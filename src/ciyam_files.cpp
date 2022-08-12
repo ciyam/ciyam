@@ -456,6 +456,36 @@ void validate_hash_with_uncompressed_content( const string& hash,
    }
 }
 
+void encrypt_file_buffer( const string& hash, const string& repository,
+ session_file_buffer_access& file_buffer, string& crypt_password, size_t offset, size_t length )
+{
+   string file_data;
+   file_buffer.copy_to_string( file_data, offset, length );
+
+   stringstream ss( file_data.substr( 1 ) );
+
+   // NOTE: Use the file content hash as salt.
+   crypt_stream( ss, crypt_password + hash );
+
+   string new_file_data( file_data.substr( 0, 1 ) );
+
+   new_file_data += ss.str( );
+
+   new_file_data[ 0 ] |= c_file_type_val_encrypted;
+
+   file_buffer.copy_from_string( new_file_data, offset );
+
+   if( !has_repository_entry_record( repository, hash ) )
+   {
+      string pub_key;
+      create_peer_repository_entry_push_info( hash, crypt_password, &pub_key, false );
+
+      store_repository_entry_record( repository, hash, "", pub_key, pub_key );
+   }
+
+   clear_key( crypt_password );
+}
+
 string get_archive_status( const string& path )
 {
    string retval( c_okay );
@@ -3091,7 +3121,36 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
 
       string content( buffer_file( file_name ) );
 
-      file_buffer.copy_string_data( content );
+      unsigned char file_type = ( content[ 0 ] & c_file_type_val_mask );
+      unsigned char file_extra = ( content[ 0 ] & c_file_type_val_extra_mask );
+
+      bool is_encrypted = ( content[ 0 ] & c_file_type_val_encrypted );
+
+      string crypt_password( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_crypt_password ) ) );
+
+      if( is_encrypted && !crypt_password.empty( ) )
+      {
+         if( crypt_password == get_special_var_name( e_special_var_sid ) )
+            get_identity( crypt_password, false, true );
+
+         stringstream ss( content.substr( 1 ) );
+
+         // NOTE: Use the file content hash as salt.
+         crypt_stream( ss, crypt_password + hash );
+
+         string new_file_data( content.substr( 0, 1 ) );
+
+         new_file_data += ss.str( );
+
+         new_file_data[ 0 ] &= ~c_file_type_val_encrypted;
+
+         content = new_file_data;
+
+         clear_key( crypt_password );
+      }
+
+      file_buffer.copy_from_string( content );
    }
 
    file_transfer( "", socket,
@@ -3241,9 +3300,28 @@ bool store_file( const string& hash,
 
          if( !existing && !is_in_blacklist )
          {
+            string repository( get_system_variable(
+             get_special_var_name( e_special_var_blockchain ) ) );
+
+            string crypt_password;
+
+            if( !repository.empty( ) )
+            {
+               crypt_password = get_session_variable(
+                get_special_var_name( e_special_var_blockchain_crypt_password ) );
+
+               if( crypt_password == get_special_var_name( e_special_var_sid ) )
+                  get_identity( crypt_password, false, true );
+            }
+
 #ifndef ZLIB_SUPPORT
             if( !p_file_data )
+            {
+               if( !is_encrypted && !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
+                  encrypt_file_buffer( hash, repository, file_buffer, crypt_password, 0, total_bytes );
+
                write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
+            }
             else
             {
                *p_file_data = string( total_bytes, '\0' );
@@ -3272,7 +3350,12 @@ bool store_file( const string& hash,
                      file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ] | c_file_type_val_compressed;
 
                      if( !p_file_data )
+                     {
+                        if( !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
+                           encrypt_file_buffer( hash, repository, file_buffer, crypt_password, size, csize + 1 );
+
                         write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
+                     }
                      else
                      {
                         *p_file_data = string( csize + 1, '\0' );
@@ -3287,7 +3370,12 @@ bool store_file( const string& hash,
             if( !has_written )
             {
                if( !p_file_data )
+               {
+                  if( !is_encrypted && !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
+                     encrypt_file_buffer( hash, repository, file_buffer, crypt_password, 0, total_bytes );
+
                   write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
+               }
                else
                {
                   *p_file_data = string( total_bytes, '\0' );

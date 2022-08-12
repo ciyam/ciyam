@@ -5924,17 +5924,33 @@ session_file_buffer_access::~session_file_buffer_access( )
    gtp_session->buffer_is_locked = false;
 }
 
-void session_file_buffer_access::copy_string_data( const string& data )
+void session_file_buffer_access::copy_to_string( string& str, size_t offset, size_t length )
+{
+   guard g( g_mutex );
+
+   if( length )
+   {
+      str.resize( length );
+      memcpy( &str[ 0 ], p_buffer + offset, length );
+   }
+   else
+   {
+      str.resize( size - offset );
+      memcpy( &str[ 0 ], p_buffer + offset, size - offset );
+   }
+}
+
+void session_file_buffer_access::copy_from_string( const string& str, size_t offset )
 {
    guard g( g_mutex );
 
    unsigned int bufsize = get_files_area_item_max_size( ) * c_max_file_buffer_expansion;
 
-   if( data.size( ) > bufsize )
-      throw runtime_error( "copy_string_data too large for session_file_buffer_access" );
+   if( str.size( ) + offset > bufsize )
+      throw runtime_error( "copy_from_string too large for session_file_buffer_access" );
 
-   size = data.size( );
-   memcpy( p_buffer, data.data( ), size );
+   size = str.size( );
+   memcpy( p_buffer + offset, str.data( ), size );
 }
 
 void increment_peer_files_uploaded( int64_t bytes )

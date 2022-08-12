@@ -171,6 +171,7 @@ enum special_var
    e_special_var_blockchain_archive_path,
    e_special_var_blockchain_peer_is_owner,
    e_special_var_blockchain_zenith_height,
+   e_special_var_blockchain_crypt_password,
    e_special_var_blockchain_data_file_hash,
    e_special_var_blockchain_get_tree_files,
    e_special_var_blockchain_num_tree_items,

@@ -4,19 +4,19 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 @ifeq "$1" ""
-#Usage: bc_gen.cin [-tertiary] <seed>
+#Usage: bc_gen.cin [-legacy] <seed>
 @else
 TERTIARY=
 @ifneq "$2" ""
-@ifneq "$1" "-tertiary"
-ERROR=Invalid argument '$1' (was expecting '-tertiary').
+@ifneq "$1" "-legacy"
+ERROR=Invalid argument '$1' (was expecting '-legacy').
 #$ERROR
 @else
 SEED=$2
-TERTIARY=1
 @endif
 @else
 SEED=$1
+TERTIARY=1
 @endif
 ;
 @ifndef $ERROR
