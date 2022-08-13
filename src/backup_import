@@ -68,6 +68,7 @@ if [ -f $BACKUP_TIME ]; then
     echo "Starting backup..." >>Backup.txt
 
     if [ -f $BACKUP_IMAGE ]; then
+     export REPO_CRYPT_PASSWORD=@sid
      ./import_files $USER_PATH Backup : $IMAGE_NAME >>Backup.txt 2>&1
     fi
 

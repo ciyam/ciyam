@@ -6,7 +6,7 @@
 .system_variable @blockchain
 IDENT=$OUTPUT
 @ifneq "$IDENT" ""
-<tree_crypt.cin -repo_encrypt $IDENT ciyam @sid
+;
 .file_info -content bc.$IDENT.zenith
 @ifndef $ERROR
 BLK_HDR=%OUTPUT:2%
@@ -15,13 +15,27 @@ INFO_LINES=@repstr:,/\n:$BLK_INFO
 HEIGHT_INFO=%INFO_LINES:1%
 BLK_HEIGHT=@repstr:blk\:h=/:$HEIGHT_INFO
 NEW_HEIGHT=@$BLK_HEIGHT+1
+;
+IS_TERTIARY=
+.file_info -content bc.$IDENT.0.blk
+@ifndef $ERROR
+SECONDARY_PUB_KEY=%OUTPUT:4%
+;
+@ifndef $SECONDARY_PUB_KEY
+IS_TERTIARY=1
+@endif
 <bc_gen_keys.cin @sid $IDENT $NEW_HEIGHT
+;
+@ifndef $IS_TERTIARY
 <bc_gen_data.cin $IDENT $NEW_HEIGHT
+@endif
+;
 <bc_gen_block.cin $IDENT $NEW_HEIGHT
 @ifndef $ERROR
 ; FUTURE: This message should be handled as a server string.
 .system_variable %$IDENT "Currently at height $NEW_HEIGHT"
 @endif
 .file_repo_entries -remove_obsolete $IDENT
+@endif
 @endif
 @endif
