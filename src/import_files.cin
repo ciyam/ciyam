@@ -11,6 +11,10 @@ SUB_DIRECTORY=$3
 FILES_EXPRESSION=@repstr:;/,:$4
 PATHS_EXPRESSION=@repstr:;/,:$5
 ;
+@ifdef $REPO_CRYPT_PASSWORD
+.session_variable @repo_crypt_password $REPO_CRYPT_PASSWORD
+@endif
+;
 IS_CURRENT=
 @ifeq "$1" "."
 @ifeq "$1" "$3"

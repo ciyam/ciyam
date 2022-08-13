@@ -151,6 +151,7 @@ const char* const c_special_variable_check_script_error = "@check_script_error";
 const char* const c_special_variable_extra_field_values = "@extra_field_values";
 const char* const c_special_variable_file_info_buffered = "@file_info_buffered";
 const char* const c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
+const char* const c_special_variable_repo_crypt_password = "@repo_crypt_password";
 const char* const c_special_variable_blockchain_hind_hash = "@blockchain_hind_hash";
 const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_ratios";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
@@ -161,7 +162,6 @@ const char* const c_special_variable_blockchain_zenith_hash = "@blockchain_zenit
 const char* const c_special_variable_blockchain_archive_path = "@blockchain_archive_path";
 const char* const c_special_variable_blockchain_peer_is_owner = "@blockchain_peer_is_owner";
 const char* const c_special_variable_blockchain_zenith_height = "@blockchain_zenith_height";
-const char* const c_special_variable_blockchain_crypt_password = "@blockchain_crypt_password";
 const char* const c_special_variable_blockchain_data_file_hash = "@blockchain_data_file_hash";
 const char* const c_special_variable_blockchain_get_tree_files = "@blockchain_get_tree_files";
 const char* const c_special_variable_blockchain_num_tree_items = "@blockchain_num_tree_items";
@@ -631,6 +631,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_blockchain_is_owner );
       break;
 
+      case e_special_var_repo_crypt_password:
+      s = string( c_special_variable_repo_crypt_password );
+      break;
+
       case e_special_var_blockchain_hind_hash:
       s = string( c_special_variable_blockchain_hind_hash );
       break;
@@ -669,10 +673,6 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_zenith_height:
       s = string( c_special_variable_blockchain_zenith_height );
-      break;
-
-      case e_special_var_blockchain_crypt_password:
-      s = string( c_special_variable_blockchain_crypt_password );
       break;
 
       case e_special_var_blockchain_data_file_hash:

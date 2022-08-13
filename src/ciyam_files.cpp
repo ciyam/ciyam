@@ -3127,7 +3127,7 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
       bool is_encrypted = ( content[ 0 ] & c_file_type_val_encrypted );
 
       string crypt_password( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_crypt_password ) ) );
+       get_special_var_name( e_special_var_repo_crypt_password ) ) );
 
       if( is_encrypted && !crypt_password.empty( ) )
       {
@@ -3308,7 +3308,7 @@ bool store_file( const string& hash,
             if( !repository.empty( ) )
             {
                crypt_password = get_session_variable(
-                get_special_var_name( e_special_var_blockchain_crypt_password ) );
+                get_special_var_name( e_special_var_repo_crypt_password ) );
 
                if( crypt_password == get_special_var_name( e_special_var_sid ) )
                   get_identity( crypt_password, false, true );
