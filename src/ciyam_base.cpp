@@ -5924,7 +5924,7 @@ session_file_buffer_access::~session_file_buffer_access( )
    gtp_session->buffer_is_locked = false;
 }
 
-void session_file_buffer_access::copy_to_string( string& str, size_t offset, size_t length )
+void session_file_buffer_access::copy_to_string( string& str, size_t offset, size_t length ) const
 {
    guard g( g_mutex );
 

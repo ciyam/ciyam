@@ -955,7 +955,8 @@ void process_list_items( const string& identity,
    string all_list_items( extract_file( hash, "" ) );
 
    vector< string > list_items;
-   split( all_list_items, list_items, '\n' );
+
+   split_list_items( all_list_items, list_items );
 
    string file_data( c_file_type_str_blob );
 
