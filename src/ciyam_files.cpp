@@ -371,10 +371,12 @@ string construct_file_name_from_hash( const string& hash,
    return file_name;
 }
 
-void validate_list( const string& data, bool* p_rc = 0, bool allow_missing_items = false )
+void validate_list( const string& data, bool* p_rc = 0,
+ bool allow_missing_items = false, bool* p_has_encrypted_blobs = 0 )
 {
    vector< string > list_items;
-   split( data, list_items, '\n' );
+
+   split_list_items( data, list_items );
 
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
@@ -406,6 +408,16 @@ void validate_list( const string& data, bool* p_rc = 0, bool allow_missing_items
          }
          else
             throw runtime_error( "list item file '" + next_list_item.substr( 0, pos ) + "' does not exist" );
+      }
+      else
+      {
+         bool is_list_item = false;
+
+         if( p_has_encrypted_blobs && is_encrypted_file( next_hash, &is_list_item ) )
+         {
+            if( !is_list_item )
+               *p_has_encrypted_blobs = true;
+         }
       }
    }
 
@@ -484,6 +496,68 @@ void encrypt_file_buffer( const string& hash, const string& repository,
    }
 
    clear_key( crypt_password );
+}
+
+string create_transformed_list(
+ session_file_buffer_access& file_buffer, size_t offset, size_t length )
+{
+   string file_data;
+   file_buffer.copy_to_string( file_data, offset, length );
+
+   string new_file_data( file_data.substr( 0, 1 ) );
+
+   vector< string > list_items;
+
+   split_list_items( file_data.substr( 1 ), list_items );
+
+   string archive_path( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+
+   for( size_t i = 0; i < list_items.size( ); i++ )
+   {
+      string next_item( list_items[ i ] );
+
+      string::size_type pos = next_item.find( ' ' );
+
+      if( pos == string::npos )
+         throw runtime_error( "unexpected next_item '" + next_item + "' in create_transformed_list" );
+
+      string next_hash( next_item.substr( 0, pos ) );
+      string next_name( next_item.substr( pos + 1 ) );
+
+      bool is_list = false;
+
+      string encrypted_hash;
+
+      if( is_encrypted_file( next_hash, &is_list ) )
+      {
+         if( !is_list )
+         {
+            string file_name( construct_file_name_from_hash(
+             next_hash, false, archive_path.empty( ), ( archive_path.empty( ) ? 0 : &archive_path ) ) );
+
+            string encrypted_blob_data( buffer_file( file_name ) );
+
+            encrypted_hash = sha256( encrypted_blob_data ).get_digest_as_string( );
+         }
+      }
+
+      // NOTE: Initial length of 1 is the type and extra.
+      if( new_file_data.length( ) > 2 )
+         new_file_data += '\n';
+
+      if( encrypted_hash.empty( ) )
+         new_file_data += next_item;
+      else
+      {
+         new_file_data += hex_decode( next_hash );
+         new_file_data += hex_decode( encrypted_hash );
+
+         new_file_data += ':' + next_name;
+      }
+   }
+
+   return new_file_data;
 }
 
 string get_archive_status( const string& path )
@@ -975,6 +1049,80 @@ bool is_list_file( const string& hash, bool* p_is_encrypted )
    return ( !is_encrypted && ( file_type == c_file_type_val_list ) );
 }
 
+bool is_encrypted_file( const string& hash, bool* p_is_list )
+{
+   guard g( g_mutex );
+
+   multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
+
+   string archive_path( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+
+   string file_name( construct_file_name_from_hash(
+    hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
+
+   unsigned char file_type_and_extra = get_file_type_and_extra( hash, file_name.c_str( ) );
+
+   if( p_is_list )
+   {
+      unsigned char file_type = ( file_type_and_extra & c_file_type_val_mask );
+      *p_is_list = ( file_type == c_file_type_val_list );
+   }
+
+   return ( file_type_and_extra & c_file_type_val_encrypted );
+}
+
+void split_list_items( const string& list_data,
+ vector< string >& list_items, vector< string >* p_encrypted_hashes )
+{
+   size_t separator_offset = ( c_sha256_digest_size * 2 );
+   size_t minimum_item_size = ( c_sha256_digest_size * 2 ) + 2;
+
+   string remaining( list_data );
+
+   while( !remaining.empty( ) )
+   {
+      string next_item, next_encrypted;
+
+      bool has_encrypted = false;
+
+      string::size_type pos = string::npos;
+
+      if( remaining.size( ) >= minimum_item_size )
+      {
+         if( remaining[ separator_offset ] == ':' )
+            has_encrypted = true;
+
+         pos = remaining.find( '\n', minimum_item_size );
+      }
+
+      if( !has_encrypted )
+         next_item = remaining.substr( 0, pos );
+      else
+      {
+         next_item = hex_encode( remaining.substr( 0, c_sha256_digest_size ) );
+
+         if( p_encrypted_hashes )
+            next_encrypted = hex_encode( remaining.substr( c_sha256_digest_size, c_sha256_digest_size ) );
+
+         if( pos == string::npos )
+            next_item += ' ' + remaining.substr( separator_offset + 1 );
+         else
+            next_item += ' ' + remaining.substr( separator_offset + 1, pos - ( separator_offset + 1 ) );
+      }
+
+      list_items.push_back( next_item );
+
+      if( p_encrypted_hashes )
+         p_encrypted_hashes->push_back( next_encrypted );
+
+      if( pos == string::npos )
+         break;
+
+      remaining.erase( 0, pos + 1 );
+   }
+}
+
 int64_t file_bytes( const string& hash, bool blobs_for_lists )
 {
    guard g( g_mutex );
@@ -1030,7 +1178,8 @@ int64_t file_bytes( const string& hash, bool blobs_for_lists )
       if( final_data.size( ) > 1 )
       {
          vector< string > list_items;
-         split( final_data.substr( 1 ), list_items, '\n' );
+
+         split_list_items( final_data.substr( 1 ), list_items );
 
          for( size_t i = 0; i < list_items.size( ); i++ )
          {
@@ -1378,10 +1527,9 @@ string file_type_info( const string& tag_or_hash,
       }
       else if( file_type == c_file_type_val_list )
       {
-         string list_info( final_data.substr( 1 ) );
-
          vector< string > list_items;
-         split( list_info, list_items, '\n' );
+
+         split_list_items( final_data.substr( 1 ), list_items );
 
          if( !output_last_only || depth == indent + 1 )
          {
@@ -1526,7 +1674,8 @@ void file_list_item_pos(
       string all_list_items( extract_file( hash, "" ) );
 
       vector< string > list_items;
-      split( all_list_items, list_items, '\n' );
+
+      split_list_items( all_list_items, list_items );
 
       for( size_t i = 0; i < list_items.size( ); i++ )
       {
@@ -1835,7 +1984,7 @@ string create_list_file( const string& add_tags, const string& del_items,
    vector< string > items;
 
    if( !data.empty( ) )
-      split( data, items, '\n' );
+      split_list_items( data, items );
 
    vector< string > new_items;
 
@@ -2004,7 +2153,7 @@ string create_list_tree( const string& add_tags, const string& del_items,
                   if( !is_list )
                      throw runtime_error( "file '" + next_branch + "' is not a list" );
 
-                  split( data, items, '\n' );
+                  split_list_items( data, items );
 
                   found_lists.push_back( hash );
                }
@@ -2041,7 +2190,7 @@ string create_list_tree( const string& add_tags, const string& del_items,
                   if( !is_list )
                      throw runtime_error( "file '" + next_branch + "' is not a list" );
 
-                  split( data, items, '\n' );
+                  split_list_items( data, items );
                }
             }
          }
@@ -2081,7 +2230,8 @@ string create_list_tree( const string& add_tags, const string& del_items,
                   throw runtime_error( "file '" + item_hash + "' is not a list" );
 
                items.clear( );
-               split( data, items, '\n' );
+
+               split_list_items( data, items );
 
                vector< string > new_tags;
                split( add_tags, new_tags );
@@ -2567,7 +2717,8 @@ string extract_tags_from_lists( const string& tag_or_hash,
    if( is_list && !data.empty( ) )
    {
       vector< string > list_items;
-      split( data, list_items, '\n' );
+
+      split_list_items( data, list_items );
 
       for( size_t i = 0; i < list_items.size( ); i++ )
       {
@@ -2981,7 +3132,8 @@ void crypt_file( const string& repository, const string& tag_or_hash,
          if( !list_info.empty( ) )
          {
             vector< string > list_items;
-            split( list_info, list_items, '\n' );
+
+            split_list_items( list_info, list_items );
 
             for( size_t i = 0; i < list_items.size( ); i++ )
             {
@@ -3080,7 +3232,8 @@ void crypt_file( const string& repository, const string& tag_or_hash,
          if( !list_info.empty( ) )
          {
             vector< string > list_items;
-            split( list_info, list_items, '\n' );
+
+            split_list_items( list_info, list_items );
 
             for( size_t i = 0; i < list_items.size( ); i++ )
             {
@@ -3166,14 +3319,14 @@ bool store_file( const string& hash,
 {
    string file_name( construct_file_name_from_hash( hash, true ) );
 
-   bool existing = false;
-
    size_t total_bytes = 0;
+
    int64_t existing_bytes = 0;
 
+   bool is_existing = false;
    bool is_in_blacklist = false;
-
    bool file_extra_is_core = false;
+   bool list_has_encrypted_blobs = false;
 
    if( !max_bytes || max_bytes > get_files_area_item_max_size( ) )
       max_bytes = get_files_area_item_max_size( );
@@ -3182,224 +3335,253 @@ bool store_file( const string& hash,
    {
       guard g( g_mutex );
 
-      existing = file_exists( file_name );
+      is_existing = file_exists( file_name );
 
-      if( existing )
+      if( is_existing )
          existing_bytes = file_size( file_name );
    }
 
-   session_file_buffer_access file_buffer;
+   string transformed_list_data;
 
-   auto_ptr< udp_stream_helper > ap_udp_stream_helper;
-
-   if( get_stream_sock( ) )
-      ap_udp_stream_helper.reset( new udp_stream_helper( hash ) );
-
-   total_bytes = file_transfer( "",
-    socket, e_ft_direction_recv, max_bytes,
-    ( existing ? c_response_okay_skip : c_response_okay_more ),
-    c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
-    c_file_transfer_max_line_size, 0, file_buffer.get_buffer( ), file_buffer.get_size( ),
-    p_progress, ( !existing ? 0 : c_response_okay_skip ), ap_udp_stream_helper.get( ) );
-
-   if( p_total_bytes )
-      *p_total_bytes = total_bytes;
-
-   if( !existing )
+   // NOTE: Empty code block for scope purposes.
    {
-      unsigned char file_type = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_mask );
-      unsigned char file_extra = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_extra_mask );
+      session_file_buffer_access file_buffer;
 
-      if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
-         throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for store_file" );
+      auto_ptr< udp_stream_helper > ap_udp_stream_helper;
 
-      if( file_extra & c_file_type_val_extra_core )
+      if( get_stream_sock( ) )
+         ap_udp_stream_helper.reset( new udp_stream_helper( hash ) );
+
+      total_bytes = file_transfer( "",
+       socket, e_ft_direction_recv, max_bytes,
+       ( is_existing ? c_response_okay_skip : c_response_okay_more ),
+       c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
+       c_file_transfer_max_line_size, 0, file_buffer.get_buffer( ), file_buffer.get_size( ),
+       p_progress, ( !is_existing ? 0 : c_response_okay_skip ), ap_udp_stream_helper.get( ) );
+
+      if( p_total_bytes )
+         *p_total_bytes = total_bytes;
+
+      if( !is_existing )
       {
-         if( allow_core_file )
-            file_extra_is_core = true;
-         else
-            throw runtime_error( "core file not allowed for this store_file" );
-      }
+         unsigned char file_type = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_mask );
+         unsigned char file_extra = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_extra_mask );
 
-      bool is_encrypted = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_encrypted );
-      bool is_compressed = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_compressed );
-      bool is_no_encrypt = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_no_encrypt );
-      bool is_no_compress = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_no_compress );
+         if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
+            throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for store_file" );
 
-      if( is_encrypted && is_no_encrypt )
-         throw runtime_error( "file must not have both the 'encrypted' and 'no_encrypt' bit flags set" );
+         if( file_extra & c_file_type_val_extra_core )
+         {
+            if( allow_core_file )
+               file_extra_is_core = true;
+            else
+               throw runtime_error( "core file not allowed for this store_file" );
+         }
 
-      if( is_compressed && is_no_compress )
-         throw runtime_error( "file must not have both the 'compressed' and 'no_compress' bit flags set" );
+         bool is_encrypted = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_encrypted );
+         bool is_compressed = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_compressed );
+         bool is_no_encrypt = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_no_encrypt );
+         bool is_no_compress = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_no_compress );
+
+         if( is_encrypted && is_no_encrypt )
+            throw runtime_error( "file must not have both the 'encrypted' and 'no_encrypt' bit flags set" );
+
+         if( is_compressed && is_no_compress )
+            throw runtime_error( "file must not have both the 'compressed' and 'no_compress' bit flags set" );
 
 #ifdef ZLIB_SUPPORT
-      if( !is_encrypted && is_compressed )
-      {
-         unsigned long size = total_bytes - 1;
-         unsigned long usize = file_buffer.get_size( ) - size;
+         if( !is_encrypted && is_compressed )
+         {
+            unsigned long size = total_bytes - 1;
+            unsigned long usize = file_buffer.get_size( ) - size;
 
-         if( uncompress( ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
-          &usize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size ) != Z_OK )
-            throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
+            if( uncompress( ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
+             &usize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size ) != Z_OK )
+               throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
 
-         if( usize + 1 > max_bytes )
-            throw runtime_error( "uncompressed file size exceeds maximum permitted file size" );
+            if( usize + 1 > max_bytes )
+               throw runtime_error( "uncompressed file size exceeds maximum permitted file size" );
 
-         file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ];
-         validate_hash_with_uncompressed_content( hash, &file_buffer.get_buffer( )[ size ], usize + 1 );
+            file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ];
+            validate_hash_with_uncompressed_content( hash, &file_buffer.get_buffer( )[ size ], usize + 1 );
+
+            bool rc = true;
+
+            const char* p_data_buffer = ( const char* )&file_buffer.get_buffer( )[ size + 1 ];
+
+            if( !p_file_data && ( file_type != c_file_type_val_blob ) )
+               validate_list( p_data_buffer, &rc, allow_missing_items, &list_has_encrypted_blobs );
+
+            if( !rc )
+               throw runtime_error( "invalid 'list' file" );
+
+            if( p_file_data )
+            {
+               is_compressed = false;
+               is_no_compress = true;
+
+               total_bytes = usize + 1;
+
+               file_buffer.get_buffer( )[ 0 ] &= ~c_file_type_val_compressed;
+
+               memcpy( &file_buffer.get_buffer( )[ 1 ], &file_buffer.get_buffer( )[ size + 1 ], usize );
+            }
+         }
+#endif
 
          bool rc = true;
 
-         if( !p_file_data && ( file_type != c_file_type_val_blob ) )
-            validate_list( ( const char* )&file_buffer.get_buffer( )[ size + 1 ], &rc, allow_missing_items );
+         const char* p_data_buffer = ( const char* )&file_buffer.get_buffer( )[ 1 ];
+
+         if( !p_file_data && !is_encrypted && !is_compressed && ( file_type != c_file_type_val_blob ) )
+            validate_list( p_data_buffer, &rc, allow_missing_items, &list_has_encrypted_blobs );
 
          if( !rc )
             throw runtime_error( "invalid 'list' file" );
 
-         if( p_file_data )
+         if( !is_encrypted && !is_compressed )
+            validate_hash_with_uncompressed_content( hash, &file_buffer.get_buffer( )[ 0 ], total_bytes );
+
+         if( rc )
          {
-            is_compressed = false;
-            is_no_compress = true;
+            guard g( g_mutex );
 
-            total_bytes = usize + 1;
+            if( !is_existing )
+               is_in_blacklist = file_has_been_blacklisted( hash );
 
-            file_buffer.get_buffer( )[ 0 ] &= ~c_file_type_val_compressed;
-
-            memcpy( &file_buffer.get_buffer( )[ 1 ], &file_buffer.get_buffer( )[ size + 1 ], usize );
-         }
-      }
-#endif
-
-      bool rc = true;
-
-      if( !p_file_data && !is_encrypted && !is_compressed && ( file_type != c_file_type_val_blob ) )
-         validate_list( ( const char* )&file_buffer.get_buffer( )[ 1 ], &rc, allow_missing_items );
-
-      if( !rc )
-         throw runtime_error( "invalid 'list' file" );
-
-      if( !is_encrypted && !is_compressed )
-         validate_hash_with_uncompressed_content( hash, &file_buffer.get_buffer( )[ 0 ], total_bytes );
-
-      if( rc )
-      {
-         guard g( g_mutex );
-
-         if( !existing )
-            is_in_blacklist = file_has_been_blacklisted( hash );
-
-         if( !existing && !is_in_blacklist && g_total_files >= get_files_area_item_max_num( ) )
-         {
-            // NOTE: First attempt to relegate an existing file in order to make room.
-            relegate_one_or_num_oldest_files( "", "", 1, 0, true );
-
-            if( g_total_files >= get_files_area_item_max_num( ) )
-               // FUTURE: This message should be handled as a server string message.
-               throw runtime_error( "Maximum file area item limit has been reached." );
-         }
-
-         if( !existing && !is_in_blacklist )
-         {
-            string repository( get_system_variable(
-             get_special_var_name( e_special_var_blockchain ) ) );
-
-            string crypt_password;
-
-            if( !repository.empty( ) )
+            if( !is_existing && !is_in_blacklist && g_total_files >= get_files_area_item_max_num( ) )
             {
-               crypt_password = get_session_variable(
-                get_special_var_name( e_special_var_repo_crypt_password ) );
+               // NOTE: First attempt to relegate an existing file in order to make room.
+               relegate_one_or_num_oldest_files( "", "", 1, 0, true );
 
-               if( crypt_password == get_special_var_name( e_special_var_sid ) )
-                  get_identity( crypt_password, false, true );
+               if( g_total_files >= get_files_area_item_max_num( ) )
+                  // FUTURE: This message should be handled as a server string message.
+                  throw runtime_error( "Maximum file area item limit has been reached." );
             }
+
+            if( !is_existing && !is_in_blacklist )
+            {
+               string repository( get_system_variable(
+                get_special_var_name( e_special_var_blockchain ) ) );
+
+               string crypt_password;
+
+               if( !repository.empty( ) )
+               {
+                  crypt_password = get_session_variable(
+                   get_special_var_name( e_special_var_repo_crypt_password ) );
+
+                  if( crypt_password == get_special_var_name( e_special_var_sid ) )
+                     get_identity( crypt_password, false, true );
+               }
 
 #ifndef ZLIB_SUPPORT
-            if( !p_file_data )
-            {
-               if( !is_encrypted && !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
-                  encrypt_file_buffer( hash, repository, file_buffer, crypt_password, 0, total_bytes );
-
-               write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
-            }
-            else
-            {
-               *p_file_data = string( total_bytes, '\0' );
-               memcpy( &( *p_file_data )[ 0 ], &file_buffer.get_buffer( )[ 0 ], total_bytes );
-            }
-#else
-            bool has_written = false;
-            unsigned long size = total_bytes - 1;
-
-            if( !is_no_compress
-             && !is_encrypted && !is_compressed && size >= c_min_size_to_compress )
-            {
-               unsigned long csize = file_buffer.get_size( );
-
-               int rc = compress2(
-                ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
-                &csize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size, 9 ); // i.e. 9 is for maximum compression
-
-               if( rc == Z_OK )
-               {
-                  if( csize < size )
-                  {
-                     has_written = true;
-                     is_compressed = true;
-
-                     file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ] | c_file_type_val_compressed;
-
-                     if( !p_file_data )
-                     {
-                        if( !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
-                           encrypt_file_buffer( hash, repository, file_buffer, crypt_password, size, csize + 1 );
-
-                        write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
-                     }
-                     else
-                     {
-                        *p_file_data = string( csize + 1, '\0' );
-                        memcpy( &( *p_file_data )[ 0 ], &file_buffer.get_buffer( )[ size ], csize + 1 );
-                     }
-                  }
-               }
-               else if( rc != Z_BUF_ERROR )
-                  throw runtime_error( "unexpected compression error in store_file" );
-            }
-
-            if( !has_written )
-            {
                if( !p_file_data )
                {
                   if( !is_encrypted && !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
                      encrypt_file_buffer( hash, repository, file_buffer, crypt_password, 0, total_bytes );
 
-                  write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
+                  if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
+                  {
+                     is_in_blacklist = true;
+                     transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes );
+                  }
+                  else
+                     write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
                }
                else
                {
                   *p_file_data = string( total_bytes, '\0' );
                   memcpy( &( *p_file_data )[ 0 ], &file_buffer.get_buffer( )[ 0 ], total_bytes );
                }
-            }
+#else
+               bool has_written = false;
+
+               unsigned long size = total_bytes;
+
+               if( !is_no_compress
+                && !is_encrypted && !is_compressed && size >= c_min_size_to_compress )
+               {
+                  unsigned long csize = file_buffer.get_size( );
+
+                  int rc = compress2(
+                   ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
+                   &csize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size - 1, 9 ); // i.e. 9 is for maximum compression
+
+                  if( rc == Z_OK )
+                  {
+                     if( csize < size )
+                     {
+                        has_written = true;
+                        is_compressed = true;
+
+                        file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ] | c_file_type_val_compressed;
+
+                        if( !p_file_data )
+                        {
+                           if( !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
+                              encrypt_file_buffer( hash, repository, file_buffer, crypt_password, size, csize + 1 );
+
+                           if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
+                           {
+                              is_in_blacklist = true;
+                              transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes );
+                           }
+                           else
+                              write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
+                        }
+                        else
+                        {
+                           *p_file_data = string( csize + 1, '\0' );
+                           memcpy( &( *p_file_data )[ 0 ], &file_buffer.get_buffer( )[ size ], csize + 1 );
+                        }
+                     }
+                  }
+                  else if( rc != Z_BUF_ERROR )
+                     throw runtime_error( "unexpected compression error in store_file" );
+               }
+
+               if( !has_written )
+               {
+                  if( !p_file_data )
+                  {
+                     if( !is_encrypted && !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
+                        encrypt_file_buffer( hash, repository, file_buffer, crypt_password, 0, total_bytes );
+
+                     if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
+                     {
+                        is_in_blacklist = true;
+                        transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes );
+                     }
+                     else
+                        write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
+                  }
+                  else
+                  {
+                     *p_file_data = string( total_bytes, '\0' );
+                     memcpy( &( *p_file_data )[ 0 ], &file_buffer.get_buffer( )[ 0 ], total_bytes );
+                  }
+               }
 #endif
+            }
          }
-      }
 
-      if( !p_file_data )
-      {
-         if( !existing && !is_in_blacklist )
-            ++g_total_files;
-
-         if( !is_in_blacklist )
+         if( !p_file_data && !is_in_blacklist )
          {
+            guard g( g_mutex );
+
+            if( !is_existing )
+               ++g_total_files;
+
             g_total_bytes -= existing_bytes;
             g_total_bytes += file_size( file_name );
          }
       }
    }
 
-   if( !p_file_data && !is_in_blacklist )
+   if( !transformed_list_data.empty( ) )
+      create_raw_file( transformed_list_data, true, p_tag );
+   else if( !p_file_data && !is_in_blacklist )
    {
       guard g( g_mutex );
 
@@ -3413,7 +3595,7 @@ bool store_file( const string& hash,
          tag_file( current_time_stamp_tag( ), hash, true );
    }
 
-   return !existing;
+   return !is_existing;
 }
 
 void delete_file( const string& hash, bool even_if_tagged, bool ignore_not_found )
