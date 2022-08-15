@@ -485,6 +485,8 @@ void encrypt_file_buffer( const string& hash, const string& repository,
 
    new_file_data[ 0 ] |= c_file_type_val_encrypted;
 
+   set_system_variable( "@" + hash, sha256( new_file_data ).get_digest_as_string( ) );
+
    file_buffer.copy_from_string( new_file_data, offset );
 
    if( !has_repository_entry_record( repository, hash ) )
@@ -499,7 +501,8 @@ void encrypt_file_buffer( const string& hash, const string& repository,
 }
 
 string create_transformed_list(
- session_file_buffer_access& file_buffer, size_t offset, size_t length )
+ session_file_buffer_access& file_buffer,
+ size_t offset, size_t length, progress* p_progress = 0 )
 {
    string file_data;
    file_buffer.copy_to_string( file_data, offset, length );
@@ -512,6 +515,8 @@ string create_transformed_list(
 
    string archive_path( get_session_variable(
     get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+
+   date_time dtm( date_time::local( ) );
 
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
@@ -533,12 +538,19 @@ string create_transformed_list(
       {
          if( !is_list )
          {
-            string file_name( construct_file_name_from_hash(
-             next_hash, false, archive_path.empty( ), ( archive_path.empty( ) ? 0 : &archive_path ) ) );
+            encrypted_hash = get_system_variable( "@" + next_hash );
 
-            string encrypted_blob_data( buffer_file( file_name ) );
+            if( !encrypted_hash.empty( ) )
+               set_system_variable( "@" + next_hash, "" );
+            else
+            {
+               string file_name( construct_file_name_from_hash(
+                next_hash, false, archive_path.empty( ), ( archive_path.empty( ) ? 0 : &archive_path ) ) );
 
-            encrypted_hash = sha256( encrypted_blob_data ).get_digest_as_string( );
+               string encrypted_blob_data( buffer_file( file_name ) );
+
+               encrypted_hash = sha256( encrypted_blob_data ).get_digest_as_string( );
+            }
          }
       }
 
@@ -554,6 +566,20 @@ string create_transformed_list(
          new_file_data += hex_decode( encrypted_hash );
 
          new_file_data += ':' + next_name;
+      }
+
+      if( p_progress )
+      {
+         date_time now( date_time::local( ) );
+
+         uint64_t elapsed = seconds_between( dtm, now );
+
+         if( elapsed >= 1 )
+         {
+            p_progress->output_progress( "." );
+
+            dtm = now;
+         }
       }
    }
 
@@ -3433,7 +3459,7 @@ bool store_file( const string& hash,
                   if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
                   {
                      is_in_blacklist = true;
-                     transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes );
+                     transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_progress );
                   }
                   else
                      write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
@@ -3474,7 +3500,7 @@ bool store_file( const string& hash,
                            if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
                            {
                               is_in_blacklist = true;
-                              transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes );
+                              transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_progress );
                            }
                            else
                               write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
@@ -3500,7 +3526,7 @@ bool store_file( const string& hash,
                      if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
                      {
                         is_in_blacklist = true;
-                        transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes );
+                        transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_progress );
                      }
                      else
                         write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
