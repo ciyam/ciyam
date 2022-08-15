@@ -86,6 +86,7 @@ const char* const c_env_var_slotx = "SLOTX";
 const char* const c_env_var_no_udp = "NO_UDP";
 const char* const c_env_var_output = "OUTPUT";
 const char* const c_env_var_pub_key = "PUB_KEY";
+const char* const c_env_var_seconds = "SECONDS";
 const char* const c_env_var_pub_keyx = "PUB_KEYX";
 const char* const c_env_var_file_name = "FILE_NAME";
 const char* const c_env_var_local_udp = "LOCAL_UDP";
@@ -144,6 +145,8 @@ int g_pid = get_pid( );
 
 bool g_use_tls = false;
 bool g_had_error = false;
+
+size_t g_seconds = 1;
 
 size_t g_max_file_size = c_files_area_item_max_size_default;
 
@@ -607,7 +610,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                      uint64_t elapsed = seconds_between( dtm, now );
 
-                     if( elapsed >= 1 )
+                     if( elapsed >= g_seconds )
                      {
                         if( is_stdout_console( ) )
                            progress.output_progress( " ", chunk, total_chunks );
@@ -1031,7 +1034,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                         uint64_t elapsed = seconds_between( dtm, now );
 
-                        if( elapsed >= 1 )
+                        if( elapsed >= g_seconds )
                         {
                            if( is_stdout_console( ) )
                               progress.output_progress( " ", chunk, total_chunks );
@@ -1602,6 +1605,11 @@ int main( int argc, char* argv[ ] )
 
       if( p_pid )
          g_pid = atoi( p_pid );
+
+      const char* p_seconds = getenv( c_env_var_seconds );
+
+      if( p_seconds )
+         g_seconds = atoi( p_seconds );
 
       if( !cmd_handler.has_option_quiet( ) )
          cout << application_title( e_app_info_request_title_and_version ) << endl;
