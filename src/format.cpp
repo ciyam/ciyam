@@ -19,6 +19,7 @@
 
 #include "format.h"
 
+#include "sha256.h"
 #include "date_time.h"
 #include "utilities.h"
 
@@ -522,4 +523,55 @@ int unformat_duration( const string& value )
    }
 
    return rc;
+}
+
+void split_list_items( const string& list_data,
+ vector< string >& list_items, vector< string >* p_encrypted_hashes )
+{
+   size_t separator_offset = ( c_sha256_digest_size * 2 );
+   size_t minimum_item_size = ( c_sha256_digest_size * 2 ) + 2;
+
+   string remaining( list_data );
+
+   while( !remaining.empty( ) )
+   {
+      string next_item, next_encrypted;
+
+      bool has_encrypted = false;
+
+      string::size_type pos = string::npos;
+
+      if( remaining.size( ) >= minimum_item_size )
+      {
+         if( remaining[ separator_offset ] == ':' )
+            has_encrypted = true;
+
+         pos = remaining.find( '\n', minimum_item_size );
+      }
+
+      if( !has_encrypted )
+         next_item = remaining.substr( 0, pos );
+      else
+      {
+         next_item = hex_encode( remaining.substr( 0, c_sha256_digest_size ) );
+
+         if( p_encrypted_hashes )
+            next_encrypted = hex_encode( remaining.substr( c_sha256_digest_size, c_sha256_digest_size ) );
+
+         if( pos == string::npos )
+            next_item += ' ' + remaining.substr( separator_offset + 1 );
+         else
+            next_item += ' ' + remaining.substr( separator_offset + 1, pos - ( separator_offset + 1 ) );
+      }
+
+      list_items.push_back( next_item );
+
+      if( p_encrypted_hashes )
+         p_encrypted_hashes->push_back( next_encrypted );
+
+      if( pos == string::npos )
+         break;
+
+      remaining.erase( 0, pos + 1 );
+   }
 }

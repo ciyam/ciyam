@@ -913,7 +913,8 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                      if( !all_chunks.empty( ) )
                      {
                         vector< string > chunks;
-                        split( all_chunks, chunks, '\n' );
+
+                        split_list_items( all_chunks, chunks );
 
                         total_chunks = chunks.size( );
 

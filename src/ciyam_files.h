@@ -56,9 +56,6 @@ bool CIYAM_BASE_DECL_SPEC is_list_file( const std::string& hash, bool* p_is_encr
 
 bool CIYAM_BASE_DECL_SPEC is_encrypted_file( const std::string& hash, bool* p_is_list = 0 );
 
-void CIYAM_BASE_DECL_SPEC split_list_items( const std::string& list_data,
- std::vector< std::string >& list_items, std::vector< std::string >* p_encrypted_hashes = 0 );
-
 int64_t CIYAM_BASE_DECL_SPEC file_bytes( const std::string& hash, bool blobs_for_lists = false );
 
 enum file_expansion
