@@ -68,7 +68,7 @@ if [ -f $RESTORE_NOW ]; then
    sudo chown $USER:www $BACKUP_IMAGE
 
    export REPO_CRYPT_PASSWORD=@sid
-   ./export_files $BACKUP_LIST $USER_PATH | sed 's#$USER_PATH/##g' >>Backup.txt
+   ./export_files $BACKUP_LIST $USER_PATH | sed s#$USER_PATH/## >>Backup.txt
 
    sudo chown root:root $BACKUP_IMAGE
    sudo mount $BACKUP_IMAGE $BACKUP_PATH
