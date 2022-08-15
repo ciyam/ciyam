@@ -69,7 +69,7 @@ if [ -f $BACKUP_TIME ]; then
 
     if [ -f $BACKUP_IMAGE ]; then
      export REPO_CRYPT_PASSWORD=@sid
-     ./import_files $USER_PATH Backup : $IMAGE_NAME | sed 's#$USER_PATH/##g' 2>&1 >>Backup.txt
+     ./import_files $USER_PATH Backup : $IMAGE_NAME | sed 's#$USER_PATH/##g' >>Backup.txt
     fi
 
     ./tree_touch ciyam "^Backup:"
