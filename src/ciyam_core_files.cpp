@@ -830,7 +830,7 @@ void verify_core_file( const string& content, bool check_sigs )
 
       unsigned char file_type = ( file_type_and_extra & c_file_type_val_mask );
 
-      if( file_type == c_file_type_char_core_blob )
+      if( file_type == c_file_type_val_blob )
       {
          string::size_type pos = content.find( ':' );
 
