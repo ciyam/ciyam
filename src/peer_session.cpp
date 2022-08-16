@@ -4245,10 +4245,16 @@ void peer_session::on_start( )
 
    if( has_terminated && !is_for_support && !identity.empty( ) )
    {
-      set_variable_checker check_no_other_session(
-       e_variable_check_type_no_session_has, identity );
+      string paired_identity( get_session_variable(
+       get_special_var_name( e_special_var_paired_identity ) ) );
 
-      set_system_variable( '~' + identity, "", check_no_other_session );
+      if( !paired_identity.empty( ) )
+      {
+         set_variable_checker check_no_other_session(
+          e_variable_check_type_no_session_has, paired_identity );
+
+         set_system_variable( '~' + paired_identity, "", check_no_other_session );
+      }
    }
 
    delete this;
