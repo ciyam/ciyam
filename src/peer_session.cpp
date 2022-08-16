@@ -3896,6 +3896,8 @@ void peer_session::on_start( )
    bool has_terminated = false;
    bool was_initialised = false;
 
+   string paired_identity;
+
    peer_state state = ( is_responder ? e_peer_state_responder : e_peer_state_initiator );
 
    int64_t current = unix_time( date_time::local( ) );
@@ -4126,6 +4128,8 @@ void peer_session::on_start( )
 
          if( !identity.empty( ) )
          {
+            paired_identity = identity;
+
             set_session_variable( identity, c_true_value );
             set_session_variable( get_special_var_name( e_special_var_paired_identity ), identity );
 
@@ -4243,18 +4247,12 @@ void peer_session::on_start( )
       }
    }
 
-   if( has_terminated && !is_for_support && !identity.empty( ) )
+   if( has_terminated && !is_for_support && !paired_identity.empty( ) )
    {
-      string paired_identity( get_session_variable(
-       get_special_var_name( e_special_var_paired_identity ) ) );
+      set_variable_checker check_no_other_session(
+       e_variable_check_type_no_session_has, paired_identity );
 
-      if( !paired_identity.empty( ) )
-      {
-         set_variable_checker check_no_other_session(
-          e_variable_check_type_no_session_has, paired_identity );
-
-         set_system_variable( '~' + paired_identity, "", check_no_other_session );
-      }
+      set_system_variable( '~' + paired_identity, "", check_no_other_session );
    }
 
    delete this;
