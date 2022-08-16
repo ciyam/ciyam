@@ -81,6 +81,7 @@ if [ -f $BACKUP_TIME ]; then
     date >>Backup.txt
 
     ./system_variable set @backup_needed ""
+    ./system_variable set @restore_needed ""
 
     BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_height`
 

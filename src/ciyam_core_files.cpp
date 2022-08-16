@@ -826,7 +826,9 @@ void verify_core_file( const string& content, bool check_sigs )
       throw runtime_error( "invalid empty core file content" );
    else
    {
-      unsigned char file_type = content[ 0 ];
+      unsigned char file_type_and_extra = content[ 0 ];
+
+      unsigned char file_type = ( file_type_and_extra & c_file_type_val_mask );
 
       if( file_type == c_file_type_char_core_blob )
       {
