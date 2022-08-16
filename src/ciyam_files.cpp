@@ -3474,7 +3474,7 @@ bool store_file( const string& hash,
 
                unsigned long size = total_bytes;
 
-               if( !is_no_compress
+               if( !p_file_data && !is_no_compress
                 && !is_encrypted && !is_compressed && size >= c_min_size_to_compress )
                {
                   unsigned long csize = file_buffer.get_size( );
