@@ -82,6 +82,7 @@ if [ -f $RESTORE_NOW ]; then
    echo "Finished restore..." >>Backup.txt
    date >>Backup.txt
 
+   ./system_variable set @backup_needed ""
    ./system_variable set @restore_needed ""
 
    rm ~backup_export
