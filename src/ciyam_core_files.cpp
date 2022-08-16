@@ -832,7 +832,7 @@ void verify_core_file( const string& content, bool check_sigs )
 
       if( file_type == c_file_type_val_blob )
       {
-         string::size_type pos = content.find( ':' );
+         string::size_type pos = content.find( ':', 1 );
 
          if( pos == string::npos )
             throw runtime_error( "invalid content '" + content + "' for core file" );
