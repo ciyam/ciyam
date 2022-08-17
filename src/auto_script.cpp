@@ -98,6 +98,7 @@ struct script_info
    time_t last_mod;
 
    string tsfilename;
+   string busy_filename;
 
    exclude_type exclude;
 
@@ -208,6 +209,14 @@ void read_script_info( )
             info.filename = reader.read_attribute( c_attribute_filename );
             info.arguments = reader.read_opt_attribute( c_attribute_arguments );
             info.tsfilename = reader.read_opt_attribute( c_attribute_time_stamp );
+
+            pos = info.filename.find( ':' );
+
+            if( pos != string::npos )
+            {
+               info.busy_filename = info.filename.substr( pos + 1 );
+               info.filename.erase( pos );
+            }
 
             if( file_exists( info.tsfilename ) )
                info.last_mod = last_modification_time( info.tsfilename );
@@ -332,7 +341,14 @@ void output_schedule( ostream& os )
       string filename( g_scripts[ ssci->second ].filename );
       bool is_script = ( filename == c_script_dummy_filename );
 
-      if( !is_script && file_exists( "~" + filename ) )
+      bool is_busy = false;
+
+      string busy_filename( g_scripts[ ssci->second ].busy_filename );
+
+      if( !busy_filename.empty( ) && file_exists( busy_filename ) )
+         is_busy = true;
+
+      if( is_busy )
          os << " [ *** busy *** ]";
       else if( !g_scripts[ ssci->second ].tsfilename.empty( ) )
          os << " [" << g_scripts[ ssci->second ].tsfilename << "]";
@@ -454,9 +470,11 @@ void autoscript_session::on_start( )
                string filename( g_scripts[ j->second ].filename );
                bool is_script = ( filename == c_script_dummy_filename );
 
-               // NOTE: If a file named "~<filename>" exists then assumes
-               // it's running or has crashed and should not be executed.
-               if( !is_script && file_exists( "~" + filename ) )
+               // NOTE: If a "busy" filename exists then assume that it
+               // is either currently running or not ready to be called.
+               string busy_filename( g_scripts[ j->second ].busy_filename );
+
+               if( !busy_filename.empty( ) && file_exists( busy_filename ) )
                   okay = false;
 
                if( okay && !is_excluded( g_scripts[ j->second ], now )

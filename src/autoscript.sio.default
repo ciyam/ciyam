@@ -9,13 +9,13 @@
 #  <name>backup_export
 #  <time>00:00:00-23:59:50
 #  <cycle>10s
-#  <filename>backup_export
+#  <filename>backup_export:~backup
 # </script>
 # <script/>
 #  <name>backup_import
 #  <time>00:00:05-23:59:55
 #  <cycle>10s
-#  <filename>backup_import
+#  <filename>backup_import:~backup
 # </script>
 ### [<start generated>]
 ### [<finish generated>]

@@ -41,7 +41,7 @@ if [ -f $RESTORE_NOW_FILE ]; then
 fi
 
 if [ -f $RESTORE_NOW ]; then
- if [ ! -f ~backup_export ]; then
+ if [ ! -f ~backup ]; then
   date >Backup.txt
   echo "Preparing for restore..." >>Backup.txt
 
@@ -56,8 +56,8 @@ if [ -f $RESTORE_NOW ]; then
   fi
 
   # NOTE: Use this to prevent accidentally executing the actual restore twice.
-  if [ ! -f ~backup_export ]; then
-   touch ~backup_export
+  if [ ! -f ~backup ]; then
+   touch ~backup
 
    date >Backup.txt
    echo "Starting restore..." >>Backup.txt
@@ -85,7 +85,7 @@ if [ -f $RESTORE_NOW ]; then
    ./system_variable set @backup_needed ""
    ./system_variable set @restore_needed ""
 
-   rm ~backup_export
+   rm ~backup
    rm $RESTORE_NOW
   fi
  fi

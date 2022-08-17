@@ -46,7 +46,7 @@ if [ -f $BACKUP_TIME ]; then
 
  if [ $NOW -ge $TIME ]; then
 
-  if [ ! -f ~backup_import ]; then
+  if [ ! -f ~backup ]; then
    date >Backup.txt
    echo "Preparing for backup..." >>Backup.txt
 
@@ -61,8 +61,8 @@ if [ -f $BACKUP_TIME ]; then
    fi
 
    # NOTE: Use this to prevent accidentally executing the actual backup twice.
-   if [ ! -f ~backup_import ]; then
-    touch ~backup_import
+   if [ ! -f ~backup ]; then
+    touch ~backup
 
     date >Backup.txt
     echo "Starting backup..." >>Backup.txt
@@ -91,7 +91,7 @@ if [ -f $BACKUP_TIME ]; then
      echo $BLOCKCHAIN_HEIGHT > $BACKUP_HEIGHT_FILE
     fi
 
-    rm ~backup_import
+    rm ~backup
     rm $BACKUP_TIME
    fi
   fi
