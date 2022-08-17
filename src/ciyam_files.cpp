@@ -42,6 +42,7 @@
 #include "fs_iterator.h"
 #include "crypt_stream.h"
 #include "ciyam_variables.h"
+#include "command_handler.h"
 #include "ods_file_system.h"
 #include "ciyam_core_files.h"
 
@@ -3289,8 +3290,9 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
 }
 
 bool store_file( const string& hash,
- tcp_socket& socket, const char* p_tag, progress* p_progress, bool allow_core_file,
- size_t max_bytes, bool allow_missing_items, string* p_file_data, size_t* p_total_bytes )
+ tcp_socket& socket, const char* p_tag, progress* p_progress,
+ bool allow_core_file, size_t max_bytes, bool allow_missing_items,
+ string* p_file_data, size_t* p_total_bytes, command_handler* p_command_handler )
 {
    string file_name( construct_file_name_from_hash( hash, true ) );
 
@@ -3459,7 +3461,7 @@ bool store_file( const string& hash,
                   if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
                   {
                      is_in_blacklist = true;
-                     transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_progress );
+                     transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_command_handler );
                   }
                   else
                      write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
@@ -3500,7 +3502,7 @@ bool store_file( const string& hash,
                            if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
                            {
                               is_in_blacklist = true;
-                              transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_progress );
+                              transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_command_handler );
                            }
                            else
                               write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
@@ -3526,7 +3528,7 @@ bool store_file( const string& hash,
                      if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
                      {
                         is_in_blacklist = true;
-                        transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_progress );
+                        transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_command_handler );
                      }
                      else
                         write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );

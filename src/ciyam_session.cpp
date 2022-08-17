@@ -876,6 +876,7 @@ void output_response_lines( tcp_socket& socket, const string& response )
 
    vector< string > lines;
    split( response, lines, '\n' );
+
    for( size_t i = 0; i < lines.size( ); i++ )
       socket.write_line( lines[ i ], c_request_timeout, p_progress );
 }
@@ -1346,21 +1347,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
    set_last_session_cmd( command );
 
-   progress* p_progress = 0;
 #ifdef HPDF_SUPPORT
    progress* p_pdf_progress = 0;
-#endif
-   trace_progress progress( TRACE_SOCK_OPS );
 
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
-      p_progress = &progress;
-
-#ifdef HPDF_SUPPORT
    trace_progress pdf_progress( TRACE_PDF_VALS );
 
    if( get_trace_flags( ) & TRACE_PDF_VALS )
       p_pdf_progress = &pdf_progress;
 #endif
+
+   progress* p_sock_progress = 0;
+
+   trace_progress sock_progress( TRACE_SOCK_OPS );
+
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_sock_progress = &sock_progress;
 
    try
    {
@@ -1616,7 +1617,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             throw runtime_error( "file '" + hash + "' not found" );
          }
 
-         fetch_file( hash, socket, p_progress );
+         fetch_file( hash, socket, p_sock_progress );
       }
       else if( command == c_cmd_ciyam_session_file_put )
       {
@@ -1630,7 +1631,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // NOTE: Although "filename" is used to make the command usage easier to understand for
          // end users it is expected that the value provided will actually be the SHA256 hash of
          // the file content (including "prefix" which "ciyam_client" determines automatically).
-         is_new = store_file( filename, socket, ( tag.empty( ) ? 0 : tag.c_str( ) ), p_progress );
+         is_new = store_file( filename, socket,
+          ( tag.empty( ) ? 0 : tag.c_str( ) ), p_sock_progress, true, 0, false, 0, 0, &handler );
 
          // NOTE: Although it seems a little odd to be checking this *after* the "store_file" it
          // otherwise would make a mess of the protocol (and the "store_file" just quietly fails
@@ -2902,7 +2904,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !field_output.empty( ) )
                   output += " " + field_output;
 
-               socket.write_line( output, c_request_timeout, p_progress );
+               socket.write_line( output, c_request_timeout, p_sock_progress );
             }
             else
             {
@@ -3000,7 +3002,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         }
 
                         if( summaries.empty( ) )
-                           socket.write_line( output, c_request_timeout, p_progress );
+                           socket.write_line( output, c_request_timeout, p_sock_progress );
                         else
                         {
                            string prefix;
@@ -3047,7 +3049,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   for( multimap< string, string >::iterator
                    i = summary_sorted_values.begin( ); i != summary_sorted_values.end( ); ++i )
-                     socket.write_line( i->second, c_request_timeout, p_progress );
+                     socket.write_line( i->second, c_request_timeout, p_sock_progress );
                }
             }
 
@@ -4039,7 +4041,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      return_response = c_response_okay_more;
 
                   if( !socket_handler.is_restoring( ) && !return_response.empty( ) )
-                     socket.write_line( return_response, c_request_timeout, p_progress );
+                     socket.write_line( return_response, c_request_timeout, p_sock_progress );
                }
 
                if( !is_first && !skip_transaction )
@@ -4081,7 +4083,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // NOTE: As the client is expecting a response for each key provided when an
                   // an exception is thrown fill out any remaining responses with "okay more".
                   for( size_t i = num_responses; i < all_keys.size( ) - 1; i++ )
-                     socket.write_line( c_response_okay_more, c_request_timeout, p_progress );
+                     socket.write_line( c_response_okay_more, c_request_timeout, p_sock_progress );
                }
 
                if( !is_first && !skip_transaction )
@@ -4107,7 +4109,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // NOTE: As the client is expecting a response for each key provided when an
                   // an exception is thrown fill out any remaining responses with "okay more".
                   for( size_t i = num_responses; i < all_keys.size( ) - 1; i++ )
-                     socket.write_line( c_response_okay_more, c_request_timeout, p_progress );
+                     socket.write_line( c_response_okay_more, c_request_timeout, p_sock_progress );
                }
 
                if( !is_first && !skip_transaction )

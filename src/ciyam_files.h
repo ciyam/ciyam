@@ -26,6 +26,7 @@ struct progress;
 
 class date_time;
 class tcp_socket;
+class command_handler;
 
 void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_files( std::ostream& outs );
 
@@ -148,8 +149,9 @@ void CIYAM_BASE_DECL_SPEC crypt_file( const std::string& repository,
 void CIYAM_BASE_DECL_SPEC fetch_file( const std::string& hash, tcp_socket& socket, progress* p_progress = 0 );
 
 bool CIYAM_BASE_DECL_SPEC store_file( const std::string& hash,
- tcp_socket& socket, const char* p_tag = 0, progress* p_progress = 0, bool allow_core_file = true,
- size_t max_bytes = 0, bool allow_missing_items = false, std::string* p_file_data = 0, size_t* p_total_bytes = 0 );
+ tcp_socket& socket, const char* p_tag = 0, progress* p_progress = 0,
+ bool allow_core_file = true, size_t max_bytes = 0, bool allow_missing_items = false,
+ std::string* p_file_data = 0, size_t* p_total_bytes = 0, command_handler* p_command_handler = 0 );
 
 void CIYAM_BASE_DECL_SPEC delete_file( const std::string& hash, bool even_if_tagged = true, bool ignore_not_found = false );
 
