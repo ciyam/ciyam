@@ -2058,11 +2058,11 @@ void socket_command_handler::put_hello( )
 {
    last_issued_was_put = true;
 
-   progress* p_progress = 0;
-   trace_progress progress( TRACE_SOCK_OPS );
+   progress* p_sock_progress = 0;
+   trace_progress sock_progress( TRACE_SOCK_OPS );
 
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
-      p_progress = &progress;
+      p_sock_progress = &sock_progress;
 
    string data, hello_hash;
    data = get_hello_data( hello_hash );
@@ -2071,9 +2071,11 @@ void socket_command_handler::put_hello( )
       create_raw_file( data, false );
 
    socket.set_delay( );
-   socket.write_line( string( c_cmd_peer_session_put ) + " " + hello_hash, c_request_timeout, p_progress );
 
-   fetch_file( hello_hash, socket, p_progress );
+   socket.write_line( string( c_cmd_peer_session_put )
+    + " " + hello_hash, c_request_timeout, p_sock_progress );
+
+   fetch_file( hello_hash, socket, p_sock_progress );
 }
 
 void socket_command_handler::get_file( const string& hash_info, string* p_file_data )
@@ -2959,11 +2961,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    tcp_socket& socket( socket_handler.get_socket( ) );
 #endif
 
-   progress* p_progress = 0;
-   trace_progress progress( TRACE_SOCK_OPS );
+   progress* p_sock_progress = 0;
+   trace_progress sock_progress( TRACE_SOCK_OPS );
 
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
-      p_progress = &progress;
+      p_sock_progress = &sock_progress;
 
    if( command != c_cmd_peer_session_bye )
       socket.set_delay( );
@@ -3074,13 +3076,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   handler.issue_command_response( "put " + hello_hash, true );
 
                   socket.set_delay( );
-                  fetch_file( hello_hash, socket, p_progress );
+                  fetch_file( hello_hash, socket, p_sock_progress );
 
                   string temp_file_name( "~" + uuid( ).as_string( ) );
 
                   try
                   {
-                     store_temp_file( temp_file_name, socket, p_progress );
+                     store_temp_file( temp_file_name, socket, p_sock_progress );
 
                      response.erase( );
 
@@ -3222,7 +3224,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket.set_delay( );
 
-         fetch_file( hash, socket, p_progress );
+         fetch_file( hash, socket, p_sock_progress );
 
          if( hash != hello_hash )
             increment_peer_files_uploaded( file_bytes( hash ) );
@@ -3265,7 +3267,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          {
             string file_data;
 
-            store_file( hash, socket, 0, p_progress, false, 0, false, &file_data, &num_bytes );
+            store_file( hash, socket, 0, p_sock_progress, false, 0, false, &file_data, &num_bytes );
 
             if( hash != hello_hash && !get_session_variable(
              get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( ) )
@@ -3280,7 +3282,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          {
             num_bytes = file_bytes( hash );
 
-            store_temp_file( "", socket, p_progress, true );
+            store_temp_file( "", socket, p_sock_progress, true );
          }
 
          if( hash != hello_hash )
@@ -3420,7 +3422,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                if( !is_captured_session( ) )
                   handler.set_finished( );
 
-               socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_progress );
+               socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_sock_progress );
 
                has_issued_bye = true;
             }
@@ -3435,7 +3437,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       if( !is_captured_session( ) )
       {
          if( is_condemned_session( ) && !has_issued_bye )
-            socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_progress );
+            socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_sock_progress );
 
          handler.set_finished( );
       }
@@ -3448,7 +3450,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    {
       string response;
 
-      if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
+      if( socket.read_line( response, c_request_timeout, 0, p_sock_progress ) <= 0 )
       {
          string error;
 

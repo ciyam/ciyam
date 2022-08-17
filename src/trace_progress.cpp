@@ -7,12 +7,12 @@
 
 struct trace_progress : progress
 {
-   trace_progress( int flag ) : flag( flag ) { }
+   trace_progress( unsigned flag ) : flag( flag ) { }
 
    void output_progress( const string& message,
     unsigned long num = 0, unsigned long total = 0 );
 
-   int flag;
+   unsigned flag;
 };
 
 void trace_progress::output_progress(
