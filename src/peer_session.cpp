@@ -104,6 +104,8 @@ const size_t c_initial_timeout = 25000;
 const size_t c_request_timeout = 20000;
 const size_t c_support_timeout = 10000;
 
+const size_t c_num_check_disconnected = 8;
+
 const size_t c_main_session_sleep_time = 150;
 const size_t c_support_session_sleep_time = 100;
 const size_t c_support_session_sleep_repeats = 10;
@@ -2679,9 +2681,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
             process_block_for_height( blockchain, block_file_hash, blockchain_height_pending );
 
-            blockchain_height = blockchain_height_pending;
-
-            tag_file( blockchain + '.' + to_string( blockchain_height ) + c_blk_suffix, block_file_hash );
+            tag_file( blockchain + '.' + to_string( blockchain_height_pending ) + c_blk_suffix, block_file_hash );
 
             set_session_variable( blockchain_zenith_hash_name, block_file_hash );
 
@@ -4130,8 +4130,8 @@ void peer_session::on_start( )
          {
             paired_identity = identity;
 
-            set_session_variable( identity, c_true_value );
-            set_session_variable( get_special_var_name( e_special_var_paired_identity ), identity );
+            set_session_variable( paired_identity, c_true_value );
+            set_session_variable( get_special_var_name( e_special_var_paired_identity ), paired_identity );
 
             if( !is_for_support )
             {
@@ -4333,6 +4333,8 @@ void peer_listener::on_start( )
                }
             }
 
+            size_t num_iterations = 0;
+
             while( s && !g_server_shutdown )
             {
                string identity_changes( get_system_variable( '@' + to_string( port ) ) );
@@ -4398,6 +4400,33 @@ void peer_listener::on_start( )
                      }
 
                      blockchains = prefixed_blockchains( unprefixed_blockchains );
+                  }
+               }
+               else
+               {
+                  // NOTE: In case a disconnect system variable has
+                  // ended up incorrectly set when no more sessions
+                  // are currently active will clear it here.
+                  if( ++num_iterations >= c_num_check_disconnected )
+                  {
+                     num_iterations = 0;
+
+                     vector< string > all_identities;
+
+                     split( unprefixed_blockchains, all_identities );
+
+                     for( size_t i = 0; i < all_identities.size( ); i++ )
+                     {
+                        string next_identity( all_identities[ i ] );
+
+                        if( !get_system_variable( '~' + next_identity ).empty( ) )
+                        {
+                           set_variable_checker check_no_other_session(
+                            e_variable_check_type_no_session_has, next_identity );
+
+                           set_system_variable( '~' + next_identity, "", check_no_other_session );
+                        }
+                     }
                   }
                }
 
