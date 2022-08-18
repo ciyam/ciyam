@@ -320,7 +320,7 @@ string ciyam_console_command_handler::get_additional_command( )
    {
       if( !is_stdout_console( ) )
          cout << endl;
-      else if( !had_single_char_message )
+      else
          progress.output_progress( "" );
 
       had_chunk_progress = false;
@@ -1531,7 +1531,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   {
                      had_message = false;
 
-                     if( !has_option_no_progress( ) )
+                     if( !had_chunk_progress && !has_option_no_progress( ) )
                      {
                         if( is_stdout_console( ) )
                            progress.output_progress( "" );
