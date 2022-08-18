@@ -1291,6 +1291,8 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
             bool had_not_found = false;
             bool is_in_progress = false;
 
+            dtm = date_time::local( );
+
             while( response.empty( ) || response[ 0 ] != '(' )
             {
                response.erase( );
@@ -1469,6 +1471,8 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         progress.output_progress( "" );
                      else if( had_single_char_message )
                         handle_progress_message( "" );
+
+                     had_single_char_message = false;
                   }
 
                   if( is_message )
@@ -1476,17 +1480,26 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                      had_message = true;
                      had_single_char_message = ( final_response.length( ) == 1 );
 
-                     if( !has_option_no_progress( ) )
+                     date_time now( date_time::local( ) );
+
+                     uint64_t elapsed = seconds_between( dtm, now );
+
+                     if( elapsed >= g_seconds )
                      {
-                        if( !is_stdout_console( ) )
-                           handle_progress_message( final_response );
-                        else
+                        dtm = now;
+
+                        if( !has_option_no_progress( ) )
                         {
-                           string progress_prefix( get_environment_variable( c_env_var_progress_prefix ) );
+                           if( !is_stdout_console( ) )
+                              handle_progress_message( final_response );
+                           else
+                           {
+                              string progress_prefix( get_environment_variable( c_env_var_progress_prefix ) );
 
-                           set_environment_variable( c_env_var_progress_prefix, "" );
+                              set_environment_variable( c_env_var_progress_prefix, "" );
 
-                           progress.output_progress( progress_prefix + final_response );
+                              progress.output_progress( progress_prefix + final_response );
+                           }
                         }
                      }
                   }
@@ -1528,6 +1541,8 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         else if( had_single_char_message )
                            handle_progress_message( "" );
                      }
+
+                     had_single_char_message = false;
                   }
 #ifdef DEBUG
                   cout << response;
