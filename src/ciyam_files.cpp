@@ -42,7 +42,6 @@
 #include "fs_iterator.h"
 #include "crypt_stream.h"
 #include "ciyam_variables.h"
-#include "command_handler.h"
 #include "ods_file_system.h"
 #include "ciyam_core_files.h"
 
@@ -3228,7 +3227,7 @@ void crypt_file( const string& repository, const string& tag_or_hash,
    }
 }
 
-void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
+void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progress )
 {
    string archive_path( get_session_variable(
     get_special_var_name( e_special_var_blockchain_archive_path ) ) );
@@ -3286,13 +3285,13 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
     e_ft_direction_send, get_files_area_item_max_size( ),
     c_response_okay_more, c_file_transfer_initial_timeout,
     c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0,
-    file_buffer.get_buffer( ), file_buffer.get_size( ), p_progress );
+    file_buffer.get_buffer( ), file_buffer.get_size( ), p_sock_progress );
 }
 
 bool store_file( const string& hash,
- tcp_socket& socket, const char* p_tag, progress* p_progress,
+ tcp_socket& socket, const char* p_tag, progress* p_sock_progress,
  bool allow_core_file, size_t max_bytes, bool allow_missing_items,
- string* p_file_data, size_t* p_total_bytes, command_handler* p_command_handler )
+ string* p_file_data, size_t* p_total_bytes, progress* p_progress )
 {
    string file_name( construct_file_name_from_hash( hash, true ) );
 
@@ -3334,7 +3333,7 @@ bool store_file( const string& hash,
        ( is_existing ? c_response_okay_skip : c_response_okay_more ),
        c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
        c_file_transfer_max_line_size, 0, file_buffer.get_buffer( ), file_buffer.get_size( ),
-       p_progress, ( !is_existing ? 0 : c_response_okay_skip ), ap_udp_stream_helper.get( ) );
+       p_sock_progress, ( !is_existing ? 0 : c_response_okay_skip ), ap_udp_stream_helper.get( ) );
 
       if( p_total_bytes )
          *p_total_bytes = total_bytes;
@@ -3461,7 +3460,7 @@ bool store_file( const string& hash,
                   if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
                   {
                      is_in_blacklist = true;
-                     transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_command_handler );
+                     transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_progress );
                   }
                   else
                      write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
@@ -3502,7 +3501,7 @@ bool store_file( const string& hash,
                            if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
                            {
                               is_in_blacklist = true;
-                              transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_command_handler );
+                              transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_progress );
                            }
                            else
                               write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
@@ -3528,7 +3527,7 @@ bool store_file( const string& hash,
                      if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
                      {
                         is_in_blacklist = true;
-                        transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_command_handler );
+                        transformed_list_data = create_transformed_list( file_buffer, 0, total_bytes, p_progress );
                      }
                      else
                         write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
