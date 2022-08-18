@@ -320,10 +320,11 @@ string ciyam_console_command_handler::get_additional_command( )
    {
       if( !is_stdout_console( ) )
          cout << endl;
-      else
+      else if( !had_single_char_message )
          progress.output_progress( "" );
 
       had_chunk_progress = false;
+      had_single_char_message = false;
    }
 
    return cmd;
@@ -1291,8 +1292,6 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
             bool had_not_found = false;
             bool is_in_progress = false;
 
-            dtm = date_time::local( );
-
             while( response.empty( ) || response[ 0 ] != '(' )
             {
                response.erase( );
@@ -1471,8 +1470,6 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         progress.output_progress( "" );
                      else if( had_single_char_message )
                         handle_progress_message( "" );
-
-                     had_single_char_message = false;
                   }
 
                   if( is_message )
@@ -1503,7 +1500,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         }
                      }
                   }
-                  else if( !is_message && ( is_error || !get_is_quiet_command( ) || is_redirected_output( ) ) )
+                  else if( is_error || !get_is_quiet_command( ) || is_redirected_output( ) )
                      handle_command_response( final_response, is_error );
 
                   // NOTE: Will only set the error environment variable if hasn't already been set.
@@ -1541,8 +1538,6 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         else if( had_single_char_message )
                            handle_progress_message( "" );
                      }
-
-                     had_single_char_message = false;
                   }
 #ifdef DEBUG
                   cout << response;
