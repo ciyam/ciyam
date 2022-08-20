@@ -1481,7 +1481,10 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                      uint64_t elapsed = seconds_between( dtm, now );
 
-                     if( elapsed >= g_seconds )
+                     // NOTE: Only checks the elapsed time for single character
+                     // messages (assumes all other messages sent by the server
+                     // are intended to always be output).
+                     if( !had_single_char_message || ( elapsed >= g_seconds ) )
                      {
                         dtm = now;
 

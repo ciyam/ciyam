@@ -11,8 +11,13 @@ SUB_DIRECTORY=$3
 FILES_EXPRESSION=@repstr:;/,:$4
 PATHS_EXPRESSION=@repstr:;/,:$5
 ;
+HAS_REPO_LIST_INFO=
+.system_variable @blockchain
+@ifdef $OUTPUT
 @ifdef $REPO_CRYPT_PASSWORD
+HAS_REPO_LIST_INFO=1
 .session_variable @repo_crypt_password $REPO_CRYPT_PASSWORD
+@endif
 @endif
 ;
 IS_CURRENT=
@@ -22,11 +27,15 @@ IS_CURRENT=1
 @endif
 @endif
 ;
+@ifndef $MAX_SIZE
+MAX_SIZE=10.8G
+@endif
+;
 FILES_EXTRA=
 @ifndef $FILES_EXPRESSION
-FILES_EXTRA=::10.8G
+FILES_EXTRA=::$MAX_SIZE
 @else
-FILES_EXTRA=:$FILES_EXPRESSION:10.8G
+FILES_EXTRA=:$FILES_EXPRESSION:$MAX_SIZE
 @endif
 ;
 PATHS_EXTRA=
@@ -199,6 +208,24 @@ HASH=$OUTPUT
 #$HASH $SUB_DIRECTORY/$NEXT_PATH/$NEXT_NAME
 @endif
 >>
+;
+@ifdef $HAS_REPO_LIST_INFO
+.file_hash $UUID.info
+HASH=$OUTPUT
+;
+>>~$UUID.info
+@ifndef $SUB_DIRECTORY
+@ifeq "." "$NEXT_PATH"
+#$HASH $NEXT_NAME
+@else
+#$HASH $NEXT_PATH/$NEXT_NAME
+@endif
+@else
+#$HASH $SUB_DIRECTORY/$NEXT_PATH/$NEXT_NAME
+@endif
+>>
+@endif
+;
 @endif
 ;
 !!@:FILE_LOOP
@@ -216,6 +243,13 @@ TAG_NAME=@repstr:\//.:$NEXT_PATH
 .file_put ?~$UUID $TAG_PREFIX$TAG_NAME
 ~rm ~$UUID
 .file_tag -remove $UUID
+;
+@ifdef $HAS_REPO_LIST_INFO
+.file_put ?~$UUID.info .$TAG_PREFIX$TAG_NAME
+~rm ~$UUID.info
+.file_tag -remove $UUID.info
+@endif
+;
 @endif
 ;
 !!@:PATH_LOOP
