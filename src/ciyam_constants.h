@@ -42,8 +42,9 @@ const char* const c_dat_suffix = ".dat";
 const char* const c_key_suffix = ".key";
 const char* const c_pub_suffix = ".pub";
 const char* const c_sig_suffix = ".sig";
-
 const char* const c_zenith_suffix = ".zenith";
+
+const char* const c_repository_info_suffix = ".info";
 
 const char* const c_log_file_ext = ".log";
 const char* const c_txs_file_ext = ".txs";

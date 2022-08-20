@@ -67,11 +67,10 @@ enum file_expansion
 };
 
 std::string CIYAM_BASE_DECL_SPEC file_type_info(
- const std::string& tag_or_hash,
- file_expansion expansion = e_file_expansion_none, int max_depth = 0,
- int indent = 0, bool add_size = false, const char* p_prefix = 0,
- bool allow_all_after = true, bool output_total_blob_size = false,
- progress* p_progress = 0, date_time* p_dtm = 0, size_t* p_total = 0 );
+ const std::string& tag_or_hash, file_expansion expansion = e_file_expansion_none,
+ int max_depth = 0, int indent = 0, bool add_size = false, const char* p_prefix = 0,
+ bool allow_all_after = true, bool output_total_blob_size = false, progress* p_progress = 0,
+ date_time* p_dtm = 0, size_t* p_total = 0, bool ignore_not_found = false );
 
 enum file_total_type
 {
