@@ -1396,7 +1396,7 @@ void process_signature_file( const string& blockchain, const string& hash, size_
 }
 
 void process_public_key_file( const string& blockchain,
- const string& hash, size_t height, public_key_scale key_scale, bool has_tertiary = false )
+ const string& hash, size_t height, public_key_scale key_scale, bool has_tertiary = false, size_t height_other = 0 )
 {
    guard g( g_mutex );
 
@@ -1445,10 +1445,9 @@ void process_public_key_file( const string& blockchain,
 
       tag_file( blockchain + c_zenith_suffix, block_hash );
 
-      output_synchronised_progress_message( replaced( blockchain, c_bc_prefix, "" ), height );
+      output_synchronised_progress_message( replaced( blockchain, c_bc_prefix, "" ), height, height_other );
 
-      TRACE_LOG( TRACE_PEER_OPS, "::: new zenith hash: "
-       + block_hash + " height: " + to_string( height ) );
+      TRACE_LOG( TRACE_PEER_OPS, "::: new zenith hash: " + block_hash + " height: " + to_string( height ) );
 
       set_session_variable( zenith_height_name, to_string( height ) );
    }
@@ -2696,8 +2695,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
             create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
 
-            process_public_key_file( blockchain, primary_pubkey_hash,
-             blockchain_height_pending, e_public_key_scale_primary, ( has_tertiary || !is_legacy_chain ) );
+            process_public_key_file( blockchain, primary_pubkey_hash, blockchain_height_pending,
+             e_public_key_scale_primary, ( has_tertiary || !is_legacy_chain ), blockchain_height_other );
          }
          else if( next_hash == signature_file_hash )
          {

@@ -324,7 +324,7 @@ BLOCK_HASH=$OUTPUT
 @endif
 @endif
 ;
-@endif
-@endif
-;
 @:END
+;
+@endif
+@endif

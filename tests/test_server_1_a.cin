@@ -222,6 +222,7 @@ X=@repstr:\:/\/:$X
 !
 !-0
 ;
+@depth
 @label L1
 TEST=aaa
 ;
@@ -260,6 +261,7 @@ Y=YYYYY
 ;
 @label NEXT
 @ifndef $X
+@depth
 @label END
 @endif
 ;
@@ -284,6 +286,18 @@ Y=@substr:1:$Y
 ;
 !!@:MAIN_LOOP
 @:END
+;
+@ifndef $XXX
+@depth
+@ifndef $YYY
+@depth
+@ifndef $ZZZ
+@depth TRUE
+@else
+@depth FALSE
+@endif
+@endif
+@endif
 ;
 PATHS=@paths:..:^.git,^tmp,^files,^bc.39659983c
 #$PATHS

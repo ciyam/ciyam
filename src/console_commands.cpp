@@ -108,6 +108,7 @@ const char* const c_function_password = "password";
 const char* const c_envcond_command_else = "else";
 const char* const c_envcond_command_ifeq = "ifeq";
 const char* const c_envcond_command_skip = "skip";
+const char* const c_envcond_command_depth = "depth";
 const char* const c_envcond_command_endif = "endif";
 const char* const c_envcond_command_ifdef = "ifdef";
 const char* const c_envcond_command_ifneq = "ifneq";
@@ -2398,6 +2399,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
    }
    else
    {
+      if( !is_executing_commands )
+         ++line_number;
+
       if( !str.empty( ) && str[ 0 ] == c_prompted_input_prefix )
       {
          string msg( c_default_value_prompt );
@@ -3040,6 +3044,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   throw runtime_error( "unable to open file '" + new_args[ 0 ] + "' for input" );
 
                vector< bool > dummy_vector;
+               vector< size_t > dummy_lines_vector;
 
                // NOTE: As one script may call another all relevant state information must be
                // captured before and then restored after processing each script.
@@ -3050,6 +3055,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                restorable< vector< bool > > tmp_conditions( conditions, dummy_vector );
                restorable< bool > tmp_executing_commands( is_executing_commands, false );
                restorable< vector< bool > > tmp_dummy_conditions( dummy_conditions, dummy_vector );
+               restorable< vector< size_t > > tmp_lines_for_conditions( lines_for_conditions, dummy_lines_vector );
 
                string next;
                string next_command;
@@ -3057,7 +3063,6 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                while( getline( inpf, next ) )
                {
-                  ++line_number;
                   bool is_continuation = false;
 
                   if( next.empty( ) )
@@ -3086,7 +3091,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                }
 
                if( !conditions.empty( ) )
-                  throw runtime_error( "missing 'endif' for conditional in '" + new_args[ 0 ] + "'" + error_context );
+                  throw runtime_error( "missing 'endif' for conditional started at line #"
+                   + to_string( lines_for_conditions.back( ) ) + " in '" + new_args[ 0 ] + "'" + error_context );
 
                if( !inpf.eof( ) )
                   throw runtime_error( "unexpected error occurred whilst reading '" + new_args[ 0 ] + "'" + error_context );
@@ -3226,7 +3232,10 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     // are included in the history to allow these
                                     // to be nested.
                                     if( !is_executing_commands )
+                                    {
                                        command_history.push_back( str_for_history );
+                                       history_line_number.push_back( line_number );
+                                    }
 
                                     break;
                                  }
@@ -3276,6 +3285,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                         if( !remove )
                         {
+                           restorable< size_t > tmp_line_number( line_number, line_number );
+
                            restorable< bool > tmp_executing_commands( is_executing_commands, true );
                            restorable< bool > tmp_allow_history_addition( allow_history_addition, false );
 
@@ -3287,7 +3298,10 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               ap_tmp_is_skipping_to_label.reset( new restorable< bool >( is_skipping_to_label, is_skipping_to_label ) );
 
                            if( n > 0 )
+                           {
+                              line_number = history_line_number[ n - 1 ];
                               execute_command( command_history[ n - 1 ] );
+                           }
                            else
                            {
                               // NOTE: Rather than call "execute_command" for the actual loop will simply keep on
@@ -3303,7 +3317,10 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                           is_loop = false;
                                     }
                                     else
+                                    {
+                                       line_number = history_line_number[ i ];
                                        execute_command( command_history[ i ] );
+                                    }
                                  }
                               } while( is_loop );
                            }
@@ -3313,12 +3330,21 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            if( n == 0 )
                            {
                               if( !is_range )
+                              {
                                  command_history.clear( );
+                                 history_line_number.clear( );
+                              }
                               else
+                              {
                                  command_history.erase( command_history.begin( ) + b, command_history.begin( ) + e );
+                                 history_line_number.erase( history_line_number.begin( ) + b, history_line_number.begin( ) + e );
+                              }
                            }
                            else
+                           {
                               command_history.erase( command_history.begin( ) + ( n - 1 ) );
+                              history_line_number.erase( history_line_number.begin( ) + ( n - 1 ) );
+                           }
                         }
                      }
                   }
@@ -3374,10 +3400,11 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   }
 
                   // NOTE: If currently within an inactive conditional section
-                  // then need to ignore any 'skip' and 'label' commands found.
+                  // then will ignore all 'skip', 'depth' and 'label' commands.
                   if( !conditions.empty( )
                    && ( !conditions.back( ) || !dummy_conditions.empty( ) )
-                   && ( token == c_envcond_command_skip || token == c_envcond_command_label ) )
+                   && ( token == c_envcond_command_skip
+                   || token == c_envcond_command_depth || token == c_envcond_command_label ) )
                      token.erase( );
 
                   // NOTE: This first condition must take place before the next
@@ -3385,7 +3412,10 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   if( !token.empty( ) && token[ 0 ] == ':' )
                   {
                      if( is_skipping_to_label && token.substr( 1 ) == label )
+                     {
+                        label.erase( );
                         is_skipping_to_label = false;
+                     }
                   }
                   else if( token.empty( ) || is_skipping_to_label )
                      ; // i.e. do nothing
@@ -3403,6 +3433,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                         completed.push_back( false );
                         conditions.push_back( cond_args[ 0 ] == cond_args[ 1 ] );
+
+                        lines_for_conditions.push_back( line_number );
                      }
                   }
                   else if( token == c_envcond_command_ifdef )
@@ -3413,6 +3445,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                      {
                         completed.push_back( false );
                         conditions.push_back( !symbol.empty( ) );
+
+                        lines_for_conditions.push_back( line_number );
                      }
                   }
                   else if( token == c_envcond_command_ifneq )
@@ -3429,6 +3463,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                         completed.push_back( false );
                         conditions.push_back( cond_args[ 0 ] != cond_args[ 1 ] );
+
+                        lines_for_conditions.push_back( line_number );
                      }
                   }
                   else if( token == c_envcond_command_ifndef )
@@ -3439,6 +3475,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                      {
                         completed.push_back( false );
                         conditions.push_back( symbol.empty( ) );
+
+                        lines_for_conditions.push_back( line_number );
                      }
                   }
                   else if( token == c_envcond_command_else )
@@ -3459,6 +3497,15 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         conditions.push_back( !val );
                      }
                   }
+                  else if( token == c_envcond_command_depth )
+                  {
+                     cout << "depth is " << conditions.size( ) << " at line #" << line_number;
+
+                     if( !symbol.empty( ) )
+                        cout << ' ' << symbol;
+
+                     cout << endl;
+                  }
                   else if( token == c_envcond_command_endif )
                   {
                      bool pop_cond = true;
@@ -3476,6 +3523,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                         completed.pop_back( );
                         conditions.pop_back( );
+
+                        lines_for_conditions.pop_back( );
                      }
                   }
                   else if( token == c_envcond_command_skip )
@@ -3540,9 +3589,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 #endif
 
             command_history.push_back( str_for_history );
+            history_line_number.push_back( line_number );
 
             if( command_history.size( ) > c_max_history )
+            {
                command_history.pop_front( );
+               history_line_number.pop_front( );
+            }
          }
       }
    }
