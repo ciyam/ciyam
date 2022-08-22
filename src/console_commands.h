@@ -75,10 +75,14 @@ class console_command_handler : public command_handler
    std::vector< bool > conditions;
    std::vector< bool > dummy_conditions;
 
+   std::vector< size_t > lines_for_conditions;
+
    std::string label;
 
    std::string last_command;
    std::string prompt_prefix;
+
+   std::deque< size_t > history_line_number;
    std::deque< std::string > command_history;
 
    struct impl;

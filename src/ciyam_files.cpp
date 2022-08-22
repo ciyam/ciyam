@@ -503,13 +503,14 @@ void encrypt_file_buffer( const string& hash, const string& repository,
    set_system_variable( "@" + hash, sha256( new_file_data ).get_digest_as_string( ) + ':' + public_key );
 }
 
-string create_repository_list( const string& repository,
+string create_repository_lists( const string& repository,
  session_file_buffer_access& file_buffer, size_t offset, size_t length, progress* p_progress )
 {
    string file_data;
    file_buffer.copy_to_string( file_data, offset, length );
 
-   string new_file_data( file_data.substr( 0, 1 ) );
+   string encrypted_file_data( file_data.substr( 0, 1 ) );
+   string public_key_file_data( file_data.substr( 0, 1 ) );
 
    vector< string > list_items;
 
@@ -527,14 +528,14 @@ string create_repository_list( const string& repository,
       string::size_type pos = next_item.find( ' ' );
 
       if( pos == string::npos )
-         throw runtime_error( "unexpected next_item '" + next_item + "' in create_repository_list" );
+         throw runtime_error( "unexpected next_item '" + next_item + "' in create_repository_lists" );
 
       string next_hash( next_item.substr( 0, pos ) );
       string next_name( next_item.substr( pos + 1 ) );
 
       bool is_list = false;
 
-      string encrypted_hash;
+      string public_key, encrypted_hash;
 
       if( is_encrypted_file( next_hash, &is_list ) )
       {
@@ -550,7 +551,7 @@ string create_repository_list( const string& repository,
                if( pos == string::npos )
                   throw runtime_error( "unexpected encrypted_hash missing public key" );
 
-               next_name = encrypted_hash.substr( pos + 1 );
+               public_key = encrypted_hash.substr( pos + 1 );
                encrypted_hash.erase( pos );
             }
             else
@@ -563,28 +564,50 @@ string create_repository_list( const string& repository,
                encrypted_hash = sha256( encrypted_blob_data ).get_digest_as_string( );
 
                if( !has_repository_entry_record( repository, next_hash ) )
-                  throw runtime_error( "unexpected repository entry for '" + next_hash + "' not found in create_repository_list" );
+                  throw runtime_error( "unexpected repository entry for '" + next_hash + "' not found in create_repository_lists" );
 
-               string dummy, public_key;
+               string dummy;
                fetch_repository_entry_record( repository, next_hash, dummy, dummy, public_key );
-
-               next_name = public_key;
             }
          }
       }
 
       // NOTE: Initial length of 1 is the type and extra.
-      if( new_file_data.length( ) > 2 )
-         new_file_data += '\n';
+      if( encrypted_file_data.length( ) > 2 )
+         encrypted_file_data += '\n';
+
+      if( public_key_file_data.length( ) > 2 )
+         public_key_file_data += '\n';
 
       if( encrypted_hash.empty( ) )
-         new_file_data += next_item;
+         encrypted_file_data += next_item;
       else
       {
-         new_file_data += hex_decode( next_hash );
-         new_file_data += hex_decode( encrypted_hash );
+         encrypted_file_data += hex_decode( next_hash );
+         encrypted_file_data += hex_decode( encrypted_hash );
 
-         new_file_data += ':' + next_name;
+         encrypted_file_data += ':' + next_name;
+      }
+
+      if( public_key.length( ) < 3 )
+         public_key_file_data += next_item;
+      else
+      {
+         public_key_file_data += hex_decode( next_hash );
+
+         string prefix( public_key.substr( 0, 2 ) );
+         public_key.erase( 0, 2 );
+
+         public_key_file_data += hex_decode( public_key );
+
+         if( prefix == "02" )
+            public_key_file_data += '@';
+         else if( prefix == "03" )
+            public_key_file_data += '#';
+         else
+            throw runtime_error( "unexpected public key prefix '" + prefix + "' in create_repository_lists" );
+
+         public_key_file_data += next_name;
       }
 
       if( p_progress )
@@ -602,7 +625,9 @@ string create_repository_list( const string& repository,
       }
    }
 
-   return new_file_data;
+   file_buffer.copy_from_string( public_key_file_data, offset );
+
+   return encrypted_file_data;
 }
 
 string get_archive_status( const string& path )
@@ -1870,6 +1895,7 @@ string create_raw_file( const string& data, bool compress,
          throw runtime_error( "unexpected bad output stream creating output file '" + file_name + "'" );
 
       ++g_total_files;
+
       g_total_bytes += final_data.size( );
    }
    else if( p_is_existing )
@@ -3342,7 +3368,7 @@ bool store_file( const string& hash,
          existing_bytes = file_size( file_name );
    }
 
-   string repository_list_data;
+   string encrypted_list_data, public_key_list_data;
 
    // NOTE: Empty code block for scope purposes.
    {
@@ -3365,6 +3391,8 @@ bool store_file( const string& hash,
 
       if( !is_existing )
       {
+         guard g( g_mutex );
+
          unsigned char file_type = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_mask );
          unsigned char file_extra = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_extra_mask );
 
@@ -3445,8 +3473,6 @@ bool store_file( const string& hash,
 
          if( rc )
          {
-            guard g( g_mutex );
-
             if( !is_existing )
                is_in_blacklist = file_has_been_blacklisted( hash );
 
@@ -3483,7 +3509,7 @@ bool store_file( const string& hash,
                      encrypt_file_buffer( hash, repository, file_buffer, crypt_password, 0, total_bytes );
 
                   if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
-                     repository_list_data = create_repository_list( repository, file_buffer, 0, total_bytes, p_progress );
+                     encrypted_list_data = create_repository_lists( repository, file_buffer, 0, total_bytes, p_progress );
 
                   write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
                }
@@ -3521,9 +3547,13 @@ bool store_file( const string& hash,
                               encrypt_file_buffer( hash, repository, file_buffer, crypt_password, size, csize + 1 );
 
                            if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
-                              repository_list_data = create_repository_list( repository, file_buffer, 0, total_bytes, p_progress );
+                           {
+                              encrypted_list_data = create_repository_lists( repository, file_buffer, 0, total_bytes, p_progress );
 
-                           write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
+                              file_buffer.copy_to_string( public_key_list_data, 0, total_bytes );
+                           }
+                           else
+                              write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
                         }
                         else
                         {
@@ -3544,7 +3574,7 @@ bool store_file( const string& hash,
                         encrypt_file_buffer( hash, repository, file_buffer, crypt_password, 0, total_bytes );
 
                      if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
-                        repository_list_data = create_repository_list( repository, file_buffer, 0, total_bytes, p_progress );
+                        encrypted_list_data = create_repository_lists( repository, file_buffer, 0, total_bytes, p_progress );
 
                      write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
                   }
@@ -3560,13 +3590,15 @@ bool store_file( const string& hash,
 
          if( !p_file_data && !is_in_blacklist )
          {
-            guard g( g_mutex );
-
-            if( !is_existing )
+            if( !is_existing && public_key_list_data.empty( ) )
                ++g_total_files;
 
             g_total_bytes -= existing_bytes;
-            g_total_bytes += file_size( file_name );
+
+            if( !public_key_list_data.empty( ) )
+               g_total_bytes += total_bytes;
+            else
+               g_total_bytes += file_size( file_name );
          }
       }
    }
@@ -3575,20 +3607,30 @@ bool store_file( const string& hash,
    {
       guard g( g_mutex );
 
+      string file_hash( hash );
+
+      if( !public_key_list_data.empty( ) )
+      {
+         file_hash = create_raw_file( public_key_list_data );
+
+         // NOTE: File size likely will have shrunk due to compression so need to adjust after creating it.
+         g_total_bytes -= ( total_bytes - file_size( construct_file_name_from_hash( file_hash, true ) ) );
+      }
+
       string tag_name;
       if( p_tag )
          tag_name = string( p_tag );
 
       if( !tag_name.empty( ) )
-         tag_file( tag_name, hash );
+         tag_file( tag_name, file_hash );
       else if( !file_extra_is_core )
-         tag_file( current_time_stamp_tag( ), hash, true );
+         tag_file( current_time_stamp_tag( ), file_hash, true );
 
-      if( !tag_name.empty( ) && !repository_list_data.empty( ) )
+      if( !tag_name.empty( ) && !encrypted_list_data.empty( ) )
       {
          tag_name += c_repository_info_suffix;
 
-         create_raw_file( repository_list_data, true, tag_name.c_str( ) );
+         create_raw_file( encrypted_list_data, true, tag_name.c_str( ) );
       }
    }
 
@@ -3627,6 +3669,7 @@ void delete_file( const string& hash, bool even_if_tagged, bool ignore_not_found
       file_remove( file_name );
 
       --g_total_files;
+
       g_total_bytes -= existing_bytes;
    }
 }

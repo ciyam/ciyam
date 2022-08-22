@@ -154,6 +154,7 @@ j
 6	#j
 1	#b
 2	#f
+depth is 0 at line #225
 Looping with aaa
 Looping with bbb
 Looping with ccc
@@ -179,7 +180,11 @@ CONT
 CONT
 CONT
 DONE
+depth is 1 at line #264
 END
+depth is 1 at line #291
+depth is 2 at line #293
+depth is 3 at line #295 TRUE
 docs
 src
 src/haru
