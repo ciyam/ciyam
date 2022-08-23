@@ -416,7 +416,9 @@ struct session
    deque< string > deque_items;
 
    map< string, string > variables;
+
    map< string, deque< string > > deque_variables;
+   map< string, map< string, string > > mapped_variables;
 
    deque< string > file_hashes_to_get;
    deque< string > file_hashes_to_put;
@@ -6608,6 +6610,8 @@ string get_raw_session_variable( const string& name )
       {
          if( gtp_session->deque_variables.count( name ) )
          {
+            found = true;
+
             if( gtp_session->deque_variables[ name ].size( ) )
             {
                retval = gtp_session->deque_variables[ name ].front( );
@@ -6616,6 +6620,32 @@ string get_raw_session_variable( const string& name )
 
             if( !gtp_session->deque_variables[ name ].size( ) )
                gtp_session->deque_variables.erase( name );
+         }
+      }
+      else if( name.find( c_special_variable_mapped_prefix ) == 0 )
+      {
+         string::size_type pos = name.find( ':' );
+
+         if( gtp_session->mapped_variables.count( name.substr( 0, pos ) ) )
+         {
+            found = true;
+
+            if( pos == string::npos )
+            {
+               map< string, string >::const_iterator ci;
+
+               for( ci = gtp_session->mapped_variables[ name ].begin( ); ci != gtp_session->mapped_variables[ name ].end( ); ++ci )
+               {
+                  if( !retval.empty( ) )
+                     retval += '\n';
+                  retval += ci->first + ' ' + ci->second;
+               }
+            }
+            else
+            {
+               if( gtp_session->mapped_variables[ name.substr( 0, pos ) ].count( name.substr( pos + 1 ) ) )
+                  retval = gtp_session->mapped_variables[ name.substr( 0, pos ) ][ name.substr( pos + 1 ) ];
+            }
          }
       }
       else if( gtp_session->variables.count( name ) )
@@ -6650,6 +6680,18 @@ string get_raw_session_variable( const string& name )
 
                if( dci->second.size( ) > 1 )
                   retval += " (+" + to_string( dci->second.size( ) - 1 ) + ")";
+            }
+         }
+
+         map< string, map< string, string > >::const_iterator mci;
+         for( mci = gtp_session->mapped_variables.begin( ); mci != gtp_session->mapped_variables.end( ); ++mci )
+         {
+            if( wildcard_match( name, mci->first ) )
+            {
+               if( !retval.empty( ) )
+                  retval += "\n";
+
+               retval += mci->first + " (" + to_string( mci->second.size( ) ) + ")";
             }
          }
       }
@@ -7184,6 +7226,27 @@ void set_session_variable( const string& name,
             gtp_session->deque_variables.erase( name );
          else
             gtp_session->deque_variables[ name ].push_back( val );
+      }
+      else if( name.find( c_special_variable_mapped_prefix ) == 0 )
+      {
+         skip_standard_variable = true;
+
+         string::size_type pos = name.find( ':' );
+
+         if( pos == string::npos )
+         {
+            if( !val.empty( ) )
+               throw runtime_error( "invalid mapped variable missing key separator ':'" );
+
+            gtp_session->mapped_variables.erase( name );
+         }
+         else
+         {
+            if( val.empty( ) )
+               gtp_session->mapped_variables[ name.substr( 0, pos ) ].erase( name.substr( pos + 1 ) );
+            else
+               gtp_session->mapped_variables[ name.substr( 0, pos ) ][ name.substr( pos + 1 ) ] = val;
+         }
       }
 
       if( !skip_standard_variable )

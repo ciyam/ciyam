@@ -777,7 +777,8 @@ bool has_all_list_items( const string& blockchain,
    string all_list_items( extract_file( hash, "" ) );
 
    vector< string > list_items;
-   split( all_list_items, list_items, '\n' );
+
+   split_list_items( all_list_items, list_items );
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
@@ -958,8 +959,14 @@ void process_list_items( const string& identity,
    string all_list_items( extract_file( hash, "" ) );
 
    vector< string > list_items;
+   vector< string > secondary_values;
 
-   split_list_items( all_list_items, list_items );
+   bool prefixed_secondary_values = false;
+
+   split_list_items( all_list_items, list_items, &secondary_values, &prefixed_secondary_values );
+
+   if( list_items.size( ) != secondary_values.size( ) )
+      throw runtime_error( "unexpected list_items.size( ) != secondary_values.size( )" );
 
    string file_data( c_file_type_str_blob );
 
@@ -988,6 +995,7 @@ void process_list_items( const string& identity,
    string first_hash_name( get_special_var_name( e_special_var_hash ) );
    string first_hash_to_get( get_session_variable( first_hash_name ) );
 
+   bool is_owner = !get_session_variable( blockchain_is_owner_name ).empty( );
    bool is_fetching = !get_session_variable( blockchain_is_fetching_name ).empty( );
 
    bool allow_blob_creation = false;
@@ -995,7 +1003,10 @@ void process_list_items( const string& identity,
    if( !is_fetching
     && get_session_variable( blockchain_skip_blob_puts_name ).empty( )
     && get_session_variable( blockchain_both_are_owners_name ).empty( ) )
-      allow_blob_creation = true;
+   {
+      if( !is_owner || secondary_values.empty( ) )
+         allow_blob_creation = true;
+   }
 
    string blockchain_height_processed( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processed ) ) );
@@ -1055,6 +1066,7 @@ void process_list_items( const string& identity,
       }
 
       string next_item( list_items[ i ] );
+      string next_secondary( secondary_values[ i ] );
 
       if( !next_item.empty( ) )
       {
@@ -1085,7 +1097,12 @@ void process_list_items( const string& identity,
          if( !has_file( next_hash ) )
          {
             if( !has_repository_entry_record( identity, next_hash ) )
-               add_peer_file_hash_for_get( next_hash );
+            {
+               if( next_secondary.empty( ) )
+                  add_peer_file_hash_for_get( next_hash );
+               else if( prefixed_secondary_values )
+                  add_peer_file_hash_for_get( next_hash + ':' + next_secondary + c_repository_suffix );
+            }
             else if( allow_blob_creation && first_hash_to_get.empty( ) )
             {
                fetch_repository_entry_record( identity,
@@ -1142,7 +1159,7 @@ void process_list_items( const string& identity,
                      put_info_and_store_repository_entry = true;
                }
             }
-            else if( allow_blob_creation && !get_session_variable( blockchain_is_owner_name ).empty( ) )
+            else if( is_owner && allow_blob_creation )
                put_info_and_store_repository_entry = true;
 
             if( first_hash_to_get.empty( ) && put_info_and_store_repository_entry )
@@ -4407,7 +4424,8 @@ void peer_listener::on_start( )
                {
                   // NOTE: In case a disconnect system variable has
                   // ended up incorrectly set when no more sessions
-                  // are currently active will clear it here.
+                  // are currently active will clear it here (as it
+                  // could well occur due to UI refresh behaviour).
                   if( ++num_iterations >= c_num_check_disconnected )
                   {
                      num_iterations = 0;
