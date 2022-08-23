@@ -216,5 +216,6 @@ const char* const c_response_error_prefix = "(error)";
 const char* const c_response_message_prefix = "(message)";
 
 const char* const c_special_variable_queue_prefix = "@queue_";
+const char* const c_special_variable_mapped_prefix = "@mapped_";
 
 #endif

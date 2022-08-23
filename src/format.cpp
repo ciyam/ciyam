@@ -525,8 +525,9 @@ int unformat_duration( const string& value )
    return rc;
 }
 
-void split_list_items( const string& list_data,
- vector< string >& list_items, vector< string >* p_secondary_hashes )
+void split_list_items(
+ const string& list_data, vector< string >& list_items,
+ vector< string >* p_secondary_hashes, bool* p_secondary_prefixed )
 {
    size_t separator_offset = ( c_sha256_digest_size * 2 );
    size_t minimum_item_size = ( c_sha256_digest_size * 2 ) + 2;
@@ -555,6 +556,9 @@ void split_list_items( const string& list_data,
             prefix = "03";
             has_secondary = true;
          }
+
+         if( p_secondary_prefixed )
+            *p_secondary_prefixed = !prefix.empty( );
 
          pos = remaining.find( '\n', minimum_item_size );
       }

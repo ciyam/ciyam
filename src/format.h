@@ -141,8 +141,9 @@ int64_t unformat_bytes( const std::string& size_string,
 std::string format_duration( int value, bool include_seconds = true );
 int unformat_duration( const std::string& value );
 
-void split_list_items( const std::string& list_data,
- std::vector< std::string >& list_items, std::vector< std::string >* p_secondary_hashes = 0 );
+void split_list_items(
+ const std::string& list_data, std::vector< std::string >& list_items,
+ std::vector< std::string >* p_secondary_hashes = 0, bool* p_secondary_prefixed = 0 );
 
 #endif
 

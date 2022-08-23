@@ -386,6 +386,42 @@ session_variable @deque
 session_variable @set @deque
 session_variable @set
 ;
+session_variable @queue_test abc
+session_variable @queue_test def
+session_variable @queue_test ghi
+session_variable @queue_test
+session_variable @queue_test
+session_variable @queue_test
+session_variable @queue_test
+;
+session_variable @mapped_test:abc xxx
+session_variable @mapped_test:def yyy
+session_variable @mapped_test:ghi zzz
+session_variable @mapped_test:abc
+session_variable @mapped_test:def
+session_variable @mapped_test:ghi
+session_variable @mapped_test:abc 111
+session_variable @mapped_test:def 222
+session_variable @mapped_test:ghi 333
+session_variable @mapped_test
+session_variable @mapped_test:abc
+session_variable @mapped_test:def
+session_variable @mapped_test:ghi
+session_variable @mapped_test:abc ""
+session_variable @mapped_test:abc
+session_variable @mapped_test:def
+session_variable @mapped_test:ghi
+session_variable @mapped_test
+session_variable @mapped_test:def ""
+session_variable @mapped_test:abc
+session_variable @mapped_test:def
+session_variable @mapped_test:ghi
+session_variable @mapped_test
+session_variable @mapped_test ""
+session_variable @mapped_test:abc
+session_variable @mapped_test:def
+session_variable @mapped_test:ghi
+;
 <test_args.cin XXX
 <test_args.cin XXX YYY
 <test_args.cin XXX YYY ZZZ
