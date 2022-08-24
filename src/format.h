@@ -143,7 +143,7 @@ int unformat_duration( const std::string& value );
 
 void split_list_items(
  const std::string& list_data, std::vector< std::string >& list_items,
- std::vector< std::string >* p_secondary_hashes = 0, bool* p_secondary_prefixed = 0 );
+ std::vector< std::string >* p_secondary_values = 0, bool* p_secondary_prefixed = 0 );
 
 #endif
 
