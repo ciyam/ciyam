@@ -527,10 +527,12 @@ int unformat_duration( const string& value )
 
 void split_list_items(
  const string& list_data, vector< string >& list_items,
- vector< string >* p_secondary_hashes, bool* p_secondary_prefixed )
+ vector< string >* p_secondary_values, bool* p_secondary_prefixed )
 {
    size_t separator_offset = ( c_sha256_digest_size * 2 );
    size_t minimum_item_size = ( c_sha256_digest_size * 2 ) + 2;
+
+   bool had_secondary = false;
 
    string remaining( list_data );
 
@@ -567,9 +569,11 @@ void split_list_items(
          next_item = remaining.substr( 0, pos );
       else
       {
+         had_secondary = true;
+
          next_item = hex_encode( remaining.substr( 0, c_sha256_digest_size ) );
 
-         if( p_secondary_hashes )
+         if( p_secondary_values )
             next_secondary = hex_encode( remaining.substr( c_sha256_digest_size, c_sha256_digest_size ) );
 
          if( pos == string::npos )
@@ -580,12 +584,15 @@ void split_list_items(
 
       list_items.push_back( next_item );
 
-      if( p_secondary_hashes )
-         p_secondary_hashes->push_back( prefix + next_secondary );
+      if( p_secondary_values )
+         p_secondary_values->push_back( prefix + next_secondary );
 
       if( pos == string::npos )
          break;
 
       remaining.erase( 0, pos + 1 );
    }
+
+   if( !had_secondary && p_secondary_values )
+      p_secondary_values->clear( );
 }

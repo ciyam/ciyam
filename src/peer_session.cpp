@@ -965,7 +965,7 @@ void process_list_items( const string& identity,
 
    split_list_items( all_list_items, list_items, &secondary_values, &prefixed_secondary_values );
 
-   if( list_items.size( ) != secondary_values.size( ) )
+   if( ( prefixed_secondary_values || !secondary_values.empty( ) ) && ( list_items.size( ) != secondary_values.size( ) ) )
       throw runtime_error( "unexpected list_items.size( ) != secondary_values.size( )" );
 
    string file_data( c_file_type_str_blob );
@@ -1066,7 +1066,10 @@ void process_list_items( const string& identity,
       }
 
       string next_item( list_items[ i ] );
-      string next_secondary( secondary_values[ i ] );
+      string next_secondary;
+
+      if( !secondary_values.empty( ) )
+         next_secondary = secondary_values[ i ];
 
       if( !next_item.empty( ) )
       {
