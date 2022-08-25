@@ -81,9 +81,9 @@ enum file_total_type
 };
 
 void CIYAM_BASE_DECL_SPEC file_list_item_pos(
- const std::string& repository, const std::string& tag_or_hash,
- size_t& total, file_total_type total_type, const std::string& item_hash,
- size_t& item_pos, bool recurse = false, progress* p_progress = 0, date_time* p_dtm = 0 );
+ const std::string& repository, const std::string& tag_or_hash, size_t& total,
+ file_total_type total_type, const std::string& item_hash, size_t& item_pos, bool recurse = false,
+ progress* p_progress = 0, date_time* p_dtm = 0, bool is_hidden = false, bool is_top_level = true );
 
 std::string CIYAM_BASE_DECL_SPEC create_raw_file(
  const std::string& data, bool compress = true, const char* p_tag = 0,

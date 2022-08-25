@@ -8,5 +8,4 @@
 @ifeq "$OUTPUT" ""
 <<bc_gen.cin @sid
 <<init_ciyam_peer.cin
-<<init_ciyam_tree.cin
 @endif

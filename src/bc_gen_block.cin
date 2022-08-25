@@ -203,6 +203,7 @@ u:$UTIME bc.$IDENT.$HEIGHT.blk
 @skip
 .encode $OUTPUT
 TREE_ROOT_HASH_ENC=$OUTPUT
+.session_variable @totals_exclude_hidden_blobs 1
 .file_info -total_items $TREE
 NUM_TREE_ITEMS=$OUTPUT
 ;
