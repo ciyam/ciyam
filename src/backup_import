@@ -73,7 +73,7 @@ if [ -f $BACKUP_TIME ]; then
      ./import_files $USER_PATH Backup : $IMAGE_NAME >>Backup.txt
     fi
 
-    ./tree_touch ciyam "^Backup:"
+    ./tree_insert_trunk ciyam .Backup
     ./tree_insert_trunk ciyam Backup
 
     ./generate_next_block >>Backup.txt 2>&1

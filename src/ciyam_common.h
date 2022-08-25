@@ -182,6 +182,7 @@ enum special_var
    e_special_var_blockchain_height_processed,
    e_special_var_total_child_field_in_parent,
    e_special_var_blockchain_zenith_tree_hash,
+   e_special_var_totals_exclude_hidden_blobs,
    e_special_var_blockchain_peer_has_supporters,
    e_special_var_blockchain_primary_pubkey_hash,
    e_special_var_blockchain_signature_file_hash,

@@ -1680,8 +1680,8 @@ string file_type_info( const string& tag_or_hash,
 
 void file_list_item_pos(
  const string& repository, const string& tag_or_hash,
- size_t& total, file_total_type total_type, const string& item_hash,
- size_t& item_pos, bool recurse, progress* p_progress, date_time* p_dtm )
+ size_t& total, file_total_type total_type, const string& item_hash, size_t& item_pos,
+ bool recurse, progress* p_progress, date_time* p_dtm, bool is_hidden, bool is_top_level )
 {
    guard g( g_mutex );
 
@@ -1725,9 +1725,26 @@ void file_list_item_pos(
             if( total_type == e_file_total_type_all_items )
                ++total;
 
-            string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
+            string::size_type pos = next_item.find( ' ' );
 
-            if( next_hash == item_hash )
+            string next_hash( next_item.substr( 0, pos ) );
+            string next_name;
+
+            if( pos != string::npos )
+               next_name = next_item.substr( pos + 1 );
+
+            // NOTE: If a top-level list item name begins with a '.' then any blobs below it
+            // will be excluded as "hidden" if the session variable has been set accordingly.
+            if( is_top_level && !get_session_variable(
+             get_special_var_name( e_special_var_totals_exclude_hidden_blobs ) ).empty( ) )
+            {
+               if( !next_name.empty( ) && next_name[ 0 ] == '.' )
+                  is_hidden = true;
+               else
+                  is_hidden = false;
+            }
+
+            if( !item_pos && !is_hidden && ( next_hash == item_hash ) )
                item_pos = total;
 
             if( !recurse )
@@ -1737,12 +1754,23 @@ void file_list_item_pos(
 
             if( ( total_type == e_file_total_type_repository_entries )
              && has_repository_entry_record( repository, next_hash ) )
-               ++total;
+            {
+               if( !is_hidden )
+                  ++total;
+            }
             else if( has_file( next_hash ) )
             {
                if( is_list_file( next_hash, &is_encrypted ) )
                   file_list_item_pos( repository, next_hash,
-                   total, total_type, item_hash, item_pos, recurse, p_progress, p_dtm );
+                   total, total_type, item_hash, item_pos, recurse, p_progress, p_dtm, is_hidden, false );
+               else if( is_hidden )
+               {
+                  // NOTE: The total was already incremented above before
+                  // it was known whether it was a blob or a list. So now
+                  // if is a hidden blob will need to decrement the total.
+                  if( total_type == e_file_total_type_all_items )
+                     --total;
+               }
                else if( total_type != e_file_total_type_all_items )
                {
                   if( total_type == e_file_total_type_blobs_only )
@@ -4920,10 +4948,10 @@ size_t count_total_repository_entries( const string& repository,
 
       total_entries += repo_entries.size( );
 
-      last_key = repo_entries[ repo_entries.size( ) - 1 ];
-
       if( repo_entries.size( ) < 1000 )
          break;
+
+      last_key = repo_entries[ repo_entries.size( ) - 1 ];
    }
 
    return total_entries;

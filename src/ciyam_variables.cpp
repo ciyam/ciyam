@@ -172,6 +172,7 @@ const char* const c_special_variable_blockchain_both_are_owners = "@blockchain_b
 const char* const c_special_variable_blockchain_height_processed = "@blockchain_height_processed";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 const char* const c_special_variable_blockchain_zenith_tree_hash = "@blockchain_zenith_tree_hash";
+const char* const c_special_variable_totals_exclude_hidden_blobs = "@totals_exclude_hidden_blobs";
 const char* const c_special_variable_blockchain_peer_has_supporters = "@blockchain_peer_has_supporters";
 const char* const c_special_variable_blockchain_primary_pubkey_hash = "@blockchain_primary_pubkey_hash";
 const char* const c_special_variable_blockchain_signature_file_hash = "@blockchain_signature_file_hash";
@@ -713,6 +714,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_zenith_tree_hash:
       s = string( c_special_variable_blockchain_zenith_tree_hash );
+      break;
+
+      case e_special_var_totals_exclude_hidden_blobs:
+      s = string( c_special_variable_totals_exclude_hidden_blobs );
       break;
 
       case e_special_var_blockchain_peer_has_supporters:

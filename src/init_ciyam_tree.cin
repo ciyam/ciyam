@@ -3,8 +3,6 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-.session_variable @uuid
-UUID=$OUTPUT
-.file_raw blob $UUID Unique
-.file_list -a=Unique -d=Unique -sort ciyam:Variables !ciyam
-.file_tag -remove Unique
+.file_raw blob 0.1 Version
+.file_list -a=Version -d=Version -sort ciyam:Variables !ciyam
+.file_tag -remove Version
