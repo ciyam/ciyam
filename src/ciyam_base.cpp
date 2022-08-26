@@ -423,6 +423,8 @@ struct session
    deque< string > file_hashes_to_get;
    deque< string > file_hashes_to_put;
 
+   map< string, string > mapped_hash_values;
+
    set< string > tx_key_info;
    stack< ods::transaction* > transactions;
 
@@ -6359,6 +6361,7 @@ void set_session_timeout( unsigned int seconds )
 string get_session_blockchain( )
 {
    guard g( g_mutex );
+
    return gtp_session->blockchain;
 }
 
@@ -6386,6 +6389,9 @@ void add_peer_file_hash_for_get( const string& hash,
  bool check_for_supporters, bool add_at_front, const string* p_hash_to_remove )
 {
    guard g( g_mutex );
+
+   if( !gtp_session )
+      throw runtime_error( "invalid call to add_peer_file_hash_for_get from non-session" );
 
    string hash_to_remove;
    if( p_hash_to_remove )
@@ -6441,6 +6447,9 @@ string top_next_peer_file_hash_to_get( bool* p_any_supporter_has )
 
    string hash;
 
+   if( !gtp_session )
+      throw runtime_error( "invalid call to top_next_peer_file_hash_to_get from non-session" );
+
    if( !gtp_session->file_hashes_to_get.empty( ) )
       hash = gtp_session->file_hashes_to_get.front( );
 
@@ -6472,6 +6481,9 @@ void pop_next_peer_file_hash_to_get( )
 {
    guard g( g_mutex );
 
+   if( !gtp_session )
+      throw runtime_error( "invalid call to pop_next_peer_file_hash_to_get from non-session" );
+
    if( !gtp_session->file_hashes_to_get.empty( ) )
       gtp_session->file_hashes_to_get.pop_front( );
 }
@@ -6479,6 +6491,9 @@ void pop_next_peer_file_hash_to_get( )
 void add_peer_file_hash_for_put( const string& hash, bool check_for_supporters )
 {
    guard g( g_mutex );
+
+   if( !gtp_session )
+      throw runtime_error( "invalid call to add_peer_file_hash_for_put from non-session" );
 
    if( find( gtp_session->file_hashes_to_put.begin( ),
     gtp_session->file_hashes_to_put.end( ), hash ) == gtp_session->file_hashes_to_put.end( ) )
@@ -6533,6 +6548,9 @@ string top_next_peer_file_hash_to_put( bool* p_any_supporter_has )
 
    string hash;
 
+   if( !gtp_session )
+      throw runtime_error( "invalid call to top_next_peer_file_hash_to_put from non-session" );
+
    if( !gtp_session->file_hashes_to_put.empty( ) )
       hash = gtp_session->file_hashes_to_put.front( );
 
@@ -6564,6 +6582,9 @@ void pop_next_peer_file_hash_to_put( )
 {
    guard g( g_mutex );
 
+   if( !gtp_session )
+      throw runtime_error( "invalid call to pop_next_peer_file_hash_to_put from non-session" );
+
    if( !gtp_session->file_hashes_to_put.empty( ) )
       gtp_session->file_hashes_to_put.pop_front( );
 }
@@ -6588,6 +6609,55 @@ bool any_peer_still_has_file_hash_to_put(
    }
 
    return false;
+}
+
+void add_peer_mapped_hash( const string& hash, const string& mapped_hash )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session )
+      throw runtime_error( "invalid call to add_peer_mapped_hash from non-session" );
+   else
+      gtp_session->mapped_hash_values.insert( make_pair( hex_decode( hash ), hex_decode( mapped_hash ) ) );
+}
+
+string get_peer_mapped_hash( const string& hash )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   if( !gtp_session )
+      throw runtime_error( "invalid call to get_peer_mapped_hash from non-session" );
+   else
+   {
+      string decoded( hex_decode( hash ) );
+
+      if( gtp_session->mapped_hash_values.count( decoded ) )
+         retval = hex_encode( gtp_session->mapped_hash_values[ decoded ] );
+   }
+
+   return retval;
+}
+
+void clear_peer_mapped_hash( const string& hash )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session )
+      throw runtime_error( "invalid call to clear_peer_mapped_hash from non-session" );
+   else
+      gtp_session->mapped_hash_values.erase( hex_decode( hash ) );
+}
+
+void clear_all_peer_mapped_hashes( )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session )
+      throw runtime_error( "invalid call to clear_all_peer_mapped_hashes from non-session" );
+   else
+      gtp_session->mapped_hash_values.clear( );
 }
 
 void set_default_session_variables( int port )
