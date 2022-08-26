@@ -426,6 +426,14 @@ void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_put( );
 bool CIYAM_BASE_DECL_SPEC any_peer_still_has_file_hash_to_put(
  const std::string& hash, const std::string* p_blockchain = 0 );
 
+void CIYAM_BASE_DECL_SPEC add_peer_mapped_hash( const std::string& hash, const std::string& mapped_hash );
+
+std::string CIYAM_BASE_DECL_SPEC get_peer_mapped_hash( const std::string& hash );
+
+void CIYAM_BASE_DECL_SPEC clear_peer_mapped_hash( const std::string& hash );
+
+void CIYAM_BASE_DECL_SPEC clear_all_peer_mapped_hashes( );
+
 void CIYAM_BASE_DECL_SPEC set_default_session_variables( int port = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC get_raw_session_variable( const std::string& name );

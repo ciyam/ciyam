@@ -361,12 +361,27 @@ void process_repository_file( const string& blockchain,
     e_special_var_blockchain_archive_path ) ).empty( ) )
       has_archive = true;
 
-   string file_data, file_content;
+   bool is_blockchain_owner = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
+
+   string file_data, file_content, file_data_hash, peer_mapped_hash;
 
    if( p_file_data && !p_file_data->empty( ) )
    {
       file_data = *p_file_data;
       type_and_extra = file_data[ 0 ];
+
+      peer_mapped_hash = get_peer_mapped_hash( src_hash );
+
+      if( !peer_mapped_hash.empty( ) )
+      {
+         file_data_hash = sha256( file_data ).get_digest_as_string( );
+
+         if( is_blockchain_owner && ( peer_mapped_hash != file_data_hash ) )
+            throw runtime_error( "found invalid encrypted file content" );
+
+         clear_peer_mapped_hash( src_hash );
+      }
 
       file_content = file_data.substr( 1 );
    }
@@ -406,9 +421,6 @@ void process_repository_file( const string& blockchain,
       }
       else
       {
-         bool is_blockchain_owner = !get_session_variable(
-          get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
-
          if( !is_blockchain_owner )
          {
             if( !has_repository_entry_record( identity, target_hash ) )
@@ -989,6 +1001,7 @@ void process_list_items( const string& identity,
 
    string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
    string blockchain_is_fetching_name( get_special_var_name( e_special_var_blockchain_is_fetching ) );
+   string blockchain_peer_is_owner_name( get_special_var_name( e_special_var_blockchain_peer_is_owner ) );
    string blockchain_skip_blob_puts_name( get_special_var_name( e_special_var_blockchain_skip_blob_puts ) );
    string blockchain_both_are_owners_name( get_special_var_name( e_special_var_blockchain_both_are_owners ) );
 
@@ -997,6 +1010,14 @@ void process_list_items( const string& identity,
 
    bool is_owner = !get_session_variable( blockchain_is_owner_name ).empty( );
    bool is_fetching = !get_session_variable( blockchain_is_fetching_name ).empty( );
+
+   bool store_encrypted_hashes = false;
+
+   if( is_fetching )
+   {
+      if( is_owner || !get_session_variable( blockchain_peer_is_owner_name ).empty( ) )
+         store_encrypted_hashes = true;
+   }
 
    bool allow_blob_creation = false;
 
@@ -1103,8 +1124,13 @@ void process_list_items( const string& identity,
             {
                if( next_secondary.empty( ) )
                   add_peer_file_hash_for_get( next_hash );
-               else if( prefixed_secondary_values )
-                  add_peer_file_hash_for_get( next_hash + ':' + next_secondary + c_repository_suffix );
+               else
+               {
+                  if( !prefixed_secondary_values )
+                     add_peer_mapped_hash( next_hash, next_secondary );
+                  else
+                     add_peer_file_hash_for_get( next_hash + ':' + next_secondary + c_repository_suffix );
+               }
             }
             else if( allow_blob_creation && first_hash_to_get.empty( ) )
             {
@@ -1468,6 +1494,8 @@ void process_public_key_file( const string& blockchain,
       output_synchronised_progress_message( replaced( blockchain, c_bc_prefix, "" ), height, height_other );
 
       TRACE_LOG( TRACE_PEER_OPS, "::: new zenith hash: " + block_hash + " height: " + to_string( height ) );
+
+      clear_all_peer_mapped_hashes( );
 
       set_session_variable( zenith_height_name, to_string( height ) );
    }
@@ -3058,13 +3086,21 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                string height( tag_or_hash.substr( blockchain.length( ) + 1 ) );
 
+               size_t blk_off = 0;
+
                string::size_type pos = height.find( c_blk_suffix );
 
-               if( pos != string::npos && height != string( "0" ) )
-               {
+               if( pos != string::npos )
+                  blk_off = 1;
+               else
+                  pos = height.find( c_sig_suffix );
+
+               if( pos != string::npos )
                   height.erase( pos );
 
-                  blockchain_height_other = from_string< size_t >( height ) - 1;
+               if( height != string( "0" ) )
+               {
+                  blockchain_height_other = from_string< size_t >( height ) - blk_off;
                   socket_handler.set_blockchain_height_other( blockchain_height_other );
                }
             }
@@ -3276,6 +3312,21 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                throw runtime_error( "invalid state for put (initiator)" );
             else
                throw runtime_error( "invalid state for put (responder)" );
+         }
+
+         bool put_allowed = !get_session_variable(
+          get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
+
+         if( !socket_handler.get_is_owner( ) && !get_session_variable(
+          get_special_var_name( e_special_var_blockchain_peer_is_owner ) ).empty( ) )
+            put_allowed = false;
+
+         if( !put_allowed )
+         {
+            if( !socket_handler.get_is_responder( ) )
+               throw runtime_error( "invalid put when not allowed (initiator)" );
+            else
+               throw runtime_error( "invalid put when not allowed (responder)" );
          }
 
          socket.set_delay( );
