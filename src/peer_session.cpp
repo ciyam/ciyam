@@ -77,6 +77,8 @@ const char c_tree_files_suffix = '+';
 const char c_error_message_prefix = '#';
 const char c_progress_output_prefix = '%';
 
+const char c_check_for_supporters_prefix = '*';
+
 const char* const c_hello = "hello";
 
 const char* const c_dummy_peer_tag = "peer";
@@ -516,28 +518,28 @@ void process_repository_file( const string& blockchain,
    }
 }
 
-string get_file_hash_from_put_data( const string& encoded_master,
- const string& encoded_pubkey, const string& encoded_source_hash, const string& encoded_target_hash )
+string get_hash_info_from_put_data( const string& encoded_master_pubkey,
+ const string& encoded_local_pubkey, const string& encoded_source_hash, const string& encoded_target_hash )
 {
    string retval;
 
    try
    {
-      if( !encoded_master.empty( ) )
-         base64::validate( encoded_master );
+      if( !encoded_master_pubkey.empty( ) )
+         base64::validate( encoded_master_pubkey );
 
-      base64::validate( encoded_pubkey );
+      base64::validate( encoded_local_pubkey );
       base64::validate( encoded_source_hash );
 
       // NOTE: Construct a public key object for the purpose of validation.
-      public_key pubkey( encoded_pubkey, true );
+      public_key pubkey( encoded_local_pubkey, true );
 
-      string extra( hex_encode( base64::decode( encoded_pubkey ) ) );
+      string extra( hex_encode( base64::decode( encoded_local_pubkey ) ) );
 
-      if( !encoded_master.empty( ) )
+      if( !encoded_master_pubkey.empty( ) )
       {
-         public_key pubkey( encoded_master, true );
-         extra += '-' + hex_encode( base64::decode( encoded_master ) );
+         public_key pubkey( encoded_master_pubkey, true );
+         extra += '-' + hex_encode( base64::decode( encoded_master_pubkey ) );
       }
 
       if( !encoded_target_hash.empty( ) )
@@ -707,7 +709,7 @@ void process_put_file( const string& blockchain,
 #ifndef SSL_SUPPORT
                      okay = true;
 #else
-                     string hash_info( get_file_hash_from_put_data( master_key, public_key, source_hash, target_hash ) );
+                     string hash_info( get_hash_info_from_put_data( master_key, public_key, source_hash, target_hash ) );
 
                      if( !hash_info.empty( ) )
                      {
@@ -718,24 +720,24 @@ void process_put_file( const string& blockchain,
 
                         if( !has_file( hash_info.substr( 0, pos ) ) )
                         {
-                           if( target_hash.empty( ) )
-                              target_hash = hash_info.substr( 0, pos );
-                           else
-                              target_hash = hex_encode( base64::decode( target_hash ) );
+                           string hex_target_hash;
 
-                           if( has_file( target_hash ) )
+                           if( target_hash.empty( ) )
+                              hex_target_hash = hash_info.substr( 0, pos );
+                           else
+                              hex_target_hash = hex_encode( base64::decode( target_hash ) );
+
+                           if( has_file( hex_target_hash ) )
                            {
                               add_to_blockchain_tree_item( blockchain, 1 );
 
-                              target_hashes.insert( target_hash );
+                              target_hashes.insert( hex_target_hash );
                            }
                            else
                            {
-                              list_items_to_ignore.insert( target_hash );
-
                               string local_hash;
 
-                              bool has_repo_entry = fetch_repository_entry_record( identity, target_hash, local_hash, false );
+                              bool has_repo_entry = fetch_repository_entry_record( identity, hex_target_hash, local_hash, false );
 
                               if( has_repo_entry && has_file( local_hash ) )
                               {
@@ -745,11 +747,15 @@ void process_put_file( const string& blockchain,
                               }
                               else
                               {
-                                 if( !target_hashes.count( target_hash ) )
+                                 if( !target_hashes.count( hex_target_hash ) )
                                  {
-                                    target_hashes.insert( target_hash );
+                                    target_hashes.insert( hex_target_hash );
 
-                                    add_peer_file_hash_for_get( hash_info, check_for_supporters );
+                                    string prefix;
+                                    if( check_for_supporters )
+                                       prefix = c_check_for_supporters_prefix;
+
+                                    set_session_variable( hex_target_hash, hash_info );
                                  }
                               }
                            }
@@ -789,8 +795,14 @@ bool has_all_list_items( const string& blockchain,
    string all_list_items( extract_file( hash, "" ) );
 
    vector< string > list_items;
+   vector< string > secondary_values;
 
-   split_list_items( all_list_items, list_items );
+   bool prefixed_secondary_values = false;
+
+   split_list_items( all_list_items, list_items, &secondary_values, &prefixed_secondary_values );
+
+   if( ( prefixed_secondary_values || !secondary_values.empty( ) ) && ( list_items.size( ) != secondary_values.size( ) ) )
+      throw runtime_error( "unexpected list_items.size( ) != secondary_values.size( )" );
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
@@ -812,76 +824,79 @@ bool has_all_list_items( const string& blockchain,
    bool is_fetching = !get_session_variable(
     get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
 
-   for( size_t i = 0; i < list_items.size( ); i++ )
+   if( secondary_values.empty( ) || prefixed_secondary_values )
    {
-      string next_item( list_items[ i ] );
-
-      if( p_dtm && p_progress )
+      for( size_t i = 0; i < list_items.size( ); i++ )
       {
-         date_time now( date_time::local( ) );
+         string next_item( list_items[ i ] );
 
-         uint64_t elapsed = seconds_between( *p_dtm, now );
-
-         if( elapsed >= 2 )
+         if( p_dtm && p_progress )
          {
-            string progress;
+            date_time now( date_time::local( ) );
 
-            if( touch_all_lists )
+            uint64_t elapsed = seconds_between( *p_dtm, now );
+
+            if( elapsed >= 2 )
             {
-               size_t next_height = from_string< size_t >( blockchain_height_processed );
+               string progress;
 
-               progress = "Verifying at height " + to_string( next_height )
-                + " (" + to_string( *p_total_processed ) + "/" + num_tree_items + ")...";
-
-               set_session_progress_output( progress );
-
-               progress = ".";
-            }
-            else
-            {
-               progress = "Processed " + to_string( *p_total_processed ) + " items...";
-
-               if( is_fetching )
+               if( touch_all_lists )
                {
+                  size_t next_height = from_string< size_t >( blockchain_height_processed );
+
+                  progress = "Verifying at height " + to_string( next_height )
+                   + " (" + to_string( *p_total_processed ) + "/" + num_tree_items + ")...";
+
                   set_session_progress_output( progress );
 
                   progress = ".";
                }
+               else
+               {
+                  progress = "Processed " + to_string( *p_total_processed ) + " items...";
+
+                  if( is_fetching )
+                  {
+                     set_session_progress_output( progress );
+
+                     progress = ".";
+                  }
+               }
+
+               *p_dtm = now;
+
+               p_progress->output_progress( progress );
             }
-
-            *p_dtm = now;
-
-            p_progress->output_progress( progress );
          }
-      }
 
-      ++( *p_total_processed );
+         ++( *p_total_processed );
 
-      if( !next_item.empty( ) )
-      {
-         string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
-
-         bool has_next_file = has_file( next_hash );
-         bool has_next_repo_entry = false;
-
-         if( !has_next_file )
-            has_next_repo_entry = has_repository_entry_record( identity, next_hash );
-
-         if( !has_next_file && !has_next_repo_entry )
+         if( !next_item.empty( ) )
          {
-            retval = false;
-            break;
-         }
-         else if( recurse && !has_next_repo_entry && is_list_file( next_hash ) )
-         {
-            retval = has_all_list_items( blockchain, next_hash,
-             recurse, touch_all_lists, p_dtm, p_progress, p_total_processed, p_blob_hashes );
+            string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
 
-            if( !retval )
+            bool has_next_file = has_file( next_hash );
+            bool has_next_repo_entry = false;
+
+            if( !has_next_file )
+               has_next_repo_entry = has_repository_entry_record( identity, next_hash );
+
+            if( !has_next_file && !has_next_repo_entry )
+            {
+               retval = false;
                break;
+            }
+            else if( recurse && !has_next_repo_entry && is_list_file( next_hash ) )
+            {
+               retval = has_all_list_items( blockchain, next_hash,
+                recurse, touch_all_lists, p_dtm, p_progress, p_total_processed, p_blob_hashes );
+
+               if( !retval )
+                  break;
+            }
+            else if( p_blob_hashes )
+               p_blob_hashes->insert( next_hash );
          }
-         else if( p_blob_hashes )
-            p_blob_hashes->insert( next_hash );
       }
    }
 
@@ -1010,12 +1025,13 @@ void process_list_items( const string& identity,
 
    bool is_owner = !get_session_variable( blockchain_is_owner_name ).empty( );
    bool is_fetching = !get_session_variable( blockchain_is_fetching_name ).empty( );
+   bool is_peer_owner = !get_session_variable( blockchain_peer_is_owner_name ).empty( );
 
    bool store_encrypted_hashes = false;
 
    if( is_fetching )
    {
-      if( is_owner || !get_session_variable( blockchain_peer_is_owner_name ).empty( ) )
+      if( is_owner || is_peer_owner )
          store_encrypted_hashes = true;
    }
 
@@ -1127,8 +1143,27 @@ void process_list_items( const string& identity,
                else
                {
                   if( !prefixed_secondary_values )
+                  {
+                     string hash_info( get_session_variable( next_hash ) );
+
+                     if( !hash_info.empty( ) )
+                     {
+                        bool check_for_supporters = false;
+
+                        if( hash_info[ 0 ] == c_check_for_supporters_prefix )
+                        {
+                           hash_info.erase( 0, 1 );
+                           check_for_supporters = true;
+                        }
+
+                        add_peer_file_hash_for_get( hash_info, check_for_supporters );
+                     }
+
+                     set_session_variable( next_hash, "" );
+
                      add_peer_mapped_hash( next_hash, next_secondary );
-                  else
+                  }
+                  else if( is_peer_owner )
                      add_peer_file_hash_for_get( next_hash + ':' + next_secondary + c_repository_suffix );
                }
             }
