@@ -976,8 +976,9 @@ string create_peer_repository_entry_push_info(
    return retval;
 }
 
-void decrypt_pulled_peer_file( const string& dest_hash,
- const string& src_hash, const string& password, bool is_for_testing, const string* p_file_data )
+void decrypt_pulled_peer_file(
+ const string& dest_hash, const string& src_hash, const string& password,
+ bool is_for_testing, const string* p_file_data, const string* p_encrypted_hash )
 {
    string all_tags( get_hash_tags( src_hash ) );
 
@@ -1005,13 +1006,15 @@ void decrypt_pulled_peer_file( const string& dest_hash,
       if( public_key_in_hex.empty( ) )
          throw runtime_error( "unable to locate peer public key tag for file '" + src_hash + "'" );
       else
-         decrypt_pulled_peer_file( dest_hash, src_hash, password, public_key_in_hex, is_for_testing, p_file_data );
+         decrypt_pulled_peer_file( dest_hash, src_hash,
+          password, public_key_in_hex, is_for_testing, p_file_data, p_encrypted_hash );
    }
 }
 
 void decrypt_pulled_peer_file(
- const string& dest_hash, const string& src_hash, const string& password,
- const string& public_key_in_hex, bool is_for_testing, const string* p_file_data )
+ const string& dest_hash, const string& src_hash,
+ const string& password, const string& public_key_in_hex,
+ bool is_for_testing, const string* p_file_data, const string* p_encrypted_hash )
 {
 #ifndef SSL_SUPPORT
    throw runtime_error( "decrypt_pulled_peer_file requires SSL support" );
@@ -1053,6 +1056,14 @@ void decrypt_pulled_peer_file(
    stringstream ss( file_data );
    crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
 
+   if( is_encrypted && p_encrypted_hash && !p_encrypted_hash->empty( ) )
+   {
+      sha256 encrypted_hash( ( char )type_and_extra + ss.str( ) );
+
+      if( *p_encrypted_hash != encrypted_hash.get_digest_as_string( ) )
+         throw runtime_error( "failed to decrypt (incorrect content)" );
+   }
+
    string hash;
 
    if( !is_encrypted )
@@ -1063,7 +1074,7 @@ void decrypt_pulled_peer_file(
    if( !is_encrypted && ( hash != dest_hash ) )
    {
       delete_file( hash );
-      throw runtime_error( "cannot decrypt peer file (bad password or incorrect content)" );
+      throw runtime_error( "failed to decrypt (bad password or incorrect content)" );
    }
 #endif
 }
