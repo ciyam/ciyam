@@ -10,13 +10,10 @@ const int c_tx_id_module = 1;
 const int c_tx_id_initial = 2;
 const int c_tx_id_standard = 5;
 
-const char c_tertiary = 't';
-const char c_secondary = 's';
-
 const size_t c_bc_identity_length = 9;
 
-const size_t c_bc_scaling_value = 100;
-const size_t c_bc_scaling_demo_value = 10;
+const size_t c_bc_scaling_value = 50;
+const size_t c_bc_scaling_demo_value = 5;
 
 const char* const c_none = "none";
 const char* const c_okay = "okay";
@@ -34,9 +31,6 @@ const char* const c_ciyam_logs_tag = "ciyam.logs";
 
 const char* const c_bc_prefix = "bc.";
 
-const char* const c_tertiary_prefix = ".t";
-const char* const c_secondary_prefix = ".s";
-
 const char* const c_blk_suffix = ".blk";
 const char* const c_dat_suffix = ".dat";
 const char* const c_key_suffix = ".key";
@@ -52,7 +46,7 @@ const char* const c_txs_file_ext = ".txs";
 const char* const c_ciyam_script = "ciyam_script";
 const char* const c_ciyam_server = "ciyam_server";
 
-const char* const c_demo_identity = "39659983c";
+const char* const c_demo_identity = "e3733d121";
 
 const char* const c_variables_branch = "Variables";
 
@@ -162,19 +156,7 @@ const char* const c_file_type_str_core_list = "\x12";
 const char* const c_file_type_str_blob_encrypted = "\x05";
 const char* const c_file_type_str_blob_no_compress = "\x81";
 
-const char* const c_file_type_core_data_object = "dat";
 const char* const c_file_type_core_block_object = "blk";
-
-const char* const c_file_type_core_data_header_height_prefix = "h=";
-const char* const c_file_type_core_data_header_identity_prefix = "i=";
-const char* const c_file_type_core_data_header_num_tree_items_prefix = "n=";
-const char* const c_file_type_core_data_header_version_number_prefix = "v=";
-
-const char* const c_file_type_core_data_detail_hind_hash_prefix = "h:";
-const char* const c_file_type_core_data_detail_last_hash_prefix = "l:";
-const char* const c_file_type_core_data_detail_pubkey_hash_prefix = "p:";
-const char* const c_file_type_core_data_detail_tree_root_hash_prefix = "t:";
-const char* const c_file_type_core_data_detail_unix_data_time_value_prefix = "u:";
 
 const char* const c_file_type_core_block_header_height_prefix = "h=";
 const char* const c_file_type_core_block_header_identity_prefix = "i=";
@@ -182,10 +164,9 @@ const char* const c_file_type_core_block_header_num_tree_items_prefix = "n=";
 const char* const c_file_type_core_block_header_version_number_prefix = "v=";
 
 const char* const c_file_type_core_block_detail_hind_hash_prefix = "h:";
-const char* const c_file_type_core_block_detail_last_hash_prefix = "l:";
-const char* const c_file_type_core_block_detail_pubkey_hash_prefix = "p:";
+const char* const c_file_type_core_block_detail_last_hashes_prefix = "l:";
+const char* const c_file_type_core_block_detail_pubkey_hashes_prefix = "p:";
 const char* const c_file_type_core_block_detail_tree_root_hash_prefix = "t:";
-const char* const c_file_type_core_block_detail_secondary_pubkey_prefix = "s:";
 const char* const c_file_type_core_block_detail_signature_file_hash_prefix = "s:";
 const char* const c_file_type_core_block_detail_unix_block_time_value_prefix = "u:";
 

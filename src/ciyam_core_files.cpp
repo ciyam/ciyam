@@ -53,20 +53,6 @@ namespace
 
 const unsigned int c_max_core_line_size = 1000;
 
-struct data_info
-{
-   data_info( ) : version( 0 ), unix_time_value( 0 ) { }
-
-   size_t version;
-
-   string public_key_hash;
-
-   string secondary_key_hash;
-   string tertiary_key_hash;
-
-   uint64_t unix_time_value;
-};
-
 struct block_info
 {
    block_info( ) : version( 0 ), unix_time_value( 0 ) { }
@@ -82,287 +68,7 @@ struct block_info
    uint64_t unix_time_value;
 };
 
-void verify_data( const string& content, bool check_sigs, data_info* p_data_info = 0 );
-
-void verify_block( const string& content, bool check_sigs, block_info* p_block_info = 0 );
-
-void verify_data( const string& content, bool check_sigs, data_info* p_data_info )
-{
-   guard g( g_mutex, "verify_data" );
-
-   vector< string > lines;
-
-   if( !content.empty( ) )
-      split( content, lines, '\n', c_esc, false );
-
-   if( lines.empty( ) )
-      throw runtime_error( "unexpected empty data content" );
-
-   string identity, hind_hash, last_data_hash, public_key_hash, tree_root_hash;
-
-   vector< string > secondary_hashes;
-
-   size_t version = 0;
-
-   uint64_t data_height = 0;
-
-   size_t num_tree_items = 0;
-
-   uint64_t unix_time_value = 0;
-
-   string header( lines[ 0 ] );
-   if( header.empty( ) )
-      throw runtime_error( "unexpected empty data header" );
-   else
-   {
-      vector< string > attributes;
-      split( header, attributes );
-
-      if( attributes.empty( ) )
-         throw runtime_error( "unexpected empty data header attributes" );
-
-      bool has_height = false;
-      bool has_identity = false;
-      bool has_num_tree_items = false;
-
-      for( size_t i = 0; i < attributes.size( ); i++ )
-      {
-         string next_attribute( attributes[ i ] );
-         if( next_attribute.empty( ) )
-            throw runtime_error( "unexpected empty attribute in data header '" + header + "'" );
-
-         if( !has_height )
-         {
-            if( next_attribute.find( c_file_type_core_data_header_height_prefix ) != 0 )
-               throw runtime_error( "unexpected missing height attribute in data header '" + header + "'" );
-
-            string value( next_attribute.substr( strlen( c_file_type_core_data_header_height_prefix ) ) );
-
-            regex expr( c_regex_integer );
-
-            if( ( value.length( ) > 1 && value[ 0 ] == '0' ) || expr.search( value ) != 0 )
-               throw runtime_error( "invalid height value '" + value + "'" );
-
-            has_height = true;
-
-            data_height = from_string< uint64_t >( value );
-         }
-         else if( !has_identity )
-         {
-            if( next_attribute.find( c_file_type_core_data_header_identity_prefix ) != 0 )
-               throw runtime_error( "unexpected missing identity attribute in data header '" + header + "'" );
-
-            has_identity = true;
-
-            identity = next_attribute.substr( strlen( c_file_type_core_data_header_identity_prefix ) );
-         }
-         else if( !has_num_tree_items )
-         {
-            if( next_attribute.find( c_file_type_core_data_header_num_tree_items_prefix ) != 0 )
-               throw runtime_error( "unexpected missing num tree items attribute in data header '" + header + "'" );
-
-            has_num_tree_items = true;
-
-            num_tree_items = from_string< size_t >( next_attribute.substr(
-             strlen( c_file_type_core_data_header_num_tree_items_prefix ) ) );
-
-            // NOTE: The total tree items attribute does not include the tree root itself but in order to match
-            // the number of files being processed in a peer session the value is being incremented by one here.
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_num_tree_items ), to_string( num_tree_items + 1 ) );
-         }
-         else if( !version )
-         {
-            if( next_attribute.find( c_file_type_core_data_header_version_number_prefix ) != 0 )
-               throw runtime_error( "unexpected missing version number attribute in data header '" + header + "'" );
-
-            string version_str( next_attribute.substr( strlen( c_file_type_core_data_header_version_number_prefix ) ) );
-
-            version = from_string< size_t >( version_str );
-
-            if( p_data_info )
-               p_data_info->version = version;
-         }
-         else
-            throw runtime_error( "unexpected extraneous attribute in data header '" + header + "'" );
-      }
-
-      if( !has_identity )
-         throw runtime_error( "unexpected missing identity attribute in data header '" + header + "'" );
-
-      if( !p_data_info && !has_num_tree_items )
-         set_session_variable( get_special_var_name( e_special_var_blockchain_num_tree_items ), "" );
-   }
-
-   data_info info;
-
-   for( size_t i = 1; i < lines.size( ); i++ )
-   {
-      string next_line( lines[ i ] );
-
-      if( next_line.size( ) < 3 )
-         throw runtime_error( "unexpected line < 3 '" + next_line + "' in verify_data" );
-
-      if( next_line.length( ) > c_max_core_line_size )
-         throw runtime_error( "unexpected line length exceeds "
-          + to_string( c_max_core_line_size ) + " in '" + next_line + "' in verify_data" );
-
-      string next_attribute( next_line );
-
-      bool found = false;
-
-      if( hind_hash.empty( ) )
-      {
-         size_t len = strlen( c_file_type_core_data_detail_hind_hash_prefix );
-
-         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_hind_hash_prefix ) )
-            throw runtime_error( "invalid data hind hash attribute '" + next_attribute + "'" );
-
-         next_attribute.erase( 0, len );
-
-         hind_hash = hex_encode( base64::decode( next_attribute ) );
-
-         found = true;
-      }
-
-      if( !found && ( data_height > 1 && last_data_hash.empty( ) ) )
-      {
-         size_t len = strlen( c_file_type_core_data_detail_last_hash_prefix );
-
-         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_last_hash_prefix ) )
-            throw runtime_error( "invalid data last data hash attribute '" + next_attribute + "'" );
-
-         next_attribute.erase( 0, len );
-
-         last_data_hash = hex_encode( base64::decode( next_attribute ) );
-
-         if( !has_file( last_data_hash ) )
-            throw runtime_error( "last data file '" + last_data_hash + "' not found" );
-
-         if( check_sigs )
-         {
-            string last_data_info( extract_file( last_data_hash, "", c_file_type_char_core_blob ) );
-
-            string::size_type pos = last_data_info.find( ':' );
-            if( pos == string::npos )
-               throw runtime_error( "unexpected invalid data info in validate_data" );
-
-            verify_data( last_data_info.substr( pos + 1 ), false, &info );
-         }
-
-         found = true;
-      }
-
-      if( !found && public_key_hash.empty( ) )
-      {
-         size_t len = strlen( c_file_type_core_data_detail_pubkey_hash_prefix );
-
-         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_pubkey_hash_prefix ) )
-            throw runtime_error( "invalid data public key hash attribute '" + next_attribute + "'" );
-
-         next_attribute.erase( 0, len );
-
-         public_key_hash = hex_encode( base64::decode( next_attribute ) );
-
-         if( check_sigs && !has_file( public_key_hash ) )
-            throw runtime_error( "public key file '" + public_key_hash + "' not found" );
-
-         if( p_data_info )
-            p_data_info->public_key_hash = public_key_hash;
-
-         found = true;
-      }
-
-      if( !found && tree_root_hash.empty( ) )
-      {
-         size_t len = strlen( c_file_type_core_data_detail_tree_root_hash_prefix );
-
-         if( next_attribute.substr( 0, len ) == string( c_file_type_core_data_detail_tree_root_hash_prefix ) )
-         {
-            next_attribute.erase( 0, len );
-
-            tree_root_hash = hex_encode( base64::decode( next_attribute ) );
-
-            if( check_sigs && !has_file( tree_root_hash ) )
-               throw runtime_error( "tree root file '" + tree_root_hash + "' not found" );
-
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_tree_root_hash ), tree_root_hash );
-
-            found = true;
-         }
-      }
-
-      if( !found && !unix_time_value )
-      {
-         size_t len = strlen( c_file_type_core_data_detail_unix_data_time_value_prefix );
-
-         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_unix_data_time_value_prefix ) )
-            throw runtime_error( "invalid unix data time value attribute '" + next_attribute + "'" );
-
-         next_attribute.erase( 0, len );
-
-         unix_time_value = from_string< uint64_t >( next_attribute );
-
-         if( p_data_info )
-            p_data_info->unix_time_value = unix_time_value;
-
-         if( check_sigs && ( data_height > 1 ) )
-         {
-            if( version < info.version )
-               throw runtime_error( "invalid data version value is less than last" );
-
-            if( unix_time_value <= info.unix_time_value )
-               throw runtime_error( "invalid unix data time value not more recent than last" );
-         }
-
-         found = true;
-      }
-
-      if( !found )
-         throw runtime_error( "unexpected extraneous data attribute '" + next_attribute + "'" );
-   }
-
-   if( !num_tree_items && !tree_root_hash.empty( ) )
-      throw runtime_error( "unexpected missing num tree items header attribute" );
-
-   if( num_tree_items && tree_root_hash.empty( ) )
-      throw runtime_error( "unexpected missing tree root hash attribute" );
-
-   if( tree_root_hash.empty( ) )
-      set_session_variable(
-       get_special_var_name( e_special_var_blockchain_tree_root_hash ), tree_root_hash );
-
-   if( public_key_hash.empty( ) )
-      throw runtime_error( "unexpected missing public key hash attribute" );
-
-   if( data_height > 1 && last_data_hash.empty( ) )
-      throw runtime_error( "unexpected missing data last data hash attribute" );
-
-   if( !unix_time_value )
-      throw runtime_error( "unexpected missing unix data time value attribute" );
-
-   string block_tag( c_bc_prefix + identity + "." + to_string( data_height ) + c_blk_suffix );
-
-   if( has_tag( block_tag ) )
-   {
-      string block_hash( tag_file_hash( block_tag ) );
-      string block_data( extract_file( block_hash, "", c_file_type_char_core_blob ) );
-
-      string::size_type pos = block_data.find( ':' );
-
-      if( pos == string::npos )
-         throw runtime_error( "unexpected invalid block data in verify_data" );
-
-      block_info info;
-      verify_block( block_data.substr( pos + 1 ), false, &info );
-
-      if( public_key_hash != info.public_key_hash )
-         throw runtime_error( "unexpected data primary public key does not match block public key hash" );
-   }
-}
-
-void verify_block( const string& content, bool check_sigs, block_info* p_block_info )
+void verify_block( const string& content, bool check_sigs, block_info* p_block_info = 0 )
 {
    guard g( g_mutex, "verify_block" );
 
@@ -442,8 +148,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
             block_height = from_string< uint64_t >( value );
 
             if( !p_block_info )
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_height ), value );
+               set_session_variable( get_special_var_name( e_special_var_blockchain_height ), value );
          }
          else if( !has_identity )
          {
@@ -461,17 +166,6 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
             string version_str( next_attribute.substr( strlen( c_file_type_core_block_header_version_number_prefix ) ) );
 
-            if( !version_str.empty( ) )
-            {
-               if( version_str[ 0 ] == c_secondary )
-                  is_secondary = true;
-               else if( version_str[ 0 ] == c_tertiary )
-                  is_tertiary = true;
-
-               if( is_secondary || is_tertiary )
-                  version_str.erase( 0, 1 );
-            }
-
             version = from_string< size_t >( version_str );
 
             if( p_block_info )
@@ -485,7 +179,6 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
          throw runtime_error( "unexpected missing or incorrect identity attribute in block header '" + header + "'" );
    }
 
-   data_info data;
    block_info info;
 
    string hind_hash, last_block_hash, public_key_hash, tree_root_hash, signature_file_hash;
@@ -498,6 +191,8 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
    if( identity == string( c_demo_identity ) )
       scaling_value = c_bc_scaling_demo_value;
+
+   size_t scaling_squared = ( scaling_value * scaling_value );
 
    for( size_t i = 1; i < lines.size( ); i++ )
    {
@@ -516,10 +211,10 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
       {
          if( !has_primary_pubkey )
          {
-            size_t len = strlen( c_file_type_core_block_detail_pubkey_hash_prefix );
+            size_t len = strlen( c_file_type_core_block_detail_pubkey_hashes_prefix );
 
-            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_pubkey_hash_prefix ) )
-               throw runtime_error( "invalid genesis block public keys attribute '" + next_attribute + "'" );
+            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_pubkey_hashes_prefix ) )
+               throw runtime_error( "invalid genesis block public key hashes attribute '" + next_attribute + "'" );
 
             next_attribute.erase( 0, len );
 
@@ -566,25 +261,6 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
                       get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ), tertiary_pubkey_hash );
                }
             }
-         }
-         else if( !has_secondary_pubkey )
-         {
-            size_t len = strlen( c_file_type_core_block_detail_secondary_pubkey_prefix );
-
-            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_secondary_pubkey_prefix ) )
-               throw runtime_error( "invalid genesis block secondary pubkey attribute '" + next_attribute + "'" );
-
-            next_attribute.erase( 0, len );
-
-            has_secondary_pubkey = true;
-
-            string secondary_pubkey_hash( hex_encode( base64::decode( next_attribute ) ) );
-
-            if( p_block_info )
-               p_block_info->secondary_key_hash = secondary_pubkey_hash;
-            else
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
          }
          else
             throw runtime_error( "unexpected extraneous genesis block attribute '" + next_attribute + "'" );
@@ -636,57 +312,76 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
          if( last_block_hash.empty( ) )
          {
-            size_t len = strlen( c_file_type_core_block_detail_last_hash_prefix );
+            size_t len = strlen( c_file_type_core_block_detail_last_hashes_prefix );
 
-            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_last_hash_prefix ) )
-               throw runtime_error( "invalid block last block hash attribute '" + next_attribute + "'" );
+            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_last_hashes_prefix ) )
+               throw runtime_error( "invalid block last block hashes attribute '" + next_attribute + "'" );
 
             next_attribute.erase( 0, len );
 
-            last_block_hash = hex_encode( base64::decode( next_attribute ) );
+            vector< string > last_block_hashes;
+            split( next_attribute, last_block_hashes );
 
-            if( !has_file( last_block_hash ) )
-               throw runtime_error( "last block file '" + last_block_hash + "' not found" );
+            last_block_hash = hex_encode( base64::decode( last_block_hashes[ 0 ] ) );
 
-            string last_block_tag;
+            string last_block_tag( c_bc_prefix + identity + "." + to_string( block_height - 1 ) + c_blk_suffix );
 
-            if( !is_secondary && !is_tertiary )
-               last_block_tag = c_bc_prefix + identity + "." + to_string( block_height - 1 ) + c_blk_suffix;
-            else
+            bool found_last = false;
+
+            if( has_tag( last_block_tag ) )
             {
-               if( is_secondary )
-               {
-                  if( block_height == scaling_value )
-                     last_block_tag = c_bc_prefix + identity + ".0" + to_string( c_blk_suffix );
-                  else
-                     last_block_tag = c_bc_prefix + identity + c_secondary_prefix
-                      + to_string( block_height - scaling_value ) + c_blk_suffix;
-               }
-               else
-               {
-                  size_t tertiary_scaling_value = ( scaling_value * scaling_value );
+               if( tag_file_hash( last_block_tag ) != last_block_hash )
+                  throw runtime_error( "incorrect last block hash '" + last_block_hash + "'" );
 
-                  if( block_height == tertiary_scaling_value )
-                     last_block_tag = c_bc_prefix + identity + ".0" + to_string( c_blk_suffix );
-                  else
-                     last_block_tag = c_bc_prefix + identity + c_tertiary_prefix
-                      + to_string( block_height - tertiary_scaling_value ) + c_blk_suffix;
+               found_last = true;
+            }
+
+            if( last_block_hashes.size( ) > 1 )
+            {
+               last_block_hash = hex_encode( base64::decode( last_block_hashes[ 1 ] ) );
+
+               last_block_tag = c_bc_prefix + identity + "." + to_string( block_height - scaling_value ) + c_blk_suffix;
+
+               if( has_tag( last_block_tag ) )
+               {
+                  if( tag_file_hash( last_block_tag ) != last_block_hash )
+                     throw runtime_error( "incorrect last block hash '" + last_block_hash + "'" );
+
+                  found_last = true;
                }
             }
 
-            if( tag_file_hash( last_block_tag ) != last_block_hash )
-               throw runtime_error( "incorrect last block hash '" + last_block_hash + "'" );
+            if( last_block_hashes.size( ) > 2 )
+            {
+               last_block_hash = hex_encode( base64::decode( last_block_hashes[ 2 ] ) );
+
+               last_block_tag = c_bc_prefix + identity + "." + to_string( block_height - scaling_squared ) + c_blk_suffix;
+
+               if( has_tag( last_block_tag ) )
+               {
+                  if( tag_file_hash( last_block_tag ) != last_block_hash )
+                     throw runtime_error( "incorrect last block hash '" + last_block_hash + "'" );
+
+                  found_last = true;
+               }
+            }
+
+            if( !found_last )
+               throw runtime_error( "no last block file was found" );
          }
          else if( public_key_hash.empty( ) )
          {
-            size_t len = strlen( c_file_type_core_block_detail_pubkey_hash_prefix );
+            size_t len = strlen( c_file_type_core_block_detail_pubkey_hashes_prefix );
 
-            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_pubkey_hash_prefix ) )
-               throw runtime_error( "invalid data public key hash attribute '" + next_attribute + "'" );
+            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_pubkey_hashes_prefix ) )
+               throw runtime_error( "invalid data public key hashes attribute '" + next_attribute + "'" );
 
             next_attribute.erase( 0, len );
 
-            public_key_hash = hex_encode( base64::decode( next_attribute ) );
+            vector< string > public_key_hashes;
+            split( next_attribute, public_key_hashes );
+
+            public_key_hash = hex_encode( base64::decode( public_key_hashes[ 0 ] ) );
 
             if( check_sigs && !has_file( public_key_hash ) )
                throw runtime_error( "public key file '" + public_key_hash + "' not found" );
@@ -696,63 +391,26 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
             else
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), public_key_hash );
-         }
-         else if( hind_hash.empty( ) && signature_file_hash.empty( ) )
-         {
-            size_t len = strlen( c_file_type_core_block_detail_signature_file_hash_prefix );
 
-            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_signature_file_hash_prefix ) )
-               throw runtime_error( "invalid block signature file hash attribute '" + next_attribute + "'" );
-
-            next_attribute.erase( 0, len );
-
-            signature_file_hash = hex_encode( base64::decode( next_attribute ) );
-
-            if( !p_block_info )
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_signature_file_hash ), signature_file_hash );
-
-            if( check_sigs
-             || ( !p_block_info && ( has_file( public_key_hash ) && has_file( signature_file_hash ) ) ) )
+            if( public_key_hashes.size( ) > 1 )
             {
-               if( !has_file( signature_file_hash ) )
-                  throw runtime_error( "signature file '" + signature_file_hash + "' not found" );
-
-               string last_block_info( extract_file( last_block_hash, "", c_file_type_char_core_blob ) );
-
-               string::size_type pos = last_block_info.find( ':' );
-               if( pos == string::npos )
-                  throw runtime_error( "unexpected invalid block info in verify_block" );
-
-               verify_block( last_block_info.substr( pos + 1 ), false, &info );
-
-               string pub_key_hash( info.public_key_hash );
-
-               if( is_secondary && ( block_height == scaling_value ) )
-                  pub_key_hash = info.secondary_key_hash;
-
-               if( is_tertiary && ( block_height == ( scaling_value * scaling_value ) ) )
-                  pub_key_hash = tag_file_hash( c_bc_prefix + identity
-                   + c_tertiary_prefix + to_string( scaling_value ) + c_pub_suffix );
-
-               string file_hash_info( pub_key_hash + ':' + signature_file_hash );
-               string data_file_hash( crypto_lamport( file_hash_info, "", false, true ) );
+               string secondary_pubkey_hash( hex_encode( base64::decode( public_key_hashes[ 1 ] ) ) );
 
                if( p_block_info )
-                  p_block_info->data_file_hash = data_file_hash;
+                  p_block_info->secondary_key_hash = secondary_pubkey_hash;
                else
                   set_session_variable(
-                   get_special_var_name( e_special_var_blockchain_data_file_hash ), data_file_hash );
+                   get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
 
-               if( !p_block_info && has_file( data_file_hash ) )
+               if( public_key_hashes.size( ) > 2 )
                {
-                  string data_file_info( extract_file( data_file_hash, "", c_file_type_char_core_blob ) );
+                  string tertiary_pubkey_hash( hex_encode( base64::decode( public_key_hashes[ 2 ] ) ) );
 
-                  pos = data_file_info.find( ':' );
-                  if( pos == string::npos )
-                     throw runtime_error( "unexpected invalid data info in verify_block" );
-
-                  verify_data( data_file_info.substr( pos + 1 ), false, &data );
+                  if( p_block_info )
+                     p_block_info->tertiary_key_hash = tertiary_pubkey_hash;
+                  else
+                     set_session_variable(
+                      get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ), tertiary_pubkey_hash );
                }
             }
          }
@@ -774,9 +432,6 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
             {
                if( version < info.version )
                   throw runtime_error( "invalid block version value is less than last" );
-
-               if( unix_time_value < data.unix_time_value )
-                  throw runtime_error( "invalid unix block time value older than unix data time" );
 
                if( unix_time_value <= info.unix_time_value )
                   throw runtime_error( "invalid unix block time value not more recent than last" );
@@ -839,9 +494,7 @@ void verify_core_file( const string& content, bool check_sigs )
 
          string type( content.substr( 1, pos - 1 ) );
 
-         if( type == string( c_file_type_core_data_object ) )
-            verify_data( content.substr( pos + 1 ), check_sigs );
-         else if( type == string( c_file_type_core_block_object ) )
+         if( type == string( c_file_type_core_block_object ) )
             verify_block( content.substr( pos + 1 ), check_sigs );
          else
             throw runtime_error( "unknown type '" + type + "' for core file" );
@@ -1056,9 +709,11 @@ void decrypt_pulled_peer_file(
    stringstream ss( file_data );
    crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
 
+   string raw_file_data( ( char )type_and_extra + ss.str( ) );
+
    if( is_encrypted && p_encrypted_hash && !p_encrypted_hash->empty( ) )
    {
-      sha256 encrypted_hash( ( char )type_and_extra + ss.str( ) );
+      sha256 encrypted_hash( raw_file_data );
 
       if( *p_encrypted_hash != encrypted_hash.get_digest_as_string( ) )
          throw runtime_error( "failed to decrypt (incorrect content)" );
@@ -1067,9 +722,9 @@ void decrypt_pulled_peer_file(
    string hash;
 
    if( !is_encrypted )
-      hash = create_raw_file( string( 1, ( char )type_and_extra ) + ss.str( ) );
+      hash = create_raw_file( raw_file_data );
    else
-      create_raw_file( ( char )type_and_extra + ss.str( ), true, 0, 0, dest_hash.c_str( ) );
+      create_raw_file( raw_file_data, true, 0, 0, dest_hash.c_str( ) );
 
    if( !is_encrypted && ( hash != dest_hash ) )
    {
