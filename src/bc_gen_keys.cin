@@ -22,40 +22,32 @@ SEED=$1
 IDENT=$2
 HEIGHT=$3
 ;
-@ifeq "$IDENT" "39659983c"
-MULTIPLE=10
+.file_hash bc.$IDENT.0.blk
+@ifndef $ERROR
+;
+NEXT_HEIGHT=@$HEIGHT+1
+;
+@ifeq "$IDENT" "e3733d121"
+MULTIPLE=5
 @else
-MULTIPLE=100
+MULTIPLE=50
 @endif
 ;
-IS_TERTIARY=
-;
-.file_info -content bc.$IDENT.0.blk
-@ifndef $ERROR
-SECONDARY_PUB_KEY=%OUTPUT:4%
-;
-@ifndef $SECONDARY_PUB_KEY
-IS_TERTIARY=1
+MODULUS=@$NEXT_HEIGHT#$MULTIPLE
+@ifeq "$MODULUS" "0"
+HEIGHT=@$HEIGHT+$MULTIPLE
 @endif
 ;
 .crypto_hash $SEED -s=-$HEIGHT
-ENTROPY_HASH_PN=$OUTPUT
+ENTROPY_HASH=$OUTPUT
 ;
-.crypto_lamport new_primary $ENTROPY_HASH_PN
+.crypto_lamport new_primary $ENTROPY_HASH
 ;
-@ifdef $IS_TERTIARY
 .file_kill -q bc.$IDENT.$HEIGHT.key
 .file_put new_primary.key bc.$IDENT.$HEIGHT.key
 .file_crypt bc.$IDENT.$HEIGHT.key @sid
 ;
 .file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
-@else
-.file_kill -q bc.$IDENT.p$HEIGHT.key
-.file_put new_primary.key bc.$IDENT.p$HEIGHT.key
-.file_crypt bc.$IDENT.p$HEIGHT.key @sid
-;
-.file_put new_primary.pub bc.$IDENT.p$HEIGHT.pub
-@endif
 ;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
@@ -63,48 +55,25 @@ ENTROPY_HASH_PN=$OUTPUT
 @endif
 ~rm new_primary.key new_primary.pub
 ;
-@ifdef $IS_TERTIARY
-@ifneq "$HEIGHT" "0"
-MODULUS=@$HEIGHT#$MULTIPLE
-;
-@ifeq "$MODULUS" "0"
-.crypto_hash $SEED -s=!$HEIGHT
-ENTROPY_HASH_SN=$OUTPUT
-;
-.crypto_lamport new_primary $ENTROPY_HASH_SN
-;
-.file_kill -q bc.$IDENT.s$HEIGHT.key
-.file_put new_primary.key bc.$IDENT.s$HEIGHT.key
-.file_crypt bc.$IDENT.s$HEIGHT.key @sid
-;
-.file_put new_primary.pub bc.$IDENT.s$HEIGHT.pub
-;
-.system_variable @os
-@ifeq "$OUTPUT" "Linux"
-~shred new_primary.key
-@endif
-~rm new_primary.key new_primary.pub
-;
-NEED_TERTIARY=
+HEIGHT=@$NEXT_HEIGHT-1
 ;
 SQUARED=@$MULTIPLE*$MULTIPLE
-MODULUS=@$HEIGHT#$SQUARED
+;
+MODULUS=@$NEXT_HEIGHT#$SQUARED
 ;
 @ifeq "$MODULUS" "0"
-NEED_TERTIARY=1
-@endif
+HEIGHT=@$HEIGHT+$SQUARED
 ;
-@ifdef $NEED_TERTIARY
-.crypto_hash $SEED -s=@$HEIGHT
-ENTROPY_HASH_TN=$OUTPUT
+.crypto_hash $SEED -s=-$HEIGHT
+ENTROPY_HASH=$OUTPUT
 ;
-.crypto_lamport new_primary $ENTROPY_HASH_TN
+.crypto_lamport new_primary $ENTROPY_HASH
 ;
-.file_kill -q bc.$IDENT.t$HEIGHT.key
-.file_put new_primary.key bc.$IDENT.t$HEIGHT.key
-.file_crypt bc.$IDENT.t$HEIGHT.key @sid
+.file_kill -q bc.$IDENT.$HEIGHT.key
+.file_put new_primary.key bc.$IDENT.$HEIGHT.key
+.file_crypt bc.$IDENT.$HEIGHT.key @sid
 ;
-.file_put new_primary.pub bc.$IDENT.t$HEIGHT.pub
+.file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
 ;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
@@ -113,8 +82,5 @@ ENTROPY_HASH_TN=$OUTPUT
 ~rm new_primary.key new_primary.pub
 @endif
 ;
-@endif
-@endif
-@endif
 @endif
 @endif

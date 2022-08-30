@@ -1458,14 +1458,24 @@ void process_public_key_file( const string& blockchain,
 
    string pubkey_tag( blockchain );
 
-   if( key_scale == e_public_key_scale_primary )
-      pubkey_tag += ".";
-   else if( key_scale != e_public_key_scale_secondary )
-      pubkey_tag += c_tertiary_prefix;
-   else
-      pubkey_tag += c_secondary_prefix;
+   pubkey_tag += ".";
 
-   pubkey_tag += to_string( height );
+   string demo_blockchain( c_bc_prefix );
+   demo_blockchain += c_demo_identity;
+
+   size_t scaling_value = c_bc_scaling_value;
+
+   if( blockchain == demo_blockchain )
+      scaling_value = c_bc_scaling_demo_value;
+
+   size_t scaling_squared = ( scaling_value * scaling_value );
+
+   if( key_scale == e_public_key_scale_primary )
+      pubkey_tag += to_string( height );
+   else if( key_scale == e_public_key_scale_secondary )
+      pubkey_tag += to_string( height + scaling_value - 1 );
+   else
+      pubkey_tag += to_string( height + scaling_squared - 1 );
 
    pubkey_tag += c_pub_suffix;
 

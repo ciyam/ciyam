@@ -24,12 +24,12 @@ IS_DEMO=
 @ifeq "$IDENT" "bc139fc15"
 IS_DEMO=1
 @endif
-@ifeq "$IDENT" "39659983c"
+@ifeq "$IDENT" "e3733d121"
 IS_DEMO=1
 @endif
 ;
 @ifndef $IS_DEMO
-MULTIPLE=100
+MULTIPLE=50
 UTIME=@unix:
 @else
 HRS_01=3600
@@ -37,29 +37,24 @@ HRS_24=@$HRS_01*24
 ;
 HRS_HEIGHT=@$HRS_24*$HEIGHT
 ;
-MULTIPLE=10
+MULTIPLE=5
 UTIME=@1635400000+$HRS_HEIGHT
 @endif
 ;
-.session_variable @uuid
-UUID=$OUTPUT
+SQUARED=@$MULTIPLE*$MULTIPLE
 ;
 @ifeq "$HEIGHT" "0"
 #Error: Height must be greater than zero.
 @else
 ;
-IS_TERTIARY=
+.session_variable @uuid
+UUID=$OUTPUT
 ;
-.file_info -content bc.$IDENT.0.blk
+.file_hash bc.$IDENT.0.blk
 @ifdef $ERROR
 @label END
 @endif
 @skip
-;
-SECONDARY_PUB_KEY=%OUTPUT:4%
-;
-@ifndef $SECONDARY_PUB_KEY
-IS_TERTIARY=1
 ;
 @ifndef $TREE
 .file_tags -i=ciyam
@@ -68,25 +63,46 @@ TREE=ciyam
 @endif
 @endif
 ;
-@endif
-;
 LAST=@$HEIGHT-1
+LAST_BLOCK_HEIGHT=$LAST
 ;
-.file_hash bc.$IDENT.$LAST.blk
+.file_hash bc.$IDENT.$LAST_BLOCK_HEIGHT.blk
 @ifdef $ERROR
 @label END
 @endif
 @skip
 ;
-LAST_HASH=$OUTPUT
-.encode $LAST_HASH
-LAST_HASH_ENC=$OUTPUT
+LAST_BLOCK_HASH=$OUTPUT
+.encode $LAST_BLOCK_HASH
+LAST_BLOCK_HASH_ENC=$OUTPUT
 ;
-@ifdef $IS_TERTIARY
-.file_hash bc.$IDENT.$HEIGHT.pub
-@else
-.file_hash bc.$IDENT.p$HEIGHT.pub
+MODULUS=@$HEIGHT#$MULTIPLE
+;
+@ifeq "$MODULUS" "0"
+LAST_BLOCK_HEIGHT=@$HEIGHT-$MULTIPLE
+.file_hash bc.$IDENT.$LAST_BLOCK_HEIGHT.blk
+@ifdef $ERROR
+@label END
 @endif
+@skip
+.encode $OUTPUT
+LAST_BLOCK_HASH_ENC=$LAST_BLOCK_HASH_ENC,$OUTPUT
+@endif
+;
+MODULUS=@$HEIGHT#$SQUARED
+;
+@ifeq "$MODULUS" "0"
+LAST_BLOCK_HEIGHT=@$HEIGHT-$SQUARED
+.file_hash bc.$IDENT.$LAST_BLOCK_HEIGHT.blk
+@ifdef $ERROR
+@label END
+@endif
+@skip
+.encode $OUTPUT
+LAST_BLOCK_HASH_ENC=$LAST_BLOCK_HASH_ENC,$OUTPUT
+@endif
+;
+.file_hash bc.$IDENT.$HEIGHT.pub
 @ifdef $ERROR
 @label END
 @endif
@@ -95,32 +111,40 @@ LAST_HASH_ENC=$OUTPUT
 .encode $OUTPUT
 PUB_KEY_HASH_ENC=$OUTPUT
 ;
-@ifdef $IS_TERTIARY
-; KLUDGE: Uses pub key hash just to avoid an error.
-.file_hash bc.$IDENT.$HEIGHT.pub
-@else
-.file_hash bc.$IDENT.$HEIGHT.dat
-@endif
+MODULUS=@$HEIGHT#$MULTIPLE
+;
+@ifeq "$MODULUS" "0"
+NEXT_HEIGHT=@$HEIGHT+$MULTIPLE
+NEXT_HEIGHT=@$NEXT_HEIGHT-1
+.file_hash bc.$IDENT.$NEXT_HEIGHT.pub
 @ifdef $ERROR
 @label END
 @endif
 @skip
+.encode $OUTPUT
+PUB_KEY_HASH_ENC=$PUB_KEY_HASH_ENC,$OUTPUT
+@endif
 ;
-DATA_HASH=$OUTPUT
-.encode $DATA_HASH
-DATA_HASH_ENC=$OUTPUT
+MODULUS=@$HEIGHT#$SQUARED
 ;
-@ifdef $IS_TERTIARY
+@ifeq "$MODULUS" "0"
+NEXT_HEIGHT=@$HEIGHT+$SQUARED
+NEXT_HEIGHT=@$NEXT_HEIGHT-1
+.file_hash bc.$IDENT.$NEXT_HEIGHT.pub
+@ifdef $ERROR
+@label END
+@endif
+@skip
+.encode $OUTPUT
+PUB_KEY_HASH_ENC=$PUB_KEY_HASH_ENC,$OUTPUT
+@endif
+;
 .file_hash bc.$IDENT.$LAST.key
-@else
-.file_hash bc.$IDENT.p$LAST.key
-@endif
 @ifdef $ERROR
 @label END
 @endif
 @skip
 ;
-@ifdef $IS_TERTIARY
 .crypto_hash @sid -s=#%HEIGHT%
 .crypto_chain 1440 -b64 $OUTPUT
 HIND_HASH_ENC=%OUTPUT:1440%
@@ -131,68 +155,13 @@ HIND_HASH_ENC=%OUTPUT:1440%
 ;
 .file_get bc.$IDENT.$LAST.pub ~$UUID.pub
 ;
-LAST_SECONDARY=
-;
-MODULUS=@$HEIGHT#$MULTIPLE
-;
-@ifeq "$MODULUS" "0"
-LAST_SECONDARY=@$HEIGHT-$MULTIPLE
-.file_hash bc.$IDENT.$LAST_SECONDARY.blk
-LAST_SECONDARY_HASH=$OUTPUT
-.encode $LAST_SECONDARY_HASH
-LAST_SECONDARY_HASH_ENC=$OUTPUT
-;
-.file_hash bc.$IDENT.s$HEIGHT.pub
-SECONDARY_PUB_KEY_HASH=$OUTPUT
-.encode $SECONDARY_PUB_KEY_HASH
-SECONDARY_PUB_KEY_HASH_ENC=$OUTPUT
-@endif
-@ifdef $ERROR
-@label END
-@endif
-@skip
-;
-LAST_TERTIARY=
-;
-SQUARED=@$MULTIPLE*$MULTIPLE
-MODULUS=@$HEIGHT#$SQUARED
-;
-@ifeq "$MODULUS" "0"
-LAST_TERTIARY=@$HEIGHT-$SQUARED
-.file_hash bc.$IDENT.$LAST_TERTIARY.blk
-LAST_TERTIARY_HASH=$OUTPUT
-.encode $LAST_TERTIARY_HASH
-LAST_TERTIARY_HASH_ENC=$OUTPUT
-;
-.file_hash bc.$IDENT.t$HEIGHT.pub
-TERTIARY_PUB_KEY_HASH=$OUTPUT
-.encode $TERTIARY_PUB_KEY_HASH
-TERTIARY_PUB_KEY_HASH_ENC=$OUTPUT
-@endif
-;
 @ifndef $TREE
 ;
-@ifdef $LAST_TERTIARY
 .file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=0,v=1\n\
 h:$HIND_HASH_ENC\n\
-l:$LAST_HASH_ENC,$LAST_SECONDARY_HASH_ENC,$LAST_TERTIARY_HASH_ENC\n\
-p:$PUB_KEY_HASH_ENC,$SECONDARY_PUB_KEY_HASH_ENC,$TERTIARY_PUB_KEY_HASH_ENC\n\
-u:$UTIME bc.$IDENT.$HEIGHT.blk
-@else
-@ifdef $LAST_SECONDARY
-.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=0,v=1\n\
-h:$HIND_HASH_ENC\n\
-l:$LAST_HASH_ENC,$LAST_SECONDARY_HASH_ENC\n\
-p:$PUB_KEY_HASH_ENC,$SECONDARY_PUB_KEY_HASH_ENC\n\
-u:$UTIME bc.$IDENT.$HEIGHT.blk
-@else
-.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=0,v=1\n\
-h:$HIND_HASH_ENC\n\
-l:$LAST_HASH_ENC\n\
+l:$LAST_BLOCK_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.blk
-@endif
-@endif
 ;
 @else
 ;
@@ -207,117 +176,30 @@ TREE_ROOT_HASH_ENC=$OUTPUT
 .file_info -total_items $TREE
 NUM_TREE_ITEMS=$OUTPUT
 ;
-@ifdef $LAST_TERTIARY
 .file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS,v=1\n\
 h:$HIND_HASH_ENC\n\
-l:$LAST_HASH_ENC,$LAST_SECONDARY_HASH_ENC,$LAST_TERTIARY_HASH_ENC\n\
-p:$PUB_KEY_HASH_ENC,$SECONDARY_PUB_KEY_HASH_ENC,$TERTIARY_PUB_KEY_HASH_ENC\n\
-t:$TREE_ROOT_HASH_ENC\n\
-u:$UTIME bc.$IDENT.$HEIGHT.blk
-@else
-@ifdef $LAST_SECONDARY
-.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS,v=1\n\
-h:$HIND_HASH_ENC\n\
-l:$LAST_HASH_ENC,$LAST_SECONDARY_HASH_ENC\n\
-p:$PUB_KEY_HASH_ENC,$SECONDARY_PUB_KEY_HASH_ENC\n\
-t:$TREE_ROOT_HASH_ENC\n\
-u:$UTIME bc.$IDENT.$HEIGHT.blk
-@else
-.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS,v=1\n\
-h:$HIND_HASH_ENC\n\
-l:$LAST_HASH_ENC\n\
+l:$LAST_BLOCK_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 t:$TREE_ROOT_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.blk
-@endif
-@endif
 ;
-@endif
-@endif
-;
-@ifndef $IS_TERTIARY
-.file_crypt bc.$IDENT.p$LAST.key @sid
-.file_get bc.$IDENT.p$LAST.key ~$UUID.key
-.file_crypt bc.$IDENT.p$LAST.key @sid
-;
-.file_get bc.$IDENT.p$LAST.pub ~$UUID.pub
-;
-.crypto_lamport -sign ~$UUID:$DATA_HASH
-.file_put ~$UUID.sig bc.$IDENT.$LAST.sig
-.file_hash bc.$IDENT.$LAST.sig
-SIG_HASH=$OUTPUT
-.encode $SIG_HASH
-SIG_HASH_ENC=$OUTPUT
-;
-.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,v=1\n\
-l:$LAST_HASH_ENC\n\
-p:$PUB_KEY_HASH_ENC\n\
-s:$SIG_HASH_ENC\n\
-u:$UTIME bc.$IDENT.$HEIGHT.blk
 @endif
 ;
 BLOCK_HASH=$OUTPUT
 ;
-@ifdef $IS_TERTIARY
 .crypto_lamport -sign ~$UUID:$BLOCK_HASH
 .file_put ~$UUID.sig bc.$IDENT.$LAST.sig
 .file_hash bc.$IDENT.$LAST.sig
-@endif
 ;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
 ~shred ~$UUID.key
 @endif
 ~rm ~$UUID.key ~$UUID.pub ~$UUID.sig
-;
-@ifdef $LAST_SECONDARY
-.file_crypt bc.$IDENT.s$LAST_SECONDARY.key @sid
-.file_get bc.$IDENT.s$LAST_SECONDARY.key ~$UUID.key
-.file_crypt bc.$IDENT.s$LAST_SECONDARY.key @sid
-;
-.file_get bc.$IDENT.s$LAST_SECONDARY.pub ~$UUID.pub
-;
-.crypto_lamport -sign ~$UUID:$BLOCK_HASH
-.file_put ~$UUID.sig bc.$IDENT.s$LAST_SECONDARY.sig
-;
-.file_tag -unlink bc.$IDENT.s$LAST_SECONDARY.key
-;
-.system_variable @os
-@ifeq "$OUTPUT" "Linux"
-~shred ~$UUID.key
-@endif
-~rm ~$UUID.key ~$UUID.pub ~$UUID.sig
-;
-@endif
-;
-@ifdef $LAST_TERTIARY
-.file_crypt bc.$IDENT.t$LAST_TERTIARY.key @sid
-.file_get bc.$IDENT.t$LAST_TERTIARY.key ~$UUID.key
-.file_crypt bc.$IDENT.t$LAST_TERTIARY.key @sid
-;
-.file_get bc.$IDENT.t$LAST_TERTIARY.pub ~$UUID.pub
-;
-.crypto_lamport -sign ~$UUID:$DATA_HASH
-.file_put ~$UUID.sig bc.$IDENT.t$LAST_TERTIARY.sig
-;
-.file_tag -unlink bc.$IDENT.t$LAST_TERTIARY.key
-;
-.system_variable @os
-@ifeq "$OUTPUT" "Linux"
-~shred ~$UUID.key
-@endif
-~rm ~$UUID.key ~$UUID.pub ~$UUID.sig
-;
-@endif
 ;
 @ifndef $ERROR
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
-;
-@ifdef $IS_TERTIARY
 .file_tag -unlink bc.$IDENT.$LAST.key
-@else
-.file_tag -unlink bc.$IDENT.p$LAST.key
-@endif
 ;
 .system_variable @blockchain
 @ifeq "$OUTPUT" "$IDENT"

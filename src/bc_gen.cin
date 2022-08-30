@@ -4,164 +4,103 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 @ifeq "$1" ""
-#Usage: bc_gen.cin [-legacy] <seed>
-@else
-TERTIARY=
-@ifneq "$2" ""
-@ifneq "$1" "-legacy"
-ERROR=Invalid argument '$1' (was expecting '-legacy').
-#$ERROR
-@else
-SEED=$2
-@endif
+#Usage: bc_gen.cin <seed>
 @else
 SEED=$1
-TERTIARY=1
-@endif
-;
-@ifndef $ERROR
 ;
 .session_variable @uuid
 UUID=$OUTPUT
 ;
+MULTIPLE=50
+SQUARED=@$MULTIPLE*$MULTIPLE
+;
+MULTIPLE=@$MULTIPLE-1
+SQUARED=@$SQUARED-1
+;
 .crypto_hash $SEED -s=-0
-ENTROPY_HASH_P0=$OUTPUT
+ENTROPY_HASH_PRIMARY=$OUTPUT
 ;
-.crypto_hash $SEED -s=!0
-ENTROPY_HASH_S0=$OUTPUT
+.crypto_hash $SEED -s=-$MULTIPLE
+ENTROPY_HASH_SECONDARY=$OUTPUT
 ;
-@ifdef $TERTIARY
-.crypto_hash $SEED -s=@0
-ENTROPY_HASH_T0=$OUTPUT
-@endif
+.crypto_hash $SEED -s=-$SQUARED
+ENTROPY_HASH_TERTIARY=$OUTPUT
 ;
-.crypto_lamport primary $ENTROPY_HASH_P0
-.crypto_lamport secondary $ENTROPY_HASH_S0
-@ifdef $TERTIARY
-.crypto_lamport tertiary $ENTROPY_HASH_T0
-@endif
+.crypto_lamport primary $ENTROPY_HASH_PRIMARY
+.crypto_lamport secondary $ENTROPY_HASH_SECONDARY
+.crypto_lamport tertiary $ENTROPY_HASH_TERTIARY
 ;
-@ifdef $TERTIARY
 .file_put primary.key bc.$UUID.0.key
 .file_put primary.pub bc.$UUID.0.pub
-@else
-.file_put primary.key bc.$UUID.p0.key
-.file_put primary.pub bc.$UUID.p0.pub
-@endif
-.file_put secondary.key bc.$UUID.s0.key
-.file_put secondary.pub bc.$UUID.s0.pub
-@ifdef $TERTIARY
-.file_put tertiary.key bc.$UUID.t0.key
-.file_put tertiary.pub bc.$UUID.t0.pub
-@endif
+.file_put secondary.key bc.$UUID.$MULTIPLE.key
+.file_put secondary.pub bc.$UUID.$MULTIPLE.pub
+.file_put tertiary.key bc.$UUID.$SQUARED.key
+.file_put tertiary.pub bc.$UUID.$SQUARED.pub
 ;
-@ifdef $TERTIARY
 .file_crypt bc.$UUID.0.key @sid
-@else
-.file_crypt bc.$UUID.p0.key @sid
-@endif
-.file_crypt bc.$UUID.s0.key @sid
-@ifdef $TERTIARY
-.file_crypt bc.$UUID.t0.key @sid
-@endif
+.file_crypt bc.$UUID.$MULTIPLE.key @sid
+.file_crypt bc.$UUID.$SQUARED.key @sid
 ;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
 ~shred primary.key
 ~shred secondary.key
-@ifdef $TERTIARY
 ~shred tertiary.key
 @endif
-@endif
-~rm primary.key secondary.key primary.pub secondary.pub
-@ifdef $TERTIARY
-~rm tertiary.key tertiary.pub
-@endif
+~rm primary.key secondary.key tertiary.key primary.pub secondary.pub tertiary.pub
 ;
-@ifdef $TERTIARY
 .file_hash bc.$UUID.0.pub
-@else
-.file_hash bc.$UUID.p0.pub
-@endif
 PRIMARY_PUBKEY_HASH=$OUTPUT
 ;
 .encode $PRIMARY_PUBKEY_HASH
 PRIMARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
-@ifndef $TERTIARY
-IDENT=@substr:0,9:$PRIMARY_PUBKEY_HASH
-@endif
-;
-@ifdef $TERTIARY
 .file_hash bc.$UUID.0.key
-@else
-.file_hash bc.$UUID.p0.key
-@endif
 PRIMARY_PRIVKEY_HASH=$OUTPUT
 ;
-.file_hash bc.$UUID.s0.pub
+.file_hash bc.$UUID.$MULTIPLE.pub
 SECONDARY_PUBKEY_HASH=$OUTPUT
 ;
-.file_hash bc.$UUID.s0.key
+.file_hash bc.$UUID.$MULTIPLE.key
 SECONDARY_PRIVKEY_HASH=$OUTPUT
 ;
-@ifdef $TERTIARY
-.file_hash bc.$UUID.t0.pub
+.file_hash bc.$UUID.$SQUARED.pub
 TERTIARY_PUBKEY_HASH=$OUTPUT
 ;
-.file_hash bc.$UUID.t0.key
+.file_hash bc.$UUID.$SQUARED.key
 TERTIARY_PRIVKEY_HASH=$OUTPUT
 ;
 .crypto_hash $PRIMARY_PUBKEY_HASH$SECONDARY_PUBKEY_HASH$TERTIARY_PUBKEY_HASH
 IDENT=@substr:0,9:$OUTPUT
-@endif
 ;
-@ifdef $TERTIARY
 .file_tag -remove bc.$UUID.0.pub
 .file_tag $PRIMARY_PUBKEY_HASH bc.$IDENT.0.pub
-@else
-.file_tag -remove bc.$UUID.p0.pub
-.file_tag $PRIMARY_PUBKEY_HASH bc.$IDENT.p0.pub
-@endif
 ;
-@ifdef $TERTIARY
 .file_tag -remove bc.$UUID.0.key
 .file_tag $PRIMARY_PRIVKEY_HASH bc.$IDENT.0.key
-@else
-.file_tag -remove bc.$UUID.p0.key
-.file_tag $PRIMARY_PRIVKEY_HASH bc.$IDENT.p0.key
-@endif
 ;
-.file_tag -remove bc.$UUID.s0.pub
-.file_tag $SECONDARY_PUBKEY_HASH bc.$IDENT.s0.pub
+.file_tag -remove bc.$UUID.$MULTIPLE.pub
+.file_tag $SECONDARY_PUBKEY_HASH bc.$IDENT.$MULTIPLE.pub
 ;
-.file_tag -remove bc.$UUID.s0.key
-.file_tag $SECONDARY_PRIVKEY_HASH bc.$IDENT.s0.key
+.file_tag -remove bc.$UUID.$MULTIPLE.key
+.file_tag $SECONDARY_PRIVKEY_HASH bc.$IDENT.$MULTIPLE.key
 ;
-.file_hash bc.$IDENT.s0.pub
+.file_hash bc.$IDENT.$MULTIPLE.pub
 .encode $OUTPUT
 SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
-@ifdef $TERTIARY
-.file_tag -remove bc.$UUID.t0.pub
-.file_tag $TERTIARY_PUBKEY_HASH bc.$IDENT.t0.pub
+.file_tag -remove bc.$UUID.$SQUARED.pub
+.file_tag $TERTIARY_PUBKEY_HASH bc.$IDENT.$SQUARED.pub
 ;
-.file_tag -remove bc.$UUID.t0.key
-.file_tag $TERTIARY_PRIVKEY_HASH bc.$IDENT.t0.key
+.file_tag -remove bc.$UUID.$SQUARED.key
+.file_tag $TERTIARY_PRIVKEY_HASH bc.$IDENT.$SQUARED.key
 ;
-.file_hash bc.$IDENT.t0.pub
+.file_hash bc.$IDENT.$SQUARED.pub
 .encode $OUTPUT
 TERTIARY_PUBKEY_HASH_ENC=$OUTPUT
-@endif
 ;
-@ifndef $TERTIARY
-.file_raw -core blob blk:h=0,i=$IDENT\n\
-p:$PRIMARY_PUBKEY_HASH_ENC\n\
-s:$SECONDARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
-@else
 .file_raw -core blob blk:h=0,i=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
-@endif
 ;
 BLOCK_HASH=$OUTPUT
 ;
@@ -175,5 +114,4 @@ BLOCK_HASH=$OUTPUT
 .system_variable >@blockchain $IDENT
 @endif
 ;
-@endif
 @endif

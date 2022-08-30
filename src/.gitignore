@@ -158,8 +158,8 @@ Meta.modules.lst
 ciyam_init_cmd.bat
 
 # Ignore any blockchain files directories.
-bc.39659983c
+bc.e3733d121
 
 # Ignore any specific blockchain init files (except sample ones).
 *.bc_init.cin
-!39659983c.bc_init.cin
+!e3733d121.bc_init.cin
