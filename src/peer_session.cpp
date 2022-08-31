@@ -815,8 +815,6 @@ bool has_all_list_items( const string& blockchain,
    if( !p_total_processed )
       p_total_processed = &total_processed;
 
-   system_ods_bulk_read ods_bulk_read;
-
    string num_tree_items( get_session_variable(
     get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
@@ -996,8 +994,6 @@ void process_list_items( const string& identity,
 
    if( !p_num_items_skipped )
       p_num_items_skipped = &num_items_skipped;
-
-   system_ods_bulk_write ods_bulk_write;
 
    size_t max_blob_file_data = get_files_area_item_max_size( ) - c_max_put_blob_size;
 
