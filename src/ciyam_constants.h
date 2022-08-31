@@ -32,7 +32,6 @@ const char* const c_ciyam_logs_tag = "ciyam.logs";
 const char* const c_bc_prefix = "bc.";
 
 const char* const c_blk_suffix = ".blk";
-const char* const c_dat_suffix = ".dat";
 const char* const c_key_suffix = ".key";
 const char* const c_pub_suffix = ".pub";
 const char* const c_sig_suffix = ".sig";

@@ -124,8 +124,11 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
                // NOTE: The total tree items attribute does not include the tree root itself but in order to match
                // the number of files being processed in a peer session the value is being incremented by one here.
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_num_tree_items ), to_string( num_tree_items + 1 ) );
+               if( !p_block_info )
+               {
+                  set_session_variable(
+                   get_special_var_name( e_special_var_blockchain_num_tree_items ), to_string( num_tree_items + 1 ) );
+               }
 
                continue;
             }
