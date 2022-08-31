@@ -964,8 +964,6 @@ void process_list_items( const string& identity,
  size_t* p_num_items_found = 0, set< string >* p_list_items_to_ignore = 0,
  date_time* p_dtm = 0, progress* p_progress = 0, size_t* p_num_items_skipped = 0 )
 {
-   guard g( g_mutex );
-
    TRACE_LOG( TRACE_PEER_OPS, "(process_list_items) hash: " + hash );
 
    string all_list_items( extract_file( hash, "" ) );
