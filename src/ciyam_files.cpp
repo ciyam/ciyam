@@ -1751,6 +1751,7 @@ void file_list_item_pos(
                continue;
 
             bool is_encrypted = false;
+            bool was_hidden_blob = false;
 
             if( ( total_type == e_file_total_type_repository_entries )
              && has_repository_entry_record( repository, next_hash ) )
@@ -1764,13 +1765,7 @@ void file_list_item_pos(
                   file_list_item_pos( repository, next_hash,
                    total, total_type, item_hash, item_pos, recurse, p_progress, p_dtm, is_hidden, false );
                else if( is_hidden )
-               {
-                  // NOTE: The total was already incremented above before
-                  // it was known whether it was a blob or a list. So now
-                  // if is a hidden blob will need to decrement the total.
-                  if( total_type == e_file_total_type_all_items )
-                     --total;
-               }
+                  was_hidden_blob = true;
                else if( total_type != e_file_total_type_all_items )
                {
                   if( total_type == e_file_total_type_blobs_only )
@@ -1779,6 +1774,14 @@ void file_list_item_pos(
                      ++total;
                }
             }
+            else if( is_hidden )
+               was_hidden_blob = true;
+
+            // NOTE: The total was already incremented above before
+            // it was known whether it was a blob or a list. So now
+            // if is a hidden blob will need to decrement the total.
+            if( was_hidden_blob && ( total_type == e_file_total_type_all_items ) )
+               --total;
          }
       }
    }
