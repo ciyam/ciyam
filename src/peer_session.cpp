@@ -103,7 +103,7 @@ const size_t c_wait_sleep_time = 250;
 const size_t c_start_sleep_time = 2500;
 
 const size_t c_initial_timeout = 25000;
-const size_t c_request_timeout = 60000;
+const size_t c_request_timeout = 30000;
 const size_t c_support_timeout = 10000;
 
 const size_t c_num_check_disconnected = 8;
@@ -1119,8 +1119,13 @@ void process_list_items( const string& identity,
          {
             if( !has_repository_entry_record( identity, next_hash ) )
             {
+               bool added = false;
+
                if( next_secondary.empty( ) )
+               {
+                  added = true;
                   add_peer_file_hash_for_get( next_hash );
+               }
                else
                {
                   if( !prefixed_secondary_values )
@@ -1137,6 +1142,7 @@ void process_list_items( const string& identity,
                            check_for_supporters = true;
                         }
 
+                        added = true;
                         add_peer_file_hash_for_get( hash_info, check_for_supporters );
                      }
 
@@ -1145,8 +1151,14 @@ void process_list_items( const string& identity,
                      add_peer_mapped_hash( next_hash, next_secondary );
                   }
                   else if( is_peer_owner )
+                  {
+                     added = true;
                      add_peer_file_hash_for_get( next_hash + ':' + next_secondary + c_repository_suffix );
+                  }
                }
+
+               if( added && p_list_items_to_ignore )
+                  p_list_items_to_ignore->insert( next_hash );
             }
             else if( allow_blob_creation && first_hash_to_get.empty( ) )
             {
