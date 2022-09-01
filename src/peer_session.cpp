@@ -757,7 +757,7 @@ void process_put_file( const string& blockchain,
                                     if( check_for_supporters )
                                        prefix = c_check_for_supporters_prefix;
 
-                                    set_session_variable( hex_target_hash, hash_info );
+                                    set_session_variable( hex_target_hash, prefix + hash_info );
                                  }
                               }
                            }
