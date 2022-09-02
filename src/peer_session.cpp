@@ -1590,9 +1590,8 @@ bool process_block_for_height( const string& blockchain, const string& hash,
                add_peer_file_hash_for_get( tree_root_hash );
             else
             {
-               if( get_session_variable( get_special_var_name(
-                e_special_var_blockchain_skip_blob_puts ) ).empty( ) )
-                  get_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, p_progress );
+               if( !get_tree_items )
+                  get_tree_items = !has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, p_progress );
 
                if( get_tree_items )
                {
@@ -2339,6 +2338,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      need_to_check = true;
 
                      set_session_variable( blockchain_is_fetching_name, c_true_value );
+                     set_session_variable( blockchain_zenith_hash_name, next_block_hash );
                   }
 
                   size_t num_items_found = 0;
@@ -2368,7 +2368,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         // NOTE: Use the "nonce" argument to indicate the first
                         // file to be fetched (so that pull requests will start
                         // from the correct point).
-                        if( !file_hash.empty( ) )
+                        if( !file_hash.empty( )
+                         && ( file_hash.find( ':' ) == string::npos ) )
                            next_block_tag += string( " " ) + '@' + file_hash;
 
                         has_tree_files = chk_file( next_block_tag, &next_block_hash );
@@ -3934,6 +3935,18 @@ void peer_session::on_start( )
             {
                has_zenith = true;
                cmd_handler.set_blockchain_height( blockchain_height );
+
+               string signature_tag( blockchain + '.' + to_string( blockchain_height ) + c_sig_suffix );
+
+               // NOTE: If there is a signature at this height but no next block file then need
+               // to remove the signature file so that synchronisation can be cleanly restarted.
+               if( has_tag( signature_tag ) )
+               {
+                  string next_block_tag( blockchain + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
+
+                  if( !has_tag( next_block_tag ) )
+                     delete_file( tag_file_hash( signature_tag ) );
+               }
 
                set_session_variable( get_special_var_name(
                 e_special_var_blockchain_zenith_height ), to_string( blockchain_height ) );
