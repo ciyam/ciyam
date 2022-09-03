@@ -315,12 +315,6 @@ void process_core_file( const string& hash, const string& blockchain )
 
             if( !tertiary_pubkey_hash.empty( ) && !has_file( tertiary_pubkey_hash ) )
                add_peer_file_hash_for_get( tertiary_pubkey_hash );
-
-            string signature_file_hash( get_session_variable(
-             get_special_var_name( e_special_var_blockchain_signature_file_hash ) ) );
-
-            if( !signature_file_hash.empty( ) && !has_file( signature_file_hash ) )
-               add_peer_file_hash_for_get( signature_file_hash );
          }
          catch( ... )
          {
@@ -734,6 +728,9 @@ void process_put_file( const string& blockchain,
                               add_to_blockchain_tree_item( blockchain, 1 );
 
                               target_hashes.insert( hex_target_hash );
+
+                              if( !has_repository_entry_record( identity, hex_target_hash ) )
+                                 store_repository_entry_record( identity, hex_target_hash, "", master_key, master_key );
                            }
                            else
                            {
@@ -753,18 +750,27 @@ void process_put_file( const string& blockchain,
                                  {
                                     target_hashes.insert( hex_target_hash );
 
-                                    string prefix;
-                                    if( check_for_supporters )
-                                       prefix = c_check_for_supporters_prefix;
+                                    string mapped_hash( get_peer_mapped_hash( hex_target_hash ) );
 
-                                    set_session_variable( hex_target_hash, prefix + hash_info );
+                                    // NOTE: Either set a session variable or add the file info to
+                                    // be fetched depending on whether or not "process_list_items"
+                                    // has been called (if was called the mapped hash will exist).
+                                    if( mapped_hash.empty( ) )
+                                    {
+                                       string prefix;
+                                       if( check_for_supporters )
+                                          prefix = c_check_for_supporters_prefix;
+
+                                       set_session_variable( hex_target_hash, prefix + hash_info );
+                                    }
+                                    else
+                                       add_peer_file_hash_for_get( hash_info );
                                  }
                               }
                            }
                         }
                         else
-                           process_repository_file( blockchain,
-                            hash_info.substr( 0, hash_info.length( ) - 1 ), is_test_session );
+                           process_repository_file( blockchain, hash_info.substr( 0, hash_info.length( ) - 1 ), is_test_session );
                      }
 #endif
                   }
@@ -971,9 +977,13 @@ void process_list_items( const string& identity,
    vector< string > list_items;
    vector< string > secondary_values;
 
+   bool skip_secondary_blobs = false;
    bool prefixed_secondary_values = false;
 
    split_list_items( all_list_items, list_items, &secondary_values, &prefixed_secondary_values );
+
+   if( !secondary_values.empty( ) && !prefixed_secondary_values )
+      skip_secondary_blobs = true;
 
    if( ( prefixed_secondary_values || !secondary_values.empty( ) ) && ( list_items.size( ) != secondary_values.size( ) ) )
       throw runtime_error( "unexpected list_items.size( ) != secondary_values.size( )" );
@@ -1003,6 +1013,12 @@ void process_list_items( const string& identity,
 
    string first_hash_name( get_special_var_name( e_special_var_hash ) );
    string first_hash_to_get( get_session_variable( first_hash_name ) );
+
+   if( hash == first_hash_to_get )
+   {
+      first_hash_to_get.erase( );
+      set_session_variable( first_hash_name, "" );
+   }
 
    bool is_owner = !get_session_variable( blockchain_is_owner_name ).empty( );
    bool is_fetching = !get_session_variable( blockchain_is_fetching_name ).empty( );
@@ -1165,7 +1181,7 @@ void process_list_items( const string& identity,
                fetch_repository_entry_record( identity,
                 next_hash, local_hash, local_public_key, master_public_key );
 
-               if( local_public_key != master_public_key )
+               if( !skip_secondary_blobs && ( local_public_key != master_public_key ) )
                {
                   if( p_blob_data->size( ) > 1 )
                      *p_blob_data += c_blob_separator;
@@ -1221,7 +1237,7 @@ void process_list_items( const string& identity,
 
             if( first_hash_to_get.empty( ) && put_info_and_store_repository_entry )
             {
-               if( local_hash.empty( ) || !has_file( local_hash ) )
+               if( !skip_secondary_blobs && ( local_hash.empty( ) || !has_file( local_hash ) ) )
                {
                   string password;
                   get_identity( password, false, true );
@@ -1571,6 +1587,14 @@ bool process_block_for_height( const string& blockchain, const string& hash,
              tertiary_pubkey_hash, height, e_public_key_scale_tertiary );
       }
 
+      string first_hash_to_get(
+       get_session_variable( get_special_var_name( e_special_var_hash ) ) );
+
+      if( ( first_hash_to_get == primary_pubkey_hash )
+       || ( first_hash_to_get == secondary_pubkey_hash )
+       || ( first_hash_to_get == tertiary_pubkey_hash ) )
+         set_session_variable( get_special_var_name( e_special_var_hash ), "" );
+
       string tree_root_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
@@ -1616,20 +1640,6 @@ bool process_block_for_height( const string& blockchain, const string& hash,
                 get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
             }
          }
-      }
-
-      string signature_file_hash( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_signature_file_hash ) ) );
-
-      if( !signature_file_hash.empty( ) )
-      {
-         if( !has_file( signature_file_hash ) )
-         {
-            waiting_for_signature = true;
-            add_peer_file_hash_for_get( signature_file_hash );
-         }
-         else if( !waiting_for_pubkey )
-            process_signature_file( blockchain, signature_file_hash, height );
       }
    }
 
