@@ -2243,11 +2243,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          string progress_message( "Synchronising at height " + to_string( blockchain_height + 1 ) );
 
          if( !num_tree_items.empty( ) )
-         {
-            progress_message += " (" + to_string( num_tree_item );
-            progress_message += '/' + num_tree_items;
-            progress_message += ")...";
-         }
+            progress_message += " (" + to_string( num_tree_item ) + '/' + num_tree_items + ")";
+
+         progress_message += "...";
 
          set_session_progress_output( progress_message );
          set_system_variable( c_progress_output_prefix + identity, progress_message );
