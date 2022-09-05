@@ -391,7 +391,8 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
             string prefix( c_file_type_str_blob );
 
-            regex expr( c_regex_hash_256 );
+            regex expr( c_regex_hash_256, true, true );
+
             if( was_chk && !was_chk_token && expr.search( data ) == string::npos )
                was_chk_tag = true;
 

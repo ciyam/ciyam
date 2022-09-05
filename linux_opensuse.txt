@@ -126,6 +126,7 @@ Installing the CIYAM "systemd" Service
 NOTE: Do this *only after* the CIYAM application server has been built and the
 Meta DB has been created.
 
+./xrep @ciyamd.service.xrep uid=$USER >ciyamd.service
 sudo cp ciyamd.service /etc/systemd/system
 
 sudo vi /etc/systemd/system/ciyamd.service

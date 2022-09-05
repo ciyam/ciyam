@@ -1040,6 +1040,7 @@ int main( int argc, char* argv[ ] )
          for( size_t i = 0; i < ARRAY_SIZE( command_tests ); i++ )
          {
             p.parse_syntax( command_tests[ i ].p_syntax );
+
             if( !p.okay( ) )
             {
                ++num_errors;
@@ -1050,7 +1051,9 @@ int main( int argc, char* argv[ ] )
             {
                vector< string > arguments;
                map< string, string > parameters;
+
                setup_arguments( command_tests[ i ].p_command, arguments );
+
                if( p.parse_command( arguments, parameters ) != command_tests[ i ].test_should_succeed )
                {
                   ++num_errors;

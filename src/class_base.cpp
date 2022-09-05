@@ -105,6 +105,7 @@ const char* const c_crypto_info_acct_p2sh_fee = "acct_p2sh_fee";
 
 const char* const c_email_subject_script_marker = "[CIYAM]";
 
+const char* const c_special_regex_for_domain_name = "@domain_name";
 const char* const c_special_regex_for_email_address = "@email_address";
 const char* const c_special_regex_for_bitcoin_address = "@bitcoin_address";
 
@@ -3449,10 +3450,12 @@ string check_with_regex( const string& r, const string& s, bool* p_rc )
 {
    string re( r );
 
-   if( re == c_special_regex_for_email_address )
+   if( re == c_special_regex_for_domain_name )
+      re = "^" + string( c_regex_domain_name ) + "$";
+   else if( re == c_special_regex_for_email_address )
       re = "^" + string( c_regex_email_address ) + "$";
    else if( re == c_special_regex_for_bitcoin_address )
-      re = string( c_regex_bitcoin_address );
+      re = "^" + string( c_regex_bitcoin_address ) + "$";
 
    regex expr( re );
 
@@ -3483,6 +3486,7 @@ string check_with_regex( const string& r, const string& s, bool* p_rc )
    if( !refs.empty( ) )
    {
       retval.clear( );
+
       for( size_t i = 0; i < refs.size( ); i++ )
          retval += refs[ i ];
    }

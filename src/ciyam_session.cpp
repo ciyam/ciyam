@@ -5625,6 +5625,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = utc.as_string( e_time_format_hhmmss, true );
       }
+      else if( command == c_cmd_ciyam_session_utils_regex )
+      {
+         string expr( get_parm_val( parameters, c_cmd_ciyam_session_utils_regex_expr_or_name ) );
+         string text( get_parm_val( parameters, c_cmd_ciyam_session_utils_regex_text_to_check ) );
+
+         bool rc = false;
+
+         string found( check_with_regex( expr, text, &rc ) );
+
+         response = to_string( rc ) + ' ' + found;
+      }
       else if( command == c_cmd_ciyam_session_utils_decode )
       {
          bool url( has_parm_val( parameters, c_cmd_ciyam_session_utils_decode_url ) );

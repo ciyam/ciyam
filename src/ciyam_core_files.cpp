@@ -141,7 +141,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
             string value( next_attribute.substr( strlen( c_file_type_core_block_header_height_prefix ) ) );
 
-            regex expr( c_regex_integer );
+            regex expr( c_regex_integer, true, true );
 
             if( ( value.length( ) > 1 && value[ 0 ] == '0' ) || expr.search( value ) != 0 )
                throw runtime_error( "invalid height value '" + value + "'" );

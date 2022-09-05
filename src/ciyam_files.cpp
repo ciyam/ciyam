@@ -339,7 +339,7 @@ string construct_file_name_from_hash( const string& hash,
 
    if( check_hash_pattern )
    {
-      regex expr( c_regex_hash_256 );
+      regex expr( c_regex_hash_256, true, true );
 
       if( expr.search( hash ) == string::npos )
          throw runtime_error( "unexpected hash '" + hash + "'" );
@@ -941,7 +941,7 @@ void init_archive_info( progress* p_progress )
          file_filter ff;
          fs_iterator fs( path, &ff );
 
-         regex expr( c_regex_hash_256 );
+         regex expr( c_regex_hash_256, true, true );
 
          g_archive_file_info.insert( make_pair( archive, archive_file_info( ) ) );
 
@@ -4062,7 +4062,7 @@ void repair_file_archive( const string& name )
          file_filter ff;
          fs_iterator fs( path, &ff );
 
-         regex expr( c_regex_hash_256 );
+         regex expr( c_regex_hash_256, true, true );
 
          while( fs.has_next( ) )
          {
@@ -4645,7 +4645,7 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
 {
    guard g( g_mutex );
 
-   regex expr( c_regex_hash_256 );
+   regex expr( c_regex_hash_256, true, true );
 
    if( expr.search( hash ) == string::npos )
       // FUTURE: This message should be handled as a server string message.
