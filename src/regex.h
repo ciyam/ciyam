@@ -14,11 +14,12 @@
 #  endif
 
 const char* const c_regex_label = "[A-Za-z0-9_]+";
-const char* const c_regex_integer = "^[0-9]{1,19}$";
-const char* const c_regex_hash_256 = "^[A-Fa-f0-9]{64}$";
+const char* const c_regex_integer = "[0-9]{1,19}";
+const char* const c_regex_hash_256 = "[A-Fa-f0-9]{64}";
 const char* const c_regex_html_tag = "<[/]?([A-Za-z][A-Za-z0-9]*)[\\s]*([^>]*)>";
-const char* const c_regex_email_address = "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,8}";
-const char* const c_regex_bitcoin_address = "^[1-9A-HJ-NP-Za-km-z]{26,35}$";
+const char* const c_regex_domain_name = "[a-z0-9.-]+\\.[a-z]{2,18}";
+const char* const c_regex_email_address = "[A-Za-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,18}";
+const char* const c_regex_bitcoin_address = "[1-9A-HJ-NP-Za-km-z]{26,35}";
 const char* const c_regex_html_paired_tags = "<([A-Za-z][A-Za-z0-9]*)[\\s]*([^>]*)>(.*)</\\1>";
 const char* const c_regex_floating_point_number = "[-+]?[0-9]+\\.[0-9]+";
 
@@ -32,7 +33,7 @@ const char* const c_regex_floating_point_number = "[-+]?[0-9]+\\.[0-9]+";
 class regex
 {
    public:
-   regex( const std::string& expr );
+   regex( const std::string& expr, bool match_at_start = false, bool match_at_finish = false );
    ~regex( );
 
    std::string get_expr( ) const;

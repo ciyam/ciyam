@@ -216,7 +216,7 @@ void dump_state( const string& msg, char ch, char last_ch, bool ch_used, bool is
 
 struct regex::impl
 {
-   impl( const string& expr );
+   impl( const string& expr, bool match_at_start, bool match_at_finish );
 
    string get_expr( ) const { return expr; }
 
@@ -244,6 +244,7 @@ struct regex::impl
    bool prefix_at_boundary;
 
    size_t last_unlimited_part;
+
    size_t min_size_from_finish;
    size_t max_size_from_finish;
 
@@ -253,13 +254,13 @@ struct regex::impl
    map< int, string > node_refs;
 };
 
-regex::impl::impl( const string& expr )
+regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish )
  :
  expr( expr ),
  min_size( 0 ),
  max_size( 1 ),
- match_at_start( false ),
- match_at_finish( false ),
+ match_at_start( match_at_start ),
+ match_at_finish( match_at_finish ),
  prefix_at_boundary( false ),
  last_unlimited_part( 0 ),
  min_size_from_finish( 0 ),
@@ -289,10 +290,14 @@ regex::impl::impl( const string& expr )
    {
       char ch = expr[ i ];
 
+      // NOTE: Although "match_at_start" can be
+      // defaulted via the constructor argument
+      // it can also be explicitly provided (as
+      // can "match_at_finish") as a character.
       if( i == 0 && ch == '^' )
       {
          start++;
-         match_at_start = true;
+         this->match_at_start = true;
 
          continue;
       }
@@ -426,7 +431,7 @@ regex::impl::impl( const string& expr )
          if( i == expr.size( ) - 1 && ch == '$' )
          {
             ch_used = true;
-            match_at_finish = true;
+            this->match_at_finish = true;
 
             break;
          }
@@ -956,6 +961,7 @@ string::size_type regex::impl::search(
    }
 
    last_unlimited_part = 0;
+
    min_size_from_finish = 0;
    max_size_from_finish = 0;
 
@@ -1031,6 +1037,7 @@ string::size_type regex::impl::do_search(
 
    size_t pf = 0;
    bool had_min = false;
+
    // NOTE: Need to force all refs to be empty strings in case they are in optional parts.
    for( size_t i = 0; i < parts.size( ); i++ )
    {
@@ -1079,11 +1086,15 @@ string::size_type regex::impl::do_search(
       bool has_last_literal_used = false;
 
       int remaining_used = 0;
+
       string last_literal_used;
+
       size_t last_lit_part_used = 0;
       size_t last_set_part_used = 0;
+
       bool last_ref_finish_used = false;
       bool last_set_inverted_used = false;
+
       vector< pair< char, char > > last_set_used;
 
       for( size_t i = start; i < text.size( ); i++ )
@@ -1143,6 +1154,7 @@ string::size_type regex::impl::do_search(
                      // that the matching at the end be non-greedy (in which case the last possible
                      // literal match should be chosen over any earlier one).
                      if( old_okay && match_at_finish
+                      && text.length( ) > min_size_from_finish
                       && j == last_unlimited_part + 1 && i < text.length( ) - min_size_from_finish )
                      {
                         if( literal.empty( ) )
@@ -1160,7 +1172,7 @@ string::size_type regex::impl::do_search(
                      {
 #ifdef DEBUG
                         cout << "matched literal in part #" << ( j + 1 ) << " for " << literal
-                         << " at " << i << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + 1 ) ) << endl;
+                         << " at " << i << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + literal.size( ) ) ) << endl;
 #endif
                         if( !literal.empty( ) && literal[ 0 ] == '\b' && !is_word_char( text[ i ] ) )
                            ++i;
@@ -1318,7 +1330,8 @@ string::size_type regex::impl::do_search(
             // the expression then if the length is less than maximum that can follow prefer to
             // keep matching rather than skipping ahead to the next part (otherwise a match may
             // not be found at all).
-            if( ( found || already_matched ) && max_size_from_finish
+            if( ( found || already_matched )
+             && max_size_from_finish && text.size( ) > max_size_from_finish
              && j >= last_unlimited_part && li + 1 <= text.size( ) - max_size_from_finish )
                force_repeat = true;
 
@@ -1339,7 +1352,8 @@ string::size_type regex::impl::do_search(
             // NOTE: If matching occurs with the last unlimited part but have reached the point
             // where the remaining parts could require all the remaining characters then simply
             // try matching the next part (from the last position) rather than repeating.
-            if( found && !force_repeat && already_matched && max_size_from_finish
+            if( found && !force_repeat && already_matched
+             && max_size_from_finish && text.size( ) > max_size_from_finish
              && j == last_unlimited_part && li + 1 >= text.size( ) - max_size_from_finish )
             {
                i = li - 1;
@@ -1551,6 +1565,9 @@ string::size_type regex::impl::do_search(
 
       if( !text.size( ) || start++ >= text.size( ) - 1 )
          break;
+
+      if( match_at_start )
+         break;
 #ifdef DEBUG
        cout << "retry match from pos: " << start << endl;
 #endif
@@ -1627,6 +1644,7 @@ bool regex::impl::match_set( const string& text, size_t off, const part& p )
 string& regex::impl::expand_refs( string& literal )
 {
    int j = 0;
+
    for( map< int, string >::iterator i = node_refs.begin( ); i != node_refs.end( ); ++i )
    {
       string s( "\\" + to_string( ++j ) );
@@ -1674,13 +1692,13 @@ void regex::impl::dump( ostream& os )
    os << endl;
 }
 
-regex::regex( const string& expr )
+regex::regex( const string& expr, bool match_at_start, bool match_at_finish )
 {
 #ifdef DEBUG
    try
    {
 #endif
-      p_impl = new regex::impl( expr );
+      p_impl = new regex::impl( expr, match_at_start, match_at_finish );
 #ifdef DEBUG
    }
    catch( exception& x )
