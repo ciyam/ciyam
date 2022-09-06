@@ -21,7 +21,9 @@ const char* const c_regex_domain_name = "[a-z0-9.-]+\\.[a-z]{2,18}";
 const char* const c_regex_email_address = "[A-Za-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,18}";
 const char* const c_regex_bitcoin_address = "[1-9A-HJ-NP-Za-km-z]{26,35}";
 const char* const c_regex_html_paired_tags = "<([A-Za-z][A-Za-z0-9]*)[\\s]*([^>]*)>(.*)</\\1>";
+const char* const c_regex_peerchain_identity = "[a-f0-9]{9}";
 const char* const c_regex_floating_point_number = "[-+]?[0-9]+\\.[0-9]+";
+const char* const c_regex_peerchain_description = "[A-Za-z0-9-+.' ]+";
 
 // NOTE: This regular expression implementation does not perform backtracking and so will never
 // match greedily (and does not support non-greedy match tokens such as +? *?). It does support

@@ -108,6 +108,8 @@ const char* const c_email_subject_script_marker = "[CIYAM]";
 const char* const c_special_regex_for_domain_name = "@domain_name";
 const char* const c_special_regex_for_email_address = "@email_address";
 const char* const c_special_regex_for_bitcoin_address = "@bitcoin_address";
+const char* const c_special_regex_for_peerchain_identity = "@peerchain_identity";
+const char* const c_special_regex_for_peerchain_description = "@peerchain_description";
 
 const char* const c_section_timezone = "timezone";
 const char* const c_section_timezones = "timezones";
@@ -3456,6 +3458,10 @@ string check_with_regex( const string& r, const string& s, bool* p_rc )
       re = "^" + string( c_regex_email_address ) + "$";
    else if( re == c_special_regex_for_bitcoin_address )
       re = "^" + string( c_regex_bitcoin_address ) + "$";
+   else if( re == c_special_regex_for_peerchain_identity )
+      re = "^" + string( c_regex_peerchain_identity ) + "$";
+   else if( re == c_special_regex_for_peerchain_description )
+      re = "^" + string( c_regex_peerchain_description ) + "$";
 
    regex expr( re );
 
