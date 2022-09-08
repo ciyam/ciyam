@@ -1380,62 +1380,73 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          {
             if( cmd != c_cmd_join && cmd != c_cmd_open && !mod_info.user_class_id.empty( ) )
             {
-               // FUTURE: Support for HTTPS should be an option and if not being used then Sign In/Up
-               // should not be menus but just direct links to the "client crypto" implementations.
-               extra_content << "<div id=\"sign\"><ul><li><a href=\"#\">" << GDS( c_display_sign_in ) << "</a>";
-
-               extra_content << "<div id=\"sign_in_up\"><ul>";
-
-               if( file_exists( "../openid/" + app_dir_name, false ) )
-                  extra_content << "<li><a href=\"https://" << input_data[ c_http_param_host ]
-                   << "/openid/" << app_dir_name << "\">" << GDS( c_display_openid ) << "</a></li>";
-
-               extra_content << "<li><a href=\"https://" << input_data[ c_http_param_host ]
-                << "/" << app_dir_name << "/" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_credentials;
-               extra_content << "\">" << GDS( c_display_standard ) << "</a></li>";
-
-               extra_content << "<li><a href=\"http://" << input_data[ c_http_param_host ]
-                << "/" << app_dir_name << "/" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_credentials;
-               extra_content << "\">" << GDS( c_display_client_crypto ) << "</a></li>";
-
-               extra_content << "</ul></div></li>";
-
-               // NOTE: To limit "sign ups" to specific IP addresses simply add them
-               // as lines to the list of "sign up testers" file (to let *all* users
-               // have access simply remove the file).
-               set< string > testers;
-               if( file_exists( c_sign_up_testers_file ) )
+               if( !get_storage_info( ).blockchain.empty( ) )
                {
-                  testers.insert( "10.0.0.1" );
+                  extra_content << "<div id=\"sign\"><ul><li><a href=\"http://" << input_data[ c_http_param_host ]
+                   << "/" << app_dir_name << "/" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_credentials;
+                  extra_content << "\">" << GDS( c_display_sign_in ) << "</a></li>";
 
-                  testers.insert( c_local_ip_addr );
-                  testers.insert( c_local_ip_addr_for_ipv6 );
-
-                  buffer_file_lines( c_sign_up_testers_file, testers );
+                  extra_content << "</ul></div>";
                }
-
-               if( testers.empty( ) || testers.count( p_session_info->ip_addr ) )
+               else
                {
-                  extra_content << "<li><a class=\"grey\" href=\"#\">" << GDS( c_display_sign_up ) << "</a>";
+                  // FUTURE: Support for HTTPS should be an option and if not being used then Sign In/Up
+                  // should not be menus but just direct links to the "client crypto" implementations.
+                  extra_content << "<div id=\"sign\"><ul><li><a href=\"#\">" << GDS( c_display_sign_in ) << "</a>";
 
                   extra_content << "<div id=\"sign_in_up\"><ul>";
 
                   if( file_exists( "../openid/" + app_dir_name, false ) )
-                     extra_content << "<li><a class=\"grey\" href=\"https://" << input_data[ c_http_param_host ]
+                     extra_content << "<li><a href=\"https://" << input_data[ c_http_param_host ]
                       << "/openid/" << app_dir_name << "\">" << GDS( c_display_openid ) << "</a></li>";
 
-                  extra_content << "<li><a class=\"grey\" href=\"https://" << input_data[ c_http_param_host ]
-                   << "/" << app_dir_name << "/" <<  get_module_page_name( module_ref ) << "?cmd=" << c_cmd_join;
+                  extra_content << "<li><a href=\"https://" << input_data[ c_http_param_host ]
+                   << "/" << app_dir_name << "/" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_credentials;
                   extra_content << "\">" << GDS( c_display_standard ) << "</a></li>";
 
-                  extra_content << "<li><a class=\"grey\" href=\"http://" << input_data[ c_http_param_host ]
-                   << "/" << app_dir_name << "/" <<  get_module_page_name( module_ref ) << "?cmd=" << c_cmd_join;
+                  extra_content << "<li><a href=\"http://" << input_data[ c_http_param_host ]
+                   << "/" << app_dir_name << "/" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_credentials;
                   extra_content << "\">" << GDS( c_display_client_crypto ) << "</a></li>";
 
-                  extra_content << "</div></li></ul>";
-               }
+                  extra_content << "</ul></div></li>";
 
-               extra_content << "</ul></div>\n";
+                  // NOTE: To limit "sign ups" to specific IP addresses simply add them
+                  // as lines to the list of "sign up testers" file (to let *all* users
+                  // have access simply remove the file).
+                  set< string > testers;
+                  if( file_exists( c_sign_up_testers_file ) )
+                  {
+                     testers.insert( "10.0.0.1" );
+
+                     testers.insert( c_local_ip_addr );
+                     testers.insert( c_local_ip_addr_for_ipv6 );
+
+                     buffer_file_lines( c_sign_up_testers_file, testers );
+                  }
+
+                  if( testers.empty( ) || testers.count( p_session_info->ip_addr ) )
+                  {
+                     extra_content << "<li><a class=\"grey\" href=\"#\">" << GDS( c_display_sign_up ) << "</a>";
+
+                     extra_content << "<div id=\"sign_in_up\"><ul>";
+
+                     if( file_exists( "../openid/" + app_dir_name, false ) )
+                        extra_content << "<li><a class=\"grey\" href=\"https://" << input_data[ c_http_param_host ]
+                         << "/openid/" << app_dir_name << "\">" << GDS( c_display_openid ) << "</a></li>";
+
+                     extra_content << "<li><a class=\"grey\" href=\"https://" << input_data[ c_http_param_host ]
+                      << "/" << app_dir_name << "/" <<  get_module_page_name( module_ref ) << "?cmd=" << c_cmd_join;
+                     extra_content << "\">" << GDS( c_display_standard ) << "</a></li>";
+
+                     extra_content << "<li><a class=\"grey\" href=\"http://" << input_data[ c_http_param_host ]
+                      << "/" << app_dir_name << "/" <<  get_module_page_name( module_ref ) << "?cmd=" << c_cmd_join;
+                     extra_content << "\">" << GDS( c_display_client_crypto ) << "</a></li>";
+
+                     extra_content << "</div></li></ul>";
+                  }
+
+                  extra_content << "</ul></div>\n";
+               }
             }
          }
          else
