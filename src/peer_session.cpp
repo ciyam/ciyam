@@ -3850,16 +3850,6 @@ void peer_session::on_start( )
       string slot_and_pubkey( get_session_variable( get_special_var_name( e_special_var_slot ) ) );
       slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
 
-/*idk
-      if( has_support_sessions )
-      {
-         slot_and_pubkey += '+';
-
-         // NOTE: Give up some CPU time for starting the support sessions.
-         msleep( c_start_sleep_time );
-      }
-
-*/
       string slotx, pubkeyx, slotx_and_pubkeyx;
 
       // NOTE: After handshake exchange public keys then commence peer protocol.
@@ -3888,16 +3878,6 @@ void peer_session::on_start( )
       if( slotx.empty( ) )
          slotx = string( c_none );
 
-/*idk
-      pos = pubkeyx.find( '+' );
-
-      if( pos != string::npos )
-      {
-         pubkeyx.erase( pos );
-         has_support_sessions = true;
-      }
-
-*/
       set_session_variable(
        get_special_var_name( e_special_var_slotx ), slotx );
 
