@@ -84,6 +84,8 @@ const char* const c_hello = "hello";
 const char* const c_dummy_peer_tag = "peer";
 const char* const c_dummy_support_tag = "support";
 
+const size_t c_dummy_num_for_support = 999;
+
 const int c_accept_timeout = 250;
 const int c_max_line_length = 500;
 
@@ -3848,6 +3850,7 @@ void peer_session::on_start( )
       string slot_and_pubkey( get_session_variable( get_special_var_name( e_special_var_slot ) ) );
       slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
 
+/*idk
       if( has_support_sessions )
       {
          slot_and_pubkey += '+';
@@ -3856,6 +3859,7 @@ void peer_session::on_start( )
          msleep( c_start_sleep_time );
       }
 
+*/
       string slotx, pubkeyx, slotx_and_pubkeyx;
 
       // NOTE: After handshake exchange public keys then commence peer protocol.
@@ -3884,6 +3888,7 @@ void peer_session::on_start( )
       if( slotx.empty( ) )
          slotx = string( c_none );
 
+/*idk
       pos = pubkeyx.find( '+' );
 
       if( pos != string::npos )
@@ -3892,6 +3897,7 @@ void peer_session::on_start( )
          has_support_sessions = true;
       }
 
+*/
       set_session_variable(
        get_special_var_name( e_special_var_slotx ), slotx );
 
@@ -4398,18 +4404,23 @@ void create_peer_listener( int port, const string& blockchains )
    }
 }
 
-void create_peer_initiator(
- const string& blockchain, const string& host_and_or_port,
- bool force, size_t num_for_support, bool is_interactive, bool is_secondary )
+peer_session* create_peer_initiator(
+ const string& blockchain, const string& host_and_or_port, bool force,
+ size_t num_for_support, bool is_interactive, bool is_secondary, peer_session* p_main_session )
 {
-   if( g_server_shutdown )
-      return;
-
    if( blockchain.empty( ) )
       throw runtime_error( "create_peer_initiator called with empty blockchain identity" );
 
    if( has_max_peers( ) )
       throw runtime_error( "server has reached its maximum peer limit" );
+
+   bool will_have_support = false;
+
+   if( num_for_support == c_dummy_num_for_support )
+   {
+      num_for_support = 0;
+      will_have_support = true;
+   }
 
    if( num_for_support > c_max_num_for_support )
       throw runtime_error( "cannot create " + to_string( num_for_support )
@@ -4423,12 +4434,7 @@ void create_peer_initiator(
    if( !port )
       throw runtime_error( "invalid or missing port in '" + host_and_or_port + "' for create_peer_initiator" );
 
-   size_t total_to_create = 1 + num_for_support;
-
-   peer_session* p_main_session = 0;
-   size_t num_supporters_created = 0;
-
-   size_t prefix_length = strlen( c_bc_prefix );
+   size_t total_to_create = ( p_main_session ? 0 : 1 ) + num_for_support;
 
    string identity( blockchain );
    replace( identity, c_bc_prefix, "" );
@@ -4450,7 +4456,8 @@ void create_peer_initiator(
       else
       {
          set_system_variable( c_error_message_prefix + identity, error );
-         return;
+
+         return p_main_session;
       }
    }
 
@@ -4475,6 +4482,9 @@ void create_peer_initiator(
 
    for( size_t i = 0; i < total_to_create; i++ )
    {
+      if( g_server_shutdown )
+         break;
+
 #ifdef SSL_SUPPORT
       auto_ptr< ssl_socket > ap_socket( new ssl_socket );
 #else
@@ -4495,41 +4505,41 @@ void create_peer_initiator(
             else
             {
                set_system_variable( c_error_message_prefix + identity, error );
-               return;
+
+               break;
             }
          }
 
-         if( ap_socket->connect( address, ( i == 0 ) ? c_initial_timeout : c_support_timeout ) )
+         if( ap_socket->connect( address, !p_main_session ? c_initial_timeout : c_support_timeout ) )
          {
             const char* p_identity = 0;
             peer_extra extra = e_peer_extra_none;
 
-            if( i == 0 && ( is_secondary || has_separate_identity ) )
+            if( !p_main_session && ( is_secondary || has_separate_identity ) )
             {
                p_identity = identity.c_str( );
                extra = ( !is_secondary ? e_peer_extra_primary : e_peer_extra_secondary );
             }
 
             peer_session* p_session = construct_session( dtm, false, ap_socket,
-             ip_addr + "=" + session_blockchain + ":" + to_string( port ), i > 0, extra, p_identity );
+             ip_addr + "=" + session_blockchain + ":" + to_string( port ), p_main_session, extra, p_identity );
 
             if( !p_session )
                break;
             else
             {
-               if( !p_main_session && total_to_create > 1 )
+               if( !p_main_session )
                {
                   p_main_session = p_session;
-                  p_main_session->set_has_support_sessions( );
+
+                  if( num_for_support || will_have_support )
+                     p_main_session->set_has_support_sessions( );
                }
 
                p_session->start( );
-
-               if( i > 0 )
-                  ++num_supporters_created;
             }
          }
-         else if( i == 0 )
+         else if( !p_main_session )
          {
             string error;
 
@@ -4547,11 +4557,13 @@ void create_peer_initiator(
             else
             {
                set_system_variable( c_error_message_prefix + identity, error );
-               return;
+               break;
             }
          }
       }
    }
+
+   return p_main_session;
 }
 
 peer_session_starter::peer_session_starter( )
@@ -4666,18 +4678,24 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    temporary_system_variable tmp_blockchain_connect( identity, c_true_value );
 
-   // NOTE: Create sessions for both the local and hosted blockchains.
-   create_peer_initiator( blockchain, info, false, num_for_support, false );
-   create_peer_initiator( blockchain, info, false, num_for_support, false, true );
+   // NOTE: First create main sessions for both the local and hosted blockchains.
+   peer_session* p_local_main = create_peer_initiator( blockchain,
+    info, false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false );
 
-   // NOTE: As connections are handled by separate threads need to wait some time
-   // here to determine whether both connections have been created successfully.
-   for( size_t i = 0; i < 10; i++ )
+   if( p_local_main )
    {
-      msleep( c_peer_sleep_time );
+      peer_session* p_hosted_main = create_peer_initiator( blockchain, info,
+       false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true );
 
-      if( !has_any_session_variable( identity ) )
-         break;
+      if( p_hosted_main )
+      {
+         // NOTE: If both main sessions were successfully created now create all requested support sessions.
+         if( num_for_support )
+         {
+            create_peer_initiator( blockchain, info, false, num_for_support, false, false, p_local_main );
+            create_peer_initiator( blockchain, info, false, num_for_support, false, true, p_hosted_main );
+         }
+      }
    }
 }
 
