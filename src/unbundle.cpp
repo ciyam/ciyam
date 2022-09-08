@@ -478,7 +478,9 @@ int main( int argc, char* argv[ ] )
       }
 
       int level = -1;
+
       bool is_first = false;
+      bool was_skipped = false;
 
       string next_file;
       string rwx_perms;
@@ -571,7 +573,8 @@ int main( int argc, char* argv[ ] )
                if( !use_zlib )
                   p_is->seekg( raw_file_size, ios::cur );
 
-               cout << endl;
+               if( !is_quieter && !was_skipped )
+                  cout << endl;
             }
             else
             {
@@ -628,7 +631,7 @@ int main( int argc, char* argv[ ] )
                ap_ofstream.reset( );
                file_perms( next_file, rwx_perms );
 
-               if( !is_quieter )
+               if( !is_quieter && !was_skipped )
                   cout << endl;
 
                continue;
@@ -736,6 +739,7 @@ int main( int argc, char* argv[ ] )
             throw runtime_error( "unexpected format in line #" + to_string( line ) );
 
          char type( next[ 0 ] );
+
          if( type == c_type_file )
          {
             if( is_first )
@@ -791,6 +795,7 @@ int main( int argc, char* argv[ ] )
             md5.update( ( unsigned char* )next.c_str( ), next.length( ) );
 
             bool matched = false;
+
             if( filename_filters.empty( ) )
                matched = true;
             else
@@ -800,6 +805,7 @@ int main( int argc, char* argv[ ] )
                   string wildcard( filename_filters[ i ] );
 
                   string::size_type pos = wildcard.find( "/" );
+
                   if( pos == string::npos )
                   {
                      pos = test_file.find_last_of( "/" );
@@ -829,6 +835,7 @@ int main( int argc, char* argv[ ] )
                   string wildcard( exclude_filename_filters[ i ] );
 
                   string::size_type pos = wildcard.find( "/" );
+
                   if( pos == string::npos )
                   {
                      pos = test_file.find_last_of( "/" );
@@ -852,6 +859,7 @@ int main( int argc, char* argv[ ] )
             if( matched && !list_only && !overwrite && !replace_all && file_exists( next_file ) )
             {
                bool replace = false;
+
                if( !is_quiet && !replace_none )
                {
                   char ch;
@@ -861,30 +869,41 @@ int main( int argc, char* argv[ ] )
                   {
                      ch = get_char( prompt.c_str( ) );
 
+                     dtm = date_time::local( );
+
                      if( ch == 'A' )
                         replace_all = true;
                      else if( ch == 'N' )
                         replace_none = true;
 
                      if( ch == 'y' || ch == 'A' )
+                     {
                         replace = true;
+                        was_skipped = false;
+                     }
 
                      if( replace || replace_all || replace_none || ch == 'n' )
                      {
                         cout << ch << '\n';
                         break;
                      }
+
+                     // NOTE: The bell character may result in a beep (depending upon the terminal).
+                     cout << "\a\r";
                   }
                }
 
                if( !replace )
                {
                   matched = false;
+                  was_skipped = true;
 
                   if( is_quieter )
                      cerr << "*** error: file '" << next_file << "' already exists ***" << endl;
                }
             }
+            else
+               was_skipped = false;
 
             count = 0;
 
@@ -1063,4 +1082,3 @@ int main( int argc, char* argv[ ] )
 
    return 0;
 }
-
