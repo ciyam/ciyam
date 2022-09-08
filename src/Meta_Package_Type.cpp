@@ -626,9 +626,9 @@ void Meta_Package_Type::impl::impl_Install( )
          package_file = get_obj( ).get_attached_file_path( get_obj( ).File( ) );
 
 #ifdef _WIN32
-      string cmd( "unbundle -o " );
+      string cmd( "unbundle -o -q " );
 #else
-      string cmd( "./unbundle -o " );
+      string cmd( "./unbundle -o -q " );
 #endif
       cmd += package_file;
 
