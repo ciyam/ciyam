@@ -4720,11 +4720,35 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          data_decrypt( sid, sid, info );
 
-         if( count( sid.begin( ), sid.end( ), ' ' ) == 11 )
+         size_t num_spaces = count( sid.begin( ), sid.end( ), ' ' );
+
+         string extra;
+
+         // If there are additional spaces then treat all additional words
+         // as being additional entropy (rather than validated mnemonics).
+         if( num_spaces > 11 )
+         {
+            string::size_type pos = 0;
+
+            for( size_t n = 0; n < 12; n++ )
+               pos = sid.find( ' ', pos + 1 );
+
+            extra = sid.substr( pos + 1 );
+
+            num_spaces = 11;
+            sid.erase( pos );
+         }
+
+         if( num_spaces == 11 )
             get_mnemonics_or_hex_seed( sid, sid );
 
          if( are_hex_nibbles( sid ) )
+         {
+            if( !extra.empty( ) )
+               harden_key_with_salt( sid, info, extra );
+
             set_sid( sid );
+         }
       }
 
       clear_key( sid );
