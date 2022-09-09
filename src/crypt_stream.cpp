@@ -439,17 +439,19 @@ void data_encrypt( string& s, const string& dat, const string& key, bool use_ssl
    clear_key( salted_key );
 }
 
-void harden_key_with_salt( string& s, const string& key, const string& salt )
+void harden_key_with_salt( string& s, const string& key, const string& salt, size_t extra_multiplier )
 {
    sha256 hash;
 
-   s.reserve( c_sha256_digest_size + key.length( ) );
+   s.reserve( ( c_sha256_digest_size * 2 ) + key.length( ) );
    s.resize( 0 );
 
    s += key;
    s += salt;
 
-   for( size_t i = 0; i < c_password_hash_rounds * c_password_rounds_multiplier; i++ )
+   size_t num_rounds = ( c_password_hash_rounds * c_password_rounds_multiplier ) * extra_multiplier;
+
+   for( size_t i = 0; i < num_rounds; i++ )
    {
       hash.update( s + key );
       hash.get_digest_as_string( s );

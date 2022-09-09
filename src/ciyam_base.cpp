@@ -100,7 +100,8 @@ const int c_loop_variable_digits = 8;
 
 const int c_storable_file_pad_len = 32;
 
-const int c_minimum_encrypted_password_size = 10;
+const size_t c_identity_additional_multiplier = 10;
+const size_t c_minimum_encrypted_password_size = 10;
 
 // NOTE: Limit the buffer to twice the maximum file size (if a compression
 // call returns buffer too small then the file can be stored uncompressed).
@@ -4745,7 +4746,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          if( are_hex_nibbles( sid ) )
          {
             if( !extra.empty( ) )
-               harden_key_with_salt( sid, info, extra );
+               harden_key_with_salt( sid, info, extra, c_identity_additional_multiplier );
 
             set_sid( sid );
          }
