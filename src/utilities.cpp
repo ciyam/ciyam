@@ -1347,9 +1347,11 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
 
    while( pos != string::npos )
    {
-      if( s.size( ) > pos + 1 && s[ pos + 1 ] >= '0' && s[ pos + 1 ] <= '9' )
+      if( s.size( ) > pos + 1
+       && ( ( s[ pos + 1 ] == c ) || ( s[ pos + 1 ] == '*' )
+       || ( s[ pos + 1 ] >= '0' && s[ pos + 1 ] <= '9' ) ) )
       {
-         pos = s.find( c, pos + 1 );
+         pos = s.find( c, pos + 2 );
          continue;
       }
 

@@ -27,6 +27,25 @@ c=Z
 #%a%%b%%c%.
 #.%a%%b%%c%.
 #%a%.%b%.%c%.
+TSX=xxx
+TSY=yyy
+#$TSX
+#$TSY
+#$$TSX
+#$$TSY
+#$TSX$TSY
+#$$TSX$TSY
+#$TSX$$$TSY
+#$$TSX$$TSY
+#%TSX%
+#%TSY%
+#%%TSX
+#%%TSY
+#%TSX%%TSY%
+#%%TSX%TSY%
+#%%TSX%%TSY
+#%TSX%%%%TSY%
+#%%%TSX%%%%TSY%%%
 crypto_keys XBT test
 addr=%OUTPUT:1%
 pubkey=%OUTPUT:2%

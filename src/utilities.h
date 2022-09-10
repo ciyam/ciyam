@@ -824,13 +824,13 @@ inline std::string replace_environment_variables(
 }
 
 inline void replace_unquoted_environment_variables(
- std::string& s, char c = '%', const char* p_specials = 0, char esc = c_esc )
+ std::string& s, char c = '$', const char* p_specials = 0, char esc = c_esc )
 {
    replace_environment_variables( s, c, false, p_specials, esc );
 }
 
 inline std::string replace_unquoted_environment_variables(
- const char* p_str, char c = '%', const char* p_specials = 0, char esc = c_esc )
+ const char* p_str, char c = '$', const char* p_specials = 0, char esc = c_esc )
 {
    return replace_environment_variables( p_str, c, false, p_specials, esc );
 }
