@@ -77,8 +77,6 @@ if [ -f $RESTORE_NOW ]; then
    echo `date +%s` > $IMPORTED_TIME_FILE
    echo $BLOCKCHAIN_HEIGHT > $BACKUP_HEIGHT_FILE
 
-   ./tree_crypt -repo_encrypt $BLOCKCHAIN ciyam @sid >>Backup.txt
-
    echo "Finished restore..." >>Backup.txt
    date >>Backup.txt
 

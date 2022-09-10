@@ -71,12 +71,10 @@ if [ -f $BACKUP_TIME ]; then
      export SECONDS=2
      export REPO_CRYPT_PASSWORD=@sid
      ./import_files $USER_PATH Backup : $IMAGE_NAME >>Backup.txt
+     ./tree_insert_trunk ciyam .Backup
+     ./tree_insert_trunk ciyam Backup
+     ./generate_next_block >>Backup.txt 2>&1
     fi
-
-    ./tree_insert_trunk ciyam .Backup
-    ./tree_insert_trunk ciyam Backup
-
-    ./generate_next_block >>Backup.txt 2>&1
 
     echo "Finished backup..." >>Backup.txt
     date >>Backup.txt
