@@ -27,6 +27,23 @@ XYZ
 XYZ.
 .XYZ.
 X.Y.Z.
+xxx
+yyy
+$TSX
+$TSY
+xxxyyy
+$TSXyyy
+xxx$yyy
+$TSX$TSY
+xxx
+yyy
+%TSX
+%TSY
+xxxyyy
+%TSXyyy
+%TSX%TSY
+xxx%yyy
+%xxx%yyy%
 crypto_keys XBT test
 1Hri98tpTekszQQTBnKbBrMsecrjik4PX8
 02b0dbb9b8c580f2cc7b45aaf10d8353cea7880903e1f07ce996614260c55db4a1
@@ -154,7 +171,7 @@ j
 6	#j
 1	#b
 2	#f
-depth is 0 at line #225
+depth is 0 at line #244
 Looping with aaa
 Looping with bbb
 Looping with ccc
@@ -180,11 +197,11 @@ CONT
 CONT
 CONT
 DONE
-depth is 1 at line #264
+depth is 1 at line #283
 END
-depth is 1 at line #291
-depth is 2 at line #293
-depth is 3 at line #295 TRUE
+depth is 1 at line #310
+depth is 2 at line #312
+depth is 3 at line #314 TRUE
 docs
 src
 src/haru
