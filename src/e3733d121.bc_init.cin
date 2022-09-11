@@ -112,5 +112,6 @@ BLOCK_HASH=$OUTPUT
 @ifndef "$OUTPUT"
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
 .system_variable >@blockchain $IDENT
+.system_variable >@blockchain_hash $BLOCK_HASH
 @endif
 ;
