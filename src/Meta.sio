@@ -5190,6 +5190,31 @@
       </specifications>
      </field>
      <field/>
+      <id>145112
+      <name>Shared_Secret
+      <type>1025
+      <mandatory>false
+      <extra>encrypted
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>145301
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>145305
+        <affect>protect
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603970
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>145107
       <name>Status
       <type>int
@@ -32181,6 +32206,7 @@
      <field_info>145109
      <field_info>145106
      <field_info>145107;no_edit+enum=955
+     <field_info>145112;show
      <field_info>145110
     </data>
    </specification>

@@ -36,7 +36,8 @@ class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public
       e_field_id_Local_Port = 8,
       e_field_id_Num_Helpers = 9,
       e_field_id_Port_Numbers = 10,
-      e_field_id_Status = 11
+      e_field_id_Shared_Secret = 11,
+      e_field_id_Status = 12
    };
 
    Meta_Global_Peerchain_Entry( );
@@ -71,6 +72,9 @@ class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public
 
    const std::string& Port_Numbers( ) const;
    void Port_Numbers( const std::string& Port_Numbers );
+
+   const std::string& Shared_Secret( ) const;
+   void Shared_Secret( const std::string& Shared_Secret );
 
    int Status( ) const;
    void Status( int Status );
