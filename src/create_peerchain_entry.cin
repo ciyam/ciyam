@@ -22,12 +22,9 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $6
 NUM_ARGS=@$NUM_ARGS+1
 @endif
-@ifdef $7
-NUM_ARGS=@$NUM_ARGS+1
-@endif
 ;
-@ifneq "$NUM_ARGS" "7"
-#NOTE: This script requires an identity, auto-start, description, host name, port number, number of helpers and shared secret.
+@ifneq "$NUM_ARGS" "6"
+#NOTE: This script requires an identity, auto-start, description, host name, port number and number of helpers.
 @else
 ;
 IDENTITY=$1
