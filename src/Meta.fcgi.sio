@@ -3633,6 +3633,14 @@
      <modifiers>100:extralight1,200:extralight,400:extralight
     </field>
     <field/>
+     <name>field_global_peerchain_entry_shared_secret
+     <field>145112
+     <ftype>string
+     <extra>show+encrypted+max_size=200
+     <mandatory>false
+     <modifiers>1000:relegate,2000:protect
+    </field>
+    <field/>
      <name>field_global_peerchain_entry_actions
      <field>145110
      <ftype>string

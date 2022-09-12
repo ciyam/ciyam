@@ -1206,7 +1206,7 @@
 `{`$specification_Global_Peerchain_Entry_view_extra`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_view_mods`=`'800:lowlight`'`}
 `{`$specification_Global_Peerchain_Entry_view_binfo`=`'`'`}
-`{`$specification_Global_Peerchain_Entry_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010`'`}
+`{`$specification_Global_Peerchain_Entry_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010 011`'`}
 `{`$specification_Global_Peerchain_Entry_view_field000`=`'@key`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype000`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra000`=`'`'`}
@@ -1267,12 +1267,18 @@
 `{`$specification_Global_Peerchain_Entry_view_fmods009`=`'100:extralight1,200:extralight,400:extralight`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname009`=`'field_global_peerchain_entry_status`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand009`=`'true`'`}
-`{`$specification_Global_Peerchain_Entry_view_field010`=`'145110`'`}
+`{`$specification_Global_Peerchain_Entry_view_field010`=`'145112`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype010`=`'string`'`}
-`{`$specification_Global_Peerchain_Entry_view_extra010`=`'actions`'`}
-`{`$specification_Global_Peerchain_Entry_view_fmods010`=`'`'`}
-`{`$specification_Global_Peerchain_Entry_view_fname010`=`'field_global_peerchain_entry_actions`'`}
+`{`$specification_Global_Peerchain_Entry_view_extra010`=`'show+encrypted+max_size=200`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods010`=`'1000:relegate,2000:protect`'`}
+`{`$specification_Global_Peerchain_Entry_view_fname010`=`'field_global_peerchain_entry_shared_secret`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand010`=`'false`'`}
+`{`$specification_Global_Peerchain_Entry_view_field011`=`'145110`'`}
+`{`$specification_Global_Peerchain_Entry_view_ftype011`=`'string`'`}
+`{`$specification_Global_Peerchain_Entry_view_extra011`=`'actions`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods011`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_fname011`=`'field_global_peerchain_entry_actions`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmand011`=`'false`'`}
 `{`}
 `{`$specification_Global_Repository_Entry_list_id`=`'603980`'`}
 `{`$specification_Global_Repository_Entry_list_cid`=`'150100`'`}

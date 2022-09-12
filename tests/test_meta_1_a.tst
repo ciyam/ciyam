@@ -70,9 +70,10 @@ Error,M001C102F104
 Genesis_Block_Hash,M001C102F105
 Host_Domain,M001C102F106
 Port_Number,M001C102F107
-Connection_Type,M001C102F108
-Status,M001C102F109
-Synchronisation,M001C102F110
+Shared_Secret,M001C102F108
+Connection_Type,M001C102F109
+Status,M001C102F110
+Synchronisation,M001C102F111
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000

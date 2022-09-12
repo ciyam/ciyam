@@ -69,6 +69,7 @@ const char* const c_field_id_Identity = "145101";
 const char* const c_field_id_Local_Port = "145105";
 const char* const c_field_id_Num_Helpers = "145109";
 const char* const c_field_id_Port_Numbers = "145111";
+const char* const c_field_id_Shared_Secret = "145112";
 const char* const c_field_id_Status = "145107";
 
 const char* const c_field_name_Actions = "Actions";
@@ -81,6 +82,7 @@ const char* const c_field_name_Identity = "Identity";
 const char* const c_field_name_Local_Port = "Local_Port";
 const char* const c_field_name_Num_Helpers = "Num_Helpers";
 const char* const c_field_name_Port_Numbers = "Port_Numbers";
+const char* const c_field_name_Shared_Secret = "Shared_Secret";
 const char* const c_field_name_Status = "Status";
 
 const char* const c_field_display_name_Actions = "field_global_peerchain_entry_actions";
@@ -93,9 +95,10 @@ const char* const c_field_display_name_Identity = "field_global_peerchain_entry_
 const char* const c_field_display_name_Local_Port = "field_global_peerchain_entry_local_port";
 const char* const c_field_display_name_Num_Helpers = "field_global_peerchain_entry_num_helpers";
 const char* const c_field_display_name_Port_Numbers = "field_global_peerchain_entry_port_numbers";
+const char* const c_field_display_name_Shared_Secret = "field_global_peerchain_entry_shared_secret";
 const char* const c_field_display_name_Status = "field_global_peerchain_entry_status";
 
-const int c_num_fields = 11;
+const int c_num_fields = 12;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -109,7 +112,8 @@ const char* const c_all_sorted_field_ids[ ] =
    "145108",
    "145109",
    "145110",
-   "145111"
+   "145111",
+   "145112"
 };
 
 const char* const c_all_sorted_field_names[ ] =
@@ -124,6 +128,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Local_Port",
    "Num_Helpers",
    "Port_Numbers",
+   "Shared_Secret",
    "Status"
 };
 
@@ -135,9 +140,25 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
-const int c_num_encrypted_fields = 0;
+const int c_num_encrypted_fields = 1;
 
-bool is_encrypted_field( const string& ) { static bool false_value( false ); return false_value; }
+const char* const c_encrypted_sorted_field_ids[ ] =
+{
+   "145112"
+};
+
+const char* const c_encrypted_sorted_field_names[ ] =
+{
+   "Shared_Secret"
+};
+
+inline bool is_encrypted_field( const string& field )
+{
+   return binary_search( c_encrypted_sorted_field_ids,
+    c_encrypted_sorted_field_ids + c_num_encrypted_fields, field.c_str( ), compare )
+    || binary_search( c_encrypted_sorted_field_names,
+    c_encrypted_sorted_field_names + c_num_encrypted_fields, field.c_str( ), compare );
+}
 
 const int c_num_transient_fields = 5;
 
@@ -185,6 +206,7 @@ domain_int_range< 0, 65535 > g_Host_Port_domain;
 domain_string_max_size< 50 > g_Identity_domain;
 domain_int_range< 0, 65535 > g_Local_Port_domain;
 domain_int_range< 0, 99 > g_Num_Helpers_domain;
+domain_string_max_size< 200 > g_Shared_Secret_domain;
 
 string g_order_field_name;
 string g_owner_field_name;
@@ -239,6 +261,7 @@ string g_default_Identity = string( );
 int g_default_Local_Port = int( 0 );
 int g_default_Num_Helpers = int( 3 );
 string g_default_Port_Numbers = string( );
+string g_default_Shared_Secret = string( );
 int g_default_Status = int( 0 );
 
 set< int > g_peerchain_entry_type_enum;
@@ -432,6 +455,12 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
          string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Port_Numbers( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Shared_Secret || field_name == c_field_name_Shared_Secret )
+      {
+         handled = true;
+         string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Shared_Secret( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Status || field_name == c_field_name_Status )
       {
          handled = true;
@@ -518,6 +547,13 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
          handled = true;
          func_string_setter< Meta_Global_Peerchain_Entry, string >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Port_Numbers, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Shared_Secret || field_name == c_field_name_Shared_Secret )
+      {
+         handled = true;
+         func_string_setter< Meta_Global_Peerchain_Entry, string >(
+          *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Shared_Secret, field_value );
       }
 
       if( !handled && field_name == c_field_id_Status || field_name == c_field_name_Status )
@@ -619,6 +655,9 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
    const string& impl_Port_Numbers( ) const { return lazy_fetch( p_obj ), v_Port_Numbers; }
    void impl_Port_Numbers( const string& Port_Numbers ) { sanity_check( Port_Numbers ); v_Port_Numbers = Port_Numbers; }
 
+   const string& impl_Shared_Secret( ) const { return lazy_fetch( p_obj ), v_Shared_Secret; }
+   void impl_Shared_Secret( const string& Shared_Secret ) { sanity_check( Shared_Secret ); v_Shared_Secret = Shared_Secret; }
+
    int impl_Status( ) const { return lazy_fetch( p_obj ), v_Status; }
    void impl_Status( int Status ) { v_Status = Status; }
 
@@ -700,6 +739,7 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
    int v_Local_Port;
    int v_Num_Helpers;
    string v_Port_Numbers;
+   string v_Shared_Secret;
    int v_Status;
 };
 
@@ -794,6 +834,10 @@ string Meta_Global_Peerchain_Entry::impl::get_field_value( int field ) const
       break;
 
       case 10:
+      retval = to_string( impl_Shared_Secret( ) );
+      break;
+
+      case 11:
       retval = to_string( impl_Status( ) );
       break;
 
@@ -849,6 +893,10 @@ void Meta_Global_Peerchain_Entry::impl::set_field_value( int field, const string
       break;
 
       case 10:
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Shared_Secret, value );
+      break;
+
+      case 11:
       func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Status, value );
       break;
 
@@ -902,6 +950,10 @@ void Meta_Global_Peerchain_Entry::impl::set_field_default( int field )
       break;
 
       case 10:
+      impl_Shared_Secret( g_default_Shared_Secret );
+      break;
+
+      case 11:
       impl_Status( g_default_Status );
       break;
 
@@ -957,6 +1009,10 @@ bool Meta_Global_Peerchain_Entry::impl::is_field_default( int field ) const
       break;
 
       case 10:
+      retval = ( v_Shared_Secret == g_default_Shared_Secret );
+      break;
+
+      case 11:
       retval = ( v_Status == g_default_Status );
       break;
 
@@ -1106,6 +1162,7 @@ void Meta_Global_Peerchain_Entry::impl::clear( )
    v_Local_Port = g_default_Local_Port;
    v_Num_Helpers = g_default_Num_Helpers;
    v_Port_Numbers = g_default_Port_Numbers;
+   v_Shared_Secret = g_default_Shared_Secret;
    v_Status = g_default_Status;
 }
 
@@ -1183,6 +1240,13 @@ void Meta_Global_Peerchain_Entry::impl::validate(
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Num_Helpers,
        get_module_string( c_field_display_name_Num_Helpers ) + " " + error_message ) );
 
+   if( !is_null( v_Shared_Secret )
+    && ( v_Shared_Secret != g_default_Shared_Secret
+    || !value_will_be_provided( c_field_name_Shared_Secret ) )
+    && !g_Shared_Secret_domain.is_valid( v_Shared_Secret, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Shared_Secret,
+       get_module_string( c_field_display_name_Shared_Secret ) + " " + error_message ) );
+
    if( !g_peerchain_entry_type_enum.count( v_Entry_Type ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Entry_Type,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
@@ -1243,6 +1307,12 @@ void Meta_Global_Peerchain_Entry::impl::validate_set_fields(
     && !g_Num_Helpers_domain.is_valid( v_Num_Helpers, error_message = "" ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Num_Helpers,
        get_module_string( c_field_display_name_Num_Helpers ) + " " + error_message ) );
+
+   if( !is_null( v_Shared_Secret )
+    && ( fields_set.count( c_field_id_Shared_Secret ) || fields_set.count( c_field_name_Shared_Secret ) )
+    && !g_Shared_Secret_domain.is_valid( v_Shared_Secret, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Shared_Secret,
+       get_module_string( c_field_display_name_Shared_Secret ) + " " + error_message ) );
 }
 
 void Meta_Global_Peerchain_Entry::impl::after_fetch( )
@@ -1575,6 +1645,16 @@ void Meta_Global_Peerchain_Entry::Port_Numbers( const string& Port_Numbers )
    p_impl->impl_Port_Numbers( Port_Numbers );
 }
 
+const string& Meta_Global_Peerchain_Entry::Shared_Secret( ) const
+{
+   return p_impl->impl_Shared_Secret( );
+}
+
+void Meta_Global_Peerchain_Entry::Shared_Secret( const string& Shared_Secret )
+{
+   p_impl->impl_Shared_Secret( Shared_Secret );
+}
+
 int Meta_Global_Peerchain_Entry::Status( ) const
 {
    return p_impl->impl_Status( );
@@ -1876,6 +1956,16 @@ const char* Meta_Global_Peerchain_Entry::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Shared_Secret )
+   {
+      p_id = c_field_id_Shared_Secret;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Status )
    {
       p_id = c_field_id_Status;
@@ -1997,6 +2087,16 @@ const char* Meta_Global_Peerchain_Entry::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Shared_Secret )
+   {
+      p_name = c_field_name_Shared_Secret;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Status )
    {
       p_name = c_field_name_Status;
@@ -2091,6 +2191,11 @@ string Meta_Global_Peerchain_Entry::get_field_uom_symbol( const string& id_or_na
       name = string( c_field_display_name_Port_Numbers );
       get_module_string( c_field_display_name_Port_Numbers, &next );
    }
+   else if( id_or_name == c_field_id_Shared_Secret || id_or_name == c_field_name_Shared_Secret )
+   {
+      name = string( c_field_display_name_Shared_Secret );
+      get_module_string( c_field_display_name_Shared_Secret, &next );
+   }
    else if( id_or_name == c_field_id_Status || id_or_name == c_field_name_Status )
    {
       name = string( c_field_display_name_Status );
@@ -2131,6 +2236,8 @@ string Meta_Global_Peerchain_Entry::get_field_display_name( const string& id_or_
       display_name = get_module_string( c_field_display_name_Num_Helpers );
    else if( id_or_name == c_field_id_Port_Numbers || id_or_name == c_field_name_Port_Numbers )
       display_name = get_module_string( c_field_display_name_Port_Numbers );
+   else if( id_or_name == c_field_id_Shared_Secret || id_or_name == c_field_name_Shared_Secret )
+      display_name = get_module_string( c_field_display_name_Shared_Secret );
    else if( id_or_name == c_field_id_Status || id_or_name == c_field_name_Status )
       display_name = get_module_string( c_field_display_name_Status );
 
@@ -2496,6 +2603,7 @@ void Meta_Global_Peerchain_Entry::static_get_field_info( field_info_container& a
    all_field_info.push_back( field_info( "145105", "Local_Port", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "145109", "Num_Helpers", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "145111", "Port_Numbers", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "145112", "Shared_Secret", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145107", "Status", "int", false, "", "" ) );
 }
 
@@ -2569,6 +2677,10 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_id( field_id id )
       break;
 
       case 11:
+      p_id = "145112";
+      break;
+
+      case 12:
       p_id = "145107";
       break;
    }
@@ -2626,6 +2738,10 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_name( field_id id )
       break;
 
       case 11:
+      p_id = "Shared_Secret";
+      break;
+
+      case 12:
       p_id = "Status";
       break;
    }
@@ -2662,8 +2778,10 @@ int Meta_Global_Peerchain_Entry::static_get_field_num( const string& field )
       rc += 9;
    else if( field == c_field_id_Port_Numbers || field == c_field_name_Port_Numbers )
       rc += 10;
-   else if( field == c_field_id_Status || field == c_field_name_Status )
+   else if( field == c_field_id_Shared_Secret || field == c_field_name_Shared_Secret )
       rc += 11;
+   else if( field == c_field_id_Status || field == c_field_name_Status )
+      rc += 12;
 
    return rc - 1;
 }
