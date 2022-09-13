@@ -1123,6 +1123,9 @@ void process_list_items( const string& identity,
 
          if( p_list_items_to_ignore && p_list_items_to_ignore->count( next_hash ) )
          {
+            if( p_num_items_found )
+               ++( *p_num_items_found );
+
             if( allow_blob_creation )
                ++( *p_num_items_skipped );
 
@@ -1188,6 +1191,9 @@ void process_list_items( const string& identity,
             }
             else if( !recurse && is_fetching )
             {
+               if( p_num_items_found )
+                  ++( *p_num_items_found );
+
                // NOTE: For repository entries need to touch the local file.
                fetch_repository_entry_record( identity, next_hash, local_hash );
 
