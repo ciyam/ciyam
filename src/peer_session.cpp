@@ -3082,10 +3082,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          bool put_allowed = !get_session_variable(
           get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
 
-         if( !socket_handler.get_is_owner( ) && !get_session_variable(
-          get_special_var_name( e_special_var_blockchain_peer_is_owner ) ).empty( ) )
-            put_allowed = false;
-
          if( !put_allowed )
          {
             if( !socket_handler.get_is_responder( ) )
@@ -3864,10 +3860,21 @@ void peer_session::on_start( )
          ap_socket->read_line( slotx_and_pubkeyx,
           c_request_timeout, c_max_pubkey_size, p_progress );
 
+         if( has_support_sessions )
+            slot_and_pubkey += '+';
+
          ap_socket->write_line( slot_and_pubkey, c_request_timeout, p_progress );
       }
 
-      string::size_type pos = slotx_and_pubkeyx.find( '-' );
+      string::size_type pos = slotx_and_pubkeyx.find( '+' );
+
+      if( pos != string::npos )
+      {
+         has_support_sessions = true;
+         slotx_and_pubkeyx.erase( pos );
+      }
+
+      pos = slotx_and_pubkeyx.find( '-' );
 
       if( pos != string::npos )
       {

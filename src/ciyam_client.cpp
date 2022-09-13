@@ -1475,6 +1475,13 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                   if( is_message )
                   {
+                     string progress_prefix;
+
+                     // NOTE: If prior was not a message then ensure that
+                     // output will start from the beginning of the line.
+                     if( !had_message )
+                        progress_prefix = "\r";
+
                      had_message = true;
                      had_single_char_message = ( final_response.length( ) == 1 );
 
@@ -1495,7 +1502,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                               handle_progress_message( final_response );
                            else
                            {
-                              string progress_prefix( get_environment_variable( c_env_var_progress_prefix ) );
+                              progress_prefix += get_environment_variable( c_env_var_progress_prefix );
 
                               set_environment_variable( c_env_var_progress_prefix, "" );
 
