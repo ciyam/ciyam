@@ -77,8 +77,6 @@ const char c_tree_files_suffix = '+';
 const char c_error_message_prefix = '#';
 const char c_progress_output_prefix = '%';
 
-const char c_check_for_supporters_prefix = '*';
-
 const char* const c_hello = "hello";
 
 const char* const c_dummy_peer_tag = "peer";
@@ -756,17 +754,11 @@ void process_put_file( const string& blockchain,
 
                                     // NOTE: Either set a session variable or add the file info to
                                     // be fetched depending on whether or not "process_list_items"
-                                    // has been called (if was called the mapped hash will exist).
-                                    if( mapped_hash.empty( ) )
-                                    {
-                                       string prefix;
-                                       if( check_for_supporters )
-                                          prefix = c_check_for_supporters_prefix;
-
-                                       set_session_variable( hex_target_hash, prefix + hash_info );
-                                    }
-                                    else
+                                    // had been called (if was called the mapped hash will exist).
+                                    if( !mapped_hash.empty( ) )
                                        add_peer_file_hash_for_get( hash_info );
+                                    else
+                                       set_session_variable( hex_target_hash, hash_info );
                                  }
                               }
                            }
@@ -1026,6 +1018,12 @@ void process_list_items( const string& identity,
    bool is_fetching = !get_session_variable( blockchain_is_fetching_name ).empty( );
    bool is_peer_owner = !get_session_variable( blockchain_peer_is_owner_name ).empty( );
 
+   bool check_for_supporters = false;
+
+   if( !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
+      check_for_supporters = true;
+
    bool store_encrypted_hashes = false;
 
    if( is_fetching )
@@ -1152,14 +1150,6 @@ void process_list_items( const string& identity,
 
                      if( !hash_info.empty( ) )
                      {
-                        bool check_for_supporters = false;
-
-                        if( hash_info[ 0 ] == c_check_for_supporters_prefix )
-                        {
-                           hash_info.erase( 0, 1 );
-                           check_for_supporters = true;
-                        }
-
                         added = true;
                         add_peer_file_hash_for_get( hash_info, check_for_supporters );
                      }
@@ -1171,7 +1161,9 @@ void process_list_items( const string& identity,
                   else if( is_peer_owner )
                   {
                      added = true;
-                     add_peer_file_hash_for_get( next_hash + ':' + next_secondary + c_repository_suffix );
+
+                     add_peer_file_hash_for_get( next_hash
+                      + ':' + next_secondary + c_repository_suffix, check_for_supporters );
                   }
                }
 
@@ -2385,6 +2377,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         has_tree_files = chk_file( next_block_tag, &next_block_hash );
 
                         has_issued_chk = true;
+
+                        add_to_blockchain_tree_item( blockchain, num_items_found );
                      }
 
                      blockchain_height_pending = blockchain_height + 1;
