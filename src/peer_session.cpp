@@ -1090,7 +1090,7 @@ void process_list_items( const string& identity,
                   set_session_progress_output( progress );
                else
                {
-                  size_t next_height = from_string< size_t >( blockchain_height_processed );
+                  size_t next_height = from_string< size_t >( blockchain_height_processed ) + 1;
 
                   // FUTURE: This message should be handled as a server string message.
                   string progress_message( "Synchronising at height " + to_string( next_height ) );
@@ -1227,6 +1227,14 @@ void process_list_items( const string& identity,
                fetch_repository_entry_record( identity, next_hash, local_hash );
 
                touch_file( local_hash, identity, false );
+            }
+            else
+            {
+               if( p_num_items_found )
+                  ++( *p_num_items_found );
+
+               if( is_fetching )
+                  add_to_blockchain_tree_item( blockchain, 1 );
             }
          }
          else if( recurse && is_list_file( next_hash ) )
@@ -2835,6 +2843,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    bool had_zenith_hash = false;
    bool check_for_supporters = false;
 
+   bool is_owner = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
+
    if( !get_session_variable( blockchain_zenith_height_name ).empty( ) )
       had_zenith_hash = true;
 
@@ -3022,7 +3033,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   hash = tag_file_hash( block_tag );
                }
 
-               if( get_block_height_from_tags( blockchain, hash, blockchain_height ) )
+               if( !is_owner && get_block_height_from_tags( blockchain, hash, blockchain_height ) )
                {
                   string first_item_hash;
 
@@ -3035,6 +3046,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   temporary_session_variable temp_hash( get_special_var_name( e_special_var_hash ), first_item_hash );
 
+                  
                   if( socket_handler.get_is_responder( ) )
                   {
                      if( blockchain_height > socket_handler.get_blockchain_height( ) )
