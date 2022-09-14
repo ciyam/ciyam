@@ -968,6 +968,8 @@ void process_list_items( const string& identity,
 
    string all_list_items( extract_file( hash, "" ) );
 
+   string blockchain( c_bc_prefix + identity );
+
    vector< string > list_items;
    vector< string > secondary_values;
 
@@ -1042,6 +1044,9 @@ void process_list_items( const string& identity,
          allow_blob_creation = true;
    }
 
+   string num_tree_items( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
+
    string blockchain_height_processed( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processed ) ) );
 
@@ -1081,7 +1086,25 @@ void process_list_items( const string& identity,
 
             if( is_fetching )
             {
-               set_session_progress_output( progress );
+               if( blockchain_height_processed.empty( ) )
+                  set_session_progress_output( progress );
+               else
+               {
+                  size_t next_height = from_string< size_t >( blockchain_height_processed );
+
+                  // FUTURE: This message should be handled as a server string message.
+                  string progress_message( "Synchronising at height " + to_string( next_height ) );
+
+                  progress_message += " (" + to_string( get_blockchain_tree_item( blockchain ) );
+
+                  if( !num_tree_items.empty( ) )
+                     progress_message += '/' + num_tree_items;
+
+                  progress_message += ")...";
+
+                  set_session_progress_output( progress_message );
+               }
+
                progress = ".";
             }
 
@@ -1128,6 +1151,9 @@ void process_list_items( const string& identity,
 
             if( allow_blob_creation )
                ++( *p_num_items_skipped );
+
+            if( is_fetching )
+               add_to_blockchain_tree_item( blockchain, 1 );
 
             continue;
          }
@@ -1194,6 +1220,9 @@ void process_list_items( const string& identity,
                if( p_num_items_found )
                   ++( *p_num_items_found );
 
+               if( is_fetching )
+                  add_to_blockchain_tree_item( blockchain, 1 );
+
                // NOTE: For repository entries need to touch the local file.
                fetch_repository_entry_record( identity, next_hash, local_hash );
 
@@ -1204,6 +1233,9 @@ void process_list_items( const string& identity,
          {
             if( p_num_items_found )
                ++( *p_num_items_found );
+
+            if( is_fetching )
+               add_to_blockchain_tree_item( blockchain, 1 );
 
             process_list_items( identity, next_hash, recurse,
              p_blob_data, p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress, p_num_items_skipped );
@@ -1218,6 +1250,9 @@ void process_list_items( const string& identity,
 
             if( p_num_items_found )
                ++( *p_num_items_found );
+
+            if( is_fetching )
+               add_to_blockchain_tree_item( blockchain, 1 );
 
             if( has_repository_entry_record( identity, next_hash ) )
             {
@@ -1259,6 +1294,12 @@ void process_list_items( const string& identity,
          }
          else
          {
+            if( p_num_items_found )
+               ++( *p_num_items_found );
+
+            if( is_fetching )
+               add_to_blockchain_tree_item( blockchain, 1 );
+
             // NOTE: Although recursion was not requested in order to ensure
             // that all blob items will be "touched" need to do this anyway.
             if( !is_list_file( next_hash ) )
@@ -2383,8 +2424,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         has_tree_files = chk_file( next_block_tag, &next_block_hash );
 
                         has_issued_chk = true;
-
-                        add_to_blockchain_tree_item( blockchain, num_items_found );
                      }
 
                      blockchain_height_pending = blockchain_height + 1;
