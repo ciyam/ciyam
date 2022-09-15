@@ -1475,15 +1475,20 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                   if( is_message )
                   {
-                     string progress_prefix;
-
-                     // NOTE: If prior was not a message then ensure that
-                     // output will start from the beginning of the line.
-                     if( !had_message )
-                        progress_prefix = "\r";
-
                      had_message = true;
-                     had_single_char_message = ( final_response.length( ) == 1 );
+
+                     if( final_response.length( ) == 1 )
+                     {
+                        if( !had_single_char_message )
+                        {
+                           // NOTE: Double the single character response in order
+                           // to first erase the prior progress percentage output.
+                           if( had_chunk_progress && is_stdout_console( ) )
+                              progress.output_progress( final_response + final_response );
+                        }
+
+                        had_single_char_message = true;
+                     }
 
                      date_time now( date_time::local( ) );
 
@@ -1502,7 +1507,10 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                               handle_progress_message( final_response );
                            else
                            {
-                              progress_prefix += get_environment_variable( c_env_var_progress_prefix );
+                              if( had_single_char_message )
+                                 progress.output_prefix.erase( );
+
+                              string progress_prefix( get_environment_variable( c_env_var_progress_prefix ) );
 
                               set_environment_variable( c_env_var_progress_prefix, "" );
 
@@ -1542,13 +1550,23 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   {
                      had_message = false;
 
-                     if( !had_chunk_progress && !has_option_no_progress( ) )
+                     if( !has_option_no_progress( ) )
                      {
+                        if( had_chunk_progress )
+                           had_chunk_progress = false;
+
                         if( is_stdout_console( ) )
-                           progress.output_progress( "" );
+                        {
+                           progress.output_length = 0;
+                           progress.output_prefix.erase( );
+
+                           cout << endl;
+                        }
                         else if( had_single_char_message )
                            handle_progress_message( "" );
                      }
+
+                     had_single_char_message = false;
                   }
 #ifdef DEBUG
                   cout << response;

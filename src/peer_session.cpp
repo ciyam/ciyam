@@ -1152,7 +1152,7 @@ void process_list_items( const string& identity,
             if( allow_blob_creation )
                ++( *p_num_items_skipped );
 
-            if( is_fetching )
+            if( recurse && is_fetching )
                add_to_blockchain_tree_item( blockchain, 1 );
 
             continue;
@@ -1220,7 +1220,7 @@ void process_list_items( const string& identity,
                if( p_num_items_found )
                   ++( *p_num_items_found );
 
-               if( is_fetching )
+               if( recurse && is_fetching )
                   add_to_blockchain_tree_item( blockchain, 1 );
 
                // NOTE: For repository entries need to touch the local file.
@@ -1233,7 +1233,7 @@ void process_list_items( const string& identity,
                if( p_num_items_found )
                   ++( *p_num_items_found );
 
-               if( is_fetching )
+               if( recurse && is_fetching )
                   add_to_blockchain_tree_item( blockchain, 1 );
             }
          }
@@ -1242,7 +1242,7 @@ void process_list_items( const string& identity,
             if( p_num_items_found )
                ++( *p_num_items_found );
 
-            if( is_fetching )
+            if( recurse && is_fetching )
                add_to_blockchain_tree_item( blockchain, 1 );
 
             process_list_items( identity, next_hash, recurse,
@@ -1259,7 +1259,7 @@ void process_list_items( const string& identity,
             if( p_num_items_found )
                ++( *p_num_items_found );
 
-            if( is_fetching )
+            if( recurse && is_fetching )
                add_to_blockchain_tree_item( blockchain, 1 );
 
             if( has_repository_entry_record( identity, next_hash ) )
@@ -1304,9 +1304,6 @@ void process_list_items( const string& identity,
          {
             if( p_num_items_found )
                ++( *p_num_items_found );
-
-            if( is_fetching )
-               add_to_blockchain_tree_item( blockchain, 1 );
 
             // NOTE: Although recursion was not requested in order to ensure
             // that all blob items will be "touched" need to do this anyway.
