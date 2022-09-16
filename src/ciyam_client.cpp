@@ -751,6 +751,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
          }
          else
          {
+            bool was_wait = false;
             bool was_get_or_put = false;
             bool ignore_exception = false;
 
@@ -758,7 +759,9 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
             {
                string::size_type pos = str.find( ' ' );
 
-               if( str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "put" )
+               if( str.substr( 0, pos ) == "wait" )
+                  was_wait = true;
+               else if( str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "put" )
                   was_get_or_put = true;
 
                if( str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "file_get" )
@@ -1477,7 +1480,8 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   {
                      had_message = true;
 
-                     if( final_response.length( ) == 1 )
+                     if( ( final_response != string( " " ) )
+                      && ( final_response.length( ) == 1 ) )
                      {
                         if( !had_single_char_message )
                         {
@@ -1552,22 +1556,22 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                      if( !has_option_no_progress( ) )
                      {
-                        if( had_chunk_progress )
-                           had_chunk_progress = false;
+                        had_chunk_progress = false;
 
                         if( is_stdout_console( ) )
                         {
                            progress.output_length = 0;
                            progress.output_prefix.erase( );
 
-                           cout << endl;
+                           if( !was_wait )
+                              cout << endl;
                         }
                         else if( had_single_char_message )
                            handle_progress_message( "" );
                      }
-
-                     had_single_char_message = false;
                   }
+
+                  had_single_char_message = false;
 #ifdef DEBUG
                   cout << response;
 #endif
