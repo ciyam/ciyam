@@ -4248,7 +4248,38 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string milliseconds( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_milliseconds ) );
 
          set_uid( uid );
-         msleep( atoi( milliseconds.c_str( ) ) );
+
+         int msecs = atoi( milliseconds.c_str( ) );
+
+         bool use_dots = false;
+
+         if( msecs < 0 )
+         {
+            msecs *= -1;
+            use_dots = true;
+         }
+
+         if( msecs < 2000 )
+            msleep( msecs );
+         else
+         {
+            while( true )
+            {
+               if( use_dots )
+                  handler.output_progress( "." );
+               else
+                  handler.output_progress( "(waiting for " + format_duration( msecs / 1000, true ) + ")" );
+
+               msleep( min( 1000, msecs ) );
+
+               if( msecs <= 1000 )
+                  break;
+
+               msecs -= 1000;
+            }
+
+            handler.output_progress( " " );
+         }
       }
       else if( command == c_cmd_ciyam_session_session_timeout )
       {
