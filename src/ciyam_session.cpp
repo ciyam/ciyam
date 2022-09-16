@@ -4259,7 +4259,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             use_dots = true;
          }
 
-         if( msecs < 2000 )
+         if( msecs <= 2000 )
             msleep( msecs );
          else
          {
@@ -4268,7 +4268,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( use_dots )
                   handler.output_progress( "." );
                else
-                  handler.output_progress( "(waiting for " + format_duration( msecs / 1000, true ) + ")" );
+                  handler.output_progress( "(wait " + format_duration( msecs / 1000, true ) + ")" );
 
                msleep( min( 1000, msecs ) );
 

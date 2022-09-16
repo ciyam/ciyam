@@ -2077,6 +2077,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
        get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
 
       date_time dtm( date_time::local( ) );
+
       process_list_items( identity, hash, false, 0, 0, &list_items_to_ignore, &dtm, this );
    }
 
