@@ -2019,25 +2019,25 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
 {
    last_issued_was_put = false;
 
-   progress* p_progress = 0;
-   trace_progress progress( TRACE_SOCK_OPS );
+   progress* p_sock_progress = 0;
+   trace_progress sock_progress( TRACE_SOCK_OPS );
 
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
-      p_progress = &progress;
+      p_sock_progress = &sock_progress;
 
    string::size_type pos = hash_info.find( ':' );
 
    string hash( hash_info.substr( 0, pos ) );
 
    socket.set_delay( );
-   socket.write_line( string( c_cmd_peer_session_get ) + " " + hash, c_request_timeout, p_progress );
+   socket.write_line( string( c_cmd_peer_session_get ) + " " + hash, c_request_timeout, p_sock_progress );
 
    bool is_list = false;
    size_t num_bytes = 0;
 
    if( !p_file_data )
    {
-      store_file( hash, socket, 0, p_progress, true, 0, true );
+      store_file( hash, socket, 0, p_sock_progress, true, 0, true );
 
       is_list = is_list_file( hash );
       num_bytes = file_bytes( hash );
@@ -2046,7 +2046,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
    {
       string file_data;
 
-      store_file( hash, socket, 0, p_progress, true, 0, true, &file_data, &num_bytes );
+      store_file( hash, socket, 0, p_sock_progress, true, 0, true, &file_data, &num_bytes );
 
       *p_file_data = file_data;
 
@@ -2076,7 +2076,8 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
 
-      process_list_items( identity, hash, false, 0, 0, &list_items_to_ignore );
+      date_time dtm( date_time::local( ) );
+      process_list_items( identity, hash, false, 0, 0, &list_items_to_ignore, &dtm, this );
    }
 
    increment_peer_files_downloaded( num_bytes );
@@ -2086,33 +2087,33 @@ void socket_command_handler::put_file( const string& hash )
 {
    last_issued_was_put = true;
 
-   progress* p_progress = 0;
-   trace_progress progress( TRACE_SOCK_OPS );
+   progress* p_sock_progress = 0;
+   trace_progress sock_progress( TRACE_SOCK_OPS );
 
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
-      p_progress = &progress;
+      p_sock_progress = &sock_progress;
 
    socket.set_delay( );
-   socket.write_line( string( c_cmd_peer_session_put ) + " " + hash, c_request_timeout, p_progress );
+   socket.write_line( string( c_cmd_peer_session_put ) + " " + hash, c_request_timeout, p_sock_progress );
 
-   fetch_file( hash, socket, p_progress );
+   fetch_file( hash, socket, p_sock_progress );
 
    increment_peer_files_uploaded( file_bytes( hash ) );
 }
 
 void socket_command_handler::pip_peer( const string& ip_address )
 {
-   progress* p_progress = 0;
-   trace_progress progress( TRACE_SOCK_OPS );
+   progress* p_sock_progress = 0;
+   trace_progress sock_progress( TRACE_SOCK_OPS );
 
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
-      p_progress = &progress;
+      p_sock_progress = &sock_progress;
 
    socket.set_no_delay( );
-   socket.write_line( string( c_cmd_peer_session_pip ) + " " + ip_address, c_request_timeout, p_progress );
+   socket.write_line( string( c_cmd_peer_session_pip ) + " " + ip_address, c_request_timeout, p_sock_progress );
 
    string response;
-   if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
+   if( socket.read_line( response, c_request_timeout, 0, p_sock_progress ) <= 0 )
    {
       string error;
 
@@ -2130,11 +2131,11 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 {
    bool has_extra = false;
 
-   progress* p_progress = 0;
-   trace_progress progress( TRACE_SOCK_OPS );
+   progress* p_sock_progress = 0;
+   trace_progress sock_progress( TRACE_SOCK_OPS );
 
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
-      p_progress = &progress;
+      p_sock_progress = &sock_progress;
 
    string expected;
 
@@ -2142,7 +2143,7 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
    if( p_response )
       socket.write_line(
-       string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_progress );
+       string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_sock_progress );
    else
    {
       string nonce( uuid( ).as_string( ) );
@@ -2150,7 +2151,7 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
       expected = hash_with_nonce( hash_or_tag, nonce );
 
       socket.write_line( string( c_cmd_peer_session_chk )
-       + " " + hash_or_tag + " " + nonce, c_request_timeout, p_progress );
+       + " " + hash_or_tag + " " + nonce, c_request_timeout, p_sock_progress );
    }
 
    string response;
@@ -2159,7 +2160,7 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
    {
       response.erase( );
 
-      if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
+      if( socket.read_line( response, c_request_timeout, 0, p_sock_progress ) <= 0 )
       {
          string error;
 
@@ -2751,11 +2752,11 @@ void socket_command_handler::postprocess_command_and_args( const string& cmd_and
 
 void socket_command_handler::handle_command_response( const string& response, bool is_special )
 {
-   progress* p_progress = 0;
-   trace_progress progress( TRACE_SOCK_OPS );
+   progress* p_sock_progress = 0;
+   trace_progress sock_progress( TRACE_SOCK_OPS );
 
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
-      p_progress = &progress;
+      p_sock_progress = &sock_progress;
 
    if( !response.empty( ) )
    {
@@ -2764,13 +2765,13 @@ void socket_command_handler::handle_command_response( const string& response, bo
       else
          socket.set_no_delay( );
 
-      socket.write_line( response, c_request_timeout, p_progress );
+      socket.write_line( response, c_request_timeout, p_sock_progress );
    }
 
    if( !is_special && is_responder )
    {
       socket.set_no_delay( );
-      socket.write_line( c_response_okay, c_request_timeout, p_progress );
+      socket.write_line( c_response_okay, c_request_timeout, p_sock_progress );
    }
 }
 
@@ -3417,11 +3418,11 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
    while( true )
    {
-      progress* p_progress = 0;
-      trace_progress progress( TRACE_SOCK_OPS );
+      progress* p_sock_progress = 0;
+      trace_progress sock_progress( TRACE_SOCK_OPS );
 
       if( get_trace_flags( ) & TRACE_SOCK_OPS )
-         p_progress = &progress;
+         p_sock_progress = &sock_progress;
 
       if( !check_for_supporters
        && !get_session_variable( blockchain_peer_has_supporters_name ).empty( ) )
@@ -3433,7 +3434,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          {
             string response;
 
-            if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
+            if( socket.read_line( response, c_request_timeout, 0, p_sock_progress ) <= 0 )
             {
                cmd_and_args = "bye";
                break;
@@ -3470,7 +3471,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
       cmd_and_args.erase( );
 
-      if( socket.read_line( cmd_and_args, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
+      if( socket.read_line( cmd_and_args, c_request_timeout, c_max_line_length, p_sock_progress ) <= 0 )
       {
          if( !is_captured_session( )
           && ( is_condemned_session( ) || g_server_shutdown || !socket.had_timeout( ) ) )
@@ -3646,12 +3647,12 @@ peer_session::peer_session( int64_t time_val,
     && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
       is_owner = true;
 
-   progress* p_progress = 0;
-   trace_progress progress( TRACE_SOCK_OPS );
+   progress* p_sock_progress = 0;
+   trace_progress sock_progress( TRACE_SOCK_OPS );
 
 #ifdef DEBUG_PEER_HANDSHAKE
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
-      p_progress = &progress;
+      p_sock_progress = &sock_progress;
 #endif
 
    this->ap_socket->set_no_delay( );
@@ -3683,13 +3684,13 @@ peer_session::peer_session( int64_t time_val,
       if( is_owner && !is_for_support )
          pid += '!';
 
-      this->ap_socket->write_line( pid, c_request_timeout, p_progress );
+      this->ap_socket->write_line( pid, c_request_timeout, p_sock_progress );
    }
    else
    {
       pid.erase( );
 
-      this->ap_socket->read_line( pid, c_request_timeout, c_max_greeting_size, p_progress );
+      this->ap_socket->read_line( pid, c_request_timeout, c_max_greeting_size, p_sock_progress );
 
       string::size_type pos = pid.find( '!' );
 
@@ -3784,12 +3785,12 @@ void peer_session::on_start( )
       cmd_handler.add_commands( 0,
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
 
-      progress* p_progress = 0;
-      trace_progress progress( TRACE_SOCK_OPS );
+      progress* p_sock_progress = 0;
+      trace_progress sock_progress( TRACE_SOCK_OPS );
 
 #ifdef DEBUG_PEER_HANDSHAKE
       if( get_trace_flags( ) & TRACE_SOCK_OPS )
-         p_progress = &progress;
+         p_sock_progress = &sock_progress;
 #endif
 
       string unprefixed_blockchain( blockchain );
@@ -3803,13 +3804,13 @@ void peer_session::on_start( )
             extra += '!';
 
          ap_socket->write_line( string( c_protocol_version )
-          + ':' + extra + '\n' + string( c_response_okay ), c_request_timeout, p_progress );
+          + ':' + extra + '\n' + string( c_response_okay ), c_request_timeout, p_sock_progress );
       }
       else
       {
          string greeting;
 
-         if( ap_socket->read_line( greeting, c_request_timeout, c_max_greeting_size, p_progress ) <= 0 )
+         if( ap_socket->read_line( greeting, c_request_timeout, c_max_greeting_size, p_sock_progress ) <= 0 )
          {
             // FUTURE: This message should be handled as a server string message.
             string error;
@@ -3899,19 +3900,19 @@ void peer_session::on_start( )
       // NOTE: After handshake exchange public keys then commence peer protocol.
       if( is_responder )
       {
-         ap_socket->write_line( slot_and_pubkey, c_request_timeout, p_progress );
+         ap_socket->write_line( slot_and_pubkey, c_request_timeout, p_sock_progress );
 
-         ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout, c_max_pubkey_size, p_progress );
+         ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout, c_max_pubkey_size, p_sock_progress );
       }
       else
       {
          ap_socket->read_line( slotx_and_pubkeyx,
-          c_request_timeout, c_max_pubkey_size, p_progress );
+          c_request_timeout, c_max_pubkey_size, p_sock_progress );
 
          if( has_support_sessions )
             slot_and_pubkey += '+';
 
-         ap_socket->write_line( slot_and_pubkey, c_request_timeout, p_progress );
+         ap_socket->write_line( slot_and_pubkey, c_request_timeout, p_sock_progress );
       }
 
       string::size_type pos = slotx_and_pubkeyx.find( '+' );
@@ -4052,7 +4053,7 @@ void peer_session::on_start( )
          if( hash_or_tag.empty( ) )
             hash_or_tag = hello_hash;
 
-         ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_progress );
+         ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_sock_progress );
 
          cmd_handler.state( ) = e_peer_state_waiting_for_put;
          cmd_handler.op_state( ) = e_peer_state_waiting_for_put;
@@ -4061,7 +4062,7 @@ void peer_session::on_start( )
          {
             string block_hash;
 
-            if( ap_socket->read_line( block_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
+            if( ap_socket->read_line( block_hash, c_request_timeout, c_max_line_length, p_sock_progress ) <= 0 )
                okay = false;
             else if( !is_for_support && ( block_hash != string( c_response_not_found ) ) )
                add_peer_file_hash_for_get( block_hash );
