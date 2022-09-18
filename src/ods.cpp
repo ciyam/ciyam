@@ -2947,7 +2947,7 @@ string ods::get_file_names( const char* p_ext, char sep, bool add_tranlog_always
 void ods::reconstruct_database( progress* p_progress )
 {
    if( !p_impl->using_tranlog )
-      THROW_ODS_ERROR( "cannot reconstruct database unless using a tranlog" );
+      THROW_ODS_ERROR( "cannot reconstruct database unless using a transaction log" );
    else
       restore_from_transaction_log( true, p_progress );
 }
@@ -4673,10 +4673,10 @@ void ods::bulk_operation_close( )
    if( !okay )
       THROW_ODS_ERROR( "database instance in bad state" );
 
-   DEBUG_LOG( "ods::bulk_operation_close( )" );
-
    close_store( );
    unlock_header_file( );
+
+   DEBUG_LOG( "ods::bulk_operation_close( )" );
 }
 
 void ods::bulk_operation_start( )
@@ -4685,6 +4685,7 @@ void ods::bulk_operation_start( )
       THROW_ODS_ERROR( "database instance in bad state" );
 
    DEBUG_LOG( "ods::bulk_operation_start( )" );
+
    if( !*p_impl->rp_bulk_level )
       bulk_operation_open( );
 
@@ -4698,6 +4699,7 @@ void ods::bulk_operation_pause( )
       THROW_ODS_ERROR( "database instance in bad state" );
 
    DEBUG_LOG( "ods::bulk_operation_pause( )" );
+
    *p_impl->rp_is_in_bulk_pause = true;
    bulk_operation_close( );
 
@@ -4712,9 +4714,10 @@ void ods::bulk_operation_finish( )
    if( !okay )
       THROW_ODS_ERROR( "database instance in bad state" );
 
-   DEBUG_LOG( "ods::bulk_operation_finish( )" );
    if( !--( *p_impl->rp_bulk_level ) )
       bulk_operation_close( );
+
+   DEBUG_LOG( "ods::bulk_operation_finish( )" );
 }
 
 void ods::transaction_start( const char* p_label )
@@ -5441,6 +5444,8 @@ void ods::rollback_dead_transactions( progress* p_progress )
    guard lock_read( read_lock );
    guard lock_impl( *p_impl->rp_impl_lock );
 
+   DEBUG_LOG( "(rollback dead transactions)" );
+
    if( !okay )
       THROW_ODS_ERROR( "database instance in bad state" );
 
@@ -5522,6 +5527,8 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
    guard lock_read( read_lock );
    guard lock_impl( *p_impl->rp_impl_lock );
 
+   DEBUG_LOG( "(restore from transaction log)" );
+
    if( !okay )
       THROW_ODS_ERROR( "database instance in bad state" );
 
@@ -5581,26 +5588,39 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
    }
    else
    {
+      string tranlog_path( "." );
+      string tranlog_file( p_impl->tranlog_file_name );
+
+      string::size_type pos = tranlog_file.rfind( '/' );
+
+      if( pos != string::npos )
+      {
+         tranlog_path = tranlog_file.substr( 0, pos );
+         tranlog_file.erase( 0, pos + 1 );
+      }
+
       file_filter ff;
-      fs_iterator fsi( ".", &ff );
+      fs_iterator fsi( tranlog_path, &ff );
 
       while( fsi.has_next( ) )
       {
-         string::size_type pos = fsi.get_name( ).find( p_impl->tranlog_file_name );
+         string::size_type pos = fsi.get_name( ).find( tranlog_file );
 
          if( pos != 0 )
             continue;
 
-         fs.open( fsi.get_name( ).c_str( ), ios::in | ios::binary );
+         string tranlog_path_and_file( tranlog_path + '/' + fsi.get_name( ) );
+
+         fs.open( tranlog_path_and_file.c_str( ), ios::in | ios::binary );
 
          if( !fs )
-            THROW_ODS_ERROR( "unable to open transaction log '" + fsi.get_name( ) + "' in restore_from_transaction_log" );
+            THROW_ODS_ERROR( "unable to open transaction log '" + tranlog_path_and_file + "' in restore_from_transaction_log" );
 
          tranlog_info.read( fs );
 
          fs.close( );
 
-         sequenced_logs.insert( make_pair( tranlog_info.sequence, make_pair( fsi.get_name( ), tranlog_info ) ) );
+         sequenced_logs.insert( make_pair( tranlog_info.sequence, make_pair( tranlog_path_and_file, tranlog_info ) ) );
       }
 
       int64_t init_time = 0;
@@ -5627,6 +5647,8 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
    }
 
    int64_t entry_num = 0;
+
+   int64_t last_offs = 0;
    int64_t last_tx_id = 0;
 
    int64_t last_entry_offs = 0;
@@ -5718,7 +5740,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                had_any_entries = true;
                tranlog_offset = entry_offset;
 
-               if( !next_offs )
+               if( !next_offs || ( next_offs == last_offs ) )
                   next_offs = tranlog_info.append_offs;
 
                bool had_any_data = false;
@@ -5901,6 +5923,8 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                fs.seekg( next_offs, ios::beg );
             }
 
+            last_offs = next_offs;
+
             if( fs.tellg( ) > tranlog_info.entry_offs )
                break;
          }
@@ -5959,9 +5983,6 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
       data_and_index_write( false );
 
-      p_impl->rp_header_info->num_trans = 0;
-      p_impl->rp_header_info->num_writers = 0;
-
       if( is_reconstruct )
          p_impl->rp_header_info->tranlog_offset = tranlog_offset;
       else
@@ -5979,12 +6000,23 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
          p_impl->rp_header_info->data_transform_id = last_data_transform_id;
          p_impl->rp_header_info->index_transform_id = last_index_transform_id;
       }
-
-      *p_impl->rp_has_changed = true;
-      p_impl->write_header_file_info( );
-
-      *p_impl->rp_has_changed = false;
    }
+
+   p_impl->rp_header_info->num_trans = 0;
+   p_impl->rp_header_info->num_writers = 0;
+
+   // NOTE: If no write has occurred then act as though
+   // one has in order to ensure that the "num_writers"
+   // will be correctly zeroed.
+   if( !*p_impl->rp_has_changed )
+   {
+      *p_impl->rp_has_changed = true;
+      ++p_impl->rp_header_info->num_writers;
+   }
+
+   p_impl->write_header_file_info( );
+
+   *p_impl->rp_has_changed = false;
 }
 
 ods& operator >>( ods& o, storable_base& s )
@@ -6313,6 +6345,7 @@ ods& operator <<( ods& o, storable_base& s )
             int64_t old_tx_id = index_entry.data.tran_id;
 
             transaction_op op;
+
             if( o.p_impl->trans_level )
             {
                op.data.id = s.id;
@@ -6324,6 +6357,7 @@ ods& operator <<( ods& o, storable_base& s )
                   op.type = transaction_op::e_op_type_append;
 
                op.data.old_tran_id = old_tran_id;
+
                if( index_entry.trans_flag != ods_index_entry::e_trans_none )
                   op.data.old_tran_op = index_entry.data.tran_op;
 

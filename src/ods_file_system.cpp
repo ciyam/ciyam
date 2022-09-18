@@ -672,7 +672,6 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
 
    btree_type& bt( p_impl->bt );
 
-
    if( valid_file_name( name ) != name )
    {
       if( p_os )
@@ -704,6 +703,7 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
       }
 
       auto_ptr< ods::transaction > ap_ods_tx;
+
       if( !o.is_in_transaction( ) )
          ap_ods_tx.reset( new ods::transaction( o ) );
 
@@ -759,6 +759,7 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
                   *p_os << "Enter multi-line content followed by a line with just a single dot (.) to finish:" << endl;
 
                bool first = true;
+
                while( getline( *p_is, next ) )
                {
                   if( next == "." )

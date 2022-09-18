@@ -45,6 +45,7 @@ const char* const c_cmd_exclusive = "x";
 const char* const c_cmd_use_transaction_log = "tlg";
 const char* const c_cmd_use_synchronised_write = "sync";
 const char* const c_cmd_use_for_regression_tests = "test";
+const char* const c_cmd_reconstruct_from_transaction_log = "reconstruct";
 
 const char* const c_rename_attribute_type_input = "input";
 const char* const c_rename_attribute_type_folder = "folder";
@@ -70,6 +71,7 @@ bool g_shared_write = true;
 bool g_use_transaction_log = false;
 bool g_use_synchronised_write = false;
 bool g_use_for_regression_tests = false;
+bool g_reconstruct_from_transaction_log = false;
 
 bool g_application_title_called = false;
 
@@ -383,6 +385,8 @@ class ods_fsed_startup_functor : public command_functor
          g_use_synchronised_write = true;
       else if( command == c_cmd_use_for_regression_tests )
          g_use_for_regression_tests = true;
+      else if( command == c_cmd_reconstruct_from_transaction_log )
+         g_reconstruct_from_transaction_log = true;
    }
 };
 
@@ -443,15 +447,23 @@ void ods_fsed_command_handler::init_ods( const char* p_file_name )
    if( not_found )
       throw runtime_error( "unexpected database not found" );
 
-   if( ap_ods->is_corrupt( ) )
+   if( ap_ods->is_corrupt( ) || g_reconstruct_from_transaction_log )
    {
       if( g_shared_write )
-         throw runtime_error( "ODS DB is corrupt - re-start using exclusive write access in order to repair" );
+      {
+         if( !ap_ods->is_corrupt( ) )
+            throw runtime_error( "restart using exclusive write access in order to reconstruct" );
+         else
+            throw runtime_error( "ODS DB is corrupt - restart using exclusive write access in order to repair/reconstruct" );
+      }
 
       console_progress progress;
       console_progress* p_progress = has_option_no_progress( ) ? 0 : &progress;
 
-      ap_ods->repair_corrupt_database( p_progress );
+      if( g_reconstruct_from_transaction_log )
+         ap_ods->reconstruct_database( p_progress );
+      else
+         ap_ods->repair_corrupt_database( p_progress );
    }
 
    ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );
@@ -818,6 +830,9 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_use_for_regression_tests, 2,
           "", "use this for regression tests", new ods_fsed_startup_functor( cmd_handler ) );
 
+         cmd_handler.add_command( c_cmd_reconstruct_from_transaction_log, 3,
+          "", "use to reconstruct from transaction log", new ods_fsed_startup_functor( cmd_handler ) );
+
          processor.process_commands( );
 
          cmd_handler.remove_command( c_cmd_password );
@@ -825,6 +840,7 @@ int main( int argc, char* argv[ ] )
          cmd_handler.remove_command( c_cmd_use_transaction_log );
          cmd_handler.remove_command( c_cmd_use_synchronised_write );
          cmd_handler.remove_command( c_cmd_use_for_regression_tests );
+         cmd_handler.remove_command( c_cmd_reconstruct_from_transaction_log );
       }
 
       if( !cmd_handler.has_option_quiet( ) )

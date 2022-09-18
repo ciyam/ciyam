@@ -1257,6 +1257,8 @@ const size_t c_num_send_stream_sessions_default = 1;
 
 string g_empty_string;
 
+string_container g_strings;
+
 int g_server_port = c_default_ciyam_port;
 
 int g_stream_port = 0;
@@ -1282,7 +1284,65 @@ map< string, map< string, string > > g_crypt_keys;
 auto_ptr< ods > gap_ods;
 auto_ptr< ods_file_system > gap_ofs;
 
+string g_domain;
+string g_timezone;
+string g_web_root;
+
+string g_set_trace;
+
+bool g_use_udp = false;
+bool g_use_https = false;
+bool g_using_ssl = false;
+
+string g_gpg_password;
+string g_pem_password;
+string g_rpc_password;
+string g_sql_password;
+
+int g_test_peer_port = 0;
+
+string g_default_storage;
+
+unsigned int g_session_timeout = 0;
+
+unsigned int g_max_peers = c_default_max_peers;
+unsigned int g_max_user_limit = c_default_max_user_limit;
+
+bool g_script_reconfig = false;
+
 bool g_ods_use_sync_write = true;
+
+set< string > g_accepted_ip_addrs;
+set< string > g_rejected_ip_addrs;
+set< string > g_accepted_peer_ip_addrs;
+set< string > g_rejected_peer_ip_addrs;
+
+string g_mbox_path;
+string g_mbox_username;
+
+string g_pop3_server;
+string g_pop3_suffix;
+string g_pop3_username;
+string g_pop3_password;
+string g_pop3_security;
+
+string g_smtp_server;
+string g_smtp_sender;
+string g_smtp_suffix;
+string g_smtp_username;
+string g_smtp_password;
+string g_smtp_security;
+
+int g_smtp_max_send_attempts = c_min_smtp_max_send_attempts;
+
+int64_t g_smtp_max_attached_data = INT64_C( 100000 );
+
+typedef map< string, external_client > external_client_container;
+typedef external_client_container::iterator external_client_iterator;
+typedef external_client_container::const_iterator external_client_const_iterator;
+typedef external_client_container::value_type external_client_value_type;
+
+external_client_container g_external_client_info;
 
 size_t get_last_raw_file_data_chunk(
  const string& tree_tag, const string& log_blob_file_prefix,
@@ -1379,30 +1439,41 @@ void append_system_ods_transaction_log_files( )
    }
 }
 
-struct trace_progress : progress
+struct reconstruct_trace_progress : progress
 {
-   trace_progress( const string& name, bool also_to_cout = false )
+   reconstruct_trace_progress( const string& name, bool also_to_cout = false )
     :
     name( name ),
     dtm( date_time::local( ) ),
     also_to_cout( also_to_cout )
    {
+      if( !g_web_root.empty( ) && !g_default_storage.empty( ) )
+         stop_file = g_web_root + '/' + lower( g_default_storage ) + "/ciyam_interface.stop";
+
+      // FUTURE: This message should be handled as a server string message.
       string message( "Starting restore for ODS DB '" + name + "'..." );
 
       if( also_to_cout )
          cout << message << endl;
 
       TRACE_LOG( TRACE_ANYTHING, message );
+
+      if( !stop_file.empty( ) )
+         file_touch( stop_file, 0, true );
    }
 
-   ~trace_progress( )
+   ~reconstruct_trace_progress( )
    {
+      // FUTURE: This message should be handled as a server string message.
       string message( "Finished restore for ODS DB '" + name + "'..." );
 
       if( also_to_cout )
          cout << message << endl;
 
      TRACE_LOG( TRACE_ANYTHING, message );
+
+      if( !stop_file.empty( ) )
+         file_remove( stop_file );
    }
 
    void output_message( const string& message, unsigned long num, unsigned long total )
@@ -1410,9 +1481,13 @@ struct trace_progress : progress
       date_time now( date_time::local( ) );
       uint64_t elapsed = seconds_between( dtm, now );
 
+      string final_message( message );
+
       // NOTE: Avoid filling the log with a large number of progress messages.
       if( elapsed >= 10 )
       {
+         dtm = now;
+
          string extra;
 
          if( num || total )
@@ -1423,13 +1498,25 @@ struct trace_progress : progress
                extra += '/' + to_string( total );
          }
 
-         dtm = now;
+         if( also_to_cout )
+            cout << message << extra << endl;
+
+         if( final_message == "." )
+         {
+            extra.erase( );
+
+            // FUTURE: This message should be handled as a server string message.
+            final_message = "(restore for ODS DB '" + name + "' in progress)";
+         }
+
          TRACE_LOG( TRACE_ANYTHING, message + extra );
       }
    }
 
    string name;
    date_time dtm;
+
+   string stop_file;
 
    bool also_to_cout;
 };
@@ -1444,18 +1531,19 @@ void init_system_ods( )
     ods::e_open_mode_create_if_not_exist,
     ods::e_write_mode_exclusive, true, 0, 0, g_ods_use_sync_write ) );
 
-   ods::bulk_write bulk_write( *gap_ods );
-   scoped_ods_instance ods_instance( *gap_ods );
-
    bool was_just_created = false;
 
    if( gap_ods->is_corrupt( ) )
    {
-      trace_progress progress( ods_db_name, true );
+      reconstruct_trace_progress progress( ods_db_name, true );
+
       gap_ods->repair_corrupt_database( &progress );
    }
    else if( gap_ods->is_new( ) )
       was_just_created = true;
+
+   ods::bulk_write bulk_write( *gap_ods );
+   scoped_ods_instance ods_instance( *gap_ods );
 
    gap_ofs.reset( new ods_file_system( *gap_ods ) );
 
@@ -1631,14 +1719,14 @@ void perform_storage_op( storage_op op,
 
          auto_ptr< storage_handler > ap_handler( new storage_handler( slot, name, ap_ods.get( ) ) );
 
-         ap_handler->obtain_bulk_write( );
-
-         // NOTE: In case a server shutdown had occurred whilst an ODS transaction was still active.
          if( ap_ods->is_corrupt( ) )
          {
-            trace_progress progress( name );
-            ap_ods->reconstruct_database( &progress );
+            reconstruct_trace_progress progress( name );
+
+            ap_ods->repair_corrupt_database( &progress );
          }
+
+         ap_handler->obtain_bulk_write( );
 
          ods::instance( ap_ods.get( ) );
 
@@ -3533,67 +3621,7 @@ void append_transaction_log_command( storage_handler& handler,
    gtp_session->transaction_log_command.erase( );
 }
 
-string_container g_strings;
-
 string g_sid;
-
-string g_domain;
-string g_timezone;
-string g_web_root;
-
-string g_set_trace;
-
-bool g_use_udp = false;
-bool g_use_https = false;
-bool g_using_ssl = false;
-
-string g_gpg_password;
-string g_pem_password;
-string g_rpc_password;
-string g_sql_password;
-
-int g_test_peer_port = 0;
-
-string g_default_storage;
-
-unsigned int g_session_timeout = 0;
-
-unsigned int g_max_peers = c_default_max_peers;
-unsigned int g_max_user_limit = c_default_max_user_limit;
-
-bool g_script_reconfig = false;
-
-set< string > g_accepted_ip_addrs;
-set< string > g_rejected_ip_addrs;
-set< string > g_accepted_peer_ip_addrs;
-set< string > g_rejected_peer_ip_addrs;
-
-string g_mbox_path;
-string g_mbox_username;
-
-string g_pop3_server;
-string g_pop3_suffix;
-string g_pop3_username;
-string g_pop3_password;
-string g_pop3_security;
-
-string g_smtp_server;
-string g_smtp_sender;
-string g_smtp_suffix;
-string g_smtp_username;
-string g_smtp_password;
-string g_smtp_security;
-
-int g_smtp_max_send_attempts = c_min_smtp_max_send_attempts;
-
-int64_t g_smtp_max_attached_data = INT64_C( 100000 );
-
-typedef map< string, external_client > external_client_container;
-typedef external_client_container::iterator external_client_iterator;
-typedef external_client_container::const_iterator external_client_const_iterator;
-typedef external_client_container::value_type external_client_value_type;
-
-external_client_container g_external_client_info;
 
 #include "sid.enc"
 
@@ -3803,7 +3831,7 @@ void read_server_configuration( )
       if( g_test_peer_port < 0 )
          throw runtime_error( "invalid negative test peer port value " + to_string( g_test_peer_port ) );
 
-      g_default_storage = reader.read_opt_attribute( c_attribute_default_storage );
+      g_default_storage = reader.read_opt_attribute( c_attribute_default_storage, "Meta" );
       set_system_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
 
       string peer_ips_permit( reader.read_opt_attribute( c_attribute_peer_ips_permit ) );
