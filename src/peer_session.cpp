@@ -2331,8 +2331,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
     && ( any_supporter_has_top_get || any_supporter_has_top_put ) )
       msleep( c_main_session_sleep_time );
 
-   if( !any_supporter_has_top_get
-    && !any_supporter_has_top_put && !prior_put( ).empty( ) && want_to_do_op( e_op_chk ) )
+   bool no_top_for_self_or_supporters = ( next_hash_to_get.empty( ) && next_hash_to_put.empty( ) );
+
+   if( !is_for_support && ( any_supporter_has_top_get || any_supporter_has_top_put ) )
+      no_top_for_self_or_supporters = false;
+
+   if( no_top_for_self_or_supporters
+    && !prior_put( ).empty( ) && want_to_do_op( e_op_chk ) )
    {
       bool has_issued_chk = false;
 
@@ -3920,7 +3925,9 @@ void peer_session::on_start( )
 
       if( pos != string::npos )
       {
-         has_support_sessions = true;
+         if( !is_for_support )
+            has_support_sessions = true;
+
          slotx_and_pubkeyx.erase( pos );
       }
 
