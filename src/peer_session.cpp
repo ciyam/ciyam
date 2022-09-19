@@ -79,6 +79,8 @@ const char c_progress_output_prefix = '%';
 
 const char* const c_hello = "hello";
 
+const char* const c_dummy_suffix = ".dummy";
+
 const char* const c_dummy_peer_tag = "peer";
 const char* const c_dummy_support_tag = "support";
 
@@ -1851,7 +1853,7 @@ class socket_command_handler : public command_handler
 
    bool get_is_test_session( ) const { return is_local && is_responder && blockchain.empty( ); }
 
-   string& prior_put( ) { return prior_put_hash; }
+   string& prior_file( ) { return prior_file_hash; }
 
    void get_hello( );
    void put_hello( );
@@ -1940,7 +1942,7 @@ class socket_command_handler : public command_handler
    string last_command;
    string next_command;
 
-   string prior_put_hash;
+   string prior_file_hash;
 
    date_time dtm_rcvd_not_found;
    date_time dtm_sent_not_found;
@@ -1969,7 +1971,7 @@ void socket_command_handler::get_hello( )
 
    string temp_file_name( "~" + uuid( ).as_string( ) );
 
-   socket.set_delay( );
+   socket.set_no_delay( );
    socket.write_line( string( c_cmd_peer_session_get ) + " " + hello_hash, c_request_timeout, p_progress );
 
    try
@@ -2008,9 +2010,7 @@ void socket_command_handler::put_hello( )
       create_raw_file( data, false );
 
    socket.set_delay( );
-
-   socket.write_line( string( c_cmd_peer_session_put )
-    + " " + hello_hash, c_request_timeout, p_sock_progress );
+   socket.write_line( string( c_cmd_peer_session_put ) + " " + hello_hash, c_request_timeout, p_sock_progress );
 
    fetch_file( hello_hash, socket, p_sock_progress );
 }
@@ -2029,7 +2029,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
 
    string hash( hash_info.substr( 0, pos ) );
 
-   socket.set_delay( );
+   socket.set_no_delay( );
    socket.write_line( string( c_cmd_peer_session_get ) + " " + hash, c_request_timeout, p_sock_progress );
 
    bool is_list = false;
@@ -2261,10 +2261,10 @@ bool socket_command_handler::want_to_do_op( op o ) const
 
 void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 {
-   // NOTE: If a prior put no longer exists locally then it is to be expected
+   // NOTE: If a prior file no longer exists locally then it is to be expected
    // it would not exist in the peer either.
-   if( !prior_put( ).empty( ) && !has_file( prior_put( ) ) )
-      prior_put( ).erase( );
+   if( !prior_file( ).empty( ) && !has_file( prior_file( ) ) )
+      prior_file( ).erase( );
 
    bool any_supporter_has_top_get = false;
    bool any_supporter_has_top_put = false;
@@ -2336,8 +2336,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    if( !is_for_support && ( any_supporter_has_top_get || any_supporter_has_top_put ) )
       no_top_for_self_or_supporters = false;
 
-   if( no_top_for_self_or_supporters
-    && !prior_put( ).empty( ) && want_to_do_op( e_op_chk ) )
+   if( no_top_for_self_or_supporters && want_to_do_op( e_op_chk ) )
    {
       bool has_issued_chk = false;
 
@@ -2450,7 +2449,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                    + '.' + to_string( blockchain_height ) + c_sig_suffix );
 
                   string next_sig_hash;
-
                   has_tree_files = chk_file( next_sig_tag, &next_sig_hash );
 
                   has_issued_chk = true;
@@ -2502,7 +2500,15 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       }
 
       if( !has_issued_chk )
-         chk_file( prior_put( ) );
+      {
+         string tag_or_hash( prior_file( ) );
+
+         if( tag_or_hash.empty( ) )
+            tag_or_hash = blockchain + c_dummy_suffix;
+
+         string chk_hash;
+         chk_file( tag_or_hash, &chk_hash );
+      }
    }
    else if( want_to_do_op( e_op_pip ) )
       pip_peer( get_random_same_port_peer_ip_addr( c_local_ip_addr ) );
@@ -2883,6 +2889,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( has_tag( tag_or_hash ) )
             response = hash = tag_file_hash( tag_or_hash );
 
+         bool is_dummy = false;
+
+         if( !blockchain.empty( ) && ( tag_or_hash == blockchain + c_dummy_suffix ) )
+            is_dummy = true;
+
          // NOTE: Unless doing interactive testing any peer "chk tag" request must start
          // with the blockchain tag prefix (otherwise a peer might be able to find files
          // that are not intended for their discovery).
@@ -2892,16 +2903,16 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             throw runtime_error( "invalid non-blockchain prefixed tag" );
 
          if( tag_or_hash.find( c_key_suffix ) != string::npos )
-            throw runtime_error( "invalid suspiciouus tag '" + tag_or_hash + "'" );
+            throw runtime_error( "invalid suspicious tag '" + tag_or_hash + "'" );
 
-         bool has = has_file( hash, false );
+         bool has = is_dummy ? false : has_file( hash, false );
          bool was_initial_state = ( socket_handler.state( ) == e_peer_state_responder );
 
          if( !has )
          {
             response = c_response_not_found;
 
-            if( tag_or_hash.find( blockchain ) == 0 )
+            if( !is_dummy && ( tag_or_hash.find( blockchain ) == 0 ) )
             {
                string height( tag_or_hash.substr( blockchain.length( ) + 1 ) );
 
@@ -2924,7 +2935,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                }
             }
 
-            socket_handler.set_dtm_sent_not_found( date_time::standard( ) );
+            if( !is_dummy )
+               socket_handler.set_dtm_sent_not_found( date_time::standard( ) );
 
             if( was_initial_state )
             {
@@ -3173,12 +3185,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( hash != hello_hash )
             increment_peer_files_downloaded( num_bytes );
-
-         if( has_file( hash ) )
-         {
-            if( socket_handler.prior_put( ).empty( ) )
-               socket_handler.prior_put( ) = hash;
-         }
 
          socket_handler.op_state( ) = e_peer_state_waiting_for_get;
 
@@ -3980,8 +3986,6 @@ void peer_session::on_start( )
       // NOTE: Create the dummy "hello" blob as it will be required.
       if( !has_file( hello_hash ) )
          create_raw_file( hello_data, false );
-
-      cmd_handler.prior_put( ) = hello_hash;
 
       if( !blockchain.empty( ) )
       {
