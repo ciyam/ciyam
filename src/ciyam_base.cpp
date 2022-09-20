@@ -6494,7 +6494,7 @@ void add_peer_file_hash_for_get( const string& hash,
    }
 }
 
-string top_next_peer_file_hash_to_get( bool* p_any_supporter_has )
+string top_next_peer_file_hash_to_get( bool take_from_supporter, bool* p_any_supporter_has )
 {
    guard g( g_mutex );
 
@@ -6506,9 +6506,10 @@ string top_next_peer_file_hash_to_get( bool* p_any_supporter_has )
    if( !gtp_session->file_hashes_to_get.empty( ) )
       hash = gtp_session->file_hashes_to_get.front( );
 
-   if( hash.empty( ) && p_any_supporter_has )
+   if( hash.empty( ) && ( take_from_supporter || p_any_supporter_has ) )
    {
-      *p_any_supporter_has = false;
+      session* p_most_full = 0;
+      size_t most_full_num = 0;
 
       for( size_t i = 0; i < g_max_sessions; i++ )
       {
@@ -6518,12 +6519,36 @@ string top_next_peer_file_hash_to_get( bool* p_any_supporter_has )
           && ( p_next->ip_addr == gtp_session->ip_addr )
           && ( p_next->blockchain == gtp_session->blockchain ) )
          {
-            if( !p_next->file_hashes_to_get.empty( ) )
+            size_t next_num = p_next->file_hashes_to_get.size( );
+
+            if( next_num )
             {
-               *p_any_supporter_has = true;
-               break;
+               // NOTE: As support sessions don't "pop" the front hash
+               // until it has finished fetching and processing of the
+               // file will only take a file hash from the back of the
+               // deque if there is more than one present.
+               if( next_num > 1 && take_from_supporter )
+               {
+                  if( !p_most_full || ( most_full_num < next_num ) )
+                  {
+                     p_most_full = p_next;
+                     most_full_num = next_num;
+                  }
+               }
+
+               if( p_any_supporter_has )
+                  *p_any_supporter_has = true;
+
+               if( !take_from_supporter )
+                  break;
             }
          }
+      }
+
+      if( p_most_full )
+      {
+         hash = p_most_full->file_hashes_to_get.back( );
+         p_most_full->file_hashes_to_get.pop_back( );
       }
    }
 
@@ -6595,7 +6620,7 @@ void add_peer_file_hash_for_put_for_all_peers( const string& hash,
    }
 }
 
-string top_next_peer_file_hash_to_put( bool* p_any_supporter_has )
+string top_next_peer_file_hash_to_put( bool take_from_supporter, bool* p_any_supporter_has )
 {
    guard g( g_mutex );
 
@@ -6607,9 +6632,10 @@ string top_next_peer_file_hash_to_put( bool* p_any_supporter_has )
    if( !gtp_session->file_hashes_to_put.empty( ) )
       hash = gtp_session->file_hashes_to_put.front( );
 
-   if( hash.empty( ) && p_any_supporter_has )
+   if( hash.empty( ) && ( take_from_supporter || p_any_supporter_has ) )
    {
-      *p_any_supporter_has = false;
+      session* p_most_full = 0;
+      size_t most_full_num = 0;
 
       for( size_t i = 0; i < g_max_sessions; i++ )
       {
@@ -6619,12 +6645,32 @@ string top_next_peer_file_hash_to_put( bool* p_any_supporter_has )
           && ( p_next->ip_addr == gtp_session->ip_addr )
           && ( p_next->blockchain == gtp_session->blockchain ) )
          {
-            if( !p_next->file_hashes_to_put.empty( ) )
+            size_t next_num = p_next->file_hashes_to_put.size( );
+
+            if( next_num )
             {
-               *p_any_supporter_has = true;
-               break;
+               if( next_num > 1 && take_from_supporter )
+               {
+                  if( !p_most_full || ( most_full_num < next_num ) )
+                  {
+                     p_most_full = p_next;
+                     most_full_num = next_num;
+                  }
+               }
+
+               if( p_any_supporter_has )
+                  *p_any_supporter_has = true;
+
+               if( !take_from_supporter )
+                  break;
             }
          }
+      }
+
+      if( p_most_full )
+      {
+         hash = p_most_full->file_hashes_to_put.back( );
+         p_most_full->file_hashes_to_put.pop_back( );
       }
    }
 
@@ -10253,6 +10299,7 @@ bool determine_alternative_key_fields( size_t handle, const string& context,
    if( !candidates_key_field_info.empty( ) )
    {
       size_t best = 0;
+
       for( size_t i = 0; i < candidates_key_field_info.size( ); i++ )
       {
          if( candidates_key_field_info[ i ].size( ) < candidates_key_field_info[ best ].size( ) )

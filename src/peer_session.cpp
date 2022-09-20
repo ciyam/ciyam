@@ -1730,6 +1730,28 @@ bool get_block_height_from_tags( const string& blockchain, const string& hash, s
    return found;
 }
 
+struct scoped_pop_peer_get_hash
+{
+   scoped_pop_peer_get_hash( bool pop_immediately = false )
+   {
+      if( !pop_immediately )
+         has_popped = false;
+      else
+      {
+         has_popped = true;
+         pop_next_peer_file_hash_to_get( );
+      }
+   }
+
+   ~scoped_pop_peer_get_hash( )
+   {
+      if( !has_popped )
+         pop_next_peer_file_hash_to_get( );
+   }
+
+   bool has_popped;
+};
+
 class socket_command_handler : public command_handler
 {
    public:
@@ -2266,9 +2288,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    if( !prior_file( ).empty( ) && !has_file( prior_file( ) ) )
       prior_file( ).erase( );
 
-   bool any_supporter_has_top_get = false;
-   bool any_supporter_has_top_put = false;
-
    string next_hash_to_get, next_hash_to_put;
 
    string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
@@ -2300,14 +2319,16 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       }
    }
 
+   bool any_supporter_has = false;
+
    // NOTE: If a support session is not given a file hash to get/put then sleep for a while.
    for( size_t i = 0; i < c_support_session_sleep_repeats; i++ )
    {
       next_hash_to_get = top_next_peer_file_hash_to_get(
-       ( i == 0 && check_for_supporters ) ? &any_supporter_has_top_get : 0 );
+       ( !is_for_support && check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
 
       next_hash_to_put = top_next_peer_file_hash_to_put(
-       ( i == 0 && check_for_supporters ) ? &any_supporter_has_top_put : 0 );
+       ( !is_for_support && check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
 
       if( is_for_support && next_hash_to_get.empty( ) && next_hash_to_put.empty( ) )
          msleep( c_support_session_sleep_time );
@@ -2320,23 +2341,12 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    string zenith_hash( get_session_variable( blockchain_zenith_hash_name ) );
 
-   if( !zenith_hash.empty( ) && next_hash_to_get.empty( )
-    && !any_supporter_has_top_get && !any_supporter_has_top_put )
+   if( !zenith_hash.empty( ) && next_hash_to_get.empty( ) && !any_supporter_has )
       set_new_zenith = true;
 
-   // NOTE: If main session has nothing to do while support sessions
-   // are still processing get/put file hashes then will sleep here.
-   if( !is_for_support
-    && next_hash_to_get.empty( ) && next_hash_to_put.empty( )
-    && ( any_supporter_has_top_get || any_supporter_has_top_put ) )
-      msleep( c_main_session_sleep_time );
+   bool no_top_hash = ( next_hash_to_get.empty( ) && next_hash_to_put.empty( ) );
 
-   bool no_top_for_self_or_supporters = ( next_hash_to_get.empty( ) && next_hash_to_put.empty( ) );
-
-   if( !is_for_support && ( any_supporter_has_top_get || any_supporter_has_top_put ) )
-      no_top_for_self_or_supporters = false;
-
-   if( no_top_for_self_or_supporters && want_to_do_op( e_op_chk ) )
+   if( no_top_hash && want_to_do_op( e_op_chk ) )
    {
       bool has_issued_chk = false;
 
@@ -2527,7 +2537,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          string file_data;
 
          get_file( next_hash, &file_data );
-         pop_next_peer_file_hash_to_get( );
+
+         // NOTE: Delay popping for support sessions so that the main
+         // session doesn't attempt to create new zenith whilst files
+         // fetched by support sessions are still being processed.
+         scoped_pop_peer_get_hash pop_peer_get_hash( !is_for_support );
 
          bool is_list = false;
 

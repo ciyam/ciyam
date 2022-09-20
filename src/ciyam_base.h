@@ -411,7 +411,9 @@ void CIYAM_BASE_DECL_SPEC set_session_timeout( unsigned int seconds );
 void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_get( const std::string& hash,
  bool check_for_supporters = false, bool add_at_front = false, const std::string* p_hash_to_remove = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC top_next_peer_file_hash_to_get( bool* p_any_supporter_has = 0 );
+std::string CIYAM_BASE_DECL_SPEC top_next_peer_file_hash_to_get(
+ bool take_from_supporter = false, bool* p_any_supporter_has = 0 );
+
 void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_get( );
 
 void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_put( const std::string& hash, bool check_for_supporters = false );
@@ -420,7 +422,9 @@ void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_put_for_all_peers(
  const std::string& hash, const std::string* p_blockchain = 0,
  const std::string* p_session_variable = 0, bool include_self = true, size_t session_id_to_skip = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC top_next_peer_file_hash_to_put( bool* p_any_supporter_has = 0 );
+std::string CIYAM_BASE_DECL_SPEC top_next_peer_file_hash_to_put(
+ bool take_from_supporter = false, bool* p_any_supporter_has = 0 );
+
 void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_put( );
 
 bool CIYAM_BASE_DECL_SPEC any_peer_still_has_file_hash_to_put(
