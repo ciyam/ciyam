@@ -2574,7 +2574,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          {
             create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
 
-            process_block_for_height( blockchain, block_file_hash, blockchain_height_pending );
+            process_block_for_height( blockchain, block_file_hash, blockchain_height_pending, 0, this );
 
             tag_file( blockchain + '.' + to_string( blockchain_height_pending ) + c_blk_suffix, block_file_hash );
 
@@ -3047,7 +3047,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   if( zenith_height.empty( )
                    && get_block_height_from_tags( blockchain, hash, blockchain_height ) )
-                     process_block_for_height( blockchain, hash, blockchain_height, &num_items_found );
+                     process_block_for_height( blockchain, hash, blockchain_height, &num_items_found, &socket_handler );
                }
             }
             else if( !socket_handler.get_is_for_support( ) && ( tag_or_hash.find( c_bc_prefix ) == 0 ) )
