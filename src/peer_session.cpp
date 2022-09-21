@@ -1154,7 +1154,7 @@ void process_list_items( const string& identity,
             if( allow_blob_creation )
                ++( *p_num_items_skipped );
 
-            if( recurse && is_fetching )
+            if( recurse && is_fetching && !skip_secondary_blobs )
                add_to_blockchain_tree_item( blockchain, 1 );
 
             continue;
@@ -1222,7 +1222,7 @@ void process_list_items( const string& identity,
                if( p_num_items_found )
                   ++( *p_num_items_found );
 
-               if( recurse && is_fetching )
+               if( recurse && is_fetching && !skip_secondary_blobs )
                   add_to_blockchain_tree_item( blockchain, 1 );
 
                // NOTE: For repository entries need to touch the local file.
@@ -1235,7 +1235,7 @@ void process_list_items( const string& identity,
                if( p_num_items_found )
                   ++( *p_num_items_found );
 
-               if( recurse && is_fetching )
+               if( recurse && is_fetching && !skip_secondary_blobs )
                   add_to_blockchain_tree_item( blockchain, 1 );
             }
          }
@@ -1261,7 +1261,7 @@ void process_list_items( const string& identity,
             if( p_num_items_found )
                ++( *p_num_items_found );
 
-            if( recurse && is_fetching )
+            if( recurse && is_fetching && !skip_secondary_blobs )
                add_to_blockchain_tree_item( blockchain, 1 );
 
             if( has_repository_entry_record( identity, next_hash ) )
