@@ -6523,10 +6523,10 @@ string top_next_peer_file_hash_to_get( bool take_from_supporter, bool* p_any_sup
 
             if( next_num )
             {
-               // NOTE: As support sessions don't "pop" the front hash
-               // until it has finished fetching and processing of the
-               // file will only take a file hash from the back of the
-               // deque if there is more than one present.
+               // NOTE: As a support session won't "pop" the front hash
+               // until it has finished both fetching and processing of
+               // this file it will only take a file hash from the back
+               // of the deque if there is more than one present.
                if( next_num > 1 && take_from_supporter )
                {
                   if( !p_most_full || ( most_full_num < next_num ) )
@@ -6549,6 +6549,10 @@ string top_next_peer_file_hash_to_get( bool take_from_supporter, bool* p_any_sup
       {
          hash = p_most_full->file_hashes_to_get.back( );
          p_most_full->file_hashes_to_get.pop_back( );
+
+         // NOTE: After taking from the back of the supporter's
+         // queue will now push to the front of one's own queue.
+         gtp_session->file_hashes_to_get.push_front( hash );
       }
    }
 
@@ -6671,6 +6675,8 @@ string top_next_peer_file_hash_to_put( bool take_from_supporter, bool* p_any_sup
       {
          hash = p_most_full->file_hashes_to_put.back( );
          p_most_full->file_hashes_to_put.pop_back( );
+
+         gtp_session->file_hashes_to_put.push_front( hash );
       }
    }
 
