@@ -1291,6 +1291,8 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
             string response;
 
+            size_t num_singles = 0;
+
             bool is_first = true;
             bool had_not_found = false;
             bool is_in_progress = false;
@@ -1487,7 +1489,10 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                            // NOTE: Double the single character response in order
                            // to first erase the prior progress percentage output.
                            if( had_chunk_progress && is_stdout_console( ) )
+                           {
+                              num_singles = 2;
                               progress.output_progress( final_response + final_response );
+                           }
                         }
 
                         had_single_char_message = true;
@@ -1511,7 +1516,10 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                            else
                            {
                               if( had_single_char_message )
+                              {
+                                 ++num_singles;
                                  progress.output_prefix.erase( );
+                              }
 
                               string progress_prefix( get_environment_variable( c_env_var_progress_prefix ) );
 
@@ -1557,8 +1565,15 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                      {
                         if( is_stdout_console( ) )
                         {
-                           if( !had_chunk_progress )
+                           if( !num_singles )
                               progress.output_progress( "" );
+                           else
+                           {
+                              string eraser( num_singles, '\b' );
+                              eraser += string( num_singles, ' ' ) + string( num_singles, '\b' );
+
+                              cout << eraser;
+                           }
 
                            progress.output_length = 0;
                            progress.output_prefix.erase( );
