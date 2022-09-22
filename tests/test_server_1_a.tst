@@ -1,6 +1,6 @@
 version
 0.1
-1000000
+1MB
 session_list -min
 1* session_list <none> 127.0.0.1 0:0 0:0 2
 encrypt -no_ssl -no_salt for_testing_password

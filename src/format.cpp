@@ -198,11 +198,16 @@ string format_int( int64_t i, char separator, unsigned int grouping )
    return retval;
 }
 
-string format_bytes( int64_t size, bool use_iec, int decimal_precision )
+string format_bytes( int64_t size, bool use_iec, int decimal_precision, char separator )
 {
    ostringstream osstr;
 
    double ss;
+
+   string sep;
+
+   if( separator != '\0' )
+      sep += separator;
 
    int precision = ( decimal_precision < 0 ) ? c_default_format_precision : decimal_precision;
 
@@ -224,13 +229,13 @@ string format_bytes( int64_t size, bool use_iec, int decimal_precision )
       osstr.precision( precision );
       osstr.setf( ios::fixed, ios::floatfield );
 
-      osstr << ss << ' ' << sp << suffix;
+      osstr << ss << sep << sp << suffix;
 
       osstr.flags( old_flags );
       osstr.precision( old_precision );
    }
    else
-      osstr << ss << ' ' << c_byte_suffix;
+      osstr << ss << sep << c_byte_suffix;
 
    return osstr.str( );
 }
