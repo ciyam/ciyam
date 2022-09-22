@@ -1057,7 +1057,6 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                      if( chunk >= total_chunks )
                      {
                         chunk = 0;
-
                         progress.previous_num = 0;
                      }
                   }
@@ -1556,19 +1555,22 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                      if( !has_option_no_progress( ) )
                      {
-                        had_chunk_progress = false;
-
                         if( is_stdout_console( ) )
                         {
+                           if( !had_chunk_progress )
+                              progress.output_progress( "" );
+
                            progress.output_length = 0;
                            progress.output_prefix.erase( );
 
-                           if( !was_wait )
+                           if( !was_wait && had_chunk_progress )
                               cout << endl;
                         }
                         else if( had_single_char_message )
                            handle_progress_message( "" );
                      }
+
+                     had_chunk_progress = false;
                   }
 
                   had_single_char_message = false;
@@ -1722,10 +1724,14 @@ int main( int argc, char* argv[ ] )
                 + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
             }
 
-            if( !ver_info.extra.empty( ) )
+            string max_file_size( get_environment_variable( c_env_var_max_file_size ) );
+
+            if( !max_file_size.empty( ) )
+               g_max_file_size = unformat_bytes( max_file_size );
+            else if( !ver_info.extra.empty( ) )
             {
                g_max_file_size = from_string< size_t >( ver_info.extra );
-               set_environment_variable( c_env_var_max_file_size, ver_info.extra.c_str( ) );
+               set_environment_variable( c_env_var_max_file_size, format_bytes( g_max_file_size, false, 0, '\0' ) );
             }
 
             // NOTE: After handshake exchange public keys then commence command handling.
