@@ -500,7 +500,13 @@ test1 [okay      ] (1.0 MB/1.0 MB) test1
 file_kill xxxx
 file_retrieve $FILE_HASH
 Error: Unable to retrieve file ca0fd64a906ba4fe821ca0c290b4777e26ac8f7afc9fa47ba332e97d2cc7654f from archival.
+file_put test.jpg
+file_put test1.jpg
+file_put test2.jpg
+file_archives
+test1 [okay      ] (514.6 kB/1.0 MB) test1
 file_archive -destroy test1
+session_variable @blockchain_archive_path ""
 ~rmdir test1
 ~rmdir test2
 ~rmdir test3

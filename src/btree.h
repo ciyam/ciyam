@@ -617,6 +617,21 @@ template< typename T, typename L = std::less< T >,
 
    state_t& get_state( ) { return state; }
 
+   bool has_changed( volatile state_t& prior )
+   {
+      if( state.total_nodes != prior.total_nodes
+       || state.total_items != prior.total_items
+       || state.root_node != prior.root_node
+       || state.lft_leaf_node != prior.lft_leaf_node
+       || state.rgt_leaf_node != prior.rgt_leaf_node
+       || state.free_list_node != prior.free_list_node
+       || state.first_append_node != prior.first_append_node
+       || state.current_append_node != prior.current_append_node )
+         return true;
+      else
+         return false;
+   }
+
    virtual void commit( ) { }
    virtual void rollback( ) { }
 
