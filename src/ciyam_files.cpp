@@ -331,11 +331,14 @@ void create_directory_if_not_exists( const string& dir_name )
    }
 }
 
-string construct_file_name_from_hash( const string& hash,
- bool create_directory = false, bool check_hash_pattern = true, string* p_alt_path = 0 )
+string construct_file_name_from_hash(
+ const string& hash, bool create_directory = false,
+ bool check_hash_pattern = true, string* p_alt_path = 0, bool alt_path_only = false )
 {
    if( hash.length( ) < 3 )
       return string( );
+
+   string file_name;
 
    if( check_hash_pattern )
    {
@@ -347,17 +350,17 @@ string construct_file_name_from_hash( const string& hash,
 
    if( p_alt_path )
    {
-      string file_name( *p_alt_path );
+      file_name = *p_alt_path;
 
       file_name += '/';
 
       file_name += hash;
 
-      if( file_exists( file_name ) )
+      if( alt_path_only || file_exists( file_name ) )
          return file_name;
    }
 
-   string file_name( get_files_area_dir( ) );
+   file_name = get_files_area_dir( );
 
    file_name += '/';
    file_name += lower( hash.substr( 0, 2 ) );
@@ -3375,7 +3378,27 @@ bool store_file( const string& hash,
  bool allow_core_file, size_t max_bytes, bool allow_missing_items,
  string* p_file_data, size_t* p_total_bytes, progress* p_progress )
 {
-   string file_name( construct_file_name_from_hash( hash, true ) );
+   string tag_name;
+   if( p_tag )
+      tag_name = string( p_tag );
+
+   string archive;
+
+   string archive_path( !tag_name.empty( ) ? string( )
+    : get_session_variable( get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+
+   if( !archive_path.empty( ) )
+   {
+      string::size_type pos = archive_path.rfind( '/' );
+
+      if( pos == string::npos )
+         archive = archive_path;
+      else
+         archive = archive_path.substr( pos + 1 );
+   }
+
+   string file_name( construct_file_name_from_hash( hash, true,
+    archive_path.empty( ), ( archive_path.empty( ) ? 0 : &archive_path ), !archive_path.empty( ) ) );
 
    size_t total_bytes = 0;
 
@@ -3539,10 +3562,18 @@ bool store_file( const string& hash,
                   if( !is_encrypted && !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
                      encrypt_file_buffer( hash, repository, file_buffer, crypt_password, 0, total_bytes );
 
-                  if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
+                  if( !tag_name.empty( ) && list_has_encrypted_blobs && !crypt_password.empty( ) )
                      encrypted_list_data = create_repository_lists( repository, file_buffer, 0, total_bytes, p_progress );
 
-                  write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
+                  if( archive.empty( ) )
+                     write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
+                  else
+                  {
+                     string file_data;
+                     file_buffer.copy_to_string( file_data, 0, total_bytes );
+
+                     create_raw_file_in_archive( archive, hash, file_data );
+                  }
                }
                else
                {
@@ -3577,14 +3608,24 @@ bool store_file( const string& hash,
                            if( !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
                               encrypt_file_buffer( hash, repository, file_buffer, crypt_password, size, csize + 1 );
 
-                           if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
+                           if( !tag_name.empty( ) && list_has_encrypted_blobs && !crypt_password.empty( ) )
                            {
                               encrypted_list_data = create_repository_lists( repository, file_buffer, 0, total_bytes, p_progress );
 
                               file_buffer.copy_to_string( public_key_list_data, 0, total_bytes );
                            }
                            else
-                              write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
+                           {
+                              if( archive.empty( ) )
+                                 write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
+                              else
+                              {
+                                 string file_data;
+                                 file_buffer.copy_to_string( file_data, size, csize + 1 );
+
+                                 create_raw_file_in_archive( archive, hash, file_data );
+                              }
+                           }
                         }
                         else
                         {
@@ -3604,10 +3645,18 @@ bool store_file( const string& hash,
                      if( !is_encrypted && !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
                         encrypt_file_buffer( hash, repository, file_buffer, crypt_password, 0, total_bytes );
 
-                     if( p_tag && list_has_encrypted_blobs && !crypt_password.empty( ) )
+                     if( !tag_name.empty( ) && list_has_encrypted_blobs && !crypt_password.empty( ) )
                         encrypted_list_data = create_repository_lists( repository, file_buffer, 0, total_bytes, p_progress );
 
-                     write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
+                     if( archive.empty( ) )
+                        write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
+                     else
+                     {
+                        string file_data;
+                        file_buffer.copy_to_string( file_data, 0, total_bytes );
+
+                        create_raw_file_in_archive( archive, hash, file_data );
+                     }
                   }
                   else
                   {
@@ -3619,7 +3668,7 @@ bool store_file( const string& hash,
             }
          }
 
-         if( !p_file_data && !is_in_blacklist )
+         if( !p_file_data && !is_in_blacklist && archive_path.empty( ) )
          {
             if( !is_existing && public_key_list_data.empty( ) )
                ++g_total_files;
@@ -3640,7 +3689,7 @@ bool store_file( const string& hash,
 
       string file_hash( hash );
 
-      if( !public_key_list_data.empty( ) )
+      if( archive_path.empty( ) && !public_key_list_data.empty( ) )
       {
          file_hash = create_raw_file( public_key_list_data );
 
@@ -3648,13 +3697,9 @@ bool store_file( const string& hash,
          g_total_bytes -= ( total_bytes - file_size( construct_file_name_from_hash( file_hash, true ) ) );
       }
 
-      string tag_name;
-      if( p_tag )
-         tag_name = string( p_tag );
-
       if( !tag_name.empty( ) )
          tag_file( tag_name, file_hash );
-      else if( !file_extra_is_core )
+      else if( archive_path.empty( ) && !file_extra_is_core )
          tag_file( current_time_stamp_tag( ), file_hash, true );
 
       if( !tag_name.empty( ) && !encrypted_list_data.empty( ) )

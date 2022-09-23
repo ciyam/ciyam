@@ -276,13 +276,17 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
    static const uint8_t c_version = 1;
    static const size_t c_round_to_value = STORABLE_BTREE_SIZE;
 
+   mutable typename storable_btree_base< T, L >::state_t prior;
+
    private:
    ods& o;
 
    protected:
    virtual void commit( )
    {
-      o << *this;
+      // NOTE: No need to store if the state has not changed.
+      if( storable_btree_base< T, L >::has_changed( prior ) )
+         o << *this;
    }
 };
 
@@ -326,6 +330,8 @@ template< typename T, typename L > read_stream& operator >>( read_stream& rs, st
     >> s.state.root_node >> s.state.lft_leaf_node >> s.state.rgt_leaf_node
     >> s.state.free_list_node >> s.state.first_append_node >> s.state.current_append_node;
 
+   s.prior = s.state;
+
    s.get_node_manager( ).reset( );
 
    s.get_node_manager( ).set_items_per_node( items_per_node );
@@ -349,6 +355,8 @@ template< typename T, typename L >
     << s.state.padding << s.state.total_nodes << s.state.total_items
     << s.state.root_node << s.state.lft_leaf_node << s.state.rgt_leaf_node
     << s.state.free_list_node << s.state.first_append_node << s.state.current_append_node;
+
+   s.prior = s.state;
 
    return ws;
 }

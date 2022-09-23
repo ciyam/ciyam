@@ -204,7 +204,12 @@ file_raw -text blob 499998 test1:xxxx
 file_archives
 file_kill xxxx
 file_retrieve $FILE_HASH
+file_put test.jpg
+file_put test1.jpg
+file_put test2.jpg
+file_archives
 file_archive -destroy test1
+session_variable @blockchain_archive_path ""
 #~rmdir test1
 ~rmdir test1
 #~rmdir test2
