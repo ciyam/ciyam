@@ -30,7 +30,17 @@ int main( int argc, char* argv[ ] )
       if( argc < 2
        || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "-?" || string( argv[ 1 ] ) == "/?" )
       {
-         cout << "Usage: ods_dump [[-d|-t|-tt|-dt|-dtt] <entries>] <database>" << endl;
+         cout << "Usage: ods_dump [[-d|-t|-tt|-dt|-dtt] <entries>] [path/to/]<database>" << endl;
+         cout << "\nwhere: entries can be 'all' for all or ':all' for only tx log entries" << endl;
+         cout << "   or: a single OID or comma separated list of OIDs and/or OID ranges" << endl;
+         cout << "   or: :X for tx log entry X (where :0 is for the final tx log entry)" << endl;
+         cout << "   or: :X+Y for tx log entry X and Y more entries (:0-Y before final)" << endl;
+#ifdef FUTURE_SUPPORT_DATE_RANGE_TXS
+         cout << "   or: @yyyy[mm[dd[hh[mm[ss]]]]] for tx log entries matching the time" << endl;
+         cout << "   or: @..yyyy[mm[dd[hh[mm[ss]]]]] for tx log entries up to this time" << endl;
+         cout << "   or: @yyyy[mm[dd[hh[mm[ss]]]]].. for tx log entries from given time" << endl;
+         cout << "   or: @yyyy[mm[dd[hh[mm[ss]]]]]..yyyy[mm[dd[hh[mm[ss]]]]] time range" << endl;
+#endif
          return 0;
       }
 
@@ -117,29 +127,38 @@ int main( int argc, char* argv[ ] )
 
       if( !all_entries.empty( ) && o.get_total_entries( ) )
       {
-         if( all_entries == "~" || all_entries == "~all" )
+         if( all_entries[ 0 ] == ':' )
          {
             skip_entries = true;
-            all_entries = "all";
+            show_tranlog_entries = true;
          }
-
-         split_and_condense_range_pairs( all_entries, entry_items, o.get_total_entries( ) );
-
-         if( all_entries == "*" || all_entries == "all" )
-            is_all = true;
          else
          {
-            // NOTE: After the range pairs have been condensed reconstruct "all_entries" from the result.
-            all_entries.erase( );
-            for( map< int64_t, int64_t >::iterator i = entry_items.begin( ); i != entry_items.end( ); ++i )
+            if( all_entries == ":" || all_entries == ":*" || all_entries == ":all" )
             {
-               if( !all_entries.empty( ) )
-                  all_entries += ',';
+               skip_entries = true;
+               all_entries = "all";
+            }
 
-               if( i->first == i->second )
-                  all_entries += to_string( i->first );
-               else
-                  all_entries += to_string( i->first ) + '-' + to_string( i->second );
+            split_and_condense_range_pairs( all_entries, entry_items, o.get_total_entries( ) );
+
+            if( all_entries == "*" || all_entries == "all" )
+               is_all = true;
+            else
+            {
+               // NOTE: After the range pairs have been condensed reconstruct "all_entries" from the result.
+               all_entries.erase( );
+
+               for( map< int64_t, int64_t >::iterator i = entry_items.begin( ); i != entry_items.end( ); ++i )
+               {
+                  if( !all_entries.empty( ) )
+                     all_entries += ',';
+
+                  if( i->first == i->second )
+                     all_entries += to_string( i->first );
+                  else
+                     all_entries += to_string( i->first ) + '-' + to_string( i->second );
+               }
             }
          }
       }

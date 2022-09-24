@@ -4179,15 +4179,49 @@ void ods::dump_transaction_log( ostream& os, bool omit_dtms,
 
    if( !header_only && tranlog_info.entry_offs )
    {
+      bool entries_are_tx_ids = false;
+
+      int64_t tx_id_start = 0;
+      int64_t tx_id_finish = 0;
+
       map< int64_t, int64_t > range_pairs;
 
-      // NOTE: Optionally restrict the output to a map of log entry item ranges.
+      // NOTE: Optionally restrict the output to a map of log entry item ranges
+      // or to a single tx or to a single range of txs (where 0 is the last tx).
       if( p_entry_ranges && !p_entry_ranges->empty( ) )
       {
-         if( entries_are_condensed )
-            split_range_pairs( *p_entry_ranges, range_pairs );
+         string entries( *p_entry_ranges );
+
+         if( entries[ 0 ] == ':' )
+         {
+            entries.erase( 0, 1 );
+
+            string::size_type pos = entries.find_first_of( "-+" );
+
+            string first_tx_id( entries.substr( 0, pos ) );
+
+            if( first_tx_id == "0" )
+            {
+               tx_id_start = tx_id_finish = max( ( int64_t )1, get_next_transaction_id( ) - 1 );
+
+               if( pos != string::npos )
+                  tx_id_start = tx_id_finish - from_string< int64_t >( entries.substr( pos + 1 ) );
+            }
+            else
+            {
+               tx_id_start = tx_id_finish = from_string< int64_t >( first_tx_id );
+
+               if( pos != string::npos )
+                  tx_id_finish = tx_id_start + from_string< int64_t >( entries.substr( pos + 1 ) );
+            }
+         }
          else
-            split_and_condense_range_pairs( *p_entry_ranges, range_pairs, get_total_entries( ) );
+         {
+            if( entries_are_condensed )
+               split_range_pairs( entries, range_pairs );
+            else
+               split_and_condense_range_pairs( entries, range_pairs, get_total_entries( ) );
+         }
       }
 
       if( !skip_header )
@@ -4202,6 +4236,25 @@ void ods::dump_transaction_log( ostream& os, bool omit_dtms,
          log_entry tranlog_entry;
          tranlog_entry.read( fs );
 
+         int64_t next_offs = tranlog_entry.next_entry_offs;
+
+         if( !next_offs )
+            next_offs = tranlog_info.append_offs;
+
+         if( tx_id_start || tx_id_finish )
+         {
+            if( ( tx_id_start && ( tranlog_entry.tx_id < tx_id_start ) )
+             || ( tx_id_finish && ( tranlog_entry.tx_id > tx_id_finish ) ) )
+            {
+               fs.seekg( next_offs, ios::beg );
+
+               if( fs.tellg( ) > tranlog_info.entry_offs )
+                  break;
+
+               continue;
+            }
+         }
+
          bool first_item = true;
          ostringstream osstr;
 
@@ -4211,11 +4264,6 @@ void ods::dump_transaction_log( ostream& os, bool omit_dtms,
             osstr << '\n';
 
          tranlog_entry.dump( osstr, offs, omit_dtms );
-
-         int64_t next_offs = tranlog_entry.next_entry_offs;
-
-         if( !next_offs )
-            next_offs = tranlog_info.append_offs;
 
          // NOTE: If dumping all then also include empty txs.
          if( !p_entry_ranges && ( fs.tellg( ) == next_offs ) )
