@@ -4302,7 +4302,8 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
    return retval;
 }
 
-void create_raw_file_in_archive( const string& archive, const string& hash, const string& file_data, string* p_hash )
+void create_raw_file_in_archive( const string& archive,
+ const string& hash, const string& file_data, string* p_hash )
 {
    guard g( g_mutex );
 
@@ -4319,23 +4320,36 @@ void create_raw_file_in_archive( const string& archive, const string& hash, cons
          *p_hash = file_hash;
    }
 
-   string archive_found;
+   string archive_found( archive );
 
-   if( has_file_been_archived( file_hash, &archive_found ) && ( archive == archive_found ) )
+   if( has_file_been_archived( file_hash, &archive_found, true ) )
       touch_file_in_archive( file_hash, archive );
    else
    {
       system_ods_bulk_write ods_bulk_write;
 
-      string all_archives( list_file_archives( true, &paths ) );
+      string all_archives;
 
-      auto_ptr< ods::transaction > ap_ods_tx;
-      if( !system_ods_instance( ).is_in_transaction( ) )
-         ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
+      // NOTE: If "@blockchain_archive_path" has been set then can avoid
+      // calling "list_file_archives".
+      string archive_path( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+
+      if( !archive_path.empty( ) )
+      {
+         all_archives = archive;
+         paths.push_back( archive_path );
+      }
+
+      if( all_archives.empty( ) )
+         all_archives = list_file_archives( true, &paths );
 
       ods_file_system& ods_fs( system_ods_file_system( ) );
 
       bool found = false;
+      bool has_changed = false;
+
+      int64_t new_avail = 0;
 
       if( !all_archives.empty( ) )
       {
@@ -4359,6 +4373,8 @@ void create_raw_file_in_archive( const string& archive, const string& hash, cons
 
             int64_t avail = 0;
             ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
+
+            int64_t prior_avail = avail;
 
             int64_t limit = 0;
             ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
@@ -4384,7 +4400,13 @@ void create_raw_file_in_archive( const string& archive, const string& hash, cons
 
             g_archive_file_info[ archive ].add_file( file_hash, tm_val );
 
-            ods_fs.store_as_text_file( c_file_archive_size_avail, avail );
+            if( avail != prior_avail )
+            {
+               new_avail = avail;
+               has_changed = true;
+            }
+
+            break;
          }
       }
 
@@ -4392,8 +4414,17 @@ void create_raw_file_in_archive( const string& archive, const string& hash, cons
          // FUTURE: This message should be handled as a server string message.
          throw runtime_error( "File archive '" + archive + "' was not found." );
 
-      if( ap_ods_tx.get( ) )
-         ap_ods_tx->commit( );
+      if( has_changed )
+      {
+         auto_ptr< ods::transaction > ap_ods_tx;
+         if( !system_ods_instance( ).is_in_transaction( ) )
+            ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
+
+         ods_fs.store_as_text_file( c_file_archive_size_avail, new_avail );
+
+         if( ap_ods_tx.get( ) )
+            ap_ods_tx->commit( );
+      }
    }
 }
 
