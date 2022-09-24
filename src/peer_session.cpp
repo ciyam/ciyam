@@ -2330,11 +2330,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       next_hash_to_put = top_next_peer_file_hash_to_put(
        ( !is_for_support && check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
 
-      if( is_for_support && next_hash_to_get.empty( ) && next_hash_to_put.empty( ) )
-         msleep( c_support_session_sleep_time );
-
       if( !is_for_support || !next_hash_to_get.empty( ) || !next_hash_to_put.empty( ) )
          break;
+
+      msleep( c_support_session_sleep_time );
    }
 
    bool set_new_zenith = false;
