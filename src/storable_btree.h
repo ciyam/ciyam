@@ -256,7 +256,8 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
     storable_node_manager< T > >( compare_less ),
     o( *ods::instance( ) )
    {
-      has_written = o.is_new( );
+      has_written = !o.is_new( );
+      prior = storable_btree_base< T, L >::state;
 
       bt_base_class::get_node_manager( ).set_ods( o );
    }
@@ -266,7 +267,8 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
     storable_node_manager< T > >( compare_less ),
     o( o )
    {
-      has_written = o.is_new( );
+      has_written = !o.is_new( );
+      prior = storable_btree_base< T, L >::state;
 
       bt_base_class::get_node_manager( ).set_ods( o );
    }

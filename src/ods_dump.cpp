@@ -134,12 +134,6 @@ int main( int argc, char* argv[ ] )
          }
          else
          {
-            if( all_entries == ":" || all_entries == ":*" || all_entries == ":all" )
-            {
-               skip_entries = true;
-               all_entries = "all";
-            }
-
             split_and_condense_range_pairs( all_entries, entry_items, o.get_total_entries( ) );
 
             if( all_entries == "*" || all_entries == "all" )

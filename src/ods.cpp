@@ -4196,23 +4196,51 @@ void ods::dump_transaction_log( ostream& os, bool omit_dtms,
          {
             entries.erase( 0, 1 );
 
+            if( entries.empty( ) || entries == "*" || entries == "all" )
+               entries = "1+0";
+
+            bool is_from_end = false;
+
+            if( !entries.empty( ) && entries[ 0 ] == '-' )
+            {
+               is_from_end = true;
+               entries.erase( 0, 1 );
+            }
+
             string::size_type pos = entries.find_first_of( "-+" );
 
             string first_tx_id( entries.substr( 0, pos ) );
 
-            if( first_tx_id == "0" )
+            if( is_from_end || first_tx_id == "0" )
             {
-               tx_id_start = tx_id_finish = max( ( int64_t )1, get_next_transaction_id( ) - 1 );
+               int64_t num_from_end = from_string< int64_t >( first_tx_id ) + 1;
 
-               if( pos != string::npos )
+               if( num_from_end >= get_next_transaction_id( ) )
+                  throw runtime_error( "tx id entry info " + p_entry_ranges->substr( 1 ) + " is out of range" );
+
+               tx_id_start = tx_id_finish = ( get_next_transaction_id( ) - num_from_end );
+
+               if( tx_id_start && ( pos != string::npos ) )
+               {
                   tx_id_start = tx_id_finish - from_string< int64_t >( entries.substr( pos + 1 ) );
+
+                  if( tx_id_start < 1 )
+                     tx_id_start = 1;
+               }
             }
             else
             {
                tx_id_start = tx_id_finish = from_string< int64_t >( first_tx_id );
 
                if( pos != string::npos )
-                  tx_id_finish = tx_id_start + from_string< int64_t >( entries.substr( pos + 1 ) );
+               {
+                  entries.erase( 0, pos + 1 );
+
+                  if( entries == "0" )
+                     tx_id_finish = 0;
+                  else
+                     tx_id_finish = tx_id_start + from_string< int64_t >( entries );
+               }
             }
          }
          else

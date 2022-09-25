@@ -372,7 +372,6 @@ ods_file_system::ods_file_system( ods& o, int64_t i )
       btree_trans_type bt_tx( bt );
 
       bt.set_items_per_node( c_ofs_items_per_node );
-      o << bt;
 
       bt_tx.commit( );
 
