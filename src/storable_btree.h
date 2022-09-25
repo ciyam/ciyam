@@ -256,6 +256,8 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
     storable_node_manager< T > >( compare_less ),
     o( *ods::instance( ) )
    {
+      has_written = o.is_new( );
+
       bt_base_class::get_node_manager( ).set_ods( o );
    }
 
@@ -264,6 +266,8 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
     storable_node_manager< T > >( compare_less ),
     o( o )
    {
+      has_written = o.is_new( );
+
       bt_base_class::get_node_manager( ).set_ods( o );
    }
 
@@ -281,12 +285,17 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
    private:
    ods& o;
 
+   bool has_written;
+
    protected:
    virtual void commit( )
    {
-      // NOTE: No need to store if the state has not changed.
-      if( storable_btree_base< T, L >::has_changed( prior ) )
+      // NOTE: Do not store if state has not changed since was last written.
+      if( !has_written || storable_btree_base< T, L >::has_changed( prior ) )
+      {
          o << *this;
+         has_written = true;
+      }
    }
 };
 

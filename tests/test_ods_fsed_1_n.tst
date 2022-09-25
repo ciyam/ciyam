@@ -1,8 +1,22 @@
 cd
 /
 cd abc
+folders
+aaa
+def
+xyz
+folder_move aaa bbb
+folders
+bbb
+def
+xyz
+folder_move bbb aaa
+folders
+aaa
+def
+xyz
 folder_remove def
-*** cannot remove 'def' as it has one or more child folders ***
+error: cannot remove 'def' as it has one or more child folders
 folder_remove -r def
 cd /
 branch folders
@@ -18,7 +32,7 @@ ghi/555
 ghi/999
 zzz
 folder_remove abc
-*** cannot remove 'abc' as it has one or more child folders ***
+error: cannot remove 'abc' as it has one or more child folders
 folder_remove -r abc
 branch folders
 ghi
@@ -27,7 +41,7 @@ ghi/555
 ghi/999
 zzz
 folder_remove ghi
-*** cannot remove 'ghi' as it has one or more child folders ***
+error: cannot remove 'ghi' as it has one or more child folders
 folder_remove -r ghi
 branch folders
 zzz

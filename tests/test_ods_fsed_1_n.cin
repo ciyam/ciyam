@@ -1,5 +1,10 @@
 cd
 cd abc
+folders
+folder_move aaa bbb
+folders
+folder_move bbb aaa
+folders
 folder_remove def
 folder_remove -r def
 cd /

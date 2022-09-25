@@ -369,8 +369,12 @@ ods_file_system::ods_file_system( ods& o, int64_t i )
    }
    else
    {
+      btree_trans_type bt_tx( bt );
+
       bt.set_items_per_node( c_ofs_items_per_node );
       o << bt;
+
+      bt_tx.commit( );
 
       p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
@@ -383,11 +387,12 @@ ods_file_system::~ods_file_system( )
 
 void ods_file_system::set_folder( const string& new_folder, bool* p_rc )
 {
-   string s( determine_folder( new_folder ) );
+   string s( determine_folder( new_folder, false, true ) );
 
    if( !s.empty( ) )
    {
       current_folder = s;
+
       if( p_rc )
          *p_rc = true;
    }
@@ -405,7 +410,8 @@ void ods_file_system::set_root_folder( const string& new_folder, bool* p_rc )
    set_folder( string( c_root_folder ) + new_folder, p_rc );
 }
 
-string ods_file_system::determine_folder( const string& folder, ostream* p_os, bool explicit_child_only )
+string ods_file_system::determine_folder(
+ const string& folder, bool explicit_child_only, bool ignore_not_found )
 {
    string new_folder( folder );
    string old_current_folder( current_folder );
@@ -417,12 +423,7 @@ string ods_file_system::determine_folder( const string& folder, ostream* p_os, b
       string::size_type pos = new_folder.find( c_parent_folder );
 
       if( pos != string::npos || ( !new_folder.empty( ) && new_folder[ 0 ] == c_folder ) )
-      {
-         if( p_os )
-            *p_os << "*** invalid non-explicit or non-child folder ***" << endl;
-
-         new_folder.erase( );
-      }
+         throw runtime_error( "invalid non-explicit or non-child folder" );
    }
 
    if( !new_folder.empty( ) )
@@ -442,6 +443,7 @@ string ods_file_system::determine_folder( const string& folder, ostream* p_os, b
          }
 
          new_folder.erase( 0, 2 );
+
          if( !new_folder.empty( ) && new_folder.substr( 0, 1 ) == string( c_root_folder ) )
             new_folder.erase( 0, 1 );
 
@@ -480,8 +482,8 @@ string ods_file_system::determine_folder( const string& folder, ostream* p_os, b
 
          if( bt.find( tmp_item ) == bt.end( ) )
          {
-            if( p_os )
-               *p_os << "*** folder '" << folder << "' not found ***" << endl;
+            if( !ignore_not_found )
+               throw runtime_error( "folder '" + folder + "' not found" );
 
             new_folder.erase( );
          }
@@ -491,7 +493,7 @@ string ods_file_system::determine_folder( const string& folder, ostream* p_os, b
    return new_folder;
 }
 
-string ods_file_system::determine_strip_and_change_folder( string& name, ostream* p_os )
+string ods_file_system::determine_strip_and_change_folder( string& name )
 {
    string original_folder;
 
@@ -499,7 +501,7 @@ string ods_file_system::determine_strip_and_change_folder( string& name, ostream
 
    if( pos != string::npos )
    {
-      string source_folder( determine_folder( name.substr( 0, pos ), p_os ) );
+      string source_folder( determine_folder( name.substr( 0, pos ), false, true ) );
 
       if( source_folder.empty( ) )
          name.erase( );
@@ -663,7 +665,8 @@ void ods_file_system::branch_folders( const string& expr, ostream& os, branch_st
     : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ), "|/" );
 }
 
-void ods_file_system::add_file( const string& name, const string& source, ostream* p_os, istream* p_is, progress* p_progress )
+void ods_file_system::add_file( const string& name,
+ const string& source, ostream* p_os, istream* p_is, progress* p_progress )
 {
    string file_name( source );
 
@@ -673,14 +676,12 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
    btree_type& bt( p_impl->bt );
 
    if( valid_file_name( name ) != name )
-   {
-      if( p_os )
-         *p_os << "*** invalid file name '" << name << "' ***" << endl;
-      else
-         throw runtime_error( "invalid file name '" + name + "'" );
-   }
+      throw runtime_error( "invalid file name '" + name + "'" );
    else
    {
+      if( !p_is && !file_exists( file_name ) )
+         throw runtime_error( "file '" + file_name + "' not found" );
+
       string value( current_folder );
 
       replace( value, c_folder_separator, c_pipe_separator );
@@ -715,12 +716,7 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
       tmp_iter = bt.find( tmp_item );
 
       if( tmp_iter != bt.end( ) )
-      {
-         if( p_os )
-            *p_os << "*** a folder with the name '" << name << "' already exists ***" << endl;
-         else
-            throw runtime_error( "a folder with the name '" + name + "' already exists" );
-      }
+         throw runtime_error( "a folder with the name '" + name + "' already exists" );
       else
 #endif
       {
@@ -728,12 +724,7 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
          tmp_iter = bt.find( tmp_item );
 
          if( tmp_iter != bt.end( ) )
-         {
-            if( p_os )
-               *p_os << "*** file '" << name << "' already exists ***" << endl;
-            else
-               throw runtime_error( "file '" + name + "' already exists" );
-         }
+            throw runtime_error( "file '" + name + "' already exists" );
          else
          {
             scoped_ods_instance so( o );
@@ -828,10 +819,10 @@ void ods_file_system::get_file( const string& name,
 
    if( tmp_iter == bt.end( ) )
    {
-      if( p_os )
-         *p_os << "*** file '" << name << "' not found ***" << endl;
-      else
+      if( !p_os )
          throw runtime_error( "file '" + name + "' not found" );
+      else
+         *p_os << "*** file '" << name << "' not found ***" << endl;
    }
    else
    {
@@ -945,17 +936,12 @@ string ods_file_system::last_file_name_with_prefix( const string& prefix )
    return retval;
 }
 
-void ods_file_system::link_file( const string& name, const string& source, ostream* p_os )
+void ods_file_system::link_file( const string& name, const string& source )
 {
    btree_type& bt( p_impl->bt );
 
    if( valid_file_name( name ) != name )
-   {
-      if( p_os )
-         *p_os << "*** invalid file name '" << name << "' ***" << endl;
-      else
-         throw runtime_error( "invalid file name '" + name + "'" );
-   }
+      throw runtime_error( "invalid file name '" + name + "'" );
    else
    {
       string value( current_folder );
@@ -991,12 +977,7 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
       tmp_iter = bt.find( tmp_item );
 
       if( tmp_iter != bt.end( ) )
-      {
-         if( p_os )
-            *p_os << "*** a folder with the name '" << name << "' already exists ***" << endl;
-         else
-            throw runtime_error( "a folder with the name '" + name + "' already exists" );
-      }
+         throw runtime_error( "a folder with the name '" + name + "' already exists" );
       else
 #endif
       {
@@ -1005,19 +986,16 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
          tmp_iter = bt.find( tmp_item );
 
          if( tmp_iter != bt.end( ) )
-         {
-            if( p_os )
-               *p_os << "*** file '" << name << "' already exists ***" << endl;
-            else
-               throw runtime_error( "file '" + name + "' already exists" );
-         }
+            throw runtime_error( "file '" + name + "' already exists" );
          else
          {
             string::size_type pos = source.rfind( c_folder );
 
             string source_name( source.substr( pos == string::npos ? 0 : pos + 1 ) );
 
-            string source_folder( determine_folder( source.substr( 0, pos ) ) );
+            int rc = 0;
+
+            string source_folder( determine_folder( source.substr( 0, pos ), false, true ) );
 
             if( source_folder.empty( ) )
                source_folder = string( c_root_folder );
@@ -1036,12 +1014,7 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
             tmp_iter = bt.find( tmp_item );
 
             if( tmp_iter == bt.end( ) )
-            {
-               if( p_os )
-                  *p_os << "*** file '" << source << "' not found ***" << endl;
-               else
-                  throw runtime_error( "file '" + source + "' not found" );
-            }
+               throw runtime_error( "file '" + source + "' not found" );
             else
             {
                tmp_item.val = value;
@@ -1074,7 +1047,7 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
    }
 }
 
-void ods_file_system::move_file( const string& name, const string& destination, ostream* p_os )
+void ods_file_system::move_file( const string& name, const string& destination )
 {
    string dest( destination );
 
@@ -1085,12 +1058,7 @@ void ods_file_system::move_file( const string& name, const string& destination, 
    btree_type& bt( p_impl->bt );
 
    if( valid_file_name( dest_name ) != dest_name )
-   {
-      if( p_os )
-         *p_os << "*** invalid destination file name '" << dest_name << "' ***" << endl;
-      else
-         throw runtime_error( "invalid destination file name '" + dest_name + "'" );
-   }
+      throw runtime_error( "invalid destination file name '" + dest_name + "'" );
    else
    {
       auto_ptr< ods::bulk_write > ap_bulk;
@@ -1123,12 +1091,7 @@ void ods_file_system::move_file( const string& name, const string& destination, 
       tmp_iter = bt.find( tmp_item );
 
       if( tmp_iter == bt.end( ) )
-      {
-         if( p_os )
-            *p_os << "*** file '" << name << "' not found ***" << endl;
-         else
-            throw runtime_error( "file '" + name + "' not found" );
-      }
+         throw runtime_error( "file '" + name + "' not found" );
       else
       {
          tmp_item = *tmp_iter;
@@ -1136,7 +1099,7 @@ void ods_file_system::move_file( const string& name, const string& destination, 
          bool is_link = tmp_item.get_is_link( );
          oid id( tmp_item.get_file( ).get_id( ) );
 
-         string dest_folder( determine_folder( dest ) );
+         string dest_folder( determine_folder( dest, false, true ) );
 
          if( dest_folder.empty( ) )
          {
@@ -1149,7 +1112,7 @@ void ods_file_system::move_file( const string& name, const string& destination, 
             }
             else
             {
-               dest_folder = determine_folder( dest.substr( 0, pos ), p_os );
+               dest_folder = determine_folder( dest.substr( 0, pos ), false, true );
 
                if( !dest_folder.empty( ) )
                   dest_name = dest.substr( pos + 1 );
@@ -1173,12 +1136,7 @@ void ods_file_system::move_file( const string& name, const string& destination, 
                tmp_item.set_is_link( );
 
             if( bt.find( tmp_item ) != bt.end( ) )
-            {
-               if( p_os )
-                  *p_os << "*** destination file '" << dest_name << "' already exists ***" << endl;
-               else
-                  throw runtime_error( "destination file '" + dest_name + "' already exists" );
-            }
+               throw runtime_error( "destination file '" + dest_name + "' already exists" );
             else
             {
                bt.erase( tmp_iter );
@@ -1190,12 +1148,7 @@ void ods_file_system::move_file( const string& name, const string& destination, 
                tmp_iter = bt.find( tmp_item );
 
                if( tmp_iter != bt.end( ) )
-               {
-                  if( p_os )
-                     *p_os << "*** a folder with the name '" << dest_name << "' already exists ***" << endl;
-                  else
-                     throw runtime_error( "a folder with the name '" + dest_name + "' already exists" );
-               }
+                  throw runtime_error( "a folder with the name '" + dest_name + "' already exists" );
                else
 #endif
                {
@@ -1268,7 +1221,7 @@ void ods_file_system::remove_file( const string& name, ostream* p_os, progress* 
 
    btree_trans_type bt_tx( bt );
 
-   if( remove_items_for_file( name, p_os, is_prefix ) )
+   if( remove_items_for_file( name, is_prefix, true ) )
    {
       bt_tx.commit( );
 
@@ -1320,10 +1273,10 @@ void ods_file_system::replace_file( const string& name, const string& source, os
 
    if( tmp_iter == bt.end( ) )
    {
-      if( p_os )
-         *p_os << "*** file '" << name << "' not found ***" << endl;
-      else
+      if( !p_os )
          throw runtime_error( "file '" + name + "' not found" );
+      else
+         *p_os << "*** file '" << name << "' not found ***" << endl;
    }
    else
    {
@@ -1471,10 +1424,10 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
 
    if( valid_file_name( name ) != name )
    {
-      if( p_os )
-         *p_os << "*** invalid folder name '" << name << "' ***" << endl;
-      else
+      if( !p_os )
          throw runtime_error( "invalid folder name '" + name + "'" );
+      else
+         *p_os << "*** invalid folder name '" << name << "' ***" << endl;
    }
    else
    {
@@ -1509,10 +1462,10 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
 
          if( tmp_iter != bt.end( ) )
          {
-            if( p_os )
-               *p_os << "*** a file with the name '" << name << "' already exists ***" << endl;
-            else
+            if( !p_os )
                throw runtime_error( "a file with the name '" + name + "' already exists" );
+            else
+               *p_os << "*** a file with the name '" << name << "' already exists ***" << endl;
          }
          else
 #endif
@@ -1522,10 +1475,10 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
 
             if( tmp_iter != bt.end( ) )
             {
-               if( p_os )
-                  *p_os << "*** folder '" << name << "' already exists ***" << endl;
-               else
+               if( !p_os )
                   throw runtime_error( "folder '" + name + "' already exists" );
+               else
+                  *p_os << "*** folder '" << name << "' already exists ***" << endl;
             }
             else
             {
@@ -1550,10 +1503,10 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
 
          if( tmp_iter != bt.end( ) )
          {
-            if( p_os )
-               *p_os << "*** a file with the name '" << name << "' already exists ***" << endl;
-            else
+            if( !p_os )
                throw runtime_error( "a file with the name '" + name + "' already exists" );
+            else
+               *p_os << "*** a file with the name '" << name << "' already exists ***" << endl;
          }
          else
 #endif
@@ -1563,10 +1516,10 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
 
             if( tmp_iter != bt.end( ) )
             {
-               if( p_os )
-                  *p_os << "*** folder '" << name << "' already exists ***" << endl;
-               else
+               if( !p_os )
                   throw runtime_error( "folder '" + name + "' already exists" );
+               else
+                  *p_os << "*** folder '" << name << "' already exists ***" << endl;
             }
             else
             {
@@ -1676,30 +1629,30 @@ void ods_file_system::move_folder( const string& name, const string& destination
 
    if( tmp_iter == bt.end( ) )
    {
-      if( p_os )
-         *p_os << "*** folder '" << name << "' not found ***" << endl;
-      else
+      if( !p_os )
          throw runtime_error( "folder '" + name + "' not found" );
+      else
+         *p_os << "*** folder '" << name << "' not found ***" << endl;
    }
    else
    {
-      string dest_folder = determine_folder( destination );
+      string dest_folder = determine_folder( destination, false, true );
 
       if( dest_folder.empty( ) )
       {
          if( destination.find( c_folder_separator ) != string::npos )
          {
-            if( p_os )
-               *p_os << "*** folder '" << destination << "' does not exist ***" << endl;
-            else
+            if( !p_os )
                throw runtime_error( "folder '" + destination + "' does not exist" );
+            else
+               *p_os << "*** folder '" << destination << "' does not exist ***" << endl;
          }
          else if( valid_file_name( destination ) != destination )
          {
-            if( p_os )
-               *p_os << "*** invalid folder name '" << destination << "' ***" << endl;
-            else
+            if( !p_os )
                throw runtime_error( "invalid folder name '" + destination + "'" );
+            else
+               *p_os << "*** invalid folder name '" << destination << "' ***" << endl;
          }
          else
          {
@@ -1724,10 +1677,10 @@ void ods_file_system::move_folder( const string& name, const string& destination
 
          if( dest_folder.size( ) >= full_name.size( ) && dest_folder.find( full_name ) == 0 )
          {
-            if( p_os )
-               *p_os << "*** a folder cannot be moved below itself ***" << endl;
-            else
+            if( !p_os )
                throw runtime_error( "a folder cannot be moved below itself" );
+            else
+               *p_os << "*** a folder cannot be moved below itself ***" << endl;
          }
          else
             okay = move_files_and_folders( full_name, dest_name, src_is_root, dest_is_root, overwrite );
@@ -1769,7 +1722,7 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
 
    btree_trans_type bt_tx( bt );
 
-   string tmp_folder( determine_folder( name, p_os, true ) );
+   string tmp_folder( determine_folder( name, true, true ) );
 
    if( tmp_folder.empty( ) )
       okay = false;
@@ -1782,13 +1735,13 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
 
       if( !remove_branch && !child_folders.empty( ) )
       {
-         if( p_os )
+         if( !p_os )
+            throw runtime_error( "cannot remove '" + name + "' as it has one or more child folders" );
+         else
          {
             okay = false;
             *p_os << "*** cannot remove '" << name << "' as it has one or more child folders ***" << endl;
          }
-         else
-            throw runtime_error( "cannot remove '" + name + "' as it has one or more child folders" );
       }
       else
       {
@@ -1797,13 +1750,13 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
 
          if( !remove_branch && !child_files.empty( ) )
          {
-            if( p_os )
+            if( !p_os )
+               throw runtime_error( "cannot remove '" + name + "' as it has one or more files" );
+            else
             {
                okay = false;
                *p_os << "*** cannot remove '" << name << "' as it has one or more files ***" << endl;
             }
-            else
-               throw runtime_error( "cannot remove '" + name + "' as it has one or more files" );
          }
          else
          {
@@ -1818,7 +1771,7 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
 
    if( okay )
    {
-      if( remove_items_for_folder( name, p_os ) )
+      if( remove_items_for_folder( name, true ) )
       {
          bt_tx.commit( );
 
@@ -1874,12 +1827,13 @@ void ods_file_system::dump_node_data( const string& file_name, ostream* p_os )
    if( file_name.length( ) )
    {
       ofstream outf( file_name.c_str( ) );
+
       if( !outf )
       {
-         if( p_os )
-            *p_os << "error: unable to open file '" << file_name << "' for output" << endl;
-         else
+         if( !p_os )
             throw runtime_error( "unable to open file '" + file_name + "' for output" );
+         else
+            *p_os << "error: unable to open file '" << file_name << "' for output" << endl;
       }
       else
          bt.dump_all_info( outf );
@@ -2163,7 +2117,7 @@ void ods_file_system::expand_entity_expression(
          if( pos != string::npos && expr.find( c_parent_folder, pos + 1 ) == pos + 1 )
             pos += strlen( c_parent_folder ) + 1;
 
-         entity_expr = determine_folder( expr.substr( 0, pos ) );
+         entity_expr = determine_folder( expr.substr( 0, pos ), false, true );
 
          if( entity_expr.size( ) > 1 && p_suffix && pos == string::npos )
             entity_expr += string( p_suffix );
@@ -2479,7 +2433,7 @@ bool ods_file_system::move_files_and_folders( const string& source,
          if( bt.find( tmp_item ) != bt.end( ) )
          {
             if( !replace_existing )
-               throw runtime_error( "*** the folder '" + next + "' already exists ***" );
+               throw runtime_error( "folder '" + next + "' already exists" );
          }
          else
             bt.insert( tmp_item );
@@ -2539,8 +2493,8 @@ bool ods_file_system::move_files_and_folders( const string& source,
          tmp_item.val = new_root_name;
 
          if( bt.find( tmp_item ) != bt.end( ) )
-            throw runtime_error( "*** a file with the name '"
-             + replaced( dest_name, c_colon_separator, c_folder_separator ) + "' already exists ***" );
+            throw runtime_error( "a file with the name '"
+             + replaced( dest_name, c_colon_separator, c_folder_separator ) + "' already exists" );
 #endif
       }
       else
@@ -2563,8 +2517,8 @@ bool ods_file_system::move_files_and_folders( const string& source,
             tmp_item.val = new_folder_name;
 
             if( bt.find( tmp_item ) != bt.end( ) )
-               throw runtime_error( "*** a file with the name '"
-                + replaced( dest_name, c_colon_separator, c_folder_separator ) + "' already exists ***" );
+               throw runtime_error( "a file with the name '"
+                + replaced( dest_name, c_colon_separator, c_folder_separator ) + "' already exists" );
 #endif
          }
       }
@@ -2608,8 +2562,8 @@ bool ods_file_system::move_files_and_folders( const string& source,
             tmp_item.val = next;
 
             if( bt.find( tmp_item ) != bt.end( ) )
-               throw runtime_error( "*** a file with the name '"
-                + replaced( next, c_pipe_separator, c_folder_separator ) + "' already exists ***" );
+               throw runtime_error( "a file with the name '"
+                + replaced( next, c_pipe_separator, c_folder_separator ) + "' already exists" );
 #endif
          }
       }
@@ -2658,8 +2612,8 @@ bool ods_file_system::move_files_and_folders( const string& source,
             already_exists = ( bt.find( tmp_item ) != bt.end( ) );
 
          if( already_exists && !replace_existing )
-            throw runtime_error( "*** file '"
-             + replaced( next, c_pipe_separator, c_folder_separator ) + "' already exists ***" );
+            throw runtime_error( "file '"
+             + replaced( next, c_pipe_separator, c_folder_separator ) + "' already exists" );
          else
          {
             bt.insert( tmp_item );
@@ -2671,8 +2625,8 @@ bool ods_file_system::move_files_and_folders( const string& source,
             tmp_item.val = next;
 
             if( bt.find( tmp_item ) != bt.end( ) )
-               throw runtime_error( "*** a folder with the name '"
-                + replaced( next, c_colon_separator, c_folder_separator ) + "' already exists ***" );
+               throw runtime_error( "a folder with the name '"
+                + replaced( next, c_colon_separator, c_folder_separator ) + "' already exists" );
 #endif
             // NOTE: If this is a file link then need to also update its special object.
             if( is_link )
@@ -2703,7 +2657,8 @@ bool ods_file_system::move_files_and_folders( const string& source,
    return true;
 }
 
-bool ods_file_system::remove_items_for_file( const string& name, ostream* p_os, bool is_prefix )
+bool ods_file_system::remove_items_for_file(
+ const string& name, bool is_prefix, bool ignore_not_found )
 {
    bool okay = true;
 
@@ -2741,13 +2696,10 @@ bool ods_file_system::remove_items_for_file( const string& name, ostream* p_os, 
 
    if( tmp_iter == bt.end( ) )
    {
-      if( p_os )
-      {
-         okay = false;
-         *p_os << "*** file '" << name << "' not found ***" << endl;
-      }
-      else
+      if( !ignore_not_found )
          throw runtime_error( "file '" + name + "' not found" );
+
+      okay = false;
    }
    else
    {
@@ -2802,7 +2754,7 @@ bool ods_file_system::remove_items_for_file( const string& name, ostream* p_os, 
    return okay;
 }
 
-bool ods_file_system::remove_items_for_folder( const string& name, ostream* p_os )
+bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_not_found )
 {
    bool okay = true;
 
@@ -2816,13 +2768,10 @@ bool ods_file_system::remove_items_for_folder( const string& name, ostream* p_os
 
       if( !bt.erase( tmp_item ) )
       {
-         if( p_os )
-         {
-            okay = false;
-            *p_os << "*** folder '" << name << "' not found ***" << endl;
-         }
-         else
+         if( !ignore_not_found )
             throw runtime_error( "folder '" + name + "' not found" );
+
+         okay = false;
       }
       else
       {
@@ -2855,13 +2804,10 @@ bool ods_file_system::remove_items_for_folder( const string& name, ostream* p_os
 
       if( !bt.erase( tmp_item ) )
       {
-         if( p_os )
-         {
-            okay = false;
-            *p_os << "*** folder '" << name << "' not found ***" << endl;
-         }
-         else
+         if( !ignore_not_found )
             throw runtime_error( "folder '" + name + "' not found" );
+
+         okay = false;
       }
       else
       {
