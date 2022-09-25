@@ -42,9 +42,9 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    inline std::string get_folder( ) const { return current_folder; }
 
    std::string determine_folder( const std::string& folder,
-    std::ostream* p_os = 0, bool explicit_child_only = false );
+    bool explicit_child_only = false, bool ignore_not_found = false );
 
-   std::string determine_strip_and_change_folder( std::string& name, std::ostream* p_os = 0 );
+   std::string determine_strip_and_change_folder( std::string& name );
 
    enum list_style
    {
@@ -198,9 +198,9 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
 
    std::string last_file_name_with_prefix( const std::string& prefix );
 
-   void link_file( const std::string& name, const std::string& source, std::ostream* p_os = 0 );
+   void link_file( const std::string& name, const std::string& source );
 
-   void move_file( const std::string& name, const std::string& destination, std::ostream* p_os = 0 );
+   void move_file( const std::string& name, const std::string& destination );
 
    void store_file( const std::string& name,
     const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 );
@@ -285,8 +285,10 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    bool move_files_and_folders( const std::string& source,
     const std::string& destination, bool src_is_root, bool dest_is_root, bool replace_existing = false );
 
-   bool remove_items_for_file( const std::string& name, std::ostream* p_os = 0, bool is_prefix = false );
-   bool remove_items_for_folder( const std::string& name, std::ostream* p_os = 0 );
+   bool remove_items_for_file( const std::string& name,
+    bool is_prefix = false, bool ignore_not_found = false );
+
+   bool remove_items_for_folder( const std::string& name, bool ignore_not_found = false );
 
    private:
    ods& o;

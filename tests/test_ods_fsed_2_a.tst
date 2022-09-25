@@ -1,4 +1,12 @@
 file_add xxx test.jpg
+files
+xxx (6.7 kB)
+file_move xxx yyy
+files
+yyy (6.7 kB)
+file_move yyy xxx
+files
+xxx (6.7 kB)
 file_add yyy test1.jpg
 file_add zzz test2.jpg
 branch objects

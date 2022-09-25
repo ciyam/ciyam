@@ -47,6 +47,8 @@ const char* const c_cmd_use_synchronised_write = "sync";
 const char* const c_cmd_use_for_regression_tests = "test";
 const char* const c_cmd_reconstruct_from_transaction_log = "reconstruct";
 
+const char* const c_error_prefix = "error: ";
+
 const char* const c_rename_attribute_type_input = "input";
 const char* const c_rename_attribute_type_folder = "folder";
 const char* const c_rename_attribute_type_output = "output";
@@ -510,294 +512,301 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 {
    console_command_handler& console_handler( dynamic_cast< console_command_handler& >( handler ) );
 
-   if( command == c_cmd_ods_fsed_cd )
+   try
    {
-      string folder( get_parm_val( parameters, c_cmd_ods_fsed_cd_folder ) );
-
-      if( folder.empty( ) )
-         handler.issue_command_response( ap_ofs->get_folder( ) );
-      else
+      if( command == c_cmd_ods_fsed_cd )
       {
-         folder = ap_ofs->determine_folder( folder, ods_fsed_handler.get_std_out( ) );
+         string folder( get_parm_val( parameters, c_cmd_ods_fsed_cd_folder ) );
 
-         if( !folder.empty( ) )
+         if( folder.empty( ) )
+            handler.issue_command_response( ap_ofs->get_folder( ) );
+         else
          {
-            ap_ofs->set_folder( folder );
-            ods_fsed_handler.set_prompt_prefix( folder );
+            folder = ap_ofs->determine_folder( folder );
+
+            if( !folder.empty( ) )
+            {
+               ap_ofs->set_folder( folder );
+               ods_fsed_handler.set_prompt_prefix( folder );
+            }
          }
       }
-   }
-   else if( command == c_cmd_ods_fsed_files )
-   {
-      bool full( has_parm_val( parameters, c_cmd_ods_fsed_files_full ) );
-      bool brief( has_parm_val( parameters, c_cmd_ods_fsed_files_brief ) );
-      string expr( get_parm_val( parameters, c_cmd_ods_fsed_files_expr ) );
-
-      ods_file_system::list_style style = ods_file_system::e_list_style_default;
-
-      if( brief )
-         style = ods_file_system::e_list_style_brief;
-      else if( full )
-         style = ods_file_system::e_list_style_extended;
-
-      ap_ofs->list_files( expr, *ods_fsed_handler.get_std_out( ), style );
-   }
-   else if( command == c_cmd_ods_fsed_folders )
-   {
-      bool full( has_parm_val( parameters, c_cmd_ods_fsed_folders_full ) );
-      string expr( get_parm_val( parameters, c_cmd_ods_fsed_folders_expr ) );
-
-      ap_ofs->list_folders( expr, *ods_fsed_handler.get_std_out( ), full );
-   }
-   else if( command == c_cmd_ods_fsed_objects )
-   {
-      bool full( has_parm_val( parameters, c_cmd_ods_fsed_objects_full ) );
-      bool brief( has_parm_val( parameters, c_cmd_ods_fsed_objects_brief ) );
-      string expr( get_parm_val( parameters, c_cmd_ods_fsed_objects_expr ) );
-
-      ods_file_system::list_style style = ods_file_system::e_list_style_default;
-
-      if( brief )
-         style = ods_file_system::e_list_style_brief;
-      else if( full )
-         style = ods_file_system::e_list_style_extended;
-
-      ap_ofs->list_objects( expr, *ods_fsed_handler.get_std_out( ), style );
-   }
-   else if( command == c_cmd_ods_fsed_branch )
-   {
-      bool full( has_parm_val( parameters, c_cmd_ods_fsed_branch_full ) );
-      bool brief( has_parm_val( parameters, c_cmd_ods_fsed_branch_brief ) );
-      string expr( get_parm_val( parameters, c_cmd_ods_fsed_branch_expr ) );
-
-      ods_file_system::branch_style style = ods_file_system::e_branch_style_default;
-
-      if( brief )
-         style = ods_file_system::e_branch_style_brief;
-      else if( full )
-         style = ods_file_system::e_branch_style_extended;
-
-      if( has_parm_val( parameters, c_cmd_ods_fsed_branch_folders ) )
-         ap_ofs->branch_folders( expr, *ods_fsed_handler.get_std_out( ), style );
-      else
+      else if( command == c_cmd_ods_fsed_files )
       {
-         if( expr.empty( ) )
-            expr = "*";
+         bool full( has_parm_val( parameters, c_cmd_ods_fsed_files_full ) );
+         bool brief( has_parm_val( parameters, c_cmd_ods_fsed_files_brief ) );
+         string expr( get_parm_val( parameters, c_cmd_ods_fsed_files_expr ) );
 
-         if( !has_parm_val( parameters, c_cmd_ods_fsed_branch_objects ) )
-            ap_ofs->branch_files( expr, *ods_fsed_handler.get_std_out( ), style );
+         ods_file_system::list_style style = ods_file_system::e_list_style_default;
+
+         if( brief )
+            style = ods_file_system::e_list_style_brief;
+         else if( full )
+            style = ods_file_system::e_list_style_extended;
+
+         ap_ofs->list_files( expr, *ods_fsed_handler.get_std_out( ), style );
+      }
+      else if( command == c_cmd_ods_fsed_folders )
+      {
+         bool full( has_parm_val( parameters, c_cmd_ods_fsed_folders_full ) );
+         string expr( get_parm_val( parameters, c_cmd_ods_fsed_folders_expr ) );
+
+         ap_ofs->list_folders( expr, *ods_fsed_handler.get_std_out( ), full );
+      }
+      else if( command == c_cmd_ods_fsed_objects )
+      {
+         bool full( has_parm_val( parameters, c_cmd_ods_fsed_objects_full ) );
+         bool brief( has_parm_val( parameters, c_cmd_ods_fsed_objects_brief ) );
+         string expr( get_parm_val( parameters, c_cmd_ods_fsed_objects_expr ) );
+
+         ods_file_system::list_style style = ods_file_system::e_list_style_default;
+
+         if( brief )
+            style = ods_file_system::e_list_style_brief;
+         else if( full )
+            style = ods_file_system::e_list_style_extended;
+
+         ap_ofs->list_objects( expr, *ods_fsed_handler.get_std_out( ), style );
+      }
+      else if( command == c_cmd_ods_fsed_branch )
+      {
+         bool full( has_parm_val( parameters, c_cmd_ods_fsed_branch_full ) );
+         bool brief( has_parm_val( parameters, c_cmd_ods_fsed_branch_brief ) );
+         string expr( get_parm_val( parameters, c_cmd_ods_fsed_branch_expr ) );
+
+         ods_file_system::branch_style style = ods_file_system::e_branch_style_default;
+
+         if( brief )
+            style = ods_file_system::e_branch_style_brief;
+         else if( full )
+            style = ods_file_system::e_branch_style_extended;
+
+         if( has_parm_val( parameters, c_cmd_ods_fsed_branch_folders ) )
+            ap_ofs->branch_folders( expr, *ods_fsed_handler.get_std_out( ), style );
          else
-            ap_ofs->branch_objects( expr, *ods_fsed_handler.get_std_out( ), style );
+         {
+            if( expr.empty( ) )
+               expr = "*";
+
+            if( !has_parm_val( parameters, c_cmd_ods_fsed_branch_objects ) )
+               ap_ofs->branch_files( expr, *ods_fsed_handler.get_std_out( ), style );
+            else
+               ap_ofs->branch_objects( expr, *ods_fsed_handler.get_std_out( ), style );
+         }
       }
-   }
-   else if( command == c_cmd_ods_fsed_file_add )
-   {
-      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_name ) );
-      bool use_cin( has_parm_val( parameters, c_cmd_ods_fsed_file_add_cin ) );
-      string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_file_name ) );
-
-      console_progress progress;
-      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
-
-      ap_ofs->add_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0, p_progress );
-   }
-   else if( command == c_cmd_ods_fsed_file_get )
-   {
-      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_get_name ) );
-      bool use_cout( has_parm_val( parameters, c_cmd_ods_fsed_file_get_cout ) );
-      string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_get_file_name ) );
-
-      string original_folder( ap_ofs->determine_strip_and_change_folder( name, ods_fsed_handler.get_std_out( ) ) );
-
-      if( !name.empty( ) )
+      else if( command == c_cmd_ods_fsed_file_add )
       {
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_name ) );
+         bool use_cin( has_parm_val( parameters, c_cmd_ods_fsed_file_add_cin ) );
+         string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_file_name ) );
+
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ap_ofs->get_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cout, p_progress );
-
-         if( !original_folder.empty( ) )
-            ap_ofs->set_folder( original_folder );
+         ap_ofs->add_file( name, file_name, 0, ( use_cin ? &cin : 0 ), p_progress );
       }
-   }
-   else if( command == c_cmd_ods_fsed_file_link )
-   {
-      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_link_name ) );
-      string source( get_parm_val( parameters, c_cmd_ods_fsed_file_link_source ) );
-
-      ap_ofs->link_file( name, source, ods_fsed_handler.get_std_out( ) );
-   }
-   else if( command == c_cmd_ods_fsed_file_move )
-   {
-      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_move_name ) );
-      string destination( get_parm_val( parameters, c_cmd_ods_fsed_file_move_destination ) );
-
-      ap_ofs->move_file( name, destination, ods_fsed_handler.get_std_out( ) );
-   }
-   else if( command == c_cmd_ods_fsed_file_remove )
-   {
-      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_remove_name ) );
-
-      console_progress progress;
-      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
-
-      ap_ofs->remove_file( name, ods_fsed_handler.get_std_out( ), p_progress );
-   }
-   else if( command == c_cmd_ods_fsed_file_replace )
-   {
-      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_replace_name ) );
-      bool use_cin( has_parm_val( parameters, c_cmd_ods_fsed_file_replace_cin ) );
-      string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_replace_file_name ) );
-
-      console_progress progress;
-      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
-
-      ap_ofs->replace_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0, p_progress );
-   }
-   else if( command == c_cmd_ods_fsed_folder_add )
-   {
-      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_name ) );
-
-      ap_ofs->add_folder( name, ods_fsed_handler.get_std_out( ) );
-   }
-   else if( command == c_cmd_ods_fsed_folder_move )
-   {
-      bool overwrite( has_parm_val( parameters, c_cmd_ods_fsed_folder_move_overwrite ) );
-      string name( get_parm_val( parameters, c_cmd_ods_fsed_folder_move_name ) );
-      string destination( get_parm_val( parameters, c_cmd_ods_fsed_folder_move_destination ) );
-
-      ap_ofs->move_folder( name, destination, overwrite, ods_fsed_handler.get_std_out( ) );
-   }
-   else if( command == c_cmd_ods_fsed_folder_remove )
-   {
-      string name( get_parm_val( parameters, c_cmd_ods_fsed_folder_remove_name ) );
-      bool recurse( has_parm_val( parameters, c_cmd_ods_fsed_folder_remove_recurse ) );
-
-      ap_ofs->remove_folder( name, ods_fsed_handler.get_std_out( ), recurse );
-   }
-   else if( command == c_cmd_ods_fsed_export )
-   {
-      string directory( get_parm_val( parameters, c_cmd_ods_fsed_export_directory ) );
-      string rename_exprs( get_parm_val( parameters, c_cmd_ods_fsed_export_rename_exprs ) );
-
-      vector< string > rename_expressions;
-
-      if( !rename_exprs.empty( ) )
-         split( rename_exprs, rename_expressions );
-
-      string cwd( get_cwd( ) );
-
-      bool rc = false;
-      set_cwd( directory, &rc );
-
-      if( !rc )
+      else if( command == c_cmd_ods_fsed_file_get )
       {
-         create_dir( directory );
-         set_cwd( directory );
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_file_get_name ) );
+         bool use_cout( has_parm_val( parameters, c_cmd_ods_fsed_file_get_cout ) );
+         string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_get_file_name ) );
+
+         string original_folder( ap_ofs->determine_strip_and_change_folder( name ) );
+
+         if( !name.empty( ) )
+         {
+            console_progress progress;
+            console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+            ap_ofs->get_file( name, file_name, 0, use_cout, p_progress );
+
+            if( !original_folder.empty( ) )
+               ap_ofs->set_folder( original_folder );
+         }
       }
-
-      console_progress progress;
-      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
-
-      ods::bulk_read bulk( *ap_ods );
-
-      export_objects( *ap_ofs, directory, rename_expressions, ods_fsed_handler.get_std_out( ), p_progress );
-
-      set_cwd( cwd );
-   }
-   else if( command == c_cmd_ods_fsed_import )
-   {
-      string directory( get_parm_val( parameters, c_cmd_ods_fsed_import_directory ) );
-      string rename_exprs( get_parm_val( parameters, c_cmd_ods_fsed_import_rename_exprs ) );
-
-      vector< string > rename_expressions;
-
-      if( !rename_exprs.empty( ) )
-         split( rename_exprs, rename_expressions );
-
-      console_progress progress;
-      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
-
-      ods::bulk_write bulk( *ap_ods, p_progress );
-
-      ods::transaction tx( *ap_ods );
-
-      import_objects( *ap_ofs, directory, rename_expressions, ods_fsed_handler.get_std_out( ), p_progress );
-
-      tx.commit( );
-   }
-   else if( command == c_cmd_ods_fsed_label )
-   {
-      string name( get_parm_val( parameters, c_cmd_ods_fsed_label_name ) );
-
-      ods::transaction label_tx( *ap_ods, name );
-   }
-   else if( command == c_cmd_ods_fsed_rewind )
-   {
-      bool is_dtm( has_parm_val( parameters, c_cmd_ods_fsed_rewind_dtm ) );
-      bool is_last( has_parm_val( parameters, c_cmd_ods_fsed_rewind_last ) );
-      bool is_unix( has_parm_val( parameters, c_cmd_ods_fsed_rewind_unix ) );
-      string label_or_value( get_parm_val( parameters, c_cmd_ods_fsed_rewind_label_or_value ) );
-
-      int64_t rewind_value = 0;
-
-      if( is_dtm )
+      else if( command == c_cmd_ods_fsed_file_link )
       {
-         date_time dtm( label_or_value );
-         rewind_value = unix_time( dtm );
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_file_link_name ) );
+         string source( get_parm_val( parameters, c_cmd_ods_fsed_file_link_source ) );
+
+         ap_ofs->link_file( name, source );
       }
-      else if( is_last )
-         rewind_value = from_string< int64_t >( label_or_value ) * -1;
-      else if( is_unix )
-         rewind_value = from_string< int64_t >( label_or_value );
-
-      if( is_dtm || is_last || is_unix )
-         label_or_value.erase( );
-
-      if( g_shared_write )
-         handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
-      else
+      else if( command == c_cmd_ods_fsed_file_move )
       {
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_file_move_name ) );
+         string destination( get_parm_val( parameters, c_cmd_ods_fsed_file_move_destination ) );
+
+         ap_ofs->move_file( name, destination );
+      }
+      else if( command == c_cmd_ods_fsed_file_remove )
+      {
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_file_remove_name ) );
+
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ap_ods->rewind_transactions( label_or_value, rewind_value, p_progress );
-
-         // NOTE: Need to reconstruct the ODS FS to ensure data integrity.
-         ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );
+         ap_ofs->remove_file( name, 0, p_progress );
       }
-   }
-   else if( command == c_cmd_ods_fsed_rebuild )
-   {
-      ap_ofs->rebuild_index( );
-   }
-   else if( command == c_cmd_ods_fsed_dump )
-   {
-      string filename( get_parm_val( parameters, c_cmd_ods_fsed_dump_filename ) );
-
-      ap_ofs->dump_node_data( filename, ods_fsed_handler.get_std_out( ) );
-   }
-   else if( command == c_cmd_ods_fsed_compress )
-   {
-      if( g_shared_write )
-         handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
-      else
+      else if( command == c_cmd_ods_fsed_file_replace )
       {
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_file_replace_name ) );
+         bool use_cin( has_parm_val( parameters, c_cmd_ods_fsed_file_replace_cin ) );
+         string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_replace_file_name ) );
+
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ap_ods->move_free_data_to_end( p_progress );
+         ap_ofs->replace_file( name, file_name, 0, ( use_cin ? &cin : 0 ), p_progress );
       }
+      else if( command == c_cmd_ods_fsed_folder_add )
+      {
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_name ) );
+
+         ap_ofs->add_folder( name );
+      }
+      else if( command == c_cmd_ods_fsed_folder_move )
+      {
+         bool overwrite( has_parm_val( parameters, c_cmd_ods_fsed_folder_move_overwrite ) );
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_folder_move_name ) );
+         string destination( get_parm_val( parameters, c_cmd_ods_fsed_folder_move_destination ) );
+
+         ap_ofs->move_folder( name, destination, overwrite );
+      }
+      else if( command == c_cmd_ods_fsed_folder_remove )
+      {
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_folder_remove_name ) );
+         bool recurse( has_parm_val( parameters, c_cmd_ods_fsed_folder_remove_recurse ) );
+
+         ap_ofs->remove_folder( name, 0, recurse );
+      }
+      else if( command == c_cmd_ods_fsed_export )
+      {
+         string directory( get_parm_val( parameters, c_cmd_ods_fsed_export_directory ) );
+         string rename_exprs( get_parm_val( parameters, c_cmd_ods_fsed_export_rename_exprs ) );
+
+         vector< string > rename_expressions;
+
+         if( !rename_exprs.empty( ) )
+            split( rename_exprs, rename_expressions );
+
+         string cwd( get_cwd( ) );
+
+         bool rc = false;
+         set_cwd( directory, &rc );
+
+         if( !rc )
+         {
+            create_dir( directory );
+            set_cwd( directory );
+         }
+
+         console_progress progress;
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+         ods::bulk_read bulk( *ap_ods );
+
+         export_objects( *ap_ofs, directory, rename_expressions, ods_fsed_handler.get_std_out( ), p_progress );
+
+         set_cwd( cwd );
+      }
+      else if( command == c_cmd_ods_fsed_import )
+      {
+         string directory( get_parm_val( parameters, c_cmd_ods_fsed_import_directory ) );
+         string rename_exprs( get_parm_val( parameters, c_cmd_ods_fsed_import_rename_exprs ) );
+
+         vector< string > rename_expressions;
+
+         if( !rename_exprs.empty( ) )
+            split( rename_exprs, rename_expressions );
+
+         console_progress progress;
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+         ods::bulk_write bulk( *ap_ods, p_progress );
+
+         ods::transaction tx( *ap_ods );
+
+         import_objects( *ap_ofs, directory, rename_expressions, ods_fsed_handler.get_std_out( ), p_progress );
+
+         tx.commit( );
+      }
+      else if( command == c_cmd_ods_fsed_label )
+      {
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_label_name ) );
+
+         ods::transaction label_tx( *ap_ods, name );
+      }
+      else if( command == c_cmd_ods_fsed_rewind )
+      {
+         bool is_dtm( has_parm_val( parameters, c_cmd_ods_fsed_rewind_dtm ) );
+         bool is_last( has_parm_val( parameters, c_cmd_ods_fsed_rewind_last ) );
+         bool is_unix( has_parm_val( parameters, c_cmd_ods_fsed_rewind_unix ) );
+         string label_or_value( get_parm_val( parameters, c_cmd_ods_fsed_rewind_label_or_value ) );
+
+         int64_t rewind_value = 0;
+
+         if( is_dtm )
+         {
+            date_time dtm( label_or_value );
+            rewind_value = unix_time( dtm );
+         }
+         else if( is_last )
+            rewind_value = from_string< int64_t >( label_or_value ) * -1;
+         else if( is_unix )
+            rewind_value = from_string< int64_t >( label_or_value );
+
+         if( is_dtm || is_last || is_unix )
+            label_or_value.erase( );
+
+         if( g_shared_write )
+            handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
+         else
+         {
+            console_progress progress;
+            console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+            ap_ods->rewind_transactions( label_or_value, rewind_value, p_progress );
+
+            // NOTE: Need to reconstruct the ODS FS to ensure data integrity.
+            ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );
+         }
+      }
+      else if( command == c_cmd_ods_fsed_rebuild )
+      {
+         ap_ofs->rebuild_index( );
+      }
+      else if( command == c_cmd_ods_fsed_dump )
+      {
+         string filename( get_parm_val( parameters, c_cmd_ods_fsed_dump_filename ) );
+
+         ap_ofs->dump_node_data( filename, ods_fsed_handler.get_std_out( ) );
+      }
+      else if( command == c_cmd_ods_fsed_compress )
+      {
+         if( g_shared_write )
+            handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
+         else
+         {
+            console_progress progress;
+            console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+            ap_ods->move_free_data_to_end( p_progress );
+         }
+      }
+      else if( command == c_cmd_ods_fsed_truncate )
+      {
+         if( g_shared_write )
+            handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
+         else
+            ap_ods->truncate_log( );
+      }
+      else if( command == c_cmd_ods_fsed_exit )
+         handler.set_finished( );
    }
-   else if( command == c_cmd_ods_fsed_truncate )
+   catch( exception& x )
    {
-      if( g_shared_write )
-         handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
-      else
-         ap_ods->truncate_log( );
+      handler.issue_command_response( to_string( c_error_prefix ) + x.what( ) );
    }
-   else if( command == c_cmd_ods_fsed_exit )
-      handler.set_finished( );
 }
 
 command_functor* ods_fsed_command_functor_factory( const string& /*name*/, command_handler& handler )
