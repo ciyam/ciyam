@@ -113,5 +113,13 @@ BLOCK_HASH=$OUTPUT
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
 .system_variable >@blockchain $IDENT
 .system_variable >@blockchain_hash $BLOCK_HASH
-@endif
 ;
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+;
+~mkdir $FILES_AREA_DIR/$IDENT
+.file_archive -add $FILES_AREA_DIR/$IDENT 100GB $IDENT
+@ifndef $ERROR
+.system_variable >@blockchain_archive_path $FILES_AREA_DIR/$IDENT
+@endif
+@endif

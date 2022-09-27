@@ -5,9 +5,9 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 2 ]; then
- echo "Usage: tree_remove_trunk [tree tag] [trunk item]"
+ echo "Usage: tree_remove_trunks [tree tag] [trunk item(s)]"
 else
- echo "<<tree_remove_trunk.cin $1 $2" >~tree_remove_trunk
- ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_remove_trunk
- rm ~tree_remove_trunk
+ echo "<<tree_remove_trunks.cin $1 $2" >~tree_remove_trunks
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_remove_trunks
+ rm ~tree_remove_trunks
 fi
