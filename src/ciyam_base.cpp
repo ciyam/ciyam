@@ -2263,7 +2263,7 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
 
          if( is_file_not_folder )
          {
-            gap_ofs->get_file( key, &sio_data, true );
+            gap_ofs->get_file( key, &sio_data );
             ap_sio_reader.reset( new sio_reader( sio_data ) );
          }
 
@@ -4910,7 +4910,7 @@ string get_peerchain_info( const string& identity, bool* p_is_listener )
          stringstream sio_data;
          auto_ptr< sio_reader > ap_sio_reader;
 
-         gap_ofs->get_file( identity, &sio_data, true );
+         gap_ofs->get_file( identity, &sio_data );
          ap_sio_reader.reset( new sio_reader( sio_data ) );
 
          string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
@@ -4958,7 +4958,7 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
       stringstream sio_data;
       auto_ptr< sio_reader > ap_sio_reader;
 
-      gap_ofs->get_file( identity, &sio_data, true );
+      gap_ofs->get_file( identity, &sio_data );
       ap_sio_reader.reset( new sio_reader( sio_data ) );
 
       string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
@@ -4994,7 +4994,7 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
       stringstream sio_data;
       auto_ptr< sio_reader > ap_sio_reader;
 
-      gap_ofs->get_file( identity, &sio_data, true );
+      gap_ofs->get_file( identity, &sio_data );
       ap_sio_reader.reset( new sio_reader( sio_data ) );
 
       string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );

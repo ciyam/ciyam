@@ -782,7 +782,7 @@ void ods_file_system::add_file( const string& name,
 }
 
 void ods_file_system::get_file( const string& name,
- const string& destination, ostream* p_os, bool output_to_stream, progress* p_progress )
+ const string& destination, ostream* p_os, progress* p_progress )
 {
    string file_name( destination );
 
@@ -828,9 +828,9 @@ void ods_file_system::get_file( const string& name,
       tmp_item = *tmp_iter;
 
       scoped_ods_instance so( o );
-      *tmp_item.get_file( new storable_file_extra( file_name, output_to_stream ? p_os : 0, p_progress ) );
+      *tmp_item.get_file( new storable_file_extra( file_name, p_os, p_progress ) );
 
-      if( !output_to_stream && tmp_item.perm_val )
+      if( !p_os && tmp_item.perm_val )
          file_perms( file_name, tmp_item.get_perms( ) );
    }
 }
