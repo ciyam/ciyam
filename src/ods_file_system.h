@@ -180,18 +180,16 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    }
 
    void get_file( const std::string& name,
-    const std::string& destination, std::ostream* p_os = 0,
-    bool output_to_stream = false, progress* p_progress = 0 );
+    const std::string& destination, std::ostream* p_os = 0, progress* p_progress = 0 );
 
-   inline void get_file( const std::string& name,
-    std::ostream* p_os = 0, bool output_to_stream = false, progress* p_progress = 0 )
+   inline void get_file( const std::string& name, std::ostream* p_os = 0, progress* p_progress = 0 )
    {
-      get_file( name, "", p_os, output_to_stream, p_progress );
+      get_file( name, "", p_os, p_progress );
    }
 
    inline void get_file( const std::string& name, std::ostream& os, progress* p_progress = 0 )
    {
-      get_file( name, "", &os, true, p_progress );
+      get_file( name, "", &os, p_progress );
    }
 
    bool has_file( const std::string& name, bool is_prefix = false, std::string* p_suffix = 0 );

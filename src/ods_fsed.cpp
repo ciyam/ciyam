@@ -228,7 +228,7 @@ void export_objects( ods_file_system& ofs, const string& directory,
             *p_os << " ==> " << destination;
       }
 
-      ofs.get_file( next, destination, p_os, false, p_progress );
+      ofs.get_file( next, destination, 0, p_progress );
 
       if( p_os )
          *p_os << endl;
@@ -618,7 +618,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
             console_progress progress;
             console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-            ap_ofs->get_file( name, file_name, 0, use_cout, p_progress );
+            ap_ofs->get_file( name, file_name, ( use_cout ? &cout : 0 ), p_progress );
 
             if( !original_folder.empty( ) )
                ap_ofs->set_folder( original_folder );

@@ -4802,7 +4802,7 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
       if( ods_fs.has_file( hash ) )
       {
          stringstream sio_data;
-         ods_fs.get_file( hash, &sio_data, true );
+         ods_fs.get_file( hash, &sio_data );
          
          sio_reader reader( sio_data );
 
@@ -4863,7 +4863,7 @@ bool fetch_repository_entry_record(
       try
       {
          stringstream sio_data;
-         ods_fs.get_file( file_name + suffix, &sio_data, true );
+         ods_fs.get_file( file_name + suffix, &sio_data );
 
          sio_reader reader( sio_data );
 
@@ -4904,7 +4904,7 @@ bool fetch_repository_entry_record( const string& repository, const string& hash
    try
    {
       stringstream sio_data;
-      ods_fs.get_file( file_name + suffix, &sio_data, true );
+      ods_fs.get_file( file_name + suffix, &sio_data );
 
       sio_reader reader( sio_data );
 
@@ -5131,7 +5131,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
          else
          {
             stringstream sio_data;
-            ods_fs.get_file( last_key, &sio_data, true );
+            ods_fs.get_file( last_key, &sio_data );
 
             sio_reader reader( sio_data );
 
