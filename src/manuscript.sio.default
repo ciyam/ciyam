@@ -9,6 +9,11 @@
   <arguments>init_ciyam.cin
  </script>
  <script/>
+  <name>add_archive
+  <filename>*script*
+  <arguments>add_archive.cin @path @size @name
+ </script>
+ <script/>
   <name>app_blk_txs
   <filename>*script*
   <arguments>app_blk_txs.cin @application @rewind_height @block_height
@@ -17,11 +22,6 @@
   <name>ext_request
   <filename>ext_request
   <arguments>@arg1 @output_file
- </script>
- <script/>
-  <name>add_archive
-  <filename>*script*
-  <arguments>add_archive.cin @path @size @name
  </script>
  <script/>
   <name>remove_file
@@ -37,31 +37,6 @@
   <name>import_files
   <filename>*script*
   <arguments>import_files.cin @path @tag_prefix @sub_directory @files_expression
- </script>
- <script/>
-  <name>export_app_file
-  <filename>*script*
-  <arguments>export_app_file.cin @app_directory @list_hash @web_root
- </script>
- <script/>
-  <name>tree_insert_file
-  <filename>*script*
-  <arguments>tree_insert_file.cin @tag @type @branch @sub_directory @name @path @tag_prefix
- </script>
- <script/>
-  <name>tree_insert_trunk
-  <filename>*script*
-  <arguments>tree_insert_trunk.cin @tree @trunk
- </script>
- <script/>
-  <name>tree_remove_trunk
-  <filename>*script*
-  <arguments>tree_remove_trunk.cin @tree @trunk
- </script>
- <script/>
-  <name>tree_insert_branch
-  <filename>*script*
-  <arguments>tree_insert_branch.cin @tree @trunk @branch
  </script>
  <script/>
   <name>add_blacklist
@@ -84,9 +59,34 @@
   <arguments>status_archive.cin @name
  </script>
  <script/>
+  <name>export_app_file
+  <filename>*script*
+  <arguments>export_app_file.cin @app_directory @list_hash @web_root
+ </script>
+ <script/>
   <name>install_package
   <filename>*script*
   <arguments>install_package.cin @storage @name @package_install_extra
+ </script>
+ <script/>
+  <name>tree_insert_file
+  <filename>*script*
+  <arguments>tree_insert_file.cin @tag @type @branch @sub_directory @name @path @tag_prefix
+ </script>
+ <script/>
+  <name>tree_insert_branch
+  <filename>*script*
+  <arguments>tree_insert_branch.cin @tree @trunk @branch
+ </script>
+ <script/>
+  <name>tree_insert_trunks
+  <filename>*script*
+  <arguments>tree_insert_trunks.cin @tree @trunks
+ </script>
+ <script/>
+  <name>tree_remove_trunks
+  <filename>*script*
+  <arguments>tree_remove_trunks.cin @tree @trunks
  </script>
  <script/>
   <name>install_application

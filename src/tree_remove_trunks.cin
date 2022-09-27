@@ -1,4 +1,4 @@
-; Copyright (c) 2021-2022 CIYAM Developers
+; Copyright (c) 2022 CIYAM Developers
 ;
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -12,17 +12,12 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "2"
-#NOTE: This script requires a tree tag and a trunk tag.
+#NOTE: This script requires a tree tag and one or more trunk items.
 @else
 ;
 TREE=$1
-TRUNK=$2
+TRUNKS=$2
 ;
-.file_hash "$TRUNK"
-;
-@ifndef $ERROR
-.file_list -a=?$TRUNK -d=$TRUNK -sort $TREE !$TREE
-.file_tag -remove $TRUNK
-@endif
+.file_list -d=$TRUNKS -sort $TREE !$TREE
 ;
 @endif

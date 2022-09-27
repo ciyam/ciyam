@@ -5,9 +5,9 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 2 ]; then
- echo "Usage: tree_insert_trunk [tree tag] [trunk tag]"
+ echo "Usage: tree_insert_trunks [tree tag] [trunk tag(s)]"
 else
- echo "<<tree_insert_trunk.cin $1 $2" >~tree_insert_trunk
- ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_insert_trunk
- rm ~tree_insert_trunk
+ echo "<<tree_insert_trunks.cin $1 $2" >~tree_insert_trunks
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_insert_trunks
+ rm ~tree_insert_trunks
 fi
