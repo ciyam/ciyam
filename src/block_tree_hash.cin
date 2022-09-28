@@ -1,0 +1,42 @@
+; Copyright (c) 2022 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#NOTE: This script requires a blockchain identity (or @blockchain for system variable).
+@else
+;
+IDENT=$1
+HEIGHT=$2
+;
+ATTR=t
+;
+@ifeq "$1" "@blockchain"
+.system_variable @blockchain
+IDENT=$OUTPUT
+@endif
+;
+@ifndef $HEIGHT
+HEIGHT=zenith
+@endif
+;
+@ifeq "$IDENT" ""
+#No local blockchain identity was found.
+@else
+.file_hash bc.$IDENT.$HEIGHT
+;
+@ifndef $ERROR
+.file_info -content $OUTPUT
+.regex "\n$ATTR:(.*)\n" "$OUTPUT"
+;
+@ifdef $OUTPUT
+.decode $OUTPUT
+#$OUTPUT
+@endif
+;
+@endif
+;
+@endif
+;
+@endif

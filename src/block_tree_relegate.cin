@@ -1,0 +1,53 @@
+; Copyright (c) 2022 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#NOTE: This script requires a blockchain identity (or @blockchain for system variable).
+@else
+;
+IDENT=$1
+TREE_TAG=$2
+;
+@ifeq "$1" "@blockchain"
+.system_variable @blockchain
+IDENT=$OUTPUT
+@endif
+;
+@ifeq "$2" ""
+TREE_TAG=ciyam
+@endif
+;
+.file_hash $TREE_TAG
+@ifndef $ERROR
+TREE_HASH=$OUTPUT
+;
+.file_info -recurse -d=-2 $TREE_HASH
+.session_variable @deque "~$OUTPUT"
+@:LOOP
+@label NEXT
+.session_variable @deque front
+@ifndef $OUTPUT
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+NEXT=$OUTPUT
+;
+.regex " ([a-f0-9]{64}) $" "$NEXT"
+.file_relegate $OUTPUT $IDENT
+;
+.session_variable @deque pop_front
+;
+!!@:LOOP
+;
+@:END_LOOP
+;
+.file_tag -remove $TREE_TAG
+.file_relegate $TREE_HASH $IDENT
+;
+@endif
+@endif

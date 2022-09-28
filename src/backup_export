@@ -62,13 +62,15 @@ if [ -f $RESTORE_NOW ]; then
    date >Backup.txt
    echo "Starting restore..." >>Backup.txt
 
-   BLOCKCHAIN=`./system_variable get @blockchain`
-   BACKUP_LIST=`./tree_list ciyam 0 Backup | tail -n 1`
+   BLOCK_TREE=`./block_tree_hash @blockchain`
+   BACKUP_LIST=`./tree_list $BLOCK_TREE 0 Backup | tail -n 1`
 
    sudo chown $USER:www $BACKUP_IMAGE
 
    export SECONDS=2
    export REPO_CRYPT_PASSWORD=@sid
+   export USE_BLOCKCHAIN_ARCHIVE=1
+
    ./export_files $BACKUP_LIST $USER_PATH >>Backup.txt
 
    sudo chown root:root $BACKUP_IMAGE
