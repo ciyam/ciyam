@@ -70,9 +70,12 @@ if [ -f $BACKUP_TIME ]; then
     if [ -f $BACKUP_IMAGE ]; then
      export SECONDS=2
      export REPO_CRYPT_PASSWORD=@sid
+     export USE_BLOCKCHAIN_ARCHIVE=1
+
      ./import_files $USER_PATH Backup : $IMAGE_NAME >>Backup.txt
-     ./tree_insert_trunks ciyam Backup,.Backup
+     ./tree_insert_trunks ciyam Backup,.Backup >>Backup.txt 2>&1
      ./generate_next_block >>Backup.txt 2>&1
+     ./block_tree_relegate @blockchain ciyam >>Backup.txt 2>&1
     fi
 
     echo "Finished backup..." >>Backup.txt

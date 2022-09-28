@@ -5665,7 +5665,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string found( check_with_regex( expr, text, &rc ) );
 
-         response = to_string( rc ) + ' ' + found;
+         if( rc )
+            response = found;
       }
       else if( command == c_cmd_ciyam_session_utils_decode )
       {

@@ -20,6 +20,11 @@ HAS_REPO_LIST_INFO=1
 @endif
 @endif
 ;
+@ifdef USE_BLOCKCHAIN_ARCHIVE
+.system_variable @blockchain_archive_path
+.session_variable @blockchain_archive_path "$OUTPUT"
+@endif
+;
 IS_CURRENT=
 @ifeq "$1" "."
 @ifeq "$1" "$3"

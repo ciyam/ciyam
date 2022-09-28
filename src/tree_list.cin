@@ -15,6 +15,11 @@ PREFIX=$3
 DEPTH=2
 @endif
 ;
+@ifdef USE_BLOCKCHAIN_ARCHIVE
+.system_variable @blockchain_archive_path
+.session_variable @blockchain_archive_path "$OUTPUT"
+@endif
+;
 @ifndef $PREFIX
 .file_info -recurse -d=$DEPTH $TREE
 @else
