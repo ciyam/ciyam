@@ -439,7 +439,8 @@ void process_repository_file( const string& blockchain,
 
             peer_mapped_hash = get_peer_mapped_hash( target_hash );
 
-            decrypt_pulled_peer_file( target_hash, src_hash, password, hex_pub_key, false, p_file_data, &peer_mapped_hash );
+            decrypt_pulled_peer_file( target_hash, src_hash, password, hex_pub_key,
+             false, p_file_data, &peer_mapped_hash, ( has_archive ? &identity : 0 ) );
 
             string repo_hash( create_peer_repository_entry_push_info( target_hash, password ) );
 
