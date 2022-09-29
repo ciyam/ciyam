@@ -48,12 +48,12 @@ std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_push_info(
 
 void CIYAM_BASE_DECL_SPEC decrypt_pulled_peer_file(
  const std::string& dest_hash, const std::string& src_hash,
- const std::string& password, bool is_for_testing = false,
- const std::string* p_file_data = 0, const std::string* p_encrypted_hash = 0 );
+ const std::string& password, bool is_for_testing = false, const std::string* p_file_data = 0,
+ const std::string* p_encrypted_hash = 0, const std::string* p_archive = 0 );
 
 void CIYAM_BASE_DECL_SPEC decrypt_pulled_peer_file(
  const std::string& dest_hash, const std::string& src_hash,
  const std::string& password, const std::string& public_key_in_hex, bool is_for_testing = false,
- const std::string* p_file_data = 0, const std::string* p_encrypted_hash = 0 );
+ const std::string* p_file_data = 0, const std::string* p_encrypted_hash = 0, const std::string* p_archive = 0 );
 
 #endif

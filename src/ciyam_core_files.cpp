@@ -632,9 +632,9 @@ string create_peer_repository_entry_push_info(
    return retval;
 }
 
-void decrypt_pulled_peer_file(
- const string& dest_hash, const string& src_hash, const string& password,
- bool is_for_testing, const string* p_file_data, const string* p_encrypted_hash )
+void decrypt_pulled_peer_file( const string& dest_hash,
+ const string& src_hash, const string& password, bool is_for_testing,
+ const string* p_file_data, const string* p_encrypted_hash, const string* p_archive )
 {
    string all_tags( get_hash_tags( src_hash ) );
 
@@ -667,10 +667,9 @@ void decrypt_pulled_peer_file(
    }
 }
 
-void decrypt_pulled_peer_file(
- const string& dest_hash, const string& src_hash,
- const string& password, const string& public_key_in_hex,
- bool is_for_testing, const string* p_file_data, const string* p_encrypted_hash )
+void decrypt_pulled_peer_file( const string& dest_hash,
+ const string& src_hash, const string& password, const string& public_key_in_hex,
+ bool is_for_testing, const string* p_file_data, const string* p_encrypted_hash, const string* p_archive )
 {
 #ifndef SSL_SUPPORT
    throw runtime_error( "decrypt_pulled_peer_file requires SSL support" );
@@ -727,7 +726,12 @@ void decrypt_pulled_peer_file(
    if( !is_encrypted )
       hash = create_raw_file( raw_file_data );
    else
-      create_raw_file( raw_file_data, true, 0, 0, dest_hash.c_str( ) );
+   {
+      if( !p_archive )
+         create_raw_file( raw_file_data, true, 0, 0, dest_hash.c_str( ) );
+      else
+         create_raw_file_in_archive( *p_archive, dest_hash, raw_file_data );
+   }
 
    if( !is_encrypted && ( hash != dest_hash ) )
    {
