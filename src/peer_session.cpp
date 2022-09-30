@@ -1695,7 +1695,8 @@ bool process_block_for_height( const string& blockchain,
 
                      // NOTE: Retrieve all the blob hashes for the prior data tree 
                      // in order to skip any repeats found in "process_list_items".
-                     if( !prior_data_tree_hash.empty( ) )
+                     if( !prior_data_tree_hash.empty( )
+                      && has_file( prior_data_tree_hash ) )
                         has_all_list_items( blockchain, prior_data_tree_hash,
                          true, false, &dtm, p_progress, 0, &prior_data_tree_blobs );
 
