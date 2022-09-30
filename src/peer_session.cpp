@@ -1549,8 +1549,8 @@ void validate_public_key_file( const string& file_data )
    }
 }
 
-bool process_block_for_height( const string& blockchain, const string& hash,
- size_t height, size_t* p_num_items_found = 0, progress* p_progress = 0, bool get_tree_items = false )
+bool process_block_for_height( const string& blockchain,
+ const string& hash, size_t height, size_t* p_num_items_found = 0, progress* p_progress = 0 )
 {
    bool retval = false;
    bool has_hind_hash = false;
@@ -1662,54 +1662,51 @@ bool process_block_for_height( const string& blockchain, const string& hash,
       bool is_new_height = ( blockchain_height_processed.empty( )
        || ( from_string< size_t >( blockchain_height_processed ) < height ) );
 
-      if( has_hind_hash && ( is_new_height || get_tree_items ) )
+      if( !tree_root_hash.empty( ) )
       {
-         if( !tree_root_hash.empty( ) )
+         date_time dtm( date_time::local( ) );
+
+         if( !has_file( tree_root_hash ) )
          {
-            date_time dtm( date_time::local( ) );
+            if( is_fetching && peer_has_tree_items )
+               add_peer_file_hash_for_get( tree_root_hash );
+         }
+         else
+         {
+            bool has_all_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, p_progress );
 
-            if( !has_file( tree_root_hash ) )
+            if( is_fetching || has_all_tree_items )
             {
-               if( is_fetching && peer_has_tree_items )
-                  add_peer_file_hash_for_get( tree_root_hash );
-            }
-            else
-            {
-               if( !get_tree_items )
-                  get_tree_items = !has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, p_progress );
-
-               if( get_tree_items )
+               // NOTE: If is owner and not fetching (and has all tree items) then no need to
+               // call "process_list_items" but still need to set "p_num_items_found" so that
+               // the tree files suffix will be appended.
+               if( is_owner && !is_fetching && has_all_tree_items )
                {
-                  // NOTE: If is the owner and not fetching then no need to call "process_list_items" but
-                  // if "p_num_items_found" is provided then set it non-zero for the tree files indicator.
-                  if( is_owner && !is_fetching )
+                  if( p_num_items_found )
+                     *p_num_items_found = 1;
+               }
+               else
+               {
+                  string prior_data_tree_hash;
+
+                  if( !last_data_tree_is_identical( blockchain, height - 1, &prior_data_tree_hash ) )
                   {
-                     if( p_num_items_found )
-                        *p_num_items_found = 1;
-                  }
-                  else
-                  {
-                     string prior_data_tree_hash;
+                     set< string > prior_data_tree_blobs;
 
-                     if( !last_data_tree_is_identical( blockchain, height - 1, &prior_data_tree_hash ) )
-                     {
-                        set< string > prior_data_tree_blobs;
+                     // NOTE: Retrieve all the blob hashes for the prior data tree 
+                     // in order to skip any repeats found in "process_list_items".
+                     if( !prior_data_tree_hash.empty( ) )
+                        has_all_list_items( blockchain, prior_data_tree_hash,
+                         true, false, &dtm, p_progress, 0, &prior_data_tree_blobs );
 
-                        // NOTE: Retrieve all the blob hashes for the prior data tree 
-                        // in order to skip any repeats found in "process_list_items".
-                        if( !prior_data_tree_hash.empty( ) )
-                           has_all_list_items( blockchain, prior_data_tree_hash,
-                            true, false, &dtm, p_progress, 0, &prior_data_tree_blobs );
-
-                        process_list_items( identity, tree_root_hash, true,
-                         0, p_num_items_found, &prior_data_tree_blobs, &dtm, p_progress );
-                     }
+                     process_list_items( identity, tree_root_hash, true,
+                      0, p_num_items_found, &prior_data_tree_blobs, &dtm, p_progress );
                   }
                }
-
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
             }
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
          }
       }
    }
@@ -3103,13 +3100,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      if( blockchain_height > socket_handler.get_blockchain_height( ) )
                         socket_handler.set_blockchain_height( blockchain_height );
 
-                     process_block_for_height( blockchain, hash, blockchain_height, &num_items_found, &socket_handler, true );
+                     process_block_for_height( blockchain, hash, blockchain_height, &num_items_found, &socket_handler );
                   }
                   else
                   {
                      if( !first_item_hash.empty( )
                       || get_session_variable( blockchain_is_fetching_name ).empty( ) )
-                        process_block_for_height( blockchain, hash, blockchain_height, &num_items_found, &socket_handler, true );
+                        process_block_for_height( blockchain, hash, blockchain_height, &num_items_found, &socket_handler );
                   }
                }
             }
