@@ -1561,6 +1561,9 @@ bool process_block_for_height( const string& blockchain, const string& hash,
    bool is_fetching = !get_session_variable(
     get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
 
+   bool peer_has_tree_items = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( );
+
    TRACE_LOG( TRACE_PEER_OPS, "(process_block_for_height) hash: " + hash + " height: " + to_string( height ) );
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
@@ -1667,7 +1670,7 @@ bool process_block_for_height( const string& blockchain, const string& hash,
 
             if( !has_file( tree_root_hash ) )
             {
-               if( is_fetching )
+               if( is_fetching && peer_has_tree_items )
                   add_peer_file_hash_for_get( tree_root_hash );
             }
             else
@@ -2593,9 +2596,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          {
             create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
 
-            if( !get_session_variable(
-             get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( ) )
-               process_block_for_height( blockchain, block_file_hash, blockchain_height_pending, 0, this );
+            process_block_for_height( blockchain, block_file_hash, blockchain_height_pending, 0, this );
 
             tag_file( blockchain + '.' + to_string( blockchain_height_pending ) + c_blk_suffix, block_file_hash );
 
