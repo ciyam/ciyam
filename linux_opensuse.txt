@@ -97,7 +97,17 @@ sudo vi /etc/fstab
 
 sudo mkdir backup
 cd backup
-sudo ln -s ../backup.img backup.img
+sudo vi README.md
+
+[README.md]
+CIYAM Backup Staging Area
+=========================
+
+If you are reading this text then an import is now in progress - please disconnect and try again later.
+
+NOTE: If still seeing this after being disconnected for an hour then this device may require rebooting.
+[README.md]
+
 cd ..
 
 sudo mount backup.img backup
@@ -105,7 +115,40 @@ cd backup
 sudo chown tux:www .
 sudo chown tux:www *
 cd ..
+
 sudo umount backup
+
+Create shared staging area ext4 file system and automount entry
+---------------------------------------------------------------
+sudo fallocate -l 10M shared.img
+sudo mkfs.ext4 shared.img
+
+sudo vi /etc/fstab
+[append the following line]
+/home/tux/shared.img  /home/tux/shared ext4 loop 0 0
+
+sudo mkdir shared
+cd shared
+sudo vi README.md
+
+[README.md]
+CIYAM Shared Staging Area
+=========================
+
+If you are reading this text then an import is now in progress - please disconnect and try again later.
+
+NOTE: If still seeing this after being disconnected for an hour then this device may require rebooting.
+[REAMDE.md]
+
+cd ..
+
+sudo mount shared.img shared
+cd shared
+sudo chown tux:www .
+sudo chown tux:www *
+cd ..
+
+sudo umount shared
 
 Clone the CIYAM Software Manufacturing repository
 -------------------------------------------------
