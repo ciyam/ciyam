@@ -2746,6 +2746,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       set_session_variable( blockchain_zenith_hash_name, "" );
 
+      set_session_variable( get_special_var_name(
+       e_special_var_blockchain_height_processed ), to_string( blockchain_height ) );
+
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_height ), to_string( blockchain_height ) );
    }
