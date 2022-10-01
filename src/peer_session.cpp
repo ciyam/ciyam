@@ -1317,7 +1317,7 @@ void process_list_items( const string& identity,
                touch_file( next_hash, identity, false );
             else
                process_list_items( identity, next_hash, false,
-                p_blob_data, 0, p_list_items_to_ignore, p_dtm, p_progress, p_num_items_skipped );
+                p_blob_data, p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress, p_num_items_skipped );
          }
       }
    }
@@ -1432,6 +1432,7 @@ void process_public_key_file( const string& blockchain,
       TRACE_LOG( TRACE_PEER_OPS, "::: new zenith hash: " + block_hash + " height: " + to_string( height ) );
 
       set_session_variable( zenith_height_name, to_string( height ) );
+      set_session_variable( get_special_var_name( e_special_var_blockchain_height_processed ), "0" );
    }
 
    if( key_scale == e_public_key_scale_primary )
