@@ -204,10 +204,13 @@ void output_synchronised_progress_message(
    string own_identity( get_system_variable(
     get_special_var_name( e_special_var_blockchain ) ) );
 
+   string shared_identity( own_identity );
+   reverse( shared_identity.begin( ), shared_identity.end( ) );
+
    string progress_message;
 
    // FUTURE: These messages should be handled as server string messages.
-   if( identity == own_identity )
+   if( ( identity == own_identity ) || ( identity == shared_identity ) )
    {
       progress_message = "Currently at height ";
 
@@ -270,6 +273,9 @@ void process_core_file( const string& hash, const string& blockchain )
 
             verify_core_file( block_content, false );
 
+            bool is_shared = !get_session_variable(
+             get_special_var_name( e_special_var_blockchain_is_shared ) ).empty( );
+
             string block_height( get_session_variable(
              get_special_var_name( e_special_var_blockchain_height ) ) );
 
@@ -284,17 +290,12 @@ void process_core_file( const string& hash, const string& blockchain )
 
             if( !primary_pubkey_hash.empty( ) )
             {
-               if( block_height == "0" )
+               if( !is_shared && ( block_height == "0" ) )
                {
-                  string hash_value( primary_pubkey_hash );
+                  sha256 hash( primary_pubkey_hash
+                   + secondary_pubkey_hash + tertiary_pubkey_hash );
 
-                  if( !tertiary_pubkey_hash.empty( ) )
-                  {
-                     sha256 hash( primary_pubkey_hash
-                      + secondary_pubkey_hash + tertiary_pubkey_hash );
-
-                     hash_value = hash.get_digest_as_string( );
-                  }
+                  string hash_value( hash.get_digest_as_string( ) );
 
                   if( hash_value.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
                      throw runtime_error( "invalid genesis hash value '"
@@ -1577,6 +1578,9 @@ bool process_block_for_height( const string& blockchain,
 
    verify_core_file( block_content, false );
 
+   bool is_shared = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_is_shared ) ).empty( );
+
    if( !get_session_variable(
     get_special_var_name( e_special_var_blockchain_hind_hash ) ).empty( ) )
       has_hind_hash = true;
@@ -1601,17 +1605,12 @@ bool process_block_for_height( const string& blockchain,
 
       if( !primary_pubkey_hash.empty( ) )
       {
-         if( !height )
+         if( !height && !is_shared )
          {
-            string hash_value( primary_pubkey_hash );
+            sha256 hash( primary_pubkey_hash
+             + secondary_pubkey_hash + tertiary_pubkey_hash );
 
-            if( !tertiary_pubkey_hash.empty( ) )
-            {
-               sha256 hash( primary_pubkey_hash
-                + secondary_pubkey_hash + tertiary_pubkey_hash );
-
-               hash_value = hash.get_digest_as_string( );
-            }
+            string hash_value( hash.get_digest_as_string( ) );
 
             if( hash_value.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
                throw runtime_error( "invalid genesis hash value '"

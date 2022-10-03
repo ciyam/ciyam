@@ -161,6 +161,14 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
             has_identity = true;
 
             identity = next_attribute.substr( strlen( c_file_type_core_block_header_identity_prefix ) );
+
+            if( identity.size( ) > 1 && identity[ identity.size( ) - 1 ] == '+' )
+            {
+               identity.erase( identity.size( ) - 1 );
+
+               if( !p_block_info )
+                  set_session_variable( get_special_var_name( e_special_var_blockchain_is_shared ), c_true_value );
+            }
          }
          else if( !version )
          {
