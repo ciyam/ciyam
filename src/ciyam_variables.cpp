@@ -153,6 +153,7 @@ const char* const c_special_variable_file_info_buffered = "@file_info_buffered";
 const char* const c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
 const char* const c_special_variable_repo_crypt_password = "@repo_crypt_password";
 const char* const c_special_variable_blockchain_hind_hash = "@blockchain_hind_hash";
+const char* const c_special_variable_blockchain_is_shared = "@blockchain_is_shared";
 const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_ratios";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
@@ -637,6 +638,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_hind_hash:
       s = string( c_special_variable_blockchain_hind_hash );
+      break;
+
+      case e_special_var_blockchain_is_shared:
+      s = string( c_special_variable_blockchain_is_shared );
       break;
 
       case e_special_var_ods_cache_hit_ratios:

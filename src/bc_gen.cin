@@ -3,20 +3,36 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-@ifeq "$1" ""
-#Usage: bc_gen.cin <seed>
-@else
+@ifneq "$1" "-shared"
 SEED=$1
+SHARED=
+@else
+SEED=$2
+SHARED=1
+@endif
 ;
-.session_variable @uuid
-UUID=$OUTPUT
+@ifeq "$SEED" ""
+#Usage: bc_gen.cin [-shared] <seed>
+@else
 ;
+<std.fissile
+;
+@ifeq "$SEED" "de604cee0755a3d81944ea96aed12681"
+MULTIPLE=5
+UUID=d4e29a4041d28de363315110b335905
+@else
 MULTIPLE=50
+@endif
+;
 SQUARED=@$MULTIPLE*$MULTIPLE
 ;
 MULTIPLE=@$MULTIPLE-1
 SQUARED=@$SQUARED-1
 ;
+.session_variable @uuid
+UUID=$OUTPUT
+;
+@ifndef $SHARED
 .crypto_hash $SEED -s=-0
 ENTROPY_HASH_PRIMARY=$OUTPUT
 ;
@@ -25,6 +41,16 @@ ENTROPY_HASH_SECONDARY=$OUTPUT
 ;
 .crypto_hash $SEED -s=-$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
+@else
+.crypto_hash $SEED -s=+0
+ENTROPY_HASH_PRIMARY=$OUTPUT
+;
+.crypto_hash $SEED -s=+$MULTIPLE
+ENTROPY_HASH_SECONDARY=$OUTPUT
+;
+.crypto_hash $SEED -s=+$SQUARED
+ENTROPY_HASH_TERTIARY=$OUTPUT
+@endif
 ;
 .crypto_lamport primary $ENTROPY_HASH_PRIMARY
 .crypto_lamport secondary $ENTROPY_HASH_SECONDARY
@@ -70,9 +96,20 @@ TERTIARY_PUBKEY_HASH=$OUTPUT
 .file_hash bc.$UUID.$SQUARED.key
 TERTIARY_PRIVKEY_HASH=$OUTPUT
 ;
+@ifndef $SHARED
 .crypto_hash $PRIMARY_PUBKEY_HASH$SECONDARY_PUBKEY_HASH$TERTIARY_PUBKEY_HASH
 IDENT=@substr:0,9:$OUTPUT
+@else
+.system_variable @blockchain
+@ifndef $OUTPUT
+ERROR=No backup blockchain was found.
+#Error: $ERROR
+@else
+IDENT=*!reverse?$OUTPUT
+@endif
+@endif
 ;
+@ifndef $ERROR
 .file_tag -remove bc.$UUID.0.pub
 .file_tag $PRIMARY_PUBKEY_HASH bc.$IDENT.0.pub
 ;
@@ -99,8 +136,13 @@ SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
 .encode $OUTPUT
 TERTIARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
+@ifndef $SHARED
 .file_raw -core blob blk:h=0,i=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@else
+.file_raw -core blob blk:h=0,i=$IDENT+\n\
+p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@endif
 ;
 BLOCK_HASH=$OUTPUT
 ;
@@ -111,17 +153,26 @@ BLOCK_HASH=$OUTPUT
  .file_hash -q bc.$IDENT.zenith
 @ifndef "$OUTPUT"
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
+@ifndef $SHARED
 .system_variable >@blockchain $IDENT
-.system_variable >@blockchain_hash $BLOCK_HASH
+.system_variable >@blockchain_backup $BLOCK_HASH
+@else
+.system_variable >@blockchain_shared $BLOCK_HASH
+@endif
 ;
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
 ~mkdir $FILES_AREA_DIR/$IDENT
+@ifdef $SHARED
+.file_archive -add $FILES_AREA_DIR/$IDENT 10GB $IDENT
+@else
 .file_archive -add $FILES_AREA_DIR/$IDENT 100GB $IDENT
 @ifndef $ERROR
 .system_variable >@blockchain_archive_path $FILES_AREA_DIR/$IDENT
 @endif
 @endif
+@endif
 ;
+@endif
 @endif

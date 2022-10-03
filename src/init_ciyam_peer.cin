@@ -3,6 +3,8 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+<std.fissile
+;
 .system_variable @peer_port
 PEER_PORT=$OUTPUT
 @ifeq "$PEER_PORT" ""
@@ -17,12 +19,14 @@ BLOCKCHAIN=$OUTPUT
 @ifeq "$BLOCKCHAIN" ""
 #Error: Found empty '@blockchain' system variable value.
 @else
-.peer_listen $PEER_PORT %BLOCKCHAIN%
+REVERSE_ID=*!reverse?$OUTPUT
+.peer_listen $PEER_PORT $BLOCKCHAIN,$REVERSE_ID
 @ifndef $ERROR
 .storage_init Meta
-.pc sys @now Meta Global_Peerchain_Entry %BLOCKCHAIN% "Auto_Start=1,Description=Local,Entry_Type=1,Local_Port=$PEER_PORT"
+.pc sys @now Meta Global_Peerchain_Entry $BLOCKCHAIN "Auto_Start=1,Description=Local Backup,Entry_Type=1,Local_Port=$PEER_PORT"
+.pc sys @now Meta Global_Peerchain_Entry $REVERSE_ID "Auto_Start=1,Description=Local Shared,Entry_Type=1,Local_Port=$PEER_PORT"
 @ifndef $ERROR
-#Created listener and global peerchain entry for identity '$BLOCKCHAIN'.
+#Created listeners and global peerchain entries for identities '$BLOCKCHAIN' and '$REVERSE_ID'.
 @endif
 .storage_term
 @endif

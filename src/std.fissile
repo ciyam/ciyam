@@ -3,7 +3,7 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-; Various general purpose FISSILE functions (available for inclusion in CIYAM scripts).
+; Various general purpose FISSILE functions (to be executed for use in CIYAM scripts).
 ;
 *@split.n.add.char=$<^z,^y
 *@split.n.add.sep=$?^z!!_@^z+$,
@@ -20,3 +20,5 @@
 ;
 *@hex2dec=$@^x=$@?=#16#_@^x+@?_!^x_@?#10
 *@dec2hex=$@^x=$@?=#10#_@^x+@?_!^x_@?#16
+;
+*@reverse=$@^x=$!split.n?1,_@^x+@?_!^x_!reverse.set_!join_@?

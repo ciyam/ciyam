@@ -18,7 +18,8 @@ Backup_Details,M001C100F110
 Backup_Needed,M001C100F111
 Backup_Time_File,M001C100F112
 Ellipsis,M001C100F113
-Genesis_Block_Hash,M001C100F114
+Initial_Backup_Hash,M001C100F114
+Initial_Shared_Hash,M001C100F115
 Dummy_Self,M001C101F100
 User_Id,M001C101F101
 User_Id_or_Name,M001C101F102
@@ -56,13 +57,14 @@ Active,M001C102F101
 Identity,M001C102F102
 Description,M001C102F103
 Error,M001C102F104
-Genesis_Block_Hash,M001C102F105
-Host_Domain,M001C102F106
-Port_Number,M001C102F107
-Shared_Secret,M001C102F108
-Connection_Type,M001C102F109
-Status,M001C102F110
-Synchronisation,M001C102F111
+Initial_Backup_Hash,M001C102F105
+Initial_Shared_Hash,M001C102F106
+Host_Domain,M001C102F107
+Port_Number,M001C102F108
+Shared_Secret,M001C102F109
+Connection_Type,M001C102F110
+Status,M001C102F111
+Synchronisation,M001C102F112
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000
