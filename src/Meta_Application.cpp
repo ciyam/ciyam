@@ -2066,10 +2066,6 @@ void Meta_Application::impl::impl_Generate( )
 
       outv << "\x60{\x60$modules\x60=\x60'" << all_modules << "\x60'\x60}\n";
 
-      // NOTE: If no blockchain identity exists then create one for testing.
-      if( !get_obj( ).Type( ) && is_null( get_obj( ).Blockchain_Id( ) ) )
-         outss1 << "<bc139fc15.bc_init.cin\n";
-
       outss1 << "storage_init " << storage_name( ) << "\n";
       outss1 << "pe sys 20080101 " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( )

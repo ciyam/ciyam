@@ -80,7 +80,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
    if( lines.empty( ) )
       throw runtime_error( "unexpected empty block content" );
 
-   string identity;
+   string identity, targeted_identity;
 
    size_t version = 0;
    size_t num_tree_items = 0;
@@ -106,6 +106,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
       bool has_height = false;
       bool has_identity = false;
       bool has_num_tree_items = false;
+      bool has_targeted_identity = false;
 
       for( size_t i = 0; i < attributes.size( ); i++ )
       {
@@ -113,7 +114,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
          if( next_attribute.empty( ) )
             throw runtime_error( "unexpected empty attribute in block header '" + header + "'" );
 
-         if( i > 1 && !has_num_tree_items )
+         if( i > 1 && ( !has_num_tree_items || !has_targeted_identity ) )
          {
             if( next_attribute.find( c_file_type_core_block_header_num_tree_items_prefix ) == 0 )
             {
@@ -129,6 +130,17 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
                   set_session_variable(
                    get_special_var_name( e_special_var_blockchain_num_tree_items ), to_string( num_tree_items + 1 ) );
                }
+
+               continue;
+            }
+            else if( next_attribute.find( c_file_type_core_block_header_targeted_ident_prefix ) == 0 )
+            {
+               has_targeted_identity = true;
+
+               targeted_identity = next_attribute.substr( strlen( c_file_type_core_block_header_targeted_ident_prefix ) );
+
+               if( !p_block_info )
+                  set_session_variable( get_special_var_name( e_special_var_blockchain_targeted_identity ), targeted_identity );
 
                continue;
             }
@@ -161,14 +173,6 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
             has_identity = true;
 
             identity = next_attribute.substr( strlen( c_file_type_core_block_header_identity_prefix ) );
-
-            if( identity.size( ) > 1 && identity[ identity.size( ) - 1 ] == '+' )
-            {
-               identity.erase( identity.size( ) - 1 );
-
-               if( !p_block_info )
-                  set_session_variable( get_special_var_name( e_special_var_blockchain_is_shared ), c_true_value );
-            }
          }
          else if( !version )
          {
@@ -186,7 +190,8 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
             throw runtime_error( "unexpected extraneous attribute in block header '" + header + "'" );
       }
 
-      if( identity.length( ) != c_bc_identity_length )
+      // NOTE: If a 9 character identity was found to be palindromic it will have been extended to 10 characters.
+      if( ( identity.length( ) < c_bc_identity_length ) || ( identity.length( ) > c_bc_identity_length + 1 ) )
          throw runtime_error( "unexpected missing or incorrect identity attribute in block header '" + header + "'" );
    }
 

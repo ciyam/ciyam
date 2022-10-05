@@ -5667,6 +5667,17 @@ void disconnect_peerchain( const string& identity, bool no_delay )
 
    if( set_system_variable( '~' + identity, c_true_value, check_not_has ) )
    {
+      string reversed( identity );
+      reverse( reversed.begin( ), reversed.end( ) );
+
+      set_variable_checker check_has(
+       e_variable_check_type_any_session_has, reversed );
+
+      set_variable_checker check_not_has(
+       e_variable_check_type_not_has_other_system, reversed, &check_has );
+
+      set_system_variable( '~' + reversed, c_true_value, check_not_has );
+
       if( !no_delay )
          msleep( c_peer_sleep_time * 5 );
    }
