@@ -153,7 +153,6 @@ const char* const c_special_variable_file_info_buffered = "@file_info_buffered";
 const char* const c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
 const char* const c_special_variable_repo_crypt_password = "@repo_crypt_password";
 const char* const c_special_variable_blockchain_hind_hash = "@blockchain_hind_hash";
-const char* const c_special_variable_blockchain_is_shared = "@blockchain_is_shared";
 const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_ratios";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
@@ -173,6 +172,7 @@ const char* const c_special_variable_blockchain_height_processed = "@blockchain_
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 const char* const c_special_variable_blockchain_zenith_tree_hash = "@blockchain_zenith_tree_hash";
 const char* const c_special_variable_totals_exclude_hidden_blobs = "@totals_exclude_hidden_blobs";
+const char* const c_special_variable_blockchain_targeted_identity = "@blockchain_targeted_identity";
 const char* const c_special_variable_blockchain_peer_has_supporters = "@blockchain_peer_has_supporters";
 const char* const c_special_variable_blockchain_primary_pubkey_hash = "@blockchain_primary_pubkey_hash";
 const char* const c_special_variable_blockchain_signature_file_hash = "@blockchain_signature_file_hash";
@@ -640,10 +640,6 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_blockchain_hind_hash );
       break;
 
-      case e_special_var_blockchain_is_shared:
-      s = string( c_special_variable_blockchain_is_shared );
-      break;
-
       case e_special_var_ods_cache_hit_ratios:
       s = string( c_special_variable_ods_cache_hit_ratios );
       break;
@@ -718,6 +714,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_totals_exclude_hidden_blobs:
       s = string( c_special_variable_totals_exclude_hidden_blobs );
+      break;
+
+      case e_special_var_blockchain_targeted_identity:
+      s = string( c_special_variable_blockchain_targeted_identity );
       break;
 
       case e_special_var_blockchain_peer_has_supporters:

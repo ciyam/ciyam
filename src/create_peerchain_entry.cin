@@ -27,6 +27,8 @@ NUM_ARGS=@$NUM_ARGS+1
 #NOTE: This script requires an identity, auto-start, description, host name, port number and number of helpers.
 @else
 ;
+<std.fissile
+;
 IDENTITY=$1
 AUTO_START=$2
 DESCRIPTION=$3
@@ -35,12 +37,14 @@ HOST_PORT=$5
 NUM_HELPERS=$6
 SHARED_SECRET=$7
 ;
+REVERSED=*!reverse?$IDENTITY
+;
 .system_variable @peer_port
 PEER_PORT=$OUTPUT
 @ifeq "$PEER_PORT" ""
 #Error: Found empty '@peer_port' system variable value.
 @else
-.peer_listen $PEER_PORT $IDENTITY
+.peer_listen $PEER_PORT $IDENTITY,$REVERSED
 .storage_init Meta
 ;
 .pc sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=$AUTO_START,Description=$DESCRIPTION,Entry_Type=0\
@@ -54,7 +58,10 @@ FILES_AREA_DIR=$OUTPUT
 ;
 ~mkdir $FILES_AREA_DIR/$IDENTITY
 .file_archive -add $FILES_AREA_DIR/$IDENTITY 100GB $IDENTITY
+;
+~mkdir $FILES_AREA_DIR/$REVERSED
+.file_archive -add $FILES_AREA_DIR/$REVERSED 10GB $REVERSED
 @endif
-#Created listener, global peerchain entry and file archive for identity '$IDENTITY'.
+#Created listeners, global peerchain entry and file archives for identity '$IDENTITY'.
 @endif
 @endif

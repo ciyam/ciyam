@@ -273,9 +273,6 @@ void process_core_file( const string& hash, const string& blockchain )
 
             verify_core_file( block_content, false );
 
-            bool is_shared = !get_session_variable(
-             get_special_var_name( e_special_var_blockchain_is_shared ) ).empty( );
-
             string block_height( get_session_variable(
              get_special_var_name( e_special_var_blockchain_height ) ) );
 
@@ -287,6 +284,9 @@ void process_core_file( const string& hash, const string& blockchain )
 
             string tertiary_pubkey_hash( get_session_variable(
              get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ) ) );
+
+            bool is_shared = !get_session_variable(
+             get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
 
             if( !primary_pubkey_hash.empty( ) )
             {
@@ -1578,15 +1578,15 @@ bool process_block_for_height( const string& blockchain,
 
    verify_core_file( block_content, false );
 
-   bool is_shared = !get_session_variable(
-    get_special_var_name( e_special_var_blockchain_is_shared ) ).empty( );
+   string block_height( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_height ) ) );
 
    if( !get_session_variable(
     get_special_var_name( e_special_var_blockchain_hind_hash ) ).empty( ) )
       has_hind_hash = true;
 
-   string block_height( get_session_variable(
-    get_special_var_name( e_special_var_blockchain_height ) ) );
+   bool is_shared = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
 
    if( !block_height.empty( ) && ( block_height != to_string( height ) ) )
       throw runtime_error( "specified height does not match that found in the block itself (blk)" );
@@ -4488,9 +4488,9 @@ void create_peer_listener( int port, const string& blockchains )
    }
 }
 
-peer_session* create_peer_initiator(
- const string& blockchain, const string& host_and_or_port, bool force,
- size_t num_for_support, bool is_interactive, bool is_secondary, peer_session* p_main_session )
+peer_session* create_peer_initiator( const string& blockchain,
+ const string& host_and_or_port, bool force, size_t num_for_support,
+ bool is_interactive, bool is_secondary, peer_session* p_main_session, bool is_for_shared )
 {
    if( blockchain.empty( ) )
       throw runtime_error( "create_peer_initiator called with empty blockchain identity" );
@@ -4548,9 +4548,13 @@ peer_session* create_peer_initiator(
    string own_identity( get_system_variable(
     get_special_var_name( e_special_var_blockchain ) ) );
 
+   if( is_for_shared )
+      reverse( own_identity.begin( ), own_identity.end( ) );
+
    bool has_separate_identity = false;
 
-   if( !is_secondary && !own_identity.empty( ) && ( identity != own_identity ) )
+   if( !is_secondary && !is_interactive
+    && !own_identity.empty( ) && ( identity != own_identity ) )
       has_separate_identity = true;
 
    string session_blockchain( c_bc_prefix );
@@ -4773,11 +4777,42 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
       if( p_hosted_main )
       {
-         // NOTE: If both main sessions were successfully created now create all requested support sessions.
+         // NOTE: If the two main sessions were successfully created then
+         // will now create the requested support sessions for them both.
          if( num_for_support )
          {
-            create_peer_initiator( blockchain, info, false, num_for_support, false, false, p_local_main );
-            create_peer_initiator( blockchain, info, false, num_for_support, false, true, p_hosted_main );
+            create_peer_initiator( blockchain,
+             info, false, num_for_support, false, false, p_local_main );
+
+            create_peer_initiator( blockchain,
+             info, false, num_for_support, false, true, p_hosted_main );
+         }
+      }
+   }
+
+   // NOTE: Shared blockchain sessions use the same identity value but in reverse.
+   string reversed( identity );
+   reverse( reversed.begin( ), reversed.end( ) );
+
+   string shared_chain( c_bc_prefix + reversed );
+
+   peer_session* p_local_shared = create_peer_initiator( shared_chain,
+    info, false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, 0, true );
+
+   if( p_local_shared )
+   {
+      peer_session* p_hosted_shared = create_peer_initiator( shared_chain,
+       info, false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, true );
+
+      if( p_hosted_shared )
+      {
+         if( num_for_support )
+         {
+            create_peer_initiator( shared_chain,
+             info, false, num_for_support, false, false, p_local_shared, true );
+
+            create_peer_initiator( shared_chain,
+             info, false, num_for_support, false, true, p_hosted_shared, true );
          }
       }
    }

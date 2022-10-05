@@ -98,11 +98,21 @@ TERTIARY_PRIVKEY_HASH=$OUTPUT
 ;
 @ifndef $SHARED
 .crypto_hash $PRIMARY_PUBKEY_HASH$SECONDARY_PUBKEY_HASH$TERTIARY_PUBKEY_HASH
-IDENT=@substr:0,9:$OUTPUT
+IDENTITY_HASH=$OUTPUT
+;
+IDENT=@substr:0,9:$IDENTITY_HASH
+;
+;NOTE: If a 9 character identity is palindromic then extend the size to 10 characters
+;to ensure than when it's reversed a different value is used for the shared identity.
+;
+REVERSE=*!reverse?$IDENT
+@ifeq "$IDENT" "$REVERSE"
+IDENT=@substr:0,10:$IDENTITY_HASH
+@endif
 @else
 .system_variable @blockchain
 @ifndef $OUTPUT
-ERROR=No backup blockchain was found.
+ERROR=No system blockchain was found.
 #Error: $ERROR
 @else
 IDENT=*!reverse?$OUTPUT
@@ -140,7 +150,7 @@ TERTIARY_PUBKEY_HASH_ENC=$OUTPUT
 .file_raw -core blob blk:h=0,i=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @else
-.file_raw -core blob blk:h=0,i=$IDENT+\n\
+.file_raw -core blob blk:h=0,i=$IDENT,t=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @endif
 ;
@@ -150,7 +160,7 @@ BLOCK_HASH=$OUTPUT
 #Created keys and genesis block for blockchain identity '$IDENT'.
 @endif
 ;
- .file_hash -q bc.$IDENT.zenith
+.file_hash -q bc.$IDENT.zenith
 @ifndef "$OUTPUT"
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
 @ifndef $SHARED
