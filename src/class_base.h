@@ -1508,6 +1508,8 @@ std::string CIYAM_BASE_DECL_SPEC create_html_embedded_image(
 std::string CIYAM_BASE_DECL_SPEC crypto_digest(
  const std::string& data, bool use_sha512 = false, bool decode_hex_data = false );
 
+std::string CIYAM_BASE_DECL_SPEC crypto_checksum( const std::string& hashes );
+
 uint64_t CIYAM_BASE_DECL_SPEC crypto_amount( const std::string& amount );
 
 std::string CIYAM_BASE_DECL_SPEC crypto_sign(
