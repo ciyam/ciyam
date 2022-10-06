@@ -4983,6 +4983,74 @@ string crypto_digest( const string& data, bool use_sha512, bool decode_hex_data 
    return retval;
 }
 
+string crypto_checksum( const string& hashes )
+{
+   string retval( "00000-00000-000000-000000-00000-00000" );
+
+   if( !hashes.empty( ) )
+   {
+      regex expr( c_regex_hash_256, true, true );
+
+      vector< string > all_hashes;
+
+      split( hashes, all_hashes );
+
+      unsigned char buffer[ c_sha256_digest_size ];
+
+      memset( buffer, '\0', sizeof( buffer ) );
+
+      for( size_t i = 0; i < all_hashes.size( ); i++ )
+      {
+         string next_hash( all_hashes[ i ] );
+
+         if( next_hash.empty( ) )
+         {
+            memset( buffer, '\0', sizeof( buffer ) );
+            break;
+         }
+
+         if( expr.search( next_hash ) == string::npos )
+            throw runtime_error( "unexpected hash value '" + next_hash + "'" );
+
+         unsigned char next_buffer[ c_sha256_digest_size ];
+
+         hex_decode( next_hash, next_buffer, sizeof( next_buffer ) );
+
+         for( size_t i = 0; i < c_sha256_digest_size; i++ )
+            buffer[ i ] ^= next_buffer[ i ];
+      }
+
+      // NOTE: First XOR all hashes into a buffer then XOR the second half
+      // of this buffer with the first half in order to create a 32 nibble
+      // checksum which is returned as dash separated values (5-5-6-6-5-5).
+      size_t half = c_sha256_digest_size / 2;
+
+      for( size_t i = 0; i < half; i++ )
+         buffer[ i ] ^= buffer[ half + i ];
+
+      string xored_hash( hex_encode( buffer, half ) );
+
+      retval = xored_hash.substr( 0, 5 );
+      xored_hash.erase( 0, 5 );
+
+      retval += '-' + xored_hash.substr( 0, 5 );
+      xored_hash.erase( 0, 5 );
+
+      retval += '-' + xored_hash.substr( 0, 6 );
+      xored_hash.erase( 0, 6 );
+
+      retval += '-' + xored_hash.substr( 0, 6 );
+      xored_hash.erase( 0, 6 );
+
+      retval += '-' + xored_hash.substr( 0, 5 );
+      xored_hash.erase( 0, 5 );
+
+      retval += '-' + xored_hash;
+   }
+
+   return retval;
+}
+
 uint64_t crypto_amount( const string& amount )
 {
    uint64_t amt = 0;

@@ -1516,6 +1516,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = crypto_public( privkey, !are_hex_nibbles( privkey ), false, !uncompressed );
       }
+      else if( command == c_cmd_ciyam_session_crypto_checksum )
+      {
+         string hashes( get_parm_val( parameters, c_cmd_ciyam_session_crypto_checksum_hashes ) );
+
+         response = crypto_checksum( hashes );
+      }
       else if( command == c_cmd_ciyam_session_crypto_addr_hash )
       {
          string address( get_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_hash_address ) );
@@ -3461,7 +3467,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                for( map< string, string >::iterator i = check_value_items.begin( ), end = check_value_items.end( ); i != end; ++i )
                {
                   string method_name_and_args( "get " );
+
                   method_name_and_args += i->first;
+
                   string value = execute_object_command( handle, "", method_name_and_args );
 
                   if( value != i->second )
@@ -3500,15 +3508,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         check_instance_field_permission( module, handle, false, scope_and_perm_info );
                      }
 
-                     string value, method_name_and_args( "set " );
+                     string method_name_and_args( "set " );
 
-                     if( !is_encrypted || value.empty( ) != i->second.empty( ) || decrypt( value ) != decrypt( i->second ) )
-                     {
-                        method_name_and_args += i->first + " ";
-                        method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
+                     method_name_and_args += i->first + " ";
+                     method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
 
-                        execute_object_command( handle, "", method_name_and_args );
-                     }
+                     execute_object_command( handle, "", method_name_and_args );
 
                      fields_set.insert( i->first );
                   }
