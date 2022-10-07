@@ -108,8 +108,7 @@ get_perms( ).count( "`{`$arg_permission_id`}" )`{`!`@eq`(`$arg_altfield`,`'`'`) 
 `{`@eq`(`$arg_altfield`,`'`'`)\
    if( `{`!`@eq`(`$arg_permission_id`,`'`'`)get_perms( ).count( "`{`$arg_permission_id`}" )
     && `}get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_even_when_changing`,`'true`'`)
-    && !( state & c_state_is_changing )`}
-`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && !( state & c_state_is_changing )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
     && ( state & c_modifier_`{`$arg_modifier`} )`} )`{`!`@eq`(`$arg_permission_id`,`'`'`) // i.e. `{`$arg_permission`}`}
 `,\
 `{`@eq`(`$arg_permission_id`,`'`'`)\
@@ -223,6 +222,9 @@ get_perms( ).count( "`{`$arg_permission_id`}" )`{`!`@eq`(`$arg_altfield`,`'`'`) 
 `}\
 `{`@eq`(`$arg_default`,`'true`'`)\
          actions += '>';
+`}\
+`{`@eq`(`$arg_no_log`,`'true`'`)\
+      actions += '_';
 `}\
 `{`@eq`(`$arg_no_trans`,`'true`'`)\
          actions += '-';
