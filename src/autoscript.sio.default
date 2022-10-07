@@ -17,6 +17,12 @@
 #  <cycle>10s
 #  <filename>backup_import:~backup
 # </script>
+# <script/>
+#  <name>shared_check
+#  <time>00:00:07-23:59:57
+#  <cycle>10s
+#  <filename>shared_check
+# </script>
 ### [<start generated>]
 ### [<finish generated>]
 </sio>
