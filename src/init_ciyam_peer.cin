@@ -3,30 +3,30 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-<std.fissile
-;
 .system_variable @peer_port
 PEER_PORT=$OUTPUT
+;
 @ifeq "$PEER_PORT" ""
 #Error: Found empty '@peer_port' system variable value.
 @else
-@ifneq "$1" ""
-BLOCKCHAIN=$1
+;
+.system_variable @blockchain_backup_ident
+BACKUP=$OUTPUT
+@ifeq "$BACKUP" ""
+#Error: Found empty '@blockchain_backup_ident' system variable value.
 @else
-.system_variable @blockchain
-BLOCKCHAIN=$OUTPUT
-@endif
-@ifeq "$BLOCKCHAIN" ""
-#Error: Found empty '@blockchain' system variable value.
-@else
-REVERSE_ID=*!reverse?$OUTPUT
-.peer_listen $PEER_PORT $BLOCKCHAIN,$REVERSE_ID
+;
+.system_variable @blockchain_shared_ident
+SHARED=$OUTPUT
+;
+.peer_listen $PEER_PORT $BACKUP,$SHARED
+;
 @ifndef $ERROR
 .storage_init Meta
-.pc sys @now Meta Global_Peerchain_Entry $BLOCKCHAIN "Auto_Start=1,Description=Local Backup,Entry_Type=1,Local_Port=$PEER_PORT"
-.pc sys @now Meta Global_Peerchain_Entry $REVERSE_ID "Auto_Start=1,Description=Local Shared,Entry_Type=1,Local_Port=$PEER_PORT"
+.pc sys @now Meta Global_Peerchain_Entry $BACKUP "Auto_Start=1,Description=Local Backup,Entry_Type=1,Local_Port=$PEER_PORT"
+.pc sys @now Meta Global_Peerchain_Entry $SHARED "Auto_Start=1,Description=Local Shared,Entry_Type=1,Local_Port=$PEER_PORT"
 @ifndef $ERROR
-#Created listeners and global peerchain entries for identities '$BLOCKCHAIN' and '$REVERSE_ID'.
+#Created listeners and global peerchain entries for identities '$BACKUP' and '$SHARED'.
 @endif
 .storage_term
 @endif

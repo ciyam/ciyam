@@ -13,6 +13,6 @@ del ~block_tree_hash
 goto end
 
 :usage
-echo Usage: block_tree_hash [<identity> or @blockchain] [[height]]
+echo Usage: block_tree_hash [<identity> or @blockchain_<type>_ident] [[height]]
 
 :end

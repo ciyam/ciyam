@@ -3,6 +3,8 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+<std.fissile
+;
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -26,8 +28,6 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifneq "$NUM_ARGS" "6"
 #NOTE: This script requires an identity, auto-start, description, host name, port number and number of helpers.
 @else
-;
-<std.fissile
 ;
 IDENTITY=$1
 AUTO_START=$2

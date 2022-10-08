@@ -160,6 +160,8 @@ const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchroni
 const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
 const char* const c_special_variable_blockchain_zenith_hash = "@blockchain_zenith_hash";
 const char* const c_special_variable_blockchain_archive_path = "@blockchain_archive_path";
+const char* const c_special_variable_blockchain_backup_ident = "@blockchain_backup_ident";
+const char* const c_special_variable_blockchain_shared_ident = "@blockchain_shared_ident";
 const char* const c_special_variable_blockchain_peer_is_owner = "@blockchain_peer_is_owner";
 const char* const c_special_variable_blockchain_zenith_height = "@blockchain_zenith_height";
 const char* const c_special_variable_blockchain_get_tree_files = "@blockchain_get_tree_files";
@@ -666,6 +668,14 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_archive_path:
       s = string( c_special_variable_blockchain_archive_path );
+      break;
+
+      case e_special_var_blockchain_backup_ident:
+      s = string( c_special_variable_blockchain_backup_ident );
+      break;
+
+      case e_special_var_blockchain_shared_ident:
+      s = string( c_special_variable_blockchain_shared_ident );
       break;
 
       case e_special_var_blockchain_peer_is_owner:

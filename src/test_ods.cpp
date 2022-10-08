@@ -402,6 +402,7 @@ class test_ods_command_handler : public console_command_handler
 
    size_t trans_level;
    size_t trans_stack_levels[ c_max_trans_depth ];
+
    ods::transaction* trans_buffer[ c_max_trans_depth ];
 };
 
@@ -469,6 +470,7 @@ class test_ods_command_functor : public command_functor
 
    size_t& trans_level;
    ods::transaction** trans_buffer;
+
    size_t* trans_stack_levels;
 
    stack< oid, vector< oid > >& oid_stack;
@@ -1002,6 +1004,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          handler.issue_command_response( "rollback transaction (level = " + to_string( trans_level ) + ")" );
          delete trans_buffer[ --trans_level ];
       }
+
       test_handler.set_finished( );
    }
 

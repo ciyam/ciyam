@@ -1,0 +1,94 @@
+#!/bin/sh
+# Copyright (c) 2022 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+USER_PATH=/home/$USER
+IMAGE_NAME=shared.img
+
+IMPORT_TIME=.import.time
+IMPORTED_TIME=.imported.time
+
+SHARED_PATH=$USER_PATH/shared
+SHARED_IMAGE=$USER_PATH/$IMAGE_NAME
+
+IMPORT_TIME_FILE=$SHARED_PATH/$IMPORT_TIME
+IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
+
+if mountpoint -q $SHARED_PATH; then
+ if [ ! -f $IMPORTED_TIME_FILE ]; then
+  NEW_CHANGE=`find $SHARED_PATH -path lost+found -prune -o -name "*" -type f -print | head -n 1`
+ else
+  NEW_CHANGE=`find $SHARED_PATH -path lost+found -prune -o -newermm $IMPORTED_TIME_FILE -name "*" -type d -print | head -n 1`
+ fi
+
+ if [ ! "$NEW_CHANGE" = "" ]; then
+  ./system_variable set @import_needed "1"
+ fi
+fi
+
+if [ -f $IMPORT_TIME_FILE ]; then
+ mv $IMPORT_TIME_FILE .
+fi
+
+if [ -f $IMPORT_TIME ]; then
+ NOW=`date +%s`
+ TIME=`cat $IMPORT_TIME`
+
+ # NOTE: Allows the use of "touch" to trigger.
+ if [ "$TIME" = "" ]; then
+  TIME=$NOW
+ fi
+
+ if [ $NOW -ge $TIME ]; then
+
+  if [ ! -f ~shared ]; then
+   date >Import.txt
+   echo "Preparing for import..." >>Import.txt
+
+   # NOTE: If unable to umount will exit (so can call repeatedly until okay).
+   if [ -d $SHARED_PATH ]; then
+    if mountpoint -q $SHARED_PATH; then
+     sudo umount $SHARED_PATH
+     if [ $? -ne 0 ]; then
+      exit
+     fi
+    fi
+   fi
+
+   # NOTE: Use this to prevent accidentally executing the actual import twice.
+   if [ ! -f ~shared ]; then
+    touch ~shared
+
+    date >Import.txt
+    echo "Starting import..." >>Import.txt
+
+    if [ -f $SHARED_IMAGE ]; then
+     export SECONDS=2
+     export SHARED_PASSWORD=@shared_secret
+     export USE_SHARED_ARCHIVE=1
+
+     ./import_files $USER_PATH Shared : $IMAGE_NAME >>Import.txt
+     ./tree_insert_trunks ciyam Shared >>Import.txt 2>&1
+     ./generate_next_block @blockchain_shared_ident >>Import.txt 2>&1
+     ./block_tree_relegate @blockchain_shared_ident ciyam >>Import.txt 2>&1
+    fi
+
+    echo "Finished import..." >>Import.txt
+    date >>Import.txt
+
+    ./system_variable set @export_needed ""
+    ./system_variable set @import_needed ""
+
+    if [ -f $SHARED_IMAGE ]; then
+     sudo mount $SHARED_IMAGE $SHARED_PATH
+     echo `date +%s` > $IMPORTED_TIME_FILE
+    fi
+
+    rm ~shared
+    rm $IMPORT_TIME
+   fi
+  fi
+ fi
+fi

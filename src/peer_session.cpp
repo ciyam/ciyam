@@ -201,16 +201,16 @@ void add_to_blockchain_tree_item( const string& blockchain, size_t num_to_add )
 void output_synchronised_progress_message(
  const string& identity, size_t blockchain_height, size_t blockchain_height_other = 0 )
 {
-   string own_identity( get_system_variable(
-    get_special_var_name( e_special_var_blockchain ) ) );
+   string backup_identity( get_system_variable(
+    get_special_var_name( e_special_var_blockchain_backup_ident ) ) );
 
-   string shared_identity( own_identity );
-   reverse( shared_identity.begin( ), shared_identity.end( ) );
+   string shared_identity( get_system_variable(
+    get_special_var_name( e_special_var_blockchain_shared_ident ) ) );
 
    string progress_message;
 
    // FUTURE: These messages should be handled as server string messages.
-   if( ( identity == own_identity ) || ( identity == shared_identity ) )
+   if( ( identity == backup_identity ) || ( identity == shared_identity ) )
    {
       progress_message = "Currently at height ";
 
@@ -3723,7 +3723,7 @@ peer_session::peer_session( int64_t time_val,
          if( extra != e_peer_extra_none )
          {
             string own_identity( get_system_variable(
-             get_special_var_name( e_special_var_blockchain ) ) );
+             get_special_var_name( e_special_var_blockchain_backup_ident ) ) );
 
             pid += '@' + own_identity;
          }
@@ -4545,11 +4545,8 @@ peer_session* create_peer_initiator( const string& blockchain,
       }
    }
 
-   string own_identity( get_system_variable(
-    get_special_var_name( e_special_var_blockchain ) ) );
-
-   if( is_for_shared )
-      reverse( own_identity.begin( ), own_identity.end( ) );
+   string own_identity( get_system_variable( get_special_var_name(
+    !is_for_shared ? e_special_var_blockchain_backup_ident : e_special_var_blockchain_shared_ident ) ) );
 
    bool has_separate_identity = false;
 

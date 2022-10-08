@@ -3586,7 +3586,8 @@ void Meta_Application::impl::after_fetch( )
       }
 
       if( !get_obj( ).Type( ) )
-         get_obj( ).Blockchain_Id( get_system_variable( get_special_var_name( e_special_var_blockchain ) ) );
+         get_obj( ).Blockchain_Id( get_system_variable(
+          get_special_var_name( e_special_var_blockchain_backup_ident ) ) );
    }
    // [<finish after_fetch>]
 }

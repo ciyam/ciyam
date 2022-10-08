@@ -384,8 +384,17 @@ ods_file_system::~ods_file_system( )
    delete p_impl;
 }
 
+string ods_file_system::get_folder( bool /* force reload */ )
+{
+   force_reload( );
+
+   return get_folder( );
+}
+
 void ods_file_system::set_folder( const string& new_folder, bool* p_rc )
 {
+   force_reload( );
+
    string s( determine_folder( new_folder, false, true ) );
 
    if( !s.empty( ) )
@@ -1839,6 +1848,11 @@ void ods_file_system::dump_node_data( const string& file_name, ostream* p_os )
    }
    else if( p_os )
       bt.dump_all_info( *p_os );
+}
+
+void ods_file_system::force_reload( )
+{
+   p_impl->next_transaction_id = 0;
 }
 
 void ods_file_system::perform_match(

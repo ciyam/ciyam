@@ -15,8 +15,8 @@ PREFIX=$3
 DEPTH=2
 @endif
 ;
-@ifdef USE_BLOCKCHAIN_ARCHIVE
-.system_variable @blockchain_archive_path
+@ifdef USE_BACKUP_ARCHIVE
+.system_variable @blockchain_backup_archive
 .session_variable @blockchain_archive_path "$OUTPUT"
 @endif
 ;

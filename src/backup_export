@@ -14,7 +14,7 @@ IMPORTED_TIME=.imported.time
 BACKUP_PATH=$USER_PATH/backup
 BACKUP_IMAGE=$USER_PATH/$IMAGE_NAME
 
-BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_height`
+BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_backup_height`
 
 RESTORE_NOW_FILE=$BACKUP_PATH/$RESTORE_NOW
 BACKUP_HEIGHT_FILE=$BACKUP_PATH/$BACKUP_HEIGHT
@@ -62,14 +62,14 @@ if [ -f $RESTORE_NOW ]; then
    date >Backup.txt
    echo "Starting restore..." >>Backup.txt
 
-   BLOCK_TREE=`./block_tree_hash @blockchain`
+   BLOCK_TREE=`./block_tree_hash @blockchain_backup_ident`
    BACKUP_LIST=`./tree_list $BLOCK_TREE 0 Backup | tail -n 1`
 
    sudo chown $USER:www $BACKUP_IMAGE
 
    export SECONDS=2
+   export USE_BACKUP_ARCHIVE=1
    export REPO_CRYPT_PASSWORD=@sid
-   export USE_BLOCKCHAIN_ARCHIVE=1
 
    ./export_files $BACKUP_LIST $USER_PATH >>Backup.txt
 
