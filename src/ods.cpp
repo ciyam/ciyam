@@ -5365,9 +5365,9 @@ int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset, const ch
       tranlog_entry.commit_offs = tranlog_entry.commit_items = 0;
    }
 
-   if( !p_label )
-      memset( tranlog_entry.label, '\0', sizeof( tranlog_entry.label ) );
-   else
+   memset( tranlog_entry.label, '\0', sizeof( tranlog_entry.label ) );
+
+   if( p_label )
       memcpy( tranlog_entry.label, p_label, min( strlen( p_label ), sizeof( tranlog_entry.label ) ) );
 
    tranlog_entry.tx_id = tx_id;

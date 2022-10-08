@@ -12,7 +12,7 @@ FILES_EXPRESSION=@repstr:;/,:$4
 PATHS_EXPRESSION=@repstr:;/,:$5
 ;
 HAS_REPO_LIST_INFO=
-.system_variable @blockchain
+.system_variable @blockchain_backup_ident
 @ifdef $OUTPUT
 @ifdef $REPO_CRYPT_PASSWORD
 HAS_REPO_LIST_INFO=1
@@ -20,8 +20,13 @@ HAS_REPO_LIST_INFO=1
 @endif
 @endif
 ;
-@ifdef USE_BLOCKCHAIN_ARCHIVE
-.system_variable @blockchain_archive_path
+@ifdef USE_BACKUP_ARCHIVE
+.system_variable @blockchain_backup_archive
+.session_variable @blockchain_archive_path "$OUTPUT"
+@endif
+;
+@ifdef USE_SHARED_ARCHIVE
+.system_variable @blockchain_shared_archive
 .session_variable @blockchain_archive_path "$OUTPUT"
 @endif
 ;

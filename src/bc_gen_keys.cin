@@ -27,6 +27,14 @@ HEIGHT=$3
 ;
 NEXT_HEIGHT=@$HEIGHT+1
 ;
+SHARED=
+.system_variable @blockchain_shared_ident
+@ifdef $OUTPUT
+@ifeq "$IDENT" "$REVERSE"
+SHARED=1
+@endif
+@endif
+;
 @ifeq "$IDENT" "e3733d121"
 MULTIPLE=5
 @else
@@ -38,7 +46,11 @@ MODULUS=@$NEXT_HEIGHT#$MULTIPLE
 HEIGHT=@$HEIGHT+$MULTIPLE
 @endif
 ;
+@ifndef $SHARED
 .crypto_hash $SEED -s=-$HEIGHT
+@else
+.crypto_hash $SEED -s=+$HEIGHT
+@endif
 ENTROPY_HASH=$OUTPUT
 ;
 .crypto_lamport new_primary $ENTROPY_HASH
@@ -64,7 +76,11 @@ MODULUS=@$NEXT_HEIGHT#$SQUARED
 @ifeq "$MODULUS" "0"
 HEIGHT=@$HEIGHT+$SQUARED
 ;
+@ifndef $SHARED
 .crypto_hash $SEED -s=-$HEIGHT
+@else
+.crypto_hash $SEED -s=+$HEIGHT
+@endif
 ENTROPY_HASH=$OUTPUT
 ;
 .crypto_lamport new_primary $ENTROPY_HASH

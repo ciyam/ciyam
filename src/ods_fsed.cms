@@ -15,6 +15,9 @@ folder_remove "remove a folder from below the current folder" [<opt/-r/recurse>]
 export "export all objects to a directory" <val//directory>[<list//rename_exprs>]
 import "import all objects from a directory" <val//directory>[<list//rename_exprs>]
 label "append a transaction log label" <val//name>
+trans "begin a transaction"
+commit "commit current transaction"
+rollback "rollback current transaction"
 rewind "rewind transactions" [<opt/-dtm/dtm>|<opt/-last/last>|<opt/-unix/unix>]<val//label_or_value>
 rebuild "rebuild index nodes"
 dump "dump container details" [<val//filename>]

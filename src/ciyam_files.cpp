@@ -3543,7 +3543,7 @@ bool store_file( const string& hash,
             if( !is_existing && !is_in_blacklist )
             {
                string repository( get_system_variable(
-                get_special_var_name( e_special_var_blockchain ) ) );
+                get_special_var_name( e_special_var_blockchain_backup_ident ) ) );
 
                string crypt_password;
 

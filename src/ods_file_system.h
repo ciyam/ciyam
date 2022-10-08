@@ -36,10 +36,12 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    ods_file_system( ods& o, int64_t i = 0 );
    ~ods_file_system( );
 
+   inline std::string get_folder( ) const { return current_folder; }
+
+   std::string get_folder( bool /* force reload */ );
+
    void set_folder( const std::string& new_folder, bool* p_rc = 0 );
    void set_root_folder( const std::string& new_folder, bool* p_rc = 0 );
-
-   inline std::string get_folder( ) const { return current_folder; }
 
    std::string determine_folder( const std::string& folder,
     bool explicit_child_only = false, bool ignore_not_found = false );
@@ -254,6 +256,8 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       e_file_size_output_type_scaled,
       e_file_size_output_type_num_bytes
    };
+
+   void force_reload( );
 
    void perform_match( std::ostream& os,
     const std::string& expr, const std::string& regexpr, size_t* p_count = 0,

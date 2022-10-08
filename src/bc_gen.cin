@@ -3,6 +3,8 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+<std.fissile
+;
 @ifneq "$1" "-shared"
 SEED=$1
 SHARED=
@@ -14,8 +16,6 @@ SHARED=1
 @ifeq "$SEED" ""
 #Usage: bc_gen.cin [-shared] <seed>
 @else
-;
-<std.fissile
 ;
 @ifeq "$SEED" "de604cee0755a3d81944ea96aed12681"
 MULTIPLE=5
@@ -110,9 +110,9 @@ REVERSE=*!reverse?$IDENT
 IDENT=@substr:0,10:$IDENTITY_HASH
 @endif
 @else
-.system_variable @blockchain
+.system_variable @blockchain_backup_ident
 @ifndef $OUTPUT
-ERROR=No system blockchain was found.
+ERROR=No backup blockchain identity was found.
 #Error: $ERROR
 @else
 IDENT=*!reverse?$OUTPUT
@@ -164,10 +164,13 @@ BLOCK_HASH=$OUTPUT
 @ifndef "$OUTPUT"
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
 @ifndef $SHARED
-.system_variable >@blockchain $IDENT
-.system_variable >@blockchain_backup $BLOCK_HASH
+.system_variable >@blockchain_backup_ident $IDENT
+.system_variable >@blockchain_backup_height 0
+.system_variable >@blockchain_backup_initial $BLOCK_HASH
 @else
-.system_variable >@blockchain_shared $BLOCK_HASH
+.system_variable >@blockchain_shared_ident $IDENT
+.system_variable >@blockchain_shared_height 0
+.system_variable >@blockchain_shared_initial $BLOCK_HASH
 @endif
 ;
 .system_variable @files_area_dir
@@ -176,10 +179,11 @@ FILES_AREA_DIR=$OUTPUT
 ~mkdir $FILES_AREA_DIR/$IDENT
 @ifdef $SHARED
 .file_archive -add $FILES_AREA_DIR/$IDENT 10GB $IDENT
+.system_variable >@blockchain_shared_archive $FILES_AREA_DIR/$IDENT
 @else
 .file_archive -add $FILES_AREA_DIR/$IDENT 100GB $IDENT
 @ifndef $ERROR
-.system_variable >@blockchain_archive_path $FILES_AREA_DIR/$IDENT
+.system_variable >@blockchain_backup_archive $FILES_AREA_DIR/$IDENT
 @endif
 @endif
 @endif

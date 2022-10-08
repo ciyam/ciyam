@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo "Usage: block_tree_hash [<identity> or @blockchain] [[height]]"
+ echo "Usage: block_tree_hash [<identity> or @blockchain_<type>_ident] [[height]]"
 else
  echo "<<block_tree_hash.cin $1 $2" >~block_tree_hash
  ./ciyam_client -echo -quiet -no_prompt -no_stderr <~block_tree_hash

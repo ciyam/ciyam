@@ -170,6 +170,8 @@ enum special_var
    e_special_var_blockchain_is_fetching,
    e_special_var_blockchain_zenith_hash,
    e_special_var_blockchain_archive_path,
+   e_special_var_blockchain_backup_ident,
+   e_special_var_blockchain_shared_ident,
    e_special_var_blockchain_peer_is_owner,
    e_special_var_blockchain_zenith_height,
    e_special_var_blockchain_get_tree_files,

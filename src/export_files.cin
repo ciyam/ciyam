@@ -11,8 +11,13 @@
 .session_variable @repo_crypt_password $REPO_CRYPT_PASSWORD
 @endif
 ;
-@ifdef USE_BLOCKCHAIN_ARCHIVE
-.system_variable @blockchain_archive_path
+@ifdef USE_BACKUP_ARCHIVE
+.system_variable @blockchain_backup_archive
+.session_variable @blockchain_archive_path "$OUTPUT"
+@endif
+;
+@ifdef USE_SHARED_ARCHIVE
+.system_variable @blockchain_shared_archive
 .session_variable @blockchain_archive_path "$OUTPUT"
 @endif
 ;

@@ -10,6 +10,7 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <stack>
 #  include <memory>
 #  include <string>
 #  include <sstream>
@@ -34,6 +35,8 @@ namespace
 {
 
 const size_t c_max_pwd_size = 128;
+
+const char c_trans_suffix = '!';
 
 const char* const c_opt_exclusive = "-x";
 
@@ -410,6 +413,9 @@ class ods_fsed_command_handler : public console_command_handler
    auto_ptr< ods > ap_ods;
    auto_ptr< ods_file_system > ap_ofs;
 
+   stack< string, deque< string > > folder_stack;
+   stack< ods::transaction*, deque< ods::transaction* > > ods_tx_stack;
+
    void process_custom_startup_option( size_t num, const string& option );
 };
 
@@ -493,7 +499,9 @@ class ods_fsed_command_functor : public command_functor
     : command_functor( ods_fsed_handler ),
     ods_fsed_handler( ods_fsed_handler ),
     ap_ods( ods_fsed_handler.ap_ods ),
-    ap_ofs( ods_fsed_handler.ap_ofs )
+    ap_ofs( ods_fsed_handler.ap_ofs ),
+    folder_stack( ods_fsed_handler.folder_stack ),
+    ods_tx_stack( ods_fsed_handler.ods_tx_stack )
    {
       ods_fsed_handler.set_prompt_prefix( ap_ofs->get_folder( ) );
    }
@@ -501,11 +509,13 @@ class ods_fsed_command_functor : public command_functor
    void operator ( )( const string& command, const parameter_info& parameters );
 
    private:
-   auto_ptr< ods >& ap_ods;
-
    ods_fsed_command_handler& ods_fsed_handler;
 
+   auto_ptr< ods >& ap_ods;
    auto_ptr< ods_file_system >& ap_ofs;
+
+   stack< string, deque< string > >& folder_stack;
+   stack< ods::transaction*, deque< ods::transaction* > >& ods_tx_stack;
 };
 
 void ods_fsed_command_functor::operator ( )( const string& command, const parameter_info& parameters )
@@ -527,6 +537,10 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
             if( !folder.empty( ) )
             {
                ap_ofs->set_folder( folder );
+
+               if( ods_tx_stack.size( ) )
+                  folder += c_trans_suffix;
+
                ods_fsed_handler.set_prompt_prefix( folder );
             }
          }
@@ -603,7 +617,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ap_ofs->add_file( name, file_name, 0, ( use_cin ? &cin : 0 ), p_progress );
+         ap_ofs->add_file( name, file_name, ( use_cin ? &cout : 0 ), ( use_cin ? &cin : 0 ), p_progress );
       }
       else if( command == c_cmd_ods_fsed_file_get )
       {
@@ -734,7 +748,78 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       {
          string name( get_parm_val( parameters, c_cmd_ods_fsed_label_name ) );
 
+         if( ods_tx_stack.size( ) )
+            throw runtime_error( "currently in a transaction" );
+
          ods::transaction label_tx( *ap_ods, name );
+      }
+      else if( command == c_cmd_ods_fsed_trans )
+      {
+         folder_stack.push( ap_ofs->get_folder( ) );
+         ods_tx_stack.push( new ods::transaction( *ap_ods ) );
+
+         handler.issue_command_response( "begin transaction (level = " + to_string( ods_tx_stack.size( ) ) + ")" );
+
+         ods_fsed_handler.set_prompt_prefix( ap_ofs->get_folder( ) + c_trans_suffix );
+      }
+      else if( command == c_cmd_ods_fsed_commit )
+      {
+         if( !ods_tx_stack.size( ) )
+            throw runtime_error( "not currently in a transaction" );
+
+         console_progress progress;
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+         ods::bulk_write bulk( *ap_ods, p_progress );
+
+         ods_tx_stack.top( )->commit( );
+
+         handler.issue_command_response( "transaction committed (level = " + to_string( ods_tx_stack.size( ) ) + ")" );
+
+         delete ods_tx_stack.top( );
+         ods_tx_stack.pop( );
+
+         folder_stack.pop( );
+
+         string folder( ap_ofs->get_folder( true ) );
+
+         if( !ods_tx_stack.empty( ) )
+            folder += c_trans_suffix;
+
+         ods_fsed_handler.set_prompt_prefix( folder );
+      }
+      else if( command == c_cmd_ods_fsed_rollback )
+      {
+         if( !ods_tx_stack.size( ) )
+            throw runtime_error( "not currently in a transaction" );
+
+         console_progress progress;
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+         ods::bulk_write bulk( *ap_ods, p_progress );
+
+         string folder( ap_ofs->get_folder( ) );
+
+         ods_tx_stack.top( )->rollback( );
+
+         handler.issue_command_response( "transaction rolled back (level = " + to_string( ods_tx_stack.size( ) ) + ")" );
+
+         delete ods_tx_stack.top( );
+         ods_tx_stack.pop( );
+
+         if( !ap_ofs->has_folder( folder ) )
+            folder = folder_stack.top( );
+
+         folder_stack.pop( );
+
+         ap_ofs->set_folder( folder );
+
+         folder = ap_ofs->get_folder( );
+
+         if( !ods_tx_stack.empty( ) )
+            folder += c_trans_suffix;
+
+         ods_fsed_handler.set_prompt_prefix( folder );
       }
       else if( command == c_cmd_ods_fsed_rewind )
       {
@@ -742,6 +827,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          bool is_last( has_parm_val( parameters, c_cmd_ods_fsed_rewind_last ) );
          bool is_unix( has_parm_val( parameters, c_cmd_ods_fsed_rewind_unix ) );
          string label_or_value( get_parm_val( parameters, c_cmd_ods_fsed_rewind_label_or_value ) );
+
+         if( ods_tx_stack.size( ) )
+            throw runtime_error( "currently in a transaction" );
 
          int64_t rewind_value = 0;
 
@@ -769,10 +857,15 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 
             // NOTE: Need to reconstruct the ODS FS to ensure data integrity.
             ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );
+
+            ods_fsed_handler.set_prompt_prefix( ap_ofs->get_folder( ) );
          }
       }
       else if( command == c_cmd_ods_fsed_rebuild )
       {
+         if( ods_tx_stack.size( ) )
+            throw runtime_error( "currently in a transaction" );
+
          ap_ofs->rebuild_index( );
       }
       else if( command == c_cmd_ods_fsed_dump )
@@ -783,6 +876,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_ods_fsed_compress )
       {
+         if( ods_tx_stack.size( ) )
+            throw runtime_error( "currently in a transaction" );
+
          if( g_shared_write )
             handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
          else
@@ -795,13 +891,26 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_ods_fsed_truncate )
       {
+         if( ods_tx_stack.size( ) )
+            throw runtime_error( "currently in a transaction" );
+
          if( g_shared_write )
             handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
          else
             ap_ods->truncate_log( );
       }
       else if( command == c_cmd_ods_fsed_exit )
+      {
+         while( ods_tx_stack.size( ) )
+         {
+            handler.issue_command_response( "rollback transaction (level = " + to_string( ods_tx_stack.size( ) ) + ")" );
+
+            delete ods_tx_stack.top( );
+            ods_tx_stack.pop( );
+         }
+
          handler.set_finished( );
+      }
    }
    catch( exception& x )
    {
