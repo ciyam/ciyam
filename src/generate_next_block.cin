@@ -7,10 +7,17 @@ IDENT=$1
 BACKUP=
 SHARED=
 ;
+@ifeq "$1" ""
+BACKUP=1
+@endif
+;
 @ifeq "$1" "@blockchain_backup_ident"
+BACKUP=1
+@endif
+;
+@ifdef $BACKUP
 .system_variable @blockchain_backup_ident
 IDENT=$OUTPUT
-BACKUP=1
 @endif
 ;
 @ifeq "$1" "@blockchain_shared_ident"

@@ -148,6 +148,7 @@ const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
 const char* const c_special_variable_check_script_error = "@check_script_error";
+const char* const c_special_variable_encrypted_password = "@encrypted_password";
 const char* const c_special_variable_extra_field_values = "@extra_field_values";
 const char* const c_special_variable_file_info_buffered = "@file_info_buffered";
 const char* const c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
@@ -620,6 +621,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_check_script_error:
       s = string( c_special_variable_check_script_error );
+      break;
+
+      case e_special_var_encrypted_password:
+      s = string( c_special_variable_encrypted_password );
       break;
 
       case e_special_var_extra_field_values:

@@ -1,0 +1,11 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_set_variable)] `{`$arg_id`}
+`{`@eq`(`$arg_system`,`'true`'`)\
+   set_system_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_field`}( ) );
+`,`@eq`(`$arg_session`,`'true`'`)\
+   set_session_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_field`}( ) );
+`,\
+   get_obj( ).set_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_field`}( ) );
+`}\
+   // [(finish for_set_variable)] `{`$arg_id`}
+`}
