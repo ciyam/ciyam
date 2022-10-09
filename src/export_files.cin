@@ -7,8 +7,13 @@
 #NOTE: The script requires a list tag and a local directory to export the files below.
 @else
 ;
+@ifdef $ENCRYPTED_PASSWORD
+.system_variable $ENCRYPTED_PASSWORD
+.session_variable @enrypted_password "$OUTPUT"
+@else
 @ifdef $REPO_CRYPT_PASSWORD
 .session_variable @repo_crypt_password $REPO_CRYPT_PASSWORD
+@endif
 @endif
 ;
 @ifdef USE_BACKUP_ARCHIVE

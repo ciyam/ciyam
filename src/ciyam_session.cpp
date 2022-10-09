@@ -2190,6 +2190,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_file_archive )
       {
          bool add( has_parm_val( parameters, c_cmd_ciyam_session_file_archive_add ) );
+         bool clear( has_parm_val( parameters, c_cmd_ciyam_session_file_archive_clear ) );
          bool remove( has_parm_val( parameters, c_cmd_ciyam_session_file_archive_remove ) );
          bool repair( has_parm_val( parameters, c_cmd_ciyam_session_file_archive_repair ) );
          bool destroy( has_parm_val( parameters, c_cmd_ciyam_session_file_archive_destroy ) );
@@ -2201,6 +2202,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( add )
             add_file_archive( name, path, unformat_bytes( size_limit ) );
+         else if( clear )
+            clear_file_archive( name );
          else if( remove || destroy )
          {
             // NOTE: To make sure that the console client doesn't time out issue a progress message.

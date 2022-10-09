@@ -185,6 +185,8 @@ class CIYAM_BASE_DECL_SPEC system_ods_fs_guard
 void CIYAM_BASE_DECL_SPEC add_file_archive(
  const std::string& name, const std::string& path, int64_t size_limit );
 
+void CIYAM_BASE_DECL_SPEC clear_file_archive( const std::string& name );
+
 void CIYAM_BASE_DECL_SPEC remove_file_archive( const std::string& name, bool destroy_files = false );
 void CIYAM_BASE_DECL_SPEC repair_file_archive( const std::string& name );
 

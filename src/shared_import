@@ -66,7 +66,7 @@ if [ -f $IMPORT_TIME ]; then
 
     if [ -f $SHARED_IMAGE ]; then
      export SECONDS=2
-     export SHARED_PASSWORD=@shared_secret
+     export ENCRYPTED_PASSWORD=@shared_secret
      export USE_SHARED_ARCHIVE=1
 
      ./import_files $USER_PATH Shared : $IMAGE_NAME >>Import.txt
@@ -80,6 +80,9 @@ if [ -f $IMPORT_TIME ]; then
 
     ./system_variable set @export_needed ""
     ./system_variable set @import_needed ""
+
+    ./system_variable set @shared_secret ""
+    ./system_variable set @importing_for_identity ""
 
     if [ -f $SHARED_IMAGE ]; then
      sudo mount $SHARED_IMAGE $SHARED_PATH

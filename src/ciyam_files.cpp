@@ -472,7 +472,7 @@ void validate_hash_with_uncompressed_content( const string& hash,
 }
 
 void encrypt_file_buffer( const string& hash, const string& repository,
- session_file_buffer_access& file_buffer, string& crypt_password, size_t offset, size_t length )
+ session_file_buffer_access& file_buffer, string& crypt_password, size_t offset, size_t length, bool is_shared )
 {
    string file_data;
    file_buffer.copy_to_string( file_data, offset, length );
@@ -490,20 +490,23 @@ void encrypt_file_buffer( const string& hash, const string& repository,
 
    file_buffer.copy_from_string( new_file_data, offset );
 
-   string dummy, public_key;
-
-   if( has_repository_entry_record( repository, hash ) )
-      fetch_repository_entry_record( repository, hash, dummy, dummy, public_key );
-   else
+   if( !is_shared && !repository.empty( ) )
    {
-      create_peer_repository_entry_push_info( hash, crypt_password, &public_key, false );
+      string dummy, public_key;
 
-      store_repository_entry_record( repository, hash, "", public_key, public_key );
+      if( has_repository_entry_record( repository, hash ) )
+         fetch_repository_entry_record( repository, hash, dummy, dummy, public_key );
+      else
+      {
+         create_peer_repository_entry_push_info( hash, crypt_password, &public_key, false );
+
+         store_repository_entry_record( repository, hash, "", public_key, public_key );
+      }
+
+      set_system_variable( "@" + hash, sha256( new_file_data ).get_digest_as_string( ) + ':' + public_key );
    }
 
    clear_key( crypt_password );
-
-   set_system_variable( "@" + hash, sha256( new_file_data ).get_digest_as_string( ) + ':' + public_key );
 }
 
 string create_repository_lists( const string& repository,
@@ -3339,12 +3342,25 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
 
       bool is_encrypted = ( content[ 0 ] & c_file_type_val_encrypted );
 
+      bool is_encrypted_password = false;
+
       string crypt_password( get_session_variable(
        get_special_var_name( e_special_var_repo_crypt_password ) ) );
 
+      if( crypt_password.empty( ) )
+      {
+         crypt_password = get_session_variable(
+          get_special_var_name( e_special_var_encrypted_password ) );
+
+         if( !crypt_password.empty( ) )
+            is_encrypted_password = true;
+      }
+
       if( is_encrypted && !crypt_password.empty( ) )
       {
-         if( crypt_password == get_special_var_name( e_special_var_sid ) )
+         if( is_encrypted_password )
+            decrypt_data( crypt_password, crypt_password );
+         else if( crypt_password == get_special_var_name( e_special_var_sid ) )
             get_identity( crypt_password, false, true );
 
          stringstream ss( content.substr( 1 ) );
@@ -3547,6 +3563,8 @@ bool store_file( const string& hash,
 
                string crypt_password;
 
+               bool is_shared = false;
+
                if( !repository.empty( ) )
                {
                   crypt_password = get_session_variable(
@@ -3556,13 +3574,28 @@ bool store_file( const string& hash,
                      get_identity( crypt_password, false, true );
                }
 
+               string shared_identity( get_system_variable(
+                get_special_var_name( e_special_var_blockchain_shared_ident ) ) );
+
+               if( crypt_password.empty( ) && !shared_identity.empty( ) )
+               {
+                  crypt_password = get_session_variable(
+                   get_special_var_name( e_special_var_encrypted_password ) );
+
+                  if( !crypt_password.empty( ) )
+                  {
+                     is_shared = true;
+                     decrypt_data( crypt_password, crypt_password );
+                  }
+               }
+
 #ifndef ZLIB_SUPPORT
                if( !p_file_data )
                {
                   if( !is_encrypted && !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
-                     encrypt_file_buffer( hash, repository, file_buffer, crypt_password, 0, total_bytes );
+                     encrypt_file_buffer( hash, repository, file_buffer, crypt_password, 0, total_bytes, is_shared );
 
-                  if( !tag_name.empty( ) && list_has_encrypted_blobs && !crypt_password.empty( ) )
+                  if( !is_shared && !tag_name.empty( ) && list_has_encrypted_blobs && !crypt_password.empty( ) )
                      encrypted_list_data = create_repository_lists( repository, file_buffer, 0, total_bytes, p_progress );
 
                   if( archive.empty( ) )
@@ -3606,9 +3639,9 @@ bool store_file( const string& hash,
                         if( !p_file_data )
                         {
                            if( !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
-                              encrypt_file_buffer( hash, repository, file_buffer, crypt_password, size, csize + 1 );
+                              encrypt_file_buffer( hash, repository, file_buffer, crypt_password, size, csize + 1, is_shared );
 
-                           if( !tag_name.empty( ) && list_has_encrypted_blobs && !crypt_password.empty( ) )
+                           if( !is_shared && !tag_name.empty( ) && list_has_encrypted_blobs && !crypt_password.empty( ) )
                            {
                               encrypted_list_data = create_repository_lists( repository, file_buffer, 0, total_bytes, p_progress );
 
@@ -3643,9 +3676,9 @@ bool store_file( const string& hash,
                   if( !p_file_data )
                   {
                      if( !is_encrypted && !crypt_password.empty( ) && ( file_type == c_file_type_val_blob ) )
-                        encrypt_file_buffer( hash, repository, file_buffer, crypt_password, 0, total_bytes );
+                        encrypt_file_buffer( hash, repository, file_buffer, crypt_password, 0, total_bytes, is_shared );
 
-                     if( !tag_name.empty( ) && list_has_encrypted_blobs && !crypt_password.empty( ) )
+                     if( !is_shared && !tag_name.empty( ) && list_has_encrypted_blobs && !crypt_password.empty( ) )
                         encrypted_list_data = create_repository_lists( repository, file_buffer, 0, total_bytes, p_progress );
 
                      if( archive.empty( ) )
@@ -4001,6 +4034,61 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
    ods_tx.commit( );
 
    g_archive_file_info.insert( make_pair( name, archive_file_info( ) ) );
+}
+
+void clear_file_archive( const string& name )
+{
+   guard g( g_mutex );
+
+   system_ods_bulk_write ods_bulk_write;
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_archives_folder );
+
+   if( !ods_fs.has_folder( name ) )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Archive '" + name + "' not found." );
+   else
+   {
+      ods::transaction ods_tx( system_ods_instance( ) );
+
+      ods_fs.set_folder( name );
+
+      string path;
+      ods_fs.fetch_from_text_file( c_file_archive_path, path );
+
+      int64_t size_limit = 0;
+      ods_fs.fetch_from_text_file( c_file_archive_size_limit, size_limit );
+
+      string status_info;
+      ods_fs.fetch_from_text_file( c_file_archive_status_info, status_info );
+
+      string new_status_info( get_archive_status( path ) );
+
+      if( trim( status_info ) != new_status_info )
+         ods_fs.store_as_text_file( c_file_archive_status_info, new_status_info, c_status_info_pad_len );
+
+      if( new_status_info == string( c_okay ) )
+      {
+         while( true )
+         {
+            string next( g_archive_file_info[ name ].get_oldest_file( ) );
+
+            if( next.empty( ) )
+               break;
+
+            file_remove( path + '/' + next );
+
+            g_archive_file_info[ name ].remove_file( next );
+         }
+
+         ods_fs.store_as_text_file( c_file_archive_size_avail, size_limit );
+         ods_fs.store_as_text_file( c_file_archive_size_limit, size_limit );
+
+         ods_tx.commit( );
+      }
+   }
 }
 
 void remove_file_archive( const string& name, bool destroy_files )
