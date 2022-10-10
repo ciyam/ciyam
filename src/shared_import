@@ -44,8 +44,8 @@ if [ -f $IMPORT_TIME ]; then
  if [ $NOW -ge $TIME ]; then
 
   if [ ! -f ~shared ]; then
-   date >Import.txt
-   echo "Preparing for import..." >>Import.txt
+   date >Shared.txt
+   echo "Preparing for import..." >>Shared.txt
 
    # NOTE: If unable to umount will exit (so can call repeatedly until okay).
    if [ -d $SHARED_PATH ]; then
@@ -61,22 +61,22 @@ if [ -f $IMPORT_TIME ]; then
    if [ ! -f ~shared ]; then
     touch ~shared
 
-    date >Import.txt
-    echo "Starting import..." >>Import.txt
+    date >Shared.txt
+    echo "Starting import..." >>Shared.txt
 
     if [ -f $SHARED_IMAGE ]; then
      export SECONDS=2
      export ENCRYPTED_PASSWORD=@shared_secret
      export USE_SHARED_ARCHIVE=1
 
-     ./import_files $USER_PATH Shared : $IMAGE_NAME >>Import.txt
-     ./tree_insert_trunks ciyam Shared >>Import.txt 2>&1
-     ./generate_next_block @blockchain_shared_ident >>Import.txt 2>&1
-     ./block_tree_relegate @blockchain_shared_ident ciyam >>Import.txt 2>&1
+     ./import_files $USER_PATH Shared : $IMAGE_NAME >>Shared.txt
+     ./tree_insert_trunks ciyam Shared >>Shared.txt 2>&1
+     ./generate_next_block @blockchain_shared_ident >>Shared.txt 2>&1
+     ./block_tree_relegate @blockchain_shared_ident ciyam >>Shared.txt 2>&1
     fi
 
-    echo "Finished import..." >>Import.txt
-    date >>Import.txt
+    echo "Finished import..." >>Shared.txt
+    date >>Shared.txt
 
     ./system_variable set @export_needed ""
     ./system_variable set @import_needed ""
