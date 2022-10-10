@@ -1,0 +1,92 @@
+#!/bin/sh
+# Copyright (c) 2022 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+USER_PATH=/home/$USER
+IMAGE_NAME=shared.img
+
+EXPORT_NOW=.export.now
+SHARED_HEIGHT=.shared.height
+EXPORTED_TIME=.imported.time
+
+SHARED_PATH=$USER_PATH/shared
+SHARED_IMAGE=$USER_PATH/$IMAGE_NAME
+
+BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_shared_height`
+
+EXPORT_NOW_FILE=$SHARED_PATH/$EXPORT_NOW
+SHARED_HEIGHT_FILE=$SHARED_PATH/$SHARED_HEIGHT
+
+EXPORTED_TIME_FILE=$SHARED_PATH/$EXPORTED_TIME
+
+if [ ! "$BLOCKCHAIN_HEIGHT" = "" ]; then
+ if [ ! -f $EXPORTED_TIME_FILE ]; then
+  if [ ! -f $SHARED_HEIGHT_FILE ]; then
+   CURRENT_HEIGHT=0
+  else
+   CURRENT_HEIGHT=`cat $SHARED_HEIGHT_FILE`
+  fi
+
+  if [ $CURRENT_HEIGHT -lt $BLOCKCHAIN_HEIGHT ]; then
+   ./system_variable set @import_needed ""
+   ./system_variable set @export_needed "1"
+  fi
+ fi
+fi
+
+if [ -f $EXPORT_NOW_FILE ]; then
+ mv $EXPORT_NOW_FILE .
+fi
+
+if [ -f $EXPORT_NOW ]; then
+ if [ ! -f ~shared ]; then
+  date >Shared.txt
+  echo "Preparing for export..." >>Shared.txt
+
+  # NOTE: If unable to umount will exit (so can call repeatedly until okay).
+  if [ -d $SHARED_PATH ]; then
+   if mountpoint -q $SHARED_PATH; then
+    sudo umount $SHARED_PATH
+    if [ $? -ne 0 ]; then
+     exit
+    fi
+   fi
+  fi
+
+  # NOTE: Use this to prevent accidentally executing the actual export twice.
+  if [ ! -f ~shared ]; then
+   touch ~shared
+
+   date >Shared.txt
+   echo "Starting export..." >>Shared.txt
+
+   BLOCK_TREE=`./block_tree_hash @blockchain_shared_ident`
+   SHARED_LIST=`./tree_list $BLOCK_TREE 0 Shared | tail -n 1`
+
+   sudo chown $USER:www $SHARED_IMAGE
+
+   export SECONDS=2
+   export ENCRYPTED_PASSWORD=@shared_secret
+   export USE_SHARED_ARCHIVE=1
+
+   ./export_files $SHARED_LIST $USER_PATH >>Shared.txt
+
+   sudo chown root:root $SHARED_IMAGE
+   sudo mount $SHARED_IMAGE $SHARED_PATH
+
+   echo `date +%s` > $EXPORTED_TIME_FILE
+   echo $BLOCKCHAIN_HEIGHT > $SHARED_HEIGHT_FILE
+
+   echo "Finished export..." >>Shared.txt
+   date >>Shared.txt
+
+   ./system_variable set @import_needed ""
+   ./system_variable set @export_needed ""
+
+   rm ~shared
+   rm $EXPORT_NOW
+  fi
+ fi
+fi

@@ -18,10 +18,16 @@
 #  <filename>backup_import:~backup
 # </script>
 # <script/>
+#  <name>shared_export
+#  <time>00:00:03-23:59:53
+#  <cycle>10s
+#  <filename>shared_export:~shared
+# </script>
+# <script/>
 #  <name>shared_import
 #  <time>00:00:07-23:59:57
 #  <cycle>10s
-#  <filename>shared_import
+#  <filename>shared_import:~shared
 # </script>
 ### [<start generated>]
 ### [<finish generated>]
