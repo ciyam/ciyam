@@ -209,15 +209,18 @@ void output_synchronised_progress_message(
 
    string progress_message;
 
+   bool is_backup = ( identity == backup_identity );
+   bool is_shared = ( identity == shared_identity );
+
    // FUTURE: These messages should be handled as server string messages.
-   if( ( identity == backup_identity ) || ( identity == shared_identity ) )
+   if( is_backup || is_shared )
    {
       progress_message = "Currently at height ";
 
       string current_height( to_string( blockchain_height ) );
 
-      string blockchain_height_name(
-       get_special_var_name( e_special_var_blockchain_height ) );
+      string blockchain_height_name( get_special_var_name(
+       is_backup ? e_special_var_blockchain_backup_height : e_special_var_blockchain_shared_height ) );
 
       if( get_system_variable( blockchain_height_name ) != current_height )
          set_system_variable( ">" + blockchain_height_name, current_height );
