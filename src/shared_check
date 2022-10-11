@@ -1,0 +1,47 @@
+#!/bin/sh
+# Copyright (c) 2022 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+USER_PATH=/home/$USER
+IMAGE_NAME=shared.img
+
+IMPORT_TIME=.import.time
+IMPORTED_TIME=.imported.time
+
+IMPORT_TIME_FILE=$SHARED_PATH/$IMPORT_TIME
+IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
+
+if [ ! -f ~shared ]; then
+  if [ -f $IMPORT_TIME_FILE ]; then
+   mv $IMPORT_TIME_FILE .
+  fi
+
+ if mountpoint -q $SHARED_PATH; then
+  if [ ! -f $IMPORTED_TIME_FILE ]; then
+   NEW_CHANGE=`find $SHARED_PATH -path lost+found -prune -o -name "*" -type f -print | head -n 1`
+  else
+   NEW_CHANGE=`find $SHARED_PATH -path lost+found -prune -o -newermm $IMPORTED_TIME_FILE -name "*" -type d -print | head -n 1`
+  fi
+
+  if [ ! "$NEW_CHANGE" = "" ]; then
+   ./system_variable set @export_needed ""
+   ./system_variable set @import_needed "1"
+  fi
+ fi
+
+ if [ -f $IMPORT_TIME ]; then
+  NOW=`date +%s`
+  TIME=`cat $IMPORT_TIME`
+
+  # NOTE: Allows the use of "touch" to trigger.
+  if [ "$TIME" = "" ]; then
+   TIME=$NOW
+  fi
+
+  if [ $NOW -ge $TIME ]; then
+   ./shared_import
+  fi
+ fi
+fi

@@ -16,8 +16,8 @@ User,User,M001C101
 Peerchain,Peerchains,M001C102
 pf 100 107100 "107110 " 107101,107110 -min
 Name,M001C100F100
-Restore_Needed,M001C100F101
-Restore_Now_File,M001C100F102
+Restore_In_Progress,M001C100F101
+Restore_Needed,M001C100F102
 Status,M001C100F103
 Status_Has_Ellipsis,M001C100F104
 Vendor,M001C100F105
@@ -26,13 +26,14 @@ Message,M001C100F107
 Actions,M001C100F108
 Backup,M001C100F109
 Backup_Details,M001C100F110
-Backup_Needed,M001C100F111
-Backup_Time_File,M001C100F112
+Backup_In_Progress,M001C100F111
+Backup_Needed,M001C100F112
 Blockchain_Checksum,M001C100F113
 Blockchain_Hashes,M001C100F114
-Ellipsis,M001C100F115
-Initial_Backup_Hash,M001C100F116
-Initial_Shared_Hash,M001C100F117
+Dummy_1,M001C100F115
+Ellipsis,M001C100F116
+Initial_Backup_Hash,M001C100F117
+Initial_Shared_Hash,M001C100F118
 Dummy_Self,M001C101F100
 User_Id,M001C101F101
 User_Id_or_Name,M001C101F102
@@ -70,9 +71,9 @@ Active,M001C102F101
 Blockchain_Checksum,M001C102F102
 Blockchain_Hashes,M001C102F103
 Identity,M001C102F104
-Import,M001C102F105
+Shared,M001C102F105
 Import_Needed,M001C102F106
-Import_Notes,M001C102F107
+Shared_Notes,M001C102F107
 Import_Time_File,M001C102F108
 Importing_For_Identity,M001C102F109
 Description,M001C102F110

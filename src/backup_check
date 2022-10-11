@@ -1,0 +1,82 @@
+#!/bin/sh
+# Copyright (c) 2022 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+USER_PATH=/home/$USER
+IMAGE_NAME=backup.img
+
+BACKUP_TIME=.backup.time
+RESTORE_NOW=.restore.now
+BACKUP_HEIGHT=.backup.height
+IMPORTED_TIME=.imported.time
+
+BACKUP_PATH=$USER_PATH/backup
+BACKUP_IMAGE=$USER_PATH/$IMAGE_NAME
+
+IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
+
+BLOCKCHAIN_HEIGHT=$1
+
+BACKUP_TIME_FILE=$BACKUP_PATH/$BACKUP_TIME
+RESTORE_NOW_FILE=$BACKUP_PATH/$RESTORE_NOW
+BACKUP_HEIGHT_FILE=$BACKUP_PATH/$BACKUP_HEIGHT
+
+IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
+
+if [ ! -f ~backup ]; then
+ if mountpoint -q $BACKUP_PATH; then
+  if [ ! -f $IMPORTED_TIME_FILE ]; then
+   NEW_CHANGE=`find $BACKUP_PATH -path lost+found -prune -o -name "*" -type f -print | head -n 1`
+  else
+   NEW_CHANGE=`find $BACKUP_PATH -path lost+found -prune -o -newermm $IMPORTED_TIME_FILE -name "*" -type d -print | head -n 1`
+  fi
+
+  if [ ! "$NEW_CHANGE" = "" ]; then
+   ./system_variable set @backup_needed "1"
+   ./system_variable set @restore_needed ""
+  fi
+ fi
+
+ if [ ! "$BLOCKCHAIN_HEIGHT" = "" ]; then
+  if [ ! -f $IMPORTED_TIME_FILE ]; then
+   if [ ! -f $BACKUP_HEIGHT_FILE ]; then
+    CURRENT_HEIGHT=0
+   else
+    CURRENT_HEIGHT=`cat $BACKUP_HEIGHT_FILE`
+   fi
+
+   if [ $CURRENT_HEIGHT -lt $BLOCKCHAIN_HEIGHT ]; then
+    ./system_variable set @backup_needed ""
+    ./system_variable set @restore_needed "1"
+   fi
+  fi
+ fi
+
+ if [ -f $BACKUP_TIME_FILE ]; then
+  mv $BACKUP_TIME_FILE .
+ fi
+
+ if [ -f $RESTORE_NOW_FILE ]; then
+  mv $RESTORE_NOW_FILE .
+ fi
+
+ if [ -f $BACKUP_TIME ]; then
+  NOW=`date +%s`
+  TIME=`cat $BACKUP_TIME`
+
+  # NOTE: Allows the use of "touch" to trigger.
+  if [ "$TIME" = "" ]; then
+   TIME=$NOW
+  fi
+
+  if [ $NOW -ge $TIME ]; then
+   ./backup_import
+  fi
+ else
+  if [ -f $RESTORE_NOW ]; then
+   ./backup_export
+  fi
+ fi
+fi

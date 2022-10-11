@@ -46,7 +46,8 @@ get_session_variable( "`{`$arg_session_var`}" ), `}`}get_obj( ).`{`$arg_fvalue`}
       temporary_session_variable tmp_session_errors_only(
        get_special_var_name( e_special_var_errors_only ), "1" );
 `}
-      run_script( "`{`$arg_script`}", `{`@eq`(`$arg_async`,`'`'`)false`,true`}, `{`@eq`(`$arg_delay`,`'`'`)false`,true`}, `{`@eq`(`$arg_logging_none`,`'`'`)false`,true`} );
+      run_script( "`{`@eq`(`$arg_script_name`,`'`'`)`{`$arg_script`}`,`{`$arg_script_name`}`}",\
+ `{`@eq`(`$arg_async`,`'`'`)false`,true`}, `{`@eq`(`$arg_delay`,`'`'`)false`,true`}, `{`@eq`(`$arg_logging_none`,`'`'`)false`,true`} );
    }
    // [(finish trigger_execute)] `{`$arg_id`}
 `}

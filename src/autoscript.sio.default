@@ -3,31 +3,20 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 #
-# NOTE: Session variables (apart from @none and @storage) must not be used here.
+# NOTE: Any @name values used in arguments are system (rather than session) variables.
 <sio/>
 # <script/>
-#  <name>backup_export
-#  <time>00:00:00-23:59:50
-#  <cycle>10s
-#  <filename>backup_export:~backup
+#  <name>backup_check
+#  <time>00:00:00-23:59:55
+#  <cycle>5s
+#  <filename>backup_check:~backup
+#  <arguments>@blockchain_backup_height
 # </script>
 # <script/>
-#  <name>backup_import
-#  <time>00:00:05-23:59:55
-#  <cycle>10s
-#  <filename>backup_import:~backup
-# </script>
-# <script/>
-#  <name>shared_export
-#  <time>00:00:03-23:59:53
-#  <cycle>10s
-#  <filename>shared_export:~shared
-# </script>
-# <script/>
-#  <name>shared_import
-#  <time>00:00:07-23:59:57
-#  <cycle>10s
-#  <filename>shared_import:~shared
+#  <name>shared_check
+#  <time>00:00:03-23:59:58
+#  <cycle>5s
+#  <filename>shared_check:~shared
 # </script>
 ### [<start generated>]
 ### [<finish generated>]
