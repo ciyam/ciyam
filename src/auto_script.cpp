@@ -480,7 +480,7 @@ void autoscript_session::on_start( )
                if( okay && !is_excluded( g_scripts[ j->second ], now )
                 && ( g_scripts[ j->second ].allow_late_exec || ( now - next <= 1.0 ) ) )
                {
-                  string arguments( process_script_args( g_scripts[ j->second ].arguments ) );
+                  string arguments( process_script_args( g_scripts[ j->second ].arguments, true ) );
 
                   int cycle_seconds = g_scripts[ j->second ].cycle_seconds;
 

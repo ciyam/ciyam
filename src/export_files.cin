@@ -9,7 +9,7 @@
 ;
 @ifdef $ENCRYPTED_PASSWORD
 .system_variable $ENCRYPTED_PASSWORD
-.session_variable @enrypted_password "$OUTPUT"
+.session_variable @encrypted_password "$OUTPUT"
 @else
 @ifdef $REPO_CRYPT_PASSWORD
 .session_variable @repo_crypt_password $REPO_CRYPT_PASSWORD

@@ -298,7 +298,8 @@ int CIYAM_BASE_DECL_SPEC run_script(
 
 void CIYAM_BASE_DECL_SPEC list_scripts( const std::string& pattern, std::ostream& os );
 
-std::string CIYAM_BASE_DECL_SPEC process_script_args( const std::string& raw_args );
+std::string CIYAM_BASE_DECL_SPEC process_script_args(
+ const std::string& raw_args, bool use_system_variables = false );
 
 void CIYAM_BASE_DECL_SPEC generate_new_script_sio_files( );
 

@@ -9,7 +9,7 @@ IMAGE_NAME=shared.img
 
 EXPORT_NOW=.export.now
 SHARED_HEIGHT=.shared.height
-EXPORTED_TIME=.imported.time
+EXPORTED_TIME=.exported.time
 
 SHARED_PATH=$USER_PATH/shared
 SHARED_IMAGE=$USER_PATH/$IMAGE_NAME

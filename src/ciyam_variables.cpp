@@ -968,6 +968,8 @@ string get_raw_system_variable( const string& name )
       }
       else if( g_variables.count( var_name ) )
          retval = g_variables[ var_name ];
+      else if( name == get_special_var_name( e_special_var_none ) )
+         retval = " ";
       else if( var_name == string( c_special_variable_files_area_dir ) )
          retval = string( c_files_directory );
       else if( var_name == string( c_special_variable_ods_cache_hit_ratios ) )

@@ -14,79 +14,60 @@ IMPORTED_TIME=.imported.time
 BACKUP_PATH=$USER_PATH/backup
 BACKUP_IMAGE=$USER_PATH/$IMAGE_NAME
 
-BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_backup_height`
-
-RESTORE_NOW_FILE=$BACKUP_PATH/$RESTORE_NOW
 BACKUP_HEIGHT_FILE=$BACKUP_PATH/$BACKUP_HEIGHT
-
 IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
 
-if [ ! "$BLOCKCHAIN_HEIGHT" = "" ]; then
- if [ ! -f $IMPORTED_TIME_FILE ]; then
-  if [ ! -f $BACKUP_HEIGHT_FILE ]; then
-   CURRENT_HEIGHT=0
-  else
-   CURRENT_HEIGHT=`cat $BACKUP_HEIGHT_FILE`
-  fi
+# NOTE: Use this to prevent accidentally executing the restore twice.
+if [ ! -f ~backup ]; then
+ touch ~backup
 
-  if [ $CURRENT_HEIGHT -lt $BLOCKCHAIN_HEIGHT ]; then
-   ./system_variable set @backup_needed ""
-   ./system_variable set @restore_needed "1"
-  fi
- fi
-fi
+ date >Backup.txt
+ echo "Preparing for restore..." >>Backup.txt
 
-if [ -f $RESTORE_NOW_FILE ]; then
- mv $RESTORE_NOW_FILE .
-fi
-
-if [ -f $RESTORE_NOW ]; then
- if [ ! -f ~backup ]; then
-  date >Backup.txt
-  echo "Preparing for restore..." >>Backup.txt
-
-  # NOTE: If unable to umount will exit (so can call repeatedly until okay).
-  if [ -d $BACKUP_PATH ]; then
-   if mountpoint -q $BACKUP_PATH; then
-    sudo umount $BACKUP_PATH
-    if [ $? -ne 0 ]; then
-     exit
-    fi
+ # NOTE: If unable to umount will exit (so can call repeatedly until okay).
+ if [ -d $BACKUP_PATH ]; then
+  if mountpoint -q $BACKUP_PATH; then
+   sudo umount $BACKUP_PATH
+   if [ $? -ne 0 ]; then
+    date >Backup.txt
+    echo "NOTE: Backup files area is not currently available (please try again later)." >>Backup.txt
+    date >>Backup.txt
+    rm ~backup
+    exit
    fi
   fi
-
-  # NOTE: Use this to prevent accidentally executing the actual restore twice.
-  if [ ! -f ~backup ]; then
-   touch ~backup
-
-   date >Backup.txt
-   echo "Starting restore..." >>Backup.txt
-
-   BLOCK_TREE=`./block_tree_hash @blockchain_backup_ident`
-   BACKUP_LIST=`./tree_list $BLOCK_TREE 0 Backup | tail -n 1`
-
-   sudo chown $USER:www $BACKUP_IMAGE
-
-   export SECONDS=2
-   export USE_BACKUP_ARCHIVE=1
-   export REPO_CRYPT_PASSWORD=@sid
-
-   ./export_files $BACKUP_LIST $USER_PATH >>Backup.txt
-
-   sudo chown root:root $BACKUP_IMAGE
-   sudo mount $BACKUP_IMAGE $BACKUP_PATH
-
-   echo `date +%s` > $IMPORTED_TIME_FILE
-   echo $BLOCKCHAIN_HEIGHT > $BACKUP_HEIGHT_FILE
-
-   echo "Finished restore..." >>Backup.txt
-   date >>Backup.txt
-
-   ./system_variable set @backup_needed ""
-   ./system_variable set @restore_needed ""
-
-   rm ~backup
-   rm $RESTORE_NOW
-  fi
  fi
+
+ ./system_variable set @backup_needed ""
+ ./system_variable set @restore_needed ""
+
+ date >Backup.txt
+ echo "Starting restore..." >>Backup.txt
+
+ BLOCK_TREE=`./block_tree_hash @blockchain_backup_ident`
+ BACKUP_LIST=`./tree_list $BLOCK_TREE 0 Backup | tail -n 1`
+
+ sudo chown $USER:www $BACKUP_IMAGE
+
+ export SECONDS=2
+ export USE_BACKUP_ARCHIVE=1
+ export REPO_CRYPT_PASSWORD=@sid
+
+ ./export_files $BACKUP_LIST $USER_PATH >>Backup.txt
+
+ sudo chown root:root $BACKUP_IMAGE
+ sudo mount $BACKUP_IMAGE $BACKUP_PATH
+
+ BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_backup_height`
+
+ echo `date +%s` > $IMPORTED_TIME_FILE
+ echo $BLOCKCHAIN_HEIGHT > $BACKUP_HEIGHT_FILE
+
+ echo "Finished restore..." >>Backup.txt
+ date >>Backup.txt
+
+ ./system_variable set @restore_in_progress ""
+
+ rm $RESTORE_NOW
+ rm ~backup
 fi

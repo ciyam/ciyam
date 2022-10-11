@@ -44,6 +44,18 @@
   <arguments>add_blacklist.cin @hash
  </script>
  <script/>
+  <name>backup_export
+  <filename>backup_export
+ </script>
+ <script/>
+  <name>backup_import
+  <filename>backup_import
+ </script>
+ <script/>
+  <name>shared_import
+  <filename>shared_import
+ </script>
+ <script/>
   <name>remove_archive
   <filename>*script*
   <arguments>remove_archive.cin @name

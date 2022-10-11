@@ -111,6 +111,7 @@ create_demo_*_application.cin
 !for_function.spec.xrep
 !for_auto_code.spec.xrep
 !for_call_procs.spec.xrep
+!for_run_script.spec.xrep
 !for_each_record.spec.xrep
 !for_clone_script.spec.xrep
 !for_set_variable.spec.xrep

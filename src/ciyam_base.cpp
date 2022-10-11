@@ -5553,7 +5553,7 @@ void list_scripts( const string& pattern, ostream& os )
    output_script_info( pattern, os );
 }
 
-string process_script_args( const string& raw_args )
+string process_script_args( const string& raw_args, bool use_system_variables )
 {
    string retval;
 
@@ -5567,7 +5567,12 @@ string process_script_args( const string& raw_args )
          string next_arg( all_args[ i ] );
 
          if( !next_arg.empty( ) && next_arg[ 0 ] == '@' )
-            next_arg = get_raw_session_variable( next_arg );
+         {
+            if( use_system_variables )
+               next_arg = get_raw_system_variable( next_arg );
+            else
+               next_arg = get_raw_session_variable( next_arg );
+         }
 
          if( !next_arg.empty( ) )
             next_arg = escaped_shell_arg( next_arg );
