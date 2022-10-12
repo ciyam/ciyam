@@ -4,6 +4,10 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+if [ "$USER" = "" ]; then
+ USER=$CIYAM_USER
+fi
+
 USER_PATH=/home/$USER
 IMAGE_NAME=backup.img
 

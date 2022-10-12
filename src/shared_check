@@ -4,19 +4,25 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+if [ "$USER" = "" ]; then
+ USER=$CIYAM_USER
+fi
+
 USER_PATH=/home/$USER
 IMAGE_NAME=shared.img
 
 IMPORT_TIME=.import.time
 IMPORTED_TIME=.imported.time
 
+SHARED_PATH=$USER_PATH/shared
+
 IMPORT_TIME_FILE=$SHARED_PATH/$IMPORT_TIME
 IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 
 if [ ! -f ~shared ]; then
-  if [ -f $IMPORT_TIME_FILE ]; then
-   mv $IMPORT_TIME_FILE .
-  fi
+ if [ -f $IMPORT_TIME_FILE ]; then
+  mv $IMPORT_TIME_FILE .
+ fi
 
  if mountpoint -q $SHARED_PATH; then
   if [ ! -f $IMPORTED_TIME_FILE ]; then
@@ -42,7 +48,7 @@ if [ ! -f ~shared ]; then
 
   if [ $NOW -ge $TIME ]; then
    rm $IMPORT_TIME
-   ./shared_import
+   ./run_script shared_import @errors_only=1
   fi
  fi
 fi
