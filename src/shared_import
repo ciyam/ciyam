@@ -7,7 +7,6 @@
 USER_PATH=/home/$USER
 IMAGE_NAME=shared.img
 
-IMPORT_TIME=.import.time
 IMPORTED_TIME=.imported.time
 
 SHARED_PATH=$USER_PATH/shared
@@ -61,6 +60,5 @@ if [ ! -f ~shared ]; then
   echo `date +%s` > $IMPORTED_TIME_FILE
  fi
 
- rm $IMPORT_TIME
  rm ~shared
 fi

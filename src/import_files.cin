@@ -34,11 +34,11 @@ HAS_REPO_LIST_INFO=1
 @ifdef USE_BACKUP_ARCHIVE
 .system_variable @blockchain_backup_archive
 .session_variable @blockchain_archive_path "$OUTPUT"
-@endif
-;
+@else
 @ifdef USE_SHARED_ARCHIVE
 .system_variable @blockchain_shared_archive
 .session_variable @blockchain_archive_path "$OUTPUT"
+@endif
 @endif
 ;
 IS_CURRENT=
