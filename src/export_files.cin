@@ -16,11 +16,11 @@
 @endif
 @endif
 ;
-@ifdef USE_BACKUP_ARCHIVE
+@ifdef $USE_BACKUP_ARCHIVE
 .system_variable @blockchain_backup_archive
 .session_variable @blockchain_archive_path "$OUTPUT"
 @else
-@ifdef USE_SHARED_ARCHIVE
+@ifdef $USE_SHARED_ARCHIVE
 .system_variable @blockchain_shared_archive
 .session_variable @blockchain_archive_path "$OUTPUT"
 @endif
