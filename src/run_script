@@ -1,0 +1,13 @@
+#!/bin/sh
+# Copyright (c) 2019-2022 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 1 ]; then
+ echo "Usage: run_script [script name] [[script args,]]"
+else
+ echo "<<run_script.cin $1 $2" >~run_script
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr <~run_script
+ rm ~run_script
+fi

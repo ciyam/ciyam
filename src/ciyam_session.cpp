@@ -5552,6 +5552,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   string next( pairs[ i ] );
                   string::size_type pos = next.find( '=' );
+
                   if( pos == string::npos )
                      throw runtime_error( "invalid arg and value pair format '" + next + "'" );
 

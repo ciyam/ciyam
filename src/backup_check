@@ -6,6 +6,10 @@
 
 BLOCKCHAIN_HEIGHT=$1
 
+if [ "$USER" = "" ]; then
+ USER=$CIYAM_USER
+fi
+
 USER_PATH=/home/$USER
 IMAGE_NAME=backup.img
 
@@ -15,7 +19,6 @@ BACKUP_HEIGHT=.backup.height
 IMPORTED_TIME=.imported.time
 
 BACKUP_PATH=$USER_PATH/backup
-BACKUP_IMAGE=$USER_PATH/$IMAGE_NAME
 
 BACKUP_TIME_FILE=$BACKUP_PATH/$BACKUP_TIME
 RESTORE_NOW_FILE=$BACKUP_PATH/$RESTORE_NOW
@@ -71,12 +74,12 @@ if [ ! -f ~backup ]; then
 
   if [ $NOW -ge $TIME ]; then
    rm $BACKUP_TIME
-   ./backup_import
+   ./run_script backup_import @errors_only=1
   fi
  else
   if [ -f $RESTORE_NOW ]; then
    rm $RESTORE_NOW
-   ./backup_export
+   ./run_script backup_export @errors_only=1
   fi
  fi
 fi
