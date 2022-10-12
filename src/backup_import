@@ -7,16 +7,13 @@
 USER_PATH=/home/$USER
 IMAGE_NAME=backup.img
 
-BACKUP_TIME=.backup.time
 BACKUP_HEIGHT=.backup.height
 IMPORTED_TIME=.imported.time
 
 BACKUP_PATH=$USER_PATH/backup
 BACKUP_IMAGE=$USER_PATH/$IMAGE_NAME
 
-BACKUP_TIME_FILE=$BACKUP_PATH/$BACKUP_TIME
 BACKUP_HEIGHT_FILE=$BACKUP_PATH/$BACKUP_HEIGHT
-
 IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
 
 # NOTE: Use this to prevent accidentally executing the backup twice.
@@ -66,6 +63,5 @@ if [ ! -f ~backup ]; then
 
  ./system_variable set @backup_in_progress ""
 
- rm $BACKUP_TIME
  rm ~backup
 fi

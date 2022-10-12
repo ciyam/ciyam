@@ -7,23 +7,23 @@
 #NOTE: The script requires a list tag and a local directory to export the files below.
 @else
 ;
+@ifdef $REPO_CRYPT_PASSWORD
+.session_variable @repo_crypt_password $REPO_CRYPT_PASSWORD
+@else
 @ifdef $ENCRYPTED_PASSWORD
 .system_variable $ENCRYPTED_PASSWORD
 .session_variable @encrypted_password "$OUTPUT"
-@else
-@ifdef $REPO_CRYPT_PASSWORD
-.session_variable @repo_crypt_password $REPO_CRYPT_PASSWORD
 @endif
 @endif
 ;
 @ifdef USE_BACKUP_ARCHIVE
 .system_variable @blockchain_backup_archive
 .session_variable @blockchain_archive_path "$OUTPUT"
-@endif
-;
+@else
 @ifdef USE_SHARED_ARCHIVE
 .system_variable @blockchain_shared_archive
 .session_variable @blockchain_archive_path "$OUTPUT"
+@endif
 @endif
 ;
 .file_get $1 *$2/

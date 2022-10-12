@@ -41,6 +41,7 @@ if [ ! -f ~shared ]; then
   fi
 
   if [ $NOW -ge $TIME ]; then
+   rm $IMPORT_TIME
    ./shared_import
   fi
  fi

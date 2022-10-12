@@ -4,6 +4,8 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+BLOCKCHAIN_HEIGHT=$1
+
 USER_PATH=/home/$USER
 IMAGE_NAME=backup.img
 
@@ -14,10 +16,6 @@ IMPORTED_TIME=.imported.time
 
 BACKUP_PATH=$USER_PATH/backup
 BACKUP_IMAGE=$USER_PATH/$IMAGE_NAME
-
-IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
-
-BLOCKCHAIN_HEIGHT=$1
 
 BACKUP_TIME_FILE=$BACKUP_PATH/$BACKUP_TIME
 RESTORE_NOW_FILE=$BACKUP_PATH/$RESTORE_NOW
@@ -72,10 +70,12 @@ if [ ! -f ~backup ]; then
   fi
 
   if [ $NOW -ge $TIME ]; then
+   rm $BACKUP_TIME
    ./backup_import
   fi
  else
   if [ -f $RESTORE_NOW ]; then
+   rm $RESTORE_NOW
    ./backup_export
   fi
  fi

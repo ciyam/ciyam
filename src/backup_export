@@ -7,7 +7,6 @@
 USER_PATH=/home/$USER
 IMAGE_NAME=backup.img
 
-RESTORE_NOW=.restore.now
 BACKUP_HEIGHT=.backup.height
 IMPORTED_TIME=.imported.time
 
@@ -68,6 +67,5 @@ if [ ! -f ~backup ]; then
 
  ./system_variable set @restore_in_progress ""
 
- rm $RESTORE_NOW
  rm ~backup
 fi
