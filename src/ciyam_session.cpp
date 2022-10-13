@@ -1400,7 +1400,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( decrypt )
          {
             secret.reserve( c_secret_reserve_size );
-            secret = decrypt_data( secret );
+            decrypt_data( secret, secret );
          }
 
          response = create_address_key_pair( extkey, pub_key, priv_key, secret, decrypt, true, !uncompressed );
@@ -1412,6 +1412,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool use_sha512( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_sha512 ) );
          bool hex_decode( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_hex_decode ) );
+         string extra_rounds( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_extra_rounds ) );
          bool data_from_file( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_from_file ) );
          string data_or_filename( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_or_filename ) );
          string data_suffix_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_suffix_text ) );
@@ -1425,13 +1426,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             data = load_file( data, true );
          else if( data == get_special_var_name( e_special_var_sid ) )
             get_identity( data, false, true );
+         else if( data == get_special_var_name( e_special_var_encrypted_password ) )
+            decrypt_data( data, get_session_variable(
+             get_special_var_name( e_special_var_encrypted_password ) ) );
 
          if( data_from_file && data.empty( ) )
             response = "(file not found)";
          else
          {
             data += data_suffix_text;
-            response = crypto_digest( data, use_sha512, hex_decode );
+            response = crypto_digest( data, use_sha512, hex_decode, from_string< size_t >( extra_rounds ) );
          }
 
          if( !data_from_file )
@@ -1452,7 +1456,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
          {
             if( decrypt )
-               secret = decrypt_data( secret );
+               decrypt_data( secret, secret );
+
             response = create_address_key_pair( extkey, pub_key, priv_key, secret, true, use_base64, !uncompressed );
          }
 
@@ -5425,7 +5430,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // the first character of "secret" followed by the suffix of the "passtotp.*" variable (so for the name
          // "passtotp.test" you would use a secret "*test".
          if( !secret.empty( ) && secret[ 0 ] == '*' )
-            secret = decrypt_data( get_system_variable( string( c_passtotp_prefix ) + secret.substr( 1 ) ) );
+            decrypt_data( secret, get_system_variable( string( c_passtotp_prefix ) + secret.substr( 1 ) ) );
 
          response = get_totp( secret );
 

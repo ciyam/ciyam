@@ -4946,7 +4946,8 @@ string create_html_embedded_image( const string& source_file, bool is_encrypted 
    return s;
 }
 
-string crypto_digest( const string& data, bool use_sha512, bool decode_hex_data )
+string crypto_digest( const string& data,
+ bool use_sha512, bool decode_hex_data, size_t extra_rounds )
 {
    string retval;
 
@@ -4956,11 +4957,23 @@ string crypto_digest( const string& data, bool use_sha512, bool decode_hex_data 
       {
          sha256 hash( data );
          retval = hash.get_digest_as_string( );
+
+         for( size_t i = 0; i < extra_rounds; i++ )
+         {
+            hash.update( retval + data );
+            hash.get_digest_as_string( retval );
+         }
       }
       else
       {
          sha512 hash( data );
          retval = hash.get_digest_as_string( );
+
+         for( size_t i = 0; i < extra_rounds; i++ )
+         {
+            hash.update( retval + data );
+            hash.get_digest_as_string( retval );
+         }
       }
    }
    else
@@ -4972,11 +4985,23 @@ string crypto_digest( const string& data, bool use_sha512, bool decode_hex_data 
       {
          sha256 hash( &buffer[ 0 ], buffer.size( ) );
          retval = hash.get_digest_as_string( );
+
+         for( size_t i = 0; i < extra_rounds; i++ )
+         {
+            hash.update( retval + data );
+            hash.get_digest_as_string( retval );
+         }
       }
       else
       {
          sha512 hash( &buffer[ 0 ], buffer.size( ) );
          retval = hash.get_digest_as_string( );
+
+         for( size_t i = 0; i < extra_rounds; i++ )
+         {
+            hash.update( retval + data );
+            hash.get_digest_as_string( retval );
+         }
       }
    }
 

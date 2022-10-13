@@ -305,6 +305,38 @@ encode -url $OUTPUT
 m3HSJL1i83hdltRq0-o9czGb-8KJDKra4t_3JRlnPKcjI8PZm6XBHXx6zG4UuMXaDEZjR1wuXDre9G9zvN7AQw
 decode -url $OUTPUT
 9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043
+crypto_hash -x=0 hello
+2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+crypto_hash -x=1 hello
+ae3967e4aa96162198fb8b1f706cc8565388a7fe0a09d9ef9bae38fd6e77d34d
+crypto_hash -x=2 hello
+18efea3357c1d3a6e33e3bbe21343d99a42f495ffc25ddd0b71f1f3b2c639108
+crypto_hash -x=3 hello
+1dfcd445a59f40dedace74f327233b57e28930367a3946fbee06bf2c1c3b3cd9
+crypto_hash -x=4 hello
+88f860146206257be3d881b4c416ddcb859d7c1b0dde13f2b37cc0edf9d9177d
+crypto_hash -x=5 hello
+07781cb7e5585194923fe009856c4e5d12a9feb95ae61ace8f0eb8a514c6b896
+crypto_hash -x=6 hello
+3aeb3e00fb362d0cd8fccea1bfcf0ba1166f1464e08523a7fd7779ed5d25c1db
+crypto_hash -x=7 hello
+946a604e25667b21d26385a105530fc306bdc2f801b272ab7b6e9a1581548a04
+crypto_hash -x=8 hello
+e36135196abbc93049e6eacf2f9073ddadb6cb9c4e1e5adcab5c60ed1e40a8f0
+crypto_hash -x=9 hello
+ba9bd021f5af1c02b93f40cd31949855b080f9cf2ff8110cde95865fdf16d292
+crypto_hash -x=9 hello -s=0
+3d452bdd2b9bdb760acb5576495e84f3d907b9fcfa451240cbf7a7f03d3c434d
+crypto_hash -x=9 hello -s=1
+4a5874ab6fc048a0ba69a05814384f5f426e7902e7fa90b8ec51df7e1f93a82f
+crypto_hash -x=9 hello -s=2
+3989b359e25b503e18e4fc3b49e2099c5c3cf6c980bac3d8b1fa4b200139a6af
+crypto_hash -x=9 hello -s=3
+559b84a18f1b9e31bf71485a5ed8cba49d20042d950692c7d518cfaedaa63a2f
+crypto_hash -x=9 hello -s=4
+62aa30bc3e176557d12fb53839a149397928af912a9477f07a8b5b2eb8353bcb
+crypto_hash -x=9 hello -s=5
+ade14a0f9610a7cea12f1b549679e96fb51f21d7a305c902eb3d142643607a19
 session_variable test (okay)
 Error: invalid value '(okay)' (could be confused with a protocol response)
 session_variable @set aaa
