@@ -378,6 +378,23 @@ crypto_hash -512 hello
 encode -url $OUTPUT
 decode -url $OUTPUT
 ;
+crypto_hash -x=0 hello
+crypto_hash -x=1 hello
+crypto_hash -x=2 hello
+crypto_hash -x=3 hello
+crypto_hash -x=4 hello
+crypto_hash -x=5 hello
+crypto_hash -x=6 hello
+crypto_hash -x=7 hello
+crypto_hash -x=8 hello
+crypto_hash -x=9 hello
+crypto_hash -x=9 hello -s=0
+crypto_hash -x=9 hello -s=1
+crypto_hash -x=9 hello -s=2
+crypto_hash -x=9 hello -s=3
+crypto_hash -x=9 hello -s=4
+crypto_hash -x=9 hello -s=5
+;
 session_variable test (okay)
 session_variable @set aaa
 session_variable @set aaa
