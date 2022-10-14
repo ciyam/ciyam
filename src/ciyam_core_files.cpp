@@ -205,7 +205,8 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
    size_t scaling_value = c_bc_scaling_value;
 
-   if( identity == string( c_demo_identity ) )
+   if( ( identity == string( c_demo_backup_identity ) )
+    || ( identity == string( c_demo_shared_identity ) ) )
       scaling_value = c_bc_scaling_demo_value;
 
    size_t scaling_squared = ( scaling_value * scaling_value );

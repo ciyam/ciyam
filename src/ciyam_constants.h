@@ -45,7 +45,8 @@ const char* const c_txs_file_ext = ".txs";
 const char* const c_ciyam_script = "ciyam_script";
 const char* const c_ciyam_server = "ciyam_server";
 
-const char* const c_demo_identity = "e3733d121";
+const char* const c_demo_backup_identity = "e3733d121";
+const char* const c_demo_shared_identity = "121d3373e";
 
 const char* const c_variables_branch = "Variables";
 
