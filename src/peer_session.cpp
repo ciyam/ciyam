@@ -1401,12 +1401,16 @@ void process_public_key_file( const string& blockchain,
 
    pubkey_tag += ".";
 
-   string demo_blockchain( c_bc_prefix );
-   demo_blockchain += c_demo_identity;
+   string demo_backup_blockchain( c_bc_prefix );
+   demo_backup_blockchain += c_demo_backup_identity;
+
+   string demo_shared_blockchain( c_bc_prefix );
+   demo_shared_blockchain += c_demo_shared_identity;
 
    size_t scaling_value = c_bc_scaling_value;
 
-   if( blockchain == demo_blockchain )
+   if( ( blockchain == demo_backup_blockchain )
+    || ( blockchain == demo_shared_blockchain ) )
       scaling_value = c_bc_scaling_demo_value;
 
    size_t scaling_squared = ( scaling_value * scaling_value );
