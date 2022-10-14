@@ -276,5 +276,10 @@ TAG_NAME=@repstr:\//.:$NEXT_PATH
 !!@:PATH_LOOP
 ;
 @:EXIT_PATH
+;
+@ifdef $ENCRYPTED_PASSWORD
+.session_variable @encrypted_password ""
+@endif
+;
 @endif
 @endif

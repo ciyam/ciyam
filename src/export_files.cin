@@ -27,4 +27,9 @@
 @endif
 ;
 .file_get $1 *$2/
+;
+@ifdef $ENCRYPTED_PASSWORD
+.session_variable @encrypted_password ""
+@endif
+;
 @endif
