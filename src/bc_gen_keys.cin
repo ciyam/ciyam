@@ -30,12 +30,20 @@ NEXT_HEIGHT=@$HEIGHT+1
 SHARED=
 .system_variable @blockchain_shared_ident
 @ifdef $OUTPUT
-@ifeq "$IDENT" "$REVERSE"
+@ifeq "$IDENT" "$OUTPUT"
 SHARED=1
 @endif
 @endif
 ;
+IS_DEMO=
 @ifeq "$IDENT" "e3733d121"
+IS_DEMO=1
+@endif
+@ifeq "$IDENT" "121d3373e"
+IS_DEMO=1
+@endif
+;
+@ifdef $IS_DEMO
 MULTIPLE=5
 @else
 MULTIPLE=50

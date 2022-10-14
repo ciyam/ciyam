@@ -4,11 +4,16 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 IDENT=$1
+SEED=$2
 BACKUP=
 SHARED=
 ;
 @ifeq "$1" ""
 BACKUP=1
+@endif
+;
+@ifeq "$2" ""
+SEED=@sid
 @endif
 ;
 @ifeq "$1" "@blockchain_backup_ident"
@@ -36,7 +41,7 @@ HEIGHT_INFO=%INFO_LINES:1%
 BLK_HEIGHT=@repstr:blk\:h=/:$HEIGHT_INFO
 NEW_HEIGHT=@$BLK_HEIGHT+1
 ;
-<bc_gen_keys.cin @sid $IDENT $NEW_HEIGHT
+<bc_gen_keys.cin $SEED $IDENT $NEW_HEIGHT
 ;
 <bc_gen_block.cin $IDENT $NEW_HEIGHT
 ;

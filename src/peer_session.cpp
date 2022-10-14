@@ -851,6 +851,7 @@ bool has_all_list_items( const string& blockchain,
                {
                   size_t next_height = from_string< size_t >( blockchain_height_processed );
 
+                  // FUTURE: This message should be handled as a server string message.
                   progress = "Verifying at height " + to_string( next_height )
                    + " (" + to_string( *p_total_processed ) + "/" + num_tree_items + ")...";
 
@@ -860,6 +861,7 @@ bool has_all_list_items( const string& blockchain,
                }
                else
                {
+                  // FUTURE: This message should be handled as a server string message.
                   progress = "Processed " + to_string( *p_total_processed ) + " items...";
 
                   if( is_fetching )
@@ -988,7 +990,7 @@ void process_list_items( const string& identity,
    if( !secondary_values.empty( ) && !prefixed_secondary_values )
       skip_secondary_blobs = true;
 
-   if( ( prefixed_secondary_values || !secondary_values.empty( ) ) && ( list_items.size( ) != secondary_values.size( ) ) )
+   if( !secondary_values.empty( ) && ( list_items.size( ) != secondary_values.size( ) ) )
       throw runtime_error( "unexpected list_items.size( ) != secondary_values.size( )" );
 
    string file_data( c_file_type_str_blob );
@@ -1026,6 +1028,9 @@ void process_list_items( const string& identity,
    bool is_owner = !get_session_variable( blockchain_is_owner_name ).empty( );
    bool is_fetching = !get_session_variable( blockchain_is_fetching_name ).empty( );
    bool is_peer_owner = !get_session_variable( blockchain_peer_is_owner_name ).empty( );
+
+   bool has_targeted_identity = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
 
    bool check_for_supporters = false;
 
@@ -1190,11 +1195,14 @@ void process_list_items( const string& identity,
                         {
                            added = true;
                            add_peer_file_hash_for_get( hash_info, check_for_supporters );
+
+                           set_session_variable( next_hash, "" );
                         }
 
-                        set_session_variable( next_hash, "" );
-
                         add_peer_mapped_hash( next_hash, next_secondary );
+
+                        if( has_targeted_identity )
+                           add_peer_file_hash_for_get( next_hash );
                      }
                      else if( is_peer_owner )
                      {
@@ -2593,6 +2601,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          bool has_tertiary = !tertiary_pubkey_hash.empty( );
 
+         bool has_targeted_identity = !get_session_variable(
+          get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
+
          if( next_hash == block_file_hash )
          {
             create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
@@ -2649,14 +2660,29 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          {
             if( !is_list )
             {
-               // NOTE: Unles both are owners only core block files should be found here.
-               if( get_session_variable( 
-                get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
-                  verify_core_file( file_data, false );
+               if( has_targeted_identity )
+               {
+                  string peer_mapped_hash( get_peer_mapped_hash( next_hash ) );
+                  string file_data_hash( sha256( file_data ).get_digest_as_string( ) );
 
-               create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+                  if( peer_mapped_hash.empty( ) )
+                     throw runtime_error( "unexpected unmapped file hash '" + next_hash + "'" );
+                  else if( file_data_hash != peer_mapped_hash )
+                     throw runtime_error( "found invalid encrypted file content for hash '" + next_hash + "'" );
 
-               process_core_file( next_hash, blockchain );
+                  create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+               }
+               else
+               {
+                  // NOTE: Unless both are owners only core block files should be found here.
+                  if( get_session_variable( 
+                   get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
+                     verify_core_file( file_data, false );
+
+                  create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+
+                  process_core_file( next_hash, blockchain );
+               }
             }
          }
 #ifdef SSL_SUPPORT

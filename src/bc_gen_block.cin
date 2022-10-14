@@ -191,6 +191,7 @@ TARGET_EXTRA=
 .crypto_hash -x=1000000 @encrypted_password -s=$HEIGHT
 TARGET=@substr:0,9:$OUTPUT
 TARGET_EXTRA=,t=$TARGET
+.session_variable @encrypted_password ""
 @endif
 ;
 .file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS$TARGET_EXTRA,v=1\n\
