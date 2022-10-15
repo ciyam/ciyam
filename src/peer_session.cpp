@@ -2674,7 +2674,16 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                   else if( file_data_hash != peer_mapped_hash )
                      throw runtime_error( "found invalid encrypted file content for hash '" + next_hash + "'" );
 
-                  create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+                  bool has_archive = false;
+
+                  if( !get_session_variable( get_special_var_name(
+                   e_special_var_blockchain_archive_path ) ).empty( ) )
+                     has_archive = true;
+
+                  if( has_archive )
+                     create_raw_file_in_archive( identity, next_hash, file_data );
+                  else
+                     create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
                }
                else
                {
