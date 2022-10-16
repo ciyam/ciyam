@@ -52,6 +52,10 @@
   <filename>backup_import
  </script>
  <script/>
+  <name>shared_export
+  <filename>shared_export
+ </script>
+ <script/>
   <name>shared_import
   <filename>shared_import
  </script>

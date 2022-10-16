@@ -2792,6 +2792,44 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_height ), to_string( blockchain_height ) );
+
+      string targeted_identity( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
+
+      if( !targeted_identity.empty( ) )
+      {
+         string reversed( identity );
+         reverse( reversed.begin( ), reversed.end( ) );
+
+         string password;
+         password.reserve( 256 );
+
+         get_peerchain_info( reversed, 0, &password );
+
+         // NOTE: The following needs to be equivalent to the application protocol command:
+         // .crypto_hash -x=1000000 @encrypted_password -s=<height>
+         // as is currently being used in the application protocol script "bc_gen_block.cin".
+         decrypt_data( password, password );
+
+         password += to_string( blockchain_height );
+
+         sha256 hash( password );
+         string digest( hash.get_digest_as_string( ) );
+
+         for( size_t i = 0; i < 1000000; i++ )
+         {
+            hash.update( digest + password );
+            hash.get_digest_as_string( digest );
+         }
+
+         if( digest.find( targeted_identity ) == 0 )
+         {
+            set_system_variable( get_special_var_name( e_special_var_export_ident ), identity );
+            set_system_variable( get_special_var_name( e_special_var_export_needed ), reversed );
+         }
+
+         clear_key( password );
+      }
    }
 }
 

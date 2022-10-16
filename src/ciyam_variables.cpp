@@ -127,9 +127,13 @@ const char* const c_special_variable_skip_update = "@skip_update";
 const char* const c_special_variable_state_names = "@state_names";
 const char* const c_special_variable_transaction = "@transaction";
 const char* const c_special_variable_block_height = "@block_height";
+const char* const c_special_variable_export_ident = "@export_ident";
 const char* const c_special_variable_app_directory = "@app_directory";
+const char* const c_special_variable_export_needed = "@export_needed";
+const char* const c_special_variable_import_needed = "@import_needed";
 const char* const c_special_variable_last_file_put = "@last_file_put";
 const char* const c_special_variable_rewind_height = "@rewind_height";
+const char* const c_special_variable_shared_secret = "@shared_secret";
 const char* const c_special_variable_sub_directory = "@sub_directory";
 const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_files_area_dir = "@files_area_dir";
@@ -545,8 +549,20 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_block_height );
       break;
 
+      case e_special_var_export_ident:
+      s = string( c_special_variable_export_ident );
+      break;
+
       case e_special_var_app_directory:
       s = string( c_special_variable_app_directory );
+      break;
+
+      case e_special_var_export_needed:
+      s = string( c_special_variable_export_needed );
+      break;
+
+      case e_special_var_import_needed:
+      s = string( c_special_variable_import_needed );
       break;
 
       case e_special_var_last_file_put:
