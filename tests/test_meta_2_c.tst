@@ -66,15 +66,17 @@ Shared_Notes,M001C102F107
 Importing_For_Identity,M001C102F108
 Description,M001C102F109
 Error,M001C102F110
-Initial_Backup_Hash,M001C102F111
-Initial_Shared_Hash,M001C102F112
-Host_Domain,M001C102F113
-Port_Number,M001C102F114
-Shared_Secret,M001C102F115
-Connection_Type,M001C102F116
-Status,M001C102F117
-Synchronisation,M001C102F118
-System_Secret,M001C102F119
+Export_Needed,M001C102F111
+Exporting_For_identity,M001C102F112
+Initial_Backup_Hash,M001C102F113
+Initial_Shared_Hash,M001C102F114
+Host_Domain,M001C102F115
+Port_Number,M001C102F116
+Shared_Secret,M001C102F117
+Connection_Type,M001C102F118
+Status,M001C102F119
+Synchronisation,M001C102F120
+System_Secret,M001C102F121
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000
