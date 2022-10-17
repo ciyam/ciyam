@@ -38,14 +38,14 @@ if [ ! -f ~shared ]; then
  date >Shared.txt
  echo "Starting export..." >>Shared.txt
 
- BLOCK_TREE=`./block_tree_hash @export_ident`
- SHARED_LIST=`./tree_list $BLOCK_TREE 0 Shared | tail -n 1`
-
  sudo chown $USER:www $SHARED_IMAGE
 
  export SECONDS=2
  export ENCRYPTED_PASSWORD=@shared_secret
  export USE_SHARED_ARCHIVE=1
+
+ BLOCK_TREE=`./block_tree_hash @export_ident`
+ SHARED_LIST=`./tree_list $BLOCK_TREE 0 Shared | tail -n 1`
 
  ./export_files $SHARED_LIST $USER_PATH >>Shared.txt
 
