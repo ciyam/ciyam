@@ -42,9 +42,11 @@ if [ ! -f ~shared ]; then
 
  export SECONDS=2
  export ENCRYPTED_PASSWORD=@shared_secret
- export USE_SHARED_ARCHIVE=1
 
  IDENTITY=`./system_variable get @export_ident`
+
+ export CIYAM_ARCHIVE_PATH=`./ciyam_command file_archives -path_only,$IDENTITY`
+
  BLOCK_TREE=`./block_tree_hash $IDENTITY`
  SHARED_LIST=`./tree_list $BLOCK_TREE 0 Shared | tail -n 1`
 

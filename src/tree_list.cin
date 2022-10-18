@@ -15,6 +15,9 @@ PREFIX=$3
 DEPTH=2
 @endif
 ;
+@ifdef $CIYAM_ARCHIVE_PATH
+.session_variable @blockchain_archive_path "$CIYAM_ARCHIVE_PATH"
+@else
 @ifdef $USE_BACKUP_ARCHIVE
 .system_variable @blockchain_backup_archive
 .session_variable @blockchain_archive_path "$OUTPUT"
@@ -22,6 +25,7 @@ DEPTH=2
 @ifdef $USE_SHARED_ARCHIVE
 .system_variable @blockchain_shared_archive
 .session_variable @blockchain_archive_path "$OUTPUT"
+@endif
 @endif
 @endif
 ;

@@ -196,8 +196,15 @@ bool CIYAM_BASE_DECL_SPEC file_has_been_blacklisted( const std::string& hash );
 
 bool CIYAM_BASE_DECL_SPEC has_file_archive( const std::string& archive, std::string* p_path = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC list_file_archives( bool minimal = false,
- std::vector< std::string >* p_paths = 0, int64_t min_avail = 0, bool stop_after_first = false );
+enum archive_list_type
+{
+   e_archive_list_type_full,
+   e_archive_list_type_minimal,
+   e_archive_list_type_path_only
+};
+
+std::string CIYAM_BASE_DECL_SPEC list_file_archives( archive_list_type list_type = e_archive_list_type_full,
+ std::vector< std::string >* p_paths = 0, int64_t min_avail = 0, bool stop_after_first = false, const std::string* p_name = 0 );
 
 void CIYAM_BASE_DECL_SPEC create_raw_file_in_archive(
  const std::string& archive, const std::string& hash, const std::string& file_data, std::string* p_hash = 0 );
