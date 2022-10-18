@@ -3047,8 +3047,23 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                if( height != string( "0" ) )
                {
+                  size_t old_blockchain_height_other = blockchain_height_other;
+
                   blockchain_height_other = from_string< size_t >( height ) - blk_off;
-                  socket_handler.set_blockchain_height_other( blockchain_height_other );
+
+                  if( blockchain_height_other != old_blockchain_height_other )
+                  {
+                     socket_handler.set_blockchain_height_other( blockchain_height_other );
+
+                     if( blockchain_height < blockchain_height_other )
+                     {
+                        string progress_message( get_system_variable( c_progress_output_prefix + identity ) );
+
+                        // NOTE: To assist with UI behaviour progress message will be updated if is missing an elipsis.
+                        if( progress_message.find( "..." ) == string::npos )
+                           output_synchronised_progress_message( identity, blockchain_height, blockchain_height_other );
+                     }
+                  }
                }
             }
 
@@ -4034,8 +4049,7 @@ void peer_session::on_start( )
       }
       else
       {
-         ap_socket->read_line( slotx_and_pubkeyx,
-          c_request_timeout, c_max_pubkey_size, p_sock_progress );
+         ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout, c_max_pubkey_size, p_sock_progress );
 
          if( has_support_sessions )
             slot_and_pubkey += '+';
