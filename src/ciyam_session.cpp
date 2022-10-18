@@ -2230,6 +2230,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_file_archives )
       {
          bool minimal( has_parm_val( parameters, c_cmd_ciyam_session_file_archives_minimal ) );
+         bool path_only( has_parm_val( parameters, c_cmd_ciyam_session_file_archives_path_only ) );
          bool status_update( has_parm_val( parameters, c_cmd_ciyam_session_file_archives_update_status ) );
          string name( get_parm_val( parameters, c_cmd_ciyam_session_file_archives_name ) );
 
@@ -2239,7 +2240,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             archives_status_update( name );
          }
 
-         response = list_file_archives( minimal );
+         archive_list_type list_type = e_archive_list_type_full;
+
+         if( minimal )
+            list_type = e_archive_list_type_minimal;
+         else if( path_only )
+            list_type = e_archive_list_type_path_only;
+
+         response = list_file_archives( list_type, 0, 0, false, name.empty( ) ? 0 : &name );
       }
       else if( command == c_cmd_ciyam_session_file_relegate )
       {
@@ -2255,6 +2263,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
          {
             uint32_t num = 0;
+
             if( !num_files.empty( ) )
                num = from_string< uint32_t >( num_files );
 

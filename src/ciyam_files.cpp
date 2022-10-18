@@ -773,7 +773,7 @@ bool path_already_used_in_archive( const string& path )
 
    vector< string > paths;
 
-   list_file_archives( true, &paths );
+   list_file_archives( e_archive_list_type_minimal, &paths );
 
    for( size_t i = 0; i < paths.size( ); i++ )
    {
@@ -1001,7 +1001,7 @@ void init_archive_info( progress* p_progress )
 
    system_ods_bulk_read ods_bulk_read;
 
-   string all_archives( list_file_archives( true, &paths ) );
+   string all_archives( list_file_archives( e_archive_list_type_minimal, &paths ) );
 
    if( !all_archives.empty( ) )
    {
@@ -4418,7 +4418,7 @@ bool has_file_archive( const string& archive, string* p_path )
 
    vector< string > paths;
 
-   string all_archives( list_file_archives( true, &paths ) );
+   string all_archives( list_file_archives( e_archive_list_type_minimal, &paths ) );
 
    if( !all_archives.empty( ) )
    {
@@ -4447,7 +4447,8 @@ bool has_file_archive( const string& archive, string* p_path )
    return retval;
 }
 
-string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_avail, bool stop_after_first )
+string list_file_archives( archive_list_type list_type,
+ vector< string >* p_paths, int64_t min_avail, bool stop_after_first, const string* p_name )
 {
    guard g( g_mutex );
 
@@ -4466,6 +4467,9 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
    {
       string next( names[ i ] );
 
+      if( p_name && next != *p_name )
+         continue;
+
       if( !retval.empty( ) )
          retval += '\n';
 
@@ -4477,24 +4481,41 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
       int64_t avail = 0;
       int64_t limit = 0;
 
+      if( list_type == e_archive_list_type_minimal )
+      {
+         retval += next;
+
+         if( p_paths )
+            p_paths->push_back( path );
+
+         ods_fs.set_folder( ".." );
+
+         continue;
+      }
+      else if( list_type == e_archive_list_type_path_only )
+      {
+         retval += path;
+
+         if( p_paths )
+            p_paths->push_back( path );
+
+         ods_fs.set_folder( ".." );
+
+         continue;
+      }
+
       string status_info;
 
-      if( !minimal || min_avail )
-         ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
-
-      if( !minimal )
-      {
-         ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
-         ods_fs.fetch_from_text_file( c_file_archive_status_info, status_info );
-      }
+      ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
+      ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
+      ods_fs.fetch_from_text_file( c_file_archive_status_info, status_info );
 
       if( min_avail <= 0 || avail >= min_avail )
       {
          retval += next;
 
-         if( !minimal )
-            retval += " [" + status_info + "] ("
-             + format_bytes( limit - avail ) + '/' + format_bytes( limit ) + ") " + path;
+         retval += " [" + status_info + "] ("
+          + format_bytes( limit - avail ) + '/' + format_bytes( limit ) + ") " + path;
 
          if( p_paths )
             p_paths->push_back( path );
@@ -4549,7 +4570,7 @@ void create_raw_file_in_archive( const string& archive,
       }
 
       if( all_archives.empty( ) )
-         all_archives = list_file_archives( true, &paths );
+         all_archives = list_file_archives( e_archive_list_type_minimal, &paths );
 
       ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -4668,7 +4689,7 @@ string relegate_one_or_num_oldest_files( const string& hash,
 
    int64_t num_bytes = hash.empty( ) ? min_bytes : file_bytes( hash );
 
-   string all_archives( list_file_archives( true, &paths, num_bytes ) );
+   string all_archives( list_file_archives( e_archive_list_type_minimal, &paths, num_bytes ) );
 
    if( !file_hashes.empty( ) && !all_archives.empty( ) )
    {
@@ -4819,7 +4840,7 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
    {
       vector< string > paths;
 
-      string all_archives( list_file_archives( true, &paths ) );
+      string all_archives( list_file_archives( e_archive_list_type_minimal, &paths ) );
 
       string archive;
       vector< string > archives;
@@ -4892,7 +4913,7 @@ bool touch_file_in_archive( const string& hash, const string& archive )
    }
 
    if( all_archives.empty( ) )
-      all_archives = list_file_archives( true, &paths );
+      all_archives = list_file_archives( e_archive_list_type_minimal, &paths );
 
    if( !all_archives.empty( ) )
    {
@@ -4939,7 +4960,7 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
 
    system_ods_bulk_write ods_bulk_write;
 
-   string all_archives( list_file_archives( true, &paths ) );
+   string all_archives( list_file_archives( e_archive_list_type_minimal, &paths ) );
 
    auto_ptr< ods::transaction > ap_ods_tx;
    if( !system_ods_instance( ).is_in_transaction( ) )
@@ -5251,7 +5272,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
    string archive_path;
    vector< string > paths;
 
-   string all_archives( list_file_archives( true, &paths ) );
+   string all_archives( list_file_archives( e_archive_list_type_minimal, &paths ) );
 
    if( !all_archives.empty( ) )
    {
