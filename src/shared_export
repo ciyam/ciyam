@@ -11,8 +11,12 @@ fi
 USER_PATH=/home/$USER
 IMAGE_NAME=shared.img
 
+IMPORTED_TIME=.imported.time
+
 SHARED_PATH=$USER_PATH/shared
 SHARED_IMAGE=$USER_PATH/$IMAGE_NAME
+
+IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 
 # NOTE: Use this to prevent accidentally executing the export twice.
 if [ ! -f ~shared ]; then
@@ -55,7 +59,7 @@ if [ ! -f ~shared ]; then
  sudo chown root:root $SHARED_IMAGE
  sudo mount $SHARED_IMAGE $SHARED_PATH
 
- echo `date +%s` > $EXPORTED_TIME_FILE
+ echo `date +%s` > $IMPORTED_TIME_FILE
 
  echo "Finished export..." >>Shared.txt
  date >>Shared.txt
