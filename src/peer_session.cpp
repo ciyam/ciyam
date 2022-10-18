@@ -2796,7 +2796,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       string targeted_identity( get_session_variable(
        get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
 
-      if( !targeted_identity.empty( ) )
+      if( !targeted_identity.empty( ) && ( blockchain_height == blockchain_height_other ) )
       {
          string reversed( identity );
          reverse( reversed.begin( ), reversed.end( ) );

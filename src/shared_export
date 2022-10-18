@@ -44,7 +44,8 @@ if [ ! -f ~shared ]; then
  export ENCRYPTED_PASSWORD=@shared_secret
  export USE_SHARED_ARCHIVE=1
 
- BLOCK_TREE=`./block_tree_hash @export_ident`
+ IDENTITY=`./system_variable get @export_ident`
+ BLOCK_TREE=`./block_tree_hash $IDENTITY`
  SHARED_LIST=`./tree_list $BLOCK_TREE 0 Shared | tail -n 1`
 
  ./export_files $SHARED_LIST $USER_PATH >>Shared.txt
