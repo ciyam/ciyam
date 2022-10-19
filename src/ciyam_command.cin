@@ -12,7 +12,31 @@ ARGS=$2
 ;
 SPACED=@repstr:,/ :$ARGS
 ;
+APPEND_STAR=
+.session_variable @single_string_response 1
+;
+@ifeq "$CMD" "session_variable"
+@ifndef $ARGS
+APPEND_STAR=1
+@endif
+@endif
+;
+@ifeq "$CMD" "system_variable"
+@ifndef $ARGS
+APPEND_STAR=1
+@endif
+@endif
+;
+@ifdef $APPEND_STAR
+CMD=$CMD *
+@endif
+;
+@ifndef $ARGS
+.$CMD
+@else
 .$CMD $SPACED
+@endif
+;
 @ifdef $OUTPUT
 #$OUTPUT
 @endif

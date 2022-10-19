@@ -6,7 +6,7 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 
 if '%1' == '' goto usage
 
-echo ^<^<ciyam_command.cin %1 "%2" >~ciyam_command
+echo ^<^<ciyam_command.cin %1 %2" >~ciyam_command
 ciyam_client -echo -quiet -no_prompt -no_stderr < ~ciyam_command
 
 del ~ciyam_command

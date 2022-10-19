@@ -79,6 +79,8 @@ const char c_progress_output_prefix = '%';
 
 const char* const c_hello = "hello";
 
+const char* c_ellipsis = "...";
+
 const char* const c_dummy_suffix = ".dummy";
 
 const char* const c_dummy_peer_tag = "peer";
@@ -231,7 +233,7 @@ void output_synchronised_progress_message(
    progress_message += to_string( blockchain_height );
 
    if( blockchain_height_other > blockchain_height )
-      progress_message += "...";
+      progress_message += c_ellipsis;
 
    set_session_progress_output( progress_message );
    set_system_variable( c_progress_output_prefix + identity, progress_message );
@@ -1088,7 +1090,7 @@ void process_list_items( const string& identity,
                if( allow_blob_creation )
                   // FUTURE: This message should be handled as a server string message.
                   progress = "Processing " + to_string( *p_num_items_found )
-                   + " items at height " + blockchain_height_processed + "...";
+                   + " items at height " + blockchain_height_processed + c_ellipsis;
                else
                   // FUTURE: This message should be handled as a server string message.
                   progress = "Processed " + to_string( *p_num_items_found ) + " items...";
@@ -2348,7 +2350,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          if( !num_tree_items.empty( ) )
             progress_message += " (" + to_string( num_tree_item ) + '/' + num_tree_items + ")";
 
-         progress_message += "...";
+         progress_message += c_ellipsis;
 
          set_session_progress_output( progress_message );
          set_system_variable( c_progress_output_prefix + identity, progress_message );
@@ -2874,6 +2876,18 @@ void socket_command_handler::postprocess_command_and_args( const string& cmd_and
 
    if( has_finished( ) )
    {
+      // NOTE: If found then remove the trailing ellipsis from the system progress
+      // message variable in order to make sure that the UI does not auto-refresh.
+      if( !is_for_support && !get_identity( ).empty( ) )
+      {
+         string progress_message( get_system_variable( c_progress_output_prefix + get_identity( ) ) );
+
+         string::size_type pos = progress_message.find( c_ellipsis );
+
+         if( pos != string::npos )
+            set_system_variable( c_progress_output_prefix + get_identity( ), progress_message.substr( 0, pos ) );
+      }
+
       TRACE_LOG( TRACE_SESSIONS, get_blockchain( ).empty( )
        ? "finished peer session" : "finished peer session for blockchain " + get_blockchain( ) );
    }
@@ -3059,8 +3073,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      {
                         string progress_message( get_system_variable( c_progress_output_prefix + identity ) );
 
-                        // NOTE: To assist with UI behaviour progress message will be updated if is missing an elipsis.
-                        if( progress_message.find( "..." ) == string::npos )
+                        // NOTE: To assist with UI behaviour progress message will be updated if is missing an ellipsis.
+                        if( progress_message.find( c_ellipsis ) == string::npos )
                            output_synchronised_progress_message( identity, blockchain_height, blockchain_height_other );
                      }
                   }

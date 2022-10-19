@@ -2353,7 +2353,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_module_list )
       {
          module_list( osstr );
-         output_response_lines( socket, osstr.str( ) );
+
+         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+            response = osstr.str( );
+         else
+            output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_module_load )
       {
@@ -2372,14 +2376,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string module( get_parm_val( parameters, c_cmd_ciyam_session_module_class_list_module ) );
 
          module_class_list( module, osstr );
-         output_response_lines( socket, osstr.str( ) );
+
+         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+            response = osstr.str( );
+         else
+            output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_module_strings_list )
       {
          string module( get_parm_val( parameters, c_cmd_ciyam_session_module_strings_list_module ) );
 
          module_strings_list( module, osstr );
-         output_response_lines( socket, osstr.str( ) );
+
+         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+            response = osstr.str( );
+         else
+            output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_module_class_field_list )
       {
@@ -2387,7 +2399,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string class_id_or_name( get_parm_val( parameters, c_cmd_ciyam_session_module_class_field_list_class ) );
 
          module_class_fields_list( module, class_id_or_name, osstr );
-         output_response_lines( socket, osstr.str( ) );
+
+         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+            response = osstr.str( );
+         else
+            output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_module_class_procedure_list )
       {
@@ -2395,12 +2411,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string class_id_or_name( get_parm_val( parameters, c_cmd_ciyam_session_module_class_procedure_list_class ) );
 
          module_class_procedures_list( module, class_id_or_name, osstr );
-         output_response_lines( socket, osstr.str( ) );
+
+         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+            response = osstr.str( );
+         else
+            output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_object_list )
       {
          list_object_instances( osstr );
-         output_response_lines( socket, osstr.str( ) );
+
+         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+            response = osstr.str( );
+         else
+            output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_object_fetch )
       {
@@ -4233,7 +4257,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool minimal( has_parm_val( parameters, c_cmd_ciyam_session_session_list_minimal ) );
 
          list_sessions( osstr, !minimal, !minimal );
-         output_response_lines( socket, osstr.str( ) );
+
+         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+            response = osstr.str( );
+         else
+            output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_session_lock )
       {
@@ -5260,12 +5288,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_storage_dump_cache )
       {
          dump_storage_cache( osstr );
-         output_response_lines( socket, osstr.str( ) );
+
+         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+            response = osstr.str( );
+         else
+            output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_storage_dump_locks )
       {
          dump_storage_locks( osstr );
-         output_response_lines( socket, osstr.str( ) );
+
+         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+            response = osstr.str( );
+         else
+            output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_storage_log_splice )
       {
@@ -5465,7 +5501,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_system_schedule )
       {
          output_schedule( osstr );
-         output_response_lines( socket, osstr.str( ) );
+
+         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+            response = osstr.str( );
+         else
+            output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_system_sendmail )
       {
