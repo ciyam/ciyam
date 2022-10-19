@@ -3618,14 +3618,14 @@ bool process_group(
                   break;
                }
 
-               // FUTURE: The elipsis appending should also be supported for wide character
+               // FUTURE: The ellipsis appending should also be supported for wide character
                // sets but this requires using the appropriate wide characters (use iconv?).
                // Also the detection of CR/LF needs to be implemented for wide chars below.
                bool is_last_line = !is_growable && !using_wide_chars && ( i == height - 1 );
 
-               string elipsis( "..." );
+               string ellipsis( "..." );
 
-               // NOTE: Before considering the need for an elipsis first check if the whole
+               // NOTE: Before considering the need for an ellipsis first check if the whole
                // of the remaining text will fit in the available width.
                if( is_last_line )
                {
@@ -3645,7 +3645,7 @@ bool process_group(
                    pos <= data.length( ); pos += ( using_wide_chars ? 2 : 1 ) )
                   {
                      float next_width = page.text_width(
-                      data.substr( 0, pos ) + ( is_last_line ? elipsis : string( ) ) );
+                      data.substr( 0, pos ) + ( is_last_line ? ellipsis : string( ) ) );
 
                      // FUTURE: (see above FUTURE note)
                      if( is_last_line && ( data[ pos - 1 ] == '\r' || data[ pos - 1 ] == '\n' ) )
@@ -3761,7 +3761,7 @@ bool process_group(
                   if( is_last_line && wrap_fit_data.length( ) < wrap_over_data.length( ) )
                   {
                      force_wrap_fit = true;
-                     wrap_fit_data += elipsis;
+                     wrap_fit_data += ellipsis;
                   }
 
                   unsigned int len = 0;

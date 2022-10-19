@@ -7,7 +7,7 @@
 if [ $# -lt 1 ]; then
  echo "Usage: ciyam_command [cmd] [[args,]]"
 else
- echo "<<ciyam_command.cin $1 "$2"" >~ciyam_command
+ echo "<<ciyam_command.cin $1 $2" >~ciyam_command
  ./ciyam_client -echo -quiet -no_prompt -no_stderr <~ciyam_command
  rm ~ciyam_command
 fi

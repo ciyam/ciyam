@@ -173,6 +173,7 @@ enum special_var
    e_special_var_peer_is_synchronising,
    e_special_var_blockchain_is_fetching,
    e_special_var_blockchain_zenith_hash,
+   e_special_var_single_string_response,
    e_special_var_blockchain_archive_path,
    e_special_var_blockchain_backup_ident,
    e_special_var_blockchain_shared_ident,

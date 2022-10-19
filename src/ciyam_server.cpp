@@ -153,7 +153,7 @@ namespace
 {
 
 bool g_start_autoscript = true;
-bool g_start_peer_listeners = true;
+bool g_start_peer_sessions = true;
 bool g_start_udp_stream_sessions = true;
 
 #ifdef _WIN32
@@ -366,7 +366,7 @@ class ciyam_server_startup_functor : public command_functor
       else if( command == c_cmd_no_auto )
          g_start_autoscript = false;
       else if( command == c_cmd_no_peers )
-         g_start_peer_listeners = false;
+         g_start_peer_sessions = false;
       else if( command == c_cmd_no_streams )
          g_start_udp_stream_sessions = false;
 #ifdef _WIN32
@@ -711,8 +711,8 @@ int main( int argc, char* argv[ ] )
 
                int min_active_sessions = g_active_sessions;
 
-               if( !g_server_shutdown )
-                  ( *fp_init_peer_sessions_func )( g_start_peer_listeners );
+               if( g_start_peer_sessions )
+                  ( *fp_init_peer_sessions_func )( true );
 
                while( !g_server_shutdown || g_active_sessions )
                {
