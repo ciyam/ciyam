@@ -1098,6 +1098,26 @@ void process_list_items( const string& identity,
 
             *p_dtm = now;
 
+            // NOTE: If there is a paired session that has been disconnected will abort processing.
+            string paired_identity( get_session_variable(
+             get_special_var_name( e_special_var_paired_identity ) ) );
+
+            if( !paired_identity.empty( ) && get_system_variable( paired_identity ).empty( ) )
+            {
+               string time_value( get_session_variable( get_special_var_name( e_special_var_blockchain_time_value ) ) );
+
+               int64_t time_val = from_string< int64_t >( time_value );
+
+               if( unix_time( now ) >= time_val )
+               {
+                  if( num_have_session_variable( paired_identity ) < 2 )
+                  {
+                     condemn_this_session( );
+                     throw runtime_error( "peer session has been condemned due to missing paired session" );
+                  }
+               }
+            }
+
             if( is_fetching )
             {
                if( blockchain_height_processed.empty( ) )
@@ -3934,10 +3954,12 @@ void peer_session::on_start( )
 
    int64_t difference = ( current - time_val ) + 2;
 
+   int64_t time_value = current + ( difference * 2 );
+
    try
    {
       socket_command_handler cmd_handler( *ap_socket, state,
-       current + ( difference * 2 ), is_local, is_owner, blockchain, is_for_support );
+       time_value, is_local, is_owner, blockchain, is_for_support );
 
       cmd_handler.add_commands( 0,
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
@@ -4117,6 +4139,9 @@ void peer_session::on_start( )
 
       if( has_support_sessions )
          set_session_variable( get_special_var_name( e_special_var_blockchain_peer_has_supporters ), c_true_value );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_time_value ), to_string( time_value ) );
 
       okay = true;
       was_initialised = true;
