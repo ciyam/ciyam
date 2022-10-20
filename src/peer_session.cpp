@@ -564,6 +564,32 @@ string get_hash_info_from_put_data( const string& encoded_master_pubkey,
 }
 #endif
 
+void check_for_missing_paired_session( const date_time& now )
+{
+   string paired_identity( get_session_variable(
+    get_special_var_name( e_special_var_paired_identity ) ) );
+
+   if( !paired_identity.empty( ) && get_system_variable( paired_identity ).empty( ) )
+   {
+      string time_value( get_session_variable( get_special_var_name( e_special_var_blockchain_time_value ) ) );
+
+      if( !time_value.empty( ) )
+      {
+         int64_t time_val = from_string< int64_t >( time_value );
+
+         if( unix_time( now ) >= time_val )
+         {
+            if( num_have_session_variable( paired_identity ) < 2 )
+            {
+               condemn_this_session( );
+
+               throw runtime_error( "peer session has been condemned due to missing paired session" );
+            }
+         }
+      }
+   }
+}
+
 void process_put_file( const string& blockchain,
  const string& file_data, bool check_for_supporters, bool is_test_session,
  set< string >& list_items_to_ignore, date_time* p_dtm = 0, progress* p_progress = 0 )
@@ -660,6 +686,8 @@ void process_put_file( const string& blockchain,
             }
 
             *p_dtm = now;
+
+            check_for_missing_paired_session( now );
 
             p_progress->output_progress( progress );
          }
@@ -872,6 +900,8 @@ bool has_all_list_items( const string& blockchain,
 
                      progress = ".";
                   }
+
+                  check_for_missing_paired_session( now );
                }
 
                *p_dtm = now;
@@ -1098,25 +1128,7 @@ void process_list_items( const string& identity,
 
             *p_dtm = now;
 
-            // NOTE: If there is a paired session that has been disconnected will abort processing.
-            string paired_identity( get_session_variable(
-             get_special_var_name( e_special_var_paired_identity ) ) );
-
-            if( !paired_identity.empty( ) && get_system_variable( paired_identity ).empty( ) )
-            {
-               string time_value( get_session_variable( get_special_var_name( e_special_var_blockchain_time_value ) ) );
-
-               int64_t time_val = from_string< int64_t >( time_value );
-
-               if( unix_time( now ) >= time_val )
-               {
-                  if( num_have_session_variable( paired_identity ) < 2 )
-                  {
-                     condemn_this_session( );
-                     throw runtime_error( "peer session has been condemned due to missing paired session" );
-                  }
-               }
-            }
+            check_for_missing_paired_session( now );
 
             if( is_fetching )
             {
@@ -1859,6 +1871,24 @@ class socket_command_handler : public command_handler
       }
 
       last_issued_was_put = !is_responder;
+   }
+
+   ~socket_command_handler( )
+   {
+      // NOTE: If found then remove the trailing ellipsis from the system progress
+      // message variable in order to make sure that the UI does not auto-refresh.
+      if( !is_for_support && !get_identity( ).empty( ) )
+      {
+         string progress_message( get_system_variable( c_progress_output_prefix + get_identity( ) ) );
+
+         string::size_type pos = progress_message.find( c_ellipsis );
+
+         if( pos != string::npos )
+            set_system_variable( c_progress_output_prefix + get_identity( ), progress_message.substr( 0, pos ) );
+      }
+
+      TRACE_LOG( TRACE_SESSIONS, get_blockchain( ).empty( )
+       ? "finished peer session" : "finished peer session for blockchain " + get_blockchain( ) );
    }
 
 #ifdef SSL_SUPPORT
@@ -2893,24 +2923,6 @@ void socket_command_handler::postprocess_command_and_args( const string& cmd_and
 {
    string::size_type pos = cmd_and_args.find( ' ' );
    last_command = cmd_and_args.substr( 0, pos );
-
-   if( has_finished( ) )
-   {
-      // NOTE: If found then remove the trailing ellipsis from the system progress
-      // message variable in order to make sure that the UI does not auto-refresh.
-      if( !is_for_support && !get_identity( ).empty( ) )
-      {
-         string progress_message( get_system_variable( c_progress_output_prefix + get_identity( ) ) );
-
-         string::size_type pos = progress_message.find( c_ellipsis );
-
-         if( pos != string::npos )
-            set_system_variable( c_progress_output_prefix + get_identity( ), progress_message.substr( 0, pos ) );
-      }
-
-      TRACE_LOG( TRACE_SESSIONS, get_blockchain( ).empty( )
-       ? "finished peer session" : "finished peer session for blockchain " + get_blockchain( ) );
-   }
 }
 
 void socket_command_handler::handle_command_response( const string& response, bool is_special )
