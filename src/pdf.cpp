@@ -18,8 +18,10 @@
 
 #ifdef __GNUG__
 #  include <hpdf.h>
+#  include <hpdf_version.h>
 #else
 #  include <haru/hpdf.h>
+#  include <haru/hpdf_version.h>
 #endif
 
 #include "pdf.h"
@@ -471,7 +473,11 @@ void pdf_page::set_line_cap( line_cap cap )
       break;
 
       case e_line_cap_projecting_end:
+#if HPDF_MINOR_VERSION < 4
       hcap = HPDF_PROJECTING_SCUARE_END;
+#else
+      hcap = HPDF_PROJECTING_SQUARE_END;
+#endif
       break;
 
       default:
