@@ -542,25 +542,20 @@ string transform_shared_list_info(
 
       bool is_list = false;
 
-      string encrypted_hash;
+      string encrypted_hash( get_system_variable( "@" + next_hash ) );
 
-      if( is_encrypted_file( next_hash, &is_list ) )
+      if( !encrypted_hash.empty( ) )
+         set_system_variable( "@" + next_hash, "" );
+      else if( is_encrypted_file( next_hash, &is_list ) )
       {
          if( !is_list )
          {
-            encrypted_hash = get_system_variable( "@" + next_hash );
+            string file_name( construct_file_name_from_hash(
+             next_hash, false, archive_path.empty( ), ( archive_path.empty( ) ? 0 : &archive_path ) ) );
 
-            if( !encrypted_hash.empty( ) )
-               set_system_variable( "@" + next_hash, "" );
-            else
-            {
-               string file_name( construct_file_name_from_hash(
-                next_hash, false, archive_path.empty( ), ( archive_path.empty( ) ? 0 : &archive_path ) ) );
+            string encrypted_blob_data( buffer_file( file_name ) );
 
-               string encrypted_blob_data( buffer_file( file_name ) );
-
-               encrypted_hash = sha256( encrypted_blob_data ).get_digest_as_string( );
-            }
+            encrypted_hash = sha256( encrypted_blob_data ).get_digest_as_string( );
          }
       }
 
@@ -631,40 +626,35 @@ string create_repository_lists(
 
       bool is_list = false;
 
-      string public_key, encrypted_hash;
+      string public_key, encrypted_hash( get_system_variable( "@" + next_hash ) );
 
-      if( is_encrypted_file( next_hash, &is_list ) )
+      if( !encrypted_hash.empty( ) )
+      {
+         set_system_variable( "@" + next_hash, "" );
+
+         string::size_type pos = encrypted_hash.find( ':' );
+         if( pos == string::npos )
+            throw runtime_error( "unexpected encrypted_hash missing public key" );
+
+         public_key = encrypted_hash.substr( pos + 1 );
+         encrypted_hash.erase( pos );
+      }
+      else if( is_encrypted_file( next_hash, &is_list ) )
       {
          if( !is_list )
          {
-            encrypted_hash = get_system_variable( "@" + next_hash );
+            string file_name( construct_file_name_from_hash(
+             next_hash, false, archive_path.empty( ), ( archive_path.empty( ) ? 0 : &archive_path ) ) );
 
-            if( !encrypted_hash.empty( ) )
-            {
-               set_system_variable( "@" + next_hash, "" );
+            string encrypted_blob_data( buffer_file( file_name ) );
 
-               string::size_type pos = encrypted_hash.find( ':' );
-               if( pos == string::npos )
-                  throw runtime_error( "unexpected encrypted_hash missing public key" );
+            encrypted_hash = sha256( encrypted_blob_data ).get_digest_as_string( );
 
-               public_key = encrypted_hash.substr( pos + 1 );
-               encrypted_hash.erase( pos );
-            }
-            else
-            {
-               string file_name( construct_file_name_from_hash(
-                next_hash, false, archive_path.empty( ), ( archive_path.empty( ) ? 0 : &archive_path ) ) );
+            if( !has_repository_entry_record( repository, next_hash ) )
+               throw runtime_error( "unexpected repository entry for '" + next_hash + "' not found in create_repository_lists" );
 
-               string encrypted_blob_data( buffer_file( file_name ) );
-
-               encrypted_hash = sha256( encrypted_blob_data ).get_digest_as_string( );
-
-               if( !has_repository_entry_record( repository, next_hash ) )
-                  throw runtime_error( "unexpected repository entry for '" + next_hash + "' not found in create_repository_lists" );
-
-               string dummy;
-               fetch_repository_entry_record( repository, next_hash, dummy, dummy, public_key );
-            }
+            string dummy;
+            fetch_repository_entry_record( repository, next_hash, dummy, dummy, public_key );
          }
       }
 
@@ -3710,8 +3700,6 @@ bool store_file( const string& hash,
 
                      if( hash != file_hash )
                      {
-                        guard g( g_mutex );
-
                         is_existing = file_exists( file_name );
 
                         if( is_existing )
@@ -3759,8 +3747,6 @@ bool store_file( const string& hash,
 
                   if( hash != file_hash )
                   {
-                     guard g( g_mutex );
-
                      is_existing = file_exists( file_name );
 
                      if( is_existing )
