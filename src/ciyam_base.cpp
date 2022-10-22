@@ -4549,6 +4549,9 @@ void term_globals( )
    term_system_ods( );
    term_files_area( );
 
+   // NOTE: Need to force the manuscript information to be reloaded.
+   g_scripts_mod = 0;
+
    g_scripts.clear( );
 
    g_strings.clear( );
