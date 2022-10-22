@@ -10,6 +10,10 @@ sudo vi /etc/sudoers
 [add the following line]
 tux ALL=(ALL) NOPASSWD:ALL
 
+Updgrade to latest version (will have to reboot after):
+
+sudo zypper dup
+
 Change the CD/DVD to Guest Additions then mount, install and reboot:
 
 sudo mount /dev/cdrom /mnt
