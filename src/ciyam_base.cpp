@@ -425,7 +425,7 @@ struct session
    deque< string > file_hashes_to_get;
    deque< string > file_hashes_to_put;
 
-   map< string, string > mapped_hash_values;
+   map< string, pair< string, string > > mapped_hash_values;
 
    set< string > tx_key_info;
    stack< ods::transaction* > transactions;
@@ -6738,7 +6738,18 @@ void add_peer_mapped_hash( const string& hash, const string& mapped_hash )
    if( !gtp_session )
       throw runtime_error( "invalid call to add_peer_mapped_hash from non-session" );
    else
-      gtp_session->mapped_hash_values.insert( make_pair( hex_decode( hash ), hex_decode( mapped_hash ) ) );
+   {
+      pair< string, string > mapped_pair;
+
+      string::size_type pos = mapped_hash.find( ':' );
+
+      mapped_pair.first = hex_decode( mapped_hash.substr( 0, pos ) );
+
+      if( pos != string::npos )
+         mapped_pair.second = hex_decode( mapped_hash.substr( pos + 1 ) );
+
+      gtp_session->mapped_hash_values.insert( make_pair( hex_decode( hash ), mapped_pair ) );
+   }
 }
 
 string get_peer_mapped_hash( const string& hash )
@@ -6754,7 +6765,19 @@ string get_peer_mapped_hash( const string& hash )
       string decoded( hex_decode( hash ) );
 
       if( gtp_session->mapped_hash_values.count( decoded ) )
-         retval = hex_encode( gtp_session->mapped_hash_values[ decoded ] );
+      {
+         pair< string, string > mapped_pair;
+
+         mapped_pair = gtp_session->mapped_hash_values[ decoded ];
+
+         if( !mapped_pair.first.empty( ) )
+         {
+            retval += hex_encode( mapped_pair.first );
+
+            if( !mapped_pair.second.empty( ) )
+               retval += ':' + hex_encode( mapped_pair.second );
+         }
+      }
    }
 
    return retval;
