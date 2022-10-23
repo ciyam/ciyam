@@ -528,6 +528,8 @@ string transform_shared_list_info(
 
    date_time dtm( date_time::local( ) );
 
+   map< string, string > mapped_hashes;
+
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
       string next_item( list_items[ i ] );
@@ -541,10 +543,22 @@ string transform_shared_list_info(
       string next_name( next_item.substr( pos + 1 ) );
 
       bool is_list = false;
+      bool is_repeated = false;
+      bool was_peer_mapped = false;
 
-      string encrypted_hash( get_peer_mapped_hash( next_hash ) );
+      string encrypted_hash;
 
-      if( encrypted_hash.empty( ) && is_encrypted_file( next_hash, &is_list ) )
+      if( mapped_hashes.count( next_hash ) )
+      {
+         is_repeated = true;
+         encrypted_hash = mapped_hashes[ next_hash ];
+      }
+      else
+         encrypted_hash = get_peer_mapped_hash( next_hash );
+
+      if( !encrypted_hash.empty( ) )
+         was_peer_mapped = !is_repeated;
+      else if( is_encrypted_file( next_hash, &is_list ) )
       {
          if( !is_list )
          {
@@ -559,6 +573,12 @@ string transform_shared_list_info(
 
       if( encrypted_hash.empty( ) )
          throw runtime_error( "unexpected encrypted hash for blob not found in transform_shared_list_info" );
+
+      if( was_peer_mapped )
+         clear_peer_mapped_hash( next_hash );
+
+      if( !is_repeated )
+         mapped_hashes[ next_hash ] = encrypted_hash;
 
       // NOTE: Initial length of 1 is the type and extra.
       if( encrypted_list_data.length( ) > 2 )
@@ -589,8 +609,6 @@ string transform_shared_list_info(
       }
    }
 
-   clear_all_peer_mapped_hashes( );
-
    file_buffer.copy_from_string( encrypted_list_data, offset );
 
    return sha256( encrypted_list_data ).get_digest_as_string( );
@@ -615,6 +633,8 @@ string create_repository_lists(
 
    date_time dtm( date_time::local( ) );
 
+   map< string, string > mapped_hashes;
+
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
       string next_item( list_items[ i ] );
@@ -628,11 +648,23 @@ string create_repository_lists(
       string next_name( next_item.substr( pos + 1 ) );
 
       bool is_list = false;
+      bool is_repeated = false;
+      bool was_peer_mapped = false;
 
-      string public_key, encrypted_hash( get_peer_mapped_hash( next_hash ) );
+      string public_key, encrypted_hash;
 
+      if( mapped_hashes.count( next_hash ) )
+      {
+         is_repeated = true;
+         encrypted_hash = mapped_hashes[ next_hash ];
+      }
+      else
+         encrypted_hash = get_peer_mapped_hash( next_hash );
+   
       if( !encrypted_hash.empty( ) )
       {
+         was_peer_mapped = !is_repeated;
+
          string::size_type pos = encrypted_hash.find( ':' );
          if( pos == string::npos )
             throw runtime_error( "unexpected encrypted_hash missing public key" );
@@ -661,6 +693,12 @@ string create_repository_lists(
 
       if( encrypted_hash.empty( ) )
          throw runtime_error( "unexpected encrypted hash for blob not found in create_repository_lists" );
+
+      if( was_peer_mapped )
+         clear_peer_mapped_hash( next_hash );
+
+      if( !is_repeated )
+         mapped_hashes[ next_hash ] = encrypted_hash;
 
       // NOTE: Initial length of 1 is the type and extra.
       if( encrypted_file_data.length( ) > 2 )
@@ -714,8 +752,6 @@ string create_repository_lists(
          }
       }
    }
-
-   clear_all_peer_mapped_hashes( );
 
    if( p_encrypted_file_data )
       *p_encrypted_file_data = encrypted_file_data;
