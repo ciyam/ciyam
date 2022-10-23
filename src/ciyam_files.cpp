@@ -491,7 +491,7 @@ void encrypt_file_buffer( const string& hash, const string& repository,
    file_buffer.copy_from_string( new_file_data, offset );
 
    if( is_shared )
-      set_system_variable( "@" + hash, sha256( new_file_data ).get_digest_as_string( ) );
+      add_peer_mapped_hash( hash, sha256( new_file_data ).get_digest_as_string( ) );
    else if( !repository.empty( ) )
    {
       string dummy, public_key;
@@ -505,7 +505,7 @@ void encrypt_file_buffer( const string& hash, const string& repository,
          store_repository_entry_record( repository, hash, "", public_key, public_key );
       }
 
-      set_system_variable( "@" + hash, sha256( new_file_data ).get_digest_as_string( ) + ':' + public_key );
+      add_peer_mapped_hash( hash, sha256( new_file_data ).get_digest_as_string( ) + ':' + public_key );
    }
 
    clear_key( crypt_password );
@@ -542,11 +542,9 @@ string transform_shared_list_info(
 
       bool is_list = false;
 
-      string encrypted_hash( get_system_variable( "@" + next_hash ) );
+      string encrypted_hash( get_peer_mapped_hash( next_hash ) );
 
-      if( !encrypted_hash.empty( ) )
-         set_system_variable( "@" + next_hash, "" );
-      else if( is_encrypted_file( next_hash, &is_list ) )
+      if( encrypted_hash.empty( ) && is_encrypted_file( next_hash, &is_list ) )
       {
          if( !is_list )
          {
@@ -558,6 +556,9 @@ string transform_shared_list_info(
             encrypted_hash = sha256( encrypted_blob_data ).get_digest_as_string( );
          }
       }
+
+      if( encrypted_hash.empty( ) )
+         throw runtime_error( "unexpected encrypted hash for blob not found in transform_shared_list_info" );
 
       // NOTE: Initial length of 1 is the type and extra.
       if( encrypted_list_data.length( ) > 2 )
@@ -587,6 +588,8 @@ string transform_shared_list_info(
          }
       }
    }
+
+   clear_all_peer_mapped_hashes( );
 
    file_buffer.copy_from_string( encrypted_list_data, offset );
 
@@ -626,12 +629,10 @@ string create_repository_lists(
 
       bool is_list = false;
 
-      string public_key, encrypted_hash( get_system_variable( "@" + next_hash ) );
+      string public_key, encrypted_hash( get_peer_mapped_hash( next_hash ) );
 
       if( !encrypted_hash.empty( ) )
       {
-         set_system_variable( "@" + next_hash, "" );
-
          string::size_type pos = encrypted_hash.find( ':' );
          if( pos == string::npos )
             throw runtime_error( "unexpected encrypted_hash missing public key" );
@@ -657,6 +658,9 @@ string create_repository_lists(
             fetch_repository_entry_record( repository, next_hash, dummy, dummy, public_key );
          }
       }
+
+      if( encrypted_hash.empty( ) )
+         throw runtime_error( "unexpected encrypted hash for blob not found in create_repository_lists" );
 
       // NOTE: Initial length of 1 is the type and extra.
       if( encrypted_file_data.length( ) > 2 )
@@ -710,6 +714,8 @@ string create_repository_lists(
          }
       }
    }
+
+   clear_all_peer_mapped_hashes( );
 
    if( p_encrypted_file_data )
       *p_encrypted_file_data = encrypted_file_data;
