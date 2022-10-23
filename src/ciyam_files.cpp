@@ -698,7 +698,7 @@ string create_repository_lists(
          clear_peer_mapped_hash( next_hash );
 
       if( !is_repeated )
-         mapped_hashes[ next_hash ] = encrypted_hash;
+         mapped_hashes[ next_hash ] = encrypted_hash + ':' + public_key;
 
       // NOTE: Initial length of 1 is the type and extra.
       if( encrypted_file_data.length( ) > 2 )
