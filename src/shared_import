@@ -43,7 +43,6 @@ if [ ! -f ~shared ]; then
  echo "Starting import..." >>Shared.txt
 
  if [ -f $SHARED_IMAGE ]; then
-  export SECONDS=2
   export ENCRYPTED_PASSWORD=@shared_secret
   export USE_SHARED_ARCHIVE=1
 

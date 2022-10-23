@@ -44,7 +44,6 @@ if [ ! -f ~backup ]; then
  echo "Starting backup..." >>Backup.txt
 
  if [ -f $BACKUP_IMAGE ]; then
-  export SECONDS=2
   export USE_BACKUP_ARCHIVE=1
   export REPO_CRYPT_PASSWORD=@sid
 
