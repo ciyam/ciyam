@@ -113,6 +113,7 @@ const char* const c_special_variable_blockchain = "@blockchain";
 const char* const c_special_variable_extra_info = "@extra_info";
 const char* const c_special_variable_file_names = "@file_names";
 const char* const c_special_variable_permission = "@permission";
+const char* const c_special_variable_session_id = "@session_id";
 const char* const c_special_variable_tag_prefix = "@tag_prefix";
 const char* const c_special_variable_allow_async = "@allow_async";
 const char* const c_special_variable_application = "@application";
@@ -494,6 +495,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_permission:
       s = string( c_special_variable_permission );
+      break;
+
+      case e_special_var_session_id:
+      s = string( c_special_variable_session_id );
       break;
 
       case e_special_var_tag_prefix:
