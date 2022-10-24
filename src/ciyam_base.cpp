@@ -4130,81 +4130,101 @@ void log_trace_message( unsigned flag, const string& message )
 {
    guard g( g_trace_mutex );
 
-   string type( "unknown" );
-   switch( flag )
+   bool ignore = false;
+
+   if( flag != TRACE_ANYTHING )
    {
-      case TRACE_COMMANDS:
-      type = "command";
-      break;
+      string trace_session_id( get_raw_system_variable(
+       get_special_var_name( e_special_var_trace_session_id ) ) );
 
-      case TRACE_SQLSTMTS:
-      type = "sqlstmt";
-      break;
+      if( !trace_session_id.empty( ) )
+      {
+         size_t session_id = ( gtp_session ? gtp_session->id : 0 );
 
-      case TRACE_CLASSOPS:
-      type = "classop";
-      break;
-
-      case TRACE_MODS_GEN:
-      type = "mod_gen";
-      break;
-
-      case TRACE_SQLCLSET:
-      type = "sql_set";
-      break;
-
-      case TRACE_FLD_VALS:
-      type = "fld_val";
-      break;
-
-      case TRACE_LOCK_OPS:
-      type = "lock_op";
-      break;
-
-      case TRACE_CTR_DTRS:
-      type = "ctr_dtr";
-      break;
-
-      case TRACE_SESSIONS:
-      type = "session";
-      break;
-
-      case TRACE_MAIL_OPS:
-      type = "mail_op";
-      break;
-
-      case TRACE_PDF_VALS:
-      type = "pdf_val";
-      break;
-
-      case TRACE_SOCK_OPS:
-      type = "sock_op";
-      break;
-
-      case TRACE_CORE_FLS:
-      type = "core_fs";
-      break;
-
-      case TRACE_SYNC_OPS:
-      type = "sync_op";
-      break;
-
-      case TRACE_PEER_OPS:
-      type = "peer_op";
-      break;
-
-      case TRACE_ANYTHING:
-      type = "general";
-      break;
+         if( session_id != from_string< size_t >( trace_session_id ) )
+            ignore = true;
+      }
    }
 
-   string log_file_name( get_files_area_dir( ) );
-   log_file_name += '/' + string( c_server_log_file );
+   if( !ignore )
+   {
+      string type( "unknown" );
 
-   ofstream outf( log_file_name.c_str( ), ios::out | ios::app );
+      switch( flag )
+      {
+         case TRACE_COMMANDS:
+         type = "command";
+         break;
 
-   outf << '[' << date_time::local( ).as_string( true, false ) << "] [" << setw( 6 )
-    << setfill( '0' ) << ( gtp_session ? gtp_session->id : 0 ) << "] [" << type << "] " << message << '\n';
+         case TRACE_SQLSTMTS:
+         type = "sqlstmt";
+         break;
+
+         case TRACE_CLASSOPS:
+         type = "classop";
+         break;
+
+         case TRACE_MODS_GEN:
+         type = "mod_gen";
+         break;
+
+         case TRACE_SQLCLSET:
+         type = "sql_set";
+         break;
+
+         case TRACE_FLD_VALS:
+         type = "fld_val";
+         break;
+
+         case TRACE_LOCK_OPS:
+         type = "lock_op";
+         break;
+
+         case TRACE_CTR_DTRS:
+         type = "ctr_dtr";
+         break;
+
+         case TRACE_SESSIONS:
+         type = "session";
+         break;
+
+         case TRACE_MAIL_OPS:
+         type = "mail_op";
+         break;
+
+         case TRACE_PDF_VALS:
+         type = "pdf_val";
+         break;
+
+         case TRACE_SOCK_OPS:
+         type = "sock_op";
+         break;
+
+         case TRACE_CORE_FLS:
+         type = "core_fs";
+         break;
+
+         case TRACE_SYNC_OPS:
+         type = "sync_op";
+         break;
+
+         case TRACE_PEER_OPS:
+         type = "peer_op";
+         break;
+
+         case TRACE_ANYTHING:
+         type = "general";
+         break;
+      }
+
+      string log_file_name( get_files_area_dir( ) );
+      log_file_name += '/' + string( c_server_log_file );
+
+      ofstream outf( log_file_name.c_str( ), ios::out | ios::app );
+
+      outf << '[' << date_time::local( ).as_string( true, false ) << "] [" << setw( 6 )
+       << setfill( '0' ) << ( gtp_session ? gtp_session->id : 0 ) << "] [" << type << "] " << message << '\n';
+   }
 }
 
 void log_trace_string( unsigned flag, const char* p_message )
