@@ -473,10 +473,10 @@ void pdf_page::set_line_cap( line_cap cap )
       break;
 
       case e_line_cap_projecting_end:
-#if HPDF_MINOR_VERSION < 4
-      hcap = HPDF_PROJECTING_SCUARE_END;
-#else
+#if HPDF_BUGFIX_VERSION >= 2
       hcap = HPDF_PROJECTING_SQUARE_END;
+#else
+      hcap = HPDF_PROJECTING_SCUARE_END;
 #endif
       break;
 
