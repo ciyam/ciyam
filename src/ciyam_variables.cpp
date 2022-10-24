@@ -147,6 +147,7 @@ const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_dummy_time_stamp = "@dummy_time_stamp";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_skip_persistance = "@skip_persistance";
+const char* const c_special_variable_trace_session_id = "@trace_session_id";
 const char* const c_special_variable_blockchain_height = "@blockchain_height";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
@@ -621,6 +622,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_skip_persistance:
       s = string( c_special_variable_skip_persistance );
+      break;
+
+      case e_special_var_trace_session_id:
+      s = string( c_special_variable_trace_session_id );
       break;
 
       case e_special_var_blockchain_height:

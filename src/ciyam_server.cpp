@@ -463,10 +463,10 @@ int main( int argc, char* argv[ ] )
           "", "don't start the autoscript thread", new ciyam_server_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_no_peers, 4,
-          "", "don't start any peer listener threads", new ciyam_server_startup_functor( cmd_handler ) );
+          "", "don't start the peer sessions thread", new ciyam_server_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_no_streams, 4,
-          "", "don't start the udp stream session threads", new ciyam_server_startup_functor( cmd_handler ) );
+          "", "don't start any udp stream session threads", new ciyam_server_startup_functor( cmd_handler ) );
 
 #ifdef _WIN32
          cmd_handler.add_command( c_cmd_svcins, 5,

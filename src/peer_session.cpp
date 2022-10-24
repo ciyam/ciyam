@@ -97,8 +97,7 @@ const size_t c_max_pubkey_size = 256;
 const size_t c_max_greeting_size = 256;
 const size_t c_max_put_blob_size = 256;
 
-const size_t c_num_signature_lines = 256;
-const size_t c_num_public_key_lines = 256;
+const size_t c_num_lamport_lines = 256;
 
 const size_t c_num_base64_key_chars = 44;
 const size_t c_key_pair_separator_pos = 44;
@@ -1510,11 +1509,11 @@ void validate_signature_file( const string& file_data )
    if( !lines.empty( ) && lines[ lines.size( ) - 1 ].empty( ) )
       lines.pop_back( );
 
-   if( lines.size( ) != c_num_signature_lines )
+   if( lines.size( ) != c_num_lamport_lines )
       throw runtime_error( "unexpected number of lines is " + to_string( lines.size( ) )
-       + " rather than " + to_string( c_num_public_key_lines ) + " in  'validate_signature_file'" );
+       + " rather than " + to_string( c_num_lamport_lines ) + " in  'validate_signature_file'" );
 
-   for( size_t i = 0; i < c_num_signature_lines; i++ )
+   for( size_t i = 0; i < c_num_lamport_lines; i++ )
    {
       string next_line( lines[ i ] );
 
@@ -1553,11 +1552,11 @@ void validate_public_key_file( const string& file_data )
    if( !lines.empty( ) && lines[ lines.size( ) - 1 ].empty( ) )
       lines.pop_back( );
 
-   if( lines.size( ) != c_num_public_key_lines )
+   if( lines.size( ) != c_num_lamport_lines )
       throw runtime_error( "unexpected number of lines is " + to_string( lines.size( ) )
-       + " rather than " + to_string( c_num_public_key_lines ) + " in  'validate_public_key_file'" );
+       + " rather than " + to_string( c_num_lamport_lines ) + " in  'validate_public_key_file'" );
 
-   for( size_t i = 0; i < c_num_public_key_lines; i++ )
+   for( size_t i = 0; i < c_num_lamport_lines; i++ )
    {
       string next_line( lines[ i ] );
 

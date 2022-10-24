@@ -156,6 +156,7 @@ enum special_var
    e_special_var_dummy_time_stamp,
    e_special_var_skip_after_fetch,
    e_special_var_skip_persistance,
+   e_special_var_trace_session_id,
    e_special_var_blockchain_height,
    e_special_var_fields_and_values,
    e_special_var_package_type_path,
