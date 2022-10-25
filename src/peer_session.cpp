@@ -1041,6 +1041,7 @@ void process_list_items( const string& identity,
 
    string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
    string blockchain_is_fetching_name( get_special_var_name( e_special_var_blockchain_is_fetching ) );
+   string blockchain_first_mapped_name( get_special_var_name( e_special_var_blockchain_first_mapped ) );
    string blockchain_peer_is_owner_name( get_special_var_name( e_special_var_blockchain_peer_is_owner ) );
    string blockchain_skip_blob_puts_name( get_special_var_name( e_special_var_blockchain_skip_blob_puts ) );
    string blockchain_both_are_owners_name( get_special_var_name( e_special_var_blockchain_both_are_owners ) );
@@ -1067,6 +1068,7 @@ void process_list_items( const string& identity,
     get_special_var_name( e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
       check_for_supporters = true;
 
+   bool has_set_first_mapped = false;
    bool store_encrypted_hashes = false;
 
    if( is_fetching )
@@ -1234,6 +1236,8 @@ void process_list_items( const string& identity,
 
                         if( has_targeted_identity )
                            add_peer_file_hash_for_get( next_hash );
+                        else if( !has_set_first_mapped )
+                           has_set_first_mapped = set_session_variable( blockchain_first_mapped_name, next_hash, "" );
                      }
                      else if( is_peer_owner )
                      {
@@ -2499,8 +2503,15 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                   set_blockchain_tree_item( blockchain, 0 );
 
+                  string blockchain_first_mapped_name(
+                   get_special_var_name( e_special_var_blockchain_first_mapped ) );
+
                   bool has_block_data = process_block_for_height( blockchain,
                    next_block_hash, blockchain_height + 1, &num_items_found, this );
+
+                  string first_mapped( get_session_variable( blockchain_first_mapped_name ) );
+
+                  set_session_variable( blockchain_first_mapped_name, "" );
 
                   if( has_block_data && top_next_peer_file_hash_to_get( ).empty( ) )
                   {
@@ -2518,6 +2529,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      if( need_to_check )
                      {
                         string file_hash( top_next_peer_file_hash_to_get( ) );
+
+                        if( file_hash.empty( ) )
+                           file_hash = first_mapped;
 
                         // NOTE: Use the "nonce" argument to indicate the first
                         // file to be fetched (so that pull requests will start

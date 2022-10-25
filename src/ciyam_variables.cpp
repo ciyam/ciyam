@@ -170,6 +170,7 @@ const char* const c_special_variable_blockchain_zenith_hash = "@blockchain_zenit
 const char* const c_special_variable_single_string_response = "@single_string_response";
 const char* const c_special_variable_blockchain_archive_path = "@blockchain_archive_path";
 const char* const c_special_variable_blockchain_backup_ident = "@blockchain_backup_ident";
+const char* const c_special_variable_blockchain_first_mapped = "@blockchain_first_mapped";
 const char* const c_special_variable_blockchain_shared_ident = "@blockchain_shared_ident";
 const char* const c_special_variable_blockchain_backup_height = "@blockchain_backup_height";
 const char* const c_special_variable_blockchain_peer_is_owner = "@blockchain_peer_is_owner";
@@ -715,6 +716,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_backup_ident:
       s = string( c_special_variable_blockchain_backup_ident );
+      break;
+
+      case e_special_var_blockchain_first_mapped:
+      s = string( c_special_variable_blockchain_first_mapped );
       break;
 
       case e_special_var_blockchain_shared_ident:
