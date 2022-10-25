@@ -1049,7 +1049,11 @@ void process_list_items( const string& identity,
    string first_hash_name( get_special_var_name( e_special_var_hash ) );
    string first_hash_to_get( get_session_variable( first_hash_name ) );
 
-   if( hash == first_hash_to_get )
+   bool has_targeted_identity = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
+
+   if( ( hash == first_hash_to_get )
+    && ( !skip_secondary_blobs || has_targeted_identity ) )
    {
       first_hash_to_get.erase( );
       set_session_variable( first_hash_name, "" );
@@ -1058,9 +1062,6 @@ void process_list_items( const string& identity,
    bool is_owner = !get_session_variable( blockchain_is_owner_name ).empty( );
    bool is_fetching = !get_session_variable( blockchain_is_fetching_name ).empty( );
    bool is_peer_owner = !get_session_variable( blockchain_peer_is_owner_name ).empty( );
-
-   bool has_targeted_identity = !get_session_variable(
-    get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
 
    bool check_for_supporters = false;
 
@@ -1177,7 +1178,8 @@ void process_list_items( const string& identity,
       {
          string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
 
-         if( next_hash == first_hash_to_get )
+         if( ( next_hash == first_hash_to_get )
+          && ( !skip_secondary_blobs || has_targeted_identity ) )
          {
             first_hash_to_get.erase( );
             set_session_variable( first_hash_name, "" );
@@ -1254,6 +1256,9 @@ void process_list_items( const string& identity,
             }
             else if( allow_blob_creation && first_hash_to_get.empty( ) )
             {
+               if( p_num_items_found )
+                  ++( *p_num_items_found );
+
                fetch_repository_entry_record( identity,
                 next_hash, local_hash, local_public_key, master_public_key );
 
