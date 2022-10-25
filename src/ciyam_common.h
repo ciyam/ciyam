@@ -179,6 +179,7 @@ enum special_var
    e_special_var_single_string_response,
    e_special_var_blockchain_archive_path,
    e_special_var_blockchain_backup_ident,
+   e_special_var_blockchain_first_mapped,
    e_special_var_blockchain_shared_ident,
    e_special_var_blockchain_backup_height,
    e_special_var_blockchain_peer_is_owner,
