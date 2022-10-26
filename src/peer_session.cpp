@@ -844,6 +844,8 @@ bool has_all_list_items( const string& blockchain,
 
    bool retval = true;
 
+   string last_hash;
+
    size_t total_processed = 0;
 
    if( !p_total_processed )
@@ -913,11 +915,19 @@ bool has_all_list_items( const string& blockchain,
          {
             string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
 
-            bool has_next_file = has_file( next_hash );
+            bool has_next_file = false;
             bool has_next_repo_entry = false;
+
+            if( next_hash == last_hash )
+               has_next_file = true;
+
+            if( !has_next_file )
+               has_next_file = has_file( next_hash );
 
             if( !has_next_file )
                has_next_repo_entry = has_repository_entry_record( identity, next_hash );
+
+            last_hash = next_hash;
 
             if( !has_next_file && !has_next_repo_entry )
             {
@@ -1101,6 +1111,16 @@ void process_list_items( const string& identity,
       if( is_condemned_session( ) )
          throw runtime_error( "peer session has been condemned" );
 
+      bool blob_increment = has_targeted_identity;
+
+      if( !blob_increment )
+      {
+         if( skip_secondary_blobs )
+            blob_increment = ( ( i % 2 ) == 0 );
+         else
+            blob_increment = ( ( i % 2 ) == 1 );
+      }
+
       if( p_dtm && p_progress )
       {
          date_time now( date_time::local( ) );
@@ -1191,14 +1211,17 @@ void process_list_items( const string& identity,
 
          if( p_list_items_to_ignore && p_list_items_to_ignore->count( next_hash ) )
          {
-            if( p_num_items_found )
+            if( blob_increment && p_num_items_found )
                ++( *p_num_items_found );
 
-            if( allow_blob_creation )
-               ++( *p_num_items_skipped );
+            if( recurse )
+            {
+               if( allow_blob_creation && !skip_secondary_blobs )
+                  ++( *p_num_items_skipped );
 
-            if( recurse && is_fetching && !skip_secondary_blobs )
-               add_to_blockchain_tree_item( blockchain, 1 );
+               if( is_fetching && !skip_secondary_blobs )
+                  add_to_blockchain_tree_item( blockchain, 1 );
+            }
 
             continue;
          }
@@ -1254,7 +1277,7 @@ void process_list_items( const string& identity,
             }
             else if( allow_blob_creation && first_hash_to_get.empty( ) )
             {
-               if( p_num_items_found )
+               if( blob_increment && p_num_items_found )
                   ++( *p_num_items_found );
 
                fetch_repository_entry_record( identity,
@@ -1276,12 +1299,6 @@ void process_list_items( const string& identity,
             }
             else if( !recurse && is_fetching )
             {
-               if( p_num_items_found )
-                  ++( *p_num_items_found );
-
-               if( recurse && is_fetching && !skip_secondary_blobs )
-                  add_to_blockchain_tree_item( blockchain, 1 );
-
                // NOTE: For repository entries need to touch the local file.
                fetch_repository_entry_record( identity, next_hash, local_hash );
 
@@ -1289,7 +1306,7 @@ void process_list_items( const string& identity,
             }
             else
             {
-               if( p_num_items_found )
+               if( blob_increment && p_num_items_found )
                   ++( *p_num_items_found );
 
                if( recurse && is_fetching && !skip_secondary_blobs )
@@ -1301,7 +1318,7 @@ void process_list_items( const string& identity,
             if( p_num_items_found )
                ++( *p_num_items_found );
 
-            if( recurse && is_fetching )
+            if( is_fetching )
                add_to_blockchain_tree_item( blockchain, 1 );
 
             process_list_items( identity, next_hash, recurse,
@@ -1315,10 +1332,10 @@ void process_list_items( const string& identity,
             bool has_repository_entry = false;
             bool put_info_and_store_repository_entry = false;
 
-            if( p_num_items_found )
+            if( blob_increment && p_num_items_found )
                ++( *p_num_items_found );
 
-            if( recurse && is_fetching && !skip_secondary_blobs )
+            if( is_fetching && !skip_secondary_blobs )
                add_to_blockchain_tree_item( blockchain, 1 );
 
             if( has_repository_entry_record( identity, next_hash ) )
@@ -1364,9 +1381,6 @@ void process_list_items( const string& identity,
          }
          else
          {
-            if( p_num_items_found )
-               ++( *p_num_items_found );
-
             // NOTE: Although recursion was not requested in order to ensure
             // that all blob items will be "touched" need to do this anyway.
             if( !is_list_file( next_hash ) )
@@ -1732,7 +1746,11 @@ bool process_block_for_height( const string& blockchain,
          }
          else
          {
-            bool has_all_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, p_progress );
+            // NOTE: If height matches the current zenith then skip checking for all items.
+            bool has_all_tree_items = ( blockchain_height_processed == to_string( height ) );
+
+            if( !is_fetching && !has_all_tree_items )
+               has_all_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, p_progress );
 
             if( is_fetching || has_all_tree_items )
             {
