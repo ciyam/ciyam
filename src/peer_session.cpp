@@ -1011,12 +1011,15 @@ void process_list_items( const string& identity,
    vector< string > list_items;
    vector< string > secondary_values;
 
+   bool has_targeted_identity = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
+
    bool skip_secondary_blobs = false;
    bool prefixed_secondary_values = false;
 
    split_list_items( all_list_items, list_items, &secondary_values, &prefixed_secondary_values );
 
-   if( !secondary_values.empty( ) && !prefixed_secondary_values )
+   if( !has_targeted_identity && !secondary_values.empty( ) && !prefixed_secondary_values )
       skip_secondary_blobs = true;
 
    if( !secondary_values.empty( ) && ( list_items.size( ) != secondary_values.size( ) ) )
@@ -1049,11 +1052,7 @@ void process_list_items( const string& identity,
    string first_hash_name( get_special_var_name( e_special_var_hash ) );
    string first_hash_to_get( get_session_variable( first_hash_name ) );
 
-   bool has_targeted_identity = !get_session_variable(
-    get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
-
-   if( ( hash == first_hash_to_get )
-    && ( !skip_secondary_blobs || has_targeted_identity ) )
+   if( !skip_secondary_blobs && ( hash == first_hash_to_get ) )
    {
       first_hash_to_get.erase( );
       set_session_variable( first_hash_name, "" );
@@ -1178,8 +1177,7 @@ void process_list_items( const string& identity,
       {
          string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
 
-         if( ( next_hash == first_hash_to_get )
-          && ( !skip_secondary_blobs || has_targeted_identity ) )
+         if( !skip_secondary_blobs && ( next_hash == first_hash_to_get ) )
          {
             first_hash_to_get.erase( );
             set_session_variable( first_hash_name, "" );
@@ -1272,6 +1270,9 @@ void process_list_items( const string& identity,
 
                   *p_num_items_skipped = 0;
                }
+
+               if( !skip_secondary_blobs && p_list_items_to_ignore )
+                  p_list_items_to_ignore->insert( next_hash );
             }
             else if( !recurse && is_fetching )
             {
@@ -1353,6 +1354,9 @@ void process_list_items( const string& identity,
 
                   *p_num_items_skipped = 0;
                }
+
+               if( !skip_secondary_blobs && p_list_items_to_ignore )
+                  p_list_items_to_ignore->insert( next_hash );
 
                if( !has_repository_entry )
                   store_repository_entry_record( identity, next_hash, "", master_public_key, master_public_key );
