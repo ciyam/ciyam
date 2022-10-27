@@ -22,14 +22,16 @@ IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 if [ ! -f ~shared ]; then
  touch ~shared
 
+ EXPORT_FOR=`./system_variable get @exporting_for_identity`
+
  if [ -d $SHARED_PATH ]; then
   if mountpoint -q $SHARED_PATH; then
    sudo umount $SHARED_PATH
    # NOTE: If unable to umount will exit (so can be called repeatedly until okay).
    if [ $? -ne 0 ]; then
-    date >Shared.txt
-    echo "NOTE: Shared files area is not currently available (please try again later)." >>Shared.txt
-    date >>Shared.txt
+    date >$EXPORT_FOR
+    echo "NOTE: Shared files area is not currently available (please try again later)." >>$EXPORT_FOR
+    date >>$EXPORT_FOR
     rm ~shared
     exit
    fi
@@ -39,8 +41,8 @@ if [ ! -f ~shared ]; then
  ./system_variable set @export_needed ""
  ./system_variable set @import_needed ""
 
- date >Shared.txt
- echo "Starting export..." >>Shared.txt
+ date >$EXPORT_FOR
+ echo "Starting export..." >>$EXPORT_FOR
 
  sudo chown $USER:www $SHARED_IMAGE
 
@@ -54,15 +56,15 @@ if [ ! -f ~shared ]; then
  BLOCK_TREE=`./block_tree_hash $IDENTITY`
  SHARED_LIST=`./tree_list $BLOCK_TREE 0 Shared | tail -n 1`
 
- ./export_files $SHARED_LIST $USER_PATH >>Shared.txt
+ ./export_files $SHARED_LIST $USER_PATH >>$EXPORT_FOR
 
  sudo chown root:root $SHARED_IMAGE
  sudo mount $SHARED_IMAGE $SHARED_PATH
 
  echo `date +%s` > $IMPORTED_TIME_FILE
 
- echo "Finished export..." >>Shared.txt
- date >>Shared.txt
+ echo "Finished export..." >>$EXPORT_FOR
+ date >>$EXPORT_FOR
 
  ./system_variable set @export_ident ""
  ./system_variable set @shared_secret ""
