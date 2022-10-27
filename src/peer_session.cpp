@@ -1114,12 +1114,7 @@ void process_list_items( const string& identity,
       bool blob_increment = has_targeted_identity;
 
       if( !blob_increment )
-      {
-         if( skip_secondary_blobs )
-            blob_increment = ( ( i % 2 ) == 0 );
-         else
-            blob_increment = ( ( i % 2 ) == 1 );
-      }
+         blob_increment = ( ( i % 2 ) == skip_secondary_blobs );
 
       if( p_dtm && p_progress )
       {
