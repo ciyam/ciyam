@@ -22,7 +22,7 @@ IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 if [ ! -f ~shared ]; then
  touch ~shared
 
- IMPORT_FOR=`./system_variable get @importing_for_identity`
+ IMPORT_FOR=`./system_variable get @importing_for_identity`.txt
 
  if [ -d $SHARED_PATH ]; then
   if mountpoint -q $SHARED_PATH; then
