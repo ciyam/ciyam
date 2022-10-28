@@ -664,7 +664,7 @@ void process_put_file( const string& blockchain,
 
             if( num_tree_items.empty( ) || blockchain_height_processed.empty( ) )
                // FUTURE: This message should be handled as a server string message.
-               progress = "Processed " + to_string( i ) + " files...";
+               progress = "Processed " + to_string( i ) + " files" + to_string( c_ellipsis );
             else
             {
                size_t next_height = from_string< size_t >( blockchain_height_processed );
@@ -677,7 +677,7 @@ void process_put_file( const string& blockchain,
                if( !num_tree_items.empty( ) )
                   progress_message += '/' + num_tree_items;
 
-               progress_message += ")...";
+               progress_message += ")" + to_string( c_ellipsis );
 
                set_session_progress_output( progress_message );
             }
@@ -882,7 +882,9 @@ bool has_all_list_items( const string& blockchain,
 
                   // FUTURE: This message should be handled as a server string message.
                   progress = "Verifying at height " + to_string( next_height )
-                   + " (" + to_string( *p_total_processed ) + "/" + num_tree_items + ")...";
+                   + " (" + to_string( *p_total_processed ) + "/" + num_tree_items + ")";
+
+                  progress += c_ellipsis;
 
                   set_session_progress_output( progress );
 
@@ -891,7 +893,9 @@ bool has_all_list_items( const string& blockchain,
                else
                {
                   // FUTURE: This message should be handled as a server string message.
-                  progress = "Processed " + to_string( *p_total_processed ) + " items...";
+                  progress = "Processed " + to_string( *p_total_processed ) + " items";
+
+                  progress += c_ellipsis;
 
                   if( is_fetching )
                   {
@@ -1169,7 +1173,7 @@ void process_list_items( const string& identity,
                   if( !num_tree_items.empty( ) )
                      progress_message += '/' + num_tree_items;
 
-                  progress_message += ")...";
+                  progress_message += ")" + to_string( c_ellipsis );
 
                   set_session_progress_output( progress_message );
                }
@@ -1910,16 +1914,21 @@ class socket_command_handler : public command_handler
 
    ~socket_command_handler( )
    {
-      // NOTE: If found then remove the trailing ellipsis from the system progress
-      // message variable in order to make sure that the UI does not auto-refresh.
+      // NOTE: Replace the current progress message with the last zenith height.
       if( !is_for_support && !get_identity( ).empty( ) )
       {
-         string progress_message( get_system_variable( c_progress_output_prefix + get_identity( ) ) );
+         string zenith_height( get_session_variable(
+          get_special_var_name( e_special_var_blockchain_zenith_height ) ) );
 
-         string::size_type pos = progress_message.find( c_ellipsis );
+         // FUTURE: This message should be handled as server string messages.
+         string progress_message( "Currently at height " );
 
-         if( pos != string::npos )
-            set_system_variable( c_progress_output_prefix + get_identity( ), progress_message.substr( 0, pos ) );
+         if( zenith_height.empty( ) )
+            progress_message += "0";
+         else
+            progress_message += zenith_height;
+
+         set_system_variable( c_progress_output_prefix + get_identity( ), progress_message );
       }
 
       TRACE_LOG( TRACE_SESSIONS, get_blockchain( ).empty( )
@@ -4261,7 +4270,9 @@ void peer_session::on_start( )
                else
                {
                   // FUTURE: This message should be handled as a server string message.
-                  string progress_message( "Synchronising..." );
+                  string progress_message( "Synchronising" );
+
+                  progress_message += c_ellipsis;
 
                   set_session_progress_output( progress_message );
                   set_system_variable( c_progress_output_prefix + unprefixed_blockchain, progress_message );
@@ -4922,7 +4933,7 @@ void peer_session_starter::on_start( )
    catch( ... )
    {
 #ifdef DEBUG
-      cout << "unexpected peer_session_starter exception..." << endl;
+      cout << "unexpected peer_session_starter exception" << endl;
 #endif
       TRACE_LOG( TRACE_ANYTHING, "peer_session_starter error: unexpected unknown exception caught" );
    }
