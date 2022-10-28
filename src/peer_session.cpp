@@ -1045,6 +1045,8 @@ void process_list_items( const string& identity,
       p_blob_data = &file_data;
    }
 
+   string last_blob_hash;
+
    size_t num_items_skipped = 0;
 
    if( !p_num_items_skipped )
@@ -1126,18 +1128,25 @@ void process_list_items( const string& identity,
          {
             string progress;
 
+            // FUTURE: These messages should be handled as a server string message.
             if( !p_num_items_found )
-               // FUTURE: This message should be handled as a server string message.
                progress = "Processing: " + hash;
             else
             {
-               if( allow_blob_creation )
-                  // FUTURE: This message should be handled as a server string message.
-                  progress = "Processing " + to_string( *p_num_items_found )
-                   + " items at height " + blockchain_height_processed + c_ellipsis;
+               if( !allow_blob_creation )
+                  progress = "Processed " + to_string( *p_num_items_found );
                else
-                  // FUTURE: This message should be handled as a server string message.
-                  progress = "Processed " + to_string( *p_num_items_found ) + " items...";
+                  progress = "Preparing " + to_string( *p_num_items_found );
+
+               if( !num_tree_items.empty( ) )
+                  progress += "/" + num_tree_items;
+
+               progress += " items";
+
+               if( allow_blob_creation )
+                  progress += " at height " + blockchain_height_processed;
+
+               progress += c_ellipsis;
             }
 
             *p_dtm = now;
@@ -1204,7 +1213,8 @@ void process_list_items( const string& identity,
                p_list_items_to_ignore = 0;
          }
 
-         if( p_list_items_to_ignore && p_list_items_to_ignore->count( next_hash ) )
+         if( ( next_hash == last_blob_hash )
+          || ( p_list_items_to_ignore && p_list_items_to_ignore->count( next_hash ) ) )
          {
             if( blob_increment && p_num_items_found )
                ++( *p_num_items_found );
@@ -1287,6 +1297,7 @@ void process_list_items( const string& identity,
                    next_hash, local_hash, local_public_key, master_public_key, false, *p_num_items_skipped );
 
                   *p_num_items_skipped = 0;
+                  last_blob_hash = next_hash;
                }
 
                if( !skip_secondary_blobs && p_list_items_to_ignore )
@@ -1365,6 +1376,7 @@ void process_list_items( const string& identity,
                   clear_key( password );
 
                   *p_num_items_skipped = 0;
+                  last_blob_hash = next_hash;
                }
 
                if( !skip_secondary_blobs && p_list_items_to_ignore )
@@ -2320,7 +2332,10 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
          response.erase( 0, strlen( c_response_message_prefix ) );
 
          if( response != "." )
+         {
             set_session_progress_output( response );
+            set_system_variable( c_progress_output_prefix + identity, response );
+         }
 
          continue;
       }
