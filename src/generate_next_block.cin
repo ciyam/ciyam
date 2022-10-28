@@ -41,8 +41,8 @@ HEIGHT_INFO=%INFO_LINES:1%
 BLK_HEIGHT=@repstr:blk\:h=/:$HEIGHT_INFO
 NEW_HEIGHT=@$BLK_HEIGHT+1
 ;
-.file_hash bc.$IDENT.$BLK_HEIGHT.key
-@ifdef $ERROR
+.file_tags bc.$IDENT.$BLK_HEIGHT.key*
+@ifndef $OUTPUT
 <bc_gen_keys.cin $SEED $IDENT $BLK_HEIGHT
 @endif
 ;
