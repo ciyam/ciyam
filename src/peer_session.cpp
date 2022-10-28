@@ -2900,7 +2900,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       string genesis_key_tag( blockchain + ".0" + string( c_key_suffix ) );
 
       if( has_tag( genesis_key_tag ) )
-         delete_file( genesis_key_tag );
+         delete_file( tag_file_hash( genesis_key_tag ) );
 
       set_session_variable( blockchain_zenith_hash_name, "" );
 
