@@ -664,7 +664,7 @@ void process_put_file( const string& blockchain,
 
             if( num_tree_items.empty( ) || blockchain_height_processed.empty( ) )
                // FUTURE: This message should be handled as a server string message.
-               progress = "Processed " + to_string( i ) + " files" + to_string( c_ellipsis );
+               progress = "Processed " + to_string( i ) + " items" + to_string( c_ellipsis );
             else
             {
                size_t next_height = from_string< size_t >( blockchain_height_processed );
@@ -1138,20 +1138,23 @@ void process_list_items( const string& identity,
             else
             {
                if( !allow_blob_creation )
-                  progress = "Processed " + to_string( *p_num_items_found );
+                  progress = "Processed " + to_string( *p_num_items_found ) + " items";
                else
-                  progress = "Preparing " + to_string( *p_num_items_found );
+               {
+                  progress = "Preparing items for height ";
 
-               if( !num_tree_items.empty( ) )
-                  progress += "/" + num_tree_items;
+                  progress += blockchain_height_processed;
 
-               progress += " items";
+                  progress += " (" + to_string( *p_num_items_found );
 
-               if( allow_blob_creation )
-                  progress += " at height " + blockchain_height_processed;
+                  if( !num_tree_items.empty( ) )
+                     progress += "/" + num_tree_items;
 
-               progress += c_ellipsis;
+                  progress += ")";
+               }
             }
+
+            progress += c_ellipsis;
 
             *p_dtm = now;
 
