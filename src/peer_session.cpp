@@ -4075,6 +4075,9 @@ void peer_session::on_start( )
             else
                error = "Peer has unexpectedly terminated this connection.";
 
+            if( !identity.empty( ) )
+               set_system_variable( c_error_message_prefix + identity, error );
+
             if( !unprefixed_blockchain.empty( ) )
                set_system_variable( c_error_message_prefix + unprefixed_blockchain, error );
 
@@ -4088,6 +4091,9 @@ void peer_session::on_start( )
 
             greeting.erase( 0, strlen( c_response_error_prefix ) );
 
+            if( !identity.empty( ) )
+               set_system_variable( c_error_message_prefix + identity, greeting );
+
             if( !unprefixed_blockchain.empty( ) )
                set_system_variable( c_error_message_prefix + unprefixed_blockchain, greeting );
 
@@ -4098,6 +4104,9 @@ void peer_session::on_start( )
          if( get_version_info( greeting, ver_info ) != string( c_response_okay ) )
          {
             ap_socket->close( );
+
+            if( !identity.empty( ) )
+               set_system_variable( c_error_message_prefix + identity, greeting );
 
             if( !unprefixed_blockchain.empty( ) )
                set_system_variable( c_error_message_prefix + unprefixed_blockchain, greeting );
@@ -4112,6 +4121,9 @@ void peer_session::on_start( )
             // FUTURE: This message should be handled as a server string message.
             string error( "Incompatible protocol version "
              + ver_info.ver + " (was expecting " + string( c_protocol_version ) + ")." );
+
+            if( !identity.empty( ) )
+               set_system_variable( c_error_message_prefix + identity, error );
 
             if( !unprefixed_blockchain.empty( ) )
                set_system_variable( c_error_message_prefix + unprefixed_blockchain, error );
@@ -4137,6 +4149,9 @@ void peer_session::on_start( )
 
                // FUTURE: This message should be handled as a server string message.
                string error( "Unexpected files area item size mismatch." );
+
+               if( !identity.empty( ) )
+                  set_system_variable( c_error_message_prefix + identity, error );
 
                if( !unprefixed_blockchain.empty( ) )
                   set_system_variable( c_error_message_prefix + unprefixed_blockchain, error );
@@ -4735,7 +4750,7 @@ peer_session* create_peer_initiator( const string& blockchain,
    string identity( blockchain );
    replace( identity, c_bc_prefix, "" );
 
-   if( !is_interactive )
+   if( !is_interactive && !p_main_session )
       set_system_variable( c_error_message_prefix + identity, "" );
 
    ip_address address( host.c_str( ), port );
