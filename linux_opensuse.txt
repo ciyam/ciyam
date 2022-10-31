@@ -107,7 +107,7 @@ sudo vi README.md
 CIYAM Backup Staging Area
 =========================
 
-If you are reading this text then an import is now in progress - please disconnect and try again later.
+If you are reading this then a backup or restore is now active - please disconnect and try again later.
 
 NOTE: If still seeing this after being disconnected for an hour then this device may require rebooting.
 [README.md]
@@ -139,7 +139,7 @@ sudo vi README.md
 CIYAM Shared Staging Area
 =========================
 
-If you are reading this text then an import is now in progress - please disconnect and try again later.
+If you are reading this then an import or export is now active - please disconnect and try again later.
 
 NOTE: If still seeing this after being disconnected for an hour then this device may require rebooting.
 [REAMDE.md]

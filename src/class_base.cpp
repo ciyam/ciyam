@@ -5729,6 +5729,12 @@ void disuse_peerchain( const string& identity, bool no_delay )
    {
       set_system_variable( '@' + to_string( port ), '~' + identity );
 
+      string reversed( identity );
+      reverse( reversed.begin( ), reversed.end( ) );
+
+      if( has_registered_listener_id( reversed, &port ) )
+         set_system_variable( '@' + to_string( port ), '~' + reversed );
+
       if( !no_delay )
          msleep( c_peer_sleep_time );
    }
