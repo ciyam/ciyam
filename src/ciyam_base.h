@@ -447,13 +447,14 @@ void CIYAM_BASE_DECL_SPEC clear_all_peer_mapped_hashes( );
 
 void CIYAM_BASE_DECL_SPEC set_default_session_variables( int port = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC get_raw_session_variable( const std::string& name );
-std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name_or_expr );
+std::string CIYAM_BASE_DECL_SPEC get_raw_session_variable( const std::string& name, size_t sess_id = 0 );
+
+std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name_or_expr, const std::string* p_sess_id = 0 );
 std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name, size_t slot );
 
 void CIYAM_BASE_DECL_SPEC set_session_variable(
  const std::string& name, const std::string& value,
- bool* p_set_special_temporary = 0, command_handler* p_command_handler = 0 );
+ bool* p_set_special_temporary = 0, command_handler* p_command_handler = 0, const std::string* p_sess_id = 0 );
 
 bool CIYAM_BASE_DECL_SPEC set_session_variable(
  const std::string& name, const std::string& value, const std::string& current );

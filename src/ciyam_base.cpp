@@ -5872,6 +5872,24 @@ bool has_session_with_ip_addr( const string& ip_addr, const string& blockchain )
    return false;
 }
 
+session* get_session_pointer( size_t sess_id )
+{
+   guard g( g_mutex );
+
+   session* p_session = 0;
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ] && g_sessions[ i ]->id == sess_id )
+      {
+         p_session = g_sessions[ i ];
+         break;
+      }
+   }
+
+   return p_session;
+}
+
 string get_random_same_port_peer_ip_addr( const string& empty_value )
 {
    guard g( g_mutex );
@@ -6837,11 +6855,20 @@ void set_default_session_variables( int port )
    set_session_variable( get_special_var_name( e_special_var_storage ), get_default_storage( ) );
 }
 
-string get_raw_session_variable( const string& name )
+string get_raw_session_variable( const string& name, size_t sess_id )
 {
    string retval;
 
    bool found = false;
+
+   auto_ptr< guard > ap_guard;
+   auto_ptr< restorable< session* > > ap_temp_session;
+
+   if( sess_id )
+   {
+      ap_guard.reset( new guard( g_mutex ) );
+      ap_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
+   }
 
    if( gtp_session )
    {
@@ -7019,12 +7046,21 @@ string get_raw_session_variable( const string& name )
 
 struct raw_session_variable_getter : variable_getter
 {
-   string get_value( const string& name ) const { return get_raw_session_variable( name ); }
+   raw_session_variable_getter( size_t sess_id ) : sess_id( sess_id ) { }
+    
+   string get_value( const string& name ) const { return get_raw_session_variable( name, sess_id ); }
+
+   size_t sess_id;
 };
 
-string get_session_variable( const string& name_or_expr )
+string get_session_variable( const string& name_or_expr, const string* p_sess_id )
 {
-   raw_session_variable_getter raw_getter;
+   size_t sess_id = 0;
+
+   if( p_sess_id )
+      sess_id = from_string< size_t >( *p_sess_id );
+
+   raw_session_variable_getter raw_getter( sess_id );
    variable_expression expr( name_or_expr, raw_getter );
 
    return expr.get_value( );
@@ -7045,10 +7081,20 @@ string get_session_variable( const string& name, size_t slot )
    return retval;
 }
 
-void set_session_variable( const string& name,
- const string& value, bool* p_set_special_temporary, command_handler* p_command_handler )
+void set_session_variable( const string& name, const string& value,
+ bool* p_set_special_temporary, command_handler* p_command_handler, const string* p_sess_id )
 {
    guard g( g_mutex );
+
+   size_t sess_id = 0;
+
+   if( p_sess_id )
+      sess_id = from_string< size_t >( *p_sess_id );
+
+   auto_ptr< restorable< session* > > ap_temp_session;
+
+   if( sess_id )
+      ap_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
 
    if( gtp_session )
    {
