@@ -4348,9 +4348,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_session_variable )
       {
+         string sess_id( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_sess_id ) );
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_name_or_expr ) );
          bool has_new_val( has_parm_val( parameters, c_cmd_ciyam_session_session_variable_new_value ) );
          string new_value( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_new_value ) );
+
+         string* p_sess_id = 0;
+
+         if( !sess_id.empty( ) )
+            p_sess_id = &sess_id;
 
          bool needs_response = false;
 
@@ -4361,12 +4367,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
          {
             check_not_possible_protocol_response( new_value );
-            set_session_variable( name_or_expr, new_value, &needs_response, &handler );
+            set_session_variable( name_or_expr, new_value, &needs_response, &handler, p_sess_id );
          }
 
          if( needs_response )
          {
-            response = get_session_variable( name_or_expr );
+            response = get_session_variable( name_or_expr, p_sess_id );
             check_not_possible_protocol_response( response );
          }
       }
