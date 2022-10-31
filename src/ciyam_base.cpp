@@ -6467,10 +6467,13 @@ unsigned int get_num_sessions_for_blockchain( const string& blockchain )
 
    unsigned int num_sessions = 0;
 
-   for( size_t i = 0; i < g_max_sessions; i++ )
+   if( !blockchain.empty( ) )
    {
-      if( g_sessions[ i ] && blockchain == g_sessions[ i ]->blockchain )
-         ++num_sessions;
+      for( size_t i = 0; i < g_max_sessions; i++ )
+      {
+         if( g_sessions[ i ] && blockchain == g_sessions[ i ]->blockchain )
+            ++num_sessions;
+      }
    }
 
    return num_sessions;
