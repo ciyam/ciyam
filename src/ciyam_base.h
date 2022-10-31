@@ -407,6 +407,11 @@ bool CIYAM_BASE_DECL_SPEC get_session_is_using_blockchain( );
 
 unsigned int CIYAM_BASE_DECL_SPEC get_num_sessions_for_blockchain( const std::string& blockchain );
 
+inline bool any_session_has_blockchain( const std::string& blockchain )
+{
+   return ( get_num_sessions_for_blockchain( blockchain ) > 0 );
+}
+
 unsigned int CIYAM_BASE_DECL_SPEC get_session_timeout( );
 void CIYAM_BASE_DECL_SPEC set_session_timeout( unsigned int seconds );
 
