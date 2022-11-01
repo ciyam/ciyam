@@ -2314,6 +2314,9 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
    string response;
 
+   string paired_identity( get_session_variable(
+    get_special_var_name( e_special_var_paired_identity ) ) );
+
    while( true )
    {
       response.erase( );
@@ -2340,6 +2343,23 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
          if( is_condemned_session( ) )
             throw runtime_error( "peer session has been condemned" );
+
+         if( !paired_identity.empty( ) && get_system_variable( paired_identity ).empty( ) )
+         {
+            bool is_only_session = false;
+
+            if( get_is_time_for_check( ) )
+               is_only_session = ( num_have_session_variable( paired_identity ) < 2 );
+
+            bool is_disconnecting = !get_system_variable( '~' + paired_identity ).empty( );
+
+            if( is_only_session || is_disconnecting )
+            {
+               set_session_variable( paired_identity, "" );
+
+               throw runtime_error( "peer session disconnected" );
+            }
+         }
 
          response.erase( 0, strlen( c_response_message_prefix ) );
 
@@ -3515,7 +3535,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    // NOTE: If a disconnect has been actioned for the paired identity then issue
    // a "bye" after condemning this session and (unless still connecting) do the
    // same if the matching identity session is not found.
-   if( !socket_handler.get_is_for_support( ) )
+   if( send_okay_response && !socket_handler.get_is_for_support( ) )
    {
       string paired_identity( get_session_variable(
        get_special_var_name( e_special_var_paired_identity ) ) );
