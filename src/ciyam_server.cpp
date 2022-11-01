@@ -814,7 +814,11 @@ int main( int argc, char* argv[ ] )
          if( !is_update )
             break;
 
-         ( *fp_log_trace_string_func )( TRACE_ANYTHING, "*** reloading ciyam_base library ***" );
+#ifndef _WIN32
+         ( *fp_log_trace_string_func )( TRACE_ANYTHING, "*** reloading ciyam_base.so library ***" );
+#else
+         ( *fp_log_trace_string_func )( TRACE_ANYTHING, "*** reloading ciyam_base.dll library ***" );
+#endif
 
          // NOTE: Force the dynamic library to be unloaded.
          ap_dynamic_library.reset( 0 );

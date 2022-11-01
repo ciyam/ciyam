@@ -1975,7 +1975,9 @@ class socket_command_handler : public command_handler
             extra += '/' + to_string( total );
       }
 
-      socket.write_line( string( c_response_message_prefix ) + message + extra, c_request_timeout, p_progress );
+      if( socket.write_line( string( c_response_message_prefix )
+       + message + extra, c_request_timeout, p_progress ) <= 0 )
+         throw runtime_error( "unexpected peer socket write failure" );
    }
 
    const string& get_last_command( ) { return last_command; }
