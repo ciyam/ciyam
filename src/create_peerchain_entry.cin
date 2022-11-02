@@ -62,6 +62,7 @@ FILES_AREA_DIR=$OUTPUT
 ~mkdir $FILES_AREA_DIR/$REVERSED
 .file_archive -add $FILES_AREA_DIR/$REVERSED 10GB $REVERSED
 @endif
-#Created listeners, global peerchain entry and file archives for identities '$IDENTITY' and '$REVERSED'.
+;
+#Created listeners, global peerchain entry and file archives for identity '$IDENTITY' (and '$REVERSED').
 @endif
 @endif

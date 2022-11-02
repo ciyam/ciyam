@@ -6,6 +6,8 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 
 if "%WEBDIR%" == "" goto error1
 
+if exist "ciyam_server.sid.sav" goto error2
+
 if not exist "ciyam_server.sid" goto skip
 copy /y "ciyam_server.sid" "ciyam_server.sid.sav" >nul
 
@@ -20,5 +22,9 @@ goto end
 
 :error1
 echo Error: Missing environment variable 'WEBDIR'.
+goto end
+
+:error2
+echo Error: An identity has already been saved (i.e. 'ciyam_server.sid.sav' exists).
 
 :end

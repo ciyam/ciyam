@@ -4930,14 +4930,23 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
 
    gap_ofs->list_files( "", peerchains );
 
+   string reversed( identity );
+   reverse( reversed.begin( ), reversed.end( ) );
+
    for( size_t i = 0; i < peerchains.size( ); i++ )
    {
-      if( identity == peerchains[ i ] )
+      bool is_reversed = false;
+
+      if( reversed == peerchains[ i ] )
+         is_reversed = true;
+
+      if( is_reversed || ( identity == peerchains[ i ] ) )
       {
          stringstream sio_data;
          auto_ptr< sio_reader > ap_sio_reader;
 
-         gap_ofs->get_file( identity, &sio_data );
+         gap_ofs->get_file( !is_reversed ? identity : reversed, &sio_data );
+
          ap_sio_reader.reset( new sio_reader( sio_data ) );
 
          string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
@@ -4955,12 +4964,14 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
          {
             if( p_is_listener )
                *p_is_listener = true;
+
             retval = identity + '=' + local_port;
          }
          else
          {
             if( p_is_listener )
                *p_is_listener = false;
+
             retval = identity + '+' + num_helpers + '=' + host_name + '-' + host_port;
          }
       }

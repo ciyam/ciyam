@@ -36,11 +36,12 @@ struct CIYAM_BASE_DECL_SPEC system_variable_lock
 std::string CIYAM_BASE_DECL_SPEC get_raw_system_variable( const std::string& name );
 std::string CIYAM_BASE_DECL_SPEC get_system_variable( const std::string& name_or_expr );
 
-void CIYAM_BASE_DECL_SPEC set_system_variable(
- const std::string& name, const std::string& value, bool is_init = false, progress* p_progress = 0 );
+void CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name,
+ const std::string& value, bool is_init = false, progress* p_progress = 0 );
 
 bool CIYAM_BASE_DECL_SPEC set_system_variable(
- const std::string& name, const std::string& value, const std::string& current, progress* p_progress = 0 );
+ const std::string& name, const std::string& value,
+ const std::string& current, progress* p_progress = 0, const char append_separator = '\0' );
 
 enum variable_check_type
 {

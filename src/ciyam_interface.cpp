@@ -1410,7 +1410,6 @@ void request_handler::process_request( )
 
                         if( !file_exists( id_file_name.c_str( ) ) )
                            throw runtime_error( "unable to create identity file (incorrect directory perms?)" );
-
                      }
                      else
                      {

@@ -5,17 +5,21 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ "$WEBDIR" = "" ]; then
-  echo Error: Missing environment variable 'WEBDIR'.
+  echo "Error: Missing environment variable 'WEBDIR'."
 else
- if [ -f ciyam_server.sid ]; then
-  cp ciyam_server.sid ciyam_server.sid.sav
- fi
+ if [ -f ciyam_server.sid.sav ]; then
+  echo "Error: An identity has already been saved (i.e. 'ciyam_server.sid.sav' exists)."
+ else
+  if [ -f ciyam_server.sid ]; then
+   cp ciyam_server.sid ciyam_server.sid.sav
+  fi
 
- if [ -f $WEBDIR/meta/identity.txt ]; then
-  cp $WEBDIR/meta/identity.txt $WEBDIR/meta/identity.txt.sav
- fi
+  if [ -f $WEBDIR/meta/identity.txt ]; then
+   cp $WEBDIR/meta/identity.txt $WEBDIR/meta/identity.txt.sav
+  fi
 
- if [ -f $WEBDIR/meta/encrypted.txt ]; then
-  cp $WEBDIR/meta/encrypted.txt $WEBDIR/meta/encrypted.txt.sav
+  if [ -f $WEBDIR/meta/encrypted.txt ]; then
+   cp $WEBDIR/meta/encrypted.txt $WEBDIR/meta/encrypted.txt.sav
+  fi
  fi
 fi
