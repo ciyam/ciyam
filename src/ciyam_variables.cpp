@@ -1135,27 +1135,40 @@ void set_system_variable( const string& name, const string& value, bool is_init,
    }
 }
 
-bool set_system_variable( const string& name, const string& value, const string& current, progress* p_progress )
+bool set_system_variable( const string& name, const string& value,
+ const string& current, progress* p_progress, const char append_separator )
 {
    guard g( g_mutex );
 
    bool retval = false;
 
+   string new_value( value );
+
+   // NOTE: If an append separator is provided then variable will be
+   // set to the new value if currently empty or it will be appended
+   // to the current value after the separator.
    if( !g_variables.count( name ) )
    {
-      if( current.empty( ) )
+      if( current.empty( ) || append_separator )
          retval = true;
    }
    else if( current == g_variables[ name ] )
    {
       retval = true;
+
       g_variables.erase( name );
+   }
+   else if( append_separator )
+   {
+      retval = true;
+
+      new_value = g_variables[ name ] + append_separator + value; 
    }
 
    if( retval )
    {
-      if( !value.empty( ) )
-         g_variables[ name ] = value;
+      if( !new_value.empty( ) )
+         g_variables[ name ] = new_value;
       else
       {
          if( g_variables.count( name ) )

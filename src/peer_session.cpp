@@ -2937,13 +2937,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       if( !targeted_identity.empty( ) && ( blockchain_height == blockchain_height_other ) )
       {
-         string reversed( identity );
-         reverse( reversed.begin( ), reversed.end( ) );
-
          string password;
          password.reserve( 256 );
 
-         get_peerchain_info( reversed, 0, &password );
+         get_peerchain_info( identity, 0, &password );
 
          // NOTE: The following needs to be equivalent to the application protocol command:
          // .crypto_hash -x=1000000 @encrypted_password -s=<height>
@@ -2963,6 +2960,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          if( digest.find( targeted_identity ) == 0 )
          {
+            string reversed( identity );
+            reverse( reversed.begin( ), reversed.end( ) );
+
             set_system_variable( get_special_var_name( e_special_var_export_ident ), identity );
             set_system_variable( get_special_var_name( e_special_var_export_needed ), reversed );
          }
@@ -4521,7 +4521,8 @@ void peer_listener::on_start( )
                {
                   bool is_remove = false;
 
-                  set_system_variable( '@' + to_string( port ), "" );
+                  // NOTE: Only clear the system variable if the value matches.
+                  set_system_variable( '@' + to_string( port ), "", identity_changes );
 
                   if( identity_changes[ 0 ] == '~' )
                   {
@@ -4724,7 +4725,7 @@ string unprefixed_blockchains( const string& blockchains )
 void create_peer_listener( int port, const string& blockchains )
 {
    if( has_registered_listener( port ) )
-      set_system_variable( '@' + to_string( port ), blockchains );
+      set_system_variable( '@' + to_string( port ), blockchains, "", 0, ',' );
    else
    {
 #ifdef __GNUG__
@@ -4933,35 +4934,42 @@ void peer_session_starter::on_start( )
          if( g_server_shutdown || has_max_peers( ) )
             break;
 
-         string identity( get_system_variable( get_special_var_name( e_special_var_queue_peers ) ) );
+         string identities( get_system_variable( get_special_var_name( e_special_var_queue_peers ) ) );
 
-         if( identity.empty( ) )
+         if( identities.empty( ) )
             msleep( c_wait_sleep_time );
          else
          {
             bool is_listener = false;
-            bool is_secondary = false;
+            vector< string > all_identities;
 
-            // NOTE: If identity is prefixed with '!' then will always start a listener.
-            if( identity[ 0 ] == '!' )
+            // NOTE: If first identity is prefixed with '!' then will always start listeners.
+            if( identities[ 0 ] == '!' )
             {
                is_listener = true;
-               identity.erase( 0, 1 );
+               identities.erase( 0, 1 );
             }
 
-            string peer_info( get_peerchain_info( identity, is_listener ? 0 : &is_listener ) );
+            split( identities, all_identities );
 
-            if( !peer_info.empty( ) )
+            for( size_t i = 0; i < all_identities.size( ); i++ )
             {
-               if( !is_listener )
-                  start_peer_session( peer_info );
-               else
+               string identity( all_identities[ i ] );
+
+               string peer_info( get_peerchain_info( identity, is_listener ? 0 : &is_listener ) );
+
+               if( !peer_info.empty( ) )
                {
-                  string::size_type pos = peer_info.find( '=' );
-                  if( pos != string::npos )
+                  if( !is_listener )
+                     start_peer_session( peer_info );
+                  else
                   {
-                     int port = from_string< int >( peer_info.substr( pos + 1 ) );
-                     create_peer_listener( port, peer_info.substr( 0, pos ) );
+                     string::size_type pos = peer_info.find( '=' );
+                     if( pos != string::npos )
+                     {
+                        int port = from_string< int >( peer_info.substr( pos + 1 ) );
+                        create_peer_listener( port, peer_info.substr( 0, pos ) );
+                     }
                   }
                }
             }
@@ -5099,7 +5107,18 @@ void init_peer_sessions( int start_listeners )
       }
 
       for( map< int, string >::iterator i = port_blockchains.begin( ); i != port_blockchains.end( ); ++i )
-         create_peer_listener( i->first, i->second );
+      {
+         string blockchain( i->second );
+
+         string unprefixed_blockchain( replaced( blockchain, c_bc_prefix, "" ) );
+
+         string reversed( unprefixed_blockchain );
+         reverse( reversed.begin( ), reversed.end( ) );
+
+         reversed = c_bc_prefix + reversed;
+
+         create_peer_listener( i->first, blockchain + ',' + reversed );
+      }
    }
 
    peer_session_starter* p_peer_session_start = new peer_session_starter;

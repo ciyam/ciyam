@@ -156,10 +156,6 @@ p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC 
 ;
 BLOCK_HASH=$OUTPUT
 ;
-@ifndef $ERROR
-#Created keys and genesis block for blockchain identity '$IDENT'.
-@endif
-;
 .file_hash -q bc.$IDENT.zenith
 @ifndef "$OUTPUT"
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
@@ -186,6 +182,10 @@ FILES_AREA_DIR=$OUTPUT
 .system_variable >@blockchain_backup_archive $FILES_AREA_DIR/$IDENT
 @endif
 @endif
+@endif
+;
+@ifndef $ERROR
+#Created keys, genesis block and file archive for identity '$IDENT'.
 @endif
 ;
 @endif

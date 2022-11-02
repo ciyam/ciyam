@@ -5712,8 +5712,14 @@ void use_peerchain( const string& identity, bool no_delay )
 {
    guard g( g_mutex );
 
-   set_system_variable( get_special_var_name(
-    e_special_var_queue_peers ), '!' + identity );
+   string identities( identity );
+
+   string reversed( identity );
+   reverse( reversed.begin( ), reversed.end( ) );
+
+   identities += ',' + reversed;
+
+   set_system_variable( get_special_var_name( e_special_var_queue_peers ), '!' + identities );
 
    if( !no_delay )
       msleep( c_peer_sleep_time );
@@ -5732,8 +5738,7 @@ void disuse_peerchain( const string& identity, bool no_delay )
       string reversed( identity );
       reverse( reversed.begin( ), reversed.end( ) );
 
-      if( has_registered_listener_id( reversed, &port ) )
-         identities += ',' + reversed;
+      identities += ',' + reversed;
 
       set_system_variable( '@' + to_string( port ), '~' + identities );
 
