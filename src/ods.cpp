@@ -2737,6 +2737,14 @@ ods::ods(
          if( tranlog_info.init_time != p_impl->rp_header_info->init_tranlog )
             THROW_ODS_ERROR( "database transaction log init time mismatch" );
 
+         // NOTE: If the "sequence" and "init_time" match but the offset of the
+         // transaction log is greater than expected then assumes that this log
+         // contains one or more transactions that have yet to be processed and
+         // therefore will require repairing to do so (this supports using just
+         // the newer transaction log to update an older ODS DB).
+         if( tranlog_info.entry_offs > p_impl->rp_header_info->tranlog_offset )
+            p_impl->is_corrupt = true;
+
          p_impl->using_tranlog = true;
       }
       else if( using_tranlog )
