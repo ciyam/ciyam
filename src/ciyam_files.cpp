@@ -1894,6 +1894,10 @@ void file_list_item_pos(
             {
                if( is_list_file( next_hash, &is_encrypted ) )
                {
+                  // NOTE: Do not ignore a list hash even if it's in a hidden branch.
+                  if( !item_pos && !item_hash.empty( ) && ( next_hash == item_hash ) )
+                     item_pos = total;
+
                   file_list_item_pos( repository, next_hash,
                    total, total_type, item_hash, item_pos, recurse, p_progress, p_dtm, is_hidden, false );
                }
