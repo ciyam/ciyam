@@ -1864,6 +1864,9 @@ void file_list_item_pos(
             if( pos != string::npos )
                next_name = next_item.substr( pos + 1 );
 
+            if( !item_pos && !is_hidden && ( next_hash == item_hash ) )
+               item_pos = total;
+
             // NOTE: If a top-level list item name begins with a '.' then any blobs below it
             // will be excluded as "hidden" if the session variable has been set accordingly.
             if( is_top_level && !get_session_variable(
@@ -1874,9 +1877,6 @@ void file_list_item_pos(
                else
                   is_hidden = false;
             }
-
-            if( !item_pos && !is_hidden && ( next_hash == item_hash ) )
-               item_pos = total;
 
             if( !recurse )
                continue;
@@ -1893,8 +1893,10 @@ void file_list_item_pos(
             else if( has_file( next_hash ) )
             {
                if( is_list_file( next_hash, &is_encrypted ) )
+               {
                   file_list_item_pos( repository, next_hash,
                    total, total_type, item_hash, item_pos, recurse, p_progress, p_dtm, is_hidden, false );
+               }
                else if( is_hidden )
                   was_hidden_blob = true;
                else if( total_type != e_file_total_type_all_items )
