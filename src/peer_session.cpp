@@ -2719,9 +2719,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          else
             is_list = is_list_file( next_hash.substr( 0, next_hash.find( ':' ) ) );
 
-         if( is_list || is_for_support || last_num_tree_item )
-            add_to_blockchain_tree_item( blockchain, 1 );
-
          string block_file_hash( get_session_variable(
           get_special_var_name( e_special_var_blockchain_block_file_hash ) ) );
 
@@ -2736,6 +2733,12 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          string tertiary_pubkey_hash( get_session_variable(
           get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ) ) );
+
+         if( ( is_list || is_for_support )
+          || ( last_num_tree_item && ( next_hash != block_file_hash )
+          && ( next_hash != primary_pubkey_hash ) && ( next_hash != signature_file_hash )
+          && ( next_hash != tertiary_pubkey_hash ) && ( next_hash != secondary_pubkey_hash ) ) )
+            add_to_blockchain_tree_item( blockchain, 1 );
 
          bool has_tertiary = !tertiary_pubkey_hash.empty( );
 
