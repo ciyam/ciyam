@@ -678,9 +678,6 @@ class storage_handler
 
    void release_ods( ) { delete p_ods; p_ods = 0; }
 
-   void obtain_bulk_write( ) { p_bulk_write = new ods::bulk_write( *p_ods ); }
-   void release_bulk_write( ) { delete p_bulk_write; p_bulk_write = 0; }
-
    size_t get_ref_count( ) const { return ref_count; }
 
    size_t inc_ref_count( ) { return ++ref_count; }
@@ -1730,12 +1727,12 @@ void perform_storage_op( storage_op op,
             ap_ods->repair_corrupt_database( &progress );
          }
 
-         ap_handler->obtain_bulk_write( );
-
          ods::instance( ap_ods.get( ) );
 
          if( ap_ods->is_new( ) )
          {
+            ods::bulk_write bulk_write( *ap_ods );
+
             ods::transaction tx( *ap_ods );
 
             ap_handler->get_root( ).module_directory = directory;
@@ -1756,6 +1753,8 @@ void perform_storage_op( storage_op op,
          {
             if( ap_handler->get_root( ).version != c_storage_format_version )
                throw runtime_error( "found incorrect storage format version " + to_string( ap_handler->get_root( ).version ) );
+
+            ods::bulk_read bulk_read( *ap_ods );
 
             ods_file_system ofs( *ap_ods );
             ap_handler->get_root( ).fetch_from_text_files( ofs );
@@ -1830,7 +1829,7 @@ void perform_storage_op( storage_op op,
          throw runtime_error( "storage '" + name + "' was not found" );
    }
 
-   if( p_new_handler && p_new_handler != gtp_session->p_storage_handler )
+   if( p_new_handler && ( p_new_handler != gtp_session->p_storage_handler ) )
    {
       if( p_new_handler->get_is_locked_for_admin( ) )
          throw runtime_error( "storage '" + name + "' is currently locked for administration" );
@@ -1894,7 +1893,6 @@ void perform_storage_op( storage_op op,
 
          if( was_constructed )
          {
-            p_new_handler->release_bulk_write( );
             p_new_handler->release_ods( );
 
             g_storage_handler_index.erase( p_new_handler->get_name( ) );
@@ -3588,7 +3586,8 @@ void append_transaction_log_command( storage_handler& handler,
             // not occur then up to the "burn" number of identities will be lost.
             restorable< int32_t > tmp_identity( identity.next_id, identity.ceiling );
 
-            ods_file_system ofs( *gtp_session->p_storage_handler->get_ods( ) );
+            ods_file_system ofs( *ods::instance( ) );
+
             ofs.store_as_text_file( c_storable_file_name_log_id, identity.next_id );
          }
 
@@ -8035,9 +8034,9 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
          ostringstream osstr;
          osstr << "." << setw( 3 ) << setfill( '0' ) << *p_truncation_count;
 
-         gtp_session->p_storage_handler->get_ods( )->truncate_log( osstr.str( ).c_str( ) );
+         ods::instance( )->truncate_log( osstr.str( ).c_str( ) );
 
-         ods_file_system ofs( *gtp_session->p_storage_handler->get_ods( ) );
+         ods_file_system ofs( *ods::instance( ) );
 
          ofs.store_as_text_file( c_storable_file_name_trunc_n,
           gtp_session->p_storage_handler->get_root( ).truncation_count );
@@ -8062,7 +8061,6 @@ void restore_storage( command_handler& cmd_handler )
       if( ods::instance( )->get_transaction_level( ) )
          throw runtime_error( "cannot perform a restore whilst a transaction is active" );
 
-      ods* p_ods( ods::instance( ) );
       storage_handler& handler( *gtp_session->p_storage_handler );
 
       if( !handler.get_is_locked_for_admin( ) )
@@ -8086,7 +8084,6 @@ void upgrade_storage( command_handler& cmd_handler )
       if( ods::instance( )->get_transaction_level( ) )
          throw runtime_error( "cannot perform an upgrade whilst a transaction is active" );
 
-      ods* p_ods( ods::instance( ) );
       storage_handler& handler( *gtp_session->p_storage_handler );
 
       if( !handler.get_is_locked_for_admin( ) )
@@ -8133,7 +8130,6 @@ void term_storage( command_handler& cmd_handler )
          g_storage_handler_index.erase( gtp_session->p_storage_handler->get_name( ) );
          g_storage_handlers[ gtp_session->p_storage_handler->get_slot( ) ] = 0;
 
-         gtp_session->p_storage_handler->release_bulk_write( );
          gtp_session->p_storage_handler->release_ods( );
 
          if( gtp_session->p_storage_handler->get_log_file( ).is_open( ) )
@@ -8691,7 +8687,8 @@ void storage_identity( const string& new_identity )
    if( !storage_locked_for_admin( ) )
       throw runtime_error( "cannot change identity unless locked for administration" );
 
-   ods_file_system ofs( *gtp_session->p_storage_handler->get_ods( ) );
+   ods_file_system ofs( *ods::instance( ) );
+
    ofs.store_as_text_file( c_storable_file_name_id, new_identity );
 
    gtp_session->p_storage_handler->get_root( ).identity = new_identity;
@@ -11784,7 +11781,8 @@ size_t set_transaction_id( size_t tx_id )
       // not occur then up to the "burn" number of identities will be lost.
       restorable< int32_t > tmp_identity( identity.next_id, identity.ceiling );
 
-      ods_file_system ofs( *gtp_session->p_storage_handler->get_ods( ) );
+      ods_file_system ofs( *ods::instance( ) );
+
       ofs.store_as_text_file( c_storable_file_name_log_id, identity.next_id );
    }
 
