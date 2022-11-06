@@ -1169,7 +1169,7 @@ void process_list_items( const string& identity,
                   size_t next_height = from_string< size_t >( blockchain_height_processed ) + 1;
 
                   // FUTURE: This message should be handled as a server string message.
-                  string progress_message( "Synchronising at height " + to_string( next_height ) );
+                  string progress_message( "Processing at height " + to_string( next_height ) );
 
                   progress_message += " (" + to_string( get_blockchain_tree_item( blockchain ) );
 
@@ -1179,6 +1179,7 @@ void process_list_items( const string& identity,
                   progress_message += ")" + to_string( c_ellipsis );
 
                   set_session_progress_output( progress_message );
+                  set_system_variable( c_progress_output_prefix + identity, progress_message );
                }
 
                progress = ".";
