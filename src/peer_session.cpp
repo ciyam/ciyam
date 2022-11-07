@@ -2673,8 +2673,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                   set_session_variable( get_special_var_name(
                    e_special_var_blockchain_get_tree_files ), "" );
                else
+               {
+                  if( next_block_tag.find( '@' ) != string::npos )
+                     set_blockchain_tree_item( blockchain, 0 );
+
                   set_session_variable( get_special_var_name(
                    e_special_var_blockchain_get_tree_files ), c_true_value );
+               }
             }
          }
       }

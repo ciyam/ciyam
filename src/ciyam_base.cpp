@@ -7568,7 +7568,7 @@ bool set_session_variable( const string& name, const string& value, const string
 
    bool retval = false;
 
-   if( gtp_session )
+   if( gtp_session && ( value != current ) )
    {
       if( !gtp_session->variables.count( name ) )
       {
