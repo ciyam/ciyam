@@ -1918,15 +1918,17 @@ void file_list_item_pos(
                }
             }
             else if( is_hidden )
+            {
                was_hidden_blob = true;
 
-            if( !has_set_missing
-             && ( total_type == e_file_total_type_repository_entries ) )
-            {
-               has_set_missing = true;
+               if( !has_set_missing
+                && ( total_type == e_file_total_type_repository_entries ) )
+               {
+                  has_set_missing = true;
 
-               set_session_variable( get_special_var_name(
-                e_special_var_repo_entry_missing ), next_hash, "" );
+                  set_session_variable( get_special_var_name(
+                   e_special_var_repo_entry_missing ), next_hash, "" );
+               }
             }
 
             // NOTE: The total was already incremented above before
