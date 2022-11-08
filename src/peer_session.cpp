@@ -1169,7 +1169,7 @@ void process_list_items( const string& identity,
                   size_t next_height = from_string< size_t >( blockchain_height_processed ) + 1;
 
                   // FUTURE: This message should be handled as a server string message.
-                  string progress_message( "Processing at height " + to_string( next_height ) );
+                  string progress_message( "Checking items for height " + to_string( next_height ) );
 
                   progress_message += " (" + to_string( get_blockchain_tree_item( blockchain ) );
 
@@ -1234,6 +1234,9 @@ void process_list_items( const string& identity,
 
                if( is_fetching && !skip_secondary_blobs )
                   add_to_blockchain_tree_item( blockchain, 1 );
+
+               if( p_list_items_to_ignore && ( next_hash == last_blob_hash ) )
+                  p_list_items_to_ignore->insert( next_hash );
             }
 
             continue;
@@ -1338,6 +1341,9 @@ void process_list_items( const string& identity,
 
             if( is_fetching )
                add_to_blockchain_tree_item( blockchain, 1 );
+
+            if( allow_blob_creation && !first_hash_to_get.empty( ) )
+               ++( *p_num_items_skipped );
 
             process_list_items( identity, next_hash, recurse,
              p_blob_data, p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress, p_num_items_skipped );
