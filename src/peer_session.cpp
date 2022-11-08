@@ -1397,7 +1397,7 @@ void process_list_items( const string& identity,
                if( !has_repository_entry )
                   store_repository_entry_record( identity, next_hash, "", master_public_key, master_public_key );
             }
-            else if( allow_blob_creation && !first_hash_to_get.empty( ) )
+            else if( allow_blob_creation && !skip_secondary_blobs && !first_hash_to_get.empty( ) )
                ++( *p_num_items_skipped );
          }
          else
