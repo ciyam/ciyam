@@ -1323,6 +1323,10 @@ void process_list_items( const string& identity,
                if( blob_increment && p_num_items_found )
                   ++( *p_num_items_found );
 
+               if( recurse
+                && allow_blob_creation && !skip_secondary_blobs )
+                  ++( *p_num_items_skipped );
+
                if( recurse && is_fetching && !skip_secondary_blobs )
                   add_to_blockchain_tree_item( blockchain, 1 );
             }
@@ -1393,6 +1397,8 @@ void process_list_items( const string& identity,
                if( !has_repository_entry )
                   store_repository_entry_record( identity, next_hash, "", master_public_key, master_public_key );
             }
+            else if( allow_blob_creation && !first_hash_to_get.empty( ) )
+               ++( *p_num_items_skipped );
          }
          else
          {
