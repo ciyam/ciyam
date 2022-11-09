@@ -3672,9 +3672,9 @@ class socket_command_processor : public command_processor
       set_session_variable( peer_special_variable, value );
 
       if( !is_responder )
-         set_session_variable( initiator_special_variable, value );
+         set_session_variable( initiator_special_variable, c_true );
       else
-         set_session_variable( responder_special_variable, value );
+         set_session_variable( responder_special_variable, c_true );
    }
 
    private:
@@ -3967,13 +3967,8 @@ peer_session::peer_session( int64_t time_val,
       {
          pid += ':' + blockchain;
 
-         if( extra != e_peer_extra_none )
-         {
-            string own_identity( get_system_variable(
-             get_special_var_name( e_special_var_blockchain_backup_ident ) ) );
-
-            pid += '@' + own_identity;
-         }
+         if( !identity.empty( ) && ( extra != e_peer_extra_none ) )
+            pid += '@' + identity;
       }
 
       if( is_owner && !is_for_support )
