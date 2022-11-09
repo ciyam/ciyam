@@ -188,6 +188,7 @@ enum special_var
    e_special_var_blockchain_zenith_height,
    e_special_var_blockchain_get_tree_files,
    e_special_var_blockchain_num_tree_items,
+   e_special_var_blockchain_peer_supporter,
    e_special_var_blockchain_skip_blob_puts,
    e_special_var_blockchain_tree_root_hash,
    e_special_var_blockchain_block_file_hash,

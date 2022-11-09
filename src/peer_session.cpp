@@ -3672,9 +3672,9 @@ class socket_command_processor : public command_processor
       set_session_variable( peer_special_variable, value );
 
       if( !is_responder )
-         set_session_variable( initiator_special_variable, c_true );
+         set_session_variable( initiator_special_variable, c_true_value );
       else
-         set_session_variable( responder_special_variable, c_true );
+         set_session_variable( responder_special_variable, c_true_value );
    }
 
    private:
@@ -4261,6 +4261,9 @@ void peer_session::on_start( )
 
       if( peer_is_owner )
          set_session_variable( get_special_var_name( e_special_var_blockchain_peer_is_owner ), c_true_value );
+
+      if( is_for_support )
+         set_session_variable( get_special_var_name( e_special_var_blockchain_peer_supporter ), c_true_value );
 
       if( both_are_owners )
          set_session_variable( get_special_var_name( e_special_var_blockchain_both_are_owners ), c_true_value );
