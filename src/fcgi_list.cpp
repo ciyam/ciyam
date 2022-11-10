@@ -4001,47 +4001,51 @@ void output_list_form( ostream& os,
          else
             os << "<div class=\"navigation\">\n";
 
-         if( !source.prev_key_info.empty( ) )
+         if( !source.prev_key_info.empty( ) 
+          || !source.next_key_info.empty( ) )
          {
-            os << "&laquo; <a href=\"javascript:";
-
-            if( is_child_list )
-               os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
-
-            if( use_url_checksum )
+            if( !source.prev_key_info.empty( ) )
             {
-               os << "query_update( '" << c_param_uselextra << "', '', true ); ";
-               os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
+               os << "&laquo; <a href=\"javascript:";
+
+               if( is_child_list )
+                  os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
+
+               if( use_url_checksum )
+               {
+                  os << "query_update( '" << c_param_uselextra << "', '', true ); ";
+                  os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
+               }
+
+               os << "query_update( '" << source.id << c_info_suffix
+                << "', 'P" << source.prev_key_info << "' );\">" << GDS( c_display_last ) << "</a>";
             }
+            else
+               os << "<span class=\"disabled\">&laquo; " << GDS( c_display_last ) << "</span>";
 
-            os << "query_update( '" << source.id << c_info_suffix
-             << "', 'P" << source.prev_key_info << "' );\">" << GDS( c_display_prev ) << "</a>";
-         }
-         else
-            os << "<span class=\"disabled\">&laquo; " << GDS( c_display_prev ) << "</span>";
+            os << " &nbsp; | &nbsp; ";
 
-         os << " &nbsp; | &nbsp; ";
-
-         if( !source.next_key_info.empty( ) )
-         {
-            os << "<a href=\"javascript:";
-
-            if( is_child_list )
-               os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
-
-            if( use_url_checksum )
+            if( !source.next_key_info.empty( ) )
             {
-               os << "query_update( '" << c_param_uselextra << "', '', true ); ";
-               os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
+               os << "<a href=\"javascript:";
+
+               if( is_child_list )
+                  os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
+
+               if( use_url_checksum )
+               {
+                  os << "query_update( '" << c_param_uselextra << "', '', true ); ";
+                  os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
+               }
+
+               os << "query_update( '" << source.id << c_info_suffix
+                << "', 'N" << source.next_key_info << "' );\">" << GDS( c_display_next ) << "</a>\n";
+
+               os << " &raquo;";
             }
-
-            os << "query_update( '" << source.id << c_info_suffix
-             << "', 'N" << source.next_key_info << "' );\">" << GDS( c_display_next ) << "</a>\n";
-
-            os << " &raquo;";
+            else
+               os << "<span class=\"disabled\">" << GDS( c_display_next ) << " &raquo;</span>\n";
          }
-         else
-            os << "<span class=\"disabled\">" << GDS( c_display_next ) << " &raquo;</span>\n";
 
          if( !is_ui_prototype( ) )
             os << "</td>\n";
