@@ -2898,15 +2898,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    {
       date_time dtm( date_time::local( ) );
 
-      tag_file( blockchain + c_zenith_suffix, zenith_hash );
-
-      last_num_tree_item = 0;
-      set_blockchain_tree_item( blockchain, 0 );
-
-      list_items_to_ignore.clear( );
-
-      blockchain_height = blockchain_height_pending;
-
       string zenith_tree_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_tree_hash ) ) );
 
@@ -2915,18 +2906,30 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          if( has_file( zenith_tree_hash ) )
          {
             // NOTE: Will touch all tree lists iff has the tree root.
-            has_all_list_items( blockchain, zenith_tree_hash, true, true, &dtm, this );
+            if( !has_all_list_items( blockchain, zenith_tree_hash, true, true, &dtm, this ) )
+               throw runtime_error( "unexpected missing tree files" );
 
             if( !get_session_variable( blockchain_is_owner_name ).empty( )
              && !get_session_variable( blockchain_is_fetching_name ).empty( ) )
                tag_file( c_ciyam_tag, zenith_tree_hash );
          }
+         else
+            throw runtime_error( "unexpected missing tree root" );
 
          set_session_variable(
           get_special_var_name( e_special_var_blockchain_zenith_tree_hash ), "" );
       }
 
       remove_obsolete_repository_entries( identity, &dtm, this, 2, true );
+
+      last_num_tree_item = 0;
+      set_blockchain_tree_item( blockchain, 0 );
+
+      list_items_to_ignore.clear( );
+
+      blockchain_height = blockchain_height_pending;
+
+      tag_file( blockchain + c_zenith_suffix, zenith_hash );
 
       set_session_variable( get_special_var_name(
        e_special_var_blockchain_num_tree_items ), "" );
