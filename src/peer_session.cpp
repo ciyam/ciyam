@@ -2901,7 +2901,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       string zenith_tree_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_tree_hash ) ) );
 
-      if( !zenith_tree_hash.empty( ) )
+      bool peer_has_tree_items = !get_session_variable(
+       get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( );
+
+      if( peer_has_tree_items && !zenith_tree_hash.empty( ) )
       {
          if( has_file( zenith_tree_hash ) )
          {
