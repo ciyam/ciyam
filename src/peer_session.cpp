@@ -2901,6 +2901,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       string zenith_tree_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_tree_hash ) ) );
 
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_zenith_tree_hash ), "" );
+
       bool peer_has_tree_items = !get_session_variable(
        get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( );
 
@@ -2918,9 +2921,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          }
          else
             throw runtime_error( "unexpected missing tree root" );
-
-         set_session_variable(
-          get_special_var_name( e_special_var_blockchain_zenith_tree_hash ), "" );
       }
 
       remove_obsolete_repository_entries( identity, &dtm, this, 2, true );
