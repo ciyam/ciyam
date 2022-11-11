@@ -846,12 +846,12 @@ bool has_all_list_items( const string& blockchain,
 
    bool retval = true;
 
-   string last_hash;
-
    size_t total_processed = 0;
 
    if( !p_total_processed )
       p_total_processed = &total_processed;
+
+   string last_repo_entry_hash;
 
    string num_tree_items( get_session_variable(
     get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
@@ -922,18 +922,18 @@ bool has_all_list_items( const string& blockchain,
             string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
 
             bool has_next_file = false;
-            bool has_next_repo_entry = false;
+            bool has_next_repo_entry = ( next_hash == last_repo_entry_hash );
 
-            if( next_hash == last_hash )
-               has_next_file = true;
-
-            if( !has_next_file )
+            if( !has_next_repo_entry )
                has_next_file = has_file( next_hash );
 
-            if( !has_next_file )
+            if( !has_next_file && !has_next_repo_entry )
+            {
                has_next_repo_entry = has_repository_entry_record( identity, next_hash );
 
-            last_hash = next_hash;
+               if( has_next_repo_entry )
+                  last_repo_entry_hash = next_hash;
+            }
 
             if( !has_next_file && !has_next_repo_entry )
             {
