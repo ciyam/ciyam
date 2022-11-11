@@ -36,7 +36,8 @@
 using namespace std;
 
 const int c_buffer_size = 1024;
-const char* const c_title = "crypt v0.1h";
+
+const char* const c_title = "crypt v0.1i";
 
 void create_checksum_test_file( fstream& fs, const string& test_file_name )
 {
@@ -283,9 +284,6 @@ int main( int argc, char* argv[ ] )
          if( !fs.good( ) )
             throw runtime_error( "Unexpected error occurred whilst writing to file '" + file_name + "'." );
 
-         if( use_test_file && !create_test_file )
-            file_remove( test_file_name );
-
          if( ++first_arg < argc )
          {
             fs.close( );
@@ -295,9 +293,6 @@ int main( int argc, char* argv[ ] )
 
             fs.open( file_name.c_str( ), ios::in | ios::out | ios::binary );
 
-            if( use_test_file && !create_test_file )
-               create_checksum_test_file( fs, test_file_name );
-
             crypt_stream( fs, password.c_str( ), password.size( ) );
 
             if( !fs.good( ) )
@@ -306,6 +301,8 @@ int main( int argc, char* argv[ ] )
                return 2;
             }
          }
+         else if( use_test_file && !create_test_file )
+            file_remove( test_file_name );
       }
 
 #ifndef _WIN32
@@ -337,4 +334,3 @@ int main( int argc, char* argv[ ] )
 
    return 0;
 }
-

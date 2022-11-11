@@ -828,6 +828,8 @@ bool has_all_list_items( const string& blockchain,
  const string& hash, bool recurse, bool touch_all_lists = false, date_time* p_dtm = 0,
  progress* p_progress = 0, size_t* p_total_processed = 0, set< string >* p_blob_hashes = 0 )
 {
+   TRACE_LOG( TRACE_PEER_OPS, "(has_all_list_items) hash: " + hash );
+
    string all_list_items( extract_file( hash, "" ) );
 
    vector< string > list_items;
@@ -1463,9 +1465,6 @@ void process_signature_file( const string& blockchain, const string& hash, size_
       tag_file( signature_tag, hash );
 
       set_session_variable(
-       get_special_var_name( e_special_var_blockchain_height ), "" );
-
-      set_session_variable(
        get_special_var_name( e_special_var_blockchain_signature_file_hash ), "" );
    }
    catch( ... )
@@ -1680,6 +1679,9 @@ bool process_block_for_height( const string& blockchain,
 
    string block_height( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height ) ) );
+
+   set_session_variable(
+    get_special_var_name( e_special_var_blockchain_height ), "" );
 
    if( !get_session_variable(
     get_special_var_name( e_special_var_blockchain_hind_hash ) ).empty( ) )
@@ -2464,6 +2466,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
    string blockchain_is_fetching_name( get_special_var_name( e_special_var_blockchain_is_fetching ) );
    string blockchain_zenith_hash_name( get_special_var_name( e_special_var_blockchain_zenith_hash ) );
+   string blockchain_first_mapped_name( get_special_var_name( e_special_var_blockchain_first_mapped ) );
    string blockchain_height_processed_name( get_special_var_name( e_special_var_blockchain_height_processed ) );
 
    if( !is_for_support )
@@ -2584,9 +2587,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                   size_t num_items_found = 0;
 
                   set_blockchain_tree_item( blockchain, 0 );
-
-                  string blockchain_first_mapped_name(
-                   get_special_var_name( e_special_var_blockchain_first_mapped ) );
 
                   bool has_block_data = process_block_for_height( blockchain,
                    next_block_hash, blockchain_height + 1, &num_items_found, this );
@@ -2950,6 +2950,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          delete_file( tag_file_hash( genesis_key_tag ) );
 
       set_session_variable( blockchain_zenith_hash_name, "" );
+      set_session_variable( blockchain_first_mapped_name, "" );
 
       set_session_variable( get_special_var_name(
        e_special_var_blockchain_height_processed ), to_string( blockchain_height ) );
