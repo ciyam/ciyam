@@ -428,8 +428,6 @@ struct session
    deque< string > file_hashes_to_get;
    deque< string > file_hashes_to_put;
 
-   map< string, pair< string, string > > mapped_hash_values;
-
    set< string > tx_key_info;
    stack< ods::transaction* > transactions;
 
@@ -1317,6 +1315,8 @@ set< string > g_accepted_ip_addrs;
 set< string > g_rejected_ip_addrs;
 set< string > g_accepted_peer_ip_addrs;
 set< string > g_rejected_peer_ip_addrs;
+
+map< string, map< string, pair< string, string > > > g_mapped_hash_values;
 
 string g_mbox_path;
 string g_mbox_username;
@@ -6785,76 +6785,58 @@ bool any_peer_still_has_file_hash_to_put(
    return false;
 }
 
-void add_peer_mapped_hash( const string& hash, const string& mapped_hash )
+void add_peer_mapped_hash( const string& identity, const string& hash, const string& mapped_hash )
 {
    guard g( g_mutex );
 
-   if( !gtp_session )
-      throw runtime_error( "invalid call to add_peer_mapped_hash from non-session" );
-   else
+   pair< string, string > mapped_pair;
+
+   string::size_type pos = mapped_hash.find( ':' );
+
+   mapped_pair.first = hex_decode( mapped_hash.substr( 0, pos ) );
+
+   if( pos != string::npos )
+      mapped_pair.second = hex_decode( mapped_hash.substr( pos + 1 ) );
+
+   g_mapped_hash_values[ identity ].insert( make_pair( hex_decode( hash ), mapped_pair ) );
+}
+
+string get_peer_mapped_hash( const string& identity, const string& hash )
+{
+   guard g( g_mutex );
+
+   string retval, decoded( hex_decode( hash ) );
+
+   if( g_mapped_hash_values[ identity ].count( decoded ) )
    {
       pair< string, string > mapped_pair;
 
-      string::size_type pos = mapped_hash.find( ':' );
+      mapped_pair = g_mapped_hash_values[ identity ][ decoded ];
 
-      mapped_pair.first = hex_decode( mapped_hash.substr( 0, pos ) );
-
-      if( pos != string::npos )
-         mapped_pair.second = hex_decode( mapped_hash.substr( pos + 1 ) );
-
-      gtp_session->mapped_hash_values.insert( make_pair( hex_decode( hash ), mapped_pair ) );
-   }
-}
-
-string get_peer_mapped_hash( const string& hash )
-{
-   guard g( g_mutex );
-
-   string retval;
-
-   if( !gtp_session )
-      throw runtime_error( "invalid call to get_peer_mapped_hash from non-session" );
-   else
-   {
-      string decoded( hex_decode( hash ) );
-
-      if( gtp_session->mapped_hash_values.count( decoded ) )
+      if( !mapped_pair.first.empty( ) )
       {
-         pair< string, string > mapped_pair;
+         retval += hex_encode( mapped_pair.first );
 
-         mapped_pair = gtp_session->mapped_hash_values[ decoded ];
-
-         if( !mapped_pair.first.empty( ) )
-         {
-            retval += hex_encode( mapped_pair.first );
-
-            if( !mapped_pair.second.empty( ) )
-               retval += ':' + hex_encode( mapped_pair.second );
-         }
+         if( !mapped_pair.second.empty( ) )
+            retval += ':' + hex_encode( mapped_pair.second );
       }
    }
 
    return retval;
 }
 
-void clear_peer_mapped_hash( const string& hash )
+void clear_peer_mapped_hash( const string& identity, const string& hash )
 {
    guard g( g_mutex );
 
-   if( !gtp_session )
-      throw runtime_error( "invalid call to clear_peer_mapped_hash from non-session" );
-   else
-      gtp_session->mapped_hash_values.erase( hex_decode( hash ) );
+   g_mapped_hash_values[ identity ].erase( hash );
 }
 
-void clear_all_peer_mapped_hashes( )
+void clear_all_peer_mapped_hashes( const string& identity )
 {
    guard g( g_mutex );
 
-   if( !gtp_session )
-      throw runtime_error( "invalid call to clear_all_peer_mapped_hashes from non-session" );
-   else
-      gtp_session->mapped_hash_values.clear( );
+   g_mapped_hash_values[ identity ].clear( );
 }
 
 void set_default_session_variables( int port )
