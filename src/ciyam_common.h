@@ -182,6 +182,7 @@ enum special_var
    e_special_var_blockchain_backup_ident,
    e_special_var_blockchain_first_mapped,
    e_special_var_blockchain_shared_ident,
+   e_special_var_blockchain_shared_peers,
    e_special_var_blockchain_backup_height,
    e_special_var_blockchain_peer_is_owner,
    e_special_var_blockchain_shared_height,

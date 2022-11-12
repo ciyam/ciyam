@@ -173,6 +173,7 @@ const char* const c_special_variable_blockchain_archive_path = "@blockchain_arch
 const char* const c_special_variable_blockchain_backup_ident = "@blockchain_backup_ident";
 const char* const c_special_variable_blockchain_first_mapped = "@blockchain_first_mapped";
 const char* const c_special_variable_blockchain_shared_ident = "@blockchain_shared_ident";
+const char* const c_special_variable_blockchain_shared_peers = "@blockchain_shared_peers";
 const char* const c_special_variable_blockchain_backup_height = "@blockchain_backup_height";
 const char* const c_special_variable_blockchain_peer_is_owner = "@blockchain_peer_is_owner";
 const char* const c_special_variable_blockchain_shared_height = "@blockchain_shared_height";
@@ -730,6 +731,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_shared_ident:
       s = string( c_special_variable_blockchain_shared_ident );
+      break;
+
+      case e_special_var_blockchain_shared_peers:
+      s = string( c_special_variable_blockchain_shared_peers );
       break;
 
       case e_special_var_blockchain_backup_height:
