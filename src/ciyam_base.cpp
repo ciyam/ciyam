@@ -7636,7 +7636,8 @@ size_t num_have_session_variable( const string& name )
    return total;
 }
 
-size_t num_have_session_variable( const string& name, const string& value )
+size_t num_have_session_variable( const string& name,
+ const string& value, vector< string >* p_identities )
 {
    guard g( g_mutex );
 
@@ -7647,7 +7648,12 @@ size_t num_have_session_variable( const string& name, const string& value )
       if( g_sessions[ i ]
        && g_sessions[ i ]->variables.count( name )
        && g_sessions[ i ]->variables[ name ] == value )
+      {
          ++total;
+
+         if( p_identities )
+            p_identities->push_back( to_string( g_sessions[ i ]->id ) );
+      }
    }
 
    return total;

@@ -246,6 +246,28 @@ string get_hello_data( string& hello_hash )
    return data;
 }
 
+void set_targeted_for_support_sessions( const string& blockchain )
+{
+   vector< string > identities;
+
+   if( get_session_variable( get_special_var_name( e_special_var_blockchain_shared_peers ) ).empty( )
+    && num_have_session_variable( get_special_var_name( e_special_var_peer ), blockchain, &identities ) )
+   {
+      string own_sess_id( to_string( session_id( ) ) );
+
+      for( size_t i = 0; i < identities.size( ); i++ )
+      {
+         string next_id( identities[ i ] );
+
+         if( next_id != own_sess_id )
+            set_session_variable( get_special_var_name(
+             e_special_var_blockchain_targeted_identity ), c_true_value, 0, 0, &next_id );
+      }
+
+      set_session_variable( get_special_var_name( e_special_var_blockchain_shared_peers ), c_true_value );
+   }
+}
+
 void process_core_file( const string& hash, const string& blockchain )
 {
    guard g( g_mutex );
@@ -289,6 +311,9 @@ void process_core_file( const string& hash, const string& blockchain )
 
             bool is_shared = !get_session_variable(
              get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
+
+            if( is_shared )
+               set_targeted_for_support_sessions( blockchain );
 
             if( !primary_pubkey_hash.empty( ) )
             {
@@ -1692,6 +1717,9 @@ bool process_block_for_height( const string& blockchain,
 
    bool is_shared = !get_session_variable(
     get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
+
+   if( is_shared )
+      set_targeted_for_support_sessions( blockchain );
 
    if( !block_height.empty( ) && ( block_height != to_string( height ) ) )
       throw runtime_error( "specified height does not match that found in the block itself (blk)" );

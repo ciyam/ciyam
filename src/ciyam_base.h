@@ -465,7 +465,9 @@ bool CIYAM_BASE_DECL_SPEC has_any_session_variable( const std::string& name );
 bool CIYAM_BASE_DECL_SPEC has_any_session_variable( const std::string& name, const std::string& value );
 
 size_t CIYAM_BASE_DECL_SPEC num_have_session_variable( const std::string& name );
-size_t CIYAM_BASE_DECL_SPEC num_have_session_variable( const std::string& name, const std::string& value );
+
+size_t CIYAM_BASE_DECL_SPEC num_have_session_variable(
+ const std::string& name, const std::string& value, std::vector< std::string >* p_identities = 0 );
 
 bool CIYAM_BASE_DECL_SPEC is_first_using_session_variable( const std::string& name );
 bool CIYAM_BASE_DECL_SPEC is_first_using_session_variable( const std::string& name, const std::string& value );
