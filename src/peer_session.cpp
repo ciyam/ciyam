@@ -250,8 +250,8 @@ void set_targeted_for_support_sessions( const string& blockchain )
 {
    vector< string > identities;
 
-   if( get_session_variable( get_special_var_name( e_special_var_blockchain_shared_peers ) ).empty( )
-    && num_have_session_variable( get_special_var_name( e_special_var_peer ), blockchain, &identities ) )
+   if( num_have_session_variable(
+    get_special_var_name( e_special_var_peer ), blockchain, &identities ) )
    {
       string own_sess_id( to_string( session_id( ) ) );
 
@@ -312,7 +312,8 @@ void process_core_file( const string& hash, const string& blockchain )
             bool is_shared = !get_session_variable(
              get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
 
-            if( is_shared )
+            if( is_shared && get_session_variable(
+             get_special_var_name( e_special_var_blockchain_shared_peers ) ).empty( ) )
                set_targeted_for_support_sessions( blockchain );
 
             if( !primary_pubkey_hash.empty( ) )
@@ -1718,7 +1719,8 @@ bool process_block_for_height( const string& blockchain,
    bool is_shared = !get_session_variable(
     get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
 
-   if( is_shared )
+   if( is_shared && get_session_variable(
+    get_special_var_name( e_special_var_blockchain_shared_peers ) ).empty( ) )
       set_targeted_for_support_sessions( blockchain );
 
    if( !block_height.empty( ) && ( block_height != to_string( height ) ) )
@@ -2791,6 +2793,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          bool has_targeted_identity = !get_session_variable(
           get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
+
+         if( !is_for_support && has_targeted_identity && get_session_variable(
+          get_special_var_name( e_special_var_blockchain_shared_peers ) ).empty( ) )
+            set_targeted_for_support_sessions( blockchain );
 
          if( next_hash == block_file_hash )
          {
