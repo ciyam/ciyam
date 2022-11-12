@@ -491,7 +491,7 @@ void encrypt_file_buffer( const string& hash, const string& repository,
    file_buffer.copy_from_string( new_file_data, offset );
 
    if( is_shared )
-      add_peer_mapped_hash( hash, sha256( new_file_data ).get_digest_as_string( ) );
+      add_peer_mapped_hash( repository, hash, sha256( new_file_data ).get_digest_as_string( ) );
    else if( !repository.empty( ) )
    {
       string dummy, public_key;
@@ -505,13 +505,13 @@ void encrypt_file_buffer( const string& hash, const string& repository,
          store_repository_entry_record( repository, hash, "", public_key, public_key );
       }
 
-      add_peer_mapped_hash( hash, sha256( new_file_data ).get_digest_as_string( ) + ':' + public_key );
+      add_peer_mapped_hash( repository, hash, sha256( new_file_data ).get_digest_as_string( ) + ':' + public_key );
    }
 
    clear_key( crypt_password );
 }
 
-string transform_shared_list_info(
+string transform_shared_list_info( const string& repository,
  session_file_buffer_access& file_buffer, size_t offset, size_t length, progress* p_progress )
 {
    string list_data;
@@ -554,7 +554,7 @@ string transform_shared_list_info(
          encrypted_hash = mapped_hashes[ next_hash ];
       }
       else
-         encrypted_hash = get_peer_mapped_hash( next_hash );
+         encrypted_hash = get_peer_mapped_hash( repository, next_hash );
 
       if( !encrypted_hash.empty( ) )
          was_peer_mapped = !is_repeated;
@@ -575,7 +575,7 @@ string transform_shared_list_info(
          throw runtime_error( "unexpected encrypted hash for blob not found in transform_shared_list_info" );
 
       if( was_peer_mapped )
-         clear_peer_mapped_hash( next_hash );
+         clear_peer_mapped_hash( repository, next_hash );
 
       if( !is_repeated )
          mapped_hashes[ next_hash ] = encrypted_hash;
@@ -659,7 +659,7 @@ string create_repository_lists(
          encrypted_hash = mapped_hashes[ next_hash ];
       }
       else
-         encrypted_hash = get_peer_mapped_hash( next_hash );
+         encrypted_hash = get_peer_mapped_hash( repository, next_hash );
    
       if( !encrypted_hash.empty( ) )
       {
@@ -695,7 +695,7 @@ string create_repository_lists(
          throw runtime_error( "unexpected encrypted hash for blob not found in create_repository_lists" );
 
       if( was_peer_mapped )
-         clear_peer_mapped_hash( next_hash );
+         clear_peer_mapped_hash( repository, next_hash );
 
       if( !is_repeated )
          mapped_hashes[ next_hash ] = encrypted_hash + ':' + public_key;
@@ -3752,15 +3752,9 @@ bool store_file( const string& hash,
                   if( !tag_name.empty( ) && list_has_encrypted_blobs && !crypt_password.empty( ) )
                   {
                      if( is_shared )
-                     {
-                        file_hash = transform_shared_list_info(
-                         file_buffer, 0, total_bytes, p_progress );
-                     }
+                        file_hash = transform_shared_list_info( repository, file_buffer, 0, total_bytes, p_progress );
                      else
-                     {
-                        file_hash = create_repository_lists( repository,
-                         file_buffer, 0, total_bytes, &encrypted_list_data, p_progress );
-                     }
+                        file_hash = create_repository_lists( repository, file_buffer, 0, total_bytes, &encrypted_list_data, p_progress );
 
                      file_name = construct_file_name_from_hash( file_hash, true, true );
 
@@ -3799,15 +3793,9 @@ bool store_file( const string& hash,
                if( !tag_name.empty( ) && list_has_encrypted_blobs && !crypt_password.empty( ) )
                {
                   if( is_shared )
-                  {
-                     file_hash = transform_shared_list_info(
-                      file_buffer, 0, total_bytes, p_progress );
-                  }
+                     file_hash = transform_shared_list_info( repository, file_buffer, 0, total_bytes, p_progress );
                   else
-                  {
-                     file_hash = create_repository_lists( repository,
-                      file_buffer, 0, total_bytes, &encrypted_list_data, p_progress );
-                  }
+                     file_hash = create_repository_lists( repository, file_buffer, 0, total_bytes, &encrypted_list_data, p_progress );
 
                   file_name = construct_file_name_from_hash( file_hash, true, true );
 

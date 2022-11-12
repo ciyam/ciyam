@@ -372,7 +372,7 @@ void process_repository_file( const string& blockchain,
       file_data = *p_file_data;
       type_and_extra = file_data[ 0 ];
 
-      peer_mapped_hash = get_peer_mapped_hash( src_hash );
+      peer_mapped_hash = get_peer_mapped_hash( identity, src_hash );
 
       if( !peer_mapped_hash.empty( ) )
       {
@@ -381,7 +381,7 @@ void process_repository_file( const string& blockchain,
          if( is_blockchain_owner && ( peer_mapped_hash != file_data_hash ) )
             throw runtime_error( "found invalid encrypted file content" );
 
-         clear_peer_mapped_hash( src_hash );
+         clear_peer_mapped_hash( identity, src_hash );
       }
 
       file_content = file_data.substr( 1 );
@@ -440,7 +440,7 @@ void process_repository_file( const string& blockchain,
             string password;
             get_identity( password, false, true );
 
-            peer_mapped_hash = get_peer_mapped_hash( target_hash );
+            peer_mapped_hash = get_peer_mapped_hash( identity, target_hash );
 
             decrypt_pulled_peer_file( target_hash, src_hash, password, hex_pub_key,
              false, p_file_data, &peer_mapped_hash, ( has_archive ? &identity : 0 ) );
@@ -632,7 +632,7 @@ void process_put_file( const string& blockchain,
    if( !repo_files_to_get.empty( ) )
    {
       for( size_t i = 0; i < repo_files_to_get.size( ); i++ )
-         add_peer_file_hash_for_get( repo_files_to_get[ i ] );
+         add_peer_file_hash_for_get( repo_files_to_get[ i ], check_for_supporters );
    }
 
    size_t order = get_blockchain_tree_item( blockchain );
@@ -784,15 +784,15 @@ void process_put_file( const string& blockchain,
                                  {
                                     target_hashes.insert( hex_target_hash );
 
-                                    string mapped_hash( get_peer_mapped_hash( hex_target_hash ) );
+                                    string mapped_hash( get_peer_mapped_hash( identity, hex_target_hash ) );
 
-                                    // NOTE: Either set a session variable or add the file info to
-                                    // be fetched depending on whether or not "process_list_items"
-                                    // had been called (if was called the mapped hash will exist).
+                                    // NOTE: Either set a system variable or add the file info to
+                                    // fetch depending on whether or not "process_list_items" had
+                                    // been called (if it was called the mapped hash will exist).
                                     if( !mapped_hash.empty( ) )
-                                       add_peer_file_hash_for_get( hash_info );
+                                       add_peer_file_hash_for_get( hash_info, check_for_supporters );
                                     else
-                                       set_session_variable( hex_target_hash, hash_info );
+                                       set_system_variable( hex_target_hash, hash_info );
                                  }
                               }
                            }
@@ -1263,20 +1263,23 @@ void process_list_items( const string& identity,
                   {
                      if( !prefixed_secondary_values )
                      {
-                        string hash_info( get_session_variable( next_hash ) );
+                        string hash_info( get_system_variable( next_hash ) );
 
                         if( !hash_info.empty( ) )
                         {
                            added = true;
                            add_peer_file_hash_for_get( hash_info, check_for_supporters );
 
-                           set_session_variable( next_hash, "" );
+                           set_system_variable( next_hash, "" );
                         }
-
-                        add_peer_mapped_hash( next_hash, next_secondary );
+                        else
+                           add_peer_mapped_hash( identity, next_hash, next_secondary );
 
                         if( has_targeted_identity )
-                           add_peer_file_hash_for_get( next_hash );
+                        {
+                           added = true;
+                           add_peer_file_hash_for_get( next_hash, check_for_supporters );
+                        }
                         else if( !has_set_first_mapped )
                            has_set_first_mapped = set_session_variable( blockchain_first_mapped_name, next_hash, "" );
                      }
@@ -2819,8 +2822,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             {
                if( has_targeted_identity )
                {
-                  string peer_mapped_hash( get_peer_mapped_hash( next_hash ) );
                   string file_data_hash( sha256( file_data ).get_digest_as_string( ) );
+
+                  string peer_mapped_hash( get_peer_mapped_hash( identity, next_hash ) );
 
                   if( peer_mapped_hash.empty( ) )
                      throw runtime_error( "unexpected unmapped file hash '" + next_hash + "'" );
@@ -2942,7 +2946,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
        + zenith_hash + " height: " + to_string( blockchain_height ) );
 
-      clear_all_peer_mapped_hashes( );
+      clear_all_peer_mapped_hashes( identity );
 
       string genesis_key_tag( blockchain + ".0" + string( c_key_suffix ) );
 
