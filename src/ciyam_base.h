@@ -491,6 +491,25 @@ struct temporary_session_variable
    std::string original_value;
 };
 
+void CIYAM_BASE_DECL_SPEC copy_session_variables( std::map< std::string, std::string >& variables );
+
+void CIYAM_BASE_DECL_SPEC restore_session_variables( const std::map< std::string, std::string >& variables );
+
+struct restorable_session_variables
+{
+   std::map< std::string, std::string > variables;
+
+   restorable_session_variables( )
+   {
+      copy_session_variables( variables );
+   }
+
+   ~restorable_session_variables( )
+   {
+      restore_session_variables( variables );
+   }
+};
+
 void CIYAM_BASE_DECL_SPEC add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const std::string& info_and_data );
 void CIYAM_BASE_DECL_SPEC add_udp_send_file_chunk_info( size_t slot, size_t chunk, const std::string& info_and_data );
 
