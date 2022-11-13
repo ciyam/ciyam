@@ -7688,6 +7688,22 @@ bool is_first_using_session_variable( const string& name, const string& value )
    return false;
 }
 
+void copy_session_variables( map< string, string >& variables )
+{
+   guard g( g_mutex );
+
+   if( gtp_session )
+      variables = gtp_session->variables;
+}
+
+void restore_session_variables( const map< string, string >& variables )
+{
+   guard g( g_mutex );
+
+   if( gtp_session )
+      gtp_session->variables = variables;
+}
+
 void add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const string& info_and_data )
 {
    guard g( g_mutex );

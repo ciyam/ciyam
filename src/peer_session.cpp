@@ -993,14 +993,10 @@ bool last_data_tree_is_identical( const string& blockchain,
 
    if( previous_height )
    {
-      string num_tree_items( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
+      restorable_session_variables all_session_variables;
 
       string tree_root_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
-
-      string public_key_hash( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
 
       string block_tag( blockchain + '.' );
 
@@ -1015,12 +1011,6 @@ bool last_data_tree_is_identical( const string& blockchain,
 
       verify_core_file( prior_block_content, false );
 
-      set_session_variable( get_special_var_name(
-       e_special_var_blockchain_num_tree_items ), num_tree_items );
-
-      set_session_variable( get_special_var_name(
-       e_special_var_blockchain_primary_pubkey_hash ), public_key_hash );
-
       string prior_data_tree_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
@@ -1030,9 +1020,6 @@ bool last_data_tree_is_identical( const string& blockchain,
       {
          if( p_prior_data_tree_hash )
             *p_prior_data_tree_hash = prior_data_tree_hash;
-
-         set_session_variable( get_special_var_name(
-          e_special_var_blockchain_tree_root_hash ), tree_root_hash );
       }
    }
 
@@ -1105,6 +1092,8 @@ void process_list_items( const string& identity,
    bool is_owner = !get_session_variable( blockchain_is_owner_name ).empty( );
    bool is_fetching = !get_session_variable( blockchain_is_fetching_name ).empty( );
    bool is_peer_owner = !get_session_variable( blockchain_peer_is_owner_name ).empty( );
+
+   bool is_peer_responder = !get_session_variable( get_special_var_name( e_special_var_peer_responder ) ).empty( );
 
    bool check_for_supporters = false;
 
@@ -1196,10 +1185,15 @@ void process_list_items( const string& identity,
                {
                   size_t next_height = from_string< size_t >( blockchain_height_processed ) + 1;
 
-                  // FUTURE: This message should be handled as a server string message.
-                  string progress_message( "Checking items for height " + to_string( next_height ) );
+                  string progress_message;
 
-                  progress_message += " (" + to_string( get_blockchain_tree_item( blockchain ) );
+                  // FUTURE: These messages should be handled as a server string messages.
+                  if( is_peer_responder )
+                     progress_message = "Synchronising at height ";
+                  else
+                     progress_message = "Checking items for height ";
+
+                  progress_message += to_string( next_height ) + " (" + to_string( get_blockchain_tree_item( blockchain ) );
 
                   if( !num_tree_items.empty( ) )
                      progress_message += '/' + num_tree_items;
