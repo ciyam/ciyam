@@ -998,6 +998,9 @@ bool last_data_tree_is_identical( const string& blockchain,
       string tree_root_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
+
       string block_tag( blockchain + '.' );
 
       block_tag += to_string( previous_height );
