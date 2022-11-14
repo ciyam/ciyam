@@ -246,25 +246,44 @@ string get_hello_data( string& hello_hash )
    return data;
 }
 
-void set_targeted_for_support_sessions( const string& blockchain )
+void check_shared_for_support_session( const string& blockchain )
 {
    vector< string > identities;
 
    if( num_have_session_variable(
     get_special_var_name( e_special_var_peer ), blockchain, &identities ) )
    {
+      size_t index = 0;
+      size_t lowest = 0;
+
       string own_sess_id( to_string( session_id( ) ) );
 
+      string blockchain_targeted_identity_name(
+       get_special_var_name( e_special_var_blockchain_targeted_identity ) );
+
+      // NOTE: As the main session is started first (and session ids start
+      // from one and always increment) find the lowest (non-zero) session
+      // id's index in order to check if the main session is "shared".
       for( size_t i = 0; i < identities.size( ); i++ )
       {
          string next_id( identities[ i ] );
 
          if( next_id != own_sess_id )
-            set_session_variable( get_special_var_name(
-             e_special_var_blockchain_targeted_identity ), c_true_value, 0, 0, &next_id );
+         {
+            size_t next_value = from_string< size_t >( next_id );
+
+            if( !lowest || ( next_value < lowest ) )
+            {
+               index = i;
+               lowest = next_value;
+            }
+         }
       }
 
-      set_session_variable( get_special_var_name( e_special_var_blockchain_shared_peers ), c_true_value );
+      if( !get_session_variable( blockchain_targeted_identity_name, &identities[ index ] ).empty( ) )
+         set_session_variable( blockchain_targeted_identity_name, c_true_value );
+
+      set_session_variable( get_special_var_name( e_special_var_blockchain_checked_shared ), c_true_value );
    }
 }
 
@@ -311,10 +330,6 @@ void process_core_file( const string& hash, const string& blockchain )
 
             bool is_shared = !get_session_variable(
              get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
-
-            if( is_shared && get_session_variable(
-             get_special_var_name( e_special_var_blockchain_shared_peers ) ).empty( ) )
-               set_targeted_for_support_sessions( blockchain );
 
             if( !primary_pubkey_hash.empty( ) )
             {
@@ -1716,10 +1731,6 @@ bool process_block_for_height( const string& blockchain,
    bool is_shared = !get_session_variable(
     get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
 
-   if( is_shared && get_session_variable(
-    get_special_var_name( e_special_var_blockchain_shared_peers ) ).empty( ) )
-      set_targeted_for_support_sessions( blockchain );
-
    if( !block_height.empty( ) && ( block_height != to_string( height ) ) )
       throw runtime_error( "specified height does not match that found in the block itself (blk)" );
    else
@@ -1790,9 +1801,6 @@ bool process_block_for_height( const string& blockchain,
 
       string blockchain_height_processed( get_session_variable(
        get_special_var_name( e_special_var_blockchain_height_processed ) ) );
-
-      bool is_new_height = ( blockchain_height_processed.empty( )
-       || ( from_string< size_t >( blockchain_height_processed ) < height ) );
 
       if( !tree_root_hash.empty( ) )
       {
@@ -2754,7 +2762,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          get_file( next_hash, &file_data );
 
          // NOTE: Delay popping for support sessions so that the main
-         // session doesn't attempt to create new zenith whilst files
+         // session won't attempt to create a new zenith whilst files
          // fetched by support sessions are still being processed.
          scoped_pop_peer_get_hash pop_peer_get_hash( !is_for_support );
 
@@ -2764,6 +2772,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             is_list = is_list_file( file_data[ 0 ] ); 
          else
             is_list = is_list_file( next_hash.substr( 0, next_hash.find( ':' ) ) );
+
+         if( is_for_support && get_session_variable(
+          get_special_var_name( e_special_var_blockchain_checked_shared ) ).empty( ) )
+            check_shared_for_support_session( blockchain );
 
          string block_file_hash( get_session_variable(
           get_special_var_name( e_special_var_blockchain_block_file_hash ) ) );
@@ -2790,10 +2802,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          bool has_targeted_identity = !get_session_variable(
           get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
-
-         if( !is_for_support && has_targeted_identity && get_session_variable(
-          get_special_var_name( e_special_var_blockchain_shared_peers ) ).empty( ) )
-            set_targeted_for_support_sessions( blockchain );
 
          if( next_hash == block_file_hash )
          {

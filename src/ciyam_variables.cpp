@@ -173,11 +173,11 @@ const char* const c_special_variable_blockchain_archive_path = "@blockchain_arch
 const char* const c_special_variable_blockchain_backup_ident = "@blockchain_backup_ident";
 const char* const c_special_variable_blockchain_first_mapped = "@blockchain_first_mapped";
 const char* const c_special_variable_blockchain_shared_ident = "@blockchain_shared_ident";
-const char* const c_special_variable_blockchain_shared_peers = "@blockchain_shared_peers";
 const char* const c_special_variable_blockchain_backup_height = "@blockchain_backup_height";
 const char* const c_special_variable_blockchain_peer_is_owner = "@blockchain_peer_is_owner";
 const char* const c_special_variable_blockchain_shared_height = "@blockchain_shared_height";
 const char* const c_special_variable_blockchain_zenith_height = "@blockchain_zenith_height";
+const char* const c_special_variable_blockchain_checked_shared = "@blockchain_checked_shared";
 const char* const c_special_variable_blockchain_get_tree_files = "@blockchain_get_tree_files";
 const char* const c_special_variable_blockchain_num_tree_items = "@blockchain_num_tree_items";
 const char* const c_special_variable_blockchain_peer_supporter = "@blockchain_peer_supporter";
@@ -733,10 +733,6 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_blockchain_shared_ident );
       break;
 
-      case e_special_var_blockchain_shared_peers:
-      s = string( c_special_variable_blockchain_shared_peers );
-      break;
-
       case e_special_var_blockchain_backup_height:
       s = string( c_special_variable_blockchain_backup_height );
       break;
@@ -751,6 +747,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_zenith_height:
       s = string( c_special_variable_blockchain_zenith_height );
+      break;
+
+      case e_special_var_blockchain_checked_shared:
+      s = string( c_special_variable_blockchain_checked_shared );
       break;
 
       case e_special_var_blockchain_get_tree_files:
