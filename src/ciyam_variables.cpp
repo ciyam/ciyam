@@ -184,9 +184,9 @@ const char* const c_special_variable_blockchain_skip_blob_puts = "@blockchain_sk
 const char* const c_special_variable_blockchain_tree_root_hash = "@blockchain_tree_root_hash";
 const char* const c_special_variable_blockchain_block_file_hash = "@blockchain_block_file_hash";
 const char* const c_special_variable_blockchain_both_are_owners = "@blockchain_both_are_owners";
-const char* const c_special_variable_blockchain_hash_processing = "@blockchain_hash_processing";
-const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
+const char* const c_special_variable_blockchain_block_processing = "@blockchain_block_processing";
 const char* const c_special_variable_blockchain_zenith_tree_hash = "@blockchain_zenith_tree_hash";
+const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 const char* const c_special_variable_totals_exclude_hidden_blobs = "@totals_exclude_hidden_blobs";
 const char* const c_special_variable_blockchain_height_processing = "@blockchain_height_processing";
 const char* const c_special_variable_blockchain_targeted_identity = "@blockchain_targeted_identity";
@@ -777,16 +777,16 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_blockchain_both_are_owners );
       break;
 
-      case e_special_var_blockchain_hash_processing:
-      s = string( c_special_variable_blockchain_hash_processing );
-      break;
-
-      case e_special_var_total_child_field_in_parent:
-      s = string( c_special_variable_total_child_field_in_parent );
+      case e_special_var_blockchain_block_processing:
+      s = string( c_special_variable_blockchain_block_processing );
       break;
 
       case e_special_var_blockchain_zenith_tree_hash:
       s = string( c_special_variable_blockchain_zenith_tree_hash );
+      break;
+
+      case e_special_var_total_child_field_in_parent:
+      s = string( c_special_variable_total_child_field_in_parent );
       break;
 
       case e_special_var_totals_exclude_hidden_blobs:
