@@ -167,24 +167,24 @@ const char* const c_special_variable_blockchain_time_value = "@blockchain_time_v
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
 const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
-const char* const c_special_variable_blockchain_zenith_hash = "@blockchain_zenith_hash";
 const char* const c_special_variable_single_string_response = "@single_string_response";
 const char* const c_special_variable_blockchain_archive_path = "@blockchain_archive_path";
 const char* const c_special_variable_blockchain_backup_ident = "@blockchain_backup_ident";
 const char* const c_special_variable_blockchain_first_mapped = "@blockchain_first_mapped";
 const char* const c_special_variable_blockchain_shared_ident = "@blockchain_shared_ident";
 const char* const c_special_variable_blockchain_backup_height = "@blockchain_backup_height";
-const char* const c_special_variable_blockchain_peer_is_owner = "@blockchain_peer_is_owner";
 const char* const c_special_variable_blockchain_shared_height = "@blockchain_shared_height";
 const char* const c_special_variable_blockchain_zenith_height = "@blockchain_zenith_height";
 const char* const c_special_variable_blockchain_checked_shared = "@blockchain_checked_shared";
 const char* const c_special_variable_blockchain_get_tree_files = "@blockchain_get_tree_files";
 const char* const c_special_variable_blockchain_num_tree_items = "@blockchain_num_tree_items";
+const char* const c_special_variable_blockchain_other_is_owner = "@blockchain_other_is_owner";
 const char* const c_special_variable_blockchain_peer_supporter = "@blockchain_peer_supporter";
 const char* const c_special_variable_blockchain_skip_blob_puts = "@blockchain_skip_blob_puts";
 const char* const c_special_variable_blockchain_tree_root_hash = "@blockchain_tree_root_hash";
 const char* const c_special_variable_blockchain_block_file_hash = "@blockchain_block_file_hash";
 const char* const c_special_variable_blockchain_both_are_owners = "@blockchain_both_are_owners";
+const char* const c_special_variable_blockchain_hash_processing = "@blockchain_hash_processing";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 const char* const c_special_variable_blockchain_zenith_tree_hash = "@blockchain_zenith_tree_hash";
 const char* const c_special_variable_totals_exclude_hidden_blobs = "@totals_exclude_hidden_blobs";
@@ -709,10 +709,6 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_blockchain_is_fetching );
       break;
 
-      case e_special_var_blockchain_zenith_hash:
-      s = string( c_special_variable_blockchain_zenith_hash );
-      break;
-
       case e_special_var_single_string_response:
       s = string( c_special_variable_single_string_response );
       break;
@@ -737,10 +733,6 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_blockchain_backup_height );
       break;
 
-      case e_special_var_blockchain_peer_is_owner:
-      s = string( c_special_variable_blockchain_peer_is_owner );
-      break;
-
       case e_special_var_blockchain_shared_height:
       s = string( c_special_variable_blockchain_shared_height );
       break;
@@ -761,6 +753,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_blockchain_num_tree_items );
       break;
 
+      case e_special_var_blockchain_other_is_owner:
+      s = string( c_special_variable_blockchain_other_is_owner );
+      break;
+
       case e_special_var_blockchain_peer_supporter:
       s = string( c_special_variable_blockchain_peer_supporter );
       break;
@@ -779,6 +775,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_both_are_owners:
       s = string( c_special_variable_blockchain_both_are_owners );
+      break;
+
+      case e_special_var_blockchain_hash_processing:
+      s = string( c_special_variable_blockchain_hash_processing );
       break;
 
       case e_special_var_total_child_field_in_parent:
