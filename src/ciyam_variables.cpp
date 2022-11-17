@@ -166,6 +166,7 @@ const char* const c_special_variable_secondary_validation = "@secondary_validati
 const char* const c_special_variable_blockchain_time_value = "@blockchain_time_value";
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
+const char* const c_special_variable_blockchain_is_checking = "@blockchain_is_checking";
 const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
 const char* const c_special_variable_single_string_response = "@single_string_response";
 const char* const c_special_variable_blockchain_archive_path = "@blockchain_archive_path";
@@ -703,6 +704,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_peer_is_synchronising:
       s = string( c_special_variable_peer_is_synchronising );
+      break;
+
+      case e_special_var_blockchain_is_checking:
+      s = string( c_special_variable_blockchain_is_checking );
       break;
 
       case e_special_var_blockchain_is_fetching:
