@@ -1144,6 +1144,16 @@ void process_list_items( const string& identity,
    string blockchain_height_processing( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processing ) ) );
 
+   // NOTE: If not found then if zenith height exists will add one to that.
+   if( blockchain_height_processing.empty( ) )
+   {
+      blockchain_height_processing = get_session_variable(
+       get_special_var_name( e_special_var_blockchain_zenith_height ) );
+
+      if( !blockchain_height_processing.empty( ) )
+         blockchain_height_processing = to_string( from_string< size_t >( blockchain_height_processing ) + 1 );
+   }
+
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
       if( g_server_shutdown )
@@ -1173,12 +1183,25 @@ void process_list_items( const string& identity,
             else
             {
                if( !allow_blob_creation )
-                  progress = "Processed " + to_string( *p_num_items_found ) + " items";
+               {
+                  progress = "Checking items";
+
+                  if( !blockchain_height_processing.empty( ) )
+                     progress += " for height " + blockchain_height_processing;
+
+                  progress += " (" + to_string( *p_num_items_found );
+
+                  if( !num_tree_items.empty( ) )
+                     progress += "/" + num_tree_items;
+
+                  progress += ")";
+               }
                else
                {
-                  progress = "Preparing items for height ";
+                  progress = "Preparing items";
 
-                  progress += blockchain_height_processing;
+                  if( !blockchain_height_processing.empty( ) )
+                     progress += " for height " + blockchain_height_processing;
 
                   progress += " (" + to_string( *p_num_items_found );
 
@@ -1197,11 +1220,13 @@ void process_list_items( const string& identity,
 
             if( is_fetching )
             {
+               // NOTE: If "blockchain_height_processing" is empty then will output the
+               // message created above so at least a progress message has been issued.
                if( blockchain_height_processing.empty( ) )
                   set_session_progress_output( progress );
                else
                {
-                  size_t next_height = from_string< size_t >( blockchain_height_processing ) + 1;
+                  size_t next_height = from_string< size_t >( blockchain_height_processing );
 
                   string progress_message;
 
@@ -1267,17 +1292,14 @@ void process_list_items( const string& identity,
             if( blob_increment && p_num_items_found )
                ++( *p_num_items_found );
 
-            if( recurse )
-            {
-               if( allow_blob_creation && !skip_secondary_blobs )
-                  ++( *p_num_items_skipped );
+            if( is_fetching && blob_increment )
+               add_to_blockchain_tree_item( blockchain, 1 );
 
-               if( is_fetching && !skip_secondary_blobs )
-                  add_to_blockchain_tree_item( blockchain, 1 );
+            if( recurse && allow_blob_creation && !skip_secondary_blobs )
+               ++( *p_num_items_skipped );
 
-               if( p_list_items_to_ignore && ( next_hash == last_blob_hash ) )
-                  p_list_items_to_ignore->insert( next_hash );
-            }
+            if( p_list_items_to_ignore && ( next_hash == last_blob_hash ) )
+               p_list_items_to_ignore->insert( next_hash );
 
             continue;
          }
@@ -1369,12 +1391,11 @@ void process_list_items( const string& identity,
                if( blob_increment && p_num_items_found )
                   ++( *p_num_items_found );
 
-               if( recurse
-                && allow_blob_creation && !skip_secondary_blobs )
-                  ++( *p_num_items_skipped );
-
-               if( recurse && is_fetching && !skip_secondary_blobs )
+               if( is_fetching && blob_increment )
                   add_to_blockchain_tree_item( blockchain, 1 );
+
+               if( recurse && allow_blob_creation && !skip_secondary_blobs )
+                  ++( *p_num_items_skipped );
             }
          }
          else if( recurse && is_list_file( next_hash ) )
@@ -1402,7 +1423,7 @@ void process_list_items( const string& identity,
             if( blob_increment && p_num_items_found )
                ++( *p_num_items_found );
 
-            if( is_fetching && !skip_secondary_blobs )
+            if( is_fetching && blob_increment )
                add_to_blockchain_tree_item( blockchain, 1 );
 
             if( has_repository_entry_record( identity, next_hash ) )
@@ -2611,6 +2632,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      blockchain_height = ++blockchain_height_pending;
 
                      set_session_variable( blockchain_is_fetching_name, "" );
+                     set_session_variable( blockchain_block_processing_name, "" );
                      set_session_variable( blockchain_height_processing_name, "" );
 
                      set_session_variable( blockchain_zenith_height_name, to_string( current_zenith_height ) );
@@ -2622,19 +2644,20 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      // must have not been previously completed.
                      need_to_check = true;
 
-                     set_session_variable( blockchain_is_fetching_name, c_true_value );
-                     set_session_variable( blockchain_block_processing_name, next_block_hash );
-
                      size_t num_items_found = 0;
 
                      set_blockchain_tree_item( blockchain, 0 );
 
+                     blockchain_height_pending = blockchain_height + 1;
+
+                     set_session_variable( blockchain_is_fetching_name, c_true_value );
+                     set_session_variable( blockchain_block_processing_name, next_block_hash );
+                     set_session_variable( blockchain_height_processing_name, to_string( blockchain_height_pending ) );
+
                      bool has_block_data = process_block_for_height( blockchain,
-                      next_block_hash, blockchain_height + 1, list_items_to_ignore, &num_items_found, this );
+                      next_block_hash, blockchain_height_pending, list_items_to_ignore, &num_items_found, this );
 
                      string first_mapped( get_session_variable( blockchain_first_mapped_name ) );
-
-                     blockchain_height_pending = blockchain_height + 1;
 
                      set_session_variable( blockchain_first_mapped_name, "" );
 
@@ -2647,11 +2670,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         if( file_hash.empty( ) )
                            file_hash = first_mapped;
 
-                        // NOTE: Use the "nonce" argument to indicate the first
-                        // file to be fetched (so that pull requests will start
-                        // from the correct point).
-                        if( !file_hash.empty( )
-                         && ( file_hash.find( ':' ) == string::npos ) )
+                        // NOTE: Use the "nonce" argument to identify the first file needing to
+                        // be fetched (so that pull requests are commenced at the right point).
+                        if( !file_hash.empty( ) && ( file_hash.find( ':' ) == string::npos ) )
                            next_block_tag += string( " " ) + '@' + file_hash;
 
                         temporary_session_variable temp_is_checking(
@@ -2660,8 +2681,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         has_tree_files = chk_file( next_block_tag, &next_block_hash );
 
                         has_issued_chk = true;
-
-                        set_session_variable( blockchain_height_processing_name, to_string( blockchain_height_pending ) );
                      }
                   }
                }
