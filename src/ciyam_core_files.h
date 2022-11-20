@@ -43,8 +43,8 @@ std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_pull_info(
  size_t num_items_skipped = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_push_info(
- const std::string& file_hash, const std::string& password, std::string* p_pub_key = 0,
- bool store_as_blob = true, bool is_for_testing = false, size_t num_items_skipped = 0 );
+ const std::string& file_hash, const std::string& password,
+ std::string* p_pub_key = 0, bool store_as_blob = true, bool is_for_testing = false );
 
 void CIYAM_BASE_DECL_SPEC decrypt_pulled_peer_file(
  const std::string& dest_hash, const std::string& src_hash,
