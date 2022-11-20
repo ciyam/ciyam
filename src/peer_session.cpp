@@ -749,16 +749,6 @@ void process_put_file( const string& blockchain,
                   string public_key(
                    lines[ 1 ].substr( strlen( c_file_repository_public_key_line_prefix ) ) );
 
-                  pos = public_key.find( ':' );
-
-                  if( pos != string::npos )
-                  {
-                     size_t num_skipped = from_string< size_t >( public_key.substr( pos + 1 ) );
-                     public_key.erase( pos );
-
-                     add_to_blockchain_tree_item( blockchain, num_skipped );
-                  }
-
                   pos = public_key.find( '-' );
 
                   if( pos != string::npos )
@@ -800,8 +790,6 @@ void process_put_file( const string& blockchain,
 
                            if( has_file( hex_target_hash ) )
                            {
-                              add_to_blockchain_tree_item( blockchain, 1 );
-
                               target_hashes.insert( hex_target_hash );
 
                               if( !has_repository_entry_record( identity, hex_target_hash ) )
@@ -814,11 +802,7 @@ void process_put_file( const string& blockchain,
                               bool has_repo_entry = fetch_repository_entry_record( identity, hex_target_hash, local_hash, false );
 
                               if( has_repo_entry && has_file( local_hash ) )
-                              {
-                                 add_to_blockchain_tree_item( blockchain, 1 );
-
                                  touch_file( local_hash, identity, false );
-                              }
                               else
                               {
                                  if( !target_hashes.count( hex_target_hash ) )
@@ -1044,10 +1028,9 @@ bool last_data_tree_is_identical( const string& blockchain,
    return retval;
 }
 
-void process_list_items( const string& identity,
- const string& hash, bool recurse, string* p_blob_data = 0,
- size_t* p_num_items_found = 0, set< string >* p_list_items_to_ignore = 0,
- date_time* p_dtm = 0, progress* p_progress = 0, size_t* p_num_items_skipped = 0 )
+void process_list_items( const string& identity, const string& hash,
+ bool recurse, string* p_blob_data = 0, size_t* p_num_items_found = 0,
+ set< string >* p_list_items_to_ignore = 0, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
    TRACE_LOG( TRACE_PEER_OPS, "(process_list_items) hash: " + hash );
 
@@ -1083,11 +1066,6 @@ void process_list_items( const string& identity,
    }
 
    string last_blob_hash;
-
-   size_t num_items_skipped = 0;
-
-   if( !p_num_items_skipped )
-      p_num_items_skipped = &num_items_skipped;
 
    size_t max_blob_file_data = get_files_area_item_max_size( ) - c_max_put_blob_size;
 
@@ -1162,10 +1140,7 @@ void process_list_items( const string& identity,
       if( is_condemned_session( ) )
          throw runtime_error( "peer session has been condemned" );
 
-      bool blob_increment = has_targeted_identity;
-
-      if( !blob_increment )
-         blob_increment = ( ( i % 2 ) == skip_secondary_blobs );
+      bool blob_increment = ( has_targeted_identity ? true : !skip_secondary_blobs );
 
       if( p_dtm && p_progress )
       {
@@ -1187,7 +1162,7 @@ void process_list_items( const string& identity,
                   progress = "Checking items";
 
                   if( !blockchain_height_processing.empty( ) )
-                     progress += " for height " + blockchain_height_processing;
+                     progress += " at height " + blockchain_height_processing;
 
                   progress += " (" + to_string( *p_num_items_found );
 
@@ -1234,7 +1209,7 @@ void process_list_items( const string& identity,
                   if( is_peer_responder )
                      progress_message = "Synchronising at height ";
                   else
-                     progress_message = "Checking items for height ";
+                     progress_message = "Checking items at height ";
 
                   progress_message += to_string( next_height ) + " (" + to_string( get_blockchain_tree_item( blockchain ) );
 
@@ -1286,20 +1261,13 @@ void process_list_items( const string& identity,
                p_list_items_to_ignore = 0;
          }
 
-         if( ( next_hash == last_blob_hash )
-          || ( p_list_items_to_ignore && p_list_items_to_ignore->count( next_hash ) ) )
+         if( p_list_items_to_ignore && p_list_items_to_ignore->count( next_hash ) )
          {
             if( blob_increment && p_num_items_found )
                ++( *p_num_items_found );
 
             if( is_fetching && blob_increment )
                add_to_blockchain_tree_item( blockchain, 1 );
-
-            if( recurse && allow_blob_creation && !skip_secondary_blobs )
-               ++( *p_num_items_skipped );
-
-            if( p_list_items_to_ignore && ( next_hash == last_blob_hash ) )
-               p_list_items_to_ignore->insert( next_hash );
 
             continue;
          }
@@ -1370,9 +1338,8 @@ void process_list_items( const string& identity,
                      *p_blob_data += c_blob_separator;
 
                   *p_blob_data += create_peer_repository_entry_pull_info( identity,
-                   next_hash, local_hash, local_public_key, master_public_key, false, *p_num_items_skipped );
+                   next_hash, local_hash, local_public_key, master_public_key, false );
 
-                  *p_num_items_skipped = 0;
                   last_blob_hash = next_hash;
                }
 
@@ -1393,9 +1360,6 @@ void process_list_items( const string& identity,
 
                if( is_fetching && blob_increment )
                   add_to_blockchain_tree_item( blockchain, 1 );
-
-               if( recurse && allow_blob_creation && !skip_secondary_blobs )
-                  ++( *p_num_items_skipped );
             }
          }
          else if( recurse && is_list_file( next_hash ) )
@@ -1406,11 +1370,8 @@ void process_list_items( const string& identity,
             if( is_fetching )
                add_to_blockchain_tree_item( blockchain, 1 );
 
-            if( allow_blob_creation && !first_hash_to_get.empty( ) )
-               ++( *p_num_items_skipped );
-
             process_list_items( identity, next_hash, recurse,
-             p_blob_data, p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress, p_num_items_skipped );
+             p_blob_data, p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress );
 
             // NOTE: Recursive processing may have already located this.
             first_hash_to_get = get_session_variable( first_hash_name );
@@ -1453,11 +1414,10 @@ void process_list_items( const string& identity,
                      *p_blob_data += c_blob_separator;
 
                   *p_blob_data += create_peer_repository_entry_push_info(
-                   next_hash, password, &master_public_key, false, false, *p_num_items_skipped );
+                   next_hash, password, &master_public_key, false, false );
 
                   clear_key( password );
 
-                  *p_num_items_skipped = 0;
                   last_blob_hash = next_hash;
                }
 
@@ -1467,8 +1427,6 @@ void process_list_items( const string& identity,
                if( !has_repository_entry )
                   store_repository_entry_record( identity, next_hash, "", master_public_key, master_public_key );
             }
-            else if( allow_blob_creation && !skip_secondary_blobs && !first_hash_to_get.empty( ) )
-               ++( *p_num_items_skipped );
          }
          else
          {
@@ -1478,7 +1436,7 @@ void process_list_items( const string& identity,
                touch_file( next_hash, identity, false );
             else
                process_list_items( identity, next_hash, false,
-                p_blob_data, p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress, p_num_items_skipped );
+                p_blob_data, p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress );
          }
       }
    }
@@ -2737,16 +2695,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             if( has_issued_chk )
             {
                if( !has_tree_files )
-                  set_session_variable( get_special_var_name(
-                   e_special_var_blockchain_get_tree_files ), "" );
+                  set_session_variable( get_special_var_name( e_special_var_blockchain_get_tree_files ), "" );
                else
-               {
-                  if( next_block_tag.find( '@' ) != string::npos )
-                     set_blockchain_tree_item( blockchain, 0 );
-
-                  set_session_variable( get_special_var_name(
-                   e_special_var_blockchain_get_tree_files ), c_true_value );
-               }
+                  set_session_variable( get_special_var_name( e_special_var_blockchain_get_tree_files ), c_true_value );
             }
          }
       }
