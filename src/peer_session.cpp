@@ -676,8 +676,6 @@ void process_put_file( const string& blockchain,
          add_peer_file_hash_for_get( repo_files_to_get[ i ], check_for_supporters );
    }
 
-   size_t order = get_blockchain_tree_item( blockchain );
-
    for( size_t i = 0; i < blobs.size( ); i++ )
    {
       string next_blob( blobs[ i ] );
@@ -3484,8 +3482,18 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                date_time dtm( date_time::local( ) );
 
+               bool put_was_first = false;
+
+               set< string >& items_to_ignore( socket_handler.get_list_items_to_ignore( ) );
+
+               if( items_to_ignore.empty( ) )
+                  put_was_first = true;
+
                process_put_file( blockchain, file_data.substr( 1 ), check_for_supporters,
-                socket_handler.get_is_test_session( ), socket_handler.get_list_items_to_ignore( ), &dtm, &socket_handler );
+                socket_handler.get_is_test_session( ), items_to_ignore, &dtm, &socket_handler );
+
+               if( put_was_first )
+                  set_session_variable( "@blockchain_num_puts", to_string( items_to_ignore.size( ) ) );
             }
          }
          else
