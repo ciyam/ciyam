@@ -1065,8 +1065,6 @@ void process_list_items( const string& identity, const string& hash,
       p_blob_data = &file_data;
    }
 
-   string last_blob_hash;
-
    size_t max_blob_file_data = get_files_area_item_max_size( ) - c_max_put_blob_size;
 
    string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
@@ -1339,8 +1337,6 @@ void process_list_items( const string& identity, const string& hash,
 
                   *p_blob_data += create_peer_repository_entry_pull_info( identity,
                    next_hash, local_hash, local_public_key, master_public_key, false );
-
-                  last_blob_hash = next_hash;
                }
 
                if( !skip_secondary_blobs && p_list_items_to_ignore )
@@ -1417,8 +1413,6 @@ void process_list_items( const string& identity, const string& hash,
                    next_hash, password, &master_public_key, false, false );
 
                   clear_key( password );
-
-                  last_blob_hash = next_hash;
                }
 
                if( !skip_secondary_blobs && p_list_items_to_ignore )
