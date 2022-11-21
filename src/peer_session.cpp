@@ -630,7 +630,7 @@ void check_for_missing_paired_session( const date_time& now )
 
 void process_put_file( const string& blockchain,
  const string& file_data, bool check_for_supporters, bool is_test_session,
- set< string >& list_items_to_ignore, date_time* p_dtm = 0, progress* p_progress = 0 )
+ set< string >& target_hashes, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
    TRACE_LOG( TRACE_PEER_OPS, "(process_put_file) blockchain: " + blockchain );
 
@@ -640,8 +640,6 @@ void process_put_file( const string& blockchain,
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
    size_t num_skipped = 0;
-
-   set< string > target_hashes;
 
    deque< string > repo_files_to_get;
    deque< string > non_repo_files_to_get;
@@ -3484,16 +3482,16 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                bool put_was_first = false;
 
-               set< string >& items_to_ignore( socket_handler.get_list_items_to_ignore( ) );
-
-               if( items_to_ignore.empty( ) )
+               if( socket_handler.get_list_items_to_ignore( ).empty( ) )
                   put_was_first = true;
 
+               set< string > target_hashes;
+
                process_put_file( blockchain, file_data.substr( 1 ), check_for_supporters,
-                socket_handler.get_is_test_session( ), items_to_ignore, &dtm, &socket_handler );
+                socket_handler.get_is_test_session( ), target_hashes, &dtm, &socket_handler );
 
                if( put_was_first )
-                  set_session_variable( "@blockchain_num_puts", to_string( items_to_ignore.size( ) ) );
+                  set_session_variable( "@blockchain_num_puts", to_string( target_hashes.size( ) ) );
             }
          }
          else
