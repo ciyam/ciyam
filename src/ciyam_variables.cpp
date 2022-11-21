@@ -159,6 +159,7 @@ const char* const c_special_variable_extra_field_values = "@extra_field_values";
 const char* const c_special_variable_file_info_buffered = "@file_info_buffered";
 const char* const c_special_variable_repo_entry_missing = "@repo_entry_missing";
 const char* const c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
+const char* const c_special_variable_blockchain_num_puts = "@blockchain_num_puts";
 const char* const c_special_variable_repo_crypt_password = "@repo_crypt_password";
 const char* const c_special_variable_blockchain_hind_hash = "@blockchain_hind_hash";
 const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_ratios";
@@ -676,6 +677,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_is_owner:
       s = string( c_special_variable_blockchain_is_owner );
+      break;
+
+      case e_special_var_blockchain_num_puts:
+      s = string( c_special_variable_blockchain_num_puts );
       break;
 
       case e_special_var_repo_crypt_password:
