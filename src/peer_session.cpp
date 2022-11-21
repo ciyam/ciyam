@@ -192,9 +192,12 @@ void set_blockchain_tree_item( const string& blockchain, size_t num )
    g_blockchain_tree_item[ blockchain ] = num;
 }
 
-void add_to_blockchain_tree_item( const string& blockchain, size_t num_to_add )
+void add_to_blockchain_tree_item( const string& blockchain, size_t num_to_add, size_t upper_limit = 0 )
 {
    guard g( g_mutex );
+
+   if( upper_limit && g_blockchain_tree_item[ blockchain ] >= upper_limit )
+      return;
 
    g_blockchain_tree_item[ blockchain ] += num_to_add;
 }
@@ -1113,6 +1116,17 @@ void process_list_items( const string& identity, const string& hash,
    string num_tree_items( get_session_variable(
     get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
+   size_t upper_limit = 0;
+
+   if( !num_tree_items.empty( ) )
+   {
+      size_t num_items = from_string< size_t >( num_tree_items );
+
+      string blockchain_num_puts( get_session_variable( "@blockchain_num_puts" ) );
+
+      upper_limit = ( num_items - from_string< size_t >( blockchain_num_puts ) );
+   }
+
    string blockchain_height_processing( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processing ) ) );
 
@@ -1261,7 +1275,7 @@ void process_list_items( const string& identity, const string& hash,
                ++( *p_num_items_found );
 
             if( is_fetching && blob_increment )
-               add_to_blockchain_tree_item( blockchain, 1 );
+               add_to_blockchain_tree_item( blockchain, 1, upper_limit );
 
             continue;
          }
@@ -1351,7 +1365,7 @@ void process_list_items( const string& identity, const string& hash,
                   ++( *p_num_items_found );
 
                if( is_fetching && blob_increment )
-                  add_to_blockchain_tree_item( blockchain, 1 );
+                  add_to_blockchain_tree_item( blockchain, 1, upper_limit );
             }
          }
          else if( recurse && is_list_file( next_hash ) )
@@ -1360,7 +1374,7 @@ void process_list_items( const string& identity, const string& hash,
                ++( *p_num_items_found );
 
             if( is_fetching )
-               add_to_blockchain_tree_item( blockchain, 1 );
+               add_to_blockchain_tree_item( blockchain, 1, upper_limit );
 
             process_list_items( identity, next_hash, recurse,
              p_blob_data, p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress );
@@ -1377,7 +1391,7 @@ void process_list_items( const string& identity, const string& hash,
                ++( *p_num_items_found );
 
             if( is_fetching && blob_increment )
-               add_to_blockchain_tree_item( blockchain, 1 );
+               add_to_blockchain_tree_item( blockchain, 1, upper_limit );
 
             if( has_repository_entry_record( identity, next_hash ) )
             {
@@ -2952,6 +2966,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       if( has_tag( genesis_key_tag ) )
          delete_file( tag_file_hash( genesis_key_tag ) );
+
+      set_session_variable( "@blockchain_num_puts", "" );
 
       set_session_variable( blockchain_first_mapped_name, "" );
       set_session_variable( blockchain_block_processing_name, "" );
