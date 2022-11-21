@@ -1122,7 +1122,8 @@ void process_list_items( const string& identity, const string& hash,
    {
       size_t num_items = from_string< size_t >( num_tree_items );
 
-      string blockchain_num_puts( get_session_variable( "@blockchain_num_puts" ) );
+      string blockchain_num_puts( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_num_puts ) ) );
 
       upper_limit = ( num_items - from_string< size_t >( blockchain_num_puts ) );
    }
@@ -2967,8 +2968,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       if( has_tag( genesis_key_tag ) )
          delete_file( tag_file_hash( genesis_key_tag ) );
 
-      set_session_variable( "@blockchain_num_puts", "" );
-
       set_session_variable( blockchain_first_mapped_name, "" );
       set_session_variable( blockchain_block_processing_name, "" );
 
@@ -2977,6 +2976,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          set_session_variable( blockchain_is_fetching_name, "" );
          set_session_variable( blockchain_height_processing_name, "" );
       }
+
+      set_session_variable( get_special_var_name( e_special_var_blockchain_num_puts ), "" );
 
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_height ), to_string( blockchain_height ) );
@@ -3507,7 +3508,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                 socket_handler.get_is_test_session( ), target_hashes, &dtm, &socket_handler );
 
                if( put_was_first )
-                  set_session_variable( "@blockchain_num_puts", to_string( target_hashes.size( ) ) );
+                  set_session_variable( get_special_var_name(
+                   e_special_var_blockchain_num_puts ), to_string( target_hashes.size( ) ) );
             }
          }
          else
