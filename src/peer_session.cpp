@@ -3148,6 +3148,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    set_last_session_cmd( command );
 
+   increment_session_commands_executed( );
+
    string identity( socket_handler.get_identity( ) );
    string blockchain( socket_handler.get_blockchain( ) );
 
