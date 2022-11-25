@@ -1152,7 +1152,7 @@ void process_list_items( const string& identity, const string& hash,
       bool blob_increment = ( has_targeted_identity ? true : !skip_secondary_blobs );
 
       if( !has_targeted_identity
-       && !secondary_values.empty( ) && ( !is_fetching || is_peer_responder ) )
+       && !secondary_values.empty( ) && ( !is_fetching || !is_peer_responder ) )
          blob_increment = ( i % 2 == 0 );
 
       if( p_dtm && p_progress )
@@ -1189,7 +1189,7 @@ void process_list_items( const string& identity, const string& hash,
                   progress = "Preparing items";
 
                   if( !blockchain_height_processing.empty( ) )
-                     progress += " for height " + blockchain_height_processing;
+                     progress += " at height " + blockchain_height_processing;
 
                   progress += " (" + to_string( *p_num_items_found );
 
