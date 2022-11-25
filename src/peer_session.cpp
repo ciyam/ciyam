@@ -1151,7 +1151,8 @@ void process_list_items( const string& identity, const string& hash,
 
       bool blob_increment = ( has_targeted_identity ? true : !skip_secondary_blobs );
 
-      if( !is_fetching && !has_targeted_identity && !secondary_values.empty( ) )
+      if( !has_targeted_identity
+       && !secondary_values.empty( ) && ( !is_fetching || is_peer_responder ) )
          blob_increment = ( i % 2 == 0 );
 
       if( p_dtm && p_progress )
