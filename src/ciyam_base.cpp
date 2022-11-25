@@ -5936,35 +5936,39 @@ void list_sessions( ostream& os, bool inc_dtms, bool include_progress )
 {
    guard g( g_mutex );
 
+   map< size_t, string > sessions;
+
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
       if( g_sessions[ i ] )
       {
-         os << g_sessions[ i ]->id;
+         stringstream ss;
+
+         ss << g_sessions[ i ]->id;
 
          if( gtp_session && gtp_session->id == g_sessions[ i ]->id )
-            os << '*';
+            ss << '*';
          else if( g_condemned_sessions.count( g_sessions[ i ]->id )
           || gtp_session->condemned_sessions.count( g_sessions[ i ]->id ) )
-            os << '~';
+            ss << '~';
 
          if( inc_dtms )
          {
-            os << ' ' << g_sessions[ i ]->dtm_created.as_string( true, false )
+            ss << ' ' << g_sessions[ i ]->dtm_created.as_string( true, false )
              << ' ' << g_sessions[ i ]->dtm_last_cmd.as_string( true, false );
          }
 
-         os << ' ' << g_sessions[ i ]->last_cmd << ' ';
+         ss << ' ' << g_sessions[ i ]->last_cmd << ' ';
 
          if( !g_sessions[ i ]->is_peer_session )
-            os << g_sessions[ i ]->p_storage_handler->get_name( );
+            ss << g_sessions[ i ]->p_storage_handler->get_name( );
          else
-            os << ( g_sessions[ i ]->blockchain.empty( ) ? string( c_str_peer ) : g_sessions[ i ]->blockchain );
+            ss << ( g_sessions[ i ]->blockchain.empty( ) ? string( c_str_peer ) : g_sessions[ i ]->blockchain );
 
          if( g_sessions[ i ]->is_support_session )
-            os << '+';
+            ss << '+';
          else if( g_sessions[ i ]->p_storage_handler->get_is_locked_for_admin( ) )
-            os << '*';
+            ss << '*';
 
          string uid( g_sessions[ i ]->uid );
 
@@ -5984,29 +5988,33 @@ void list_sessions( ostream& os, bool inc_dtms, bool include_progress )
                uid = '"' + uid.substr( pos + 1 ) + '"';
          }
 
-         os << ' ' << uid;
+         ss << ' ' << uid;
 
          if( !g_sessions[ i ]->is_peer_session )
-            os << ' ' << g_sessions[ i ]->instance_registry.size( ) << ':' << g_sessions[ i ]->next_handle;
+            ss << ' ' << g_sessions[ i ]->instance_registry.size( ) << ':' << g_sessions[ i ]->next_handle;
          else
-            os << ' ' << g_sessions[ i ]->peer_files_uploaded << ':' << g_sessions[ i ]->peer_bytes_uploaded;
+            ss << ' ' << g_sessions[ i ]->peer_files_uploaded << ':' << g_sessions[ i ]->peer_bytes_uploaded;
 
          if( !g_sessions[ i ]->is_peer_session )
-            os << ' ' << g_sessions[ i ]->sql_count << ':' << g_sessions[ i ]->cache_count;
+            ss << ' ' << g_sessions[ i ]->sql_count << ':' << g_sessions[ i ]->cache_count;
          else
-            os << ' ' << g_sessions[ i ]->peer_files_downloaded << ':' << g_sessions[ i ]->peer_bytes_downloaded;
+            ss << ' ' << g_sessions[ i ]->peer_files_downloaded << ':' << g_sessions[ i ]->peer_bytes_downloaded;
 
-         os << ' ' << g_sessions[ i ]->session_commands_executed;
+         ss << ' ' << g_sessions[ i ]->session_commands_executed;
 
          if( g_sessions[ i ]->is_captured )
-            os << '*';
+            ss << '*';
 
          if( include_progress )
-            os << ' ' << g_sessions[ i ]->progress_output;
+            ss << ' ' << g_sessions[ i ]->progress_output;
 
-         os << '\n';
+         sessions.insert( make_pair( g_sessions[ i ]->id, ss.str( ) ) );
       }
    }
+
+   // NOTE: The 'sessions' map is used to ensure that the output is ordered by session id.
+   for( map< size_t, string >::iterator i = sessions.begin( ); i != sessions.end( ); ++i )
+      os << i->second << '\n';
 }
 
 command_handler& get_session_command_handler( )
