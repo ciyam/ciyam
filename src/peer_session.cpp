@@ -2367,6 +2367,9 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
    string paired_identity( get_session_variable(
     get_special_var_name( e_special_var_paired_identity ) ) );
 
+   string backup_identity( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+
    while( true )
    {
       response.erase( );
@@ -2397,13 +2400,20 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
          if( !paired_identity.empty( ) && get_system_variable( paired_identity ).empty( ) )
          {
             bool is_only_session = false;
+            bool is_missing_backup = false;
 
             if( get_is_time_for_check( ) )
+            {
                is_only_session = ( num_have_session_variable( paired_identity ) < 2 );
+
+               if( !is_only_session && !backup_identity.empty( ) 
+                && ( num_have_session_variable( backup_identity ) < 2 ) )
+                  is_missing_backup = true;
+            }
 
             bool is_disconnecting = !get_system_variable( '~' + paired_identity ).empty( );
 
-            if( is_only_session || is_disconnecting )
+            if( is_only_session || is_missing_backup || is_disconnecting )
             {
                set_session_variable( paired_identity, "" );
 
@@ -3630,17 +3640,27 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       string paired_identity( get_session_variable(
        get_special_var_name( e_special_var_paired_identity ) ) );
 
+      string backup_identity( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+
       if( !paired_identity.empty( ) && get_system_variable( paired_identity ).empty( ) )
       {
          bool is_only_session = false;
+         bool is_missing_backup = false;
 
          if( socket_handler.get_is_time_for_check( ) )
+         {
             is_only_session = ( num_have_session_variable( paired_identity ) < 2 );
+
+            if( !is_only_session && !backup_identity.empty( ) 
+             && ( num_have_session_variable( backup_identity ) < 2 ) )
+               is_missing_backup = true;
+         }
 
          bool is_disconnecting = !get_system_variable( '~' + paired_identity ).empty( );
          bool had_connect_error = !get_system_variable( c_error_message_prefix + paired_identity ).empty( );
 
-         if( is_only_session || is_disconnecting || had_connect_error )
+         if( is_only_session || is_missing_backup || is_disconnecting || had_connect_error )
          {
             set_session_variable( paired_identity, "" );
 
@@ -3650,8 +3670,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                if( is_only_session )
                {
-                  TRACE_LOG( TRACE_SESSIONS, "(ending session for paired identity '"
-                   + paired_identity + "' due to matching session not being found)" );
+                  TRACE_LOG( TRACE_SESSIONS,
+                   "(ending session due to matching paired identity '"
+                   + paired_identity + "' session not being found)" );
+               }
+               else if( is_missing_backup )
+               {
+                  TRACE_LOG( TRACE_SESSIONS,
+                   "(ending session due to backup identity '"
+                   + backup_identity + "' session not being found)" );
                }
 
                if( !is_captured_session( ) )
