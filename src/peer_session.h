@@ -51,6 +51,8 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 
    void on_start( );
 
+   void set_backup_identity( const std::string& identity ) { backup_identity = identity; }
+
    void set_has_support_sessions( ) { has_support_sessions = true; }
 
    static void increment_session_count( );
@@ -74,6 +76,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    std::string identity;
 
    std::string blockchain;
+   std::string backup_identity;
 
 #  ifdef SSL_SUPPORT
    std::auto_ptr< ssl_socket > ap_socket;
