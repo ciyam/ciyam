@@ -3523,19 +3523,24 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                date_time dtm( date_time::local( ) );
 
-               bool put_was_first = false;
-
-               if( socket_handler.get_list_items_to_ignore( ).empty( ) )
-                  put_was_first = true;
-
                set< string > target_hashes;
 
                process_put_file( blockchain, file_data.substr( 1 ), check_for_supporters,
                 socket_handler.get_is_test_session( ), target_hashes, &dtm, &socket_handler );
 
-               if( put_was_first )
-                  set_session_variable( get_special_var_name(
-                   e_special_var_blockchain_num_puts ), to_string( target_hashes.size( ) ) );
+               size_t num_puts = 0;
+
+               string num_puts_name( get_special_var_name( e_special_var_blockchain_num_puts ) );
+
+               string num_puts_value( get_session_variable( num_puts_name ) );
+
+               if( !num_puts_value.empty( ) )
+                  num_puts = from_string< size_t >( num_puts_value );
+
+               num_puts += target_hashes.size( );
+
+               if( num_puts )
+                  set_session_variable( num_puts_name, to_string( num_puts ) );
             }
          }
          else
