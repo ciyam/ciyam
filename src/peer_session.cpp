@@ -1076,6 +1076,13 @@ void process_list_items( const string& identity, const string& hash,
 
    size_t max_blob_file_data = get_files_area_item_max_size( ) - c_max_put_blob_size;
 
+   bool has_archive = false;
+
+   if( !get_session_variable( get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
+      has_archive = true;
+
+   string queue_puts_name( get_special_var_name( e_special_var_queue_puts ) );
+
    string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
    string blockchain_is_fetching_name( get_special_var_name( e_special_var_blockchain_is_fetching ) );
    string blockchain_first_mapped_name( get_special_var_name( e_special_var_blockchain_first_mapped ) );
@@ -1254,10 +1261,17 @@ void process_list_items( const string& identity, const string& hash,
 
       if( p_blob_data->size( ) >= max_blob_file_data )
       {
-         string file_hash( create_raw_file( *p_blob_data ) );
+         string file_hash;
 
-         set_session_variable( file_hash, c_true_value );
-         add_peer_file_hash_for_put( file_hash );
+         if( !has_archive )
+            file_hash = create_raw_file( *p_blob_data );
+         else
+            create_raw_file_in_archive( identity, "", *p_blob_data, &file_hash );
+
+         set_session_variable( queue_puts_name, file_hash );
+
+         if( first_hash_to_get.empty( ) )
+            add_peer_file_hash_for_put( file_hash );
 
          *p_blob_data = string( c_file_type_str_blob );
       }
@@ -1347,7 +1361,7 @@ void process_list_items( const string& identity, const string& hash,
                      p_list_items_to_ignore->insert( next_hash );
                }
             }
-            else if( allow_blob_creation && first_hash_to_get.empty( ) )
+            else if( allow_blob_creation )
             {
                if( blob_increment && p_num_items_found )
                   ++( *p_num_items_found );
@@ -1424,7 +1438,7 @@ void process_list_items( const string& identity, const string& hash,
             else if( is_owner && allow_blob_creation )
                put_info_and_store_repository_entry = true;
 
-            if( first_hash_to_get.empty( ) && put_info_and_store_repository_entry )
+            if( put_info_and_store_repository_entry )
             {
                if( !skip_secondary_blobs && ( local_hash.empty( ) || !has_file( local_hash ) ) )
                {
@@ -1462,10 +1476,17 @@ void process_list_items( const string& identity, const string& hash,
 
    if( new_blob && p_blob_data->size( ) > 1 )
    {
-      string file_hash( create_raw_file( *p_blob_data ) );
+      string file_hash;
 
-      set_session_variable( file_hash, c_true_value );
-      add_peer_file_hash_for_put( file_hash );
+      if( !has_archive )
+         file_hash = create_raw_file( *p_blob_data );
+      else
+         create_raw_file_in_archive( identity, "", *p_blob_data, &file_hash );
+
+      set_session_variable( queue_puts_name, file_hash );
+
+      if( first_hash_to_get.empty( ) )
+         add_peer_file_hash_for_put( file_hash );
    }
 }
 
@@ -3412,20 +3433,55 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   set_session_variable( blockchain_height_processing_name, to_string( blockchain_height ) );
 
-                  if( socket_handler.get_is_responder( ) )
-                  {
-                     if( blockchain_height > socket_handler.get_blockchain_height( ) )
-                        socket_handler.set_blockchain_height( blockchain_height );
+                  string put_tag_name( c_bc_prefix + identity + '.' + to_string( blockchain_height ) + c_put_suffix );
 
-                     process_block_for_height( blockchain, hash, blockchain_height,
-                      socket_handler.get_list_items_to_ignore( ), &num_items_found, &socket_handler );
+                  if( has_tag( put_tag_name ) )
+                  {
+                     string put_hashes( extract_file( tag_file_hash( put_tag_name ), "" ) );
+
+                     vector< string > all_put_hashes;
+
+                     split( put_hashes, all_put_hashes );
+
+                     for( size_t i = 0; i < all_put_hashes.size( ); i++ )
+                        add_peer_file_hash_for_put( hex_encode( base64::decode( all_put_hashes[ i ] ) ) );
                   }
                   else
                   {
-                     if( !first_item_hash.empty( )
-                      || get_session_variable( blockchain_is_fetching_name ).empty( ) )
+                     if( socket_handler.get_is_responder( ) )
+                     {
+                        if( blockchain_height > socket_handler.get_blockchain_height( ) )
+                           socket_handler.set_blockchain_height( blockchain_height );
+
                         process_block_for_height( blockchain, hash, blockchain_height,
                          socket_handler.get_list_items_to_ignore( ), &num_items_found, &socket_handler );
+                     }
+                     else
+                     {
+                        if( !first_item_hash.empty( )
+                         || get_session_variable( blockchain_is_fetching_name ).empty( ) )
+                           process_block_for_height( blockchain, hash, blockchain_height,
+                            socket_handler.get_list_items_to_ignore( ), &num_items_found, &socket_handler );
+                     }
+
+                     string queue_puts_name( get_special_var_name( e_special_var_queue_puts ) );
+
+                     string next_put( get_session_variable( queue_puts_name ) );
+
+                     string put_hashes;
+
+                     while( !next_put.empty( ) )
+                     {
+                        if( !put_hashes.empty( ) )
+                           put_hashes += '\n';
+
+                        put_hashes += base64::encode( hex_decode( next_put ) );
+
+                        next_put = get_session_variable( queue_puts_name );
+                     }
+
+                     if( !put_hashes.empty( ) )
+                        create_raw_file( put_hashes, false, put_tag_name.c_str( ) );
                   }
                }
             }

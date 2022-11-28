@@ -124,6 +124,7 @@ enum special_var
    e_special_var_extra_info,
    e_special_var_file_names,
    e_special_var_permission,
+   e_special_var_queue_puts,
    e_special_var_session_id,
    e_special_var_tag_prefix,
    e_special_var_allow_async,
