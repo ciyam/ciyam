@@ -3474,6 +3474,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      {
                         if( !put_hashes.empty( ) )
                            put_hashes += '\n';
+                        else
+                           put_hashes += c_file_type_str_blob;
 
                         put_hashes += base64::encode( hex_decode( next_put ) );
 
