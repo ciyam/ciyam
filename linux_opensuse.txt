@@ -10,6 +10,10 @@ sudo vi /etc/sudoers
 [add the following line]
 tux ALL=(ALL) NOPASSWD:ALL
 
+Set the static host name:
+
+sudo echo "localhost" >/etc/hostname
+
 Updgrade to latest version (will have to reboot after):
 
 sudo zypper dup
