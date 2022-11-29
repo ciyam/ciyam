@@ -820,13 +820,13 @@ void process_put_file( const string& blockchain,
 
                                     string mapped_hash( get_peer_mapped_hash( identity, hex_target_hash ) );
 
-                                    // NOTE: Either set a system variable or add the file info to
-                                    // fetch depending on whether or not "process_list_items" had
-                                    // been called (if it was called the mapped hash will exist).
-                                    if( !mapped_hash.empty( ) )
-                                       add_peer_file_hash_for_get( hash_info, check_for_supporters );
+                                    // NOTE: Either set a session variable or add the file info to
+                                    // be fetched depending on whether or not "process_list_items"
+                                    // had been called (if called the mapped hash will exist).
+                                    if( mapped_hash.empty( ) )
+                                       set_session_variable( target_hash, hash_info );
                                     else
-                                       set_system_variable( hex_target_hash, hash_info );
+                                       add_peer_file_hash_for_get( hash_info, check_for_supporters );
                                  }
                               }
                            }
@@ -1328,7 +1328,7 @@ void process_list_items( const string& identity, const string& hash,
                   {
                      if( !prefixed_secondary_values )
                      {
-                        string hash_info( get_system_variable( next_hash ) );
+                        string hash_info( get_session_variable( base64::encode( hex_decode( next_hash ) ) ) );
 
                         if( !hash_info.empty( ) )
                         {
