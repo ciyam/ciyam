@@ -3443,16 +3443,54 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                      split( put_hashes, all_put_hashes );
 
+                     // NOTE: Set "num_items_found" to a non-zero value
+                     // so that the tree files suffix will be appended.
+                     num_items_found = 1;
+
+                     vector< string > hex_encoded_hashes;
+
                      for( size_t i = 0; i < all_put_hashes.size( ); i++ )
-                        add_peer_file_hash_for_put( hex_encode( base64::decode( all_put_hashes[ i ] ) ) );
+                     {
+                        string next_hash( hex_encode( base64::decode( all_put_hashes[ i ] ) ) );
+
+                        if( !has_file( next_hash ) )
+                        {
+                           num_items_found = 0;
+                           break;
+                        }
+
+                        hex_encoded_hashes.push_back( next_hash );
+                     }
+
+                     if( num_items_found )
+                     {
+                        date_time dtm( date_time::local( ) );
+
+                        string tree_root_hash( get_session_variable(
+                         get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
+
+                        bool is_fetching = !get_session_variable(
+                         get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
+
+                        // NOTE: If height matches the current zenith then skip checking for all items.
+                        bool has_all_tree_items = ( socket_handler.get_blockchain_height( ) == blockchain_height );
+
+                        if( !is_fetching && !has_all_tree_items )
+                           has_all_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, &socket_handler );
+
+                        if( !has_all_tree_items )
+                           num_items_found = 0;
+                        else
+                        {
+                           for( size_t i = 0; i < hex_encoded_hashes.size( ); i++ )
+                              add_peer_file_hash_for_put( hex_encoded_hashes[ i ] );
+                        }
+                     }
                   }
                   else
                   {
                      if( socket_handler.get_is_responder( ) )
                      {
-                        if( blockchain_height > socket_handler.get_blockchain_height( ) )
-                           socket_handler.set_blockchain_height( blockchain_height );
-
                         process_block_for_height( blockchain, hash, blockchain_height,
                          socket_handler.get_list_items_to_ignore( ), &num_items_found, &socket_handler );
                      }
