@@ -1328,14 +1328,16 @@ void process_list_items( const string& identity, const string& hash,
                   {
                      if( !prefixed_secondary_values )
                      {
-                        string hash_info( get_session_variable( base64::encode( hex_decode( next_hash ) ) ) );
+                        string target( base64::encode( hex_decode( next_hash ) ) );
+
+                        string hash_info( get_session_variable( target ) );
 
                         if( !hash_info.empty( ) )
                         {
                            added = true;
                            add_peer_file_hash_for_get( hash_info, check_for_supporters );
 
-                           set_system_variable( next_hash, "" );
+                           set_system_variable( target, "" );
                         }
                         else
                            add_peer_mapped_hash( identity, next_hash, next_secondary );
