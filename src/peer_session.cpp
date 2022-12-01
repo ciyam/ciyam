@@ -111,10 +111,6 @@ const size_t c_support_timeout = 10000;
 
 const size_t c_num_check_disconnected = 8;
 
-const size_t c_main_session_sleep_time = 150;
-const size_t c_support_session_sleep_time = 100;
-const size_t c_support_session_sleep_repeats = 10;
-
 enum op
 {
    e_op_chk,
@@ -2564,24 +2560,15 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    bool any_supporter_has = false;
 
-   // NOTE: If a support session is not given a file hash to get/put then sleep for a while.
-   for( size_t i = 0; i < c_support_session_sleep_repeats; i++ )
-   {
-      next_hash_to_get = top_next_peer_file_hash_to_get(
-       ( !is_for_support && check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
+   next_hash_to_get = top_next_peer_file_hash_to_get(
+    ( !is_for_support && check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
 
-      next_hash_to_put = top_next_peer_file_hash_to_put(
-       ( !is_for_support && check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
-
-      if( !is_for_support || !next_hash_to_get.empty( ) || !next_hash_to_put.empty( ) )
-         break;
-
-      msleep( c_support_session_sleep_time );
-   }
-
-   bool set_new_zenith = false;
+   next_hash_to_put = top_next_peer_file_hash_to_put(
+    ( !is_for_support && check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
 
    string block_processing( get_session_variable( blockchain_block_processing_name ) );
+
+   bool set_new_zenith = false;
 
    if( !block_processing.empty( ) && next_hash_to_get.empty( ) && !any_supporter_has )
       set_new_zenith = true;
@@ -2590,6 +2577,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    if( no_top_hash && want_to_do_op( e_op_chk ) )
    {
+      bool was_not_found = false;
       bool has_issued_chk = false;
 
       if( !is_for_support && !blockchain.empty( ) )
@@ -2711,23 +2699,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                   has_issued_chk = true;
 
                   if( next_sig_hash.empty( ) )
-                  {
-                     date_time now( date_time::standard( ) );
-
-                     seconds elapsed = ( seconds )( now - dtm_rcvd_not_found );
-
-                     dtm_rcvd_not_found = now;
-
-                     // NOTE: If neither peer has had a new block within one
-                     // second then sleep now to avoid unnecessary CPU usage.
-                     if( elapsed < 1.0 )
-                     {
-                        elapsed = ( seconds )( now - dtm_sent_not_found );
-
-                        if( elapsed < 1.0 )
-                           msleep( c_peer_sleep_time );
-                     }
-                  }
+                     was_not_found = true;
                   else if( !has_file( next_sig_hash ) )
                   {
                      if( !block_processing.empty( ) )
@@ -2763,6 +2735,28 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          string chk_hash;
          chk_file( tag_or_hash, &chk_hash );
+
+         if( chk_hash.empty( ) )
+            was_not_found = true;
+      }
+
+      if( !is_local && was_not_found )
+      {
+         date_time now( date_time::standard( ) );
+
+         seconds elapsed = ( seconds )( now - dtm_rcvd_not_found );
+
+         dtm_rcvd_not_found = now;
+
+         // NOTE: If has sent and received "not found" within one
+         // second then sleep now to avoid unnecessary CPU usage.
+         if( elapsed < 1.0 )
+         {
+            elapsed = ( seconds )( now - dtm_sent_not_found );
+
+            if( elapsed < 1.0 )
+               msleep( c_peer_sleep_time );
+         }
       }
    }
    else if( want_to_do_op( e_op_pip ) )
@@ -3301,8 +3295,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                }
             }
 
-            if( !is_dummy )
-               socket_handler.set_dtm_sent_not_found( date_time::standard( ) );
+            socket_handler.set_dtm_sent_not_found( date_time::standard( ) );
 
             if( was_initial_state )
             {
