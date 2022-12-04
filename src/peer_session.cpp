@@ -485,8 +485,6 @@ void process_repository_file( const string& blockchain,
             decrypt_pulled_peer_file( target_hash, src_hash, password, hex_pub_key,
              false, p_file_data, &peer_mapped_hash, ( has_archive ? &identity : 0 ) );
 
-            string repo_hash( create_peer_repository_entry_push_info( target_hash, password ) );
-
             clear_key( password );
 
             if( !has_repository_entry_record( identity, target_hash ) )
@@ -494,8 +492,6 @@ void process_repository_file( const string& blockchain,
 
             if( was_extracted )
                delete_file( src_hash );
-
-            delete_file( repo_hash );
          }
       }
    }
