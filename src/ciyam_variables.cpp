@@ -183,7 +183,6 @@ const char* const c_special_variable_blockchain_get_tree_files = "@blockchain_ge
 const char* const c_special_variable_blockchain_num_tree_items = "@blockchain_num_tree_items";
 const char* const c_special_variable_blockchain_other_is_owner = "@blockchain_other_is_owner";
 const char* const c_special_variable_blockchain_peer_supporter = "@blockchain_peer_supporter";
-const char* const c_special_variable_blockchain_skip_blob_puts = "@blockchain_skip_blob_puts";
 const char* const c_special_variable_blockchain_tree_root_hash = "@blockchain_tree_root_hash";
 const char* const c_special_variable_blockchain_backup_identity = "@blockchain_backup_identity";
 const char* const c_special_variable_blockchain_block_file_hash = "@blockchain_block_file_hash";
@@ -775,10 +774,6 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_peer_supporter:
       s = string( c_special_variable_blockchain_peer_supporter );
-      break;
-
-      case e_special_var_blockchain_skip_blob_puts:
-      s = string( c_special_variable_blockchain_skip_blob_puts );
       break;
 
       case e_special_var_blockchain_tree_root_hash:
