@@ -393,17 +393,17 @@ void process_repository_file( const string& blockchain,
 
    unsigned char type_and_extra = '\0';
 
-   bool has_archive = false;
-   bool was_extracted = false;
-
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
-
-   if( !get_session_variable( get_special_var_name(
-    e_special_var_blockchain_archive_path ) ).empty( ) )
-      has_archive = true;
 
    bool is_blockchain_owner = !get_session_variable(
     get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
+
+   bool has_archive = false;
+   bool was_extracted = false;
+
+   if( !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
+      has_archive = true;
 
    string file_data, file_content, file_data_hash, peer_mapped_hash;
 
@@ -552,6 +552,8 @@ void process_repository_file( const string& blockchain,
 
          store_repository_entry_record( identity, src_hash,
           local_hash, ap_priv_key->get_public( ), pub_key.get_public( ) );
+
+         add_peer_mapped_hash( '@' + identity, src_hash, local_hash + ap_priv_key->get_public( ) + pub_key.get_public( ) );
       }
    }
 }
@@ -972,34 +974,45 @@ bool has_all_list_items( const string& blockchain,
 
             if( p_blob_data && has_next_repo_entry )
             {
-               string password;
-               get_identity( password, false, true );
+               string peer_mapped_info( get_peer_mapped_hash( '@' + identity, next_hash ) );
 
-               if( p_blob_data->size( ) > 1 )
-                  *p_blob_data += c_blob_separator;
-
-               string local_hash, local_public_key, master_public_key;
-
-               fetch_repository_entry_record( identity,
-                next_hash, local_hash, local_public_key, master_public_key );
-
-               *p_blob_data += create_peer_repository_entry_pull_info( identity,
-                next_hash, local_hash, local_public_key, master_public_key, false );
-
-               clear_key( password );
-
-               if( p_blob_data->size( ) >= max_blob_file_data )
+               if( !peer_mapped_info.empty( ) )
                {
-                  string file_hash;
+                  string password;
+                  get_identity( password, false, true );
 
-                  if( !has_archive )
-                     file_hash = create_raw_file( *p_blob_data );
-                  else
-                     create_raw_file_in_archive( identity, "", *p_blob_data, &file_hash );
+                  if( p_blob_data->size( ) > 1 )
+                     *p_blob_data += c_blob_separator;
 
-                  set_session_variable( queue_puts_name, file_hash );
+                  string local_hash, local_public_key, master_public_key;
 
-                  *p_blob_data = string( c_file_type_str_blob );
+                  if( peer_mapped_info.length( ) != 196 )
+                     throw runtime_error( "unexpected peer_mapped_info length != 196" );
+
+                  local_hash = peer_mapped_info.substr( 0, 64 );
+                  local_public_key = peer_mapped_info.substr( 64, 66 );
+                  master_public_key = peer_mapped_info.substr( 130 );
+
+                  *p_blob_data += create_peer_repository_entry_pull_info( identity,
+                   next_hash, local_hash, local_public_key, master_public_key, false );
+
+                  clear_key( password );
+
+                  clear_peer_mapped_hash( '@' + identity, next_hash );
+
+                  if( p_blob_data->size( ) >= max_blob_file_data )
+                  {
+                     string file_hash;
+
+                     if( !has_archive )
+                        file_hash = create_raw_file( *p_blob_data );
+                     else
+                        create_raw_file_in_archive( identity, "", *p_blob_data, &file_hash );
+
+                     set_session_variable( queue_puts_name, file_hash );
+
+                     *p_blob_data = string( c_file_type_str_blob );
+                  }
                }
             }
 
@@ -2818,8 +2831,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                   bool has_archive = false;
 
-                  if( !get_session_variable( get_special_var_name(
-                   e_special_var_blockchain_archive_path ) ).empty( ) )
+                  if( !get_session_variable( get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
                      has_archive = true;
 
                   if( has_archive )
@@ -2896,9 +2908,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       bool peer_has_tree_items = !get_session_variable(
        get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( );
 
-//idk
-TEMP_TRACE( "zenith_tree_hash: " + zenith_tree_hash );
-TEMP_TRACE( "peer_has_tree_items = " + to_string( peer_has_tree_items ) );
       if( peer_has_tree_items && !zenith_tree_hash.empty( ) )
       {
          bool is_in_archive = false;
@@ -2914,8 +2923,6 @@ TEMP_TRACE( "peer_has_tree_items = " + to_string( peer_has_tree_items ) );
             string put_tag_name( c_bc_prefix + identity
              + '.' + to_string( blockchain_height_pending ) + c_put_suffix );
 
-//idk
-TEMP_TRACE( "put_tag_name = " + put_tag_name );
             string queue_puts_name( get_special_var_name( e_special_var_queue_puts ) );
 
             string next_put( get_session_variable( queue_puts_name ) );
@@ -3561,8 +3568,27 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                set< string > target_hashes;
 
+               string queue_puts_name( get_special_var_name( e_special_var_queue_puts ) );
+
                process_put_file( blockchain, file_data.substr( 1 ), check_for_supporters,
                 socket_handler.get_is_test_session( ), target_hashes, &dtm, &socket_handler );
+
+               // NOtE: If is not restoring then will now store the 'put' file data.
+               if( !is_owner )
+               {
+                  bool has_archive = false;
+
+                  if( !get_session_variable(
+                   get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
+                     has_archive = true;
+
+                  if( !has_archive )
+                     create_raw_file( file_data );
+                  else
+                     create_raw_file_in_archive( identity, "", file_data );
+
+                  set_session_variable( queue_puts_name, hash );
+               }
 
                size_t num_puts = 0;
 

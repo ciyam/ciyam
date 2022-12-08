@@ -6793,18 +6793,18 @@ bool any_peer_still_has_file_hash_to_put(
    return false;
 }
 
-void add_peer_mapped_hash( const string& identity, const string& hash, const string& mapped_hash )
+void add_peer_mapped_hash( const string& identity, const string& hash, const string& mapped_info )
 {
    guard g( g_mutex );
 
    pair< string, string > mapped_pair;
 
-   string::size_type pos = mapped_hash.find( ':' );
+   string::size_type pos = mapped_info.find( ':' );
 
-   mapped_pair.first = hex_decode( mapped_hash.substr( 0, pos ) );
+   mapped_pair.first = hex_decode( mapped_info.substr( 0, pos ) );
 
    if( pos != string::npos )
-      mapped_pair.second = hex_decode( mapped_hash.substr( pos + 1 ) );
+      mapped_pair.second = hex_decode( mapped_info.substr( pos + 1 ) );
 
    g_mapped_hash_values[ identity ].insert( make_pair( hex_decode( hash ), mapped_pair ) );
 }
