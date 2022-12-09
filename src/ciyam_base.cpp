@@ -6793,23 +6793,23 @@ bool any_peer_still_has_file_hash_to_put(
    return false;
 }
 
-void add_peer_mapped_hash( const string& identity, const string& hash, const string& mapped_info )
+void add_peer_mapped_hash_info( const string& identity, const string& hash, const string& info )
 {
    guard g( g_mutex );
 
    pair< string, string > mapped_pair;
 
-   string::size_type pos = mapped_info.find( ':' );
+   string::size_type pos = info.find( ':' );
 
-   mapped_pair.first = hex_decode( mapped_info.substr( 0, pos ) );
+   mapped_pair.first = hex_decode( info.substr( 0, pos ) );
 
    if( pos != string::npos )
-      mapped_pair.second = hex_decode( mapped_info.substr( pos + 1 ) );
+      mapped_pair.second = hex_decode( info.substr( pos + 1 ) );
 
    g_mapped_hash_values[ identity ].insert( make_pair( hex_decode( hash ), mapped_pair ) );
 }
 
-string get_peer_mapped_hash( const string& identity, const string& hash )
+string get_peer_mapped_hash_info( const string& identity, const string& hash )
 {
    guard g( g_mutex );
 
@@ -6837,7 +6837,7 @@ void clear_peer_mapped_hash( const string& identity, const string& hash )
 {
    guard g( g_mutex );
 
-   g_mapped_hash_values[ identity ].erase( hash );
+   g_mapped_hash_values[ identity ].erase( hex_decode( hash ) );
 }
 
 void clear_all_peer_mapped_hashes( const string& identity )

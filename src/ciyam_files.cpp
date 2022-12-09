@@ -491,7 +491,7 @@ void encrypt_file_buffer( const string& hash, const string& repository,
    file_buffer.copy_from_string( new_file_data, offset );
 
    if( is_shared )
-      add_peer_mapped_hash( repository, hash, sha256( new_file_data ).get_digest_as_string( ) );
+      add_peer_mapped_hash_info( repository, hash, sha256( new_file_data ).get_digest_as_string( ) );
    else if( !repository.empty( ) )
    {
       string dummy, public_key;
@@ -505,7 +505,7 @@ void encrypt_file_buffer( const string& hash, const string& repository,
          store_repository_entry_record( repository, hash, "", public_key, public_key );
       }
 
-      add_peer_mapped_hash( repository, hash, sha256( new_file_data ).get_digest_as_string( ) + ':' + public_key );
+      add_peer_mapped_hash_info( repository, hash, sha256( new_file_data ).get_digest_as_string( ) + ':' + public_key );
    }
 
    clear_key( crypt_password );
@@ -554,7 +554,7 @@ string transform_shared_list_info( const string& repository,
          encrypted_hash = mapped_hashes[ next_hash ];
       }
       else
-         encrypted_hash = get_peer_mapped_hash( repository, next_hash );
+         encrypted_hash = get_peer_mapped_hash_info( repository, next_hash );
 
       if( !encrypted_hash.empty( ) )
          was_peer_mapped = !is_repeated;
@@ -659,7 +659,7 @@ string create_repository_lists(
          encrypted_hash = mapped_hashes[ next_hash ];
       }
       else
-         encrypted_hash = get_peer_mapped_hash( repository, next_hash );
+         encrypted_hash = get_peer_mapped_hash_info( repository, next_hash );
    
       if( !encrypted_hash.empty( ) )
       {
