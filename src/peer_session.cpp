@@ -982,41 +982,38 @@ bool has_all_list_items( const string& blockchain,
                   last_repo_entry_hash = next_hash;
             }
 
-            if( p_blob_data && has_next_repo_entry )
+            if( p_blob_data && !peer_mapped_info.empty( ) )
             {
-               if( !peer_mapped_info.empty( ) )
+               if( p_blob_data->size( ) > 1 )
+                  *p_blob_data += c_blob_separator;
+
+               string local_hash, local_public_key, master_public_key;
+
+               if( peer_mapped_info.length( ) != 197 )
+                  throw runtime_error( "unexpected peer_mapped_info length != 197" );
+
+               // NOTE: Mapped info is '<local_hash>:<local_pub_key><master_pub_key>'.
+               local_hash = peer_mapped_info.substr( 0, 64 );
+               local_public_key = peer_mapped_info.substr( 65, 66 );
+               master_public_key = peer_mapped_info.substr( 131 );
+
+               *p_blob_data += create_peer_repository_entry_pull_info( identity,
+                next_hash, local_hash, local_public_key, master_public_key, false );
+
+               clear_peer_mapped_hash( mapped_info_identity, next_hash );
+
+               if( p_blob_data->size( ) >= max_blob_file_data )
                {
-                  if( p_blob_data->size( ) > 1 )
-                     *p_blob_data += c_blob_separator;
+                  string file_hash;
 
-                  string local_hash, local_public_key, master_public_key;
+                  if( !has_archive )
+                     file_hash = create_raw_file( *p_blob_data );
+                  else
+                     create_raw_file_in_archive( identity, "", *p_blob_data, &file_hash );
 
-                  if( peer_mapped_info.length( ) != 197 )
-                     throw runtime_error( "unexpected peer_mapped_info length != 197" );
+                  set_session_variable( queue_puts_name, file_hash );
 
-                  // NOTE: Mapped info is '<local_hash>:<local_pub_key><master_pub_key>'.
-                  local_hash = peer_mapped_info.substr( 0, 64 );
-                  local_public_key = peer_mapped_info.substr( 65, 66 );
-                  master_public_key = peer_mapped_info.substr( 131 );
-
-                  *p_blob_data += create_peer_repository_entry_pull_info( identity,
-                   next_hash, local_hash, local_public_key, master_public_key, false );
-
-                  clear_peer_mapped_hash( mapped_info_identity, next_hash );
-
-                  if( p_blob_data->size( ) >= max_blob_file_data )
-                  {
-                     string file_hash;
-
-                     if( !has_archive )
-                        file_hash = create_raw_file( *p_blob_data );
-                     else
-                        create_raw_file_in_archive( identity, "", *p_blob_data, &file_hash );
-
-                     set_session_variable( queue_puts_name, file_hash );
-
-                     *p_blob_data = string( c_file_type_str_blob );
-                  }
+                  *p_blob_data = string( c_file_type_str_blob );
                }
             }
 
@@ -1653,10 +1650,9 @@ void validate_public_key_file( const string& file_data )
    }
 }
 
-bool process_block_for_height( const string& blockchain, const string& hash, size_t height,
+void process_block_for_height( const string& blockchain, const string& hash, size_t height,
  set< string >& list_items_to_ignore, size_t* p_num_items_found = 0, progress* p_progress = 0 )
 {
-   bool retval = false;
    bool has_hind_hash = false;
 
    bool is_owner = !get_session_variable(
@@ -1803,10 +1799,9 @@ bool process_block_for_height( const string& blockchain, const string& hash, siz
                   {
                      // NOTE: Retrieve all the blob hashes for the prior data tree 
                      // in order to skip any repeats found in "process_list_items".
-                     if( !prior_data_tree_hash.empty( )
-                      && has_file( prior_data_tree_hash ) )
-                        has_all_list_items( blockchain, prior_data_tree_hash,
-                         true, false, &dtm, p_progress, 0, &list_items_to_ignore );
+                     if( !prior_data_tree_hash.empty( ) && has_file( prior_data_tree_hash ) )
+                        has_all_list_items( blockchain,
+                         prior_data_tree_hash, true, false, &dtm, p_progress, 0, &list_items_to_ignore );
 
                      process_list_items( identity, tree_root_hash, true,
                       p_num_items_found, &list_items_to_ignore, &dtm, p_progress );
@@ -1819,8 +1814,6 @@ bool process_block_for_height( const string& blockchain, const string& hash, siz
          }
       }
    }
-
-   return retval;
 }
 
 bool get_block_height_from_tags( const string& blockchain, const string& hash, size_t& block_height )
@@ -2598,14 +2591,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      set_session_variable( blockchain_block_processing_name, next_block_hash );
                      set_session_variable( blockchain_height_processing_name, to_string( blockchain_height_pending ) );
 
-                     bool has_block_data = process_block_for_height( blockchain,
+                     process_block_for_height( blockchain,
                       next_block_hash, blockchain_height_pending, list_items_to_ignore, &num_items_found, this );
 
                      string first_mapped( get_session_variable( blockchain_first_mapped_name ) );
-
                      set_session_variable( blockchain_first_mapped_name, "" );
 
-                     if( has_block_data && top_next_peer_file_hash_to_get( ).empty( ) )
+                     if( first_mapped.empty( ) && top_next_peer_file_hash_to_get( ).empty( ) )
                         set_new_zenith = true;
                      else
                      {
