@@ -9,7 +9,7 @@ Transaction Id = 5
 Index Free List = n/a
 Total Size of Data = 1569
 Data Transformation Id = 3
-Index Transformation Id = 8
+Index Transformation Id = 9
 
 ** Entry Info for: all
 num: 0000000000000000          pos: 0000000000000000          len: 0000000000000100
@@ -28,20 +28,19 @@ No freelist entries.
 version = 1.0
 sequence = 2
 entry_offs = 56
-append_offs = 2844
+append_offs = 2820
 
 ** Transaction Log Info for: all
 tx_id = 4 (offs = 56)
-commit_offs = 1506
+commit_offs = 1490
 commit_items = 2
 next_entry_offs = 0
 prior_entry_offs = 0
 total_data_bytes = 1569
 data_transform_id = 2
-index_transform_id = 5
+index_transform_id = 6
 
 flags = 2 (update) offs = 144
-tx_id = 4
 tx_oid = 3
 data_pos = 0
 data_size = 256
@@ -63,8 +62,7 @@ index_entry_id = 0
 00000000000000e0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000000000000f0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 
-flags = 2 (update) offs = 441
-tx_id = 4
+flags = 2 (update) offs = 433
 tx_oid = 3
 data_pos = 256
 data_size = 1024
@@ -134,8 +132,7 @@ index_entry_id = 2
 00000000000003e0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000000000003f0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 
-flags = 16 (store) offs = 1506
-tx_id = 4
+flags = 16 (store) offs = 1490
 data_pos = 256
 data_size = 1024
 index_entry_id = 2
@@ -204,7 +201,7 @@ index_entry_id = 2
 00000000000003e0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000000000003f0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 
-flags = 20 (store) offs = 2563
+flags = 16 (store) offs = 2539
 data_pos = 0
 data_size = 256
 index_entry_id = 0

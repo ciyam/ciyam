@@ -4,12 +4,12 @@ Num Logs = 1
 Num Trans = 0
 Num Writers = 0
 Total Entries = 10
-Tranlog Offset = 16013
+Tranlog Offset = 15877
 Transaction Id = 8
 Index Free List = n/a
 Total Size of Data = 13708
 Data Transformation Id = 7
-Index Transformation Id = 31
+Index Transformation Id = 33
 
 ** Entry Info for: 0-7
 num: 0000000000000000          pos: 00000000000001d3          len: 0000000000000058
@@ -81,8 +81,8 @@ No freelist entries.
 version = 1.0 (encrypted)
 sequence = 1
 val_hash = 2177926815
-entry_offs = 16013
-append_offs = 30015
+entry_offs = 15877
+append_offs = 29879
 
 ** Transaction Log Info for: 0-7
 tx_id = 1 (offs = 56)
@@ -94,11 +94,11 @@ total_data_bytes = 0
 data_transform_id = 0
 index_transform_id = 0
 
-flags = 9 (create) offs = 144
+flags = 1 (create) offs = 144
 tx_oid = 0
 index_entry_id = 0
 
-flags = 24 (store) offs = 161
+flags = 16 (store) offs = 161
 data_pos = 0
 data_size = 32
 index_entry_id = 0
@@ -107,21 +107,19 @@ index_entry_id = 0
 
 [xxx]
 tx_id = 2 (offs = 218)
-commit_offs = 454
+commit_offs = 422
 commit_items = 4
-next_entry_offs = 699
+next_entry_offs = 659
 prior_entry_offs = 56
 total_data_bytes = 32
 data_transform_id = 1
-index_transform_id = 1
+index_transform_id = 2
 
 flags = 1 (create) offs = 306
-tx_id = 2
 tx_oid = 0
 index_entry_id = 1
 
-flags = 2 (update) offs = 331
-tx_id = 2
+flags = 2 (update) offs = 323
 tx_oid = 1
 data_pos = 0
 data_size = 32
@@ -129,18 +127,15 @@ index_entry_id = 0
 0000000000000000  c7 47 31 9e 3d 6d ce 31 96 fb 2e 62 e0 a7 97 5e  .G1.=m.1...b...^
 0000000000000010  90 15 f6 a0 83 68 07 fe 17 20 90 e2 0e 67 c2 26  .....h... ...g.&
 
-flags = 1 (create) offs = 404
-tx_id = 2
+flags = 1 (create) offs = 388
 tx_oid = 0
 index_entry_id = 2
 
-flags = 1 (create) offs = 429
-tx_id = 2
+flags = 1 (create) offs = 405
 tx_oid = 0
 index_entry_id = 3
 
-flags = 16 (store) offs = 454
-tx_id = 2
+flags = 16 (store) offs = 422
 data_pos = 32
 data_size = 56
 index_entry_id = 0
@@ -149,21 +144,21 @@ index_entry_id = 0
 0000000000000020  55 7a bd c2 ed 5e 68 6e ac 24 63 c6 fc 2c 63 c4  Uz...^hn.$c..,c.
 0000000000000030  25 5f c2 f4 59 8f c1 f3                          %_..Y...
 
-flags = 20 (store) offs = 543
+flags = 16 (store) offs = 503
 data_pos = 88
 data_size = 27
 index_entry_id = 3
 0000000000000000  2f 90 c4 fa 5b 8d c5 f8 39 c1 7f a7 6d 24 b7 46  /...[...9...m$.F
 0000000000000010  31 f3 83 b2 be 08 60 ad e2 f9 1e                 1.....`....
 
-flags = 20 (store) offs = 595
+flags = 16 (store) offs = 555
 data_pos = 115
 data_size = 27
 index_entry_id = 2
 0000000000000000  81 e0 49 81 b2 18 4a 80 80 74 2c 79 45 df d4 99  ..I...J..t,yE...
 0000000000000010  23 01 81 b1 29 a7 a7 dd fd fe 63                 #...).....c
 
-flags = 20 (store) offs = 647
+flags = 16 (store) offs = 607
 data_pos = 142
 data_size = 27
 index_entry_id = 1
@@ -171,22 +166,20 @@ index_entry_id = 1
 0000000000000010  71 4f f3 66 d3 37 99 c0 03 47 c2                 qO.f.7...G.
 
 [yyy]
-tx_id = 3 (offs = 699)
-commit_offs = 934
+tx_id = 3 (offs = 659)
+commit_offs = 870
 commit_items = 3
-next_entry_offs = 1143
+next_entry_offs = 1071
 prior_entry_offs = 218
 total_data_bytes = 169
 data_transform_id = 2
-index_transform_id = 6
+index_transform_id = 7
 
-flags = 1 (create) offs = 787
-tx_id = 3
+flags = 1 (create) offs = 747
 tx_oid = 0
 index_entry_id = 4
 
-flags = 2 (update) offs = 812
-tx_id = 3
+flags = 2 (update) offs = 764
 tx_oid = 2
 data_pos = 32
 data_size = 56
@@ -196,13 +189,11 @@ index_entry_id = 0
 0000000000000020  55 7a bd c2 ed 5e 68 6e ac 24 63 c6 fc 2c 63 c4  Uz...^hn.$c..,c.
 0000000000000030  25 5f c2 f4 59 8f c1 f3                          %_..Y...
 
-flags = 1 (create) offs = 909
-tx_id = 3
+flags = 1 (create) offs = 853
 tx_oid = 0
 index_entry_id = 5
 
-flags = 16 (store) offs = 934
-tx_id = 3
+flags = 16 (store) offs = 870
 data_pos = 169
 data_size = 72
 index_entry_id = 0
@@ -212,30 +203,30 @@ index_entry_id = 0
 0000000000000030  ba 0b 6f cf f2 2d 4d 87 ab dc f2 05 6a 85 95 cc  ..o..-M.....j...
 0000000000000040  3f 7a ea 22 84 9e 0d 24                          ?z."...$
 
-flags = 20 (store) offs = 1039
+flags = 16 (store) offs = 967
 data_pos = 241
 data_size = 27
 index_entry_id = 5
 0000000000000000  59 b8 31 66 a6 b9 33 4d ea ae 2e 72 08 90 43 08  Y.1f..3M...r..C.
 0000000000000010  d0 80 6b d8 33 b2 24 92 a9 d0 fb                 ..k.3.$....
 
-flags = 20 (store) offs = 1091
+flags = 16 (store) offs = 1019
 data_pos = 268
 data_size = 27
 index_entry_id = 4
 0000000000000000  0d 73 c5 39 84 8d b9 2c 03 e1 c4 58 15 e3 8a 7f  .s.9...,...X....
 0000000000000010  53 05 f5 75 af b3 21 82 92 14 2f                 S..u..!.../
 
-tx_id = 4 (offs = 1143)
-commit_offs = 1231
+tx_id = 4 (offs = 1071)
+commit_offs = 1159
 commit_items = 6
-next_entry_offs = 1684
-prior_entry_offs = 699
+next_entry_offs = 1612
+prior_entry_offs = 659
 total_data_bytes = 295
 data_transform_id = 3
-index_transform_id = 10
+index_transform_id = 11
 
-flags = 40 (store) offs = 1231
+flags = 32 (store) offs = 1159
 tx_oid = 2
 data_pos = 0
 data_opos = 88
@@ -244,7 +235,7 @@ index_entry_id = 3
 0000000000000000  2f 90 c4 fa 5b 8d c5 f8 39 c1 7f a7 6d 24 b7 46  /...[...9...m$.F
 0000000000000010  31 f3 83 b2 be 08 60 ad e2 f9 1e                 1.....`....
 
-flags = 40 (store) offs = 1299
+flags = 32 (store) offs = 1227
 tx_oid = 2
 data_pos = 27
 data_opos = 115
@@ -253,7 +244,7 @@ index_entry_id = 2
 0000000000000000  81 e0 49 81 b2 18 4a 80 80 74 2c 79 45 df d4 99  ..I...J..t,yE...
 0000000000000010  23 01 81 b1 29 a7 a7 dd fd fe 63                 #...).....c
 
-flags = 40 (store) offs = 1367
+flags = 32 (store) offs = 1295
 tx_oid = 2
 data_pos = 54
 data_opos = 142
@@ -262,7 +253,7 @@ index_entry_id = 1
 0000000000000000  95 01 5b b8 f0 32 63 6e cb 8c 6a 8e 4a 28 d4 b8  ..[..2cn..j.J(..
 0000000000000010  71 4f f3 66 d3 37 99 c0 03 47 c2                 qO.f.7...G.
 
-flags = 40 (store) offs = 1435
+flags = 32 (store) offs = 1363
 tx_oid = 3
 data_pos = 81
 data_opos = 169
@@ -274,7 +265,7 @@ index_entry_id = 0
 0000000000000030  ba 0b 6f cf f2 2d 4d 87 ab dc f2 05 6a 85 95 cc  ..o..-M.....j...
 0000000000000040  3f 7a ea 22 84 9e 0d 24                          ?z."...$
 
-flags = 40 (store) offs = 1548
+flags = 32 (store) offs = 1476
 tx_oid = 3
 data_pos = 153
 data_opos = 241
@@ -283,7 +274,7 @@ index_entry_id = 5
 0000000000000000  59 b8 31 66 a6 b9 33 4d ea ae 2e 72 08 90 43 08  Y.1f..3M...r..C.
 0000000000000010  d0 80 6b d8 33 b2 24 92 a9 d0 fb                 ..k.3.$....
 
-flags = 40 (store) offs = 1616
+flags = 32 (store) offs = 1544
 tx_oid = 3
 data_pos = 180
 data_opos = 268
@@ -292,27 +283,24 @@ index_entry_id = 4
 0000000000000000  0d 73 c5 39 84 8d b9 2c 03 e1 c4 58 15 e3 8a 7f  .s.9...,...X....
 0000000000000010  53 05 f5 75 af b3 21 82 92 14 2f                 S..u..!.../
 
-tx_id = 5 (offs = 1684)
-commit_offs = 1935
+tx_id = 5 (offs = 1612)
+commit_offs = 1839
 commit_items = 3
-next_entry_offs = 2430
-prior_entry_offs = 1143
+next_entry_offs = 2326
+prior_entry_offs = 1071
 total_data_bytes = 207
 data_transform_id = 4
-index_transform_id = 16
+index_transform_id = 18
 
-flags = 1 (create) offs = 1772
-tx_id = 5
+flags = 1 (create) offs = 1700
 tx_oid = 0
 index_entry_id = 6
 
-flags = 1 (create) offs = 1797
-tx_id = 5
+flags = 1 (create) offs = 1717
 tx_oid = 0
 index_entry_id = 7
 
-flags = 2 (update) offs = 1822
-tx_id = 5
+flags = 2 (update) offs = 1734
 tx_oid = 4
 data_pos = 81
 data_size = 72
@@ -323,8 +311,7 @@ index_entry_id = 0
 0000000000000030  28 66 dc fe 7e b1 29 a7 a3 dd fd fe 63 96 01 5b  (f..~.).....c..[
 0000000000000040  bd f0 32 63 6e aa ed 0b                          ..2cn...
 
-flags = 16 (store) offs = 1935
-tx_id = 5
+flags = 16 (store) offs = 1839
 data_pos = 207
 data_size = 80
 index_entry_id = 0
@@ -334,7 +321,7 @@ index_entry_id = 0
 0000000000000030  bf f7 2f 7f 94 d8 33 b2 20 92 a9 d0 fb 0e 73 c5  ../...3. .....s.
 0000000000000040  3c 84 8d b9 2c 67 85 a0 a1 ea 1c 75 80 ac fa 0a  <...,g.....u....
 
-flags = 20 (store) offs = 2048
+flags = 16 (store) offs = 1944
 data_pos = 287
 data_size = 43
 index_entry_id = 6
@@ -342,7 +329,7 @@ index_entry_id = 6
 0000000000000010  26 1d 88 6e ec 86 2e 16 b7 63 2d ca 15 5d 77 8c  &..n.....c-..]w.
 0000000000000020  e7 21 32 8e 9a f2 1f 5c 8e b5 c8                 .!2....\...
 
-flags = 20 (store) offs = 2116
+flags = 16 (store) offs = 2012
 data_pos = 330
 data_size = 289
 index_entry_id = 7
@@ -366,17 +353,16 @@ index_entry_id = 7
 0000000000000110  51 f5 e6 91 53 25 c7 db d5 7c 54 8e 47 69 a7 4e  Q...S%...|T.Gi.N
 0000000000000120  9d                                               .
 
-tx_id = 6 (offs = 2430)
-commit_offs = 2689
+tx_id = 6 (offs = 2326)
+commit_offs = 2561
 commit_items = 3
-next_entry_offs = 16013
-prior_entry_offs = 1684
+next_entry_offs = 15877
+prior_entry_offs = 1612
 total_data_bytes = 619
 data_transform_id = 5
-index_transform_id = 20
+index_transform_id = 22
 
-flags = 2 (update) offs = 2568
-tx_id = 6
+flags = 2 (update) offs = 2448
 tx_oid = 5
 data_pos = 207
 data_size = 80
@@ -387,8 +373,7 @@ index_entry_id = 0
 0000000000000030  bf f7 2f 7f 94 d8 33 b2 20 92 a9 d0 fb 0e 73 c5  ../...3. .....s.
 0000000000000040  3c 84 8d b9 2c 67 85 a0 a1 ea 1c 75 80 ac fa 0a  <...,g.....u....
 
-flags = 16 (store) offs = 2689
-tx_id = 6
+flags = 16 (store) offs = 2561
 data_pos = 619
 data_size = 88
 index_entry_id = 0
@@ -399,16 +384,16 @@ index_entry_id = 0
 0000000000000040  29 72 bd cd e8 f4 48 68 84 c5 0d 34 9a b8 25 5c  )r....Hh...4..%\
 0000000000000050  61 7a dc 48 67 9c dc 50                          az.Hg..P
 
-tx_id = 7 (offs = 16013)
-commit_offs = 16101
+tx_id = 7 (offs = 15877)
+commit_offs = 15965
 commit_items = 7
 next_entry_offs = 0
-prior_entry_offs = 2430
+prior_entry_offs = 2326
 total_data_bytes = 13860
 data_transform_id = 6
-index_transform_id = 24
+index_transform_id = 26
 
-flags = 40 (store) offs = 16101
+flags = 32 (store) offs = 15965
 tx_oid = 4
 data_pos = 81
 data_opos = 153
@@ -417,7 +402,7 @@ index_entry_id = 5
 0000000000000000  72 b5 d7 2b 47 8e b0 0c 03 b6 52 66 3f fc b8 3d  r..+G.....Rf?..=
 0000000000000010  e1 a1 91 c3 cb 47 64 6d 90 d2 ea                 .....Gdm...
 
-flags = 40 (store) offs = 16169
+flags = 32 (store) offs = 16033
 tx_oid = 4
 data_pos = 108
 data_opos = 180
@@ -426,7 +411,7 @@ index_entry_id = 4
 0000000000000000  21 57 8d c0 26 5a 8f f5 4c ea 96 da 94 72 1d f6  !W..&Z..L....r..
 0000000000000010  9d 22 1b 35 8b af 13 6d e9 ef 0f                 .".5...m...
 
-flags = 40 (store) offs = 16237
+flags = 32 (store) offs = 16101
 tx_oid = 5
 data_pos = 135
 data_opos = 287
@@ -436,7 +421,7 @@ index_entry_id = 6
 0000000000000010  26 1d 88 6e ec 86 2e 16 b7 63 2d ca 15 5d 77 8c  &..n.....c-..]w.
 0000000000000020  e7 21 32 8e 9a f2 1f 5c 8e b5 c8                 .!2....\...
 
-flags = 40 (store) offs = 16321
+flags = 32 (store) offs = 16185
 tx_oid = 5
 data_pos = 178
 data_opos = 330
@@ -462,7 +447,7 @@ index_entry_id = 7
 0000000000000110  51 f5 e6 91 53 25 c7 db d5 7c 54 8e 47 69 a7 4e  Q...S%...|T.Gi.N
 0000000000000120  9d                                               .
 
-flags = 40 (store) offs = 16651
+flags = 32 (store) offs = 16515
 tx_oid = 6
 data_pos = 467
 data_opos = 619

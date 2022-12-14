@@ -9,7 +9,7 @@ Transaction Id = 4
 Index Free List = n/a
 Total Size of Data = 1569
 Data Transformation Id = 2
-Index Transformation Id = 5
+Index Transformation Id = 6
 
 ** Entry Info for: all
 num: 0000000000000000          pos: 0000000000000000          len: 0000000000000100
@@ -128,7 +128,7 @@ version = 1.0 (encrypted)
 sequence = 1
 val_hash = 2177926815
 entry_offs = 530
-append_offs = 2617
+append_offs = 2585
 
 ** Transaction Log Info for: all
 tx_id = 1 (offs = 56)
@@ -140,11 +140,11 @@ total_data_bytes = 0
 data_transform_id = 0
 index_transform_id = 0
 
-flags = 9 (create) offs = 144
+flags = 1 (create) offs = 144
 tx_oid = 0
 index_entry_id = 0
 
-flags = 24 (store) offs = 161
+flags = 16 (store) offs = 161
 data_pos = 0
 data_size = 256
 index_entry_id = 0
@@ -173,29 +173,26 @@ next_entry_offs = 530
 prior_entry_offs = 56
 total_data_bytes = 256
 data_transform_id = 1
-index_transform_id = 1
+index_transform_id = 2
 
 tx_id = 3 (offs = 530)
-commit_offs = 965
+commit_offs = 941
 commit_items = 3
 next_entry_offs = 0
 prior_entry_offs = 442
 total_data_bytes = 256
 data_transform_id = 1
-index_transform_id = 1
+index_transform_id = 2
 
 flags = 1 (create) offs = 618
-tx_id = 3
 tx_oid = 0
 index_entry_id = 1
 
-flags = 1 (create) offs = 643
-tx_id = 3
+flags = 1 (create) offs = 635
 tx_oid = 0
 index_entry_id = 2
 
-flags = 2 (update) offs = 668
-tx_id = 3
+flags = 2 (update) offs = 652
 tx_oid = 1
 data_pos = 0
 data_size = 256
@@ -217,8 +214,7 @@ index_entry_id = 0
 00000000000000e0  87 af dc f2 05 6a 85 95 cc 3a 7a ea 22 84 9e 0d  .....j...:z."...
 00000000000000f0  24 5a b8 31 66 a6 b9 33 4d 8f cb 4b 8d f7 6f bc  $Z.1f..3M..K..o.
 
-flags = 16 (store) offs = 965
-tx_id = 3
+flags = 16 (store) offs = 941
 data_pos = 256
 data_size = 1024
 index_entry_id = 2
@@ -287,7 +283,7 @@ index_entry_id = 2
 00000000000003e0  cc 2d 89 f9 6d 7a 91 c1 cb ff 5f d7 e8 59 a3 ab  .-..mz...._..Y..
 00000000000003f0  0c 67 7e e8 4e 54 a5 e5 4a bf f5 28 78 83 ce d8  .g~.NT..J..(x...
 
-flags = 20 (store) offs = 2022
+flags = 16 (store) offs = 1990
 data_pos = 0
 data_size = 256
 index_entry_id = 0
@@ -308,7 +304,7 @@ index_entry_id = 0
 00000000000000e0  87 af dc f2 05 6a 85 95 cc 3a 7a ea 22 84 9e 0d  .....j...:z."...
 00000000000000f0  24 5a b8 31 66 a6 b9 33 4d 8f cb 4b 8d f7 6f bc  $Z.1f..3M..K..o.
 
-flags = 20 (store) offs = 2303
+flags = 16 (store) offs = 2271
 data_pos = 1280
 data_size = 289
 index_entry_id = 1

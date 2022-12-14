@@ -1,5 +1,6 @@
 add test*10000
 del test*10000
+compress
 trans
 add test*10000
 trans
