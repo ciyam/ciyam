@@ -9,7 +9,7 @@ Transaction Id = 4
 Index Free List = n/a
 Total Size of Data = 1569
 Data Transformation Id = 2
-Index Transformation Id = 5
+Index Transformation Id = 6
 
 ** Entry Info for: all
 num: 0000000000000000          pos: 0000000000000000          len: 0000000000000100
@@ -127,7 +127,7 @@ No freelist entries.
 version = 1.0
 sequence = 1
 entry_offs = 530
-append_offs = 2617
+append_offs = 2585
 
 ** Transaction Log Info for: all
 tx_id = 1 (offs = 56)
@@ -139,11 +139,11 @@ total_data_bytes = 0
 data_transform_id = 0
 index_transform_id = 0
 
-flags = 9 (create) offs = 144
+flags = 1 (create) offs = 144
 tx_oid = 0
 index_entry_id = 0
 
-flags = 24 (store) offs = 161
+flags = 16 (store) offs = 161
 data_pos = 0
 data_size = 256
 index_entry_id = 0
@@ -172,29 +172,26 @@ next_entry_offs = 530
 prior_entry_offs = 56
 total_data_bytes = 256
 data_transform_id = 1
-index_transform_id = 1
+index_transform_id = 2
 
 tx_id = 3 (offs = 530)
-commit_offs = 965
+commit_offs = 941
 commit_items = 3
 next_entry_offs = 0
 prior_entry_offs = 442
 total_data_bytes = 256
 data_transform_id = 1
-index_transform_id = 1
+index_transform_id = 2
 
 flags = 1 (create) offs = 618
-tx_id = 3
 tx_oid = 0
 index_entry_id = 1
 
-flags = 1 (create) offs = 643
-tx_id = 3
+flags = 1 (create) offs = 635
 tx_oid = 0
 index_entry_id = 2
 
-flags = 2 (update) offs = 668
-tx_id = 3
+flags = 2 (update) offs = 652
 tx_oid = 1
 data_pos = 0
 data_size = 256
@@ -216,8 +213,7 @@ index_entry_id = 0
 00000000000000e0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000000000000f0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 
-flags = 16 (store) offs = 965
-tx_id = 3
+flags = 16 (store) offs = 941
 data_pos = 256
 data_size = 1024
 index_entry_id = 2
@@ -286,7 +282,7 @@ index_entry_id = 2
 00000000000003e0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000000000003f0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 
-flags = 20 (store) offs = 2022
+flags = 16 (store) offs = 1990
 data_pos = 0
 data_size = 256
 index_entry_id = 0
@@ -307,7 +303,7 @@ index_entry_id = 0
 00000000000000e0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000000000000f0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 
-flags = 20 (store) offs = 2303
+flags = 16 (store) offs = 2271
 data_pos = 1280
 data_size = 289
 index_entry_id = 1

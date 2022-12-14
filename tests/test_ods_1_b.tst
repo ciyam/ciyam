@@ -6,11 +6,11 @@ Num Writers = 0
 Init Tranlog = 0
 Total Entries = 14
 Tranlog Offset = 0
-Transaction Id = 18
+Transaction Id = 11
 Index Free List = 12
 Total Size of Data = 428
-Data Transformation Id = 15
-Index Transformation Id = 50
+Data Transformation Id = 9
+Index Transformation Id = 58
 
 ** Freelist Info
 First freelist entry = 12

@@ -9,7 +9,7 @@ Transaction Id = 5
 Index Free List = n/a
 Total Size of Data = 1569
 Data Transformation Id = 3
-Index Transformation Id = 8
+Index Transformation Id = 9
 
 ** Entry Info for: all
 num: 0000000000000000          pos: 0000000000000000          len: 0000000000000100
@@ -29,20 +29,19 @@ version = 1.0 (encrypted)
 sequence = 2
 val_hash = 2177926815
 entry_offs = 56
-append_offs = 2844
+append_offs = 2820
 
 ** Transaction Log Info for: all
 tx_id = 4 (offs = 56)
-commit_offs = 1506
+commit_offs = 1490
 commit_items = 2
 next_entry_offs = 0
 prior_entry_offs = 0
 total_data_bytes = 1569
 data_transform_id = 2
-index_transform_id = 5
+index_transform_id = 6
 
 flags = 2 (update) offs = 144
-tx_id = 4
 tx_oid = 3
 data_pos = 0
 data_size = 256
@@ -64,8 +63,7 @@ index_entry_id = 0
 00000000000000e0  87 af dc f2 05 6a 85 95 cc 3a 7a ea 22 84 9e 0d  .....j...:z."...
 00000000000000f0  24 5a b8 31 66 a6 b9 33 4d 8f cb 4b 8d f7 6f bc  $Z.1f..3M..K..o.
 
-flags = 2 (update) offs = 441
-tx_id = 4
+flags = 2 (update) offs = 433
 tx_oid = 3
 data_pos = 256
 data_size = 1024
@@ -135,8 +133,7 @@ index_entry_id = 2
 00000000000003e0  cc 2d 89 f9 6d 7a 91 c1 cb ff 5f d7 e8 59 a3 ab  .-..mz...._..Y..
 00000000000003f0  0c 67 7e e8 4e 54 a5 e5 4a bf f5 28 78 83 ce d8  .g~.NT..J..(x...
 
-flags = 16 (store) offs = 1506
-tx_id = 4
+flags = 16 (store) offs = 1490
 data_pos = 256
 data_size = 1024
 index_entry_id = 2
@@ -205,7 +202,7 @@ index_entry_id = 2
 00000000000003e0  cc 2d 89 f9 6d 7a 91 c1 cb ff 5f d7 e8 59 a3 ab  .-..mz...._..Y..
 00000000000003f0  0c 67 7e e8 4e 54 a5 e5 4a bf f5 28 78 83 ce d8  .g~.NT..J..(x...
 
-flags = 20 (store) offs = 2563
+flags = 16 (store) offs = 2539
 data_pos = 0
 data_size = 256
 index_entry_id = 0

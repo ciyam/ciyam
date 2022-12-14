@@ -60,6 +60,7 @@ const char* const c_cmd_exclusive = "x";
 const char* const c_cmd_use_transaction_log = "tlg";
 const char* const c_cmd_use_synchronised_write = "sync";
 const char* const c_cmd_use_for_regression_tests = "test";
+const char* const c_cmd_reconstruct_from_transaction_log = "reconstruct";
 
 bool g_encrypted = false;
 bool g_needs_magic = false;
@@ -67,6 +68,7 @@ bool g_shared_write = true;
 bool g_use_transaction_log = false;
 bool g_use_synchronised_write = false;
 bool g_use_for_regression_tests = false;
+bool g_reconstruct_from_transaction_log = false;
 
 bool g_application_title_called = false;
 
@@ -361,6 +363,8 @@ class test_ods_startup_functor : public command_functor
          g_use_synchronised_write = true;
       else if( command == c_cmd_use_for_regression_tests )
          g_use_for_regression_tests = true;
+      else if( command == c_cmd_reconstruct_from_transaction_log )
+         g_reconstruct_from_transaction_log = true;
    }
 };
 
@@ -641,6 +645,10 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          ods::bulk_write bulk( o );
          o >> node;
 
+         auto_ptr< ods::transaction > ap_ods_tx;
+         if( !o.is_in_transaction( ) )
+            ap_ods_tx.reset( new ods::transaction( o ) );
+
          int num = 1;
          bool is_multi = false;
          pos = name.find( '*' );
@@ -682,6 +690,9 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          }
 
          o << node;
+
+         if( ap_ods_tx.get( ) )
+            ap_ods_tx->commit( );
       }
    }
    else if( command == c_cmd_test_ods_del )
@@ -694,6 +705,10 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       bool found = false;
       ods::bulk_write bulk( o, p_progress );
       o >> node;
+
+      auto_ptr< ods::transaction > ap_ods_tx;
+      if( !o.is_in_transaction( ) )
+         ap_ods_tx.reset( new ods::transaction( o ) );
 
       int num = 1;
       size_t index = 0;
@@ -814,6 +829,9 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          if( !found )
             cout << "cannot find folder: " << name << endl;
       }
+
+      if( ap_ods_tx.get( ) )
+         ap_ods_tx->commit( );
    }
    else if( command == c_cmd_test_ods_import )
    {
@@ -1049,6 +1067,9 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_use_for_regression_tests, 2,
           "", "use this for regression tests", new test_ods_startup_functor( cmd_handler ) );
 
+         cmd_handler.add_command( c_cmd_reconstruct_from_transaction_log, 3,
+          "", "use to reconstruct from transaction log", new test_ods_startup_functor( cmd_handler ) );
+
          processor.process_commands( );
 
          cmd_handler.remove_command( c_cmd_password );
@@ -1063,16 +1084,31 @@ int main( int argc, char* argv[ ] )
 
       cmd_handler.init_ods( "test_ods" );
 
+      if( cmd_handler.get_ods( ).is_corrupt( ) || g_reconstruct_from_transaction_log )
+      {
+         if( g_shared_write )
+         {
+            if( !cmd_handler.get_ods( ).is_corrupt( ) )
+               throw runtime_error( "restart using exclusive write access in order to reconstruct" );
+            else
+               throw runtime_error( "ODS DB is corrupt - restart using exclusive write access in order to repair/reconstruct" );
+         }
+
+         if( g_reconstruct_from_transaction_log )
+            cmd_handler.get_ods( ).reconstruct_database( );
+         else
+            cmd_handler.get_ods( ).repair_corrupt_database( );
+      }
+
       if( cmd_handler.get_ods( ).is_new( ) )
       {
          outline root( c_root_node_description );
 
          cmd_handler.get_ods( ) << root;
       }
-      else if( cmd_handler.get_ods( ).is_corrupt( ) )
-         cmd_handler.get_ods( ).repair_corrupt_database( );
 
       cmd_handler.get_node( ).set_id( 0 );
+
       cmd_handler.get_ods( ) >> cmd_handler.get_node( );
       cmd_handler.get_oid_stack( ).push( cmd_handler.get_node( ).get_id( ) );
       cmd_handler.get_path_strings( ).push_back( cmd_handler.get_node( ).get_description( ) );
