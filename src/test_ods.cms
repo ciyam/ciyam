@@ -11,7 +11,7 @@ rollback "rollback transaction"
 trans_id "get the current transaction id"
 trans_level "get the current transaction level"
 rewind "rewind transactions" [<opt/-dtm/dtm>|<opt/-last/last>|<opt/-unix/unix>]<val//label_or_value>
-compress "move free data to end of store"
-truncate "truncate transaction log"
+compress "move free data to end of data storage"
+truncate "truncate and optionally reset the transaction log" [<opt/-reset/reset>]
 abort "force an immediate exit"
 exit "exit program"

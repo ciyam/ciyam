@@ -891,13 +891,15 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_ods_fsed_truncate )
       {
+         bool reset( has_parm_val( parameters, c_cmd_ods_fsed_truncate_reset ) );
+
          if( ods_tx_stack.size( ) )
             throw runtime_error( "currently in a transaction" );
 
          if( g_shared_write )
             handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
          else
-            ap_ods->truncate_log( );
+            ap_ods->truncate_log( "", reset );
       }
       else if( command == c_cmd_ods_fsed_exit )
       {

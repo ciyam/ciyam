@@ -21,6 +21,6 @@ rollback "rollback current transaction"
 rewind "rewind transactions" [<opt/-dtm/dtm>|<opt/-last/last>|<opt/-unix/unix>]<val//label_or_value>
 rebuild "rebuild index nodes"
 dump "dump container details" [<val//filename>]
-compress "move free data to end of store"
-truncate "truncate transaction log"
+compress "move free data to end of data storage"
+truncate "truncate and optionally reset the transaction log" [<opt/-reset/reset>]
 exit "exit program"

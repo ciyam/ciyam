@@ -650,7 +650,7 @@ class ODS_DECL_SPEC ods
 
    void move_free_data_to_end( progress* p_progress = 0 );
 
-   void truncate_log( const char* p_ext = 0 );
+   void truncate_log( const char* p_ext = 0, bool reset = false, progress* p_progress = 0 );
 
    void clear_cache_statistics( );
 
@@ -777,7 +777,7 @@ class ODS_DECL_SPEC ods
 
    void log_entry_commit( int64_t entry_offset, int64_t commit_offs, int64_t commit_items );
 
-   void append_log_entry_item(
+   int64_t append_log_entry_item(
     int64_t num, const ods_index_entry& index_entry, unsigned char flags,
     int64_t old_tx_id = 0, int64_t log_entry_offs = 0, int64_t old_data_pos = 0, progress* p_progress = 0 );
 
