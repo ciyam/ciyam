@@ -1010,10 +1010,12 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_test_ods_truncate )
    {
+      bool reset( has_parm_val( parameters, c_cmd_test_ods_truncate_reset ) );
+
       if( g_shared_write )
          handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
       else
-         o.truncate_log( );
+         o.truncate_log( "", reset );
    }
    else if( command == c_cmd_test_ods_exit )
    {
