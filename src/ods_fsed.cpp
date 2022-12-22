@@ -968,11 +968,16 @@ int main( int argc, char* argv[ ] )
 
       cmd_handler.init_ods( g_name.c_str( ) );
 
-      cmd_handler.add_commands( 0,
-       ods_fsed_command_functor_factory, ARRAY_PTR_AND_SIZE( ods_fsed_command_definitions ) );
+      if( g_reconstruct_from_transaction_log )
+         cout << "ODS DB reconstruct completed." << endl;
+      else
+      {
+         cmd_handler.add_commands( 0,
+          ods_fsed_command_functor_factory, ARRAY_PTR_AND_SIZE( ods_fsed_command_definitions ) );
 
-      console_command_processor processor( cmd_handler );
-      processor.process_commands( );
+         console_command_processor processor( cmd_handler );
+         processor.process_commands( );
+      }
    }
    catch( exception& x )
    {

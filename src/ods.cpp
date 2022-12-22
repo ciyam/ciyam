@@ -543,7 +543,7 @@ const unsigned char c_log_entry_item_op_destroy = 3;
 const unsigned char c_log_entry_item_mask_op = 0x03;
 
 const unsigned char c_log_entry_item_type_normal = 0;
-const unsigned char c_log_entry_item_type_reserved_4 = 4;
+const unsigned char c_log_entry_item_type_nested_tx = 4;
 const unsigned char c_log_entry_item_type_reserved_8 = 8;
 
 const unsigned char c_log_entry_item_mask_type = 0x0c;
@@ -566,14 +566,17 @@ struct log_entry_item
    {
    }
 
+   bool is_store( ) const { return ( flags & c_log_entry_item_mask_op ) == c_log_entry_item_op_store; }
    bool is_create( ) const { return ( flags & c_log_entry_item_mask_op ) == c_log_entry_item_op_create; }
    bool is_destroy( ) const { return ( flags & c_log_entry_item_mask_op ) == c_log_entry_item_op_destroy; }
 
    bool is_post_op( ) const { return ( flags & c_log_entry_item_flag_is_post_op ); }
 
+   bool is_nested_tx( ) const { return ( flags & c_log_entry_item_mask_type ) == c_log_entry_item_type_nested_tx; }
+
    bool has_old_tran_id( ) const
    {
-      return !is_post_op( );
+      return !is_post_op( ) && !is_nested_tx( );
    }
 
    bool has_old_pos( ) const { return ( flags & c_log_entry_item_flag_has_old_pos ); }
@@ -600,21 +603,34 @@ struct log_entry_item
       os << "flags = " << ( int )flags;
 
       unsigned char op = ( flags & c_log_entry_item_mask_op );
+      unsigned char type = ( flags & c_log_entry_item_mask_type );
 
       bool pos_and_size = has_pos_and_size( );
 
-      if( op == c_log_entry_item_op_store )
-         os << " (store)";
-      else if( op == c_log_entry_item_op_create )
-         os << " (create)";
-      else if( op == c_log_entry_item_op_update )
-         os << " (update)";
-      else
+      if( type == c_log_entry_item_type_normal )
       {
-         if( !is_post_op( ) )
-            os << " (destroy)";
+         if( op == c_log_entry_item_op_store )
+            os << " (store)";
+         else if( op == c_log_entry_item_op_create )
+            os << " (create)";
+         else if( op == c_log_entry_item_op_update )
+            os << " (update)";
          else
-            os << " (freelist)";
+         {
+            if( !is_post_op( ) )
+               os << " (destroy)";
+            else
+               os << " (freelist)";
+         }
+      }
+      else if( type == c_log_entry_item_type_nested_tx )
+      {
+         if( op == c_log_entry_item_op_store )
+            os << " (nested start)";
+         else if( op == c_log_entry_item_op_create )
+            os << " (nested commit)";
+         else
+            os << " (nested rollback)";
       }
 
       if( offs )
@@ -622,19 +638,24 @@ struct log_entry_item
 
       os << '\n';
 
-      if( has_old_tran_id( ) )
-         os << "tx_oid = " << tx_oid << '\n';
+      if( type == c_log_entry_item_type_normal )
+      {
+         if( has_old_tran_id( ) )
+            os << "tx_oid = " << tx_oid << '\n';
 
-      if( pos_and_size )
-         os << "data_pos = " << data_pos << '\n';
+         if( pos_and_size )
+            os << "data_pos = " << data_pos << '\n';
 
-      if( has_old_pos( ) )
-         os << "data_opos = " << data_opos << '\n';
+         if( has_old_pos( ) )
+            os << "data_opos = " << data_opos << '\n';
 
-      if( pos_and_size )
-         os << "data_size = " << data_size << '\n';
+         if( pos_and_size )
+            os << "data_size = " << data_size << '\n';
 
-      os << "index_entry_id = " << index_entry_id << endl;
+         os << "index_entry_id = " << index_entry_id << endl;
+      }
+      else if( type == c_log_entry_item_type_nested_tx )
+         os << "nested tx level = " << index_entry_id << endl;
    }
 
    void read( istream& is )
@@ -2188,6 +2209,7 @@ struct transaction_buffer
    transaction_buffer( ) : tran_id( 0 ) { }
 
    int64_t tran_id;
+
    stack< transaction_level_info > levels;
 };
 
@@ -3445,7 +3467,7 @@ void ods::destroy( const oid& id )
                      index_entry.data.tran_id = tx_id;
 
                      if( !skip_log_entry && p_impl->using_tranlog )
-                        append_log_entry_item( id.get_num( ), index_entry, flags, old_tx_id, 0, 0, p_progress );
+                        append_log_entry_item( id.get_num( ), index_entry, flags, true, old_tx_id, 0, p_progress );
 
                      index_entry.trans_flag = ods_index_entry::e_trans_delete;
                   }
@@ -3459,8 +3481,7 @@ void ods::destroy( const oid& id )
                      {
                         p_impl->tranlog_offset = append_log_entry( p_impl->rp_header_info->transaction_id );
 
-                        append_log_entry_item( id.get_num( ),
-                         index_entry, flags, old_tx_id, p_impl->tranlog_offset, 0, p_progress );
+                        append_log_entry_item( id.get_num( ), index_entry, flags, false, old_tx_id, 0, p_progress );
 
                         if( !p_impl->rp_header_info->tranlog_offset )
                            p_impl->rp_header_info->tranlog_offset = p_impl->tranlog_offset;
@@ -4798,6 +4819,7 @@ void ods::transaction::commit( )
          THROW_ODS_ERROR( "attempt to commit an already processed transaction" );
 
       o.transaction_commit( );
+
       can_commit = false;
       has_committed = true;
    }
@@ -4811,6 +4833,7 @@ void ods::transaction::rollback( )
          THROW_ODS_ERROR( "attempt to rollback an already processed transaction" );
 
       o.transaction_rollback( );
+
       can_commit = false;
    }
 }
@@ -5028,10 +5051,25 @@ void ods::transaction_start( const char* p_label )
       }
       // NOTE: Finish file lock section.
    }
+   else if( p_impl->using_tranlog )
+   {
+      // NOTE: Start file lock section.
+      {
+         ods::header_file_lock header_file_lock( *this );
+
+         unsigned char flags = ( c_log_entry_item_op_store | c_log_entry_item_type_nested_tx );
+
+         ods_index_entry index_entry;
+
+         append_log_entry_item( p_impl->trans_level + 1, index_entry, flags, true );
+      }
+      // NOTE: Finish file lock section.
+   }
 
    ++p_impl->trans_level;
 
    transaction_level_info trans_level_info;
+
    if( p_impl->trans_level > 1 )
    {
       trans_level_info.offset += p_impl->total_trans_size;
@@ -5220,7 +5258,7 @@ void ods::transaction_commit( )
                   {
                      ++commit_items;
 
-                     append_log_entry_item( op.data.id.get_num( ), index_entry, flags, 0, 0, 0, p_progress );
+                     append_log_entry_item( op.data.id.get_num( ), index_entry, flags, true, 0, 0, p_progress );
                   }
 
                   index_entry.data.tran_op = 0;
@@ -5255,7 +5293,22 @@ void ods::transaction_commit( )
       transaction_completed( );
    }
    else
+   {
+      // NOTE: Start file lock section.
+      if( p_impl->using_tranlog )
+      {
+         ods::header_file_lock header_file_lock( *this );
+
+         unsigned char flags = ( c_log_entry_item_op_create | c_log_entry_item_type_nested_tx );
+
+         ods_index_entry index_entry;
+
+         append_log_entry_item( p_impl->trans_level, index_entry, flags, true );
+      }
+      // NOTE: Finish file lock section.
+
       transaction_completed( true );
+   }
 }
 
 void ods::transaction_rollback( )
@@ -5271,6 +5324,7 @@ void ods::transaction_rollback( )
       THROW_ODS_ERROR( "cannot rollback transaction when bulk locked for dumping or reading" );
 
    int64_t size = p_impl->p_trans_buffer->levels.top( ).size;
+
    int64_t op_count = p_impl->p_trans_buffer->levels.top( ).op_count;
    int64_t op_offset = p_impl->p_trans_buffer->levels.top( ).op_offset;
 
@@ -5298,6 +5352,15 @@ void ods::transaction_rollback( )
    auto_ptr< ods::bulk_write > ap_bulk_write;
    if( !*p_impl->rp_bulk_level )
       ap_bulk_write.reset( new ods::bulk_write( *this ) );
+
+   if( p_impl->using_tranlog && p_impl->trans_level > 1 )
+   {
+      unsigned char flags = ( c_log_entry_item_op_destroy | c_log_entry_item_type_nested_tx );
+
+      ods_index_entry index_entry;
+
+      append_log_entry_item( p_impl->trans_level, index_entry, flags, true );
+   }
 
 #ifdef ODS_DEBUG
    ostringstream osstr;
@@ -5339,6 +5402,9 @@ void ods::transaction_rollback( )
 
                index_entry.data.tran_op = op.data.old_tran_op;
 
+               if( op.data.old_tran_id > 0 )
+                  index_entry.data.tran_id = op.data.old_tran_id;
+
                if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
                {
                   if( op.data.old_tran_op == 0 )
@@ -5356,7 +5422,8 @@ void ods::transaction_rollback( )
 
       data_and_index_write( false );
 
-      ++p_impl->rp_header_info->index_transform_id;
+      if( p_impl->trans_level == 1 )
+         ++p_impl->rp_header_info->index_transform_id;
 
       set_write_trans_data_pos( p_impl->total_trans_size - size );
    }
@@ -5610,7 +5677,7 @@ void ods::log_entry_commit( int64_t entry_offset, int64_t commit_offs, int64_t c
 
 int64_t ods::append_log_entry_item( int64_t num,
  const ods_index_entry& index_entry, unsigned char flags,
- int64_t old_tx_id, int64_t log_entry_offs, int64_t old_data_pos, progress* p_progress )
+ bool is_in_tx, int64_t old_tx_id, int64_t old_data_pos, progress* p_progress )
 {
    date_time dtm( date_time::local( ) );
 
@@ -5681,6 +5748,8 @@ int64_t ods::append_log_entry_item( int64_t num,
 
    tranlog_info.append_offs = logf.get_pos( );
 
+   int64_t log_entry_offs = p_impl->tranlog_offset;
+
    if( log_entry_offs )
    {
       log_entry tranlog_entry;
@@ -5688,8 +5757,13 @@ int64_t ods::append_log_entry_item( int64_t num,
       logf.set_pos( log_entry_offs );
       tranlog_entry.read( logf );
 
-      tranlog_entry.commit_offs = old_append_offs;
-      tranlog_entry.commit_items = 1;
+      if( !is_in_tx )
+      {
+         tranlog_entry.commit_offs = old_append_offs;
+         tranlog_entry.commit_items = 1;
+      }
+      else
+         tranlog_entry.commit_offs = tranlog_info.append_offs;
 
       logf.set_pos( log_entry_offs );
       tranlog_entry.write( logf );
@@ -5943,9 +6017,6 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
          if( is_reconstruct )
             tranlog_offset = 0;
 
-         // NOTE: As transaction entry items are not necessarily processed "in order" each entry
-         // in the log is processed to determine whether commit or rollback operations should be
-         // performed.
          while( true )
          {
             int64_t entry_offset = fs.tellg( );
@@ -5972,7 +6043,9 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
             if( tx_id >= p_impl->rp_header_info->transaction_id )
                p_impl->rp_header_info->transaction_id = tx_id + 1;
 
-            if( tranlog_entry.commit_offs )
+            int64_t commit_offs = tranlog_entry.commit_offs;
+
+            if( tranlog_entry.commit_items )
                committed_transactions.insert( tx_id );
 
             int64_t next_offs = tranlog_entry.next_entry_offs;
@@ -6006,7 +6079,14 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                   next_offs = tranlog_info.append_offs;
 
                bool had_any_data = false;
+
+               size_t nested_level = 0;
+               size_t ignore_start_nested = 0;
+
+               map< size_t, size_t > num_at_height;
  
+               map< int64_t, deque< int64_t > > rollback_freelist_entries;
+
                while( fs.tellg( ) < next_offs )
                {
                   log_entry_item tranlog_item;
@@ -6017,19 +6097,84 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
                   bool commit = ( committed_transactions.find( tx_id ) != committed_transactions.end( ) );
 
+                  ods_index_entry index_entry;
+
+                  if( tranlog_item.is_nested_tx( ) )
+                  {
+                     if( tranlog_item.is_create( ) )
+                     {
+                        ++num_at_height[ --nested_level ];
+
+                        continue;
+                     }
+                     else if( tranlog_item.is_destroy( ) )
+                     {
+                        --nested_level;
+
+                        if( rollback_freelist_entries.count( commit_offs ) )
+                        {
+                           int64_t tran_id = rollback_freelist_entries[ commit_offs ].front( );
+
+                           while( !rollback_freelist_entries[ commit_offs ].empty( ) )
+                           {
+                              int64_t index_entry_id = rollback_freelist_entries[ commit_offs ].back( );
+
+                              if( index_entry_id == -1 )
+                              {
+                                 rollback_freelist_entries[ commit_offs ].pop_back( );
+
+                                 if( !num_at_height[ nested_level + 1 ] )
+                                    break;
+
+                                 --num_at_height[ nested_level + 1 ];
+
+                                 continue;
+                              }
+
+                              add_entry_to_freelist( index_entry_id, tran_id );
+
+                              rollback_freelist_entries[ commit_offs ].pop_back( );
+                           }
+                        }
+
+                        continue;
+                     }
+                     else
+                     {
+                        ++nested_level;
+
+                        if( !rollback_freelist_entries.count( commit_offs ) )
+                           rollback_freelist_entries[ commit_offs ].push_back( tx_id );
+
+                        rollback_freelist_entries[ commit_offs ].push_back( -1 );
+
+                        continue;
+                     }
+                  }
+
                   if( !tranlog_item.is_post_op( ) )
                      ++p_impl->rp_header_info->index_transform_id;
 
+                  bool can_read = true;
+
                   if( tranlog_item.index_entry_id >= p_impl->rp_header_info->total_entries )
+                  {
+                     can_read = false;
+                     ods_index_entry blank_entry;
+
+                     index_entry = blank_entry;
                      p_impl->rp_header_info->total_entries = tranlog_item.index_entry_id + 1;
+                  }
 
                   int64_t tran_id = tx_id;
 
                   if( !commit && tranlog_item.has_old_tran_id( ) )
                      tran_id = tranlog_item.tx_oid;
 
-                  ods_index_entry index_entry;
-                  read_index_entry( index_entry, tranlog_item.index_entry_id );
+                  if( !can_read )
+                     write_entry = true;
+                  else
+                     read_index_entry( index_entry, tranlog_item.index_entry_id );
 
                   if( tranlog_item.has_pos_and_size( ) )
                   {
@@ -6117,12 +6262,14 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                               }
                            }
 
+                           // NOTE: If "move_free_data_to_end" has been called then this applies.
                            if( commit && tranlog_item.has_old_pos( )
                             && ( p_impl->rp_header_info->total_size_of_data
                             == ( tranlog_item.data_opos + tranlog_item.data_size ) ) )
                               p_impl->rp_header_info->total_size_of_data = dpos + tranlog_item.data_size;
 
-                           if( p_impl->rp_header_info->total_size_of_data < dpos + tranlog_item.data_size )
+                           if( commit
+                            && ( p_impl->rp_header_info->total_size_of_data < dpos + tranlog_item.data_size ) )
                               p_impl->rp_header_info->total_size_of_data = dpos + tranlog_item.data_size;
                         }
 
@@ -6136,18 +6283,33 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                      else
                         fs.seekg( tranlog_item.data_size, ios::cur );
                   }
-                  else if( commit && tranlog_item.is_destroy( ) && tranlog_item.is_post_op( ) )
-                     add_to_free_list = true;
+                  else
+                  {
+                     if( commit && tranlog_item.is_destroy( ) && tranlog_item.is_post_op( ) )
+                        add_to_free_list = true;
+                     else if( tranlog_item.is_create( ) )
+                     {
+                        write_entry = true;
 
-                  if( commit && tranlog_item.is_create( )
+                        index_entry.trans_flag = ods_index_entry::e_trans_none;
+
+                        if( !rollback_freelist_entries.count( commit_offs ) )
+                           rollback_freelist_entries[ commit_offs ].push_back( tx_id );
+
+                        rollback_freelist_entries[ commit_offs ].push_back( tranlog_item.index_entry_id );
+                     }
+                  }
+
+                  if( tranlog_item.is_create( )
                    && ( p_impl->rp_header_info->index_free_list == tranlog_item.index_entry_id + 1 ) )
                      p_impl->rp_header_info->index_free_list = tranlog_item.data_opos;
 
+                  if( commit && tranlog_item.is_destroy( ) && tranlog_item.is_post_op( )
+                   && ( p_impl->rp_header_info->total_size_of_data == ( index_entry.data.pos + index_entry.data.size ) ) )
+                     p_impl->rp_header_info->total_size_of_data -= index_entry.data.size;
+
                   if( add_to_free_list )
                   {
-                     if( index_entry.data.pos + index_entry.data.size == p_impl->rp_header_info->total_size_of_data )
-                        p_impl->rp_header_info->total_size_of_data -= index_entry.data.size;
-
                      if( !p_impl->rp_header_info->index_free_list )
                      {
                         index_entry.data.pos = 0;
@@ -6173,6 +6335,30 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                      write_index_entry( index_entry, tranlog_item.index_entry_id );
                   }
                }
+
+               if( tranlog_entry.commit_items )
+                  rollback_freelist_entries.erase( commit_offs );
+
+               if( rollback_freelist_entries.count( commit_offs ) )
+               {
+                  int64_t tran_id = rollback_freelist_entries[ commit_offs ].front( );
+
+                  rollback_freelist_entries[ commit_offs ].pop_front( );
+
+                  while( !rollback_freelist_entries[ commit_offs ].empty( ) )
+                  {
+                     int64_t index_entry_id = rollback_freelist_entries[ commit_offs ].back( );
+
+                     if( index_entry_id >= 0 )
+                        add_entry_to_freelist( index_entry_id, tran_id );
+
+                     rollback_freelist_entries[ commit_offs ].pop_back( );
+                  }
+
+                  ++p_impl->rp_header_info->index_transform_id;
+               }
+
+               rollback_freelist_entries.erase( commit_offs );
 
                if( had_any_data )
                {
@@ -6600,6 +6786,7 @@ ods& operator <<( ods& o, storable_base& s )
                   skip_log_entry = true;
 
                index_entry.trans_flag = ods_index_entry::e_trans_change;
+
                old_index_entry.data.tran_id = index_entry.data.tran_id = o.p_impl->p_trans_buffer->tran_id;
             }
             else
@@ -6610,6 +6797,7 @@ ods& operator <<( ods& o, storable_base& s )
                   index_entry.data.pos = old_total_size;
 
                index_entry.data.size = o.bytes_reserved;
+
                old_index_entry.data.tran_id = index_entry.data.tran_id = o.p_impl->rp_header_info->transaction_id;
             }
 
@@ -6634,7 +6822,8 @@ ods& operator <<( ods& o, storable_base& s )
 
             if( !skip_log_entry && o.p_impl->using_tranlog )
                o.append_log_entry_item( s.id.num,
-                ( !is_new_object ? old_index_entry : index_entry ), flags, old_tx_id, 0, old_data_pos, o.p_progress );
+                ( !is_new_object ? old_index_entry : index_entry ),
+                flags, ( o.p_impl->trans_level > 0 ), old_tx_id, old_data_pos, o.p_progress );
 
             o.write_index_entry( index_entry, s.id.num );
 
@@ -6650,6 +6839,7 @@ ods& operator <<( ods& o, storable_base& s )
 
                ++o.p_impl->total_trans_op_count;
                trans_write_pos = o.p_impl->total_trans_size;
+
                o.p_impl->total_trans_size += o.bytes_reserved;
             }
 
@@ -6725,7 +6915,7 @@ ods& operator <<( ods& o, storable_base& s )
                memset( o.p_impl->data_write_key_buffer.data, '\0', c_data_bytes_per_item );
 
             if( o.p_impl->using_tranlog )
-               o.append_log_entry_item( s.id.num, index_entry, flags, 0, o.p_impl->tranlog_offset, 0, o.p_progress );
+               o.append_log_entry_item( s.id.num, index_entry, flags, false, 0, 0, o.p_progress );
 
             ++o.p_impl->rp_header_info->data_transform_id;
          }
@@ -7131,6 +7321,36 @@ void ods::write_index_entry( const ods_index_entry& index_entry, int64_t num )
 
    if( index_entry.trans_flag & c_bit_2 )
       data.tran_op |= c_int_type_hi_bit;
+}
+
+void ods::add_entry_to_freelist( int64_t num, int64_t tran_id )
+{
+   ods_index_entry index_entry;
+
+   read_index_entry( index_entry, num );
+
+   if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
+   {
+      if( !p_impl->rp_header_info->index_free_list )
+      {
+         index_entry.data.pos = 0;
+         p_impl->rp_header_info->index_free_list = num + 1;
+      }
+      else
+      {
+         index_entry.data.pos = p_impl->rp_header_info->index_free_list;
+         p_impl->rp_header_info->index_free_list = num + 1;
+      }
+
+      index_entry.data.size = 0;
+
+      index_entry.data.tran_id = tran_id;
+      index_entry.data.tran_op = 0;
+
+      index_entry.trans_flag = ods_index_entry::e_trans_free_list;
+
+      write_index_entry( index_entry, num );
+   }
 }
 
 void ods::read_transaction_op( transaction_op& op, int64_t num )

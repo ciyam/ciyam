@@ -1,0 +1,13 @@
+add www*3
+del www*3
+trans
+add xxx*3
+trans
+add yyy*3
+rollback
+trans
+add zzz*3
+commit
+rollback
+list
+exit
