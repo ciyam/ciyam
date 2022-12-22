@@ -1,4 +1,4 @@
 add zzz
 list
-truncate
+truncate -reset
 exit

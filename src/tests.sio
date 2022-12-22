@@ -929,7 +929,7 @@
      </test_step>
      <test_step/>
       <name>c
-      <exec>del test_ods.dat* test_ods.idx* test_ods.hdr*
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1013,7 +1013,7 @@
      </test_step>
      <test_step/>
       <name>q
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg.1
       <input>false
       <output>none
      </test_step>
@@ -1151,6 +1151,160 @@
       <name>s
       <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -x -tlg -test
       <input>true
+      <output>generate
+     </test_step>
+    </test>
+    <test/>
+     <name>7
+     <description>Test nested transactions with restoration from transaction log.
+     <kill>test_ods.dat
+     <kill>test_ods.idx
+     <kill>test_ods.hdr
+     <kill>test_ods.tlg
+     <kill>test_ods.tlg.1
+     <kill>test_ods.tlg.2
+     <test_step/>
+      <name>a
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -x -tlg -test -reconstruct
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>f
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>g
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>h
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -x -tlg -test -reconstruct
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>i
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>j
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>k
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>l
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>m
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -x -tlg -test -reconstruct
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>n
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>o
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>p
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>q
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>r
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -x -tlg -test -reconstruct
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>s
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>t
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>u
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>v
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>w
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -x -tlg -test -reconstruct
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>x
+      <exec>ods_dump -dtt all test_ods
+      <input>false
       <output>generate
      </test_step>
     </test>
@@ -1380,7 +1534,7 @@
      </test_step>
      <test_step/>
       <name>d
-      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1392,7 +1546,7 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1404,7 +1558,7 @@
      </test_step>
      <test_step/>
       <name>h
-      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1434,7 +1588,7 @@
      </test_step>
      <test_step/>
       <name>m
-      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1452,7 +1606,7 @@
      </test_step>
      <test_step/>
       <name>p
-      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1498,7 +1652,7 @@
      </test_step>
      <test_step/>
       <name>d
-      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1510,7 +1664,7 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1522,7 +1676,7 @@
      </test_step>
      <test_step/>
       <name>h
-      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1552,7 +1706,7 @@
      </test_step>
      <test_step/>
       <name>m
-      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1570,7 +1724,7 @@
      </test_step>
      <test_step/>
       <name>p
-      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr ods_fsed.tlg.1
       <input>false
       <output>none
      </test_step>

@@ -550,6 +550,7 @@ struct transaction_level_info
 
    int64_t size;
    int64_t offset;
+
    int64_t op_count;
    int64_t op_offset;
 };
@@ -779,7 +780,7 @@ class ODS_DECL_SPEC ods
 
    int64_t append_log_entry_item(
     int64_t num, const ods_index_entry& index_entry, unsigned char flags,
-    int64_t old_tx_id = 0, int64_t log_entry_offs = 0, int64_t old_data_pos = 0, progress* p_progress = 0 );
+    bool is_in_tx = true, int64_t old_tx_id = 0, int64_t old_data_pos = 0, progress* p_progress = 0 );
 
    void rollback_dead_transactions( progress* p_progress = 0 );
    void restore_from_transaction_log( bool force_reconstruct = false, progress* p_progress = 0 );
@@ -819,7 +820,7 @@ class ODS_DECL_SPEC ods
    void read_index_entry( ods_index_entry& index_entry, int64_t num );
    void write_index_entry( const ods_index_entry& index_entry, int64_t num );
 
-   int64_t index_item_buffer_num;
+   void add_entry_to_freelist( int64_t num, int64_t tran_id );
 
    void read_transaction_op( transaction_op& op, int64_t num );
    void write_transaction_op( const transaction_op& op );
@@ -829,6 +830,8 @@ class ODS_DECL_SPEC ods
 
    void read_trans_data_bytes( char* p_dest, int64_t len );
    void write_trans_data_bytes( const char* p_src, int64_t len );
+
+   int64_t index_item_buffer_num;
 
    bool had_interim_trans_op_write;
    bool had_interim_trans_data_write;

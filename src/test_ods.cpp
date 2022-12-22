@@ -1086,6 +1086,8 @@ int main( int argc, char* argv[ ] )
 
       cmd_handler.init_ods( "test_ods" );
 
+      bool was_reconstructed = false;
+
       if( cmd_handler.get_ods( ).is_corrupt( ) || g_reconstruct_from_transaction_log )
       {
          if( g_shared_write )
@@ -1097,31 +1099,39 @@ int main( int argc, char* argv[ ] )
          }
 
          if( g_reconstruct_from_transaction_log )
+         {
             cmd_handler.get_ods( ).reconstruct_database( );
+            was_reconstructed = true;
+         }
          else
             cmd_handler.get_ods( ).repair_corrupt_database( );
       }
 
-      if( cmd_handler.get_ods( ).is_new( ) )
+      if( was_reconstructed )
+         cout << "ODS DB reconstruct completed." << endl;
+      else
       {
-         outline root( c_root_node_description );
+         if( cmd_handler.get_ods( ).is_new( ) )
+         {
+            outline root( c_root_node_description );
 
-         cmd_handler.get_ods( ) << root;
+            cmd_handler.get_ods( ) << root;
+         }
+
+         cmd_handler.get_node( ).set_id( 0 );
+
+         cmd_handler.get_ods( ) >> cmd_handler.get_node( );
+         cmd_handler.get_oid_stack( ).push( cmd_handler.get_node( ).get_id( ) );
+         cmd_handler.get_path_strings( ).push_back( cmd_handler.get_node( ).get_description( ) );
+
+         cmd_handler.set_prompt_prefix( "/" );
+
+         cmd_handler.add_commands( 0,
+          test_ods_command_functor_factory, ARRAY_PTR_AND_SIZE( test_ods_command_definitions ) );
+
+         console_command_processor processor( cmd_handler );
+         processor.process_commands( );
       }
-
-      cmd_handler.get_node( ).set_id( 0 );
-
-      cmd_handler.get_ods( ) >> cmd_handler.get_node( );
-      cmd_handler.get_oid_stack( ).push( cmd_handler.get_node( ).get_id( ) );
-      cmd_handler.get_path_strings( ).push_back( cmd_handler.get_node( ).get_description( ) );
-
-      cmd_handler.set_prompt_prefix( "/" );
-
-      cmd_handler.add_commands( 0,
-       test_ods_command_functor_factory, ARRAY_PTR_AND_SIZE( test_ods_command_definitions ) );
-
-      console_command_processor processor( cmd_handler );
-      processor.process_commands( );
 
       return 0;
    }

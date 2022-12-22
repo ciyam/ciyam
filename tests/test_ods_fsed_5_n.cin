@@ -1,4 +1,4 @@
 cd
 branch objects
-truncate
+truncate -reset
 exit
