@@ -7,7 +7,7 @@ Total Entries = 7
 Tranlog Offset = 1092
 Transaction Id = 5
 Index Free List = 1
-Total Size of Data = 138
+Total Size of Data = 80
 Data Transformation Id = 3
 Index Transformation Id = 23
 
@@ -197,7 +197,7 @@ commit_offs = 1494
 commit_items = 0
 next_entry_offs = 0
 prior_entry_offs = 653
-total_data_bytes = 138
+total_data_bytes = 80
 data_transform_id = 3
 index_transform_id = 12
 
