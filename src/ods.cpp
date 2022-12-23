@@ -5155,6 +5155,10 @@ void ods::transaction_commit( )
       int64_t commit_items = 0;
       int64_t append_offset = 0;
 
+      int64_t last_delete_pos = 0;
+      int64_t last_delete_size = 0;
+      int64_t prior_deleted_bytes = 0;
+
       date_time dtm( date_time::local( ) );
 
       if( p_impl->using_tranlog )
@@ -5187,9 +5191,39 @@ void ods::transaction_commit( )
                {
                   if( index_entry.trans_flag == ods_index_entry::e_trans_delete )
                   {
-                     if( index_entry.data.pos + index_entry.data.size
-                      == p_impl->rp_header_info->total_size_of_data )
-                        p_impl->rp_header_info->total_size_of_data -= index_entry.data.size;
+                     bool clear_last = false;
+
+                     int64_t pos_and_size = index_entry.data.pos + index_entry.data.size;
+
+                     if( last_delete_size )
+                     {
+                        if( ( last_delete_pos + last_delete_size ) != index_entry.data.pos )
+                        {
+                           clear_last = true;
+                           prior_deleted_bytes = 0;
+                        }
+                        else
+                           prior_deleted_bytes += last_delete_size;
+                     }
+
+                     if( pos_and_size == p_impl->rp_header_info->total_size_of_data )
+                     {
+                        clear_last = true;
+                        p_impl->rp_header_info->total_size_of_data -= ( index_entry.data.size + prior_deleted_bytes );
+                     }
+
+                     if( clear_last )
+                     {
+                        last_delete_pos = 0;
+                        last_delete_size = 0;
+
+                        prior_deleted_bytes = 0;
+                     }
+                     else
+                     {
+                        last_delete_pos = index_entry.data.pos;
+                        last_delete_size = index_entry.data.size;
+                     }
 
                      flags |= c_log_entry_item_op_destroy;
 
@@ -6083,6 +6117,10 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                size_t nested_level = 0;
                size_t ignore_start_nested = 0;
 
+               int64_t last_delete_pos = 0;
+               int64_t last_delete_size = 0;
+               int64_t prior_deleted_bytes = 0;
+
                map< size_t, size_t > num_at_height;
  
                map< int64_t, deque< int64_t > > rollback_freelist_entries;
@@ -6304,9 +6342,42 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                    && ( p_impl->rp_header_info->index_free_list == tranlog_item.index_entry_id + 1 ) )
                      p_impl->rp_header_info->index_free_list = tranlog_item.data_opos;
 
-                  if( commit && tranlog_item.is_destroy( ) && tranlog_item.is_post_op( )
-                   && ( p_impl->rp_header_info->total_size_of_data == ( index_entry.data.pos + index_entry.data.size ) ) )
-                     p_impl->rp_header_info->total_size_of_data -= index_entry.data.size;
+                  if( commit && tranlog_item.is_destroy( ) && tranlog_item.is_post_op( ) )
+                  {
+                     bool clear_last = false;
+
+                     int64_t pos_and_size = index_entry.data.pos + index_entry.data.size;
+
+                     if( last_delete_size )
+                     {
+                        if( ( last_delete_pos + last_delete_size ) != index_entry.data.pos )
+                        {
+                           clear_last = true;
+                           prior_deleted_bytes = 0;
+                        }
+                        else
+                           prior_deleted_bytes += last_delete_size;
+                     }
+
+                     if( pos_and_size == p_impl->rp_header_info->total_size_of_data )
+                     {
+                        clear_last = true;
+                        p_impl->rp_header_info->total_size_of_data -= ( index_entry.data.size + prior_deleted_bytes );
+                     }
+
+                     if( clear_last )
+                     {
+                        last_delete_pos = 0;
+                        last_delete_size = 0;
+
+                        prior_deleted_bytes = 0;
+                     }
+                     else
+                     {
+                        last_delete_pos = index_entry.data.pos;
+                        last_delete_size = index_entry.data.size;
+                     }
+                  }
 
                   if( add_to_free_list )
                   {
