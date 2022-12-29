@@ -4163,6 +4163,36 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
    }
 }
 
+void ods::compress_and_reset_tx_log( progress* p_progress )
+{
+   guard lock_write( write_lock );
+   guard lock_read( read_lock );
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
+
+   if( p_impl->trans_level )
+      THROW_ODS_ERROR( "cannot truncate log whilst in a transaction" );
+
+   if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
+      THROW_ODS_ERROR( "cannot truncate log unless locked for exclusive write" );
+
+   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+      THROW_ODS_ERROR( "cannot truncate log when bulk locked for dumping or reading" );
+
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !*p_impl->rp_bulk_level )
+      ap_bulk_write.reset( new ods::bulk_write( *this ) );
+
+   move_free_data_to_end( p_progress );
+
+   if( p_impl->using_tranlog )
+      truncate_log( "", true, p_progress );
+
+   clear_cache_statistics( );
+}
+
 void ods::clear_cache_statistics( )
 {
    guard lock_impl( *p_impl->rp_impl_lock );

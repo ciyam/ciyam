@@ -100,6 +100,8 @@ const int c_loop_variable_digits = 8;
 
 const int c_storable_file_pad_len = 32;
 
+const size_t c_num_txs_for_reset = 500000;
+
 const size_t c_identity_additional_multiplier = 10;
 const size_t c_minimum_encrypted_password_size = 10;
 
@@ -1446,21 +1448,30 @@ struct reconstruct_trace_progress : progress
     :
     name( name ),
     dtm( date_time::local( ) ),
-    also_to_cout( also_to_cout )
+    also_to_cout( also_to_cout ),
+    num_chars_to_cout( 0 )
    {
       if( !g_web_root.empty( ) && !g_default_storage.empty( ) )
          stop_file = g_web_root + '/' + lower( g_default_storage ) + "/ciyam_interface.stop";
 
+      if( !stop_file.empty( ) )
+         file_touch( stop_file, 0, true );
+
       // FUTURE: This message should be handled as a server string message.
       string message( "Starting restore for ODS DB '" + name + "'..." );
 
-      if( also_to_cout )
-         cout << message << endl;
-
       TRACE_LOG( TRACE_ANYTHING, message );
+   }
 
-      if( !stop_file.empty( ) )
-         file_touch( stop_file, 0, true );
+   void clear_num_cout_chars( )
+   {
+      if( num_chars_to_cout )
+      {
+         cout << string( num_chars_to_cout, '\b' );
+         cout << string( num_chars_to_cout, ' ' ) << '\r';
+
+         cout.flush( );
+      }
    }
 
    ~reconstruct_trace_progress( )
@@ -1468,10 +1479,9 @@ struct reconstruct_trace_progress : progress
       // FUTURE: This message should be handled as a server string message.
       string message( "Finished restore for ODS DB '" + name + "'..." );
 
-      if( also_to_cout )
-         cout << message << endl;
+      TRACE_LOG( TRACE_ANYTHING, message );
 
-     TRACE_LOG( TRACE_ANYTHING, message );
+      clear_num_cout_chars( );
 
       if( !stop_file.empty( ) )
          file_remove( stop_file );
@@ -1482,35 +1492,50 @@ struct reconstruct_trace_progress : progress
       date_time now( date_time::local( ) );
       uint64_t elapsed = seconds_between( dtm, now );
 
-      string final_message( message );
+      string extra;
+
+      if( num )
+      {
+         extra += to_string( num );
+
+         if( total )
+            extra += '/' + to_string( total );
+      }
+
+      if( also_to_cout )
+      {
+         if( message == "." )
+         {
+            cout << '.';
+            cout.flush( );
+
+            ++num_chars_to_cout;
+         }
+         else
+         {
+            clear_num_cout_chars( );
+
+            cout << message << extra;
+            cout.flush( );
+
+            num_chars_to_cout = ( message.length( ) + extra.length( ) );
+         }
+      }
 
       // NOTE: Avoid filling the log with a large number of progress messages.
       if( elapsed >= 10 )
       {
          dtm = now;
 
-         string extra;
+         string final_message( message );
 
-         if( num || total )
-         {
-            extra += to_string( num );
-
-            if( total )
-               extra += '/' + to_string( total );
-         }
-
-         if( also_to_cout )
-            cout << message << extra << endl;
-
-         if( final_message == "." )
-         {
-            extra.erase( );
-
+         if( final_message != "." )
+            final_message += extra;
+         else
             // FUTURE: This message should be handled as a server string message.
             final_message = "(restore for ODS DB '" + name + "' in progress)";
-         }
 
-         TRACE_LOG( TRACE_ANYTHING, message + extra );
+         TRACE_LOG( TRACE_ANYTHING, final_message );
       }
    }
 
@@ -1520,6 +1545,8 @@ struct reconstruct_trace_progress : progress
    string stop_file;
 
    bool also_to_cout;
+
+   size_t num_chars_to_cout;
 };
 
 void init_system_ods( )
@@ -1542,6 +1569,14 @@ void init_system_ods( )
    }
    else if( gap_ods->is_new( ) )
       was_just_created = true;
+
+   if( !was_just_created
+    && ( gap_ods->get_next_transaction_id( ) >= c_num_txs_for_reset ) )
+   {
+      reconstruct_trace_progress progress( ods_db_name, true );
+
+      gap_ods->compress_and_reset_tx_log( &progress );
+   }
 
    ods::bulk_write bulk_write( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
