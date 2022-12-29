@@ -653,6 +653,8 @@ class ODS_DECL_SPEC ods
 
    void truncate_log( const char* p_ext = 0, bool reset = false, progress* p_progress = 0 );
 
+   void compress_and_reset_tx_log( progress* p_progress = 0 );
+
    void clear_cache_statistics( );
 
    std::string get_cache_hit_ratios( ) const;
