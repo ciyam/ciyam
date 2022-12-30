@@ -22,16 +22,16 @@ IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 if [ ! -f ~shared ]; then
  touch ~shared
 
- IMPORT_FOR=`./system_variable get @importing_for_identity`.txt
+ SHARED_DETAILS=`./system_variable get @importing_for_identity`.txt
 
  if [ -d $SHARED_PATH ]; then
   if mountpoint -q $SHARED_PATH; then
    sudo umount $SHARED_PATH
    # NOTE: If unable to umount will exit (so can be called repeatedly until okay).
    if [ $? -ne 0 ]; then
-    date >$IMPORT_FOR
-    echo "NOTE: Shared files area is not currently available (please try again later)." >>$IMPORT_FOR
-    date >>$IMPORT_FOR
+    date >$SHARED_DETAILS
+    echo "NOTE: Shared files area is not currently available (please try again later)." >>$SHARED_DETAILS
+    date >>$SHARED_DETAILS
     rm ~shared
     exit
    fi
@@ -41,21 +41,21 @@ if [ ! -f ~shared ]; then
  ./system_variable set @export_needed ""
  ./system_variable set @import_needed ""
 
- date >$IMPORT_FOR
- echo "Starting import..." >>$IMPORT_FOR
+ date >$SHARED_DETAILS
+ echo "Starting import..." >>$SHARED_DETAILS
 
  if [ -f $SHARED_IMAGE ]; then
   export ENCRYPTED_PASSWORD=@shared_secret
   export USE_SHARED_ARCHIVE=1
 
-  ./import_files $USER_PATH Shared : $IMAGE_NAME >>$IMPORT_FOR
-  ./tree_insert_trunks ciyam Shared >>$IMPORT_FOR 2>&1
-  ./generate_next_block @blockchain_shared_ident >>$IMPORT_FOR 2>&1
-  ./block_tree_relegate @blockchain_shared_ident ciyam >>$IMPORT_FOR 2>&1
+  ./import_files $USER_PATH Shared : $IMAGE_NAME >>$SHARED_DETAILS
+  ./tree_insert_trunks ciyam Shared >>$SHARED_DETAILS 2>&1
+  ./generate_next_block @blockchain_shared_ident >>$SHARED_DETAILS 2>&1
+  ./block_tree_relegate @blockchain_shared_ident ciyam >>$SHARED_DETAILS 2>&1
  fi
 
- echo "Finished import..." >>$IMPORT_FOR
- date >>$IMPORT_FOR
+ echo "Finished import..." >>$SHARED_DETAILS
+ date >>$SHARED_DETAILS
 
  ./system_variable set @shared_secret ""
  ./system_variable set @importing_for_identity ""
