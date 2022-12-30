@@ -22,6 +22,7 @@ IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 if [ ! -f ~shared ]; then
  touch ~shared
 
+ IDENTITY=`./system_variable get @export_needed`
  EXPORT_FOR=`./system_variable get @exporting_for_identity`.txt
 
  if [ -d $SHARED_PATH ]; then
@@ -39,6 +40,8 @@ if [ ! -f ~shared ]; then
  fi
 
  ./system_variable set @export_needed ""
+ ./system_variable set @export_needed_$IDENTITY ""
+
  ./system_variable set @import_needed ""
 
  date >$EXPORT_FOR
@@ -48,8 +51,6 @@ if [ ! -f ~shared ]; then
 
  export SECONDS=2
  export ENCRYPTED_PASSWORD=@shared_secret
-
- IDENTITY=`./system_variable get @export_ident`
 
  export CIYAM_ARCHIVE_PATH=`./ciyam_command file_archives -path_only,$IDENTITY`
 
@@ -66,7 +67,6 @@ if [ ! -f ~shared ]; then
  echo "Finished export..." >>$EXPORT_FOR
  date >>$EXPORT_FOR
 
- ./system_variable set @export_ident ""
  ./system_variable set @shared_secret ""
  ./system_variable set @exporting_for_identity ""
 
