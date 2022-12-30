@@ -3021,7 +3021,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             reverse( reversed.begin( ), reversed.end( ) );
 
             set_system_variable( get_special_var_name(
-             e_special_var_export_needed ) + '_' + identity, reversed );
+             e_special_var_export_needed ) + '_' + reversed, identity );
          }
 
          clear_key( password );
