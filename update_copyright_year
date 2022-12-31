@@ -3,8 +3,6 @@
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-#
-# Task #T00004 - Update copyright dates to 2013
 
 # NOTE: Replace with an explicit year leave this empty to derive the year from 'date'.
 DATEYEAR=""
@@ -27,6 +25,10 @@ git ls-files | grep -Ev "\.gz$|\.jpg$|\.png$" | xargs -I{} sed -i "s/Copyright \
 git ls-files | grep -Ev "\.gz$|\.jpg$|\.png$" | xargs -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
 git ls-files | grep -Ev "\.gz$|\.jpg$|\.png$" | xargs -I{} sed -i "s/Copyright \([0-9]\{4\}\)-\([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
 git ls-files | grep -Ev "\.gz$|\.jpg$|\.png$" | xargs -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\)-\([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
+
+pushd src
+./update_package_copyright_year
+popd
 
 echo
 echo "NOTE: Also need to manually update 'footer.htms' files for generated applications as well as re-generate all HTML documentation files."
