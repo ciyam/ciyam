@@ -95,7 +95,8 @@ class mutex
 
    void acquire( const guard* p_guard, const char* p_msg )
    {
-      pre_acquire( p_guard, p_msg );
+      if( p_msg )
+         pre_acquire( p_guard, p_msg );
 
 #  ifndef _WIN32
       pthread_t self = ::pthread_self( );
@@ -114,7 +115,8 @@ class mutex
 
       lock_id = current_thread_id( );
 
-      post_acquire( p_guard, p_msg );
+      if( p_msg )
+         post_acquire( p_guard, p_msg );
    }
 
    void release( const guard* p_guard, const char* p_msg )
@@ -131,7 +133,8 @@ class mutex
       ::LeaveCriticalSection( &cs );
 #  endif
 
-      has_released( p_guard, p_msg );
+      if( p_msg )
+         has_released( p_guard, p_msg );
    }
 
    thread_id get_lock_id( ) const { return lock_id; }
@@ -159,22 +162,21 @@ class guard
    public:
    guard( mutex& m, const char* p_msg = 0 )
     :
-    m( m )
+    m( m ),
+    p_msg( p_msg )
    {
       m.acquire( this, p_msg );
-
-      if( p_msg )
-         msg = std::string( p_msg );
    }
 
    ~guard( )
    {
-      m.release( this, msg.c_str( ) );
+      m.release( this, p_msg );
    }
 
    private:
    mutex& m;
-   std::string msg;
+
+   const char* p_msg;
 };
 
 #  ifdef _WIN32
