@@ -254,7 +254,8 @@ typedef module_commands_registry_container::value_type module_commands_registry_
 
 class storage_handler;
 
-mutex g_mutex;
+trace_mutex g_mutex;
+
 mutex g_trace_mutex;
 
 string g_storage_name_lock;
@@ -1688,7 +1689,7 @@ enum storage_op
 void perform_storage_op( storage_op op,
  const string& name, const string& directory, command_handler& cmd_handler, bool lock_for_admin )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "perform_storage_op" );
 
    storage_handler* p_new_handler = 0;
 
@@ -1945,7 +1946,7 @@ void perform_storage_op( storage_op op,
 
 bool fetch_instance_from_cache( class_base& instance, const string& key, bool sys_only_fields = false )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "fetch_instance_from_cache" );
 
    bool found = false;
    class_base_accessor instance_accessor( instance );
@@ -2112,7 +2113,7 @@ bool fetch_instance_from_db( class_base& instance,
 
                if( allow_caching && !is_minimal_fetch )
                {
-                  guard g( g_mutex );
+                  guard g( g_mutex, "fetch_instance_from_db" );
 
                   storage_handler& handler( *gtp_session->p_storage_handler );
 
@@ -5764,7 +5765,7 @@ void generate_new_script_sio_files( )
 void init_session( command_handler& cmd_handler, bool is_peer_session,
  const string* p_ip_addr, const string* p_blockchain, int port, bool is_support_session )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "init_session" );
 
    gtp_session = 0;
    for( size_t i = 0; i < g_max_sessions; i++ )
@@ -5789,7 +5790,7 @@ void init_session( command_handler& cmd_handler, bool is_peer_session,
 
 void term_session( )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "term_session" );
 
    if( gtp_session )
    {
@@ -5969,7 +5970,7 @@ string get_random_same_port_peer_ip_addr( const string& empty_value )
 
 void list_sessions( ostream& os, bool inc_dtms, bool include_progress )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "list_sessions" );
 
    map< size_t, string > sessions;
 
@@ -6315,6 +6316,7 @@ void capture_all_other_sessions( )
 bool is_captured_session( )
 {
    guard g( g_mutex );
+
    return gtp_session && gtp_session->is_captured;
 }
 
@@ -6359,6 +6361,7 @@ void release_all_other_sessions( bool wait_until_term )
 bool session_skip_fk_fetches( )
 {
    guard g( g_mutex );
+
    return gtp_session && gtp_session->skip_fk_fetches;
 }
 
@@ -6373,6 +6376,7 @@ void session_skip_fk_fetches( bool skip_fk_fetches )
 bool session_skip_validation( )
 {
    guard g( g_mutex );
+
    return gtp_session && gtp_session->skip_validation;
 }
 
@@ -6387,6 +6391,7 @@ void session_skip_validation( bool skip_validation )
 bool session_skip_is_constained( )
 {
    guard g( g_mutex );
+
    return gtp_session && gtp_session->skip_is_constrained;
 }
 
@@ -6401,6 +6406,7 @@ void session_skip_is_constained( bool skip_is_constrained )
 bool get_script_reconfig( )
 {
    guard g( g_mutex );
+
    return g_script_reconfig;
 }
 
@@ -6457,66 +6463,77 @@ string get_sql_password( )
 int get_test_peer_port( )
 {
    guard g( g_mutex );
+
    return g_test_peer_port;
 }
 
 string get_encrypted_gpg_password( )
 {
    guard g( g_mutex );
+
    return g_gpg_password;
 }
 
 string get_encrypted_pem_password( )
 {
    guard g( g_mutex );
+
    return g_pem_password;
 }
 
 string get_encrypted_rpc_password( )
 {
    guard g( g_mutex );
+
    return g_rpc_password;
 }
 
 string get_encrypted_sql_password( )
 {
    guard g( g_mutex );
+
    return g_sql_password;
 }
 
 string get_encrypted_pop3_password( )
 {
    guard g( g_mutex );
+
    return g_pop3_password;
 }
 
 string get_encrypted_smtp_password( )
 {
    guard g( g_mutex );
+
    return g_smtp_password;
 }
 
 string get_default_storage( )
 {
    guard g( g_mutex );
+
    return g_default_storage;
 }
 
 void set_default_storage( const string& name )
 {
    guard g( g_mutex );
+
    g_default_storage = name;
 }
 
 unsigned int get_session_timeout( )
 {
    guard g( g_mutex );
+
    return g_session_timeout;
 }
 
 void set_session_timeout( unsigned int seconds )
 {
    guard g( g_mutex );
+
    g_session_timeout = seconds;
 }
 
@@ -7103,7 +7120,7 @@ string get_session_variable( const string& name_or_expr, const string* p_sess_id
 
 string get_session_variable( const string& name, size_t slot )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "get_session_variable" );
 
    string retval;
 
@@ -7119,7 +7136,7 @@ string get_session_variable( const string& name, size_t slot )
 void set_session_variable( const string& name, const string& value,
  bool* p_set_special_temporary, command_handler* p_command_handler, const string* p_sess_id )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "set_session_variable" );
 
    size_t sess_id = 0;
 
@@ -8146,7 +8163,7 @@ void upgrade_storage( command_handler& cmd_handler )
 
 void term_storage( command_handler& cmd_handler )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "term_storage" );
 
    if( ods::instance( ) )
    {
@@ -11643,7 +11660,7 @@ void transaction_commit( )
 
    // NOTE: Scope for guard object.
    {
-      guard g( g_mutex );
+      guard g( g_mutex, "transaction_commit" );
 
       gtp_session->transactions.top( )->commit( );
 
@@ -12183,7 +12200,7 @@ void begin_instance_op( instance_op op, class_base& instance,
          if( ( lock_info.handle && lock_info.type >= op_lock::e_lock_type_review && lock_info.p_session == gtp_session )
           || handler.obtain_lock( xlock_handle, lock_class_id, clone_key, op_lock::e_lock_type_review, gtp_session, &instance ) )
          {
-            guard g( g_mutex );
+            guard g( g_mutex, "begin_instance_op" );
 
             scoped_lock_holder xlock_holder( handler, xlock_handle );
 

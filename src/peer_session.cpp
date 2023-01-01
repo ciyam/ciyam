@@ -67,7 +67,7 @@ namespace
 
 #include "trace_progress.cpp"
 
-mutex g_mutex;
+trace_mutex g_mutex;
 
 const char c_blob_separator = '&';
 
@@ -163,12 +163,14 @@ inline void issue_warning( const string& message )
 void increment_active_listeners( )
 {
    guard g( g_mutex );
+
    ++g_active_listeners;
 }
 
 void decrement_active_listeners( )
 {
    guard g( g_mutex );
+
    --g_active_listeners;
 }
 
@@ -288,7 +290,7 @@ void check_shared_for_support_session( const string& blockchain )
 
 void process_core_file( const string& hash, const string& blockchain )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "process_core_file" );
 
    TRACE_LOG( TRACE_PEER_OPS, "(process_core_file) hash: " + hash );
 
@@ -379,7 +381,7 @@ void process_core_file( const string& hash, const string& blockchain )
 void process_repository_file( const string& blockchain,
  const string& hash_info, bool is_test_session, const string* p_file_data = 0 )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "process_repository_file" );
 
    TRACE_LOG( TRACE_PEER_OPS, "(process_repository_file) hash_info: " + hash_info );
 
@@ -778,7 +780,7 @@ void process_put_file( const string& blockchain,
 
                      if( !hash_info.empty( ) )
                      {
-                        guard g( g_mutex );
+                        guard g( g_mutex, "process_put_file" );
 
                         okay = true;
                         pos = hash_info.find( ':' );
@@ -1433,7 +1435,7 @@ void process_list_items( const string& identity,
 
 void process_signature_file( const string& blockchain, const string& hash, size_t height )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "process_signature_file" );
 
    TRACE_LOG( TRACE_PEER_OPS, "(process_signature_file) hash: " + hash + " height: " + to_string( height ) );
 
@@ -1480,7 +1482,7 @@ void process_signature_file( const string& blockchain, const string& hash, size_
 void process_public_key_file( const string& blockchain,
  const string& hash, size_t height, public_key_scale key_scale, size_t height_other = 0 )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "process_public_key_file" );
 
    string pubkey_tag( blockchain );
 
@@ -1818,7 +1820,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 
 bool get_block_height_from_tags( const string& blockchain, const string& hash, size_t& block_height )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "get_block_height_from_tags" );
 
    string all_tags( get_hash_tags( hash ) );
 
@@ -2225,7 +2227,8 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
             create_raw_file( file_data, true, 0, 0, 0, true, true );
          else
          {
-            guard g( g_mutex );
+            guard g( g_mutex, "get_file" );
+
             create_raw_file_in_archive( identity, hash, file_data );
          }
       }

@@ -485,11 +485,6 @@ void list_mutex_lock_ids_for_ciyam_core_files( ostream& outs )
    outs << "ciyam_core_files::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
 }
 
-trace_mutex& get_core_files_trace_mutex( )
-{
-   return g_mutex;
-}
-
 void verify_core_file( const string& content, bool check_sigs )
 {
    if( content.empty( ) )

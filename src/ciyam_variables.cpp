@@ -29,6 +29,8 @@
 
 using namespace std;
 
+extern size_t g_active_sessions;
+
 namespace
 {
 
@@ -199,7 +201,7 @@ const char* const c_special_variable_blockchain_signature_file_hash = "@blockcha
 const char* const c_special_variable_blockchain_tertiary_pubkey_hash = "@blockchain_tertiary_pubkey_hash";
 const char* const c_special_variable_blockchain_secondary_pubkey_hash = "@blockchain_secondary_pubkey_hash";
 
-mutex g_mutex;
+trace_mutex g_mutex;
 
 map< string, string > g_variables;
 map< string, deque< string > > g_deque_variables;
@@ -1065,7 +1067,7 @@ string get_system_variable( const string& name_or_expr )
 
 void set_system_variable( const string& name, const string& value, bool is_init, progress* p_progress )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "set_system_variable" );
 
    string val( value );
 
@@ -1132,6 +1134,9 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
       if( !is_init )
       {
+         if( g_active_sessions > 1 )
+            throw runtime_error( "cannot switch files area whilst has other active sessions (including autostarted)" );
+
          TRACE_LOG( TRACE_ANYTHING, "*** switched files area across to: " + val + " ***" );
 
          string from( get_files_area_dir( ) );
@@ -1148,6 +1153,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
    else if( var_name == string( c_special_variable_ods_cache_hit_ratios ) )
    {
       persist = false;
+
       system_ods_instance( ).clear_cache_statistics( );
    }
 
@@ -1168,7 +1174,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 bool set_system_variable( const string& name, const string& value,
  const string& current, progress* p_progress, const char append_separator )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "set_system_variable (current)" );
 
    bool retval = false;
 
