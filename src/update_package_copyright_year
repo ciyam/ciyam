@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2022 CIYAM Developers
+# Copyright (c) 2022-2023 CIYAM Developers
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -15,7 +15,7 @@ for f in *.package.bun.gz
 do
  echo "Processing $f..."
 
- ./unbundle -l -q $f | grep -Ev "\.jpg$|\.png$|\.info$|\.4WX.cin$|\.4WX.txt$|\.cpp.xrep$|\.abbrs.txt$|\.email.txt$|\.spec.xrep$|\.data.package.sio$" >~update_package_copyright_year
+ ./unbundle -l -q $f | grep -Ev "\.jpg$|\.png$|\.info$|\.4WX.cin$|\.4WX.txt$|\.cpp.xrep$|\.abbrs.txt$|\.email.txt$|\.spec.xrep$|_extkeys.txt$|_enum_icons.lst$|\.data.package.sio$" >~update_package_copyright_year
 
  cat ~update_package_copyright_year | xargs -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
  cat ~update_package_copyright_year | xargs -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\)-\([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
