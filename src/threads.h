@@ -8,7 +8,6 @@
 #  define THREADS_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
-#     include <string>
 #     include <iostream>
 #  endif
 
@@ -56,6 +55,7 @@ class thread_id
 inline std::ostream& operator <<( std::ostream& outf, const thread_id& t )
 {
    outf << t.tid;
+
    return outf;
 }
 
@@ -66,6 +66,7 @@ inline thread_id current_thread_id( )
 #  else
    thread_id tid( ::GetCurrentThreadId( ) );
 #  endif
+
    return tid;
 }
 
@@ -76,6 +77,8 @@ class mutex
    public:
 #  ifdef _WIN32
    mutex( )
+    :
+    p_info( 0 )
    {
       ::InitializeCriticalSection( &cs );
    }
@@ -87,7 +90,8 @@ class mutex
 #  else
    mutex( )
     :
-    tid( 0 )
+    tid( 0 ),
+    p_info( 0 )
    {
       ::pthread_mutex_init( &ptm, 0 );
    }
@@ -95,11 +99,15 @@ class mutex
 
    void acquire( const guard* p_guard, const char* p_msg )
    {
+      if( !p_info )
+         p_info = p_msg;
+
       if( p_msg )
          pre_acquire( p_guard, p_msg );
 
 #  ifndef _WIN32
       pthread_t self = ::pthread_self( );
+
       if( tid == self )
          ++count;
       else
@@ -126,6 +134,7 @@ class mutex
       {
          tid = 0;
          lock_id = 0;
+
          ::pthread_mutex_unlock( &ptm );
       }
 #  else
@@ -135,9 +144,14 @@ class mutex
 
       if( p_msg )
          has_released( p_guard, p_msg );
+
+      if( p_msg == p_info )
+         p_info = 0;
    }
 
    thread_id get_lock_id( ) const { return lock_id; }
+
+   const char* get_lock_info( ) const { return p_info; }
 
    private:
 #  ifdef _WIN32
@@ -149,6 +163,8 @@ class mutex
 #  endif
 
    thread_id lock_id;
+
+   const char* p_info;
 
    protected:
    virtual void pre_acquire( const guard* p_guard, const char* p_msg ) { }
@@ -231,4 +247,3 @@ inline unsigned long __stdcall threadfunc( void* pv )
 #  endif
 
 #endif
-

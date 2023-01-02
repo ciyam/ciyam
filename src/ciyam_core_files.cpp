@@ -480,9 +480,9 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
 }
 
-void list_mutex_lock_ids_for_ciyam_core_files( ostream& outs )
+mutex& get_mutex_for_ciyam_core_files( )
 {
-   outs << "ciyam_core_files::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
+   return g_mutex;
 }
 
 void verify_core_file( const string& content, bool check_sigs )

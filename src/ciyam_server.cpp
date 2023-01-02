@@ -234,6 +234,7 @@ const int c_active_start_delay = 250;
 
 const int c_max_wait_attempts = 20;
 
+const char* const c_server_cmd_file = "ciyam_server.cmd";
 const char* const c_update_signal_file = "ciyam_base.update";
 const char* const c_shutdown_signal_file = "ciyam_server.stop";
 
@@ -247,6 +248,7 @@ const char* const c_ciyam_base_lib = "ciyam_base.dll";
 const char* const c_trace_flags_func_name = "trace_flags";
 const char* const c_init_globals_func_name = "init_globals";
 const char* const c_term_globals_func_name = "term_globals";
+const char* const c_server_command_func_name = "server_command";
 const char* const c_set_server_port_func_name = "set_server_port";
 const char* const c_init_auto_script_func_name = "init_auto_script";
 const char* const c_init_udp_streams_func_name = "init_udp_streams";
@@ -263,6 +265,7 @@ const char* const c_unregister_listener_func_name = "unregister_listener";
 const char* const c_trace_flags_func_name = "_trace_flags";
 const char* const c_init_globals_func_name = "_init_globals";
 const char* const c_term_globals_func_name = "_term_globals";
+const char* const c_server_command_func_name = "_server_command";
 const char* const c_set_server_port_func_name = "_set_server_port";
 const char* const c_init_auto_script_func_name = "_init_auto_script";
 const char* const c_init_udp_streams_func_name = "_init_udp_streams";
@@ -557,6 +560,9 @@ int main( int argc, char* argv[ ] )
          fp_term_globals fp_term_globals_func;
          fp_term_globals_func = ( fp_term_globals )ap_dynamic_library->bind_to_function( c_term_globals_func_name );
 
+         fp_server_command fp_server_command_func;
+         fp_server_command_func = ( fp_server_command )ap_dynamic_library->bind_to_function( c_server_command_func_name );
+
          fp_set_server_port fp_set_server_port_func;
          fp_set_server_port_func = ( fp_set_server_port )ap_dynamic_library->bind_to_function( c_set_server_port_func_name );
 
@@ -765,6 +771,23 @@ int main( int argc, char* argv[ ] )
 #endif
                      if( *ap_socket && ( *fp_is_accepted_ip_addr_func )( address.get_addr_string( ).c_str( ) ) )
                         ( *fp_init_ciyam_session_func )( ap_socket.release( ), address.get_addr_string( ).c_str( ) );
+
+                     // NOTE: Support for being able to issue special commands using a file
+                     // (such as dumping mutexes) if connection via a socket is not working.
+                     if( file_exists( c_server_cmd_file ) )
+                     {
+                        string cmd( buffer_file( c_server_cmd_file ) );
+
+                        string::size_type pos = cmd.find( '\n' );
+
+                        if( pos != string::npos )
+                           cmd.erase( pos );
+
+                        if( !cmd.empty( ) )
+                           ( *fp_server_command_func )( cmd.c_str( ) );
+
+                        file_remove( c_server_cmd_file );
+                     }
                   }
                }
 

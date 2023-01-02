@@ -4294,6 +4294,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_session_wait )
       {
+         bool lock( has_parm_val( parameters, c_cmd_ciyam_session_session_wait_lock ) );
          string uid( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_uid ) );
          string milliseconds( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_milliseconds ) );
 
@@ -4308,6 +4309,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             msecs *= -1;
             use_dots = true;
          }
+
+         auto_ptr< guard > ap_guard;
+
+         if( lock )
+            ap_guard.reset( new guard( g_mutex, "wait" ) );
 
          if( msecs <= 2000 )
             msleep( msecs );
@@ -5433,14 +5439,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          ostringstream osstr;
 
-         list_mutex_lock_ids_for_ciyam_base( osstr );
-         list_mutex_lock_ids_for_ciyam_files( osstr );
-         list_mutex_lock_ids_for_peer_session( osstr );
-
-         osstr << "ciyam_session::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
-
-         list_mutex_lock_ids_for_ciyam_variables( osstr );
-         list_mutex_lock_ids_for_ciyam_core_files( osstr );
+         list_trace_mutex_lock_ids( osstr, &g_mutex, "ciyam_session::g_mutex = " );
 
          response = osstr.str( );
       }

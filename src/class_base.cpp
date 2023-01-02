@@ -158,7 +158,7 @@ timezone_container g_timezones;
 map< string, string > g_timezone_abbrs;
 map< string, string > g_daylight_names;
 
-mutex g_mutex;
+trace_mutex g_mutex;
 
 map< string, pair< int, map< string, string > > > g_class_maps;
 
@@ -4313,6 +4313,7 @@ void add_class_map( const string& class_id, const string& map_id, const string& 
       }
 
       g_class_maps.insert( make_pair( map_name, make_pair( 1, new_map ) ) );
+
       TRACE_LOG( TRACE_MODS_GEN, "[add_class_map] " + map_name + " " + file_name + ( !in_reverse ? "" : " (reverse)" ) );
    }
 }
@@ -4331,6 +4332,7 @@ void remove_class_map( const string& class_id, const string& map_id )
    guard g( g_mutex );
 
    string map_name( class_id + ":" + map_id );
+
    if( g_class_maps.count( map_name ) )
    {
       if( g_class_maps[ map_name ].first > 1 )
@@ -4338,6 +4340,7 @@ void remove_class_map( const string& class_id, const string& map_id )
       else
       {
          g_class_maps.erase( map_name );
+
          TRACE_LOG( TRACE_MODS_GEN, "[remove_class_map] " + map_name );
       }
    }
@@ -4348,10 +4351,12 @@ string get_class_map_value( const string& class_id, const string& map_id, const 
    guard g( g_mutex );
 
    string map_name( class_id + ":" + map_id );
+
    if( !g_class_maps.count( map_name ) )
       throw runtime_error( "class map '" + map_name + "' was not found" );
 
    string retval;
+
    if( g_class_maps[ map_name ].second.count( key ) )
       retval = g_class_maps[ map_name ].second[ key ];
 
@@ -5710,7 +5715,7 @@ void get_mnemonics_or_hex_seed( string& s, const string& mnemonics_or_hex_seed )
 
 void use_peerchain( const string& identity, bool no_delay )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "use_peerchain" );
 
    string identities( identity );
 
@@ -5727,7 +5732,7 @@ void use_peerchain( const string& identity, bool no_delay )
 
 void disuse_peerchain( const string& identity, bool no_delay )
 {
-   guard g( g_mutex );
+   guard g( g_mutex, "disuse_peerchain" );
 
    int port = 0;
 
@@ -7743,3 +7748,7 @@ string meta_procedure_arg_type( int primitive )
    return type;
 }
 
+mutex& get_mutex_for_class_base( )
+{
+   return g_mutex;
+}

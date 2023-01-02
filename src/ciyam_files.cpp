@@ -821,11 +821,6 @@ bool path_already_used_in_archive( const string& path )
 
 }
 
-void list_mutex_lock_ids_for_ciyam_files( ostream& outs )
-{
-   outs << "ciyam_files::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
-}
-
 size_t get_total_files( )
 {
    guard g( g_mutex );
@@ -859,6 +854,11 @@ string get_file_stats( )
    s += " tag(s)";
 
    return s;
+}
+
+mutex& get_mutex_for_ciyam_files( )
+{
+   return g_mutex;
 }
 
 void init_files_area( progress* p_progress, bool remove_invalid_tags )
