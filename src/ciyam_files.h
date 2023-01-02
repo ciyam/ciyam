@@ -27,12 +27,14 @@ struct progress;
 class date_time;
 class tcp_socket;
 
-void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_files( std::ostream& outs );
+class mutex;
 
 size_t CIYAM_BASE_DECL_SPEC get_total_files( );
 int64_t CIYAM_BASE_DECL_SPEC get_total_bytes( );
 
 std::string CIYAM_BASE_DECL_SPEC get_file_stats( );
+
+mutex& CIYAM_BASE_DECL_SPEC get_mutex_for_ciyam_files( );
 
 void CIYAM_BASE_DECL_SPEC init_files_area( progress* p_progress = 0, bool remove_invalid_tags = false );
 

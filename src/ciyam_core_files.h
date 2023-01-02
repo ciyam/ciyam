@@ -19,7 +19,9 @@
 #     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
-void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_core_files( std::ostream& outs );
+class mutex;
+
+mutex& CIYAM_BASE_DECL_SPEC get_mutex_for_ciyam_core_files( );
 
 void CIYAM_BASE_DECL_SPEC verify_core_file( const std::string& content, bool check_sigs = true );
 

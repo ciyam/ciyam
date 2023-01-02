@@ -45,20 +45,22 @@
 #include "utilities.h"
 #include "char_array.h"
 #include "class_base.h"
-#include "ciyam_files.h"
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"
 #  include "crypto_keys.h"
 #endif
+#include "ciyam_files.h"
 #include "fs_iterator.h"
 #include "oid_pointer.h"
 #include "crypt_stream.h"
+#include "peer_session.h"
 #include "ciyam_strings.h"
 #include "ciyam_session.h"
 #include "ciyam_variables.h"
 #include "command_handler.h"
 #include "dynamic_library.h"
 #include "ods_file_system.h"
+#include "ciyam_core_files.h"
 #include "module_interface.h"
 #include "module_management.h"
 #include "read_write_stream.h"
@@ -118,6 +120,8 @@ const char* const c_server_log_file = "ciyam_server.log";
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
+
+const char* const c_server_command_mutexes = "mutexes";
 
 const char* const c_section_mbox = "mbox";
 const char* const c_section_pop3 = "pop3";
@@ -4303,6 +4307,52 @@ void trace_mutex::has_released( const guard* p_guard, const char* p_msg )
     + to_string( this ) + ", guard = " + to_string( p_guard ) + extra );
 }
 
+void dump_mutex_info( ostream& os, mutex& m, const char* p_mutex_name )
+{
+   if( p_mutex_name )
+      os << p_mutex_name;
+
+   os << m.get_lock_id( );
+
+   const char* p_info = m.get_lock_info( );
+
+   if( p_info )
+      os << " (" << p_info << ")";
+
+   os << '\n';
+}
+
+void list_trace_mutex_lock_ids( ostream& os, mutex* p_mutex, const char* p_mutex_name )
+{
+   dump_mutex_info( os, g_mutex, "ciyam_base::g_mutex = " );
+
+   dump_mutex_info( os, get_mutex_for_class_base( ), "class_base::g_mutex = " );
+   dump_mutex_info( os, get_mutex_for_ciyam_files( ), "ciyam_files::g_mutex = " );
+   dump_mutex_info( os, get_mutex_for_peer_session( ), "peer_session::g_mutex = " );
+
+   // NOTE: This is expected to be for "ciyam_session" (to support interactive testing).
+   if( p_mutex )
+   {
+      if( p_mutex_name )
+         os << p_mutex_name;
+
+      os << p_mutex->get_lock_id( );
+
+      const char* p_info = p_mutex->get_lock_info( );
+
+      if( p_info )
+         os << " (" << p_info << ")";
+
+      os << '\n';
+   }
+
+   dump_mutex_info( os, get_mutex_for_ciyam_variables( ), "ciyam_variables::g_mutex = " );
+   dump_mutex_info( os, get_mutex_for_ciyam_core_files( ), "ciyam_core_files::g_mutex = " );
+
+   if( !p_mutex )
+      os.flush( );
+}
+
 int get_server_port( )
 {
    return g_server_port;
@@ -5144,6 +5194,23 @@ void set_files_area_dir( const char* p_files_area_dir )
       set_system_variable( get_special_var_name( e_special_var_files_area_dir ), g_files_area_dir, true );
 }
 
+void server_command( const char* p_cmd )
+{
+   string cmd;
+
+   if( p_cmd )
+      cmd = string( p_cmd );
+
+   if( cmd == c_server_command_mutexes )
+   {
+      cerr << "(mutexes)" << endl;
+
+      list_trace_mutex_lock_ids( cerr );
+   }
+   else
+      cerr << "available commands: " << c_server_command_mutexes << endl;
+}
+
 size_t get_files_area_item_max_num( )
 {
    return g_files_area_item_max_num;
@@ -5768,6 +5835,7 @@ void init_session( command_handler& cmd_handler, bool is_peer_session,
    guard g( g_mutex, "init_session" );
 
    gtp_session = 0;
+
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
       if( !g_sessions[ i ] )
@@ -5845,6 +5913,7 @@ void term_session( )
          if( gtp_session == g_sessions[ i ] )
          {
             set< size_t >::iterator j;
+
             for( j = gtp_session->release_sessions.begin( ); j != gtp_session->release_sessions.end( ); ++j )
                release_session( *j, false );
 
@@ -5854,6 +5923,7 @@ void term_session( )
             delete g_sessions[ i ];
             g_sessions[ i ] = 0;
             gtp_session = 0;
+
             break;
          }
       }
@@ -7866,11 +7936,6 @@ string get_udp_recv_file_chunk_info( size_t& chunk, bool chunk_specified, size_t
    }
 
    return retval;
-}
-
-void list_mutex_lock_ids_for_ciyam_base( ostream& outs )
-{
-   outs << "ciyam_base::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
 }
 
 bool has_crypt_key_for_blockchain_account( const string& blockchain, const string& account )

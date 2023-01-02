@@ -1253,7 +1253,7 @@ bool set_system_variable( const string& name,
    return true;
 }
 
-void list_mutex_lock_ids_for_ciyam_variables( ostream& outs )
+mutex& get_mutex_for_ciyam_variables( )
 {
-   outs << "ciyam_variables::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
+   return g_mutex;
 }

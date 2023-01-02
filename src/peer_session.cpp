@@ -4859,9 +4859,9 @@ void peer_listener::on_start( )
    delete this;
 }
 
-void list_mutex_lock_ids_for_peer_session( std::ostream& outs )
+mutex& get_mutex_for_peer_session( )
 {
-   outs << "peer_session::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
+   return g_mutex;
 }
 
 string prefixed_blockchains( const string& blockchains )

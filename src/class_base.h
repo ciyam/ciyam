@@ -1746,5 +1746,9 @@ std::string CIYAM_BASE_DECL_SPEC meta_field_extras( int uom,
 
 std::string CIYAM_BASE_DECL_SPEC meta_procedure_arg_type( int primitive );
 
+class mutex;
+
+mutex& CIYAM_BASE_DECL_SPEC get_mutex_for_class_base( );
+
 #endif
 

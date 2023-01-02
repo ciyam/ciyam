@@ -87,6 +87,9 @@ class CIYAM_BASE_DECL_SPEC trace_mutex : public mutex
    void has_released( const guard* p_guard, const char* p_msg );
 };
 
+void CIYAM_BASE_DECL_SPEC list_trace_mutex_lock_ids(
+ std::ostream& os, mutex* p_mutex = 0, const char* p_mutex_name = 0 );
+
 int CIYAM_BASE_DECL_SPEC get_server_port( );
 
 extern "C" void CIYAM_BASE_DECL_SPEC  set_server_port( int p );
@@ -216,6 +219,10 @@ inline void set_files_area_dir( const std::string& files_area_dir )
 {
    set_files_area_dir( files_area_dir.c_str( ) );
 }
+
+extern "C" void CIYAM_BASE_DECL_SPEC server_command( const char* p_cmd );
+
+typedef void ( *fp_server_command )( const char* );
 
 size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_num( );
 size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_size( );
@@ -521,8 +528,6 @@ size_t CIYAM_BASE_DECL_SPEC elapsed_since_last_recv( const date_time& dtm, const
 bool CIYAM_BASE_DECL_SPEC has_udp_recv_file_chunk_info( size_t* p_num_chunks = 0 );
 std::string CIYAM_BASE_DECL_SPEC get_udp_recv_file_chunk_info( size_t& chunk,
  bool chunk_specified = false, size_t* p_first_chunk = 0, size_t* p_num_chunks = 0 );
-
-void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_base( std::ostream& outs );
 
 bool CIYAM_BASE_DECL_SPEC has_crypt_key_for_blockchain_account( const std::string& blockchain, const std::string& account );
 std::string CIYAM_BASE_DECL_SPEC get_crypt_key_for_blockchain_account( const std::string& blockchain, const std::string& account );

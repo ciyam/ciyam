@@ -92,7 +92,9 @@ struct temporary_system_variable
    std::string original_value;
 };
 
-void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_variables( std::ostream& outs );
+class mutex;
+
+mutex& CIYAM_BASE_DECL_SPEC get_mutex_for_ciyam_variables( );
 
 #endif
 
