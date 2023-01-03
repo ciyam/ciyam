@@ -3713,7 +3713,7 @@ bool store_file( const string& hash,
             if( !is_existing && !is_in_blacklist )
             {
                string repository( get_system_variable(
-                get_special_var_name( e_special_var_blockchain_backup_ident ) ) );
+                get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
                string crypt_password;
 
@@ -3729,7 +3729,7 @@ bool store_file( const string& hash,
                }
 
                string shared_identity( get_system_variable(
-                get_special_var_name( e_special_var_blockchain_shared_ident ) ) );
+                get_special_var_name( e_special_var_blockchain_shared_identity ) ) );
 
                if( crypt_password.empty( ) && !shared_identity.empty( ) )
                {

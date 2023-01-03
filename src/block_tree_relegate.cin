@@ -10,13 +10,13 @@
 IDENT=$1
 TREE_TAG=$2
 ;
-@ifeq "$1" "@blockchain_backup_ident"
-.system_variable @blockchain_backup_ident
+@ifeq "$1" "@blockchain_backup_identity"
+.system_variable @blockchain_backup_identity
 IDENT=$OUTPUT
 @endif
 ;
-@ifeq "$1" "@blockchain_shared_ident"
-.system_variable @blockchain_shared_ident
+@ifeq "$1" "@blockchain_shared_identity"
+.system_variable @blockchain_shared_identity
 IDENT=$OUTPUT
 @endif
 ;

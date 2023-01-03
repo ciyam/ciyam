@@ -131,7 +131,6 @@ const char* const c_special_variable_skip_update = "@skip_update";
 const char* const c_special_variable_state_names = "@state_names";
 const char* const c_special_variable_transaction = "@transaction";
 const char* const c_special_variable_block_height = "@block_height";
-const char* const c_special_variable_export_ident = "@export_ident";
 const char* const c_special_variable_app_directory = "@app_directory";
 const char* const c_special_variable_export_needed = "@export_needed";
 const char* const c_special_variable_import_needed = "@import_needed";
@@ -174,9 +173,7 @@ const char* const c_special_variable_blockchain_is_checking = "@blockchain_is_ch
 const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
 const char* const c_special_variable_single_string_response = "@single_string_response";
 const char* const c_special_variable_blockchain_archive_path = "@blockchain_archive_path";
-const char* const c_special_variable_blockchain_backup_ident = "@blockchain_backup_ident";
 const char* const c_special_variable_blockchain_first_mapped = "@blockchain_first_mapped";
-const char* const c_special_variable_blockchain_shared_ident = "@blockchain_shared_ident";
 const char* const c_special_variable_blockchain_backup_height = "@blockchain_backup_height";
 const char* const c_special_variable_blockchain_shared_height = "@blockchain_shared_height";
 const char* const c_special_variable_blockchain_zenith_height = "@blockchain_zenith_height";
@@ -189,6 +186,7 @@ const char* const c_special_variable_blockchain_tree_root_hash = "@blockchain_tr
 const char* const c_special_variable_blockchain_backup_identity = "@blockchain_backup_identity";
 const char* const c_special_variable_blockchain_block_file_hash = "@blockchain_block_file_hash";
 const char* const c_special_variable_blockchain_both_are_owners = "@blockchain_both_are_owners";
+const char* const c_special_variable_blockchain_shared_identity = "@blockchain_shared_identity";
 const char* const c_special_variable_blockchain_block_processing = "@blockchain_block_processing";
 const char* const c_special_variable_blockchain_zenith_tree_hash = "@blockchain_zenith_tree_hash";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
@@ -570,10 +568,6 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_block_height );
       break;
 
-      case e_special_var_export_ident:
-      s = string( c_special_variable_export_ident );
-      break;
-
       case e_special_var_app_directory:
       s = string( c_special_variable_app_directory );
       break;
@@ -734,16 +728,8 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_blockchain_archive_path );
       break;
 
-      case e_special_var_blockchain_backup_ident:
-      s = string( c_special_variable_blockchain_backup_ident );
-      break;
-
       case e_special_var_blockchain_first_mapped:
       s = string( c_special_variable_blockchain_first_mapped );
-      break;
-
-      case e_special_var_blockchain_shared_ident:
-      s = string( c_special_variable_blockchain_shared_ident );
       break;
 
       case e_special_var_blockchain_backup_height:
@@ -792,6 +778,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_both_are_owners:
       s = string( c_special_variable_blockchain_both_are_owners );
+      break;
+
+      case e_special_var_blockchain_shared_identity:
+      s = string( c_special_variable_blockchain_shared_identity );
       break;
 
       case e_special_var_blockchain_block_processing:
@@ -1067,7 +1057,7 @@ string get_system_variable( const string& name_or_expr )
 
 void set_system_variable( const string& name, const string& value, bool is_init, progress* p_progress )
 {
-   guard g( g_mutex, "set_system_variable" );
+   guard g( g_mutex );
 
    string val( value );
 
@@ -1135,7 +1125,11 @@ void set_system_variable( const string& name, const string& value, bool is_init,
       if( !is_init )
       {
          if( g_active_sessions > 1 )
-            throw runtime_error( "cannot switch files area whilst has other active sessions (including autostarted)" );
+            throw runtime_error( "invalid switch files area whilst has other active sessions (including autostarted)" );
+
+         // NOTE: Although already thread locked adds a mutex name here
+         // just in case a deadlock could arise during the resync calls.
+         guard g( g_mutex, "set_system_variable" );
 
          TRACE_LOG( TRACE_ANYTHING, "*** switched files area across to: " + val + " ***" );
 
@@ -1174,7 +1168,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 bool set_system_variable( const string& name, const string& value,
  const string& current, progress* p_progress, const char append_separator )
 {
-   guard g( g_mutex, "set_system_variable (current)" );
+   guard g( g_mutex );
 
    bool retval = false;
 
@@ -1213,10 +1207,7 @@ bool set_system_variable( const string& name, const string& value,
    }
 
    if( name == string( c_special_variable_files_area_dir ) )
-   {
-      set_files_area_dir( value );
-      resync_files_area( 0, p_progress );
-   }
+      throw runtime_error( "invalid attempt to change the files area dir" );
 
    return retval;
 }

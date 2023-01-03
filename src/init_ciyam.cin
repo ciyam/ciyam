@@ -3,7 +3,7 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-.system_variable @blockchain_backup_ident
+.system_variable @blockchain_backup_identity
 ;
 @ifeq "$OUTPUT" ""
 <<bc_gen.cin @sid

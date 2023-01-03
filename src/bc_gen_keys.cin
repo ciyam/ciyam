@@ -28,7 +28,7 @@ HEIGHT=$3
 NEXT_HEIGHT=@$HEIGHT+1
 ;
 SHARED=
-.system_variable @blockchain_shared_ident
+.system_variable @blockchain_shared_identity
 @ifdef $OUTPUT
 @ifeq "$IDENT" "$OUTPUT"
 SHARED=1

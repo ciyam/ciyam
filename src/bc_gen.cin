@@ -110,7 +110,7 @@ REVERSE=*!reverse?$IDENT
 IDENT=@substr:0,10:$IDENTITY_HASH
 @endif
 @else
-.system_variable @blockchain_backup_ident
+.system_variable @blockchain_backup_identity
 @ifndef $OUTPUT
 ERROR=No backup blockchain identity was found.
 #Error: $ERROR
@@ -160,13 +160,13 @@ BLOCK_HASH=$OUTPUT
 @ifndef "$OUTPUT"
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
 @ifndef $SHARED
-.system_variable >@blockchain_backup_ident $IDENT
 .system_variable >@blockchain_backup_height 0
 .system_variable >@blockchain_backup_initial $BLOCK_HASH
+.system_variable >@blockchain_backup_identity $IDENT
 @else
-.system_variable >@blockchain_shared_ident $IDENT
 .system_variable >@blockchain_shared_height 0
 .system_variable >@blockchain_shared_initial $BLOCK_HASH
+.system_variable >@blockchain_shared_identity $IDENT
 @endif
 ;
 .system_variable @files_area_dir
