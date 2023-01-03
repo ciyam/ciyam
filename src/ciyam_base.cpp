@@ -4908,7 +4908,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          }
 #endif
 
-         if( get_system_variable( get_special_var_name( e_special_var_blockchain_backup_ident ) ).empty( ) )
+         if( get_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
             run_init_script = true;
       }
    }

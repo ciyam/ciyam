@@ -29,7 +29,7 @@ IS_DEMO=1
 @endif
 ;
 SHARED=
-.system_variable @blockchain_shared_ident
+.system_variable @blockchain_shared_identity
 @ifdef $OUTPUT
 @ifeq "$IDENT" "$OUTPUT"
 SHARED=1
@@ -219,12 +219,12 @@ BLOCK_HASH=$OUTPUT
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
 .file_tag -unlink bc.$IDENT.$LAST.key
 ;
-.system_variable @blockchain_backup_ident
+.system_variable @blockchain_backup_identity
 @ifeq "$OUTPUT" "$IDENT"
 .system_variable >@blockchain_backup_height $HEIGHT
 @endif
 ;
-.system_variable @blockchain_shared_ident
+.system_variable @blockchain_shared_identity
 @ifeq "$OUTPUT" "$IDENT"
 .system_variable >@blockchain_shared_height $HEIGHT
 @endif

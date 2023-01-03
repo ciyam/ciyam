@@ -50,8 +50,8 @@ if [ ! -f ~shared ]; then
 
   ./import_files $USER_PATH Shared : $IMAGE_NAME >>$SHARED_DETAILS
   ./tree_insert_trunks ciyam Shared >>$SHARED_DETAILS 2>&1
-  ./generate_next_block @blockchain_shared_ident >>$SHARED_DETAILS 2>&1
-  ./block_tree_relegate @blockchain_shared_ident ciyam >>$SHARED_DETAILS 2>&1
+  ./generate_next_block @blockchain_shared_identity >>$SHARED_DETAILS 2>&1
+  ./block_tree_relegate @blockchain_shared_identity ciyam >>$SHARED_DETAILS 2>&1
  fi
 
  echo "Finished import..." >>$SHARED_DETAILS

@@ -204,10 +204,10 @@ void output_synchronised_progress_message(
  const string& identity, size_t blockchain_height, size_t blockchain_height_other = 0 )
 {
    string backup_identity( get_system_variable(
-    get_special_var_name( e_special_var_blockchain_backup_ident ) ) );
+    get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
    string shared_identity( get_system_variable(
-    get_special_var_name( e_special_var_blockchain_shared_ident ) ) );
+    get_special_var_name( e_special_var_blockchain_shared_identity ) ) );
 
    string progress_message;
 
@@ -4975,7 +4975,7 @@ peer_session* create_peer_initiator( const string& blockchain,
    }
 
    string own_identity( get_system_variable( get_special_var_name(
-    !is_for_shared ? e_special_var_blockchain_backup_ident : e_special_var_blockchain_shared_ident ) ) );
+    !is_for_shared ? e_special_var_blockchain_backup_identity : e_special_var_blockchain_shared_identity ) ) );
 
    bool has_separate_identity = false;
 

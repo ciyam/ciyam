@@ -31,6 +31,7 @@ enum primitive
 };
 
 const uint64_t c_state_normal = 0;
+
 const uint64_t c_state_uneditable = UINT64_C( 0x01 );
 const uint64_t c_state_undeletable = UINT64_C( 0x02 );
 const uint64_t c_state_is_changing = UINT64_C( 0x04 );
@@ -140,7 +141,6 @@ enum special_var
    e_special_var_state_names,
    e_special_var_transaction,
    e_special_var_block_height,
-   e_special_var_export_ident,
    e_special_var_app_directory,
    e_special_var_export_needed,
    e_special_var_import_needed,
@@ -181,9 +181,7 @@ enum special_var
    e_special_var_blockchain_is_fetching,
    e_special_var_single_string_response,
    e_special_var_blockchain_archive_path,
-   e_special_var_blockchain_backup_ident,
    e_special_var_blockchain_first_mapped,
-   e_special_var_blockchain_shared_ident,
    e_special_var_blockchain_backup_height,
    e_special_var_blockchain_shared_height,
    e_special_var_blockchain_zenith_height,
@@ -196,6 +194,7 @@ enum special_var
    e_special_var_blockchain_backup_identity,
    e_special_var_blockchain_block_file_hash,
    e_special_var_blockchain_both_are_owners,
+   e_special_var_blockchain_shared_identity,
    e_special_var_blockchain_block_processing,
    e_special_var_blockchain_zenith_tree_hash,
    e_special_var_total_child_field_in_parent,

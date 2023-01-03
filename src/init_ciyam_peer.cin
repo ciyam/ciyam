@@ -10,13 +10,13 @@ PEER_PORT=$OUTPUT
 #Error: Found empty '@peer_port' system variable value.
 @else
 ;
-.system_variable @blockchain_backup_ident
+.system_variable @blockchain_backup_identity
 BACKUP=$OUTPUT
 @ifeq "$BACKUP" ""
-#Error: Found empty '@blockchain_backup_ident' system variable value.
+#Error: Found empty '@blockchain_backup_identity' system variable value.
 @else
 ;
-.system_variable @blockchain_shared_ident
+.system_variable @blockchain_shared_identity
 SHARED=$OUTPUT
 ;
 .peer_listen $PEER_PORT $BACKUP,$SHARED
