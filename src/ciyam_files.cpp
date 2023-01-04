@@ -1125,7 +1125,7 @@ void resync_archive_info( progress* p_progress )
 
 string current_time_stamp_tag( bool truncated, size_t days_ahead )
 {
-   guard g( g_mutex, "current_time_stamp_tag" );
+   guard g( g_mutex );
 
    string retval( c_time_stamp_tag_prefix );
 
@@ -1154,7 +1154,7 @@ string current_time_stamp_tag( bool truncated, size_t days_ahead )
 
 bool has_tag( const string& name, file_type type )
 {
-   guard g( g_mutex, "has_tag" );
+   guard g( g_mutex );
 
    if( name.empty( ) )
       return false;
@@ -1191,7 +1191,7 @@ bool has_tag( const string& name, file_type type )
 
 bool has_file( const string& hash, bool check_is_hash, bool* p_is_in_archive )
 {
-   guard g( g_mutex, "has_file" );
+   guard g( g_mutex );
 
    bool retval = false;
 
@@ -1228,7 +1228,7 @@ bool is_list_file( unsigned char ch )
 
 bool is_list_file( const string& hash, bool* p_is_encrypted )
 {
-   guard g( g_mutex, "is_list_file" );
+   guard g( g_mutex );
 
    multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
 
@@ -1252,7 +1252,7 @@ bool is_list_file( const string& hash, bool* p_is_encrypted )
 
 bool is_encrypted_file( const string& hash, bool* p_is_list )
 {
-   guard g( g_mutex, "is_encrypted_file" );
+   guard g( g_mutex );
 
    multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
 
@@ -1275,7 +1275,7 @@ bool is_encrypted_file( const string& hash, bool* p_is_list )
 
 int64_t file_bytes( const string& hash, bool blobs_for_lists )
 {
-   guard g( g_mutex, "file_bytes" );
+   guard g( g_mutex );
 
    string archive_path( get_session_variable(
     get_special_var_name( e_special_var_blockchain_archive_path ) ) );
@@ -2529,7 +2529,7 @@ string create_list_tree( const string& add_tags, const string& del_items,
 
 void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
 {
-   guard g( g_mutex, "tag_del" );
+   guard g( g_mutex );
 
    string::size_type pos = name.find_first_of( "*?" );
 
@@ -2588,7 +2588,7 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
 
 void tag_file( const string& name, const string& hash, bool skip_tag_del, bool is_external )
 {
-   guard g( g_mutex, "tag_file" );
+   guard g( g_mutex );
 
    if( is_external && name.find( c_time_stamp_tag_prefix ) == 0 )
       throw runtime_error( "invalid file time-stamp prefixed tag name '" + name + "'" );
@@ -2726,7 +2726,7 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
 void touch_file( const string& hash,
  const string& archive, bool set_archive_path, bool* p_has_updated_archive )
 {
-   guard g( g_mutex, "touch_file" );
+   guard g( g_mutex );
 
    string old_archive_path;
 
@@ -2777,7 +2777,7 @@ void touch_file( const string& hash,
 
 string get_hash( const string& prefix )
 {
-   guard g( g_mutex, "get_hash" );
+   guard g( g_mutex );
 
    string retval;
 
@@ -2815,7 +2815,7 @@ string get_hash( const string& prefix )
 
 string get_hash_tags( const string& hash )
 {
-   guard g( g_mutex, "get_hash_tags" );
+   guard g( g_mutex );
 
    string retval;
    set< string > tags_found;
@@ -2843,7 +2843,7 @@ string get_hash_tags( const string& hash )
 
 string tag_file_hash( const string& name, bool* p_rc )
 {
-   guard g( g_mutex, "tag_file_hash" );
+   guard g( g_mutex );
 
    string retval;
 
@@ -2892,7 +2892,7 @@ string tag_file_hash( const string& name, bool* p_rc )
 string extract_tags_from_lists( const string& tag_or_hash,
  const string& prefix, int depth, int level, progress* p_progress, date_time* p_dtm, size_t* p_total )
 {
-   guard g( g_mutex, "extract_tags_from_lists" );
+   guard g( g_mutex );
 
    string retval;
 
@@ -3003,7 +3003,7 @@ string list_file_tags(
  int64_t max_bytes, int64_t* p_min_bytes, deque< string >* p_hashes,
  bool include_multiples, progress* p_progress, date_time* p_dtm )
 {
-   guard g( g_mutex, "list_file_tags" );
+   guard g( g_mutex );
 
    string retval;
 
@@ -3707,7 +3707,7 @@ bool store_file( const string& hash,
 
                if( g_total_files >= get_files_area_item_max_num( ) )
                   // FUTURE: This message should be handled as a server string message.
-                  throw runtime_error( "Maximum file area item limit has been reached." );
+                  throw runtime_error( "Maximum files area item limit has been reached." );
             }
 
             if( !is_existing && !is_in_blacklist )
@@ -3907,7 +3907,7 @@ bool store_file( const string& hash,
 
 void delete_file( const string& hash, bool even_if_tagged, bool ignore_not_found )
 {
-   guard g( g_mutex, "delete_file" );
+   guard g( g_mutex );
 
    string tags( get_hash_tags( hash ) );
    string file_name( construct_file_name_from_hash( hash ) );
@@ -3962,7 +3962,7 @@ void delete_file_tree( const string& hash, progress* p_progress )
 
 void delete_files_for_tags( const string& pat, progress* p_progress )
 {
-   guard g( g_mutex, "delete_files_for_tags" );
+   guard g( g_mutex );
 
    date_time dtm( date_time::local( ) );
 
@@ -4006,7 +4006,7 @@ void delete_files_for_tags( const string& pat, progress* p_progress )
 
 void copy_raw_file( const string& hash, const string& dest_file_name )
 {
-   guard g( g_mutex, "copy_raw_file" );
+   guard g( g_mutex );
 
    string file_name( construct_file_name_from_hash( hash ) );
 
@@ -4055,7 +4055,7 @@ string extract_file( const string& hash,
  const string& dest_file_name, unsigned char check_file_type_and_extra,
  bool* p_is_list, unsigned char* p_type_and_extra, bool* p_is_encrypted, bool set_is_encrypted )
 {
-   guard g( g_mutex, "extract_file" );
+   guard g( g_mutex );
 
    string archive_path( get_session_variable(
     get_special_var_name( e_special_var_blockchain_archive_path ) ) );
@@ -4145,7 +4145,7 @@ system_ods_fs_guard::~system_ods_fs_guard( )
 
 void add_file_archive( const string& name, const string& path, int64_t size_limit )
 {
-   guard g( g_mutex, "add_file_archive" );
+   guard g( g_mutex );
 
    if( size_limit < 0 )
       throw runtime_error( "unexpected negative size_limit provided to add_file_archive" );
@@ -4197,7 +4197,7 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
 
 void clear_file_archive( const string& name )
 {
-   guard g( g_mutex, "clear_file_archive" );
+   guard g( g_mutex );
 
    system_ods_bulk_write ods_bulk_write;
 
@@ -4252,7 +4252,7 @@ void clear_file_archive( const string& name )
 
 void remove_file_archive( const string& name, bool destroy_files )
 {
-   guard g( g_mutex, "remove_file_archive" );
+   guard g( g_mutex );
 
    system_ods_bulk_write ods_bulk_write;
 
@@ -4434,7 +4434,7 @@ void archives_status_update( const string& name )
 
 bool file_has_been_blacklisted( const string& hash )
 {
-   guard g( g_mutex, "file_has_been_blacklisted" );
+   guard g( g_mutex );
 
    bool retval = false;
 
@@ -4452,7 +4452,7 @@ bool file_has_been_blacklisted( const string& hash )
 
 bool has_file_archive( const string& archive, string* p_path )
 {
-   guard g( g_mutex, "has_file_archive" );
+   guard g( g_mutex );
 
    bool retval = false;
 
@@ -4490,7 +4490,7 @@ bool has_file_archive( const string& archive, string* p_path )
 string list_file_archives( archive_list_type list_type,
  vector< string >* p_paths, int64_t min_avail, bool stop_after_first, const string* p_name )
 {
-   guard g( g_mutex, "list_file_archives" );
+   guard g( g_mutex );
 
    string retval;
    vector< string > names;
@@ -4831,7 +4831,7 @@ string relegate_one_or_num_oldest_files( const string& hash,
 
 bool has_file_been_archived( const string& hash, string* p_archive_name, bool in_specific_archive_only )
 {
-   guard g( g_mutex, "has_file_been_archived" );
+   guard g( g_mutex );
 
    bool retval = false;
 
@@ -4867,7 +4867,7 @@ bool has_file_been_archived( const string& hash, string* p_archive_name, bool in
 
 string retrieve_file_from_archive( const string& hash, const string& tag, size_t days_ahead )
 {
-   guard g( g_mutex, "retrieve_file_from_archive" );
+   guard g( g_mutex );
 
    string retval;
 
@@ -4929,7 +4929,7 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
 
 bool touch_file_in_archive( const string& hash, const string& archive )
 {
-   guard g( g_mutex, "touch_file_in_archive" );
+   guard g( g_mutex );
 
    bool retval = false;
 
@@ -5089,7 +5089,7 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
 
 bool has_repository_entry_record( const string& repository, const string& hash )
 {
-   guard g( g_mutex, "has_repository_entry_record" );
+   guard g( g_mutex );
 
    system_ods_bulk_read ods_bulk_read;
 
@@ -5105,7 +5105,7 @@ bool has_repository_entry_record( const string& repository, const string& hash )
 bool fetch_repository_entry_record(
  const string& repository, const string& hash, string& local_hash, bool must_exist )
 {
-   guard g( g_mutex, "fetch_repository_entry_record" );
+   guard g( g_mutex );
 
    system_ods_bulk_read ods_bulk_read;
 
@@ -5153,7 +5153,7 @@ bool fetch_repository_entry_record(
 bool fetch_repository_entry_record( const string& repository, const string& hash,
  string& local_hash, string& local_public_key, string& master_public_key, bool must_exist )
 {
-   guard g( g_mutex, "fetch_repository_entry_record" );
+   guard g( g_mutex );
 
    system_ods_bulk_read ods_bulk_read;
 
@@ -5195,7 +5195,7 @@ bool fetch_repository_entry_record( const string& repository, const string& hash
 void store_repository_entry_record( const string& repository, const string& hash,
  const string& local_hash, const string& local_public_key, const string& master_public_key )
 {
-   guard g( g_mutex, "store_repository_entry_record" );
+   guard g( g_mutex );
 
    system_ods_bulk_write ods_bulk_write;
 
@@ -5233,7 +5233,7 @@ void store_repository_entry_record( const string& repository, const string& hash
 
 bool destroy_repository_entry_record( const string& repository, const string& hash, bool must_exist )
 {
-   guard g( g_mutex, "destroy_repository_entry_record" );
+   guard g( g_mutex );
 
    system_ods_bulk_write ods_bulk_write;
 
