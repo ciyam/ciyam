@@ -122,6 +122,7 @@ const char* const c_server_config_file = "ciyam_server.sio";
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
 const char* const c_server_command_mutexes = "mutexes";
+const char* const c_server_command_sessions = "sessions";
 
 const char* const c_section_mbox = "mbox";
 const char* const c_section_pop3 = "pop3";
@@ -261,6 +262,7 @@ class storage_handler;
 trace_mutex g_mutex;
 
 mutex g_trace_mutex;
+mutex g_session_mutex;
 
 string g_storage_name_lock;
 
@@ -4349,6 +4351,8 @@ void list_trace_mutex_lock_ids( ostream& os, mutex* p_mutex, const char* p_mutex
    dump_mutex_info( os, get_mutex_for_ciyam_variables( ), "ciyam_variables::g_mutex = " );
    dump_mutex_info( os, get_mutex_for_ciyam_core_files( ), "ciyam_core_files::g_mutex = " );
 
+   dump_mutex_info( os, g_mutex, "ciyam_base::g_session_mutex = " );
+
    if( !p_mutex )
       os.flush( );
 }
@@ -5194,23 +5198,6 @@ void set_files_area_dir( const char* p_files_area_dir )
       set_system_variable( get_special_var_name( e_special_var_files_area_dir ), g_files_area_dir, true );
 }
 
-void server_command( const char* p_cmd )
-{
-   string cmd;
-
-   if( p_cmd )
-      cmd = string( p_cmd );
-
-   if( cmd == c_server_command_mutexes )
-   {
-      cerr << "(mutexes)" << endl;
-
-      list_trace_mutex_lock_ids( cerr );
-   }
-   else
-      cerr << "available commands: " << c_server_command_mutexes << endl;
-}
-
 size_t get_files_area_item_max_num( )
 {
    return g_files_area_item_max_num;
@@ -5832,7 +5819,7 @@ void generate_new_script_sio_files( )
 void init_session( command_handler& cmd_handler, bool is_peer_session,
  const string* p_ip_addr, const string* p_blockchain, int port, bool is_support_session )
 {
-   guard g( g_mutex, "init_session" );
+   guard g( g_session_mutex, "init_session" );
 
    gtp_session = 0;
 
@@ -5858,7 +5845,7 @@ void init_session( command_handler& cmd_handler, bool is_peer_session,
 
 void term_session( )
 {
-   guard g( g_mutex, "term_session" );
+   guard g( g_session_mutex, "term_session" );
 
    if( gtp_session )
    {
@@ -5945,8 +5932,6 @@ size_t session_id( )
 
 string session_ip_addr( )
 {
-   guard g( g_mutex );
-
    string retval;
 
    if( gtp_session )
@@ -5957,7 +5942,7 @@ string session_ip_addr( )
 
 string session_ip_addr( size_t slot )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    string retval;
 
@@ -5972,7 +5957,7 @@ string session_ip_addr( size_t slot )
 
 bool has_session_with_ip_addr( const string& ip_addr, const string& blockchain )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    // NOTE: Need to ignore suffix if was included.
    string::size_type pos = blockchain.find( '_' );
@@ -5990,7 +5975,7 @@ bool has_session_with_ip_addr( const string& ip_addr, const string& blockchain )
 
 session* get_session_pointer( size_t sess_id )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    session* p_session = 0;
 
@@ -6008,7 +5993,7 @@ session* get_session_pointer( size_t sess_id )
 
 string get_random_same_port_peer_ip_addr( const string& empty_value )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    string retval( empty_value );
    vector< string > peer_ip_addresses;
@@ -6038,10 +6023,8 @@ string get_random_same_port_peer_ip_addr( const string& empty_value )
    return retval;
 }
 
-void list_sessions( ostream& os, bool inc_dtms, bool include_progress )
+void list_all_sessions( ostream& os, bool inc_dtms, bool include_progress )
 {
-   guard g( g_mutex, "list_sessions" );
-
    map< size_t, string > sessions;
 
    for( size_t i = 0; i < g_max_sessions; i++ )
@@ -6055,7 +6038,7 @@ void list_sessions( ostream& os, bool inc_dtms, bool include_progress )
          if( gtp_session && gtp_session->id == g_sessions[ i ]->id )
             ss << '*';
          else if( g_condemned_sessions.count( g_sessions[ i ]->id )
-          || gtp_session->condemned_sessions.count( g_sessions[ i ]->id ) )
+          || ( gtp_session && gtp_session->condemned_sessions.count( g_sessions[ i ]->id ) ) )
             ss << '~';
 
          if( inc_dtms )
@@ -6123,6 +6106,13 @@ void list_sessions( ostream& os, bool inc_dtms, bool include_progress )
       os << i->second << '\n';
 }
 
+void list_sessions( ostream& os, bool inc_dtms, bool include_progress )
+{
+   guard g( g_session_mutex, "list_sessions" );
+
+   list_all_sessions( os, inc_dtms, include_progress );
+}
+
 command_handler& get_session_command_handler( )
 {
    if( !gtp_session )
@@ -6131,13 +6121,34 @@ command_handler& get_session_command_handler( )
    return gtp_session->cmd_handler;
 }
 
+void server_command( const char* p_cmd )
+{
+   string cmd;
+
+   if( p_cmd )
+      cmd = string( p_cmd );
+
+   if( cmd == c_server_command_mutexes )
+   {
+      cerr << "[mutexes]" << endl;
+
+      list_trace_mutex_lock_ids( cerr );
+   }
+   else if( cmd == c_server_command_sessions )
+   {
+      cerr << "[sessions]" << endl;
+
+      list_all_sessions( cerr, true, true );
+   }
+   else
+      cerr << "available commands: " << c_server_command_mutexes << " and " << c_server_command_sessions << endl;
+}
+
 session_file_buffer_access::session_file_buffer_access( )
  :
  size( 0 ),
  p_buffer( 0 )
 {
-   guard g( g_mutex );
-
    if( !gtp_session || gtp_session->buffer_is_locked )
       throw runtime_error( "unable to access session buffer" );
 
@@ -6156,15 +6167,11 @@ session_file_buffer_access::session_file_buffer_access( )
 
 session_file_buffer_access::~session_file_buffer_access( )
 {
-   guard g( g_mutex );
-
    gtp_session->buffer_is_locked = false;
 }
 
 void session_file_buffer_access::copy_to_string( string& str, size_t offset, size_t length ) const
 {
-   guard g( g_mutex );
-
    if( length )
    {
       str.resize( length );
@@ -6179,8 +6186,6 @@ void session_file_buffer_access::copy_to_string( string& str, size_t offset, siz
 
 void session_file_buffer_access::copy_from_string( const string& str, size_t offset )
 {
-   guard g( g_mutex );
-
    unsigned int bufsize = get_files_area_item_max_size( ) * c_max_file_buffer_expansion;
 
    if( str.size( ) + offset > bufsize )
@@ -6192,8 +6197,6 @@ void session_file_buffer_access::copy_from_string( const string& str, size_t off
 
 void increment_peer_files_uploaded( int64_t bytes )
 {
-   guard g( g_mutex );
-
    if( gtp_session )
    {
       ++gtp_session->peer_files_uploaded;
@@ -6203,8 +6206,6 @@ void increment_peer_files_uploaded( int64_t bytes )
 
 void increment_peer_files_downloaded( int64_t bytes )
 {
-   guard g( g_mutex );
-
    if( gtp_session )
    {
       ++gtp_session->peer_files_downloaded;
@@ -6214,15 +6215,13 @@ void increment_peer_files_downloaded( int64_t bytes )
 
 void increment_session_commands_executed( )
 {
-   guard g( g_mutex );
-
    if( gtp_session )
       ++gtp_session->session_commands_executed;
 }
 
 void set_slowest_if_applicable( )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( gtp_session )
    {
@@ -6242,7 +6241,7 @@ void set_slowest_if_applicable( )
 
 void set_session_progress_output( const string& progress_output )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( gtp_session )
       gtp_session->progress_output = progress_output;
@@ -6250,7 +6249,7 @@ void set_session_progress_output( const string& progress_output )
 
 void set_last_session_cmd( const string& cmd )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( gtp_session )
    {
@@ -6261,7 +6260,7 @@ void set_last_session_cmd( const string& cmd )
 
 void condemn_session( size_t sess_id, int num_seconds, bool force_uncapture, bool wait_until_term )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    // NOTE: This function is not designed to be used to self terminate (use condemn_this_session).
    if( gtp_session && sess_id == gtp_session->id )
@@ -6286,7 +6285,7 @@ void condemn_session( size_t sess_id, int num_seconds, bool force_uncapture, boo
 
 void condemn_this_session( )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( gtp_session )
       g_condemned_sessions.insert( make_pair( gtp_session->id, date_time::local( ) ) );
@@ -6294,7 +6293,7 @@ void condemn_this_session( )
 
 void condemn_matching_sessions( int num_seconds, bool wait_until_term )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( gtp_session )
    {
@@ -6321,7 +6320,7 @@ void condemn_matching_sessions( int num_seconds, bool wait_until_term )
 
 void condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wait_until_term )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    size_t sess_id = 0;
    if( gtp_session )
@@ -6346,7 +6345,7 @@ void condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wai
 
 bool is_condemned_session( )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    return gtp_session
     && ( ( g_condemned_sessions.count( gtp_session->id )
@@ -6356,7 +6355,7 @@ bool is_condemned_session( )
 
 void capture_session( size_t sess_id )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -6370,9 +6369,10 @@ void capture_session( size_t sess_id )
 
 void capture_all_other_sessions( )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    size_t sess_id = 0;
+
    if( gtp_session )
       sess_id = gtp_session->id;
 
@@ -6385,14 +6385,12 @@ void capture_all_other_sessions( )
 
 bool is_captured_session( )
 {
-   guard g( g_mutex );
-
    return gtp_session && gtp_session->is_captured;
 }
 
 void release_session( size_t sess_id, bool wait_until_term )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -6410,9 +6408,10 @@ void release_session( size_t sess_id, bool wait_until_term )
 
 void release_all_other_sessions( bool wait_until_term )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    size_t sess_id = 0;
+
    if( gtp_session )
       sess_id = gtp_session->id;
 
@@ -6430,45 +6429,33 @@ void release_all_other_sessions( bool wait_until_term )
 
 bool session_skip_fk_fetches( )
 {
-   guard g( g_mutex );
-
    return gtp_session && gtp_session->skip_fk_fetches;
 }
 
 void session_skip_fk_fetches( bool skip_fk_fetches )
 {
-   guard g( g_mutex );
-
    if( gtp_session )
       gtp_session->skip_fk_fetches = skip_fk_fetches;
 }
 
 bool session_skip_validation( )
 {
-   guard g( g_mutex );
-
    return gtp_session && gtp_session->skip_validation;
 }
 
 void session_skip_validation( bool skip_validation )
 {
-   guard g( g_mutex );
-
    if( gtp_session )
       gtp_session->skip_validation = skip_validation;
 }
 
 bool session_skip_is_constained( )
 {
-   guard g( g_mutex );
-
    return gtp_session && gtp_session->skip_is_constrained;
 }
 
 void session_skip_is_constained( bool skip_is_constrained )
 {
-   guard g( g_mutex );
-
    if( gtp_session )
       gtp_session->skip_is_constrained = skip_is_constrained;
 }
@@ -6482,8 +6469,6 @@ bool get_script_reconfig( )
 
 string get_gpg_password( )
 {
-   guard g( g_mutex );
-
    if( g_gpg_password.length( ) < c_minimum_encrypted_password_size )
       return g_gpg_password;
    else
@@ -6492,8 +6477,6 @@ string get_gpg_password( )
 
 string get_pem_password( )
 {
-   guard g( g_mutex );
-
    if( g_pem_password.length( ) < c_minimum_encrypted_password_size )
       return g_pem_password;
    else
@@ -6502,8 +6485,6 @@ string get_pem_password( )
 
 string get_rpc_password( )
 {
-   guard g( g_mutex );
-
    if( g_rpc_password.length( ) < c_minimum_encrypted_password_size )
       return g_rpc_password;
    else
@@ -6512,8 +6493,6 @@ string get_rpc_password( )
 
 string get_sql_password( )
 {
-   guard g( g_mutex );
-
    string pwd;
 
    if( gtp_session
@@ -6532,50 +6511,36 @@ string get_sql_password( )
 
 int get_test_peer_port( )
 {
-   guard g( g_mutex );
-
    return g_test_peer_port;
 }
 
 string get_encrypted_gpg_password( )
 {
-   guard g( g_mutex );
-
    return g_gpg_password;
 }
 
 string get_encrypted_pem_password( )
 {
-   guard g( g_mutex );
-
    return g_pem_password;
 }
 
 string get_encrypted_rpc_password( )
 {
-   guard g( g_mutex );
-
    return g_rpc_password;
 }
 
 string get_encrypted_sql_password( )
 {
-   guard g( g_mutex );
-
    return g_sql_password;
 }
 
 string get_encrypted_pop3_password( )
 {
-   guard g( g_mutex );
-
    return g_pop3_password;
 }
 
 string get_encrypted_smtp_password( )
 {
-   guard g( g_mutex );
-
    return g_smtp_password;
 }
 
@@ -6609,8 +6574,6 @@ void set_session_timeout( unsigned int seconds )
 
 string get_session_blockchain( )
 {
-   guard g( g_mutex );
-
    return gtp_session->blockchain;
 }
 
@@ -6621,7 +6584,7 @@ bool get_session_is_using_blockchain( )
 
 unsigned int get_num_sessions_for_blockchain( const string& blockchain )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    unsigned int num_sessions = 0;
 
@@ -6640,7 +6603,7 @@ unsigned int get_num_sessions_for_blockchain( const string& blockchain )
 void add_peer_file_hash_for_get( const string& hash,
  bool check_for_supporters, bool add_at_front, const string* p_hash_to_remove )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( !gtp_session )
       throw runtime_error( "invalid call to add_peer_file_hash_for_get from non-session" );
@@ -6695,7 +6658,7 @@ void add_peer_file_hash_for_get( const string& hash,
 
 string top_next_peer_file_hash_to_get( bool take_from_supporter, bool* p_any_supporter_has )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    string hash;
 
@@ -6760,7 +6723,7 @@ string top_next_peer_file_hash_to_get( bool take_from_supporter, bool* p_any_sup
 
 void pop_next_peer_file_hash_to_get( )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( !gtp_session )
       throw runtime_error( "invalid call to pop_next_peer_file_hash_to_get from non-session" );
@@ -6771,7 +6734,7 @@ void pop_next_peer_file_hash_to_get( )
 
 void add_peer_file_hash_for_put( const string& hash, bool check_for_supporters )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( !gtp_session )
       throw runtime_error( "invalid call to add_peer_file_hash_for_put from non-session" );
@@ -6825,7 +6788,7 @@ void add_peer_file_hash_for_put_for_all_peers( const string& hash,
 
 string top_next_peer_file_hash_to_put( bool take_from_supporter, bool* p_any_supporter_has )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    string hash;
 
@@ -6884,7 +6847,7 @@ string top_next_peer_file_hash_to_put( bool take_from_supporter, bool* p_any_sup
 
 void pop_next_peer_file_hash_to_put( )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( !gtp_session )
       throw runtime_error( "invalid call to pop_next_peer_file_hash_to_put from non-session" );
@@ -6896,7 +6859,7 @@ void pop_next_peer_file_hash_to_put( )
 bool any_peer_still_has_file_hash_to_put(
  const string& hash, const string* p_blockchain )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -6971,6 +6934,8 @@ void clear_all_peer_mapped_hashes( const string& identity )
 
 void set_default_session_variables( int port )
 {
+   guard g( g_session_mutex );
+
    if( port )
       set_session_variable( get_special_var_name( e_special_var_port ), to_string( port ) );
 
@@ -6988,7 +6953,7 @@ string get_raw_session_variable( const string& name, size_t sess_id )
 
    if( sess_id )
    {
-      ap_guard.reset( new guard( g_mutex ) );
+      ap_guard.reset( new guard( g_session_mutex, "get_raw_session_variable" ) );
       ap_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
    }
 
@@ -7190,7 +7155,7 @@ string get_session_variable( const string& name_or_expr, const string* p_sess_id
 
 string get_session_variable( const string& name, size_t slot )
 {
-   guard g( g_mutex, "get_session_variable" );
+   guard g( g_session_mutex, "get_session_variable" );
 
    string retval;
 
@@ -7206,23 +7171,26 @@ string get_session_variable( const string& name, size_t slot )
 void set_session_variable( const string& name, const string& value,
  bool* p_set_special_temporary, command_handler* p_command_handler, const string* p_sess_id )
 {
-   guard g( g_mutex, "set_session_variable" );
-
    size_t sess_id = 0;
 
    if( p_sess_id )
       sess_id = from_string< size_t >( *p_sess_id );
 
+   auto_ptr< guard > ap_guard;
    auto_ptr< restorable< session* > > ap_temp_session;
 
    if( sess_id )
+   {
+      ap_guard.reset( new guard( g_session_mutex, "set_session_variable" ) );
       ap_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
+   }
 
    if( gtp_session )
    {
       string val( value );
 
       string old_val;
+
       if( gtp_session->variables.count( name ) )
          old_val = gtp_session->variables[ name ];
 
@@ -7676,7 +7644,7 @@ void set_session_variable( const string& name, const string& value,
 
 bool set_session_variable( const string& name, const string& value, const string& current )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    bool retval = false;
 
@@ -7707,7 +7675,7 @@ bool set_session_variable( const string& name, const string& value, const string
 
 bool has_session_variable( const string& name )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    bool retval = false;
 
@@ -7721,7 +7689,7 @@ bool has_session_variable( const string& name )
 
 bool has_any_session_variable( const string& name )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -7736,7 +7704,7 @@ bool has_any_session_variable( const string& name )
 
 bool has_any_session_variable( const string& name, const string& value )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -7751,7 +7719,7 @@ bool has_any_session_variable( const string& name, const string& value )
 
 size_t num_have_session_variable( const string& name )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    size_t total = 0;
 
@@ -7769,7 +7737,7 @@ size_t num_have_session_variable( const string& name )
 size_t num_have_session_variable( const string& name,
  const string& value, vector< string >* p_identities )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    size_t total = 0;
 
@@ -7791,7 +7759,7 @@ size_t num_have_session_variable( const string& name,
 
 bool is_first_using_session_variable( const string& name )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -7805,7 +7773,7 @@ bool is_first_using_session_variable( const string& name )
 
 bool is_first_using_session_variable( const string& name, const string& value )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -7820,7 +7788,7 @@ bool is_first_using_session_variable( const string& name, const string& value )
 
 void copy_session_variables( map< string, string >& variables )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( gtp_session )
       variables = gtp_session->variables;
@@ -7828,7 +7796,7 @@ void copy_session_variables( map< string, string >& variables )
 
 void restore_session_variables( const map< string, string >& variables )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( gtp_session )
       gtp_session->variables = variables;
@@ -7836,7 +7804,7 @@ void restore_session_variables( const map< string, string >& variables )
 
 void add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const string& info_and_data )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( slot < g_max_sessions )
    {
@@ -7850,7 +7818,7 @@ void add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const string& info
 
 void add_udp_send_file_chunk_info( size_t slot, size_t chunk, const string& info_and_data )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( slot < g_max_sessions )
    {
@@ -7861,7 +7829,7 @@ void add_udp_send_file_chunk_info( size_t slot, size_t chunk, const string& info
 
 void clear_udp_recv_file_chunks( )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    if( gtp_session )
       gtp_session->udp_recv_file_chunks.clear( );
@@ -7869,7 +7837,7 @@ void clear_udp_recv_file_chunks( )
 
 size_t elapsed_since_last_recv( const date_time& dtm, const date_time* p_dtm )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    size_t retval = 0;
 
@@ -7895,7 +7863,7 @@ size_t elapsed_since_last_recv( const date_time& dtm, const date_time* p_dtm )
 
 bool has_udp_recv_file_chunk_info( size_t* p_num_chunks )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    bool retval = false;
 
@@ -7912,7 +7880,7 @@ bool has_udp_recv_file_chunk_info( size_t* p_num_chunks )
 
 string get_udp_recv_file_chunk_info( size_t& chunk, bool chunk_specified, size_t* p_first_chunk, size_t* p_num_chunks )
 {
-   guard g( g_mutex );
+   guard g( g_session_mutex );
 
    string retval;
 
