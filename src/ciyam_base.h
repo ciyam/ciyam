@@ -220,10 +220,6 @@ inline void set_files_area_dir( const std::string& files_area_dir )
    set_files_area_dir( files_area_dir.c_str( ) );
 }
 
-extern "C" void CIYAM_BASE_DECL_SPEC server_command( const char* p_cmd );
-
-typedef void ( *fp_server_command )( const char* );
-
 size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_num( );
 size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_size( );
 
@@ -331,6 +327,10 @@ std::string CIYAM_BASE_DECL_SPEC get_random_same_port_peer_ip_addr( const std::s
 void CIYAM_BASE_DECL_SPEC list_sessions( std::ostream& os, bool inc_dtms = true, bool include_progress = true );
 
 command_handler CIYAM_BASE_DECL_SPEC& get_session_command_handler( );
+
+extern "C" void CIYAM_BASE_DECL_SPEC server_command( const char* p_cmd );
+
+typedef void ( *fp_server_command )( const char* );
 
 class CIYAM_BASE_DECL_SPEC session_file_buffer_access
 {
