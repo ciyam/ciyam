@@ -586,8 +586,10 @@ template< typename T > inline T from_string( const std::string& s )
 {
    std::istringstream iss( s );
 
-   T t;
+   T t = T( );
+
    iss >> t;
+
    return t;
 }
 
@@ -613,8 +615,10 @@ template< typename T > inline void from_string_impl( T& t, const std::string& s 
 #     endif
 template< typename T > inline T from_string( const std::string& s )
 {
-   T t;
+   T t = T( );
+
    from_string_impl( t, s );
+
    return t;
 }
 #     ifdef NEW_BORLAND_VERSION
