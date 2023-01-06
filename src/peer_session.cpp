@@ -2521,7 +2521,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    bool no_top_hash = ( next_hash_to_get.empty( ) && next_hash_to_put.empty( ) );
 
-   if( no_top_hash && want_to_do_op( e_op_chk ) )
+   if( no_top_hash && !any_supporter_has && want_to_do_op( e_op_chk ) )
    {
       bool was_not_found = false;
       bool has_issued_chk = false;

@@ -1913,7 +1913,7 @@ void file_list_item_pos(
                {
                   if( total_type == e_file_total_type_blobs_only )
                      ++total;
-                  else if( is_encrypted )
+                  else if( is_encrypted && ( total_type != e_file_total_type_repository_entries ) )
                      ++total;
                }
             }
