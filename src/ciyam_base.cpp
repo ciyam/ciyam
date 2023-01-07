@@ -2374,6 +2374,7 @@ void remove_tx_info_from_cache( )
       if( handler.get_record_cache( ).count( *i ) )
       {
          time_info_iterator tii = handler.get_key_for_time( ).lower_bound( handler.get_time_for_key( ).find( *i )->second );
+
          while( tii->second != *i )
             ++tii;
 
@@ -11686,6 +11687,8 @@ void transaction_commit( )
 {
    if( gtp_session->transactions.empty( ) )
       throw runtime_error( "no active transaction exists" );
+
+   system_ods_bulk_write ods_bulk_write;
 
    storage_handler& handler( *gtp_session->p_storage_handler );
 
