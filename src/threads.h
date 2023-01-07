@@ -99,11 +99,11 @@ class mutex
 
    void acquire( const guard* p_guard, const char* p_msg )
    {
-      if( !p_info )
-         p_info = p_msg;
-
       if( p_msg )
+      {
+         p_info = p_msg;
          pre_acquire( p_guard, p_msg );
+      }
 
 #  ifndef _WIN32
       pthread_t self = ::pthread_self( );
@@ -127,7 +127,7 @@ class mutex
          post_acquire( p_guard, p_msg );
    }
 
-   void release( const guard* p_guard, const char* p_msg )
+   void release( const guard* p_guard, const char* p_msg, const char* p_old_info )
    {
 #  ifndef _WIN32
       if( !--count )
@@ -145,8 +145,7 @@ class mutex
       if( p_msg )
          has_released( p_guard, p_msg );
 
-      if( p_msg == p_info )
-         p_info = 0;
+      p_info = p_old_info;
    }
 
    thread_id get_lock_id( ) const { return lock_id; }
@@ -181,18 +180,21 @@ class guard
     m( m ),
     p_msg( p_msg )
    {
+      p_old_info = m.get_lock_info( );
+
       m.acquire( this, p_msg );
    }
 
    ~guard( )
    {
-      m.release( this, p_msg );
+      m.release( this, p_msg, p_old_info );
    }
 
    private:
    mutex& m;
 
    const char* p_msg;
+   const char* p_old_info;
 };
 
 #  ifdef _WIN32
