@@ -4685,6 +4685,7 @@ void create_raw_file_in_archive( const string& archive,
       if( has_changed )
       {
          auto_ptr< ods::transaction > ap_ods_tx;
+
          if( !system_ods_instance( ).is_in_transaction( ) )
             ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
 
@@ -5003,6 +5004,7 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
    string all_archives( list_file_archives( e_archive_list_type_minimal, &paths ) );
 
    auto_ptr< ods::transaction > ap_ods_tx;
+
    if( !system_ods_instance( ).is_in_transaction( ) )
       ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
 
