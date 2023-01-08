@@ -262,6 +262,7 @@ class storage_handler;
 trace_mutex g_mutex;
 
 mutex g_trace_mutex;
+mutex g_mapping_mutex;
 mutex g_session_mutex;
 
 string g_storage_name_lock;
@@ -311,6 +312,7 @@ struct session
     cmd_handler( cmd_handler ),
     skip_is_constrained( false ),
     session_commands_executed( 0 ),
+    append_to_log_blob_files( false ),
     is_peer_session( is_peer_session ),
     p_storage_handler( p_storage_handler ),
     is_support_session( is_support_session )
@@ -399,6 +401,8 @@ struct session
    int64_t peer_bytes_downloaded;
 
    size_t session_commands_executed;
+
+   bool append_to_log_blob_files;
 
    module_container modules_by_id;
    module_container modules_by_name;
@@ -3552,11 +3556,6 @@ void append_transaction_log_command( storage_handler& handler,
       if( !file_exists( log_filename ) )
          is_new = true;
 
-      bool append_to_log_blob_files = false;
-
-      if( has_files_area_tag( c_ciyam_logs_tag, e_file_type_list ) )
-         append_to_log_blob_files = true;
-
       string extra_info_name( get_special_var_name( e_special_var_extra_field_values ) );
       string extra_field_values( get_session_variable( extra_info_name ) );
 
@@ -3592,7 +3591,7 @@ void append_transaction_log_command( storage_handler& handler,
       {
          log_file << c_storage_identity_tx_id << handler.get_root( ).identity << '\n';
 
-         if( append_to_log_blob_files )
+         if( gtp_session->append_to_log_blob_files )
             tx_log_lines.push_back( c_storage_identity_tx_id + handler.get_root( ).identity + "\n" );
       }
 
@@ -3645,7 +3644,7 @@ void append_transaction_log_command( storage_handler& handler,
 
          log_file << next_line;
 
-         if( append_to_log_blob_files )
+         if( gtp_session->append_to_log_blob_files )
             tx_log_lines.push_back( next_line );
       }
 
@@ -3654,7 +3653,7 @@ void append_transaction_log_command( storage_handler& handler,
       if( !get_session_variable( get_special_var_name( e_special_var_package_install_extra ) ).empty( ) )
          is_restoring = true;
 
-      if( append_to_log_blob_files )
+      if( gtp_session->append_to_log_blob_files )
          append_transaction_log_lines_to_blob_files( handler.get_name( ) + ".log", tx_log_lines, is_restoring );
 
       log_file.flush( );
@@ -4350,6 +4349,7 @@ void list_trace_mutex_lock_ids( ostream& os, mutex* p_mutex, const char* p_mutex
    dump_mutex_info( os, get_mutex_for_ciyam_variables( ), "ciyam_variables::g_mutex = " );
    dump_mutex_info( os, get_mutex_for_ciyam_core_files( ), "ciyam_core_files::g_mutex = " );
 
+   dump_mutex_info( os, g_mutex, "ciyam_base::g_mapping_mutex = " );
    dump_mutex_info( os, g_mutex, "ciyam_base::g_session_mutex = " );
 
    if( !p_mutex )
@@ -5818,21 +5818,24 @@ void generate_new_script_sio_files( )
 void init_session( command_handler& cmd_handler, bool is_peer_session,
  const string* p_ip_addr, const string* p_blockchain, int port, bool is_support_session )
 {
-   guard g( g_session_mutex, "init_session" );
-
-   gtp_session = 0;
-
-   for( size_t i = 0; i < g_max_sessions; i++ )
+   // NOTE: Scope for guard object.
    {
-      if( !g_sessions[ i ] )
+      guard g( g_session_mutex, "init_session" );
+
+      gtp_session = 0;
+
+      for( size_t i = 0; i < g_max_sessions; i++ )
       {
-         g_sessions[ i ] = new session( ++g_next_session_id, i, cmd_handler,
-          g_storage_handlers[ 0 ], is_peer_session, p_ip_addr, p_blockchain, is_support_session );
+         if( !g_sessions[ i ] )
+         {
+            g_sessions[ i ] = new session( ++g_next_session_id, i, cmd_handler,
+             g_storage_handlers[ 0 ], is_peer_session, p_ip_addr, p_blockchain, is_support_session );
 
-         gtp_session = g_sessions[ i ];
-         ods::instance( 0, true );
+            gtp_session = g_sessions[ i ];
+            ods::instance( 0, true );
 
-         break;
+            break;
+         }
       }
    }
 
@@ -5840,6 +5843,9 @@ void init_session( command_handler& cmd_handler, bool is_peer_session,
       throw runtime_error( "max. permitted concurrent sessions already active" );
 
    set_default_session_variables( port );
+
+   if( has_files_area_tag( c_ciyam_logs_tag, e_file_type_list ) )
+      gtp_session->append_to_log_blob_files = true;
 }
 
 void term_session( )
@@ -6879,7 +6885,7 @@ bool any_peer_still_has_file_hash_to_put(
 
 void add_peer_mapped_hash_info( const string& identity, const string& hash, const string& info )
 {
-   guard g( g_mutex );
+   guard g( g_mapping_mutex );
 
    pair< string, string > mapped_pair;
 
@@ -6895,7 +6901,7 @@ void add_peer_mapped_hash_info( const string& identity, const string& hash, cons
 
 string get_peer_mapped_hash_info( const string& identity, const string& hash )
 {
-   guard g( g_mutex );
+   guard g( g_mapping_mutex );
 
    string retval, decoded( hex_decode( hash ) );
 
@@ -6919,14 +6925,14 @@ string get_peer_mapped_hash_info( const string& identity, const string& hash )
 
 void clear_peer_mapped_hash( const string& identity, const string& hash )
 {
-   guard g( g_mutex );
+   guard g( g_mapping_mutex );
 
    g_mapped_hash_values[ identity ].erase( hex_decode( hash ) );
 }
 
 void clear_all_peer_mapped_hashes( const string& identity )
 {
-   guard g( g_mutex );
+   guard g( g_mapping_mutex );
 
    g_mapped_hash_values[ identity ].clear( );
 }
