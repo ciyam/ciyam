@@ -3622,16 +3622,14 @@ void append_transaction_log_command( storage_handler& handler,
          {
             identity.ceiling += c_identity_burn;
 
+            ods_file_system ofs( *ods::instance( ) );
+
             // NOTE: Store the "ceiling" rather than "next_id" to avoid having to
             // perform extra I/O for every transaction. If storage termination is
             // to occur normally then the actual "next_id" will be written and no
             // identity value is lost. If for some reason normal termination does
             // not occur then up to the "burn" number of identities will be lost.
-            restorable< int32_t > tmp_identity( identity.next_id, identity.ceiling );
-
-            ods_file_system ofs( *ods::instance( ) );
-
-            ofs.store_as_text_file( c_storable_file_name_log_id, identity.next_id );
+            ofs.store_as_text_file( c_storable_file_name_log_id, identity.ceiling );
          }
 
          tx_id = ++identity.next_id;
@@ -11687,8 +11685,6 @@ void transaction_commit( )
 {
    if( gtp_session->transactions.empty( ) )
       throw runtime_error( "no active transaction exists" );
-
-   system_ods_bulk_write ods_bulk_write;
 
    storage_handler& handler( *gtp_session->p_storage_handler );
 
