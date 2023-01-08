@@ -129,10 +129,13 @@ class mutex
 
    void release( const guard* p_guard, const char* p_msg, const char* p_old_info )
    {
+      p_info = p_old_info;
+
 #  ifndef _WIN32
       if( !--count )
       {
          tid = 0;
+         p_info = 0;
          lock_id = 0;
 
          ::pthread_mutex_unlock( &ptm );
@@ -144,8 +147,6 @@ class mutex
 
       if( p_msg )
          has_released( p_guard, p_msg );
-
-      p_info = p_old_info;
    }
 
    thread_id get_lock_id( ) const { return lock_id; }

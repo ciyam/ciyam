@@ -312,7 +312,7 @@ struct session
     cmd_handler( cmd_handler ),
     skip_is_constrained( false ),
     session_commands_executed( 0 ),
-    append_to_log_blob_files( false ),
+    has_ciyam_logs_list_tag( false ),
     is_peer_session( is_peer_session ),
     p_storage_handler( p_storage_handler ),
     is_support_session( is_support_session )
@@ -402,7 +402,7 @@ struct session
 
    size_t session_commands_executed;
 
-   bool append_to_log_blob_files;
+   bool has_ciyam_logs_list_tag;
 
    module_container modules_by_id;
    module_container modules_by_name;
@@ -3591,7 +3591,7 @@ void append_transaction_log_command( storage_handler& handler,
       {
          log_file << c_storage_identity_tx_id << handler.get_root( ).identity << '\n';
 
-         if( gtp_session->append_to_log_blob_files )
+         if( gtp_session->has_ciyam_logs_list_tag )
             tx_log_lines.push_back( c_storage_identity_tx_id + handler.get_root( ).identity + "\n" );
       }
 
@@ -3644,7 +3644,7 @@ void append_transaction_log_command( storage_handler& handler,
 
          log_file << next_line;
 
-         if( gtp_session->append_to_log_blob_files )
+         if( gtp_session->has_ciyam_logs_list_tag )
             tx_log_lines.push_back( next_line );
       }
 
@@ -3653,7 +3653,7 @@ void append_transaction_log_command( storage_handler& handler,
       if( !get_session_variable( get_special_var_name( e_special_var_package_install_extra ) ).empty( ) )
          is_restoring = true;
 
-      if( gtp_session->append_to_log_blob_files )
+      if( gtp_session->has_ciyam_logs_list_tag )
          append_transaction_log_lines_to_blob_files( handler.get_name( ) + ".log", tx_log_lines, is_restoring );
 
       log_file.flush( );
@@ -5845,7 +5845,7 @@ void init_session( command_handler& cmd_handler, bool is_peer_session,
    set_default_session_variables( port );
 
    if( has_files_area_tag( c_ciyam_logs_tag, e_file_type_list ) )
-      gtp_session->append_to_log_blob_files = true;
+      gtp_session->has_ciyam_logs_list_tag = true;
 }
 
 void term_session( )
@@ -11676,7 +11676,7 @@ void transaction_start( )
       exec_sql( *gtp_session->ap_db, "BEGIN" );
    }
 
-   if( has_files_area_tag( c_ciyam_logs_tag, e_file_type_list ) )
+   if( gtp_session->has_ciyam_logs_list_tag )
    {
       string server_tx_log_file( get_files_area_dir( ) );
       server_tx_log_file += '/' + string( c_server_tx_log_file );
@@ -11736,7 +11736,7 @@ void transaction_commit( )
       }
    }
 
-   if( has_files_area_tag( c_ciyam_logs_tag, e_file_type_list ) )
+   if( gtp_session->has_ciyam_logs_list_tag )
    {
       string server_tx_log_file( get_files_area_dir( ) );
       server_tx_log_file += '/' + string( c_server_tx_log_file );
