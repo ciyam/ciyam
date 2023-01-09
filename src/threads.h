@@ -100,10 +100,7 @@ class mutex
    void acquire( const guard* p_guard, const char* p_msg )
    {
       if( p_msg )
-      {
-         p_info = p_msg;
          pre_acquire( p_guard, p_msg );
-      }
 
 #  ifndef _WIN32
       pthread_t self = ::pthread_self( );
@@ -124,7 +121,10 @@ class mutex
       lock_id = current_thread_id( );
 
       if( p_msg )
+      {
+         p_info = p_msg;
          post_acquire( p_guard, p_msg );
+      }
    }
 
    void release( const guard* p_guard, const char* p_msg, const char* p_old_info )
