@@ -3413,12 +3413,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                      split( put_hashes, all_put_hashes, '\n' );
 
+                     string target_hash( c_file_repository_target_hash_line_prefix );
+
+                     if( !first_item_hash.empty( ) )
+                        target_hash += base64::encode( hex_decode( first_item_hash ) );
+
                      for( size_t i = 0; i < all_put_hashes.size( ); i++ )
                      {
                         string next_put( all_put_hashes[ i ] );
-
-                        string target_hash( c_file_repository_target_hash_line_prefix );
-                        target_hash += next_put;
 
                         string next_hash( hex_encode( base64::decode( next_put ) ) );
 
