@@ -3556,61 +3556,60 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          size_t num_bytes = 0;
 
-         if( !has_file( hash ) )
+         string file_data;
+
+         if( has_file( hash ) )
          {
-            string file_data;
+            file_data = string( c_file_type_str_blob );
+            file_data += extract_file( hash, "" );
 
-            store_file( hash, socket, 0, p_sock_progress, false, 0, false, &file_data, &num_bytes );
-
-            if( hash != hello_hash && !get_session_variable(
-             get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( ) )
-            {
-               date_time dtm( date_time::local( ) );
-
-               set< string > target_hashes;
-
-               string queue_puts_name( get_special_var_name( e_special_var_queue_puts ) );
-
-               process_put_file( blockchain, file_data.substr( 1 ), check_for_supporters,
-                socket_handler.get_is_test_session( ), target_hashes, &dtm, &socket_handler );
-
-               // NOtE: If is not restoring then will now store the 'put' file data.
-               if( !is_owner )
-               {
-                  bool has_archive = false;
-
-                  if( !get_session_variable(
-                   get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
-                     has_archive = true;
-
-                  if( !has_archive )
-                     create_raw_file( file_data );
-                  else
-                     create_raw_file_in_archive( identity, "", file_data );
-
-                  set_session_variable( queue_puts_name, hash );
-               }
-
-               size_t num_puts = 0;
-
-               string num_puts_name( get_special_var_name( e_special_var_blockchain_num_puts ) );
-
-               string num_puts_value( get_session_variable( num_puts_name ) );
-
-               if( !num_puts_value.empty( ) )
-                  num_puts = from_string< size_t >( num_puts_value );
-
-               num_puts += target_hashes.size( );
-
-               if( num_puts )
-                  set_session_variable( num_puts_name, to_string( num_puts ) );
-            }
+            num_bytes = file_data.size( );
          }
          else
-         {
-            num_bytes = file_bytes( hash );
+            store_file( hash, socket, 0, p_sock_progress, false, 0, false, &file_data, &num_bytes );
 
-            store_temp_file( "", socket, p_sock_progress, true );
+         if( hash != hello_hash && !get_session_variable(
+          get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( ) )
+         {
+            date_time dtm( date_time::local( ) );
+
+            set< string > target_hashes;
+
+            string queue_puts_name( get_special_var_name( e_special_var_queue_puts ) );
+
+            process_put_file( blockchain, file_data.substr( 1 ), check_for_supporters,
+             socket_handler.get_is_test_session( ), target_hashes, &dtm, &socket_handler );
+
+            // NOtE: If is not restoring then will now store the 'put' file data.
+            if( !is_owner )
+            {
+               bool has_archive = false;
+
+               if( !get_session_variable(
+                get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
+                  has_archive = true;
+
+               if( !has_archive )
+                  create_raw_file( file_data );
+               else
+                  create_raw_file_in_archive( identity, "", file_data );
+
+               set_session_variable( queue_puts_name, hash );
+            }
+
+            size_t num_puts = 0;
+
+            string num_puts_name( get_special_var_name( e_special_var_blockchain_num_puts ) );
+
+            string num_puts_value( get_session_variable( num_puts_name ) );
+
+            if( !num_puts_value.empty( ) )
+               num_puts = from_string< size_t >( num_puts_value );
+
+            num_puts += target_hashes.size( );
+
+            if( num_puts )
+               set_session_variable( num_puts_name, to_string( num_puts ) );
          }
 
          if( hash != hello_hash )
