@@ -3564,6 +3564,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             file_data += extract_file( hash, "" );
 
             num_bytes = file_data.size( );
+
+            store_temp_file( "", socket, p_sock_progress, true );
          }
          else
             store_file( hash, socket, 0, p_sock_progress, false, 0, false, &file_data, &num_bytes );
