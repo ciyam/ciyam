@@ -85,13 +85,14 @@ Export_Needed,M001C102F110
 Exporting_For_identity,M001C102F111
 Initial_Backup_Hash,M001C102F112
 Initial_Shared_Hash,M001C102F113
-Host_Domain,M001C102F114
-Port_Number,M001C102F115
-Shared_Secret,M001C102F116
-Connection_Type,M001C102F117
-Status,M001C102F118
-Synchronisation,M001C102F119
-System_Secret,M001C102F120
+Host_Name,M001C102F114
+Peer_Type,M001C102F115
+Port_Number,M001C102F116
+Shared_Secret,M001C102F117
+Connection_Type,M001C102F118
+Status,M001C102F119
+Synchronisation,M001C102F120
+System_Secret,M001C102F121
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000
@@ -109,8 +110,9 @@ Minutes,E110
 Occurrence,E111
 Orientation,E112
 Peerchain_Connection,E113
-Peerchain_Status,E114
-Change_Password_Seconds,E115
+Peerchain_Peer_Type,E114
+Peerchain_Status,E115
+Change_Password_Seconds,E116
 pf 100 102100 "102111 " 102101,102111 -min
 string,T000
 string,T000
