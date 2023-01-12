@@ -1570,23 +1570,23 @@
   </enum>
   <enum/>
    <id>960
-   <name>enum_peerchain_entry_type
+   <name>enum_peerchain_peer_type
    <values/>
     <value/>
      <data>0
-     <name>enum_peerchain_entry_type_hosted
+     <name>enum_peerchain_peer_type_hosted
     </value>
     <value/>
      <data>1
-     <name>enum_peerchain_entry_type_local_only
+     <name>enum_peerchain_peer_type_local_only
     </value>
     <value/>
      <data>2
-     <name>enum_peerchain_entry_type_backup_only
+     <name>enum_peerchain_peer_type_backup_only
     </value>
     <value/>
      <data>3
-     <name>enum_peerchain_entry_type_shared_only
+     <name>enum_peerchain_peer_type_shared_only
     </value>
    </values>
   </enum>
@@ -3585,8 +3585,8 @@
      <modifiers>
     </field>
     <field/>
-     <name>field_global_peerchain_entry_entry_type
-     <field>145108
+     <name>field_global_peerchain_entry_peer_type
+     <field>145103
      <ftype>int
      <extra>new_edit+force+enum=960
      <mandatory>true
@@ -3594,7 +3594,7 @@
     </field>
     <field/>
      <name>field_global_peerchain_entry_local_port
-     <field>145105
+     <field>145106
      <ftype>int
      <extra>range=0..65535
      <mandatory>true
@@ -3602,7 +3602,7 @@
     </field>
     <field/>
      <name>field_global_peerchain_entry_host_name
-     <field>145103
+     <field>145104
      <ftype>string
      <extra>max_size=100
      <mandatory>true
@@ -3610,7 +3610,7 @@
     </field>
     <field/>
      <name>field_global_peerchain_entry_host_port
-     <field>145104
+     <field>145105
      <ftype>int
      <extra>range=0..65535
      <mandatory>true
@@ -3626,7 +3626,7 @@
     </field>
     <field/>
      <name>field_global_peerchain_entry_auto_start
-     <field>145106
+     <field>145107
      <ftype>bool
      <extra>
      <mandatory>true
@@ -3634,7 +3634,7 @@
     </field>
     <field/>
      <name>field_global_peerchain_entry_status
-     <field>145107
+     <field>145108
      <ftype>int
      <extra>no_edit+enum=955
      <mandatory>true
@@ -8988,7 +8988,7 @@
     </column>
     <column/>
      <name>field_global_peerchain_entry_status
-     <field>145107
+     <field>145108
      <ftype>int
      <extra>enum=955
      <modifiers>
@@ -8997,7 +8997,7 @@
     </column>
     <column/>
      <name>field_global_peerchain_entry_host_name
-     <field>145103
+     <field>145104
      <ftype>string
      <extra>max_size=100
      <modifiers>4000:protect

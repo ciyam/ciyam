@@ -29,12 +29,12 @@ class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public
       e_field_id_Actions = 1,
       e_field_id_Auto_Start = 2,
       e_field_id_Description = 3,
-      e_field_id_Entry_Type = 4,
-      e_field_id_Host_Name = 5,
-      e_field_id_Host_Port = 6,
-      e_field_id_Identity = 7,
-      e_field_id_Local_Port = 8,
-      e_field_id_Num_Helpers = 9,
+      e_field_id_Host_Name = 4,
+      e_field_id_Host_Port = 5,
+      e_field_id_Identity = 6,
+      e_field_id_Local_Port = 7,
+      e_field_id_Num_Helpers = 8,
+      e_field_id_Peer_Type = 9,
       e_field_id_Port_Numbers = 10,
       e_field_id_Shared_Secret = 11,
       e_field_id_Status = 12
@@ -52,9 +52,6 @@ class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public
    const std::string& Description( ) const;
    void Description( const std::string& Description );
 
-   int Entry_Type( ) const;
-   void Entry_Type( int Entry_Type );
-
    const std::string& Host_Name( ) const;
    void Host_Name( const std::string& Host_Name );
 
@@ -69,6 +66,9 @@ class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public
 
    int Num_Helpers( ) const;
    void Num_Helpers( int Num_Helpers );
+
+   int Peer_Type( ) const;
+   void Peer_Type( int Peer_Type );
 
    const std::string& Port_Numbers( ) const;
    void Port_Numbers( const std::string& Port_Numbers );

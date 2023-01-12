@@ -51,7 +51,7 @@ PEER_PORT=$OUTPUT
 .peer_listen $PEER_PORT $IDENTITY,$REVERSED
 .storage_init Meta
 ;
-.pc sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=$AUTO_START,Description=$DESCRIPTION,Entry_Type=$PEER_TYPE\
+.pc sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=$AUTO_START,Description=$DESCRIPTION,Peer_Type=$PEER_TYPE\
 ,Host_Name=$HOST_NAME,Host_Port=$HOST_PORT,Local_Port=$PEER_PORT,Num_Helpers=$NUM_HELPERS,Shared_Secret=$SHARED_SECRET"
 ;
 @ifndef $ERROR
