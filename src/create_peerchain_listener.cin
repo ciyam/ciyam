@@ -30,7 +30,7 @@ PEER_PORT=$OUTPUT
 .peer_listen $PEER_PORT $IDENTITY,$REVERSED
 ;
 .storage_init Meta
-.pc sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=1,Description=$DESCRIPTION,Entry_Type=1,Local_Port=$PEER_PORT"
+.pc sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=1,Description=$DESCRIPTION,Peer_Type=1,Local_Port=$PEER_PORT"
 ;
 @ifndef $ERROR
 #Created listeners and global peerchain entry for identity '$IDENTITY' (and '$REVERSED').

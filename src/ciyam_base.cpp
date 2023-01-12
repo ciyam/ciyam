@@ -185,6 +185,7 @@ const char* const c_peerchain_attribute_host_name = "host_name";
 const char* const c_peerchain_attribute_host_port = "host_port";
 const char* const c_peerchain_attribute_local_port = "local_port";
 const char* const c_peerchain_attribute_num_helpers = "num_helpers";
+const char* const c_peerchain_attribute_peer_type = "peer_type";
 const char* const c_peerchain_attribute_shared_secret = "shared_secret";
 
 const char* const c_default_web_root = "%root%/%store%";
@@ -5043,6 +5044,7 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
          string host_port( ap_sio_reader->read_attribute( c_peerchain_attribute_host_port ) );
          string local_port( ap_sio_reader->read_attribute( c_peerchain_attribute_local_port ) );
          string num_helpers( ap_sio_reader->read_attribute( c_peerchain_attribute_num_helpers ) );
+         string peer_type( ap_sio_reader->read_attribute( c_peerchain_attribute_peer_type ) );
          string shared_secret( ap_sio_reader->read_attribute( c_peerchain_attribute_shared_secret ) );
 
          if( p_shared_secret )
@@ -5097,6 +5099,7 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
       string host_port( ap_sio_reader->read_attribute( c_peerchain_attribute_host_port ) );
       string local_port( ap_sio_reader->read_attribute( c_peerchain_attribute_local_port ) );
       string num_helpers( ap_sio_reader->read_attribute( c_peerchain_attribute_num_helpers ) );
+      string peer_type( ap_sio_reader->read_attribute( c_peerchain_attribute_peer_type ) );
       string shared_secret( ap_sio_reader->read_attribute( c_peerchain_attribute_shared_secret ) );
 
       if( ( host_name != string( c_local_host ) )
@@ -5134,6 +5137,7 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
       string host_port( ap_sio_reader->read_attribute( c_peerchain_attribute_host_port ) );
       string local_port( ap_sio_reader->read_attribute( c_peerchain_attribute_local_port ) );
       string num_helpers( ap_sio_reader->read_attribute( c_peerchain_attribute_num_helpers ) );
+      string peer_type( ap_sio_reader->read_attribute( c_peerchain_attribute_peer_type ) );
       string shared_secret( ap_sio_reader->read_attribute( c_peerchain_attribute_shared_secret ) );
 
       int port = atoi( local_port.c_str( ) );

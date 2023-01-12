@@ -4997,7 +4997,7 @@
       </specifications>
      </field>
      <field/>
-      <id>145106
+      <id>145107
       <name>Auto_Start
       <type>bool
       <mandatory>true
@@ -5034,34 +5034,7 @@
       </specifications>
      </field>
      <field/>
-      <id>145108
-      <name>Entry_Type
-      <type>int
-      <mandatory>true
-      <transient>true
-      <enum_id>960
-      <default_value>0
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600898b
-        <item>field
-       </specification>
-       <specification/>
-        <id>600898c
-        <item>field
-       </specification>
-       <specification/>
-        <id>603970
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>145103
+      <id>145104
       <name>Host_Name
       <type>1020
       <mandatory>true
@@ -5089,7 +5062,7 @@
       </specifications>
      </field>
      <field/>
-      <id>145104
+      <id>145105
       <name>Host_Port
       <type>1035
       <mandatory>true
@@ -5135,7 +5108,7 @@
       </specifications>
      </field>
      <field/>
-      <id>145105
+      <id>145106
       <name>Local_Port
       <type>1035
       <mandatory>true
@@ -5174,6 +5147,32 @@
        </modifier>
       </modifiers>
       <specifications/>
+       <specification/>
+        <id>603970
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>145103
+      <name>Peer_Type
+      <type>int
+      <mandatory>true
+      <enum_id>960
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600898b
+        <item>field
+       </specification>
+       <specification/>
+        <id>600898c
+        <item>field
+       </specification>
        <specification/>
         <id>603970
         <item>field
@@ -5227,7 +5226,7 @@
       </specifications>
      </field>
      <field/>
-      <id>145107
+      <id>145108
       <name>Status
       <type>int
       <mandatory>true
@@ -32092,7 +32091,7 @@
     <data/>
      <class_id>145100
      <modifier_id>145302
-     <field_id>145108
+     <field_id>145103
      <field_value>2
     </data>
    </specification>
@@ -32104,7 +32103,7 @@
      <class_id>145100
      <modifier_id>145303
      <enum_id>955
-     <field_id>145107
+     <field_id>145108
      <field_value>Connected
      <enum_value_name>Connected
     </data>
@@ -32117,7 +32116,7 @@
      <class_id>145100
      <modifier_id>145304
      <enum_id>955
-     <field_id>145107
+     <field_id>145108
      <field_value>Connecting
      <enum_value_name>Connecting
     </data>
@@ -32150,7 +32149,7 @@
      <class_id>145100
      <modifier_id>145304
      <enum_id>955
-     <field_id>145107
+     <field_id>145108
      <field_value>Disconnecting
      <enum_value_name>Disconnecting
     </data>
@@ -32162,7 +32161,7 @@
     <data/>
      <class_id>145100
      <modifier_id>145300
-     <field_id>145107
+     <field_id>145108
      <field_value>0
     </data>
    </specification>
@@ -32173,7 +32172,7 @@
     <data/>
      <class_id>145100
      <modifier_id>145301
-     <field_id>145108
+     <field_id>145103
      <field_value>1
     </data>
    </specification>
@@ -32184,7 +32183,7 @@
     <data/>
      <class_id>145100
      <modifier_id>145306
-     <field_id>145107
+     <field_id>145108
      <field_value>0
      <not_equal>true
     </data>
@@ -32210,8 +32209,8 @@
      <ordering>forward
      <field_info>145101
      <field_info>145102
-     <field_info>145107;enum=955
-     <field_info>145103
+     <field_info>145108;enum=955
+     <field_info>145104
      <field_info>145111
     </data>
    </specification>
@@ -32226,13 +32225,13 @@
      <field_info>@key
      <field_info>145101;key_name
      <field_info>145102
-     <field_info>145108;new_edit+force+enum=960
-     <field_info>145105
-     <field_info>145103
-     <field_info>145104
-     <field_info>145109
+     <field_info>145103;new_edit+force+enum=960
      <field_info>145106
-     <field_info>145107;no_edit+enum=955
+     <field_info>145104
+     <field_info>145105
+     <field_info>145109
+     <field_info>145107
+     <field_info>145108;no_edit+enum=955
      <field_info>145112;show
      <field_info>145110
     </data>
@@ -39449,7 +39448,7 @@
    </user_defined_enum>
    <user_defined_enum/>
     <id>960
-    <name>peerchain_entry_type
+    <name>peerchain_peer_type
     <type>int
     <key_values>0=Hosted,1=Local_Only,2=Backup_Only,3=Shared_Only
    </user_defined_enum>
