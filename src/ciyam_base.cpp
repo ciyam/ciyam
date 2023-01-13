@@ -5062,7 +5062,7 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
             if( p_is_listener )
                *p_is_listener = false;
 
-            retval = identity + '+' + num_helpers + '=' + host_name + '-' + host_port;
+            retval = identity + '+' + num_helpers + '=' + host_name + '-' + host_port + ':' + peer_type;
          }
       }
    }
@@ -5104,7 +5104,7 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
 
       if( ( host_name != string( c_local_host ) )
        && ( !auto_start_only || ( auto_start == c_true_value ) ) )
-         peerchain_externals.push_back( identity + '+' + num_helpers + '=' + host_name + '-' + host_port );
+         peerchain_externals.push_back( identity + '+' + num_helpers + '=' + host_name + '-' + host_port + ':' + peer_type );
    }
 }
 
