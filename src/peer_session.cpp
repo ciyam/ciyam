@@ -3020,11 +3020,15 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          if( digest.find( targeted_identity ) == 0 )
          {
-            string reversed( identity );
-            reverse( reversed.begin( ), reversed.end( ) );
+            string backup_identity( get_session_variable(
+             get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
-            set_system_variable( get_special_var_name(
-             e_special_var_export_needed ) + '_' + reversed, identity );
+            if( backup_identity.empty( ) )
+               set_system_variable( get_special_var_name(
+                e_special_var_export_needed ) + '_' + identity, identity );
+            else
+               set_system_variable( get_special_var_name(
+                e_special_var_export_needed ) + '_' + backup_identity, identity );
          }
 
          clear_key( password );
@@ -5226,8 +5230,11 @@ void peer_session_starter::start_peer_session( const string& peer_info )
          // will now create the requested support sessions for them both.
          if( num_for_support )
          {
-            create_peer_initiator( blockchain, info, false, num_for_support, false, false, p_local_main );
-            create_peer_initiator( blockchain, info, false, num_for_support, false, true, p_hosted_main );
+            create_peer_initiator( blockchain, info,
+             false, num_for_support, false, false, p_local_main, ( peer_type == 3 ) );
+
+            create_peer_initiator( blockchain, info,
+             false, num_for_support, false, true, p_hosted_main, ( peer_type == 3 ) );
          }
       }
    }
@@ -5240,22 +5247,25 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
       string shared_chain( c_bc_prefix + reversed );
 
-      peer_session* p_local_shared = create_peer_initiator( shared_chain,
-       info, false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, 0, true );
+      peer_session* p_local_shared = create_peer_initiator( shared_chain, info,
+       false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, 0, true );
 
       if( p_local_shared )
       {
          p_local_shared->set_backup_identity( identity );
 
-         peer_session* p_hosted_shared = create_peer_initiator( shared_chain,
-          info, false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, true );
+         peer_session* p_hosted_shared = create_peer_initiator( shared_chain, info,
+          false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, true );
 
          if( p_hosted_shared )
          {
             if( num_for_support )
             {
-               create_peer_initiator( shared_chain, info, false, num_for_support, false, false, p_local_shared, true );
-               create_peer_initiator( shared_chain, info, false, num_for_support, false, true, p_hosted_shared, true );
+               create_peer_initiator( shared_chain, info,
+                false, num_for_support, false, false, p_local_shared, true );
+
+               create_peer_initiator( shared_chain, info,
+                false, num_for_support, false, true, p_hosted_shared, true );
             }
          }
       }
