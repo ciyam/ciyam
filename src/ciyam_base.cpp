@@ -5064,6 +5064,10 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
 
             retval = identity + '+' + num_helpers + '=' + host_name + '-' + host_port + ':' + peer_type;
          }
+
+         // NOTE: Only break if not reversed in case both "backup only" and "shared only" entries exist.
+         if( !is_reversed )
+            break;
       }
    }
 
