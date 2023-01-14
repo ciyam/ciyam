@@ -5288,37 +5288,44 @@ void init_peer_sessions( int start_listeners )
 
       for( multimap< int, string >::iterator i = peerchain_listeners.begin( ); i != peerchain_listeners.end( ); ++i )
       {
-         string next_blockchain( c_bc_prefix + i->second );
+         string next_identity( i->second );
 
-         set_system_variable( c_error_message_prefix + i->second, "" );
+         bool add_reversed = false;
 
-         string::size_type pos = next_blockchain.find( '_' );
+         string::size_type pos = next_identity.find( '!' );
 
          if( pos != string::npos )
-            next_blockchain.erase( pos );
+         {
+            add_reversed = true;
+            next_identity.erase( pos );
+         }
+
+         set_system_variable( c_error_message_prefix + next_identity, "" );
+
+         string next_blockchains( c_bc_prefix + next_identity );
+
+         if( add_reversed )
+         {
+            string reversed( next_identity );
+            reverse( reversed.begin( ), reversed.end( ) );
+
+            reversed = c_bc_prefix + reversed;
+
+            next_blockchains += ',' + reversed;
+         }
 
          if( !port_blockchains.count( i->first ) )
-            port_blockchains.insert( make_pair( i->first, next_blockchain ) );
+            port_blockchains.insert( make_pair( i->first, next_blockchains ) );
          else
          {
-            string blockchains( port_blockchains.find( i->first )->second + ',' + next_blockchain );
-            port_blockchains[ i->first ] = blockchains;
+            string all_blockchains( port_blockchains.find( i->first )->second + ',' + next_blockchains );
+
+            port_blockchains[ i->first ] = all_blockchains;
          }
       }
 
       for( map< int, string >::iterator i = port_blockchains.begin( ); i != port_blockchains.end( ); ++i )
-      {
-         string blockchain( i->second );
-
-         string unprefixed_blockchain( replaced( blockchain, c_bc_prefix, "" ) );
-
-         string reversed( unprefixed_blockchain );
-         reverse( reversed.begin( ), reversed.end( ) );
-
-         reversed = c_bc_prefix + reversed;
-
-         create_peer_listener( i->first, blockchain + ',' + reversed );
-      }
+         create_peer_listener( i->first, i->second );
    }
 
    peer_session_starter* p_peer_session_start = new peer_session_starter;

@@ -5140,11 +5140,18 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
       string peer_type( ap_sio_reader->read_attribute( c_peerchain_attribute_peer_type ) );
       string shared_secret( ap_sio_reader->read_attribute( c_peerchain_attribute_shared_secret ) );
 
+      size_t type = from_string< size_t >( peer_type );
+
       int port = atoi( local_port.c_str( ) );
+
+      string extra;
+
+      if( type < 2 )
+         extra = '!';
 
       if( ( port > 0 )
        && ( !auto_start_only || ( auto_start == c_true_value ) ) )
-         peerchain_listeners.insert( make_pair( port, identity ) );
+         peerchain_listeners.insert( make_pair( port, identity + extra ) );
    }
 }
 

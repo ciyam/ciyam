@@ -174,7 +174,7 @@ FILES_AREA_DIR=$OUTPUT
 ;
 ~mkdir $FILES_AREA_DIR/$IDENT
 @ifdef $SHARED
-.file_archive -add $FILES_AREA_DIR/$IDENT 10GB $IDENT
+.file_archive -add $FILES_AREA_DIR/$IDENT 5GB $IDENT
 .system_variable >@blockchain_shared_archive $FILES_AREA_DIR/$IDENT
 @else
 .file_archive -add $FILES_AREA_DIR/$IDENT 100GB $IDENT
