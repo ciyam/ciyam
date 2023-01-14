@@ -5259,6 +5259,8 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
          if( p_hosted_shared )
          {
+            p_hosted_shared->set_backup_identity( identity );
+
             if( num_for_support )
             {
                create_peer_initiator( shared_chain, info,
