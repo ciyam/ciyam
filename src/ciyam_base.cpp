@@ -1957,8 +1957,6 @@ void perform_storage_op( storage_op op,
 
 bool fetch_instance_from_cache( class_base& instance, const string& key, bool sys_only_fields = false )
 {
-   guard g( g_mutex, "fetch_instance_from_cache" );
-
    bool found = false;
    class_base_accessor instance_accessor( instance );
 
@@ -1966,63 +1964,69 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
 
    storage_handler& handler( *gtp_session->p_storage_handler );
 
-   found = handler.get_record_cache( ).count( key_info );
-
-   if( found )
+   // NOTE: Empty code block for scope purposes.
    {
-      time_info_iterator tii = handler.get_key_for_time( ).lower_bound( handler.get_time_for_key( ).find( key_info )->second );
-      while( tii->second != key_info )
-         ++tii;
+      guard g( g_mutex, "fetch_instance_from_cache" );
 
-      time_t tm( time( 0 ) );
-      handler.get_time_for_key( )[ key_info ] = tm;
+      found = handler.get_record_cache( ).count( key_info );
 
-      handler.get_key_for_time( ).erase( tii );
-      handler.get_key_for_time( ).insert( make_pair( tm, key_info ) );
+      if( found )
+      {
+         time_info_iterator tii = handler.get_key_for_time( ).lower_bound( handler.get_time_for_key( ).find( key_info )->second );
+         while( tii->second != key_info )
+            ++tii;
+
+         time_t tm( time( 0 ) );
+         handler.get_time_for_key( )[ key_info ] = tm;
+
+         handler.get_key_for_time( ).erase( tii );
+         handler.get_key_for_time( ).insert( make_pair( tm, key_info ) );
+
+         ++gtp_session->cache_count;
+
+         if( !sys_only_fields )
+            instance_accessor.clear( );
+
+         TRACE_LOG( TRACE_SQLSTMTS, "*** fetching '" + key_info + "' from cache ***" );
+
+         vector< string >& columns( handler.get_record_cache( )[ key_info ] );
+
+         instance_accessor.set_key( columns[ 0 ], true );
+         instance_accessor.set_version( from_string< uint16_t >( columns[ 1 ] ) );
+         instance_accessor.set_revision( from_string< uint64_t >( columns[ 2 ] ) );
+
+         instance_accessor.set_original_revision( instance.get_revision( ) );
+         instance_accessor.set_original_identity( columns[ 3 ] );
+
+         if( !sys_only_fields )
+         {
+            TRACE_LOG( TRACE_SQLCLSET, "(from cache)" );
+
+            int fnum = 4;
+
+            for( int i = fnum; i < columns.size( ); i++, fnum++ )
+            {
+               while( instance.is_field_transient( fnum - 4 ) )
+                  fnum++;
+
+               TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - 4 + 1 ) + " to " + columns[ i ] );
+               instance.set_field_value( fnum - 4, columns[ i ] );
+            }
+
+            instance_accessor.after_fetch_from_db( );
+         }
+      }
    }
 
-   if( found )
+   if( found && !sys_only_fields )
    {
-      found = true;
-      ++gtp_session->cache_count;
+      string skip_after_fetch_var(
+       instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
-      if( !sys_only_fields )
-         instance_accessor.clear( );
-
-      TRACE_LOG( TRACE_SQLSTMTS, "*** fetching '" + key_info + "' from cache ***" );
-
-      vector< string >& columns( handler.get_record_cache( )[ key_info ] );
-
-      instance_accessor.set_key( columns[ 0 ], true );
-      instance_accessor.set_version( from_string< uint16_t >( columns[ 1 ] ) );
-      instance_accessor.set_revision( from_string< uint64_t >( columns[ 2 ] ) );
-
-      instance_accessor.set_original_revision( instance.get_revision( ) );
-      instance_accessor.set_original_identity( columns[ 3 ] );
-
-      if( !sys_only_fields )
-      {
-         int fnum = 4;
-         TRACE_LOG( TRACE_SQLCLSET, "(from cache)" );
-         for( int i = fnum; i < columns.size( ); i++, fnum++ )
-         {
-            while( instance.is_field_transient( fnum - 4 ) )
-               fnum++;
-
-            TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - 4 + 1 ) + " to " + columns[ i ] );
-            instance.set_field_value( fnum - 4, columns[ i ] );
-         }
-
-         instance_accessor.after_fetch_from_db( );
-
-         string skip_after_fetch_var(
-          instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
-
-         if( skip_after_fetch_var == c_true || skip_after_fetch_var == c_true_value )
-            ; // i.e. do nothing
-         else
-            instance_accessor.perform_after_fetch( );
-      }
+      if( skip_after_fetch_var == c_true || skip_after_fetch_var == c_true_value )
+         ; // i.e. do nothing
+      else
+         instance_accessor.perform_after_fetch( );
    }
 
    return found;
