@@ -21,7 +21,7 @@ else
  fi
  if [ ! "$had_error" = "true" ]; then
   rm -f $CIYAM_STORAGE.log $CIYAM_STORAGE.tlg $CIYAM_STORAGE.dat $CIYAM_STORAGE.idx $CIYAM_STORAGE.hdr >/dev/null
-  ./ciyam_server -quiet &
+  ./ciyam_server -quiet -no_auto -no_peers &
   sleep 2
   ./ciyam_client -quiet -no_prompt < init.cin
   touch ciyam_server.stop
