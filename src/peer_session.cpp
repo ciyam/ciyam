@@ -772,6 +772,8 @@ void process_put_file( const string& blockchain,
 
                      if( lines.size( ) > 3 && lines[ 3 ].find( c_file_repository_target_hash_line_prefix ) == 0 )
                         target_hash = lines[ 3 ].substr( strlen( c_file_repository_target_hash_line_prefix ) );
+                     else
+                        throw runtime_error( "unexpected missing target hash in put file info" );
 
 #ifndef SSL_SUPPORT
                      okay = true;
@@ -787,12 +789,7 @@ void process_put_file( const string& blockchain,
 
                         if( !has_file( hash_info.substr( 0, pos ) ) )
                         {
-                           string hex_target_hash;
-
-                           if( target_hash.empty( ) )
-                              hex_target_hash = hash_info.substr( 0, pos );
-                           else
-                              hex_target_hash = hex_encode( base64::decode( target_hash ) );
+                           string hex_target_hash( hex_encode( base64::decode( target_hash ) ) );
 
                            if( has_file( hex_target_hash ) )
                            {
