@@ -443,13 +443,22 @@ void process_repository_file( const string& blockchain,
       string hex_pub_key( extra_info.substr( 0, pos ) );
       string target_hash( extra_info.substr( pos + 1 ) );
 
+      if( !are_hex_nibbles( target_hash ) )
+         target_hash = hex_encode( base64::decode( target_hash ) );
+
       pos = hex_pub_key.find( '-' );
 
       if( pos != string::npos )
       {
          hex_master = hex_pub_key.substr( pos + 1 );
          hex_pub_key.erase( pos );
+
+         if( !are_hex_nibbles( hex_master ) )
+            hex_master = hex_encode( base64::decode( hex_master ) );
       }
+
+      if( !are_hex_nibbles( hex_pub_key ) )
+         hex_pub_key = hex_encode( base64::decode( hex_pub_key ) );
 
       // NOTE: If this file is the result of a repository pull request
       // then when testing tag it with both the target hash and public
@@ -514,7 +523,7 @@ void process_repository_file( const string& blockchain,
       }
       else
       {
-         public_key pub_key( extra_info );
+         public_key pub_key( extra_info, !are_hex_nibbles( extra_info ) );
 
          auto_ptr< private_key > ap_priv_key;
 
@@ -577,18 +586,20 @@ string get_hash_info_from_put_data( const string& encoded_master_pubkey,
       // NOTE: Construct a public key object for the purpose of validation.
       public_key pubkey( encoded_local_pubkey, true );
 
-      string extra( hex_encode( base64::decode( encoded_local_pubkey ) ) );
+      string extra( encoded_local_pubkey );
 
       if( !encoded_master_pubkey.empty( ) )
       {
          public_key pubkey( encoded_master_pubkey, true );
-         extra += '-' + hex_encode( base64::decode( encoded_master_pubkey ) );
+
+         extra += '-' + encoded_master_pubkey;
       }
 
       if( !encoded_target_hash.empty( ) )
       {
          base64::validate( encoded_target_hash );
-         extra += ';' + hex_encode( base64::decode( encoded_target_hash ) );
+
+         extra += ';' + encoded_target_hash;
       }
 
       retval = hex_encode( base64::decode( encoded_source_hash ) ) + ':' + extra + c_repository_suffix;
