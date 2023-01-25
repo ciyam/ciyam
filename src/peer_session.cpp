@@ -570,8 +570,20 @@ void process_repository_file( const string& blockchain,
    }
 }
 
-string get_hash_info_from_put_data( const string& encoded_master_pubkey,
- const string& encoded_local_pubkey, const string& encoded_source_hash, const string& encoded_target_hash )
+void parse_peer_mapped_info( const string& peer_mapped_info,
+ string& local_hash, string& local_public_key, string& master_public_key )
+{
+   if( peer_mapped_info.length( ) != 197 )
+      throw runtime_error( "unexpected peer_mapped_info length != 197" );
+
+   // NOTE: Mapped info is '<local_hash>:<local_pub_key><master_pub_key>'.
+   local_hash = peer_mapped_info.substr( 0, 64 );
+   local_public_key = peer_mapped_info.substr( 65, 66 );
+   master_public_key = peer_mapped_info.substr( 131 );
+}
+
+string get_peer_mapped_info_from_put_data(
+ const string& encoded_master_pubkey, const string& encoded_local_pubkey, const string& encoded_source_hash )
 {
    string retval;
 
@@ -586,23 +598,16 @@ string get_hash_info_from_put_data( const string& encoded_master_pubkey,
       // NOTE: Construct a public key object for the purpose of validation.
       public_key pubkey( encoded_local_pubkey, true );
 
-      string extra( encoded_local_pubkey );
+      string extra( hex_encode( base64::decode( encoded_local_pubkey ) ) );
 
       if( !encoded_master_pubkey.empty( ) )
       {
          public_key pubkey( encoded_master_pubkey, true );
 
-         extra += '-' + encoded_master_pubkey;
+         extra += hex_encode( base64::decode( encoded_master_pubkey ) );
       }
 
-      if( !encoded_target_hash.empty( ) )
-      {
-         base64::validate( encoded_target_hash );
-
-         extra += ';' + encoded_target_hash;
-      }
-
-      retval = hex_encode( base64::decode( encoded_source_hash ) ) + ':' + extra + c_repository_suffix;
+      retval = hex_encode( base64::decode( encoded_source_hash ) ) + ':' + extra;
    }
    catch( ... )
    {
@@ -789,19 +794,23 @@ void process_put_file( const string& blockchain,
 #ifndef SSL_SUPPORT
                      okay = true;
 #else
-                     string hash_info( get_hash_info_from_put_data( master_key, public_key, source_hash, target_hash ) );
+                     string peer_mapped_info( get_peer_mapped_info_from_put_data( master_key, public_key, source_hash ) );
 
-                     if( !hash_info.empty( ) )
+                     string local_hash, local_public_key, master_public_key;
+
+                     parse_peer_mapped_info( peer_mapped_info, local_hash, local_public_key, master_public_key );
+
+                     if( !peer_mapped_info.empty( ) )
                      {
                         guard g( g_mutex, "process_put_file" );
 
                         okay = true;
-                        pos = hash_info.find( ':' );
+                        pos = peer_mapped_info.find( ':' );
 
-                        if( !has_file( hash_info.substr( 0, pos ) ) )
+                        string hex_target_hash( hex_encode( base64::decode( target_hash ) ) );
+
+                        if( !has_file( peer_mapped_info.substr( 0, pos ) ) )
                         {
-                           string hex_target_hash( hex_encode( base64::decode( target_hash ) ) );
-
                            if( has_file( hex_target_hash ) )
                            {
                               target_hashes.insert( hex_target_hash );
@@ -825,19 +834,23 @@ void process_put_file( const string& blockchain,
 
                                     string mapped_hash( get_peer_mapped_hash_info( identity, hex_target_hash ) );
 
-                                    // NOTE: Either set a session variable or add the file info to
-                                    // be fetched depending on whether or not "process_list_items"
-                                    // had been called (if was called the mapped hash will exist).
+                                    // NOTE: Either now adds the file to be fetched or maps information
+                                    // depending on whether or not "process_list_items" had been called
+                                    // (if was called the mapped hash will exist).
                                     if( mapped_hash.empty( ) )
-                                       set_session_variable( target_hash, hash_info );
+                                       add_peer_mapped_hash_info( '!' + identity, hex_target_hash, peer_mapped_info );
                                     else
-                                       add_peer_file_hash_for_get( hash_info, check_for_supporters );
+                                    {
+                                       add_peer_file_hash_for_get( local_hash + ':' + local_public_key + '-'
+                                        + master_public_key + ';' + hex_target_hash + c_repository_suffix, check_for_supporters );
+                                    }
                                  }
                               }
                            }
                         }
                         else
-                           process_repository_file( blockchain, hash_info.substr( 0, hash_info.length( ) - 1 ), is_test_session );
+                           process_repository_file( blockchain, local_hash + ':'
+                            + local_public_key + '-' + master_public_key + ';' + hex_target_hash, is_test_session );
                      }
 #endif
                   }
@@ -999,13 +1012,8 @@ bool has_all_list_items( const string& blockchain,
 
                string local_hash, local_public_key, master_public_key;
 
-               if( peer_mapped_info.length( ) != 197 )
-                  throw runtime_error( "unexpected peer_mapped_info length != 197" );
-
-               // NOTE: Mapped info is '<local_hash>:<local_pub_key><master_pub_key>'.
-               local_hash = peer_mapped_info.substr( 0, 64 );
-               local_public_key = peer_mapped_info.substr( 65, 66 );
-               master_public_key = peer_mapped_info.substr( 131 );
+               parse_peer_mapped_info( peer_mapped_info,
+                local_hash, local_public_key, master_public_key );
 
                *p_blob_data += create_peer_repository_entry_pull_info( identity,
                 next_hash, local_hash, local_public_key, master_public_key, false );
@@ -1351,19 +1359,24 @@ void process_list_items( const string& identity,
                   {
                      if( !prefixed_secondary_values )
                      {
-                        string target( base64::encode( hex_decode( next_hash ) ) );
+                        string peer_mapped_info( get_peer_mapped_hash_info( '!' + identity, next_hash ) );
 
-                        string hash_info( get_session_variable( target ) );
-
-                        if( !hash_info.empty( ) )
+                        if( peer_mapped_info.empty( ) )
+                           add_peer_mapped_hash_info( identity, next_hash, next_secondary );
+                        else
                         {
                            added = true;
 
-                           set_system_variable( target, "" );
-                           add_peer_file_hash_for_get( hash_info, check_for_supporters );
+                           string local_hash, local_public_key, master_public_key;
+
+                           parse_peer_mapped_info( peer_mapped_info,
+                            local_hash, local_public_key, master_public_key );
+
+                           clear_peer_mapped_hash( '!' + identity, next_hash );
+
+                           add_peer_file_hash_for_get( local_hash + ':' + local_public_key + '-'
+                            + master_public_key + ';' + next_hash + c_repository_suffix, check_for_supporters );
                         }
-                        else
-                           add_peer_mapped_hash_info( identity, next_hash, next_secondary );
 
                         if( has_targeted_identity )
                         {
