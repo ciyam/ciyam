@@ -820,8 +820,6 @@ void process_put_file( const string& blockchain,
                            }
                            else
                            {
-                              string local_hash;
-
                               bool has_repo_entry = fetch_repository_entry_record( identity, hex_target_hash, local_hash, false );
 
                               if( has_repo_entry && has_file( local_hash ) )
