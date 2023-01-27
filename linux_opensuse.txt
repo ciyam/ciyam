@@ -10,6 +10,9 @@ sudo vi /etc/sudoers
 [add the following line]
 tux ALL=(ALL) NOPASSWD:ALL
 
+(to disable "smart indenting")
+sudo mv /usr/share/vim/current/indent.vim /usr/share/vim/current/indent.vim.sav
+
 Updgrade to latest version (will have to reboot after):
 
 sudo zypper dup
