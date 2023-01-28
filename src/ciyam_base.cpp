@@ -104,7 +104,7 @@ const int c_storable_file_pad_len = 32;
 
 const size_t c_num_txs_for_reset = 500000;
 
-const size_t c_identity_additional_multiplier = 10;
+const size_t c_identity_additional_multiplier = 35;
 const size_t c_minimum_encrypted_password_size = 10;
 
 // NOTE: Limit the buffer to twice the maximum file size (if a compression
@@ -4893,6 +4893,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          if( are_hex_nibbles( sid ) )
          {
+            // NOTE: The additional entropy is now used as salt to harden the identity key.
             if( !extra.empty( ) )
                harden_key_with_salt( sid, info, extra, c_identity_additional_multiplier );
 

@@ -13,6 +13,14 @@ tux ALL=(ALL) NOPASSWD:ALL
 (to disable "smart indenting")
 sudo mv /usr/share/vim/current/indent.vim /usr/share/vim/current/indent.vim.sav
 
+(to create "clip" for copying text to the clipboard)
+vi bin/clip
+if [ $# -lt 1 ]; then
+ echo "Usage: clip [\"text\""
+else
+ echo -n "$1" | xclip -selection clipboard -display "$DISPLAY"
+fi
+
 Updgrade to latest version (will have to reboot after):
 
 sudo zypper dup

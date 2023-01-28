@@ -258,14 +258,14 @@ void data_decrypt( string& s, const string& dat, const string& key, bool use_ssl
    else
       salt = dat.substr( 0, ++pos );
 
-   bool use_MD5 = false;
-
    // NOTE: For compatability with older 128 bit AES encrypted
    // passwords the 256 bit ones are prefixed with an asterisk
    // or a hash (the asterisk prefixed ones use an MD5 hash of
    // the key rather than the key itself and so are considered
    // to be less secure).
    bool use_256 = false;
+   bool use_MD5 = false;
+
    if( dat[ pos ] == '*' || dat[ pos ] == '#' )
    {
       ++pos;
