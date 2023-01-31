@@ -3042,8 +3042,12 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             hash.get_digest_as_string( digest );
          }
 
-         if( digest.find( targeted_identity ) == 0 )
+         if( digest.find( targeted_identity ) != 0 )
+            tag_del( blockchain + c_shared_suffix );
+         else
          {
+            tag_file( blockchain + c_shared_suffix, block_processing );
+
             string backup_identity( get_session_variable(
              get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
@@ -3287,6 +3291,18 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         // NOTE: To assist with UI behaviour progress message will be updated if is missing an ellipsis.
                         if( progress_message.find( c_ellipsis ) == string::npos )
                            output_synchronised_progress_message( identity, blockchain_height, blockchain_height_other );
+                     }
+                     else if( has_tag( blockchain + c_shared_suffix, e_file_type_blob ) )
+                     {
+                        string backup_identity( get_session_variable(
+                         get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+
+                        if( backup_identity.empty( ) )
+                           set_system_variable( get_special_var_name(
+                            e_special_var_export_needed ) + '_' + identity, identity );
+                        else
+                           set_system_variable( get_special_var_name(
+                            e_special_var_export_needed ) + '_' + backup_identity, identity );
                      }
                   }
                }

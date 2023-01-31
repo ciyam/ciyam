@@ -61,6 +61,8 @@ if [ ! -f ~shared ]; then
 
  ./export_files $SHARED_LIST $USER_PATH >>$SHARED_DETAILS
 
+ ./ciyam_command file_tag -remove bc.$IDENTITY.shared
+
  sudo chown root:root $SHARED_IMAGE
  sudo mount $SHARED_IMAGE $SHARED_PATH
 
