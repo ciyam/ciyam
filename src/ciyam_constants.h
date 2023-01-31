@@ -37,6 +37,7 @@ const char* const c_pub_suffix = ".pub";
 const char* const c_put_suffix = ".put";
 const char* const c_sig_suffix = ".sig";
 
+const char* const c_shared_suffix = ".shared";
 const char* const c_zenith_suffix = ".zenith";
 
 const char* const c_repository_info_suffix = ".info";
