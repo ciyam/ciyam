@@ -158,10 +158,10 @@ PUB_KEY_HASH_ENC=$PUB_KEY_HASH_ENC,$OUTPUT
 HIND_HASH_ENC=%OUTPUT:1440%
 ;
 .file_crypt bc.$IDENT.$LAST.key @sid
-.file_get bc.$IDENT.$LAST.key ~$UUID.key
+.file_get bc.$IDENT.$LAST.key $UUID.key
 .file_crypt bc.$IDENT.$LAST.key @sid
 ;
-.file_get bc.$IDENT.$LAST.pub ~$UUID.pub
+.file_get bc.$IDENT.$LAST.pub $UUID.pub
 ;
 @ifndef $TREE
 ;
@@ -205,15 +205,15 @@ u:$UTIME bc.$IDENT.$HEIGHT.blk
 ;
 BLOCK_HASH=$OUTPUT
 ;
-.crypto_lamport -sign ~$UUID:$BLOCK_HASH
-.file_put ~$UUID.sig bc.$IDENT.$LAST.sig
+.crypto_lamport -sign $UUID:$BLOCK_HASH
+.file_put $UUID.sig bc.$IDENT.$LAST.sig
 .file_hash bc.$IDENT.$LAST.sig
 ;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
-~shred ~$UUID.key
+~shred $UUID.key
 @endif
-~rm ~$UUID.key ~$UUID.pub ~$UUID.sig
+~rm $UUID.key $UUID.pub $UUID.sig
 ;
 @ifndef $ERROR
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
