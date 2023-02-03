@@ -5,6 +5,8 @@
 ;
 IDENT=$1
 SEED=$2
+TREE=$3
+;
 BACKUP=
 SHARED=
 ;
@@ -48,7 +50,7 @@ NEW_HEIGHT=@$BLK_HEIGHT+1
 ;
 <bc_gen_keys.cin $SEED $IDENT $NEW_HEIGHT
 ;
-<bc_gen_block.cin $IDENT $NEW_HEIGHT
+<bc_gen_block.cin $IDENT $NEW_HEIGHT $TREE
 ;
 @ifndef $ERROR
 ; FUTURE: This message should be handled as a server string.
