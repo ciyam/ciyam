@@ -1397,7 +1397,7 @@ void request_handler::process_request( )
 
                      string server_id( identity_info.substr( 0, pos ) );
 
-                     if( get_server_id( ) == server_id )
+                     if( matches_server_id( server_id ) )
                      {
                         g_unlock_fails = 0;
                         g_id = get_id_from_server_id( );
@@ -1576,7 +1576,12 @@ void request_handler::process_request( )
 
                         string admin_user_hash( sha256( c_admin_user_key + admin_pwd_hash ).get_digest_as_string( ) );
 
-                        string encrypted_pwd( data_encrypt( admin_pwd_hash, get_server_id( ) ) );
+                        string sid;
+                        get_server_id( sid );
+
+                        string encrypted_pwd( data_encrypt( admin_pwd_hash, sid ) );
+
+                        clear_key( sid );
 
                         vector< pair< string, string > > pwd_field_value_pairs;
 
@@ -1684,7 +1689,12 @@ void request_handler::process_request( )
 
                      vector< pair< string, string > > field_value_pairs;
 
-                     string encrypted_password( data_encrypt( activate_password, get_server_id( ) ) );
+                     string sid;
+                     get_server_id( sid );
+
+                     string encrypted_password( data_encrypt( activate_password, sid ) );
+
+                     clear_key( sid );
 
                      field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_password ) );
                      field_value_pairs.push_back( make_pair( mod_info.user_active_field_id, "1" ) );
@@ -2602,7 +2612,12 @@ void request_handler::process_request( )
                      error_message = string( c_response_error_prefix ) + GDS( c_display_old_password_is_incorrect );
                   else
                   {
-                     string encrypted_new_password( data_encrypt( new_password, get_server_id( ) ) );
+                     string sid;
+                     get_server_id( sid );
+
+                     string encrypted_new_password( data_encrypt( new_password, sid ) );
+
+                     sid.clear( );
 
                      vector< pair< string, string > > pwd_field_value_pairs;
                      pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_new_password ) );

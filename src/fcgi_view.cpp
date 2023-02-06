@@ -1209,6 +1209,9 @@ bool output_view_form( ostream& os, const string& act,
    date_time dt_current;
    get_session_dtm( sess_info, dt_current );
 
+   string sid;
+   get_server_id( sid );
+
    for( size_t i = 0; i < source.field_ids.size( ); i++ )
    {
       string cell_data;
@@ -1618,7 +1621,7 @@ bool output_view_form( ostream& os, const string& act,
             split( source.vici->second->fields[ i ].pextra, parent_extras, '+' );
 
          if( !cell_data.empty( ) && parent_extras.count( c_parent_extra_decrypt ) )
-            cell_data = data_decrypt( cell_data, get_server_id( ) );
+            cell_data = data_decrypt( cell_data, sid );
 
          if( !field_list.empty( ) )
             field_list += ',';
@@ -3158,6 +3161,8 @@ bool output_view_form( ostream& os, const string& act,
          os << "<tbody>\n";
       }
    }
+
+   clear_key( sid );
 
    if( display_tabs && !has_displayed_tabs )
       output_view_tabs( os, source, sess_info, vtab_num, is_in_edit, data,

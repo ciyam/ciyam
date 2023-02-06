@@ -87,9 +87,9 @@ void log_trace_message( const string& message )
    outf << message << '\n';
 }
 
-const string& get_server_id( )
+void get_server_id( string& id )
 {
-   return get_sid( );
+   get_sid( id );
 }
 
 void set_server_id( const string& id )
@@ -97,9 +97,29 @@ void set_server_id( const string& id )
    set_sid( id );
 }
 
+bool matches_server_id( const string& id )
+{
+   bool retval = false;
+
+   string sid;
+   get_sid( sid );
+
+   if( id == sid )
+      retval = true;
+
+   clear_key( sid );
+
+   return retval;
+}
+
 string get_id_from_server_id( const char* p_server_id )
 {
-   string key( p_server_id ? string( p_server_id ) : get_server_id( ) );
+   string sid;
+   get_sid( sid );
+
+   string key( p_server_id ? string( p_server_id ) : sid );
+
+   clear_key( sid );
 
    MD5 md5;
    md5.update( ( unsigned char* )key.c_str( ), key.length( ) );
@@ -262,7 +282,12 @@ string get_hash( const string& values )
 
 string get_user_hash( const string& user_id )
 {
-   sha1 hash( get_sid( ) + user_id );
+   string sid;
+   get_sid( sid );
+
+   sha1 hash( sid + user_id );
+
+   clear_key( sid );
 
    vector< string > sha1_quads;
    split( hash.get_digest_as_string( ',' ), sha1_quads );
@@ -277,7 +302,12 @@ string get_checksum( const string& values )
 {
    DEBUG_TRACE( "(checksum) values = " + values );
 
-   sha1 hash( get_sid( ) + values );
+   string sid;
+   get_sid( sid );
+
+   sha1 hash( sid + values );
+
+   clear_key( sid );
 
    vector< string > sha1_quads;
    split( hash.get_digest_as_string( ',' ), sha1_quads );

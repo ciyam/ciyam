@@ -168,7 +168,7 @@ std::string CIYAM_BASE_DECL_SPEC get_domain( );
 std::string CIYAM_BASE_DECL_SPEC get_app_url( const std::string& suffix );
 
 void CIYAM_BASE_DECL_SPEC get_identity( std::string& s,
- bool append_max_user_limit = false, bool use_truncated = false, bool md5_version = false );
+ bool append_max_user_limit = false, bool use_single_hash = false, bool md5_version = false );
 
 bool CIYAM_BASE_DECL_SPEC has_identity( bool* p_is_encrypted = 0 );
 
