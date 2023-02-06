@@ -419,6 +419,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          // sent to the application server.
          if( !skip_force_fields )
          {
+            string sid;
+            get_server_id( sid );
+
             for( size_t i = 0; i < view.user_force_fields.size( ); i++ )
             {
                if( userfetch == view.user_force_fields[ i ] )
@@ -435,7 +438,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      if( view.encrypted_fields.count( view.user_force_fields[ i ] ) )
                      {
                        set_field_values += "=" + data_encrypt(
-                        user_field_info[ view.user_force_fields[ i ] ], get_server_id( ) );
+                        user_field_info[ view.user_force_fields[ i ] ], sid );
                      }
                      else
                         set_field_values += "=" + escaped( escaped(
@@ -443,6 +446,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   }
                }
             }
+
+            clear_key( sid );
          }
       }
 
@@ -538,9 +543,13 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             view.state = state;
             view.key_info = key_and_version;
 
+            size_t field_num = 0;
+
             bool has_always_editable = false;
 
-            size_t field_num = 0;
+            string sid;
+            get_server_id( sid );
+
             for( size_t i = 0; i < view.field_ids.size( ); i++ )
             {
                if( view.field_ids[ i ] == c_key_field )
@@ -570,7 +579,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                 && !view.hidden_fields.count( view.field_ids[ i ] )
                 && view.encrypted_fields.count( view.field_ids[ i ] ) )
                {
-                  item_value = data_decrypt( item_value, get_server_id( ) );
+                  item_value = data_decrypt( item_value, sid );
 
                   item_values[ field_num ] = item_value;
                }
@@ -613,6 +622,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                if( field_num < item_values.size( ) )
                   view.field_values[ view.value_ids[ i ] ] = item_values[ field_num++ ];
             }
+
+            clear_key( sid );
 
             // NOTE: If a "force" field triggered the POST then user values for any
             // "forced" fields are replaced by the value retrieved from the server.
@@ -2346,7 +2357,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   if( !simple_command( *p_session_info, "password gpg", &gpg_password ) )
                      throw runtime_error( "unable to access GPG password" );
 
-                  gpg_password = data_decrypt( gpg_password, get_server_id( ) + string( c_salt_value ) );
+                  string sid;
+                  get_server_id( sid );
+
+                  gpg_password = data_decrypt( gpg_password, sid + string( c_salt_value ) );
 
                   string smtp_sender;
                   if( !simple_command( *p_session_info, "smtpinfo", &smtp_sender ) )
@@ -2371,7 +2385,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   {
                      password = hash_password( g_id + password + req_username );
 
-                     password = data_encrypt( password, get_server_id( ) );
+                     password = data_encrypt( password, sid );
 
                      bool is_anon_email_addr = false;
                      string::size_type pos = email_addr.find( "@" );
@@ -2387,7 +2401,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                         if( !is_anon_email_addr )
                         {
-                           email = data_encrypt( email_addr, get_server_id( ) );
+                           email = data_encrypt( email_addr, sid );
                            gpg_key_file = get_storage_info( ).web_root + "/x.gpg";
                         }
 
@@ -2420,6 +2434,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                             + date_time::local( ).as_string( true, false ) + " from " + raddr + "]" );
                         }
                      }
+
+                     clear_key( sid );
 
                      file_remove( "x.gpg" );
                      file_remove( "x.tmp" );
@@ -2468,7 +2484,12 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             }
             else if( error_message.empty( ) && !email.empty( ) )
             {
-               string encrypted_email( data_encrypt( email, get_server_id( ) ) );
+               string sid;
+               get_server_id( sid );
+
+               string encrypted_email( data_encrypt( email, sid ) );
+
+               clear_key( sid );
 
                string new_key;
                add_user( req_username, req_username, encrypted_email,
@@ -2571,7 +2592,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             string encrypted_email;
 
             if( !email.empty( ) )
-               encrypted_email = data_encrypt( email, get_server_id( ) );
+            {
+               string sid;
+               get_server_id( sid );
+
+               encrypted_email = data_encrypt( email, sid );
+
+               clear_key( sid );
+            }
 
             add_user( userhash, req_username, encrypted_email,
              clone_key, "", error_message, mod_info, *p_session_info );

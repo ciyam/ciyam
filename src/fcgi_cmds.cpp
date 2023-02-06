@@ -1392,13 +1392,18 @@ bool fetch_parent_row_data( const string& module,
 
    if( needs_decrypting )
    {
+      string sid;
+      get_server_id( sid );
+
       for( size_t i = 0; i < parent_row_data.size( ); i++ )
       {
          if( parent_row_data[ i ].second.empty( ) )
             continue;
 
-         parent_row_data[ i ].second = data_decrypt( parent_row_data[ i ].second, get_server_id( ) );
+         parent_row_data[ i ].second = data_decrypt( parent_row_data[ i ].second, sid );
       }
+
+      clear_key( sid );
    }
 
    if( sort_manually )
@@ -1896,6 +1901,9 @@ bool populate_list_info( list_source& list,
          // before manual sorting (as they clearly might affect the sorting).
          if( !encrypted_columns.empty( ) )
          {
+            string sid;
+            get_server_id( sid );
+
             for( size_t i = 0; i < list.row_data.size( ); i++ )
             {
                vector< string > columns;
@@ -1910,12 +1918,14 @@ bool populate_list_info( list_source& list,
                         continue;
 
                      columns[ encrypted_columns[ j ] ]
-                      = data_decrypt( columns[ encrypted_columns[ j ] ], get_server_id( ) );
+                      = data_decrypt( columns[ encrypted_columns[ j ] ], sid );
                   }
 
                   list.row_data[ i ].second = join( columns );
                }
             }
+
+            clear_key( sid );
          }
 
          if( sort_manually )
@@ -2178,7 +2188,14 @@ bool fetch_user_record(
           + ( userhash.empty( ) ? username : user_data[ 0 ] ), 100 );
       }
       else
-         user_password = data_decrypt( user_password, get_server_id( ) );
+      {
+         string sid;
+         get_server_id( sid );
+
+         user_password = data_decrypt( user_password, sid );
+
+         clear_key( sid );
+      }
 
       string final_password( user_password );
 
@@ -2570,6 +2587,9 @@ void save_record( const string& module_id,
       }
    }
 
+   string sid;
+   get_server_id( sid );
+
    for( size_t i = 0; i < fields.size( ); i++ )
    {
       string field_id( fields[ i ] );
@@ -2663,7 +2683,7 @@ void save_record( const string& module_id,
       else if( !ignore_encrypted && view.encrypted_fields.count( field_id ) )
       {
          if( !next.empty( ) )
-            next = data_encrypt( next, get_server_id( ) );
+            next = data_encrypt( next, sid );
       }
       else
       {
@@ -2732,6 +2752,8 @@ void save_record( const string& module_id,
          field_values += ',';
       field_values += field_id + '=' + escaped( next, "\"", '\\', "rn\r\n" );
    }
+
+   clear_key( sid );
 
    // NOTE: After dealing with all the field values provided via the UI next check the view
    // for any "defcurrent" fields that haven't already been provided.

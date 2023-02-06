@@ -301,7 +301,7 @@ void data_decrypt( string& s, const string& dat, const string& key, bool use_ssl
 #endif
 
    string salted_key;
-   salted_key.reserve( c_sha256_digest_size + key.length( ) );
+   salted_key.reserve( ( c_sha256_digest_size * 2 ) + key.length( ) );
 
    salted_key += key;
    salted_key += salt;
@@ -309,6 +309,7 @@ void data_decrypt( string& s, const string& dat, const string& key, bool use_ssl
    if( !salt.empty( ) )
    {
       sha256 hash;
+
       for( size_t i = 0; i < c_password_hash_rounds * c_password_rounds_multiplier; i++ )
       {
          string tmp;
@@ -392,7 +393,7 @@ void data_encrypt( string& s, const string& dat, const string& key, bool use_ssl
       salt += uuid( ).as_string( ) + ':';
 
    string salted_key;
-   salted_key.reserve( c_sha256_digest_size + key.length( ) );
+   salted_key.reserve( ( c_sha256_digest_size * 2 ) + key.length( ) );
 
    salted_key += key;
    salted_key += salt;
@@ -400,6 +401,7 @@ void data_encrypt( string& s, const string& dat, const string& key, bool use_ssl
    if( add_salt )
    {
       sha256 hash;
+
       for( size_t i = 0; i < c_password_hash_rounds * c_password_rounds_multiplier; i++ )
       {
          string tmp;

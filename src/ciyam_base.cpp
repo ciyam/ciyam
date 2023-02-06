@@ -3673,11 +3673,14 @@ string g_sid;
 
 #include "sid.enc"
 
-void sid_hash( string& s, bool use_truncated = false )
+void sid_hash( string& s, bool use_single_hash = false )
 {
    guard g( g_mutex );
 
-   string sid( get_sid( ) );
+   string sid;
+   get_sid( sid );
+
+   bool had_extra_entropy = ( sid.length( ) > 32 );
 
    string tmp;
    tmp.reserve( c_key_reserve_size );
@@ -3699,13 +3702,23 @@ void sid_hash( string& s, bool use_truncated = false )
 
    hash1.get_digest_as_string( s );
 
-   if( use_truncated )
-      s.resize( c_sha1_digest_size * 2 );
-   else
+   // NOTE: Unless the "sid" is greater than 32 characters in length
+   // either use an SHA1 hash or truncate it to the equivalent size.
+   if( !had_extra_entropy )
    {
-      sha1 hash2( s );
+      if( use_single_hash )
+         s.resize( c_sha1_digest_size * 2 );
+      else
+      {
+         sha1 hash2( s );
 
-      hash2.get_digest_as_string( s );
+         hash2.get_digest_as_string( s );
+      }
+   }
+   else if( !use_single_hash )
+   {
+      hash1.update( s );
+      hash1.get_digest_as_string( s );
    }
 }
 
@@ -4795,16 +4808,17 @@ string get_app_url( const string& suffix )
    return url;
 }
 
-void get_identity( string& s, bool append_max_user_limit, bool use_truncated, bool md5_version )
+void get_identity( string& s, bool append_max_user_limit, bool use_single_hash, bool md5_version )
 {
    guard g( g_mutex );
 
    s.reserve( c_key_reserve_size );
 
-   string sid( get_sid( ) );
+   string sid;
+   get_sid( sid );
 
    if( !sid.empty( ) )
-      sid_hash( s, use_truncated );
+      sid_hash( s, use_single_hash );
    else
    {
       string seed;
@@ -4828,7 +4842,8 @@ bool has_identity( bool* p_is_encrypted )
 {
    guard g( g_mutex );
 
-   string sid( get_sid( ) );
+   string sid;
+   get_sid( sid );
 
    bool retval = !sid.empty( );
 
@@ -4855,7 +4870,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
       bool is_encrypted = false;
 
-      string sid( get_sid( ) );
+      string sid;
+      get_sid( sid );
 
       if( sid.find( ':' ) != string::npos )
          is_encrypted = true;
@@ -4930,9 +4946,10 @@ string get_checksum( const string& data )
 {
    guard g( g_mutex );
 
-   string prefix( get_sid( ) );
+   string sid;
+   get_sid( sid );
 
-   sha1 hash( prefix + data );
+   sha1 hash( sid + data );
 
    vector< string > sha1_quads;
    split( hash.get_digest_as_string( ',' ), sha1_quads );
