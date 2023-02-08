@@ -125,8 +125,7 @@ string get_id_from_server_id( const char* p_server_id )
    md5.update( ( unsigned char* )key.c_str( ), key.length( ) );
    md5.finalize( );
 
-   for( size_t i = 0; i < key.size( ); i++ )
-      key[ i ] = '\0';
+   clear_key( key );
 
    auto_ptr< char > ap_digest( md5.hex_digest( ) );
 

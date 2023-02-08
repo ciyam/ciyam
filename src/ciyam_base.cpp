@@ -3680,7 +3680,10 @@ void sid_hash( string& s, bool use_single_hash = false )
    string sid;
    get_sid( sid );
 
-   bool had_extra_entropy = ( sid.length( ) > 32 );
+   bool had_extra_entropy = false;
+
+   if( sid.length( ) > 32 && ( sid.find( ':' ) == string::npos ) )
+      had_extra_entropy = true;
 
    string tmp;
    tmp.reserve( c_key_reserve_size );
