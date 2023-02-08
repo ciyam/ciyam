@@ -939,7 +939,7 @@ void request_handler::process_request( )
       module_id = mod_info.id;
 
       if( g_id.empty( ) && file_exists( c_id_file ) )
-         g_id = buffer_file( c_id_file );
+         g_id = get_id_from_server_id( buffer_file( c_id_file ).c_str( ) );
 
       bool is_invalid_session = false;
 
@@ -1280,12 +1280,8 @@ void request_handler::process_request( )
                         throw runtime_error( "incompatible protocol version "
                          + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
 
-                     // NOTE: After initial handshake exchange public keys.
-                     string pubkey;
-
-                     if( pubkey.empty( ) )
-                        pubkey = string( c_none );
-
+                     // NOTE: After initial handshake exchange public keys (currently sets "none" as own).
+                     string pubkey( c_none );
                      string slotx, pubkeyx, slotx_and_pubkeyx;
 
                      if( p_session_info->p_socket->read_line( slotx_and_pubkeyx, c_pubkey_timeout ) <= 0 )
@@ -1336,8 +1332,16 @@ void request_handler::process_request( )
 
                      if( g_seed.empty( ) )
                      {
+#ifdef SSL_SUPPORT
+                        public_key pub_key( pubkeyx );
+                        private_key priv_key;
+
+                        if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( ), &identity_info ) )
+                           throw runtime_error( "unable to determine identity information" );
+#else
                         if( !simple_command( *p_session_info, "identity", &identity_info ) )
                            throw runtime_error( "unable to determine identity information" );
+#endif
                      }
                      else
                      {
@@ -1364,6 +1368,9 @@ void request_handler::process_request( )
                         }
                         else
                         {
+                           // NOTE: The seed is encrypted and sent as the identity (so that the application
+                           // server will return the "encrypted identity") before then sending the password
+                           // to unlock it.
                            string encrypted( g_seed );
                            data_encrypt( encrypted, encrypted, g_id_pwd );
 
@@ -1400,12 +1407,13 @@ void request_handler::process_request( )
                      if( matches_server_id( server_id ) )
                      {
                         g_unlock_fails = 0;
-                        g_id = get_id_from_server_id( );
+
+                        g_id = get_id_from_server_id( server_id.c_str( ) );
 
                         if( !file_exists( id_file_name.c_str( ) ) )
                         {
                            ofstream outf( id_file_name.c_str( ) );
-                           outf << g_id;
+                           outf << server_id;
                         }
 
                         if( !file_exists( id_file_name.c_str( ) ) )
@@ -1453,7 +1461,7 @@ void request_handler::process_request( )
                            if( !g_seed.empty( ) )
                            {
                               ofstream outf( id_file_name.c_str( ) );
-                              outf << g_id;
+                              outf << server_id;
 
                               has_set_identity = true;
 
@@ -3031,7 +3039,7 @@ int main( int argc, char* argv[ ] )
       g_ciyam_interface_html = buffer_file( c_ciyam_interface_file );
 
       if( file_exists( c_id_file ) )
-         g_id = buffer_file( c_id_file );
+         g_id = get_id_from_server_id( buffer_file( c_id_file ).c_str( ) );
 
       str_replace( g_login_html, c_login, GDS( c_display_login ) );
       str_replace( g_login_html, c_user_id, GDS( c_display_user_id ) );

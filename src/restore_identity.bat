@@ -18,13 +18,14 @@ move "ciyam_server.sid.sav" "ciyam_server.sid"
 if not exist "%WEBDIR%\meta\identity.txt.sav" goto skip2
 set RESTORED=1
 move "%WEBDIR%\meta\identity.txt.sav" "%WEBDIR%\meta\identity.txt"
+if exist "%WEBDIR%\meta\encrypted.txt" del "%WEBDIR%\meta\encrypted.txt"
 
 :skip2
 if not exist "%WEBDIR%\meta\encrypted.txt.sav" goto next
 set RESTORED=1
 move "%WEBDIR%\meta\encrypted.txt.sav" "%WEBDIR%\meta\encrypted.txt"
 
-:next2
+:next
 if "%RESTORED%" == "" goto end
 echo NOTE: Will need to restart both the application and HTTP server.
 goto end

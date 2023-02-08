@@ -17,6 +17,7 @@ else
  if [ -f $WEBDIR/meta/identity.txt.sav ]; then
   export RESTORED=1
   mv $WEBDIR/meta/identity.txt.sav $WEBDIR/meta/identity.txt
+  rm -f $WEBDIR/meta/encrypted.txt
  fi
 
  if [ -f $WEBDIR/meta/encrypted.txt.sav ]; then

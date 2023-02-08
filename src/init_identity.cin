@@ -7,7 +7,8 @@ SID_FILE=@files::ciyam_server.sid,^.sav,^.xrep
 ;
 @ifdef $SID_FILE
 .identity
-IDENT=@substr:0,40:$OUTPUT
+COMBINED=@repstr:\:/\n:$OUTPUT
+IDENT=%COMBINED:1%
 #Existing Identity: $IDENT
 @else
 ;
@@ -25,15 +26,18 @@ ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
 ENCRYPTED=$OUTPUT
 ;
 .identity $ENCRYPTED
+COMBINED=@repstr:\:/\n:$OUTPUT
+LOCKED=%COMBINED:1%
 .identity $ARGS $ENCRYPTED
-IDENT=@substr:0,40:$OUTPUT
-#Identity: $IDENT
+COMBINED=@repstr:\:/\n:$OUTPUT
+UNLOCKED=%COMBINED:1%
+#Identity: $UNLOCKED
 ;
 .system_variable @os
 @ifneq "$OUTPUT" "Linux"
-~echo $IDENT > $WEBDIR/meta/encrypted.txt
+~echo $LOCKED > $WEBDIR/meta/encrypted.txt
 @else
-~echo -n $IDENT > $WEBDIR/meta/encrypted.txt
+~echo -n $LOCKED > $WEBDIR/meta/encrypted.txt
 @endif
 ;
 @endif
