@@ -1355,7 +1355,7 @@ void request_handler::process_request( )
                             + " " + priv_key.encrypt_message( pub_key, g_id_pwd ), &identity_info ) )
                               throw runtime_error( "unable to unlock encrypted identity information" );
 #else
-                           if( !simple_command( *p_session_info, "identity " + g_id_pwd, &identity_info ) )
+                           if( !simple_command( *p_session_info, "identity " + quote( g_id_pwd ), &identity_info ) )
                               throw runtime_error( "unable to unlock encrypted identity information" );
 #endif
                            was_unlock = true;
@@ -1392,7 +1392,8 @@ void request_handler::process_request( )
                             + " " + priv_key.encrypt_message( pub_key, g_id_pwd ) + " " + encrypted, &identity_info ) )
                               throw runtime_error( "unable to set/update identity information" );
 #else
-                           if( !simple_command( *p_session_info, "identity " + g_id_pwd + " " + encrypted, &identity_info ) )
+                           if( !simple_command( *p_session_info,
+                            "identity " + quote( g_id_pwd ) + " " + encrypted, &identity_info ) )
                               throw runtime_error( "unable to set/update identity information" );
 #endif
                         }

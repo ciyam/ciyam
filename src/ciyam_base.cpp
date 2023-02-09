@@ -5402,9 +5402,18 @@ void decrypt_data( string& s, const string& data,
 
    string::size_type pos = 0;
 
+   // NOTE: Password and data are space (or double space) separated
+   // (the latter being necessary if the password includes spaces).
    if( pwd_and_data )
    {
-      pos = str.find( ' ' );
+      bool is_double = false;
+
+      pos = str.find( c_two_spaces );
+
+      if( pos != string::npos )
+         is_double = true;
+      else
+         pos = str.find( ' ' );
 
       if( pos == string::npos )
          pos = 0;
@@ -5413,7 +5422,7 @@ void decrypt_data( string& s, const string& data,
          key.resize( pos );
          memcpy( &key[ 0 ], &str[ 0 ], pos );
 
-         str.erase( 0, pos + 1 );
+         str.erase( 0, pos + 1 + is_double );
       }
    }
 
@@ -5443,9 +5452,18 @@ void encrypt_data( string& s, const string& data,
 
    string::size_type pos = 0;
 
+   // NOTE: Password and data are space (or double space) separated
+   // (the latter being necessary if the password includes spaces).
    if( pwd_and_data )
    {
-      pos = str.find( ' ' );
+      bool is_double = false;
+
+      pos = str.find( c_two_spaces );
+
+      if( pos != string::npos )
+         is_double = true;
+      else
+         pos = str.find( ' ' );
 
       if( pos == string::npos )
       {
@@ -5472,7 +5490,7 @@ void encrypt_data( string& s, const string& data,
          key.resize( pos );
          memcpy( &key[ 0 ], &str[ 0 ], pos );
 
-         str.erase( 0, pos + 1 );
+         str.erase( 0, pos + 1 + is_double );
       }
 
       // NOTE: Assume is mnemonics if has eleven spaces.
