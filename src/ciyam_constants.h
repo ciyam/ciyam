@@ -42,6 +42,8 @@ const char* const c_zenith_suffix = ".zenith";
 
 const char* const c_repository_info_suffix = ".info";
 
+const char* const c_two_spaces = "  ";
+
 const char* const c_log_file_ext = ".log";
 const char* const c_txs_file_ext = ".txs";
 

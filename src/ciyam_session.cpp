@@ -5414,11 +5414,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             info.reserve( c_secret_reserve_size );
             session_shared_decrypt( info, pubkey, info );
 
-            // KLUDGE: If is using the 'init_identity' application protocol script
-            // then the entropy immediately follows the password (space separated).
+            // NOTE: If using the 'init_identity' application protocol script then
+            // the entropy can follow the password after a separator which will be
+            // either one (or if the password itself contains spaces) two spaces.
             if( !encrypted.empty( ) && info.size( ) >= 32 )
             {
-               string::size_type pos = info.find( ' ' );
+               string::size_type pos = info.find( c_two_spaces );
+
+               if( pos == string::npos )
+                  pos = info.find( ' ' );
+
                if( pos != string::npos )
                   info.erase( pos );
             }
