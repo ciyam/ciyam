@@ -1402,15 +1402,16 @@ void request_handler::process_request( )
                      string sid, server_identity( identity_info.substr( 0, pos ) );
 
                      pos = identity_info.find( ' ', pos + 1 );
-                     if( pos == string::npos )
-                        throw runtime_error( "unexpected identity information '" + identity_info + "'" );
 
-                     sid = identity_info.substr( pos + 1 );
+                     if( pos != string::npos )
+                     {
+                        sid = identity_info.substr( pos + 1 );
 #ifdef SSL_SUPPORT
-                     sid = priv_key.decrypt_message( pub_key, sid );
+                        sid = priv_key.decrypt_message( pub_key, sid );
 #endif
+                     }
 
-                     if( matches_server_sid( sid ) )
+                     if( !sid.empty( ) && matches_server_sid( sid ) )
                      {
                         g_unlock_fails = 0;
 
