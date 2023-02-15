@@ -43,12 +43,15 @@ const char* const c_extkeys_file = "extkeys.txt";
 void init_log( );
 void log_trace_message( const std::string& message );
 
-void get_server_id( std::string& id );
-void set_server_id( const std::string& id );
+void get_server_sid( std::string& sid );
+void set_server_sid( const std::string& sid );
 
-bool matches_server_id( const std::string& id );
+bool matches_server_sid( const std::string& chk );
 
-std::string get_id_from_server_id( const char* p_server_id = 0 );
+void get_server_identity( std::string& id );
+void set_server_identity( const std::string& id );
+
+std::string get_id_from_server_identity( const char* p_server_id = 0 );
 
 void init_strings( );
 void init_extkeys( );

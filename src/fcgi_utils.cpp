@@ -54,6 +54,8 @@ string g_sid;
 
 #include "sid.enc"
 
+string g_identity;
+
 set< string > g_non_persistent;
 
 map< string, string > g_strings;
@@ -87,24 +89,24 @@ void log_trace_message( const string& message )
    outf << message << '\n';
 }
 
-void get_server_id( string& id )
+void get_server_sid( string& sid )
 {
-   get_sid( id );
+   get_sid( sid );
 }
 
-void set_server_id( const string& id )
+void set_server_sid( const string& sid )
 {
-   set_sid( id );
+   set_sid( sid );
 }
 
-bool matches_server_id( const string& id )
+bool matches_server_sid( const string& chk )
 {
    bool retval = false;
 
    string sid;
    get_sid( sid );
 
-   if( id == sid )
+   if( chk == sid )
       retval = true;
 
    clear_key( sid );
@@ -112,14 +114,19 @@ bool matches_server_id( const string& id )
    return retval;
 }
 
-string get_id_from_server_id( const char* p_server_id )
+void get_server_identity( string& id )
 {
-   string sid;
-   get_sid( sid );
+   id = g_identity;
+}
 
-   string key( p_server_id ? string( p_server_id ) : sid );
+void set_server_identity( const string& id )
+{
+   g_identity = id;
+}
 
-   clear_key( sid );
+string get_id_from_server_identity( const char* p_server_id )
+{
+   string key( p_server_id ? string( p_server_id ) : g_identity );
 
    MD5 md5;
    md5.update( ( unsigned char* )key.c_str( ), key.length( ) );

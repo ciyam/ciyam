@@ -266,6 +266,9 @@ mutex g_trace_mutex;
 mutex g_mapping_mutex;
 mutex g_session_mutex;
 
+bool g_hardened_identity;
+bool g_encrypted_identity;
+
 string g_storage_name_lock;
 
 struct global_storage_name_lock
@@ -3673,56 +3676,16 @@ string g_sid;
 
 #include "sid.enc"
 
-void sid_hash( string& s, bool use_single_hash = false )
+void sid_hash( string& s )
 {
-   guard g( g_mutex );
-
    string sid;
    get_sid( sid );
 
-   bool had_extra_entropy = false;
-
-   if( sid.length( ) > 32 && ( sid.find( ':' ) == string::npos ) )
-      had_extra_entropy = true;
-
-   string tmp;
-   tmp.reserve( c_key_reserve_size );
-
-   size_t salt_len = strlen( c_salt_value );
-
-   tmp.resize( salt_len );
-   memcpy( &tmp[ 0 ], c_salt_value, salt_len );
-
-   tmp += sid;
-
-   sha256 hash1( tmp );
+   sha1 hash( sid );
 
    clear_key( sid );
-   clear_key( tmp );
 
-   // NOTE: Fix the initial size so that no temporary string is used.
-   s.resize( c_sha256_digest_size * 2 );
-
-   hash1.get_digest_as_string( s );
-
-   // NOTE: Unless the "sid" is greater than 32 characters in length
-   // either use an SHA1 hash or truncate it to the equivalent size.
-   if( !had_extra_entropy )
-   {
-      if( use_single_hash )
-         s.resize( c_sha1_digest_size * 2 );
-      else
-      {
-         sha1 hash2( s );
-
-         hash2.get_digest_as_string( s );
-      }
-   }
-   else if( !use_single_hash )
-   {
-      hash1.update( s );
-      hash1.get_digest_as_string( s );
-   }
+   hash.get_digest_as_string( s );
 }
 
 struct script_info
@@ -4578,17 +4541,33 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
    try
    {
-      g_sid.reserve( c_key_reserve_size );
+      string sid;
+      sid.reserve( c_key_reserve_size );
 
       if( p_sid && strlen( p_sid ) )
-         set_sid( p_sid );
+         sid = string( p_sid );
       else if( file_exists( c_server_sid_file ) )
-      {
-         string sid;
          buffer_file( sid, c_server_sid_file );
 
-         set_sid( sid );
+      g_sid.reserve( c_key_reserve_size );
+
+      if( !sid.empty( )
+       && ( sid.find( ':' ) == string::npos ) )
+      {
+         string salt( c_salt_value );
+
+         if( !salt.empty( ) )
+            sid.insert( 0, salt );
+
+         sha256 hash( sid );
+         hash.get_digest_as_string( sid );
       }
+
+      set_sid( sid );
+
+      clear_key( sid );
+
+      has_identity( &g_encrypted_identity );
 
       read_server_configuration( );
 
@@ -4811,7 +4790,8 @@ string get_app_url( const string& suffix )
    return url;
 }
 
-void get_identity( string& s, bool append_max_user_limit, bool use_single_hash, bool md5_version )
+void get_identity( string& s, bool append_max_user_limit,
+ bool use_raw_value, bool md5_version, const char* p_pubkey )
 {
    guard g( g_mutex );
 
@@ -4820,17 +4800,30 @@ void get_identity( string& s, bool append_max_user_limit, bool use_single_hash, 
    string sid;
    get_sid( sid );
 
+   bool encrypted = ( sid.find( ':' ) != string::npos );
+
    if( !sid.empty( ) )
-      sid_hash( s, use_single_hash );
+   {
+      if( !use_raw_value )
+         sid_hash( s );
+      else
+      {
+         // NOTE: Unless the identity had been hardened
+         // then will shrink the size (as assuming only
+         // twelve mnemonics were used then the entropy
+         // was only 128 bits in the first place).
+         if( g_hardened_identity )
+            s = sid;
+         else
+            s = sid.substr( 0, c_sha1_digest_size * 2 );
+      }
+   }
    else
    {
       string seed;
       get_mnemonics_or_hex_seed( s, seed );
    }
 
-   clear_key( sid );
-
-   // NOTE: This variant is being used by the FCGI UI.
    if( md5_version )
    {
       MD5 hash( ( unsigned char* )s.c_str( ) );
@@ -4839,6 +4832,20 @@ void get_identity( string& s, bool append_max_user_limit, bool use_single_hash, 
 
    if( append_max_user_limit )
       s += ":" + to_string( g_max_user_limit );
+
+   if( p_pubkey && !encrypted && g_encrypted_identity )
+   {
+#ifndef SSL_SUPPORT
+      s += ' ' + sid;
+#else
+      string data;
+      session_shared_encrypt( data, p_pubkey, sid );
+
+      s += ' ' + data;
+#endif
+   }
+
+   clear_key( sid );
 }
 
 bool has_identity( bool* p_is_encrypted )
@@ -4874,6 +4881,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
       bool is_encrypted = false;
 
       string sid;
+      sid.reserve( c_key_reserve_size );
+ 
       get_sid( sid );
 
       if( sid.find( ':' ) != string::npos )
@@ -4881,7 +4890,15 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
       // NOTE: Encrypted identity passwords must be < 32 characters.
       if( info.length( ) >= 32 )
+      {
          set_sid( info );
+
+         if( info.find( ':' ) != string::npos )
+         {
+            g_hardened_identity = false;
+            g_encrypted_identity = true;
+         }
+      }
       else if( is_encrypted )
       {
          string encrypted( sid );
@@ -4912,9 +4929,24 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          if( are_hex_nibbles( sid ) )
          {
-            // NOTE: The additional entropy is now used as salt to harden the identity key.
-            if( !extra.empty( ) )
+            string salt( c_salt_value );
+
+            // NOTE: If a salt constant had been provided then prepend it now.
+            if( !salt.empty( ) )
+               sid.insert( 0, salt );
+
+            // NOTE: Either now simply store the hash of the entropy or if any extra
+            // entropy had been supplied then use this in order to harden the value.
+            if( extra.empty( ) )
+            {
+               sha256 hash( sid );
+               hash.get_digest_as_string( sid );
+            }
+            else
+            {
+               g_hardened_identity = true;
                harden_key_with_salt( sid, info, extra, c_identity_additional_multiplier );
+            }
 
             set_sid( sid );
          }
@@ -5393,7 +5425,7 @@ void verify_active_external_service( const string& ext_key )
 }
 
 void decrypt_data( string& s, const string& data,
- bool no_ssl, bool no_salt, bool hash_only, bool pwd_and_data )
+ bool no_ssl, bool empty_key, bool use_sid_only, bool is_pwd_and_data )
 {
    string key;
    string str( data );
@@ -5404,7 +5436,7 @@ void decrypt_data( string& s, const string& data,
 
    // NOTE: Password and data are space (or double space) separated
    // (the latter being necessary if the password includes spaces).
-   if( pwd_and_data )
+   if( is_pwd_and_data )
    {
       bool is_double = false;
 
@@ -5426,15 +5458,10 @@ void decrypt_data( string& s, const string& data,
       }
    }
 
-   // NOTE: If "no_salt" was specified then an empty key is used (so "no_salt" should
-   // only ever be set "true" for the purpose of performing simple regression tests).
-   if( !no_salt && ( pos == 0 ) )
-   {
-      sid_hash( key );
-
-      if( !hash_only )
-         key += string( c_salt_value );
-   }
+   // NOTE: If "empty_key" was specified then an empty key is used (so
+   // should only set "true" when performing simple regression tests).
+   if( !empty_key && ( pos == 0 ) )
+      get_sid( key );
 
    data_decrypt( s, str, key, !no_ssl );
 
@@ -5443,7 +5470,7 @@ void decrypt_data( string& s, const string& data,
 }
 
 void encrypt_data( string& s, const string& data,
- bool no_ssl, bool no_salt, bool hash_only, bool pwd_and_data )
+ bool no_ssl, bool empty_key, bool use_sid_only, bool is_pwd_and_data )
 {
    string key;
    string str( data );
@@ -5454,7 +5481,7 @@ void encrypt_data( string& s, const string& data,
 
    // NOTE: Password and data are space (or double space) separated
    // (the latter being necessary if the password includes spaces).
-   if( pwd_and_data )
+   if( is_pwd_and_data )
    {
       bool is_double = false;
 
@@ -5499,15 +5526,10 @@ void encrypt_data( string& s, const string& data,
    }
 
    // NOTE: (see above)
-   if( !no_salt && !pwd_and_data )
-   {
-      sid_hash( key );
+   if( !empty_key && !is_pwd_and_data )
+      get_sid( key );
 
-      if( !hash_only )
-         key += string( c_salt_value );
-   }
-
-   data_encrypt( s, str, key, !no_ssl, !no_salt );
+   data_encrypt( s, str, key, !no_ssl, !empty_key );
 
    clear_key( key );
    clear_key( str );
@@ -5522,7 +5544,7 @@ string totp_secret_key( const string& unique )
    string crypt_key( get_raw_session_variable( get_special_var_name( e_special_var_crypt_key ) ) );
 
    if( crypt_key.empty( ) )
-      sid_hash( key );
+      get_sid( key );
 
    retval = get_totp_secret( unique, crypt_key.empty( ) ? key : crypt_key );
 
@@ -9497,6 +9519,19 @@ void session_shared_decrypt( string& data, const string& pubkey, const string& m
    gtp_session->priv_key.decrypt_message( data, pub_key, message );
 #else
    throw runtime_error( "session_shared_decrypt requires SSL support" );
+#endif
+}
+
+void session_shared_encrypt( string& data, const string& pubkey, const string& message )
+{
+#ifdef SSL_SUPPORT
+   if( pubkey.empty( ) )
+      throw runtime_error( "invalid empty key value in session_shared_encrypt" );
+
+   public_key pub_key( pubkey );
+   gtp_session->priv_key.encrypt_message( data, pub_key, message, 0, true );
+#else
+   throw runtime_error( "session_shared_encrypt requires SSL support" );
 #endif
 }
 

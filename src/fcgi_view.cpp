@@ -1210,7 +1210,7 @@ bool output_view_form( ostream& os, const string& act,
    get_session_dtm( sess_info, dt_current );
 
    string sid;
-   get_server_id( sid );
+   get_server_sid( sid );
 
    for( size_t i = 0; i < source.field_ids.size( ); i++ )
    {
