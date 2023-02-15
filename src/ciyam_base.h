@@ -167,8 +167,9 @@ std::string CIYAM_BASE_DECL_SPEC get_domain( );
 
 std::string CIYAM_BASE_DECL_SPEC get_app_url( const std::string& suffix );
 
-void CIYAM_BASE_DECL_SPEC get_identity( std::string& s,
- bool append_max_user_limit = false, bool use_single_hash = false, bool md5_version = false );
+void CIYAM_BASE_DECL_SPEC get_identity(
+ std::string& s, bool append_max_user_limit = false,
+ bool use_raw_value = false, bool md5_version = false, const char* p_pubkey = 0 );
 
 bool CIYAM_BASE_DECL_SPEC has_identity( bool* p_is_encrypted = 0 );
 
@@ -270,25 +271,25 @@ void CIYAM_BASE_DECL_SPEC get_external_client_info( const std::string& key, exte
 void CIYAM_BASE_DECL_SPEC verify_active_external_service( const std::string& ext_key );
 
 void CIYAM_BASE_DECL_SPEC decrypt_data( std::string& s, const std::string& data,
- bool no_ssl = false, bool no_salt = false, bool hash_only = false, bool pwd_and_data = false );
+ bool no_ssl = false, bool empty_key = false, bool use_sid_only = false, bool is_pwd_and_data = false );
 
 inline std::string decrypt_data( const std::string& data,
- bool no_ssl = false, bool no_salt = false, bool hash_only = false, bool pwd_and_data = false )
+ bool no_ssl = false, bool empty_key = false, bool use_sid_only = false, bool is_pwd_and_data = false )
 {
    std::string s;
-   decrypt_data( s, data, no_ssl, no_salt, hash_only, pwd_and_data );
+   decrypt_data( s, data, no_ssl, empty_key, use_sid_only, is_pwd_and_data );
 
    return s;
 }
 
 void CIYAM_BASE_DECL_SPEC encrypt_data( std::string& s, const std::string& data,
- bool no_ssl = false, bool no_salt = false, bool hash_only = false, bool pwd_and_data = false );
+ bool no_ssl = false, bool empty_key = false, bool use_sid_only = false, bool is_pwd_and_data = false );
 
 inline std::string encrypt_data( const std::string& data,
- bool no_ssl = false, bool no_salt = false, bool hash_only = false, bool pwd_and_data = false )
+ bool no_ssl = false, bool empty_key = false, bool use_sid_only = false, bool is_pwd_and_data = false )
 {
    std::string s;
-   encrypt_data( s, data, no_ssl, no_salt, hash_only, pwd_and_data );
+   encrypt_data( s, data, no_ssl, empty_key, use_sid_only, is_pwd_and_data );
 
    return s;
 }
@@ -660,6 +661,9 @@ void CIYAM_BASE_DECL_SPEC set_session_mint_account( const std::string& account )
 bool CIYAM_BASE_DECL_SPEC uid_matches_session_mint_account( );
 
 void CIYAM_BASE_DECL_SPEC session_shared_decrypt(
+ std::string& data, const std::string& pubkey, const std::string& message );
+
+void CIYAM_BASE_DECL_SPEC session_shared_encrypt(
  std::string& data, const std::string& pubkey, const std::string& message );
 
 size_t CIYAM_BASE_DECL_SPEC get_next_handle( );

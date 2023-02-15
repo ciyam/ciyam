@@ -1393,7 +1393,7 @@ bool fetch_parent_row_data( const string& module,
    if( needs_decrypting )
    {
       string sid;
-      get_server_id( sid );
+      get_server_sid( sid );
 
       for( size_t i = 0; i < parent_row_data.size( ); i++ )
       {
@@ -1902,7 +1902,7 @@ bool populate_list_info( list_source& list,
          if( !encrypted_columns.empty( ) )
          {
             string sid;
-            get_server_id( sid );
+            get_server_sid( sid );
 
             for( size_t i = 0; i < list.row_data.size( ); i++ )
             {
@@ -2190,7 +2190,7 @@ bool fetch_user_record(
       else
       {
          string sid;
-         get_server_id( sid );
+         get_server_sid( sid );
 
          user_password = data_decrypt( user_password, sid );
 
@@ -2588,7 +2588,7 @@ void save_record( const string& module_id,
    }
 
    string sid;
-   get_server_id( sid );
+   get_server_sid( sid );
 
    for( size_t i = 0; i < fields.size( ); i++ )
    {

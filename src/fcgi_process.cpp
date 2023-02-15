@@ -420,7 +420,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          if( !skip_force_fields )
          {
             string sid;
-            get_server_id( sid );
+            get_server_sid( sid );
 
             for( size_t i = 0; i < view.user_force_fields.size( ); i++ )
             {
@@ -548,7 +548,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             bool has_always_editable = false;
 
             string sid;
-            get_server_id( sid );
+            get_server_sid( sid );
 
             for( size_t i = 0; i < view.field_ids.size( ); i++ )
             {
@@ -2358,9 +2358,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      throw runtime_error( "unable to access GPG password" );
 
                   string sid;
-                  get_server_id( sid );
+                  get_server_sid( sid );
 
-                  gpg_password = data_decrypt( gpg_password, sid + string( c_salt_value ) );
+                  gpg_password = data_decrypt( gpg_password, sid );
 
                   string smtp_sender;
                   if( !simple_command( *p_session_info, "smtpinfo", &smtp_sender ) )
@@ -2485,7 +2485,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             else if( error_message.empty( ) && !email.empty( ) )
             {
                string sid;
-               get_server_id( sid );
+               get_server_sid( sid );
 
                string encrypted_email( data_encrypt( email, sid ) );
 
@@ -2594,7 +2594,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             if( !email.empty( ) )
             {
                string sid;
-               get_server_id( sid );
+               get_server_sid( sid );
 
                encrypted_email = data_encrypt( email, sid );
 

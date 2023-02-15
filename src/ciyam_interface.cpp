@@ -939,7 +939,7 @@ void request_handler::process_request( )
       module_id = mod_info.id;
 
       if( g_id.empty( ) && file_exists( c_id_file ) )
-         g_id = get_id_from_server_id( buffer_file( c_id_file ).c_str( ) );
+         g_id = get_id_from_server_identity( buffer_file( c_id_file ).c_str( ) );
 
       bool is_invalid_session = false;
 
@@ -1330,16 +1330,18 @@ void request_handler::process_request( )
 
                      string identity_info;
 
+#ifdef SSL_SUPPORT
+                     public_key pub_key( pubkeyx );
+                     private_key priv_key;
+#endif
+
                      if( g_seed.empty( ) )
                      {
 #ifdef SSL_SUPPORT
-                        public_key pub_key( pubkeyx );
-                        private_key priv_key;
-
                         if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( ), &identity_info ) )
                            throw runtime_error( "unable to determine identity information" );
 #else
-                        if( !simple_command( *p_session_info, "identity", &identity_info ) )
+                        if( !simple_command( *p_session_info, "identity -k=dummy", &identity_info ) )
                            throw runtime_error( "unable to determine identity information" );
 #endif
                      }
@@ -1348,14 +1350,11 @@ void request_handler::process_request( )
                         if( g_seed == c_unlock )
                         {
 #ifdef SSL_SUPPORT
-                           public_key pub_key( pubkeyx );
-                           private_key priv_key;
-
                            if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( )
-                            + " " + priv_key.encrypt_message( pub_key, g_id_pwd ), &identity_info ) )
+                            + " " + priv_key.encrypt_message( pub_key, g_id_pwd, 0, true ), &identity_info ) )
                               throw runtime_error( "unable to unlock encrypted identity information" );
 #else
-                           if( !simple_command( *p_session_info, "identity " + quote( g_id_pwd ), &identity_info ) )
+                           if( !simple_command( *p_session_info, "identity -k=dummy " + quote( g_id_pwd ), &identity_info ) )
                               throw runtime_error( "unable to unlock encrypted identity information" );
 #endif
                            was_unlock = true;
@@ -1385,15 +1384,12 @@ void request_handler::process_request( )
                            outf << identity_info.substr( 0, pos );
 
 #ifdef SSL_SUPPORT
-                           public_key pub_key( pubkeyx );
-                           private_key priv_key;
-
                            if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( )
-                            + " " + priv_key.encrypt_message( pub_key, g_id_pwd ) + " " + encrypted, &identity_info ) )
+                            + " " + priv_key.encrypt_message( pub_key, g_id_pwd, 0, true ) + " " + encrypted, &identity_info ) )
                               throw runtime_error( "unable to set/update identity information" );
 #else
                            if( !simple_command( *p_session_info,
-                            "identity " + quote( g_id_pwd ) + " " + encrypted, &identity_info ) )
+                            "identity -k=dummy " + quote( g_id_pwd ) + " " + encrypted, &identity_info ) )
                               throw runtime_error( "unable to set/update identity information" );
 #endif
                         }
@@ -1403,18 +1399,27 @@ void request_handler::process_request( )
                      if( pos == string::npos )
                         throw runtime_error( "unexpected identity information '" + identity_info + "'" );
 
-                     string server_id( identity_info.substr( 0, pos ) );
+                     string sid, server_identity( identity_info.substr( 0, pos ) );
 
-                     if( matches_server_id( server_id ) )
+                     pos = identity_info.find( ' ', pos + 1 );
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected identity information '" + identity_info + "'" );
+
+                     sid = identity_info.substr( pos + 1 );
+#ifdef SSL_SUPPORT
+                     sid = priv_key.decrypt_message( pub_key, sid );
+#endif
+
+                     if( matches_server_sid( sid ) )
                      {
                         g_unlock_fails = 0;
 
-                        g_id = get_id_from_server_id( server_id.c_str( ) );
+                        g_id = get_id_from_server_identity( server_identity.c_str( ) );
 
                         if( !file_exists( id_file_name.c_str( ) ) )
                         {
                            ofstream outf( id_file_name.c_str( ) );
-                           outf << server_id;
+                           outf << server_identity;
                         }
 
                         if( !file_exists( id_file_name.c_str( ) ) )
@@ -1438,15 +1443,15 @@ void request_handler::process_request( )
 
                         string old_id( g_id );
 
-                        g_id = get_id_from_server_id( server_id.c_str( ) );
+                        g_id = get_id_from_server_identity( server_identity.c_str( ) );
 
-                        string encrypted_id;
+                        string encrypted_identity;
 
                         if( file_exists( eid_file_name.c_str( ) ) )
                         {
-                           encrypted_id = buffer_file( eid_file_name.c_str( ) );
+                           encrypted_identity = buffer_file( eid_file_name.c_str( ) );
 
-                           if( server_id != encrypted_id && !file_exists( id_file_name.c_str( ) ) )
+                           if( ( server_identity != encrypted_identity ) && !file_exists( id_file_name.c_str( ) ) )
                            {
                               login_refresh = true;
                               g_seed = string( c_unlock );
@@ -1457,12 +1462,12 @@ void request_handler::process_request( )
                         // been saved previously then do not output the "system identity" form.
                         if( old_id == g_id || !g_seed.empty( ) )
                         {
-                           set_server_id( server_id );
+                           set_server_sid( sid );
 
                            if( !g_seed.empty( ) )
                            {
                               ofstream outf( id_file_name.c_str( ) );
-                              outf << server_id;
+                              outf << server_identity;
 
                               has_set_identity = true;
 
@@ -1480,9 +1485,9 @@ void request_handler::process_request( )
                         {
                            bool needs_to_unlock = false;
 
-                           if( !encrypted_id.empty( ) )
+                           if( !encrypted_identity.empty( ) )
                            {
-                              if( g_unlock_fails || server_id == encrypted_id )
+                              if( g_unlock_fails || ( server_identity == encrypted_identity ) )
                                  needs_to_unlock = true;
                            }
 
@@ -1506,7 +1511,7 @@ void request_handler::process_request( )
                                c_identity_introduction_2, GDS( c_display_identity_introduction_2 ) );
 
                               // NOTE: Encrypt mnemonics using the "unique_id" value as the key.
-                              string encrypted_seed( server_id );
+                              string encrypted_seed( server_identity );
                               crypt_decoded( unique_id, encrypted_seed, false );
 
                               str_replace( identity_html, c_identity_mnemonics, encrypted_seed );
@@ -1585,12 +1590,7 @@ void request_handler::process_request( )
 
                         string admin_user_hash( sha256( c_admin_user_key + admin_pwd_hash ).get_digest_as_string( ) );
 
-                        string sid;
-                        get_server_id( sid );
-
                         string encrypted_pwd( data_encrypt( admin_pwd_hash, sid ) );
-
-                        clear_key( sid );
 
                         vector< pair< string, string > > pwd_field_value_pairs;
 
@@ -1613,8 +1613,7 @@ void request_handler::process_request( )
                         g_id_pwd.erase( );
                      }
 
-                     clear_key( server_id );
-                     clear_key( identity_info );
+                     clear_key( sid );
 
                      if( was_unlock )
                         display_error = false;
@@ -1699,7 +1698,7 @@ void request_handler::process_request( )
                      vector< pair< string, string > > field_value_pairs;
 
                      string sid;
-                     get_server_id( sid );
+                     get_server_sid( sid );
 
                      string encrypted_password( data_encrypt( activate_password, sid ) );
 
@@ -2622,7 +2621,7 @@ void request_handler::process_request( )
                   else
                   {
                      string sid;
-                     get_server_id( sid );
+                     get_server_sid( sid );
 
                      string encrypted_new_password( data_encrypt( new_password, sid ) );
 
@@ -3040,7 +3039,7 @@ int main( int argc, char* argv[ ] )
       g_ciyam_interface_html = buffer_file( c_ciyam_interface_file );
 
       if( file_exists( c_id_file ) )
-         g_id = get_id_from_server_id( buffer_file( c_id_file ).c_str( ) );
+         g_id = get_id_from_server_identity( buffer_file( c_id_file ).c_str( ) );
 
       str_replace( g_login_html, c_login, GDS( c_display_login ) );
       str_replace( g_login_html, c_user_id, GDS( c_display_user_id ) );

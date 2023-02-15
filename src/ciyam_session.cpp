@@ -5409,6 +5409,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_system_identity_pubkey ) );
          string encrypted( get_parm_val( parameters, c_cmd_ciyam_session_system_identity_encrypted ) );
 
+         const char* p_pubkey = 0;
+
+         if( !pubkey.empty( ) )
+         {
+            if( pubkey == c_dummy )
+               pubkey.erase( );
+
+            p_pubkey = pubkey.c_str( );
+         }
+
          if( !info.empty( ) && !pubkey.empty( ) )
          {
             info.reserve( c_secret_reserve_size );
@@ -5447,7 +5457,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          clear_key( info );
 
-         get_identity( response, !is_raw, false, is_md5 );
+         get_identity( response, !is_raw, false, is_md5, p_pubkey );
       }
       else if( command == c_cmd_ciyam_session_system_mutexes )
       {

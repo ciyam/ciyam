@@ -5,15 +5,11 @@
 
 void get_sid( string& sid )
 {
-   guard g( g_mutex );
-
    sid = g_sid;
 }
 
 void set_sid( const string& sid )
 {
-   guard g( g_mutex );
-
    g_sid = sid;
 }
 
