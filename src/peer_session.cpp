@@ -879,8 +879,8 @@ void process_put_file( const string& blockchain,
 }
 
 bool has_all_list_items( const string& blockchain,
- const string& hash, bool recurse, bool touch_all_lists = false, date_time* p_dtm = 0,
- progress* p_progress = 0, size_t* p_total_processed = 0, set< string >* p_blob_hashes = 0, string* p_blob_data = 0 )
+ const string& hash, bool recurse, bool touch_all_lists = false,
+ date_time* p_dtm = 0, progress* p_progress = 0, size_t* p_total_processed = 0, string* p_blob_data = 0 )
 {
    TRACE_LOG( TRACE_PEER_OPS, "(has_all_list_items) hash: " + hash );
 
@@ -990,11 +990,16 @@ bool has_all_list_items( const string& blockchain,
             bool has_next_file = false;
             bool has_next_repo_entry = ( next_hash == last_repo_entry_hash );
 
-            // NOTE: Can assume the repository entry exists if the mapped information exists.
-            string peer_mapped_info( get_peer_mapped_hash_info( mapped_info_identity, next_hash ) );
+            string peer_mapped_info;
 
-            if( !peer_mapped_info.empty( ) )
-               has_next_repo_entry = true;
+            // NOTE: Can assume the repository entry exists if the mapped information exists.
+            if( !has_next_repo_entry )
+            {
+               peer_mapped_info = get_peer_mapped_hash_info( mapped_info_identity, next_hash );
+
+               if( !peer_mapped_info.empty( ) )
+                  has_next_repo_entry = true;
+            }
 
             if( !has_next_repo_entry )
                has_next_file = has_file( next_hash );
@@ -1045,13 +1050,11 @@ bool has_all_list_items( const string& blockchain,
             else if( recurse && !has_next_repo_entry && is_list_file( next_hash ) )
             {
                retval = has_all_list_items( blockchain, next_hash,
-                recurse, touch_all_lists, p_dtm, p_progress, p_total_processed, p_blob_hashes, p_blob_data );
+                recurse, touch_all_lists, p_dtm, p_progress, p_total_processed, p_blob_data );
 
                if( !retval )
                   break;
             }
-            else if( p_blob_hashes )
-               p_blob_hashes->insert( next_hash );
          }
       }
 
@@ -1822,16 +1825,8 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                   string prior_data_tree_hash;
 
                   if( !last_data_tree_is_identical( blockchain, height - 1, &prior_data_tree_hash ) )
-                  {
-                     // NOTE: Retrieve all the blob hashes for the prior data tree 
-                     // in order to skip any repeats found in "process_list_items".
-                     if( !prior_data_tree_hash.empty( ) && has_file( prior_data_tree_hash ) )
-                        has_all_list_items( blockchain,
-                         prior_data_tree_hash, true, false, &dtm, p_progress, 0, &list_items_to_ignore );
-
-                     process_list_items( identity, tree_root_hash, true,
-                      p_num_items_found, &list_items_to_ignore, &dtm, p_progress );
-                  }
+                     process_list_items( identity,
+                      tree_root_hash, true, p_num_items_found, &list_items_to_ignore, &dtm, p_progress );
                }
             }
 
@@ -2940,7 +2935,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             string put_file_data( c_file_type_str_blob );
 
             // NOTE: Will touch all tree lists and create "put" files if the tree items were present.
-            if( !has_all_list_items( blockchain, zenith_tree_hash, true, true, &dtm, this, 0, 0, &put_file_data ) )
+            if( !has_all_list_items( blockchain, zenith_tree_hash, true, true, &dtm, this, 0, &put_file_data ) )
                throw runtime_error( "unexpected missing tree files" );
 
             string put_tag_name( c_bc_prefix + identity
