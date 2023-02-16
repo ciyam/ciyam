@@ -1,0 +1,43 @@
+System Identity Implementation
+------------------------------
+
+Every CIYAM node requires its own "identity" in order to differentiate it from all other nodes and which also
+will allow its backup data to be restored (assuming that at least one "backup peer" exists). When it is first
+started a list of twelve randomly chosen words (from a small dictionary of 2048 words) appears in the FCGI UI
+dialog (along with a master password that is used for unlocking the system when this is required).
+
+Keeping Your Identity Secure
+----------------------------
+
+In order to be able to later restore backup data the twelve words (also known as "mnemonics") need to kept in
+a manner that is secure from theft (including being secure from hacking) and accidental loss. When starting a
+node for the first time it would be recommended that no internet connection be present until after you make a
+copy of the twelve words (using an analog method such as pen and paper) and have entered the master password.
+
+Restoring an Existing Identity
+------------------------------
+
+If wishing to restore an already existing CIYAM system using a new node then the twelve words which initially
+appear should be replaced with those that had been written down previously (the master password that had been
+used before is not important so if it was not remembered then a new one can now be used).
+
+Enhancing Your Identity Security
+--------------------------------
+
+It should be noted that the dictionary being used is that defined in BIP39 (being the standard used in crypto
+wallets). Although it might be a convenience to use the same words for both your crypto wallet and CIYAM node
+THIS SHOULD NEVER BE DONE as it might lead to the loss of all your crypto assets.
+
+As the dictionary is 2048 words each single word is 11 bits (1024 being 10 bits so 2048 being one extra bit).
+This means that twelve words is 132 bits, however, to minimise human error the last 4 bits are being used for
+a "checksum" (to detect an input mistake) so there are only 128 bits of "entropy" (or randomness) present.
+
+This is a lot of entropy but if wanting to be "future proof" one might want to extend this even further. This
+is why some crypto wallets have 18 or 24 words as an option (rather than just 12). The CIYAM node permits you
+to add extra characters after the twelve words (with a space separating the last of the twelve words from the
+first of the extra characters) which are used to "harden" the 128 bits of entropy (with over one million hash
+operations being performed after combining the extra characters with the seed value of the twelve mnemonics).
+
+It should be noted that any extra characters provided are *not* BIP39 mnemonics and so if entered incorrectly
+will simply result in the wrong identity (with no error being issued) so be very careful when recording these
+along with the other twelve words for safe keeping.
