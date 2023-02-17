@@ -4937,7 +4937,7 @@ string create_html_embedded_image( const string& source_file, bool is_encrypted 
 
          stringstream sstr( buffer );
 
-         string key( harden_key_with_salt(
+         string key( harden_key_with_rounds(
           get_crypt_key_for_blockchain_account( blockchain, uid ), file_name_without_path( source_file, true ) ) );
 
          crypt_stream( sstr, key );

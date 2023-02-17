@@ -5,6 +5,8 @@ session_list -min
 1* session_list <none> 127.0.0.1 0:0 0:0 2
 encrypt -no_ssl -no_salt for_testing_password
 Zm9yX3Rlc3RpbmdfcGFzc3dvcmQ=
+encrypt -no_ssl -no_salt -harden_key for_testing_password
+OP+wqlM//bOWDKOoXD7kvXVZ6LY=
 X
 X.
 .X
@@ -171,7 +173,7 @@ j
 6	#j
 1	#b
 2	#f
-depth is 0 at line #244
+depth is 0 at line #245
 Looping with aaa
 Looping with bbb
 Looping with ccc
@@ -197,11 +199,11 @@ CONT
 CONT
 CONT
 DONE
-depth is 1 at line #283
+depth is 1 at line #284
 END
-depth is 1 at line #310
-depth is 2 at line #312
-depth is 3 at line #314 TRUE
+depth is 1 at line #311
+depth is 2 at line #313
+depth is 3 at line #315 TRUE
 docs
 src
 src/haru

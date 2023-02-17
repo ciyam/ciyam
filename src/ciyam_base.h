@@ -270,26 +270,26 @@ void CIYAM_BASE_DECL_SPEC get_external_client_info( const std::string& key, exte
 
 void CIYAM_BASE_DECL_SPEC verify_active_external_service( const std::string& ext_key );
 
-void CIYAM_BASE_DECL_SPEC decrypt_data( std::string& s, const std::string& data,
- bool no_ssl = false, bool empty_key = false, bool use_sid_only = false, bool is_pwd_and_data = false );
+void CIYAM_BASE_DECL_SPEC decrypt_data( std::string& s, const std::string& data, bool no_ssl = false,
+ bool empty_key = false, bool use_sid_only = false, bool harden_key = false, bool is_pwd_and_data = false );
 
-inline std::string decrypt_data( const std::string& data,
- bool no_ssl = false, bool empty_key = false, bool use_sid_only = false, bool is_pwd_and_data = false )
+inline std::string decrypt_data( const std::string& data, bool no_ssl = false,
+ bool empty_key = false, bool use_sid_only = false, bool harden_key = false, bool is_pwd_and_data = false )
 {
    std::string s;
-   decrypt_data( s, data, no_ssl, empty_key, use_sid_only, is_pwd_and_data );
+   decrypt_data( s, data, no_ssl, empty_key, use_sid_only, harden_key, is_pwd_and_data );
 
    return s;
 }
 
-void CIYAM_BASE_DECL_SPEC encrypt_data( std::string& s, const std::string& data,
- bool no_ssl = false, bool empty_key = false, bool use_sid_only = false, bool is_pwd_and_data = false );
+void CIYAM_BASE_DECL_SPEC encrypt_data( std::string& s, const std::string& data, bool no_ssl = false,
+ bool empty_key = false, bool use_sid_only = false, bool harden_key = false, bool is_pwd_and_data = false );
 
-inline std::string encrypt_data( const std::string& data,
- bool no_ssl = false, bool empty_key = false, bool use_sid_only = false, bool is_pwd_and_data = false )
+inline std::string encrypt_data( const std::string& data, bool no_ssl = false,
+ bool empty_key = false, bool use_sid_only = false, bool harden_key = false, bool is_pwd_and_data = false )
 {
    std::string s;
-   encrypt_data( s, data, no_ssl, empty_key, use_sid_only, is_pwd_and_data );
+   encrypt_data( s, data, no_ssl, empty_key, use_sid_only, harden_key, is_pwd_and_data );
 
    return s;
 }
