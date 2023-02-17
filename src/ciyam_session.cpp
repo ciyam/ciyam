@@ -5786,6 +5786,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool no_ssl( has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_no_ssl ) );
          bool no_salt( has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_no_salt ) );
+         bool harden_key( has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_harden_key ) );
          bool pwd_and_data( has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_pwd_and_data ) );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_data ) );
          string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_pubkey ) );
@@ -5796,7 +5797,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             session_shared_decrypt( data, pubkey, data );
          }
 
-         decrypt_data( response, data, no_ssl, no_salt, false, pwd_and_data );
+         decrypt_data( response, data, no_ssl, no_salt, false, harden_key, pwd_and_data );
 
          clear_key( data );
          clear_response = true;
@@ -5805,6 +5806,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool no_ssl( has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_no_ssl ) );
          bool no_salt( has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_no_salt ) );
+         bool harden_key( has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_harden_key ) );
          bool pwd_and_data( has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_pwd_and_data ) );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_data ) );
          string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_pubkey ) );
@@ -5815,7 +5817,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             session_shared_decrypt( data, pubkey, data );
          }
 
-         encrypt_data( response, data, no_ssl, no_salt, false, pwd_and_data );
+         encrypt_data( response, data, no_ssl, no_salt, false, harden_key, pwd_and_data );
 
          clear_key( data );
       }

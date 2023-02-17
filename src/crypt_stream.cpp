@@ -441,7 +441,7 @@ void data_encrypt( string& s, const string& dat, const string& key, bool use_ssl
    clear_key( salted_key );
 }
 
-void harden_key_with_salt( string& s, const string& key, const string& salt, size_t extra_multiplier )
+void harden_key_with_rounds( string& s, const string& key, const string& extra, size_t extra_multiplier )
 {
    sha256 hash;
 
@@ -449,7 +449,7 @@ void harden_key_with_salt( string& s, const string& key, const string& salt, siz
    s.resize( 0 );
 
    s += key;
-   s += salt;
+   s += extra;
 
    size_t num_rounds = ( c_password_hash_rounds * c_password_rounds_multiplier ) * extra_multiplier;
 

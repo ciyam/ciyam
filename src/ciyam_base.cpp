@@ -4903,7 +4903,13 @@ void set_identity( const string& info, const char* p_encrypted_sid )
       {
          string encrypted( sid );
 
-         data_decrypt( sid, sid, info );
+         string key;
+         key.reserve( c_key_reserve_size );
+
+         key = info;
+         harden_key_with_rounds( key, key, key, c_key_multiplier );
+
+         data_decrypt( sid, sid, key );
 
          size_t num_spaces = count( sid.begin( ), sid.end( ), ' ' );
 
@@ -4945,7 +4951,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             else
             {
                g_hardened_identity = true;
-               harden_key_with_salt( sid, info, extra, c_identity_additional_multiplier );
+               harden_key_with_rounds( sid, info, extra, c_identity_additional_multiplier );
             }
 
             set_sid( sid );
@@ -5425,7 +5431,7 @@ void verify_active_external_service( const string& ext_key )
 }
 
 void decrypt_data( string& s, const string& data,
- bool no_ssl, bool empty_key, bool use_sid_only, bool is_pwd_and_data )
+ bool no_ssl, bool empty_key, bool use_sid_only, bool harden_key, bool is_pwd_and_data )
 {
    string key;
    string str( data );
@@ -5463,6 +5469,9 @@ void decrypt_data( string& s, const string& data,
    if( !empty_key && ( pos == 0 ) )
       get_sid( key );
 
+   if( harden_key )
+      harden_key_with_rounds( key, key, key, c_key_multiplier );
+
    data_decrypt( s, str, key, !no_ssl );
 
    clear_key( key );
@@ -5470,7 +5479,7 @@ void decrypt_data( string& s, const string& data,
 }
 
 void encrypt_data( string& s, const string& data,
- bool no_ssl, bool empty_key, bool use_sid_only, bool is_pwd_and_data )
+ bool no_ssl, bool empty_key, bool use_sid_only, bool harden_key, bool is_pwd_and_data )
 {
    string key;
    string str( data );
@@ -5517,6 +5526,7 @@ void encrypt_data( string& s, const string& data,
          key.resize( pos );
          memcpy( &key[ 0 ], &str[ 0 ], pos );
 
+
          str.erase( 0, pos + 1 + is_double );
       }
 
@@ -5528,6 +5538,9 @@ void encrypt_data( string& s, const string& data,
    // NOTE: (see above)
    if( !empty_key && !is_pwd_and_data )
       get_sid( key );
+
+   if( harden_key )
+      harden_key_with_rounds( key, key, key, c_key_multiplier );
 
    data_encrypt( s, str, key, !no_ssl, !empty_key );
 

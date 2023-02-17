@@ -1370,10 +1370,16 @@ void request_handler::process_request( )
                            // NOTE: The seed is encrypted and sent as the identity (so that the application
                            // server will return the "encrypted identity") before then sending the password
                            // to unlock it.
-                           string encrypted( g_seed );
-                           data_encrypt( encrypted, encrypted, g_id_pwd );
+                           string password( g_id_pwd );
+                           string encrypted_seed( g_seed );
 
-                           if( !simple_command( *p_session_info, "identity " + encrypted, &identity_info ) )
+                           harden_key_with_rounds( password, password, password, c_key_multiplier );
+
+                           data_encrypt( encrypted_seed, encrypted_seed, password );
+
+                           clear_key( password );
+
+                           if( !simple_command( *p_session_info, "identity " + encrypted_seed, &identity_info ) )
                               throw runtime_error( "unable to determine encrypted identity information" );
 
                            string::size_type pos = identity_info.find( ':' );
@@ -1385,11 +1391,11 @@ void request_handler::process_request( )
 
 #ifdef SSL_SUPPORT
                            if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( )
-                            + " " + priv_key.encrypt_message( pub_key, g_id_pwd, 0, true ) + " " + encrypted, &identity_info ) )
+                            + " " + priv_key.encrypt_message( pub_key, g_id_pwd, 0, true ) + " " + encrypted_seed, &identity_info ) )
                               throw runtime_error( "unable to set/update identity information" );
 #else
                            if( !simple_command( *p_session_info,
-                            "identity -k=dummy " + quote( g_id_pwd ) + " " + encrypted, &identity_info ) )
+                            "identity -k=dummy " + quote( g_id_pwd ) + " " + encrypted_seed, &identity_info ) )
                               throw runtime_error( "unable to set/update identity information" );
 #endif
                         }
