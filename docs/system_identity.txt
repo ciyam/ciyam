@@ -20,6 +20,39 @@ it by brute force would take a very long time, however, it would still be recomm
 includes special characters, digits and both lower and upper case letters and which is at least 10 characters
 in length.
 
+Calculating Password Strength
+-----------------------------
+
+A typical high-end Bitcoin mining device can perform 100 TH/s and although the way that CIYAM hash operations
+are performed is not the same (meaning a specific ASIC device would need to be manufactured for this purpose)
+this can be a useful way to perform some "back of the envelope" calculations to measure just how much a brute
+force attack on a password would cost in terms of hashing time. In order to make the calulations a bit easier
+the relevant numbers will be rounded. Although there are nearly 200K hashes performed per password the number
+will be rounded down to 100K and although there are 95 different characters that can be typed with a standard
+keyboard this will be rounded up to 100.
+
+100,000,000,000,000 (100 TH/s - Bitcoin hashing device)
+100,000 (number of hashes required for a single password)
+100 (number of possible character values)
+10 (recommended minimum password characters)
+
+If a single character password can have 100 possible values then a brute force attack would try each possible
+value until the correct password is found (which on average would take 50% of all the possible combinations).
+So a password of 2 characters would require on average (100x100)/2 attempts and likewise a password of length
+3 would require on average (100x100x100)/2. So with every increase in length the total number of combinations
+is multiplied by the number of possible characters. So a password with 10 characters would 100x100x100...x100
+or a 1 followed by 20 zeroes (100,000,000,000,000,000,000). Next it needs to be taken into account the number
+of hashes per password attempt (100,000) so we add another 5 zeros (now 25 zeroes). Now with the best hashing
+devices able to perform 100 TH/s we would subtract 14 zeroes leaving a 1 followed by 11 zeroes divided by two
+(on average) seconds in order to brute force the 10 character password (50,000,000,000 seconds). To keep this
+simple just assume 60 billion which would require 1 billion minutes or nearly 2,000 years. A group of devices
+that numbers 1,000 would still on average take 2 years to perform such a brute force attack which should mean
+that provided the password is not a pattern (i.e. is purely random) then it should never likely be discovered
+using this approach.
+
+If the password is not strong then of course it could be brute forced in a small fraction of this time so the
+use of a strong password is highly recommended.
+
 Restoring an Existing Identity
 ------------------------------
 

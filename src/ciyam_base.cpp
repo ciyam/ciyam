@@ -4822,6 +4822,9 @@ void get_identity( string& s, bool append_max_user_limit,
    {
       string seed;
       get_mnemonics_or_hex_seed( s, seed );
+
+      if( p_pubkey )
+         session_shared_encrypt( s, p_pubkey, s );
    }
 
    if( md5_version )
@@ -4831,7 +4834,7 @@ void get_identity( string& s, bool append_max_user_limit,
    }
 
    if( append_max_user_limit )
-      s += ":" + to_string( g_max_user_limit );
+      s += "!" + to_string( g_max_user_limit );
 
    if( p_pubkey && !encrypted && g_encrypted_identity )
    {
@@ -4931,7 +4934,17 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          }
 
          if( num_spaces == 11 )
-            get_mnemonics_or_hex_seed( sid, sid );
+         {
+            try
+            {
+               get_mnemonics_or_hex_seed( sid, sid );
+            }
+            catch( ... )
+            {
+               g_sid.erase( );
+               throw;
+            }
+         }
 
          if( are_hex_nibbles( sid ) )
          {

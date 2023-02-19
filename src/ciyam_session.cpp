@@ -5797,9 +5797,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             session_shared_decrypt( data, pubkey, data );
          }
 
+         scoped_clear_key clear_data( data );
+
          decrypt_data( response, data, no_ssl, no_salt, false, harden_key, pwd_and_data );
 
-         clear_key( data );
          clear_response = true;
       }
       else if( command == c_cmd_ciyam_session_utils_encrypt )
@@ -5817,9 +5818,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             session_shared_decrypt( data, pubkey, data );
          }
 
-         encrypt_data( response, data, no_ssl, no_salt, false, harden_key, pwd_and_data );
+         scoped_clear_key clear_data( data );
 
-         clear_key( data );
+         encrypt_data( response, data, no_ssl, no_salt, false, harden_key, pwd_and_data );
       }
    }
    catch( exception& x )
