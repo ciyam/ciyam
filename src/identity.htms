@@ -8,6 +8,9 @@
 <p>
 @@identity_introduction_2
 </p>
+<p class="error">
+@@identity_error
+</p>
 
 <form method="POST" name="identity" id="identity"
  onsubmit="return dyn_load( this, 'cmd=identity'

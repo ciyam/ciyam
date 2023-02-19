@@ -196,6 +196,8 @@ map< string, string > g_uuid_for_ip_addr;
 string g_id;
 string g_seed;
 string g_id_pwd;
+string g_bad_seed;
+string g_seed_error;
 
 int g_unlock_fails = 0;
 
@@ -735,6 +737,7 @@ void request_handler::process_request( )
    bool created_session = false;
    bool using_anonymous = false;
    bool finished_session = false;
+   bool identity_failure = false;
 
    string hash;
    string user;
@@ -999,22 +1002,55 @@ void request_handler::process_request( )
          g_seed = input_data[ c_param_data ];
          g_id_pwd = input_data[ c_param_extra ];
 
-         if( g_seed != c_unlock )
-            crypt_decoded( unique_id, g_seed );
+         bool missing_mnemonics = false;
 
-         crypt_decoded( unique_id, g_id_pwd );
-
-         if( !mod_info.allows_anonymous_access )
+         if( g_seed.empty( ) )
+            missing_mnemonics = true;
+         else
          {
-            is_sign_in = true;
-
-            // KLUDGE: When the initial identity is provided
-            // the first login will fail so force a refresh.
             if( g_seed != c_unlock )
-               login_refresh = true;
+            {
+               crypt_decoded( unique_id, g_seed );
+
+               g_seed = trim( g_seed );
+
+               size_t num_spaces = count( g_seed.begin( ), g_seed.end( ), ' ' );
+
+               if( num_spaces < 11 )
+                  missing_mnemonics = true;
+            }
+
+            crypt_decoded( unique_id, g_id_pwd );
+         }
+
+         if( missing_mnemonics )
+         {
+            display_error = false;
+
+            login_refresh = true;
+            identity_failure = true;
+
+            g_bad_seed = g_seed;
+            g_seed.erase( );
+
+            g_seed_error = GDS( c_display_error ) + ": " + GDS( c_display_missing_mnemonics );
+
+            throw runtime_error( "unable to set/update identity information" );
          }
          else
-            cmd = c_cmd_home;
+         {
+            if( !mod_info.allows_anonymous_access )
+            {
+               is_sign_in = true;
+
+               // KLUDGE: When the initial identity is provided
+               // the first login will fail so force a refresh.
+               if( g_seed != c_unlock )
+                  login_refresh = true;
+            }
+            else
+               cmd = c_cmd_home;
+         }
       }
       else if( g_id.empty( ) )
          cmd = c_cmd_home;
@@ -1246,6 +1282,7 @@ void request_handler::process_request( )
                      if( p_session_info->p_socket->write_line( to_string( get_pid( ) ), c_pid_timeout ) <= 0 )
                      {
                         string error;
+
                         if( p_session_info->p_socket->had_timeout( ) )
                            error = "timeout occurred trying to connect to server";
                         else
@@ -1259,6 +1296,7 @@ void request_handler::process_request( )
                      if( p_session_info->p_socket->read_line( greeting, c_greeting_timeout ) <= 0 )
                      {
                         string error;
+
                         if( p_session_info->p_socket->had_timeout( ) )
                            error = "timeout occurred trying to connect to server";
                         else
@@ -1287,6 +1325,7 @@ void request_handler::process_request( )
                      if( p_session_info->p_socket->read_line( slotx_and_pubkeyx, c_pubkey_timeout ) <= 0 )
                      {
                         string error;
+
                         if( p_session_info->p_socket->had_timeout( ) )
                            error = "timeout occurred trying to connect to server";
                         else
@@ -1380,32 +1419,68 @@ void request_handler::process_request( )
                            clear_key( password );
 
                            if( !simple_command( *p_session_info, "identity " + encrypted_seed, &identity_info ) )
-                              throw runtime_error( "unable to determine encrypted identity information" );
+                              throw runtime_error( "unable to set encrypted identity information" );
 
-                           string::size_type pos = identity_info.find( ':' );
+                           string::size_type pos = identity_info.find( '!' );
                            if( pos == string::npos )
-                              throw runtime_error( "unexpected identity information '" + identity_info + "'" );
+                              throw runtime_error( "unexpected encrypted identity information '" + identity_info + "'" );
 
-                           ofstream outf( eid_file_name.c_str( ) );
-                           outf << identity_info.substr( 0, pos );
+                           string encrypted_identity( identity_info.substr( 0, pos ) );
 
 #ifdef SSL_SUPPORT
-                           if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( )
-                            + " " + priv_key.encrypt_message( pub_key, g_id_pwd, 0, true ) + " " + encrypted_seed, &identity_info ) )
+                           if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( ) + " "
+                            + priv_key.encrypt_message( pub_key, g_id_pwd, 0, true ) + " " + encrypted_seed, &identity_info ) )
+                           {
+                              g_bad_seed = g_seed;
+                              g_seed.erase( );
+
+                              identity_failure = true;
+
+                              if( identity_info.find( c_response_error_prefix ) == 0 )
+                              {
+                                 display_error = false;
+
+                                 g_seed_error = GDS( c_display_error ) + ": "
+                                  + identity_info.substr( strlen( c_response_error_prefix ) );
+                              }
+
                               throw runtime_error( "unable to set/update identity information" );
+                           }
 #else
-                           if( !simple_command( *p_session_info,
-                            "identity -k=dummy " + quote( g_id_pwd ) + " " + encrypted_seed, &identity_info ) )
+                           if( !simple_command( *p_session_info, "identity -k=dummy "
+                            + quote( g_id_pwd ) + " " + encrypted_seed, &identity_info ) )
+                           {
+                              g_bad_seed = g_seed;
+                              g_seed.erase( );
+
+                              identity_failure = true;
+
+                              if( identity_info.find( c_response_error_prefix ) == 0 )
+                              {
+                                 display_error = false;
+
+                                 g_seed_error = GDS( c_display_error ) + ": "
+                                  + identity_info.substr( strlen( c_response_error_prefix ) );
+                              }
+
                               throw runtime_error( "unable to set/update identity information" );
+                           }
 #endif
+                           ofstream outf( eid_file_name.c_str( ) );
+                           outf << encrypted_identity;
                         }
                      }
 
-                     pos = identity_info.find( ':' );
+                     pos = identity_info.find( '!' );
                      if( pos == string::npos )
                         throw runtime_error( "unexpected identity information '" + identity_info + "'" );
 
                      string sid, server_identity( identity_info.substr( 0, pos ) );
+#ifdef SSL_SUPPORT
+                     // NOTE: If mnemonics then will have been encrypted (confirmed by finding the salt marker).
+                     if( server_identity.find( ':' ) != string::npos )
+                        server_identity = priv_key.decrypt_message( pub_key, server_identity );
+#endif
 
                      pos = identity_info.find( ' ', pos + 1 );
 
@@ -1517,8 +1592,19 @@ void request_handler::process_request( )
                               str_replace( identity_html,
                                c_identity_introduction_2, GDS( c_display_identity_introduction_2 ) );
 
+                              str_replace( identity_html, c_identity_error, g_seed_error );
+
                               // NOTE: Encrypt mnemonics using the "unique_id" value as the key.
                               string encrypted_seed( server_identity );
+
+                              if( !g_bad_seed.empty( ) )
+                              {
+                                 encrypted_seed = g_bad_seed;
+
+                                 g_bad_seed.erase( );
+                                 g_seed_error.erase( );
+                              }
+
                               crypt_decoded( unique_id, encrypted_seed, false );
 
                               str_replace( identity_html, c_identity_mnemonics, encrypted_seed );
@@ -2721,7 +2807,8 @@ void request_handler::process_request( )
       bool log_error = true;
 
       // NOTE: Filter out some of the more "noisy" (and less serious) error messages.
-      if( x.what( ) == GDS( c_display_invalid_url )
+      if( !g_seed_error.empty( )
+       || x.what( ) == GDS( c_display_invalid_url )
        || x.what( ) == GDS( c_display_client_script_out_of_date )
        || x.what( ) == GDS( c_display_unknown_or_invalid_user_id )
        || x.what( ) == GDS( c_display_you_are_currently_logged_in )
@@ -2779,6 +2866,18 @@ void request_handler::process_request( )
              make_pair( c_display_click_here_to_login_parm_href,
              "<a href=\"" + get_module_page_name( module_ref, true )
              + "?cmd=" + string( c_cmd_login ) + "\">" ), "</a>" ) + "</p>\n";
+         }
+         else if( identity_failure )
+         {
+            is_logged_in = true;
+            has_output_extra = true;
+
+            // NOTE: An automatic refresh will occur but output this
+            // just in case it fails due to browser compatibility.
+            osstr << "<p align=\"center\">"
+             << string_message( GDS( c_display_click_here_to_retry ),
+             make_pair( c_display_click_here_to_retry_parm_href,
+             "<a href=\"" + get_module_page_name( module_ref, true ) + "\">" ), "</a>" ) + "</p>\n";
          }
       }
 

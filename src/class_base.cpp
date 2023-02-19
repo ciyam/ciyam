@@ -5558,7 +5558,8 @@ void get_mnemonics_or_hex_seed( string& s, const string& mnemonics_or_hex_seed )
       split( seed, mnemonics, ( space_separated ? ' ' : ',' ) );
 
       if( mnemonics.size( ) != 12 )
-         throw runtime_error( "unexpected number of seed mnemonics != 12" );
+         // FUTURE: This message should be handled as a server string message.
+         throw runtime_error( "Unexpected number of seed mnemonics is not twelve." );
       else
       {
          for( size_t i = 0; i < 12; i++ )
@@ -5566,7 +5567,8 @@ void get_mnemonics_or_hex_seed( string& s, const string& mnemonics_or_hex_seed )
             string next( mnemonics[ i ] );
 
             if( !g_mnemonic_values.count( next ) )
-               throw runtime_error( "invalid mnemonic word '" + next + "'" );
+               // FUTURE: This message should be handled as a server string message.
+               throw runtime_error( "Found invalid mnemonic word '" + next + "'." );
 
             int bit = 1024;
             int val = g_mnemonic_values[ next ];
@@ -5619,7 +5621,8 @@ void get_mnemonics_or_hex_seed( string& s, const string& mnemonics_or_hex_seed )
          unsigned char first_nibble = hex_nibble( digest[ 0 ] );
 
          if( byte != first_nibble )
-            throw runtime_error( "invalid checksum for seed mnemonics" );
+            // FUTURE: This message should be handled as a server string message.
+            throw runtime_error( "Invalid seed mnemonics (one or more incorrect words?)." );
 
          s = osstr.str( );
       }
