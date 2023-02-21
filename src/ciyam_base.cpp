@@ -102,9 +102,10 @@ const int c_loop_variable_digits = 8;
 
 const int c_storable_file_pad_len = 32;
 
+const int c_num_extra_entropy_chars = 10;
+
 const size_t c_num_txs_for_reset = 500000;
 
-const size_t c_identity_additional_multiplier = 35;
 const size_t c_minimum_encrypted_password_size = 10;
 
 // NOTE: Limit the buffer to twice the maximum file size (if a compression
@@ -4910,7 +4911,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          key.reserve( c_key_reserve_size );
 
          key = info;
-         harden_key_with_rounds( key, key, key, c_key_multiplier );
+         harden_key_with_rounds( key, key, key, c_key_rounds_multiplier );
 
          data_decrypt( sid, sid, key );
 
@@ -4964,7 +4965,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             else
             {
                g_hardened_identity = true;
-               harden_key_with_rounds( sid, info, extra, c_identity_additional_multiplier );
+               harden_key_with_rounds( sid, info, extra, c_key_rounds_multiplier );
             }
 
             set_sid( sid );
@@ -5483,7 +5484,7 @@ void decrypt_data( string& s, const string& data,
       get_sid( key );
 
    if( harden_key )
-      harden_key_with_rounds( key, key, key, c_key_multiplier );
+      harden_key_with_rounds( key, key, key, c_key_rounds_multiplier );
 
    data_decrypt( s, str, key, !no_ssl );
 
@@ -5514,46 +5515,53 @@ void encrypt_data( string& s, const string& data,
       else
          pos = str.find( ' ' );
 
+      // NOTE: If no data has been provided after the space (or double space)
+      // separator will treat as though no space has been found but if double
+      // spaces had been provided then will add extra entropy characters.
+      if( pos != string::npos && ( str.length( ) == ( pos + 1 + is_double ) ) )
+      {
+         str.erase( pos );
+         pos = string::npos;
+      }
+
       if( pos == string::npos )
       {
          key = str;
          str.erase( );
 
-         string seed;
          string mnemonics;
-         string seed_as_hex;
 
          mnemonics.reserve( c_key_reserve_size );
-         seed_as_hex.reserve( c_key_reserve_size );
 
-         get_mnemonics_or_hex_seed( mnemonics, seed );
-         get_mnemonics_or_hex_seed( seed_as_hex, mnemonics );
+         get_mnemonics_or_hex_seed( mnemonics, string( ) );
 
-         str += seed_as_hex;
+         str += mnemonics;
+
+         if( is_double )
+         {
+            str += ' ';
+
+            for( size_t i = 0; i < c_num_extra_entropy_chars; i++ )
+               str += ( char )( 32 + ( rand( ) % 95 ) );
+         }
 
          clear_key( mnemonics );
-         clear_key( seed_as_hex );
       }
       else
       {
          key.resize( pos );
          memcpy( &key[ 0 ], &str[ 0 ], pos );
 
-
          str.erase( 0, pos + 1 + is_double );
       }
-
-      // NOTE: Assume is mnemonics if has eleven spaces.
-      if( count( str.begin( ), str.end( ), ' ' ) == 11 )
-         get_mnemonics_or_hex_seed( str, str );
    }
 
-   // NOTE: (see above)
+   // NOTE: (refer to "decrypt_data")
    if( !empty_key && !is_pwd_and_data )
       get_sid( key );
 
    if( harden_key )
-      harden_key_with_rounds( key, key, key, c_key_multiplier );
+      harden_key_with_rounds( key, key, key, c_key_rounds_multiplier );
 
    data_encrypt( s, str, key, !no_ssl, !empty_key );
 
