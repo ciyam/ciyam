@@ -27,12 +27,12 @@ A typical high-end Bitcoin mining device can perform 100 TH/s and although the w
 are performed is not the same (meaning a specific ASIC device would need to be manufactured for this purpose)
 this can be a useful way to perform some "back of the envelope" calculations to measure just how much a brute
 force attack on a password would cost in terms of hashing time. In order to make the calulations a bit easier
-the relevant numbers will be rounded. Although there are nearly 200K hashes performed per password the number
-will be rounded down to 100K and although there are 95 different characters that can be typed with a standard
+the relevant numbers will be rounded. Although over 1.1M hashes are performed per password attempt the number
+will be rounded down to 1M and although there are 95 different characters that could be typed with a standard
 keyboard this will be rounded up to 100.
 
 100,000,000,000,000 (100 TH/s - Bitcoin hashing device)
-100,000 (number of hashes required for a single password)
+1,000,000 (number of hashes required for a password)
 100 (number of possible character values)
 10 (recommended minimum password characters)
 
@@ -42,16 +42,17 @@ So a password of 2 characters would require on average (100x100)/2 attempts and 
 3 would require on average (100x100x100)/2. So with every increase in length the total number of combinations
 is multiplied by the number of possible characters. So a password with 10 characters would 100x100x100...x100
 or a 1 followed by 20 zeroes (100,000,000,000,000,000,000). Next it needs to be taken into account the number
-of hashes per password attempt (100,000) so we add another 5 zeros (now 25 zeroes). Now with the best hashing
-devices able to perform 100 TH/s we would subtract 14 zeroes leaving a 1 followed by 11 zeroes divided by two
-(on average) seconds in order to brute force the 10 character password (50,000,000,000 seconds). To keep this
-simple just assume 60 billion which would require 1 billion minutes or nearly 2,000 years. A group of devices
-that numbers 1,000 would still on average take 2 years to perform such a brute force attack which should mean
-that provided the password is not a pattern (i.e. is purely random) then it should never likely be discovered
-using this approach.
+of hashes per password attempt (1,000,000) so we add another 6 zeros (now 26 zeroes). With the latest hashing
+devices able to perform 100 TH/s we would subtract 14 zeroes leaving a 1 followed by 12 zeroes divided by two
+(on average) seconds in order to brute force the 10 character password (500,000,000,000 seconds). Again to be
+simple assume 600 billion which would require 10 billion minutes or nearly 20,000 years! Even using a pool of
+10,000 such devices would take around 2 years in order to complete this brute force attack therefore provided
+the password is not a pattern (i.e. it is purely random) then it should never likely be discovered using this
+approach.
 
 If the password is not strong then of course it could be brute forced in a small fraction of this time so the
-use of a strong password is highly recommended.
+use of a strong password is highly recommended (and should be considered essential if other people could have
+physical access to the device).
 
 Restoring an Existing Identity
 ------------------------------
@@ -70,7 +71,7 @@ THIS SHOULD NEVER BE DONE as it might lead to the loss of all your crypto assets
 
 As the dictionary is 2048 words each single word is 11 bits (1024 being 10 bits so 2048 being one extra bit).
 This means that twelve words is 132 bits, however, to minimise human error the last 4 bits are being used for
-a "checksum" (to detect an input mistake) so there are only 128 bits of "entropy" (or randomness) present.
+a "checksum" (to detect input mistakes) so there are only 128 bits of "entropy" (or randomness) present.
 
 This is a lot of entropy but if wanting to be "future proof" one might want to extend this even further. This
 is why some crypto wallets have 18 or 24 words as an option (rather than just 12). The CIYAM node permits you
@@ -98,5 +99,5 @@ for usage with the "shared" folder therefore it will be 10 characters long if 9 
 
 Using additonal characters in order to create a more "future proof" identity:
 
-Identity: 5c0bf360e
-Mnemonics: detect jazz kick ghost novel rifle scout mirror stairs craft outdoor crisp #!@A11E4sy2Cr4ck
+Identity: 59a23c2bb
+Mnemonics: detect jazz kick ghost novel rifle scout mirror stairs craft outdoor crisp #!@A11E4sy

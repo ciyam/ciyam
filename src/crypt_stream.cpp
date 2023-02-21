@@ -443,21 +443,32 @@ void data_encrypt( string& s, const string& dat, const string& key, bool use_ssl
 
 void harden_key_with_rounds( string& s, const string& key, const string& extra, size_t extra_multiplier )
 {
-   sha256 hash;
+   sha256 hash( key );
 
-   s.reserve( ( c_sha256_digest_size * 2 ) + key.length( ) );
-   s.resize( 0 );
+   s.reserve( c_sha256_digest_size * 2 );
 
-   s += key;
-   s += extra;
+   hash.update( extra );
+
+   hash.get_digest_as_string( s );
 
    size_t num_rounds = ( c_password_hash_rounds * c_password_rounds_multiplier ) * extra_multiplier;
 
+   unsigned char offset = 0;
+
    for( size_t i = 0; i < num_rounds; i++ )
    {
-      hash.update( s + key );
-      hash.get_digest_as_string( s );
+      // NOTE: Cycles through inverting one byte
+      // at a time (changing the input but doing
+      // so with minimal CPU effort).
+      s[ offset ] ^= 0xaa;
+
+      hash.update( s );
+
+      if( ++offset >= 64 )
+         offset = 0;
    }
+
+   hash.get_digest_as_string( s );
 }
 
 string check_for_proof_of_work(
