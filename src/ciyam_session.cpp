@@ -1184,7 +1184,7 @@ class socket_command_handler : public command_handler
    auto_ptr< restorable< bool > > set_restoring( ) { return auto_ptr< restorable< bool > >( new restorable< bool >( restoring, true ) ); }
 
    private:
-   void preprocess_command_and_args( string& str, const string& cmd_and_args );
+   void preprocess_command_and_args( string& str, const string& cmd_and_args, bool /*skip_command_usage*/ );
 
    void postprocess_command_and_args( const string& cmd_and_args );
 
@@ -1222,7 +1222,7 @@ class socket_command_handler : public command_handler
    map< string, string > transformations;
 };
 
-void socket_command_handler::preprocess_command_and_args( string& str, const string& cmd_and_args )
+void socket_command_handler::preprocess_command_and_args( string& str, const string& cmd_and_args, bool /*skip_command_usage*/ )
 {
    str = cmd_and_args;
 

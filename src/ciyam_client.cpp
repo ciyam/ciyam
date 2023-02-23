@@ -290,7 +290,7 @@ class ciyam_console_command_handler : public console_command_handler
 
    string get_additional_command( );
 
-   void preprocess_command_and_args( string& str, const string& cmd_and_args );
+   void preprocess_command_and_args( string& str, const string& cmd_and_args, bool /*skip_command_usage*/ );
 
    void process_custom_startup_option( size_t num, const string& option );
 };
@@ -330,17 +330,17 @@ string ciyam_console_command_handler::get_additional_command( )
    return cmd;
 }
 
-void ciyam_console_command_handler::preprocess_command_and_args( string& str, const string& cmd_and_args )
+void ciyam_console_command_handler::preprocess_command_and_args(
+ string& str, const string& cmd_and_args, bool /*skip_command_usage*/ )
 {
    if( is_handling_startup_options( ) )
-      return console_command_handler::preprocess_command_and_args( str, cmd_and_args );
+      return console_command_handler::preprocess_command_and_args( str, cmd_and_args, false );
 
    str = cmd_and_args;
 
    if( !str.empty( ) )
    {
-      if( str[ 0 ] != '?' && str.find( "help" ) != 0 )
-         console_command_handler::preprocess_command_and_args( str, cmd_and_args );
+      console_command_handler::preprocess_command_and_args( str, cmd_and_args, true );
 
       if( !str.empty( ) )
       {

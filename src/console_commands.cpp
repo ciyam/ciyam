@@ -2371,7 +2371,7 @@ string console_command_handler::format_usage_output(
    return retval;
 }
 
-void console_command_handler::preprocess_command_and_args( string& str, const string& cmd_and_args )
+void console_command_handler::preprocess_command_and_args( string& str, const string& cmd_and_args, bool skip_command_usage )
 {
    str = cmd_and_args;
 
@@ -3138,14 +3138,25 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             }
             else if( str[ 0 ] == c_output_command_usage || str.substr( 0, pos ) == c_help_command )
             {
-               string wildcard_match_expr;
-               if( pos != string::npos )
-                  wildcard_match_expr = str.substr( pos + 1 );
+#ifdef __GNUG__
+#  ifdef RDLINE_SUPPORT
+               if( add_to_history && isatty( STDIN_FILENO ) )
+                  add_history( str.c_str( ) );
+#  endif
+#endif
+               if( !skip_command_usage )
+               {
+                  string wildcard_match_expr;
+                  if( pos != string::npos )
+                     wildcard_match_expr = str.substr( pos + 1 );
 
-               if( get_command_processor( ) )
-                  get_command_processor( )->output_command_usage( wildcard_match_expr );
+                  if( get_command_processor( ) )
+                     get_command_processor( )->output_command_usage( wildcard_match_expr );
 
-               str.erase( );
+                  str.erase( );
+               }
+
+               add_to_history = false;
             }
             else if( str[ 0 ] == c_system_command_prefix )
             {
