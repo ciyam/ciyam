@@ -194,7 +194,11 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
    virtual std::string format_usage_output( const std::string& command,
     char cmd_arg_separator, const std::string& usage, const std::string& description ) const;
 
-   virtual void preprocess_command_and_args( std::string& str, const std::string& cmd_and_args ) { str = cmd_and_args; }
+   virtual void preprocess_command_and_args( std::string& str,
+    const std::string& cmd_and_args, bool skip_command_usage = false )
+   {
+      str = cmd_and_args;
+   }
 
    virtual void postprocess_command_and_args( const std::string& /*cmd_and_args*/ ) { }
 

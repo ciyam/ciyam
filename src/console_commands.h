@@ -89,7 +89,7 @@ class console_command_handler : public command_handler
    impl* p_impl;
 
    protected:
-   void preprocess_command_and_args( std::string& str, const std::string& cmd_and_args );
+   void preprocess_command_and_args( std::string& str, const std::string& cmd_and_args, bool skip_command_usage = false );
 
    std::ostream* get_std_err( ) const { return p_std_err; }
    std::ostream* get_std_out( ) const { return p_std_out; }
