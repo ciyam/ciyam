@@ -441,7 +441,7 @@ void data_encrypt( string& s, const string& dat, const string& key, bool use_ssl
    clear_key( salted_key );
 }
 
-void harden_key_with_rounds( string& s, const string& key, const string& extra, size_t extra_multiplier )
+void harden_key_with_hash_rounds( string& s, const string& key, const string& extra, size_t extra_multiplier )
 {
    sha256 hash( key );
 

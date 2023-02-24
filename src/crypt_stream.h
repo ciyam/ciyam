@@ -68,14 +68,14 @@ inline std::string data_encrypt( const std::string& dat,
    return s;
 }
 
-void harden_key_with_rounds( std::string& s,
+void harden_key_with_hash_rounds( std::string& s,
  const std::string& key, const std::string& extra, size_t extra_multiplier = 1 );
 
-inline std::string harden_key_with_rounds(
+inline std::string harden_key_with_hash_rounds(
  const std::string& key, const std::string& extra, size_t extra_multiplier = 1 )
 {
    std::string s;
-   harden_key_with_rounds( s, key, extra, extra_multiplier );
+   harden_key_with_hash_rounds( s, key, extra, extra_multiplier );
 
    return s;
 }

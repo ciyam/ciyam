@@ -1412,7 +1412,7 @@ void request_handler::process_request( )
                            string password( g_id_pwd );
                            string encrypted_seed( g_seed );
 
-                           harden_key_with_rounds( password, password, password, c_key_rounds_multiplier );
+                           harden_key_with_hash_rounds( password, password, password, c_key_rounds_multiplier );
 
                            data_encrypt( encrypted_seed, encrypted_seed, password );
 
