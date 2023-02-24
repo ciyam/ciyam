@@ -15,7 +15,7 @@ node for the first time it would be recommended that no internet connection be p
 have made a copy of the twelve words (using an analog method such as pen and paper) and have also entered the
 master password (which should be typed in twice manually to confirm that it is correct).
 
-The master password is hardened (with over 185K hash operations) in order to ensure that any attempt to crack
+The master password is hardened (with over 1.1M hash operations) in order to ensure that any attempt to crack
 it by brute force would take a very long time, however, it would still be recommended to use a password which
 includes special characters, digits and both lower and upper case letters and which is at least 10 characters
 in length.

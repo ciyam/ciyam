@@ -4911,7 +4911,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          key.reserve( c_key_reserve_size );
 
          key = info;
-         harden_key_with_rounds( key, key, key, c_key_rounds_multiplier );
+         harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
 
          data_decrypt( sid, sid, key );
 
@@ -4965,7 +4965,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             else
             {
                g_hardened_identity = true;
-               harden_key_with_rounds( sid, info, extra, c_key_rounds_multiplier );
+               harden_key_with_hash_rounds( sid, info, extra, c_key_rounds_multiplier );
             }
 
             set_sid( sid );
@@ -5484,7 +5484,7 @@ void decrypt_data( string& s, const string& data,
       get_sid( key );
 
    if( harden_key )
-      harden_key_with_rounds( key, key, key, c_key_rounds_multiplier );
+      harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
 
    data_decrypt( s, str, key, !no_ssl );
 
@@ -5561,7 +5561,7 @@ void encrypt_data( string& s, const string& data,
       get_sid( key );
 
    if( harden_key )
-      harden_key_with_rounds( key, key, key, c_key_rounds_multiplier );
+      harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
 
    data_encrypt( s, str, key, !no_ssl, !empty_key );
 
