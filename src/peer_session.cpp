@@ -248,20 +248,24 @@ string get_hello_data( string& hello_hash )
 }
 
 void parse_peer_mapped_info( const string& peer_mapped_info,
- string& local_hash, string& local_public_key, string& master_public_key, bool base64_encode_pubkeys )
+ string& local_hash, string& local_public_key, string& master_public_key, bool base64_encode_pubkeys, bool is_test_session = false )
 {
-   if( peer_mapped_info.length( ) != 197 )
+   if( !is_test_session && peer_mapped_info.length( ) != 197 )
       throw runtime_error( "unexpected peer_mapped_info length != 197" );
 
    // NOTE: Mapped info is '<local_hash>:<local_pub_key><master_pub_key>'.
    local_hash = peer_mapped_info.substr( 0, 64 );
    local_public_key = peer_mapped_info.substr( 65, 66 );
-   master_public_key = peer_mapped_info.substr( 131 );
+
+   if( !is_test_session )
+      master_public_key = peer_mapped_info.substr( 131 );
 
    if( base64_encode_pubkeys )
    {
       local_public_key = base64::encode( hex_decode( local_public_key ) );
-      master_public_key = base64::encode( hex_decode( master_public_key ) );
+
+      if( !is_test_session )
+         master_public_key = base64::encode( hex_decode( master_public_key ) );
    }
 }
 
@@ -794,7 +798,7 @@ void process_put_file( const string& blockchain,
 
                      if( lines.size( ) > 3 && lines[ 3 ].find( c_file_repository_target_hash_line_prefix ) == 0 )
                         target_hash = lines[ 3 ].substr( strlen( c_file_repository_target_hash_line_prefix ) );
-                     else
+                     else if( !is_test_session )
                         throw runtime_error( "unexpected missing target hash in put file info" );
 
 #ifndef SSL_SUPPORT
@@ -804,7 +808,7 @@ void process_put_file( const string& blockchain,
 
                      string local_hash, local_public_key, master_public_key;
 
-                     parse_peer_mapped_info( peer_mapped_info, local_hash, local_public_key, master_public_key, true );
+                     parse_peer_mapped_info( peer_mapped_info, local_hash, local_public_key, master_public_key, true, is_test_session );
 
                      if( !peer_mapped_info.empty( ) )
                      {
@@ -841,7 +845,10 @@ void process_put_file( const string& blockchain,
                                     // NOTE: Either now adds the file to be fetched or maps information
                                     // depending on whether or not "process_list_items" had been called
                                     // (if was called the mapped hash will already exist).
-                                    if( !mapped_hash.empty( ) )
+                                    if( is_test_session )
+                                       add_peer_file_hash_for_get( local_hash + ':'
+                                        + local_public_key + c_repository_suffix, false );
+                                    else if( !mapped_hash.empty( ) )
                                        add_peer_file_hash_for_get( local_hash + ':' + local_public_key + '-'
                                         + master_public_key + ';' + target_hash + c_repository_suffix, check_for_supporters );
                                     else
@@ -2077,7 +2084,7 @@ class socket_command_handler : public command_handler
    }
 
    private:
-   void preprocess_command_and_args( string& str, const string& cmd_and_args );
+   void preprocess_command_and_args( string& str, const string& cmd_and_args, bool /*skip_command_usage*/ );
 
    void postprocess_command_and_args( const string& cmd_and_args );
 
@@ -3059,7 +3066,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    }
 }
 
-void socket_command_handler::preprocess_command_and_args( string& str, const string& cmd_and_args )
+void socket_command_handler::preprocess_command_and_args( string& str, const string& cmd_and_args, bool /*skip_command_usage*/ )
 {
    str = cmd_and_args;
 
@@ -3580,7 +3587,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                throw runtime_error( "invalid state for put (responder)" );
          }
 
-         bool put_allowed = !get_session_variable(
+         bool put_allowed = blockchain.empty( ) || !get_session_variable(
           get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
 
          if( !put_allowed )
@@ -3609,8 +3616,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          else
             store_file( hash, socket, 0, p_sock_progress, false, 0, false, &file_data, &num_bytes );
 
-         if( hash != hello_hash && !get_session_variable(
-          get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( ) )
+         if( hash != hello_hash && ( blockchain.empty( ) || !get_session_variable(
+          get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( ) ) )
          {
             date_time dtm( date_time::local( ) );
 
