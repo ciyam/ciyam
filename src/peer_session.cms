@@ -1,6 +1,6 @@
 chk "check if peer has a file or hash the content of a file with a nonce" <val//tag_or_hash>[<val//nonce>]
-get "fetch a local file from the peer's files area" <val//tag_or_hash>[<val//name>]
-put "store a local file into the peer's files area" <val//hash>
-pip "exchange a random peer's ip address" <val//addr>
+get "fetch a file from the peer files area or blockchain archive" <val//tag_or_hash>[<val//name>]
+put "send a file with public key and hash information for repository processing" <val//hash>
+msg "exchange an arbitrary data message" <val//data>
 tls "start TLS session"
 bye "terminate session"
