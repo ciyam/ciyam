@@ -35,19 +35,24 @@ file using the "chk" command and its "nonce" argument.
 Interactive Testing
 -------------------
 
-In order to interactively test the CIYAM peer protocol a special configuration entry needs to be added to the
-"ciyam_server.sio" configuration file (immediately before the "<default_storage>" entry):
+In order to interactively test the CIYAM peer protocol a "-test_peer_port=<port>" option can be used when the
+application server is being started. If needing to test for some time (such as when developing a new protocol
+command) a special configuration option can be added to "ciyam_server.sio" (which is found immediately before
+the "<default_storage>" entry):
 
+ ./ciyam_server -test_peer_port=11111 &
+
+[or alternatively edit "ciyam_server.sio"]
 ...
  <test_peer_port>11111
 # <default_storage>test
 ...
 
-After changing the configuration file and restarting the server the "ciyam_server.log" should look similar to
-the following:
+After providing the startup option (or changing the configuration file and restarting the application server)
+the "ciyam_server.log" should look similar to the following:
 
-[2017-04-07 17:52:25] [000000] [general] server started on port 11011 (pid = 888)
-[2017-04-07 17:52:25] [000000] [general] peer listener started on port 11111
+[2020-04-07 17:52:25] [000000] [general] server started on port 11011 (pid = 888)
+[2020-04-07 17:52:25] [000000] [general] peer listener started on port 11111
 
 To connect use "ciyam_client" specifying the port number (i.e. 11111 per above) as follows:
 
@@ -118,7 +123,7 @@ owner of a file creates a repository storage request (which will be later used v
 #-----------------------------------------------------------------------------------------------------------#
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
- ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d &
+ ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -test_peer_port=11111 &
 sleep 2
  ./ciyam_client -quiet
 file_put test.jpg

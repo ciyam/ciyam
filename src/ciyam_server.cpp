@@ -206,6 +206,9 @@ const char* const c_cmd_no_auto = "no_auto";
 const char* const c_cmd_no_peers = "no_peers";
 const char* const c_cmd_no_streams = "no_streams";
 
+const char* const c_cmd_test_peer_port = "test_peer_port";
+const char* const c_cmd_test_peer_port_port = "port";
+
 #ifdef _WIN32
 const char* const c_cmd_svcins = "svcins";
 const char* const c_cmd_svcrem = "svcrem";
@@ -228,6 +231,8 @@ bool g_has_flags = false;
 
 string g_entropy;
 string g_files_directory;
+
+int g_test_peer_port = 0;
 
 const int c_accept_timeout = 500;
 const int c_active_start_delay = 250;
@@ -257,6 +262,7 @@ const char* const c_register_listener_func_name = "register_listener";
 const char* const c_set_stream_socket_func_name = "set_stream_socket";
 const char* const c_init_ciyam_session_func_name = "init_ciyam_session";
 const char* const c_set_files_area_dir_func_name = "set_files_area_dir";
+const char* const c_set_test_peer_port_func_name = "set_test_peer_port";
 const char* const c_init_peer_sessions_func_name = "init_peer_sessions";
 const char* const c_check_timezone_info_func_name = "check_timezone_info";
 const char* const c_is_accepted_ip_addr_func_name = "is_accepted_ip_addr";
@@ -266,6 +272,7 @@ const char* const c_trace_flags_func_name = "_trace_flags";
 const char* const c_init_globals_func_name = "_init_globals";
 const char* const c_term_globals_func_name = "_term_globals";
 const char* const c_server_command_func_name = "_server_command";
+const char* const c_test_peer_port_func_name = "_test_peer_port";
 const char* const c_set_server_port_func_name = "_set_server_port";
 const char* const c_init_auto_script_func_name = "_init_auto_script";
 const char* const c_init_udp_streams_func_name = "_init_udp_streams";
@@ -274,6 +281,7 @@ const char* const c_register_listener_func_name = "_register_listener";
 const char* const c_set_stream_socket_func_name = "_set_stream_socket";
 const char* const c_init_ciyam_session_func_name = "_init_ciyam_session";
 const char* const c_set_files_area_dir_func_name = "_set_files_area_dir";
+const char* const c_set_test_peer_port_func_name = "_set_test_peer_port";
 const char* const c_init_peer_sessions_func_name = "_init_peer_sessions";
 const char* const c_check_timezone_info_func_name = "_check_timezone_info";
 const char* const c_is_accepted_ip_addr_func_name = "_is_accepted_ip_addr";
@@ -372,6 +380,12 @@ class ciyam_server_startup_functor : public command_functor
          g_start_peer_sessions = false;
       else if( command == c_cmd_no_streams )
          g_start_udp_stream_sessions = false;
+      else if( command == c_cmd_test_peer_port )
+      {
+         string port( get_parm_val( parameters, c_cmd_test_peer_port_port ) );
+
+         g_test_peer_port = atoi( port.c_str( ) );
+      }
 #ifdef _WIN32
       else if( command == c_cmd_svcins )
       {
@@ -471,19 +485,22 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_no_streams, 4,
           "", "don't start any udp stream session threads", new ciyam_server_startup_functor( cmd_handler ) );
 
+         cmd_handler.add_command( c_cmd_test_peer_port, 5,
+          "<val//port>", "port number for interactive peer testing", new ciyam_server_startup_functor( cmd_handler ) );
+
 #ifdef _WIN32
-         cmd_handler.add_command( c_cmd_svcins, 5,
+         cmd_handler.add_command( c_cmd_svcins, 6,
           "", "install Win32 service", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_svcrem, 5,
+         cmd_handler.add_command( c_cmd_svcrem, 6,
           "", "remove Win32 service", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_svcrun, 5,
+         cmd_handler.add_command( c_cmd_svcrun, 6,
           "", "start as Win32 service", new ciyam_server_startup_functor( cmd_handler ) );
 #endif
 
 #ifdef __GNUG__
-         cmd_handler.add_command( c_cmd_daemon, 5,
+         cmd_handler.add_command( c_cmd_daemon, 6,
           "", "run server as a daemon", new ciyam_server_startup_functor( cmd_handler ) );
 #endif
 
@@ -587,6 +604,9 @@ int main( int argc, char* argv[ ] )
          fp_set_files_area_dir fp_set_files_area_dir_func;
          fp_set_files_area_dir_func = ( fp_set_files_area_dir )ap_dynamic_library->bind_to_function( c_set_files_area_dir_func_name );
 
+         fp_set_test_peer_port fp_set_test_peer_port_func;
+         fp_set_test_peer_port_func = ( fp_set_test_peer_port )ap_dynamic_library->bind_to_function( c_set_test_peer_port_func_name );
+
          fp_init_peer_sessions fp_init_peer_sessions_func;
          fp_init_peer_sessions_func = ( fp_init_peer_sessions )ap_dynamic_library->bind_to_function( c_init_peer_sessions_func_name );
 
@@ -610,6 +630,9 @@ int main( int argc, char* argv[ ] )
             ( *fp_set_files_area_dir_func )( "" );
          else
             ( *fp_set_files_area_dir_func )( g_files_directory.c_str( ) );
+
+         if( g_test_peer_port )
+            ( *fp_set_test_peer_port_func )( g_test_peer_port );
 
          int use_udp = 0;
 
