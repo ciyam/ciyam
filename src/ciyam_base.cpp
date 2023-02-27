@@ -3854,10 +3854,11 @@ void read_server_configuration( )
       g_rpc_password = reader.read_opt_attribute( c_attribute_rpc_password );
       g_sql_password = reader.read_opt_attribute( c_attribute_sql_password );
 
-      g_test_peer_port = atoi( reader.read_opt_attribute( c_attribute_test_peer_port, "0" ).c_str( ) );
+      int test_peer_port = atoi( reader.read_opt_attribute( c_attribute_test_peer_port, "0" ).c_str( ) );
 
-      if( g_test_peer_port < 0 )
-         throw runtime_error( "invalid negative test peer port value " + to_string( g_test_peer_port ) );
+      // NOTE: Don't override if was provided as a startup option.
+      if( !g_test_peer_port )
+         set_test_peer_port( test_peer_port );
 
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage, "Meta" );
       set_system_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
@@ -6631,6 +6632,14 @@ string get_sql_password( )
 int get_test_peer_port( )
 {
    return g_test_peer_port;
+}
+
+void set_test_peer_port( int port )
+{
+   if( port < 0 )
+      throw runtime_error( "invalid port number: " + to_string( port ) );
+
+   g_test_peer_port = port;
 }
 
 string get_encrypted_gpg_password( )

@@ -92,14 +92,14 @@ void CIYAM_BASE_DECL_SPEC list_trace_mutex_lock_ids(
 
 int CIYAM_BASE_DECL_SPEC get_server_port( );
 
-extern "C" void CIYAM_BASE_DECL_SPEC  set_server_port( int p );
+extern "C" void CIYAM_BASE_DECL_SPEC set_server_port( int p );
 
 typedef void ( *fp_set_server_port )( int );
 
 int CIYAM_BASE_DECL_SPEC get_stream_port( );
 int CIYAM_BASE_DECL_SPEC get_stream_sock( );
 
-extern "C" void CIYAM_BASE_DECL_SPEC  set_stream_socket( int p, int s );
+extern "C" void CIYAM_BASE_DECL_SPEC set_stream_socket( int p, int s );
 
 typedef void ( *fp_set_stream_socket )( int, int );
 
@@ -398,6 +398,10 @@ std::string CIYAM_BASE_DECL_SPEC get_rpc_password( );
 std::string CIYAM_BASE_DECL_SPEC get_sql_password( );
 
 int CIYAM_BASE_DECL_SPEC get_test_peer_port( );
+
+extern "C" void CIYAM_BASE_DECL_SPEC set_test_peer_port( int port );
+
+typedef int ( *fp_set_test_peer_port )( int );
 
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_gpg_password( );
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_pem_password( );
