@@ -12,7 +12,7 @@ Protocol Commands
 -----------------
 
 The protocol commands can be divided into those for connection/disconnection ("tls" and "bye") and those that
-are used for the general peer to peer communication ("chk", "get", "pip" and "put").
+are used for the general peer to peer communication ("chk", "get", "msg" and "put").
 
 The "tls" command is optional and can only be issued immediately after the peer has connected. If issued then
 a TLS session will be commenced (i.e. all further communications will be performed over a secure socket). The
@@ -24,13 +24,19 @@ be the first command to be issued. It should be noted that unless doing interact
 that has provided a "tag" rather than a file "hash" in its request must provide a tag value which is prefixed
 with the common blockchain prefix (e.g. "bc.da667b8c4"). This command can be issued at any time by peers.
 
-The "pip" command allows peers to exchange IP addresses of other peers that they are connected to (one single
-address per call) and after the initial "chk" has been issued can also be used at any time by peers. Normally
-the IP address is randomly chosen amongst those that are currently connected via the same listener.
-
 One could imagine a peer accepting files from other peers but then not keeping them stored for any reasonable
 amount of time so normally a peer will check that another peer has retained the content of a previously "put"
 file using the "chk" command and its "nonce" argument.
+
+The "get" command is used in order to fetch blockchain and arbitrary files during peer synchronisation. It is
+the content of specific blockchain files that determines which arbitrary files will then later be fetched.
+
+The "msg" command allows peers to exchange arbitrary messages which by convention will start with the content
+type following by a ':' separator and then the message content itself (e.g. "utf8:test"). Being arbitrary the
+messages may be simply ignored by peers and are not expected to be persisted (unlike arbitrary files).
+
+It should be noted that a "put" file is not an arbitrary file but instead will contain public keys and hashes
+for one or more arbitrary files that had been locally encrypted previously.
 
 Interactive Testing
 -------------------
@@ -64,9 +70,9 @@ To see a list of all the available peer commands after starting the client type 
 commands:
 =========
 chk <tag_or_hash> [<nonce>] (check if peer has a file or hash the content of a file with a nonce)
-get <tag_or_hash> [<name>] (fetch a local file from the peer's files area)
-put <hash> (store a local file into the peer's files area)
-pip <addr> (exchange a random peer's ip address)
+get <tag_or_hash> [<name>] (fetch a file from the peer files area or blockchain archive)
+put <hash> (send a file with public key and hash information for repository processing)
+msg <data> (exchange an arbitrary data message)
 tls (start TLS session)
 bye (terminate session)
 
@@ -91,10 +97,10 @@ get cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 
 > put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
-pip 127.0.0.1
+msg utf8:test
 
-> pip 127.0.0.1
-127.0.0.1
+> msg utf8:test
+utf8:test
 get cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 
 > ~rm cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
@@ -104,13 +110,11 @@ get cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 Testing General Peer File Storage
 ---------------------------------
 
-When a peer receives a "put" request to store an arbitrary file then this file will be encrypted with the use
-of a temporary key pair (the initial file that is actually "put" contains the master public key which belongs
-to the sender of the arbitrary file along with the hash of the file content). So the "put" itself is not used
-for pushing the arbitrary file but instead to inform a peer of the master public key and file content hash (a
-peer that decides it wishes to accept the file storage request will next issue a "get" in order to do so).
+Interactive testing does not use a blockchain and is only useful for testing the peer protocol commands. This
+does not provide a very useful understanding of how actual blockchain peers synchronise but is useful to form
+a basic understanding about repository entry handling (being a key part of the file backup security).
 
-After the file content has been retrieved it is immediately encrypted by the peer that issued the "get" (thus
+When an arbitrary file has been retrieved it is immediately encrypted by the peer that issued the "get" (thus
 the original file content itself is not persisted in order to ensure that there is no risk of storing content
 that might be regarded as illegal). The private key that was used to generate the "shared secret" is not kept
 by the peer but the public key is. This means that the peer cannot unencrypt the content but the owner of the
@@ -247,7 +251,7 @@ th:pascJuUlP7cxa1Hn9AaHGDcU4NaDA0lU4ej8Z7ykJ1M=
 get cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 
 > get b69633ac1a84748404fafb10bcf60560232e8bcd8fda4f0570b9f904b696f2a5
-pip 127.0.0.1
+msg utf8:test
 
 > ~rm b69633ac1a84748404fafb10bcf60560232e8bcd8fda4f0570b9f904b696f2a5
 

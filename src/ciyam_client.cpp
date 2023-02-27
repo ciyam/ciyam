@@ -345,7 +345,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
       if( !str.empty( ) )
       {
          bool was_chk = false;
-         bool was_pip = false;
+         bool was_msg = false;
          bool was_chk_tag = false;
          bool was_chk_token = false;
          bool was_list_prefix = false;
@@ -356,8 +356,8 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
          string::size_type pos = str.find( ' ' );
 
-         if( str.substr( 0, pos ) == "pip" )
-            was_pip = true;
+         if( str.substr( 0, pos ) == "msg" )
+            was_msg = true;
 
          if( str.substr( 0, pos ) == "chk"
           || str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "put"
@@ -1323,10 +1323,10 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                is_first = false;
 
-               if( was_chk || was_pip || was_get_or_put )
+               if( was_chk || was_msg || was_get_or_put )
                {
                   // FUTURE: Verify the hash if "was_chk_token".
-                  if( was_pip || was_chk_tag || was_chk_token )
+                  if( was_msg || was_chk_tag || was_chk_token )
                   {
                      handle_command_response( response );
 
@@ -1389,17 +1389,17 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         response.erase( );
                         socket.read_line( response );
                      }
-                     else if( response.substr( 0, pos ) == "pip" )
+                     else if( response.substr( 0, pos ) == "msg" )
                      {
                         handle_command_response( response );
 
-                        socket.write_line( c_local_ip_addr );
+                        socket.write_line( response.substr( pos + 1 ) );
 
                         response.erase( );
                         socket.read_line( response );
                      }
 
-                     was_pip = false;
+                     was_msg = false;
                      was_chk_tag = false;
                      was_chk_token = false;
                      was_get_or_put = false;

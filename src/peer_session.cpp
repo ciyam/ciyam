@@ -86,6 +86,8 @@ const char* const c_dummy_suffix = ".dummy";
 const char* const c_dummy_peer_tag = "peer";
 const char* const c_dummy_support_tag = "support";
 
+const char* const c_dummy_message_data = "utf8:test";
+
 const size_t c_dummy_num_for_support = 999;
 
 const int c_accept_timeout = 250;
@@ -114,7 +116,7 @@ const size_t c_num_check_disconnected = 8;
 enum op
 {
    e_op_chk,
-   e_op_pip,
+   e_op_msg,
    e_op_init
 };
 
@@ -2056,7 +2058,7 @@ class socket_command_handler : public command_handler
    void get_file( const string& hash, string* p_file_data = 0 );
    void put_file( const string& hash );
 
-   void pip_peer( const string& ip_address );
+   void msg_peer( const string& data );
 
    bool chk_file( const string& hash, string* p_response = 0 );
 
@@ -2300,7 +2302,7 @@ void socket_command_handler::put_file( const string& hash )
    increment_peer_files_uploaded( file_bytes( hash ) );
 }
 
-void socket_command_handler::pip_peer( const string& ip_address )
+void socket_command_handler::msg_peer( const string& data )
 {
    progress* p_sock_progress = 0;
    trace_progress sock_progress( TRACE_SOCK_OPS );
@@ -2309,7 +2311,7 @@ void socket_command_handler::pip_peer( const string& ip_address )
       p_sock_progress = &sock_progress;
 
    socket.set_no_delay( );
-   socket.write_line( string( c_cmd_peer_session_pip ) + " " + ip_address, c_request_timeout, p_sock_progress );
+   socket.write_line( string( c_cmd_peer_session_msg ) + " " + data, c_request_timeout, p_sock_progress );
 
    string response;
    if( socket.read_line( response, c_request_timeout, 0, p_sock_progress ) <= 0 )
@@ -2448,16 +2450,16 @@ bool socket_command_handler::want_to_do_op( op o ) const
    // NOTE: These statics are only to provide consistent behaviour for a
    // single interactive test session (and are not used by normal peers).
    static unsigned int chk_count = 0;
-   static unsigned int pip_count = 0;
+   static unsigned int msg_count = 0;
 
    bool retval = false;
 
    if( get_is_test_session( ) )
    {
       if( o == e_op_init )
-         chk_count = pip_count = 0;
-      else if( o == e_op_pip )
-         retval = ( ++pip_count % 3 == 0 );
+         chk_count = msg_count = 0;
+      else if( o == e_op_msg )
+         retval = ( ++msg_count % 3 == 0 );
       else
          retval = ( ++chk_count % 5 == 0 );
    }
@@ -2473,7 +2475,7 @@ bool socket_command_handler::want_to_do_op( op o ) const
       }
       else
       {
-         if( o == e_op_pip )
+         if( o == e_op_msg )
          {
             if( hash_to_get.empty( ) && hash_to_put.empty( ) )
                retval = true;
@@ -2726,8 +2728,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          }
       }
    }
-   else if( want_to_do_op( e_op_pip ) )
-      pip_peer( get_random_same_port_peer_ip_addr( c_local_ip_addr ) );
+   else if( want_to_do_op( e_op_msg ) )
+      msg_peer( c_dummy_message_data );
    else if( next_hash_to_put.empty( ) )
    {
       string next_hash( next_hash_to_get );
@@ -3678,16 +3680,17 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             socket_handler.issue_cmd_for_peer( check_for_supporters );
          }
       }
-      else if( command == c_cmd_peer_session_pip )
+      else if( command == c_cmd_peer_session_msg )
       {
-         string addr( get_parm_val( parameters, c_cmd_peer_session_pip_addr ) );
+         string data( get_parm_val( parameters, c_cmd_peer_session_msg_data ) );
 
-         response = get_random_same_port_peer_ip_addr( c_local_ip_addr );
+         // KLUDGE: For now the response is an echo of the data that was provided.
+         response = data;
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_get
           && socket_handler.state( ) != e_peer_state_waiting_for_put
           && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
-            throw runtime_error( "invalid state for pip" );
+            throw runtime_error( "invalid state for msg" );
 
          if( socket_handler.get_is_responder( ) )
          {
