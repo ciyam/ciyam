@@ -3004,6 +3004,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                str = osstr.str( );
             }
+            else
+               unescape( str, c_special_characters );
 
             set_environment_variable( assign_env_var_name.c_str( ), str.c_str( ) );
 

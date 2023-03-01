@@ -81,6 +81,12 @@ TEST=abc<def>ghi
 #$TEST
 X=%TEST:0><<>%
 #$X
+TEST=abc
+NEXT=def
+TEST=$TEST\n$NEXT
+NEXT=ghi
+TEST=$TEST\n$NEXT
+#$TEST
 X=255
 HL=@hexlit:$X
 #$HL

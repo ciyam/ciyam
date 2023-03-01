@@ -66,6 +66,9 @@ abcdef
 def
 abc<def>ghi
 def
+abc
+def
+ghi
 ff00000000000000
 00000000000000ff
 ff000000
@@ -171,7 +174,7 @@ j
 6	#j
 1	#b
 2	#f
-depth is 0 at line #244
+depth is 0 at line #250
 Looping with aaa
 Looping with bbb
 Looping with ccc
@@ -197,11 +200,11 @@ CONT
 CONT
 CONT
 DONE
-depth is 1 at line #283
+depth is 1 at line #289
 END
-depth is 1 at line #310
-depth is 2 at line #312
-depth is 3 at line #314 TRUE
+depth is 1 at line #316
+depth is 2 at line #318
+depth is 3 at line #320 TRUE
 docs
 src
 src/haru
