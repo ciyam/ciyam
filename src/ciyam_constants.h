@@ -173,6 +173,7 @@ const char* const c_file_type_core_block_header_version_number_prefix = "v=";
 
 const char* const c_file_type_core_block_detail_hind_hash_prefix = "h:";
 const char* const c_file_type_core_block_detail_last_hashes_prefix = "l:";
+const char* const c_file_type_core_block_detail_op_list_hash_prefix = "o:";
 const char* const c_file_type_core_block_detail_pubkey_hashes_prefix = "p:";
 const char* const c_file_type_core_block_detail_tree_root_hash_prefix = "t:";
 const char* const c_file_type_core_block_detail_signature_file_hash_prefix = "s:";

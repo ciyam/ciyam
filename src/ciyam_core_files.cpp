@@ -195,7 +195,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
    block_info info;
 
-   string hind_hash, last_block_hash, public_key_hash, tree_root_hash, signature_file_hash;
+   string hind_hash, last_block_hash, op_list_hash, public_key_hash, tree_root_hash, signature_file_hash;
 
    bool has_primary_pubkey = false;
    bool has_secondary_pubkey = false;
@@ -302,7 +302,30 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
             }
          }
 
-         if( i > 3 && tree_root_hash.empty( ) )
+         if( !last_block_hash.empty( ) && op_list_hash.empty( ) )
+         {
+            string prefix( c_file_type_core_block_detail_op_list_hash_prefix );
+
+            size_t len = prefix.length( );
+
+            if( ( next_attribute.length( ) > len )
+             && ( prefix == next_attribute.substr( 0, len ) ) )
+            {
+               next_attribute.erase( 0, len );
+
+               op_list_hash = hex_encode( base64::decode( next_attribute ) );
+
+               if( check_sigs && !has_file( op_list_hash ) )
+                  throw runtime_error( "op list file '" + op_list_hash + "' not found" );
+
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_op_list_hash ), op_list_hash );
+
+               continue;
+            }
+         }
+
+         if( !public_key_hash.empty( ) && tree_root_hash.empty( ) )
          {
             string prefix( c_file_type_core_block_detail_tree_root_hash_prefix );
 

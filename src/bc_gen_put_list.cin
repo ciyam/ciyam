@@ -1,0 +1,65 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+ERROR=
+@ifeq "$1" ""
+ERROR=1
+@endif
+@ifeq "$2" ""
+ERROR=1
+@endif
+;
+@ifeq "$ERROR" "1"
+#Usage: bc_gen_put_list.cin <ident> <height>
+@else
+;
+IDENT=$1
+HEIGHT=$2
+;
+ALL_PUTS=
+.session_variable @deque ""
+;
+.file_tags -i=*.zenith -x=bc.$IDENT.*
+.session_variable @deque "~$OUTPUT"
+;
+@:LOOP
+@label NEXT
+.session_variable @deque front
+@ifndef $OUTPUT
+@label END_LOOP
+@endif
+@skip
+;
+@:NEXT
+NEXT_TAG=$OUTPUT
+.file_info -content $NEXT_TAG
+BLOCK_HDR=%OUTPUT:2%
+.regex "blk:h=(.*)\," "$BLOCK_HDR"
+NEXT_HEIGHT=$OUTPUT
+.regex "\,i=(.*)\," "$BLOCK_HDR"
+NEXT_IDENT=$OUTPUT
+.file_tags -i=bc.$NEXT_IDENT.$NEXT_HEIGHT.put
+;
+@ifdef $OUTPUT
+NEXT_PUT=$OUTPUT
+.file_hash $NEXT_PUT
+NEXT_HASH=$OUTPUT
+.encode $NEXT_HASH
+NEXT_HASH_ENC=$OUTPUT
+@ifdef $ALL_PUTS
+ALL_PUTS=$ALL_PUTS\n
+@endif
+ALL_PUTS=$ALL_PUTS$NEXT_PUT $NEXT_HASH_ENC
+@endif
+.session_variable @deque pop_front
+!!@:LOOP
+@:END_LOOP
+;
+@ifdef $ALL_PUTS
+LIST_TAG_NAME=bc.$IDENT.$HEIGHT.opl
+.file_raw -blob "$ALL_PUTS" $LIST_TAG_NAME
+@endif
+;
+@endif
