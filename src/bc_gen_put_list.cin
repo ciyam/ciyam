@@ -59,7 +59,7 @@ ALL_PUTS=$ALL_PUTS$NEXT_PUT $NEXT_HASH_ENC
 ;
 @ifdef $ALL_PUTS
 LIST_TAG_NAME=bc.$IDENT.$HEIGHT.opl
-.file_raw -blob "$ALL_PUTS" $LIST_TAG_NAME
+.file_raw blob "$ALL_PUTS" $LIST_TAG_NAME
 @endif
 ;
 @endif
