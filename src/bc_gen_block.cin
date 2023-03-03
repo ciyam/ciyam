@@ -36,6 +36,22 @@ SHARED=1
 @endif
 @endif
 ;
+PEER_HUB=
+OPL_FILE_HASH_ENC=
+.system_variable @blockchain_peer_hub_identity
+@ifdef $OUTPUT
+@ifeq "$IDENT" "$OUTPUT"
+PEER_HUB=1
+.file_hash bc.$IDENT.$HEIGHT.opl
+@ifdef $ERROR
+@label END
+@endif
+@skip
+.encode $OUTPUT
+OPL_FILE_HASH_ENC=$OUTPUT
+@endif
+@endif
+;
 @ifndef $IS_DEMO
 MULTIPLE=50
 UTIME=@unix:
@@ -65,9 +81,11 @@ UUID=$OUTPUT
 @skip
 ;
 @ifndef $TREE
+@ifndef $PEER_HUB
 .file_tags -i=ciyam
 @ifdef $OUTPUT
 TREE=ciyam
+@endif
 @endif
 @endif
 ;
@@ -165,11 +183,20 @@ HIND_HASH_ENC=%OUTPUT:1440%
 ;
 @ifndef $TREE
 ;
+@ifndef $PEER_HUB
 .file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=0,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_BLOCK_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.blk
+@else
+.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=0,v=1\n\
+h:$HIND_HASH_ENC\n\
+l:$LAST_BLOCK_HASH_ENC\n\
+o:$OPL_FILE_HASH_ENC\n\
+p:$PUB_KEY_HASH_ENC\n\
+u:$UTIME bc.$IDENT.$HEIGHT.blk
+@endif
 ;
 @else
 ;

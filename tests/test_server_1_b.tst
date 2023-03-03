@@ -903,3 +903,19 @@ file_info -content x5
 file_kill -recurse x5
 file_stats
 [0/100000]0 B/100.0 GB:0 tag(s)
+file_raw blob "test" xxx
+938725ef2c126a889e25313269edf12e6efa48d6d11c1bdb3b78110146004858
+file_raw blob "test" yyy
+938725ef2c126a889e25313269edf12e6efa48d6d11c1bdb3b78110146004858
+file_tags $HASH
+xxx
+yyy
+session_variable @skip_tagging_if_exists 1
+file_raw blob "test" zzz
+938725ef2c126a889e25313269edf12e6efa48d6d11c1bdb3b78110146004858
+file_tags $HASH
+xxx
+yyy
+file_kill $HASH
+file_stats
+[0/100000]0 B/100.0 GB:0 tag(s)

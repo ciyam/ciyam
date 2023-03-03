@@ -99,9 +99,10 @@ const char* const c_special_variable_slowest = "@slowest";
 const char* const c_special_variable_storage = "@storage";
 const char* const c_special_variable_tz_name = "@tz_name";
 const char* const c_special_variable_trigger = "@trigger";
-const char* const c_special_variable_key_info = "@key_info";
 const char* const c_special_variable_executed = "@executed";
 const char* const c_special_variable_identity = "@identity";
+const char* const c_special_variable_key_info = "@key_info";
+const char* const c_special_variable_peer_hub = "@peer_hub";
 const char* const c_special_variable_progress = "@progress";
 const char* const c_special_variable_args_file = "@args_file";
 const char* const c_special_variable_crypt_key = "@crypt_key";
@@ -172,6 +173,7 @@ const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchroni
 const char* const c_special_variable_blockchain_is_checking = "@blockchain_is_checking";
 const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
 const char* const c_special_variable_single_string_response = "@single_string_response";
+const char* const c_special_variable_skip_tagging_if_exists = "@skip_tagging_if_exists";
 const char* const c_special_variable_blockchain_archive_path = "@blockchain_archive_path";
 const char* const c_special_variable_blockchain_first_mapped = "@blockchain_first_mapped";
 const char* const c_special_variable_blockchain_op_list_hash = "@blockchain_op_list_hash";
@@ -441,16 +443,20 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_trigger );
       break;
 
-      case e_special_var_key_info:
-      s = string( c_special_variable_key_info );
-      break;
-
       case e_special_var_executed:
       s = string( c_special_variable_executed );
       break;
 
       case e_special_var_identity:
       s = string( c_special_variable_identity );
+      break;
+
+      case e_special_var_key_info:
+      s = string( c_special_variable_key_info );
+      break;
+
+      case e_special_var_peer_hub:
+      s = string( c_special_variable_peer_hub );
       break;
 
       case e_special_var_progress:
@@ -723,6 +729,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_single_string_response:
       s = string( c_special_variable_single_string_response );
+      break;
+
+      case e_special_var_skip_tagging_if_exists:
+      s = string( c_special_variable_skip_tagging_if_exists );
       break;
 
       case e_special_var_blockchain_archive_path:

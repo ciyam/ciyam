@@ -305,7 +305,7 @@ void check_shared_for_support_session( const string& blockchain )
          }
       }
 
-      if( !get_session_variable( blockchain_targeted_identity_name, &identities[ index ] ).empty( ) )
+      if( lowest && !get_session_variable( blockchain_targeted_identity_name, &identities[ index ] ).empty( ) )
          set_session_variable( blockchain_targeted_identity_name, c_true_value );
 
       set_session_variable( get_special_var_name( e_special_var_blockchain_checked_shared ), c_true_value );
@@ -353,8 +353,13 @@ void process_core_file( const string& hash, const string& blockchain )
             string tertiary_pubkey_hash( get_session_variable(
              get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ) ) );
 
-            bool is_shared = !get_session_variable(
-             get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
+            string targeted_identity( get_session_variable(
+             get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
+
+            bool is_shared = false;
+
+            if( !targeted_identity.empty( ) && targeted_identity[ 0 ] != '@' )
+               is_shared = true;
 
             if( !primary_pubkey_hash.empty( ) )
             {
@@ -1724,8 +1729,13 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
     get_special_var_name( e_special_var_blockchain_hind_hash ) ).empty( ) )
       has_hind_hash = true;
 
-   bool is_shared = !get_session_variable(
-    get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
+   string targeted_identity( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
+
+   bool is_shared = false;
+
+   if( !targeted_identity.empty( ) && ( targeted_identity[ 0 ] != '@' ) )
+      is_shared = true;
 
    if( !block_height.empty( ) && ( block_height != to_string( height ) ) )
       throw runtime_error( "specified height does not match that found in the block itself (blk)" );
@@ -2785,8 +2795,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          bool has_tertiary = !tertiary_pubkey_hash.empty( );
 
-         bool has_targeted_identity = !get_session_variable(
-          get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
+         string targeted_identity( get_session_variable(
+          get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
+
+         bool has_targeted_identity = false;
+
+         if( !targeted_identity.empty( ) && ( targeted_identity[ 0 ] != '@' ) )
+            has_targeted_identity = true;
 
          if( next_hash == block_file_hash )
          {
@@ -3023,7 +3038,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       string targeted_identity( get_session_variable(
        get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
 
-      if( !targeted_identity.empty( ) && ( blockchain_height == blockchain_height_other ) )
+      if( !targeted_identity.empty( )
+       && ( targeted_identity[ 0 ] != '@' ) && ( blockchain_height == blockchain_height_other ) )
       {
          string password;
          password.reserve( 256 );
