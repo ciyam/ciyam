@@ -5,16 +5,24 @@
 ;
 <std.fissile
 ;
+HUB=
+SEED=
+SHARED=
+;
+@ifeq "$1" "-hub"
+HUB=1
+SEED=$2
+@else
 @ifneq "$1" "-shared"
 SEED=$1
-SHARED=
 @else
 SEED=$2
 SHARED=1
 @endif
+@endif
 ;
 @ifeq "$SEED" ""
-#Usage: bc_gen.cin [-shared] <seed>
+#Usage: bc_gen.cin [-hub|-shared] <seed>
 @else
 ;
 @ifeq "$SEED" "de604cee0755a3d81944ea96aed12681"
@@ -31,6 +39,7 @@ SQUARED=@$SQUARED-1
 .session_variable @uuid
 UUID=$OUTPUT
 ;
+@ifndef $HUB
 @ifndef $SHARED
 .crypto_hash $SEED -s=-0
 ENTROPY_HASH_PRIMARY=$OUTPUT
@@ -48,6 +57,17 @@ ENTROPY_HASH_PRIMARY=$OUTPUT
 ENTROPY_HASH_SECONDARY=$OUTPUT
 ;
 .crypto_hash $SEED -s=+$SQUARED
+ENTROPY_HASH_TERTIARY=$OUTPUT
+@endif
+@else
+.crypto_hash $SEED -s=#0
+#.crypto_hash $SEED -s=#0
+ENTROPY_HASH_PRIMARY=$OUTPUT
+;
+.crypto_hash $SEED -s=#$MULTIPLE
+ENTROPY_HASH_SECONDARY=$OUTPUT
+;
+.crypto_hash $SEED -s=#$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
 @endif
 ;
@@ -101,12 +121,14 @@ IDENTITY_HASH=$OUTPUT
 ;
 IDENT=@substr:0,9:$IDENTITY_HASH
 ;
+@ifndef $HUB
 ;NOTE: If a 9 character identity is palindromic then extend the size to 10 characters
 ;to ensure than when it's reversed a different value is used for the shared identity.
 ;
 REVERSE=*!reverse?$IDENT
 @ifeq "$IDENT" "$REVERSE"
 IDENT=@substr:0,10:$IDENTITY_HASH
+@endif
 @endif
 @else
 .system_variable @blockchain_backup_identity
@@ -145,11 +167,16 @@ SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
 .encode $OUTPUT
 TERTIARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
+@ifndef $HUB
 @ifndef $SHARED
 .file_raw -core blob blk:h=0,i=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @else
 .file_raw -core blob blk:h=0,i=$IDENT,t=$IDENT\n\
+p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@endif
+@else
+.file_raw -core blob blk:h=0,i=$IDENT,t=@peer_hub\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @endif
 ;
@@ -158,6 +185,7 @@ BLOCK_HASH=$OUTPUT
 .file_hash -q bc.$IDENT.zenith
 @ifndef "$OUTPUT"
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
+@ifndef $HUB
 @ifndef $SHARED
 .system_variable >@blockchain_backup_height 0
 .system_variable >@blockchain_backup_initial $BLOCK_HASH
@@ -167,7 +195,13 @@ BLOCK_HASH=$OUTPUT
 .system_variable >@blockchain_shared_initial $BLOCK_HASH
 .system_variable >@blockchain_shared_identity $IDENT
 @endif
+@else
+.system_variable >@blockchain_peer_hub_height 0
+.system_variable >@blockchain_peer_hub_initial $BLOCK_HASH
+.system_variable >@blockchain_peer_hub_identity $IDENT
+@endif
 ;
+@ifndef $HUB
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
@@ -182,9 +216,14 @@ FILES_AREA_DIR=$OUTPUT
 @endif
 @endif
 @endif
+@endif
 ;
 @ifndef $ERROR
+@ifdef $HUB
+#Created keys and genesis block for peer hub identity '$IDENT'.
+@else
 #Created keys, genesis block and file archive for identity '$IDENT'.
+@endif
 @endif
 ;
 @endif

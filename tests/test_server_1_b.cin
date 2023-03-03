@@ -344,4 +344,13 @@ file_put 1K*mnemonics.txt:1998+1998 x5
 file_info -content x5
 file_kill -recurse x5
 file_stats
+file_raw blob "test" xxx
+file_raw blob "test" yyy
+HASH=$OUTPUT
+file_tags $HASH
+session_variable @skip_tagging_if_exists 1
+file_raw blob "test" zzz
+file_tags $HASH
+file_kill $HASH
+file_stats
 .quit

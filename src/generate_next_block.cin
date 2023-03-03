@@ -9,6 +9,9 @@ TREE=$3
 ;
 BACKUP=
 SHARED=
+PEER_HUB=
+;
+HAS_NO_OPL=
 ;
 @ifeq "$1" ""
 BACKUP=1
@@ -33,6 +36,12 @@ IDENT=$OUTPUT
 SHARED=1
 @endif
 ;
+@ifeq "$1" "@blockchain_peer_hub_identity"
+.system_variable @blockchain_peer_hub_identity
+IDENT=$OUTPUT
+PEER_HUB=1
+@endif
+;
 @ifneq "$IDENT" ""
 .file_info -content bc.$IDENT.zenith
 @ifndef $ERROR
@@ -43,6 +52,15 @@ HEIGHT_INFO=%INFO_LINES:1%
 BLK_HEIGHT=@repstr:blk\:h=/:$HEIGHT_INFO
 NEW_HEIGHT=@$BLK_HEIGHT+1
 ;
+@ifdef $PEER_HUB
+<<bc_gen_put_list.cin $IDENT $NEW_HEIGHT
+.file_tags bc.$IDENT.$BLK_HEIGHT.opl*
+@ifndef $OUTPUT
+HAS_NO_OPL=1
+@endif
+@endif
+;
+@ifndef $HAS_NO_OPL
 .file_tags bc.$IDENT.$BLK_HEIGHT.key*
 @ifndef $OUTPUT
 <bc_gen_keys.cin $SEED $IDENT $BLK_HEIGHT
@@ -57,7 +75,10 @@ NEW_HEIGHT=@$BLK_HEIGHT+1
 .system_variable %$IDENT "Currently at height $NEW_HEIGHT"
 @endif
 @ifndef $SHARED
+@ifndef $PEER_HUB
 .file_repo_entries -remove_obsolete $IDENT
+@endif
+@endif
 @endif
 @endif
 @endif

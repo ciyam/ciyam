@@ -2087,14 +2087,23 @@ string create_raw_file( const string& data, bool compress,
    else if( p_is_existing )
       *p_is_existing = true;
 
-   string tag_name;
-   if( p_tag )
-      tag_name = string( p_tag );
+   bool skip_tagging = false;
 
-   if( !tag_name.empty( ) )
-      tag_file( tag_name, hash );
-   else if( !file_extra_is_core )
-      tag_file( current_time_stamp_tag( ), hash, true );
+   if( was_existing && !get_session_variable(
+    get_special_var_name( e_special_var_skip_tagging_if_exists ) ).empty( ) )
+      skip_tagging = true;
+
+   if( !skip_tagging )
+   {
+      string tag_name;
+      if( p_tag )
+         tag_name = string( p_tag );
+
+      if( !tag_name.empty( ) )
+         tag_file( tag_name, hash );
+      else if( !file_extra_is_core )
+         tag_file( current_time_stamp_tag( ), hash, true );
+   }
 
    return hash;
 }

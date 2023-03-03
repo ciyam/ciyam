@@ -58,8 +58,16 @@ ALL_PUTS=$ALL_PUTS$NEXT_PUT $NEXT_HASH_ENC
 @:END_LOOP
 ;
 @ifdef $ALL_PUTS
+.session_variable @skip_tagging_if_exists
+OLD_SKIP=$OUTPUT
+;
+; NOTE: Will not tag if file already exists.
+.session_variable @skip_tagging_if_exists 1
+;
 LIST_TAG_NAME=bc.$IDENT.$HEIGHT.opl
 .file_raw blob "$ALL_PUTS" $LIST_TAG_NAME
+;
+.session_variable @skip_tagging_if_exists "$OLD_SKIP"
 @endif
 ;
 @endif
