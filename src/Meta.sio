@@ -4933,10 +4933,6 @@
       <item>class
      </specification>
      <specification/>
-      <id>600098d
-      <item>class
-     </specification>
-     <specification/>
       <id>600098e
       <item>class
      </specification>
@@ -4961,11 +4957,19 @@
       <item>class
      </specification>
      <specification/>
+      <id>600098k
+      <item>class
+     </specification>
+     <specification/>
       <id>600898b
       <item>class
      </specification>
      <specification/>
       <id>600898c
+      <item>class
+     </specification>
+     <specification/>
+      <id>600898d
       <item>class
      </specification>
      <specification/>
@@ -5046,7 +5050,7 @@
         <affect>relegate;view
        </modifier>
        <modifier/>
-        <id>145306
+        <id>145307
         <affect>protect
        </modifier>
       </modifiers>
@@ -5075,7 +5079,7 @@
         <affect>relegate
        </modifier>
        <modifier/>
-        <id>145306
+        <id>145307
         <affect>protect
        </modifier>
       </modifiers>
@@ -5117,7 +5121,11 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>145306
+        <id>145303
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>145307
         <affect>protect
        </modifier>
       </modifiers>
@@ -5142,7 +5150,11 @@
         <affect>relegate
        </modifier>
        <modifier/>
-        <id>145306
+        <id>145303
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>145307
         <affect>protect
        </modifier>
       </modifiers>
@@ -5171,6 +5183,10 @@
        </specification>
        <specification/>
         <id>600898c
+        <item>field
+       </specification>
+       <specification/>
+        <id>600898d
         <item>field
        </specification>
        <specification/>
@@ -5214,7 +5230,11 @@
         <affect>relegate
        </modifier>
        <modifier/>
-        <id>145306
+        <id>145303
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>145307
         <affect>protect
        </modifier>
       </modifiers>
@@ -5237,25 +5257,21 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>145303
+        <id>145304
         <affect>extralight1;view
        </modifier>
        <modifier/>
-        <id>145304
+        <id>145305
         <affect>extralight;view
        </modifier>
        <modifier/>
-        <id>145305
+        <id>145306
         <affect>extralight;view
        </modifier>
       </modifiers>
       <specifications/>
        <specification/>
         <id>600098a
-        <item>field
-       </specification>
-       <specification/>
-        <id>600098d
         <item>field
        </specification>
        <specification/>
@@ -5283,6 +5299,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600098k
+        <item>field
+       </specification>
+       <specification/>
         <id>603960
         <item>field
        </specification>
@@ -5301,17 +5321,17 @@
       <name>Is_Backup_Only
      </modifier>
      <modifier/>
-      <id>145303
+      <id>145304
       <name>Is_Connected
       <affect>extralight1;list
      </modifier>
      <modifier/>
-      <id>145304
+      <id>145305
       <name>Is_Connecting
       <affect>extralight;list
      </modifier>
      <modifier/>
-      <id>145305
+      <id>145306
       <name>Is_Disconnecting
       <affect>extralight;list
      </modifier>
@@ -5325,7 +5345,11 @@
       <name>Is_Local_Only
      </modifier>
      <modifier/>
-      <id>145306
+      <id>145303
+      <name>Is_Peerchain_Hub
+     </modifier>
+     <modifier/>
+      <id>145307
       <name>Not_Is_Halted
      </modifier>
     </modifiers>
@@ -32096,12 +32120,12 @@
     </data>
    </specification>
    <specification/>
-    <id>600098d
+    <id>600098e
     <name>{Global_Peerchain_Entry}_Is_Connected
     <type>modifier_field_value
     <data/>
      <class_id>145100
-     <modifier_id>145303
+     <modifier_id>145304
      <enum_id>955
      <field_id>145108
      <field_value>Connected
@@ -32109,12 +32133,12 @@
     </data>
    </specification>
    <specification/>
-    <id>600098e
+    <id>600098f
     <name>{Global_Peerchain_Entry}_Is_Connecting
     <type>modifier_field_value
     <data/>
      <class_id>145100
-     <modifier_id>145304
+     <modifier_id>145305
      <enum_id>955
      <field_id>145108
      <field_value>Connecting
@@ -32122,7 +32146,7 @@
     </data>
    </specification>
    <specification/>
-    <id>600098g
+    <id>600098h
     <name>{Global_Peerchain_Entry}_Is_Connecting_protect
     <type>state_protect
     <data/>
@@ -32132,7 +32156,7 @@
     </data>
    </specification>
    <specification/>
-    <id>600098h
+    <id>600098i
     <name>{Global_Peerchain_Entry}_Is_Disconnecting_protect
     <type>state_protect
     <data/>
@@ -32142,12 +32166,12 @@
     </data>
    </specification>
    <specification/>
-    <id>600098f
+    <id>600098g
     <name>{Global_Peerchain_Entry}_Is_Disonnecting
     <type>modifier_field_value
     <data/>
      <class_id>145100
-     <modifier_id>145304
+     <modifier_id>145305
      <enum_id>955
      <field_id>145108
      <field_value>Disconnecting
@@ -32177,19 +32201,30 @@
     </data>
    </specification>
    <specification/>
-    <id>600098i
+    <id>600898d
+    <name>{Global_Peerchain_Entry}_Is_Peerchain_Hub
+    <type>modifier_field_value
+    <data/>
+     <class_id>145100
+     <modifier_id>145303
+     <field_id>145103
+     <field_value>4
+    </data>
+   </specification>
+   <specification/>
+    <id>600098j
     <name>{Global_Peerchain_Entry}_Not_Is_Halted
     <type>modifier_field_value
     <data/>
      <class_id>145100
-     <modifier_id>145306
+     <modifier_id>145307
      <field_id>145108
      <field_value>0
      <not_equal>true
     </data>
    </specification>
    <specification/>
-    <id>600098j
+    <id>600098k
     <name>{Global_Peerchain_Entry}_Not_Is_Halted_protect
     <type>state_protect
     <data/>
@@ -39450,7 +39485,7 @@
     <id>960
     <name>peerchain_peer_type
     <type>int
-    <key_values>0=Hosted,1=Local_Only,2=Backup_Only,3=Shared_Only
+    <key_values>0=Hosted,1=Local_Only,2=Backup_Only,3=Shared_Only,4=Peerchain_Hub
    </user_defined_enum>
    <user_defined_enum/>
     <id>955
