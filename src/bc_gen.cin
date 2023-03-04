@@ -61,7 +61,6 @@ ENTROPY_HASH_TERTIARY=$OUTPUT
 @endif
 @else
 .crypto_hash $SEED -s=#0
-#.crypto_hash $SEED -s=#0
 ENTROPY_HASH_PRIMARY=$OUTPUT
 ;
 .crypto_hash $SEED -s=#$MULTIPLE
