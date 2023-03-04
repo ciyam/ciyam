@@ -197,7 +197,8 @@ const uint64_t c_modifier_Is_Connecting = UINT64_C( 0x400 );
 const uint64_t c_modifier_Is_Disconnecting = UINT64_C( 0x800 );
 const uint64_t c_modifier_Is_Halted = UINT64_C( 0x1000 );
 const uint64_t c_modifier_Is_Local_Only = UINT64_C( 0x2000 );
-const uint64_t c_modifier_Not_Is_Halted = UINT64_C( 0x4000 );
+const uint64_t c_modifier_Is_Peerchain_Hub = UINT64_C( 0x4000 );
+const uint64_t c_modifier_Not_Is_Halted = UINT64_C( 0x8000 );
 
 domain_string_max_size< 100 > g_Description_domain;
 domain_string_max_size< 100 > g_Host_Name_domain;
@@ -270,6 +271,7 @@ const int c_enum_peerchain_peer_type_Hosted( 0 );
 const int c_enum_peerchain_peer_type_Local_Only( 1 );
 const int c_enum_peerchain_peer_type_Backup_Only( 2 );
 const int c_enum_peerchain_peer_type_Shared_Only( 3 );
+const int c_enum_peerchain_peer_type_Peerchain_Hub( 4 );
 
 string get_enum_string_peerchain_peer_type( int val )
 {
@@ -285,6 +287,8 @@ string get_enum_string_peerchain_peer_type( int val )
       string_name = "enum_peerchain_peer_type_Backup_Only";
    else if( to_string( val ) == to_string( "3" ) )
       string_name = "enum_peerchain_peer_type_Shared_Only";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_peerchain_peer_type_Peerchain_Hub";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for peerchain_peer_type" );
 
@@ -1037,40 +1041,40 @@ uint64_t Meta_Global_Peerchain_Entry::impl::get_state( ) const
       state |= c_modifier_Is_Halted;
    // [(finish modifier_field_value)] 600098a
 
-   // [(start modifier_field_value)] 600098d
+   // [(start modifier_field_value)] 600098e
    if( get_obj( ).Status( ) == 2 ) // i.e. Connected
       state |= c_modifier_Is_Connected;
-   // [(finish modifier_field_value)] 600098d
-
-   // [(start modifier_field_value)] 600098e
-   if( get_obj( ).Status( ) == 3 ) // i.e. Connecting
-      state |= c_modifier_Is_Connecting;
    // [(finish modifier_field_value)] 600098e
 
    // [(start modifier_field_value)] 600098f
-   if( get_obj( ).Status( ) == 4 ) // i.e. Disconnecting
+   if( get_obj( ).Status( ) == 3 ) // i.e. Connecting
       state |= c_modifier_Is_Connecting;
    // [(finish modifier_field_value)] 600098f
 
-   // [(start protect_equal)] 600098g
-   if( check_equal( get_obj( ).Status( ), 3 ) )
-      state |= ( c_state_uneditable | c_state_undeletable | c_state_is_changing );
-   // [(finish protect_equal)] 600098g
+   // [(start modifier_field_value)] 600098g
+   if( get_obj( ).Status( ) == 4 ) // i.e. Disconnecting
+      state |= c_modifier_Is_Connecting;
+   // [(finish modifier_field_value)] 600098g
 
    // [(start protect_equal)] 600098h
-   if( check_equal( get_obj( ).Status( ), 4 ) )
+   if( check_equal( get_obj( ).Status( ), 3 ) )
       state |= ( c_state_uneditable | c_state_undeletable | c_state_is_changing );
    // [(finish protect_equal)] 600098h
 
-   // [(start modifier_field_value)] 600098i
+   // [(start protect_equal)] 600098i
+   if( check_equal( get_obj( ).Status( ), 4 ) )
+      state |= ( c_state_uneditable | c_state_undeletable | c_state_is_changing );
+   // [(finish protect_equal)] 600098i
+
+   // [(start modifier_field_value)] 600098j
    if( get_obj( ).Status( ) != 0 )
       state |= c_modifier_Not_Is_Halted;
-   // [(finish modifier_field_value)] 600098i
+   // [(finish modifier_field_value)] 600098j
 
-   // [(start protect_not_equal)] 600098j
+   // [(start protect_not_equal)] 600098k
    if( check_not_equal( get_obj( ).Status( ), 0 ) )
       state |= ( c_state_undeletable );
-   // [(finish protect_not_equal)] 600098j
+   // [(finish protect_not_equal)] 600098k
 
    // [(start modifier_field_value)] 600898b
    if( get_obj( ).Peer_Type( ) == 1 )
@@ -1081,6 +1085,11 @@ uint64_t Meta_Global_Peerchain_Entry::impl::get_state( ) const
    if( get_obj( ).Peer_Type( ) == 2 )
       state |= c_modifier_Is_Backup_Only;
    // [(finish modifier_field_value)] 600898c
+
+   // [(start modifier_field_value)] 600898d
+   if( get_obj( ).Peer_Type( ) == 4 )
+      state |= c_modifier_Is_Peerchain_Hub;
+   // [(finish modifier_field_value)] 600898d
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -1105,6 +1114,8 @@ string Meta_Global_Peerchain_Entry::impl::get_state_names( ) const
       state_names += "|" + string( "Is_Halted" );
    if( state & c_modifier_Is_Local_Only )
       state_names += "|" + string( "Is_Local_Only" );
+   if( state & c_modifier_Is_Peerchain_Hub )
+      state_names += "|" + string( "Is_Peerchain_Hub" );
    if( state & c_modifier_Not_Is_Halted )
       state_names += "|" + string( "Not_Is_Halted" );
 
@@ -1368,14 +1379,19 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
          get_obj( ).Status( c_enum_peerchain_status_Connecting );
       else
       {
-         if( has_registered_listener_id( get_obj( ).Identity( ) ) )
-         {
-            get_obj( ).Status( c_enum_peerchain_status_Waiting );
-
-            get_obj( ).Actions( '<' + string( c_procedure_id_Finish ) + ",<" + string( c_procedure_id_Connect ) );
-         }
+         if( !get_obj( ).Local_Port( ) )
+            get_obj( ).Actions( '<' + string( c_procedure_id_Connect ) );
          else
-            get_obj( ).Actions( '<' + string( c_procedure_id_Start ) );
+         {
+            if( has_registered_listener_id( get_obj( ).Identity( ) ) )
+            {
+               get_obj( ).Status( c_enum_peerchain_status_Waiting );
+
+               get_obj( ).Actions( '<' + string( c_procedure_id_Finish ) + ",<" + string( c_procedure_id_Connect ) );
+            }
+            else
+               get_obj( ).Actions( '<' + string( c_procedure_id_Start ) );
+         }
       }
 
       get_obj( ).Port_Numbers( to_string( get_obj( ).Host_Port( ) ) + '/' + to_string( get_obj( ).Local_Port( ) ) );
@@ -1425,6 +1441,9 @@ void Meta_Global_Peerchain_Entry::impl::to_store( bool is_create, bool is_intern
 //nyi
    if( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Local_Only )
       get_obj( ).Host_Name( c_local_host );
+
+   if( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Peerchain_Hub )
+      get_obj( ).Num_Helpers( 0 );
    // [<finish to_store>]
 }
 
@@ -2479,16 +2498,8 @@ void Meta_Global_Peerchain_Entry::get_always_required_field_names(
       names.insert( "Status" );
    // [(finish modifier_field_value)] 600098a
 
-   // [(start modifier_field_value)] 600098d
-   dependents.insert( "Status" ); // (for Is_Connected modifier)
-
-   if( ( use_transients && is_field_transient( e_field_id_Status ) )
-    || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
-      names.insert( "Status" );
-   // [(finish modifier_field_value)] 600098d
-
    // [(start modifier_field_value)] 600098e
-   dependents.insert( "Status" ); // (for Is_Connecting modifier)
+   dependents.insert( "Status" ); // (for Is_Connected modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Status ) )
     || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
@@ -2503,13 +2514,13 @@ void Meta_Global_Peerchain_Entry::get_always_required_field_names(
       names.insert( "Status" );
    // [(finish modifier_field_value)] 600098f
 
-   // [(start protect_equal)] 600098g
-   dependents.insert( "Status" );
+   // [(start modifier_field_value)] 600098g
+   dependents.insert( "Status" ); // (for Is_Connecting modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Status ) )
     || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
       names.insert( "Status" );
-   // [(finish protect_equal)] 600098g
+   // [(finish modifier_field_value)] 600098g
 
    // [(start protect_equal)] 600098h
    dependents.insert( "Status" );
@@ -2519,21 +2530,29 @@ void Meta_Global_Peerchain_Entry::get_always_required_field_names(
       names.insert( "Status" );
    // [(finish protect_equal)] 600098h
 
-   // [(start modifier_field_value)] 600098i
-   dependents.insert( "Status" ); // (for Not_Is_Halted modifier)
-
-   if( ( use_transients && is_field_transient( e_field_id_Status ) )
-    || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
-      names.insert( "Status" );
-   // [(finish modifier_field_value)] 600098i
-
-   // [(start protect_not_equal)] 600098j
+   // [(start protect_equal)] 600098i
    dependents.insert( "Status" );
 
    if( ( use_transients && is_field_transient( e_field_id_Status ) )
     || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
       names.insert( "Status" );
-   // [(finish protect_not_equal)] 600098j
+   // [(finish protect_equal)] 600098i
+
+   // [(start modifier_field_value)] 600098j
+   dependents.insert( "Status" ); // (for Not_Is_Halted modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Status ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
+      names.insert( "Status" );
+   // [(finish modifier_field_value)] 600098j
+
+   // [(start protect_not_equal)] 600098k
+   dependents.insert( "Status" );
+
+   if( ( use_transients && is_field_transient( e_field_id_Status ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
+      names.insert( "Status" );
+   // [(finish protect_not_equal)] 600098k
 
    // [(start modifier_field_value)] 600898b
    dependents.insert( "Peer_Type" ); // (for Is_Local_Only modifier)
@@ -2550,6 +2569,14 @@ void Meta_Global_Peerchain_Entry::get_always_required_field_names(
     || ( !use_transients && !is_field_transient( e_field_id_Peer_Type ) ) )
       names.insert( "Peer_Type" );
    // [(finish modifier_field_value)] 600898c
+
+   // [(start modifier_field_value)] 600898d
+   dependents.insert( "Peer_Type" ); // (for Is_Peerchain_Hub modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Peer_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Peer_Type ) ) )
+      names.insert( "Peer_Type" );
+   // [(finish modifier_field_value)] 600898d
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]
@@ -2833,6 +2860,7 @@ void Meta_Global_Peerchain_Entry::static_get_all_enum_pairs( vector< pair< strin
    pairs.push_back( make_pair( "enum_peerchain_peer_type_1", get_enum_string_peerchain_peer_type( 1 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_peer_type_2", get_enum_string_peerchain_peer_type( 2 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_peer_type_3", get_enum_string_peerchain_peer_type( 3 ) ) );
+   pairs.push_back( make_pair( "enum_peerchain_peer_type_4", get_enum_string_peerchain_peer_type( 4 ) ) );
 
    pairs.push_back( make_pair( "enum_peerchain_status_0", get_enum_string_peerchain_status( 0 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_status_1", get_enum_string_peerchain_status( 1 ) ) );
@@ -2887,6 +2915,7 @@ void Meta_Global_Peerchain_Entry::static_class_init( const char* p_module_name )
    g_peerchain_peer_type_enum.insert( 1 );
    g_peerchain_peer_type_enum.insert( 2 );
    g_peerchain_peer_type_enum.insert( 3 );
+   g_peerchain_peer_type_enum.insert( 4 );
 
    g_peerchain_status_enum.insert( 0 );
    g_peerchain_status_enum.insert( 1 );

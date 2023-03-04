@@ -100,7 +100,7 @@ user_defined_enum_add -id=906 app_auto_days int 0=0,1=1,2=2,3=3,7=7,10=10,20=20,
 user_defined_enum_add -id=907 app_type bool 0=Blockchain,1=Traditional
 user_defined_enum_add -id=950 archive_standard_size numeric 100000000000=100\\_GB,300000000000=300\\_GB,500000000000=500\\_GB
 user_defined_enum_add -id=955 peerchain_status int 0=Halted,1=Waiting,2=Connected,3=Connecting,4=Disconnecting
-user_defined_enum_add -id=960 peerchain_peer_type int 0=Hosted,1=Local_Only,2=Backup_Only,3=Shared_Only
+user_defined_enum_add -id=960 peerchain_peer_type int 0=Hosted,1=Local_Only,2=Backup_Only,3=Shared_Only,4=Peerchain_Hub
 user_defined_type_add -id=1000 str5 string "max_size 5"
 user_defined_type_add -id=1005 str10 string "max_size 10"
 user_defined_type_add -id=1010 str30 string "max_size 30"
@@ -919,10 +919,11 @@ field_add -id=145112 Global_Peerchain_Entry Shared_Secret str200 opt -x=encrypte
 modifier_add -id=145300 Global_Peerchain_Entry Is_Halted @class:lowlight
 modifier_add -id=145301 Global_Peerchain_Entry Is_Local_Only Host_Name:relegate;view,Host_Port:relegate,Num_Helpers:relegate,Shared_Secret:relegate
 modifier_add -id=145302 Global_Peerchain_Entry Is_Backup_Only Shared_Secret:relegate
-modifier_add -id=145303 Global_Peerchain_Entry Is_Connected @class:extralight1;list,Status:extralight1;view
-modifier_add -id=145304 Global_Peerchain_Entry Is_Connecting @class:extralight;list,Status:extralight;view
-modifier_add -id=145305 Global_Peerchain_Entry Is_Disconnecting @class:extralight;list,Status:extralight;view
-modifier_add -id=145306 Global_Peerchain_Entry Not_Is_Halted Host_Name:protect,Host_Port:protect,Local_Port:protect,Num_Helpers:protect,Shared_Secret:protect
+modifier_add -id=145303 Global_Peerchain_Entry Is_Peerchain_Hub Local_Port:relegate,Num_Helpers:relegate,Shared_Secret:relegate
+modifier_add -id=145304 Global_Peerchain_Entry Is_Connected @class:extralight1;list,Status:extralight1;view
+modifier_add -id=145305 Global_Peerchain_Entry Is_Connecting @class:extralight;list,Status:extralight;view
+modifier_add -id=145306 Global_Peerchain_Entry Is_Disconnecting @class:extralight;list,Status:extralight;view
+modifier_add -id=145307 Global_Peerchain_Entry Not_Is_Halted Host_Name:protect,Host_Port:protect,Local_Port:protect,Num_Helpers:protect,Shared_Secret:protect
 procedure_add -id=145410 Global_Peerchain_Entry Connect
 procedure_add -id=145420 Global_Peerchain_Entry Disconnect
 procedure_add -id=145430 Global_Peerchain_Entry Start
@@ -2060,13 +2061,14 @@ specification_add -id=600897 {Package_Option}_Hide_Procedure modifier_field_valu
 specification_add -id=600098a {Global_Peerchain_Entry}_Is_Halted modifier_field_value "Global_Peerchain_Entry Is_Halted Status 0"
 specification_add -id=600898b {Global_Peerchain_Entry}_Is_Local_Only modifier_field_value "Global_Peerchain_Entry Is_Local_Only Peer_Type 1"
 specification_add -id=600898c {Global_Peerchain_Entry}_Is_Backup_Only modifier_field_value "Global_Peerchain_Entry Is_Backup_Only Peer_Type 2"
-specification_add -id=600098d {Global_Peerchain_Entry}_Is_Connected modifier_field_value "Global_Peerchain_Entry Is_Connected Status Connected -enum=peerchain_status"
-specification_add -id=600098e {Global_Peerchain_Entry}_Is_Connecting modifier_field_value "Global_Peerchain_Entry Is_Connecting Status Connecting -enum=peerchain_status"
-specification_add -id=600098f {Global_Peerchain_Entry}_Is_Disonnecting modifier_field_value "Global_Peerchain_Entry Is_Connecting Status Disconnecting -enum=peerchain_status"
-specification_add -id=600098g {Global_Peerchain_Entry}_Is_Connecting_protect state_protect "equal Global_Peerchain_Entry Status 3 -changing"
-specification_add -id=600098h {Global_Peerchain_Entry}_Is_Disconnecting_protect state_protect "equal Global_Peerchain_Entry Status 4 -changing"
-specification_add -id=600098i {Global_Peerchain_Entry}_Not_Is_Halted modifier_field_value "Global_Peerchain_Entry Not_Is_Halted Status 0 -not_equal"
-specification_add -id=600098j {Global_Peerchain_Entry}_Not_Is_Halted_protect state_protect "not_equal Global_Peerchain_Entry Status 0 -scope=delete"
+specification_add -id=600898d {Global_Peerchain_Entry}_Is_Peerchain_Hub modifier_field_value "Global_Peerchain_Entry Is_Peerchain_Hub Peer_Type 4"
+specification_add -id=600098e {Global_Peerchain_Entry}_Is_Connected modifier_field_value "Global_Peerchain_Entry Is_Connected Status Connected -enum=peerchain_status"
+specification_add -id=600098f {Global_Peerchain_Entry}_Is_Connecting modifier_field_value "Global_Peerchain_Entry Is_Connecting Status Connecting -enum=peerchain_status"
+specification_add -id=600098g {Global_Peerchain_Entry}_Is_Disonnecting modifier_field_value "Global_Peerchain_Entry Is_Connecting Status Disconnecting -enum=peerchain_status"
+specification_add -id=600098h {Global_Peerchain_Entry}_Is_Connecting_protect state_protect "equal Global_Peerchain_Entry Status 3 -changing"
+specification_add -id=600098i {Global_Peerchain_Entry}_Is_Disconnecting_protect state_protect "equal Global_Peerchain_Entry Status 4 -changing"
+specification_add -id=600098j {Global_Peerchain_Entry}_Not_Is_Halted modifier_field_value "Global_Peerchain_Entry Not_Is_Halted Status 0 -not_equal"
+specification_add -id=600098k {Global_Peerchain_Entry}_Not_Is_Halted_protect state_protect "not_equal Global_Peerchain_Entry Status 0 -scope=delete"
 specification_add -id=600999 user_info user_info "User User_Id Password User_Hash -group={Workgroup} -active=Active -perm=Permissions"
 specification_add -id=601000 {User}_list list "* admin:no_erase User User_Id,Description,{Workgroup}:Name,Active Active,checked:1"
 specification_add -id=601010 {User}_child_list0 list "@601010_* child:no_erase User User_Id,Description,Active {Workgroup} Active,checked:1"

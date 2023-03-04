@@ -1588,6 +1588,10 @@
      <data>3
      <name>enum_peerchain_peer_type_shared_only
     </value>
+    <value/>
+     <data>4
+     <name>enum_peerchain_peer_type_peerchain_hub
+    </value>
    </values>
   </enum>
   <enum/>
@@ -3598,7 +3602,7 @@
      <ftype>int
      <extra>range=0..65535
      <mandatory>true
-     <modifiers>4000:protect
+     <modifiers>4000:relegate,8000:protect
     </field>
     <field/>
      <name>field_global_peerchain_entry_host_name
@@ -3606,7 +3610,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>true
-     <modifiers>2000:relegate,4000:protect
+     <modifiers>2000:relegate,8000:protect
     </field>
     <field/>
      <name>field_global_peerchain_entry_host_port
@@ -3614,7 +3618,7 @@
      <ftype>int
      <extra>range=0..65535
      <mandatory>true
-     <modifiers>2000:relegate,4000:protect
+     <modifiers>2000:relegate,8000:protect
     </field>
     <field/>
      <name>field_global_peerchain_entry_num_helpers
@@ -3622,7 +3626,7 @@
      <ftype>int
      <extra>range=0..99
      <mandatory>true
-     <modifiers>2000:relegate,4000:protect
+     <modifiers>2000:relegate,4000:relegate,8000:protect
     </field>
     <field/>
      <name>field_global_peerchain_entry_auto_start
@@ -3646,7 +3650,7 @@
      <ftype>string
      <extra>show+encrypted+max_size=200
      <mandatory>false
-     <modifiers>2000:relegate,100:relegate,4000:protect
+     <modifiers>2000:relegate,100:relegate,4000:relegate,8000:protect
     </field>
     <field/>
      <name>field_global_peerchain_entry_actions
@@ -9000,7 +9004,7 @@
      <field>145104
      <ftype>string
      <extra>max_size=100
-     <modifiers>4000:protect
+     <modifiers>8000:protect
      <unique>false
      <indexed>false
     </column>
