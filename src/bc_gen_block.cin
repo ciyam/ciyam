@@ -255,6 +255,11 @@ BLOCK_HASH=$OUTPUT
 @ifeq "$OUTPUT" "$IDENT"
 .system_variable >@blockchain_shared_height $HEIGHT
 @endif
+;
+.system_variable @blockchain_peer_hub_identity
+@ifeq "$OUTPUT" "$IDENT"
+.system_variable >@blockchain_peer_hub_height $HEIGHT
+@endif
 @endif
 ;
 @:END
