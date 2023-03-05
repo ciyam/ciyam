@@ -2638,7 +2638,15 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      string first_mapped( get_session_variable( blockchain_first_mapped_name ) );
                      set_session_variable( blockchain_first_mapped_name, "" );
 
-                     if( first_mapped.empty( ) && top_next_peer_file_hash_to_get( ).empty( ) )
+                     string tree_root_hash( get_session_variable(
+                      get_special_var_name( e_special_var_blockchain_zenith_tree_hash ) ) );
+
+                     bool wants_tree_root = false;
+
+                     if( !tree_root_hash.empty( ) && !has_file( tree_root_hash ) )
+                        wants_tree_root = true;
+
+                     if( first_mapped.empty( ) && top_next_peer_file_hash_to_get( ).empty( ) && !wants_tree_root )
                         set_new_zenith = true;
                      else
                      {
@@ -2700,7 +2708,18 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                if( !has_tree_files )
                   set_session_variable( get_special_var_name( e_special_var_blockchain_get_tree_files ), "" );
                else
+               {
+                  if( top_next_peer_file_hash_to_get( ).empty( ) )
+                  {
+                     string tree_root_hash( get_session_variable(
+                      get_special_var_name( e_special_var_blockchain_zenith_tree_hash ) ) );
+
+                     if( !tree_root_hash.empty( ) )
+                        add_peer_file_hash_for_get( tree_root_hash );
+                  }
+
                   set_session_variable( get_special_var_name( e_special_var_blockchain_get_tree_files ), c_true_value );
+               }
             }
          }
       }
