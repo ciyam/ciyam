@@ -1439,7 +1439,8 @@ void Meta_Global_Peerchain_Entry::impl::to_store( bool is_create, bool is_intern
 
    // [<start to_store>]
 //nyi
-   if( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Local_Only )
+   if( get_obj( ).Host_Name( ).empty( )
+    || ( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Local_Only ) )
       get_obj( ).Host_Name( c_local_host );
 
    if( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Peerchain_Hub )
