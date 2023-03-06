@@ -122,7 +122,7 @@ void CIYAM_BASE_DECL_SPEC create_peer_listener( int port, const std::string& blo
 peer_session* CIYAM_BASE_DECL_SPEC create_peer_initiator(
  const std::string& blockchain, const std::string& host_and_or_port,
  bool force = false, size_t num_for_support = 0, bool is_interactive = true,
- bool is_secondary = false, peer_session* p_main_session = 0, bool is_for_shared = false, bool is_paired = true );
+ bool is_secondary = false, peer_session* p_main_session = 0, bool is_shared = false, bool is_paired = true );
 
 void CIYAM_BASE_DECL_SPEC create_initial_peer_sessions( );
 

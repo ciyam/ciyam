@@ -5006,7 +5006,7 @@ void create_peer_listener( int port, const string& blockchains )
 
 peer_session* create_peer_initiator( const string& blockchain,
  const string& host_and_or_port, bool force, size_t num_for_support,
- bool is_interactive, bool is_secondary, peer_session* p_main_session, bool is_for_shared, bool is_paired )
+ bool is_interactive, bool is_secondary, peer_session* p_main_session, bool is_shared, bool is_paired )
 {
    if( blockchain.empty( ) )
       throw runtime_error( "create_peer_initiator called with empty blockchain identity" );
@@ -5062,7 +5062,7 @@ peer_session* create_peer_initiator( const string& blockchain,
    }
 
    string own_identity( get_system_variable( get_special_var_name(
-    ( !is_for_shared ) ? e_special_var_blockchain_backup_identity : e_special_var_blockchain_shared_identity ) ) );
+    ( !is_shared ) ? e_special_var_blockchain_backup_identity : e_special_var_blockchain_shared_identity ) ) );
 
    bool has_separate_identity = false;
 
@@ -5303,7 +5303,7 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    if( p_local_main && ( peer_type != 4 ) )
    {
       peer_session* p_hosted_main = create_peer_initiator( blockchain, info, false,
-       ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, ( peer_type == 3 ), false );
+       ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, ( peer_type == 3 ), true );
 
       if( p_hosted_main )
       {
@@ -5312,31 +5312,32 @@ void peer_session_starter::start_peer_session( const string& peer_info )
          if( num_for_support )
          {
             create_peer_initiator( blockchain, info,
-             false, num_for_support, false, false, p_local_main, ( peer_type == 3 ), false );
+             false, num_for_support, false, false, p_local_main, ( peer_type == 3 ), true );
 
             create_peer_initiator( blockchain, info,
-             false, num_for_support, false, true, p_hosted_main, ( peer_type == 3 ), false );
+             false, num_for_support, false, true, p_hosted_main, ( peer_type == 3 ), true );
          }
       }
    }
 
-   if( peer_type == 1 )
+   // NOTE: If peer type is combined then will also create shared blockchain sessions.
+   if( peer_type == 0 )
    {
-      // NOTE: Shared blockchain sessions use the same identity value but in reverse.
+      // NOTE: Shared blockchain sessions use the identity value in reverse.
       string reversed( identity );
       reverse( reversed.begin( ), reversed.end( ) );
 
       string shared_chain( c_bc_prefix + reversed );
 
       peer_session* p_local_shared = create_peer_initiator( shared_chain, info,
-       false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, 0, true, false );
+       false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, 0, true, true );
 
       if( p_local_shared )
       {
          p_local_shared->set_backup_identity( identity );
 
          peer_session* p_hosted_shared = create_peer_initiator( shared_chain, info,
-          false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, true, false );
+          false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, true, true );
 
          if( p_hosted_shared )
          {
@@ -5345,10 +5346,10 @@ void peer_session_starter::start_peer_session( const string& peer_info )
             if( num_for_support )
             {
                create_peer_initiator( shared_chain, info,
-                false, num_for_support, false, false, p_local_shared, true, false );
+                false, num_for_support, false, false, p_local_shared, true, true );
 
                create_peer_initiator( shared_chain, info,
-                false, num_for_support, false, true, p_hosted_shared, true, false );
+                false, num_for_support, false, true, p_hosted_shared, true, true );
             }
          }
       }
