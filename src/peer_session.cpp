@@ -2647,7 +2647,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         wants_tree_root = true;
 
                      if( first_mapped.empty( ) && top_next_peer_file_hash_to_get( ).empty( ) && !wants_tree_root )
+                     {
                         set_new_zenith = true;
+                        block_processing = next_block_hash;
+                     }
                      else
                      {
                         string file_hash( top_next_peer_file_hash_to_get( ) );
