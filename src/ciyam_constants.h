@@ -35,6 +35,7 @@ const char* const c_bc_prefix = "bc.";
 
 const char* const c_blk_suffix = ".blk";
 const char* const c_key_suffix = ".key";
+const char* const c_opl_suffix = ".opl";
 const char* const c_pub_suffix = ".pub";
 const char* const c_put_suffix = ".put";
 const char* const c_sig_suffix = ".sig";
