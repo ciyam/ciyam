@@ -1697,7 +1697,7 @@ void validate_op_list_file( const string& file_data )
 
                regex expr( re );
 
-               if( expr.search( s ) == string::npos )
+               if( expr.search( ident ) == string::npos )
                   is_invalid = true;
                else
                {
@@ -1707,7 +1707,7 @@ void validate_op_list_file( const string& file_data )
 
                   regex expr( re );
 
-                  if( expr.search( s ) == string::npos )
+                  if( expr.search( height ) == string::npos )
                      is_invalid = true;
                }
             }
