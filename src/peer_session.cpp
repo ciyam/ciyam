@@ -3931,7 +3931,26 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       string backup_identity( get_session_variable(
        get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
-      if( !paired_identity.empty( ) && get_system_variable( paired_identity ).empty( ) )
+      if( paired_identity.empty( ) )
+      {
+         bool is_disconnecting = !get_system_variable( '~' + identity ).empty( );
+
+         if( is_disconnecting )
+         {
+            if( !is_condemned_session( ) )
+            {
+               condemn_this_session( );
+
+               if( !is_captured_session( ) )
+                  handler.set_finished( );
+
+               socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_sock_progress );
+
+               has_issued_bye = true;
+            }
+         }
+      }
+      else if( get_system_variable( paired_identity ).empty( ) )
       {
          bool is_only_session = false;
          bool is_missing_backup = false;
@@ -4725,6 +4744,8 @@ void peer_session::on_start( )
                }
             }
          }
+         else
+            set_session_variable( unprefixed_blockchain, c_true_value );
 
          // NOTE: Initially the identity value is that of the paired initiating session which
          // will not be the blockchain identity (for the paired session). In order to prevent
@@ -4825,12 +4846,17 @@ void peer_session::on_start( )
       }
    }
 
-   if( has_terminated && !is_for_support && !paired_identity.empty( ) )
+   if( has_terminated && !is_for_support )
    {
-      set_variable_checker check_no_other_session(
-       e_variable_check_type_no_session_has, paired_identity );
+      if( paired_identity.empty( ) )
+         set_system_variable( '~' + identity, "" );
+      else
+      {
+         set_variable_checker check_no_other_session(
+          e_variable_check_type_no_session_has, paired_identity );
 
-      set_system_variable( '~' + paired_identity, "", check_no_other_session );
+         set_system_variable( '~' + paired_identity, "", check_no_other_session );
+      }
    }
 
    delete this;
