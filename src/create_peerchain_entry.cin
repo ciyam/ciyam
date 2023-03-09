@@ -44,6 +44,7 @@ SHARED_SECRET=$8
 IS_ONLY=
 BACKUP_ONLY=
 SHARED_ONLY=
+PEERCHAIN_HUB=
 ;
 @ifeq "$PEER_TYPE" "2"
 BACKUP_ONLY=1
@@ -53,11 +54,19 @@ BACKUP_ONLY=1
 SHARED_ONLY=1
 @endif
 ;
+@ifeq "$PEER_TYPE" "4"
+PEERCHAIN_HUB=1
+@endif
+;
 @ifdef $BACKUP_ONLY
 IS_ONLY=1
 @else
 @ifdef $SHARED_ONLY
 IS_ONLY=1
+@else
+@ifdef $PEERCHAIN_HUB
+IS_ONLY=1
+@endif
 @endif
 @endif
 ;
@@ -71,10 +80,14 @@ PEER_PORT=$OUTPUT
 @ifeq "$PEER_PORT" ""
 #Error: Found empty '@peer_port' system variable value.
 @else
+@ifdef $PEERCHAIN_HUB
+PEER_PORT=0
+@else
 @ifdef $IS_ONLY
 .peer_listen $PEER_PORT $IDENTITY
 @else
 .peer_listen $PEER_PORT $IDENTITY,$REVERSED
+@endif
 @endif
 .storage_init Meta
 ;
@@ -84,6 +97,7 @@ PEER_PORT=$OUTPUT
 @ifndef $ERROR
 .storage_term
 ;
+@ifndef $PEERCHAIN_HUB
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
@@ -98,11 +112,17 @@ FILES_AREA_DIR=$OUTPUT
 ~mkdir $FILES_AREA_DIR/$REVERSED
 .file_archive -add $FILES_AREA_DIR/$REVERSED 5GB $REVERSED
 @endif
+@endif
 ;
+@ifdef $PEERCHAIN_HUB
+#Created global peerchain entry for hub identity '$IDENTITY'.
+@else
 @ifdef $IS_ONLY
 #Created listener, global peerchain entry and file archive for identity '$IDENTITY'.
 @else
 #Created listeners, global peerchain entry and file archives for identity '$IDENTITY' (and '$REVERSED').
+@endif
+@endif
 @endif
 @endif
 @endif
