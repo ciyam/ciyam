@@ -33,7 +33,7 @@ file_archives "list file archives and optionally update status information" [<op
 file_relegate "relegate one or more files from the files area to the archives" <val/-n=/num_files>|<val/-s=/size_limit>|{[<opt/-destroy/destroy>|<opt/-blacklist/blacklist>]<val//hash>}[<val//archive>]
 file_retrieve "retrieve a relegated file from the archives into the files area" <val//hash>[<val/-d=/days_ahead>|<val//tag>]
 file_repo_entry "view/remove global repository entry" [<opt/-remove/remove>]<val//repository><val//entry_hash>
-file_repo_entries "count/remove obsolete repository entries" <opt/-total/total>|<opt/-remove_obsolete/remove_obsolete><val//repository>
+file_repo_entries "count/remove repository entries" <opt/-total/total>|<opt/-remove_all/remove_all>|<opt/-remove_obsolete/remove_obsolete><val//repository>
 module_list "list loaded modules"
 module_load "load an existing module" <val//module>
 module_unload "unload a loaded module" <val//module>

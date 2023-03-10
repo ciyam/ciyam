@@ -1324,9 +1324,24 @@ void remove_files_area_tag( const string& tag )
    tag_del( tag );
 }
 
+void delete_files_area_files_for_pat( const string& pat )
+{
+   delete_files_for_tags( pat );
+}
+
 string get_files_area_hash_for_tag( const string& tag )
 {
    return tag_file_hash( tag );
+}
+
+bool has_files_area_archive( const string& archive )
+{
+   return has_file_archive( archive );
+}
+
+void remove_files_area_archive( const string& archive, bool destroy )
+{
+   remove_file_archive( archive, destroy );
 }
 
 int class_base::get_graph_depth( ) const

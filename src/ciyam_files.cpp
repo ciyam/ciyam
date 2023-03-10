@@ -5315,6 +5315,141 @@ size_t count_total_repository_entries( const string& repository,
    return total_entries;
 }
 
+size_t remove_all_repository_entries( const string& repository,
+ date_time* p_dtm, progress* p_progress, size_t num_seconds, bool set_session_progress )
+{
+   system_ods_bulk_write ods_bulk_write;
+
+   string archive_path;
+   vector< string > paths;
+
+   string all_archives( list_file_archives( e_archive_list_type_minimal, &paths ) );
+
+   if( !all_archives.empty( ) )
+   {
+      vector< string > archives;
+
+      split( all_archives, archives, '\n' );
+
+      if( paths.size( ) != archives.size( ) )
+         throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
+
+      for( size_t i = 0; i < archives.size( ); i++ )
+      {
+         if( archives[ i ] == repository )
+         {
+            archive_path = paths[ i ];
+            break;
+         }
+      }
+   }
+
+   auto_ptr< temporary_session_variable > ap_temp_archive_path;
+
+   if( !archive_path.empty( ) )
+      ap_temp_archive_path.reset( new temporary_session_variable(
+       get_special_var_name( e_special_var_blockchain_archive_path ), archive_path ) );
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_repository_folder );
+
+   size_t total_entries = 0;
+
+   string last_key;
+   vector< string > files_to_remove;
+
+   while( true )
+   {
+      date_time now( date_time::local( ) );
+
+      vector< string > repo_entries;
+      ods_fs.list_files( repository + '*', repo_entries, false, last_key, last_key.empty( ), 100 );
+
+      if( p_progress )
+      {
+         uint64_t elapsed = seconds_between( *p_dtm, now );
+
+         if( elapsed >= num_seconds )
+         {
+            string progress;
+
+            // FUTURE: This message should be handled as a server string message.
+            progress = "Processed " + to_string( total_entries ) + " repository entries...";
+
+            *p_dtm = now;
+
+            if( set_session_progress )
+            {
+               set_session_progress_output( progress );
+
+               progress = ".";
+            }
+
+            p_progress->output_progress( progress );
+         }
+      }
+
+      for( size_t i = 0; i < repo_entries.size( ); i++ )
+      {
+         guard g( g_mutex, "remove_all_repository_entries" );
+
+         ++total_entries;
+
+         last_key = repo_entries[ i ];
+
+         files_to_remove.push_back( last_key );
+      }
+
+      if( repo_entries.size( ) < 100 )
+         break;
+   }
+
+   total_entries = files_to_remove.size( );
+
+   if( total_entries )
+   {
+      guard g( g_mutex, "remove_all_repository_entries" );
+
+      ods::transaction ods_tx( system_ods_instance( ) );
+
+      for( size_t i = 0; i < files_to_remove.size( ); i++ )
+      {
+         date_time now( date_time::local( ) );
+
+         ods_fs.remove_file( files_to_remove[ i ] );
+
+         if( p_progress )
+         {
+            uint64_t elapsed = seconds_between( *p_dtm, now );
+
+            if( elapsed >= num_seconds )
+            {
+               string progress;
+
+               // FUTURE: This message should be handled as a server string message.
+               progress = "Removed " + to_string( i ) + " repository entries...";
+
+               *p_dtm = now;
+
+               if( set_session_progress )
+               {
+                  set_session_progress_output( progress );
+
+                  progress = ".";
+               }
+
+               p_progress->output_progress( progress );
+            }
+         }
+      }
+
+      ods_tx.commit( );
+   }
+
+   return total_entries;
+}
+
 size_t remove_obsolete_repository_entries( const string& repository,
  date_time* p_dtm, progress* p_progress, size_t num_seconds, bool set_session_progress )
 {

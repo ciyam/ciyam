@@ -2341,12 +2341,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string repository( get_parm_val( parameters, c_cmd_ciyam_session_file_repo_entries_repository ) );
          bool total( has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entries_total ) );
+         bool remove_all( has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entries_remove_all ) );
          bool remove_obsolete( has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entries_remove_obsolete ) );
 
          date_time dtm( date_time::local( ) );
 
          if( total )
             response = to_string( count_total_repository_entries( repository, &dtm, &handler ) );
+         else if( remove_all )
+            response = "Removed " + to_string( remove_all_repository_entries( repository, &dtm, &handler ) ) + " entries.";
          else
             response = "Removed " + to_string( remove_obsolete_repository_entries( repository, &dtm, &handler ) ) + " entries.";
       }

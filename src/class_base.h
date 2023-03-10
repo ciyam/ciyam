@@ -1223,7 +1223,13 @@ bool CIYAM_BASE_DECL_SPEC has_files_area_file( const std::string& hash, bool inc
 
 void CIYAM_BASE_DECL_SPEC remove_files_area_tag( const std::string& tag );
 
+void CIYAM_BASE_DECL_SPEC delete_files_area_files_for_pat( const std::string& pat );
+
 std::string CIYAM_BASE_DECL_SPEC get_files_area_hash_for_tag( const std::string& tag );
+
+bool CIYAM_BASE_DECL_SPEC has_files_area_archive( const std::string& archive );
+
+void CIYAM_BASE_DECL_SPEC remove_files_area_archive( const std::string& archive, bool destroy = false );
 
 std::string CIYAM_BASE_DECL_SPEC expand_lf_to_cr_lf( const std::string& input );
 
