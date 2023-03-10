@@ -1495,6 +1495,21 @@ void Meta_Global_Peerchain_Entry::impl::for_destroy( bool is_internal )
    ( void )state;
 
    // [<start for_destroy>]
+//nyi
+   if( has_files_area_archive( get_obj( ).Identity( ) ) )
+   {
+      remove_files_area_archive( get_obj( ).Identity( ), true );
+
+      if( get_obj( ).Peer_Type( ) < c_enum_peerchain_peer_type_Shared_Only )
+      {
+         temporary_session_variable tmp_session_name(
+          get_special_var_name( e_special_var_identity ), get_obj( ).Identity( ) );
+
+         run_script( "remove_all_repo_entries", true, true, true );
+      }
+   }
+
+   delete_files_area_files_for_pat( c_bc_prefix + get_obj( ).Identity( ) + ".*" );
    // [<finish for_destroy>]
 }
 

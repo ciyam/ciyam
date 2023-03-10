@@ -125,6 +125,11 @@
   <arguments>destroy_peerchain_entry.cin @identity
  </script>
  <script/>
+  <name>remove_all_repo_entries
+  <filename>*script*
+  <arguments>remove_all_repo_entries.cin @identity
+ </script>
+ <script/>
   <name>create_peerchain_listener
   <filename>*script*
   <arguments>create_peerchain_listener.cin @identity @description
