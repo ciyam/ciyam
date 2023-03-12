@@ -219,7 +219,7 @@ FILES_AREA_DIR=$OUTPUT
 ;
 @ifndef $ERROR
 @ifdef $HUB
-#Created keys and genesis block for peer hub identity '$IDENT'.
+#Created keys and genesis block for identity '$IDENT'.
 @else
 #Created keys, genesis block and file archive for identity '$IDENT'.
 @endif

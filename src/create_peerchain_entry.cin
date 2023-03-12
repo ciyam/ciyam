@@ -115,7 +115,7 @@ FILES_AREA_DIR=$OUTPUT
 @endif
 ;
 @ifdef $PEERCHAIN_HUB
-#Created global peerchain entry for hub identity '$IDENTITY'.
+#Created global peerchain entry for identity '$IDENTITY'.
 @else
 @ifdef $IS_ONLY
 #Created listener, global peerchain entry and file archive for identity '$IDENTITY'.

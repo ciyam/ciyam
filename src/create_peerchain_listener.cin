@@ -47,7 +47,7 @@ PEER_PORT=$OUTPUT
 ;
 @ifndef $ERROR
 @ifdef $PEER_HUB
-#Created listener and global peerchain entry for hub identity '$IDENTITY'.
+#Created listener and global peerchain entry for identity '$IDENTITY'.
 @else
 #Created listeners and global peerchain entry for identity '$IDENTITY' (and '$REVERSED').
 @endif
