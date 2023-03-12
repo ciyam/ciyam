@@ -1496,9 +1496,17 @@ void Meta_Global_Peerchain_Entry::impl::for_destroy( bool is_internal )
 
    // [<start for_destroy>]
 //nyi
+   string reversed( get_obj( ).Identity( ) );
+   reverse( reversed.begin( ), reversed.end( ) );
+
+   bool has_reversed = ( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Hosted );
+
    if( has_files_area_archive( get_obj( ).Identity( ) ) )
    {
       remove_files_area_archive( get_obj( ).Identity( ), true );
+
+      if( has_reversed && has_files_area_archive( reversed ) )
+         remove_files_area_archive( reversed, true );
 
       if( get_obj( ).Peer_Type( ) < c_enum_peerchain_peer_type_Shared_Only )
       {
@@ -1508,6 +1516,9 @@ void Meta_Global_Peerchain_Entry::impl::for_destroy( bool is_internal )
          run_script( "remove_all_repo_entries", true, true, true );
       }
    }
+
+   if( has_reversed )
+      delete_files_area_files_for_pat( c_bc_prefix + reversed + ".*" );
 
    delete_files_area_files_for_pat( c_bc_prefix + get_obj( ).Identity( ) + ".*" );
    // [<finish for_destroy>]
