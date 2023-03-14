@@ -1339,9 +1339,9 @@ bool has_files_area_archive( const string& archive )
    return has_file_archive( archive );
 }
 
-void remove_files_area_archive( const string& archive, bool destroy )
+void remove_files_area_archive( const string& archive, bool destroy, bool remove_directory )
 {
-   remove_file_archive( archive, destroy );
+   remove_file_archive( archive, destroy, remove_directory );
 }
 
 int class_base::get_graph_depth( ) const
@@ -3275,6 +3275,15 @@ void install_gpg_key( const string& key_file,
       if( had_unexpected_error )
          throw runtime_error( "unexpected error occurred installing GPG key" );
    }
+}
+
+string reversed_string( const string& s )
+{
+   string reversed( s );
+
+   reverse( reversed.begin( ), reversed.end( ) );
+
+   return reversed;
 }
 
 string trim_whitespace( const string& s )

@@ -61,10 +61,10 @@ const int32_t c_version = 1;
 
 const char* const c_field_id_Actions = "145110";
 const char* const c_field_id_Auto_Start = "145107";
+const char* const c_field_id_Chain_Id = "145101";
 const char* const c_field_id_Description = "145102";
 const char* const c_field_id_Host_Name = "145104";
 const char* const c_field_id_Host_Port = "145105";
-const char* const c_field_id_Identity = "145101";
 const char* const c_field_id_Local_Port = "145106";
 const char* const c_field_id_Num_Helpers = "145109";
 const char* const c_field_id_Peer_Type = "145103";
@@ -74,10 +74,10 @@ const char* const c_field_id_Status = "145108";
 
 const char* const c_field_name_Actions = "Actions";
 const char* const c_field_name_Auto_Start = "Auto_Start";
+const char* const c_field_name_Chain_Id = "Chain_Id";
 const char* const c_field_name_Description = "Description";
 const char* const c_field_name_Host_Name = "Host_Name";
 const char* const c_field_name_Host_Port = "Host_Port";
-const char* const c_field_name_Identity = "Identity";
 const char* const c_field_name_Local_Port = "Local_Port";
 const char* const c_field_name_Num_Helpers = "Num_Helpers";
 const char* const c_field_name_Peer_Type = "Peer_Type";
@@ -87,10 +87,10 @@ const char* const c_field_name_Status = "Status";
 
 const char* const c_field_display_name_Actions = "field_global_peerchain_entry_actions";
 const char* const c_field_display_name_Auto_Start = "field_global_peerchain_entry_auto_start";
+const char* const c_field_display_name_Chain_Id = "field_global_peerchain_entry_chain_id";
 const char* const c_field_display_name_Description = "field_global_peerchain_entry_description";
 const char* const c_field_display_name_Host_Name = "field_global_peerchain_entry_host_name";
 const char* const c_field_display_name_Host_Port = "field_global_peerchain_entry_host_port";
-const char* const c_field_display_name_Identity = "field_global_peerchain_entry_identity";
 const char* const c_field_display_name_Local_Port = "field_global_peerchain_entry_local_port";
 const char* const c_field_display_name_Num_Helpers = "field_global_peerchain_entry_num_helpers";
 const char* const c_field_display_name_Peer_Type = "field_global_peerchain_entry_peer_type";
@@ -120,10 +120,10 @@ const char* const c_all_sorted_field_names[ ] =
 {
    "Actions",
    "Auto_Start",
+   "Chain_Id",
    "Description",
    "Host_Name",
    "Host_Port",
-   "Identity",
    "Local_Port",
    "Num_Helpers",
    "Peer_Type",
@@ -173,7 +173,7 @@ const char* const c_transient_sorted_field_ids[ ] =
 const char* const c_transient_sorted_field_names[ ] =
 {
    "Actions",
-   "Identity",
+   "Chain_Id",
    "Port_Numbers",
    "Status"
 };
@@ -200,10 +200,10 @@ const uint64_t c_modifier_Is_Local_Only = UINT64_C( 0x2000 );
 const uint64_t c_modifier_Is_Peerchain_Hub = UINT64_C( 0x4000 );
 const uint64_t c_modifier_Not_Is_Halted = UINT64_C( 0x8000 );
 
+domain_string_max_size< 50 > g_Chain_Id_domain;
 domain_string_max_size< 100 > g_Description_domain;
 domain_string_max_size< 100 > g_Host_Name_domain;
 domain_int_range< 0, 65535 > g_Host_Port_domain;
-domain_string_max_size< 50 > g_Identity_domain;
 domain_int_range< 0, 65535 > g_Local_Port_domain;
 domain_int_range< 0, 99 > g_Num_Helpers_domain;
 domain_string_max_size< 200 > g_Shared_Secret_domain;
@@ -253,10 +253,10 @@ inline validation_error_value_type
 
 string g_default_Actions = string( );
 bool g_default_Auto_Start = bool( 0 );
+string g_default_Chain_Id = string( );
 string g_default_Description = string( );
 string g_default_Host_Name = string( );
 int g_default_Host_Port = int( 0 );
-string g_default_Identity = string( );
 int g_default_Local_Port = int( 0 );
 int g_default_Num_Helpers = int( 3 );
 int g_default_Peer_Type = int( 0 );
@@ -416,6 +416,12 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
          string_getter< bool >( cmd_handler.p_Meta_Global_Peerchain_Entry->Auto_Start( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Chain_Id || field_name == c_field_name_Chain_Id )
+      {
+         handled = true;
+         string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Chain_Id( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Description || field_name == c_field_name_Description )
       {
          handled = true;
@@ -432,12 +438,6 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
       {
          handled = true;
          string_getter< int >( cmd_handler.p_Meta_Global_Peerchain_Entry->Host_Port( ), cmd_handler.retval );
-      }
-
-      if( !handled && field_name == c_field_id_Identity || field_name == c_field_name_Identity )
-      {
-         handled = true;
-         string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Identity( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_Local_Port || field_name == c_field_name_Local_Port )
@@ -502,6 +502,13 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Auto_Start, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Chain_Id || field_name == c_field_name_Chain_Id )
+      {
+         handled = true;
+         func_string_setter< Meta_Global_Peerchain_Entry, string >(
+          *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Chain_Id, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Description || field_name == c_field_name_Description )
       {
          handled = true;
@@ -521,13 +528,6 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
          handled = true;
          func_string_setter< Meta_Global_Peerchain_Entry, int >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Host_Port, field_value );
-      }
-
-      if( !handled && field_name == c_field_id_Identity || field_name == c_field_name_Identity )
-      {
-         handled = true;
-         func_string_setter< Meta_Global_Peerchain_Entry, string >(
-          *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Identity, field_value );
       }
 
       if( !handled && field_name == c_field_id_Local_Port || field_name == c_field_name_Local_Port )
@@ -640,6 +640,9 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
    bool impl_Auto_Start( ) const { return lazy_fetch( p_obj ), v_Auto_Start; }
    void impl_Auto_Start( bool Auto_Start ) { v_Auto_Start = Auto_Start; }
 
+   const string& impl_Chain_Id( ) const { return lazy_fetch( p_obj ), v_Chain_Id; }
+   void impl_Chain_Id( const string& Chain_Id ) { sanity_check( Chain_Id ); v_Chain_Id = Chain_Id; }
+
    const string& impl_Description( ) const { return lazy_fetch( p_obj ), v_Description; }
    void impl_Description( const string& Description ) { sanity_check( Description ); v_Description = Description; }
 
@@ -648,9 +651,6 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
 
    int impl_Host_Port( ) const { return lazy_fetch( p_obj ), v_Host_Port; }
    void impl_Host_Port( int Host_Port ) { v_Host_Port = Host_Port; }
-
-   const string& impl_Identity( ) const { return lazy_fetch( p_obj ), v_Identity; }
-   void impl_Identity( const string& Identity ) { sanity_check( Identity ); v_Identity = Identity; }
 
    int impl_Local_Port( ) const { return lazy_fetch( p_obj ), v_Local_Port; }
    void impl_Local_Port( int Local_Port ) { v_Local_Port = Local_Port; }
@@ -740,10 +740,10 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
 
    string v_Actions;
    bool v_Auto_Start;
+   string v_Chain_Id;
    string v_Description;
    string v_Host_Name;
    int v_Host_Port;
-   string v_Identity;
    int v_Local_Port;
    int v_Num_Helpers;
    int v_Peer_Type;
@@ -759,7 +759,7 @@ void Meta_Global_Peerchain_Entry::impl::impl_Connect( )
 
    // [<start Connect_impl>]
 //nyi
-   connect_peerchain( get_obj( ).Identity( ) );
+   connect_peerchain( get_obj( ).Chain_Id( ) );
    // [<finish Connect_impl>]
 }
 
@@ -770,7 +770,7 @@ void Meta_Global_Peerchain_Entry::impl::impl_Disconnect( )
 
    // [<start Disconnect_impl>]
 //nyi
-   disconnect_peerchain( get_obj( ).Identity( ) );
+   disconnect_peerchain( get_obj( ).Chain_Id( ) );
    // [<finish Disconnect_impl>]
 }
 
@@ -781,7 +781,7 @@ void Meta_Global_Peerchain_Entry::impl::impl_Finish( )
 
    // [<start Finish_impl>]
 //nyi
-   disuse_peerchain( get_obj( ).Identity( ) );
+   disuse_peerchain( get_obj( ).Chain_Id( ) );
    // [<finish Finish_impl>]
 }
 
@@ -792,7 +792,7 @@ void Meta_Global_Peerchain_Entry::impl::impl_Start( )
 
    // [<start Start_impl>]
 //nyi
-   use_peerchain( get_obj( ).Identity( ) );
+   use_peerchain( get_obj( ).Chain_Id( ) );
    // [<finish Start_impl>]
 }
 
@@ -811,19 +811,19 @@ string Meta_Global_Peerchain_Entry::impl::get_field_value( int field ) const
       break;
 
       case 2:
-      retval = to_string( impl_Description( ) );
+      retval = to_string( impl_Chain_Id( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Host_Name( ) );
+      retval = to_string( impl_Description( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Host_Port( ) );
+      retval = to_string( impl_Host_Name( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Identity( ) );
+      retval = to_string( impl_Host_Port( ) );
       break;
 
       case 6:
@@ -870,19 +870,19 @@ void Meta_Global_Peerchain_Entry::impl::set_field_value( int field, const string
       break;
 
       case 2:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Description, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Chain_Id, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Host_Name, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Description, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Host_Port, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Host_Name, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Identity, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Host_Port, value );
       break;
 
       case 6:
@@ -927,19 +927,19 @@ void Meta_Global_Peerchain_Entry::impl::set_field_default( int field )
       break;
 
       case 2:
-      impl_Description( g_default_Description );
+      impl_Chain_Id( g_default_Chain_Id );
       break;
 
       case 3:
-      impl_Host_Name( g_default_Host_Name );
+      impl_Description( g_default_Description );
       break;
 
       case 4:
-      impl_Host_Port( g_default_Host_Port );
+      impl_Host_Name( g_default_Host_Name );
       break;
 
       case 5:
-      impl_Identity( g_default_Identity );
+      impl_Host_Port( g_default_Host_Port );
       break;
 
       case 6:
@@ -986,19 +986,19 @@ bool Meta_Global_Peerchain_Entry::impl::is_field_default( int field ) const
       break;
 
       case 2:
-      retval = ( v_Description == g_default_Description );
+      retval = ( v_Chain_Id == g_default_Chain_Id );
       break;
 
       case 3:
-      retval = ( v_Host_Name == g_default_Host_Name );
+      retval = ( v_Description == g_default_Description );
       break;
 
       case 4:
-      retval = ( v_Host_Port == g_default_Host_Port );
+      retval = ( v_Host_Name == g_default_Host_Name );
       break;
 
       case 5:
-      retval = ( v_Identity == g_default_Identity );
+      retval = ( v_Host_Port == g_default_Host_Port );
       break;
 
       case 6:
@@ -1177,10 +1177,10 @@ void Meta_Global_Peerchain_Entry::impl::clear( )
 {
    v_Actions = g_default_Actions;
    v_Auto_Start = g_default_Auto_Start;
+   v_Chain_Id = g_default_Chain_Id;
    v_Description = g_default_Description;
    v_Host_Name = g_default_Host_Name;
    v_Host_Port = g_default_Host_Port;
-   v_Identity = g_default_Identity;
    v_Local_Port = g_default_Local_Port;
    v_Num_Helpers = g_default_Num_Helpers;
    v_Peer_Type = g_default_Peer_Type;
@@ -1221,6 +1221,13 @@ void Meta_Global_Peerchain_Entry::impl::validate(
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Host_Name ) ) ) ) );
 
+   if( !is_null( v_Chain_Id )
+    && ( v_Chain_Id != g_default_Chain_Id
+    || !value_will_be_provided( c_field_name_Chain_Id ) )
+    && !g_Chain_Id_domain.is_valid( v_Chain_Id, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Chain_Id,
+       get_module_string( c_field_display_name_Chain_Id ) + " " + error_message ) );
+
    if( !is_null( v_Description )
     && ( v_Description != g_default_Description
     || !value_will_be_provided( c_field_name_Description ) )
@@ -1241,13 +1248,6 @@ void Meta_Global_Peerchain_Entry::impl::validate(
     && !g_Host_Port_domain.is_valid( v_Host_Port, error_message = "" ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Host_Port,
        get_module_string( c_field_display_name_Host_Port ) + " " + error_message ) );
-
-   if( !is_null( v_Identity )
-    && ( v_Identity != g_default_Identity
-    || !value_will_be_provided( c_field_name_Identity ) )
-    && !g_Identity_domain.is_valid( v_Identity, error_message = "" ) )
-      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Identity,
-       get_module_string( c_field_display_name_Identity ) + " " + error_message ) );
 
    if( !is_null( v_Local_Port )
     && ( v_Local_Port != g_default_Local_Port
@@ -1295,6 +1295,12 @@ void Meta_Global_Peerchain_Entry::impl::validate_set_fields(
    string error_message;
    validate_formatter vf;
 
+   if( !is_null( v_Chain_Id )
+    && ( fields_set.count( c_field_id_Chain_Id ) || fields_set.count( c_field_name_Chain_Id ) )
+    && !g_Chain_Id_domain.is_valid( v_Chain_Id, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Chain_Id,
+       get_module_string( c_field_display_name_Chain_Id ) + " " + error_message ) );
+
    if( !is_null( v_Description )
     && ( fields_set.count( c_field_id_Description ) || fields_set.count( c_field_name_Description ) )
     && !g_Description_domain.is_valid( v_Description, error_message = "" ) )
@@ -1312,12 +1318,6 @@ void Meta_Global_Peerchain_Entry::impl::validate_set_fields(
     && !g_Host_Port_domain.is_valid( v_Host_Port, error_message = "" ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Host_Port,
        get_module_string( c_field_display_name_Host_Port ) + " " + error_message ) );
-
-   if( !is_null( v_Identity )
-    && ( fields_set.count( c_field_id_Identity ) || fields_set.count( c_field_name_Identity ) )
-    && !g_Identity_domain.is_valid( v_Identity, error_message = "" ) )
-      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Identity,
-       get_module_string( c_field_display_name_Identity ) + " " + error_message ) );
 
    if( !is_null( v_Local_Port )
     && ( fields_set.count( c_field_id_Local_Port ) || fields_set.count( c_field_name_Local_Port ) )
@@ -1352,11 +1352,11 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
 //nyi
    get_obj( ).Actions( "" );
 
-   get_obj( ).Identity( get_obj( ).get_key( ) );
+   get_obj( ).Chain_Id( get_obj( ).get_key( ) );
 
    if( get_obj( ).Host_Name( ) == c_local_host )
    {
-      if( has_registered_listener_id( get_obj( ).Identity( ) ) )
+      if( has_registered_listener_id( get_obj( ).Chain_Id( ) ) )
       {
          get_obj( ).Status( c_enum_peerchain_status_Waiting );
          get_obj( ).Actions( '<' + string( c_procedure_id_Finish ) );
@@ -1368,14 +1368,14 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
    }
    else
    {
-      if( !get_system_variable( '~' + get_obj( ).Identity( ) ).empty( ) )
+      if( !get_system_variable( '~' + get_obj( ).Chain_Id( ) ).empty( ) )
          get_obj( ).Status( c_enum_peerchain_status_Disconnecting );
-      else if( has_any_session_variable( get_obj( ).Identity( ) ) )
+      else if( has_any_session_variable( get_obj( ).Chain_Id( ) ) )
       {
          get_obj( ).Status( c_enum_peerchain_status_Connected );
          get_obj( ).Actions( '<' + string( c_procedure_id_Disconnect ) );
       }
-      else if( !get_system_variable( get_obj( ).Identity( ) ).empty( ) )
+      else if( !get_system_variable( get_obj( ).Chain_Id( ) ).empty( ) )
          get_obj( ).Status( c_enum_peerchain_status_Connecting );
       else
       {
@@ -1383,7 +1383,7 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
             get_obj( ).Actions( '<' + string( c_procedure_id_Connect ) );
          else
          {
-            if( has_registered_listener_id( get_obj( ).Identity( ) ) )
+            if( has_registered_listener_id( get_obj( ).Chain_Id( ) ) )
             {
                get_obj( ).Status( c_enum_peerchain_status_Waiting );
 
@@ -1496,22 +1496,26 @@ void Meta_Global_Peerchain_Entry::impl::for_destroy( bool is_internal )
 
    // [<start for_destroy>]
 //nyi
-   string reversed( get_obj( ).Identity( ) );
+   string reversed( get_obj( ).Chain_Id( ) );
    reverse( reversed.begin( ), reversed.end( ) );
 
    bool has_reversed = ( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Hosted );
 
-   if( has_files_area_archive( get_obj( ).Identity( ) ) )
+   if( has_files_area_archive( get_obj( ).Chain_Id( ) ) )
    {
-      remove_files_area_archive( get_obj( ).Identity( ), true );
+      set_system_variable( "%" + get_obj( ).Chain_Id( ), "" );
+      remove_files_area_archive( get_obj( ).Chain_Id( ), true, true );
 
       if( has_reversed && has_files_area_archive( reversed ) )
-         remove_files_area_archive( reversed, true );
+      {
+         set_system_variable( "%" + reversed, "" );
+         remove_files_area_archive( reversed, true, true );
+      }
 
       if( get_obj( ).Peer_Type( ) < c_enum_peerchain_peer_type_Shared_Only )
       {
          temporary_session_variable tmp_session_name(
-          get_special_var_name( e_special_var_identity ), get_obj( ).Identity( ) );
+          get_special_var_name( e_special_var_identity ), get_obj( ).Chain_Id( ) );
 
          run_script( "remove_all_repo_entries", true, true, true );
       }
@@ -1520,7 +1524,7 @@ void Meta_Global_Peerchain_Entry::impl::for_destroy( bool is_internal )
    if( has_reversed )
       delete_files_area_files_for_pat( c_bc_prefix + reversed + ".*" );
 
-   delete_files_area_files_for_pat( c_bc_prefix + get_obj( ).Identity( ) + ".*" );
+   delete_files_area_files_for_pat( c_bc_prefix + get_obj( ).Chain_Id( ) + ".*" );
    // [<finish for_destroy>]
 }
 
@@ -1617,6 +1621,16 @@ void Meta_Global_Peerchain_Entry::Auto_Start( bool Auto_Start )
    p_impl->impl_Auto_Start( Auto_Start );
 }
 
+const string& Meta_Global_Peerchain_Entry::Chain_Id( ) const
+{
+   return p_impl->impl_Chain_Id( );
+}
+
+void Meta_Global_Peerchain_Entry::Chain_Id( const string& Chain_Id )
+{
+   p_impl->impl_Chain_Id( Chain_Id );
+}
+
 const string& Meta_Global_Peerchain_Entry::Description( ) const
 {
    return p_impl->impl_Description( );
@@ -1645,16 +1659,6 @@ int Meta_Global_Peerchain_Entry::Host_Port( ) const
 void Meta_Global_Peerchain_Entry::Host_Port( int Host_Port )
 {
    p_impl->impl_Host_Port( Host_Port );
-}
-
-const string& Meta_Global_Peerchain_Entry::Identity( ) const
-{
-   return p_impl->impl_Identity( );
-}
-
-void Meta_Global_Peerchain_Entry::Identity( const string& Identity )
-{
-   p_impl->impl_Identity( Identity );
 }
 
 int Meta_Global_Peerchain_Entry::Local_Port( ) const
@@ -1928,6 +1932,16 @@ const char* Meta_Global_Peerchain_Entry::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Chain_Id )
+   {
+      p_id = c_field_id_Chain_Id;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Description )
    {
       p_id = c_field_id_Description;
@@ -1957,16 +1971,6 @@ const char* Meta_Global_Peerchain_Entry::get_field_id(
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
-   }
-   else if( name == c_field_name_Identity )
-   {
-      p_id = c_field_id_Identity;
-
-      if( p_type_name )
-         *p_type_name = "string";
-
-      if( p_sql_numeric )
-         *p_sql_numeric = false;
    }
    else if( name == c_field_name_Local_Port )
    {
@@ -2059,6 +2063,16 @@ const char* Meta_Global_Peerchain_Entry::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Chain_Id )
+   {
+      p_name = c_field_name_Chain_Id;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Description )
    {
       p_name = c_field_name_Description;
@@ -2088,16 +2102,6 @@ const char* Meta_Global_Peerchain_Entry::get_field_name(
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
-   }
-   else if( id == c_field_id_Identity )
-   {
-      p_name = c_field_name_Identity;
-
-      if( p_type_name )
-         *p_type_name = "string";
-
-      if( p_sql_numeric )
-         *p_sql_numeric = false;
    }
    else if( id == c_field_id_Local_Port )
    {
@@ -2203,6 +2207,11 @@ string Meta_Global_Peerchain_Entry::get_field_uom_symbol( const string& id_or_na
       name = string( c_field_display_name_Auto_Start );
       get_module_string( c_field_display_name_Auto_Start, &next );
    }
+   else if( id_or_name == c_field_id_Chain_Id || id_or_name == c_field_name_Chain_Id )
+   {
+      name = string( c_field_display_name_Chain_Id );
+      get_module_string( c_field_display_name_Chain_Id, &next );
+   }
    else if( id_or_name == c_field_id_Description || id_or_name == c_field_name_Description )
    {
       name = string( c_field_display_name_Description );
@@ -2217,11 +2226,6 @@ string Meta_Global_Peerchain_Entry::get_field_uom_symbol( const string& id_or_na
    {
       name = string( c_field_display_name_Host_Port );
       get_module_string( c_field_display_name_Host_Port, &next );
-   }
-   else if( id_or_name == c_field_id_Identity || id_or_name == c_field_name_Identity )
-   {
-      name = string( c_field_display_name_Identity );
-      get_module_string( c_field_display_name_Identity, &next );
    }
    else if( id_or_name == c_field_id_Local_Port || id_or_name == c_field_name_Local_Port )
    {
@@ -2272,14 +2276,14 @@ string Meta_Global_Peerchain_Entry::get_field_display_name( const string& id_or_
       display_name = get_module_string( c_field_display_name_Actions );
    else if( id_or_name == c_field_id_Auto_Start || id_or_name == c_field_name_Auto_Start )
       display_name = get_module_string( c_field_display_name_Auto_Start );
+   else if( id_or_name == c_field_id_Chain_Id || id_or_name == c_field_name_Chain_Id )
+      display_name = get_module_string( c_field_display_name_Chain_Id );
    else if( id_or_name == c_field_id_Description || id_or_name == c_field_name_Description )
       display_name = get_module_string( c_field_display_name_Description );
    else if( id_or_name == c_field_id_Host_Name || id_or_name == c_field_name_Host_Name )
       display_name = get_module_string( c_field_display_name_Host_Name );
    else if( id_or_name == c_field_id_Host_Port || id_or_name == c_field_name_Host_Port )
       display_name = get_module_string( c_field_display_name_Host_Port );
-   else if( id_or_name == c_field_id_Identity || id_or_name == c_field_name_Identity )
-      display_name = get_module_string( c_field_display_name_Identity );
    else if( id_or_name == c_field_id_Local_Port || id_or_name == c_field_name_Local_Port )
       display_name = get_module_string( c_field_display_name_Local_Port );
    else if( id_or_name == c_field_id_Num_Helpers || id_or_name == c_field_name_Num_Helpers )
@@ -2663,10 +2667,10 @@ void Meta_Global_Peerchain_Entry::static_get_field_info( field_info_container& a
 {
    all_field_info.push_back( field_info( "145110", "Actions", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145107", "Auto_Start", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "145101", "Chain_Id", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145102", "Description", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145104", "Host_Name", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145105", "Host_Port", "int", false, "", "" ) );
-   all_field_info.push_back( field_info( "145101", "Identity", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145106", "Local_Port", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "145109", "Num_Helpers", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "145103", "Peer_Type", "int", false, "", "" ) );
@@ -2713,19 +2717,19 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_id( field_id id )
       break;
 
       case 3:
-      p_id = "145102";
+      p_id = "145101";
       break;
 
       case 4:
-      p_id = "145104";
+      p_id = "145102";
       break;
 
       case 5:
-      p_id = "145105";
+      p_id = "145104";
       break;
 
       case 6:
-      p_id = "145101";
+      p_id = "145105";
       break;
 
       case 7:
@@ -2774,19 +2778,19 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_name( field_id id )
       break;
 
       case 3:
-      p_id = "Description";
+      p_id = "Chain_Id";
       break;
 
       case 4:
-      p_id = "Host_Name";
+      p_id = "Description";
       break;
 
       case 5:
-      p_id = "Host_Port";
+      p_id = "Host_Name";
       break;
 
       case 6:
-      p_id = "Identity";
+      p_id = "Host_Port";
       break;
 
       case 7:
@@ -2830,13 +2834,13 @@ int Meta_Global_Peerchain_Entry::static_get_field_num( const string& field )
       rc += 1;
    else if( field == c_field_id_Auto_Start || field == c_field_name_Auto_Start )
       rc += 2;
-   else if( field == c_field_id_Description || field == c_field_name_Description )
+   else if( field == c_field_id_Chain_Id || field == c_field_name_Chain_Id )
       rc += 3;
-   else if( field == c_field_id_Host_Name || field == c_field_name_Host_Name )
+   else if( field == c_field_id_Description || field == c_field_name_Description )
       rc += 4;
-   else if( field == c_field_id_Host_Port || field == c_field_name_Host_Port )
+   else if( field == c_field_id_Host_Name || field == c_field_name_Host_Name )
       rc += 5;
-   else if( field == c_field_id_Identity || field == c_field_name_Identity )
+   else if( field == c_field_id_Host_Port || field == c_field_name_Host_Port )
       rc += 6;
    else if( field == c_field_id_Local_Port || field == c_field_name_Local_Port )
       rc += 7;
