@@ -5018,6 +5018,27 @@
       </specifications>
      </field>
      <field/>
+      <id>145101
+      <name>Chain_Id
+      <type>1015
+      <mandatory>false
+      <transient>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603960
+        <item>field
+       </specification>
+       <specification/>
+        <id>603970
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>145102
       <name>Description
       <type>1020
@@ -5084,27 +5105,6 @@
        </modifier>
       </modifiers>
       <specifications/>
-       <specification/>
-        <id>603970
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>145101
-      <name>Identity
-      <type>1015
-      <mandatory>false
-      <transient>true
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>603960
-        <item>field
-       </specification>
        <specification/>
         <id>603970
         <item>field

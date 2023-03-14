@@ -3573,7 +3573,7 @@
      <modifiers>
     </field>
     <field/>
-     <name>field_global_peerchain_entry_identity
+     <name>field_global_peerchain_entry_chain_id
      <field>145101
      <ftype>string
      <extra>key_name+max_size=50
@@ -8973,7 +8973,7 @@
    <module>Meta
    <columns/>
     <column/>
-     <name>field_global_peerchain_entry_identity
+     <name>field_global_peerchain_entry_chain_id
      <field>145101
      <ftype>string
      <extra>max_size=50

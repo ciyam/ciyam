@@ -1229,7 +1229,8 @@ std::string CIYAM_BASE_DECL_SPEC get_files_area_hash_for_tag( const std::string&
 
 bool CIYAM_BASE_DECL_SPEC has_files_area_archive( const std::string& archive );
 
-void CIYAM_BASE_DECL_SPEC remove_files_area_archive( const std::string& archive, bool destroy = false );
+void CIYAM_BASE_DECL_SPEC remove_files_area_archive(
+ const std::string& archive, bool destroy = false, bool remove_directory = false );
 
 std::string CIYAM_BASE_DECL_SPEC expand_lf_to_cr_lf( const std::string& input );
 
@@ -1244,6 +1245,8 @@ void CIYAM_BASE_DECL_SPEC locate_gpg_key( const std::string& email, std::string&
 
 void CIYAM_BASE_DECL_SPEC install_gpg_key( const std::string& key_file,
  const std::string& email, std::string& gpg_key_id, std::string& gpg_fingerprint, std::string* p_new_email = 0 );
+
+std::string CIYAM_BASE_DECL_SPEC reversed_string( const std::string& s );
 
 std::string CIYAM_BASE_DECL_SPEC trim_whitespace( const std::string& s );
 std::string CIYAM_BASE_DECL_SPEC trim_whitespace_and_quotes( const std::string& s );

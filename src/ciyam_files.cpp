@@ -4259,7 +4259,7 @@ void clear_file_archive( const string& name )
    }
 }
 
-void remove_file_archive( const string& name, bool destroy_files )
+void remove_file_archive( const string& name, bool destroy_files, bool remove_directory )
 {
    guard g( g_mutex );
 
@@ -4304,6 +4304,9 @@ void remove_file_archive( const string& name, bool destroy_files )
 
                g_archive_file_info[ name ].remove_file( next );
             }
+
+            if( remove_directory )
+               file_remove( path );
 
             ods_fs.set_root_folder( c_file_archives_folder );
          }

@@ -189,7 +189,9 @@ void CIYAM_BASE_DECL_SPEC add_file_archive(
 
 void CIYAM_BASE_DECL_SPEC clear_file_archive( const std::string& name );
 
-void CIYAM_BASE_DECL_SPEC remove_file_archive( const std::string& name, bool destroy_files = false );
+void CIYAM_BASE_DECL_SPEC remove_file_archive(
+ const std::string& name, bool destroy_files = false, bool remove_directory = false );
+
 void CIYAM_BASE_DECL_SPEC repair_file_archive( const std::string& name );
 
 void CIYAM_BASE_DECL_SPEC archives_status_update( const std::string& name );
