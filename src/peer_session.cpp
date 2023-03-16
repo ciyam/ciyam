@@ -2855,7 +2855,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          chk_file( tag_or_hash, &chk_hash );
 
          if( chk_hash.empty( ) )
+         {
             was_not_found = true;
+            check_for_missing_other_sessions( date_time::local( ) );
+         }
       }
 
       if( !is_local && was_not_found )
