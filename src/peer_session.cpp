@@ -2822,7 +2822,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             if( has_issued_chk )
             {
                if( !has_tree_files )
+               {
+                  check_for_missing_other_sessions( date_time::local( ) );
+
                   set_session_variable( get_special_var_name( e_special_var_blockchain_get_tree_files ), "" );
+               }
                else
                {
                   if( top_next_peer_file_hash_to_get( ).empty( ) )
