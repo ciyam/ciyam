@@ -4255,13 +4255,13 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 }
 
 #ifdef SSL_SUPPORT
-peer_session* construct_session( const date_time& dtm,
- bool is_responder, auto_ptr< ssl_socket >& ap_socket, const string& addr_info,
- bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0 )
+peer_session* construct_session( const date_time& dtm, bool is_responder,
+ auto_ptr< ssl_socket >& ap_socket, const string& addr_info, bool is_for_support = false,
+ peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_unknown )
 #else
-peer_session* construct_session( const date_time& dtm,
- bool is_responder, auto_ptr< tcp_socket >& ap_socket, const string& addr_info,
- bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0 )
+peer_session* construct_session( const date_time& dtm, bool is_responder,
+ auto_ptr< tcp_socket >& ap_socket, const string& addr_info, bool is_for_support = false,
+ peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_unknown )
 #endif
 {
    peer_session* p_session = 0;
@@ -4297,12 +4297,12 @@ peer_session* construct_session( const date_time& dtm,
 
 #ifdef SSL_SUPPORT
 peer_session::peer_session( int64_t time_val,
- bool is_responder, auto_ptr< ssl_socket >& ap_socket,
- const string& addr_info, bool is_for_support, peer_extra extra, const char* p_identity )
+ bool is_responder, auto_ptr< ssl_socket >& ap_socket, const string& addr_info,
+ bool is_for_support, peer_extra extra, const char* p_identity, peerchain_type chain_type )
 #else
 peer_session::peer_session( int64_t time_val,
- bool is_responder, auto_ptr< tcp_socket >& ap_socket,
- const string& addr_info, bool is_for_support, peer_extra extra, const char* p_identity )
+ bool is_responder, auto_ptr< tcp_socket >& ap_socket, const string& addr_info,
+ bool is_for_support, peer_extra extra, const char* p_identity, peerchain_type chain_type )
 #endif
  :
  is_local( false ),
@@ -5169,15 +5169,26 @@ void create_peer_listener( int port, const string& blockchains )
    }
 }
 
-peer_session* create_peer_initiator( const string& blockchain,
- const string& host_and_or_port, bool force, size_t num_for_support,
- bool is_interactive, bool is_secondary, peer_session* p_main_session, bool is_shared, bool is_paired )
+peer_session* create_peer_initiator(
+ const string& blockchain, const string& host_and_or_port, bool force, size_t num_for_support,
+ bool is_interactive, bool is_secondary, peer_session* p_main_session, peerchain_type chain_type )
 {
    if( blockchain.empty( ) )
       throw runtime_error( "create_peer_initiator called with empty blockchain identity" );
 
    if( has_max_peers( ) )
       throw runtime_error( "server has reached its maximum peer limit" );
+
+   bool is_paired = false;
+
+   if( ( chain_type == e_peerchain_type_backup )
+    || ( chain_type == e_peerchain_type_shared ) )
+      is_paired = true;
+
+   bool is_shared = false;
+
+   if( chain_type == e_peerchain_type_shared )
+      is_shared = true;
 
    bool will_have_support = false;
 
@@ -5436,6 +5447,13 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    size_t peer_type = from_string< size_t >( info.substr( pos + 1 ) );
 
+   peerchain_type chain_type = e_peerchain_type_backup;
+
+   if( peer_type == 4 )
+      chain_type = e_peerchain_type_hub;
+   else if( peer_type == 3 )
+      chain_type = e_peerchain_type_shared;
+
    info.erase( pos );
 
    pos = info.find( '=' );
@@ -5463,12 +5481,12 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    // NOTE: First create main sessions for both the local and hosted blockchains (except for peerchain hubs which
    // do not have a paired session).
    peer_session* p_local_main = create_peer_initiator( blockchain, info, false,
-    ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, 0, ( peer_type == 3 ), ( peer_type != 4 ) );
+    ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, 0, chain_type );
 
    if( p_local_main && ( peer_type != 4 ) )
    {
       peer_session* p_hosted_main = create_peer_initiator( blockchain, info, false,
-       ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, ( peer_type == 3 ), true );
+       ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, chain_type );
 
       if( p_hosted_main )
       {
@@ -5476,11 +5494,9 @@ void peer_session_starter::start_peer_session( const string& peer_info )
          // will now create the requested support sessions for them both.
          if( num_for_support )
          {
-            create_peer_initiator( blockchain, info,
-             false, num_for_support, false, false, p_local_main, ( peer_type == 3 ), true );
+            create_peer_initiator( blockchain, info, false, num_for_support, false, false, p_local_main );
 
-            create_peer_initiator( blockchain, info,
-             false, num_for_support, false, true, p_hosted_main, ( peer_type == 3 ), true );
+            create_peer_initiator( blockchain, info, false, num_for_support, false, true, p_hosted_main );
          }
       }
    }
@@ -5494,15 +5510,15 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
       string shared_chain( c_bc_prefix + reversed );
 
-      peer_session* p_local_shared = create_peer_initiator( shared_chain, info,
-       false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, 0, true, true );
+      peer_session* p_local_shared = create_peer_initiator( shared_chain, info, false,
+       ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, 0, e_peerchain_type_shared );
 
       if( p_local_shared )
       {
          p_local_shared->set_backup_identity( identity );
 
-         peer_session* p_hosted_shared = create_peer_initiator( shared_chain, info,
-          false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, true, true );
+         peer_session* p_hosted_shared = create_peer_initiator( shared_chain, info, false,
+          ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, e_peerchain_type_shared );
 
          if( p_hosted_shared )
          {
@@ -5510,11 +5526,9 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
             if( num_for_support )
             {
-               create_peer_initiator( shared_chain, info,
-                false, num_for_support, false, false, p_local_shared, true, true );
+               create_peer_initiator( shared_chain, info, false, num_for_support, false, false, p_local_shared );
 
-               create_peer_initiator( shared_chain, info,
-                false, num_for_support, false, true, p_hosted_shared, true, true );
+               create_peer_initiator( shared_chain, info, false, num_for_support, false, true, p_hosted_shared );
             }
          }
       }
