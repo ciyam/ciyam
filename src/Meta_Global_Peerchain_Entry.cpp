@@ -1503,12 +1503,16 @@ void Meta_Global_Peerchain_Entry::impl::for_destroy( bool is_internal )
 
    if( has_files_area_archive( get_obj( ).Chain_Id( ) ) )
    {
+      set_system_variable( "#" + get_obj( ).Chain_Id( ), "" );
       set_system_variable( "%" + get_obj( ).Chain_Id( ), "" );
+
       remove_files_area_archive( get_obj( ).Chain_Id( ), true, true );
 
       if( has_reversed && has_files_area_archive( reversed ) )
       {
+         set_system_variable( "#" + reversed, "" );
          set_system_variable( "%" + reversed, "" );
+
          remove_files_area_archive( reversed, true, true );
       }
 
