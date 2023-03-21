@@ -1499,13 +1499,13 @@ void Meta_Global_Peerchain_Entry::impl::for_destroy( bool is_internal )
    string reversed( get_obj( ).Chain_Id( ) );
    reverse( reversed.begin( ), reversed.end( ) );
 
+   set_system_variable( "#" + get_obj( ).Chain_Id( ), "" );
+   set_system_variable( "%" + get_obj( ).Chain_Id( ), "" );
+
    bool has_reversed = ( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Hosted );
 
    if( has_files_area_archive( get_obj( ).Chain_Id( ) ) )
    {
-      set_system_variable( "#" + get_obj( ).Chain_Id( ), "" );
-      set_system_variable( "%" + get_obj( ).Chain_Id( ), "" );
-
       remove_files_area_archive( get_obj( ).Chain_Id( ), true, true );
 
       if( has_reversed && has_files_area_archive( reversed ) )
