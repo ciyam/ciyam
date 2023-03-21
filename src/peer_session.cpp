@@ -5494,9 +5494,11 @@ void peer_session_starter::start_peer_session( const string& peer_info )
          // will now create the requested support sessions for them both.
          if( num_for_support )
          {
-            create_peer_initiator( blockchain, info, false, num_for_support, false, false, p_local_main );
+            create_peer_initiator( blockchain, info,
+             false, num_for_support, false, false, p_local_main, chain_type );
 
-            create_peer_initiator( blockchain, info, false, num_for_support, false, true, p_hosted_main );
+            create_peer_initiator( blockchain, info,
+             false, num_for_support, false, true, p_hosted_main, chain_type );
          }
       }
    }
@@ -5526,9 +5528,11 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
             if( num_for_support )
             {
-               create_peer_initiator( shared_chain, info, false, num_for_support, false, false, p_local_shared );
+               create_peer_initiator( shared_chain, info, false,
+                num_for_support, false, false, p_local_shared, e_peerchain_type_shared );
 
-               create_peer_initiator( shared_chain, info, false, num_for_support, false, true, p_hosted_shared );
+               create_peer_initiator( shared_chain, info, false,
+                num_for_support, false, true, p_hosted_shared, e_peerchain_type_shared );
             }
          }
       }
