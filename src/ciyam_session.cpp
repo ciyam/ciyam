@@ -2648,7 +2648,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool type_backup( has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_backup ) );
          bool type_shared( has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_shared ) );
 
-         peerchain_type chain_type = e_peerchain_type_unknown;
+         peerchain_type chain_type = e_peerchain_type_any;
 
          if( type_hub )
             chain_type = e_peerchain_type_hub;

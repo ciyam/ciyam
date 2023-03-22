@@ -36,10 +36,10 @@ enum peer_extra
 
 enum peerchain_type
 {
+   e_peerchain_type_any,
    e_peerchain_type_hub,
    e_peerchain_type_backup,
-   e_peerchain_type_shared,
-   e_peerchain_type_unknown
+   e_peerchain_type_shared
 };
 
 class CIYAM_BASE_DECL_SPEC peer_session : public thread
@@ -48,11 +48,11 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 #  ifdef SSL_SUPPORT
    peer_session( int64_t time_val, bool is_responder,
     std::auto_ptr< ssl_socket >& ap_socket, const std::string& addr_info, bool is_for_support = false,
-   peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_unknown );
+   peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any );
 #  else
    peer_session( int64_t time_val, bool is_responder,
     std::auto_ptr< tcp_socket >& ap_socket, const std::string& addr_info, bool is_for_support = false,
-   peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_unknown );
+   peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any );
 #  endif
 
    ~peer_session( );
@@ -130,7 +130,7 @@ void CIYAM_BASE_DECL_SPEC create_peer_listener( int port, const std::string& blo
 peer_session* CIYAM_BASE_DECL_SPEC create_peer_initiator(
  const std::string& blockchain, const std::string& host_and_or_port,
  bool force = false, size_t num_for_support = 0, bool is_interactive = true,
- bool is_secondary = false, peer_session* p_main_session = 0, peerchain_type chain_type = e_peerchain_type_unknown );
+ bool is_secondary = false, peer_session* p_main_session = 0, peerchain_type chain_type = e_peerchain_type_any );
 
 void CIYAM_BASE_DECL_SPEC create_initial_peer_sessions( );
 
