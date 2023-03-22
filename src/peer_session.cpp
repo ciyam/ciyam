@@ -272,6 +272,61 @@ void parse_peer_mapped_info( const string& peer_mapped_info,
    }
 }
 
+void check_blockchain_type( const string& blockchain, peerchain_type chain_type, string* p_error = 0 )
+{
+   string genesis_tag( blockchain );
+
+   genesis_tag += ".0" + string( c_blk_suffix );
+
+   if( has_tag( genesis_tag ) )
+   {
+      string genesis_hash( tag_file_hash( genesis_tag ) );
+
+      string block_content( construct_blob_for_block_content( extract_file( genesis_hash, "" ) ) );
+
+      verify_core_file( block_content, false );
+
+      string targeted_identity( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
+
+      bool okay = true;
+
+      if( chain_type == e_peerchain_type_any )
+         ; // i.e. do nothing
+      else if( chain_type == e_peerchain_type_hub )
+      {
+         if( targeted_identity != get_special_var_name( e_special_var_peer_hub ) )
+            okay = false;
+      }
+      else if( chain_type == e_peerchain_type_backup )
+      {
+         if( !targeted_identity.empty( ) )
+            okay = false;
+      }
+      else if( chain_type == e_peerchain_type_shared )
+      {
+         if( targeted_identity.empty( ) || ( targeted_identity[ 0 ] == '@' ) )
+            okay = false;
+      }
+      else
+         okay = false;
+
+      string error;
+
+      if( !okay )
+         // FUTURE: This message should be handled as a server string message.
+         error = "Incorrect or unsupported Peer Type.";
+
+      if( !error.empty( ) )
+      {
+         if( p_error )
+            *p_error = error;
+         else
+            throw runtime_error( error );
+      }
+   }
+}
+
 void check_shared_for_support_session( const string& blockchain )
 {
    vector< string > identities;
@@ -4257,11 +4312,11 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 #ifdef SSL_SUPPORT
 peer_session* construct_session( const date_time& dtm, bool is_responder,
  auto_ptr< ssl_socket >& ap_socket, const string& addr_info, bool is_for_support = false,
- peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_unknown )
+ peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any )
 #else
 peer_session* construct_session( const date_time& dtm, bool is_responder,
  auto_ptr< tcp_socket >& ap_socket, const string& addr_info, bool is_for_support = false,
- peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_unknown )
+ peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any )
 #endif
 {
    peer_session* p_session = 0;
@@ -4374,6 +4429,8 @@ peer_session::peer_session( int64_t time_val,
       {
          pid += ':' + blockchain;
 
+         pid += '#' + to_string( ( size_t )chain_type );
+
          if( !identity.empty( ) && ( extra != e_peer_extra_none ) )
             pid += '@' + identity;
       }
@@ -4413,6 +4470,28 @@ peer_session::peer_session( int64_t time_val,
             identity = blockchain.substr( spos + 1 );
 
             blockchain.erase( spos );
+         }
+
+         spos = blockchain.find( '#' );
+
+         if( spos != string::npos )
+         {
+            chain_type = ( peerchain_type )atoi( blockchain.substr( spos + 1 ).c_str( ) );
+
+            blockchain.erase( spos );
+
+            if( chain_type != e_peerchain_type_any )
+            {
+               string error;
+               check_blockchain_type( blockchain, chain_type, &error );
+
+               if( !error.empty( ) )
+               {
+                  this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_request_timeout );
+
+                  throw runtime_error( error );
+               }
+            }
          }
 
          if( !blockchains.count( blockchain ) )
