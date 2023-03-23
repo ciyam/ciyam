@@ -51,7 +51,7 @@
 
 //#define DEBUG
 //#define USE_THROTTLING
-#define DEBUG_PEER_HANDSHAKE
+//#define DEBUG_PEER_HANDSHAKE
 
 using namespace std;
 
@@ -282,12 +282,31 @@ void check_blockchain_type( const string& blockchain, peerchain_type chain_type,
    {
       string genesis_hash( tag_file_hash( genesis_tag ) );
 
-      string block_content( construct_blob_for_block_content( extract_file( genesis_hash, "" ) ) );
+      // NOTE: As this can be called when constructing the peer session
+      // the usual 'verify_core_file' method is not usable (as it would
+      // require the use of session variables).
+      string genesis_info( extract_file( genesis_hash, "" ) );
 
-      verify_core_file( block_content, false );
+      string::size_type pos = genesis_info.find( '\n' );
 
-      string targeted_identity( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
+      if( pos != string::npos )
+         genesis_info.erase( pos );
+
+      string prefix( "," );
+      prefix += string( c_file_type_core_block_header_targeted_ident_prefix );
+
+      bool has_target = false;
+      bool has_hub_target = false;
+
+      if( genesis_info.find( prefix ) != string::npos )
+         has_target = true;
+
+      string hub_prefix( prefix );
+
+      hub_prefix += string( get_special_var_name( e_special_var_peer_hub ) );
+
+      if( genesis_info.find( hub_prefix ) != string::npos )
+         has_hub_target = true;
 
       bool okay = true;
 
@@ -295,17 +314,17 @@ void check_blockchain_type( const string& blockchain, peerchain_type chain_type,
          ; // i.e. do nothing
       else if( chain_type == e_peerchain_type_hub )
       {
-         if( targeted_identity != get_special_var_name( e_special_var_peer_hub ) )
+         if( !has_hub_target )
             okay = false;
       }
       else if( chain_type == e_peerchain_type_backup )
       {
-         if( !targeted_identity.empty( ) )
+         if( has_target )
             okay = false;
       }
       else if( chain_type == e_peerchain_type_shared )
       {
-         if( targeted_identity.empty( ) || ( targeted_identity[ 0 ] == '@' ) )
+         if( !has_target || has_hub_target )
             okay = false;
       }
       else
