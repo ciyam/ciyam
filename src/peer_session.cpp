@@ -4919,8 +4919,11 @@ void peer_session::on_start( )
    {
       issue_error( x.what( ), true );
 
-      ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
-      ap_socket->close( );
+      if( ap_socket->okay( ) )
+      {
+         ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
+         ap_socket->close( );
+      }
 
       if( was_initialised )
       {
@@ -4935,8 +4938,11 @@ void peer_session::on_start( )
    {
       issue_error( "unexpected unknown exception occurred" );
 
-      ap_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred", c_request_timeout );
-      ap_socket->close( );
+      if( ap_socket->okay( ) )
+      {
+         ap_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred", c_request_timeout );
+         ap_socket->close( );
+      }
 
       if( was_initialised )
       {
