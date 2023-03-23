@@ -51,7 +51,7 @@
 
 //#define DEBUG
 //#define USE_THROTTLING
-//#define DEBUG_PEER_HANDSHAKE
+#define DEBUG_PEER_HANDSHAKE
 
 using namespace std;
 
@@ -4343,7 +4343,7 @@ peer_session* construct_session( const date_time& dtm, bool is_responder,
     || addr_info.substr( 0, pos ) == c_local_ip_addr
     || addr_info.substr( 0, pos ) == c_local_ip_addr_for_ipv6 )
       p_session = new peer_session( unix_time( dtm ),
-       is_responder, ap_socket, addr_info, is_for_support, extra, p_identity );
+       is_responder, ap_socket, addr_info, is_for_support, extra, p_identity, chain_type );
 
    return p_session;
 }
@@ -5378,7 +5378,7 @@ peer_session* create_peer_initiator(
             }
 
             peer_session* p_session = construct_session( dtm, false, ap_socket,
-             ip_addr + "=" + session_blockchain + ":" + to_string( port ), p_main_session, extra, p_identity );
+             ip_addr + "=" + session_blockchain + ":" + to_string( port ), p_main_session, extra, p_identity, chain_type );
 
             if( !p_session )
                break;

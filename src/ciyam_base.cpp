@@ -6269,25 +6269,36 @@ session_file_buffer_access::session_file_buffer_access( )
  size( 0 ),
  p_buffer( 0 )
 {
-   if( !gtp_session || gtp_session->buffer_is_locked )
+   if( gtp_session && gtp_session->buffer_is_locked )
       throw runtime_error( "unable to access session buffer" );
 
    unsigned int bufsize = get_files_area_item_max_size( ) * c_max_file_buffer_expansion;
 
-   if( gtp_session->ap_buffer.get( ) )
-      memset( gtp_session->ap_buffer.get( ), 0, bufsize );
+   // NOTE: If is not a session then will simply allocate a buffer
+   // (which might be necessary when constructing session objects).
+   if( !gtp_session )
+      p_buffer = new unsigned char[ bufsize ];
    else
-      gtp_session->ap_buffer.reset( new unsigned char[ bufsize ] );
+   {
+      if( gtp_session->ap_buffer.get( ) )
+         memset( gtp_session->ap_buffer.get( ), 0, bufsize );
+      else
+         gtp_session->ap_buffer.reset( new unsigned char[ bufsize ] );
 
-   gtp_session->buffer_is_locked = true;
+      gtp_session->buffer_is_locked = true;
+
+      p_buffer = gtp_session->ap_buffer.get( );
+   }
 
    size = bufsize;
-   p_buffer = gtp_session->ap_buffer.get( );
 }
 
 session_file_buffer_access::~session_file_buffer_access( )
 {
-   gtp_session->buffer_is_locked = false;
+   if( !gtp_session )
+      delete p_buffer;
+   else
+      gtp_session->buffer_is_locked = false;
 }
 
 void session_file_buffer_access::copy_to_string( string& str, size_t offset, size_t length ) const
