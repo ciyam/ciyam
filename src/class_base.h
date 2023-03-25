@@ -1515,7 +1515,7 @@ std::string CIYAM_BASE_DECL_SPEC create_html_embedded_image(
  const std::string& source_file, bool is_encrypted = false );
 
 std::string CIYAM_BASE_DECL_SPEC crypto_digest( const std::string& data,
- bool use_sha512 = false, bool decode_hex_data = false, size_t extra_rounds = 0 );
+ bool use_sha512 = false, bool decode_hex_data = false, size_t extra_rounds = 0, const std::string* p_update = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC crypto_checksum( const std::string& hashes );
 

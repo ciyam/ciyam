@@ -4976,7 +4976,7 @@ string create_html_embedded_image( const string& source_file, bool is_encrypted 
 }
 
 string crypto_digest( const string& data,
- bool use_sha512, bool decode_hex_data, size_t extra_rounds )
+ bool use_sha512, bool decode_hex_data, size_t extra_rounds, const string* p_update )
 {
    string retval;
 
@@ -4985,6 +4985,10 @@ string crypto_digest( const string& data,
       if( !use_sha512 )
       {
          sha256 hash( data );
+
+         if( p_update )
+            hash.update( *p_update );
+
          retval = hash.get_digest_as_string( );
 
          for( size_t i = 0; i < extra_rounds; i++ )
@@ -4996,6 +5000,10 @@ string crypto_digest( const string& data,
       else
       {
          sha512 hash( data );
+
+         if( p_update )
+            hash.update( *p_update );
+
          retval = hash.get_digest_as_string( );
 
          for( size_t i = 0; i < extra_rounds; i++ )
@@ -5013,6 +5021,10 @@ string crypto_digest( const string& data,
       if( !use_sha512 )
       {
          sha256 hash( &buffer[ 0 ], buffer.size( ) );
+
+         if( p_update )
+            hash.update( *p_update );
+
          retval = hash.get_digest_as_string( );
 
          for( size_t i = 0; i < extra_rounds; i++ )
@@ -5024,6 +5036,10 @@ string crypto_digest( const string& data,
       else
       {
          sha512 hash( &buffer[ 0 ], buffer.size( ) );
+
+         if( p_update )
+            hash.update( *p_update );
+
          retval = hash.get_digest_as_string( );
 
          for( size_t i = 0; i < extra_rounds; i++ )
