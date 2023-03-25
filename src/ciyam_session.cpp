@@ -1416,6 +1416,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool data_from_file( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_from_file ) );
          string data_or_filename( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_or_filename ) );
          string data_suffix_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_suffix_text ) );
+         string data_update_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_update_text ) );
 
          string data;
          data.reserve( c_secret_reserve_size );
@@ -1435,7 +1436,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
          {
             data += data_suffix_text;
-            response = crypto_digest( data, use_sha512, hex_decode, from_string< size_t >( extra_rounds ) );
+
+            string* p_update = 0;
+
+            if( !data_update_text.empty( ) )
+               p_update = &data_update_text;
+
+            response = crypto_digest( data, use_sha512, hex_decode, from_string< size_t >( extra_rounds ), p_update );
          }
 
          if( !data_from_file )

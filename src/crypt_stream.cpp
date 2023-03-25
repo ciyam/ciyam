@@ -26,6 +26,7 @@
 #include "base32.h"
 #include "base64.h"
 #include "sha256.h"
+#include "sha512.h"
 #include "utilities.h"
 
 #ifdef SSL_SUPPORT
@@ -67,6 +68,7 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length )
    memset( key, '\0', c_max_key_size );
 
    io.seekg( 0, ios::end );
+
    size_t length = ( size_t )io.tellg( );
 
    io.seekg( 0, ios::beg );
@@ -74,10 +76,12 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length )
    memcpy( key, p_key, key_length );
 
    unsigned char datkey = 0;
+
    for( size_t i = 0; i < key_length; i++ )
       datkey += key[ i ];
 
    size_t buflen = c_file_buf_size;
+
    for( size_t pos = 0; pos < length; pos += buflen )
    {
       if( length - pos < c_file_buf_size )
@@ -90,6 +94,7 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length )
       io.read( ( char* )buf, buflen );
 
       unsigned char ch;
+
       for( size_t offset = 0; offset < buflen; offset++ )
       {
          ch = buf[ offset ];
@@ -117,6 +122,75 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length )
 
    memset( buf, '\0', c_file_buf_size );
    memset( key, '\0', c_max_key_size );
+}
+
+// NOTE: This stream cypher uses two SHA512 "hash chains" each being first
+// initialised with the key and then updated with a different constant for
+// each chain. Encryption is simple XOR with both digests which are simply
+// updated with the previous digest after using every byte of the digests.
+// This is significantly slower than the algorithm above and the length of
+// the key will again determine the strength of the cypher.
+void dh_crypt_stream( iostream& io, const char* p_key, size_t key_length )
+{
+   unsigned char buf[ c_file_buf_size ];
+
+   unsigned char buf1[ c_sha512_digest_size ];
+   unsigned char buf2[ c_sha512_digest_size ];
+
+   io.seekg( 0, ios::end );
+
+   size_t length = ( size_t )io.tellg( );
+
+   io.seekg( 0, ios::beg );
+
+   sha512 hash1( ( const unsigned char* )p_key, key_length );
+   sha512 hash2( ( const unsigned char* )p_key, key_length );
+
+   // NOTE: Update the two hash chains with different values
+   // (after being initialised with the key) so XORing works
+   // using a pseudo random stream of byte values.
+   hash1.update( ( const unsigned char* )"123", 3 );
+   hash2.update( ( const unsigned char* )"xyz", 3 );
+
+   size_t buflen = c_file_buf_size;
+
+   for( size_t pos = 0; pos < length; pos += buflen )
+   {
+      if( length - pos < c_file_buf_size )
+         buflen = length - pos;
+
+      io.seekg( pos, ios::beg );
+      io.read( ( char* )buf, buflen );
+
+      unsigned char ch;
+
+      for( size_t offset = 0; offset < buflen; offset++ )
+      {
+         ch = buf[ offset ];
+
+         if( ( offset % c_sha512_digest_size ) == 0 )
+         {
+            hash1.copy_digest_to_buffer( buf1 );
+            hash2.copy_digest_to_buffer( buf2 );
+
+            hash1.update( buf1, c_sha512_digest_size );
+            hash2.update( buf2, c_sha512_digest_size );
+         }
+
+         ch ^= buf1[ offset % c_sha512_digest_size ];
+         ch ^= buf2[ offset % c_sha512_digest_size ];
+
+         buf[ offset ] = ch;
+      }
+
+      io.seekg( pos, ios::beg );
+      io.write( ( char* )buf, buflen );
+   }
+
+   memset( buf, '\0', c_file_buf_size );
+
+   memset( buf1, '\0', c_sha512_digest_size );
+   memset( buf2, '\0', c_sha512_digest_size );
 }
 
 #ifdef SSL_SUPPORT
