@@ -18,12 +18,12 @@ Format
 
 Type           Prefixes    Example
 ----           --------    -------
-const          c_          const char c_ch;
-enum           e_          enum etype e_etype_one;
+const          c_          const char c_pipe = '|';
+enum           e_          enum etype { e_etype_a, e_etype_b };
 
-globals        g_          char g_ch;
+global         g_          int g_port;
 thread         gt_         static TLS( session )* gtp_session;
- (these next prefixes can also be suffixes to the previous)
+ (these next prefixes can also be combined with the previous)
 pointer        p_          char* p_ch;
 auto pointer   ap_         auto_ptr< char > ap_char;
 ref count ptr  rp_         ref_count_ptr< private_key > rp_private_key;
@@ -115,7 +115,7 @@ export_data( outs, module, all_field_data[ i ].class_id,
  all_class_ids, excludes, tests, includes, exported_records, exported_children,
  next_pass, will_be_exported, partial_export, rounds, current_round, future_rounds, ts, total );
 
-Lines continuation is encouraged for readability and lines should usually not exceed 109 characters in length
+Lines continuation is encouraged for readability and lines should usually not exceed 135 characters in length
 (in generated code lines of up to 200 characters are acceptable).
 
 try, to, keep,
@@ -151,11 +151,6 @@ is in the following form using the type of file's applicable single line comment
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-//
-// Task #T99999 - Task Description in CIYAM Open
-
-The last two comment lines are applicable only if new files are created for a task (and please don't put your
-name or initials in any file being committed as commits will not be merged until they have all been removed).
 
 Apart from special cases in generated code comments should start with a "comment type" label (making it clear
 *why* the comment has been added) which must be one of the following:
@@ -208,20 +203,20 @@ Macros
 
 #include "header_for_this_cpp_file.h"
 
-#include "local_headers_last.h"
-#include "order_smallest_to_largest_and_then_alphabeticaly.h"
+#include "local_headers_next.h"
+#include "order_shortest_to_longest_and_then_alphabeticaly.h"
 
 Class
 -----
 
-Member access order should be public, private then protected. 
-Data declrations first and methods after.
+Member access order should be public, private then protected. Data declarations first and methods after.
 
 class class_name
 {
    public:
    class_name( );
    class_name( data_t data );
+
    virtual ~class_name( );
    ...
 
@@ -278,9 +273,9 @@ string Meta_Workgroup::static_get_sql_columns( )
    string sql_columns;
 
    sql_columns +=
-    "C_Key_ VARCHAR(64),"
-    "C_Ver_ INTEGER NOT NULL,"
-    "C_Rev_ INTEGER NOT NULL,"
+    "C_Key_ VARCHAR(75),"
+    "C_Ver_ SMALLINT UNSIGNED NOT NULL,"
+    "C_Rev_ BIGINT UNSIGNED NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Id VARCHAR(200) NOT NULL,"
     "C_Name VARCHAR(200) NOT NULL,"
@@ -288,7 +283,7 @@ string Meta_Workgroup::static_get_sql_columns( )
     "C_Next_Model_Id VARCHAR(200) NOT NULL,"
     "C_Next_Permission_Id VARCHAR(200) NOT NULL,"
     "C_Next_Type_Id VARCHAR(200) NOT NULL,"
-    "C_Standard_Package VARCHAR(64) NOT NULL,"
+    "C_Standard_Package VARCHAR(75) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

@@ -190,11 +190,13 @@ const char* const c_special_variable_blockchain_backup_identity = "@blockchain_b
 const char* const c_special_variable_blockchain_block_file_hash = "@blockchain_block_file_hash";
 const char* const c_special_variable_blockchain_both_are_owners = "@blockchain_both_are_owners";
 const char* const c_special_variable_blockchain_shared_identity = "@blockchain_shared_identity";
+const char* const c_special_variable_blockchain_waiting_for_hub = "@blockchain_waiting_for_hub";
 const char* const c_special_variable_blockchain_block_processing = "@blockchain_block_processing";
 const char* const c_special_variable_blockchain_zenith_tree_hash = "@blockchain_zenith_tree_hash";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 const char* const c_special_variable_totals_exclude_hidden_blobs = "@totals_exclude_hidden_blobs";
 const char* const c_special_variable_blockchain_height_processing = "@blockchain_height_processing";
+const char* const c_special_variable_blockchain_peer_hub_identity = "@blockchain_peer_hub_identity";
 const char* const c_special_variable_blockchain_targeted_identity = "@blockchain_targeted_identity";
 const char* const c_special_variable_blockchain_peer_has_supporters = "@blockchain_peer_has_supporters";
 const char* const c_special_variable_blockchain_primary_pubkey_hash = "@blockchain_primary_pubkey_hash";
@@ -799,6 +801,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_blockchain_shared_identity );
       break;
 
+      case e_special_var_blockchain_waiting_for_hub:
+      s = string( c_special_variable_blockchain_waiting_for_hub );
+      break;
+
       case e_special_var_blockchain_block_processing:
       s = string( c_special_variable_blockchain_block_processing );
       break;
@@ -817,6 +823,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_height_processing:
       s = string( c_special_variable_blockchain_height_processing );
+      break;
+
+      case e_special_var_blockchain_peer_hub_identity:
+      s = string( c_special_variable_blockchain_peer_hub_identity );
       break;
 
       case e_special_var_blockchain_targeted_identity:
