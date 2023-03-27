@@ -84,6 +84,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    std::string identity;
 
    std::string blockchain;
+   std::string hub_identity;
    std::string backup_identity;
 
 #  ifdef SSL_SUPPORT

@@ -217,7 +217,7 @@ void output_synchronised_progress_message(
    bool is_backup = ( identity == backup_identity );
    bool is_shared = ( identity == shared_identity );
 
-   // FUTURE: This message should be handled as server string messages.
+   // FUTURE: This message should be handled as a server string message.
    progress_message = "Currently at height ";
 
    if( is_backup || is_shared )
@@ -1885,6 +1885,9 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
+   string hub_identity( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
+
    string block_content(
     construct_blob_for_block_content( extract_file( hash, "" ) ) );
 
@@ -2006,7 +2009,26 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
          if( !has_file( tree_root_hash ) )
          {
             if( is_fetching && peer_has_tree_items )
-               add_peer_file_hash_for_get( tree_root_hash );
+            {
+               bool fetch_tree_root = true;
+
+               if( !hub_identity.empty( ) )
+               {
+                  fetch_tree_root = false;
+
+                  set_session_variable(
+                   get_special_var_name( e_special_var_blockchain_waiting_for_hub ), c_true_value );
+
+                  // FUTURE: This message should be handled as a server string message.
+                  string progress_message( "Waiting for hub " + hub_identity + "..." );
+
+                  set_session_progress_output( progress_message );
+                  set_system_variable( c_progress_output_prefix + identity, progress_message );
+               }
+
+               if( fetch_tree_root )
+                  add_peer_file_hash_for_get( tree_root_hash );
+            }
          }
          else
          {
@@ -2751,6 +2773,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       bool was_not_found = false;
       bool has_issued_chk = false;
 
+      bool is_waiting_for_hub = !get_session_variable(
+       get_special_var_name( e_special_var_blockchain_waiting_for_hub ) ).empty( );
+
       if( !is_for_support && !blockchain.empty( ) )
       {
          string genesis_block_tag( blockchain + ".0" + string( c_blk_suffix ) );
@@ -2766,7 +2791,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             if( !genesis_block_hash.empty( ) )
                add_peer_file_hash_for_get( genesis_block_hash );
          }
-         else
+         else if( !is_waiting_for_hub )
          {
             // NOTE: Check whether a new block has been created either locally or remotely.
             string next_block_tag( blockchain
@@ -2795,7 +2820,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                   if( current_zenith_height > blockchain_height )
                   {
-                     blockchain_height = ++blockchain_height_pending;
+                     blockchain_height = blockchain_height_pending = current_zenith_height;
 
                      set_session_variable( blockchain_is_fetching_name, "" );
                      set_session_variable( blockchain_block_processing_name, "" );
@@ -2922,7 +2947,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       {
          string tag_or_hash( prior_file( ) );
 
-         if( tag_or_hash.empty( ) )
+         if( tag_or_hash.empty( ) || is_waiting_for_hub )
             tag_or_hash = blockchain + c_dummy_suffix;
 
          string chk_hash;
@@ -3449,6 +3474,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    bool is_owner = !get_session_variable(
     get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
 
+   bool other_is_owner = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_other_is_owner ) ).empty( );
+
    if( !get_session_variable( blockchain_zenith_height_name ).empty( ) )
       had_zenith_hash = true;
 
@@ -3760,7 +3788,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                         if( !has_all_tree_items )
                            num_items_found = 0;
-                        else
+                        else if( other_is_owner || get_system_variable(
+                         get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ).empty( ) )
                         {
                            for( size_t i = 0; i < hex_encoded_hashes.size( ); i++ )
                               add_peer_file_hash_for_put( hex_encoded_hashes[ i ] );
@@ -4452,6 +4481,15 @@ peer_session::peer_session( int64_t time_val,
 
          if( !identity.empty( ) && ( extra != e_peer_extra_none ) )
             pid += '@' + identity;
+
+         if( chain_type == e_peerchain_type_backup )
+         {
+            string hub_identity( get_system_variable(
+             get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
+
+            if( !hub_identity.empty( ) )
+               pid += '&' + hub_identity;
+         }
       }
 
       if( is_owner && !is_for_support )
@@ -4471,6 +4509,14 @@ peer_session::peer_session( int64_t time_val,
       {
          pid.erase( pos );
          other_is_owner = true;
+      }
+
+      pos = pid.find( '&' );
+
+      if( pos != string::npos )
+      {
+         hub_identity = pid.substr( pos + 1 );
+         pid.erase( pos );
       }
 
       pos = pid.find( ':' );
@@ -4775,6 +4821,9 @@ void peer_session::on_start( )
 
       if( has_support_sessions )
          set_session_variable( get_special_var_name( e_special_var_blockchain_peer_has_supporters ), c_true_value );
+
+      if( !hub_identity.empty( ) )
+         set_session_variable( get_special_var_name( e_special_var_blockchain_peer_hub_identity ), hub_identity );
 
       if( !backup_identity.empty( ) )
          set_session_variable( get_special_var_name( e_special_var_blockchain_backup_identity ), backup_identity );
