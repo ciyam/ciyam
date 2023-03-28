@@ -272,6 +272,55 @@ void parse_peer_mapped_info( const string& peer_mapped_info,
    }
 }
 
+peerchain_type get_blockchain_type( const string& blockchain )
+{
+   peerchain_type chain_type = e_peerchain_type_any;
+
+   string genesis_tag( blockchain );
+
+   genesis_tag += ".0" + string( c_blk_suffix );
+
+   if( has_tag( genesis_tag ) )
+   {
+      string genesis_hash( tag_file_hash( genesis_tag ) );
+
+      // NOTE: As this can be called when constructing the peer session
+      // the usual 'verify_core_file' method is not usable (as it would
+      // require the use of session variables).
+      string genesis_info( extract_file( genesis_hash, "" ) );
+
+      string::size_type pos = genesis_info.find( '\n' );
+
+      if( pos != string::npos )
+         genesis_info.erase( pos );
+
+      string prefix( "," );
+      prefix += string( c_file_type_core_block_header_targeted_ident_prefix );
+
+      bool has_target = false;
+      bool has_hub_target = false;
+
+      if( genesis_info.find( prefix ) != string::npos )
+         has_target = true;
+
+      string hub_prefix( prefix );
+
+      hub_prefix += string( get_special_var_name( e_special_var_peer_hub ) );
+
+      if( genesis_info.find( hub_prefix ) != string::npos )
+         has_hub_target = true;
+
+      if( has_hub_target )
+         chain_type = e_peerchain_type_hub;
+      else if( !has_target )
+         chain_type = e_peerchain_type_backup;
+      else
+         chain_type = e_peerchain_type_shared;
+   }
+
+   return chain_type;
+}
+
 void check_blockchain_type( const string& blockchain, peerchain_type chain_type, string* p_error = 0 )
 {
    string genesis_tag( blockchain );
@@ -1244,6 +1293,7 @@ void process_list_items( const string& identity,
       has_archive = true;
 
    string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
+   string blockchain_is_checking_name( get_special_var_name( e_special_var_blockchain_is_checking ) );
    string blockchain_is_fetching_name( get_special_var_name( e_special_var_blockchain_is_fetching ) );
    string blockchain_first_mapped_name( get_special_var_name( e_special_var_blockchain_first_mapped ) );
    string blockchain_other_is_owner_name( get_special_var_name( e_special_var_blockchain_other_is_owner ) );
@@ -1259,6 +1309,7 @@ void process_list_items( const string& identity,
    }
 
    bool is_owner = !get_session_variable( blockchain_is_owner_name ).empty( );
+   bool is_checking = !get_session_variable( blockchain_is_checking_name ).empty( );
    bool is_fetching = !get_session_variable( blockchain_is_fetching_name ).empty( );
    bool is_other_owner = !get_session_variable( blockchain_other_is_owner_name ).empty( );
 
@@ -1331,7 +1382,10 @@ void process_list_items( const string& identity,
             {
                if( is_fetching )
                {
-                  progress = "Checking items";
+                  if( !is_checking )
+                     progress = "Synchronising";
+                  else
+                     progress = "Checking items";
 
                   if( !blockchain_height_processing.empty( ) )
                      progress += " at height " + blockchain_height_processing;
@@ -1378,7 +1432,7 @@ void process_list_items( const string& identity,
                   string progress_message;
 
                   // FUTURE: These messages should be handled as a server string messages.
-                  if( is_peer_responder )
+                  if( !is_checking )
                      progress_message = "Synchronising at height ";
                   else
                      progress_message = "Checking items at height ";
@@ -2840,6 +2894,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                      blockchain_height_pending = blockchain_height + 1;
 
+                     temporary_session_variable temp_is_checking(
+                      get_special_var_name( e_special_var_blockchain_is_checking ), c_true_value );
+
                      set_session_variable( blockchain_is_fetching_name, c_true_value );
                      set_session_variable( blockchain_block_processing_name, next_block_hash );
                      set_session_variable( blockchain_height_processing_name, to_string( blockchain_height_pending ) );
@@ -2874,9 +2931,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         // be fetched (so that pull requests are commenced at the right point).
                         if( !file_hash.empty( ) && ( file_hash.find( ':' ) == string::npos ) )
                            next_block_tag += string( " " ) + '@' + file_hash;
-
-                        temporary_session_variable temp_is_checking(
-                         get_special_var_name( e_special_var_blockchain_is_checking ), c_true_value );
 
                         has_tree_files = chk_file( next_block_tag, &next_block_hash );
 
@@ -4481,15 +4535,6 @@ peer_session::peer_session( int64_t time_val,
 
          if( !identity.empty( ) && ( extra != e_peer_extra_none ) )
             pid += '@' + identity;
-
-         if( chain_type == e_peerchain_type_backup )
-         {
-            string hub_identity( get_system_variable(
-             get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
-
-            if( !hub_identity.empty( ) )
-               pid += '&' + hub_identity;
-         }
       }
 
       if( is_owner && !is_for_support )
@@ -4509,14 +4554,6 @@ peer_session::peer_session( int64_t time_val,
       {
          pid.erase( pos );
          other_is_owner = true;
-      }
-
-      pos = pid.find( '&' );
-
-      if( pos != string::npos )
-      {
-         hub_identity = pid.substr( pos + 1 );
-         pid.erase( pos );
       }
 
       pos = pid.find( ':' );
@@ -4643,6 +4680,17 @@ void peer_session::on_start( )
       {
          string extra( to_string( get_files_area_item_max_size( ) ) );
 
+         peerchain_type chain_type = get_blockchain_type( blockchain );
+
+         if( chain_type == e_peerchain_type_backup )
+         {
+            string hub_identity( get_system_variable(
+             get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
+
+            if( !hub_identity.empty( ) )
+               extra += '&' + hub_identity;
+         }
+
          if( is_owner )
             extra += '!';
 
@@ -4728,6 +4776,14 @@ void peer_session::on_start( )
 
                if( is_owner )
                   both_are_owners = true;
+            }
+
+            pos = ver_info.extra.find( '&' );
+
+            if( pos != string::npos )
+            {
+               hub_identity = ver_info.extra.substr( pos + 1 );
+               ver_info.extra.erase( pos );
             }
 
             if( from_string< size_t >( ver_info.extra ) != get_files_area_item_max_size( ) )
