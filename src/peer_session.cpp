@@ -2815,9 +2815,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    string block_processing( get_session_variable( blockchain_block_processing_name ) );
 
+   bool is_waiting_for_hub = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_waiting_for_hub ) ).empty( );
+
    bool set_new_zenith = false;
 
-   if( !block_processing.empty( ) && next_hash_to_get.empty( ) && !any_supporter_has )
+   if( !any_supporter_has && !is_waiting_for_hub
+    && !block_processing.empty( ) && next_hash_to_get.empty( ) )
       set_new_zenith = true;
 
    bool no_top_hash = ( next_hash_to_get.empty( ) && next_hash_to_put.empty( ) );
@@ -2826,9 +2830,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    {
       bool was_not_found = false;
       bool has_issued_chk = false;
-
-      bool is_waiting_for_hub = !get_session_variable(
-       get_special_var_name( e_special_var_blockchain_waiting_for_hub ) ).empty( );
 
       if( !is_for_support && !blockchain.empty( ) )
       {
@@ -3834,6 +3835,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         bool is_fetching = !get_session_variable(
                          get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
 
+                        bool is_peerchain_hub = !get_system_variable(
+                         get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ).empty( );
+
                         // NOTE: If height matches the current zenith then skip checking for all items.
                         bool has_all_tree_items = ( socket_handler.get_blockchain_height( ) == blockchain_height );
 
@@ -3842,8 +3846,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                         if( !has_all_tree_items )
                            num_items_found = 0;
-                        else if( other_is_owner || get_system_variable(
-                         get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ).empty( ) )
+                        else if( !is_peerchain_hub )
                         {
                            for( size_t i = 0; i < hex_encoded_hashes.size( ); i++ )
                               add_peer_file_hash_for_put( hex_encoded_hashes[ i ] );
