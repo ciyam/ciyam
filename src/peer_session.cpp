@@ -2905,6 +2905,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      process_block_for_height( blockchain,
                       next_block_hash, blockchain_height_pending, list_items_to_ignore, &num_items_found, this );
 
+                     // NOTE: This session variable may have been set via the call above so recheck it now.
+                     is_waiting_for_hub = !get_session_variable(
+                      get_special_var_name( e_special_var_blockchain_waiting_for_hub ) ).empty( );
+
                      string first_mapped( get_session_variable( blockchain_first_mapped_name ) );
                      set_session_variable( blockchain_first_mapped_name, "" );
 
@@ -2988,7 +2992,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      string tree_root_hash( get_session_variable(
                       get_special_var_name( e_special_var_blockchain_zenith_tree_hash ) ) );
 
-                     if( !tree_root_hash.empty( ) )
+                     if( !is_waiting_for_hub && !tree_root_hash.empty( ) )
                         add_peer_file_hash_for_get( tree_root_hash );
                   }
 
