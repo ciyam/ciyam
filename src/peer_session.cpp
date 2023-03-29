@@ -2062,7 +2062,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 
          if( !has_file( tree_root_hash ) )
          {
-            if( is_fetching && peer_has_tree_items )
+            if( is_fetching )
             {
                bool fetch_tree_root = true;
 
@@ -2080,7 +2080,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                   set_system_variable( c_progress_output_prefix + identity, progress_message );
                }
 
-               if( fetch_tree_root )
+               if( fetch_tree_root && peer_has_tree_items )
                   add_peer_file_hash_for_get( tree_root_hash );
             }
          }
@@ -2984,6 +2984,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                   check_for_missing_other_sessions( date_time::local( ) );
 
                   set_session_variable( get_special_var_name( e_special_var_blockchain_get_tree_files ), "" );
+                  set_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ), "" );
                }
                else
                {
