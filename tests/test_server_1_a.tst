@@ -342,6 +342,24 @@ crypto_hash -x=9 hello -s=5
 ade14a0f9610a7cea12f1b549679e96fb51f21d7a305c902eb3d142643607a19
 session_variable test (okay)
 Error: invalid value '(okay)' (could be confused with a protocol response)
+session_variable test
+session_variable test @increment
+session_variable test
+1
+session_variable test @increment
+session_variable test
+2
+session_variable test @increment
+session_variable test
+3
+session_variable test @decrement
+session_variable test
+2
+session_variable test @decrement
+session_variable test
+1
+session_variable test @decrement
+session_variable test
 session_variable @set aaa
 session_variable @set aaa
 aaa

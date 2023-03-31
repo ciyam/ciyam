@@ -178,6 +178,7 @@ const char* const c_special_variable_blockchain_archive_path = "@blockchain_arch
 const char* const c_special_variable_blockchain_first_mapped = "@blockchain_first_mapped";
 const char* const c_special_variable_blockchain_op_list_hash = "@blockchain_op_list_hash";
 const char* const c_special_variable_blockchain_backup_height = "@blockchain_backup_height";
+const char* const c_special_variable_blockchain_put_list_hash = "@blockchain_put_list_hash";
 const char* const c_special_variable_blockchain_shared_height = "@blockchain_shared_height";
 const char* const c_special_variable_blockchain_zenith_height = "@blockchain_zenith_height";
 const char* const c_special_variable_blockchain_checked_shared = "@blockchain_checked_shared";
@@ -751,6 +752,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_backup_height:
       s = string( c_special_variable_blockchain_backup_height );
+      break;
+
+      case e_special_var_blockchain_put_list_hash:
+      s = string( c_special_variable_blockchain_put_list_hash );
       break;
 
       case e_special_var_blockchain_shared_height:

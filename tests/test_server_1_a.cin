@@ -402,6 +402,19 @@ crypto_hash -x=9 hello -s=4
 crypto_hash -x=9 hello -s=5
 ;
 session_variable test (okay)
+session_variable test
+session_variable test @increment
+session_variable test
+session_variable test @increment
+session_variable test
+session_variable test @increment
+session_variable test
+session_variable test @decrement
+session_variable test
+session_variable test @decrement
+session_variable test
+session_variable test @decrement
+session_variable test
 session_variable @set aaa
 session_variable @set aaa
 session_variable @set bbb
