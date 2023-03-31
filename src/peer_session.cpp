@@ -795,6 +795,114 @@ void check_for_missing_other_sessions( const date_time& now )
    }
 }
 
+bool get_block_height_from_tags( const string& blockchain, const string& hash, size_t& block_height )
+{
+   string all_tags( get_hash_tags( hash ) );
+
+   vector< string > tags;
+
+   if( !all_tags.empty( ) )
+      split( all_tags, tags, '\n' );
+
+   bool found = false;
+
+   for( size_t i = 0; i < tags.size( ); i++ )
+   {
+      string next_tag( tags[ i ] );
+
+      string::size_type pos = next_tag.find( blockchain );
+      string::size_type spos = next_tag.find( c_blk_suffix );
+
+      // NOTE: Determine the block height from its block tag.
+      if( pos == 0 && spos != string::npos )
+      {
+         found = true;
+
+         next_tag.erase( spos );
+
+         block_height = from_string< size_t >( next_tag.substr( blockchain.length( ) + 1 ) );
+
+         break;
+      }
+   }
+
+   return found;
+}
+
+bool add_put_list_if_available( const string& hub_identity, const string& blockchain, size_t blockchain_height )
+{
+   string hub_blockchain( c_bc_prefix + hub_identity );
+   string hub_zenith_tag( hub_blockchain + c_zenith_suffix );
+
+   bool found = false;
+
+   if( has_tag( hub_zenith_tag ) )
+   {
+      string hub_zenith_hash( tag_file_hash( hub_zenith_tag ) );
+
+      size_t hub_height = 0;
+
+      if( get_block_height_from_tags( hub_blockchain, hub_zenith_hash, hub_height ) )
+      {
+         string hub_opl_tag( hub_blockchain + '.' + to_string( hub_height ) + c_opl_suffix );
+
+         if( has_tag( hub_opl_tag ) )
+         {
+            string hub_opl_hash( tag_file_hash( hub_opl_tag ) );
+
+            string hub_opl_info( extract_file( hub_opl_hash, "" ) );
+
+            vector< string > lines;
+            split( hub_opl_info, lines, '\n' );
+
+            for( size_t i = 0; i < lines.size( ); i++ )
+            {
+               string next_line( lines[ i ] );
+
+               if( next_line.find( blockchain ) == 0 )
+               {
+                  next_line.erase( 0, blockchain.length( ) + 1 );
+
+                  string::size_type pos = next_line.find( ' ' );
+
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected opl line " + lines[ i ] );
+
+                  string encoded_hash( next_line.substr( pos + 1 ) );
+                  next_line.erase( pos );
+
+                  pos = next_line.find( c_put_suffix );
+
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected opl line " + lines[ i ] );
+
+                  next_line.erase( pos );
+
+                  size_t put_height = from_string< size_t >( next_line );
+
+                  if( put_height >= blockchain_height )
+                  {
+                     found = true;
+
+                     if( put_height == blockchain_height )
+                     {
+                        string put_file_hash( hex_encode( base64::decode( encoded_hash ) ) );
+
+                        add_peer_file_hash_for_get( put_file_hash );
+                        set_session_variable( get_special_var_name( e_special_var_blockchain_put_list_hash ), put_file_hash );
+                     }
+                  }
+
+                  break;
+               }
+            }
+         }
+      }
+   }
+
+   return found;
+}
+
 void process_put_file( const string& blockchain,
  const string& file_data, bool check_for_supporters, bool is_test_session,
  set< string >& target_hashes, date_time* p_dtm = 0, progress* p_progress = 0 )
@@ -1664,6 +1772,21 @@ void process_op_list_file( const string& blockchain, const string& hash, size_t 
    tag_file( op_list_tag, hash );
 }
 
+void process_put_list_file( const string& blockchain, const string& hash, size_t height )
+{
+   guard g( g_mutex, "process_put_list_file" );
+
+   string put_list_tag( blockchain );
+
+   put_list_tag += ".";
+
+   put_list_tag += to_string( height );
+
+   put_list_tag += c_put_suffix;
+
+   tag_file( put_list_tag, hash );
+}
+
 void process_public_key_file( const string& blockchain,
  const string& hash, size_t height, public_key_scale key_scale, size_t height_other = 0 )
 {
@@ -1857,6 +1980,40 @@ void validate_op_list_file( const string& file_data )
 
       if( is_invalid )
          throw runtime_error( "unexpected invalid op list line: " + next_line );
+   }
+}
+
+void validate_put_list_file( const string& file_data )
+{
+   if( file_data.empty( ) )
+      throw runtime_error( "unexpected empty file data in 'validate_put_list_file'" );
+
+   string content( file_data.substr( 1 ) );
+
+   if( content.empty( ) )
+      throw runtime_error( "unexpected empty file content in 'validate_put_list_file'" );
+
+   vector< string > lines;
+   split( content, lines, '\n' );
+
+   bool is_invalid = false;
+
+   for( size_t i = 0; i < lines.size( ); i++ )
+   {
+      string next_line( lines[ i ] );
+
+      if( next_line.length( ) != 44 )
+         is_invalid = true;
+      else
+      {
+         bool rc = false;
+         base64::validate( next_line, &rc );
+
+         is_invalid = !rc;
+      }
+
+      if( is_invalid )
+         throw runtime_error( "unexpected invalid put list line: " + next_line );
    }
 }
 
@@ -2070,14 +2227,17 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                {
                   fetch_tree_root = false;
 
-                  set_session_variable(
-                   get_special_var_name( e_special_var_blockchain_waiting_for_hub ), c_true_value );
+                  if( !add_put_list_if_available( hub_identity, blockchain, height ) )
+                  {
+                     set_session_variable(
+                      get_special_var_name( e_special_var_blockchain_waiting_for_hub ), c_true_value );
 
-                  // FUTURE: This message should be handled as a server string message.
-                  string progress_message( "Waiting for hub " + hub_identity + "..." );
+                     // FUTURE: This message should be handled as a server string message.
+                     string progress_message( "Waiting for hub " + hub_identity + "..." );
 
-                  set_session_progress_output( progress_message );
-                  set_system_variable( c_progress_output_prefix + identity, progress_message );
+                     set_session_progress_output( progress_message );
+                     set_system_variable( c_progress_output_prefix + identity, progress_message );
+                  }
                }
 
                if( fetch_tree_root && peer_has_tree_items )
@@ -2104,9 +2264,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                }
                else
                {
-                  string prior_data_tree_hash;
-
-                  if( !last_data_tree_is_identical( blockchain, height - 1, &prior_data_tree_hash ) )
+                  if( !last_data_tree_is_identical( blockchain, height - 1 ) )
                      process_list_items( identity,
                       tree_root_hash, true, p_num_items_found, &list_items_to_ignore, &dtm, p_progress );
                }
@@ -2117,42 +2275,6 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
          }
       }
    }
-}
-
-bool get_block_height_from_tags( const string& blockchain, const string& hash, size_t& block_height )
-{
-   guard g( g_mutex, "get_block_height_from_tags" );
-
-   string all_tags( get_hash_tags( hash ) );
-
-   vector< string > tags;
-
-   if( !all_tags.empty( ) )
-      split( all_tags, tags, '\n' );
-
-   bool found = false;
-
-   for( size_t i = 0; i < tags.size( ); i++ )
-   {
-      string next_tag( tags[ i ] );
-
-      string::size_type pos = next_tag.find( blockchain );
-      string::size_type spos = next_tag.find( c_blk_suffix );
-
-      // NOTE: Determine the block height from its block tag.
-      if( pos == 0 && spos != string::npos )
-      {
-         found = true;
-
-         next_tag.erase( spos );
-
-         block_height = from_string< size_t >( next_tag.substr( blockchain.length( ) + 1 ) );
-
-         break;
-      }
-   }
-
-   return found;
 }
 
 struct scoped_pop_peer_get_hash
@@ -2815,8 +2937,18 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    string block_processing( get_session_variable( blockchain_block_processing_name ) );
 
+   string hub_identity( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
+
    bool is_waiting_for_hub = !get_session_variable(
     get_special_var_name( e_special_var_blockchain_waiting_for_hub ) ).empty( );
+
+   if( is_waiting_for_hub
+    && add_put_list_if_available( hub_identity, blockchain, blockchain_height_pending ) )
+   {
+      is_waiting_for_hub = false;
+      set_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ), "" );
+   }
 
    bool set_new_zenith = false;
 
@@ -3073,6 +3205,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          string op_list_hash( get_session_variable(
           get_special_var_name( e_special_var_blockchain_op_list_hash ) ) );
 
+         string put_list_hash( get_session_variable(
+          get_special_var_name( e_special_var_blockchain_put_list_hash ) ) );
+
          string block_file_hash( get_session_variable(
           get_special_var_name( e_special_var_blockchain_block_file_hash ) ) );
 
@@ -3114,6 +3249,17 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
 
             process_op_list_file( blockchain, next_hash, blockchain_height_pending );
+         }
+         else if( next_hash == put_list_hash )
+         {
+            validate_put_list_file( file_data );
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_put_list_hash ), "" );
+
+            create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+
+            process_put_list_file( blockchain, next_hash, blockchain_height_pending );
          }
          else if( next_hash == block_file_hash )
          {
