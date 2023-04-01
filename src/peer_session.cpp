@@ -884,7 +884,9 @@ bool add_put_list_if_available( const string& hub_identity, const string& blockc
                   {
                      found = true;
 
-                     if( put_height == blockchain_height )
+                     if( put_height != blockchain_height )
+                        set_session_variable( get_special_var_name( e_special_var_blockchain_zenith_tree_hash ), "" );
+                     else
                      {
                         string put_file_hash( hex_encode( base64::decode( encoded_hash ) ) );
 
@@ -1772,7 +1774,7 @@ void process_op_list_file( const string& blockchain, const string& hash, size_t 
    tag_file( op_list_tag, hash );
 }
 
-void process_put_list_file( const string& blockchain, const string& hash, size_t height )
+void process_put_list_file( const string& blockchain, const string& hash, size_t height, const string& file_data )
 {
    guard g( g_mutex, "process_put_list_file" );
 
@@ -1785,6 +1787,22 @@ void process_put_list_file( const string& blockchain, const string& hash, size_t
    put_list_tag += c_put_suffix;
 
    tag_file( put_list_tag, hash );
+
+   vector< string > lines;
+   split( file_data, lines, '\n' );
+
+   for( size_t i = 0; i < lines.size( ); i++ )
+   {
+      string next_line( lines[ i ] );
+
+      add_peer_file_hash_for_get( hex_encode( base64::decode( next_line ) ) );
+
+      set_session_variable( get_special_var_name(
+       e_special_var_num_put_files ), get_special_var_name( e_special_var_increment ) );
+   }
+
+   add_peer_file_hash_for_get(
+    get_session_variable( get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 }
 
 void process_public_key_file( const string& blockchain,
@@ -3198,6 +3216,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          else
             is_list = is_list_file( next_hash.substr( 0, next_hash.find( ':' ) ) );
 
+         bool has_archive = false;
+
+         if( !get_session_variable( get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
+            has_archive = true;
+
          if( is_for_support && get_session_variable(
           get_special_var_name( e_special_var_blockchain_checked_shared ) ).empty( ) )
             check_shared_for_support_session( blockchain );
@@ -3224,9 +3247,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
           get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ) ) );
 
          if( ( is_list || is_for_support ) || ( last_num_tree_item
-          && ( next_hash != op_list_hash ) && ( next_hash != block_file_hash )
-          && ( next_hash != primary_pubkey_hash ) && ( next_hash != signature_file_hash )
-          && ( next_hash != tertiary_pubkey_hash ) && ( next_hash != secondary_pubkey_hash ) ) )
+          && ( next_hash != op_list_hash ) && ( next_hash != put_list_hash )
+          && ( next_hash != block_file_hash ) && ( next_hash != primary_pubkey_hash )
+          && ( next_hash != signature_file_hash ) && ( next_hash != tertiary_pubkey_hash )
+          && ( next_hash != secondary_pubkey_hash ) ) )
             add_to_blockchain_tree_item( blockchain, 1 );
 
          bool has_tertiary = !tertiary_pubkey_hash.empty( );
@@ -3239,7 +3263,27 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          if( !targeted_identity.empty( ) && ( targeted_identity[ 0 ] != '@' ) )
             has_targeted_identity = true;
 
-         if( next_hash == op_list_hash )
+         string num_put_files( get_session_variable(
+          get_special_var_name( e_special_var_num_put_files ) ) );
+
+         if( !num_put_files.empty( ) )
+         {
+            date_time dtm( date_time::local( ) );
+
+            set< string > target_hashes;
+
+            process_put_file( blockchain, file_data.substr( 1 ),
+             check_for_supporters, get_is_test_session( ), target_hashes, &dtm, this );
+
+            if( !has_archive )
+               create_raw_file( file_data );
+            else
+               create_raw_file_in_archive( identity, "", file_data );
+
+            set_session_variable(
+             get_special_var_name( e_special_var_num_put_files ), get_special_var_name( e_special_var_decrement ) );
+         }
+         else if( next_hash == op_list_hash )
          {
             validate_op_list_file( file_data );
 
@@ -3259,7 +3303,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
             create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
 
-            process_put_list_file( blockchain, next_hash, blockchain_height_pending );
+            process_put_list_file( blockchain, next_hash, blockchain_height_pending, file_data.substr( 1 ) );
          }
          else if( next_hash == block_file_hash )
          {
@@ -3328,11 +3372,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      throw runtime_error( "unexpected unmapped file hash '" + next_hash + "'" );
                   else if( file_data_hash != peer_mapped_hash )
                      throw runtime_error( "found invalid encrypted file content for hash '" + next_hash + "'" );
-
-                  bool has_archive = false;
-
-                  if( !get_session_variable( get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
-                     has_archive = true;
 
                   if( has_archive )
                      create_raw_file_in_archive( identity, next_hash, file_data );

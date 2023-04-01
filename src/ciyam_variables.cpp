@@ -136,6 +136,7 @@ const char* const c_special_variable_app_directory = "@app_directory";
 const char* const c_special_variable_export_needed = "@export_needed";
 const char* const c_special_variable_import_needed = "@import_needed";
 const char* const c_special_variable_last_file_put = "@last_file_put";
+const char* const c_special_variable_num_put_files = "@num_put_files";
 const char* const c_special_variable_rewind_height = "@rewind_height";
 const char* const c_special_variable_shared_secret = "@shared_secret";
 const char* const c_special_variable_sub_directory = "@sub_directory";
@@ -592,6 +593,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_last_file_put:
       s = string( c_special_variable_last_file_put );
+      break;
+
+      case e_special_var_num_put_files:
+      s = string( c_special_variable_num_put_files );
       break;
 
       case e_special_var_rewind_height:
