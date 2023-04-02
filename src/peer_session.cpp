@@ -203,6 +203,23 @@ void add_to_blockchain_tree_item( const string& blockchain, size_t num_to_add, s
    g_blockchain_tree_item[ blockchain ] += num_to_add;
 }
 
+void add_to_num_puts_value( size_t num_to_add )
+{
+   size_t num_puts = 0;
+
+   string num_puts_name( get_special_var_name( e_special_var_blockchain_num_puts ) );
+
+   string num_puts_value( get_session_variable( num_puts_name ) );
+
+   if( !num_puts_value.empty( ) )
+      num_puts = from_string< size_t >( num_puts_value );
+
+   num_puts += num_to_add;
+
+   if( num_puts )
+      set_session_variable( num_puts_name, to_string( num_puts ) );
+}
+
 void output_synchronised_progress_message(
  const string& identity, size_t blockchain_height, size_t blockchain_height_other = 0 )
 {
@@ -3279,6 +3296,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             else
                create_raw_file_in_archive( identity, "", file_data );
 
+            if( !target_hashes.empty( ) )
+               add_to_num_puts_value( target_hashes.size( ) );
+
             set_session_variable(
              get_special_var_name( e_special_var_num_put_files ), get_special_var_name( e_special_var_decrement ) );
          }
@@ -4170,19 +4190,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                set_session_variable( queue_puts_name, hash );
             }
 
-            size_t num_puts = 0;
-
-            string num_puts_name( get_special_var_name( e_special_var_blockchain_num_puts ) );
-
-            string num_puts_value( get_session_variable( num_puts_name ) );
-
-            if( !num_puts_value.empty( ) )
-               num_puts = from_string< size_t >( num_puts_value );
-
-            num_puts += target_hashes.size( );
-
-            if( num_puts )
-               set_session_variable( num_puts_name, to_string( num_puts ) );
+            if( !target_hashes.empty( ) )
+               add_to_num_puts_value( target_hashes.size( ) );
          }
 
          if( hash != hello_hash )
