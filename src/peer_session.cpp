@@ -2945,14 +2945,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       }
    }
 
-   bool any_supporter_has = false;
-
-   next_hash_to_get = top_next_peer_file_hash_to_get(
-    ( !is_for_support && check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
-
-   next_hash_to_put = top_next_peer_file_hash_to_put(
-    ( !is_for_support && check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
-
    string block_processing( get_session_variable( blockchain_block_processing_name ) );
 
    string hub_identity( get_session_variable(
@@ -2969,6 +2961,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    }
 
    bool set_new_zenith = false;
+   bool any_supporter_has = false;
+
+   next_hash_to_get = top_next_peer_file_hash_to_get(
+    ( !is_for_support && check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
+
+   next_hash_to_put = top_next_peer_file_hash_to_put(
+    ( !is_for_support && check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
 
    if( !any_supporter_has && !is_waiting_for_hub
     && !block_processing.empty( ) && next_hash_to_get.empty( ) )
