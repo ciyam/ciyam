@@ -27,6 +27,22 @@ if [ ! -f ~shared ]; then
 
  SHARED_DETAILS=$PEERCHAIN.txt
 
+ if [ "$IDENTITY" = "" ]; then
+  date >$SHARED_DETAILS
+  echo "Error: Unexpected identity for export not found." >>$SHARED_DETAILS
+  date >>$SHARED_DETAILS
+  rm ~shared
+  exit
+ fi
+
+ if [ "$PEERCHAIN" = "" ]; then
+  date >$SHARED_DETAILS
+  echo "Error: Unexpected identity exporting for not found." >>$SHARED_DETAILS
+  date >>$SHARED_DETAILS
+  rm ~shared
+  exit
+ fi
+
  if [ -d $SHARED_PATH ]; then
   if mountpoint -q $SHARED_PATH; then
    sudo umount $SHARED_PATH

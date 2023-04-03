@@ -1317,7 +1317,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      throw runtime_error( "server has terminated this connection" );
                }
 
-               // NOTE: If the reponse has no output then clear the OUTPUT environment variable.
+               // NOTE: If the response has no output then clear the OUTPUT environment variable.
                if( is_first && response == string( c_response_okay ) )
                   set_environment_variable( c_env_var_output, "" );
 
@@ -1542,7 +1542,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      if( response.length( ) <= c_max_length_for_output_env_var )
                         set_environment_variable( c_env_var_output, response.substr( start ).c_str( ) );
                      else
-                        set_environment_variable( c_env_var_output, "*** reponse exceeded maximum allowed length ***" );
+                        set_environment_variable( c_env_var_output, "*** response exceeded maximum allowed length ***" );
                   }
 
                   // NOTE: Make sure that progress messages do not end the conversation.
