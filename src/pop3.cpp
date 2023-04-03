@@ -114,7 +114,7 @@ string get_simple_response( tcp_socket& socket, progress* p_progress = 0 )
    return response_line;
 }
 
-void get_multi_line_reponse( tcp_socket& socket, ostream& os, bool* p_is_mime = 0, progress* p_progress = 0 )
+void get_multi_line_response( tcp_socket& socket, ostream& os, bool* p_is_mime = 0, progress* p_progress = 0 )
 {
    string next_response_line;
    size_t timeout = c_initial_timeout;
@@ -171,7 +171,7 @@ void get_multi_line_reponse( tcp_socket& socket, ostream& os, bool* p_is_mime = 
    }
 }
 
-void get_multi_line_reponse( tcp_socket& socket,
+void get_multi_line_response( tcp_socket& socket,
  vector< string >& response_lines, bool* p_is_mime = 0, progress* p_progress = 0 )
 {
    string next_response_line;
@@ -488,7 +488,7 @@ void pop3::get_message_list( vector< pair< int, long > >& message_list )
    send_simple_request( p_impl->socket, c_request_list, p_impl->p_progress );
 
    vector< string > response_lines;
-   get_multi_line_reponse( p_impl->socket, response_lines, 0, p_impl->p_progress );
+   get_multi_line_response( p_impl->socket, response_lines, 0, p_impl->p_progress );
 
    parse_list_response( response_lines, message_list );
 }
@@ -499,7 +499,7 @@ void pop3::get_message( int message_num, ostream& os, bool* p_is_mime )
    request += ' ' + to_string( message_num );
 
    send_simple_request( p_impl->socket, request, p_impl->p_progress );
-   get_multi_line_reponse( p_impl->socket, os, p_is_mime, p_impl->p_progress );
+   get_multi_line_response( p_impl->socket, os, p_is_mime, p_impl->p_progress );
 }
 
 void pop3::get_message_headers( int message_num, vector< string >& headers )
@@ -525,7 +525,7 @@ void pop3::get_message_headers( int message_num, vector< string >& headers )
    send_simple_request( p_impl->socket, top_request, p_impl->p_progress );
 
    vector< string > response_lines;
-   get_multi_line_reponse( p_impl->socket, response_lines, 0, p_impl->p_progress );
+   get_multi_line_response( p_impl->socket, response_lines, 0, p_impl->p_progress );
 
    parse_top_response( response_lines, headers );
 }
