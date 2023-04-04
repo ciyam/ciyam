@@ -4663,6 +4663,7 @@ peer_session::peer_session( int64_t time_val,
  bool is_for_support, peer_extra extra, const char* p_identity, peerchain_type chain_type )
 #endif
  :
+ is_hub( false ),
  is_local( false ),
  is_owner( false ),
  ip_addr( addr_info ),
@@ -4699,6 +4700,9 @@ peer_session::peer_session( int64_t time_val,
 
    if( port.empty( ) && blockchain.empty( ) )
       port = get_test_peer_port( );
+
+   if( chain_type == e_peerchain_type_hub )
+      is_hub = true;
 
    if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
@@ -5064,6 +5068,15 @@ void peer_session::on_start( )
           e_special_var_blockchain_archive_path ), archive_path );
       }
 
+      if( is_hub )
+      {
+         set_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ), c_true_value );
+
+         if( num_have_session_variable(
+          get_special_var_name( e_special_var_blockchain_peer_hub_identity ), identity ) )
+            set_session_variable( get_special_var_name( e_special_var_peer_is_dependent ), c_true_value );
+      }
+
       if( is_owner )
          set_session_variable( get_special_var_name( e_special_var_blockchain_is_owner ), c_true_value );
 
@@ -5193,6 +5206,23 @@ void peer_session::on_start( )
                okay = false;
             else if( !is_for_support && ( block_hash != string( c_response_not_found ) ) )
                add_peer_file_hash_for_get( block_hash );
+
+            if( !hub_identity.empty( ) && ( identity == paired_identity ) && !any_session_has_blockchain( hub_identity ) )
+            {
+               string host_and_port( ip_addr );
+
+               string::size_type pos = ip_addr.find( ':' );
+
+               if( pos == string::npos )
+                  host_and_port += ':';
+               else
+                  host_and_port += '-';
+
+               host_and_port += port;
+
+               create_peer_initiator( ( c_bc_prefix + hub_identity ),
+                host_and_port, false, 0, false, false, 0, e_peerchain_type_hub );
+            }
          }
       }
 

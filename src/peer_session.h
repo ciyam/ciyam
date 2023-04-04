@@ -67,6 +67,8 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    static void decrement_session_count( );
 
    private:
+   bool is_hub;
+
    bool is_local;
    bool is_owner;
 
