@@ -810,6 +810,22 @@ void check_for_missing_other_sessions( const date_time& now )
          }
       }
    }
+
+   if( !get_session_variable( get_special_var_name( e_special_var_peer_is_dependent ) ).empty( )
+    && !get_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ).empty( ) )
+   {
+      string blockchain( get_session_variable( get_special_var_name( e_special_var_peer ) ) );
+
+      string identity( replaced( blockchain, c_bc_prefix, "" ) );
+
+      if( !num_have_session_variable(
+       get_special_var_name( e_special_var_blockchain_peer_hub_identity ), identity ) )
+      {
+         condemn_this_session( );
+
+         throw runtime_error( "peer session has been condemned due to missing any hub using sessions" );
+      }
+   }
 }
 
 bool get_block_height_from_tags( const string& blockchain, const string& hash, size_t& block_height )
@@ -5073,7 +5089,7 @@ void peer_session::on_start( )
          set_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ), c_true_value );
 
          if( num_have_session_variable(
-          get_special_var_name( e_special_var_blockchain_peer_hub_identity ), identity ) )
+          get_special_var_name( e_special_var_blockchain_peer_hub_identity ), unprefixed_blockchain ) )
             set_session_variable( get_special_var_name( e_special_var_peer_is_dependent ), c_true_value );
       }
 
