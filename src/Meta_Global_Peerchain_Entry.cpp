@@ -196,8 +196,8 @@ const uint64_t c_modifier_Is_Connected = UINT64_C( 0x200 );
 const uint64_t c_modifier_Is_Connecting = UINT64_C( 0x400 );
 const uint64_t c_modifier_Is_Disconnecting = UINT64_C( 0x800 );
 const uint64_t c_modifier_Is_Halted = UINT64_C( 0x1000 );
-const uint64_t c_modifier_Is_Local_Only = UINT64_C( 0x2000 );
-const uint64_t c_modifier_Is_Peerchain_Hub = UINT64_C( 0x4000 );
+const uint64_t c_modifier_Is_Hub = UINT64_C( 0x2000 );
+const uint64_t c_modifier_Is_Local_Only = UINT64_C( 0x4000 );
 const uint64_t c_modifier_Not_Is_Halted = UINT64_C( 0x8000 );
 
 domain_string_max_size< 50 > g_Chain_Id_domain;
@@ -267,11 +267,11 @@ int g_default_Status = int( 0 );
 set< int > g_peerchain_peer_type_enum;
 set< int > g_peerchain_status_enum;
 
+const int c_enum_peerchain_peer_type_Hub( -1 );
 const int c_enum_peerchain_peer_type_Hosted( 0 );
 const int c_enum_peerchain_peer_type_Local_Only( 1 );
 const int c_enum_peerchain_peer_type_Backup_Only( 2 );
 const int c_enum_peerchain_peer_type_Shared_Only( 3 );
-const int c_enum_peerchain_peer_type_Peerchain_Hub( 4 );
 
 string get_enum_string_peerchain_peer_type( int val )
 {
@@ -279,6 +279,8 @@ string get_enum_string_peerchain_peer_type( int val )
 
    if( to_string( val ) == "" )
       throw runtime_error( "unexpected empty enum value for peerchain_peer_type" );
+   else if( to_string( val ) == to_string( "-1" ) )
+      string_name = "enum_peerchain_peer_type_Hub";
    else if( to_string( val ) == to_string( "0" ) )
       string_name = "enum_peerchain_peer_type_Hosted";
    else if( to_string( val ) == to_string( "1" ) )
@@ -287,8 +289,6 @@ string get_enum_string_peerchain_peer_type( int val )
       string_name = "enum_peerchain_peer_type_Backup_Only";
    else if( to_string( val ) == to_string( "3" ) )
       string_name = "enum_peerchain_peer_type_Shared_Only";
-   else if( to_string( val ) == to_string( "4" ) )
-      string_name = "enum_peerchain_peer_type_Peerchain_Hub";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for peerchain_peer_type" );
 
@@ -1087,8 +1087,8 @@ uint64_t Meta_Global_Peerchain_Entry::impl::get_state( ) const
    // [(finish modifier_field_value)] 600898c
 
    // [(start modifier_field_value)] 600898d
-   if( get_obj( ).Peer_Type( ) == 4 )
-      state |= c_modifier_Is_Peerchain_Hub;
+   if( get_obj( ).Peer_Type( ) == -1 )
+      state |= c_modifier_Is_Hub;
    // [(finish modifier_field_value)] 600898d
 
    // [<start get_state>]
@@ -1112,10 +1112,10 @@ string Meta_Global_Peerchain_Entry::impl::get_state_names( ) const
       state_names += "|" + string( "Is_Disconnecting" );
    if( state & c_modifier_Is_Halted )
       state_names += "|" + string( "Is_Halted" );
+   if( state & c_modifier_Is_Hub )
+      state_names += "|" + string( "Is_Hub" );
    if( state & c_modifier_Is_Local_Only )
       state_names += "|" + string( "Is_Local_Only" );
-   if( state & c_modifier_Is_Peerchain_Hub )
-      state_names += "|" + string( "Is_Peerchain_Hub" );
    if( state & c_modifier_Not_Is_Halted )
       state_names += "|" + string( "Not_Is_Halted" );
 
@@ -1439,12 +1439,12 @@ void Meta_Global_Peerchain_Entry::impl::to_store( bool is_create, bool is_intern
 
    // [<start to_store>]
 //nyi
+   if( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Hub )
+      get_obj( ).Num_Helpers( 0 );
+
    if( get_obj( ).Host_Name( ).empty( )
     || ( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Local_Only ) )
       get_obj( ).Host_Name( c_local_host );
-
-   if( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Peerchain_Hub )
-      get_obj( ).Num_Helpers( 0 );
    // [<finish to_store>]
 }
 
@@ -2609,7 +2609,7 @@ void Meta_Global_Peerchain_Entry::get_always_required_field_names(
    // [(finish modifier_field_value)] 600898c
 
    // [(start modifier_field_value)] 600898d
-   dependents.insert( "Peer_Type" ); // (for Is_Peerchain_Hub modifier)
+   dependents.insert( "Peer_Type" ); // (for Is_Hub modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Peer_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Peer_Type ) ) )
@@ -2894,11 +2894,11 @@ void Meta_Global_Peerchain_Entry::static_get_text_search_fields( vector< string 
 
 void Meta_Global_Peerchain_Entry::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
 {
+   pairs.push_back( make_pair( "enum_peerchain_peer_type_-1", get_enum_string_peerchain_peer_type( -1 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_peer_type_0", get_enum_string_peerchain_peer_type( 0 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_peer_type_1", get_enum_string_peerchain_peer_type( 1 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_peer_type_2", get_enum_string_peerchain_peer_type( 2 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_peer_type_3", get_enum_string_peerchain_peer_type( 3 ) ) );
-   pairs.push_back( make_pair( "enum_peerchain_peer_type_4", get_enum_string_peerchain_peer_type( 4 ) ) );
 
    pairs.push_back( make_pair( "enum_peerchain_status_0", get_enum_string_peerchain_status( 0 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_status_1", get_enum_string_peerchain_status( 1 ) ) );
@@ -2949,11 +2949,11 @@ void Meta_Global_Peerchain_Entry::static_class_init( const char* p_module_name )
 
    g_state_names_variable = get_special_var_name( e_special_var_state_names );
 
+   g_peerchain_peer_type_enum.insert( -1 );
    g_peerchain_peer_type_enum.insert( 0 );
    g_peerchain_peer_type_enum.insert( 1 );
    g_peerchain_peer_type_enum.insert( 2 );
    g_peerchain_peer_type_enum.insert( 3 );
-   g_peerchain_peer_type_enum.insert( 4 );
 
    g_peerchain_status_enum.insert( 0 );
    g_peerchain_status_enum.insert( 1 );

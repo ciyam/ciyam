@@ -5341,12 +5341,12 @@
       <affect>lowlight
      </modifier>
      <modifier/>
-      <id>145301
-      <name>Is_Local_Only
+      <id>145303
+      <name>Is_Hub
      </modifier>
      <modifier/>
-      <id>145303
-      <name>Is_Peerchain_Hub
+      <id>145301
+      <name>Is_Local_Only
      </modifier>
      <modifier/>
       <id>145307
@@ -32190,6 +32190,17 @@
     </data>
    </specification>
    <specification/>
+    <id>600898d
+    <name>{Global_Peerchain_Entry}_Is_Hub
+    <type>modifier_field_value
+    <data/>
+     <class_id>145100
+     <modifier_id>145303
+     <field_id>145103
+     <field_value>-1
+    </data>
+   </specification>
+   <specification/>
     <id>600898b
     <name>{Global_Peerchain_Entry}_Is_Local_Only
     <type>modifier_field_value
@@ -32198,17 +32209,6 @@
      <modifier_id>145301
      <field_id>145103
      <field_value>1
-    </data>
-   </specification>
-   <specification/>
-    <id>600898d
-    <name>{Global_Peerchain_Entry}_Is_Peerchain_Hub
-    <type>modifier_field_value
-    <data/>
-     <class_id>145100
-     <modifier_id>145303
-     <field_id>145103
-     <field_value>4
     </data>
    </specification>
    <specification/>
@@ -39485,7 +39485,7 @@
     <id>960
     <name>peerchain_peer_type
     <type>int
-    <key_values>0=Hosted,1=Local_Only,2=Backup_Only,3=Shared_Only,4=Peerchain_Hub
+    <key_values>-1=Hub,0=Hosted,1=Local_Only,2=Backup_Only,3=Shared_Only
    </user_defined_enum>
    <user_defined_enum/>
     <id>955

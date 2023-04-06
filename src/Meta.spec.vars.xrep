@@ -57,7 +57,7 @@
 `{`$enum_numeric_type`=`'0=normal 1=bytes`'`}
 `{`$enum_orientation`=`'0=landscape 1=portrait 2=neither`'`}
 `{`$enum_pdf_font_type`=`'0=Times_Roman 1=Helvetica 20=SimSun 21=SimHei`'`}
-`{`$enum_peerchain_peer_type`=`'0=Hosted 1=Local_Only 2=Backup_Only 3=Shared_Only 4=Peerchain_Hub`'`}
+`{`$enum_peerchain_peer_type`=`'-1=Hub 0=Hosted 1=Local_Only 2=Backup_Only 3=Shared_Only`'`}
 `{`$enum_peerchain_status`=`'0=Halted 1=Waiting 2=Connected 3=Connecting 4=Disconnecting`'`}
 `{`$enum_primitive`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool`'`}
 `{`$enum_procedure_arg_primitive`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool 99=Any_Primitive`'`}
@@ -1234,25 +1234,25 @@
 `{`$specification_Global_Peerchain_Entry_view_field004`=`'145106`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype004`=`'int`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra004`=`'range=0..65535`'`}
-`{`$specification_Global_Peerchain_Entry_view_fmods004`=`'4000:relegate,8000:protect`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods004`=`'2000:relegate,8000:protect`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname004`=`'field_global_peerchain_entry_local_port`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand004`=`'true`'`}
 `{`$specification_Global_Peerchain_Entry_view_field005`=`'145104`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype005`=`'string`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra005`=`'max_size=100`'`}
-`{`$specification_Global_Peerchain_Entry_view_fmods005`=`'2000:relegate,8000:protect`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods005`=`'4000:relegate,8000:protect`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname005`=`'field_global_peerchain_entry_host_name`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand005`=`'true`'`}
 `{`$specification_Global_Peerchain_Entry_view_field006`=`'145105`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype006`=`'int`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra006`=`'range=0..65535`'`}
-`{`$specification_Global_Peerchain_Entry_view_fmods006`=`'2000:relegate,8000:protect`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods006`=`'4000:relegate,8000:protect`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname006`=`'field_global_peerchain_entry_host_port`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand006`=`'true`'`}
 `{`$specification_Global_Peerchain_Entry_view_field007`=`'145109`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype007`=`'int`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra007`=`'range=0..99`'`}
-`{`$specification_Global_Peerchain_Entry_view_fmods007`=`'2000:relegate,4000:relegate,8000:protect`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods007`=`'4000:relegate,2000:relegate,8000:protect`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname007`=`'field_global_peerchain_entry_num_helpers`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand007`=`'true`'`}
 `{`$specification_Global_Peerchain_Entry_view_field008`=`'145107`'`}
@@ -1270,7 +1270,7 @@
 `{`$specification_Global_Peerchain_Entry_view_field010`=`'145112`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype010`=`'string`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra010`=`'show+encrypted+max_size=200`'`}
-`{`$specification_Global_Peerchain_Entry_view_fmods010`=`'2000:relegate,100:relegate,4000:relegate,8000:protect`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods010`=`'4000:relegate,100:relegate,2000:relegate,8000:protect`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname010`=`'field_global_peerchain_entry_shared_secret`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand010`=`'false`'`}
 `{`$specification_Global_Peerchain_Entry_view_field011`=`'145110`'`}

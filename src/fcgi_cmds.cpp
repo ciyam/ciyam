@@ -1942,6 +1942,11 @@ bool populate_list_info( list_source& list,
                   data_container new_record_list;
                   for( size_t i = 0; i < info.values.size( ); i++ )
                   {
+                     // NOTE: Enum values that start with a '-' are not included for user selection
+                     // as they are deemed as being only available for internal application purposes.
+                     if( info.values[ i ].first[ 0 ] == '-' )
+                        continue;
+
                      new_record_list.push_back( make_pair(
                       info.values[ i ].first, get_display_string( info.values[ i ].second ) ) );
                   }
