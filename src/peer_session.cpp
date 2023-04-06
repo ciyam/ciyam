@@ -5091,6 +5091,11 @@ void peer_session::on_start( )
          if( num_have_session_variable(
           get_special_var_name( e_special_var_blockchain_peer_hub_identity ), unprefixed_blockchain ) )
             set_session_variable( get_special_var_name( e_special_var_peer_is_dependent ), c_true_value );
+
+         string progress_message(
+          get_system_variable( c_progress_output_prefix + unprefixed_blockchain ) );
+
+         set_session_progress_output( progress_message );
       }
 
       if( is_owner )
@@ -5176,7 +5181,6 @@ void peer_session::on_start( )
 
                   progress_message += c_ellipsis;
 
-                  set_session_progress_output( progress_message );
                   set_system_variable( c_progress_output_prefix + unprefixed_blockchain, progress_message );
                }
             }
@@ -5252,7 +5256,6 @@ void peer_session::on_start( )
 
                      progress_message += to_string( hub_height );
 
-                     set_session_progress_output( progress_message );
                      set_system_variable( c_progress_output_prefix + hub_identity, progress_message );
                   }
                }
