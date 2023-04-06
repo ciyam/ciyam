@@ -5236,6 +5236,27 @@ void peer_session::on_start( )
 
                host_and_port += port;
 
+               string hub_blockchain( c_bc_prefix + hub_identity );
+               string hub_zenith_tag( hub_blockchain + c_zenith_suffix );
+
+               if( has_tag( hub_zenith_tag ) )
+               {
+                  string hub_zenith_hash( tag_file_hash( hub_zenith_tag ) );
+
+                  size_t hub_height = 0;
+
+                  if( get_block_height_from_tags( hub_blockchain, hub_zenith_hash, hub_height ) )
+                  {
+                     // FUTURE: This message should be handled as a server string message.
+                     string progress_message( "Currently at height " );
+
+                     progress_message += to_string( hub_height );
+
+                     set_session_progress_output( progress_message );
+                     set_system_variable( c_progress_output_prefix + hub_identity, progress_message );
+                  }
+               }
+
                create_peer_initiator( ( c_bc_prefix + hub_identity ),
                 host_and_port, false, 0, false, false, 0, e_peerchain_type_hub );
             }
