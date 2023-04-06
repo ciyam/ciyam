@@ -1263,7 +1263,7 @@ bool output_view_form( ostream& os, const string& act,
          const enum_info& info(
           sinfo.enums.find( source.enum_fields.find( source_value_id )->second )->second );
 
-         if( sess_info.user_id.empty( ) || info.values[ 0 ].first == sess_info.user_slevel )
+         if( sess_info.user_id.empty( ) || ( info.values[ 0 ].first == sess_info.user_slevel ) )
          {
             if( !is_in_edit )
                continue;

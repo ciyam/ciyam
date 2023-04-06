@@ -1199,6 +1199,11 @@ void output_list_form( ostream& os,
 
                   for( size_t k = 0; k < info.values.size( ); k++ )
                   {
+                     // NOTE: Enum values that start with a '-' are not included for user selection
+                     // as they are deemed as being only available for internal application purposes.
+                     if( info.values[ j ].first[ 0 ] == '-' )
+                        continue;
+
                      ++opt_count;
 
                      os << "<option";
@@ -1856,7 +1861,7 @@ void output_list_form( ostream& os,
                   {
                      const enum_info& info( sinfo.enums.find( restrict_extras.find( c_field_extra_enum )->second )->second );
 
-                     if( sess_info.user_id.empty( ) || info.values[ 0 ].first == sess_info.user_slevel )
+                     if( sess_info.user_id.empty( ) || ( info.values[ 0 ].first == sess_info.user_slevel ) )
                         continue;
                   }
 
