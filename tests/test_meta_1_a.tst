@@ -49,9 +49,11 @@ Dummy_Waiting,M001C100F130
 Ellipsis,M001C100F131
 Error,M001C100F132
 Hash_Prefixed_Identity,M001C100F133
-Initial_Backup_Hash,M001C100F134
-Initial_Shared_Hash,M001C100F135
-Tilda_Prefixed_Identity,M001C100F136
+Hub_Checksum,M001C100F134
+Initial_Backup_Hash,M001C100F135
+Initial_Hub_Hash,M001C100F136
+Initial_Shared_Hash,M001C100F137
+Tilda_Prefixed_Identity,M001C100F138
 Dummy_Self,M001C101F100
 User_Id,M001C101F101
 User_Id_or_Name,M001C101F102

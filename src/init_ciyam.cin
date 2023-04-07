@@ -7,6 +7,7 @@
 ;
 @ifeq "$OUTPUT" ""
 <<bc_gen.cin @sid
+<<bc_gen.cin -hub @sid
 <<bc_gen.cin -shared @sid
 <<init_ciyam_peer.cin
 @endif
