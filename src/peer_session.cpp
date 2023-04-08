@@ -453,6 +453,43 @@ void check_shared_for_support_session( const string& blockchain )
    }
 }
 
+void set_hub_system_variable_if_required(
+ const string& identity, const string& hub_identity, bool skip_queue = false )
+{
+   if( get_system_variable( "@" + identity ).empty( ) )
+   {
+      string hub_genesis_tag( c_bc_prefix + hub_identity + string( ".0" ) + c_blk_suffix );
+      string hub_genesis_hash;
+
+      if( has_tag( hub_genesis_tag ) )
+         hub_genesis_hash = tag_file_hash( hub_genesis_tag );
+
+      if( !hub_genesis_hash.empty( ) )
+         set_session_variable( ">@" + identity, hub_genesis_hash );
+      else if( !skip_queue )
+         set_system_variable( get_special_var_name( e_special_var_queue_hub_users ), identity );
+   }
+}
+
+void process_queued_hub_using_peerchains( const string& hub_identity )
+{
+   string identities( get_system_variable( get_special_var_name( e_special_var_queue_hub_users ) ) );
+
+   if( !identities.empty( ) )
+   {
+      vector< string > all_identities;
+
+      split( identities, all_identities );
+
+      for( size_t i = 0; i < all_identities.size( ); i++ )
+      {
+         string next_identity( all_identities[ i ] );
+
+         set_hub_system_variable_if_required( next_identity, hub_identity, true );
+      }
+   }
+}
+
 void process_core_file( const string& hash, const string& blockchain )
 {
    guard g( g_mutex, "process_core_file" );
@@ -1889,11 +1926,16 @@ void process_public_key_file( const string& blockchain,
 
       tag_file( blockchain + c_zenith_suffix, block_hash );
 
-      output_synchronised_progress_message( replaced( blockchain, c_bc_prefix, "" ), height, height_other );
+      string identity( replaced( blockchain, c_bc_prefix, "" ) );
+
+      output_synchronised_progress_message( identity, height, height_other );
 
       TRACE_LOG( TRACE_PEER_OPS, "::: new zenith hash: " + block_hash + " height: " + to_string( height ) );
 
       set_session_variable( zenith_height_name, to_string( height ) );
+
+      if( !get_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ).empty( ) )
+         process_queued_hub_using_peerchains( identity );
    }
 
    if( key_scale == e_public_key_scale_primary )
@@ -3567,6 +3609,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_height ), to_string( blockchain_height ) );
 
+      if( !get_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ).empty( ) )
+         process_queued_hub_using_peerchains( identity );
+
       string targeted_identity( get_session_variable(
        get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
 
@@ -5227,41 +5272,46 @@ void peer_session::on_start( )
             else if( !is_for_support && ( block_hash != string( c_response_not_found ) ) )
                add_peer_file_hash_for_get( block_hash );
 
-            if( !hub_identity.empty( ) && ( identity == paired_identity ) && !any_session_has_blockchain( hub_identity ) )
+            if( !hub_identity.empty( ) && ( identity == paired_identity ) )
             {
-               string host_and_port( ip_addr );
+               set_hub_system_variable_if_required( identity, hub_identity );
 
-               string::size_type pos = ip_addr.find( ':' );
-
-               if( pos == string::npos )
-                  host_and_port += ':';
-               else
-                  host_and_port += '-';
-
-               host_and_port += port;
-
-               string hub_blockchain( c_bc_prefix + hub_identity );
-               string hub_zenith_tag( hub_blockchain + c_zenith_suffix );
-
-               if( has_tag( hub_zenith_tag ) )
+               if( !any_session_has_blockchain( hub_identity ) )
                {
-                  string hub_zenith_hash( tag_file_hash( hub_zenith_tag ) );
+                  string host_and_port( ip_addr );
 
-                  size_t hub_height = 0;
+                  string::size_type pos = ip_addr.find( ':' );
 
-                  if( get_block_height_from_tags( hub_blockchain, hub_zenith_hash, hub_height ) )
+                  if( pos == string::npos )
+                     host_and_port += ':';
+                  else
+                     host_and_port += '-';
+
+                  host_and_port += port;
+
+                  string hub_blockchain( c_bc_prefix + hub_identity );
+                  string hub_zenith_tag( hub_blockchain + c_zenith_suffix );
+
+                  if( has_tag( hub_zenith_tag ) )
                   {
-                     // FUTURE: This message should be handled as a server string message.
-                     string progress_message( "Currently at height " );
+                     string hub_zenith_hash( tag_file_hash( hub_zenith_tag ) );
 
-                     progress_message += to_string( hub_height );
+                     size_t hub_height = 0;
 
-                     set_system_variable( c_progress_output_prefix + hub_identity, progress_message );
+                     if( get_block_height_from_tags( hub_blockchain, hub_zenith_hash, hub_height ) )
+                     {
+                        // FUTURE: This message should be handled as a server string message.
+                        string progress_message( "Currently at height " );
+
+                        progress_message += to_string( hub_height );
+
+                        set_system_variable( c_progress_output_prefix + hub_identity, progress_message );
+                     }
                   }
-               }
 
-               create_peer_initiator( ( c_bc_prefix + hub_identity ),
-                host_and_port, false, 0, false, false, 0, e_peerchain_type_hub );
+                  create_peer_initiator( ( c_bc_prefix + hub_identity ),
+                   host_and_port, false, 0, false, false, 0, e_peerchain_type_hub );
+               }
             }
          }
       }

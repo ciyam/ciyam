@@ -1502,6 +1502,8 @@ void Meta_Global_Peerchain_Entry::impl::for_destroy( bool is_internal )
    set_system_variable( "#" + get_obj( ).Chain_Id( ), "" );
    set_system_variable( "%" + get_obj( ).Chain_Id( ), "" );
 
+   set_system_variable( ">@" + get_obj( ).Chain_Id( ), "" );
+
    set_system_variable( get_special_var_name(
     e_special_var_export_needed ) + '_' + get_obj( ).Chain_Id( ), "" );
 
