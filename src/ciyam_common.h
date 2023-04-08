@@ -155,6 +155,7 @@ enum special_var
    e_special_var_peer_responder,
    e_special_var_ciyam_list_hash,
    e_special_var_paired_identity,
+   e_special_var_queue_hub_users,
    e_special_var_row_cache_limit,
    e_special_var_check_if_changed,
    e_special_var_dummy_time_stamp,
