@@ -465,7 +465,7 @@ void set_hub_system_variable_if_required(
          hub_genesis_hash = tag_file_hash( hub_genesis_tag );
 
       if( !hub_genesis_hash.empty( ) )
-         set_session_variable( ">@" + identity, hub_genesis_hash );
+         set_system_variable( ">@" + identity, hub_genesis_hash );
       else if( !skip_queue )
          set_system_variable( get_special_var_name( e_special_var_queue_hub_users ), identity );
    }
