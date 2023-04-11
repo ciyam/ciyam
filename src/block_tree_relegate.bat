@@ -13,6 +13,6 @@ del ~block_tree_relegate
 goto end
 
 :usage
-echo Usage: block_tree_relegate [<identity> or @blockchain_<type>_ident] [[tree tag]]
+echo Usage: block_tree_relegate [<identity> else "-backup" or "-shared" [tree tag]]
 
 :end
