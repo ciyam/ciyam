@@ -49,8 +49,8 @@ if [ ! -f ~backup ]; then
 
   ./import_files $USER_PATH Backup : $IMAGE_NAME >>Backup.txt
   ./tree_insert_trunks backup Backup,.Backup >>Backup.txt 2>&1
-  ./generate_next_block @blockchain_backup_identity @sid backup >>Backup.txt 2>&1
-  ./block_tree_relegate @blockchain_backup_identity backup >>Backup.txt 2>&1
+  ./generate_next_block -backup @sid backup >>Backup.txt 2>&1
+  ./block_tree_relegate -backup backup >>Backup.txt 2>&1
  fi
 
  echo "Finished backup..." >>Backup.txt
