@@ -3560,6 +3560,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             if( !put_hashes.empty( ) )
                create_raw_file( put_hashes, false, put_tag_name.c_str( ) );
 
+            if( !get_session_variable( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ).empty( ) )
+               set_system_variable( get_special_var_name( e_special_var_generate_hub_block ), c_true_value );
+
             if( !is_in_archive
              && !get_session_variable( blockchain_is_owner_name ).empty( )
              && !get_session_variable( blockchain_is_fetching_name ).empty( ) )

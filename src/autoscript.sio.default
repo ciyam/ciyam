@@ -6,15 +6,21 @@
 # NOTE: Any @name values used in arguments are system (rather than session) variables.
 <sio/>
 # <script/>
+#  <name>hub_check
+#  <time>00:00:00
+#  <cycle>5m
+#  <filename>hub_check:~hub
+# </script>
+# <script/>
 #  <name>backup_check
-#  <time>00:00:00-23:59:55
+#  <time>00:00:02-23:59:57
 #  <cycle>5s
 #  <filename>backup_check:~backup
 #  <arguments>@blockchain_backup_height
 # </script>
 # <script/>
 #  <name>shared_check
-#  <time>00:00:03-23:59:58
+#  <time>00:00:04-23:59:59
 #  <cycle>5s
 #  <filename>shared_check:~shared
 # </script>
