@@ -5,24 +5,28 @@
 ;
 <std.fissile
 ;
+@ifndef $1
+#NOTE: This script requires a blockchain type (i.e. "-hub", "-backup" or "-shared").
+@else
+;
 HUB=
-SEED=
+SEED=$2
 SHARED=
 ;
 @ifeq "$1" "-hub"
 HUB=1
-SEED=$2
 @else
-@ifneq "$1" "-shared"
-SEED=$1
-@else
-SEED=$2
+@ifeq "$1" "-shared"
 SHARED=1
+@else
+@ifneq "$1" "-backup"
+SEED=
+@endif
 @endif
 @endif
 ;
 @ifeq "$SEED" ""
-#Usage: bc_gen.cin [-hub|-shared] <seed>
+#Usage: bc_gen.cin -hub|-backup|-shared <seed>
 @else
 ;
 @ifeq "$SEED" "de604cee0755a3d81944ea96aed12681"
@@ -225,5 +229,6 @@ FILES_AREA_DIR=$OUTPUT
 @endif
 @endif
 ;
+@endif
 @endif
 @endif

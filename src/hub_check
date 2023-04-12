@@ -1,0 +1,18 @@
+#!/bin/sh
+# Copyright (c) 2023 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ ! -f ~hub ]; then
+ touch ~hub
+
+ GEN_HUB_BLOCK=`./system_variable get @generate_hub_block`
+
+ if [ "$GEN_HUB_BLOCK" = "1" ]; then
+  ./generate_next_block -hub
+  ./system_variable set @generate_hub_block ""
+ fi
+
+ rm ~hub
+fi
