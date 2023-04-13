@@ -2348,7 +2348,10 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                {
                   if( is_shared )
                   {
-                     if( !is_targeted_identity( identity, targeted_identity, height ) )
+                     string own_identity( get_system_variable(
+                      get_special_var_name( e_special_var_blockchain_shared_identity ) ) );
+
+                     if( ( identity == own_identity ) || !is_targeted_identity( identity, targeted_identity, height ) )
                      {
                         fetch_tree_root = false;
 
