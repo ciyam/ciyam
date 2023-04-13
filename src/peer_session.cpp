@@ -3659,23 +3659,26 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       if( !get_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ).empty( ) )
          process_queued_hub_using_peerchains( identity );
 
-      string targeted_identity( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
-
-      if( !targeted_identity.empty( )
-       && ( targeted_identity[ 0 ] != '@' ) && ( blockchain_height == blockchain_height_other ) )
+      if( !zenith_tree_hash.empty( ) )
       {
-         tag_file( blockchain + c_shared_suffix, block_processing );
+         string targeted_identity( get_session_variable(
+          get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
 
-         string backup_identity( get_session_variable(
-          get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+         if( !targeted_identity.empty( )
+          && ( targeted_identity[ 0 ] != '@' ) && ( blockchain_height == blockchain_height_other ) )
+         {
+            tag_file( blockchain + c_shared_suffix, block_processing );
 
-         if( backup_identity.empty( ) )
-            set_system_variable( get_special_var_name(
-             e_special_var_export_needed ) + '_' + identity, identity );
-         else
-            set_system_variable( get_special_var_name(
-             e_special_var_export_needed ) + '_' + backup_identity, identity );
+            string backup_identity( get_session_variable(
+             get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+
+            if( backup_identity.empty( ) )
+               set_system_variable( get_special_var_name(
+                e_special_var_export_needed ) + '_' + identity, identity );
+            else
+               set_system_variable( get_special_var_name(
+                e_special_var_export_needed ) + '_' + backup_identity, identity );
+         }
       }
    }
 }
