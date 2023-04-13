@@ -289,6 +289,34 @@ void parse_peer_mapped_info( const string& peer_mapped_info,
    }
 }
 
+bool is_targeted_identity( const string& identity, const string& targeted_identity, size_t blockchain_height )
+{
+   string password;
+   password.reserve( 256 );
+
+   get_peerchain_info( identity, 0, &password );
+
+   // NOTE: The following needs to be equivalent to the application protocol command:
+   // .crypto_hash -x=1000000 @encrypted_password -s=<height>
+   // as is currently executed in the application protocol script "bc_gen_block.cin".
+   decrypt_data( password, password );
+
+   password += to_string( blockchain_height );
+
+   sha256 hash( password );
+   string digest( hash.get_digest_as_string( ) );
+
+   for( size_t i = 0; i < 1000000; i++ )
+   {
+      hash.update( digest + password );
+      hash.get_digest_as_string( digest );
+   }
+
+   clear_key( password );
+
+   return ( digest.find( targeted_identity ) == 0 );
+}
+
 peerchain_type get_blockchain_type( const string& blockchain )
 {
    peerchain_type chain_type = e_peerchain_type_any;
@@ -2314,26 +2342,34 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
          {
             if( is_fetching )
             {
-               bool fetch_tree_root = true;
+               bool fetch_tree_root = peer_has_tree_items;
 
-               if( !hub_identity.empty( ) )
+               if( fetch_tree_root )
                {
-                  fetch_tree_root = false;
-
-                  if( !add_put_list_if_available( hub_identity, blockchain, height ) )
+                  if( is_shared )
                   {
-                     set_session_variable(
-                      get_special_var_name( e_special_var_blockchain_waiting_for_hub ), c_true_value );
+                     if( !is_targeted_identity( identity, targeted_identity, height ) )
+                        fetch_tree_root = false;
+                  }
+                  else if( !hub_identity.empty( ) )
+                  {
+                     fetch_tree_root = false;
 
-                     // FUTURE: This message should be handled as a server string message.
-                     string progress_message( "Waiting for hub " + hub_identity + "..." );
+                     if( !add_put_list_if_available( hub_identity, blockchain, height ) )
+                     {
+                        set_session_variable(
+                         get_special_var_name( e_special_var_blockchain_waiting_for_hub ), c_true_value );
 
-                     set_session_progress_output( progress_message );
-                     set_system_variable( c_progress_output_prefix + identity, progress_message );
+                        // FUTURE: This message should be handled as a server string message.
+                        string progress_message( "Waiting for hub " + hub_identity + "..." );
+
+                        set_session_progress_output( progress_message );
+                        set_system_variable( c_progress_output_prefix + identity, progress_message );
+                     }
                   }
                }
 
-               if( fetch_tree_root && peer_has_tree_items )
+               if( fetch_tree_root )
                   add_peer_file_hash_for_get( tree_root_hash );
             }
          }
@@ -3560,7 +3596,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             if( !put_hashes.empty( ) )
                create_raw_file( put_hashes, false, put_tag_name.c_str( ) );
 
-            if( !get_session_variable( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ).empty( ) )
+            // NOTE: If a "put" list had been created and the system has a hub blockchain then will
+            // set "@generate_hub_block" so that the next hub block can be automatically generated.
+            if( has_tag( put_tag_name ) && !get_system_variable(
+             get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ).empty( ) )
                set_system_variable( get_special_var_name( e_special_var_generate_hub_block ), c_true_value );
 
             if( !is_in_archive
@@ -3621,45 +3660,17 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       if( !targeted_identity.empty( )
        && ( targeted_identity[ 0 ] != '@' ) && ( blockchain_height == blockchain_height_other ) )
       {
-         string password;
-         password.reserve( 256 );
+         tag_file( blockchain + c_shared_suffix, block_processing );
 
-         get_peerchain_info( identity, 0, &password );
+         string backup_identity( get_session_variable(
+          get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
-         // NOTE: The following needs to be equivalent to the application protocol command:
-         // .crypto_hash -x=1000000 @encrypted_password -s=<height>
-         // as is currently being used in the application protocol script "bc_gen_block.cin".
-         decrypt_data( password, password );
-
-         password += to_string( blockchain_height );
-
-         sha256 hash( password );
-         string digest( hash.get_digest_as_string( ) );
-
-         for( size_t i = 0; i < 1000000; i++ )
-         {
-            hash.update( digest + password );
-            hash.get_digest_as_string( digest );
-         }
-
-         if( digest.find( targeted_identity ) != 0 )
-            tag_del( blockchain + c_shared_suffix );
+         if( backup_identity.empty( ) )
+            set_system_variable( get_special_var_name(
+             e_special_var_export_needed ) + '_' + identity, identity );
          else
-         {
-            tag_file( blockchain + c_shared_suffix, block_processing );
-
-            string backup_identity( get_session_variable(
-             get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
-
-            if( backup_identity.empty( ) )
-               set_system_variable( get_special_var_name(
-                e_special_var_export_needed ) + '_' + identity, identity );
-            else
-               set_system_variable( get_special_var_name(
-                e_special_var_export_needed ) + '_' + backup_identity, identity );
-         }
-
-         clear_key( password );
+            set_system_variable( get_special_var_name(
+             e_special_var_export_needed ) + '_' + backup_identity, identity );
       }
    }
 }
