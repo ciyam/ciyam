@@ -13,14 +13,14 @@
 # </script>
 # <script/>
 #  <name>backup_check
-#  <time>00:00:02-23:59:57
+#  <time>00:00:02
 #  <cycle>5s
 #  <filename>backup_check:~backup
 #  <arguments>@blockchain_backup_height
 # </script>
 # <script/>
 #  <name>shared_check
-#  <time>00:00:04-23:59:59
+#  <time>00:00:04
 #  <cycle>5s
 #  <filename>shared_check:~shared
 # </script>
