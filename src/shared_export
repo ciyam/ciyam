@@ -88,6 +88,7 @@ if [ ! -f ~shared ]; then
  date >>$SHARED_DETAILS
 
  ./system_variable set @shared_secret ""
+ ./system_variable set @export_in_progress ""
  ./system_variable set @exporting_for_identity ""
 
  rm ~shared
