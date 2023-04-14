@@ -18,10 +18,17 @@ ERROR=1
 IDENT=$1
 HEIGHT=$2
 ;
+EXCLUDES=bc.$IDENT.zenith
+;
+.system_variable @blockchain_backup_identity
+@ifneq "$OUTPUT" ""
+EXCLUDES=$EXCLUDES,bc.$OUTPUT.zenith
+@endif
+;
 ALL_PUTS=
 .session_variable @deque ""
 ;
-.file_tags -i=*.zenith -x=bc.$IDENT.*
+.file_tags -i=*.zenith -x=$EXCLUDES
 .session_variable @deque "~$OUTPUT"
 ;
 @:LOOP
