@@ -3606,7 +3606,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
             // NOTE: If a "put" list had been created and the system has a hub blockchain then will
             // set "@generate_hub_block" so that the next hub block can be automatically generated.
-            if( has_tag( put_tag_name ) && !get_system_variable(
+            if( !is_owner && has_tag( put_tag_name ) && !get_system_variable(
              get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ).empty( ) )
                set_system_variable( get_special_var_name( e_special_var_generate_hub_block ), c_true_value );
 
