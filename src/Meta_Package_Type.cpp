@@ -635,7 +635,7 @@ void Meta_Package_Type::impl::impl_Install( )
       exec_system( cmd, false );
 
       if( !exists_file( info_filename ) )
-         throw runtime_error( "Missing package information file (corrupt or incorrect bundle?)." );
+         throw runtime_error( "Missing package information file (corrupt or incorrect bundle '" + get_obj( ).File( ) + "'?)." );
    }
 
    vector< string > lines;
