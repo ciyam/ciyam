@@ -352,7 +352,7 @@ string g_default_Next_View_Id = string( );
 string g_default_Permission = string( );
 string g_default_Source_File = string( );
 string g_default_Status = string( );
-bool g_default_Type = bool( 0 );
+bool g_default_Type = bool( 1 );
 bool g_default_Use_Package_Demo_Data = bool( 0 );
 string g_default_Version = string( "0.1" );
 string g_default_Workgroup = string( );
@@ -7235,6 +7235,7 @@ void Meta_Model::impl::after_fetch( )
 #endif
 
    string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
+
    if( !get_obj( ).get_graph_parent( )
     && get_system_variable( model_key ).empty( ) && !exists_file( script_filename ) )
    {
@@ -7272,6 +7273,10 @@ void Meta_Model::impl::finalise_fetch( bool skip_set_original )
 void Meta_Model::impl::at_create( )
 {
    // [<start at_create>]
+   //nyi
+   if( !get_system_variable(
+    get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
+      get_obj( ).Type( 0 );
    // [<finish at_create>]
 }
 

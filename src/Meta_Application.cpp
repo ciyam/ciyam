@@ -3570,7 +3570,11 @@ void Meta_Application::impl::after_fetch( )
 //nyi
    if( !get_obj( ).get_key( ).empty( ) && !get_obj( ).get_graph_parent( ) )
    {
-      get_obj( ).Type( 1 );
+      string blockchain_identity( get_system_variable(
+       get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+
+      get_obj( ).Type( blockchain_identity.empty( ) );
+
       if( get_obj( ).child_Module( ).iterate_forwards( ) )
       {
          do
