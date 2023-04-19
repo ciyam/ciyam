@@ -11164,7 +11164,7 @@
       <type>bool
       <mandatory>true
       <enum_id>850
-      <default_value>0
+      <default_value>1
       <indexes/>
       </indexes>
       <modifiers/>
