@@ -967,6 +967,7 @@ void Meta_Package::impl::impl_Install( )
       outl << "Linked to existing Standard package..."; // FUTURE: Should be a module string...
 
       string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
+
       if( get_system_variable( "@" + model_key ).empty( ) )
          set_system_variable( model_key, "" );
    }
@@ -988,11 +989,7 @@ void Meta_Package::impl::impl_Install( )
                {
                   string type_name( get_obj( ).Model( ).child_Package( ).Package_Type( ).Name( ) );
 
-                  if( type_name.length( ) > 2 && type_name.substr( type_name.length( ) - 2 ) == "_B" )
-                     type_name.erase( type_name.length( ) - 2 );
-
-                  installed_types.insert( make_pair(
-                   type_name, get_obj( ).Model( ).child_Package( ).get_key( ) ) );
+                  installed_types.insert( make_pair( type_name, get_obj( ).Model( ).child_Package( ).get_key( ) ) );
                }
             }
          } while( get_obj( ).Model( ).child_Package( ).iterate_next( ) );
@@ -1237,11 +1234,7 @@ void Meta_Package::impl::impl_Install( )
             } while( get_obj( ).child_Package_Option( ).iterate_next( ) );
          }
 
-         string opt_type_name( type_name );
-         if( opt_type_name.length( ) > 3 && opt_type_name.substr( opt_type_name.length( ) - 2 ) == "_B" )
-            opt_type_name.erase( opt_type_name.length( ) - 2 );
-
-         string opt_prefix( "opt_" + lower( opt_type_name ) + "_" );
+         string opt_prefix( "opt_" + lower( type_name ) + "_" );
 
          // NOTE: The "extras" need to preceed the normal keys so they can be used in conditional
          // expressions.
