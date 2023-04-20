@@ -5094,6 +5094,7 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
                get_obj( ).Model( ).child_Relationship( ).Model( get_obj( ).Model( ) );
 
                get_obj( ).Model( ).child_Relationship( ).Child_Class( get_obj( ).get_key( ) );
+
                get_obj( ).Model( ).child_Relationship( ).Parent_Class(
                 all_classes[ get_obj( ).Source_Class( ).child_Relationship_Child( ).Parent_Class( ).Id( ) ] );
 
@@ -5134,25 +5135,35 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
                get_obj( ).Model( ).child_Relationship( ).Model( get_obj( ).Model( ) );
 
                get_obj( ).Model( ).child_Relationship( ).Parent_Class( get_obj( ).get_key( ) );
-               get_obj( ).Model( ).child_Relationship( ).Child_Class(
-                all_classes[ get_obj( ).Source_Class( ).child_Relationship_Parent( ).Child_Class( ).Id( ) ] );
 
-               get_obj( ).Model( ).child_Relationship( ).Source_Relationship( get_obj( ).Source_Class( ).child_Relationship_Parent( ) );
-
-               get_obj( ).Model( ).child_Relationship( ).op_apply( );
-
-               key_info = FIELD_ID( Meta, Field, Id );
-               key_info += "#1 " + get_obj( ).Model( ).child_Relationship( ).Field_Id( );
-
-               // NOTE: When initially cloned the Field in the Relationship's Child Class has its Parent Class linked to the Class from the source model
-               // so locate the field (via the Id which is stored in the Relationship) and change the Parent Class to link to the correct model here.
-               if( get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).iterate_forwards( key_info, true, 1, e_sql_optimisation_unordered ) )
+               // NOTE: Need to skip any self-relationships here otherwise would be creating duplicates.
+               if( get_obj( ).Source_Class( ).child_Relationship_Parent( ).Child_Class( )
+                == get_obj( ).Source_Class( ).child_Relationship_Parent( ).Parent_Class( ) )
+                  get_obj( ).Model( ).child_Relationship( ).op_cancel( );
+               else
                {
-                  get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).op_update( );
-                  get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).Parent_Class( get_obj( ).Model( ).child_Relationship( ).Parent_Class( ) );
-                  get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).op_apply( );
+                  get_obj( ).Model( ).child_Relationship( ).Child_Class( get_obj( ).get_key( ) );
 
-                  get_obj( ).Model( ).child_Relationship( ).Child_Class( ).iterate_stop( );
+                  get_obj( ).Model( ).child_Relationship( ).Child_Class(
+                   all_classes[ get_obj( ).Source_Class( ).child_Relationship_Parent( ).Child_Class( ).Id( ) ] );
+
+                  get_obj( ).Model( ).child_Relationship( ).Source_Relationship( get_obj( ).Source_Class( ).child_Relationship_Parent( ) );
+
+                  get_obj( ).Model( ).child_Relationship( ).op_apply( );
+
+                  key_info = FIELD_ID( Meta, Field, Id );
+                  key_info += "#1 " + get_obj( ).Model( ).child_Relationship( ).Field_Id( );
+
+                  // NOTE: When initially cloned the Field in the Relationship's Child Class has its Parent Class linked to the Class from the source model
+                  // so locate the field (via the Id which is stored in the Relationship) and change the Parent Class to link to the correct model here.
+                  if( get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).iterate_forwards( key_info, true, 1, e_sql_optimisation_unordered ) )
+                  {
+                     get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).op_update( );
+                     get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).Parent_Class( get_obj( ).Model( ).child_Relationship( ).Parent_Class( ) );
+                     get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).op_apply( );
+
+                     get_obj( ).Model( ).child_Relationship( ).Child_Class( ).iterate_stop( );
+                  }
                }
             }
          } while( get_obj( ).Source_Class( ).child_Relationship_Parent( ).iterate_next( ) );
