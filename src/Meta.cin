@@ -781,6 +781,7 @@ field_add -id=127135 Application Blockchain_Id str30 opt -transient
 field_add -id=127136 Application Type bool mand -def=1 -transient -e=app_type
 field_add -id=127137 Application Use_Script bool mand -def=0
 field_add -id=127138 Application Installing_Script bool mand -def=0
+field_add -id=127139 Application Year_Created year_created mand -x=defcurrentyear
 modifier_add -id=127310 Application Is_Traditional Blockchain_Id:relegate
 modifier_add -id=127311 Application Is_Non_Traditional Allow_Duplicate_Logins:relegate\
 ,Auto_Login_Days:relegate,Encrypt_Dynamic_Content:relegate,Use_Embedded_Images:relegate
@@ -1180,6 +1181,7 @@ modifier_add -id=500580 Relationship Is_Internal @class:lowlight
 modifier_add -id=500581 Relationship Hide_Parent_Field_For_View Parent_Field_For_View:relegate
 modifier_add -id=500582 Relationship Hide_Parent_Field_For_List Parent_Field_For_List:relegate
 modifier_add -id=500575 Model Is_Non_Traditional {Permission}:relegate,Add_Packages:relegate
+modifier_add -id=500576 Model Standard_Package_Installed Add_Packages:relegate
 modifier_add -id=500590 Specification Is_Comment @class:extralight1;list
 modifier_add -id=500600 Specification Hide_Field {Field}:relegate
 modifier_add -id=500601 Specification Hide_Other_Source_Child Other_Source_Child:relegate
@@ -1428,6 +1430,7 @@ specification_add -id=610013 {Model}_Next_Specification_Id_required field_requir
 specification_add -id=620013 {Model}_Next_View_Id_required field_required "Model Next_View_Id"
 specification_add -id=630013 {Model}_Next_List_Id_required field_required "Model Next_List_Id"
 specification_add -id=600014 {Model}_Is_Non_Traditional modifier_field_value "Model Is_Non_Traditional Type 0"
+specification_add -id=610014 {Model}_Standard_Package_Installed modifier_field_null "Model Standard_Package_Installed {Workgroup}:Standard_Package -negative"
 specification_add -id=600015 {Enum}_Is_Internal modifier_field_value "Enum Is_Internal Internal true"
 specification_add -id=600016 {Enum}_Internal_protect state_protect "equal Enum Internal true"
 specification_add -id=600017 {Enum}_clone_{Enum_Item}_children clone_children "Enum Enum_Item {Enum}"
@@ -2282,7 +2285,7 @@ specification_add -id=602910 {Application}_view view "? standard:can_copy Applic
 ,Use_Vertical_Menu,Use_Check_Boxes_for_Bools,Print_Lists_With_Check_Boxes,Print_Lists_With_Row_Numbers\
 ,Default_Image_Width,Default_Image_Height,Default_List_Row_Limit,Default_Multiline_Min_Rows,Default_Multiline_Max_Rows\
 ,Default_Multiline_Text_Limit,Default_Multiline_Text_Trunc,Default_List_Print_Row_Limit,Default_Max_Attached_File_Size\
-,@tab:Other_Settings,Module_Prefix,Use_TLS_Sessions,Use_URL_Checksum,Use_Embedded_Images,Encrypt_Dynamic_Content\
+,@tab:Other_Settings,Year_Created,Module_Prefix,Use_TLS_Sessions,Use_URL_Checksum,Use_Embedded_Images,Encrypt_Dynamic_Content\
 ,Auto_Login_Days,Allow_Duplicate_Logins,Actions"
 specification_add -id=602950 {Module}_child_list0 list "@602950_* child:no_limit Module {Model}:Name;link\
  -act=+!126410+@rfields+@rvalues,+!^126420+@rfields+@rvalues {Application}"

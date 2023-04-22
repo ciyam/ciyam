@@ -2802,6 +2802,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_application_year_created
+     <field>127139
+     <ftype>int
+     <extra>defcurrentyear+range=2005..2055
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_application_module_prefix
      <field>127103
      <ftype>string
@@ -4972,7 +4980,7 @@
      <ftype>int
      <extra>new_only+enum=575
      <mandatory>true
-     <modifiers>100:relegate
+     <modifiers>100:relegate,400:relegate
     </field>
     <field/>
      <name>field_model_use_package_demo_data

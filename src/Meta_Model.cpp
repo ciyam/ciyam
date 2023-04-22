@@ -45,6 +45,10 @@
 #include "command_handler.h"
 #include "module_interface.h"
 
+// [(start modifier_field_null)] 610014
+#include "Meta_Package.h"
+// [(finish modifier_field_null)] 610014
+
 // [<start includes>]
 //nyi
 #include "Meta_Enum.h"
@@ -271,6 +275,7 @@ const char* const c_procedure_id_Remove_Module = "105430";
 
 const uint64_t c_modifier_Is_Non_Traditional = UINT64_C( 0x100 );
 const uint64_t c_modifier_Is_Not_Busy = UINT64_C( 0x200 );
+const uint64_t c_modifier_Standard_Package_Installed = UINT64_C( 0x400 );
 
 domain_string_max_size< 100 > g_Home_Title_domain;
 aggregate_domain< string,
@@ -6902,6 +6907,11 @@ uint64_t Meta_Model::impl::get_state( ) const
       state |= c_modifier_Is_Non_Traditional;
    // [(finish modifier_field_value)] 600014
 
+   // [(start modifier_field_null)] 610014
+   if( !is_null( get_obj( ).Workgroup( ).Standard_Package( ) ) )
+      state |= c_modifier_Standard_Package_Installed;
+   // [(finish modifier_field_null)] 610014
+
    // [<start get_state>]
 //nyi
    if( get_obj( ).Status( ).empty( ) )
@@ -6922,6 +6932,8 @@ string Meta_Model::impl::get_state_names( ) const
       state_names += "|" + string( "Is_Non_Traditional" );
    if( state & c_modifier_Is_Not_Busy )
       state_names += "|" + string( "Is_Not_Busy" );
+   if( state & c_modifier_Standard_Package_Installed )
+      state_names += "|" + string( "Standard_Package_Installed" );
 
    return state_names.empty( ) ? state_names : state_names.substr( 1 );
 }
@@ -7411,6 +7423,9 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
 
    // [<start for_store>]
 //nyi
+   if( !is_null( get_obj( ).Workgroup( ).Standard_Package( ) ) )
+      get_obj( ).Add_Packages( 0 );
+
    if( is_create && get_obj( ).Add_Packages( ) && !storage_locked_for_admin( ) )
    {
       string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
@@ -9174,6 +9189,14 @@ void Meta_Model::get_always_required_field_names(
     || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
       names.insert( "Type" );
    // [(finish modifier_field_value)] 600014
+
+   // [(start modifier_field_null)] 610014
+   dependents.insert( "Workgroup" ); // (for Standard_Package_Installed modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Workgroup ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Workgroup ) ) )
+      names.insert( "Workgroup" );
+   // [(finish modifier_field_null)] 610014
 
    // [<start get_always_required_field_names>]
 //nyi

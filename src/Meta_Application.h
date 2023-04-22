@@ -72,7 +72,8 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
       e_field_id_Use_URL_Checksum = 36,
       e_field_id_Use_Vertical_Menu = 37,
       e_field_id_Version = 38,
-      e_field_id_Workgroup = 39
+      e_field_id_Workgroup = 39,
+      e_field_id_Year_Created = 40
    };
 
    Meta_Application( );
@@ -188,6 +189,9 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
 
    const std::string& Version( ) const;
    void Version( const std::string& Version );
+
+   int Year_Created( ) const;
+   void Year_Created( int Year_Created );
 
    Meta_Application_Script& Creation_Script( );
    const Meta_Application_Script& Creation_Script( ) const;
