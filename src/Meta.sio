@@ -833,6 +833,23 @@
       </specifications>
      </field>
      <field/>
+      <id>127139
+      <name>Year_Created
+      <type>1060
+      <mandatory>true
+      <extra>defcurrentyear
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602910
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>302220
       <name>{Workgroup}
       <type>@class
@@ -10770,6 +10787,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>610014
+      <item>class
+     </specification>
+     <specification/>
       <id>610194
       <item>pclass
      </specification>
@@ -10838,6 +10859,10 @@
       <modifiers/>
        <modifier/>
         <id>500575
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500576
         <affect>relegate
        </modifier>
       </modifiers>
@@ -11281,6 +11306,10 @@
         <id>600010
         <item>pfield
        </specification>
+       <specification/>
+        <id>610014
+        <item>field
+       </specification>
       </specifications>
      </field>
     </fields>
@@ -11304,6 +11333,10 @@
      <modifier/>
       <id>500431
       <name>Is_Not_Busy
+     </modifier>
+     <modifier/>
+      <id>500576
+      <name>Standard_Package_Installed
      </modifier>
     </modifiers>
     <procedures/>
@@ -28851,6 +28884,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>610014
+      <item>pclass
+     </specification>
+     <specification/>
       <id>610018
       <item>pclass
      </specification>
@@ -29036,6 +29073,10 @@
       <modifiers/>
       </modifiers>
       <specifications/>
+       <specification/>
+        <id>610014
+        <item>pfield
+       </specification>
       </specifications>
      </field>
     </fields>
@@ -30836,6 +30877,7 @@
      <field_info>127118;enum=903
      <field_info>127127
      <field_info>@tab:Other_Settings
+     <field_info>127139
      <field_info>127103
      <field_info>127134
      <field_info>127107
@@ -33821,6 +33863,19 @@
      <field1_id>105101
      <ext>.cpp
      <append_to_ext>.txt
+    </data>
+   </specification>
+   <specification/>
+    <id>610014
+    <name>{Model}_Standard_Package_Installed
+    <type>modifier_field_null
+    <data/>
+     <class_id>105100
+     <pclass_id>101100
+     <modifier_id>500576
+     <field_id>300500
+     <pfield_id>302835
+     <is_negative>true
     </data>
    </specification>
    <specification/>

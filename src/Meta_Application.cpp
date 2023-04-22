@@ -132,6 +132,7 @@ const char* const c_field_id_Use_URL_Checksum = "127107";
 const char* const c_field_id_Use_Vertical_Menu = "127133";
 const char* const c_field_id_Version = "127102";
 const char* const c_field_id_Workgroup = "302220";
+const char* const c_field_id_Year_Created = "127139";
 
 const char* const c_field_name_Actions = "Actions";
 const char* const c_field_name_Add_Modules_Automatically = "Add_Modules_Automatically";
@@ -172,6 +173,7 @@ const char* const c_field_name_Use_URL_Checksum = "Use_URL_Checksum";
 const char* const c_field_name_Use_Vertical_Menu = "Use_Vertical_Menu";
 const char* const c_field_name_Version = "Version";
 const char* const c_field_name_Workgroup = "Workgroup";
+const char* const c_field_name_Year_Created = "Year_Created";
 
 const char* const c_field_display_name_Actions = "field_application_actions";
 const char* const c_field_display_name_Add_Modules_Automatically = "field_application_add_modules_automatically";
@@ -212,8 +214,9 @@ const char* const c_field_display_name_Use_URL_Checksum = "field_application_use
 const char* const c_field_display_name_Use_Vertical_Menu = "field_application_use_vertical_menu";
 const char* const c_field_display_name_Version = "field_application_version";
 const char* const c_field_display_name_Workgroup = "field_application_workgroup";
+const char* const c_field_display_name_Year_Created = "field_application_year_created";
 
-const int c_num_fields = 39;
+const int c_num_fields = 40;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -254,6 +257,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "127136",
    "127137",
    "127138",
+   "127139",
    "302220",
    "302225"
 };
@@ -298,7 +302,8 @@ const char* const c_all_sorted_field_names[ ] =
    "Use_URL_Checksum",
    "Use_Vertical_Menu",
    "Version",
-   "Workgroup"
+   "Workgroup",
+   "Year_Created"
 };
 
 inline bool compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
@@ -366,6 +371,7 @@ aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Name_domain;
 domain_string_max_size< 5 > g_Version_domain;
+domain_int_range< 2005, 2055 > g_Year_Created_domain;
 
 string g_order_field_name;
 string g_owner_field_name;
@@ -449,6 +455,7 @@ bool g_default_Use_URL_Checksum = bool( 0 );
 bool g_default_Use_Vertical_Menu = bool( 0 );
 string g_default_Version = string( "0.1" );
 string g_default_Workgroup = string( );
+int g_default_Year_Created = int( );
 
 set< int > g_app_auto_days_enum;
 set< int > g_app_print_row_limit_enum;
@@ -1069,6 +1076,12 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
          string_getter< Meta_Workgroup >( cmd_handler.p_Meta_Application->Workgroup( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Year_Created || field_name == c_field_name_Year_Created )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Application->Year_Created( ), cmd_handler.retval );
+      }
+
       if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
@@ -1354,6 +1367,13 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
           *cmd_handler.p_Meta_Application, &Meta_Application::Workgroup, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Year_Created || field_name == c_field_name_Year_Created )
+      {
+         handled = true;
+         func_string_setter< Meta_Application, int >(
+          *cmd_handler.p_Meta_Application, &Meta_Application::Year_Created, field_value );
+      }
+
       if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
@@ -1548,6 +1568,9 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    const string& impl_Version( ) const { return lazy_fetch( p_obj ), v_Version; }
    void impl_Version( const string& Version ) { sanity_check( Version ); v_Version = Version; }
 
+   int impl_Year_Created( ) const { return lazy_fetch( p_obj ), v_Year_Created; }
+   void impl_Year_Created( int Year_Created ) { v_Year_Created = Year_Created; }
+
    Meta_Application_Script& impl_Creation_Script( )
    {
       if( !cp_Creation_Script )
@@ -1739,6 +1762,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    bool v_Use_URL_Checksum;
    bool v_Use_Vertical_Menu;
    string v_Version;
+   int v_Year_Created;
 
    string v_Creation_Script;
    mutable class_pointer< Meta_Application_Script > cp_Creation_Script;
@@ -1872,9 +1896,8 @@ void Meta_Application::impl::impl_Generate( )
 #else
       outs << "call touch.bat %WEBDIR%/" << app_dir << "/ciyam_interface.stop\n";
 #endif
-      // KLUDGE: Assumes that the first four digits of the key are the year created (there probably should
-      // instead be a Year_Created field for an Application).
-      outv << "\x60{\x60$year_created\x60=\x60'" << get_obj( ).get_key( ).substr( 0, 4 ) << "\x60'\x60}\n";
+
+      outv << "\x60{\x60$year_created\x60=\x60'" << get_obj( ).Year_Created( ) << "\x60'\x60}\n";
 
       string url_opts;
       if( get_obj( ).Use_URL_Checksum( ) )
@@ -1908,6 +1931,7 @@ void Meta_Application::impl::impl_Generate( )
             login_opts += '+';
          login_opts += "allow_switching";
       }
+
       outv << "\x60{\x60$login_opts\x60=\x60'" << login_opts << "\x60'\x60}\n";
 
       outv << "\x60{\x60$notes_rmin\x60=\x60'" << get_obj( ).Default_Multiline_Min_Rows( ) << "\x60'\x60}\n";
@@ -1945,6 +1969,7 @@ void Meta_Application::impl::impl_Generate( )
             print_list_ops += '+';
          print_list_ops += "show_numbers";
       }
+
       outv << "\x60{\x60$print_list_ops\x60=\x60'" << print_list_ops << "\x60'\x60}\n";
 
       outv << "\x60{\x60$use_tls\x60=\x60'" << use_tls << "\x60'\x60}\n";
@@ -2680,6 +2705,10 @@ string Meta_Application::impl::get_field_value( int field ) const
       retval = to_string( impl_Workgroup( ) );
       break;
 
+      case 39:
+      retval = to_string( impl_Year_Created( ) );
+      break;
+
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
@@ -2847,6 +2876,10 @@ void Meta_Application::impl::set_field_value( int field, const string& value )
       func_string_setter< Meta_Application::impl, Meta_Workgroup >( *this, &Meta_Application::impl::impl_Workgroup, value );
       break;
 
+      case 39:
+      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Year_Created, value );
+      break;
+
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
@@ -3010,6 +3043,10 @@ void Meta_Application::impl::set_field_default( int field )
 
       case 38:
       impl_Workgroup( g_default_Workgroup );
+      break;
+
+      case 39:
+      impl_Year_Created( g_default_Year_Created );
       break;
 
       default:
@@ -3177,6 +3214,10 @@ bool Meta_Application::impl::is_field_default( int field ) const
 
       case 38:
       retval = ( v_Workgroup == g_default_Workgroup );
+      break;
+
+      case 39:
+      retval = ( v_Year_Created == g_default_Year_Created );
       break;
 
       default:
@@ -3376,6 +3417,7 @@ void Meta_Application::impl::clear( )
    v_Use_URL_Checksum = g_default_Use_URL_Checksum;
    v_Use_Vertical_Menu = g_default_Use_Vertical_Menu;
    v_Version = g_default_Version;
+   v_Year_Created = g_default_Year_Created;
 
    v_Creation_Script = string( );
    if( cp_Creation_Script )
@@ -3450,6 +3492,13 @@ void Meta_Application::impl::validate(
     && !g_Version_domain.is_valid( v_Version, error_message = "" ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Version,
        get_module_string( c_field_display_name_Version ) + " " + error_message ) );
+
+   if( !is_null( v_Year_Created )
+    && ( v_Year_Created != g_default_Year_Created
+    || !value_will_be_provided( c_field_name_Year_Created ) )
+    && !g_Year_Created_domain.is_valid( v_Year_Created, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Year_Created,
+       get_module_string( c_field_display_name_Year_Created ) + " " + error_message ) );
 
    if( !g_app_auto_days_enum.count( v_Auto_Login_Days ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Auto_Login_Days,
@@ -3541,6 +3590,12 @@ void Meta_Application::impl::validate_set_fields(
     && !g_Version_domain.is_valid( v_Version, error_message = "" ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Version,
        get_module_string( c_field_display_name_Version ) + " " + error_message ) );
+
+   if( !is_null( v_Year_Created )
+    && ( fields_set.count( c_field_id_Year_Created ) || fields_set.count( c_field_name_Year_Created ) )
+    && !g_Year_Created_domain.is_valid( v_Year_Created, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Year_Created,
+       get_module_string( c_field_display_name_Year_Created ) + " " + error_message ) );
 }
 
 void Meta_Application::impl::after_fetch( )
@@ -4306,6 +4361,16 @@ void Meta_Application::Version( const string& Version )
    p_impl->impl_Version( Version );
 }
 
+int Meta_Application::Year_Created( ) const
+{
+   return p_impl->impl_Year_Created( );
+}
+
+void Meta_Application::Year_Created( int Year_Created )
+{
+   p_impl->impl_Year_Created( Year_Created );
+}
+
 Meta_Application_Script& Meta_Application::Creation_Script( )
 {
    return p_impl->impl_Creation_Script( );
@@ -4937,6 +5002,16 @@ const char* Meta_Application::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Year_Created )
+   {
+      p_id = c_field_id_Year_Created;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
 
    return p_id;
 }
@@ -5338,6 +5413,16 @@ const char* Meta_Application::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Year_Created )
+   {
+      p_name = c_field_name_Year_Created;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
 
    return p_name;
 }
@@ -5567,6 +5652,11 @@ string Meta_Application::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Workgroup );
       get_module_string( c_field_display_name_Workgroup, &next );
    }
+   else if( id_or_name == c_field_id_Year_Created || id_or_name == c_field_name_Year_Created )
+   {
+      name = string( c_field_display_name_Year_Created );
+      get_module_string( c_field_display_name_Year_Created, &next );
+   }
 
    // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
    // has one) will be in the module string that immediately follows that of its name.
@@ -5660,6 +5750,8 @@ string Meta_Application::get_field_display_name( const string& id_or_name ) cons
       display_name = get_module_string( c_field_display_name_Version );
    else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
       display_name = get_module_string( c_field_display_name_Workgroup );
+   else if( id_or_name == c_field_id_Year_Created || id_or_name == c_field_name_Year_Created )
+      display_name = get_module_string( c_field_display_name_Year_Created );
 
    return display_name;
 }
@@ -5951,6 +6043,7 @@ void Meta_Application::get_sql_column_names(
    names.push_back( "C_Use_Vertical_Menu" );
    names.push_back( "C_Version" );
    names.push_back( "C_Workgroup" );
+   names.push_back( "C_Year_Created" );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
       *p_done = true;
@@ -5996,6 +6089,7 @@ void Meta_Application::get_sql_column_values(
    values.push_back( to_string( Use_Vertical_Menu( ) ) );
    values.push_back( sql_quote( to_string( Version( ) ) ) );
    values.push_back( sql_quote( to_string( Workgroup( ) ) ) );
+   values.push_back( to_string( Year_Created( ) ) );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
       *p_done = true;
@@ -6171,6 +6265,7 @@ void Meta_Application::static_get_field_info( field_info_container& all_field_in
    all_field_info.push_back( field_info( "127133", "Use_Vertical_Menu", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127102", "Version", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "302220", "Workgroup", "Meta_Workgroup", true, "", "" ) );
+   all_field_info.push_back( field_info( "127139", "Year_Created", "int", false, "", "" ) );
 }
 
 void Meta_Application::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )
@@ -6360,6 +6455,10 @@ const char* Meta_Application::static_get_field_id( field_id id )
       case 39:
       p_id = "302220";
       break;
+
+      case 40:
+      p_id = "127139";
+      break;
    }
 
    if( !p_id )
@@ -6529,6 +6628,10 @@ const char* Meta_Application::static_get_field_name( field_id id )
       case 39:
       p_id = "Workgroup";
       break;
+
+      case 40:
+      p_id = "Year_Created";
+      break;
    }
 
    if( !p_id )
@@ -6621,6 +6724,8 @@ int Meta_Application::static_get_field_num( const string& field )
       rc += 38;
    else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
       rc += 39;
+   else if( field == c_field_id_Year_Created || field == c_field_name_Year_Created )
+      rc += 40;
 
    return rc - 1;
 }
@@ -6687,6 +6792,7 @@ string Meta_Application::static_get_sql_columns( )
     "C_Use_Vertical_Menu INTEGER NOT NULL,"
     "C_Version VARCHAR(256) NOT NULL,"
     "C_Workgroup VARCHAR(75) NOT NULL,"
+    "C_Year_Created INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;
