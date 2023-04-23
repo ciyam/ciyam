@@ -336,22 +336,23 @@ a
    background: #20BAD9;
 }
 
-#uselects
+#nav #uselects
 {
+   clear; both;
    color: #666;
    margin-top: 10px;
-   float: left;
+   text-align: right;
    border: 0px solid #000;
 }
 
-#uselects a
+#nav #uselects a
 {
    color: #0;
-   font-weight: 300;
+   font-weight: 600;
    text-decoration: none;
 }
 
-#uselects select
+#nav #uselects select
 {
    font-size: 12px;
 }
@@ -359,7 +360,7 @@ a
 #nav #timeinfo
 {
    clear: both;
-   margin-top: 20px;
+   margin-top: 0px;
    text-align: right;
 }
 
@@ -373,7 +374,7 @@ a
 #nav #username
 {
    color: #666;
-   margin-top: 25px;
+   margin-top: 10px;
    float: right;
    border: 0px solid #000;
 }

@@ -71,7 +71,7 @@ BIND_NORMAL = @echo Binding $@...;$(BIND) -r $@
 LINK_NORMAL = @echo Linking $@...;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -export-dynamic -o $@
 LINK_NORMAL_DYN_USER = @echo Linking $@...;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -o $@
 
-LINK_DYNAMIC = @echo Linking $@...;$(LINK) -shared -lc -o $@
+LINK_DYNAMIC = @echo Linking $@...;$(LINK) -shared -lc -Wl,--no-as-needed,-rpath,. -o $@
 
 THREAD_LIBS = -lpthread
 READLINE_LIBS = -lreadline

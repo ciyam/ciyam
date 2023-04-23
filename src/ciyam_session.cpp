@@ -4798,7 +4798,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          if( !rebuild && !partial && !exists_file( name + ".backup.bun.gz" ) )
-            throw runtime_error( "need '" + name + ".backup.bun.gz' to preform a restore" );
+            throw runtime_error( "need '" + name + ".backup.bun.gz' to perform a restore" );
 
          if( !rebuild && !partial )
          {

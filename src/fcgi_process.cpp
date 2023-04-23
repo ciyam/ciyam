@@ -1648,7 +1648,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             extra_content << "            </select>\n";
          }
 
-         if( !p_session_info->needs_pin && allow_module_switching && cmd != c_cmd_join )
+         if( !using_anonymous && !p_session_info->needs_pin && allow_module_switching && cmd != c_cmd_join )
          {
             bool had_first = false;
 
