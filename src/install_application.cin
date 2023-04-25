@@ -3,12 +3,12 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-CIYAM_GRP=%1
-CIYAM_UID=%2
-CIYAM_MODEL=%3
-CIYAM_APP_KEY=%4
-@ifdef %6
-.session_variable @package_install_extra %6
+CIYAM_GRP=$1
+CIYAM_UID=$2
+CIYAM_MODEL=$3
+CIYAM_APP_KEY=$4
+@ifdef $6
+.session_variable @package_install_extra $6
 @endif
-<%5.cin
+<$5.cin
 .quit
