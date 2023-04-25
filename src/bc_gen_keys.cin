@@ -35,6 +35,14 @@ SHARED=1
 @endif
 @endif
 ;
+PEER_HUB=
+.system_variable @blockchain_peer_hub_identity
+@ifdef $OUTPUT
+@ifeq "$IDENT" "$OUTPUT"
+PEER_HUB=1
+@endif
+@endif
+;
 IS_DEMO=
 @ifeq "$IDENT" "e3733d121"
 IS_DEMO=1
@@ -54,10 +62,14 @@ MODULUS=@$NEXT_HEIGHT#$MULTIPLE
 HEIGHT=@$HEIGHT+$MULTIPLE
 @endif
 ;
+@ifndef $PEER_HUB
 @ifndef $SHARED
 .crypto_hash $SEED -s=-$HEIGHT
 @else
 .crypto_hash $SEED -s=+$HEIGHT
+@endif
+@else
+.crypto_hash $SEED -s=#$HEIGHT
 @endif
 ENTROPY_HASH=$OUTPUT
 ;
@@ -84,10 +96,14 @@ MODULUS=@$NEXT_HEIGHT#$SQUARED
 @ifeq "$MODULUS" "0"
 HEIGHT=@$HEIGHT+$SQUARED
 ;
+@ifndef $PEER_HUB
 @ifndef $SHARED
 .crypto_hash $SEED -s=-$HEIGHT
 @else
 .crypto_hash $SEED -s=+$HEIGHT
+@endif
+@else
+.crypto_hash $SEED -s=#$HEIGHT
 @endif
 ENTROPY_HASH=$OUTPUT
 ;
