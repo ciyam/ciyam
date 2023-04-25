@@ -53,6 +53,7 @@ BLK_HEIGHT=@$BLK_HEIGHT-1
 .file_tag $OUTPUT bc.$IDENT.zenith
 ;
 .file_kill -q bc.$IDENT.$LAST_HEIGHT.blk
+.file_kill -q bc.$IDENT.$LAST_HEIGHT.opl
 .file_kill -q bc.$IDENT.$LAST_HEIGHT.pub
 ;
 .file_kill -q bc.$IDENT.$BLK_HEIGHT.sig
