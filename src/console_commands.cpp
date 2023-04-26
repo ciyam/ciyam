@@ -372,13 +372,19 @@ bool is_choice_input( const string& input )
 //
 // If instead you used the following:
 //
-// &Continue? [yes=1!Yes|no=!No] (choose one)
+// &Continue? [CONT:yes=1!Yes|no=!No] (choose one)
 //
-// then the output after typing 'y' or 'n' would be 'Yes' or 'No' instead of 'yes' or 'no'.
+// then the output after typing 'y' or 'n' would be 'Yes' or 'No' instead of 'yes'
+// or 'no' and the actual string returned will now be:
+//
+// CONT=1
+//
+// (or CONT= if 'n' was pressed)
 
 string get_input_from_choices( const string& input )
 {
    string str( input );
+   string var;
 
    string::size_type pos = input.find( '[' );
 
@@ -393,6 +399,14 @@ string get_input_from_choices( const string& input )
          string choice_info( input.substr( pos + 1, rpos - pos - 1 ) );
 
          str.erase( pos, rpos - pos + 1 );
+
+         string::size_type vpos = choice_info.find( ':' );
+
+         if( vpos != string::npos )
+         {
+            var = choice_info.substr( 0, vpos );
+            choice_info.erase( 0, vpos + 1 );
+         }
 
          while( true )
          {
@@ -502,8 +516,15 @@ string get_input_from_choices( const string& input )
          if( pos != string::npos )
          {
             str.erase( pos );
-            str += '=';
+
+            if( var.empty( ) )
+               str += '=';
+            else
+               var += '=';
          }
+
+         if( !var.empty( ) )
+            str = var;
 
          str += value;
       }
