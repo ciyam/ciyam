@@ -4055,12 +4055,17 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                {
                   string first_item_hash;
 
+                  bool was_incomplete = false;
+
                   // NOTE: In the case where a peer had not completed fetching
                   // all files for a new block height the nonce value (using a
                   // '@' prefix) identifies the next "get" file which needs to
                   // be found in the first "put" file.
                   if( !nonce.empty( ) && nonce[ 0 ] == '@' )
+                  {
+                     was_incomplete = true;
                      first_item_hash = nonce.substr( 1 );
+                  }
 
                   temporary_session_variable temp_hash( get_special_var_name( e_special_var_hash ), first_item_hash );
 
@@ -4136,7 +4141,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         // NOTE: If height matches the current zenith then skip checking for all items.
                         bool has_all_tree_items = ( socket_handler.get_blockchain_height( ) == blockchain_height );
 
-                        if( !is_fetching && !has_all_tree_items )
+                        // NOTE: Unless incomplete will not check whether all tree items are present (to minimise file transfers).
+                        if( !is_fetching && was_incomplete && !has_all_tree_items )
                            has_all_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, &socket_handler );
 
                         if( !has_all_tree_items )
