@@ -1,0 +1,15 @@
+#!/bin/sh
+# Copyright (c) 2023 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ -d cached ]; then
+ if mountpoint -q cached; then
+  echo "'cached' is already mounted"
+ else
+  sudo mkfs -q /dev/ram1 500M
+  sudo mount /dev/ram1 cached
+  sudo chown -R tux:www cached
+ fi
+fi

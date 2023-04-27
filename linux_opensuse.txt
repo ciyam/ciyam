@@ -101,6 +101,22 @@ newgrp - www
 sudo chmod g+w /srv/www/htdocs
 sudo chown wwwrun:www /srv/www/htdocs
 
+Create cached files area
+------------------------
+
+sudo mkdir cached
+cd cached
+sudo vi README.md
+
+[README.md]
+CIYAM Cached Files Area
+=======================
+
+If you are reading this then a backup or restore is now active - please disconnect and try again later.
+
+NOTE: If still seeing this after being disconnected for an hour then this device may require rebooting.
+[README.md]
+
 Create backup staging area ext4 file system and automount entry
 ---------------------------------------------------------------
 sudo fallocate -l 10M backup.img
@@ -126,10 +142,7 @@ NOTE: If still seeing this after being disconnected for an hour then this device
 cd ..
 
 sudo mount backup.img backup
-cd backup
-sudo chown tux:www .
-sudo chown tux:www *
-cd ..
+sudo chown -R tux:www backup
 
 sudo umount backup
 
@@ -158,10 +171,7 @@ NOTE: If still seeing this after being disconnected for an hour then this device
 cd ..
 
 sudo mount shared.img shared
-cd shared
-sudo chown tux:www .
-sudo chown tux:www *
-cd ..
+sudo chown -R tux:www shared
 
 sudo umount shared
 
