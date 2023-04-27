@@ -4970,6 +4970,9 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             }
 
             set_sid( sid );
+#ifndef _WIN32
+            system( "./init_cached_files_area" );
+#endif
          }
       }
 
