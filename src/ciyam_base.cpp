@@ -4971,7 +4971,14 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
             set_sid( sid );
 #ifndef _WIN32
-            system( "./init_cached_files_area" );
+            string user( get_environment_variable( c_env_var_ciyam_user ) );
+
+            if( !user.empty( ) )
+            {
+               string cmd( "./init_cached_files_area \"" + user + "\"" );
+
+               system( cmd.c_str( ) );
+            }
 #endif
          }
       }

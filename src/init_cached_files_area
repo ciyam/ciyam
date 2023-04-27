@@ -4,12 +4,16 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-if [ -d cached ]; then
- if mountpoint -q cached; then
-  echo "'cached' is already mounted"
- else
-  sudo mkfs -q /dev/ram1 500M
-  sudo mount /dev/ram1 cached
-  sudo chown -R tux:www cached
+if [ $# -lt 1 ]; then
+ echo Usage: init_cached_files_area [user]
+else
+ if [ -d "/home/$1/cached" ]; then
+  if mountpoint -q "/home/$1/cached"; then
+   echo "[init_cached_files_area] 'cached' is already mounted"
+  else
+   sudo mkfs -q /dev/ram1 500M
+   sudo mount /dev/ram1 "/home/$1/cached"
+   sudo chown -R tux:www "/home/$1/cached"
+  fi
  fi
 fi
