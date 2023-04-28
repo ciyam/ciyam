@@ -23,7 +23,7 @@
 # <peer_ips_reject>
 # <script_reconfig>false
 # <session_timeout>0
-# <ods_use_encrypted>false
+# <ods_use_encrypted>true
 # <ods_use_sync_write>true
 # <max_storage_handlers>10
 # <files_area_item_max_num>100K
