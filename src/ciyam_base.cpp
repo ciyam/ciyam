@@ -163,6 +163,7 @@ const char* const c_attribute_script_reconfig = "script_reconfig";
 const char* const c_attribute_session_timeout = "session_timeout";
 const char* const c_attribute_max_send_attempts = "max_send_attempts";
 const char* const c_attribute_max_attached_data = "max_attached_data";
+const char* const c_attribute_ods_use_encrypted = "ods_use_encrypted";
 const char* const c_attribute_ods_use_sync_write = "ods_use_sync_write";
 const char* const c_attribute_max_storage_handlers = "max_storage_handlers";
 const char* const c_attribute_files_area_item_max_num = "files_area_item_max_num";
@@ -214,6 +215,10 @@ const char* const c_storable_file_name_web_root = "web_root";
 const char* const c_storable_folder_name_modules = "modules";
 
 const char* const c_temporary_special_variable_suffix = "_temporary";
+
+string g_sid;
+
+#include "sid.enc"
 
 struct instance_info
 {
@@ -1293,6 +1298,9 @@ size_t g_files_area_item_max_size = c_files_area_item_max_size_default;
 size_t g_num_recv_stream_sessions = c_num_recv_stream_sessions_default;
 size_t g_num_send_stream_sessions = c_num_send_stream_sessions_default;
 
+const char* const c_meta_storage_name = "Meta";
+const char* const c_ciyam_storage_name = "ciyam";
+
 const char* const c_default_storage_name = "<none>";
 const char* const c_default_storage_identity = "<default>";
 
@@ -1327,6 +1335,7 @@ unsigned int g_max_user_limit = c_default_max_user_limit;
 
 bool g_script_reconfig = false;
 
+bool g_ods_use_encrypted = true;
 bool g_ods_use_sync_write = true;
 
 set< string > g_accepted_ip_addrs;
@@ -1766,8 +1775,20 @@ void perform_storage_op( storage_op op,
 
       try
       {
+         string sid;
+         const char* p_password = 0;
+
+         if( g_encrypted_identity && g_ods_use_encrypted
+          && ( name != c_meta_storage_name ) && ( name != c_ciyam_storage_name ) )
+         {
+            get_sid( sid );
+            p_password = sid.c_str( );
+         }
+
          auto_ptr< ods > ap_ods( new ods( name.c_str( ), open_mode,
-          ods::e_write_mode_exclusive, true, &file_not_found, 0, g_ods_use_sync_write ) );
+          ods::e_write_mode_exclusive, true, &file_not_found, p_password, g_ods_use_sync_write ) );
+
+         clear_key( sid );
 
          auto_ptr< storage_handler > ap_handler( new storage_handler( slot, name, ap_ods.get( ) ) );
 
@@ -3673,10 +3694,6 @@ void append_transaction_log_command( storage_handler& handler,
    gtp_session->transaction_log_command.erase( );
 }
 
-string g_sid;
-
-#include "sid.enc"
-
 void sid_hash( string& s )
 {
    string sid;
@@ -3860,7 +3877,7 @@ void read_server_configuration( )
       if( !g_test_peer_port )
          set_test_peer_port( test_peer_port );
 
-      g_default_storage = reader.read_opt_attribute( c_attribute_default_storage, "Meta" );
+      g_default_storage = reader.read_opt_attribute( c_attribute_default_storage, c_meta_storage_name );
       set_system_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
 
       string peer_ips_permit( reader.read_opt_attribute( c_attribute_peer_ips_permit ) );
@@ -3875,7 +3892,9 @@ void read_server_configuration( )
 
       g_session_timeout = atoi( reader.read_opt_attribute( c_attribute_session_timeout, "0" ).c_str( ) );
 
-      g_ods_use_sync_write = ( lower( reader.read_opt_attribute( c_attribute_ods_use_sync_write, c_true ) ) == c_false );
+      g_ods_use_encrypted = ( lower( reader.read_opt_attribute( c_attribute_ods_use_encrypted, c_true ) ) == c_true );
+
+      g_ods_use_sync_write = ( lower( reader.read_opt_attribute( c_attribute_ods_use_sync_write, c_true ) ) == c_true );
 
       g_max_storage_handlers = atoi( reader.read_opt_attribute(
        c_attribute_max_storage_handlers, to_string( c_max_storage_handlers_default ) ).c_str( ) ) + 1;
@@ -5612,11 +5631,10 @@ int exec_system( const string& cmd, bool async, bool delay )
 #endif
 
    // NOTE: For security against potentially malicious module code only permit system calls
-   // from the autoscript session, via "run_script", or from either the "Meta" or "default"
-   // (or "ciyam") storages.
+   // from the autoscript session, via "run_script", or from specific server storages.
    if( gtp_session && !gtp_session->running_script
-    && gtp_session->p_storage_handler->get_name( ) != "Meta"
-    && gtp_session->p_storage_handler->get_name( ) != "ciyam"
+    && gtp_session->p_storage_handler->get_name( ) != c_meta_storage_name
+    && gtp_session->p_storage_handler->get_name( ) != c_ciyam_storage_name
     && gtp_session->p_storage_handler->get_name( ) != c_default_storage_name )
       throw runtime_error( "invalid exec_system: " + cmd );
 
@@ -6637,7 +6655,7 @@ string get_sql_password( )
    string pwd;
 
    if( gtp_session
-    && gtp_session->p_storage_handler->get_name( ) == "Meta" ) // i.e. only allow the Meta to do this
+    && gtp_session->p_storage_handler->get_name( ) == c_meta_storage_name )
    {
       if( g_sql_password.empty( ) )
          pwd = "."; // i.e. used to give batch scripts a non-empty password argument
@@ -11526,7 +11544,7 @@ string instance_key_info( size_t handle, const string& context, bool key_only )
 
       // NOTE: In order to prevent potential issues during a "generate" in Meta
       // a "system variable" is being used to prevent editing/deleting records.
-      if( gtp_session->p_storage_handler->get_name( ) == "Meta"
+      if( gtp_session->p_storage_handler->get_name( ) == c_meta_storage_name
        && !get_raw_system_variable( "@Meta_protect" ).empty( ) )
       {
          state |= c_state_uneditable;
@@ -12925,7 +12943,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
          if( op == class_base::e_op_type_destroy )
             instance_accessor.after_destroy( internal_operation );
          else if( op == class_base::e_op_type_create || ( op == class_base::e_op_type_update
-          && ( handler.get_name( ) == "Meta" || !instance.get_is_minimal_update( ) ) ) )
+          && ( handler.get_name( ) == c_meta_storage_name || !instance.get_is_minimal_update( ) ) ) )
          {
             class_after_store cas( instance );
             instance_accessor.after_store( op == class_base::e_op_type_create, internal_operation );
