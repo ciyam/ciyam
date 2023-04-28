@@ -1335,7 +1335,7 @@ unsigned int g_max_user_limit = c_default_max_user_limit;
 
 bool g_script_reconfig = false;
 
-bool g_ods_use_encrypted = false;
+bool g_ods_use_encrypted = true;
 bool g_ods_use_sync_write = true;
 
 set< string > g_accepted_ip_addrs;
@@ -1783,6 +1783,12 @@ void perform_storage_op( storage_op op,
          {
             get_sid( sid );
             p_password = sid.c_str( );
+
+            if( file_exists( name + ".new" ) )
+            {
+               file_remove( name + ".new" );
+               open_mode = ods::e_open_mode_create_if_not_exist;
+            }
          }
 
          auto_ptr< ods > ap_ods( new ods( name.c_str( ), open_mode,
@@ -3892,7 +3898,7 @@ void read_server_configuration( )
 
       g_session_timeout = atoi( reader.read_opt_attribute( c_attribute_session_timeout, "0" ).c_str( ) );
 
-      g_ods_use_encrypted = ( lower( reader.read_opt_attribute( c_attribute_ods_use_encrypted, c_false ) ) == c_true );
+      g_ods_use_encrypted = ( lower( reader.read_opt_attribute( c_attribute_ods_use_encrypted, c_true ) ) == c_true );
 
       g_ods_use_sync_write = ( lower( reader.read_opt_attribute( c_attribute_ods_use_sync_write, c_true ) ) == c_true );
 
