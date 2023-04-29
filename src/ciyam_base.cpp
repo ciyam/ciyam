@@ -49,6 +49,7 @@
 #  include "ssl_socket.h"
 #  include "crypto_keys.h"
 #endif
+#include "file_utils.h"
 #include "ciyam_files.h"
 #include "fs_iterator.h"
 #include "oid_pointer.h"
@@ -1778,6 +1779,8 @@ void perform_storage_op( storage_op op,
          string sid;
          const char* p_password = 0;
 
+         bool has_exported_objects = false;
+
          if( g_encrypted_identity && g_ods_use_encrypted
           && ( name != c_meta_storage_name ) && ( name != c_ciyam_storage_name ) )
          {
@@ -1785,7 +1788,10 @@ void perform_storage_op( storage_op op,
             p_password = sid.c_str( );
 
             if( dir_exists( name ) )
+            {
+               has_exported_objects = true;
                open_mode = ods::e_open_mode_create_if_not_exist;
+            }
          }
 
          auto_ptr< ods > ap_ods( new ods( name.c_str( ), open_mode,
@@ -1804,7 +1810,22 @@ void perform_storage_op( storage_op op,
 
          ods::instance( ap_ods.get( ) );
 
-         if( ap_ods->is_new( ) )
+         if( ap_ods->is_new( ) && has_exported_objects )
+         {
+            ods::bulk_write bulk_write( *ap_ods );
+
+            ods::transaction tx( *ap_ods );
+
+            ods_file_system ofs( *ap_ods );
+
+            import_objects( ofs, name );
+
+            tx.commit( );
+
+            delete_directory_files( name, true );
+         }
+
+         if( ap_ods->is_new( ) && !has_exported_objects )
          {
             ods::bulk_write bulk_write( *ap_ods );
 
@@ -1819,13 +1840,8 @@ void perform_storage_op( storage_op op,
 
             ods_file_system ofs( *ap_ods );
 
-            if( dir_exists( name ) )
-               import_objects( ofs, name );
-            else
-            {
-               ofs.add_folder( c_storable_folder_name_modules );
-               ap_handler->get_root( ).store_as_text_files( ofs );
-            }
+            ofs.add_folder( c_storable_folder_name_modules );
+            ap_handler->get_root( ).store_as_text_files( ofs );
 
             tx.commit( );
          }
