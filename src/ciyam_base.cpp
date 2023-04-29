@@ -1784,11 +1784,8 @@ void perform_storage_op( storage_op op,
             get_sid( sid );
             p_password = sid.c_str( );
 
-            if( file_exists( name + ".new" ) )
-            {
-               file_remove( name + ".new" );
+            if( dir_exists( name ) )
                open_mode = ods::e_open_mode_create_if_not_exist;
-            }
          }
 
          auto_ptr< ods > ap_ods( new ods( name.c_str( ), open_mode,
@@ -1822,8 +1819,13 @@ void perform_storage_op( storage_op op,
 
             ods_file_system ofs( *ap_ods );
 
-            ofs.add_folder( c_storable_folder_name_modules );
-            ap_handler->get_root( ).store_as_text_files( ofs );
+            if( dir_exists( name ) )
+               import_objects( ofs, name );
+            else
+            {
+               ofs.add_folder( c_storable_folder_name_modules );
+               ap_handler->get_root( ).store_as_text_files( ofs );
+            }
 
             tx.commit( );
          }

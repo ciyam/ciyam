@@ -31,9 +31,11 @@
 #include "ods.h"
 #include "btree.h"
 #include "regex.h"
+#include "base64.h"
 #include "format.h"
 #include "pointers.h"
 #include "utilities.h"
+#include "fs_iterator.h"
 #include "oid_pointer.h"
 #include "storable_file.h"
 #include "storable_btree.h"
@@ -339,6 +341,119 @@ typedef storable< storable_node_base< ofs_object >, storable_node_base< ofs_obje
 typedef storable_node_manager< ofs_object > btree_node_manager_type;
 
 typedef bt_transaction< ofs_object, less< ofs_object >, btree_node_type, btree_node_manager_type > btree_trans_type;
+
+const char* const c_rename_attribute_type_input = "input";
+const char* const c_rename_attribute_type_folder = "folder";
+const char* const c_rename_attribute_type_output = "output";
+const char* const c_rename_attribute_type_prefix = "prefix";
+const char* const c_rename_attribute_type_remove = "remove";
+const char* const c_rename_attribute_type_suffix = "suffix";
+
+const char* const c_rename_attribute_type_input_any = "@any";
+const char* const c_rename_attribute_type_input_hex = "@hex";
+const char* const c_rename_attribute_type_input_b64 = "@b64";
+
+const char* const c_rename_attribute_type_output_any = "@any";
+const char* const c_rename_attribute_type_output_hex = "@hex";
+const char* const c_rename_attribute_type_output_b64 = "@b64";
+
+string process_rename_expressions(
+ vector< string >& rename_expressions, const string& folder, const string& input )
+{
+   string output( input );
+
+   for( size_t i = 0; i < rename_expressions.size( ); i++ )
+   {
+      string next_expr( rename_expressions[ i ] );
+
+      // NOTE: All rename expressions are in the form:
+      // <attribute>=<value>[|<attribute>=<value>[...]]
+      vector< string > attributes;
+
+      split( next_expr, attributes, '|' );
+
+      bool rename = true;
+
+      string prefix, suffix, renamed_output( output );
+
+      for( size_t j = 0; j < attributes.size( ); j++ )
+      {
+         string next_attr( attributes[ j ] );
+
+         string::size_type pos = next_attr.find( '=' );
+
+         if( pos == string::npos )
+            throw runtime_error( "unepxected rename expr attribute '" + next_attr + "'" );
+
+         string type( next_attr.substr( 0, pos ) );
+         string value( next_attr.substr( pos + 1 ) );
+
+         if( type == c_rename_attribute_type_input )
+         {
+            if( value == c_rename_attribute_type_input_any )
+               ;
+            else if( value == c_rename_attribute_type_input_hex )
+            {
+               if( !are_hex_nibbles( renamed_output ) )
+                  rename = false;
+               else
+                  renamed_output = hex_decode( renamed_output );
+            }
+            else if( value == c_rename_attribute_type_input_b64 )
+            {
+               bool rc = false;
+
+               base64::validate( renamed_output, &rc, true );
+
+               if( !rc )
+                  rename = false;
+               else
+                  renamed_output = base64::decode( renamed_output, true );
+            }
+            else
+               throw runtime_error( "invalid rename expr attribute input type '" + value + "'" );
+         }
+         else if( type == c_rename_attribute_type_folder )
+         {
+            if( folder != value )
+               rename = false;
+         }
+         else if( type == c_rename_attribute_type_output )
+         {
+            if( value == c_rename_attribute_type_output_any )
+               renamed_output = output;
+            else if( value == c_rename_attribute_type_output_hex )
+            {
+               string data( renamed_output );
+
+               renamed_output = hex_encode( data );
+            }
+            else if( value == c_rename_attribute_type_output_b64 )
+            {
+               string data( renamed_output );
+
+               renamed_output = base64::encode( data, true );
+            }
+            else
+               throw runtime_error( "invalid rename expr attribute output type '" + value + "'" );
+         }
+         else if( type == c_rename_attribute_type_prefix )
+            prefix = value;
+         else if( type == c_rename_attribute_type_remove )
+            renamed_output = replace( renamed_output, value, "" );
+         else if( type == c_rename_attribute_type_suffix )
+            suffix = value;
+
+         if( !rename )
+            break;
+      }
+
+      if( rename && !renamed_output.empty( ) )
+         output = prefix + renamed_output + suffix;
+   }
+
+   return output;
+}
 
 }
 
@@ -2830,4 +2945,170 @@ bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_n
    }
 
    return okay;
+}
+
+void export_objects( ods_file_system& ofs, const string& directory,
+ vector< string >* p_rename_expressions, ostream* p_os, progress* p_progress, int level )
+{
+   vector< string > files;
+
+   if( p_os && level )
+      *p_os << directory << ofs.get_folder( ) << endl;
+
+   ofs.list_files( files, false );
+
+   for( size_t i = 0; i < files.size( ); i++ )
+   {
+      string next( files[ i ] );
+      string destination( next );
+
+      if( p_rename_expressions && !p_rename_expressions->empty( ) )
+         destination = process_rename_expressions( *p_rename_expressions, ofs.get_folder( ), next );
+
+      if( p_os )
+      {
+         if( !level )
+            *p_os << directory << '/' << next;
+         else
+            *p_os << directory << ofs.get_folder( ) << '/' << next;
+
+         if( destination != next )
+            *p_os << " ==> " << destination;
+      }
+
+      ofs.get_file( next, destination, 0, p_progress );
+
+      if( p_os )
+         *p_os << endl;
+   }
+
+   vector< string > folders;
+
+   ofs.list_folders( folders );
+
+   for( size_t i = 0; i < folders.size( ); i++ )
+   {
+      string next( folders[ i ] );
+
+      string cwd( get_cwd( ) );
+
+      bool rc = false;
+      set_cwd( next, &rc );
+
+      if( !rc )
+      {
+         create_dir( next );
+         set_cwd( next );
+      }
+
+      string folder( ofs.get_folder( ) );
+
+      ofs.set_folder( next );
+      export_objects( ofs, directory, p_rename_expressions, p_os, p_progress, level + 1 );
+
+      ofs.set_folder( folder );
+
+      set_cwd( cwd );
+   }
+}
+
+void import_objects( ods_file_system& ofs, const string& directory,
+ vector< string >* p_rename_expressions, ostream* p_os, progress* p_progress )
+{
+   string cwd( get_cwd( ) );
+
+   set_cwd( directory );
+
+   directory_filter df;
+   fs_iterator dfsi( get_cwd( ), &df );
+
+   bool is_first = true;
+
+   deque< string > folders;
+   folders.push_back( get_cwd( ) );
+
+   string folder( ofs.get_folder( ) );
+
+   vector< string > all_folders;
+
+   do
+   {
+      all_folders.push_back( dfsi.get_path_name( ) );
+   } while( dfsi.has_next( ) );
+
+   set_cwd( cwd );
+
+   for( size_t i = 0; i < all_folders.size( ); i++ )
+   {
+      if( i > 0 )
+      {
+         string next_folder( all_folders[ i ] );
+         string::size_type pos = next_folder.find( folders.back( ) );
+
+         if( pos != 0 )
+         {
+            while( folders.size( ) > 1 )
+            {
+               folders.pop_back( );
+
+               ofs.set_folder( ".." );
+
+               if( next_folder.find( folders.back( ) ) == 0 )
+                  break;
+            }
+         }
+
+         next_folder.erase( 0, folders.back( ).length( ) + 1 );
+
+         if( !ofs.has_folder( next_folder ) )
+            ofs.add_folder( next_folder );
+
+         ofs.set_folder( next_folder );
+
+         folders.push_back( all_folders[ i ] );
+      }
+
+      vector< pair< string, string > > all_files;
+
+      string next_folder( all_folders[ i ] );
+
+      if( next_folder.find( directory ) == 0 )
+         next_folder.erase( 0, directory.length( ) );
+
+      if( !next_folder.empty( ) && next_folder[ 0 ] == '/' )
+         next_folder.erase( 0, 1 );
+
+      if( p_os && ( i > 0 ) )
+         *p_os << next_folder << endl;
+
+      file_filter ff;
+      fs_iterator ffsi( all_folders[ i ], &ff );
+
+      while( ffsi.has_next( ) )
+         all_files.push_back( make_pair( ffsi.get_name( ), ffsi.get_full_name( ) ) );
+
+      for( size_t j = 0; j < all_files.size( ); j++ )
+      {
+         string name( all_files[ j ].first );
+         string source( all_files[ j ].second );
+
+         if( p_rename_expressions && !p_rename_expressions->empty( ) )
+            name = process_rename_expressions( *p_rename_expressions, ofs.get_folder( ), name );
+
+         if( p_os )
+         {
+            *p_os << next_folder << '/' << all_files[ j ].first;
+
+            if( name != all_files[ j ].first )
+               *p_os << " ==> " << name;
+         }
+
+         ofs.store_file( name, source, 0, 0, p_progress );
+
+         if( p_os )
+            *p_os << endl;
+      }
+   }
+
+   ofs.set_folder( folder );
 }
