@@ -16,7 +16,8 @@ PASSWORD=@password:Enter Password to unlock identity:
 PASSWORD=$OUTPUT
 ;
 ~echo $~PASSWORD | xclip
-#Password is on the clipboard...
+#(password is on the clipboard)
 ;
-~./ods_fsed -p "-exec=export $1"
+~./ods_fsed -quiet -p "-exec=export $1" $1
+~./echo "" | xclip
 @endif
