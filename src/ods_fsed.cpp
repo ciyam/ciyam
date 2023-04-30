@@ -441,25 +441,12 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          if( !rename_exprs.empty( ) )
             split( rename_exprs, rename_expressions );
 
-         string cwd( get_cwd( ) );
-
-         bool rc = false;
-         set_cwd( directory, &rc );
-
-         if( !rc )
-         {
-            create_dir( directory );
-            set_cwd( directory );
-         }
-
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
          ods::bulk_read bulk( *ap_ods );
 
          export_objects( *ap_ofs, directory, &rename_expressions, ods_fsed_handler.get_std_out( ), p_progress );
-
-         set_cwd( cwd );
       }
       else if( command == c_cmd_ods_fsed_import )
       {
