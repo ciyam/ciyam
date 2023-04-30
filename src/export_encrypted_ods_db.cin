@@ -1,0 +1,22 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#NOTE: This script requires the name of an encrypted storage for exporting its ODS DB.
+@else
+ENCRYPTED=@file:ciyam_server.sid
+;
+PASSWORD=@password:Enter Password to unlock identity:
+;
+.decrypt -harden_key -pwd_and_data "$PASSWORD $ENCRYPTED"
+.crypto_seed "$OUTPUT"
+.crypto_hash "$OUTPUT"
+PASSWORD=$OUTPUT
+;
+~echo $~PASSWORD | xclip
+#Password is on the clipboard...
+;
+~./ods_fsed -p "-exec=export $1"
+@endif

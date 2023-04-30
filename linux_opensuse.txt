@@ -202,6 +202,11 @@ sudo cp ciyamd.service /etc/systemd/system
 sudo vi /etc/systemd/system/ciyamd.service
 (ensure that the "Environment" value matches the WEBDIR export value above)
 
+Make necessary changes (for VMs) to the "ciyam_server.sio" configuration file:
+...
+ <ods_use_sync_write>false
+...
+
 sudo systemctl daemon-reload
 sudo systemctl enable ciyamd
 
