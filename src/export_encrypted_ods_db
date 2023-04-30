@@ -1,0 +1,13 @@
+#!/bin/sh
+# Copyright (c) 2023 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 1 ]; then
+ echo Usage: export_encrypted_ods_db [app name]
+else
+ echo "<<export_encrypted_ods_db.cin $1 $2 $3" >~export_encrypted_ods_db
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr <~export_encrypted_ods_db
+ rm ~export_encrypted_ods_db
+fi
