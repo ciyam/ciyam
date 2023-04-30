@@ -2957,6 +2957,12 @@ void export_objects( ods_file_system& ofs, const string& directory,
 
    ofs.list_files( files, false );
 
+   if( !level && !directory.empty( ) )
+   {
+      if( !dir_exists( directory ) )
+         create_dir( directory );
+   }
+
    for( size_t i = 0; i < files.size( ); i++ )
    {
       string next( files[ i ] );
@@ -2976,7 +2982,14 @@ void export_objects( ods_file_system& ofs, const string& directory,
             *p_os << " ==> " << destination;
       }
 
-      ofs.get_file( next, destination, 0, p_progress );
+      string final_destination( directory );
+
+      if( level )
+         final_destination += ofs.get_folder( );
+
+      final_destination += '/' + destination;
+
+      ofs.get_file( next, final_destination, 0, p_progress );
 
       if( p_os )
          *p_os << endl;
@@ -2989,43 +3002,28 @@ void export_objects( ods_file_system& ofs, const string& directory,
    for( size_t i = 0; i < folders.size( ); i++ )
    {
       string next( folders[ i ] );
-
-      string cwd( get_cwd( ) );
-
-      bool rc = false;
-      set_cwd( next, &rc );
-
-      if( !rc )
-      {
-         create_dir( next );
-         set_cwd( next );
-      }
-
       string folder( ofs.get_folder( ) );
 
       ofs.set_folder( next );
+
       export_objects( ofs, directory, p_rename_expressions, p_os, p_progress, level + 1 );
 
       ofs.set_folder( folder );
-
-      set_cwd( cwd );
    }
 }
 
 void import_objects( ods_file_system& ofs, const string& directory,
  vector< string >* p_rename_expressions, ostream* p_os, progress* p_progress )
 {
-   string cwd( get_cwd( ) );
-
-   set_cwd( directory );
+   string cwd( get_cwd( ) + '/' );
 
    directory_filter df;
-   fs_iterator dfsi( get_cwd( ), &df );
+   fs_iterator dfsi( directory, &df );
 
    bool is_first = true;
 
    deque< string > folders;
-   folders.push_back( get_cwd( ) );
+   folders.push_back( directory );
 
    string folder( ofs.get_folder( ) );
 
@@ -3035,8 +3033,6 @@ void import_objects( ods_file_system& ofs, const string& directory,
    {
       all_folders.push_back( dfsi.get_path_name( ) );
    } while( dfsi.has_next( ) );
-
-   set_cwd( cwd );
 
    for( size_t i = 0; i < all_folders.size( ); i++ )
    {
@@ -3072,11 +3068,10 @@ void import_objects( ods_file_system& ofs, const string& directory,
 
       string next_folder( all_folders[ i ] );
 
-      if( next_folder.find( directory ) == 0 )
+      if( next_folder.find( cwd ) == 0 )
+         next_folder.erase( 0, cwd.length( ) );
+      else if( next_folder.find( directory ) == 0 )
          next_folder.erase( 0, directory.length( ) );
-
-      if( !next_folder.empty( ) && next_folder[ 0 ] == '/' )
-         next_folder.erase( 0, 1 );
 
       if( p_os && ( i > 0 ) )
          *p_os << next_folder << endl;

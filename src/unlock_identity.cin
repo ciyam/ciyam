@@ -10,7 +10,7 @@ IDENT=%COMBINED:1%
 .session_variable @pubkey
 EXT_PUBKEY=$OUTPUT
 ;
-DATA_AND_PUBKEY=@password:Enter Password to Unlock Identity:$EXT_PUBKEY
+DATA_AND_PUBKEY=@password:Enter password to unlock identity:$EXT_PUBKEY
 ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
 ;
 .identity $ARGS
@@ -18,8 +18,8 @@ COMBINED=@repstr:!/\n:$OUTPUT
 NEW_IDENT=%COMBINED:1%
 ;
 @ifneq "$IDENT" "$NEW_IDENT"
-#Unlocked Identity: $NEW_IDENT
+#Unlocked identity: $NEW_IDENT
 @else
-#Unchanged Identity: $IDENT
+#Unchanged identity: $IDENT
 #(identity is not encrypted or already unlocked or password was incorrect)
 @endif
