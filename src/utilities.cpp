@@ -2198,9 +2198,9 @@ void buffer_file_items( const string& file_name,
        "unexpected error occurred whilst reading '" + file_name + "' for input in buffer_file_items" );
 }
 
-bool absolute_path( const string& relative_path, string& absolute_path )
+void absolute_path( const string& relative_path, string& absolute_path, bool* p_rc )
 {
-   bool found;
+   bool found = false;
 
 #ifdef _WIN32
    char path[ _MAX_PATH ] = { 0 };
@@ -2212,7 +2212,13 @@ bool absolute_path( const string& relative_path, string& absolute_path )
    absolute_path = path;
 #endif
 
-   return found;
+   if( !found )
+   {
+      if( p_rc )
+         *p_rc = false;
+      else
+         throw runtime_error( "unable to determine absolute path for '" + relative_path + "'" );
+   }
 }
 
 string file_name_without_path( const string& path, bool remove_extension )

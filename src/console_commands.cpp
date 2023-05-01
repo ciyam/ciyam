@@ -2785,8 +2785,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               if( rhs.empty( ) )
                                  rhs = "./";
 
-                              if( !absolute_path( rhs, rhs ) )
-                                 throw runtime_error( "unable to determine absolute path for '" + rhs + "'" );
+                              absolute_path( rhs, rhs );
 
                               directory_filter df;
                               fs_iterator dfsi( rhs, &df );
@@ -2922,8 +2921,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            {
                               string abs_path;
 
-                              if( !absolute_path( str.substr( pos + 1 ), abs_path ) )
-                                 throw runtime_error( "invalid path '" + str.substr( pos + 1 ) + "'" );
+                              absolute_path( str.substr( pos + 1 ), abs_path );
 
                               str = abs_path;
                            }

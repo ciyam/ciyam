@@ -375,8 +375,7 @@ void process_directory( const string& directory, const string& filespec_path,
             continue;
 
          string absolute_file_name;
-         if( !absolute_path( ffsi.get_full_name( ), absolute_file_name ) )
-            throw runtime_error( "unable to determine absolute path for '" + ffsi.get_full_name( ) + "'" );
+         absolute_path( ffsi.get_full_name( ), absolute_file_name );
 
          if( absolute_file_name == g_bundle_file_name || absolute_file_name == g_output_file_name )
             continue;
@@ -792,10 +791,7 @@ int main( int argc, char* argv[ ] )
                   wpos = string::npos;
                }
                else
-               {
-                  if( !absolute_path( next.substr( 0, wpos ), filespec_path ) )
-                     throw runtime_error( "unable to determine absolute path for '" + next + "'" );
-               }
+                  absolute_path( next.substr( 0, wpos ), filespec_path );
 
 #ifdef _WIN32
                string::size_type pos;

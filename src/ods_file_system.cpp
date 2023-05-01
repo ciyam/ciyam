@@ -2957,11 +2957,13 @@ void export_objects( ods_file_system& ofs, const string& directory,
 
    ofs.list_files( files, false );
 
-   if( !level && !directory.empty( ) )
-   {
-      if( !dir_exists( directory ) )
-         create_dir( directory );
-   }
+   string next_directory( directory );
+
+   if( level )
+      next_directory += ofs.get_folder( );
+
+   if( !dir_exists( next_directory ) )
+      create_dir( next_directory );
 
    for( size_t i = 0; i < files.size( ); i++ )
    {
@@ -3015,7 +3017,7 @@ void export_objects( ods_file_system& ofs, const string& directory,
 void import_objects( ods_file_system& ofs, const string& directory,
  vector< string >* p_rename_expressions, ostream* p_os, progress* p_progress )
 {
-   string cwd( get_cwd( ) + '/' );
+   string start_path( absolute_path( directory ) );
 
    directory_filter df;
    fs_iterator dfsi( directory, &df );
@@ -3023,7 +3025,7 @@ void import_objects( ods_file_system& ofs, const string& directory,
    bool is_first = true;
 
    deque< string > folders;
-   folders.push_back( directory );
+   folders.push_back( start_path );
 
    string folder( ofs.get_folder( ) );
 
@@ -3068,13 +3070,11 @@ void import_objects( ods_file_system& ofs, const string& directory,
 
       string next_folder( all_folders[ i ] );
 
-      if( next_folder.find( cwd ) == 0 )
-         next_folder.erase( 0, cwd.length( ) );
-      else if( next_folder.find( directory ) == 0 )
-         next_folder.erase( 0, directory.length( ) );
+      if( next_folder.find( start_path ) == 0 )
+         next_folder.erase( 0, start_path.length( ) + 1 );
 
       if( p_os && ( i > 0 ) )
-         *p_os << next_folder << endl;
+         *p_os << next_folder << '/' << endl;
 
       file_filter ff;
       fs_iterator ffsi( all_folders[ i ], &ff );
@@ -3092,7 +3092,10 @@ void import_objects( ods_file_system& ofs, const string& directory,
 
          if( p_os )
          {
-            *p_os << next_folder << '/' << all_files[ j ].first;
+            if( next_folder.length( ) )
+               *p_os << next_folder << '/';
+
+            *p_os << all_files[ j ].first;
 
             if( name != all_files[ j ].first )
                *p_os << " ==> " << name;

@@ -1092,7 +1092,16 @@ void buffer_file_tail(
 void buffer_file_items( const std::string& file_name,
  std::map< std::string, std::string >& items, char separator = '=', bool strip_extra_crs = true );
 
-bool absolute_path( const std::string& relative_path, std::string& absolute_path );
+void absolute_path( const std::string& relative_path, std::string& absolute_path, bool* p_rc = 0 );
+
+inline std::string absolute_path( const std::string& relative_path )
+{
+   std::string retval;
+
+   absolute_path( relative_path, retval );
+
+   return retval;
+}
 
 std::string file_name_without_path( const std::string& path, bool remove_extension = false );
 

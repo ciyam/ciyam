@@ -85,8 +85,7 @@ void fs_iterator::set_root( const string& new_root )
    bool truncate = false;
    string path;
 
-   if( !absolute_path( new_root, path ) )
-      throw runtime_error( "unable to determine absolute path for '" + new_root + "'" );
+   absolute_path( new_root, path );
 
    bool found_true_root = false;
 
