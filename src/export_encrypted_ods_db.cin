@@ -19,5 +19,5 @@ PASSWORD=$OUTPUT
 #(password is on the clipboard)
 ;
 ~./ods_fsed -quiet -p "-exec=export $1" $1
-~./echo "" | xclip
+~echo "" | xclip
 @endif
