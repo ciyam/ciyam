@@ -5018,7 +5018,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
             if( !user.empty( ) )
             {
-               string cmd( "./init_cached_files_area \"" + user + "\"" );
+               string cmd( "./init_opened_files_area \"" + user + "\"" );
 
                system( cmd.c_str( ) );
             }
