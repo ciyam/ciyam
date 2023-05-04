@@ -101,15 +101,15 @@ newgrp - www
 sudo chmod g+w /srv/www/htdocs
 sudo chown wwwrun:www /srv/www/htdocs
 
-Create cached files area
+Create opened files area
 ------------------------
 
-sudo mkdir cached
-cd cached
+sudo mkdir opened
+cd opened
 sudo vi README.md
 
 [README.md]
-CIYAM Cached Files Area
+CIYAM Opened Files Area
 =======================
 
 If you are reading this then a backup or restore is now active - please disconnect and try again later.

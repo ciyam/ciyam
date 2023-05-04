@@ -94,8 +94,8 @@ Mnemonics: detect jazz kick ghost novel rifle scout mirror stairs craft outdoor 
 Identity: 6b24210e8
 Mnemonics: taxi act describe attitude focus ugly govern outer note isolate endless act
 
-It should be noted that an identity is always either 9 or 10 characters long (as the identity can be reversed
-for usage with the "shared" folder therefore it will be 10 characters long if 9 characters are palindromic).
+It should be noted that an identity will always be either 9 or 10 characters in length and as every character
+can be one of sixteen values even 9 characters would be enough for every person on earth to have one.
 
 Using additonal characters in order to create a more "future proof" identity:
 
