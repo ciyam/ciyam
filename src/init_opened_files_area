@@ -13,7 +13,7 @@ else
   else
    sudo mkfs -q /dev/ram1 500M
    sudo mount /dev/ram1 "/home/$1/opened"
-   sudo chown -R tux:www "/home/$1/opened"
+   sudo chown -R $1:www "/home/$1/opened"
   fi
  fi
 fi

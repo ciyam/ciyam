@@ -458,6 +458,9 @@ int main( int argc, char* argv[ ] )
             if( get_destination_directory && destination_directory.empty( ) )
             {
                destination_directory = next;
+
+               if( !dir_exists( destination_directory ) )
+                  create_dir( destination_directory );
 #ifndef _WIN32
                if( destination_directory[ destination_directory.size( ) - 1 ] != '/' )
                   destination_directory += '/';
@@ -573,6 +576,7 @@ int main( int argc, char* argv[ ] )
                if( !use_zlib )
                   p_is->seekg( raw_file_size, ios::cur );
 
+//idk
                if( !is_quieter && !was_skipped )
                   cout << endl;
             }
@@ -856,7 +860,9 @@ int main( int argc, char* argv[ ] )
                }
             }
 
-            if( matched && !list_only && !overwrite && !replace_all && file_exists( next_file ) )
+            if( !matched )
+               was_skipped = true;
+            else if( !list_only && !overwrite && !replace_all && file_exists( next_file ) )
             {
                bool replace = false;
 
@@ -932,8 +938,13 @@ int main( int argc, char* argv[ ] )
                initial_progress = true;
 
                ap_ofstream = auto_ptr< ofstream >( new ofstream( next_file.c_str( ), ios::out | ios::binary ) );
+
                if( !*ap_ofstream.get( ) )
+               {
+                  if( !is_quieter )
+                     cout << endl;
                   throw runtime_error( "unable to open file '" + next_file + "' for output" );
+               }
 
                if( !is_quieter && !raw_file_size && !file_data_lines )
                   cout << endl;
