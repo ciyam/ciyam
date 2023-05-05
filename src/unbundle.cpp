@@ -576,7 +576,6 @@ int main( int argc, char* argv[ ] )
                if( !use_zlib )
                   p_is->seekg( raw_file_size, ios::cur );
 
-//idk
                if( !is_quieter && !was_skipped )
                   cout << endl;
             }

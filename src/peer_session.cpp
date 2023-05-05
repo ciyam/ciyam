@@ -289,6 +289,32 @@ void parse_peer_mapped_info( const string& peer_mapped_info,
    }
 }
 
+string determine_identity( const string& concatenated_pubkey_hashes )
+{
+   sha256 hash( concatenated_pubkey_hashes );
+
+   string identity( hash.get_digest_as_string( ).substr( 0, c_bc_identity_length ) );
+
+   // NOTE: Shared blockchains will use the backup identity in reverse so if the
+   // identity value is palendromic then increment (or zero) the last character.
+   string reversed( identity );
+   reverse( reversed.begin( ), reversed.end( ) );
+
+   if( identity == reversed )
+   {
+      char ch = identity[ identity.length( ) - 1 ];
+
+      ++ch;
+
+      if( ch == 'g' )
+         ch = '0';
+
+      identity[ identity.length( ) - 1 ] = ch;
+   }
+
+   return identity;
+}
+
 bool is_targeted_identity( const string& identity, const string& targeted_identity, size_t blockchain_height )
 {
    string password;
@@ -571,14 +597,11 @@ void process_core_file( const string& hash, const string& blockchain )
             {
                if( !is_shared && ( block_height == "0" ) )
                {
-                  sha256 hash( primary_pubkey_hash
-                   + secondary_pubkey_hash + tertiary_pubkey_hash );
+                  string identity( determine_identity(
+                   primary_pubkey_hash + secondary_pubkey_hash + tertiary_pubkey_hash ) );
 
-                  string hash_value( hash.get_digest_as_string( ) );
-
-                  if( hash_value.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
-                     throw runtime_error( "invalid genesis hash value '"
-                      + hash_value + "' for blockchain '" + blockchain + "'" );
+                  if( identity.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
+                     throw runtime_error( "invalid identity value '" + identity + "' for blockchain '" + blockchain + "'" );
                }
 
                if( !has_file( primary_pubkey_hash ) )
@@ -2265,14 +2288,11 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
       {
          if( !height && !is_shared )
          {
-            sha256 hash( primary_pubkey_hash
-             + secondary_pubkey_hash + tertiary_pubkey_hash );
+            string identity( determine_identity(
+             primary_pubkey_hash + secondary_pubkey_hash + tertiary_pubkey_hash ) );
 
-            string hash_value( hash.get_digest_as_string( ) );
-
-            if( hash_value.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
-               throw runtime_error( "invalid genesis hash value '"
-                + hash_value + "' for blockchain '" + blockchain + "'" );
+            if( identity.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
+               throw runtime_error( "invalid identity value '" + identity + "' for blockchain '" + blockchain + "'" );
          }
 
          if( is_fetching )

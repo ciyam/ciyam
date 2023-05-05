@@ -94,8 +94,8 @@ Mnemonics: detect jazz kick ghost novel rifle scout mirror stairs craft outdoor 
 Identity: 6b24210e8
 Mnemonics: taxi act describe attitude focus ugly govern outer note isolate endless act
 
-It should be noted that an identity will always be either 9 or 10 characters in length and as every character
-can be one of sixteen values even 9 characters would be enough for every person on earth to have one.
+It should be noted that an identity will always be exactly 9 characters in length and because every character
+has one of sixteen possible values this length is enough to provide tens of billions of different identities.
 
 Using additonal characters in order to create a more "future proof" identity:
 

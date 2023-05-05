@@ -188,8 +188,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
             throw runtime_error( "unexpected extraneous attribute in block header '" + header + "'" );
       }
 
-      // NOTE: If a 9 character identity was found to be palindromic it will have been extended to 10 characters.
-      if( ( identity.length( ) < c_bc_identity_length ) || ( identity.length( ) > c_bc_identity_length + 1 ) )
+      if( identity.length( ) != c_bc_identity_length )
          throw runtime_error( "unexpected missing or incorrect identity attribute in block header '" + header + "'" );
    }
 

@@ -124,15 +124,22 @@ IDENTITY_HASH=$OUTPUT
 ;
 IDENT=@substr:0,9:$IDENTITY_HASH
 ;
-@ifndef $HUB
-;NOTE: If a 9 character identity is palindromic then extend the size to 10 characters
-;to ensure than when it's reversed a different value is used for the shared identity.
+;NOTE: If identity is palindromic then increment (or zero) the last character.
 ;
 REVERSE=*!reverse?$IDENT
+;
 @ifeq "$IDENT" "$REVERSE"
-IDENT=@substr:0,10:$IDENTITY_HASH
+LAST=@substr:8,1:$IDENT
+DEC=@hexdec:$LAST
+DEC=@$DEC+1
+@ifeq "$DEC" "16"
+DEC=0
 @endif
+HEX=@dechex:$DEC
+START=@substr:0,8:$IDENT
+IDENT=$START$HEX
 @endif
+;
 @else
 .system_variable @blockchain_backup_identity
 @ifndef $OUTPUT
