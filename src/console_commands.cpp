@@ -95,8 +95,10 @@ const char* const c_function_lower = "lower";
 const char* const c_function_paths = "paths";
 const char* const c_function_upper = "upper";
 const char* const c_function_aschex = "aschex";
+const char* const c_function_dechex = "dechex";
 const char* const c_function_hexasc = "hexasc";
 const char* const c_function_hexbig = "hexbig";
+const char* const c_function_hexdec = "hexdec";
 const char* const c_function_hexlit = "hexlit";
 const char* const c_function_padlen = "padlen";
 const char* const c_function_repstr = "repstr";
@@ -2814,8 +2816,26 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               str = upper( str.substr( pos + 1 ) );
                            else if( lhs == c_function_aschex )
                               str = hex_encode( str.substr( pos + 1 ) );
+                           else if( lhs == c_function_dechex )
+                           {
+                              int64_t val = from_string< int64_t >( str.substr( pos + 1 ) );
+
+                              stringstream ss;
+                              ss << hex << val;
+
+                              str = ss.str( );
+                           }
                            else if( lhs == c_function_hexasc )
                               str = hex_decode( str.substr( pos + 1 ) );
+                           else if( lhs == c_function_hexdec )
+                           {
+                              int64_t val;
+
+                              stringstream ss( str.substr( pos + 1 ) );
+                              ss >> hex >>  val;
+
+                              str = to_string( val );
+                           }
                            else if( lhs == c_function_hexbig || lhs == c_function_hexlit )
                            {
                               str = hex_encode( ( const unsigned char* )&rval, sizeof( rval ) );
@@ -2907,6 +2927,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                        str = rhs.substr( rval, len );
                                     else if( rhs.size( ) > rval )
                                        str = rhs.substr( rval );
+                                    else
+                                       str.erase( );
                                  }
                                  else
                                  {

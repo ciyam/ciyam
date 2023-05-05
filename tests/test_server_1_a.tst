@@ -69,10 +69,17 @@ def
 abc
 def
 ghi
+254
+fe
+255
+ff
+256
+100
 ff00000000000000
 00000000000000ff
 ff000000
 000000ff
+Empty...
 4080
 4100
 4000
@@ -174,7 +181,7 @@ j
 6	#j
 1	#b
 2	#f
-depth is 0 at line #250
+depth is 0 at line #265
 Looping with aaa
 Looping with bbb
 Looping with ccc
@@ -200,11 +207,11 @@ CONT
 CONT
 CONT
 DONE
-depth is 1 at line #289
+depth is 1 at line #304
 END
-depth is 1 at line #316
-depth is 2 at line #318
-depth is 3 at line #320 TRUE
+depth is 1 at line #331
+depth is 2 at line #333
+depth is 3 at line #335 TRUE
 docs
 src
 src/haru
