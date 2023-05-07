@@ -8,6 +8,7 @@
 #  define DATE_TIME_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <ctime>
 #     include <string>
 #     include <iosfwd>
 #  endif
@@ -774,8 +775,8 @@ void DATE_TIME_DECL_SPEC convert_julian_to_calendar( julian jdt,
 void DATE_TIME_DECL_SPEC convert_julian_to_calendar( julian jdt,
  year& yr, month& mo, day& dy, hour& hr, minute& mn, second& sc, tenth& te, hundredth& hd, thousandth& th );
 
-int64_t DATE_TIME_DECL_SPEC unix_time( const date_time& dt );
-inline int64_t DATE_TIME_DECL_SPEC unix_time( ) { return unix_time( date_time::standard( ) ); }
+int64_t DATE_TIME_DECL_SPEC unix_time( const date_time& dt, time_t* p_tt = 0 );
+inline int64_t DATE_TIME_DECL_SPEC unix_time( time_t* p_tt = 0 ) { return unix_time( date_time::standard( ), p_tt ); }
 
 int64_t DATE_TIME_DECL_SPEC seconds_between( const date_time& lhs, const date_time& rhs );
 

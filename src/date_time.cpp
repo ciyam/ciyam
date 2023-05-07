@@ -14,7 +14,6 @@
 #     include <sys/time.h>
 #  endif
 #  include <cmath>
-#  include <ctime>
 #  include <iostream>
 #  include <algorithm>
 #  include <stdexcept>
@@ -3251,12 +3250,39 @@ void convert_julian_to_calendar( julian jdt,
    julian_to_calendar( jdt, yr, mo, dy, hr, mn, sc, te, hd, th );
 }
 
-int64_t unix_time( const date_time& dt )
+int64_t unix_time( const date_time& dt, time_t* p_tt )
 {
    julian j( dt );
 
    if( j < c_unix_epoch )
       throw runtime_error( "unix time is not valid before the unix epoch" );
+
+   if( p_tt )
+   {
+      year y;
+      month mo;
+      day dy;
+      hour hr;
+      minute mn;
+      second sc;
+
+      convert_julian_to_calendar( j, y, mo, dy, hr, mn, sc );
+
+      struct tm t;
+
+      t.tm_sec = ( int )sc;
+      t.tm_min = ( int )mn;
+      t.tm_hour = ( int )hr;
+
+      t.tm_mday = ( int )dy;
+      t.tm_mon = ( int )mo - 1;
+      t.tm_year = ( int )y - 1900;
+
+      t.tm_yday = 0;
+      t.tm_isdst = 0;
+
+      *p_tt = mktime( &t );
+   }
 
    return ( int64_t )( ( ( j - c_unix_epoch ) * ( julian )c_seconds_per_day ) + 0.5 );
 }

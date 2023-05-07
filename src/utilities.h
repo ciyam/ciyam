@@ -9,6 +9,7 @@
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <cmath>
+#     include <ctime>
 #     include <map>
 #     include <set>
 #     include <deque>

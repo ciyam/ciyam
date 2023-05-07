@@ -192,10 +192,13 @@ int main( int argc, char* argv[ ] )
       t.tm_sec = 0;
       t.tm_min = 0;
       t.tm_hour = 0;
+
       t.tm_mon = 0;
       t.tm_mday = 1;
-      t.tm_yday = 0;
       t.tm_year = c_start_year - 1900;
+
+      t.tm_yday = 0;
+      t.tm_isdst = 0;
 
       daylight_info daylight;
       double utc_offset = 0.0;
@@ -212,10 +215,13 @@ int main( int argc, char* argv[ ] )
          t.tm_sec = 0;
          t.tm_min = 0;
          t.tm_hour = 0;
+
          t.tm_mon = 0;
          t.tm_mday = 1;
-         t.tm_yday = 0;
          t.tm_year = i - 1900;
+
+         t.tm_yday = 0;
+         t.tm_isdst = 0;
 
          bool new_has_daylight = get_daylight_info( t, new_daylight, new_utc_offset );
 
@@ -235,6 +241,7 @@ int main( int argc, char* argv[ ] )
 
       string abbr( argv[ 1 ] ), name;
       string::size_type pos = abbr.find( ':' );
+
       if( pos != string::npos )
       {
          name = abbr.substr( pos + 1 );
@@ -375,4 +382,3 @@ int main( int argc, char* argv[ ] )
          cerr << "error: unexpected format '" << format << "' (use 'package' or omit)" << endl;
    }
 }
-

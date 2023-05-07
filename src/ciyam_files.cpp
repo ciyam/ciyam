@@ -2690,11 +2690,8 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
                date_time dtm( tag_name.substr(
                 strlen( c_time_stamp_tag_prefix ), c_yyyymmmddhhmmss_len ) );
 
-               int64_t secs_diff = local_secs_diff( );
-
-               dtm -= ( seconds )secs_diff;
-
-               time_t tm = unix_time( dtm );
+               time_t tm;
+               unix_time( dtm, &tm );
 
                file_touch( file_name, &tm );
             }
