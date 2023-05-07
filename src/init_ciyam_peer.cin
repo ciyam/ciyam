@@ -19,14 +19,18 @@ BACKUP=$OUTPUT
 .system_variable @blockchain_shared_identity
 SHARED=$OUTPUT
 ;
-.peer_listen $PEER_PORT $BACKUP,$SHARED
+.system_variable @blockchain_peer_hub_identity
+PEER_HUB=$OUTPUT
+;
+.peer_listen $PEER_PORT $BACKUP,$SHARED,$PEER_HUB
 ;
 @ifndef $ERROR
 .storage_init Meta
 .pc sys @now Meta Global_Peerchain_Entry $BACKUP "Auto_Start=1,Description=Home,Peer_Type=1,Local_Port=$PEER_PORT"
+.pc sys @now Meta Global_Peerchain_Entry $PEER_HUB "Auto_Start=1,Description=Home Hub,Peer_Type=-1,Local_Port=$PEER_PORT"
 ;
 @ifndef $ERROR
-#Created listeners and global peerchain entry for identity '$BACKUP' (and '$SHARED').
+#Created listeners and global peerchain entries for identities '$PEER_HUB' and '$BACKUP' (which includes '$SHARED').
 @endif
 .storage_term
 @endif
