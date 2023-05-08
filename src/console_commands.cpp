@@ -549,8 +549,8 @@ string get_input_from_choices( const string& input )
 // If a command starts with an asterix then it is assumed to in fact be a list of FISSILE
 // commands (separated by spaces) which will be executed from left to right. It should be
 // noted that numerics are unsigned 64 bit integers that when converted into a string are
-// a string of X characters (so the number 10 would become the string ".........."). Thus
-// care needs to be taken not to accidentally convert a large number into a string.
+// a string of X characters (so the number 6 would become the string "......") unless the
+// value is greater than 99 (with the number 100 becoming the string "...[ 100 ]...").
 //
 // Some simple examples are as follows:
 //
@@ -584,9 +584,14 @@ const char c_fissile_base_suffix = '#';
 
 const size_t c_fissile_max_depth = 100;
 
+const size_t c_fissile_trunc_num_length = 100;
+
 const char* const c_fissile_tmp_special_char = "^@s";
 
 const char* const c_fissile_cmds_limit_variable = "*";
+
+const char* const c_fissile_compressed_prefix = "...[ ";
+const char* const c_fissile_compressed_suffix = " ]...";
 
 struct fissile_pair
 {
@@ -733,7 +738,12 @@ class fissile_string
          if( i >= len || ( l && ( l + i >= len ) ) )
             return string( );
 
-         return string( l ? l : len - i, '.' );
+         uint64_t slen = ( l ? l : len - i );
+
+         if( slen < c_fissile_trunc_num_length )
+            return string( slen, '.' );
+         else
+            return string( c_fissile_compressed_prefix + to_string( slen ) + c_fissile_compressed_suffix );
       }
       else
          return l ? data.substr( i, l ) : data.substr( i );
@@ -742,7 +752,12 @@ class fissile_string
    operator string( ) const
    {
       if( compressed )
-         return string( len, '.' );
+      {
+         if( len < c_fissile_trunc_num_length )
+            return string( len, '.' );
+         else
+            return string( c_fissile_compressed_prefix + to_string( len ) + c_fissile_compressed_suffix );
+      }
       else
          return data;
    }
@@ -792,7 +807,11 @@ class fissile_string
       if( compressed )
       {
          compressed = false;
-         data = string( len, '.' );
+
+         if( len < c_fissile_trunc_num_length )
+            data = string( len, '.' );
+         else
+            data = string( c_fissile_compressed_prefix + to_string( len ) + c_fissile_compressed_suffix );
       }
    }
 
@@ -802,20 +821,42 @@ class fissile_string
       {
          bool can_compress = true;
 
-         for( uint64_t i = 0; i < data.length( ); i++ )
+         string::size_type ppos = data.find( c_fissile_compressed_prefix );
+
+         if( ppos != string::npos )
          {
-            if( data[ i ] != '.' )
+            string::size_type spos = data.rfind( c_fissile_compressed_suffix );
+
+            if( spos == ( data.length( ) - strlen( c_fissile_compressed_suffix ) ) )
             {
+               len = atoi( data.substr( strlen( c_fissile_compressed_prefix ),
+                data.length( ) - strlen( c_fissile_compressed_prefix ) - strlen( c_fissile_compressed_suffix ) ).c_str( ) );
+
+               compressed = true;
+               data.erase( );
+
                can_compress = false;
-               break;
             }
          }
 
          if( can_compress )
          {
-            len = data.length( );
-            compressed = true;
-            data.erase( );
+            for( uint64_t i = 0; i < data.length( ); i++ )
+            {
+               if( data[ i ] != '.' )
+               {
+                  can_compress = false;
+                  break;
+               }
+            }
+
+            if( can_compress )
+            {
+               len = data.length( );
+
+               compressed = true;
+               data.erase( );
+            }
          }
       }
    }
@@ -833,8 +874,13 @@ ostream& operator <<( ostream& os, const fissile_string& fs )
 {
    if( fs.compressed )
    {
-      for( uint64_t i = 0; i < fs.len; i++ )
-         os << fs[ i ];
+      if( fs.len >= c_fissile_trunc_num_length )
+         os << c_fissile_compressed_prefix << fs.len << c_fissile_compressed_suffix;
+      else
+      {
+         for( uint64_t i = 0; i < fs.len; i++ )
+            os << fs[ i ];
+      }
    }
    else
       os << fs.data;
@@ -928,6 +974,7 @@ string::size_type find_item_in_set( const string& item,
          else
          {
             pos = item_set.rfind( ',' + item );
+
             if( pos == item_set.length( ) - item.length( ) - 1 )
             {
                if( p_len )
@@ -2243,7 +2290,7 @@ void process_fissile_commands(
       else
          throw runtime_error( "unknown or invalid fissile command: " + next );
 
-      if( cmds_allowed && --cmds_allowed == 0 && !cmds.empty( ) )
+      if( cmds_allowed && ( --cmds_allowed == 0 ) && !cmds.empty( ) )
       {
          throw runtime_error( "fissile maximum command limit exceeded" );
          break;
@@ -2575,7 +2622,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          // it effectively is to always break down the problem into a set of functional operations).
          //
          // First let's define a "split.n" function that will let us split an arbitrary string into a
-         // set of items each having (at most) "n" characters (to test: TEST=*!split.n?2,01020304).
+         // set of items each having (at most) "n" characters (to test: TEST=*!split.n?2,01020304 ?).
          //
          // *@split.n.add.char=$<^z,^y
          // *@split.n.add.sep=$?^z!!_@^z+$,
@@ -2589,7 +2636,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          // *@reverse.set.next=$?^x!!reverse.set.final_>>^x,^y_<<^z,^y_!reverse.set.next
          // *@reverse.set=$@^x=@?_@^y=_@^z=_!reverse.set.next
          //
-         // Next we'll define a "join" function that joins the items from a set into a single string.
+         // Next we'll define a "join" function that joins the items from a set into one string (that
+         // can be tested with: TEST=*join ?)
          //
          // *@join.next=$?@?!!_<<^y_@^x+@^y_@^y=_!join.next
          // *@join=$@^x=_@^y=_!join.next_@?=@^x
@@ -3673,9 +3721,27 @@ bool console_command_handler::is_special_command( const string& cmd_and_args )
 void console_command_handler::handle_special_command( const string& cmd_and_args )
 {
    if( !cmd_and_args.empty( ) )
+   {
       process_fissile_commands( cout, true,
        cmd_and_args.substr( 1 ), p_impl->fissile_data, p_impl->last_fissile_line,
        p_impl->last_fissile_output, p_impl->fissile_values, p_impl->use_special_fissile_character );
+
+#ifdef __GNUG__
+#  ifdef RDLINE_SUPPORT
+      if( isatty( STDIN_FILENO ) )
+         add_history( cmd_and_args.c_str( ) );
+#  endif
+#endif
+
+      command_history.push_back( cmd_and_args );
+      history_line_number.push_back( line_number );
+
+      if( command_history.size( ) > c_max_history )
+      {
+         command_history.pop_front( );
+         history_line_number.pop_front( );
+      }
+   }
 }
 
 void console_command_handler::handle_unknown_command( const string& command, const string& cmd_and_args )

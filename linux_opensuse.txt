@@ -56,7 +56,22 @@ sudo systemctl enable apache2
 sudo service mysql restart
 sudo service apache2 restart
 
-NOTE: Use "yast" to add "http" and "ssh" to the public zone of the firewall.
+To add CIYAM as a known firewall service:
+sudo vi /usr/lib/firewalld/services/ciyam.xml
+
+[ciyam.xml]
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>CIYAM</short>
+  <description>CIYAM Application Server</description>
+  <port protocol="tcp" port="12021"/>
+  <port protocol="udp" port="12021"/>
+</service>
+[ciyam.xml]
+
+sudo firewall-cmd --reload
+
+NOTE: Use "yast" to add "ciyam", "http" and "ssh" to the public zone of the firewall.
 
 sudo vi /usr/etc/ssh/sshd_config
 [uncomment out the following line]
