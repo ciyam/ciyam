@@ -67,6 +67,12 @@ TEST=@file:~cat modules.lst.default
 #$TEST
 TEST=abcdefghi
 #$TEST
+X=@substr:-6:$TEST
+#$X
+X=@substr:-3:$TEST
+#$X
+X=@substr:-1:$TEST
+#$X
 X=@substr:0,-1:$TEST
 #$X
 X=@substr:0,-2:$TEST
