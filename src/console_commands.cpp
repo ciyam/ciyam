@@ -560,24 +560,31 @@ string get_input_from_choices( const string& input )
 // *#*2
 // *#
 //
-// *.+
 // *$=abc
 // *$+def
+// *.+
 // *$*...
+// *.-
 // *$
 //
 // *@hello=$`Hello`world!`
 // *!hello
 //
-// *@hex2dec=$@^x=$@?=#16#_@^x+@?_!^x_@?#
+// *@hex2dec=$@^x=$@?=#16#_@^x+@?_!^x_@?#10
 // *!hex2dec?ffff
 //
 // *@ror=$@^^x=@?_@^^y=_>^^x,^^y_>^^y,^^x_@?=@^^x_@?
 // *@rol=$@^^x=@?_@^^y=_<^^y,^^x_<^^x,^^y_@?=@^^x_@?
 // *$=X... @? !ror !ror !ror !rol !rol !rol
 //
-// *@test=$@^test2=$`.__?@?!!__<__!^test2_@?=#42_!^test2_``
+// *@test=$xxx
+// *@test
+//
+// *@test=$@^test2=$`.__?@?!!__<__!^test2_@?=#100_!^test2_``
 // *!test
+//
+// Use the following to view all current variable values (^ prefixed are temporary):
+// **
 
 const char c_fissile_op_none = '\0';
 const char c_fissile_base_suffix = '#';
@@ -1590,6 +1597,8 @@ void process_fissile_commands(
 {
    string next_fissile_line( input );
 
+   bool has_output = false;
+
    size_t cmds_allowed = 0;
 
    deque< string > cmds;
@@ -1716,6 +1725,8 @@ void process_fissile_commands(
 
                if( interactive )
                   outs << endl;
+
+               has_output = true;
             }
             else if( !final_execute.empty( ) )
                cmds.push_front( final_execute );
@@ -1805,6 +1816,8 @@ void process_fissile_commands(
             else
                outs << replace_variable_names_with_fissile_values(
                 fissile_values, replace_char_with_spaces( next.substr( 1 ), '`' ) );
+
+            has_output = true;
          }
       }
       else if( next[ 0 ] == '*' )
@@ -1830,6 +1843,8 @@ void process_fissile_commands(
                 << get_fissile_numeric( fissile_values, default_base, i->second ) << '\n';
             else
                outs << " (raw string) " << i->second << '\n';
+
+            has_output = true;
          }
       }
       else if( next.length( ) > 2 && next.substr( 0, 2 ) == "*=" )
@@ -1982,6 +1997,8 @@ void process_fissile_commands(
 
                if( interactive )
                   outs << endl;
+
+               has_output = true;
             }
          }
          else
@@ -2097,6 +2114,8 @@ void process_fissile_commands(
 
             if( interactive )
                outs << endl;
+
+            has_output = true;
          }
       }
       else if( next[ 0 ] == '$' )
@@ -2114,6 +2133,8 @@ void process_fissile_commands(
 
             if( interactive )
                outs << endl;
+
+            has_output = true;
          }
       }
       else if( next[ 0 ] == '@' )
@@ -2142,7 +2163,20 @@ void process_fissile_commands(
 
                   if( interactive )
                      outs << endl;
+
+                  has_output = true;
                }
+            }
+            else if( !fissile_data.empty( ) && is_last_command && !has_output )
+            {
+               last_fissile_output = fissile_data;
+
+               outs << fissile_data;
+
+               if( interactive )
+                  outs << endl;
+
+               has_output = true;
             }
          }
          else if( next[ pos ] == '=' && pos == next.size( ) - 1 )
@@ -2213,6 +2247,8 @@ void process_fissile_commands(
 
                      if( interactive )
                         outs << endl;
+
+                     has_output = true;
                   }
                }
                else if( var_type == '$' )
@@ -2240,6 +2276,8 @@ void process_fissile_commands(
 
                      if( interactive )
                         outs << endl;
+
+                     has_output = true;
                   }
                }
                else if( var_type == '%' )
@@ -2622,7 +2660,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          // it effectively is to always break down the problem into a set of functional operations).
          //
          // First let's define a "split.n" function that will let us split an arbitrary string into a
-         // set of items each having (at most) "n" characters (to test: TEST=*!split.n?2,01020304 ?).
+         // set of items each having (at most) "n" characters (to test: TEST=*!split.n?2,01020304).
          //
          // *@split.n.add.char=$<^z,^y
          // *@split.n.add.sep=$?^z!!_@^z+$,
@@ -2637,7 +2675,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          // *@reverse.set=$@^x=@?_@^y=_@^z=_!reverse.set.next
          //
          // Next we'll define a "join" function that joins the items from a set into one string (that
-         // can be tested with: TEST=*join ?)
+         // can be tested with: TEST=*!join)
          //
          // *@join.next=$?@?!!_<<^y_@^x+@^y_@^y=_!join.next
          // *@join=$@^x=_@^y=_!join.next_@?=@^x
@@ -2684,11 +2722,18 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   {
                      char op = str[ pos ];
 
+                     bool is_negative = false;
                      bool was_transform = false;
 
                      for( size_t i = pos + 1; i < str.length( ); i++ )
                      {
                         char ch = str[ i ];
+
+                        if( ch == '-' && ( i == pos + 1 ) )
+                        {
+                           is_negative = true;
+                           continue;
+                        }
 
                         if( ch >= '0' && ch <= '9' )
                         {
@@ -2698,6 +2743,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         else
                            break;
                      }
+
+                     if( is_negative )
+                        rval *= -1;
 
                      if( !val )
                      {
@@ -2959,7 +3007,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  {
                                     int len = atoi( str.substr( pos + 1 ).c_str( ) );
 
-                                    // NOTE: Use of negative values for "len" will treat the
+                                    // NOTE: Use of a negative value for "len" will treat the
                                     // value as being that much less than the size of "rhs".
                                     if( len < 0 )
                                     {
@@ -2980,10 +3028,24 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  }
                                  else
                                  {
-                                    if( rhs.size( ) > rval )
-                                       str = rhs.substr( rval );
+                                    // NOTE: Use of a negative value for "rval" will result
+                                    // in the value becoming the last X characters of "rhs".
+                                    if( rval < 0 )
+                                    {
+                                       rval *= -1;
+
+                                       if( rval < rhs.size( ) )
+                                          str = rhs.substr( rhs.size( ) - rval );
+                                       else
+                                          str.erase( );
+                                    }
                                     else
-                                       str.erase( );
+                                    {
+                                       if( rhs.size( ) > rval )
+                                          str = rhs.substr( rval );
+                                       else
+                                          str.erase( );
+                                    }
                                  }
                               }
                            }
