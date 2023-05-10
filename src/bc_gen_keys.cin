@@ -43,6 +43,22 @@ PEER_HUB=1
 @endif
 @endif
 ;
+CHANNEL=
+@ifndef $SHARED
+@ifndef $PEER_HUB
+.system_variable @blockchain_backup_identity
+@ifndef $OUTPUT
+ERROR=No backup blockchain identity was found.
+#Error: $ERROR
+@label END
+@endif
+@skip
+@ifneq "$IDENT" "$OUTPUT"
+CHANNEL=1
+@endif
+@endif
+@endif
+;
 IS_DEMO=
 @ifeq "$IDENT" "e3733d121"
 IS_DEMO=1
@@ -62,6 +78,9 @@ MODULUS=@$NEXT_HEIGHT#$MULTIPLE
 HEIGHT=@$HEIGHT+$MULTIPLE
 @endif
 ;
+@ifdef $CHANNEL
+.crypto_hash $SEED -s==$HEIGHT
+@else
 @ifndef $PEER_HUB
 @ifndef $SHARED
 .crypto_hash $SEED -s=-$HEIGHT
@@ -70,6 +89,7 @@ HEIGHT=@$HEIGHT+$MULTIPLE
 @endif
 @else
 .crypto_hash $SEED -s=#$HEIGHT
+@endif
 @endif
 ENTROPY_HASH=$OUTPUT
 ;
@@ -96,6 +116,9 @@ MODULUS=@$NEXT_HEIGHT#$SQUARED
 @ifeq "$MODULUS" "0"
 HEIGHT=@$HEIGHT+$SQUARED
 ;
+@ifdef $CHANNEL
+.crypto_hash $SEED -s==$HEIGHT
+@else
 @ifndef $PEER_HUB
 @ifndef $SHARED
 .crypto_hash $SEED -s=-$HEIGHT
@@ -104,6 +127,7 @@ HEIGHT=@$HEIGHT+$SQUARED
 @endif
 @else
 .crypto_hash $SEED -s=#$HEIGHT
+@endif
 @endif
 ENTROPY_HASH=$OUTPUT
 ;
@@ -121,6 +145,8 @@ ENTROPY_HASH=$OUTPUT
 @endif
 ~rm new_primary.key new_primary.pub
 @endif
+;
+@:END
 ;
 @endif
 @endif

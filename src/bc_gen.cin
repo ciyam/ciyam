@@ -5,13 +5,11 @@
 ;
 <std.fissile
 ;
-@ifndef $1
-#NOTE: This script requires a blockchain type (i.e. "-hub", "-backup" or "-shared").
-@else
-;
 HUB=
 SEED=$2
+OTHER=
 SHARED=
+CHANNEL=
 ;
 @ifeq "$1" "-hub"
 HUB=1
@@ -20,13 +18,14 @@ HUB=1
 SHARED=1
 @else
 @ifneq "$1" "-backup"
-SEED=
+OTHER=$1
+CHANNEL=1
 @endif
 @endif
 @endif
 ;
 @ifeq "$SEED" ""
-#Usage: bc_gen.cin -hub|-backup|-shared <seed>
+#Usage: bc_gen.cin -hub|-backup|-shared|<other_ident> <seed>
 @else
 ;
 @ifeq "$SEED" "de604cee0755a3d81944ea96aed12681"
@@ -45,6 +44,7 @@ UUID=$OUTPUT
 ;
 @ifndef $HUB
 @ifndef $SHARED
+@ifndef $CHANNEL
 .crypto_hash $SEED -s=-0
 ENTROPY_HASH_PRIMARY=$OUTPUT
 ;
@@ -53,6 +53,16 @@ ENTROPY_HASH_SECONDARY=$OUTPUT
 ;
 .crypto_hash $SEED -s=-$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
+@else
+.crypto_hash $SEED -s==0
+ENTROPY_HASH_PRIMARY=$OUTPUT
+;
+.crypto_hash $SEED -s==$MULTIPLE
+ENTROPY_HASH_SECONDARY=$OUTPUT
+;
+.crypto_hash $SEED -s==$SQUARED
+ENTROPY_HASH_TERTIARY=$OUTPUT
+@endif
 @else
 .crypto_hash $SEED -s=+0
 ENTROPY_HASH_PRIMARY=$OUTPUT
@@ -119,6 +129,7 @@ TERTIARY_PUBKEY_HASH=$OUTPUT
 TERTIARY_PRIVKEY_HASH=$OUTPUT
 ;
 @ifndef $SHARED
+@ifndef $CHANNEL
 .crypto_hash $PRIMARY_PUBKEY_HASH$SECONDARY_PUBKEY_HASH$TERTIARY_PUBKEY_HASH
 IDENTITY_HASH=$OUTPUT
 ;
@@ -140,6 +151,51 @@ START=@substr:0,8:$IDENT
 IDENT=$START$HEX
 @endif
 ;
+@else
+.system_variable @blockchain_backup_identity
+@ifndef $OUTPUT
+ERROR=No backup blockchain identity was found.
+#Error: $ERROR
+@else
+IDENT=$OUTPUT
+;
+BIN1=*!hex2bin?$IDENT
+BIN2=*!hex2bin?$OTHER
+;
+COMBINED=*!xorbin?$BIN1,$BIN2
+COMBINED=*!bin2hex?$COMBINED
+COMBINED=000000000$COMBINED
+COMBINED=@substr:-9:$COMBINED
+;
+REVERSED=*!reverse?$COMBINED
+;
+@ifeq "$COMBINED" "$REVERSED"
+LAST=@substr:8,1:$COMBINED
+DEC=@hexdec:$LAST
+DEC=@$DEC+1
+@ifeq "$DEC" "16"
+DEC=0
+@endif
+HEX=@dechex:$DEC
+PREFIX=@substr:0,8:$COMBINED
+COMBINED=$PREFIX$HEX
+REVERSED=*!reverse?$COMBINED
+@endif
+;
+.session_variable @set ""
+.session_variable @set "$IDENT"
+.session_variable @set "$OTHER"
+.session_variable @set
+LINES=$OUTPUT
+LINE1=%LINES:1%
+LINE2=%LINES:2%
+@ifneq "$IDENT" "$LINE1"
+COMBINED=$REVERSED
+@endif
+;
+IDENT=$COMBINED
+@endif
+@endif
 @else
 .system_variable @blockchain_backup_identity
 @ifndef $OUTPUT
@@ -179,8 +235,13 @@ TERTIARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
 @ifndef $HUB
 @ifndef $SHARED
+@ifndef $CHANNEL
 .file_raw -core blob blk:h=0,i=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@else
+.file_raw -core blob blk:h=0,i=$IDENT,t=@channel\n\
+p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@endif
 @else
 .file_raw -core blob blk:h=0,i=$IDENT,t=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
@@ -195,6 +256,7 @@ BLOCK_HASH=$OUTPUT
 .file_hash -q bc.$IDENT.zenith
 @ifndef "$OUTPUT"
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
+@ifndef $CHANNEL
 @ifndef $HUB
 @ifndef $SHARED
 .system_variable >@blockchain_backup_height 0
@@ -210,12 +272,16 @@ BLOCK_HASH=$OUTPUT
 .system_variable >@blockchain_peer_hub_initial $BLOCK_HASH
 .system_variable >@blockchain_peer_hub_identity $IDENT
 @endif
+@endif
 ;
 @ifndef $HUB
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
 ~mkdir $FILES_AREA_DIR/$IDENT
+@ifdef $CHANNEL
+.file_archive -add $FILES_AREA_DIR/$IDENT 100MB $IDENT
+@else
 @ifdef $SHARED
 .file_archive -add $FILES_AREA_DIR/$IDENT 5GB $IDENT
 .system_variable >@blockchain_shared_archive $FILES_AREA_DIR/$IDENT
@@ -223,6 +289,7 @@ FILES_AREA_DIR=$OUTPUT
 .file_archive -add $FILES_AREA_DIR/$IDENT 100GB $IDENT
 @ifndef $ERROR
 .system_variable >@blockchain_backup_archive $FILES_AREA_DIR/$IDENT
+@endif
 @endif
 @endif
 @endif
@@ -236,6 +303,5 @@ FILES_AREA_DIR=$OUTPUT
 @endif
 @endif
 ;
-@endif
 @endif
 @endif

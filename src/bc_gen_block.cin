@@ -52,6 +52,22 @@ OPL_FILE_HASH_ENC=$OUTPUT
 @endif
 @endif
 ;
+CHANNEL=
+@ifndef $SHARED
+@ifndef $PEER_HUB
+.system_variable @blockchain_backup_identity
+@ifndef $OUTPUT
+ERROR=No backup blockchain identity was found.
+#Error: $ERROR
+@label END
+@endif
+@skip
+@ifneq "$IDENT" "$OUTPUT"
+CHANNEL=1
+@endif
+@endif
+@endif
+;
 @ifndef $IS_DEMO
 MULTIPLE=50
 UTIME=@unix:
