@@ -615,14 +615,17 @@ void process_core_file( const string& hash, const string& blockchain )
             string targeted_identity( get_session_variable(
              get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
 
-            bool is_shared = false;
-
-            if( !targeted_identity.empty( ) && targeted_identity[ 0 ] != '@' )
-               is_shared = true;
-
             if( !primary_pubkey_hash.empty( ) )
             {
-               if( !is_shared && ( block_height == "0" ) )
+               bool is_user = false;
+               bool is_shared = false;
+
+               if( targeted_identity == get_special_var_name( e_special_var_peer_user ) )
+                  is_user = true;
+               else if( !targeted_identity.empty( ) && targeted_identity[ 0 ] != '@' )
+                  is_shared = true;
+
+               if( !is_user && !is_shared && ( block_height == "0" ) )
                {
                   string identity( determine_identity(
                    primary_pubkey_hash + secondary_pubkey_hash + tertiary_pubkey_hash ) );
@@ -2318,7 +2321,8 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
             string identity( determine_identity(
              primary_pubkey_hash + secondary_pubkey_hash + tertiary_pubkey_hash ) );
 
-            if( identity.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
+            if( targeted_identity != get_special_var_name( e_special_var_peer_user )
+             && ( identity.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 ) )
                throw runtime_error( "invalid identity value '" + identity + "' for blockchain '" + blockchain + "'" );
          }
 
