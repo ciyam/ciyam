@@ -710,7 +710,7 @@ int main( int argc, char* argv[ ] )
       cout << "  and: -q for quiet mode (-qq to suppress all output apart from errors)" << endl;
       cout << "  and: -b64/-esc stores file data using b64/esc encoding for text lines" << endl;
 #ifdef ZLIB_SUPPORT
-      cout << "  and: -ngz in order to not preform zlib compression" << endl;
+      cout << "  and: -ngz in order to not perform zlib compression" << endl;
 #endif
       cout << " also: -x identifies one or more filespecs that are to be excluded" << endl;
       return 0;

@@ -4940,6 +4940,11 @@ peer_session::peer_session( int64_t time_val,
 
                   throw runtime_error( error );
                }
+
+               if( chain_type == e_peerchain_type_hub )
+                  is_hub = true;
+               else if( chain_type == e_peerchain_type_user )
+                  is_user = true;
             }
          }
 
