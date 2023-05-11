@@ -370,6 +370,7 @@ peerchain_type get_blockchain_type( const string& blockchain )
 
       bool has_target = false;
       bool has_hub_target = false;
+      bool has_user_target = false;
 
       if( genesis_info.find( prefix ) != string::npos )
          has_target = true;
@@ -380,9 +381,20 @@ peerchain_type get_blockchain_type( const string& blockchain )
 
       if( genesis_info.find( hub_prefix ) != string::npos )
          has_hub_target = true;
+      else
+      {
+         string user_prefix( prefix );
+
+         user_prefix += string( get_special_var_name( e_special_var_peer_user ) );
+
+         if( genesis_info.find( user_prefix ) != string::npos )
+            has_user_target = true;
+      }
 
       if( has_hub_target )
          chain_type = e_peerchain_type_hub;
+      else if( has_user_target )
+         chain_type = e_peerchain_type_user;
       else if( !has_target )
          chain_type = e_peerchain_type_backup;
       else
@@ -417,6 +429,7 @@ void check_blockchain_type( const string& blockchain, peerchain_type chain_type,
 
       bool has_target = false;
       bool has_hub_target = false;
+      bool has_user_target = false;
 
       if( genesis_info.find( prefix ) != string::npos )
          has_target = true;
@@ -427,6 +440,15 @@ void check_blockchain_type( const string& blockchain, peerchain_type chain_type,
 
       if( genesis_info.find( hub_prefix ) != string::npos )
          has_hub_target = true;
+      else
+      {
+         string user_prefix( prefix );
+
+         user_prefix += string( get_special_var_name( e_special_var_peer_user ) );
+
+         if( genesis_info.find( user_prefix ) != string::npos )
+            has_user_target = true;
+      }
 
       bool okay = true;
 
@@ -436,6 +458,11 @@ void check_blockchain_type( const string& blockchain, peerchain_type chain_type,
       {
          if( !has_hub_target )
             okay = false;
+      }
+      else if( chain_type == e_peerchain_type_user )
+      {
+         if( !has_user_target )
+            okay = true;
       }
       else if( chain_type == e_peerchain_type_backup )
       {
@@ -4776,6 +4803,7 @@ peer_session::peer_session( int64_t time_val,
 #endif
  :
  is_hub( false ),
+ is_user( false ),
  is_local( false ),
  is_owner( false ),
  ip_addr( addr_info ),
@@ -4815,6 +4843,8 @@ peer_session::peer_session( int64_t time_val,
 
    if( chain_type == e_peerchain_type_hub )
       is_hub = true;
+   else if( chain_type == e_peerchain_type_user )
+      is_user = true;
 
    if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
@@ -4913,10 +4943,25 @@ peer_session::peer_session( int64_t time_val,
             }
          }
 
-         if( !blockchains.count( blockchain ) )
-         {
-            string unprefixed_blockchain( replaced( blockchain, c_bc_prefix, "" ) );
+         bool has_user = false;
 
+         string unprefixed_blockchain( replaced( blockchain, c_bc_prefix, "" ) );
+
+         if( is_user )
+         {
+            string forwards_tag( blockchain + c_zenith_suffix );
+
+            string reversed( unprefixed_blockchain );
+            reverse( reversed.begin( ), reversed.end( ) );
+
+            string reversed_tag( c_bc_prefix + reversed + c_zenith_suffix );
+
+            if( has_tag( forwards_tag ) || has_tag( reversed_tag ) )
+               has_user = true;
+         }
+
+         if( !has_user && !blockchains.count( blockchain ) )
+         {
             // FUTURE: This message should be handled as a server string message.
             string error( "Unsupported peerchain identity '" + unprefixed_blockchain + "'." );
 

@@ -267,7 +267,8 @@ int g_default_Status = int( 0 );
 set< int > g_peerchain_peer_type_enum;
 set< int > g_peerchain_status_enum;
 
-const int c_enum_peerchain_peer_type_Hub( -1 );
+const int c_enum_peerchain_peer_type_Hub( -2 );
+const int c_enum_peerchain_peer_type_User( -1 );
 const int c_enum_peerchain_peer_type_Hosted( 0 );
 const int c_enum_peerchain_peer_type_Local_Only( 1 );
 const int c_enum_peerchain_peer_type_Backup_Only( 2 );
@@ -279,8 +280,10 @@ string get_enum_string_peerchain_peer_type( int val )
 
    if( to_string( val ) == "" )
       throw runtime_error( "unexpected empty enum value for peerchain_peer_type" );
-   else if( to_string( val ) == to_string( "-1" ) )
+   else if( to_string( val ) == to_string( "-2" ) )
       string_name = "enum_peerchain_peer_type_Hub";
+   else if( to_string( val ) == to_string( "-1" ) )
+      string_name = "enum_peerchain_peer_type_User";
    else if( to_string( val ) == to_string( "0" ) )
       string_name = "enum_peerchain_peer_type_Hosted";
    else if( to_string( val ) == to_string( "1" ) )
@@ -2896,6 +2899,7 @@ void Meta_Global_Peerchain_Entry::static_get_text_search_fields( vector< string 
 
 void Meta_Global_Peerchain_Entry::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
 {
+   pairs.push_back( make_pair( "enum_peerchain_peer_type_-2", get_enum_string_peerchain_peer_type( -2 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_peer_type_-1", get_enum_string_peerchain_peer_type( -1 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_peer_type_0", get_enum_string_peerchain_peer_type( 0 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_peer_type_1", get_enum_string_peerchain_peer_type( 1 ) ) );
@@ -2951,6 +2955,7 @@ void Meta_Global_Peerchain_Entry::static_class_init( const char* p_module_name )
 
    g_state_names_variable = get_special_var_name( e_special_var_state_names );
 
+   g_peerchain_peer_type_enum.insert( -2 );
    g_peerchain_peer_type_enum.insert( -1 );
    g_peerchain_peer_type_enum.insert( 0 );
    g_peerchain_peer_type_enum.insert( 1 );

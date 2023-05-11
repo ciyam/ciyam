@@ -1573,8 +1573,12 @@
    <name>enum_peerchain_peer_type
    <values/>
     <value/>
-     <data>-1
+     <data>-2
      <name>enum_peerchain_peer_type_hub
+    </value>
+    <value/>
+     <data>-1
+     <name>enum_peerchain_peer_type_user
     </value>
     <value/>
      <data>0

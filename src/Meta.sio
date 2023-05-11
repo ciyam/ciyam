@@ -39540,7 +39540,7 @@
     <id>960
     <name>peerchain_peer_type
     <type>int
-    <key_values>-1=Hub,0=Hosted,1=Local_Only,2=Backup_Only,3=Shared_Only
+    <key_values>-2=Hub,-1=User,0=Hosted,1=Local_Only,2=Backup_Only,3=Shared_Only
    </user_defined_enum>
    <user_defined_enum/>
     <id>955
