@@ -38,6 +38,7 @@ enum peerchain_type
 {
    e_peerchain_type_any,
    e_peerchain_type_hub,
+   e_peerchain_type_user,
    e_peerchain_type_backup,
    e_peerchain_type_shared
 };
@@ -68,6 +69,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 
    private:
    bool is_hub;
+   bool is_user;
 
    bool is_local;
    bool is_owner;
