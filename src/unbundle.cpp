@@ -333,7 +333,7 @@ int main( int argc, char* argv[ ] )
       cout << "  and: -q for quiet mode (-qq to suppress all output apart from errors)" << endl;
       cout << "  and: -x identifies one or more filespecs that are to be excluded" << endl;
 #ifdef ZLIB_SUPPORT
-      cout << "  and: -ngz in order to not preform zlib expansion (for use with '-')" << endl;
+      cout << "  and: -ngz in order to not perform zlib expansion (for use with '-')" << endl;
 #endif
       cout << " also: -d <directory> to set a directory origin for output" << endl;
       return 0;
