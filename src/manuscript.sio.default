@@ -39,6 +39,11 @@
   <arguments>import_files.cin @path @tag_prefix @sub_directory @files_expression
  </script>
  <script/>
+  <name>init_channel
+  <filename>*script*
+  <arguments>init_channel.cin @identity
+ </script>
+ <script/>
   <name>add_blacklist
   <filename>*script*
   <arguments>add_blacklist.cin @hash
