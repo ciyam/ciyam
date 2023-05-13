@@ -8,7 +8,7 @@
       set_session_variable( get_special_var_name( e_special_var_arg1 ), get_obj( ).`{`$arg_arg1`}( ) );
 `}\
 `{`!`@eq`(`$arg_arg2`,`'`'`)\
-      set_session_variable( get_special_var_name( e_special_var_arg1 ), get_obj( ).`{`$arg_arg2`}( ) );
+      set_session_variable( get_special_var_name( e_special_var_arg2 ), get_obj( ).`{`$arg_arg2`}( ) );
 `}\
       set_session_variable( get_special_var_name( e_special_var_output_file ), tmp );
 

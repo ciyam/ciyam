@@ -5870,7 +5870,14 @@ string process_script_args( const string& raw_args, bool use_system_variables )
             if( use_system_variables )
                next_arg = get_raw_system_variable( next_arg );
             else
+            {
                next_arg = get_raw_session_variable( next_arg );
+
+               // NOTE: If the explicitly named argument session variable was empty
+               // allows "@argX" (X being the arg number) as a generic alternative.
+               if( next_arg.empty( ) )
+                  next_arg = get_raw_session_variable( "@arg" + to_string( i ) );
+            }
          }
 
          if( !next_arg.empty( ) )
