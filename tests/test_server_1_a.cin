@@ -422,6 +422,13 @@ crypto_hash -x=9 hello -s=3
 crypto_hash -x=9 hello -s=4
 crypto_hash -x=9 hello -s=5
 ;
+regex @peerchain_identity 012343210
+regex @peerchain_identity abcdedbca
+regex @peerchain_identity abcd01234
+regex @peerchain_identity abcdefg01
+regex @peerchain_identity 0123456789
+regex @peerchain_identity 1234567890
+;
 session_variable test (okay)
 session_variable test
 session_variable test @increment

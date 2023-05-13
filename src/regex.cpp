@@ -556,6 +556,10 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
                   else
                   {
                      ch_used = true;
+
+                     if( last_ch != ',' && !has_maximum )
+                        next_part.max_matches = next_part.min_matches;
+
                      is_set_matches = false;
                   }
                }
@@ -1758,13 +1762,14 @@ int main( )
       cout << "\ninput text to match: ";
       cin >> input;
 
-      cout << "\nregex is: " << expr.get_input( )
+      cout << "\nregex is: " << expr.get_expr( )
        << "\nsearching: " << input << "\n\n";
 
       string::size_type length;
       string::size_type pos = expr.search( input, &length );
+
       if( pos != string::npos )
-         cout << "matched: " << input.substr( pos, length );
+         cout << "matched: " << input.substr( pos, length ) << endl;
       else
          cout << "*** no match ***" << endl;
    }
