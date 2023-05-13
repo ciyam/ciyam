@@ -350,6 +350,15 @@ crypto_hash -x=9 hello -s=4
 62aa30bc3e176557d12fb53839a149397928af912a9477f07a8b5b2eb8353bcb
 crypto_hash -x=9 hello -s=5
 ade14a0f9610a7cea12f1b549679e96fb51f21d7a305c902eb3d142643607a19
+regex @peerchain_identity 012343210
+012343210
+regex @peerchain_identity abcdedbca
+abcdedbca
+regex @peerchain_identity abcd01234
+abcd01234
+regex @peerchain_identity abcdefg01
+regex @peerchain_identity 0123456789
+regex @peerchain_identity 1234567890
 session_variable test (okay)
 Error: invalid value '(okay)' (could be confused with a protocol response)
 session_variable test
