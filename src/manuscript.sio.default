@@ -80,6 +80,11 @@
   <arguments>status_archive.cin @name
  </script>
  <script/>
+  <name>destroy_channel
+  <filename>*script*
+  <arguments>destroy_channel.cin @identity
+ </script>
+ <script/>
   <name>export_app_file
   <filename>*script*
   <arguments>export_app_file.cin @app_directory @list_hash @web_root
