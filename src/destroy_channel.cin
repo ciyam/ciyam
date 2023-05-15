@@ -1,0 +1,41 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifeq "$1" ""
+#Usage: destroy_channel.cin <identity>
+@else
+;
+<std.fissile
+;
+IDENT=$1
+;
+PREFIX=$$
+;
+INITIAL_VAR=%PREFIX%$%IDENT%_initial
+IDENTITY_VAR=%PREFIX%$%IDENT%_identity
+;
+.system_variable $IDENTITY_VAR
+;
+@ifdef "$OUTPUT"
+CHANNEL=$OUTPUT
+REVERSED=*!reverse?$CHANNEL
+;
+.file_archive -destroy $CHANNEL
+.file_archive -destroy $REVERSED
+;
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+;
+~rmdir $FILES_AREA_DIR/$CHANNEL
+~rmdir $FILES_AREA_DIR/$REVERSED
+;
+.file_kill -q -p=bc.$CHANNEL.*
+.file_kill -q -p=bc.$REVERSED.*
+;
+.system_variable >$INITIAL_VAR ""
+.system_variable >$IDENTITY_VAR ""
+@endif
+;
+@endif

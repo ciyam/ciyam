@@ -42,6 +42,55 @@ SQUARED=@$SQUARED-1
 .session_variable @uuid
 UUID=$OUTPUT
 ;
+@ifdef $CHANNEL
+.system_variable @blockchain_backup_identity
+@ifndef $OUTPUT
+ERROR=No backup blockchain identity was found.
+#Error: $ERROR
+@label END
+@else
+IDENT=$OUTPUT
+;
+BIN1=*!hex2bin?$IDENT
+BIN2=*!hex2bin?$OTHER
+;
+COMBINED=*!xorbin?$BIN1,$BIN2
+COMBINED=*!bin2hex?$COMBINED
+COMBINED=000000000$COMBINED
+COMBINED=@substr:-9:$COMBINED
+;
+REVERSED=*!reverse?$COMBINED
+;
+@ifeq "$COMBINED" "$REVERSED"
+LAST=@substr:8,1:$COMBINED
+DEC=@hexdec:$LAST
+DEC=@$DEC+1
+@ifeq "$DEC" "16"
+DEC=0
+@endif
+HEX=@dechex:$DEC
+PREFIX=@substr:0,8:$COMBINED
+COMBINED=$PREFIX$HEX
+REVERSED=*!reverse?$COMBINED
+@endif
+;
+.session_variable @set ""
+.session_variable @set "$IDENT"
+.session_variable @set "$OTHER"
+.session_variable @set
+LINES=$OUTPUT
+LINE1=%LINES:1%
+LINE2=%LINES:2%
+@ifneq "$IDENT" "$LINE1"
+COMBINED=$REVERSED
+@endif
+;
+@endif
+;
+IDENT=$COMBINED
+@skip
+@endif
+;
 @ifndef $HUB
 @ifndef $SHARED
 @ifndef $CHANNEL
@@ -54,13 +103,13 @@ ENTROPY_HASH_SECONDARY=$OUTPUT
 .crypto_hash $SEED -s=-$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
 @else
-.crypto_hash $SEED -s==0
+.crypto_hash $SEED -s==%IDENT%0
 ENTROPY_HASH_PRIMARY=$OUTPUT
 ;
-.crypto_hash $SEED -s==$MULTIPLE
+.crypto_hash $SEED -s==$IDENT$MULTIPLE
 ENTROPY_HASH_SECONDARY=$OUTPUT
 ;
-.crypto_hash $SEED -s==$SQUARED
+.crypto_hash $SEED -s==$IDENT$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
 @endif
 @else
@@ -149,51 +198,7 @@ DEC=0
 HEX=@dechex:$DEC
 START=@substr:0,8:$IDENT
 IDENT=$START$HEX
-@endif
 ;
-@else
-.system_variable @blockchain_backup_identity
-@ifndef $OUTPUT
-ERROR=No backup blockchain identity was found.
-#Error: $ERROR
-@else
-IDENT=$OUTPUT
-;
-BIN1=*!hex2bin?$IDENT
-BIN2=*!hex2bin?$OTHER
-;
-COMBINED=*!xorbin?$BIN1,$BIN2
-COMBINED=*!bin2hex?$COMBINED
-COMBINED=000000000$COMBINED
-COMBINED=@substr:-9:$COMBINED
-;
-REVERSED=*!reverse?$COMBINED
-;
-@ifeq "$COMBINED" "$REVERSED"
-LAST=@substr:8,1:$COMBINED
-DEC=@hexdec:$LAST
-DEC=@$DEC+1
-@ifeq "$DEC" "16"
-DEC=0
-@endif
-HEX=@dechex:$DEC
-PREFIX=@substr:0,8:$COMBINED
-COMBINED=$PREFIX$HEX
-REVERSED=*!reverse?$COMBINED
-@endif
-;
-.session_variable @set ""
-.session_variable @set "$IDENT"
-.session_variable @set "$OTHER"
-.session_variable @set
-LINES=$OUTPUT
-LINE1=%LINES:1%
-LINE2=%LINES:2%
-@ifneq "$IDENT" "$LINE1"
-COMBINED=$REVERSED
-@endif
-;
-IDENT=$COMBINED
 @endif
 @endif
 @else
@@ -280,7 +285,9 @@ FILES_AREA_DIR=$OUTPUT
 ;
 ~mkdir $FILES_AREA_DIR/$IDENT
 @ifdef $CHANNEL
+~mkdir $FILES_AREA_DIR/$REVERSED
 .file_archive -add $FILES_AREA_DIR/$IDENT 100MB $IDENT
+.file_archive -add $FILES_AREA_DIR/$REVERSED 100MB $REVERSED
 @else
 @ifdef $SHARED
 .file_archive -add $FILES_AREA_DIR/$IDENT 5GB $IDENT
@@ -304,4 +311,7 @@ FILES_AREA_DIR=$OUTPUT
 @endif
 ;
 @endif
+;
+@:END
+;
 @endif
