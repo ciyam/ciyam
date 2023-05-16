@@ -4965,7 +4965,8 @@ peer_session::peer_session( int64_t time_val,
 
             string reversed_tag( c_bc_prefix + reversed + c_zenith_suffix );
 
-            if( has_tag( forwards_tag ) || has_tag( reversed_tag ) )
+            if( has_tag( forwards_tag ) || has_tag( reversed_tag )
+             || has_file_archive( unprefixed_blockchain ) || has_file_archive( reversed ) )
                has_user = true;
          }
 
