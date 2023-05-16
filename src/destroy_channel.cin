@@ -36,6 +36,8 @@ FILES_AREA_DIR=$OUTPUT
 ;
 .system_variable >$INITIAL_VAR ""
 .system_variable >$IDENTITY_VAR ""
+;
+#Removed archive and all blockchain files for '$CHANNEL'.
 @endif
 ;
 @endif

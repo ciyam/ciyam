@@ -79,7 +79,7 @@ HEIGHT=@$HEIGHT+$MULTIPLE
 @endif
 ;
 @ifdef $CHANNEL
-.crypto_hash $SEED -s==$IDENT$HEIGHT
+.crypto_hash $SEED -s=$IDENT$HEIGHT
 @else
 @ifndef $PEER_HUB
 @ifndef $SHARED
@@ -117,7 +117,7 @@ MODULUS=@$NEXT_HEIGHT#$SQUARED
 HEIGHT=@$HEIGHT+$SQUARED
 ;
 @ifdef $CHANNEL
-.crypto_hash $SEED -s==$IDENT$HEIGHT
+.crypto_hash $SEED -s=$IDENT$HEIGHT
 @else
 @ifndef $PEER_HUB
 @ifndef $SHARED
