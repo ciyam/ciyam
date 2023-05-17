@@ -50,43 +50,7 @@ ERROR=No backup blockchain identity was found.
 @label END
 @else
 IDENT=$OUTPUT
-;
-BIN1=*!hex2bin?$IDENT
-BIN2=*!hex2bin?$OTHER
-;
-COMBINED=*!xorbin?$BIN1,$BIN2
-COMBINED=*!bin2hex?$COMBINED
-COMBINED=000000000$COMBINED
-COMBINED=@substr:-9:$COMBINED
-;
-REVERSED=*!reverse?$COMBINED
-;
-@ifeq "$COMBINED" "$REVERSED"
-LAST=@substr:8,1:$COMBINED
-DEC=@hexdec:$LAST
-DEC=@$DEC+1
-@ifeq "$DEC" "16"
-DEC=0
-@endif
-HEX=@dechex:$DEC
-PREFIX=@substr:0,8:$COMBINED
-COMBINED=$PREFIX$HEX
-REVERSED=*!reverse?$COMBINED
-@endif
-;
-.session_variable @set ""
-.session_variable @set "$IDENT"
-.session_variable @set "$OTHER"
-.session_variable @set
-LINES=$OUTPUT
-LINE1=%LINES:1%
-LINE2=%LINES:2%
-@ifneq "$IDENT" "$LINE1"
-TEMP_VAL=$COMBINED
-COMBINED=$REVERSED
-REVERSED=$TEMP_VAL
-@endif
-;
+<bc_channel_identity.cin $IDENT $OTHER
 @endif
 ;
 IDENT=$COMBINED
@@ -308,7 +272,11 @@ FILES_AREA_DIR=$OUTPUT
 @ifdef $HUB
 #Created keys and genesis block for identity '$IDENT'.
 @else
+@ifndef $CHANNEL
 #Created keys, genesis block and file archive for identity '$IDENT'.
+@else
+#Created keys, genesis block and file archives for identity '$IDENT' (and '$REVERSED').
+@endif
 @endif
 @endif
 ;

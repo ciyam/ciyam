@@ -1,0 +1,34 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+ERROR=
+@ifeq "$1" ""
+ERROR=1
+@endif
+@ifeq "$2" ""
+ERROR=1
+@endif
+;
+@ifeq "$ERROR" "1"
+#Usage: bc_create_channel.cin <ident> <other>
+@else
+;
+IDENT=$1
+OTHER=$2
+;
+<bc_channel_identity.cin $IDENT $OTHER
+;
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+;
+~mkdir $FILES_AREA_DIR/$COMBINED
+~mkdir $FILES_AREA_DIR/$REVERSED
+;
+.file_archive -add $FILES_AREA_DIR/$COMBINED 100MB $COMBINED
+.file_archive -add $FILES_AREA_DIR/$REVERSED 100MB $REVERSED
+;
+#Created file archives for channel identities '$COMBINED' and '$REVERSED'.
+;
+@endif

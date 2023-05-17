@@ -5,6 +5,9 @@
 ;
 ; Various general purpose FISSILE functions (to be executed for use in CIYAM scripts).
 ;
+@ifndef $STD_FISSILE
+STD_FISSILE=1
+;
 *@split.n.add.char=$<^z,^y
 *@split.n.add.sep=$?^z!!_@^z+$,
 *@split.n.loop=$?^x!!_<^y_>^x,^w_!split.n.add.char_!split.n.loop
@@ -38,3 +41,5 @@
 *@xorexec=$?@^sx!!_!xorloop_!xorexec
 ;
 *@xorbin=$@^t1=_@^t2=_<<^t1_<<^t2_!xorinit_!xorexec_@?=@^rv
+;
+@endif
