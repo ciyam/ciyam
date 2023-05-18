@@ -1,11 +1,16 @@
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
    // [(start trigger_destroy_script)] `{`$arg_id`}
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_field`,`'`'`)`|`!`@eq`(`$arg_skip_restore`,`'`'`)\
+`{`$i`=`'   `'`}`{`!`@eq`(`$arg_skip_restore`,`'`'`)\
    if( !storage_locked_for_admin( ) )
-`{`!`@eq`(`$arg_field`,`'`'`)\
+`,\
+   // NOTE: Empty code block for scope purposes.
+`}`}`{`!`@eq`(`$arg_field`,`'`'`)\
    {
       temporary_session_variable tmp_session_var( "`{`$arg_script_arg`}", get_obj( ).`{`$arg_field`}( ) );
-`}
-      run_script( "`{`$arg_script_name`}", `{`@eq`(`$arg_async`,`'`'`)false`,true`} );
+
+`}\
+`{`$i`}   `{`!`@eq`(`$arg_pre_func`,`'`'`)`{`$arg_pre_func`}( ), `}run_script( "`{`$arg_script_name`}", `{`@eq`(`$arg_async`,`'`'`)false`,true`} );
 `{`!`@eq`(`$arg_field`,`'`'`)\
    }
 `}\

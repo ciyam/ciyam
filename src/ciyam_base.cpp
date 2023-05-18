@@ -214,6 +214,7 @@ const char* const c_storable_file_name_version = "version";
 const char* const c_storable_file_name_web_root = "web_root";
 
 const char* const c_storable_folder_name_modules = "modules";
+const char* const c_storable_folder_name_channels = "channels";
 
 const char* const c_temporary_special_variable_suffix = "_temporary";
 
@@ -1841,6 +1842,11 @@ void perform_storage_op( storage_op op,
             ods_file_system ofs( *ap_ods );
 
             ofs.add_folder( c_storable_folder_name_modules );
+
+            if( g_encrypted_identity && g_ods_use_encrypted
+             && ( name != c_meta_storage_name ) && ( name != c_ciyam_storage_name ) )
+               ofs.add_folder( c_storable_folder_name_channels );
+
             ap_handler->get_root( ).store_as_text_files( ofs );
 
             tx.commit( );
@@ -9300,6 +9306,58 @@ void storage_unlock_all_tables( )
 bool storage_locked_for_admin( )
 {
    return gtp_session->p_storage_handler->get_is_locked_for_admin( );
+}
+
+void create_storage_channel( const char* p_identity )
+{
+   guard g( g_mutex );
+
+   ods_file_system ofs( *ods::instance( ) );
+
+   ofs.set_folder( c_storable_folder_name_channels );
+
+   string identity;
+
+   if( p_identity && ( *p_identity != 0 ) )
+      identity = string( p_identity );
+   else
+   {
+      identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+
+      if( identity.empty( ) )
+         identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+   }
+
+   if( identity.empty( ) )
+      throw runtime_error( "identity not found for 'create_storage_channel'" );
+
+   ofs.add_folder( identity );
+}
+
+void destroy_storage_channel( const char* p_identity )
+{
+   guard g( g_mutex );
+
+   ods_file_system ofs( *ods::instance( ) );
+
+   ofs.set_folder( c_storable_folder_name_channels );
+
+   string identity;
+
+   if( p_identity && ( *p_identity != 0 ) )
+      identity = string( p_identity );
+   else
+   {
+      identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+
+      if( identity.empty( ) )
+         identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+   }
+
+   if( identity.empty( ) )
+      throw runtime_error( "identity not found for 'destroy_storage_channel'" );
+
+   ofs.remove_folder( identity, 0, true );
 }
 
 ods& storage_ods_instance( )
