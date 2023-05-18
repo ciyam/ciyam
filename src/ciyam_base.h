@@ -592,6 +592,9 @@ void CIYAM_BASE_DECL_SPEC storage_unlock_all_tables( );
 
 bool CIYAM_BASE_DECL_SPEC storage_locked_for_admin( );
 
+void CIYAM_BASE_DECL_SPEC create_storage_channel( const char* p_identity = 0 );
+void CIYAM_BASE_DECL_SPEC destroy_storage_channel( const char* p_identity = 0 );
+
 ods CIYAM_BASE_DECL_SPEC& storage_ods_instance( );
 
 ods CIYAM_BASE_DECL_SPEC& system_ods_instance( );
