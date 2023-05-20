@@ -1692,7 +1692,7 @@ void process_list_items( const string& identity,
 
                   string progress_message;
 
-                  // FUTURE: These messages should be handled as a server string messages.
+                  // FUTURE: These messages should be handled as server string messages.
                   if( !is_checking )
                      progress_message = "Synchronising at height ";
                   else

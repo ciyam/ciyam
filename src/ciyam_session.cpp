@@ -5399,11 +5399,23 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = create_raw_file( data, true, tag.empty( ) ? 0 : tag.c_str( ) );
       }
-      else if( command == c_cmd_ciyam_session_storage_trans_start )
+      else if( command == c_cmd_ciyam_session_storage_channel_create )
+      {
+         string identity( get_parm_val( parameters, c_cmd_ciyam_session_storage_channel_create_identity ) );
+
+         storage_channel_create( identity.c_str( ) );
+      }
+      else if( command == c_cmd_ciyam_session_storage_channel_destroy )
+      {
+         string identity( get_parm_val( parameters, c_cmd_ciyam_session_storage_channel_destroy_identity ) );
+
+         storage_channel_destroy( identity.c_str( ) );
+      }
+      else if( command == c_cmd_ciyam_session_storage_transaction_start )
          transaction_start( );
-      else if( command == c_cmd_ciyam_session_storage_trans_commit )
+      else if( command == c_cmd_ciyam_session_storage_transaction_commit )
          transaction_commit( );
-      else if( command == c_cmd_ciyam_session_storage_trans_rollback )
+      else if( command == c_cmd_ciyam_session_storage_transaction_rollback )
          transaction_rollback( );
       else if( command == c_cmd_ciyam_session_system_trace )
       {

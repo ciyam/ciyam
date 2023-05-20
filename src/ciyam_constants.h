@@ -88,6 +88,12 @@ const char* const c_file_peerchain_folder = "peer";
 const char* const c_file_repository_folder = "repo";
 const char* const c_system_variables_folder = "vars";
 
+const char* const c_special_regex_for_domain_name = "@domain_name";
+const char* const c_special_regex_for_email_address = "@email_address";
+const char* const c_special_regex_for_bitcoin_address = "@bitcoin_address";
+const char* const c_special_regex_for_peerchain_identity = "@peerchain_identity";
+const char* const c_special_regex_for_peerchain_description = "@peerchain_description";
+
 const char* const c_file_repository_meta_data_line_prefix = "md:";
 const char* const c_file_repository_public_key_line_prefix = "pk:";
 const char* const c_file_repository_source_hash_line_prefix = "sh:";

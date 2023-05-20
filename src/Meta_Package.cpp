@@ -1512,7 +1512,7 @@ void Meta_Package::impl::impl_Remove( )
             {
                outf << ".storage_init " << storage_name( ) << '\n';
                outf << "@ifndef %ERROR%\n";
-               outf << ".storage_trans_start\n";
+               outf << ".storage_transaction_start\n";
                outf << "@endif\n";
 
                string attached_file_path_var( get_special_var_name( e_special_var_attached_file_path ) );
@@ -1573,9 +1573,9 @@ void Meta_Package::impl::impl_Remove( )
                }
 
                outf << "@ifndef %ERROR%\n";
-               outf << ".storage_trans_commit\n";
+               outf << ".storage_transaction_commit\n";
                outf << "@else\n";
-               outf << ".storage_trans_rollback\n";
+               outf << ".storage_transaction_rollback\n";
                outf << "@endif\n";
 
                if( is_last )
