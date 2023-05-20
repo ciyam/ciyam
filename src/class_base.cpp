@@ -105,12 +105,6 @@ const char* const c_crypto_info_acct_p2sh_fee = "acct_p2sh_fee";
 
 const char* const c_email_subject_script_marker = "[CIYAM]";
 
-const char* const c_special_regex_for_domain_name = "@domain_name";
-const char* const c_special_regex_for_email_address = "@email_address";
-const char* const c_special_regex_for_bitcoin_address = "@bitcoin_address";
-const char* const c_special_regex_for_peerchain_identity = "@peerchain_identity";
-const char* const c_special_regex_for_peerchain_description = "@peerchain_description";
-
 const char* const c_section_timezone = "timezone";
 const char* const c_section_timezones = "timezones";
 const char* const c_section_daylight_saving_change = "daylight_saving_change";

@@ -616,6 +616,12 @@ struct log_identity
    int32_t ceiling;
 };
 
+enum storage_type
+{
+   e_storage_type_standard,
+   e_storage_type_peerchain,
+};
+
 struct storage_root
 {
    storage_root( )
@@ -624,6 +630,7 @@ struct storage_root
     cache_limit( c_default_cache_limit ),
     identity( uuid( ).as_string( ) ),
     web_root( c_default_web_root ),
+    type( e_storage_type_standard ),
     truncation_count( 0 )
    {
    }
@@ -633,6 +640,8 @@ struct storage_root
 
    string identity;
    string web_root;
+
+   storage_type type;
 
    string module_directory;
 
@@ -648,7 +657,9 @@ struct storage_root
 
 void storage_root::store_as_text_files( ods_file_system& ofs )
 {
-   ofs.store_as_text_file( c_storable_file_name_id, identity );
+   string prefix( ( type == e_storage_type_peerchain ) ? "@" : "" );
+   ofs.store_as_text_file( c_storable_file_name_id, prefix + identity );
+
    ofs.store_as_text_file( c_storable_file_name_limit, cache_limit );
    ofs.store_as_text_file( c_storable_file_name_log_id, log_id.next_id );
    ofs.store_as_text_file( c_storable_file_name_mod_dir, module_directory, c_storable_file_pad_len );
@@ -660,6 +671,15 @@ void storage_root::store_as_text_files( ods_file_system& ofs )
 void storage_root::fetch_from_text_files( ods_file_system& ofs )
 {
    ofs.fetch_from_text_file( c_storable_file_name_id, identity );
+
+   if( identity.empty( ) || identity[ 0 ] != '@' )
+      type = e_storage_type_standard;
+   else
+   {
+      identity.erase( 0, 1 );
+      type = e_storage_type_peerchain;
+   }
+
    ofs.fetch_from_text_file( c_storable_file_name_limit, cache_limit );
    ofs.fetch_from_text_file( c_storable_file_name_log_id, log_id.next_id );
    ofs.fetch_from_text_file( c_storable_file_name_mod_dir, module_directory, true );
@@ -1836,15 +1856,19 @@ void perform_storage_op( storage_op op,
 
             string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
-            if( !blockchain.empty( ) )
-               ap_handler->get_root( ).identity += ":" + blockchain;
+            bool is_peerchain_application = false;
+
+            if( !blockchain.empty( ) && ( name != c_meta_storage_name ) && ( name != c_ciyam_storage_name ) )
+               is_peerchain_application = true;
+
+            if( is_peerchain_application )
+               ap_handler->get_root( ).type = e_storage_type_peerchain;
 
             ods_file_system ofs( *ap_ods );
 
             ofs.add_folder( c_storable_folder_name_modules );
 
-            if( g_encrypted_identity && g_ods_use_encrypted
-             && ( name != c_meta_storage_name ) && ( name != c_ciyam_storage_name ) )
+            if( is_peerchain_application )
                ofs.add_folder( c_storable_folder_name_channels );
 
             ap_handler->get_root( ).store_as_text_files( ofs );
@@ -8990,7 +9014,11 @@ void storage_identity( const string& new_identity )
 
    ods_file_system ofs( *ods::instance( ) );
 
-   ofs.store_as_text_file( c_storable_file_name_id, new_identity );
+   storage_type type = gtp_session->p_storage_handler->get_root( ).type;
+
+   string prefix( ( type == e_storage_type_peerchain ) ? "@" : "" );
+
+   ofs.store_as_text_file( c_storable_file_name_id, prefix + new_identity );
 
    gtp_session->p_storage_handler->get_root( ).identity = new_identity;
 }
@@ -9308,9 +9336,17 @@ bool storage_locked_for_admin( )
    return gtp_session->p_storage_handler->get_is_locked_for_admin( );
 }
 
-void create_storage_channel( const char* p_identity )
+void storage_channel_create( const char* p_identity )
 {
    guard g( g_mutex );
+
+   if( !gtp_session || !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   string storage_name( gtp_session->p_storage_handler->get_name( ) );
+
+   if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
+      throw runtime_error( "invalid storage '" + storage_name + "' for channel create" );
 
    ods_file_system ofs( *ods::instance( ) );
 
@@ -9329,14 +9365,24 @@ void create_storage_channel( const char* p_identity )
    }
 
    if( identity.empty( ) )
-      throw runtime_error( "identity not found for 'create_storage_channel'" );
+      throw runtime_error( "identity not found for 'storage_channel_create'" );
+
+   check_with_regex( c_special_regex_for_peerchain_identity, identity );
 
    ofs.add_folder( identity );
 }
 
-void destroy_storage_channel( const char* p_identity )
+void storage_channel_destroy( const char* p_identity )
 {
    guard g( g_mutex );
+
+   if( !gtp_session || !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   string storage_name( gtp_session->p_storage_handler->get_name( ) );
+
+   if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
+      throw runtime_error( "invalid storage '" + storage_name + "' for channel destroy" );
 
    ods_file_system ofs( *ods::instance( ) );
 
@@ -9355,7 +9401,9 @@ void destroy_storage_channel( const char* p_identity )
    }
 
    if( identity.empty( ) )
-      throw runtime_error( "identity not found for 'destroy_storage_channel'" );
+      throw runtime_error( "identity not found for 'storage_channel_destroy'" );
+
+   check_with_regex( c_special_regex_for_peerchain_identity, identity );
 
    ofs.remove_folder( identity, 0, true );
 }
