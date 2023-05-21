@@ -5851,6 +5851,16 @@ peer_session* create_peer_initiator(
    string identity( blockchain );
    replace( identity, c_bc_prefix, "" );
 
+   string::size_type pos = identity.find( ':' );
+
+   string explicit_paired_identity;
+
+   if( pos != string::npos )
+   {
+      explicit_paired_identity = identity.substr( pos + 1 );
+      identity.erase( pos );
+   }
+
    if( !is_interactive && !p_main_session )
       set_system_variable( c_error_message_prefix + identity, "" );
 
@@ -5933,6 +5943,8 @@ peer_session* create_peer_initiator(
                p_identity = identity.c_str( );
                extra = ( !is_secondary ? e_peer_extra_primary : e_peer_extra_secondary );
             }
+            else if( !explicit_paired_identity.empty( ) )
+               p_identity = explicit_paired_identity.c_str( );
 
             peer_session* p_session = construct_session( dtm, false, ap_socket,
              ip_addr + "=" + session_blockchain + ":" + to_string( port ), p_main_session, extra, p_identity, chain_type );

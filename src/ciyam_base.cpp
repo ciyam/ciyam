@@ -213,6 +213,7 @@ const char* const c_storable_file_name_trunc_n = "trunc_n";
 const char* const c_storable_file_name_version = "version";
 const char* const c_storable_file_name_web_root = "web_root";
 
+const char* const c_storable_folder_name_locker = "locker";
 const char* const c_storable_folder_name_modules = "modules";
 const char* const c_storable_folder_name_channels = "channels";
 
@@ -1806,6 +1807,10 @@ void perform_storage_op( storage_op op,
           && ( name != c_meta_storage_name ) && ( name != c_ciyam_storage_name ) )
          {
             get_sid( sid );
+
+            sha256 hash( sid + name );
+            sid = hash.get_digest_as_string( );
+
             p_password = sid.c_str( );
 
             if( dir_exists( name ) )
@@ -9370,6 +9375,11 @@ void storage_channel_create( const char* p_identity )
    check_with_regex( c_special_regex_for_peerchain_identity, identity );
 
    ofs.add_folder( identity );
+
+   ofs.set_folder( identity );
+   ofs.add_file( "README.md", "channel_readme.md" );
+
+   ofs.add_folder( c_storable_folder_name_locker );
 }
 
 void storage_channel_destroy( const char* p_identity )

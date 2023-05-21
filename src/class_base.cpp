@@ -3536,44 +3536,12 @@ string decrypt( const string& s )
    if( s.length( ) < 20 )
       return s;
    else
-   {
-      string crypt_key( get_raw_session_variable( get_special_var_name( e_special_var_crypt_key ) ) );
-      string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
-      if( crypt_key.empty( ) )
-      {
-         if( !blockchain.empty( ) )
-            return string( );
-         else
-            return decrypt_data( s, false, false, true );
-      }
-      else
-      {
-         string uid( get_raw_session_variable( get_special_var_name( e_special_var_uid ) ) );
-
-         return decrypt( get_crypt_key_for_blockchain_account( blockchain, uid ), s );
-      }
-   }
+      return decrypt_data( s, false, false, true );
 }
 
 string encrypt( const string& s )
 {
-   string crypt_key( get_raw_session_variable( get_special_var_name( e_special_var_crypt_key ) ) );
-   string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
-   if( crypt_key.empty( ) )
-   {
-      if( !blockchain.empty( ) )
-         return string( );
-      else
-         return encrypt_data( s, false, false, true );
-   }
-   else
-   {
-      string uid( get_raw_session_variable( get_special_var_name( e_special_var_uid ) ) );
-
-      return encrypt( get_crypt_key_for_blockchain_account( blockchain, uid ), s );
-   }
+   return encrypt_data( s, false, false, true );
 }
 
 string decrypt( const string& pw, const string& s )
