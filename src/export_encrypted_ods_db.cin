@@ -10,9 +10,13 @@ ENCRYPTED=@file:ciyam_server.sid
 ;
 PASSWORD=@password:Enter Password to unlock identity:
 ;
+.system_variable @storage
+STORAGE=$OUTPUT
+;
 .decrypt -harden_key -pwd_and_data "$PASSWORD $ENCRYPTED"
 .crypto_seed "$OUTPUT"
 .crypto_hash "$OUTPUT"
+.crypto_hash "$OUTPUT$STORAGE"
 PASSWORD=$OUTPUT
 ;
 ~echo $~PASSWORD | xclip

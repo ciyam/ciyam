@@ -2667,8 +2667,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else if( type_shared )
             chain_type = e_peerchain_type_shared;
 
-         create_peer_initiator( prefixed_blockchains( blockchain ),
+         string paired_blockchain;
+
+         string::size_type pos = blockchain.find( ':' );
+         if( pos != string::npos )
+            paired_blockchain = blockchain.substr( pos + 1 );
+
+         if( type_hub && !paired_blockchain.empty( ) )
+            throw runtime_error( "invalid paired blockchain usage with type hub" );
+
+         create_peer_initiator( blockchain,
           host_and_or_port, force, num_supporters, true, false, 0, chain_type );
+
+         if( !paired_blockchain.empty( ) )
+            create_peer_initiator( paired_blockchain + ':' + paired_blockchain,
+             host_and_or_port, force, num_supporters, true, false, 0, chain_type );
       }
       else if( command == c_cmd_ciyam_session_peer_persist_file )
       {
