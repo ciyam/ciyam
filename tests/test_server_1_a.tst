@@ -59,6 +59,7 @@ abcXXX
 Meta
 Meta
 abcdefghi
+abcdefghi
 defghi
 ghi
 i
@@ -184,7 +185,7 @@ j
 6	#j
 1	#b
 2	#f
-depth is 0 at line #271
+depth is 0 at line #273
 Looping with aaa
 Looping with bbb
 Looping with ccc
@@ -210,11 +211,11 @@ CONT
 CONT
 CONT
 DONE
-depth is 1 at line #310
+depth is 1 at line #312
 END
-depth is 1 at line #337
-depth is 2 at line #339
-depth is 3 at line #341 TRUE
+depth is 1 at line #339
+depth is 2 at line #341
+depth is 3 at line #343 TRUE
 docs
 src
 src/haru

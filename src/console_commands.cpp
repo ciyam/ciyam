@@ -3034,10 +3034,10 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     {
                                        rval *= -1;
 
-                                       if( rval < rhs.size( ) )
-                                          str = rhs.substr( rhs.size( ) - rval );
+                                       if( rval >= rhs.size( ) )
+                                          str = rhs;
                                        else
-                                          str.erase( );
+                                          str = rhs.substr( rhs.size( ) - rval );
                                     }
                                     else
                                     {

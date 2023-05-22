@@ -216,6 +216,8 @@ const char* const c_storable_file_name_web_root = "web_root";
 const char* const c_storable_folder_name_locker = "locker";
 const char* const c_storable_folder_name_modules = "modules";
 const char* const c_storable_folder_name_channels = "channels";
+const char* const c_storable_folder_name_received = "received";
+const char* const c_storable_folder_name_submitting = "submitting";
 
 const char* const c_temporary_special_variable_suffix = "_temporary";
 
@@ -9380,6 +9382,8 @@ void storage_channel_create( const char* p_identity )
    ofs.add_file( "README.md", "channel_readme.md" );
 
    ofs.add_folder( c_storable_folder_name_locker );
+   ofs.add_folder( c_storable_folder_name_received );
+   ofs.add_folder( c_storable_folder_name_submitting );
 }
 
 void storage_channel_destroy( const char* p_identity )

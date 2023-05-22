@@ -539,6 +539,12 @@ string ods_file_system::determine_folder(
    string new_folder( folder );
    string old_current_folder( current_folder );
 
+   // NOTE: Ignore trailing separator (unless is the only character).
+   string::size_type pos = new_folder.rfind( c_folder_separator );
+
+   if( pos && ( pos != string::npos ) && ( pos == new_folder.length( ) - 1 ) )
+      new_folder.erase( new_folder.size( ) - 1 );
+
    btree_type& bt( p_impl->bt );
 
    if( explicit_child_only )
