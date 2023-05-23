@@ -35,6 +35,7 @@
 #include "base64.h"
 #include "format.h"
 #include "pointers.h"
+#include "date_time.h"
 #include "utilities.h"
 #include "fs_iterator.h"
 #include "oid_pointer.h"
@@ -2217,7 +2218,20 @@ void ods_file_system::perform_match(
                            size = o.get_size( match_iter->get_file( ).get_id( ) );
 
                         if( file_size_output != e_file_size_output_type_scaled )
+                        {
                            val += " (" + format_int( size ) + ')';
+
+                           if( match_iter->perm_val )
+                           {
+                              val += " " + match_iter->get_perms( );
+
+                              if( match_iter->time_val )
+                              {
+                                 date_time dtm( match_iter->time_val );
+                                 val += " " + dtm.as_string( e_time_format_hhmmss, true );
+                              }
+                           }
+                        }
                         else
                            val += " (" + format_bytes( size ) + ')';
                      }
