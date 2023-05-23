@@ -212,7 +212,7 @@ void ods_fsed_command_handler::init_ods( const char* p_file_name )
          ap_ods->repair_corrupt_database( p_progress );
    }
 
-   ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );
+   ap_ofs.reset( new ods_file_system( *ap_ods, g_oid, g_use_for_regression_tests ) );
 }
 
 void ods_fsed_command_handler::process_custom_startup_option( size_t num, const string& option )

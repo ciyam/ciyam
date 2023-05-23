@@ -625,7 +625,9 @@ void timeout_handler::on_start( )
          }
 #endif
          bool has_changed = false;
+
          time_t t = last_modification_time( c_fcgi_sio );
+
          if( t != get_storage_info( ).sio_mod )
             has_changed = true;
          else
@@ -634,6 +636,7 @@ void timeout_handler::on_start( )
             for( mii = get_storage_info( ).modules_index.begin( ); mii != get_storage_info( ).modules_index.end( ); ++mii )
             {
                t = last_modification_time( mii->first + c_fcgi_sio_ext );
+
                if( t != mii->second->sio_mod )
                {
                   has_changed = true;
@@ -654,6 +657,7 @@ void timeout_handler::on_start( )
          if( file_exists( c_extkeys_file ) )
          {
             time_t t = last_modification_time( c_extkeys_file );
+
             if( t != get_storage_info( ).extkeys_mod )
                init_extkeys( );
          }
