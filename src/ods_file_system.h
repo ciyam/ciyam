@@ -33,7 +33,7 @@ struct progress;
 class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
 {
    public:
-   ods_file_system( ods& o, int64_t i = 0 );
+   ods_file_system( ods& o, int64_t i = 0, bool for_regression_tests = false );
    ~ods_file_system( );
 
    inline std::string get_folder( ) const { return current_folder; }

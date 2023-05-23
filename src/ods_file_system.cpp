@@ -9,6 +9,7 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <ctime>
 #  include <cstdio>
 #  include <cstddef>
 #  include <sstream>
@@ -78,6 +79,8 @@ uint16_t c_ofs_object_flag_type_perm = 0x2000;
 uint16_t c_ofs_object_flag_type_vals = 0xe000;
 
 uint16_t c_ofs_object_maxiumum_val_size = 0x1fff;
+
+uint32_t c_ofs_object_includes_unix_time = 0x1000000;
 
 const size_t c_rwx_perms_size = 9;
 
@@ -159,7 +162,7 @@ uint32_t perms_to_value( const string& perms )
 
 struct ofs_object
 {
-   ofs_object( ) : is_link( false ), perm_val( 0 ) { }
+   ofs_object( ) : is_link( false ), perm_val( 0 ), time_val( 0 ) { }
 
    string& str( ) { return val; }
    const string& const_str( ) const { return val; }
@@ -169,6 +172,9 @@ struct ofs_object
 
    string get_perms( ) const { return value_to_perms( perm_val ); }
    void set_perms( const string& perms ) { perm_val = perms_to_value( perms ); }
+
+   int64_t get_time( ) const { return time_val; }
+   void set_time( int64_t unix_time ) { time_val = unix_time; }
 
    oid_pointer< storable_file >& get_file( ) { return o_file; }
    const oid_pointer< storable_file >& get_file( ) const { return o_file; }
@@ -190,6 +196,8 @@ struct ofs_object
    bool is_link;
 
    uint32_t perm_val;
+
+   int64_t time_val;
 
    oid_pointer< storable_file > o_file;
 };
@@ -238,7 +246,16 @@ read_stream& operator >>( read_stream& rs, ofs_object& o )
       rs >> o.val[ i ];
 
    if( has_perm )
+   {
       rs >> o.perm_val;
+
+      if( o.perm_val & c_ofs_object_includes_unix_time )
+      {
+         o.perm_val &= ~c_ofs_object_includes_unix_time;
+
+         rs >> o.time_val;
+      }
+   }
 
    if( has_file )
       rs >> o.o_file;
@@ -277,8 +294,18 @@ write_stream& operator <<( write_stream& ws, const ofs_object& o )
    for( uint16_t i = 0; i < size; i++ )
       ws << o.val[ i ];
 
+   uint32_t perm_val = o.perm_val;
+
    if( has_perm )
-      ws << o.perm_val;
+   {
+      if( o.time_val )
+         perm_val |= c_ofs_object_includes_unix_time;
+
+      ws << perm_val;
+
+      if( o.time_val )
+         ws << o.time_val;
+   }
 
    if( has_file )
       ws << o.o_file;
@@ -459,19 +486,23 @@ string process_rename_expressions(
 
 struct ods_file_system::impl
 {
-   impl( ods& o ) : bt( o ), next_transaction_id( 0 ) { }
+   impl( ods& o ) : bt( o ), for_regression_tests( false ), next_transaction_id( 0 ) { }
 
    btree_type bt;
+
+   bool for_regression_tests;
 
    int64_t next_transaction_id;
 };
 
-ods_file_system::ods_file_system( ods& o, int64_t i )
+ods_file_system::ods_file_system( ods& o, int64_t i, bool for_regression_tests )
  :
  o( o ),
  current_folder( c_root_folder )
 {
    p_impl = new impl( o );
+
+   p_impl->for_regression_tests = for_regression_tests;
 
    btree_type& bt( p_impl->bt );
 
@@ -868,6 +899,11 @@ void ods_file_system::add_file( const string& name,
                else
                {
                   tmp_item.set_perms( file_perms( file_name ) );
+
+                  // NOTE: Omits the unix time for regression tests.
+                  if( !p_impl->for_regression_tests )
+                     tmp_item.set_time( last_modification_time( file_name ) );
+
                   tmp_item.get_file( new storable_file_extra( file_name, 0, p_progress ) ).store( );
                }
             }
@@ -961,7 +997,15 @@ void ods_file_system::get_file( const string& name,
       *tmp_item.get_file( new storable_file_extra( file_name, p_os, p_progress ) );
 
       if( !p_os && tmp_item.perm_val )
+      {
          file_perms( file_name, tmp_item.get_perms( ) );
+
+         if( tmp_item.time_val )
+         {
+            time_t tm = tmp_item.time_val;
+            file_touch( file_name, &tm );
+         }
+      }
    }
 }
 

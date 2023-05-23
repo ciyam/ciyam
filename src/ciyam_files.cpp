@@ -4982,6 +4982,7 @@ bool touch_file_in_archive( const string& hash, const string& archive )
          if( g_archive_file_info[ next_archive ].has_file( hash ) )
          {
             file_touch( paths[ i ] + '/' + hash );
+
             int64_t tm_val = last_modification_time( paths[ i ] + '/' + hash );
 
             g_archive_file_info[ next_archive ].remove_file( hash );

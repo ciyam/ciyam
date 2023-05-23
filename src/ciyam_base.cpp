@@ -3782,6 +3782,7 @@ bool scripts_file_has_changed( )
    bool changed = false;
 
    time_t t = 0;
+
    if( file_exists( c_manuscript_file ) )
       t = last_modification_time( c_manuscript_file );
 
