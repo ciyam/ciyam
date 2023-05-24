@@ -194,7 +194,8 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       get_file( name, "", &os, p_progress );
    }
 
-   bool has_file( const std::string& name, bool is_prefix = false, std::string* p_suffix = 0 );
+   bool has_file( const std::string& name, bool is_prefix = false,
+    std::string* p_suffix = 0, std::string* p_perms = 0, int64_t* p_tm_val = 0 );
 
    std::string last_file_name_with_prefix( const std::string& prefix );
 
@@ -202,18 +203,18 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
 
    void move_file( const std::string& name, const std::string& destination );
 
-   void store_file( const std::string& name,
+   bool store_file( const std::string& name,
     const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 );
 
-   inline void store_file( const std::string& name, std::istream* p_is = 0, progress* p_progress = 0 )
+   inline bool store_file( const std::string& name, std::istream* p_is = 0, progress* p_progress = 0 )
    {
-      store_file( name, "", 0, p_is, p_progress );
+      return store_file( name, "", 0, p_is, p_progress );
    }
 
-   inline void store_file( const std::string& name,
+   inline bool store_file( const std::string& name,
     std::ostream* p_os, std::istream* p_is = 0, progress* p_progress = 0 )
    {
-      store_file( name, "", p_os, p_is, p_progress );
+      return store_file( name, "", p_os, p_is, p_progress );
    }
 
    void remove_file( const std::string& name,
@@ -236,14 +237,18 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    void fetch_from_text_file( const std::string& name, int64_t& val );
    void fetch_from_text_file( const std::string& name, std::string& val, bool remove_padding = false );
 
-   void add_folder( const std::string& name, std::ostream* p_os = 0 );
+   void add_folder( const std::string& name,
+    std::ostream* p_os = 0, std::string* p_perms = 0, int64_t* p_tm_val = 0 );
 
-   bool has_folder( const std::string& name );
+   bool has_folder( const std::string& name, std::string* p_perms = 0, int64_t* p_tm_val = 0 );
 
    void move_folder( const std::string& name,
     const std::string& destination, bool overwrite = false, std::ostream* p_os = 0 );
 
    void remove_folder( const std::string& name, std::ostream* p_os = 0, bool remove_branch = false );
+
+   void replace_folder( const std::string& name,
+    std::ostream* p_os = 0, std::string* p_perms = 0, int64_t* p_tm_val = 0 );
 
    void rebuild_index( );
 

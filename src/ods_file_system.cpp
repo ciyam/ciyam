@@ -63,6 +63,8 @@ const char* const c_pipe_separator = "|";
 const char* const c_colon_separator = ":";
 const char* const c_folder_separator = "/";
 
+const char* const c_unchanged_suffix = " *** unchanged ***";
+
 // NOTE: Although the number of items could be
 // set to 255 the average node size can end up
 // being rather large (especially if the files
@@ -230,7 +232,8 @@ read_stream& operator >>( read_stream& rs, ofs_object& o )
 
    if( size & c_ofs_object_flag_type_vals )
    {
-      has_file = true;
+      if( size & c_ofs_object_flag_type_file )
+         has_file = true;
 
       if( size & c_ofs_object_flag_type_link )
          o.is_link = true;
@@ -273,7 +276,15 @@ write_stream& operator <<( write_stream& ws, const ofs_object& o )
    bool has_file = false;
    bool has_perm = false;
 
-   if( !o.o_file.get_id( ).is_new( ) )
+   if( o.o_file.get_id( ).is_new( ) )
+   {
+      if( o.perm_val )
+      {
+         has_perm = true;
+         size |= c_ofs_object_flag_type_perm;
+      }
+   }
+   else
    {
       has_file = true;
       size |= c_ofs_object_flag_type_file;
@@ -892,21 +903,22 @@ void ods_file_system::add_file( const string& name,
 
             if( !p_is )
             {
-               // NOTE: If the source was "*" or is a zero length file then in order not
-               // to waste space on a second object the special zero OID is instead used
-               // as an empty file content indicator.
-               if( file_name == "*" || ( file_exists( file_name ) && !file_size( file_name ) ) )
-                  tmp_item.o_file.set_id( 0 );
-               else
+               if( file_name != "*" )
                {
                   tmp_item.set_perms( file_perms( file_name ) );
 
                   // NOTE: Omits the unix time for regression tests.
                   if( !p_impl->for_regression_tests )
                      tmp_item.set_time( last_modification_time( file_name ) );
-
-                  tmp_item.get_file( new storable_file_extra( file_name, 0, p_progress ) ).store( );
                }
+
+               // NOTE: If the source was "*" or is a zero length file then in order not
+               // to waste space on a second object the special zero OID is instead used
+               // as an empty file content indicator.
+               if( file_name == "*" || ( file_exists( file_name ) && !file_size( file_name ) ) )
+                  tmp_item.o_file.set_id( 0 );
+               else
+                  tmp_item.get_file( new storable_file_extra( file_name, 0, p_progress ) ).store( );
             }
             else
             {
@@ -1010,7 +1022,8 @@ void ods_file_system::get_file( const string& name,
    }
 }
 
-bool ods_file_system::has_file( const string& name, bool is_prefix, string* p_suffix )
+bool ods_file_system::has_file( const string& name,
+ bool is_prefix, string* p_suffix, string* p_perms, int64_t* p_tm_val )
 {
    bool retval = false;
 
@@ -1035,14 +1048,19 @@ bool ods_file_system::has_file( const string& name, bool is_prefix, string* p_su
    }
 
    btree_type::item_type tmp_item;
+   btree_type::iterator i = bt.end( );
 
    tmp_item.val = value;
 
    if( !is_prefix )
-      retval = bt.find( tmp_item ) != bt.end( );
+   {
+      i = bt.find( tmp_item );
+
+      retval = ( i != bt.end( ) );
+   }
    else
    {
-      btree_type::iterator i = bt.lower_bound( tmp_item );
+      i = bt.lower_bound( tmp_item );
 
       if( i != bt.end( ) && ( i->val.find( value ) == 0 ) )
       {
@@ -1051,6 +1069,16 @@ bool ods_file_system::has_file( const string& name, bool is_prefix, string* p_su
 
          retval = true;
       }
+   }
+
+   if( retval && p_perms )
+   {
+      tmp_item = *i;
+
+      *p_perms = tmp_item.get_perms( );
+
+      if( p_tm_val )
+         *p_tm_val = tmp_item.get_time( );
    }
 
    return retval;
@@ -1357,9 +1385,14 @@ void ods_file_system::move_file( const string& name, const string& destination )
    }
 }
 
-void ods_file_system::store_file( const string& name,
+bool ods_file_system::store_file( const string& name,
  const string& source, ostream* p_os, istream* p_is, progress* p_progress )
 {
+   string file_name( source );
+
+   if( file_name.empty( ) )
+      file_name = name;
+
    btree_type& bt( p_impl->bt );
 
    auto_ptr< ods::bulk_write > ap_bulk;
@@ -1367,10 +1400,32 @@ void ods_file_system::store_file( const string& name,
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o, p_progress ) );
 
-   if( !has_file( name ) )
+   bool changed = false;
+
+   string perms;
+   int64_t tm_val = 0;
+
+   if( file_exists( file_name ) )
+   {
+      perms = file_perms( file_name );
+      tm_val = last_modification_time( file_name );
+   }
+
+   string old_perms;
+   int64_t old_tm_val = 0;
+
+   if( !has_file( name, false, 0, &old_perms, &old_tm_val ) )
+   {
+      changed = true;
       add_file( name, source, p_os, p_is, p_progress );
-   else
+   }
+   else if( ( perms != old_perms ) || ( tm_val != old_tm_val ) )
+   {
+      changed = true;
       replace_file( name, source, p_os, p_is, p_progress );
+   }
+
+   return changed;
 }
 
 void ods_file_system::remove_file( const string& name, ostream* p_os, progress* p_progress, bool is_prefix )
@@ -1462,7 +1517,30 @@ void ods_file_system::replace_file( const string& name, const string& source, os
 
       if( !p_is )
       {
-         bool id_changed = false;
+         bool changed = false;
+
+         string perms;
+         int64_t tm_val = 0;
+
+         if( file_name != "*" )
+         {
+            perms = file_perms( file_name );
+            tm_val = last_modification_time( file_name );
+         }
+
+         string old_perms( tmp_iter->get_perms( ) );
+         int64_t old_tm_val = tmp_iter->get_time( );
+
+         if( ( perms != old_perms ) || ( tm_val != old_tm_val ) )
+         {
+            changed = true;
+
+            tmp_item.set_perms( perms );
+
+            // NOTE: Omits the unix time for regression tests.
+            if( !p_impl->for_regression_tests )
+               tmp_item.set_time( tm_val );
+         }
 
          // NOTE: If the source was "*" or is a zero length file then in order not
          // to waste space on a second object the special zero OID is instead used
@@ -1471,8 +1549,8 @@ void ods_file_system::replace_file( const string& name, const string& source, os
          {
             if( id.get_num( ) )
             {
+               changed = true;
                o.destroy( id );
-               id_changed = true;
             }
 
             tmp_item.get_file( ).set_id( 0 );
@@ -1481,19 +1559,19 @@ void ods_file_system::replace_file( const string& name, const string& source, os
          {
             if( !id.get_num( ) )
             {
-               id.set_new( );
-               id_changed = true;
+               changed = true;
 
+               id.set_new( );
                tmp_item.get_file( ).set_id( id );
             }
 
-            tmp_item.set_perms( file_perms( file_name ) );
-            tmp_item.get_file(
-             new storable_file_extra( file_name, 0, p_progress ) ).store( e_oid_pointer_opt_force_write_skip_read );
+            if( !old_tm_val || ( tm_val != old_tm_val ) )
+               tmp_item.get_file(
+                new storable_file_extra( file_name, 0, p_progress ) ).store( e_oid_pointer_opt_force_write_skip_read );
          }
 
-         // NOTE: If the OID has changed then need to replace the item.
-         if( id_changed )
+         // NOTE: If anything has changed then need to replace the item.
+         if( changed )
          {
             bt.erase( tmp_iter );
             bt.insert( tmp_item );
@@ -1592,7 +1670,7 @@ void ods_file_system::fetch_from_text_file( const string& name, string& val, boo
       val = trim( val, false, true );
 }
 
-void ods_file_system::add_folder( const string& name, ostream* p_os )
+void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_perms, int64_t* p_tm_val )
 {
    btree_type& bt( p_impl->bt );
 
@@ -1656,6 +1734,15 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
             }
             else
             {
+               if( p_perms )
+               {
+                  tmp_item.set_perms( *p_perms );
+
+                  // NOTE: Omits the unix time for regression tests.
+                  if( p_tm_val && !p_impl->for_regression_tests )
+                     tmp_item.set_time( *p_tm_val );
+               }
+
                bt.insert( tmp_item );
 
                tmp_item.val = c_colon + tmp_item.val;
@@ -1697,6 +1784,15 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
             }
             else
             {
+               if( p_perms )
+               {
+                  tmp_item.set_perms( *p_perms );
+
+                  // NOTE: Omits the unix time for regression tests.
+                  if( p_tm_val && !p_impl->for_regression_tests )
+                     tmp_item.set_time( *p_tm_val );
+               }
+
                bt.insert( tmp_item );
 
                tmp_item.val = name_2;
@@ -1719,7 +1815,7 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
    }
 }
 
-bool ods_file_system::has_folder( const string& name )
+bool ods_file_system::has_folder( const string& name, string* p_perms, int64_t* p_tm_val )
 {
    btree_type& bt( p_impl->bt );
 
@@ -1749,11 +1845,28 @@ bool ods_file_system::has_folder( const string& name )
             full_name += c_folder + name;
       }
 
+      btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
 
       tmp_item.val = full_name;
 
-      return bt.find( tmp_item ) != bt.end( );
+      tmp_iter = bt.find( tmp_item );
+
+      if( tmp_iter != bt.end( ) )
+      {
+         if( p_perms )
+         {
+            tmp_item = *tmp_iter;
+
+            if( p_perms )
+               *p_perms = tmp_item.get_perms( );
+
+            if( p_tm_val )
+               *p_tm_val = tmp_item.get_time( );
+         }
+
+         return true;
+      }
    }
 
    return false;
@@ -1947,6 +2060,85 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
    {
       if( remove_items_for_folder( name, true ) )
       {
+         bt_tx.commit( );
+
+         if( ap_ods_tx.get( ) )
+            ap_ods_tx->commit( );
+
+         p_impl->next_transaction_id = o.get_next_transaction_id( );
+      }
+   }
+}
+
+void ods_file_system::replace_folder( const string& name, ostream* p_os, string* p_perms, int64_t* p_tm_val )
+{
+   btree_type& bt( p_impl->bt );
+
+   auto_ptr< ods::bulk_write > ap_bulk;
+
+   if( !o.is_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_write( o ) );
+
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
+   {
+      o >> bt;
+
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
+   }
+
+   btree_type::iterator tmp_iter;
+   btree_type::item_type tmp_item;
+
+   auto_ptr< ods::transaction > ap_ods_tx;
+   if( !o.is_in_transaction( ) )
+      ap_ods_tx.reset( new ods::transaction( o ) );
+
+   btree_trans_type bt_tx( bt );
+
+   string full_name( current_folder );
+
+   if( !name.empty( ) )
+   {
+      if( name[ 0 ] == c_folder )
+         full_name = name;
+      else
+      {
+         if( current_folder == string( c_root_folder ) )
+            full_name += name;
+         else
+            full_name += c_folder + name;
+      }
+
+      btree_type::iterator tmp_iter;
+      btree_type::item_type tmp_item;
+
+      tmp_item.val = full_name;
+
+      tmp_iter = bt.find( tmp_item );
+
+      if( tmp_iter == bt.end( ) )
+      {
+         if( !p_os )
+            throw runtime_error( "cannot replace unknown folder '" + name + "'" );
+         else
+            *p_os << "*** cannot replace unknown folder '" << name << "' ***" << endl;
+      }
+      else
+      {
+         if( !p_perms )
+         {
+            tmp_item.set_perms( "" );
+            tmp_item.set_time( 0 );
+         }
+         else
+         {
+            tmp_item.set_perms( *p_perms );
+            tmp_item.set_time( p_tm_val ? *p_tm_val : 0 );
+         }
+
+         bt.erase( tmp_iter );
+         bt.insert( tmp_item );
+
          bt_tx.commit( );
 
          if( ap_ods_tx.get( ) )
@@ -2210,7 +2402,7 @@ void ods_file_system::perform_match(
                         val += "*";
 
                      if( !match_iter->get_file( ).get_id( ).is_new( )
-                      && file_size_output != e_file_size_output_type_none )
+                      && ( file_size_output != e_file_size_output_type_none ) )
                      {
                         int64_t size = 0;
 
@@ -2234,6 +2426,21 @@ void ods_file_system::perform_match(
                         }
                         else
                            val += " (" + format_bytes( size ) + ')';
+                     }
+
+                     if( match_iter->get_file( ).get_id( ).is_new( )
+                      && ( file_size_output == e_file_size_output_type_num_bytes ) )
+                     {
+                        if( match_iter->perm_val )
+                        {
+                           val += " " + match_iter->get_perms( );
+
+                           if( match_iter->time_val )
+                           {
+                              date_time dtm( match_iter->time_val );
+                              val += " " + dtm.as_string( e_time_format_hhmmss, true );
+                           }
+                        }
                      }
 
                      os << val << '\n';
@@ -2376,10 +2583,36 @@ void ods_file_system::get_child_folders(
    if( !folders.empty( ) && folders.back( ).empty( ) )
       folders.pop_back( );
 
-   if( append_separator )
+   if( full || append_separator )
    {
       for( size_t i = 0; i < folders.size( ); i++ )
-         folders[ i ] += c_folder;
+      {
+         string extra;
+
+         if( append_separator )
+            extra += c_folder_separator;
+
+         if( full )
+         {
+            string perms;
+            int64_t tm_val = 0;
+
+            has_folder( folders[ i ], &perms, &tm_val );
+
+            if( !perms.empty( ) )
+            {
+               extra += " " + perms;
+
+               if( tm_val )
+               {
+                  date_time dtm( tm_val );
+                  extra += " " + dtm.as_string( e_time_format_hhmmss, true );
+               }
+            }
+         }
+
+         folders[ i ] += extra;
+      }
    }
 }
 
@@ -2555,7 +2788,32 @@ void ods_file_system::branch_files_or_objects( ostream& os, const string& folder
          }
 
          if( !output.empty( ) )
-            os << output << c_folder_separator << endl;
+         {
+            if( full )
+            {
+               output += c_folder_separator;
+
+               string perms;
+               int64_t tm_val = 0;
+
+               has_folder( next_folder, &perms, &tm_val );
+
+               if( !perms.empty( ) )
+               {
+                  output += " " + perms;
+
+                  if( tm_val )
+                  {
+                     date_time dtm( tm_val );
+                     output += " " + dtm.as_string( e_time_format_hhmmss, true );
+                  }
+               }
+
+               os << output << endl;
+            }
+            else
+               os << output << c_folder_separator << endl;
+         }
       }
 
       branch_files_or_objects( os, next_folder, expr,
@@ -3075,6 +3333,21 @@ void export_objects( ods_file_system& ofs, const string& directory,
       export_objects( ofs, directory, p_rename_expressions, p_os, p_progress, level + 1 );
 
       ofs.set_folder( folder );
+
+      string perms;
+      int64_t tm_val = 0;
+
+      ofs.has_folder( next, &perms, &tm_val );
+
+      if( !perms.empty( ) )
+      {
+         string next_dir_name( next_directory + '/' + next );
+
+         file_perms( next_dir_name, perms );
+
+         if( tm_val )
+            file_touch( next_dir_name, &tm_val );
+      }
    }
 }
 
@@ -3094,6 +3367,7 @@ void import_objects( ods_file_system& ofs, const string& directory,
    string folder( ofs.get_folder( ) );
 
    vector< string > all_folders;
+   set< string > unchanged_folders;
 
    do
    {
@@ -3105,6 +3379,7 @@ void import_objects( ods_file_system& ofs, const string& directory,
       if( i > 0 )
       {
          string next_folder( all_folders[ i ] );
+
          string::size_type pos = next_folder.find( folders.back( ) );
 
          if( pos != 0 )
@@ -3120,28 +3395,54 @@ void import_objects( ods_file_system& ofs, const string& directory,
             }
          }
 
+         string perms( file_perms( next_folder ) );
+
+         int64_t tm_val = last_modification_time( next_folder );
+
          next_folder.erase( 0, folders.back( ).length( ) + 1 );
 
-         if( !ofs.has_folder( next_folder ) )
-            ofs.add_folder( next_folder );
+         string old_perms;
+         int64_t old_tm_val = 0;
+
+         bool changed = false;
+
+         bool has_folder = ofs.has_folder( next_folder, &old_perms, &old_tm_val );
+
+         if( !has_folder )
+         {
+            changed = true;
+            ofs.add_folder( next_folder, 0, &perms, &tm_val );
+         }
+         else if( ( perms != old_perms ) || ( tm_val != old_tm_val ) )
+         {
+            changed = true;
+            ofs.replace_folder( next_folder, 0, &perms, &tm_val );
+         }
 
          ofs.set_folder( next_folder );
 
          folders.push_back( all_folders[ i ] );
+
+         if( !changed )
+            unchanged_folders.insert( all_folders[ i ] );
       }
 
       vector< pair< string, string > > all_files;
 
+      string suffix;
       string next_folder( all_folders[ i ] );
 
-      if( next_folder.find( start_path ) == 0 )
-         next_folder.erase( 0, start_path.length( ) + 1 );
+      if( unchanged_folders.count( next_folder ) )
+         suffix = string( c_unchanged_suffix );
 
       if( p_os && ( i > 0 ) )
-         *p_os << next_folder << '/' << endl;
+      {
+         if( next_folder.length( ) )
+            *p_os << next_folder << '/' << suffix << endl;
+      }
 
       file_filter ff;
-      fs_iterator ffsi( all_folders[ i ], &ff );
+      fs_iterator ffsi( next_folder, &ff );
 
       while( ffsi.has_next( ) )
          all_files.push_back( make_pair( ffsi.get_name( ), ffsi.get_full_name( ) ) );
@@ -3165,10 +3466,15 @@ void import_objects( ods_file_system& ofs, const string& directory,
                *p_os << " ==> " << name;
          }
 
-         ofs.store_file( name, source, 0, 0, p_progress );
+         bool changed = ofs.store_file( name, source, 0, 0, p_progress );
 
          if( p_os )
+         {
+            if( !changed )
+               *p_os << c_unchanged_suffix;
+
             *p_os << endl;
+         }
       }
    }
 
