@@ -203,18 +203,19 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
 
    void move_file( const std::string& name, const std::string& destination );
 
-   bool store_file( const std::string& name,
-    const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 );
+   bool store_file( const std::string& name, const std::string& source,
+    std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0, bool force_write = false );
 
-   inline bool store_file( const std::string& name, std::istream* p_is = 0, progress* p_progress = 0 )
+   inline bool store_file( const std::string& name,
+    std::istream* p_is = 0, progress* p_progress = 0, bool force_write = false )
    {
-      return store_file( name, "", 0, p_is, p_progress );
+      return store_file( name, "", 0, p_is, p_progress, force_write );
    }
 
    inline bool store_file( const std::string& name,
-    std::ostream* p_os, std::istream* p_is = 0, progress* p_progress = 0 )
+    std::ostream* p_os, std::istream* p_is = 0, progress* p_progress = 0, bool force_write = false )
    {
-      return store_file( name, "", p_os, p_is, p_progress );
+      return store_file( name, "", p_os, p_is, p_progress, force_write );
    }
 
    void remove_file( const std::string& name,
@@ -329,7 +330,7 @@ void ODS_FILE_SYSTEM_DECL_SPEC export_objects( ods_file_system& ofs, const std::
  std::vector< std::string >* p_rename_expressions = 0, std::ostream* p_os = 0, progress* p_progress = 0, int level = 0 );
 
 void ODS_FILE_SYSTEM_DECL_SPEC import_objects( ods_file_system& ofs, const std::string& directory,
- std::vector< std::string >* p_rename_expressions = 0, std::ostream* p_os = 0, progress* p_progress = 0 );
+ std::vector< std::string >* p_rename_expressions = 0, std::ostream* p_os = 0, progress* p_progress = 0, bool force_write = false );
 
 #endif
 
