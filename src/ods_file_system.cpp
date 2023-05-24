@@ -1386,7 +1386,7 @@ void ods_file_system::move_file( const string& name, const string& destination )
 }
 
 bool ods_file_system::store_file( const string& name,
- const string& source, ostream* p_os, istream* p_is, progress* p_progress )
+ const string& source, ostream* p_os, istream* p_is, progress* p_progress, bool force_write )
 {
    string file_name( source );
 
@@ -1419,7 +1419,7 @@ bool ods_file_system::store_file( const string& name,
       changed = true;
       add_file( name, source, p_os, p_is, p_progress );
    }
-   else if( ( perms != old_perms ) || ( tm_val != old_tm_val ) )
+   else if( force_write || ( perms != old_perms ) || ( tm_val != old_tm_val ) )
    {
       changed = true;
       replace_file( name, source, p_os, p_is, p_progress );
@@ -3352,7 +3352,7 @@ void export_objects( ods_file_system& ofs, const string& directory,
 }
 
 void import_objects( ods_file_system& ofs, const string& directory,
- vector< string >* p_rename_expressions, ostream* p_os, progress* p_progress )
+ vector< string >* p_rename_expressions, ostream* p_os, progress* p_progress, bool force_write )
 {
    string start_path( absolute_path( directory ) );
 
@@ -3413,7 +3413,7 @@ void import_objects( ods_file_system& ofs, const string& directory,
             changed = true;
             ofs.add_folder( next_folder, 0, &perms, &tm_val );
          }
-         else if( ( perms != old_perms ) || ( tm_val != old_tm_val ) )
+         else if( force_write || ( perms != old_perms ) || ( tm_val != old_tm_val ) )
          {
             changed = true;
             ofs.replace_folder( next_folder, 0, &perms, &tm_val );
@@ -3466,7 +3466,7 @@ void import_objects( ods_file_system& ofs, const string& directory,
                *p_os << " ==> " << name;
          }
 
-         bool changed = ofs.store_file( name, source, 0, 0, p_progress );
+         bool changed = ofs.store_file( name, source, 0, 0, p_progress, force_write );
 
          if( p_os )
          {

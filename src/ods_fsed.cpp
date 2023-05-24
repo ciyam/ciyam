@@ -450,6 +450,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_ods_fsed_import )
       {
+         bool force( has_parm_val( parameters, c_cmd_ods_fsed_import_force ) );
          string directory( get_parm_val( parameters, c_cmd_ods_fsed_import_directory ) );
          string rename_exprs( get_parm_val( parameters, c_cmd_ods_fsed_import_rename_exprs ) );
 
@@ -465,7 +466,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 
          ods::transaction tx( *ap_ods );
 
-         import_objects( *ap_ofs, directory, &rename_expressions, ods_fsed_handler.get_std_out( ), p_progress );
+         import_objects( *ap_ofs, directory, &rename_expressions, ods_fsed_handler.get_std_out( ), p_progress, force );
 
          tx.commit( );
       }
