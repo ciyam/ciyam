@@ -765,7 +765,7 @@ string get_archive_status( const string& path )
 {
    string retval( c_okay );
 
-   string tmp_file_name( "~" + uuid( ).as_string( ) );
+   string tmp_file_name( path + "/~" + uuid( ).as_string( ) );
 
    try
    {
@@ -1066,6 +1066,10 @@ void init_archive_info( progress* p_progress )
 
          int64_t limit = 0;
          ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
+
+         if( !dir_exists( path ) )
+            // FUTURE: This message should be handled as a server string message.
+            throw runtime_error( "Archive '" + archive + "' path '" + path + "' is not accessible." );
 
          // NOTE: Iterate through the files in the path adding all
          // that have names that appear to be valid SHA256 hashes.

@@ -1075,10 +1075,13 @@ bool ods_file_system::has_file( const string& name,
    {
       tmp_item = *i;
 
-      *p_perms = tmp_item.get_perms( );
+      if( tmp_item.perm_val )
+      {
+         *p_perms = tmp_item.get_perms( );
 
-      if( p_tm_val )
-         *p_tm_val = tmp_item.get_time( );
+         if( p_tm_val )
+            *p_tm_val = tmp_item.get_time( );
+      }
    }
 
    return retval;
@@ -1405,7 +1408,7 @@ bool ods_file_system::store_file( const string& name,
    string perms;
    int64_t tm_val = 0;
 
-   if( file_exists( file_name ) )
+   if( !p_is && file_exists( file_name ) )
    {
       perms = file_perms( file_name );
       tm_val = last_modification_time( file_name );
@@ -1419,7 +1422,7 @@ bool ods_file_system::store_file( const string& name,
       changed = true;
       add_file( name, source, p_os, p_is, p_progress );
    }
-   else if( force_write || ( perms != old_perms ) || ( tm_val != old_tm_val ) )
+   else if( p_is || force_write || ( perms != old_perms ) || ( tm_val != old_tm_val ) )
    {
       changed = true;
       replace_file( name, source, p_os, p_is, p_progress );
@@ -1858,11 +1861,14 @@ bool ods_file_system::has_folder( const string& name, string* p_perms, int64_t* 
          {
             tmp_item = *tmp_iter;
 
-            if( p_perms )
-               *p_perms = tmp_item.get_perms( );
+            if( tmp_item.perm_val )
+            {
+               if( p_perms )
+                  *p_perms = tmp_item.get_perms( );
 
-            if( p_tm_val )
-               *p_tm_val = tmp_item.get_time( );
+               if( p_tm_val )
+                  *p_tm_val = tmp_item.get_time( );
+            }
          }
 
          return true;
