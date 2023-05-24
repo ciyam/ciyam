@@ -10,7 +10,7 @@ Transaction Id = 18
 Index Free List = n/a
 Total Size of Data = 16804
 Data Transformation Id = 17
-Index Transformation Id = 49
+Index Transformation Id = 51
 
 ** Entry Info for: all
 num: 0000000000000000          pos: 0000000000000000          len: 0000000000000100
@@ -20,7 +20,7 @@ num: 0000000000000001          pos: 0000000000000500          len: 0000000000000
 txn: 0000000000000010          txo: 0000000000000000               flags: lk=0 tx=0
 
 num: 0000000000000002          pos: 0000000000000100          len: 0000000000000400
-txn: 000000000000000f          txo: 0000000000000000               flags: lk=0 tx=0
+txn: 0000000000000011          txo: 0000000000000000               flags: lk=0 tx=0
 
 num: 0000000000000003          pos: 0000000000001f34          len: 0000000000000c3c
 txn: 0000000000000011          txo: 0000000000000000               flags: lk=0 tx=0
