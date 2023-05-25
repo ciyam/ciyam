@@ -5424,6 +5424,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          storage_channel_destroy( identity.c_str( ) );
       }
+      else if( command == c_cmd_ciyam_session_storage_channel_documents )
+      {
+         bool open( has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_open ) );
+         bool close( has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_close ) );
+         string identity( get_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_identity ) );
+
+         if( open )
+            storage_channel_documents_open( identity.c_str( ) );
+         else
+            storage_channel_documents_close( identity.c_str( ) );
+      }
       else if( command == c_cmd_ciyam_session_storage_transaction_start )
          transaction_start( );
       else if( command == c_cmd_ciyam_session_storage_transaction_commit )

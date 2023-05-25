@@ -1344,6 +1344,8 @@ bool g_use_udp = false;
 bool g_use_https = false;
 bool g_using_ssl = false;
 
+string g_channel_root;
+
 string g_gpg_password;
 string g_pem_password;
 string g_rpc_password;
@@ -3885,20 +3887,8 @@ void read_server_configuration( )
 
       if( !g_web_root.empty( ) )
       {
-         if( g_web_root[ 0 ] == '$' )
-         {
-            const char* p_env = getenv( g_web_root.substr( 1 ).c_str( ) );
-            g_web_root = string( p_env ? p_env : "" );
-         }
-         else if( g_web_root[ 0 ] == '%'
-          && g_web_root.size( ) > 2 && g_web_root[ g_web_root.size( ) - 1 ] == '%' )
-         {
-            const char* p_env = getenv( g_web_root.substr( 1, g_web_root.size( ) - 2 ).c_str( ) );
-            g_web_root = string( p_env ? p_env : "" );
-         }
-#ifdef _WIN32
-         replace( g_web_root, "\\", "/" );
-#endif
+         replace_quoted_environment_variables( g_web_root );
+         replace_unquoted_environment_variables( g_web_root );
       }
 
       g_max_peers = atoi( reader.read_opt_attribute(
@@ -3916,6 +3906,14 @@ void read_server_configuration( )
       }
 
       g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, c_false ) ) == c_true );
+
+      g_channel_root = reader.read_attribute( g_channel_root );
+
+      if( !g_channel_root.empty( ) )
+      {
+         replace_quoted_environment_variables( g_channel_root );
+         replace_unquoted_environment_variables( g_channel_root );
+      }
 
       g_max_sessions = atoi( reader.read_opt_attribute(
        c_attribute_max_sessions, to_string( c_max_sessions_default ) ).c_str( ) );
@@ -9421,6 +9419,95 @@ void storage_channel_destroy( const char* p_identity )
    check_with_regex( c_special_regex_for_peerchain_identity, identity );
 
    ofs.remove_folder( identity, 0, true );
+}
+
+void storage_channel_documents_open( const char* p_identity )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session || !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   string storage_name( gtp_session->p_storage_handler->get_name( ) );
+
+   if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
+      throw runtime_error( "invalid storage '" + storage_name + "' for opening documents" );
+
+   ods_file_system ofs( *ods::instance( ) );
+
+   ofs.set_folder( c_storable_folder_name_channels );
+
+   string identity;
+
+   if( p_identity && ( *p_identity != 0 ) )
+      identity = string( p_identity );
+   else
+   {
+      identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+
+      if( identity.empty( ) )
+         identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+   }
+
+   if( identity.empty( ) )
+      throw runtime_error( "identity not found for 'storage_channel_documents_open'" );
+
+   if( !ofs.has_folder( identity ) )
+      throw runtime_error( "channel folder for '" + identity + "' was not found" );
+
+   ofs.set_folder( identity );
+
+   string path( g_channel_root + '/' + identity );
+
+   create_dir( path );
+
+   export_objects( ofs, path );
+}
+
+void storage_channel_documents_close( const char* p_identity )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session || !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   string storage_name( gtp_session->p_storage_handler->get_name( ) );
+
+   if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
+      throw runtime_error( "invalid storage '" + storage_name + "' for closing documents" );
+
+   ods_file_system ofs( *ods::instance( ) );
+
+   ofs.set_folder( c_storable_folder_name_channels );
+
+   string identity;
+
+   if( p_identity && ( *p_identity != 0 ) )
+      identity = string( p_identity );
+   else
+   {
+      identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+
+      if( identity.empty( ) )
+         identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+   }
+
+   if( identity.empty( ) )
+      throw runtime_error( "identity not found for 'storage_channel_documents_close'" );
+
+   if( identity.empty( ) )
+      throw runtime_error( "identity not found for 'storage_channel_documents_open'" );
+
+   if( !ofs.has_folder( identity ) )
+      throw runtime_error( "channel folder for '" + identity + "' was not found" );
+
+   ofs.set_folder( identity );
+
+   string path( g_channel_root + '/' + identity );
+
+   import_objects( ofs, path );
+
+   delete_directory_files( path, true );
 }
 
 ods& storage_ods_instance( )
