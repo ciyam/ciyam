@@ -326,11 +326,13 @@ struct temporary_set_folder
    std::string old_folder;
 };
 
-void ODS_FILE_SYSTEM_DECL_SPEC export_objects( ods_file_system& ofs, const std::string& directory,
- std::vector< std::string >* p_rename_expressions = 0, std::ostream* p_os = 0, progress* p_progress = 0, int level = 0 );
+void ODS_FILE_SYSTEM_DECL_SPEC export_objects( ods_file_system& ofs,
+ const std::string& directory, std::vector< std::string >* p_rename_expressions = 0,
+ std::ostream* p_os = 0, progress* p_progress = 0, int level = 0, int start_pos = 0 );
 
-void ODS_FILE_SYSTEM_DECL_SPEC import_objects( ods_file_system& ofs, const std::string& directory,
- std::vector< std::string >* p_rename_expressions = 0, std::ostream* p_os = 0, progress* p_progress = 0, bool force_write = false );
+void ODS_FILE_SYSTEM_DECL_SPEC import_objects( ods_file_system& ofs,
+ const std::string& directory, std::vector< std::string >* p_rename_expressions = 0,
+ std::ostream* p_os = 0, progress* p_progress = 0, bool force_write = false );
 
 #endif
 

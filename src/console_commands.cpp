@@ -2604,11 +2604,11 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          // console scripts can utilise either (or a combination) of these two environment variable
          // styles. The %<name>% has to be replaced before trying %* and %0..9 otherwise the second
          // % could confuse the replacement (if it is followed by a * or 0..9).
-         replace_environment_variables( str, c_environment_variable_marker_2 );
+         replace_quoted_environment_variables( str );
          replace_input_arg_values( str, args, c_environment_variable_marker_2 );
 
          replace_input_arg_values( str, args, c_environment_variable_marker_1 );
-         replace_unquoted_environment_variables( str, c_environment_variable_marker_1 );
+         replace_unquoted_environment_variables( str );
 
          // NOTE: With either format doubled tokens (but not %LIKE%%THIS%) are replaced by a single.
          string doubled_marker_1( 2, c_environment_variable_marker_1 );

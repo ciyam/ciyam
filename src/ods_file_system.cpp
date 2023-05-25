@@ -3276,9 +3276,17 @@ bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_n
 }
 
 void export_objects( ods_file_system& ofs, const string& directory,
- vector< string >* p_rename_expressions, ostream* p_os, progress* p_progress, int level )
+ vector< string >* p_rename_expressions, ostream* p_os, progress* p_progress, int level, int start_pos )
 {
    vector< string > files;
+
+   if( !level )
+   {
+      string folder( ofs.get_folder( ) );
+
+      if( folder != string( c_root_folder ) )
+         start_pos = folder.length( );
+   }
 
    if( p_os && level )
       *p_os << directory << ofs.get_folder( ) << endl;
@@ -3288,7 +3296,7 @@ void export_objects( ods_file_system& ofs, const string& directory,
    string next_directory( directory );
 
    if( level )
-      next_directory += ofs.get_folder( );
+      next_directory += ofs.get_folder( ).substr( start_pos );
 
    if( !dir_exists( next_directory ) )
       create_dir( next_directory );
@@ -3336,7 +3344,7 @@ void export_objects( ods_file_system& ofs, const string& directory,
 
       ofs.set_folder( next );
 
-      export_objects( ofs, directory, p_rename_expressions, p_os, p_progress, level + 1 );
+      export_objects( ofs, directory, p_rename_expressions, p_os, p_progress, level + 1, start_pos );
 
       ofs.set_folder( folder );
 

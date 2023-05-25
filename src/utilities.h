@@ -817,13 +817,19 @@ inline void set_environment_variable( const std::string env_var_name, const std:
 }
 
 void replace_environment_variables( std::string& s,
- char c = '%', bool as_quotes = true, const char* p_specials = 0, char esc = c_esc );
+ char c, bool as_quotes, const char* p_specials = 0, char esc = c_esc );
 
-inline std::string replace_environment_variables(
- const char* p_str, char c = '%', bool as_quotes = true, const char* p_specials = 0, char esc = c_esc )
+inline void replace_quoted_environment_variables( std::string& s, char c = '%', const char* p_specials = 0, char esc = c_esc )
+{
+   replace_environment_variables( s, c, true, p_specials, esc );
+}
+
+inline std::string replace_quoted_environment_variables(
+ const char* p_str, char c = '%', const char* p_specials = 0, char esc = c_esc )
 {
    std::string s( p_str );
-   replace_environment_variables( s, c, as_quotes, p_specials, esc );
+
+   replace_environment_variables( s, c, true, p_specials, esc );
 
    return s;
 }
@@ -837,7 +843,11 @@ inline void replace_unquoted_environment_variables(
 inline std::string replace_unquoted_environment_variables(
  const char* p_str, char c = '$', const char* p_specials = 0, char esc = c_esc )
 {
-   return replace_environment_variables( p_str, c, false, p_specials, esc );
+   std::string s( p_str );
+
+   replace_environment_variables( s, c, false, p_specials, esc );
+
+   return s;
 }
 
 std::string trim( const std::string& s, bool leading_only = false, bool trailing_only = false );
