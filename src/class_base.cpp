@@ -7552,6 +7552,10 @@ string meta_field_extras( int uom,
       all_extras.push_back( "suffix_special" );
       break;
 
+      case 34:
+      all_extras.push_back( "key_name" );
+      break;
+
       default:
       throw runtime_error( "unexpected field extra #" + to_string( extra ) + " in meta_field_extras" );
    }

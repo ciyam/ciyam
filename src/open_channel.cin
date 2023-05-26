@@ -1,0 +1,39 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "2"
+#Usage: open_channel.cin <storage> <identity>
+@else
+;
+STORAGE=$1
+IDENTITY=$2
+;
+.system_variable @error_$IDENTITY ""
+.system_variable @opened_$IDENTITY ""
+;
+.storage_init $STORAGE
+@ifdef $ERROR
+.system_variable @error_$IDENTITY "$ERROR"
+@else
+.storage_channel_documents -open $IDENTITY
+@ifdef $ERROR
+.system_variable @error_$IDENTITY "$ERROR"
+@else
+.system_variable @opened_$IDENTITY 1
+@endif
+.storage_term
+@endif
+;
+.system_variable @opening_$IDENTITY ""
+;
+@endif
