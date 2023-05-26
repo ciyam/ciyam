@@ -2254,6 +2254,7 @@ void Meta_Model::impl::impl_Generate( )
                      Meta_Field* p_field = 0;
                      Meta_Field* p_pfield = 0;
                      Meta_Field* p_xfield = 0;
+
                      if( is_null( get_obj( ).child_View( ).child_View_Field( ).Source_Parent( ) ) )
                      {
                         p_field = &get_obj( ).child_View( ).child_View_Field( ).Source_Field( );

@@ -44,6 +44,11 @@
   <arguments>init_channel.cin @identity
  </script>
  <script/>
+  <name>open_channel
+  <filename>*script*
+  <arguments>open_channel.cin @storage @identity
+ </script>
+ <script/>
   <name>add_blacklist
   <filename>*script*
   <arguments>add_blacklist.cin @hash
@@ -55,6 +60,11 @@
  <script/>
   <name>backup_import
   <filename>backup_import
+ </script>
+ <script/>
+  <name>close_channel
+  <filename>*script*
+  <arguments>close_channel.cin @storage @identity
  </script>
  <script/>
   <name>shared_export

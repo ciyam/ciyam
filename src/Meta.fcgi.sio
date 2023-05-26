@@ -625,6 +625,10 @@
      <filter>str
     </value>
     <value/>
+     <data>34
+     <name>enum_field_extra_key_name
+    </value>
+    <value/>
      <data>11
      <name>enum_field_extra_defcurrent
      <filter>dtm|dte|tme
