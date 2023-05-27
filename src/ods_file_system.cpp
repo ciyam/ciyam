@@ -3323,7 +3323,7 @@ void export_objects( ods_file_system& ofs, const string& directory,
       string final_destination( directory );
 
       if( level )
-         final_destination += ofs.get_folder( );
+         final_destination += ofs.get_folder( ).substr( start_pos );
 
       final_destination += '/' + destination;
 
