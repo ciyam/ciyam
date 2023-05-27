@@ -1851,8 +1851,6 @@ void perform_storage_op( storage_op op,
             import_objects( ofs, name );
 
             tx.commit( );
-
-            delete_directory_files( name, true );
          }
 
          if( ap_ods->is_new( ) && !has_exported_objects )
