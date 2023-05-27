@@ -9356,7 +9356,7 @@ void storage_channel_create( const char* p_identity )
 
    ods_file_system ofs( *ods::instance( ) );
 
-   ofs.set_folder( c_storable_folder_name_channels );
+   ofs.set_root_folder( c_storable_folder_name_channels );
 
    string identity;
 
@@ -9399,7 +9399,7 @@ void storage_channel_destroy( const char* p_identity )
 
    ods_file_system ofs( *ods::instance( ) );
 
-   ofs.set_folder( c_storable_folder_name_channels );
+   ofs.set_root_folder( c_storable_folder_name_channels );
 
    string identity;
 
@@ -9435,7 +9435,7 @@ void storage_channel_documents_open( const char* p_identity )
 
    ods_file_system ofs( *ods::instance( ) );
 
-   ofs.set_folder( c_storable_folder_name_channels );
+   ofs.set_root_folder( c_storable_folder_name_channels );
 
    string identity;
 
@@ -9478,7 +9478,7 @@ void storage_channel_documents_close( const char* p_identity )
 
    ods_file_system ofs( *ods::instance( ) );
 
-   ofs.set_folder( c_storable_folder_name_channels );
+   ofs.set_root_folder( c_storable_folder_name_channels );
 
    string identity;
 
