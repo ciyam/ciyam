@@ -213,7 +213,12 @@ int64_t size_of( const ofs_object& o )
    size_t extra = 0;
 
    if( o.perm_val )
+   {
       extra += sizeof( uint32_t );
+
+      if( o.time_val )
+         extra += sizeof( int64_t );
+   }
 
    return sizeof( uint16_t ) + o.val.length( )
     + extra + ( o.o_file.get_id( ).is_new( ) ? 0 : sizeof( oid ) );
