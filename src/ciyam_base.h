@@ -298,8 +298,8 @@ std::string CIYAM_BASE_DECL_SPEC totp_secret_key( const std::string& unique );
 
 int CIYAM_BASE_DECL_SPEC exec_system( const std::string& cmd, bool async = false, bool delay = false );
 
-int CIYAM_BASE_DECL_SPEC run_script(
- const std::string& script_name, bool async = true, bool delay = false, bool no_logging = false );
+int CIYAM_BASE_DECL_SPEC run_script( const std::string& script_name,
+ bool async = true, bool delay = false, bool no_logging = false, bool sleep_after = false );
 
 void CIYAM_BASE_DECL_SPEC list_scripts( const std::string& pattern, std::ostream& os );
 

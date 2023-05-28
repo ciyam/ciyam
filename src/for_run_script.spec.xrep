@@ -16,7 +16,7 @@
        get_special_var_name( e_special_var_errors_only ), c_true_value );
 `}
       run_script( "`{`$arg_script`}",\
- `{`@eq`(`$arg_async`,`'`'`)false`,true`}, false, `{`@eq`(`$arg_logging_none`,`'`'`)false`,true`} );
+ `{`@eq`(`$arg_async`,`'`'`)false`,true`}, false, `{`@eq`(`$arg_logging_none`,`'`'`)false`,true`}, `{`@eq`(`$arg_sleep_after`,`'`'`)false`,true`} );
    }
    // [(finish for_run_script)] `{`$arg_id`}
 `}
