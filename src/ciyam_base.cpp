@@ -99,6 +99,8 @@ const size_t c_iteration_row_cache_limit = 100;
 const int c_max_lock_attempts = 20;
 const int c_lock_attempt_sleep_time = 200;
 
+const int c_sleep_after_script_time = 1000;
+
 const int c_loop_variable_digits = 8;
 
 const int c_storable_file_pad_len = 32;
@@ -5753,7 +5755,7 @@ int exec_system( const string& cmd, bool async, bool delay )
    return rc;
 }
 
-int run_script( const string& script_name, bool async, bool delay, bool no_logging )
+int run_script( const string& script_name, bool async, bool delay, bool no_logging, bool sleep_after )
 {
    int rc = -1;
 
@@ -5877,6 +5879,9 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
       rc = exec_system( cmd_and_args, async, delay );
    }
+
+   if( sleep_after )
+      msleep( c_sleep_after_script_time );
 
    return rc;
 }
