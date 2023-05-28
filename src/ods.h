@@ -476,7 +476,7 @@ template< class T, int64_t R = 0, class B = none > class storable : public T, pu
       // space that might otherwise be created each time the storable size is increased).
       int64_t round( R );
 
-      if( round && size % round )
+      if( round && ( size % round ) )
          size += round - ( size % round );
 
       return size;
