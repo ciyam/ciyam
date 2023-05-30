@@ -148,6 +148,8 @@ int notifier::add_watch( const string& watch, bool recurse )
       p_impl->watches_wd.insert( make_pair( watch, wd ) );
       p_impl->wd_watches.insert( make_pair( wd, watch ) );
    }
+
+   return wd;
 }
 
 void notifier::remove_watch( int wd )
