@@ -55,6 +55,7 @@
 #include "peer_session.h"
 #include "ciyam_strings.h"
 #include "command_parser.h"
+#include "ciyam_notifier.h"
 #include "ciyam_packages.h"
 #include "ciyam_variables.h"
 #include "command_handler.h"
@@ -5555,6 +5556,25 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( i > 0 )
                response += '\n';
             response += lines[ i ];
+         }
+      }
+      else if( command == c_cmd_ciyam_session_system_notifier )
+      {
+         bool is_terminate( has_parm_val( parameters, c_cmd_ciyam_session_system_notifier_terminate ) );
+         string file_or_directory( get_parm_val( parameters, c_cmd_ciyam_session_system_notifier_file_or_directory ) );
+
+         if( is_terminate )
+         {
+            if( get_raw_system_variable( file_or_directory ).empty( ) )
+               file_or_directory += "/*";
+
+            set_system_variable( file_or_directory, "" );
+         }
+         else
+         {
+            ciyam_notifier* p_notifier = new ciyam_notifier( file_or_directory );
+
+            p_notifier->start( );
          }
       }
       else if( command == c_cmd_ciyam_session_system_passtotp )

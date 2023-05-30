@@ -1145,6 +1145,8 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          val = to_string( num_value );
    }
 
+   string::size_type pos = var_name.find_first_of( "?*" );
+
    // NOTE: All "@queue_" prefixed variables are handled with
    // deques and their values cannot currently be persisted.
    if( var_name.find( c_special_variable_queue_prefix ) == 0 )
@@ -1156,6 +1158,37 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          g_deque_variables.erase( var_name );
       else
          g_deque_variables[ var_name ].push_back( val );
+   }
+   else if( pos != string::npos )
+   {
+      if( persist )
+         throw runtime_error( "cannot persist wildcard variables for '" + var_name + "'" );
+
+      vector< string > vars_to_change;
+
+      string prefix( var_name.substr( 0, pos ) );
+
+      map< string, string >::iterator vi = g_variables.begin( );
+
+      if( !prefix.empty( ) )
+         vi = g_variables.lower_bound( prefix );
+
+      for( ; vi != g_variables.end( ); ++vi )
+      {
+         if( wildcard_match( var_name, vi->first ) )
+            vars_to_change.push_back( vi->first );
+
+         if( !prefix.empty( ) && ( vi->first.find( prefix ) != 0 ) )
+            break;
+      }
+
+      for( size_t i = 0; i < vars_to_change.size( ); i++ )
+      {
+         if( !val.empty( ) )
+            g_variables[ vars_to_change[ i ] ] = val;
+         else
+            g_variables.erase( vars_to_change[ i ] );
+      }
    }
    else
    {

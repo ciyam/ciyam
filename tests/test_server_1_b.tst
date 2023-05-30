@@ -144,6 +144,41 @@ file_tag -remove test0,test1
 file_tags test*
 file_kill -recurse root
 ~mkdir test1
+notifier test1
+system_variable test1*
+test1/ [watch]
+~touch test1/x
+~touch test1/y
+~touch test1/z
+system_variable test1*
+test1/ [watch]
+test1/x create
+test1/y create
+test1/z create
+system_variable test1/?* "none"
+system_variable test1*
+test1/ [watch]
+test1/x none
+test1/y none
+test1/z none
+~touch test1/x
+~touch test1/y
+~touch test1/z
+system_variable test1*
+test1/ [watch]
+test1/x attrib
+test1/y attrib
+test1/z attrib
+~rm test1/x
+~rm test1/y
+~rm test1/z
+system_variable test1*
+test1/ [watch]
+test1/x delete
+test1/y delete
+test1/z delete
+notifier -term test1
+system_variable test1*
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test
 [list] 2d3c89f8f5301604234589e08a695e3ab0bdaa5f99ec21cf148b99d13020cb85 (307 B)
