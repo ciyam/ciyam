@@ -35,6 +35,7 @@
      <filename>mac.cpp
      <filename>md5.cpp
      <filename>mime.cpp
+     <filename>notifier.cpp
      <filename>numeric.cpp
      <filename>ods.cpp
      <filename>ods_file_system.cpp
@@ -99,6 +100,7 @@
      <filename>ciyam_base_ods.cpp
      <filename>ciyam_core_files.cpp
      <filename>ciyam_files.cpp
+     <filename>ciyam_notifier.cpp
      <filename>ciyam_packages.cpp
      <filename>ciyam_session.cpp
      <filename>ciyam_variables.cpp

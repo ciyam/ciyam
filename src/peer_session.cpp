@@ -1111,11 +1111,11 @@ void process_put_file( const string& blockchain,
 
       bool okay = false;
 
-      if( g_server_shutdown )
-         throw runtime_error( "peer server is being shutdown" );
-
       if( is_condemned_session( ) )
          throw runtime_error( "peer session has been condemned" );
+
+      if( g_server_shutdown )
+         throw runtime_error( "application server is being shutdown" );
 
       if( p_dtm && p_progress )
       {
@@ -1614,11 +1614,11 @@ void process_list_items( const string& identity,
 
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
-      if( g_server_shutdown )
-         throw runtime_error( "peer server is being shutdown" );
-
       if( is_condemned_session( ) )
          throw runtime_error( "peer session has been condemned" );
+
+      if( g_server_shutdown )
+         throw runtime_error( "application server is being shutdown" );
 
       bool blob_increment = ( has_targeted_identity ? true : !skip_secondary_blobs );
 
@@ -2967,11 +2967,11 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
       if( pos == 0 )
       {
-         if( g_server_shutdown )
-            throw runtime_error( "peer server is being shutdown" );
-
          if( is_condemned_session( ) )
             throw runtime_error( "peer session has been condemned" );
+
+         if( g_server_shutdown )
+            throw runtime_error( "application server is being shutdown" );
 
          if( !paired_identity.empty( ) && get_system_variable( paired_identity ).empty( ) )
          {
