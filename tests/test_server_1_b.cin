@@ -43,7 +43,6 @@ file_kill -recurse root
 #~mkdir test1
 ~mkdir test1
 notifier test1
-.wait 100
 system_variable test1*
 #~touch test1/x
 ~touch test1/x
@@ -72,6 +71,14 @@ system_variable test1*
 .wait 100
 system_variable test1*
 notifier -term test1
+system_variable test1*
+#~mkdir test1/xxx
+~mkdir test1/xxx
+notifier test1/xxx
+system_variable test1*
+#~rmdir test1/xxx
+~rmdir test1/xxx
+.wait 100
 system_variable test1*
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test

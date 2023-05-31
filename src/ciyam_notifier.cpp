@@ -33,9 +33,11 @@ extern volatile sig_atomic_t g_server_shutdown;
 namespace
 {
 
+#include "ciyam_constants.h"
+
 trace_mutex g_mutex;
 
-const size_t c_wait_sleep_time = 100;
+const size_t c_wait_sleep_time = 25;
 
 inline void issue_error( const string& message, bool possibly_expected = false )
 {
@@ -90,7 +92,7 @@ void ciyam_notifier::on_start( )
       if( recurse )
          watch_var_name += '/';
 
-      set_system_variable( watch_var_name, "[watch]" );
+      set_system_variable( watch_var_name, c_watch_str );
 
       while( true )
       {
@@ -142,6 +144,9 @@ void ciyam_notifier::on_start( )
                      if( value == "delete" )
                         value = "";
                   }
+
+                  if( value == "delete_self" )
+                     value.erase( );
 
                   if( !skip )
                      set_system_variable( var_name, value );
