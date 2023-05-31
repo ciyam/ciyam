@@ -79,18 +79,23 @@ void ciyam_notifier::on_start( )
 {
    increment_active_listeners( );
 
+   bool recurse = false;
+   bool has_set_system_variable = false;
+
+   string watch_var_name( watch_root );
+
    try
    {
-      bool recurse = dir_exists( watch_root );
+      recurse = dir_exists( watch_root );
 
       notifier n( watch_root, recurse );
-
-      string watch_var_name( watch_root );
 
       if( recurse )
          watch_var_name += '/';
 
       set_system_variable( watch_var_name, c_watching );
+
+      has_set_system_variable = true;
 
       TRACE_LOG( TRACE_SESSIONS, "notifier started for '" + watch_root + "'" );
 
@@ -146,7 +151,12 @@ void ciyam_notifier::on_start( )
                   }
 
                   if( value == "delete_self" )
-                     value = string( c_finishing );
+                  {
+                     if( var_name != watch_var_name )
+                        skip = true;
+                     else
+                        value = string( c_finishing );
+                  }
 
                   if( !skip )
                      set_system_variable( var_name, value );
@@ -158,14 +168,7 @@ void ciyam_notifier::on_start( )
             msleep( c_wait_sleep_time );
 
             if( get_raw_system_variable( watch_var_name ) == c_finishing )
-            {
-               if( !recurse )
-                  set_system_variable( watch_var_name, "" );
-               else
-                  set_system_variable( watch_var_name + '*', "" );
-
                break;
-            }
          }
       }
    }
@@ -176,6 +179,14 @@ void ciyam_notifier::on_start( )
    catch( ... )
    {
       issue_error( "unexpected unknown exception occurred" );
+   }
+
+   if( has_set_system_variable )
+   {
+      if( !recurse )
+         set_system_variable( watch_var_name, "" );
+      else
+         set_system_variable( watch_var_name + '*', "" );
    }
 
    decrement_active_listeners( );

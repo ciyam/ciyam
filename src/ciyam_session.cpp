@@ -5577,7 +5577,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             // do nothing if no system variable is found.
             if( !get_raw_system_variable( var_name ).empty( ) )
             {
-               set_system_variable( var_name, c_finishing );
+               set_system_variable( var_name, c_finishing, c_watching );
 
                bool okay = false;
 
