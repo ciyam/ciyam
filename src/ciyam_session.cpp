@@ -5573,26 +5573,28 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( get_raw_system_variable( var_name ).empty( ) )
                var_name += '/';
 
-            if( get_raw_system_variable( var_name ).empty( ) )
-               throw runtime_error( "no system variable found for '" + file_or_directory + "'" );
-
-            set_system_variable( var_name, c_finishing );
-
-            bool okay = false;
-
-            for( size_t i = 0; i < c_max_notifer_checks; i++ )
+            // NOTE: As a notifier can delete itself will just
+            // do nothing if no system variable is found.
+            if( !get_raw_system_variable( var_name ).empty( ) )
             {
-               msleep( c_notifer_check_wait );
+               set_system_variable( var_name, c_finishing );
 
-               if( get_raw_system_variable( var_name ).empty( ) )
+               bool okay = false;
+
+               for( size_t i = 0; i < c_max_notifer_checks; i++ )
                {
-                  okay = true;
-                  break;
-               }
-            }
+                  msleep( c_notifer_check_wait );
 
-            if( !okay )
-               throw runtime_error( "system variable not cleared for '" + file_or_directory + "'" );
+                  if( get_raw_system_variable( var_name ).empty( ) )
+                  {
+                     okay = true;
+                     break;
+                  }
+               }
+
+               if( !okay )
+                  throw runtime_error( "system variable not cleared for '" + file_or_directory + "'" );
+            }
          }
          else
          {
