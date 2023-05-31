@@ -223,7 +223,7 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
       if( !path.empty( ) )
          path += '/';
 
-      string file_name( p_impl->watch );
+      string file_name;
 
       if( p_event->len )
          file_name = string( p_event->name );
@@ -264,10 +264,7 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
             reportable_event = true;
 
             if( is_delete_self )
-            {
-               path.erase( );
                remove_watch( wd );
-            }
             else
                remove_watch( p_impl->wd_watches[ wd ] + '/' + file_name );
          }
@@ -281,7 +278,7 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
 
          stringstream ss;
 
-         if( ( mask & IN_ISDIR ) || ( is_delete_self && ( file_name == p_impl->watch ) ) )
+         if( !file_name.empty( ) && ( mask & IN_ISDIR ) )
             file_name += '/';
 
          ss << path << file_name << c_separator << ops << c_separator << cookie;
