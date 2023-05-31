@@ -28,7 +28,8 @@ const char* const c_false_value = "0";
 
 const char* const c_dummy = "dummy";
 
-const char* const c_watch_str = "[watch]";
+const char* const c_watching = "[watching]";
+const char* const c_finishing = "[finishing]";
 
 const char* const c_ciyam_tag = "ciyam";
 const char* const c_ciyam_logs_tag = "ciyam.logs";
