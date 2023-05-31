@@ -37,7 +37,7 @@ namespace
 
 trace_mutex g_mutex;
 
-const size_t c_wait_sleep_time = 25;
+const size_t c_wait_sleep_time = 10;
 
 inline void issue_error( const string& message, bool possibly_expected = false )
 {
