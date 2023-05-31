@@ -126,6 +126,11 @@ notifier::notifier( const string& watch, bool recurse, bool ignore_hidden_files 
 
 notifier::~notifier( )
 {
+   map< int, string >::iterator i;
+
+   for( i = p_impl->wd_watches.begin( ); i  != p_impl->wd_watches.end( ); ++i )
+      remove_watch( i->first );
+
    close( p_impl->id );
 
    delete p_impl->p_buf;
@@ -192,15 +197,19 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
 
       string ops( get_ops( mask ) );
 
+      int ignored = IN_IGNORED;
       int open_dir = ( IN_OPEN | IN_ISDIR );
       int close_dir = ( IN_ISDIR | IN_CLOSE_NOWRITE );
       int create_dir = ( IN_ISDIR | IN_CREATE );
       int delete_dir = ( IN_ISDIR | IN_DELETE );
+      int delete_self = IN_DELETE_SELF;
 
-      bool is_open_dir = ( mask == open_dir );
-      bool is_close_dir = ( mask == close_dir );
-      bool is_create_dir = ( mask == create_dir );
-      bool is_delete_dir = ( mask == delete_dir );
+      bool is_ignored = ( ( mask & ignored ) == ignored );
+      bool is_open_dir = ( ( mask & open_dir ) == open_dir );
+      bool is_close_dir = ( ( mask & close_dir ) == close_dir );
+      bool is_create_dir = ( ( mask & create_dir ) == create_dir );
+      bool is_delete_dir = ( ( mask & delete_dir ) == delete_dir );
+      bool is_delete_self = ( ( mask & delete_self ) == delete_self );
 
       string new_watch;
 
@@ -250,21 +259,29 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
                add_watch( new_watch, true );
             }
          }
-         else if( is_delete_dir )
+         else if( is_delete_dir || is_delete_self )
          {
             reportable_event = true;
-            remove_watch( p_impl->wd_watches[ wd ] + '/' + file_name );
+
+            if( is_delete_self )
+            {
+               path.erase( );
+               remove_watch( wd );
+            }
+            else
+               remove_watch( p_impl->wd_watches[ wd ] + '/' + file_name );
          }
          else if( !( mask & IN_ACCESS ) && !( mask & IN_OPEN )
           && !( mask & IN_CLOSE_WRITE ) && !( mask & IN_CLOSE_NOWRITE ) )
             reportable_event = true;
 
-         if( ( file_name == prior_file_name ) && ( mask & IN_ATTRIB ) && ( prior_mask & IN_CREATE ) )
+         if( is_ignored || ( ( file_name == prior_file_name )
+          && ( mask & IN_ATTRIB ) && ( prior_mask & IN_CREATE ) ) )
             reportable_event = false;
 
          stringstream ss;
 
-         if( mask & IN_ISDIR )
+         if( ( mask & IN_ISDIR ) || ( is_delete_self && ( file_name == p_impl->watch ) ) )
             file_name += '/';
 
          ss << path << file_name << c_separator << ops << c_separator << cookie;

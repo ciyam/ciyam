@@ -89,6 +89,9 @@ const size_t c_udp_wait_repeats = 10;
 
 const int c_pdf_default_limit = 10000;
 
+const size_t c_notifer_check_wait = 50; // i.e. 1/20 sec
+const size_t c_max_notifer_checks = 10;
+
 const size_t c_secret_reserve_size = 256;
 const size_t c_response_reserve_size = 1024;
 
@@ -5572,9 +5575,33 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
          else
          {
+            string file( file_or_directory );
+            string directory( file_or_directory + '/' );
+
+            if( !get_raw_system_variable( file ).empty( )
+             && !get_raw_system_variable( directory ).empty( ) )
+               throw runtime_error( "detected conflicting system variable for '" + file_or_directory + "'" );
+
             ciyam_notifier* p_notifier = new ciyam_notifier( file_or_directory );
 
             p_notifier->start( );
+
+            bool okay = false;
+
+            for( size_t i = 0; i < c_max_notifer_checks; i++ )
+            {
+               msleep( c_notifer_check_wait );
+
+               if( !get_raw_system_variable( file ).empty( )
+                || !get_raw_system_variable( directory ).empty( ) )
+               {
+                  okay = true;
+                  break;
+               }
+            }
+
+            if( !okay )
+               throw runtime_error( "system variable not found for '" + file_or_directory + "'" );
          }
       }
       else if( command == c_cmd_ciyam_session_system_passtotp )

@@ -179,6 +179,12 @@ test1/y delete
 test1/z delete
 notifier -term test1
 system_variable test1*
+~mkdir test1/xxx
+notifier test1/xxx
+system_variable test1*
+test1/xxx/ [watch]
+~rmdir test1/xxx
+system_variable test1*
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test
 [list] 2d3c89f8f5301604234589e08a695e3ab0bdaa5f99ec21cf148b99d13020cb85 (307 B)
