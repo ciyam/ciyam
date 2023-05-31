@@ -85,14 +85,14 @@ void ciyam_notifier::on_start( )
 
       notifier n( watch_root, recurse );
 
-      TRACE_LOG( TRACE_SESSIONS, "notifier started for '" + watch_root + "'" );
-
       string watch_var_name( watch_root );
 
       if( recurse )
          watch_var_name += '/';
 
-      set_system_variable( watch_var_name, c_watch_str );
+      set_system_variable( watch_var_name, c_watching );
+
+      TRACE_LOG( TRACE_SESSIONS, "notifier started for '" + watch_root + "'" );
 
       while( true )
       {
@@ -146,7 +146,7 @@ void ciyam_notifier::on_start( )
                   }
 
                   if( value == "delete_self" )
-                     value.erase( );
+                     value = string( c_finishing );
 
                   if( !skip )
                      set_system_variable( var_name, value );
@@ -157,9 +157,11 @@ void ciyam_notifier::on_start( )
          {
             msleep( c_wait_sleep_time );
 
-            if( get_raw_system_variable( watch_var_name ).empty( ) )
+            if( get_raw_system_variable( watch_var_name ) == c_finishing )
             {
-               if( recurse )
+               if( !recurse )
+                  set_system_variable( watch_var_name, "" );
+               else
                   set_system_variable( watch_var_name + '*', "" );
 
                break;

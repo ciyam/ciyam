@@ -146,18 +146,18 @@ file_kill -recurse root
 ~mkdir test1
 notifier test1
 system_variable test1*
-test1/ [watch]
+test1/ [watching]
 ~touch test1/x
 ~touch test1/y
 ~touch test1/z
 system_variable test1*
-test1/ [watch]
+test1/ [watching]
 test1/x create
 test1/y create
 test1/z create
 system_variable test1/?* "none"
 system_variable test1*
-test1/ [watch]
+test1/ [watching]
 test1/x none
 test1/y none
 test1/z none
@@ -165,7 +165,7 @@ test1/z none
 ~touch test1/y
 ~touch test1/z
 system_variable test1*
-test1/ [watch]
+test1/ [watching]
 test1/x attrib
 test1/y attrib
 test1/z attrib
@@ -173,7 +173,7 @@ test1/z attrib
 ~rm test1/y
 ~rm test1/z
 system_variable test1*
-test1/ [watch]
+test1/ [watching]
 test1/x delete
 test1/y delete
 test1/z delete
@@ -182,7 +182,7 @@ system_variable test1*
 ~mkdir test1/xxx
 notifier test1/xxx
 system_variable test1*
-test1/xxx/ [watch]
+test1/xxx/ [watching]
 ~rmdir test1/xxx
 system_variable test1*
 file_put 1K*test.jpg test
