@@ -177,6 +177,32 @@ test1/ [watching]
 test1/x delete
 test1/y delete
 test1/z delete
+~touch test1/x
+system_variable test1*
+test1/ [watching]
+test1/x none
+test1/y delete
+test1/z delete
+~mv test/1x test1/xx
+system_variable test1*
+test1/ [watching]
+test1/x renamed_to|test1/xx
+test1/xx renamed_from|test1/x
+test1/y delete
+test1/z delete
+~mv test1/xx test1/xxx
+system_variable test1*
+test1/ [watching]
+test1/x renamed_to|test1/xxx
+test1/xxx renamed_from|test1/x
+test1/y delete
+test1/z delete
+~mv test1/xxx test1/x
+system_variable test1*
+test1/ [watching]
+test1/x none
+test1/y delete
+test1/z delete
 notifier -term test1
 system_variable test1*
 ~mkdir test1/xxx

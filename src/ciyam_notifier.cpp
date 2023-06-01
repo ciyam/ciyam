@@ -99,6 +99,8 @@ void ciyam_notifier::on_start( )
 
       TRACE_LOG( TRACE_SESSIONS, "notifier started for '" + watch_root + "'" );
 
+      string renamed_from_prefix( "renamed_from|" );
+
       while( true )
       {
          if( g_server_shutdown )
@@ -118,26 +120,81 @@ void ciyam_notifier::on_start( )
 
             split( events, all_events, '\n' );
 
+            map< string, string > cookie_names;
+
             for( size_t i = 0; i < all_events.size( ); i++ )
             {
+               string value, old_value;
+
                string next_event( all_events[ i ] );
 
                if( !next_event.empty( ) )
                {
                   string::size_type pos = next_event.find( '|' );
 
-                  string value;
                   string var_name( next_event.substr( 0, pos ) );
 
-                  if( pos )
+                  old_value = get_raw_system_variable( var_name );
+
+                  if( pos != string::npos )
                   {
                      next_event.erase( 0, pos + 1 );
                      pos = next_event.find( '|' );
 
                      value = next_event.substr( 0, pos );
-                  }
 
-                  string old_value( get_raw_system_variable( var_name ) );
+                     if( pos != string::npos )
+                     {
+                        next_event.erase( 0, pos + 1 );
+
+                        if( next_event != "0" )
+                        {
+                           if( value == "moved_to" )
+                              value = "renamed_from";
+                           else if( value == "moved_from" )
+                              value = "renamed_to";
+
+                           if( cookie_names.find( next_event ) == cookie_names.end( ) )
+                           {
+                              if( old_value == "create" )
+                              {
+                                 value.erase( );
+                                 cookie_names.insert( make_pair( next_event, "" ) );
+                              }
+                              else
+                              {
+                                 if( old_value.find( renamed_from_prefix ) == 0 )
+                                 {
+                                    old_value.erase( 0, renamed_from_prefix.length( ) );
+                                    cookie_names.insert( make_pair( next_event, old_value ) );
+                                    
+                                    value.erase( );
+                                    old_value.erase( );
+                                 }
+                                 else
+                                    cookie_names.insert( make_pair( next_event, var_name ) );
+                              }
+                           }
+                           else
+                           {
+                              if( cookie_names[ next_event ].empty( ) )
+                                 value = "create";
+                              else
+                              {
+                                 if( cookie_names[ next_event ] == var_name )
+                                    value = "none";
+                                 else
+                                    value += '|' + cookie_names[ next_event ];
+
+                                 string current_value( get_system_variable( cookie_names[ next_event ] ) );
+
+                                 set_system_variable( cookie_names[ next_event ],
+                                  current_value.substr( 0, current_value.find( '|' ) ) + '|' + var_name );
+                              }
+                           }
+                        }
+                     }
+                  }
 
                   bool skip = false;
 
@@ -148,6 +205,28 @@ void ciyam_notifier::on_start( )
 
                      if( value == "delete" )
                         value = "";
+                  }
+                  else if( value == "attrib" )
+                  {
+                     if( old_value.find( renamed_from_prefix ) == 0 )
+                        value = old_value;
+                  }
+                  else if( value == "create" )
+                  {
+                     if( old_value == "delete" )
+                        value = "none";
+                  }
+                  else if( value == "delete" )
+                  {
+                     if( old_value.find( renamed_from_prefix ) == 0 )
+                     {
+                        old_value.erase( 0, renamed_from_prefix.length( ) );
+
+                        set_system_variable( old_value, "delete" );
+
+                        value.erase( );
+                        old_value.erase( );
+                     }
                   }
 
                   if( value == "delete_self" )
