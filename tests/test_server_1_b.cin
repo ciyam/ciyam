@@ -70,6 +70,23 @@ system_variable test1*
 ~rm test1/z
 .wait 100
 system_variable test1*
+#~touch test1/x
+~touch test1/x
+.wait 100
+system_variable test1*
+#~mv test/1x test1/xx
+~mv test1/x test1/xx
+.wait 100
+system_variable test1*
+#~mv test1/xx test1/xxx
+~mv test1/xx test1/xxx
+.wait 100
+system_variable test1*
+#~mv test1/xxx test1/x
+~mv test1/xxx test1/x
+.wait 100
+system_variable test1*
+~rm test1/x
 notifier -term test1
 system_variable test1*
 #~mkdir test1/xxx
