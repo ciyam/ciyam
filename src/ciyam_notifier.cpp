@@ -22,6 +22,7 @@
 #include "notifier.h"
 #include "utilities.h"
 #include "ciyam_base.h"
+#include "fs_iterator.h"
 #include "ciyam_variables.h"
 
 using namespace std;
@@ -91,7 +92,58 @@ void ciyam_notifier::on_start( )
       notifier n( watch_root, recurse );
 
       if( recurse )
+      {
          watch_var_name += '/';
+
+         // NOTE: Add watches for all child folders and also
+         // set system variables for child files and folders.
+         directory_filter df;
+         fs_iterator dfsi( watch_root, &df );
+
+         string path_to_dir( dfsi.get_path_name( ) );
+
+         string::size_type pos = path_to_dir.rfind( watch_root );
+
+         if( pos == string::npos )
+            throw runtime_error( "unexpected '" + watch_root + "' not found in '" + path_to_dir + "'" );
+
+         path_to_dir.erase( pos );
+
+         do
+         {
+            string next_dir( dfsi.get_path_name( ) );
+
+            file_filter ff;
+            fs_iterator fs( next_dir, &ff );
+
+            pos = next_dir.find( path_to_dir );
+
+            if( pos != 0 )
+               throw runtime_error( "unexpected '" + next_dir + "' does start with '" + path_to_dir + "'" );
+
+            next_dir.erase( 0, path_to_dir.length( ) );
+
+            if( next_dir != watch_root )
+            {
+               n.add_watch( next_dir );
+               set_system_variable( next_dir + '/', "none" );
+            }
+
+            while( fs.has_next( ) )
+            {
+               string next_file( fs.get_full_name( ) );
+
+               pos = next_file.find( path_to_dir );
+
+               if( pos != 0 )
+                  throw runtime_error( "unexpected '" + next_file + "' does start with '" + path_to_dir + "'" );
+
+               next_file.erase( 0, path_to_dir.length( ) );
+
+               set_system_variable( next_file, "none" );
+            }
+         } while( dfsi.has_next( ) );
+      }
 
       set_system_variable( watch_var_name, c_watching );
 
@@ -120,7 +172,7 @@ void ciyam_notifier::on_start( )
 
             split( events, all_events, '\n' );
 
-            map< string, string > cookie_names;
+            map< string, string > cookie_id_names;
 
             for( size_t i = 0; i < all_events.size( ); i++ )
             {
@@ -145,50 +197,51 @@ void ciyam_notifier::on_start( )
 
                      if( pos != string::npos )
                      {
+                        string cookie_id( next_event.substr( pos + 1 ) );
                         next_event.erase( 0, pos + 1 );
 
-                        if( next_event != "0" )
+                        if( cookie_id != "0" )
                         {
                            if( value == "moved_to" )
                               value = "renamed_from";
                            else if( value == "moved_from" )
                               value = "renamed_to";
 
-                           if( cookie_names.find( next_event ) == cookie_names.end( ) )
+                           if( cookie_id_names.find( cookie_id ) == cookie_id_names.end( ) )
                            {
                               if( old_value == "create" )
                               {
                                  value.erase( );
-                                 cookie_names.insert( make_pair( next_event, "" ) );
+                                 cookie_id_names.insert( make_pair( cookie_id, "" ) );
                               }
                               else
                               {
                                  if( old_value.find( renamed_from_prefix ) == 0 )
                                  {
                                     old_value.erase( 0, renamed_from_prefix.length( ) );
-                                    cookie_names.insert( make_pair( next_event, old_value ) );
+                                    cookie_id_names.insert( make_pair( cookie_id, old_value ) );
                                     
                                     value.erase( );
                                     old_value.erase( );
                                  }
                                  else
-                                    cookie_names.insert( make_pair( next_event, var_name ) );
+                                    cookie_id_names.insert( make_pair( cookie_id, var_name ) );
                               }
                            }
                            else
                            {
-                              if( cookie_names[ next_event ].empty( ) )
+                              if( cookie_id_names[ cookie_id ].empty( ) )
                                  value = "create";
                               else
                               {
-                                 if( cookie_names[ next_event ] == var_name )
+                                 if( cookie_id_names[ cookie_id ] == var_name )
                                     value = "none";
                                  else
-                                    value += '|' + cookie_names[ next_event ];
+                                    value += '|' + cookie_id_names[ cookie_id ];
 
-                                 string current_value( get_system_variable( cookie_names[ next_event ] ) );
+                                 string current_value( get_system_variable( cookie_id_names[ cookie_id ] ) );
 
-                                 set_system_variable( cookie_names[ next_event ],
+                                 set_system_variable( cookie_id_names[ cookie_id ],
                                   current_value.substr( 0, current_value.find( '|' ) ) + '|' + var_name );
                               }
                            }
