@@ -4231,6 +4231,7 @@ void list_trace_flags( vector< string >& flag_names )
    flag_names.push_back( "core_fls" ); // TRACE_CORE_FLS
    flag_names.push_back( "sync_ops" ); // TRACE_SYNC_OPS
    flag_names.push_back( "peer_ops" ); // TRACE_PEER_OPS
+   flag_names.push_back( "notifier" ); // TRACE_NOTIFIER
 }
 
 void log_trace_message( unsigned flag, const string& message )
@@ -4317,6 +4318,10 @@ void log_trace_message( unsigned flag, const string& message )
 
          case TRACE_PEER_OPS:
          type = "peer_op";
+         break;
+
+         case TRACE_NOTIFIER:
+         type = "inotify";
          break;
 
          case TRACE_ANYTHING:
@@ -5049,16 +5054,6 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             }
 
             set_sid( sid );
-#ifndef _WIN32
-            string user( get_environment_variable( c_env_var_ciyam_user ) );
-
-            if( !user.empty( ) )
-            {
-               string cmd( "./init_opened_files_area \"" + user + "\"" );
-
-               system( cmd.c_str( ) );
-            }
-#endif
          }
       }
 

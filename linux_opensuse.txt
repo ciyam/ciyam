@@ -116,8 +116,14 @@ newgrp - www
 sudo chmod g+w /srv/www/htdocs
 sudo chown wwwrun:www /srv/www/htdocs
 
-Create opened files area
-------------------------
+Create opened staging area ext4 file system and automount entry
+---------------------------------------------------------------
+sudo fallocate -l 10M opened.img
+sudo mkfs.ext4 opened.img
+
+sudo vi /etc/fstab
+[append the following line]
+/home/tux/opened.img  /home/tux/opened ext4 loop 0 0
 
 sudo mkdir opened
 cd opened

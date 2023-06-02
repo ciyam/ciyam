@@ -182,6 +182,8 @@ void ciyam_notifier::on_start( )
 
                if( !next_event.empty( ) )
                {
+                  TRACE_LOG( TRACE_NOTIFIER, "event: " + next_event );
+
                   string::size_type pos = next_event.find( '|' );
 
                   string var_name( next_event.substr( 0, pos ) );
@@ -321,9 +323,9 @@ void ciyam_notifier::on_start( )
          set_system_variable( watch_var_name + '*', "" );
    }
 
-   decrement_active_listeners( );
-
    TRACE_LOG( TRACE_SESSIONS, "notifier finished for '" + watch_root + "'" );
+
+   decrement_active_listeners( );
 
    delete this;
 }
