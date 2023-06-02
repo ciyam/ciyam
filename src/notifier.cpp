@@ -126,10 +126,15 @@ notifier::notifier( const string& watch, bool recurse, bool ignore_hidden_files 
 
 notifier::~notifier( )
 {
-   map< int, string >::iterator i;
+   vector< int > watch_ids;
 
-   for( i = p_impl->wd_watches.begin( ); i  != p_impl->wd_watches.end( ); ++i )
-      remove_watch( i->first );
+   map< int, string >::iterator wi;
+
+   for( wi = p_impl->wd_watches.begin( ); wi != p_impl->wd_watches.end( ); ++wi )
+      watch_ids.push_back( wi->first );
+
+   for( size_t i = 0; i < watch_ids.size( ); i++ )
+      remove_watch( watch_ids[ i ] );
 
    close( p_impl->id );
 
@@ -161,24 +166,24 @@ void notifier::remove_watch( int wd )
 {
    inotify_rm_watch( p_impl->id, wd );
 
-   map< int, string >::iterator i = p_impl->wd_watches.find( wd );
+   map< int, string >::iterator wi = p_impl->wd_watches.find( wd );
 
-   if( i != p_impl->wd_watches.end( ) )
+   if( wi != p_impl->wd_watches.end( ) )
    {
 #ifdef COMPILE_TESTBED_MAIN
       cout << "removing watch: " << wd << endl;
 #endif
-      p_impl->watches_wd.erase( i->second );
-      p_impl->wd_watches.erase( i );
+      p_impl->watches_wd.erase( wi->second );
+      p_impl->wd_watches.erase( wi );
    }
 }
 
 void notifier::remove_watch( const string& watch )
 {
-   map< string, int >::iterator i = p_impl->watches_wd.find( watch );
+   map< string, int >::iterator wi = p_impl->watches_wd.find( watch );
 
-   if( i != p_impl->watches_wd.end( ) )
-      remove_watch( i->second );
+   if( wi != p_impl->watches_wd.end( ) )
+      remove_watch( wi->second );
 }
 
 void notifier::process_event( struct inotify_event* p_event, struct inotify_event* p_prior_event )
