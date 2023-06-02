@@ -178,13 +178,7 @@ void notifier::remove_watch( const string& watch )
    map< string, int >::iterator i = p_impl->watches_wd.find( watch );
 
    if( i != p_impl->watches_wd.end( ) )
-   {
-#ifdef COMPILE_TESTBED_MAIN
-      cout << "removing watch: " << watch << endl;
-#endif
-      p_impl->wd_watches.erase( i->second );
-      p_impl->watches_wd.erase( i );
-   }
+      remove_watch( i->second );
 }
 
 void notifier::process_event( struct inotify_event* p_event, struct inotify_event* p_prior_event )
@@ -295,8 +289,6 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
 
 size_t notifier::has_new_events( )
 {
-   size_t num = 0;
-
    int64_t num_bytes = read( p_impl->id, p_impl->p_buf, BUF_LEN );
 
    if( num_bytes > 0 )
@@ -307,7 +299,6 @@ size_t notifier::has_new_events( )
       {
          struct inotify_event* p_event = ( struct inotify_event * )p;
 
-         ++num;
          process_event( p_event, p_prior_event );
 
          p_prior_event = p_event;
@@ -316,7 +307,7 @@ size_t notifier::has_new_events( )
       }
    }
 
-   return num;
+   return p_impl->events.size( );
 }
 
 void notifier::output_events( ostream& os )
