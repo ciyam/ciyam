@@ -138,6 +138,13 @@ If you are reading this then a backup or restore is now active - please disconne
 NOTE: If still seeing this after being disconnected for an hour then this device may require rebooting.
 [README.md]
 
+cd ..
+
+sudo mount opened.img opened
+sudo chown -R tux:www opened
+
+sudo umount opened
+
 Create backup staging area ext4 file system and automount entry
 ---------------------------------------------------------------
 sudo fallocate -l 10M backup.img
