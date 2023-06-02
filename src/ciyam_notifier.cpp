@@ -237,7 +237,7 @@ void ciyam_notifier::on_start( )
                               else
                               {
                                  if( cookie_id_names[ cookie_id ] == var_name )
-                                    value = "none";
+                                    value = "modified";
                                  else
                                     value += '|' + cookie_id_names[ cookie_id ];
 
@@ -269,7 +269,7 @@ void ciyam_notifier::on_start( )
                   else if( value == "create" )
                   {
                      if( old_value == "delete" )
-                        value = "none";
+                        value = "modified";
                   }
                   else if( value == "delete" )
                   {
