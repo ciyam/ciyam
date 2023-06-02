@@ -152,9 +152,9 @@ test1/ [watching]
 ~touch test1/z
 system_variable test1*
 test1/ [watching]
-test1/x create
-test1/y create
-test1/z create
+test1/x created
+test1/y created
+test1/z created
 system_variable test1/?* "none"
 system_variable test1*
 test1/ [watching]
@@ -166,43 +166,43 @@ test1/z none
 ~touch test1/z
 system_variable test1*
 test1/ [watching]
-test1/x attrib
-test1/y attrib
-test1/z attrib
+test1/x modified
+test1/y modified
+test1/z modified
 ~rm test1/x
 ~rm test1/y
 ~rm test1/z
 system_variable test1*
 test1/ [watching]
-test1/x delete
-test1/y delete
-test1/z delete
+test1/x deleted
+test1/y deleted
+test1/z deleted
 ~touch test1/x
 system_variable test1*
 test1/ [watching]
 test1/x modified
-test1/y delete
-test1/z delete
+test1/y deleted
+test1/z deleted
 ~mv test/1x test1/xx
 system_variable test1*
 test1/ [watching]
-test1/x renamed_to|test1/xx
-test1/xx renamed_from|test1/x
-test1/y delete
-test1/z delete
+test1/x moved_to|test1/xx
+test1/xx moved_from|test1/x
+test1/y deleted
+test1/z deleted
 ~mv test1/xx test1/xxx
 system_variable test1*
 test1/ [watching]
-test1/x renamed_to|test1/xxx
-test1/xxx renamed_from|test1/x
-test1/y delete
-test1/z delete
+test1/x moved_to|test1/xxx
+test1/xxx moved_from|test1/x
+test1/y deleted
+test1/z deleted
 ~mv test1/xxx test1/x
 system_variable test1*
 test1/ [watching]
 test1/x modified
-test1/y delete
-test1/z delete
+test1/y deleted
+test1/z deleted
 notifier -term test1
 system_variable test1*
 ~mkdir test1/xxx
