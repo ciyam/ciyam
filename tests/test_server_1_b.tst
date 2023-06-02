@@ -180,7 +180,7 @@ test1/z delete
 ~touch test1/x
 system_variable test1*
 test1/ [watching]
-test1/x none
+test1/x modified
 test1/y delete
 test1/z delete
 ~mv test/1x test1/xx
@@ -200,7 +200,7 @@ test1/z delete
 ~mv test1/xxx test1/x
 system_variable test1*
 test1/ [watching]
-test1/x none
+test1/x modified
 test1/y delete
 test1/z delete
 notifier -term test1
