@@ -144,20 +144,30 @@ file_tag -remove test0,test1
 file_tags test*
 file_kill -recurse root
 ~mkdir test1
-notifier test1
+notifier -start test1/xxx
+system_variable @:*
+@:test1/xxx [watching]
+~touch test1/xxx
 system_variable test1*
-test1/ [watching]
+test1/xxx modified
+~rm test1/xxx
+system_variable test1*
+notifier -start test1
+system_variable @:*
+@:test1/ [watching]
+system_variable test1*
+test1/ none
 ~touch test1/x
 ~touch test1/y
 ~touch test1/z
 system_variable test1*
-test1/ [watching]
+test1/ none
 test1/x created
 test1/y created
 test1/z created
 system_variable test1/?* "none"
 system_variable test1*
-test1/ [watching]
+test1/ none
 test1/x none
 test1/y none
 test1/z none
@@ -165,7 +175,7 @@ test1/z none
 ~touch test1/y
 ~touch test1/z
 system_variable test1*
-test1/ [watching]
+test1/ none
 test1/x modified
 test1/y modified
 test1/z modified
@@ -173,42 +183,43 @@ test1/z modified
 ~rm test1/y
 ~rm test1/z
 system_variable test1*
-test1/ [watching]
+test1/ none
 test1/x deleted
 test1/y deleted
 test1/z deleted
 ~touch test1/x
 system_variable test1*
-test1/ [watching]
+test1/ none
 test1/x modified
 test1/y deleted
 test1/z deleted
 ~mv test/1x test1/xx
 system_variable test1*
-test1/ [watching]
+test1/ none
 test1/x moved_to|test1/xx
 test1/xx moved_from|test1/x
 test1/y deleted
 test1/z deleted
 ~mv test1/xx test1/xxx
 system_variable test1*
-test1/ [watching]
+test1/ none
 test1/x moved_to|test1/xxx
 test1/xxx moved_from|test1/x
 test1/y deleted
 test1/z deleted
 ~mv test1/xxx test1/x
 system_variable test1*
-test1/ [watching]
+test1/ none
 test1/x modified
 test1/y deleted
 test1/z deleted
-notifier -term test1
+notifier -finish test1
+system_variable @:*
 system_variable test1*
 ~mkdir test1/xxx
-notifier test1/xxx
+notifier -start test1/xxx
 system_variable test1*
-test1/xxx/ [watching]
+test1/xxx/ none
 ~rmdir test1/xxx
 system_variable test1*
 file_put 1K*test.jpg test

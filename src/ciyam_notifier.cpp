@@ -90,7 +90,8 @@ void ciyam_notifier::on_start( )
    bool recurse = false;
    bool has_set_system_variable = false;
 
-   string watch_var_name( watch_root );
+   string watch_root_name( watch_root );
+   string watch_variable_name( c_notifier_prefix + watch_root );
 
    try
    {
@@ -98,9 +99,12 @@ void ciyam_notifier::on_start( )
 
       notifier n( watch_root, recurse );
 
-      if( recurse )
+      if( !recurse )
+         set_system_variable( watch_root, c_notifier_none );
+      else
       {
-         watch_var_name += '/';
+         watch_root_name += '/';
+         watch_variable_name += '/';
 
          // NOTE: Add watches for all child folders and also
          // set system variables for child files and folders.
@@ -131,10 +135,9 @@ void ciyam_notifier::on_start( )
             next_dir.erase( 0, path_to_dir.length( ) );
 
             if( next_dir != watch_root )
-            {
                n.add_watch( next_dir );
-               set_system_variable( next_dir + '/', c_notifier_none );
-            }
+
+            set_system_variable( next_dir + '/', c_notifier_none );
 
             while( fs.has_next( ) )
             {
@@ -152,7 +155,7 @@ void ciyam_notifier::on_start( )
          } while( dfsi.has_next( ) );
       }
 
-      set_system_variable( watch_var_name, c_watching );
+      set_system_variable( watch_variable_name, c_watching );
 
       has_set_system_variable = true;
 
@@ -321,10 +324,13 @@ void ciyam_notifier::on_start( )
 
                   if( value == "delete_self" )
                   {
-                     if( var_name != watch_var_name )
+                     if( var_name != watch_root_name )
                         skip = true;
                      else
+                     {
                         value = string( c_finishing );
+                        var_name = watch_variable_name;
+                     }
                   }
 
                   if( !skip )
@@ -336,7 +342,7 @@ void ciyam_notifier::on_start( )
          {
             msleep( c_wait_sleep_time );
 
-            if( get_raw_system_variable( watch_var_name ) == c_finishing )
+            if( get_raw_system_variable( watch_variable_name ) == c_finishing )
                break;
          }
       }
@@ -353,9 +359,11 @@ void ciyam_notifier::on_start( )
    if( has_set_system_variable )
    {
       if( !recurse )
-         set_system_variable( watch_var_name, "" );
+         set_system_variable( watch_root_name, "" );
       else
-         set_system_variable( watch_var_name + '*', "" );
+         set_system_variable( watch_root_name + '*', "" );
+
+      set_system_variable( watch_variable_name, "" );
    }
 
    TRACE_LOG( TRACE_SESSIONS, "notifier finished for '" + watch_root + "'" );

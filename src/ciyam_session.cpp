@@ -5563,12 +5563,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_system_notifier )
       {
-         bool is_terminate( has_parm_val( parameters, c_cmd_ciyam_session_system_notifier_terminate ) );
+         bool is_start( has_parm_val( parameters, c_cmd_ciyam_session_system_notifier_start ) );
+         bool is_finish( has_parm_val( parameters, c_cmd_ciyam_session_system_notifier_finish ) );
          string file_or_directory( get_parm_val( parameters, c_cmd_ciyam_session_system_notifier_file_or_directory ) );
 
-         if( is_terminate )
+         if( is_finish )
          {
-            string var_name( file_or_directory );
+            string var_name( c_notifier_prefix + file_or_directory );
 
             if( get_raw_system_variable( var_name ).empty( ) )
                var_name += '/';
@@ -5615,8 +5616,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             {
                msleep( c_notifer_check_wait );
 
-               if( !get_raw_system_variable( file ).empty( )
-                || !get_raw_system_variable( directory ).empty( ) )
+               if( !get_raw_system_variable( c_notifier_prefix + file ).empty( )
+                || !get_raw_system_variable( c_notifier_prefix + directory ).empty( ) )
                {
                   okay = true;
                   break;
