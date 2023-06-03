@@ -226,6 +226,8 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
 
       if( p_event->len )
          file_name = string( p_event->name );
+      else if( p_impl->wd_watches.empty( ) )
+         file_name = p_impl->watch;
 
       string prior_file_name( new_watch );
 
