@@ -1195,6 +1195,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600033a
+      <item>class
+     </specification>
+     <specification/>
       <id>600034
       <item>class
      </specification>
@@ -1995,6 +1999,48 @@
       </specifications>
      </field>
      <field/>
+      <id>106129
+      <name>Persistence_Extra
+      <type>1020
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500911
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>106128
+      <name>Persistence_Type
+      <type>int
+      <mandatory>true
+      <enum_id>970
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600033a
+        <item>field
+       </specification>
+       <specification/>
+        <id>601610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>106102
       <name>Plural
       <type>1050
@@ -2356,6 +2402,10 @@
      <modifier/>
       <id>500910
       <name>Is_Not_Alias
+     </modifier>
+     <modifier/>
+      <id>500911
+      <name>Is_SQL_Persistence
      </modifier>
     </modifiers>
     <procedures/>
@@ -31015,6 +31065,17 @@
     </data>
    </specification>
    <specification/>
+    <id>600033a
+    <name>{Class}_Is_SQL_Persistence
+    <type>modifier_field_value
+    <data/>
+     <class_id>106100
+     <modifier_id>500911
+     <field_id>106128
+     <field_value>0
+    </data>
+   </specification>
+   <specification/>
     <id>600025
     <name>{Class}_Name
     <type>field_from_other_field
@@ -31251,6 +31312,8 @@
      <field_info>106104;no_edit+non_new
      <field_info>106107;show+enum=515
      <field_info>106103;enum=520
+     <field_info>106128;force+enum=970
+     <field_info>106129
      <field_info>106120
      <field_info>106121
      <field_info>106122;new_only
@@ -39547,6 +39610,12 @@
     <name>peerchain_status
     <type>int
     <key_values>0=Halted,1=Waiting,2=Connected,3=Connecting,4=Disconnecting
+   </user_defined_enum>
+   <user_defined_enum/>
+    <id>970
+    <name>persistence_type
+    <type>int
+    <key_values>0=SQL_DB,1=Global_ODS_DB,3=System_Variables
    </user_defined_enum>
    <user_defined_enum/>
     <id>500

@@ -164,6 +164,8 @@ const char* const c_field_id_Model = "300600";
 const char* const c_field_id_Name = "106101";
 const char* const c_field_id_Next_Field_Id = "106105";
 const char* const c_field_id_Next_Procedure_Id = "106106";
+const char* const c_field_id_Persistence_Extra = "106129";
+const char* const c_field_id_Persistence_Type = "106128";
 const char* const c_field_id_Plural = "106102";
 const char* const c_field_id_Quick_Link_Field = "300630";
 const char* const c_field_id_Source_Class = "300620";
@@ -193,6 +195,8 @@ const char* const c_field_name_Model = "Model";
 const char* const c_field_name_Name = "Name";
 const char* const c_field_name_Next_Field_Id = "Next_Field_Id";
 const char* const c_field_name_Next_Procedure_Id = "Next_Procedure_Id";
+const char* const c_field_name_Persistence_Extra = "Persistence_Extra";
+const char* const c_field_name_Persistence_Type = "Persistence_Type";
 const char* const c_field_name_Plural = "Plural";
 const char* const c_field_name_Quick_Link_Field = "Quick_Link_Field";
 const char* const c_field_name_Source_Class = "Source_Class";
@@ -222,6 +226,8 @@ const char* const c_field_display_name_Model = "field_class_model";
 const char* const c_field_display_name_Name = "field_class_name";
 const char* const c_field_display_name_Next_Field_Id = "field_class_next_field_id";
 const char* const c_field_display_name_Next_Procedure_Id = "field_class_next_procedure_id";
+const char* const c_field_display_name_Persistence_Extra = "field_class_persistence_extra";
+const char* const c_field_display_name_Persistence_Type = "field_class_persistence_type";
 const char* const c_field_display_name_Plural = "field_class_plural";
 const char* const c_field_display_name_Quick_Link_Field = "field_class_quick_link_field";
 const char* const c_field_display_name_Source_Class = "field_class_source_class";
@@ -230,7 +236,7 @@ const char* const c_field_display_name_Source_Model = "field_class_source_model"
 const char* const c_field_display_name_Static_Instance_Key = "field_class_static_instance_key";
 const char* const c_field_display_name_Type = "field_class_type";
 
-const int c_num_fields = 28;
+const int c_num_fields = 30;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -252,6 +258,8 @@ const char* const c_all_sorted_field_ids[ ] =
    "106125",
    "106126",
    "106127",
+   "106128",
+   "106129",
    "300600",
    "300610",
    "300620",
@@ -287,6 +295,8 @@ const char* const c_all_sorted_field_names[ ] =
    "Name",
    "Next_Field_Id",
    "Next_Procedure_Id",
+   "Persistence_Extra",
+   "Persistence_Type",
    "Plural",
    "Quick_Link_Field",
    "Source_Class",
@@ -334,6 +344,7 @@ const char* const c_procedure_id_Generate = "106410";
 
 const uint64_t c_modifier_Is_Alias = UINT64_C( 0x100 );
 const uint64_t c_modifier_Is_Not_Alias = UINT64_C( 0x200 );
+const uint64_t c_modifier_Is_SQL_Persistence = UINT64_C( 0x400 );
 
 aggregate_domain< string,
  domain_string_identifier_format,
@@ -347,6 +358,7 @@ aggregate_domain< string,
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Next_Procedure_Id_domain;
+domain_string_max_size< 100 > g_Persistence_Extra_domain;
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Plural_domain;
@@ -418,6 +430,8 @@ string g_default_Model = string( );
 string g_default_Name = string( );
 string g_default_Next_Field_Id = string( );
 string g_default_Next_Procedure_Id = string( );
+string g_default_Persistence_Extra = string( );
+int g_default_Persistence_Type = int( 0 );
 string g_default_Plural = string( );
 string g_default_Quick_Link_Field = string( );
 string g_default_Source_Class = string( );
@@ -430,6 +444,7 @@ set< int > g_view_access_restrict_enum;
 set< int > g_view_change_restrict_enum;
 set< int > g_list_restrict_enum;
 set< int > g_class_extra_enum;
+set< int > g_persistence_type_enum;
 set< int > g_class_type_enum;
 
 const int c_enum_view_access_restrict_none( 0 );
@@ -531,6 +546,28 @@ string get_enum_string_class_extra( int val )
       string_name = "enum_class_extra_ordered";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for class_extra" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_persistence_type_SQL_DB( 0 );
+const int c_enum_persistence_type_Global_ODS_DB( 1 );
+const int c_enum_persistence_type_System_Variables( 3 );
+
+string get_enum_string_persistence_type( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for persistence_type" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_persistence_type_SQL_DB";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_persistence_type_Global_ODS_DB";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_persistence_type_System_Variables";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for persistence_type" );
 
    return get_module_string( lower( string_name ) );
 }
@@ -840,6 +877,18 @@ void Meta_Class_command_functor::operator ( )( const string& command, const para
          string_getter< string >( cmd_handler.p_Meta_Class->Next_Procedure_Id( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Persistence_Extra || field_name == c_field_name_Persistence_Extra )
+      {
+         handled = true;
+         string_getter< string >( cmd_handler.p_Meta_Class->Persistence_Extra( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Persistence_Type || field_name == c_field_name_Persistence_Type )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Class->Persistence_Type( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Plural || field_name == c_field_name_Plural )
       {
          handled = true;
@@ -1041,6 +1090,20 @@ void Meta_Class_command_functor::operator ( )( const string& command, const para
           *cmd_handler.p_Meta_Class, &Meta_Class::Next_Procedure_Id, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Persistence_Extra || field_name == c_field_name_Persistence_Extra )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, string >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Persistence_Extra, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Persistence_Type || field_name == c_field_name_Persistence_Type )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, int >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Persistence_Type, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Plural || field_name == c_field_name_Plural )
       {
          handled = true;
@@ -1195,6 +1258,12 @@ struct Meta_Class::impl : public Meta_Class_command_handler
 
    const string& impl_Next_Procedure_Id( ) const { return lazy_fetch( p_obj ), v_Next_Procedure_Id; }
    void impl_Next_Procedure_Id( const string& Next_Procedure_Id ) { sanity_check( Next_Procedure_Id ); v_Next_Procedure_Id = Next_Procedure_Id; }
+
+   const string& impl_Persistence_Extra( ) const { return lazy_fetch( p_obj ), v_Persistence_Extra; }
+   void impl_Persistence_Extra( const string& Persistence_Extra ) { sanity_check( Persistence_Extra ); v_Persistence_Extra = Persistence_Extra; }
+
+   int impl_Persistence_Type( ) const { return lazy_fetch( p_obj ), v_Persistence_Type; }
+   void impl_Persistence_Type( int Persistence_Type ) { v_Persistence_Type = Persistence_Type; }
 
    const string& impl_Plural( ) const { return lazy_fetch( p_obj ), v_Plural; }
    void impl_Plural( const string& Plural ) { sanity_check( Plural ); v_Plural = Plural; }
@@ -2310,6 +2379,8 @@ struct Meta_Class::impl : public Meta_Class_command_handler
    string v_Name;
    string v_Next_Field_Id;
    string v_Next_Procedure_Id;
+   string v_Persistence_Extra;
+   int v_Persistence_Type;
    string v_Plural;
    string v_Source_File;
    string v_Static_Instance_Key;
@@ -2411,6 +2482,13 @@ void Meta_Class::impl::impl_Generate( )
    outf << "\x60{\x60$plural_name\x60=\x60'" << get_obj( ).Plural( ) << "\x60'\x60}\n";
    outf << "\x60{\x60$class_type\x60=\x60'" << get_obj( ).Type( ) << "\x60'\x60}\n";
    outf << "\x60{\x60$class_version\x60=\x60'1\x60'\x60}\n";
+
+   if( get_obj( ).Persistence_Type( ) != c_enum_persistence_type_SQL_DB )
+   {
+      outf << "\x60{\x60$persistence_type\x60=\x60'" << get_obj( ).Persistence_Type( ) << "\x60'\x60}\n";
+      outf << "\x60{\x60$persistence_extra\x60=\x60'" << get_obj( ).Persistence_Extra( ) << "\x60'\x60}\n";
+   }
+
    outf << "\x60{\x60$module_id\x60=\x60'" << get_obj( ).Model( ).Id( ) << "\x60'\x60}\n";
    outf << "\x60{\x60$module_name\x60=\x60'" << get_obj( ).Model( ).Name( ) << "\x60'\x60}\n";
    outf << "\x60{\x60$year_created\x60=\x60'" << get_obj( ).Model( ).Year_Created( ) << "\x60'\x60}\n";
@@ -3800,30 +3878,38 @@ string Meta_Class::impl::get_field_value( int field ) const
       break;
 
       case 21:
-      retval = to_string( impl_Plural( ) );
+      retval = to_string( impl_Persistence_Extra( ) );
       break;
 
       case 22:
-      retval = to_string( impl_Quick_Link_Field( ) );
+      retval = to_string( impl_Persistence_Type( ) );
       break;
 
       case 23:
-      retval = to_string( impl_Source_Class( ) );
+      retval = to_string( impl_Plural( ) );
       break;
 
       case 24:
-      retval = to_string( impl_Source_File( ) );
+      retval = to_string( impl_Quick_Link_Field( ) );
       break;
 
       case 25:
-      retval = to_string( impl_Source_Model( ) );
+      retval = to_string( impl_Source_Class( ) );
       break;
 
       case 26:
-      retval = to_string( impl_Static_Instance_Key( ) );
+      retval = to_string( impl_Source_File( ) );
       break;
 
       case 27:
+      retval = to_string( impl_Source_Model( ) );
+      break;
+
+      case 28:
+      retval = to_string( impl_Static_Instance_Key( ) );
+      break;
+
+      case 29:
       retval = to_string( impl_Type( ) );
       break;
 
@@ -3923,30 +4009,38 @@ void Meta_Class::impl::set_field_value( int field, const string& value )
       break;
 
       case 21:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Plural, value );
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Persistence_Extra, value );
       break;
 
       case 22:
-      func_string_setter< Meta_Class::impl, Meta_Field >( *this, &Meta_Class::impl::impl_Quick_Link_Field, value );
+      func_string_setter< Meta_Class::impl, int >( *this, &Meta_Class::impl::impl_Persistence_Type, value );
       break;
 
       case 23:
-      func_string_setter< Meta_Class::impl, Meta_Class >( *this, &Meta_Class::impl::impl_Source_Class, value );
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Plural, value );
       break;
 
       case 24:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Source_File, value );
+      func_string_setter< Meta_Class::impl, Meta_Field >( *this, &Meta_Class::impl::impl_Quick_Link_Field, value );
       break;
 
       case 25:
-      func_string_setter< Meta_Class::impl, Meta_Model >( *this, &Meta_Class::impl::impl_Source_Model, value );
+      func_string_setter< Meta_Class::impl, Meta_Class >( *this, &Meta_Class::impl::impl_Source_Class, value );
       break;
 
       case 26:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Static_Instance_Key, value );
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Source_File, value );
       break;
 
       case 27:
+      func_string_setter< Meta_Class::impl, Meta_Model >( *this, &Meta_Class::impl::impl_Source_Model, value );
+      break;
+
+      case 28:
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Static_Instance_Key, value );
+      break;
+
+      case 29:
       func_string_setter< Meta_Class::impl, int >( *this, &Meta_Class::impl::impl_Type, value );
       break;
 
@@ -4044,30 +4138,38 @@ void Meta_Class::impl::set_field_default( int field )
       break;
 
       case 21:
-      impl_Plural( g_default_Plural );
+      impl_Persistence_Extra( g_default_Persistence_Extra );
       break;
 
       case 22:
-      impl_Quick_Link_Field( g_default_Quick_Link_Field );
+      impl_Persistence_Type( g_default_Persistence_Type );
       break;
 
       case 23:
-      impl_Source_Class( g_default_Source_Class );
+      impl_Plural( g_default_Plural );
       break;
 
       case 24:
-      impl_Source_File( g_default_Source_File );
+      impl_Quick_Link_Field( g_default_Quick_Link_Field );
       break;
 
       case 25:
-      impl_Source_Model( g_default_Source_Model );
+      impl_Source_Class( g_default_Source_Class );
       break;
 
       case 26:
-      impl_Static_Instance_Key( g_default_Static_Instance_Key );
+      impl_Source_File( g_default_Source_File );
       break;
 
       case 27:
+      impl_Source_Model( g_default_Source_Model );
+      break;
+
+      case 28:
+      impl_Static_Instance_Key( g_default_Static_Instance_Key );
+      break;
+
+      case 29:
       impl_Type( g_default_Type );
       break;
 
@@ -4167,30 +4269,38 @@ bool Meta_Class::impl::is_field_default( int field ) const
       break;
 
       case 21:
-      retval = ( v_Plural == g_default_Plural );
+      retval = ( v_Persistence_Extra == g_default_Persistence_Extra );
       break;
 
       case 22:
-      retval = ( v_Quick_Link_Field == g_default_Quick_Link_Field );
+      retval = ( v_Persistence_Type == g_default_Persistence_Type );
       break;
 
       case 23:
-      retval = ( v_Source_Class == g_default_Source_Class );
+      retval = ( v_Plural == g_default_Plural );
       break;
 
       case 24:
-      retval = ( v_Source_File == g_default_Source_File );
+      retval = ( v_Quick_Link_Field == g_default_Quick_Link_Field );
       break;
 
       case 25:
-      retval = ( v_Source_Model == g_default_Source_Model );
+      retval = ( v_Source_Class == g_default_Source_Class );
       break;
 
       case 26:
-      retval = ( v_Static_Instance_Key == g_default_Static_Instance_Key );
+      retval = ( v_Source_File == g_default_Source_File );
       break;
 
       case 27:
+      retval = ( v_Source_Model == g_default_Source_Model );
+      break;
+
+      case 28:
+      retval = ( v_Static_Instance_Key == g_default_Static_Instance_Key );
+      break;
+
+      case 29:
       retval = ( v_Type == g_default_Type );
       break;
 
@@ -4215,6 +4325,11 @@ uint64_t Meta_Class::impl::get_state( ) const
       state |= c_modifier_Is_Not_Alias;
    // [(finish modifier_field_null)] 600033
 
+   // [(start modifier_field_value)] 600033a
+   if( get_obj( ).Persistence_Type( ) == 0 )
+      state |= c_modifier_Is_SQL_Persistence;
+   // [(finish modifier_field_value)] 600033a
+
    // [(start protect_not_equal)] 600034
    if( check_not_equal( get_obj( ).Source_Model( ), "" ) )
       state |= ( c_state_uneditable );
@@ -4235,6 +4350,8 @@ string Meta_Class::impl::get_state_names( ) const
       state_names += "|" + string( "Is_Alias" );
    if( state & c_modifier_Is_Not_Alias )
       state_names += "|" + string( "Is_Not_Alias" );
+   if( state & c_modifier_Is_SQL_Persistence )
+      state_names += "|" + string( "Is_SQL_Persistence" );
 
    return state_names.empty( ) ? state_names : state_names.substr( 1 );
 }
@@ -4375,6 +4492,8 @@ void Meta_Class::impl::clear( )
    v_Name = g_default_Name;
    v_Next_Field_Id = g_default_Next_Field_Id;
    v_Next_Procedure_Id = g_default_Next_Procedure_Id;
+   v_Persistence_Extra = g_default_Persistence_Extra;
+   v_Persistence_Type = g_default_Persistence_Type;
    v_Plural = g_default_Plural;
    v_Source_File = g_default_Source_File;
    v_Static_Instance_Key = g_default_Static_Instance_Key;
@@ -4496,6 +4615,13 @@ void Meta_Class::impl::validate(
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Next_Procedure_Id,
        get_module_string( c_field_display_name_Next_Procedure_Id ) + " " + error_message ) );
 
+   if( !is_null( v_Persistence_Extra )
+    && ( v_Persistence_Extra != g_default_Persistence_Extra
+    || !value_will_be_provided( c_field_name_Persistence_Extra ) )
+    && !g_Persistence_Extra_domain.is_valid( v_Persistence_Extra, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Persistence_Extra,
+       get_module_string( c_field_display_name_Persistence_Extra ) + " " + error_message ) );
+
    if( !is_null( v_Plural )
     && ( v_Plural != g_default_Plural
     || !value_will_be_provided( c_field_name_Plural ) )
@@ -4534,6 +4660,11 @@ void Meta_Class::impl::validate(
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Extra,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Extra ) ) ) ) );
+
+   if( !g_persistence_type_enum.count( v_Persistence_Type ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Persistence_Type,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Persistence_Type ) ) ) ) );
 
    if( !g_class_type_enum.count( v_Type ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Type,
@@ -4586,6 +4717,12 @@ void Meta_Class::impl::validate_set_fields(
     && !g_Next_Procedure_Id_domain.is_valid( v_Next_Procedure_Id, error_message = "" ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Next_Procedure_Id,
        get_module_string( c_field_display_name_Next_Procedure_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Persistence_Extra )
+    && ( fields_set.count( c_field_id_Persistence_Extra ) || fields_set.count( c_field_name_Persistence_Extra ) )
+    && !g_Persistence_Extra_domain.is_valid( v_Persistence_Extra, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Persistence_Extra,
+       get_module_string( c_field_display_name_Persistence_Extra ) + " " + error_message ) );
 
    if( !is_null( v_Plural )
     && ( fields_set.count( c_field_id_Plural ) || fields_set.count( c_field_name_Plural ) )
@@ -5420,6 +5557,26 @@ const string& Meta_Class::Next_Procedure_Id( ) const
 void Meta_Class::Next_Procedure_Id( const string& Next_Procedure_Id )
 {
    p_impl->impl_Next_Procedure_Id( Next_Procedure_Id );
+}
+
+const string& Meta_Class::Persistence_Extra( ) const
+{
+   return p_impl->impl_Persistence_Extra( );
+}
+
+void Meta_Class::Persistence_Extra( const string& Persistence_Extra )
+{
+   p_impl->impl_Persistence_Extra( Persistence_Extra );
+}
+
+int Meta_Class::Persistence_Type( ) const
+{
+   return p_impl->impl_Persistence_Type( );
+}
+
+void Meta_Class::Persistence_Type( int Persistence_Type )
+{
+   p_impl->impl_Persistence_Type( Persistence_Type );
 }
 
 const string& Meta_Class::Plural( ) const
@@ -6328,6 +6485,26 @@ const char* Meta_Class::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Persistence_Extra )
+   {
+      p_id = c_field_id_Persistence_Extra;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Persistence_Type )
+   {
+      p_id = c_field_id_Persistence_Type;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Plural )
    {
       p_id = c_field_id_Plural;
@@ -6619,6 +6796,26 @@ const char* Meta_Class::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Persistence_Extra )
+   {
+      p_name = c_field_name_Persistence_Extra;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Persistence_Type )
+   {
+      p_name = c_field_name_Persistence_Type;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Plural )
    {
       p_name = c_field_name_Plural;
@@ -6828,6 +7025,16 @@ string Meta_Class::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Next_Procedure_Id );
       get_module_string( c_field_display_name_Next_Procedure_Id, &next );
    }
+   else if( id_or_name == c_field_id_Persistence_Extra || id_or_name == c_field_name_Persistence_Extra )
+   {
+      name = string( c_field_display_name_Persistence_Extra );
+      get_module_string( c_field_display_name_Persistence_Extra, &next );
+   }
+   else if( id_or_name == c_field_id_Persistence_Type || id_or_name == c_field_name_Persistence_Type )
+   {
+      name = string( c_field_display_name_Persistence_Type );
+      get_module_string( c_field_display_name_Persistence_Type, &next );
+   }
    else if( id_or_name == c_field_id_Plural || id_or_name == c_field_name_Plural )
    {
       name = string( c_field_display_name_Plural );
@@ -6920,6 +7127,10 @@ string Meta_Class::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Next_Field_Id );
    else if( id_or_name == c_field_id_Next_Procedure_Id || id_or_name == c_field_name_Next_Procedure_Id )
       display_name = get_module_string( c_field_display_name_Next_Procedure_Id );
+   else if( id_or_name == c_field_id_Persistence_Extra || id_or_name == c_field_name_Persistence_Extra )
+      display_name = get_module_string( c_field_display_name_Persistence_Extra );
+   else if( id_or_name == c_field_id_Persistence_Type || id_or_name == c_field_name_Persistence_Type )
+      display_name = get_module_string( c_field_display_name_Persistence_Type );
    else if( id_or_name == c_field_id_Plural || id_or_name == c_field_name_Plural )
       display_name = get_module_string( c_field_display_name_Plural );
    else if( id_or_name == c_field_id_Quick_Link_Field || id_or_name == c_field_name_Quick_Link_Field )
@@ -7654,6 +7865,8 @@ void Meta_Class::get_sql_column_names(
    names.push_back( "C_Name" );
    names.push_back( "C_Next_Field_Id" );
    names.push_back( "C_Next_Procedure_Id" );
+   names.push_back( "C_Persistence_Extra" );
+   names.push_back( "C_Persistence_Type" );
    names.push_back( "C_Plural" );
    names.push_back( "C_Quick_Link_Field" );
    names.push_back( "C_Source_Class" );
@@ -7691,6 +7904,8 @@ void Meta_Class::get_sql_column_values(
    values.push_back( sql_quote( to_string( Name( ) ) ) );
    values.push_back( sql_quote( to_string( Next_Field_Id( ) ) ) );
    values.push_back( sql_quote( to_string( Next_Procedure_Id( ) ) ) );
+   values.push_back( sql_quote( to_string( Persistence_Extra( ) ) ) );
+   values.push_back( to_string( Persistence_Type( ) ) );
    values.push_back( sql_quote( to_string( Plural( ) ) ) );
    values.push_back( sql_quote( to_string( Quick_Link_Field( ) ) ) );
    values.push_back( sql_quote( to_string( Source_Class( ) ) ) );
@@ -7804,6 +8019,14 @@ void Meta_Class::get_always_required_field_names(
       names.insert( "Source_Model" );
    // [(finish modifier_field_null)] 600033
 
+   // [(start modifier_field_value)] 600033a
+   dependents.insert( "Persistence_Type" ); // (for Is_SQL_Persistence modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Persistence_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Persistence_Type ) ) )
+      names.insert( "Persistence_Type" );
+   // [(finish modifier_field_value)] 600033a
+
    // [(start protect_not_equal)] 600034
    dependents.insert( "Source_Model" );
 
@@ -7889,6 +8112,8 @@ void Meta_Class::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "106101", "Name", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "106105", "Next_Field_Id", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "106106", "Next_Procedure_Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "106129", "Persistence_Extra", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "106128", "Persistence_Type", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "106102", "Plural", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "300630", "Quick_Link_Field", "Meta_Field", false, "", "" ) );
    all_field_info.push_back( field_info( "300620", "Source_Class", "Meta_Class", false, "", "" ) );
@@ -8023,30 +8248,38 @@ const char* Meta_Class::static_get_field_id( field_id id )
       break;
 
       case 22:
-      p_id = "106102";
+      p_id = "106129";
       break;
 
       case 23:
-      p_id = "300630";
+      p_id = "106128";
       break;
 
       case 24:
-      p_id = "300620";
+      p_id = "106102";
       break;
 
       case 25:
-      p_id = "106108";
+      p_id = "300630";
       break;
 
       case 26:
-      p_id = "300610";
+      p_id = "300620";
       break;
 
       case 27:
-      p_id = "106120";
+      p_id = "106108";
       break;
 
       case 28:
+      p_id = "300610";
+      break;
+
+      case 29:
+      p_id = "106120";
+      break;
+
+      case 30:
       p_id = "106107";
       break;
    }
@@ -8148,30 +8381,38 @@ const char* Meta_Class::static_get_field_name( field_id id )
       break;
 
       case 22:
-      p_id = "Plural";
+      p_id = "Persistence_Extra";
       break;
 
       case 23:
-      p_id = "Quick_Link_Field";
+      p_id = "Persistence_Type";
       break;
 
       case 24:
-      p_id = "Source_Class";
+      p_id = "Plural";
       break;
 
       case 25:
-      p_id = "Source_File";
+      p_id = "Quick_Link_Field";
       break;
 
       case 26:
-      p_id = "Source_Model";
+      p_id = "Source_Class";
       break;
 
       case 27:
-      p_id = "Static_Instance_Key";
+      p_id = "Source_File";
       break;
 
       case 28:
+      p_id = "Source_Model";
+      break;
+
+      case 29:
+      p_id = "Static_Instance_Key";
+      break;
+
+      case 30:
       p_id = "Type";
       break;
    }
@@ -8230,20 +8471,24 @@ int Meta_Class::static_get_field_num( const string& field )
       rc += 20;
    else if( field == c_field_id_Next_Procedure_Id || field == c_field_name_Next_Procedure_Id )
       rc += 21;
-   else if( field == c_field_id_Plural || field == c_field_name_Plural )
+   else if( field == c_field_id_Persistence_Extra || field == c_field_name_Persistence_Extra )
       rc += 22;
-   else if( field == c_field_id_Quick_Link_Field || field == c_field_name_Quick_Link_Field )
+   else if( field == c_field_id_Persistence_Type || field == c_field_name_Persistence_Type )
       rc += 23;
-   else if( field == c_field_id_Source_Class || field == c_field_name_Source_Class )
+   else if( field == c_field_id_Plural || field == c_field_name_Plural )
       rc += 24;
-   else if( field == c_field_id_Source_File || field == c_field_name_Source_File )
+   else if( field == c_field_id_Quick_Link_Field || field == c_field_name_Quick_Link_Field )
       rc += 25;
-   else if( field == c_field_id_Source_Model || field == c_field_name_Source_Model )
+   else if( field == c_field_id_Source_Class || field == c_field_name_Source_Class )
       rc += 26;
-   else if( field == c_field_id_Static_Instance_Key || field == c_field_name_Static_Instance_Key )
+   else if( field == c_field_id_Source_File || field == c_field_name_Source_File )
       rc += 27;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Source_Model || field == c_field_name_Source_Model )
       rc += 28;
+   else if( field == c_field_id_Static_Instance_Key || field == c_field_name_Static_Instance_Key )
+      rc += 29;
+   else if( field == c_field_id_Type || field == c_field_name_Type )
+      rc += 30;
 
    return rc - 1;
 }
@@ -8290,11 +8535,13 @@ string Meta_Class::static_get_sql_columns( )
     "C_Name VARCHAR(200) NOT NULL,"
     "C_Next_Field_Id VARCHAR(200) NOT NULL,"
     "C_Next_Procedure_Id VARCHAR(200) NOT NULL,"
+    "C_Persistence_Extra VARCHAR(200) NOT NULL,"
+    "C_Persistence_Type INTEGER NOT NULL,"
     "C_Plural VARCHAR(200) NOT NULL,"
     "C_Quick_Link_Field VARCHAR(75) NOT NULL,"
     "C_Source_Class VARCHAR(75) NOT NULL,"
-    "C_Source_File VARCHAR(200) NOT NULL,"
-    "C_Source_Model VARCHAR(75) NOT NULL,"
+    "C_Source_File VARCHAR(256) NOT NULL,"
+    "C_Source_Model VARCHAR(256) NOT NULL,"
     "C_Static_Instance_Key VARCHAR(256) NOT NULL,"
     "C_Type INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
@@ -8329,6 +8576,10 @@ void Meta_Class::static_get_all_enum_pairs( vector< pair< string, string > >& pa
 
    pairs.push_back( make_pair( "enum_class_extra_0", get_enum_string_class_extra( 0 ) ) );
    pairs.push_back( make_pair( "enum_class_extra_1", get_enum_string_class_extra( 1 ) ) );
+
+   pairs.push_back( make_pair( "enum_persistence_type_0", get_enum_string_persistence_type( 0 ) ) );
+   pairs.push_back( make_pair( "enum_persistence_type_1", get_enum_string_persistence_type( 1 ) ) );
+   pairs.push_back( make_pair( "enum_persistence_type_3", get_enum_string_persistence_type( 3 ) ) );
 
    pairs.push_back( make_pair( "enum_class_type_0", get_enum_string_class_type( 0 ) ) );
    pairs.push_back( make_pair( "enum_class_type_1", get_enum_string_class_type( 1 ) ) );
@@ -8403,6 +8654,10 @@ void Meta_Class::static_class_init( const char* p_module_name )
 
    g_class_extra_enum.insert( 0 );
    g_class_extra_enum.insert( 1 );
+
+   g_persistence_type_enum.insert( 0 );
+   g_persistence_type_enum.insert( 1 );
+   g_persistence_type_enum.insert( 3 );
 
    g_class_type_enum.insert( 0 );
    g_class_type_enum.insert( 1 );

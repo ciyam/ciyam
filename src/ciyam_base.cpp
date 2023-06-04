@@ -2345,6 +2345,64 @@ void fetch_keys_from_global_storage( class_base& instance,
    }
 }
 
+void fetch_keys_from_system_variables( class_base& instance,
+ const string& start_from, bool inclusive, size_t limit, vector< string >& global_keys, bool in_reverse_order )
+{
+   string persistence_extra( instance.get_persistence_extra( ) );
+
+   string sys_var_name( persistence_extra + '*' );
+
+   if( in_reverse_order )
+      sys_var_name += '*';
+
+   string sys_vars( get_raw_system_variable( sys_var_name ) );
+
+   if( !sys_vars.empty( ) )
+   {
+      vector< string > all_sys_vars;
+
+      split( sys_vars, all_sys_vars, '\n' );
+
+      size_t num_vars = all_sys_vars.size( );
+
+      for( size_t i = 0; i < num_vars; i++ )
+      {
+         string next_var( all_sys_vars[ i ] );
+
+         string::size_type pos = next_var.find( ' ' );
+
+         string key( next_var.substr( 0, pos ) );
+
+         if( !start_from.empty( ) )
+         {
+            bool skip = false;
+
+            if( in_reverse_order )
+            {
+               if( key > start_from )
+                  skip = true;
+            }
+            else
+            {
+               if( key < start_from )
+                  skip = true;
+            }
+
+            if( key == start_from )
+               skip = !inclusive;
+
+            if( skip )
+               continue;
+         }
+
+         global_keys.push_back( key );
+
+         if( limit && ( global_keys.size( ) >= limit ) )
+            break;
+      }
+   }
+}
+
 bool fetch_instance_from_global_storage( class_base& instance, const string& key,
  const vector< string >& field_names, vector< string >* p_columns = 0, bool skip_after_fetch = false )
 {
@@ -2379,8 +2437,10 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
       if( p_columns )
       {
          p_columns->push_back( key );
+
          p_columns->push_back( "1" );
          p_columns->push_back( "0" );
+
          p_columns->push_back( instance.get_module_id( ) + ':' + instance.get_class_id( ) );
       }
       else
@@ -2426,6 +2486,87 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
                data = ap_sio_reader->read_opt_attribute( attribute_name );
             else if( gap_ofs->has_file( attribute_name ) )
                gap_ofs->fetch_from_text_file( attribute_name, data );
+
+            if( p_columns )
+               p_columns->push_back( data );
+            else
+               instance.set_field_value( field_num, data );
+         }
+      }
+
+      if( !p_columns )
+      {
+         instance_accessor.after_fetch_from_db( );
+
+         if( !skip_after_fetch )
+            instance_accessor.perform_after_fetch( );
+      }
+   }
+
+   return found;
+}
+
+bool fetch_instance_from_system_variable( class_base& instance, const string& key,
+ const vector< string >& field_names, vector< string >* p_columns = 0, bool skip_after_fetch = false )
+{
+   bool found = false;
+
+   field_info_container field_info;
+   instance.get_field_info( field_info );
+
+   class_base_accessor instance_accessor( instance );
+
+   string row_data( get_raw_system_variable( key ) );
+
+   if( row_data.empty( ) )
+      found = false;
+   else
+   {
+      found = true;
+
+      if( p_columns )
+      {
+         p_columns->push_back( key );
+
+         p_columns->push_back( "1" );
+         p_columns->push_back( "0" );
+
+         p_columns->push_back( instance.get_module_id( ) + ':' + instance.get_class_id( ) );
+      }
+      else
+      {
+         instance_accessor.set_key( key, true );
+
+         instance_accessor.set_version( 1 );
+         instance_accessor.set_revision( 0 );
+
+         instance_accessor.set_original_revision( instance.get_revision( ) );
+         instance_accessor.set_original_identity( instance.get_module_id( ) + ':' + instance.get_class_id( ) );
+      }
+
+      if( !field_names.empty( ) )
+      {
+         size_t num = 0;
+         vector< string > columns;
+
+         split( row_data, columns, '|' );
+
+         for( size_t i = 0; i < field_names.size( ); i++ )
+         {
+            string data;
+
+            size_t field_num = instance.get_field_num( field_names[ i ] );
+
+            if( instance.is_field_transient( field_num ) )
+            {
+               if( p_columns )
+                  p_columns->push_back( instance.get_field_value( field_num ) );
+
+               continue;
+            }
+
+            if( num < columns.size( ) )
+               data = columns[ num++ ];
 
             if( p_columns )
                p_columns->push_back( data );
@@ -4096,7 +4237,7 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
          instance.set_field_value( fnum, instance_accessor.row_cache( )[ 0 ][ i ] );
       }
    }
-   else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+   else
    {
       for( int i = 4; i < instance_accessor.row_cache( )[ 0 ].size( ); i++ )
       {
@@ -12588,6 +12729,8 @@ void begin_instance_op( instance_op op, class_base& instance,
    string module_name( instance.get_module_name( ) );
    string lock_class_id( instance.get_lock_class_id( ) );
 
+   int persistence_type = instance.get_persistence_type( );
+
    bool is_minimal_update( op == e_instance_op_update && !instance_accessor.fetch_field_names( ).empty( ) );
 
    if( is_minimal_update )
@@ -12658,13 +12801,15 @@ void begin_instance_op( instance_op op, class_base& instance,
 
             bool found = false;
 
-            if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+            if( persistence_type == 0 ) // i.e. SQL persistence
             {
                instance_accessor.fetch( sql, false );
                found = fetch_instance_from_db( instance, sql );
             }
-            else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+            else if( persistence_type == 1 ) // i.e. ODS global persistence
                found = has_instance_in_global_storage( instance, clone_key );
+            else
+               throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in begin_instance_op" );
 
             xlock_holder.release( );
 
@@ -12729,13 +12874,15 @@ void begin_instance_op( instance_op op, class_base& instance,
          {
             bool found = false;
 
-            if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+            if( persistence_type == 0 ) // i.e. SQL persistence
             {
                instance_accessor.fetch( sql, true );
                found = fetch_instance_from_db( instance, sql, true );
             }
-            else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+            else if( persistence_type == 1 ) // i.e. ODS global persistence
                found = has_instance_in_global_storage( instance, key_for_op );
+            else
+               throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in begin_instance_op" );
 
             if( found )
             {
@@ -12763,18 +12910,20 @@ void begin_instance_op( instance_op op, class_base& instance,
 
          bool found = false;
 
-         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+         if( persistence_type == 0 ) // i.e. SQL persistence
          {
             instance_accessor.fetch( sql, false, false );
 
             found = fetch_instance_from_db( instance, sql,
              false, is_minimal_update && op == e_instance_op_update );
          }
-         else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+         else if( persistence_type == 1 ) // i.e. ODS global persistence
          {
             found = fetch_instance_from_global_storage( instance, key_for_op );
             instance_accessor.set_original_identity( instance.get_current_identity( ) );
          }
+         else
+            throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in begin_instance_op" );
 
          if( !found )
          {
@@ -12816,16 +12965,18 @@ void begin_instance_op( instance_op op, class_base& instance,
          // NOTE: In order to correctly determine whether an instance is constrained it must be first fetched.
          bool found = false;
 
-         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+         if( persistence_type == 0 ) // i.e. SQL persistence
          {
             instance_accessor.fetch( sql, false );
             found = fetch_instance_from_db( instance, sql );
          }
-         else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+         else if( persistence_type == 1 ) // i.e. ODS global persistence
          {
             found = fetch_instance_from_global_storage( instance, key_for_op );
             instance_accessor.set_original_identity( instance.get_current_identity( ) );
          }
+         else
+            throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in begin_instance_op" );
 
          if( !found )
          {
@@ -12956,6 +13107,8 @@ void finish_instance_op( class_base& instance, bool apply_changes,
    class_base_accessor instance_accessor( instance );
    storage_handler& handler( *gtp_session->p_storage_handler );
 
+   int persistence_type = instance.get_persistence_type( );
+
    if( !apply_changes || op == class_base::e_op_type_review )
       perform_op_cancel( handler, instance, op );
    else
@@ -13053,7 +13206,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
          bool is_using_blockchain = handler.is_using_blockchain( );
 
-         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+         if( persistence_type == 0 ) // i.e. SQL persistence
          {
             vector< string > sql_stmts;
             vector< string > sql_undo_stmts;
@@ -13093,11 +13246,10 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                gtp_session->sql_undo_statements.insert(
                 gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
          }
-         else if( instance.get_persistence_type( ) == 1 // i.e. ODS global persistence
-          && instance.get_variable( get_special_var_name( e_special_var_skip_persistance ) ).empty( ) )
+         else if( persistence_type == 1 ) // i.e. ODS global persistence
          {
-            if( op == class_base::e_op_type_create
-             || op == class_base::e_op_type_update || op == class_base::e_op_type_destroy )
+            if( instance.get_variable( get_special_var_name( e_special_var_skip_persistance ) ).empty( )
+             && ( op == class_base::e_op_type_create || op == class_base::e_op_type_update || op == class_base::e_op_type_destroy ) )
             {
                string persistence_extra( instance.get_persistence_extra( ) );
 
@@ -13167,6 +13319,8 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                }
             }
          }
+         else
+            throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in finish_instance_op" );
 
          // NOTE: In order to be able to create child records (or to review the just created instance)
          // the "create" lock is downgraded to an "update" lock after the SQL is executed but prior to
@@ -13303,6 +13457,8 @@ void perform_instance_fetch( class_base& instance,
    class_base_accessor instance_accessor( instance );
    storage_handler& handler( *gtp_session->p_storage_handler );
 
+   int persistence_type = instance.get_persistence_type( );
+
    if( instance.get_is_in_op( ) && !instance_accessor.get_in_op_begin( ) )
       throw runtime_error( "cannot fetch "
        + instance.get_class_name( ) + " record whilst currently perfoming an instance operation" );
@@ -13322,7 +13478,7 @@ void perform_instance_fetch( class_base& instance,
 
    if( !found )
    {
-      if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+      if( persistence_type == 0 ) // i.e. SQL persistence
       {
          string sql;
          vector< string > field_info;
@@ -13339,8 +13495,10 @@ void perform_instance_fetch( class_base& instance,
          found = fetch_instance_from_db( instance, sql,
           only_sys_fields, false, has_simple_keyinfo && !has_tx_key_info );
       }
-      else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+      else if( persistence_type == 1 ) // i.e. ODS global persistence
          found = fetch_instance_from_global_storage( instance, key_info );
+      else
+         throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in perform_instance_fetch" );
    }
 
    if( !found )
@@ -13405,6 +13563,8 @@ bool perform_instance_iterate( class_base& instance,
       row_limit = 0;
       instance_accessor.filters( ) = *p_filters;
    }
+
+   int persistence_type = instance.get_persistence_type( );
 
    if( instance.get_is_in_op( ) && !instance_accessor.get_in_op_begin( ) )
       throw runtime_error( "cannot begin iteration whilst currently perfoming an instance operation" );
@@ -13667,7 +13827,7 @@ bool perform_instance_iterate( class_base& instance,
             }
          }
 
-         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+         if( persistence_type == 0 ) // i.e. SQL persistence
          {
             sql = construct_sql_select( instance,
              field_info, order_info, query_info, fixed_info, paging_info, security_info,
@@ -13722,7 +13882,7 @@ bool perform_instance_iterate( class_base& instance,
       if( row_cache_limit < 2 )
          throw runtime_error( "unexpected invalid < 2 row_cache_limit" );
 
-      if( row_limit < 0 && instance.get_persistence_type( ) != 0 ) // i.e. SQL persistence
+      if( ( row_limit < 0 ) && ( persistence_type != 0 ) ) // i.e. not SQL persistence
          row_limit = 0;
 
       if( row_limit < 0 )
@@ -13743,12 +13903,12 @@ bool perform_instance_iterate( class_base& instance,
             }
          }
 
-         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+         if( persistence_type == 0 ) // i.e. SQL persistence
          {
             found = fetch_instance_from_db( instance,
              instance_accessor.select_fields( ), instance_accessor.select_columns( ), skip_after_fetch );
          }
-         else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+         else if( ( persistence_type == 1 ) || ( persistence_type == 3 ) ) // i.e. ODS global persistence or system variables
          {
             size_t limit = row_limit > 0 ? row_limit : row_cache_limit;
 
@@ -13759,11 +13919,18 @@ bool perform_instance_iterate( class_base& instance,
             if( key_info == c_nul_key )
                start_from = instance.get_key( );
 
-            fetch_keys_from_global_storage( instance,
-             start_from, inclusive, limit, global_keys, ( direction == e_iter_direction_backwards ) );
+            if( persistence_type == 1 )
+               fetch_keys_from_global_storage( instance,
+                start_from, inclusive, limit, global_keys, ( direction == e_iter_direction_backwards ) );
+            else
+               fetch_keys_from_system_variables( instance,
+                start_from, inclusive, limit, global_keys, ( direction == e_iter_direction_backwards ) );
 
             found = ( global_keys.size( ) > 0 );
          }
+         else
+            throw runtime_error( "unexpected persistence type #"
+               + to_string( persistence_type ) + " in perform_instance_iterate" );
 
          // NOTE: It is expected that the "after_fetch" trigger will be being skipped due to a later
          // "prepare" call which will call the trigger and then clear this flag (otherwise dependent
@@ -13771,7 +13938,7 @@ bool perform_instance_iterate( class_base& instance,
          if( !skip_after_fetch )
             instance_accessor.set_iteration_starting( false );
 
-         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+         if( persistence_type == 0 ) // i.e. SQL persistence
          {
             ++gtp_session->sql_count;
 
@@ -13805,7 +13972,7 @@ bool perform_instance_iterate( class_base& instance,
 
          deque< vector< string > > rows;
 
-         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+         if( persistence_type == 0 ) // i.e. SQL persistence
          {
             if( !instance_accessor.p_sql_data( ) )
                throw runtime_error( "unexpected null sql_data in perform_instance_iterate" );
@@ -13831,12 +13998,13 @@ bool perform_instance_iterate( class_base& instance,
                }
             }
          }
-         else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+         else if( ( persistence_type == 1 ) || ( persistence_type == 3 ) ) // i.e. ODS global persistence or system variable
          {
             if( !global_keys.empty( ) )
             {
                vector< int > field_nums;
                vector< string > field_names;
+
                int num_fields = instance.get_num_fields( );
 
                for( int i = 0; i < num_fields; i++ )
@@ -13854,21 +14022,33 @@ bool perform_instance_iterate( class_base& instance,
                {
                   if( i == 0 )
                   {
-                     fetch_instance_from_global_storage(
-                      instance, global_keys[ i ], field_names, 0, skip_after_fetch );
+                     if( persistence_type == 1 ) // i.e. ODS global persistence
+                        fetch_instance_from_global_storage(
+                         instance, global_keys[ i ], field_names, 0, skip_after_fetch );
+                     else
+                        fetch_instance_from_system_variable(
+                         instance, global_keys[ i ], field_names, 0, skip_after_fetch );
                   }
                   else
                   {
                      vector< string > columns;
 
-                     if( !fetch_instance_from_global_storage( instance, global_keys[ i ], field_names, &columns ) )
-                        break;
+                     if( persistence_type == 1 ) // i.e. ODS global persistence
+                     {
+                        if( !fetch_instance_from_global_storage( instance, global_keys[ i ], field_names, &columns ) )
+                           break;
+                     }
+                     else
+                     {
+                        if( !fetch_instance_from_system_variable( instance, global_keys[ i ], field_names, &columns ) )
+                           break;
+                     }
 
                      found_next = true;
                      rows.push_back( columns );
                   }
 
-                  if( rows.size( ) == row_cache_limit - 1 )
+                  if( rows.size( ) == ( row_cache_limit - 1 ) )
                   {
                      query_finished = false;
                      break;
@@ -13876,6 +14056,9 @@ bool perform_instance_iterate( class_base& instance,
                }
             }
          }
+         else
+            throw runtime_error( "unexpected persistence type #"
+               + to_string( persistence_type ) + " in perform_instance_iterate" );
 
          // NOTE: Put a dummy row at the end to stop iteration.
          if( query_finished && ( found_next || key_info != c_nul_key ) )
@@ -13893,7 +14076,7 @@ bool perform_instance_iterate( class_base& instance,
 
          if( query_finished )
          {
-            if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+            if( persistence_type == 0 ) // i.e. SQL persistence
             {
                delete instance_accessor.p_sql_data( );
                instance_accessor.p_sql_data( ) = 0;
@@ -13903,7 +14086,7 @@ bool perform_instance_iterate( class_base& instance,
 
       if( !found )
       {
-         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+         if( persistence_type == 0 ) // i.e. SQL persistence
          {
             if( instance_accessor.p_sql_data( ) )
             {

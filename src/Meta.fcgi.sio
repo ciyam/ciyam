@@ -1629,6 +1629,24 @@
    </values>
   </enum>
   <enum/>
+   <id>970
+   <name>enum_persistence_type
+   <values/>
+    <value/>
+     <data>0
+     <name>enum_persistence_type_sql_db
+    </value>
+    <value/>
+     <data>1
+     <name>enum_persistence_type_global_ods_db
+    </value>
+    <value/>
+     <data>3
+     <name>enum_persistence_type_system_variables
+    </value>
+   </values>
+  </enum>
+  <enum/>
    <id>500
    <name>enum_primitive
    <values/>
@@ -2969,6 +2987,22 @@
      <extra>enum=520
      <mandatory>true
      <modifiers>100:protect
+    </field>
+    <field/>
+     <name>field_class_persistence_type
+     <field>106128
+     <ftype>int
+     <extra>force+enum=970
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_class_persistence_extra
+     <field>106129
+     <ftype>string
+     <extra>max_size=100
+     <mandatory>false
+     <modifiers>400:relegate
     </field>
     <field/>
      <name>field_class_static_instance_key
