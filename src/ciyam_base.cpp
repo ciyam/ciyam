@@ -4047,14 +4047,6 @@ void read_server_configuration( )
 
       g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, c_false ) ) == c_true );
 
-      g_user_home_path = reader.read_attribute( c_attribute_user_home_path );
-
-      if( !g_user_home_path.empty( ) )
-      {
-         replace_quoted_environment_variables( g_user_home_path );
-         replace_unquoted_environment_variables( g_user_home_path );
-      }
-
       g_max_sessions = atoi( reader.read_opt_attribute(
        c_attribute_max_sessions, to_string( c_max_sessions_default ) ).c_str( ) );
 
@@ -4076,6 +4068,14 @@ void read_server_configuration( )
       // NOTE: Don't override if was provided as a startup option.
       if( !g_test_peer_port )
          set_test_peer_port( test_peer_port );
+
+      g_user_home_path = reader.read_attribute( c_attribute_user_home_path );
+
+      if( !g_user_home_path.empty( ) )
+      {
+         replace_quoted_environment_variables( g_user_home_path );
+         replace_unquoted_environment_variables( g_user_home_path );
+      }
 
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage, c_meta_storage_name );
       set_system_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
