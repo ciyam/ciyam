@@ -1090,6 +1090,16 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                      outf << "`{`$persistence_extra`=`'" << next_class_extra.substr( pos + 1 ) << "`'`}\n";
                }
 
+               pos = next_class_extra.find( "sysvar" );
+               if( pos == 0 )
+               {
+                  outf << "`{`$persistence_type`=`'3`'`}\n";
+
+                  pos = next_class_extra.find( ':' );
+                  if( pos != string::npos )
+                     outf << "`{`$persistence_extra`=`'" << next_class_extra.substr( pos + 1 ) << "`'`}\n";
+               }
+
                outf << "`{`$module_id`=`'" << g_model.get_id( ) << "`'`}\n";
                outf << "`{`$module_name`=`'" << g_model.get_name( ) << "`'`}\n";
                outf << "`{`$year_created`=`'" << to_string( g_model.get_year_created( ) ) << "`'`}\n";

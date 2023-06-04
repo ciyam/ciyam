@@ -82,13 +82,15 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
       e_field_id_Name = 19,
       e_field_id_Next_Field_Id = 20,
       e_field_id_Next_Procedure_Id = 21,
-      e_field_id_Plural = 22,
-      e_field_id_Quick_Link_Field = 23,
-      e_field_id_Source_Class = 24,
-      e_field_id_Source_File = 25,
-      e_field_id_Source_Model = 26,
-      e_field_id_Static_Instance_Key = 27,
-      e_field_id_Type = 28
+      e_field_id_Persistence_Extra = 22,
+      e_field_id_Persistence_Type = 23,
+      e_field_id_Plural = 24,
+      e_field_id_Quick_Link_Field = 25,
+      e_field_id_Source_Class = 26,
+      e_field_id_Source_File = 27,
+      e_field_id_Source_Model = 28,
+      e_field_id_Static_Instance_Key = 29,
+      e_field_id_Type = 30
    };
 
    Meta_Class( );
@@ -135,6 +137,12 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
 
    const std::string& Next_Procedure_Id( ) const;
    void Next_Procedure_Id( const std::string& Next_Procedure_Id );
+
+   const std::string& Persistence_Extra( ) const;
+   void Persistence_Extra( const std::string& Persistence_Extra );
+
+   int Persistence_Type( ) const;
+   void Persistence_Type( int Persistence_Type );
 
    const std::string& Plural( ) const;
    void Plural( const std::string& Plural );

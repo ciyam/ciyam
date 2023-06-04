@@ -1048,33 +1048,68 @@ string get_raw_system_variable( const string& name )
    }
    else if( var_name.find_first_of( "?*" ) != string::npos )
    {
-      if( var_name == "*" )
+      if( var_name == "*" || var_name == "**" )
          var_name = sys_var_prefix + var_name;
 
-      map< string, string >::const_iterator ci;
-      for( ci = g_variables.begin( ); ci != g_variables.end( ); ++ci )
+      // NOTE: Allow use of "**" for reverse iteration.
+      if( var_name.find( "**" ) == string::npos )
       {
-         if( wildcard_match( var_name, ci->first ) )
+         map< string, string >::const_iterator ci;
+         for( ci = g_variables.begin( ); ci != g_variables.end( ); ++ci )
          {
-            if( !retval.empty( ) )
-               retval += "\n";
+            if( wildcard_match( var_name, ci->first ) )
+            {
+               if( !retval.empty( ) )
+                  retval += "\n";
 
-            retval += ci->first + ' ' + ci->second;
+               retval += ci->first + ' ' + ci->second;
+            }
+         }
+
+         map< string, deque< string > >::const_iterator dci;
+         for( dci = g_deque_variables.begin( ); dci != g_deque_variables.end( ); ++dci )
+         {
+            if( wildcard_match( var_name, dci->first ) )
+            {
+               if( !retval.empty( ) )
+                  retval += "\n";
+
+               retval += dci->first + ' ' + dci->second.front( );
+
+               if( dci->second.size( ) > 1 )
+                  retval += " (+" + to_string( dci->second.size( ) - 1 ) + ")";
+            }
          }
       }
-
-      map< string, deque< string > >::const_iterator dci;
-      for( dci = g_deque_variables.begin( ); dci != g_deque_variables.end( ); ++dci )
+      else
       {
-         if( wildcard_match( var_name, dci->first ) )
+         replace( var_name, "**", "*" );
+
+         map< string, string >::const_reverse_iterator cri;
+         for( cri = g_variables.rbegin( ); cri != g_variables.rend( ); ++cri )
          {
-            if( !retval.empty( ) )
-               retval += "\n";
+            if( wildcard_match( var_name, cri->first ) )
+            {
+               if( !retval.empty( ) )
+                  retval += "\n";
 
-            retval += dci->first + ' ' + dci->second.front( );
+               retval += cri->first + ' ' + cri->second;
+            }
+         }
 
-            if( dci->second.size( ) > 1 )
-               retval += " (+" + to_string( dci->second.size( ) - 1 ) + ")";
+         map< string, deque< string > >::const_reverse_iterator dcri;
+         for( dcri = g_deque_variables.rbegin( ); dcri != g_deque_variables.rend( ); ++dcri )
+         {
+            if( wildcard_match( var_name, dcri->first ) )
+            {
+               if( !retval.empty( ) )
+                  retval += "\n";
+
+               retval += dcri->first + ' ' + dcri->second.front( );
+
+               if( dcri->second.size( ) > 1 )
+                  retval += " (+" + to_string( dcri->second.size( ) - 1 ) + ")";
+            }
          }
       }
    }

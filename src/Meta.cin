@@ -101,6 +101,7 @@ user_defined_enum_add -id=907 app_type bool 0=Blockchain,1=Traditional
 user_defined_enum_add -id=950 archive_standard_size numeric 100000000000=100\\_GB,300000000000=300\\_GB,500000000000=500\\_GB
 user_defined_enum_add -id=955 peerchain_status int 0=Halted,1=Waiting,2=Connected,3=Connecting,4=Disconnecting
 user_defined_enum_add -id=960 peerchain_peer_type int -2=Hub,-1=User,0=Hosted,1=Local_Only,2=Backup_Only,3=Shared_Only
+user_defined_enum_add -id=970 persistence_type int 0=SQL_DB,1=Global_ODS_DB,3=System_Variables
 user_defined_type_add -id=1000 str5 string "max_size 5"
 user_defined_type_add -id=1005 str10 string "max_size 10"
 user_defined_type_add -id=1010 str30 string "max_size 30"
@@ -261,6 +262,8 @@ field_add -id=106124 Class Access_Restriction int mand -def=0 -e=view_access_res
 field_add -id=106125 Class Change_Restriction int mand -def=0 -e=view_change_restrict
 field_add -id=106126 Class Create_Restriction int mand -def=0 -e=list_restrict
 field_add -id=106127 Class Destroy_Restriction int mand -def=0 -e=list_restrict
+field_add -id=106128 Class Persistence_Type int mand -def=0 -e=persistence_type
+field_add -id=106129 Class Persistence_Extra str100 opt
 procedure_add -id=106410 Class Generate
 class_add -id=107100 Field Fields
 field_add -id=107101 Field Name mid_identifier mand
@@ -1359,6 +1362,7 @@ modifier_add -id=500889c List_Field Protect_Access Access_Restriction:protect,Ac
 modifier_add -id=500900 Class Is_Alias Name:protect,Plural:protect,Type:protect,Extra:protect\
 ,Static_Instance_Key:protect,@class:lowlight1,Delay_Initial_Records:relegate
 modifier_add -id=500910 Class Is_Not_Alias Source_{Class}:relegate
+modifier_add -id=500911 Class Is_SQL_Persistence Persistence_Extra:relegate
 modifier_add -id=500920 Application Is_Not_Full_Generate Keep_Existing_Data:relegate
 modifier_add -id=500921 Application Was_Cloned Use_Script:relegate,Add_Modules_Automatically:relegate,Generate_Details:relegate
 modifier_add -id=500922 Application Has_No_Application_Log Keep_Existing_Data:relegate
@@ -1456,6 +1460,7 @@ specification_add -id=600029 {Class}_Name_{Relationship}_change child_field_chan
 specification_add -id=600030 {Class}_Source_{Class}_check check_null_match "Class Source_{Class} Source_{Model}"
 specification_add -id=600032 {Class}_Is_Alias modifier_field_null "Class Is_Alias Source_{Model} -negative"
 specification_add -id=600033 {Class}_Is_Not_Alias modifier_field_null "Class Is_Not_Alias Source_{Model}"
+specification_add -id=600033a {Class}_Is_SQL_Persistence modifier_field_value "Class Is_SQL_Persistence Persistence_Type 0"
 specification_add -id=600034 {Class}_protect state_protect "not_equal Class Source_Model \"\" -scope=edit"
 specification_add -id=600035 {Class}_clone_{Field}_children clone_children_from_fk "Class Field {Class} Source_{Class} Source_{Field}"
 specification_add -id=610035 {Class}_clone_{Index}_children clone_children_from_fk "Class Index {Class} Source_{Class} Source_{Index}"
@@ -2110,7 +2115,7 @@ specification_add -id=601560 {Package_Option}_view view "? standard:auto_back Pa
 specification_add -id=601610 {Class}_view view "? standard Class {Model}:Name;no_edit+link\
 ,Source_{Model}:Name!@group:{Workgroup}+@xparent;new_edit+link+fkey1+force\
 ,Source_{Class}:Name!@fkey1:{Model}+Name;new_edit+force+link\
-,Name;forced,Plural;forced,Id;no_edit+non_new,Type;show,Extra\
+,Name;forced,Plural;forced,Id;no_edit+non_new,Type;show,Extra,Persistence_Type;force,Persistence_Extra\
 ,Static_Instance_Key,Delay_Initial_Records,Create_View;new_only,Create_List;new_only\
 ,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Create_Restriction,Create_{Permission}:Name!@group:{Workgroup}+Name\
