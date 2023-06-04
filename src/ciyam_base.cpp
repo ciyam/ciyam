@@ -159,6 +159,7 @@ const char* const c_attribute_pem_password = "pem_password";
 const char* const c_attribute_rpc_password = "rpc_password";
 const char* const c_attribute_sql_password = "sql_password";
 const char* const c_attribute_test_peer_port = "test_peer_port";
+const char* const c_attribute_user_home_path = "user_home_path";
 const char* const c_attribute_default_storage = "default_storage";
 const char* const c_attribute_peer_ips_permit = "peer_ips_permit";
 const char* const c_attribute_peer_ips_reject = "peer_ips_reject";
@@ -215,11 +216,9 @@ const char* const c_storable_file_name_trunc_n = "trunc_n";
 const char* const c_storable_file_name_version = "version";
 const char* const c_storable_file_name_web_root = "web_root";
 
-const char* const c_storable_folder_name_locker = "locker";
+const char* const c_storable_folder_name_opened = "opened";
 const char* const c_storable_folder_name_modules = "modules";
 const char* const c_storable_folder_name_channels = "channels";
-const char* const c_storable_folder_name_received = "received";
-const char* const c_storable_folder_name_submitting = "submitting";
 
 const char* const c_temporary_special_variable_suffix = "_temporary";
 
@@ -1346,14 +1345,14 @@ bool g_use_udp = false;
 bool g_use_https = false;
 bool g_using_ssl = false;
 
-string g_channel_root;
-
 string g_gpg_password;
 string g_pem_password;
 string g_rpc_password;
 string g_sql_password;
 
 int g_test_peer_port = 0;
+
+string g_user_home_path;
 
 string g_default_storage;
 
@@ -4048,12 +4047,12 @@ void read_server_configuration( )
 
       g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, c_false ) ) == c_true );
 
-      g_channel_root = reader.read_attribute( g_channel_root );
+      g_user_home_path = reader.read_attribute( c_attribute_user_home_path );
 
-      if( !g_channel_root.empty( ) )
+      if( !g_user_home_path.empty( ) )
       {
-         replace_quoted_environment_variables( g_channel_root );
-         replace_unquoted_environment_variables( g_channel_root );
+         replace_quoted_environment_variables( g_user_home_path );
+         replace_unquoted_environment_variables( g_user_home_path );
       }
 
       g_max_sessions = atoi( reader.read_opt_attribute(
@@ -9518,10 +9517,6 @@ void storage_channel_create( const char* p_identity )
 
    ofs.set_folder( identity );
    ofs.add_file( "README.md", "channel_readme.md" );
-
-   ofs.add_folder( c_storable_folder_name_locker );
-   ofs.add_folder( c_storable_folder_name_received );
-   ofs.add_folder( c_storable_folder_name_submitting );
 }
 
 void storage_channel_destroy( const char* p_identity )
@@ -9596,7 +9591,8 @@ void storage_channel_documents_open( const char* p_identity )
 
    ofs.set_folder( identity );
 
-   string path( g_channel_root + '/' + identity );
+   string path( g_user_home_path + '/'
+    + string( c_storable_folder_name_opened ) + '/' + identity );
 
    create_dir( path );
 
@@ -9642,7 +9638,8 @@ void storage_channel_documents_close( const char* p_identity )
 
    ofs.set_folder( identity );
 
-   string path( g_channel_root + '/' + identity );
+   string path( g_user_home_path + '/'
+    + string( c_storable_folder_name_opened ) + '/' + identity );
 
    import_objects( ofs, path );
 
