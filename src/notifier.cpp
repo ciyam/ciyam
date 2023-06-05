@@ -241,23 +241,31 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
             prior_file_name = string( p_prior_event->name );
       }
 
+      bool is_hidden_file = false;
+
+      if( !file_name.empty( ) && file_name[ 0 ] == '.' )
+         is_hidden_file = true;
+
       // NOTE: Conditionally ignore hidden files (but never directories).
       if( !p_impl->ignore_hidden_files
-       || ( ( mask & IN_ISDIR ) || file_name[ 0 ] != '.' ) )
+       || ( ( mask & IN_ISDIR ) || !is_hidden_file ) )
       {
          if( p_impl->wd_watches.count( wd ) && ( is_open_dir || is_create_dir ) )
          {
-            if( new_watch.empty( ) )
-               new_watch = file_name;
-            else
-               new_watch += '/' + file_name;
-
-            if( !p_impl->watches_wd.count( new_watch ) )
+            if( !file_name.empty( ) )
             {
-               if( is_create_dir )
-                  reportable_event = true;
+               if( new_watch.empty( ) )
+                  new_watch = file_name;
+               else
+                  new_watch += '/' + file_name;
 
-               add_watch( new_watch, true );
+               if( !p_impl->watches_wd.count( new_watch ) )
+               {
+                  if( is_create_dir )
+                     reportable_event = true;
+
+                  add_watch( new_watch, true );
+               }
             }
          }
          else if( is_delete_dir || is_delete_self )
@@ -266,7 +274,7 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
 
             if( is_delete_self )
                remove_watch( wd );
-            else
+            else if( !file_name.empty( ) )
                remove_watch( p_impl->wd_watches[ wd ] + '/' + file_name );
          }
          else if( !( mask & IN_ACCESS ) && !( mask & IN_OPEN )

@@ -125,6 +125,10 @@ const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
+const char* const c_server_folder_backup = "backup";
+const char* const c_server_folder_opened = "opened";
+const char* const c_server_folder_shared = "shared";
+
 const char* const c_server_command_mutexes = "mutexes";
 const char* const c_server_command_sessions = "sessions";
 
@@ -216,7 +220,6 @@ const char* const c_storable_file_name_trunc_n = "trunc_n";
 const char* const c_storable_file_name_version = "version";
 const char* const c_storable_file_name_web_root = "web_root";
 
-const char* const c_storable_folder_name_opened = "opened";
 const char* const c_storable_folder_name_modules = "modules";
 const char* const c_storable_folder_name_channels = "channels";
 
@@ -2347,7 +2350,25 @@ void fetch_keys_from_global_storage( class_base& instance,
 void fetch_keys_from_system_variables( class_base& instance,
  const string& start_from, bool inclusive, size_t limit, vector< string >& global_keys, bool in_reverse_order )
 {
+   string prefix, parent_key_value;
    string persistence_extra( instance.get_persistence_extra( ) );
+
+   if( instance.get_graph_parent( ) )
+      parent_key_value = instance.get_graph_parent( )->get_key( );
+
+   if( persistence_extra == get_special_var_name( e_special_var_notifier ) )
+   {
+      persistence_extra = get_system_variable( get_special_var_name( e_special_var_opened_files ) );
+
+      if( !parent_key_value.empty( ) )
+         persistence_extra += '/' + parent_key_value;
+
+      persistence_extra += '/';
+
+      prefix = persistence_extra;
+
+      persistence_extra += '?';
+   }
 
    string sys_var_name( persistence_extra + '*' );
 
@@ -2371,6 +2392,9 @@ void fetch_keys_from_system_variables( class_base& instance,
          string::size_type pos = next_var.find( ' ' );
 
          string key( next_var.substr( 0, pos ) );
+
+         if( key.find( prefix ) == 0 )
+            key.erase( 0, prefix.length( ) );
 
          if( !start_from.empty( ) )
          {
@@ -2515,7 +2539,34 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
 
    class_base_accessor instance_accessor( instance );
 
-   string row_data( get_raw_system_variable( key ) );
+   string prefix, parent_key_value;
+   string persistence_extra( instance.get_persistence_extra( ) );
+
+   string graph_parent_fk_field( instance.get_graph_parent_fk_field( ) );
+
+   if( instance.get_graph_parent( ) )
+   {
+      parent_key_value = instance.get_graph_parent( )->get_key( );
+
+      const char* p_str = instance_accessor.get_field_name( graph_parent_fk_field );
+
+      if( p_str )
+         graph_parent_fk_field = string( p_str );
+   }
+
+   if( persistence_extra == get_special_var_name( e_special_var_notifier ) )
+   {
+      persistence_extra = get_system_variable( get_special_var_name( e_special_var_opened_files ) );
+
+      if( !parent_key_value.empty( ) )
+         persistence_extra += '/' + parent_key_value;
+
+      persistence_extra += '/';
+   }
+
+   string key_value( persistence_extra + key );
+
+   string row_data( get_raw_system_variable( key_value ) );
 
    if( row_data.empty( ) )
       found = false;
@@ -2564,8 +2615,15 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
                continue;
             }
 
-            if( num < columns.size( ) )
+            if( field_names[ i ] == graph_parent_fk_field )
+               data = parent_key_value;
+            else if( num < columns.size( ) )
+            {
                data = columns[ num++ ];
+
+               if( data.find( persistence_extra ) == 0 )
+                  data.erase( 0, persistence_extra.length( ) );
+            }
 
             if( p_columns )
                p_columns->push_back( data );
@@ -4076,6 +4134,20 @@ void read_server_configuration( )
          replace_quoted_environment_variables( g_user_home_path );
          replace_unquoted_environment_variables( g_user_home_path );
       }
+
+      string user_prefix( g_user_home_path );
+
+      if( !user_prefix.empty( ) )
+         user_prefix += '/';
+
+      set_system_variable( get_special_var_name(
+       e_special_var_backup_files ), user_prefix + c_server_folder_backup );
+
+      set_system_variable( get_special_var_name(
+       e_special_var_opened_files ), user_prefix + c_server_folder_opened );
+
+      set_system_variable( get_special_var_name(
+       e_special_var_shared_files ), user_prefix + c_server_folder_shared );
 
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage, c_meta_storage_name );
       set_system_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
@@ -9591,8 +9663,8 @@ void storage_channel_documents_open( const char* p_identity )
 
    ofs.set_folder( identity );
 
-   string path( g_user_home_path + '/'
-    + string( c_storable_folder_name_opened ) + '/' + identity );
+   string path( get_system_variable(
+    get_special_var_name( e_special_var_opened_files ) ) + '/' + identity );
 
    create_dir( path );
 
@@ -9638,8 +9710,8 @@ void storage_channel_documents_close( const char* p_identity )
 
    ofs.set_folder( identity );
 
-   string path( g_user_home_path + '/'
-    + string( c_storable_folder_name_opened ) + '/' + identity );
+   string path( get_system_variable(
+    get_special_var_name( e_special_var_opened_files ) ) + '/' + identity );
 
    import_objects( ofs, path );
 

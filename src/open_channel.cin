@@ -30,6 +30,12 @@ IDENTITY=$2
 .system_variable @error_$IDENTITY "$ERROR"
 @else
 .system_variable @opened_$IDENTITY 1
+;
+.system_variable @opened_files
+notifier -start $OUTPUT/$IDENTITY
+@ifdef $ERROR
+.system_variable @error_$IDENTITY "$ERROR"
+@endif
 @endif
 .storage_term
 @endif
