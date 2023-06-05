@@ -102,6 +102,7 @@ const char* const c_special_variable_trigger = "@trigger";
 const char* const c_special_variable_executed = "@executed";
 const char* const c_special_variable_identity = "@identity";
 const char* const c_special_variable_key_info = "@key_info";
+const char* const c_special_variable_notifier = "@notifier";
 const char* const c_special_variable_peer_hub = "@peer_hub";
 const char* const c_special_variable_progress = "@progress";
 const char* const c_special_variable_args_file = "@args_file";
@@ -132,7 +133,10 @@ const char* const c_special_variable_queue_peers = "@queue_peers";
 const char* const c_special_variable_skip_update = "@skip_update";
 const char* const c_special_variable_state_names = "@state_names";
 const char* const c_special_variable_transaction = "@transaction";
+const char* const c_special_variable_backup_files = "@backup_files";
 const char* const c_special_variable_block_height = "@block_height";
+const char* const c_special_variable_opened_files = "@opened_files";
+const char* const c_special_variable_shared_files = "@shared_files";
 const char* const c_special_variable_app_directory = "@app_directory";
 const char* const c_special_variable_export_needed = "@export_needed";
 const char* const c_special_variable_import_needed = "@import_needed";
@@ -465,6 +469,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_key_info );
       break;
 
+      case e_special_var_notifier:
+      s = string( c_special_variable_notifier );
+      break;
+
       case e_special_var_peer_hub:
       s = string( c_special_variable_peer_hub );
       break;
@@ -585,8 +593,20 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_transaction );
       break;
 
+      case e_special_var_backup_files:
+      s = string( c_special_variable_backup_files );
+      break;
+
       case e_special_var_block_height:
       s = string( c_special_variable_block_height );
+      break;
+
+      case e_special_var_opened_files:
+      s = string( c_special_variable_opened_files );
+      break;
+
+      case e_special_var_shared_files:
+      s = string( c_special_variable_shared_files );
       break;
 
       case e_special_var_app_directory:
