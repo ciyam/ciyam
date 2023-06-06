@@ -21,7 +21,7 @@ class notifier
 
    ~notifier( );
 
-   int add_watch( const std::string& watch, bool recurse = true );
+   int add_watch( const std::string& watch, bool recurse = true, bool no_throw = false );
 
    void remove_watch( int wd );
    void remove_watch( const std::string& watch );

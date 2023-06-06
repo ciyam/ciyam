@@ -142,21 +142,26 @@ notifier::~notifier( )
    delete p_impl;
 }
 
-int notifier::add_watch( const string& watch, bool recurse )
+int notifier::add_watch( const string& watch, bool recurse, bool no_throw )
 {
    int wd = inotify_add_watch( p_impl->id, watch.c_str( ), IN_ALL_EVENTS );
 
    if( wd < 0 )
-      throw runtime_error( "invalid watch '" + watch + "'" );
-
+   {
+      if( !no_throw )
+         throw runtime_error( "invalid watch '" + watch + "'" );
+   }
+   else
+   {
 #ifdef COMPILE_TESTBED_MAIN
-   cout << "adding watch: " << watch << endl;
+      cout << "adding watch: " << watch << endl;
 #endif
 
-   if( recurse )
-   {
-      p_impl->watches_wd.insert( make_pair( watch, wd ) );
-      p_impl->wd_watches.insert( make_pair( wd, watch ) );
+      if( recurse )
+      {
+         p_impl->watches_wd.insert( make_pair( watch, wd ) );
+         p_impl->wd_watches.insert( make_pair( wd, watch ) );
+      }
    }
 
    return wd;
@@ -264,7 +269,8 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
                   if( is_create_dir )
                      reportable_event = true;
 
-                  add_watch( new_watch, true );
+                  // NOTE: New watch may fail if directory was just deleted.
+                  add_watch( new_watch, true, true );
                }
             }
          }
