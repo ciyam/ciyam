@@ -281,8 +281,8 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
           && !( mask & IN_CLOSE_WRITE ) && !( mask & IN_CLOSE_NOWRITE ) )
             reportable_event = true;
 
-         if( is_ignored || ( ( file_name == prior_file_name )
-          && ( mask & IN_ATTRIB ) && ( prior_mask & IN_CREATE ) ) )
+         if( is_ignored || ( mask & IN_MOVE_SELF )
+          || ( ( file_name == prior_file_name ) && ( mask & IN_ATTRIB ) && ( prior_mask & IN_CREATE ) ) )
             reportable_event = false;
 
          stringstream ss;
@@ -290,10 +290,15 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
          if( !file_name.empty( ) && ( mask & IN_ISDIR ) )
             file_name += '/';
 
+         // NOTE: Mark non-reportable events so that they will be ignored but can be viewed.
+         if( !reportable_event )
+            ss << '-';
+         else
+            ss << '+';
+
          ss << path << file_name << c_separator << ops << c_separator << cookie;
 
-         if( reportable_event )
-            p_impl->events.push_back( ss.str( ) );
+         p_impl->events.push_back( ss.str( ) );
 
          // NOTE: Accumulate mask bits for multiple file events.
          if( p_prior_event && ( file_name == prior_file_name ) )

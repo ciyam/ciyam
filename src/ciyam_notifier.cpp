@@ -199,10 +199,20 @@ void ciyam_notifier::on_start( )
 
                string next_event( all_events[ i ] );
 
+               bool reportable_event = true;
+
                if( !next_event.empty( ) )
                {
                   TRACE_LOG( TRACE_NOTIFIER, "event: " + next_event );
 
+                  if( next_event[ 0 ] == '-' )
+                     reportable_event = false;
+
+                  next_event.erase( 0, 1 );
+               }
+
+               if( !next_event.empty( ) && reportable_event )
+               {
                   string::size_type pos = next_event.find( '|' );
 
                   string var_name( next_event.substr( 0, pos ) );
