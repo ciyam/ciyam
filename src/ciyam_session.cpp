@@ -5436,8 +5436,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( open )
             storage_channel_documents_open( identity.c_str( ) );
-         else
+         else if( close )
             storage_channel_documents_close( identity.c_str( ) );
+         else
+            response = storage_channel_documents( identity );
       }
       else if( command == c_cmd_ciyam_session_storage_transaction_start )
          transaction_start( );

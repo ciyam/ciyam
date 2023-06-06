@@ -9576,7 +9576,7 @@ void storage_channel_create( const char* p_identity )
    string storage_name( gtp_session->p_storage_handler->get_name( ) );
 
    if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
-      throw runtime_error( "invalid storage '" + storage_name + "' for channel create" );
+      throw runtime_error( "invalid non-peerchain storage '" + storage_name + "' for channel create" );
 
    ods_file_system ofs( *ods::instance( ) );
 
@@ -9615,7 +9615,7 @@ void storage_channel_destroy( const char* p_identity )
    string storage_name( gtp_session->p_storage_handler->get_name( ) );
 
    if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
-      throw runtime_error( "invalid storage '" + storage_name + "' for channel destroy" );
+      throw runtime_error( "invalid non-peerchain storage '" + storage_name + "' for channel destroy" );
 
    ods_file_system ofs( *ods::instance( ) );
 
@@ -9641,6 +9641,37 @@ void storage_channel_destroy( const char* p_identity )
    ofs.remove_folder( identity, 0, true );
 }
 
+string storage_channel_documents( const string& identity )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session || !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   string storage_name( gtp_session->p_storage_handler->get_name( ) );
+
+   if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
+      throw runtime_error( "invalid non-peerchain storage '" + storage_name + "' for listing documents" );
+
+   ods_file_system ofs( *ods::instance( ) );
+
+   ofs.set_root_folder( c_storable_folder_name_channels );
+
+   if( identity.empty( ) )
+      throw runtime_error( "unexpected null identity in 'storage_channel_documents'" );
+
+   if( !ofs.has_folder( identity ) )
+      throw runtime_error( "channel folder for '" + identity + "' was not found" );
+
+   ofs.set_folder( identity );
+
+   stringstream ss;
+
+   ofs.branch_objects( "*", ss );
+
+   return ss.str( );
+}
+
 void storage_channel_documents_open( const char* p_identity )
 {
    guard g( g_mutex );
@@ -9651,7 +9682,7 @@ void storage_channel_documents_open( const char* p_identity )
    string storage_name( gtp_session->p_storage_handler->get_name( ) );
 
    if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
-      throw runtime_error( "invalid storage '" + storage_name + "' for opening documents" );
+      throw runtime_error( "invalid non-peerchain storage '" + storage_name + "' for opening documents" );
 
    ods_file_system ofs( *ods::instance( ) );
 
@@ -9695,7 +9726,7 @@ void storage_channel_documents_close( const char* p_identity )
    string storage_name( gtp_session->p_storage_handler->get_name( ) );
 
    if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
-      throw runtime_error( "invalid storage '" + storage_name + "' for closing documents" );
+      throw runtime_error( "invalid non-peerchain storage '" + storage_name + "' for closing documents" );
 
    ods_file_system ofs( *ods::instance( ) );
 
