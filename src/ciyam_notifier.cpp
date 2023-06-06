@@ -245,6 +245,8 @@ void ciyam_notifier::on_start( )
                                     value.erase( );
                                     old_value.erase( );
                                  }
+                                 else if( value == c_notifier_moved_from )
+                                    value = c_notifier_created;
                                  else
                                     cookie_id_names.insert( make_pair( cookie_id, var_name ) );
                               }

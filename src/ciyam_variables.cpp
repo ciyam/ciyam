@@ -42,6 +42,8 @@ const int c_lock_attempt_sleep_time = 200;
 const char c_persist_variable_prefix = '>';
 const char c_restore_variable_prefix = '<';
 
+const char* const c_invalid_name_chars = "<>\"|&\\";
+
 const char* const c_special_variable_bh = "@bh";
 const char* const c_special_variable_id = "@id";
 const char* const c_special_variable_os = "@os";
@@ -220,6 +222,16 @@ trace_mutex g_mutex;
 
 map< string, string > g_variables;
 map< string, deque< string > > g_deque_variables;
+
+inline string quote_if_contains_white_space( const string& name )
+{
+   string retval( name );
+
+   if( retval.find_first_of( c_whitespace_chars ) != string::npos )
+      retval = "\"" + retval + "\"";
+
+   return retval;
+}
 
 }
 
@@ -1049,7 +1061,8 @@ string get_raw_system_variable( const string& name )
                   {
                      if( !retval.empty( ) )
                         retval += "\n";
-                     retval += next + ' ' + value;
+
+                     retval += quote_if_contains_white_space( next ) + ' ' + value;
                   }
                }
             }
@@ -1082,7 +1095,7 @@ string get_raw_system_variable( const string& name )
                if( !retval.empty( ) )
                   retval += "\n";
 
-               retval += ci->first + ' ' + ci->second;
+               retval += quote_if_contains_white_space( ci->first ) + ' ' + ci->second;
             }
          }
 
@@ -1094,7 +1107,7 @@ string get_raw_system_variable( const string& name )
                if( !retval.empty( ) )
                   retval += "\n";
 
-               retval += dci->first + ' ' + dci->second.front( );
+               retval += quote_if_contains_white_space( dci->first ) + ' ' + dci->second.front( );
 
                if( dci->second.size( ) > 1 )
                   retval += " (+" + to_string( dci->second.size( ) - 1 ) + ")";
@@ -1113,7 +1126,7 @@ string get_raw_system_variable( const string& name )
                if( !retval.empty( ) )
                   retval += "\n";
 
-               retval += cri->first + ' ' + cri->second;
+               retval += quote_if_contains_white_space( cri->first ) + ' ' + cri->second;
             }
          }
 
@@ -1125,7 +1138,7 @@ string get_raw_system_variable( const string& name )
                if( !retval.empty( ) )
                   retval += "\n";
 
-               retval += dcri->first + ' ' + dcri->second.front( );
+               retval += quote_if_contains_white_space( dcri->first ) + ' ' + dcri->second.front( );
 
                if( dcri->second.size( ) > 1 )
                   retval += " (+" + to_string( dcri->second.size( ) - 1 ) + ")";
@@ -1185,6 +1198,17 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
    if( !name.empty( ) && name[ 0 ] == c_persist_variable_prefix )
       persist = true;
+
+   if( !name.empty( ) )
+   {
+      string::size_type from = 0;
+
+      if( persist )
+         ++from;
+
+      if( name.find_first_of( c_invalid_name_chars, from ) != string::npos )
+         throw runtime_error( "invalid system variable name '" + name.substr( from ) + "'" );
+   }
 
    string var_name( !persist ? name : name.substr( 1 ) );
 
@@ -1324,6 +1348,9 @@ bool set_system_variable( const string& name, const string& value,
    guard g( g_mutex );
 
    bool retval = false;
+
+   if( name.find_first_of( c_invalid_name_chars ) != string::npos )
+      throw runtime_error( "invalid system variable name '" + name + "'" );
 
    string new_value( value );
 

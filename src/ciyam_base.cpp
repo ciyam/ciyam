@@ -2389,9 +2389,23 @@ void fetch_keys_from_system_variables( class_base& instance,
       {
          string next_var( all_sys_vars[ i ] );
 
-         string::size_type pos = next_var.find( ' ' );
+         string::size_type from = 0;
+
+         if( !next_var.empty( ) && next_var[ 0 ] == '"' )
+            from = next_var.find( '"', 1 );
+
+         string::size_type pos = next_var.find( ' ', from );
 
          string key( next_var.substr( 0, pos ) );
+
+         // NOTE: Variable names that contain white space
+         // are quoted in order to be correctly parsed so
+         // now will remove the quotes.
+         if( from )
+         {
+            key.erase( 0, 1 );
+            key.erase( key.length( ) - 1 );
+         }
 
          if( key.find( prefix ) == 0 )
             key.erase( 0, prefix.length( ) );
