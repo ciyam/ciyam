@@ -65,4 +65,12 @@ system_variable *
 system_variable >
 system_variable <
 system_variable @sys_var_prefix ""
+system_variable test_a aaa
+system_variable "test a" aaa
+system_variable test_b bbb
+system_variable "test b" bbb
+system_variable test_c ccc
+system_variable "test c" ccc
+system_variable test*
+system_variable "\"abc\"" abc
 .quit

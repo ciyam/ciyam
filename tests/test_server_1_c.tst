@@ -137,3 +137,18 @@ system_variable *
 system_variable >
 system_variable <
 system_variable @sys_var_prefix ""
+system_variable test_a aaa
+system_variable "test a" aaa
+system_variable test_b bbb
+system_variable "test b" bbb
+system_variable test_c ccc
+system_variable "test c" ccc
+system_variable test*
+"test a" aaa
+"test b" bbb
+"test c" ccc
+test_a aaa
+test_b bbb
+test_c ccc
+system_variable "\"abc\"" abc
+Error: invalid system variable name '"abc"'
