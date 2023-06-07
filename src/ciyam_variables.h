@@ -92,6 +92,8 @@ struct temporary_system_variable
    std::string original_value;
 };
 
+std::string CIYAM_BASE_DECL_SPEC variable_name_from_name_and_value( const std::string& name_and_value, std::string* p_value = 0 );
+
 class mutex;
 
 mutex& CIYAM_BASE_DECL_SPEC get_mutex_for_ciyam_variables( );

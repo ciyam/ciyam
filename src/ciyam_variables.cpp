@@ -1424,6 +1424,34 @@ bool set_system_variable( const string& name,
    return true;
 }
 
+string variable_name_from_name_and_value( const string& name_and_value, string* p_value )
+{
+   string name;
+
+   string::size_type from = 0;
+
+   if( !name_and_value.empty( ) && name_and_value[ 0 ] == '"' )
+      from = name_and_value.find( '"', 1 );
+
+   string::size_type pos = name_and_value.find( ' ', from );
+
+   name = name_and_value.substr( 0, pos );
+
+   // NOTE: Variable names that contain white space
+   // are quoted in order to be correctly parsed so
+   // now removes the quotes if they were present.
+   if( from )
+   {
+      name.erase( 0, 1 );
+      name.erase( name.length( ) - 1 );
+   }
+
+   if( p_value && ( pos != string::npos ) )
+      *p_value = name_and_value.substr( pos + 1 );
+
+   return name;
+}
+
 mutex& get_mutex_for_ciyam_variables( )
 {
    return g_mutex;

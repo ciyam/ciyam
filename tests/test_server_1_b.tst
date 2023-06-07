@@ -196,14 +196,12 @@ test1/z deleted
 ~mv test/1x test1/xx
 system_variable test1*
 test1/ none
-test1/x moved_to|test1/xx
 test1/xx moved_from|test1/x
 test1/y deleted
 test1/z deleted
 ~mv test1/xx test1/xxx
 system_variable test1*
 test1/ none
-test1/x moved_to|test1/xxx
 test1/xxx moved_from|test1/x
 test1/y deleted
 test1/z deleted

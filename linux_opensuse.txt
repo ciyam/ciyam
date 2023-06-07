@@ -216,6 +216,8 @@ Next follow these instructions:
 
 ***** https://github.com/ciyam/ciyam/blob/master/getting_started.txt  *****
 
+rm ciyam.dat ciyam.hdr ciyam.idx ciyam.log ciyam.sql ciyam.tlg ciyam.modules.lst
+
 Installing the CIYAM "systemd" Service
 --------------------------------------
 
@@ -223,6 +225,7 @@ NOTE: Do this *only after* the CIYAM application server has been built and the
 Meta DB has been created.
 
 vi autoscript.sio
+(uncomment out the various "check" scripts)
 
 ./xrep @ciyamd.service.xrep uid=$USER >ciyamd.service
 sudo cp ciyamd.service /etc/systemd/system
@@ -233,6 +236,8 @@ sudo vi /etc/systemd/system/ciyamd.service
 Make necessary changes (for VMs) to the "ciyam_server.sio" configuration file:
 ...
  <ods_use_sync_write>false
+...
+ <default_storage>Home
 ...
 
 sudo systemctl daemon-reload

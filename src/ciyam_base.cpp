@@ -2389,23 +2389,7 @@ void fetch_keys_from_system_variables( class_base& instance,
       {
          string next_var( all_sys_vars[ i ] );
 
-         string::size_type from = 0;
-
-         if( !next_var.empty( ) && next_var[ 0 ] == '"' )
-            from = next_var.find( '"', 1 );
-
-         string::size_type pos = next_var.find( ' ', from );
-
-         string key( next_var.substr( 0, pos ) );
-
-         // NOTE: Variable names that contain white space
-         // are quoted in order to be correctly parsed so
-         // now will remove the quotes.
-         if( from )
-         {
-            key.erase( 0, 1 );
-            key.erase( key.length( ) - 1 );
-         }
+         string key( variable_name_from_name_and_value( next_var ) );
 
          if( key.find( prefix ) == 0 )
             key.erase( 0, prefix.length( ) );
@@ -9686,6 +9670,8 @@ void storage_channel_documents_open( const char* p_identity )
 
    ods_file_system ofs( *ods::instance( ) );
 
+   ods::bulk_read bulk_read( *ods::instance( ) );
+
    ofs.set_root_folder( c_storable_folder_name_channels );
 
    string identity;
@@ -9730,6 +9716,8 @@ void storage_channel_documents_close( const char* p_identity )
 
    ods_file_system ofs( *ods::instance( ) );
 
+   ods::bulk_write bulk_write( *ods::instance( ) );
+
    ofs.set_root_folder( c_storable_folder_name_channels );
 
    string identity;
@@ -9758,7 +9746,64 @@ void storage_channel_documents_close( const char* p_identity )
    string path( get_system_variable(
     get_special_var_name( e_special_var_opened_files ) ) + '/' + identity );
 
+   ods::transaction ods_tx( *ods::instance( ) );
+
    import_objects( ofs, path );
+
+   string prefix( get_raw_system_variable(
+    get_special_var_name( e_special_var_opened_files ) ) + '/' + identity + '/' );
+
+   string all_file_lines( get_raw_system_variable( prefix + "?*" ) );
+
+   vector< string > file_lines;
+
+   split( all_file_lines, file_lines, '\n' );
+
+   for( size_t i = 0; i < file_lines.size( ); i++ )
+   {
+      string next_line( file_lines[ i ] );
+
+      if( !next_line.empty( ) )
+      {
+         string next_name, next_value;
+
+         next_name = variable_name_from_name_and_value( next_line, &next_value );
+
+         if( next_name.find( prefix ) == 0 )
+            next_name.erase( 0, prefix.length( ) );
+
+         if( !next_value.empty( ) )
+         {
+            string::size_type pos = next_value.find( '|' );
+            string notifier_op( next_value.substr( 0, pos ) );
+
+            if( notifier_op == c_notifier_deleted )
+            {
+               if( next_name[ next_name.length( ) - 1 ] != '/' )
+                  ofs.remove_file( next_name );
+               else
+                  ofs.remove_folder( next_name, 0, true );
+            }
+            else if( notifier_op == c_notifier_moved_from )
+            {
+               string old_name( next_value.substr( pos + 1 ) );
+
+               if( !old_name.empty( ) )
+               {
+                  if( old_name.find( prefix ) == 0 )
+                     old_name.erase( 0, prefix.length( ) );
+
+                  if( old_name[ old_name.length( ) - 1 ] != '/' )
+                     ofs.remove_file( old_name );
+                  else
+                     ofs.remove_folder( old_name, 0, true );
+               }
+            }
+         }
+      }
+   }
+
+   ods_tx.commit( );
 
    delete_directory_files( path, true );
 }

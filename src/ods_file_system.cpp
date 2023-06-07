@@ -2069,7 +2069,7 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
 
    if( okay )
    {
-      if( remove_items_for_folder( name, true ) )
+      if( remove_items_for_folder( tmp_folder, true ) )
       {
          bt_tx.commit( );
 
@@ -3223,42 +3223,19 @@ bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_n
 
    btree_type::item_type tmp_item;
 
-   if( current_folder == string( c_root_folder ) )
+   string::size_type pos = name.find( c_folder );
+
+   // NOTE: If name is an absolute path (otherwise assumes a sub-path below the current folder).
+   if( pos == 0 )
    {
-      tmp_item.val = current_folder + name;
-
-      if( !bt.erase( tmp_item ) )
-      {
-         if( !ignore_not_found )
-            throw runtime_error( "folder '" + name + "' not found" );
-
-         okay = false;
-      }
-      else
-      {
-         if( name.find( c_folder_separator ) == string::npos )
-            tmp_item.val = c_colon_separator + current_folder + name;
-         else
-         {
-            replace( tmp_item.val, c_folder_separator, c_colon_separator );
-
-            string::size_type pos = tmp_item.val.rfind( c_colon_separator );
-
-            if( pos != string::npos )
-               tmp_item.val[ pos ] = c_folder;
-         }
-
-         bt.erase( tmp_item );
-      }
-   }
-   else
-   {
-      string name_1( current_folder + c_folder + name );
+      string name_1( name );
       string name_2( replaced( name_1, c_folder_separator, c_colon_separator ) );
 
       string::size_type pos = name_2.rfind( c_colon_separator );
 
-      if( pos != string::npos )
+      if( pos == 0 )
+         name_2.insert( 1, c_root_folder );
+      else if( pos != string::npos )
          name_2[ pos ] = c_folder;
 
       tmp_item.val = name_1;
@@ -3274,6 +3251,62 @@ bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_n
       {
          tmp_item.val = name_2;
          bt.erase( tmp_item );
+      }
+   }
+   else
+   {
+      if( current_folder == string( c_root_folder ) )
+      {
+         tmp_item.val = current_folder + name;
+
+         if( !bt.erase( tmp_item ) )
+         {
+            if( !ignore_not_found )
+               throw runtime_error( "folder '" + name + "' not found" );
+
+            okay = false;
+         }
+         else
+         {
+            if( name.find( c_folder_separator ) == string::npos )
+               tmp_item.val = c_colon_separator + current_folder + name;
+            else
+            {
+               replace( tmp_item.val, c_folder_separator, c_colon_separator );
+
+               string::size_type pos = tmp_item.val.rfind( c_colon_separator );
+
+               if( pos != string::npos )
+                  tmp_item.val[ pos ] = c_folder;
+            }
+
+            bt.erase( tmp_item );
+         }
+      }
+      else
+      {
+         string name_1( current_folder + c_folder + name );
+         string name_2( replaced( name_1, c_folder_separator, c_colon_separator ) );
+
+         string::size_type pos = name_2.rfind( c_colon_separator );
+
+         if( pos != string::npos )
+            name_2[ pos ] = c_folder;
+
+         tmp_item.val = name_1;
+
+         if( !bt.erase( tmp_item ) )
+         {
+            if( !ignore_not_found )
+               throw runtime_error( "folder '" + name + "' not found" );
+
+            okay = false;
+         }
+         else
+         {
+            tmp_item.val = name_2;
+            bt.erase( tmp_item );
+         }
       }
    }
 
