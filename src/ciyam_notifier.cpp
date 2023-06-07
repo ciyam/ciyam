@@ -36,13 +36,6 @@ namespace
 
 #include "ciyam_constants.h"
 
-const char* const c_notifier_none = "none";
-const char* const c_notifier_created = "created";
-const char* const c_notifier_deleted = "deleted";
-const char* const c_notifier_modified = "modified";
-const char* const c_notifier_moved_to = "moved_to";
-const char* const c_notifier_moved_from = "moved_from";
-
 trace_mutex g_mutex;
 
 const size_t c_wait_sleep_time = 10;
@@ -263,7 +256,9 @@ void ciyam_notifier::on_start( )
                            }
                            else
                            {
-                              if( cookie_id_names[ cookie_id ].empty( ) )
+                              string original_name( cookie_id_names[ cookie_id ] );
+
+                              if( original_name.empty( ) )
                               {
                                  if( old_value.empty( ) )
                                     value = c_notifier_created;
@@ -272,15 +267,40 @@ void ciyam_notifier::on_start( )
                               }
                               else
                               {
-                                 if( cookie_id_names[ cookie_id ] == var_name )
+                                 if( original_name == var_name )
                                     value = c_notifier_modified;
                                  else
-                                    value += '|' + cookie_id_names[ cookie_id ];
+                                    value += '|' + original_name;
 
-                                 string current_value( get_system_variable( cookie_id_names[ cookie_id ] ) );
+                                 // NOTE: Remove the original name's system variable and then
+                                 // replace any other system variables that are found to have
+                                 // been prefixed by the original name (if it is a folder).
+                                 set_system_variable( original_name, "" );
 
-                                 set_system_variable( cookie_id_names[ cookie_id ],
-                                  current_value.substr( 0, current_value.find( '|' ) ) + '|' + var_name );
+                                 if( original_name[ original_name.length( ) - 1 ] == '/' )
+                                 {
+                                    string all_prefixed_variables( get_raw_system_variable( original_name + "*" ) );
+
+                                    if( !all_prefixed_variables.empty( ) )
+                                    {
+                                       vector< string > prefixed_variables;
+
+                                       split( all_prefixed_variables, prefixed_variables, '\n' );
+
+                                       for( size_t i = 0; i < prefixed_variables.size( ); i++ )
+                                       {
+                                          string next_name, next_value;
+
+                                          next_name = variable_name_from_name_and_value( prefixed_variables[ i ], &next_value );
+
+                                          set_system_variable( next_name, "" );
+
+                                          next_name = var_name + next_name.substr( original_name.length( ) );
+
+                                          set_system_variable( next_name, next_value );
+                                       }
+                                    }
+                                 }
                               }
                            }
                         }

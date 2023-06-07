@@ -1,5 +1,21 @@
 cd
 /
+branch objects
+abc/
+abc/aaa/
+abc/def/
+abc/def/test_1/
+abc/def/test_2/
+abc/def/test_3/
+abc/xyz/
+abc/xyz/test_A/
+abc/xyz/test_B/
+abc/xyz/test_C/
+ghi/
+ghi/111/
+ghi/555/
+ghi/999/
+zzz/
 cd abc
 folders
 aaa

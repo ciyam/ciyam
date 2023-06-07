@@ -1,4 +1,5 @@
 cd
+branch objects
 cd abc
 folders
 folder_move aaa bbb
