@@ -184,7 +184,8 @@ void ciyam_notifier::on_start( )
 
             split( events, all_events, '\n' );
 
-            map< string, string > cookie_id_names;
+            map< string, string > cookie_id_current_names;
+            map< string, string > cookie_id_original_names;
 
             for( size_t i = 0; i < all_events.size( ); i++ )
             {
@@ -231,19 +232,21 @@ void ciyam_notifier::on_start( )
                            else if( value == "moved_from" )
                               value = c_notifier_moved_to;
 
-                           if( cookie_id_names.find( cookie_id ) == cookie_id_names.end( ) )
+                           if( cookie_id_original_names.find( cookie_id ) == cookie_id_original_names.end( ) )
                            {
                               if( old_value == c_notifier_created )
                               {
                                  value.erase( );
-                                 cookie_id_names.insert( make_pair( cookie_id, "" ) );
+                                 cookie_id_original_names.insert( make_pair( cookie_id, "" ) );
                               }
                               else
                               {
                                  if( old_value.find( moved_from_prefix ) == 0 )
                                  {
                                     old_value.erase( 0, moved_from_prefix.length( ) );
-                                    cookie_id_names.insert( make_pair( cookie_id, old_value ) );
+
+                                    cookie_id_current_names.insert( make_pair( cookie_id, var_name ) );
+                                    cookie_id_original_names.insert( make_pair( cookie_id, old_value ) );
                                     
                                     value.erase( );
                                     old_value.erase( );
@@ -251,12 +254,12 @@ void ciyam_notifier::on_start( )
                                  else if( value == c_notifier_moved_from )
                                     value = c_notifier_created;
                                  else
-                                    cookie_id_names.insert( make_pair( cookie_id, var_name ) );
+                                    cookie_id_original_names.insert( make_pair( cookie_id, var_name ) );
                               }
                            }
                            else
                            {
-                              string original_name( cookie_id_names[ cookie_id ] );
+                              string original_name( cookie_id_original_names[ cookie_id ] );
 
                               if( original_name.empty( ) )
                               {
@@ -271,6 +274,9 @@ void ciyam_notifier::on_start( )
                                     value = c_notifier_modified;
                                  else
                                     value += '|' + original_name;
+
+                                 if( cookie_id_current_names.count( cookie_id ) )
+                                    original_name = cookie_id_current_names[ cookie_id ];
 
                                  // NOTE: Remove the original name's system variable and then
                                  // replace any other system variables that are found to have
