@@ -3114,12 +3114,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       if( created_session )
          add_session_info( session_id, p_session_info );
 
-      if( !is_in_edit && !temp_session )
+      if( !is_in_edit )
       {
-         // FUTURE: Perhaps a flag should determine whether or not to reload on focus after blur.
-         if( ( cmd == c_cmd_view ) && !is_editable && !has_any_changing_records )
-            extra_content_func += "reload_after_blur( );\n";
-         else if( has_any_changing_records )
+         if( has_any_changing_records )
          {
             string seconds;
 
@@ -3129,6 +3126,12 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                seconds = to_string( c_auto_refresh_seconds_remote );
 
             extra_content_func += "auto_refresh_seconds = " + seconds + ";\nauto_refresh( );\n";
+         }
+         else
+         {
+            // FUTURE: Perhaps a flag should determine whether or not to reload on focus after blur.
+            if( cmd == c_cmd_view )
+               extra_content_func += "reload_after_blur( " + string( is_editable ? "true" : "false" ) + ");\n";
          }
       }
 
