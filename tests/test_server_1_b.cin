@@ -110,6 +110,36 @@ system_variable test1*
 ~rmdir test1/xxx
 .wait 150
 system_variable test1*
+notifier -start test1
+#~mkdir test1/xxx
+~mkdir test1/xxx
+#~mkdir test1/zzz
+~mkdir test1/zzz
+.wait 100
+system_variable test1/?*
+#~mv test1/zzz test1/yyy
+~mv test1/zzz test1/yyy
+.wait 100
+system_variable test1/?*
+#~mkdir test1/yyy/zzz
+~mkdir test1/yyy/zzz
+.wait 100
+system_variable test1/?*
+#~touch test1/yyy/zzz/abc
+~touch test1/yyy/zzz/abc
+.wait 100
+system_variable test1/?*
+#~mv test1/yyy test1/xxx
+~mv test1/yyy test1/xxx
+.wait 100
+system_variable test1/?*
+#~touch test1/xxx/yyy/zzz/def
+~touch test1/xxx/yyy/zzz/def
+.wait 100
+system_variable test1/?*
+notifier -finish test1
+#~rm -r test1/xxx
+~rm -r test1/xxx
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test
 file_get test.xxx

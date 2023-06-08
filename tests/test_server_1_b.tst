@@ -220,6 +220,42 @@ system_variable test1*
 test1/xxx/ none
 ~rmdir test1/xxx
 system_variable test1*
+notifier -start test1
+~mkdir test1/xxx
+~mkdir test1/zzz
+system_variable test1/?*
+test1/xxx/ created
+test1/zzz/ created
+~mv test1/zzz test1/yyy
+system_variable test1/?*
+test1/xxx/ created
+test1/yyy/ created
+~mkdir test1/yyy/zzz
+system_variable test1/?*
+test1/xxx/ created
+test1/yyy/ created
+test1/yyy/zzz/ created
+~touch test1/yyy/zzz/abc
+system_variable test1/?*
+test1/xxx/ created
+test1/yyy/ created
+test1/yyy/zzz/ created
+test1/yyy/zzz/abc created
+~mv test1/yyy test1/xxx
+system_variable test1/?*
+test1/xxx/ created
+test1/xxx/yyy/ created
+test1/xxx/yyy/zzz/ created
+test1/xxx/yyy/zzz/abc created
+~touch test1/xxx/yyy/zzz/def
+system_variable test1/?*
+test1/xxx/ created
+test1/xxx/yyy/ created
+test1/xxx/yyy/zzz/ created
+test1/xxx/yyy/zzz/abc created
+test1/xxx/yyy/zzz/def created
+notifier -finish test1
+~rm -r test1/xxx
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test
 [list] 2d3c89f8f5301604234589e08a695e3ab0bdaa5f99ec21cf148b99d13020cb85 (307 B)
