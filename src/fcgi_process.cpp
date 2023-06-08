@@ -3113,16 +3113,22 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       if( created_session )
          add_session_info( session_id, p_session_info );
 
-      if( !is_in_edit && has_any_changing_records )
+      if( !is_in_edit && !temp_session )
       {
-         string seconds;
+         // FUTURE: Perhaps a flag should determine whether or not to reload on focus after blur.
+         if( !has_any_changing_records && ( ( cmd == c_cmd_view ) || ( cmd == c_cmd_list ) ) )
+            extra_content_func += "reload_after_blur( );\n";
+         else if( has_any_changing_records )
+         {
+            string seconds;
 
-         if( p_session_info->ip_addr == string( c_local_ip_addr ) )
-            seconds = to_string( c_auto_refresh_seconds_local );
-         else
-            seconds = to_string( c_auto_refresh_seconds_remote );
+            if( p_session_info->ip_addr == string( c_local_ip_addr ) )
+               seconds = to_string( c_auto_refresh_seconds_local );
+            else
+               seconds = to_string( c_auto_refresh_seconds_remote );
 
-         extra_content_func += "auto_refresh_seconds = " + seconds + ";\nauto_refresh( );";
+            extra_content_func += "auto_refresh_seconds = " + seconds + ";\nauto_refresh( );\n";
+         }
       }
 
       if( g_ciyam_interface_html.find( c_form_content_comment ) != string::npos )
