@@ -157,6 +157,12 @@ function refresh( back )
       history.go( -1 );
 }
 
+function reload_after_blur( )
+{
+   window.disableResetPrompt;
+   window.onblur = function( ){ window.onfocus = function( ){ location.reload( true ) } };
+}
+
 function replace_with_scroll_info( )
 {
    if( qsContext.length > 0 )
