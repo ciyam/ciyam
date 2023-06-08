@@ -217,10 +217,14 @@ function warn_refresh( )
    }
 }
 
-function reload_after_blur( )
+function reload_after_blur( remove )
 {
    window.disableResetPrompt;
-   window.onblur = function( ){ window.onfocus = function( ){ replace_with_scroll_info( ) } };
+   
+   if( remove )
+      window.onblur = window.onfocus = null;
+   else
+      window.onblur = function( ){ window.onfocus = function( ){ replace_with_scroll_info( ) } };
 }
 
 function determine_scroll_info( )
