@@ -1277,6 +1277,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       server_command.erase( );
 #endif
 
+   bool is_editable = false;
    bool has_any_changing_records = false;
 
    if( !finished_session && !server_command.empty( ) )
@@ -2775,7 +2776,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             bool is_owner;
             string extra_html_content;
 
-            bool is_editable = output_view_form( extra_content,
+            is_editable = output_view_form( extra_content,
              act, was_invalid, user_field_info, exec, cont, data, error_message,
              extra, field, view, vtab_num, session_id, uselect, cookies_permitted,
              embed_images, new_field_and_values, *p_session_info, edit_field_list, edit_timeout_func,
@@ -3116,7 +3117,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       if( !is_in_edit && !temp_session )
       {
          // FUTURE: Perhaps a flag should determine whether or not to reload on focus after blur.
-         if( !has_any_changing_records && ( ( cmd == c_cmd_view ) || ( cmd == c_cmd_list ) ) )
+         if( ( cmd == c_cmd_view ) && !is_editable && !has_any_changing_records )
             extra_content_func += "reload_after_blur( );\n";
          else if( has_any_changing_records )
          {
