@@ -108,6 +108,8 @@ struct notifier::impl
 
    map< string, int > watches_wd;
    map< int, string > wd_watches;
+
+   map< int, string > cookie_old_names;
 };
 
 notifier::notifier( bool ignore_hidden_files )
@@ -207,6 +209,8 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
       int create_dir = ( IN_ISDIR | IN_CREATE );
       int delete_dir = ( IN_ISDIR | IN_DELETE );
       int delete_self = IN_DELETE_SELF;
+      int moved_dir_to = ( IN_ISDIR | IN_MOVED_TO );
+      int moved_dir_from = ( IN_ISDIR | IN_MOVED_FROM );
 
       bool is_ignored = ( ( mask & ignored ) == ignored );
       bool is_open_dir = ( ( mask & open_dir ) == open_dir );
@@ -214,6 +218,8 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
       bool is_create_dir = ( ( mask & create_dir ) == create_dir );
       bool is_delete_dir = ( ( mask & delete_dir ) == delete_dir );
       bool is_delete_self = ( ( mask & delete_self ) == delete_self );
+      bool is_moved_dir_to = ( ( mask & moved_dir_to ) == moved_dir_to );
+      bool is_moved_dir_from = ( ( mask & moved_dir_from ) == moved_dir_from );
 
       string new_watch;
 
@@ -287,6 +293,50 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
           && !( mask & IN_CLOSE_WRITE ) && !( mask & IN_CLOSE_NOWRITE ) )
             reportable_event = true;
 
+         if( cookie && is_moved_dir_from )
+            p_impl->cookie_old_names[ cookie ] = ( path + file_name );
+
+         // NOTE: Update watch map entries when a directory is renamed.
+         if( cookie && is_moved_dir_to )
+         {
+            string old_name( p_impl->cookie_old_names[ cookie ] );
+            string new_name( path + file_name );
+
+            if( !old_name.empty( ) && ( old_name != new_name ) )
+            {
+               int old_wd = p_impl->watches_wd[ old_name ];
+
+               if( old_wd )
+               {
+                  p_impl->wd_watches[ old_wd ] = new_name;
+
+                  p_impl->watches_wd.erase( old_name );
+                  p_impl->watches_wd.insert( make_pair( new_name, old_wd ) );
+
+                  // NOTE: Need to update any child watch map entries also.
+                  string old_prefix( old_name + '/' );
+                  string new_prefix( new_name + '/' );
+
+                  while( true )
+                  {
+                     map< string, int >::iterator i = p_impl->watches_wd.lower_bound( old_prefix );
+
+                     if( ( i == p_impl->watches_wd.end( ) ) || ( i->first.find( old_prefix ) != 0 ) )
+                        break;
+
+                     string new_child_name( new_prefix + i->first.substr( old_prefix.length( ) ) );
+
+                     int child_wd = i->second;
+
+                     p_impl->wd_watches[ child_wd ] = new_child_name;
+
+                     p_impl->watches_wd.erase( i->first );
+                     p_impl->watches_wd.insert( make_pair( new_child_name, child_wd ) );
+                  }
+               }
+            }
+         }
+
          if( is_ignored || ( mask & IN_MOVE_SELF )
           || ( ( file_name == prior_file_name ) && ( mask & IN_ATTRIB ) && ( prior_mask & IN_CREATE ) ) )
             reportable_event = false;
@@ -320,6 +370,8 @@ size_t notifier::has_new_events( )
    if( num_bytes > 0 )
    {
       struct inotify_event* p_prior_event = 0;
+
+      p_impl->cookie_old_names.clear( );
 
       for( char* p = p_impl->p_buf; p < p_impl->p_buf + num_bytes; )
       {

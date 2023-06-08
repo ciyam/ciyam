@@ -237,7 +237,11 @@ void ciyam_notifier::on_start( )
                               if( old_value == c_notifier_created )
                               {
                                  value.erase( );
-                                 cookie_id_original_names.insert( make_pair( cookie_id, "" ) );
+
+                                 if( var_name.empty( ) || ( var_name[ var_name.length( ) - 1 ] != '/' ) )
+                                    cookie_id_original_names.insert( make_pair( cookie_id, "" ) );
+                                 else
+                                    cookie_id_original_names.insert( make_pair( cookie_id, "*" + var_name ) );
                               }
                               else
                               {
@@ -272,11 +276,13 @@ void ciyam_notifier::on_start( )
                               {
                                  if( original_name == var_name )
                                     value = c_notifier_modified;
+                                 else if( original_name[ 0 ] == '*' )
+                                 {
+                                    value = c_notifier_created;
+                                    original_name.erase( 0, 1 );
+                                 }
                                  else
                                     value += '|' + original_name;
-
-                                 if( cookie_id_current_names.count( cookie_id ) )
-                                    original_name = cookie_id_current_names[ cookie_id ];
 
                                  // NOTE: Remove the original name's system variable and then
                                  // replace any other system variables that are found to have
