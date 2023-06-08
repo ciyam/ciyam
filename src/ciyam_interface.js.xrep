@@ -157,12 +157,6 @@ function refresh( back )
       history.go( -1 );
 }
 
-function reload_after_blur( )
-{
-   window.disableResetPrompt;
-   window.onblur = function( ){ window.onfocus = function( ){ location.reload( true ) } };
-}
-
 function replace_with_scroll_info( )
 {
    if( qsContext.length > 0 )
@@ -221,6 +215,12 @@ function warn_refresh( )
       warn_refresh_seconds -= 1;
       warn_refresh_timer_id = setTimeout( "warn_refresh( )", 1000 );
    }
+}
+
+function reload_after_blur( )
+{
+   window.disableResetPrompt;
+   window.onblur = function( ){ window.onfocus = function( ){ replace_with_scroll_info( ) } };
 }
 
 function determine_scroll_info( )
