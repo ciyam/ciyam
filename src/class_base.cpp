@@ -917,7 +917,7 @@ void class_base::prepare( bool for_create, bool call_to_store )
    // determined correctly.
    perform_after_fetch( false, true );
 
-   set_iteration_starting( false ); // NOTE: as per above
+   set_iteration_starting( false );
 
    if( call_to_store )
       to_store( is_create || for_create, false );
@@ -2873,6 +2873,17 @@ int64_t size_file( const string& filename )
       size = file_size( filename );
 
    return size;
+}
+
+string size_file_info( const string& filename )
+{
+   string retval;
+
+   if( !filename.empty( )
+    && !dir_exists( filename ) && file_exists( filename ) )
+      retval = '(' + format_bytes( file_size( filename ) ) + ')';
+
+   return retval;
 }
 
 int64_t last_mod_time( const string& filename )

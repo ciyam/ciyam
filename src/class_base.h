@@ -1168,6 +1168,9 @@ void CIYAM_BASE_DECL_SPEC remove_files( const std::string& filenames, char sep =
 void CIYAM_BASE_DECL_SPEC rename_file( const std::string& oldname, const std::string& newname );
 
 int64_t CIYAM_BASE_DECL_SPEC size_file( const std::string& filename );
+
+std::string CIYAM_BASE_DECL_SPEC size_file_info( const std::string& filename );
+
 int64_t CIYAM_BASE_DECL_SPEC last_mod_time( const std::string& filename );
 
 void CIYAM_BASE_DECL_SPEC copy_file( const std::string& source, const std::string& destination );

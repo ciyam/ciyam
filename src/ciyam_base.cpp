@@ -14095,7 +14095,7 @@ bool perform_instance_iterate( class_base& instance,
          // "prepare" call which will call the trigger and then clear this flag (otherwise dependent
          // fields might be missed when the trigger is actually called).
          if( !skip_after_fetch )
-            instance_accessor.set_iteration_starting( false );
+            instance_accessor.set_iteration_starting( true );
 
          if( persistence_type == 0 ) // i.e. SQL persistence
          {
@@ -14258,6 +14258,8 @@ bool perform_instance_iterate( class_base& instance,
 
          instance_accessor.set_is_in_iteration( false );
       }
+
+      instance_accessor.set_iteration_starting( false );
    }
 
    return found;
