@@ -86,7 +86,7 @@ system_variable test1*
 ~touch test1/x
 .wait 100
 system_variable test1*
-#~mv test/1x test1/xx
+#~mv test1/x test1/xx
 ~mv test1/x test1/xx
 .wait 100
 system_variable test1*
@@ -140,6 +140,25 @@ system_variable test1/?*
 notifier -finish test1
 #~rm -r test1/xxx
 ~rm -r test1/xxx
+#~touch test1/x
+~touch test1/x
+notifier -start test1
+system_variable test1/?*
+#~mv test1/x test1/y
+~mv test1/x test1/y
+.wait 100
+system_variable test1/?*
+#~touch test1/z
+~touch test1/z
+#~mv test1/z test1/y
+~mv test1/z test1/y
+.wait 100
+system_variable test1/?*
+#~rm test1/y
+~rm test1/y
+.wait 100
+system_variable test1/?*
+notifier -finish test1
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test
 file_get test.xxx

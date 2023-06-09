@@ -89,8 +89,8 @@ const char* const c_notifier_none = "none";
 const char* const c_notifier_created = "created";
 const char* const c_notifier_deleted = "deleted";
 const char* const c_notifier_modified = "modified";
-const char* const c_notifier_moved_to = "moved_to";
 const char* const c_notifier_moved_from = "moved_from";
+const char* const c_notifier_modified_from = "modified_from";
 
 const char* const c_file_zero_length = "*";
 

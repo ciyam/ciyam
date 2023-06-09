@@ -193,16 +193,16 @@ test1/ none
 test1/x modified
 test1/y deleted
 test1/z deleted
-~mv test/1x test1/xx
+~mv test1/x test1/xx
 system_variable test1*
 test1/ none
-test1/xx moved_from|test1/x
+test1/xx modified_from|test1/x
 test1/y deleted
 test1/z deleted
 ~mv test1/xx test1/xxx
 system_variable test1*
 test1/ none
-test1/xxx moved_from|test1/x
+test1/xxx modified_from|test1/x
 test1/y deleted
 test1/z deleted
 ~mv test1/xxx test1/x
@@ -256,6 +256,21 @@ test1/xxx/yyy/zzz/abc created
 test1/xxx/yyy/zzz/def created
 notifier -finish test1
 ~rm -r test1/xxx
+~touch test1/x
+notifier -start test1
+system_variable test1/?*
+test1/x none
+~mv test1/x test1/y
+system_variable test1/?*
+test1/y moved_from|test1/x
+~touch test1/z
+~mv test1/z test1/y
+system_variable test1/?*
+test1/y modified_from|test1/x
+~rm test1/y
+system_variable test1/?*
+test1/x deleted
+notifier -finish test1
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test
 [list] 2d3c89f8f5301604234589e08a695e3ab0bdaa5f99ec21cf148b99d13020cb85 (307 B)
