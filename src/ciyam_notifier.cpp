@@ -38,6 +38,9 @@ namespace
 
 trace_mutex g_mutex;
 
+const char c_created = '*';
+const char c_unchanged = '?';
+
 const size_t c_wait_sleep_time = 10;
 
 inline void issue_error( const string& message, bool possibly_expected = false )
@@ -155,6 +158,7 @@ void ciyam_notifier::on_start( )
       TRACE_LOG( TRACE_SESSIONS, "notifier started for '" + watch_root + "'" );
 
       string moved_from_prefix( string( c_notifier_moved_from ) + '|' );
+      string modified_from_prefix( string( c_notifier_modified_from ) + '|' );
 
       while( true )
       {
@@ -230,7 +234,7 @@ void ciyam_notifier::on_start( )
                            if( value == "moved_to" )
                               value = c_notifier_moved_from;
                            else if( value == "moved_from" )
-                              value = c_notifier_moved_to;
+                              value.erase( );
 
                            if( cookie_id_original_names.find( cookie_id ) == cookie_id_original_names.end( ) )
                            {
@@ -241,13 +245,20 @@ void ciyam_notifier::on_start( )
                                  if( var_name.empty( ) || ( var_name[ var_name.length( ) - 1 ] != '/' ) )
                                     cookie_id_original_names.insert( make_pair( cookie_id, "" ) );
                                  else
-                                    cookie_id_original_names.insert( make_pair( cookie_id, "*" + var_name ) );
+                                    cookie_id_original_names.insert( make_pair( cookie_id, c_created + var_name ) );
                               }
                               else
                               {
+                                 string prefix;
+
                                  if( old_value.find( moved_from_prefix ) == 0 )
+                                    prefix = moved_from_prefix;
+                                 else if( old_value.find( modified_from_prefix ) == 0 )
+                                    prefix = modified_from_prefix;
+
+                                 if( !prefix.empty( ) )
                                  {
-                                    old_value.erase( 0, moved_from_prefix.length( ) );
+                                    old_value.erase( 0, prefix.length( ) );
 
                                     cookie_id_current_names.insert( make_pair( cookie_id, var_name ) );
                                     cookie_id_original_names.insert( make_pair( cookie_id, old_value ) );
@@ -258,7 +269,12 @@ void ciyam_notifier::on_start( )
                                  else if( value == c_notifier_moved_from )
                                     value = c_notifier_created;
                                  else
-                                    cookie_id_original_names.insert( make_pair( cookie_id, var_name ) );
+                                 {
+                                    if( old_value != c_notifier_none )
+                                       cookie_id_original_names.insert( make_pair( cookie_id, var_name ) );
+                                    else
+                                       cookie_id_original_names.insert( make_pair( cookie_id, c_unchanged + var_name ) );
+                                 }
                               }
                            }
                            else
@@ -270,19 +286,31 @@ void ciyam_notifier::on_start( )
                                  if( old_value.empty( ) )
                                     value = c_notifier_created;
                                  else
-                                    value = c_notifier_modified;
+                                 {
+                                    string::size_type pos = old_value.find( '|' );
+
+                                    if( pos == string::npos )
+                                       value = c_notifier_modified;
+                                    else
+                                       value = c_notifier_modified_from + old_value.substr( pos );
+                                 }
                               }
                               else
                               {
                                  if( original_name == var_name )
                                     value = c_notifier_modified;
-                                 else if( original_name[ 0 ] == '*' )
+                                 else if( original_name[ 0 ] == c_created )
                                  {
                                     value = c_notifier_created;
                                     original_name.erase( 0, 1 );
                                  }
                                  else
-                                    value += '|' + original_name;
+                                 {
+                                    if( original_name[ 0 ] != c_unchanged )
+                                       value = string( c_notifier_modified_from ) + '|' + original_name;
+                                    else
+                                       value = string( c_notifier_moved_from ) + '|' + original_name.substr( 1 );
+                                 }
 
                                  // NOTE: Remove the original name's system variable and then
                                  // replace any other system variables that are found to have
@@ -335,15 +363,15 @@ void ciyam_notifier::on_start( )
                   }
                   else if( value == "attrib" )
                   {
-                     if( old_value.find( moved_from_prefix ) == 0 )
+                     if( ( old_value.find( moved_from_prefix ) == 0 )
+                      || ( old_value.find( modified_from_prefix ) == 0 ) )
                         value = old_value;
                      else
                         value = c_notifier_modified;
                   }
                   else if( value == "create" )
                   {
-                     if( ( old_value != c_notifier_deleted ) 
-                      && ( old_value.find( c_notifier_moved_to ) != 0 ) )
+                     if( old_value != c_notifier_deleted ) 
                         value = c_notifier_created;
                      else
                         value = c_notifier_modified;
@@ -352,18 +380,20 @@ void ciyam_notifier::on_start( )
                      value = c_notifier_modified;
                   else if( value == "delete" )
                   {
+                     string prefix;
+
                      if( old_value.find( moved_from_prefix ) == 0 )
+                        prefix = moved_from_prefix;
+                     else if( old_value.find( modified_from_prefix ) == 0 )
+                        prefix = modified_from_prefix;
+
+                     value = c_notifier_deleted;
+
+                     if( !prefix.empty( ) )
                      {
-                        old_value.erase( 0, moved_from_prefix.length( ) );
-
-                        if( old_value.find( c_notifier_moved_to ) == 0 )
-                           set_system_variable( old_value, c_notifier_deleted );
-
-                        value.erase( );
-                        old_value.erase( );
+                        set_system_variable( var_name, "" );
+                        var_name = old_value.substr( prefix.length( ) );
                      }
-                     else
-                        value = c_notifier_deleted;
                   }
 
                   if( value == "delete_self" )

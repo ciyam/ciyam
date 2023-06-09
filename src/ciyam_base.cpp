@@ -9779,14 +9779,26 @@ void storage_channel_documents_close( const char* p_identity )
 
             if( notifier_op == c_notifier_deleted )
             {
+               if( pos != string::npos )
+               {
+                  next_name = next_value.substr( pos + 1 );
+
+                  if( next_name.find( prefix ) == 0 )
+                     next_name.erase( 0, prefix.length( ) );
+               }
+
                if( next_name[ next_name.length( ) - 1 ] != '/' )
                   ofs.remove_file( next_name );
                else
                   ofs.remove_folder( next_name, 0, true );
             }
-            else if( notifier_op == c_notifier_moved_from )
+            else if( ( notifier_op == c_notifier_moved_from )
+             || ( notifier_op == c_notifier_modified_from ) )
             {
-               string old_name( next_value.substr( pos + 1 ) );
+               string old_name;
+
+               if( pos != string::npos )
+                  old_name = next_value.substr( pos + 1 );
 
                if( !old_name.empty( ) )
                {
