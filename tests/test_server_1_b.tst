@@ -271,6 +271,21 @@ test1/y modified_from|test1/x
 system_variable test1/?*
 test1/x deleted
 notifier -finish test1
+~mkdir test1/xxx
+~touch test1/xxx/111
+~touch test1/xxx/222
+notifier -start test1
+system_variable test1/?*
+test1/xxx/ none
+test1/xxx/111 none
+test1/xxx/222 none
+~mv test1/xxx test1/yyy
+system_variable test1/?*
+test1/yyy/ moved_from|test1/xxx/
+test1/yyy/111 none
+test1/yyy/222 none
+notifier -finish test1
+~rm -r test1/yyy
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test
 [list] 2d3c89f8f5301604234589e08a695e3ab0bdaa5f99ec21cf148b99d13020cb85 (307 B)
