@@ -306,10 +306,13 @@ void ciyam_notifier::on_start( )
                                  }
                                  else
                                  {
-                                    if( original_name[ 0 ] != c_unchanged )
-                                       value = string( c_notifier_modified_from ) + '|' + original_name;
+                                    if( original_name[ 0 ] == c_unchanged )
+                                    {
+                                       original_name.erase( 0, 1 );
+                                       value = string( c_notifier_moved_from ) + '|' + original_name;
+                                    }
                                     else
-                                       value = string( c_notifier_moved_from ) + '|' + original_name.substr( 1 );
+                                       value = string( c_notifier_modified_from ) + '|' + original_name;
                                  }
 
                                  // NOTE: Remove the original name's system variable and then
