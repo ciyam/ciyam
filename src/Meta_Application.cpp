@@ -1784,6 +1784,11 @@ void Meta_Application::impl::impl_Generate( )
    if( storage_locked_for_admin( ) )
       return;
 
+   if( get_obj( ).child_Module( ).iterate_forwards( ) )
+      get_obj( ).child_Module( ).iterate_stop( );
+   else
+      throw runtime_error( "Generate requires at least one Module." );
+
    set_system_variable( "@" + storage_name( ) + "_protect", "1" );
 
    // NOTE: The UI allows this to be set so use this as the value during
