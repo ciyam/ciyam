@@ -2,8 +2,8 @@ storage_init ciyam
 pf 100 106100 "106104 " 106101,106102,106104 -min
 System_Blockchain,System_Blockchain,M001C100
 User,User,M001C101
-Channel,Channels,M001C102
-Opened_Item,Opened_Items,M001C103
+Locker,Lockers,M001C102
+Locker_Item,Locker_Items,M001C103
 Peerchain,Peerchains,M001C104
 pf 100 107100 "107110 " 107101,107110 -min
 Name,M001C100F100
@@ -81,7 +81,7 @@ Owner,M001C102F100
 Actions,M001C102F101
 Active,M001C102F102
 Backup_Identity,M001C102F103
-Channel_Items,M001C102F104
+Locker_Items,M001C102F104
 Closing,M001C102F105
 Identity,M001C102F106
 Opened,M001C102F107
@@ -96,14 +96,14 @@ Shared_Identity,M001C102F115
 Shared_Secret,M001C102F116
 Status,M001C102F117
 User_Id,M001C102F118
-Channel,M001C103F100
+Locker,M001C103F100
 Original_Name,M001C103F101
 Item_Name,M001C103F102
 Item_Size_Info,M001C103F103
 Name_And_Size,M001C103F104
 Opened_Directory,M001C103F105
-Opened_Item_Directory,M001C103F106
-Opened_Item_Path,M001C103F107
+Identity_Directory,M001C103F106
+Identity_Path,M001C103F107
 Change,M001C103F108
 Actions,M001C104F100
 Active,M001C104F101
@@ -125,7 +125,7 @@ Initial_Shared_Hash,M001C104F116
 Host_Name,M001C104F117
 Hub_Checksum,M001C104F118
 Identity,M001C104F119
-Peer_Type,M001C104F120
+Peerchain_Type,M001C104F120
 Port_Number,M001C104F121
 Shared_Secret,M001C104F122
 Connection_Type,M001C104F123
@@ -149,11 +149,11 @@ Minutes,E110
 Occurrence,E111
 Orientation,E112
 Peerchain_Connection,E113
-Peerchain_Peer_Type,E114
+Peerchain_Type,E114
 Peerchain_Status,E115
-Change_Password_Seconds,E116
-Change_Type,E117
-Channel_Status,E118
+Locker_Status,E116
+Change_Password_Seconds,E117
+Change_Type,E118
 pf 100 102100 "102111 " 102101,102111 -min
 string,T000
 string,T000
