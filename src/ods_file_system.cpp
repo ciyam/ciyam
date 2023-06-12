@@ -503,10 +503,11 @@ string process_rename_expressions(
 
 struct ods_file_system::impl
 {
-   impl( ods& o ) : bt( o ), for_regression_tests( false ), next_transaction_id( 0 ) { }
+   impl( ods& o ) : bt( o ), skip_hidden( true ), for_regression_tests( false ), next_transaction_id( 0 ) { }
 
    btree_type bt;
 
+   bool skip_hidden;
    bool for_regression_tests;
 
    int64_t next_transaction_id;
@@ -2355,7 +2356,16 @@ void ods_file_system::perform_match(
             }
          }
 #endif
-         if( compare_equal( tmp_item, *match_iter ) )
+
+         bool skip = false;
+
+         if( p_impl->skip_hidden )
+         {
+            if( match_iter->val.find( "/." ) != string::npos )
+               skip = true;
+         }
+
+         if( !skip && compare_equal( tmp_item, *match_iter ) )
          {
             string::size_type pos = ap_regex.get( ) ? ap_regex->search( match_iter->val ) : 0;
 
@@ -2658,6 +2668,11 @@ void ods_file_system::list_files_or_objects(
 
       vector< pair< string, string > > search_replaces;
 
+      auto_ptr< temporary_include_hidden > ap_include_hidden;
+
+      if( full )
+         ap_include_hidden.reset( new temporary_include_hidden( *this ) );
+
       if( objects )
          get_child_folders( expr, full, extras );
 
@@ -2693,6 +2708,8 @@ void ods_file_system::branch_files_or_objects( ostream& os, const string& folder
    bool full = ( style == e_branch_style_extended );
 
    deque< string > folders;
+
+   restorable< bool > skip_hidden( p_impl->skip_hidden, !full );
 
    bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
@@ -3313,6 +3330,18 @@ bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_n
    return okay;
 }
 
+temporary_include_hidden::temporary_include_hidden( ods_file_system& ofs )
+ :
+ ofs( ofs )
+{
+   ofs.p_impl->skip_hidden = false;
+}
+
+temporary_include_hidden::~temporary_include_hidden( )
+{
+   ofs.p_impl->skip_hidden = true;
+}
+
 void export_objects( ods_file_system& ofs, const string& directory,
  vector< string >* p_rename_expressions, ostream* p_os, progress* p_progress, int level, int start_pos )
 {
@@ -3328,6 +3357,8 @@ void export_objects( ods_file_system& ofs, const string& directory,
 
    if( p_os && level )
       *p_os << directory << ofs.get_folder( ) << endl;
+
+   temporary_include_hidden include_hidden( ofs );
 
    ofs.list_files( files, false );
 

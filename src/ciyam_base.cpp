@@ -132,6 +132,8 @@ const char* const c_server_folder_shared = "shared";
 const char* const c_server_command_mutexes = "mutexes";
 const char* const c_server_command_sessions = "sessions";
 
+const char* const c_channel_folder_submitting = ".submitting";
+
 const char* const c_section_mbox = "mbox";
 const char* const c_section_pop3 = "pop3";
 const char* const c_section_smtp = "smtp";
@@ -9587,6 +9589,8 @@ void storage_channel_create( const char* p_identity )
 
    ofs.set_folder( identity );
    ofs.add_file( "README.md", "channel_readme.md" );
+
+   ofs.add_folder( c_channel_folder_submitting );
 }
 
 void storage_channel_destroy( const char* p_identity )
