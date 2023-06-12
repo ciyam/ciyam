@@ -30,11 +30,15 @@ class ods;
 
 struct progress;
 
+struct temporary_include_hidden;
+
 class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
 {
    public:
    ods_file_system( ods& o, int64_t i = 0, bool for_regression_tests = false );
    ~ods_file_system( );
+
+   friend struct temporary_include_hidden;
 
    inline std::string get_folder( ) const { return current_folder; }
 
@@ -324,6 +328,14 @@ struct temporary_set_folder
 
    ods_file_system& ofs;
    std::string old_folder;
+};
+
+struct temporary_include_hidden
+{
+   temporary_include_hidden( ods_file_system& ofs );
+   ~temporary_include_hidden( );
+
+   ods_file_system& ofs;
 };
 
 void ODS_FILE_SYSTEM_DECL_SPEC export_objects( ods_file_system& ofs,

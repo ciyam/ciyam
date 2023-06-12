@@ -120,33 +120,43 @@ void ciyam_notifier::on_start( )
          {
             string next_dir( dfsi.get_path_name( ) );
 
-            file_filter ff;
-            fs_iterator fs( next_dir, &ff );
-
-            pos = next_dir.find( path_to_dir );
-
-            if( pos != 0 )
-               throw runtime_error( "unexpected '" + next_dir + "' does start with '" + path_to_dir + "'" );
-
-            next_dir.erase( 0, path_to_dir.length( ) );
-
-            if( next_dir != watch_root )
-               n.add_watch( next_dir );
-
-            set_system_variable( next_dir + '/', c_notifier_none );
-
-            while( fs.has_next( ) )
+            // NOTE Skip hidden folders.
+            if( next_dir.find( "/." ) == string::npos )
             {
-               string next_file( fs.get_full_name( ) );
+               file_filter ff;
+               fs_iterator fs( next_dir, &ff );
 
-               pos = next_file.find( path_to_dir );
+               pos = next_dir.find( path_to_dir );
 
                if( pos != 0 )
-                  throw runtime_error( "unexpected '" + next_file + "' does start with '" + path_to_dir + "'" );
+                  throw runtime_error( "unexpected '" + next_dir + "' does start with '" + path_to_dir + "'" );
 
-               next_file.erase( 0, path_to_dir.length( ) );
+               next_dir.erase( 0, path_to_dir.length( ) );
 
-               set_system_variable( next_file, c_notifier_none );
+               if( next_dir != watch_root )
+                  n.add_watch( next_dir );
+
+               set_system_variable( next_dir + '/', c_notifier_none );
+
+               while( fs.has_next( ) )
+               {
+                  string name( fs.get_name( ) );
+
+                  // NOTE: SKip hidden files.
+                  if( !name.empty( ) && name[ 0 ] != '.' )
+                  {
+                     string next_file( fs.get_full_name( ) );
+
+                     pos = next_file.find( path_to_dir );
+
+                     if( pos != 0 )
+                        throw runtime_error( "unexpected '" + next_file + "' does start with '" + path_to_dir + "'" );
+
+                     next_file.erase( 0, path_to_dir.length( ) );
+
+                     set_system_variable( next_file, c_notifier_none );
+                  }
+               }
             }
          } while( dfsi.has_next( ) );
       }
