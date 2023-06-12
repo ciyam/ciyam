@@ -257,9 +257,8 @@ void notifier::process_event( struct inotify_event* p_event, struct inotify_even
       if( !file_name.empty( ) && file_name[ 0 ] == '.' )
          is_hidden_file = true;
 
-      // NOTE: Conditionally ignore hidden files (but never directories).
-      if( !p_impl->ignore_hidden_files
-       || ( ( mask & IN_ISDIR ) || !is_hidden_file ) )
+      // NOTE: Conditionally ignore hidden files and directories.
+      if( !is_hidden_file || !p_impl->ignore_hidden_files )
       {
          if( p_impl->wd_watches.count( wd ) && ( is_open_dir || is_create_dir ) )
          {

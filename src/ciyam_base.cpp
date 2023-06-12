@@ -2529,6 +2529,22 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
    return found;
 }
 
+bool fetch_instance_from_global_storage( class_base& instance, const string& key )
+{
+   field_info_container field_info;
+   instance.get_field_info( field_info );
+
+   vector< string > field_names;
+
+   for( size_t i = 0; i < field_info.size( ); i++ )
+   {
+      if( !field_info[ i ].is_transient )
+         field_names.push_back( field_info[ i ].name );
+   }
+
+   return fetch_instance_from_global_storage( instance, key, field_names );
+}
+
 bool fetch_instance_from_system_variable( class_base& instance, const string& key,
  const vector< string >& field_names, vector< string >* p_columns = 0, bool skip_after_fetch = false )
 {
@@ -2644,7 +2660,7 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
    return found;
 }
 
-bool fetch_instance_from_global_storage( class_base& instance, const string& key )
+bool fetch_instance_from_system_variable( class_base& instance, const string& key )
 {
    field_info_container field_info;
    instance.get_field_info( field_info );
@@ -2657,7 +2673,7 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
          field_names.push_back( field_info[ i ].name );
    }
 
-   return fetch_instance_from_global_storage( instance, key, field_names );
+   return fetch_instance_from_system_variable( instance, key, field_names );
 }
 
 void remove_tx_info_from_cache( )
@@ -9747,6 +9763,10 @@ void storage_channel_documents_close( const char* p_identity )
 
    ofs.set_folder( identity );
 
+   // NOTE: Clear current submitting branch prior to import.
+   string submitting( c_channel_folder_submitting );
+   ofs.remove_folder( submitting, 0, true );
+
    string path( get_system_variable(
     get_special_var_name( e_special_var_opened_files ) ) + '/' + identity );
 
@@ -9822,6 +9842,78 @@ void storage_channel_documents_close( const char* p_identity )
    ods_tx.commit( );
 
    delete_directory_files( path, true );
+}
+
+void storage_channel_document_submit( const string& file_path )
+{
+   string opened_prefix( get_system_variable( get_special_var_name( e_special_var_opened_files ) ) + '/' );
+
+   string identity_and_file( file_path );
+
+   if( identity_and_file.find( opened_prefix ) == 0 )
+      identity_and_file.erase( 0, opened_prefix.length( ) );
+
+   string::size_type pos = identity_and_file.find( '/' );
+
+   if( pos == string::npos )
+      throw runtime_error( "unexpected identity not found in '" + identity_and_file + "'" );
+
+   string identity( identity_and_file.substr( 0, pos ) );
+
+   string file_name( identity_and_file.substr( pos + 1 ) );
+
+   string submitting_folder( opened_prefix + identity + '/' );
+   submitting_folder += c_channel_folder_submitting;
+
+   file_copy( file_path, submitting_folder + '/' + file_name );
+}
+
+void storage_channel_document_unsubmit( const string& file_path )
+{
+   string opened_prefix( get_system_variable( get_special_var_name( e_special_var_opened_files ) ) + '/' );
+
+   string identity_and_file( file_path );
+
+   if( identity_and_file.find( opened_prefix ) == 0 )
+      identity_and_file.erase( 0, opened_prefix.length( ) );
+
+   string::size_type pos = identity_and_file.find( '/' );
+
+   if( pos == string::npos )
+      throw runtime_error( "unexpected identity not found in '" + identity_and_file + "'" );
+
+   string identity( identity_and_file.substr( 0, pos ) );
+
+   string file_name( identity_and_file.substr( pos + 1 ) );
+
+   string submitting_folder( opened_prefix + identity + '/' );
+   submitting_folder += c_channel_folder_submitting;
+   
+   file_remove( submitting_folder + '/' + file_name );
+}
+
+bool storage_channel_document_submitting( const string& file_path )
+{
+   string opened_prefix( get_system_variable( get_special_var_name( e_special_var_opened_files ) ) + '/' );
+
+   string identity_and_file( file_path );
+
+   if( identity_and_file.find( opened_prefix ) == 0 )
+      identity_and_file.erase( 0, opened_prefix.length( ) );
+
+   string::size_type pos = identity_and_file.find( '/' );
+
+   if( pos == string::npos )
+      throw runtime_error( "unexpected identity not found in '" + identity_and_file + "'" );
+
+   string identity( identity_and_file.substr( 0, pos ) );
+
+   string file_name( identity_and_file.substr( pos + 1 ) );
+
+   string submitting_folder( opened_prefix + identity + '/' );
+   submitting_folder += c_channel_folder_submitting;
+
+   return file_exists( submitting_folder + '/' + file_name );
 }
 
 ods& storage_ods_instance( )
@@ -13673,7 +13765,7 @@ void perform_instance_fetch( class_base& instance,
       else if( persistence_type == 1 ) // i.e. ODS global persistence
          found = fetch_instance_from_global_storage( instance, key_info );
       else
-         throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in perform_instance_fetch" );
+         found = fetch_instance_from_system_variable( instance, key_info );
    }
 
    if( !found )

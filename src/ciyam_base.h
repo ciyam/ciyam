@@ -601,6 +601,11 @@ std::string CIYAM_BASE_DECL_SPEC storage_channel_documents( const std::string& i
 void CIYAM_BASE_DECL_SPEC storage_channel_documents_open( const char* p_identity = 0 );
 void CIYAM_BASE_DECL_SPEC storage_channel_documents_close( const char* p_identity = 0 );
 
+void CIYAM_BASE_DECL_SPEC storage_channel_document_submit( const std::string& file_path );
+void CIYAM_BASE_DECL_SPEC storage_channel_document_unsubmit( const std::string& file_path );
+
+bool CIYAM_BASE_DECL_SPEC storage_channel_document_submitting( const std::string& file_path );
+
 ods CIYAM_BASE_DECL_SPEC& storage_ods_instance( );
 
 ods CIYAM_BASE_DECL_SPEC& system_ods_instance( );

@@ -3819,6 +3819,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string method( get_parm_val( parameters, c_cmd_ciyam_session_perform_execute_method ) );
          string args( get_parm_val( parameters, c_cmd_ciyam_session_perform_execute_args ) );
 
+         string key_prefix;
          string field_values_to_log;
          string module_and_class( module + ' ' + mclass );
 
@@ -3892,6 +3893,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( !set_values.empty( ) )
                parse_field_values( module, mclass, set_values, set_value_items, &socket_handler.get_transformations( ) );
+
+            // NOTE: Special case for @notifier child records.
+            if( !args.empty( ) )
+            {
+               string::size_type pos = args.find( ' ' );
+
+               if( args.substr( 0, pos ) == get_special_var_name( e_special_var_notifier ) )
+               {
+                  key_prefix = args.substr( pos + 1 ) + '/';
+                  args.erase( );
+               }
+            }
 
             if( !args.empty( ) )
             {
@@ -4007,7 +4020,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                for( size_t i = 0; i < all_keys.size( ); i++ )
                {
-                  string next_key( all_keys[ i ] );
+                  string next_key( key_prefix + all_keys[ i ] );
                   string next_ver( all_vers.size( ) ? all_vers[ i ] : "" );
 
                   if( next_key == " " )
