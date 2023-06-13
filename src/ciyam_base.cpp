@@ -2390,8 +2390,19 @@ void fetch_keys_from_system_variables( class_base& instance,
       for( size_t i = 0; i < num_vars; i++ )
       {
          string next_var( all_sys_vars[ i ] );
+         string next_value;
 
-         string key( variable_name_from_name_and_value( next_var ) );
+         string key( variable_name_from_name_and_value( next_var, &next_value ) );
+
+         if( !next_value.empty( ) && next_value[ 0 ] == '[' )
+         {
+            string::size_type pos = next_value.find( ']' );
+
+            if( pos == string::npos )
+               throw runtime_error( "unexpected next_value '" + next_value + "' in fetch_keys_from_system_variables" );
+
+            key = next_value.substr( 1, pos - 1 );
+         }
 
          if( key.find( prefix ) == 0 )
             key.erase( 0, prefix.length( ) );
@@ -2570,9 +2581,14 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
          graph_parent_fk_field = string( p_str );
    }
 
+   bool is_indirect_key = false;
+
    if( persistence_extra == get_special_var_name( e_special_var_notifier ) )
    {
-      persistence_extra = get_system_variable( get_special_var_name( e_special_var_opened_files ) );
+      is_indirect_key = true;
+
+      persistence_extra = string( c_notifier_prefix )
+       + get_system_variable( get_special_var_name( e_special_var_opened_files ) );
 
       if( !parent_key_value.empty( ) )
          persistence_extra += '/' + parent_key_value;
@@ -2583,6 +2599,25 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
    string key_value( persistence_extra + key );
 
    string row_data( get_raw_system_variable( key_value ) );
+
+   if( is_indirect_key )
+   {
+      string indirect_row_data( get_raw_system_variable( row_data ) );
+
+      string prefix( '[' + key + ']' );
+
+      if( indirect_row_data.find( prefix ) == 0 )
+         indirect_row_data.erase( 0, prefix.length( ) );
+
+      if( persistence_extra.find( c_notifier_prefix ) == 0 )
+         persistence_extra.erase( 0, strlen( c_notifier_prefix ) );
+
+      if( row_data.find( persistence_extra ) == 0 )
+         row_data.erase( 0, persistence_extra.length( ) );
+
+      if( !indirect_row_data.empty( ) )
+         row_data += '|' + indirect_row_data;
+   }
 
    if( row_data.empty( ) )
       found = false;
@@ -2634,12 +2669,7 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
             if( field_names[ i ] == graph_parent_fk_field )
                data = parent_key_value;
             else if( num < columns.size( ) )
-            {
                data = columns[ num++ ];
-
-               if( data.find( persistence_extra ) == 0 )
-                  data.erase( 0, persistence_extra.length( ) );
-            }
 
             if( p_columns )
                p_columns->push_back( data );
