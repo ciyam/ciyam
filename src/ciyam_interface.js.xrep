@@ -1539,7 +1539,18 @@ function get_all_checked_names( form )
       {
          if( all_names != '' )
             all_names += ',';
-         all_names += form.elements[ i ].name.substring( 5 );
+
+         var next = form.elements[ i ].name.substring( 5 );
+
+         var pos = next.lastIndexOf( ' =' );
+         
+         var suffix = next.substr( pos );
+         next = next.substr( 0, pos );
+         
+         next = next.replace( /\,/g, '?' );
+         next = next.replace( /\&/g, '*' );
+
+         all_names += next.replace( /\s/g, ':' ) + suffix;
       }
    }
 
