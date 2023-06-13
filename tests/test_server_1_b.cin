@@ -44,18 +44,17 @@ file_kill -recurse root
 ~mkdir test1
 ~touch test1/xxx
 notifier -start test1/xxx
-system_variable @:*
+system_variable *test1*
 #~touch test1/xxx
 ~touch test1/xxx
 .wait 100
-system_variable test1*
+system_variable *test1*
 #~rm test1/xxx
 ~rm test1/xxx
 .wait 150
-system_variable test1*
+system_variable *test1*
 notifier -start test1
-system_variable @:*
-system_variable test1*
+system_variable *test1*
 #~touch test1/x
 ~touch test1/x
 #~touch test1/y
@@ -63,9 +62,7 @@ system_variable test1*
 #~touch test1/z
 ~touch test1/z
 .wait 100
-system_variable test1*
-system_variable test1/?* "none"
-system_variable test1*
+system_variable *test1*
 #~touch test1/x
 ~touch test1/x
 #~touch test1/y
@@ -73,7 +70,7 @@ system_variable test1*
 #~touch test1/z
 ~touch test1/z
 .wait 100
-system_variable test1*
+system_variable *test1*
 #~rm test1/x
 ~rm test1/x
 #~rm test1/y
@@ -81,83 +78,82 @@ system_variable test1*
 #~rm test1/z
 ~rm test1/z
 .wait 100
-system_variable test1*
+system_variable *test1*
 #~touch test1/x
 ~touch test1/x
 .wait 100
-system_variable test1*
+system_variable *test1*
 #~mv test1/x test1/xx
 ~mv test1/x test1/xx
 .wait 100
-system_variable test1*
+system_variable *test1*
 #~mv test1/xx test1/xxx
 ~mv test1/xx test1/xxx
 .wait 100
-system_variable test1*
+system_variable *test1*
 #~mv test1/xxx test1/x
 ~mv test1/xxx test1/x
 .wait 100
-system_variable test1*
+system_variable *test1*
 ~rm test1/x
 notifier -finish test1
-system_variable @:*
-system_variable test1*
+system_variable *test1*
 #~mkdir test1/xxx
 ~mkdir test1/xxx
 notifier -start test1/xxx
-system_variable test1*
+system_variable *test1*
 #~rmdir test1/xxx
 ~rmdir test1/xxx
 .wait 150
-system_variable test1*
+system_variable *test1*
 notifier -start test1
 #~mkdir test1/xxx
 ~mkdir test1/xxx
 #~mkdir test1/zzz
 ~mkdir test1/zzz
 .wait 100
-system_variable test1/?*
+system_variable *test1*
 #~mv test1/zzz test1/yyy
 ~mv test1/zzz test1/yyy
 .wait 100
-system_variable test1/?*
+system_variable *test1*
 #~mkdir test1/yyy/zzz
 ~mkdir test1/yyy/zzz
 .wait 100
-system_variable test1/?*
+system_variable *test1*
 #~touch test1/yyy/zzz/abc
 ~touch test1/yyy/zzz/abc
 .wait 100
-system_variable test1/?*
+system_variable *test1*
 #~mv test1/yyy test1/xxx
 ~mv test1/yyy test1/xxx
 .wait 100
-system_variable test1/?*
+system_variable *test1*
 #~touch test1/xxx/yyy/zzz/def
 ~touch test1/xxx/yyy/zzz/def
 .wait 100
-system_variable test1/?*
+system_variable *test1*
 notifier -finish test1
 #~rm -r test1/xxx
 ~rm -r test1/xxx
 #~touch test1/x
 ~touch test1/x
 notifier -start test1
-system_variable test1/?*
+system_variable *test1*
 #~mv test1/x test1/y
 ~mv test1/x test1/y
 .wait 100
-system_variable test1/?*
+system_variable *test1*
 #~touch test1/z
 ~touch test1/z
 #~mv test1/z test1/y
 ~mv test1/z test1/y
 .wait 100
-system_variable test1/?*
+system_variable *test1*
 #~rm test1/y
 ~rm test1/y
 .wait 100
-system_variable test1/?*
+system_variable *test1*
 notifier -finish test1
 #~mkdir test1/xxx
 ~mkdir test1/xxx
@@ -166,11 +162,11 @@ notifier -finish test1
 #~touch test1/xxx/222
 ~touch test1/xxx/222
 notifier -start test1
-system_variable test1/?*
+system_variable *test1*
 #~mv test1/xxx test1/yyy
 ~mv test1/xxx test1/yyy
 .wait 100
-system_variable test1/?*
+system_variable *test1*
 notifier -finish test1
 #~rm -r test1/yyy
 ~rm -r test1/yyy
