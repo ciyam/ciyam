@@ -9862,6 +9862,8 @@ void storage_channel_document_submit( const string& file_path )
 
    string file_name( identity_and_file.substr( pos + 1 ) );
 
+   replace( file_name, "/", "." );
+
    string submitting_folder( opened_prefix + identity + '/' );
    submitting_folder += c_channel_folder_submitting;
 
@@ -9886,6 +9888,8 @@ void storage_channel_document_unsubmit( const string& file_path )
 
    string file_name( identity_and_file.substr( pos + 1 ) );
 
+   replace( file_name, "/", "." );
+
    string submitting_folder( opened_prefix + identity + '/' );
    submitting_folder += c_channel_folder_submitting;
    
@@ -9909,6 +9913,8 @@ bool storage_channel_document_submitting( const string& file_path )
    string identity( identity_and_file.substr( 0, pos ) );
 
    string file_name( identity_and_file.substr( pos + 1 ) );
+
+   replace( file_name, "/", "." );
 
    string submitting_folder( opened_prefix + identity + '/' );
    submitting_folder += c_channel_folder_submitting;
