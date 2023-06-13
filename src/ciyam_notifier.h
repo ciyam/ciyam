@@ -28,7 +28,11 @@ class CIYAM_BASE_DECL_SPEC ciyam_notifier : public thread
 
    void on_start( );
 
+   std::string get_next_unique( );
+
    private:
+   size_t unique;
+
    std::string watch_root;
 };
 

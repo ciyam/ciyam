@@ -67,10 +67,39 @@ void decrement_active_listeners( )
    --g_active_listeners;
 }
 
+string get_value_and_unique( const string& raw_value, string* p_unique = 0 )
+{
+   string retval( raw_value );
+
+   if( !retval.empty( ) )
+   {
+      if( retval[ 0 ] == '[' )
+      {
+         string::size_type pos = retval.find( ']', 1 );
+
+         if( pos == string::npos )
+            throw runtime_error( "unexpected raw value '" + raw_value + "'" );
+
+         if( p_unique )
+            *p_unique = retval.substr( 1, pos - 1 );
+
+         retval.erase( 0, pos + 1 );
+      }
+   }
+
+   return retval;
+}
+
+inline string get_value_from_system_variable( const string& var_name, string* p_unique = 0 )
+{
+   return get_value_and_unique( get_raw_system_variable( var_name ), p_unique );
+}
+
 }
 
 ciyam_notifier::ciyam_notifier( const string& watch_root )
  :
+ unique( 0 ),
  watch_root( watch_root )
 {
 }
@@ -136,7 +165,12 @@ void ciyam_notifier::on_start( )
                if( next_dir != watch_root )
                   n.add_watch( next_dir );
 
-               set_system_variable( next_dir + '/', c_notifier_none );
+               string unique( get_next_unique( ) );
+
+               string prefix( '[' + unique + ']' );
+
+               set_system_variable( next_dir + '/', prefix + c_notifier_none );
+               set_system_variable( watch_variable_name + unique, next_dir + '/' );
 
                while( fs.has_next( ) )
                {
@@ -154,7 +188,12 @@ void ciyam_notifier::on_start( )
 
                      next_file.erase( 0, path_to_dir.length( ) );
 
-                     set_system_variable( next_file, c_notifier_none );
+                     string unique( get_next_unique( ) );
+
+                     string prefix( '[' + unique + ']' );
+
+                     set_system_variable( next_file, prefix + c_notifier_none );
+                     set_system_variable( watch_variable_name + unique, next_file );
                   }
                }
             }
@@ -203,7 +242,7 @@ void ciyam_notifier::on_start( )
 
             for( size_t i = 0; i < all_events.size( ); i++ )
             {
-               string value, old_value;
+               string value, old_value, unique_value;
 
                string next_event( all_events[ i ] );
 
@@ -225,7 +264,7 @@ void ciyam_notifier::on_start( )
 
                   string var_name( next_event.substr( 0, pos ) );
 
-                  old_value = get_raw_system_variable( var_name );
+                  old_value = get_value_from_system_variable( var_name, &unique_value );
 
                   if( pos != string::npos )
                   {
@@ -350,7 +389,13 @@ void ciyam_notifier::on_start( )
 
                                           next_name = var_name + next_name.substr( original_name.length( ) );
 
+                                          string unique_value;
+                                          get_value_and_unique( next_value, &unique_value );
+
                                           set_system_variable( next_name, next_value );
+
+                                          if( !unique_value.empty( ) )
+                                             set_system_variable( watch_variable_name + unique_value, next_name );
                                        }
                                     }
                                  }
@@ -411,17 +456,38 @@ void ciyam_notifier::on_start( )
 
                   if( value == "delete_self" )
                   {
-                     if( var_name != watch_root_name )
-                        skip = true;
-                     else
+                     skip = true;
+
+                     if( var_name == watch_root_name )
                      {
                         value = string( c_finishing );
                         var_name = watch_variable_name;
+
+                        set_system_variable( var_name, value );
                      }
                   }
 
                   if( !skip )
-                     set_system_variable( var_name, value );
+                  {
+                     if( !recurse )
+                        set_system_variable( var_name, value );
+                     else
+                     {
+                        if( unique_value.empty( ) )
+                        {
+                           unique_value = get_next_unique( );
+                           set_system_variable( watch_variable_name + unique_value, var_name );
+                        }
+
+                        if( !value.empty( ) )
+                           set_system_variable( var_name, '[' + unique_value + ']' + value );
+                        else
+                        {
+                           set_system_variable( var_name, "" );
+                           set_system_variable( watch_variable_name + unique_value, "" );
+                        }
+                     }
+                  }
                }
             }
          }
@@ -450,7 +516,7 @@ void ciyam_notifier::on_start( )
       else
          set_system_variable( watch_root_name + '*', "" );
 
-      set_system_variable( watch_variable_name, "" );
+      set_system_variable( watch_variable_name + '*', "" );
    }
 
    TRACE_LOG( TRACE_SESSIONS, "notifier finished for '" + watch_root + "'" );
@@ -458,4 +524,9 @@ void ciyam_notifier::on_start( )
    decrement_active_listeners( );
 
    delete this;
+}
+
+string ciyam_notifier::get_next_unique( )
+{
+   return to_comparable_string( unique++, false, 6 );
 }
