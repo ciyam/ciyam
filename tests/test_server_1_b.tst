@@ -316,24 +316,24 @@ test1/x [000001]none
 system_variable *test1*
 @:test1/ [watching]
 @:test1/000000 test1/
-@:test1/000002 test1/y
+@:test1/000001 test1/y
 test1/ [000000]none
-test1/y [000002]moved_from|test1/x
+test1/y [000001]moved_from|test1/x
 ~touch test1/z
 ~mv test1/z test1/y
 system_variable *test1*
 @:test1/ [watching]
 @:test1/000000 test1/
-@:test1/000002 test1/y
+@:test1/000001 test1/y
 test1/ [000000]none
-test1/y [000002]modified_from|test1/x
+test1/y [000001]modified_from|test1/x
 ~rm test1/y
 system_variable *test1*
 @:test1/ [watching]
 @:test1/000000 test1/
-@:test1/000002 test1/y
+@:test1/000001 test1/x
 test1/ [000000]none
-test1/x [000002]deleted
+test1/x [000001]deleted
 notifier -finish test1
 ~mkdir test1/xxx
 ~touch test1/xxx/111
@@ -353,11 +353,11 @@ test1/xxx/222 [000002]none
 system_variable *test1*
 @:test1/ [watching]
 @:test1/000000 test1/
+@:test1/000001 test1/yyy/
 @:test1/000002 test1/yyy/222
 @:test1/000003 test1/yyy/111
-@:test1/000004 test1/yyy/
 test1/ [000000]none
-test1/yyy/ [000004]moved_from|test1/xxx/
+test1/yyy/ [000001]moved_from|test1/xxx/
 test1/yyy/111 [000003]none
 test1/yyy/222 [000002]none
 notifier -finish test1
