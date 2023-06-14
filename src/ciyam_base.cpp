@@ -2612,9 +2612,6 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
       if( persistence_extra.find( c_notifier_prefix ) == 0 )
          persistence_extra.erase( 0, strlen( c_notifier_prefix ) );
 
-      if( row_data.find( persistence_extra ) == 0 )
-         row_data.erase( 0, persistence_extra.length( ) );
-
       if( !indirect_row_data.empty( ) )
          row_data += '|' + indirect_row_data;
    }
@@ -2669,7 +2666,12 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
             if( field_names[ i ] == graph_parent_fk_field )
                data = parent_key_value;
             else if( num < columns.size( ) )
+            {
                data = columns[ num++ ];
+
+               if( is_indirect_key && data.find( persistence_extra ) == 0 )
+                  data.erase( 0, persistence_extra.length( ) );
+            }
 
             if( p_columns )
                p_columns->push_back( data );
@@ -9822,6 +9824,16 @@ void storage_channel_documents_close( const char* p_identity )
          string next_name, next_value;
 
          next_name = variable_name_from_name_and_value( next_line, &next_value );
+
+         if( !next_value.empty( ) && next_value[ 0 ] == '[' )
+         {
+            string::size_type pos = next_value.find( ']' );
+
+            if( pos == string::npos )
+               throw runtime_error( "unexpected next_value '" + next_value + "' in storage_channel_documents_close" );
+
+            next_value.erase( 0, pos + 1 );
+         }
 
          if( next_name.find( prefix ) == 0 )
             next_name.erase( 0, prefix.length( ) );
