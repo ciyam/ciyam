@@ -238,6 +238,7 @@ void ciyam_notifier::on_start( )
             split( events, all_events, '\n' );
 
             map< string, string > cookie_id_current_names;
+            map< string, string > cookie_id_unique_values;
             map< string, string > cookie_id_original_names;
 
             for( size_t i = 0; i < all_events.size( ); i++ )
@@ -305,6 +306,9 @@ void ciyam_notifier::on_start( )
                                  else if( old_value.find( modified_from_prefix ) == 0 )
                                     prefix = modified_from_prefix;
 
+                                 if( !unique_value.empty( ) )
+                                    cookie_id_unique_values.insert( make_pair( cookie_id, unique_value ) );
+
                                  if( !prefix.empty( ) )
                                  {
                                     old_value.erase( 0, prefix.length( ) );
@@ -329,6 +333,9 @@ void ciyam_notifier::on_start( )
                            else
                            {
                               string original_name( cookie_id_original_names[ cookie_id ] );
+
+                              if( unique_value.empty( ) )
+                                 unique_value = cookie_id_unique_values[ cookie_id ];
 
                               if( original_name.empty( ) )
                               {
@@ -480,7 +487,10 @@ void ciyam_notifier::on_start( )
                         }
 
                         if( !value.empty( ) )
+                        {
                            set_system_variable( var_name, '[' + unique_value + ']' + value );
+                           set_system_variable( watch_variable_name + unique_value, var_name );
+                        }
                         else
                         {
                            set_system_variable( var_name, "" );
