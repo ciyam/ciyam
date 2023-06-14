@@ -2,9 +2,9 @@ storage_init ciyam
 pf 100 106100 "106104 " 106101,106102,106104 -min
 System_Blockchain,System_Blockchain,M001C100
 User,User,M001C101
-Locker,Lockers,M001C102
-Locker_Item,Locker_Items,M001C103
-Peerchain,Peerchains,M001C104
+Peerchain_Cache,Peerchain_Caches,M001C102
+Peerchain_Cache_Item,Peerchain_Cache_Items,M001C103
+Peerchain_Base,Peerchain_Bases,M001C104
 pf 100 107100 "107110 " 107101,107110 -min
 Name,M001C100F100
 Restore_In_Progress,M001C100F101
@@ -81,7 +81,7 @@ Owner,M001C102F100
 Actions,M001C102F101
 Active,M001C102F102
 Backup_Identity,M001C102F103
-Locker_Items,M001C102F104
+Cache_Items,M001C102F104
 Closing,M001C102F105
 Identity,M001C102F106
 Opened,M001C102F107
@@ -96,7 +96,7 @@ Shared_Identity,M001C102F115
 Shared_Secret,M001C102F116
 Status,M001C102F117
 User_Id,M001C102F118
-Locker,M001C103F100
+Peerchain_Cache,M001C103F100
 Original_Name,M001C103F101
 Submitting,M001C103F102
 Item_Name,M001C103F103
@@ -156,7 +156,7 @@ Orientation,E112
 Peerchain_Connection,E113
 Peerchain_Type,E114
 Peerchain_Status,E115
-Locker_Status,E116
+Cache_Status,E116
 Change_Password_Seconds,E117
 Change_Type,E118
 pf 100 102100 "102111 " 102101,102111 -min

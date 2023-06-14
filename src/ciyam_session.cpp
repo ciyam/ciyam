@@ -3871,7 +3871,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          module = resolve_module_id( module, &socket_handler.get_transformations( ) );
          mclass = resolve_class_id( module, mclass, &socket_handler.get_transformations( ) );
 
-         bool for_notifier = false;
          bool skip_execute = false;
 
          string ltf_key( c_log_transformation_scope_any_perform_op );
@@ -3904,9 +3903,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   key_prefix = args.substr( pos + 1 ) + '/';
                   args.erase( );
-
-                  for_notifier = true;
-                  replace( keys, ":", " " );
                }
             }
 
@@ -4026,12 +4022,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   string next_key( key_prefix + all_keys[ i ] );
                   string next_ver( all_vers.size( ) ? all_vers[ i ] : "" );
-
-                  if( for_notifier )
-                  {
-                     replace( next_key, "?", "," );
-                     replace( next_key, "*", "&" );
-                  }
 
                   if( next_key == " " )
                   {
