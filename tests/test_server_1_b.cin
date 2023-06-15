@@ -180,15 +180,33 @@ system_variable *test1*
 ~touch test1/xxx/333
 #~mv test1/xxx/111 test1/xxx/222 test1
 ~mv test1/xxx/111 test1/xxx/222 test1
-wait 100
+.wait 100
 system_variable *test1*
 #~rm test1/xxx/333
 ~rm test1/xxx/333
-wait 100
+.wait 100
 system_variable *test1*
 notifier -finish test1/xxx
 #~rm test1/111 test1/222
 ~rm test1/111 test1/222
+#~touch test1/xxx/111
+~touch test1/xxx/111
+notifier -start test1/xxx
+system_variable *test1/xxx*
+system_variable test1/xxx/111 "[000001]++none"
+#~touch test1/xxx/111
+~touch test1/xxx/111
+.wait 100
+system_variable *test1/xxx*
+#~mv test1/xxx/111 test1/xxx/222
+~mv test1/xxx/111 test1/xxx/222
+.wait 100
+system_variable *test1/xxx*
+#~rm test1/xxx/222
+~rm test1/xxx/222
+.wait 100
+system_variable *test1/xxx*
+notifier -finish test1
 #~rmdir test1/xxx
 ~rmdir test1/xxx
 file_put 1K*test.jpg test

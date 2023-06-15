@@ -243,7 +243,7 @@ void ciyam_notifier::on_start( )
 
             for( size_t i = 0; i < all_events.size( ); i++ )
             {
-               string value, old_value, unique_value;
+               string extra, value, old_value, unique_value;
 
                string next_event( all_events[ i ] );
 
@@ -280,6 +280,18 @@ void ciyam_notifier::on_start( )
 
                   old_value = get_value_from_system_variable( var_name, &unique_value );
 
+                  // NOTE: The extra string is all characters before the first 'a-z' character.
+                  if( !old_value.empty( ) && ( old_value[ 0 ] < 'a' || old_value[ 0 ] > 'z' ) )
+                  {
+                     string::size_type pos = old_value.find_first_of( "abcdefghijklmnopqrstuvwxyz" );
+
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected old_value '" + old_value + "'" );
+
+                     extra = old_value.substr( 0, pos );
+                     old_value.erase( 0, pos );
+                  }
+
                   if( pos != string::npos )
                   {
                      next_event.erase( 0, pos + 1 );
@@ -306,7 +318,7 @@ void ciyam_notifier::on_start( )
                                  value.erase( );
 
                                  if( !unique_value.empty( ) )
-                                    cookie_id_unique_values.insert( make_pair( cookie_id, unique_value ) );
+                                    cookie_id_unique_values.insert( make_pair( cookie_id, unique_value + extra ) );
 
                                  if( var_name.empty( ) || ( var_name[ var_name.length( ) - 1 ] != '/' ) )
                                     cookie_id_original_names.insert( make_pair( cookie_id, "" ) );
@@ -323,7 +335,7 @@ void ciyam_notifier::on_start( )
                                     prefix = modified_from_prefix;
 
                                  if( !unique_value.empty( ) )
-                                    cookie_id_unique_values.insert( make_pair( cookie_id, unique_value ) );
+                                    cookie_id_unique_values.insert( make_pair( cookie_id, unique_value + extra ) );
 
                                  if( !prefix.empty( ) )
                                  {
@@ -351,7 +363,17 @@ void ciyam_notifier::on_start( )
                               string original_name( cookie_id_original_names[ cookie_id ] );
 
                               if( unique_value.empty( ) )
+                              {
                                  unique_value = cookie_id_unique_values[ cookie_id ];
+
+                                 string::size_type pos = unique_value.find_first_not_of( "0123456789" );
+
+                                 if( pos != string::npos )
+                                 {
+                                    extra = unique_value.substr( pos );
+                                    unique_value.erase( pos );
+                                 }
+                              }
 
                               if( original_name.empty( ) )
                               {
@@ -472,6 +494,7 @@ void ciyam_notifier::on_start( )
                      else if( old_value.find( modified_from_prefix ) == 0 )
                         prefix = modified_from_prefix;
 
+                     extra.erase( );
                      value = c_notifier_deleted;
 
                      if( !prefix.empty( ) )
@@ -508,8 +531,8 @@ void ciyam_notifier::on_start( )
 
                         if( !value.empty( ) )
                         {
-                           set_system_variable( var_name, '[' + unique_value + ']' + value );
                            set_system_variable( watch_variable_name + unique_value, var_name );
+                           set_system_variable( var_name, '[' + unique_value + ']' + extra + value );
                         }
                         else
                         {
