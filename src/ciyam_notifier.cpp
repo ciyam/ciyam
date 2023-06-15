@@ -38,8 +38,8 @@ namespace
 
 trace_mutex g_mutex;
 
-const char c_created = '*';
-const char c_unchanged = '?';
+const char c_created = '!';
+const char c_unchanged = ':';
 
 const size_t c_wait_sleep_time = 10;
 
@@ -304,6 +304,9 @@ void ciyam_notifier::on_start( )
                               if( old_value == c_notifier_created )
                               {
                                  value.erase( );
+
+                                 if( !unique_value.empty( ) )
+                                    cookie_id_unique_values.insert( make_pair( cookie_id, unique_value ) );
 
                                  if( var_name.empty( ) || ( var_name[ var_name.length( ) - 1 ] != '/' ) )
                                     cookie_id_original_names.insert( make_pair( cookie_id, "" ) );
