@@ -362,6 +362,43 @@ test1/yyy/111 [000003]none
 test1/yyy/222 [000002]none
 notifier -finish test1
 ~rm -r test1/yyy
+~mkdir test1/xxx
+~touch test1/xxx/111 test1/xxx/222
+notifier -start test1/xxx
+system_variable *test1*
+@:test1/xxx/ [watching]
+@:test1/xxx/000000 test1/xxx/
+@:test1/xxx/000001 test1/xxx/222
+@:test1/xxx/000002 test1/xxx/111
+test1/xxx/ [000000]none
+test1/xxx/111 [000002]none
+test1/xxx/222 [000001]none
+~touch test1/xxx/333
+~mv test1/xxx/111 test1/xxx/222 test1
+wait 100
+system_variable *test1*
+@:test1/xxx/ [watching]
+@:test1/xxx/000000 test1/xxx/
+@:test1/xxx/000001 test1/xxx/222
+@:test1/xxx/000002 test1/xxx/111
+@:test1/xxx/000003 test1/xxx/333
+test1/xxx/ [000000]none
+test1/xxx/111 [000002]deleted
+test1/xxx/222 [000001]deleted
+test1/xxx/333 [000003]created
+~rm test1/xxx/333
+wait 100
+system_variable *test1*
+@:test1/xxx/ [watching]
+@:test1/xxx/000000 test1/xxx/
+@:test1/xxx/000001 test1/xxx/222
+@:test1/xxx/000002 test1/xxx/111
+test1/xxx/ [000000]none
+test1/xxx/111 [000002]deleted
+test1/xxx/222 [000001]deleted
+notifier -finish test1/xxx
+~rm test1/111 test1/222
+~rmdir test1/xxx
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test
 [list] 2d3c89f8f5301604234589e08a695e3ab0bdaa5f99ec21cf148b99d13020cb85 (307 B)

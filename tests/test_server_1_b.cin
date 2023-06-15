@@ -170,6 +170,27 @@ system_variable *test1*
 notifier -finish test1
 #~rm -r test1/yyy
 ~rm -r test1/yyy
+#~mkdir test1/xxx
+~mkdir test1/xxx
+#~touch test1/xxx/111 test1/xxx/222
+~touch test1/xxx/111 test1/xxx/222
+notifier -start test1/xxx
+system_variable *test1*
+#~touch test1/xxx/333
+~touch test1/xxx/333
+#~mv test1/xxx/111 test1/xxx/222 test1
+~mv test1/xxx/111 test1/xxx/222 test1
+wait 100
+system_variable *test1*
+#~rm test1/xxx/333
+~rm test1/xxx/333
+wait 100
+system_variable *test1*
+notifier -finish test1/xxx
+#~rm test1/111 test1/222
+~rm test1/111 test1/222
+#~rmdir test1/xxx
+~rmdir test1/xxx
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test
 file_get test.xxx

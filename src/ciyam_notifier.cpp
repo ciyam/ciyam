@@ -256,7 +256,20 @@ void ciyam_notifier::on_start( )
                   if( next_event[ 0 ] == '-' )
                      reportable_event = false;
 
+                  if( next_event[ 0 ] == '*' )
+                  {
+                     string::size_type pos = next_event.find( '+' );
+
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected next event format '" + next_event + "'" );
+
+                     unique_value = next_event.substr( 1, pos - 1 );
+
+                     next_event.erase( 0, pos );
+                  }
+
                   next_event.erase( 0, 1 );
+
                }
 
                if( !next_event.empty( ) && reportable_event )
@@ -407,6 +420,10 @@ void ciyam_notifier::on_start( )
                                     }
                                  }
                               }
+
+                              cookie_id_current_names.erase( cookie_id );
+                              cookie_id_unique_values.erase( cookie_id );
+                              cookie_id_original_names.erase( cookie_id );
                            }
                         }
                      }
@@ -499,6 +516,35 @@ void ciyam_notifier::on_start( )
                      }
                   }
                }
+            }
+
+            // NOTE: Files that have been moved outside the scope of the notifier watches
+            // will not receive a matching "move" event and the "@notifier_events" system
+            // variable will be used to instead treat them as deletes.
+            if( !cookie_id_original_names.empty( ) )
+            {
+               string removed_events;
+
+               for( map< string, string >::iterator i = cookie_id_original_names.begin( ); i != cookie_id_original_names.end( ); ++i )
+               {
+                  string next_original_name( i->second );
+
+                  if( !next_original_name.empty( ) && ( next_original_name[ 0 ] == c_unchanged ) )
+                  {
+                     if( !removed_events.empty( ) )
+                        removed_events += '\n';
+
+                     string unique_value( cookie_id_unique_values[ i->first ] );
+
+                     // NOTE: Ensure that the original unique value is re-used for the delete.
+                     if( !unique_value.empty( ) )
+                        removed_events += '*' + unique_value;
+
+                     removed_events += '+' + ( i->second ).substr( 1 ) + "|delete|0";
+                  }
+               }
+
+               set_system_variable( get_special_var_name( e_special_var_notifier_events ), removed_events );
             }
          }
          else
