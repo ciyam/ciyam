@@ -9645,9 +9645,6 @@ void storage_channel_create( const char* p_identity )
    ofs.add_file( "README.md", "channel_readme.md" );
 
    ofs.add_folder( c_channel_folder_submitting );
-   ofs.set_folder( c_channel_folder_submitting );
-
-   ofs.store_as_text_file( c_channel_selections, "" );
 }
 
 void storage_channel_destroy( const char* p_identity )
@@ -9823,10 +9820,6 @@ void storage_channel_documents_close( const char* p_identity )
 
    ofs.set_folder( identity );
 
-   // NOTE: Clear current submitting branch prior to import.
-   string submitting( c_channel_folder_submitting );
-   ofs.remove_folder( submitting, 0, true );
-
    string path( get_system_variable(
     get_special_var_name( e_special_var_opened_files ) ) + '/' + identity );
 
@@ -9923,8 +9916,12 @@ void storage_channel_documents_close( const char* p_identity )
       }
    }
 
-   ofs.set_folder( submitting );
-   ofs.store_as_text_file( c_channel_selections, all_selected );
+   ofs.set_folder( c_channel_folder_submitting );
+
+   if( !all_selected.empty( ) )
+      ofs.store_as_text_file( c_channel_selections, all_selected );
+   else if( ofs.has_file( c_channel_selections ) )
+      ofs.remove_file( c_channel_selections );
 
    ods_tx.commit( );
 
