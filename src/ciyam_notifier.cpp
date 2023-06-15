@@ -192,7 +192,9 @@ void ciyam_notifier::on_start( )
 
                      string prefix( '[' + unique + ']' );
 
-                     set_system_variable( next_file, prefix + c_notifier_none );
+                     string extra( get_raw_system_variable( next_file ) );
+
+                     set_system_variable( next_file, prefix + extra + c_notifier_none );
                      set_system_variable( watch_variable_name + unique, next_file );
                   }
                }
@@ -206,6 +208,8 @@ void ciyam_notifier::on_start( )
 
       TRACE_LOG( TRACE_SESSIONS, "notifier started for '" + watch_root + "'" );
 
+      string events;
+
       string moved_from_prefix( string( c_notifier_moved_from ) + '|' );
       string modified_from_prefix( string( c_notifier_modified_from ) + '|' );
 
@@ -218,8 +222,8 @@ void ciyam_notifier::on_start( )
          }
 
          // NOTE: Supports event testing via a special system variable.
-         string events( get_system_variable(
-          get_special_var_name( e_special_var_notifier_events ) ) );
+         if( events.empty( ) )
+            events = get_system_variable( get_special_var_name( e_special_var_notifier_events ) );
 
          if( !events.empty( ) || n.has_new_events( ) )
          {
@@ -236,6 +240,8 @@ void ciyam_notifier::on_start( )
             vector< string > all_events;
 
             split( events, all_events, '\n' );
+
+            events.erase( );
 
             map< string, string > cookie_id_current_names;
             map< string, string > cookie_id_unique_values;
@@ -545,8 +551,8 @@ void ciyam_notifier::on_start( )
             }
 
             // NOTE: Files that have been moved outside the scope of the notifier watches
-            // will not receive a matching "move" event and the "@notifier_events" system
-            // variable will be used to instead treat them as deletes.
+            // will not receive a matching "move" event so the "events" variable is being
+            // used to instead treat them as deletes.
             if( !cookie_id_original_names.empty( ) )
             {
                string removed_events;
@@ -570,7 +576,7 @@ void ciyam_notifier::on_start( )
                   }
                }
 
-               set_system_variable( get_special_var_name( e_special_var_notifier_events ), removed_events );
+               events = removed_events;
             }
          }
          else
