@@ -75,6 +75,8 @@ namespace
 
 const string c_nul_key( 1, '\0' );
 
+const char c_item_selection_marker = '#';
+
 const char c_module_prefix_separator = '_';
 const char c_module_order_prefix_separator = '.';
 
@@ -132,6 +134,7 @@ const char* const c_server_folder_shared = "shared";
 const char* const c_server_command_mutexes = "mutexes";
 const char* const c_server_command_sessions = "sessions";
 
+const char* const c_channel_selections = "selections";
 const char* const c_channel_folder_submitting = ".submitting";
 
 const char* const c_section_mbox = "mbox";
@@ -2608,6 +2611,9 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
 
       if( indirect_row_data.find( prefix ) == 0 )
          indirect_row_data.erase( 0, prefix.length( ) );
+
+      if( !indirect_row_data.empty( ) && ( indirect_row_data[ 0 ] == c_item_selection_marker ) )
+         indirect_row_data.erase( 0, 1 );
 
       if( persistence_extra.find( c_notifier_prefix ) == 0 )
          persistence_extra.erase( 0, strlen( c_notifier_prefix ) );
@@ -9639,6 +9645,9 @@ void storage_channel_create( const char* p_identity )
    ofs.add_file( "README.md", "channel_readme.md" );
 
    ofs.add_folder( c_channel_folder_submitting );
+   ofs.set_folder( c_channel_folder_submitting );
+
+   ofs.store_as_text_file( c_channel_selections, "" );
 }
 
 void storage_channel_destroy( const char* p_identity )
@@ -9752,6 +9761,25 @@ void storage_channel_documents_open( const char* p_identity )
    create_dir( path );
 
    export_objects( ofs, path );
+
+   ofs.set_folder( c_channel_folder_submitting );
+
+   if( ofs.has_file( c_channel_selections ) )
+   {
+      string selections;
+
+      ofs.fetch_from_text_file( c_channel_selections, selections );
+
+      if( !selections.empty( ) )
+      {
+         vector< string > all_selections;
+
+         split( selections, all_selections, '\n' );
+
+         for( size_t i = 0; i < all_selections.size( ); i++ )
+            set_system_variable( all_selections[ i ], string( 1, c_item_selection_marker ) );
+      }
+   }
 }
 
 void storage_channel_documents_close( const char* p_identity )
@@ -9809,6 +9837,8 @@ void storage_channel_documents_close( const char* p_identity )
    string prefix( get_raw_system_variable(
     get_special_var_name( e_special_var_opened_files ) ) + '/' + identity + '/' );
 
+   string all_selected;
+
    string all_file_lines( get_raw_system_variable( prefix + "?*" ) );
 
    vector< string > file_lines;
@@ -9821,6 +9851,7 @@ void storage_channel_documents_close( const char* p_identity )
 
       if( !next_line.empty( ) )
       {
+         bool is_selected = false;
          string next_name, next_value;
 
          next_name = variable_name_from_name_and_value( next_line, &next_value );
@@ -9833,6 +9864,17 @@ void storage_channel_documents_close( const char* p_identity )
                throw runtime_error( "unexpected next_value '" + next_value + "' in storage_channel_documents_close" );
 
             next_value.erase( 0, pos + 1 );
+         }
+
+         if( !next_value.empty( ) && ( next_value[ 0 ] == c_item_selection_marker ) )
+         {
+            is_selected = true;
+            next_value.erase( 0, 1 );
+
+            if( !all_selected.empty( ) )
+               all_selected += '\n';
+
+            all_selected += next_name;
          }
 
          if( next_name.find( prefix ) == 0 )
@@ -9881,6 +9923,9 @@ void storage_channel_documents_close( const char* p_identity )
       }
    }
 
+   ofs.set_folder( submitting );
+   ofs.store_as_text_file( c_channel_selections, all_selected );
+
    ods_tx.commit( );
 
    delete_directory_files( path, true );
@@ -9888,80 +9933,83 @@ void storage_channel_documents_close( const char* p_identity )
 
 void storage_channel_document_submit( const string& file_path )
 {
-   string opened_prefix( get_system_variable( get_special_var_name( e_special_var_opened_files ) ) + '/' );
+   string notifier_value( get_raw_system_variable( file_path ) );
 
-   string identity_and_file( file_path );
+   if( !notifier_value.empty( ) )
+   {
+      string prefix;
 
-   if( identity_and_file.find( opened_prefix ) == 0 )
-      identity_and_file.erase( 0, opened_prefix.length( ) );
+      string::size_type pos = notifier_value.find( ']' );
 
-   string::size_type pos = identity_and_file.find( '/' );
+      if( notifier_value[ 0 ] == '[' )
+      {
+         if( pos == string::npos )
+            throw runtime_error( "unexpected notifier value '" + notifier_value + "' for '" + file_path + "'" );
 
-   if( pos == string::npos )
-      throw runtime_error( "unexpected identity not found in '" + identity_and_file + "'" );
+         prefix = notifier_value.substr( 0, pos + 1 );
+         notifier_value.erase( 0, pos + 1 );
+      }
 
-   string identity( identity_and_file.substr( 0, pos ) );
+      if( !notifier_value.empty( ) && ( notifier_value[ 0 ] != c_item_selection_marker ) )
+      {
+         notifier_value = c_item_selection_marker + notifier_value;
 
-   string file_name( identity_and_file.substr( pos + 1 ) );
-
-   replace( file_name, "/", "." );
-
-   string submitting_folder( opened_prefix + identity + '/' );
-   submitting_folder += c_channel_folder_submitting;
-
-   file_copy( file_path, submitting_folder + '/' + file_name );
+         set_system_variable( file_path, prefix + notifier_value );
+      }
+   }
 }
 
 void storage_channel_document_unsubmit( const string& file_path )
 {
-   string opened_prefix( get_system_variable( get_special_var_name( e_special_var_opened_files ) ) + '/' );
+   string notifier_value( get_raw_system_variable( file_path ) );
 
-   string identity_and_file( file_path );
+   if( !notifier_value.empty( ) )
+   {
+      string prefix;
 
-   if( identity_and_file.find( opened_prefix ) == 0 )
-      identity_and_file.erase( 0, opened_prefix.length( ) );
+      string::size_type pos = notifier_value.find( ']' );
 
-   string::size_type pos = identity_and_file.find( '/' );
+      if( notifier_value[ 0 ] == '[' )
+      {
+         if( pos == string::npos )
+            throw runtime_error( "unexpected notifier value '" + notifier_value + "' for '" + file_path + "'" );
 
-   if( pos == string::npos )
-      throw runtime_error( "unexpected identity not found in '" + identity_and_file + "'" );
+         prefix = notifier_value.substr( 0, pos + 1 );
+         notifier_value.erase( 0, pos + 1 );
+      }
 
-   string identity( identity_and_file.substr( 0, pos ) );
+      if( !notifier_value.empty( ) && ( notifier_value[ 0 ] == c_item_selection_marker ) )
+      {
+         notifier_value.erase( 0, 1 );
 
-   string file_name( identity_and_file.substr( pos + 1 ) );
-
-   replace( file_name, "/", "." );
-
-   string submitting_folder( opened_prefix + identity + '/' );
-   submitting_folder += c_channel_folder_submitting;
-   
-   file_remove( submitting_folder + '/' + file_name );
+         set_system_variable( file_path, prefix + notifier_value );
+      }
+   }
 }
 
 bool storage_channel_document_submitting( const string& file_path )
 {
-   string opened_prefix( get_system_variable( get_special_var_name( e_special_var_opened_files ) ) + '/' );
+   bool retval = false;
 
-   string identity_and_file( file_path );
+   string notifier_value( get_raw_system_variable( file_path ) );
 
-   if( identity_and_file.find( opened_prefix ) == 0 )
-      identity_and_file.erase( 0, opened_prefix.length( ) );
+   if( !notifier_value.empty( ) )
+   {
+      string::size_type pos = notifier_value.find( ']' );
 
-   string::size_type pos = identity_and_file.find( '/' );
+      if( notifier_value[ 0 ] == '[' )
+      {
+         if( pos == string::npos )
+            throw runtime_error( "unexpected notifier value '" + notifier_value + "' for '" + file_path + "'" );
 
-   if( pos == string::npos )
-      throw runtime_error( "unexpected identity not found in '" + identity_and_file + "'" );
+         notifier_value.erase( 0, pos + 1 );
+      }
 
-   string identity( identity_and_file.substr( 0, pos ) );
+      if( !notifier_value.empty( ) && ( notifier_value[ 0 ] == c_item_selection_marker ) )
+         retval = true;
+   }
 
-   string file_name( identity_and_file.substr( pos + 1 ) );
-
-   replace( file_name, "/", "." );
-
-   string submitting_folder( opened_prefix + identity + '/' );
-   submitting_folder += c_channel_folder_submitting;
-
-   return file_exists( submitting_folder + '/' + file_name );
+   return retval;
 }
 
 ods& storage_ods_instance( )
