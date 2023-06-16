@@ -152,3 +152,22 @@ test_b bbb
 test_c ccc
 system_variable "\"abc\"" abc
 Error: invalid system variable name '"abc"'
+system_variable xxx yyy ""
+1
+system_variable xxx
+yyy
+system_variable xxx zzz ""
+0
+system_variable xxx
+yyy
+system_variable xxx zzz yyy
+1
+system_variable xxx
+zzz
+system_variable xxx "" yyy
+0
+system_variable xxx
+zzz
+system_variable xxx "" zzz
+1
+system_variable xxx

@@ -5721,13 +5721,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) );
          bool has_new_val = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value );
          string new_value( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value ) );
+         bool has_check_val = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_check_value );
+         string check_value( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_check_value ) );
 
          possibly_expected_error = true;
 
          if( has_new_val )
          {
             check_not_possible_protocol_response( new_value );
-            set_system_variable( name_or_expr, new_value, false, &handler );
+
+            if( !has_check_val )
+               set_system_variable( name_or_expr, new_value, false, &handler );
+            else
+               response = to_string( set_system_variable( name_or_expr, new_value, check_value ) );
          }
          else
          {
