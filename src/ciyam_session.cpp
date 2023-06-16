@@ -1393,8 +1393,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       if( command == c_cmd_ciyam_session_crypto_addr )
       {
          string extkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_extkey ) );
-         bool decrypt( has_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_decrypt ) );
-         bool uncompressed( has_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_uncompressed ) );
+         bool decrypt = has_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_decrypt );
+         bool uncompressed = has_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_uncompressed );
          string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_secret ) );
 
          string pub_key, priv_key;
@@ -1414,10 +1414,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_crypto_hash )
       {
-         bool use_sha512( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_sha512 ) );
-         bool hex_decode( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_hex_decode ) );
+         bool use_sha512 = has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_sha512 );
+         bool hex_decode = has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_hex_decode );
          string extra_rounds( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_extra_rounds ) );
-         bool data_from_file( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_from_file ) );
+         bool data_from_file = has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_from_file );
          string data_or_filename( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_or_filename ) );
          string data_suffix_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_suffix_text ) );
          string data_update_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_update_text ) );
@@ -1455,9 +1455,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_crypto_keys )
       {
          string extkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_extkey ) );
-         bool decrypt( has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_decrypt ) );
-         bool use_base64( has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_base64 ) );
-         bool uncompressed( has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_uncompressed ) );
+         bool decrypt = has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_decrypt );
+         bool use_base64 = has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_base64 );
+         bool uncompressed = has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_uncompressed );
          string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_secret ) );
 
          string pub_key, priv_key;
@@ -1488,7 +1488,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_crypto_sign )
       {
          string privkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_sign_privkey ) );
-         bool hex_decode( has_parm_val( parameters, c_cmd_ciyam_session_crypto_sign_hex_decode ) );
+         bool hex_decode = has_parm_val( parameters, c_cmd_ciyam_session_crypto_sign_hex_decode );
          string message( get_parm_val( parameters, c_cmd_ciyam_session_crypto_sign_message ) );
 
          response = crypto_sign( privkey, message, hex_decode );
@@ -1496,7 +1496,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_crypto_chain )
       {
          size_t length = from_string< size_t >( get_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_length ) );
-         bool use_base64( has_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_base64 ) );
+         bool use_base64 = has_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_base64 );
          string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_secret ) );
 
          response = generate_hash_chain( length, use_base64, secret.empty( ) ? 0 : secret.c_str( ) );
@@ -1504,7 +1504,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_crypto_verify )
       {
          string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_verify_pubkey ) );
-         bool hex_decode( has_parm_val( parameters, c_cmd_ciyam_session_crypto_verify_hex_decode ) );
+         bool hex_decode = has_parm_val( parameters, c_cmd_ciyam_session_crypto_verify_hex_decode );
          string message( get_parm_val( parameters, c_cmd_ciyam_session_crypto_verify_message ) );
          string signature( get_parm_val( parameters, c_cmd_ciyam_session_crypto_verify_signature ) );
 
@@ -1512,8 +1512,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_crypto_lamport )
       {
-         bool is_sign( has_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_sign ) );
-         bool is_verify( has_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_verify ) );
+         bool is_sign = has_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_sign );
+         bool is_verify = has_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_verify );
          string filename( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_filename ) );
          string mnenomics_or_hex_seed( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_mnemonics_or_hex_seed ) );
          string additional_entropy_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_additional_entropy_text ) );
@@ -1528,7 +1528,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_crypto_pub_key )
       {
          string privkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_pub_key_privkey ) );
-         bool uncompressed( has_parm_val( parameters, c_cmd_ciyam_session_crypto_pub_key_uncompressed ) );
+         bool uncompressed = has_parm_val( parameters, c_cmd_ciyam_session_crypto_pub_key_uncompressed );
 
          response = crypto_public( privkey, !are_hex_nibbles( privkey ), false, !uncompressed );
       }
@@ -1570,7 +1570,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_crypto_nonce_search )
       {
          string data( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_data ) );
-         bool faster( has_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_faster ) );
+         bool faster = has_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_faster );
          string start( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_start ) );
          string range( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_range ) );
          string difficulty( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_difficulty ) );
@@ -1669,11 +1669,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_raw )
       {
-         bool is_core( has_parm_val( parameters, c_cmd_ciyam_session_file_raw_core ) );
-         bool is_mime( has_parm_val( parameters, c_cmd_ciyam_session_file_raw_mime ) );
-         bool is_text( has_parm_val( parameters, c_cmd_ciyam_session_file_raw_text ) );
-         bool is_blob( has_parm_val( parameters, c_cmd_ciyam_session_file_raw_blob ) );
-         bool is_list( has_parm_val( parameters, c_cmd_ciyam_session_file_raw_list ) );
+         bool is_core = has_parm_val( parameters, c_cmd_ciyam_session_file_raw_core );
+         bool is_mime = has_parm_val( parameters, c_cmd_ciyam_session_file_raw_mime );
+         bool is_text = has_parm_val( parameters, c_cmd_ciyam_session_file_raw_text );
+         bool is_blob = has_parm_val( parameters, c_cmd_ciyam_session_file_raw_blob );
+         bool is_list = has_parm_val( parameters, c_cmd_ciyam_session_file_raw_list );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_file_raw_data ) );
          string tag( get_parm_val( parameters, c_cmd_ciyam_session_file_raw_tag ) );
 
@@ -1777,7 +1777,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_hash )
       {
-         bool is_quiet( has_parm_val( parameters, c_cmd_ciyam_session_file_hash_quiet ) );
+         bool is_quiet = has_parm_val( parameters, c_cmd_ciyam_session_file_hash_quiet );
          string pat_or_tag( get_parm_val( parameters, c_cmd_ciyam_session_file_hash_pat_or_tag ) );
 
          // NOTE: Use !<prefix> to find the first matching full hash.
@@ -1810,8 +1810,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_tag )
       {
-         bool is_remove( has_parm_val( parameters, c_cmd_ciyam_session_file_tag_remove ) );
-         bool is_unlink( has_parm_val( parameters, c_cmd_ciyam_session_file_tag_unlink ) );
+         bool is_remove = has_parm_val( parameters, c_cmd_ciyam_session_file_tag_remove );
+         bool is_unlink = has_parm_val( parameters, c_cmd_ciyam_session_file_tag_unlink );
          string hash( get_parm_val( parameters, c_cmd_ciyam_session_file_tag_hash ) );
          string names( get_parm_val( parameters, c_cmd_ciyam_session_file_tag_names ) );
 
@@ -1832,12 +1832,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_info )
       {
-         bool content( has_parm_val( parameters, c_cmd_ciyam_session_file_info_content ) );
-         bool recurse( has_parm_val( parameters, c_cmd_ciyam_session_file_info_recurse ) );
-         bool total_blobs( has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_blobs ) );
-         bool total_items( has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_items ) );
-         bool total_encrypted( has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_encrypted ) );
-         bool total_repo_entries( has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_repo_entries ) );
+         bool content = has_parm_val( parameters, c_cmd_ciyam_session_file_info_content );
+         bool recurse = has_parm_val( parameters, c_cmd_ciyam_session_file_info_recurse );
+         bool total_blobs = has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_blobs );
+         bool total_items = has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_items );
+         bool total_encrypted = has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_encrypted );
+         bool total_repo_entries = has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_repo_entries );
          string repository( get_parm_val( parameters, c_cmd_ciyam_session_file_info_repository ) );
          string depth( get_parm_val( parameters, c_cmd_ciyam_session_file_info_depth ) );
          string prefix( get_parm_val( parameters, c_cmd_ciyam_session_file_info_prefix ) );
@@ -1947,8 +1947,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string pat( get_parm_val( parameters, c_cmd_ciyam_session_file_kill_pat ) );
          string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_kill_tag_or_hash ) );
-         bool quiet( has_parm_val( parameters, c_cmd_ciyam_session_file_kill_quiet ) );
-         bool recurse( has_parm_val( parameters, c_cmd_ciyam_session_file_kill_recurse ) );
+         bool quiet = has_parm_val( parameters, c_cmd_ciyam_session_file_kill_quiet );
+         bool recurse = has_parm_val( parameters, c_cmd_ciyam_session_file_kill_recurse );
 
          string hash( tag_or_hash );
 
@@ -1977,7 +1977,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string add_tags( get_parm_val( parameters, c_cmd_ciyam_session_file_list_add_tags ) );
          string del_items( get_parm_val( parameters, c_cmd_ciyam_session_file_list_del_items ) );
-         bool sort( has_parm_val( parameters, c_cmd_ciyam_session_file_list_sort ) );
+         bool sort = has_parm_val( parameters, c_cmd_ciyam_session_file_list_sort );
          string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_list_tag_or_hash ) );
          string new_tag( get_parm_val( parameters, c_cmd_ciyam_session_file_list_new_tag ) );
          string old_tag( get_parm_val( parameters, c_cmd_ciyam_session_file_list_old_tag ) );
@@ -1989,7 +1989,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_tags )
       {
-         bool extract( has_parm_val( parameters, c_cmd_ciyam_session_file_tags_extract ) );
+         bool extract = has_parm_val( parameters, c_cmd_ciyam_session_file_tags_extract );
          string depth( get_parm_val( parameters, c_cmd_ciyam_session_file_tags_depth ) );
          string prefix( get_parm_val( parameters, c_cmd_ciyam_session_file_tags_prefix ) );
          string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_tags_tag_or_hash ) );
@@ -2034,7 +2034,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_test )
       {
-         bool content( has_parm_val( parameters, c_cmd_ciyam_session_file_test_content ) );
+         bool content = has_parm_val( parameters, c_cmd_ciyam_session_file_test_content );
          string num_packets( get_parm_val( parameters, c_cmd_ciyam_session_file_test_num_packets ) );
 
          size_t num = from_string< size_t >( num_packets );
@@ -2134,12 +2134,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_crypt )
       {
-         bool decrypt( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_decrypt ) );
-         bool encrypt( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_encrypt ) );
-         bool recrypt( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_recrypt ) );
-         bool recurse( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_recurse ) );
-         bool blobs_only( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_blobs_only ) );
-         bool blobs_only_repo( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_blobs_only_repo ) );
+         bool decrypt = has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_decrypt );
+         bool encrypt = has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_encrypt );
+         bool recrypt = has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_recrypt );
+         bool recurse = has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_recurse );
+         bool blobs_only = has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_blobs_only );
+         bool blobs_only_repo = has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_blobs_only_repo );
          string repository( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_repository ) );
          string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_tag_or_hash ) );
          string password( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_password ) );
@@ -2197,7 +2197,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_resync )
       {
-         bool remove_invalid_tags( has_parm_val( parameters, c_cmd_ciyam_session_file_resync_remove_invalid_tags ) );
+         bool remove_invalid_tags = has_parm_val( parameters, c_cmd_ciyam_session_file_resync_remove_invalid_tags );
 
          resync_files_area( &handler, remove_invalid_tags );
 
@@ -2205,11 +2205,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_archive )
       {
-         bool add( has_parm_val( parameters, c_cmd_ciyam_session_file_archive_add ) );
-         bool clear( has_parm_val( parameters, c_cmd_ciyam_session_file_archive_clear ) );
-         bool remove( has_parm_val( parameters, c_cmd_ciyam_session_file_archive_remove ) );
-         bool repair( has_parm_val( parameters, c_cmd_ciyam_session_file_archive_repair ) );
-         bool destroy( has_parm_val( parameters, c_cmd_ciyam_session_file_archive_destroy ) );
+         bool add = has_parm_val( parameters, c_cmd_ciyam_session_file_archive_add );
+         bool clear = has_parm_val( parameters, c_cmd_ciyam_session_file_archive_clear );
+         bool remove = has_parm_val( parameters, c_cmd_ciyam_session_file_archive_remove );
+         bool repair = has_parm_val( parameters, c_cmd_ciyam_session_file_archive_repair );
+         bool destroy = has_parm_val( parameters, c_cmd_ciyam_session_file_archive_destroy );
          string name( get_parm_val( parameters, c_cmd_ciyam_session_file_archive_name ) );
          string path( get_parm_val( parameters, c_cmd_ciyam_session_file_archive_path ) );
          string size_limit( get_parm_val( parameters, c_cmd_ciyam_session_file_archive_size_limit ) );
@@ -2240,9 +2240,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_archives )
       {
-         bool minimal( has_parm_val( parameters, c_cmd_ciyam_session_file_archives_minimal ) );
-         bool path_only( has_parm_val( parameters, c_cmd_ciyam_session_file_archives_path_only ) );
-         bool status_update( has_parm_val( parameters, c_cmd_ciyam_session_file_archives_update_status ) );
+         bool minimal = has_parm_val( parameters, c_cmd_ciyam_session_file_archives_minimal );
+         bool path_only = has_parm_val( parameters, c_cmd_ciyam_session_file_archives_path_only );
+         bool status_update = has_parm_val( parameters, c_cmd_ciyam_session_file_archives_update_status );
          string name( get_parm_val( parameters, c_cmd_ciyam_session_file_archives_name ) );
 
          if( status_update )
@@ -2264,8 +2264,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string num_files( get_parm_val( parameters, c_cmd_ciyam_session_file_relegate_num_files ) );
          string size_limit( get_parm_val( parameters, c_cmd_ciyam_session_file_relegate_size_limit ) );
-         bool destroy( has_parm_val( parameters, c_cmd_ciyam_session_file_relegate_destroy ) );
-         bool blacklist( has_parm_val( parameters, c_cmd_ciyam_session_file_relegate_blacklist ) );
+         bool destroy = has_parm_val( parameters, c_cmd_ciyam_session_file_relegate_destroy );
+         bool blacklist = has_parm_val( parameters, c_cmd_ciyam_session_file_relegate_blacklist );
          string hash( get_parm_val( parameters, c_cmd_ciyam_session_file_relegate_hash ) );
          string archive( get_parm_val( parameters, c_cmd_ciyam_session_file_relegate_archive ) );
 
@@ -2317,7 +2317,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string repository( get_parm_val( parameters, c_cmd_ciyam_session_file_repo_entry_repository ) );
          string entry_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_repo_entry_entry_hash ) );
-         bool remove( has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entry_remove ) );
+         bool remove = has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entry_remove );
 
          string local_hash, local_public_key, master_public_key;
 
@@ -2351,9 +2351,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_file_repo_entries )
       {
          string repository( get_parm_val( parameters, c_cmd_ciyam_session_file_repo_entries_repository ) );
-         bool total( has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entries_total ) );
-         bool remove_all( has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entries_remove_all ) );
-         bool remove_obsolete( has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entries_remove_obsolete ) );
+         bool total = has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entries_total );
+         bool remove_all = has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entries_remove_all );
+         bool remove_obsolete = has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entries_remove_obsolete );
 
          date_time dtm( date_time::local( ) );
 
@@ -2453,7 +2453,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string module( get_parm_val( parameters, c_cmd_ciyam_session_object_create_module ) );
          string mclass( get_parm_val( parameters, c_cmd_ciyam_session_object_create_mclass ) );
          string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_create_handle ) );
-         bool dynamic( has_parm_val( parameters, c_cmd_ciyam_session_object_create_dynamic ) );
+         bool dynamic = has_parm_val( parameters, c_cmd_ciyam_session_object_create_dynamic );
 
          mclass = get_class_id_for_id_or_name( module, mclass );
 
@@ -2505,7 +2505,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_variable_handle ) );
          string context( get_parm_val( parameters, c_cmd_ciyam_session_object_variable_context ) );
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_object_variable_name_or_expr ) );
-         bool has_new_val( has_parm_val( parameters, c_cmd_ciyam_session_object_variable_new_value ) );
+         bool has_new_val = has_parm_val( parameters, c_cmd_ciyam_session_object_variable_new_value );
          string new_value( get_parm_val( parameters, c_cmd_ciyam_session_object_variable_new_value ) );
 
          possibly_expected_error = true;
@@ -2593,8 +2593,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_forwards_handle ) );
          string context( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_forwards_context ) );
          string key_info( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_forwards_key_info ) );
-
-         bool inclusive( has_parm_val( parameters, c_cmd_ciyam_session_object_iterate_forwards_inc ) );
+         bool inclusive = has_parm_val( parameters, c_cmd_ciyam_session_object_iterate_forwards_inc );
 
          bool rc = instance_iterate( atoi( handle.c_str( ) ),
           context, key_info, "", "", "", "", e_iter_direction_forwards, inclusive );
@@ -2610,8 +2609,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_backwards_handle ) );
          string context( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_backwards_context ) );
          string key_info( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_backwards_key_info ) );
-
-         bool inclusive( has_parm_val( parameters, c_cmd_ciyam_session_object_iterate_backwards_inc ) );
+         bool inclusive = has_parm_val( parameters, c_cmd_ciyam_session_object_iterate_backwards_inc );
 
          bool rc = instance_iterate( atoi( handle.c_str( ) ),
           context, key_info, "", "", "", "", e_iter_direction_backwards, inclusive );
@@ -2624,7 +2622,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_peer_listen )
       {
-         bool remove( has_parm_val( parameters, c_cmd_ciyam_session_peer_listen_remove ) );
+         bool remove = has_parm_val( parameters, c_cmd_ciyam_session_peer_listen_remove );
          string port( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_port ) );
          string blockchains( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_blockchains ) );
 
@@ -2635,8 +2633,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_peer_reject )
       {
-         bool list( has_parm_val( parameters, c_cmd_ciyam_session_peer_reject_list ) );
-         bool remove( has_parm_val( parameters, c_cmd_ciyam_session_peer_reject_remove ) );
+         bool list = has_parm_val( parameters, c_cmd_ciyam_session_peer_reject_list );
+         bool remove = has_parm_val( parameters, c_cmd_ciyam_session_peer_reject_remove );
          string ip_addr( get_parm_val( parameters, c_cmd_ciyam_session_peer_reject_ip_addr ) );
 
          if( list )
@@ -2651,14 +2649,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_peer_connect )
       {
-         bool force( has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_force ) );
-         size_t num_supporters( atoi( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_num_supporters ).c_str( ) ) );
+         bool force = has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_force );
+         size_t num_supporters = atoi( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_num_supporters ).c_str( ) );
          string blockchain( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_blockchain ) );
          string host_and_or_port( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_host_and_or_port ) );
-         bool type_hub( has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_hub ) );
-         bool type_user( has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_user ) );
-         bool type_backup( has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_backup ) );
-         bool type_shared( has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_shared ) );
+         bool type_hub = has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_hub );
+         bool type_user = has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_user );
+         bool type_backup = has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_backup );
+         bool type_shared = has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_shared );
 
          peerchain_type chain_type = e_peerchain_type_any;
 
@@ -2721,7 +2719,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string module( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_module ) );
          string mclass( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_mclass ) );
-         bool is_reverse( has_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_reverse ) );
+         bool is_reverse = has_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_reverse );
          string uid( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_uid ) );
          string dtm( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_dtm ) );
          string grp( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_grp ) );
@@ -2737,10 +2735,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string limit( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_limit ) );
          string set_values( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_set_values ) );
          string fields( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_fields ) );
-         bool minimal( has_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_minimal ) );
-         bool no_default_values( has_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_no_default_values ) );
+         bool minimal = has_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_minimal );
+         bool no_default_values = has_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_no_default_values );
          string map_file( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_map_file ) );
-         bool create_pdf( has_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_create_pdf ) );
+         bool create_pdf = has_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_create_pdf );
          string format_file( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_format_file ) );
          string output_file( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_output_file ) );
          string title_name( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_title_name ) );
@@ -3683,8 +3681,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string grp( get_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_grp ) );
          string tz_name( get_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_tz_name ) );
          string set_values( get_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_set_values ) );
-         bool progress( has_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_progress ) );
-         bool quiet( has_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_quiet ) );
+         bool progress = has_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_progress );
+         bool quiet = has_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_quiet );
          string key( get_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_key ) );
          string ver_info( get_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_ver_info ) );
 
@@ -4230,7 +4228,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string tz_name( get_parm_val( parameters, c_cmd_ciyam_session_perform_bulk_ops_tz_name ) );
          string filename( get_parm_val( parameters, c_cmd_ciyam_session_perform_bulk_ops_filename ) );
          string export_fields( get_parm_val( parameters, c_cmd_ciyam_session_perform_bulk_ops_export_fields ) );
-         bool destroy_records( has_parm_val( parameters, c_cmd_ciyam_session_perform_bulk_ops_destroy_records ) );
+         bool destroy_records = has_parm_val( parameters, c_cmd_ciyam_session_perform_bulk_ops_destroy_records );
          string search_text( get_parm_val( parameters, c_cmd_ciyam_session_perform_bulk_ops_search_text ) );
          string search_query( get_parm_val( parameters, c_cmd_ciyam_session_perform_bulk_ops_search_query ) );
          string fixed_field_values( get_parm_val( parameters, c_cmd_ciyam_session_perform_bulk_ops_fixed_field_values ) );
@@ -4260,8 +4258,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string dtm( get_parm_val( parameters, c_cmd_ciyam_session_perform_package_import_dtm ) );
          string module( get_parm_val( parameters, c_cmd_ciyam_session_perform_package_import_module ) );
          string filename( get_parm_val( parameters, c_cmd_ciyam_session_perform_package_import_filename ) );
-         bool new_only( has_parm_val( parameters, c_cmd_ciyam_session_perform_package_import_new_only ) );
-         bool for_remove( has_parm_val( parameters, c_cmd_ciyam_session_perform_package_import_for_remove ) );
+         bool new_only = has_parm_val( parameters, c_cmd_ciyam_session_perform_package_import_new_only );
+         bool for_remove = has_parm_val( parameters, c_cmd_ciyam_session_perform_package_import_for_remove );
          string key_prefix( get_parm_val( parameters, c_cmd_ciyam_session_perform_package_import_key_prefix ) );
          string replace_info( get_parm_val( parameters, c_cmd_ciyam_session_perform_package_import_replace_info ) );
          string skip_field_info( get_parm_val( parameters, c_cmd_ciyam_session_perform_package_import_skip_field_info ) );
@@ -4287,9 +4285,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_session_kill )
       {
-         bool force( has_parm_val( parameters, c_cmd_ciyam_session_session_kill_force ) );
-         bool at_term( has_parm_val( parameters, c_cmd_ciyam_session_session_kill_at_term ) );
-         bool kill_all( has_parm_val( parameters, c_cmd_ciyam_session_session_kill_all ) );
+         bool force = has_parm_val( parameters, c_cmd_ciyam_session_session_kill_force );
+         bool at_term = has_parm_val( parameters, c_cmd_ciyam_session_session_kill_at_term );
+         bool kill_all = has_parm_val( parameters, c_cmd_ciyam_session_session_kill_all );
          string sess_ids( get_parm_val( parameters, c_cmd_ciyam_session_session_kill_sess_ids ) );
          string seconds( get_parm_val( parameters, c_cmd_ciyam_session_session_kill_seconds ) );
 
@@ -4310,7 +4308,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_session_list )
       {
-         bool minimal( has_parm_val( parameters, c_cmd_ciyam_session_session_list_minimal ) );
+         bool minimal = has_parm_val( parameters, c_cmd_ciyam_session_session_list_minimal );
 
          list_sessions( osstr, !minimal, !minimal );
 
@@ -4321,10 +4319,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_session_lock )
       {
-         bool lock_capture( has_parm_val( parameters, c_cmd_ciyam_session_session_lock_capture ) );
-         bool lock_release( has_parm_val( parameters, c_cmd_ciyam_session_session_lock_release ) );
-         bool at_term( has_parm_val( parameters, c_cmd_ciyam_session_session_lock_at_term ) );
-         bool lock_all( has_parm_val( parameters, c_cmd_ciyam_session_session_lock_all ) );
+         bool lock_capture = has_parm_val( parameters, c_cmd_ciyam_session_session_lock_capture );
+         bool lock_release = has_parm_val( parameters, c_cmd_ciyam_session_session_lock_release );
+         bool at_term = has_parm_val( parameters, c_cmd_ciyam_session_session_lock_at_term );
+         bool lock_all = has_parm_val( parameters, c_cmd_ciyam_session_session_lock_all );
          string sess_ids( get_parm_val( parameters, c_cmd_ciyam_session_session_lock_sess_ids ) );
 
          if( lock_all )
@@ -4350,7 +4348,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_session_wait )
       {
-         bool lock( has_parm_val( parameters, c_cmd_ciyam_session_session_wait_lock ) );
+         bool lock = has_parm_val( parameters, c_cmd_ciyam_session_session_wait_lock );
          string uid( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_uid ) );
          string milliseconds( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_milliseconds ) );
 
@@ -4412,7 +4410,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string sess_id( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_sess_id ) );
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_name_or_expr ) );
-         bool has_new_val( has_parm_val( parameters, c_cmd_ciyam_session_session_variable_new_value ) );
+         bool has_new_val = has_parm_val( parameters, c_cmd_ciyam_session_session_variable_new_value );
          string new_value( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_new_value ) );
 
          string* p_sess_id = 0;
@@ -4500,7 +4498,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_storage_backup )
       {
          string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_backup_name ) );
-         bool truncate_log( has_parm_val( parameters, c_cmd_ciyam_session_storage_backup_truncate ) );
+         bool truncate_log = has_parm_val( parameters, c_cmd_ciyam_session_storage_backup_truncate );
 
          bool is_meta = ( name == "Meta" );
 
@@ -4794,10 +4792,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_restore_name ) );
          string directory( get_parm_val( parameters, c_cmd_ciyam_session_storage_restore_directory ) );
          string trace_info( get_parm_val( parameters, c_cmd_ciyam_session_storage_restore_trace_info ) );
-         int stop_at_tx( atoi( get_parm_val( parameters, c_cmd_ciyam_session_storage_restore_stop_at_tx ).c_str( ) ) );
-         bool rebuild( has_parm_val( parameters, c_cmd_ciyam_session_storage_restore_rebuild ) );
-         bool partial( has_parm_val( parameters, c_cmd_ciyam_session_storage_restore_partial ) );
-         bool quicker( has_parm_val( parameters, c_cmd_ciyam_session_storage_restore_quicker ) );
+         int stop_at_tx = atoi( get_parm_val( parameters, c_cmd_ciyam_session_storage_restore_stop_at_tx ).c_str( ) );
+         bool rebuild = has_parm_val( parameters, c_cmd_ciyam_session_storage_restore_rebuild );
+         bool partial = has_parm_val( parameters, c_cmd_ciyam_session_storage_restore_partial );
+         bool quicker = has_parm_val( parameters, c_cmd_ciyam_session_storage_restore_quicker );
 
          string db_file_names( ods_file_names( name, ' ' ) );
 
@@ -5333,7 +5331,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_storage_web_root )
       {
-         bool expand( has_parm_val( parameters, c_cmd_ciyam_session_storage_web_root_expand ) );
+         bool expand = has_parm_val( parameters, c_cmd_ciyam_session_storage_web_root_expand );
 
          string new_root( get_parm_val( parameters, c_cmd_ciyam_session_storage_web_root_new_root ) );
 
@@ -5443,16 +5441,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_storage_channel_documents )
       {
-         bool open( has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_open ) );
-         bool close( has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_close ) );
+         bool open = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_open );
+         bool close = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_close );
+         bool selected = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_selected );
          string identity( get_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_identity ) );
 
          if( open )
             storage_channel_documents_open( identity.c_str( ) );
          else if( close )
             storage_channel_documents_close( identity.c_str( ) );
-         else
+         else if ( !selected )
             response = storage_channel_documents( identity );
+         else
+            response = storage_channel_documents_selected( identity );
       }
       else if( command == c_cmd_ciyam_session_storage_transaction_start )
          transaction_start( );
@@ -5484,8 +5485,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_system_identity )
       {
-         bool is_md5( has_parm_val( parameters, c_cmd_ciyam_session_system_identity_md5 ) );
-         bool is_raw( has_parm_val( parameters, c_cmd_ciyam_session_system_identity_raw ) );
+         bool is_md5 = has_parm_val( parameters, c_cmd_ciyam_session_system_identity_md5 );
+         bool is_raw = has_parm_val( parameters, c_cmd_ciyam_session_system_identity_raw );
          string info( get_parm_val( parameters, c_cmd_ciyam_session_system_identity_info ) );
          string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_system_identity_pubkey ) );
          string encrypted( get_parm_val( parameters, c_cmd_ciyam_session_system_identity_encrypted ) );
@@ -5552,7 +5553,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          response = c_protocol_version;
       else if( command == c_cmd_ciyam_session_system_log_tail )
       {
-         bool is_script( has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_script ) );
+         bool is_script = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_script );
          string num_lines( get_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_lines ) );
 
          unsigned int num = c_cmd_ciyam_session_system_log_tail_lines_default;
@@ -5578,8 +5579,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_system_notifier )
       {
-         bool is_start( has_parm_val( parameters, c_cmd_ciyam_session_system_notifier_start ) );
-         bool is_finish( has_parm_val( parameters, c_cmd_ciyam_session_system_notifier_finish ) );
+         bool is_start = has_parm_val( parameters, c_cmd_ciyam_session_system_notifier_start );
+         bool is_finish = has_parm_val( parameters, c_cmd_ciyam_session_system_notifier_finish );
          string file_or_directory( get_parm_val( parameters, c_cmd_ciyam_session_system_notifier_file_or_directory ) );
 
          if( is_finish )
@@ -5718,7 +5719,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_system_variable )
       {
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) );
-         bool has_new_val( has_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value ) );
+         bool has_new_val = has_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value );
          string new_value( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value ) );
 
          possibly_expected_error = true;
@@ -5737,7 +5738,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_system_checkmail )
       {
          string headers( get_parm_val( parameters, c_cmd_ciyam_session_system_checkmail_headers ) );
-         bool create_script( has_parm_val( parameters, c_cmd_ciyam_session_system_checkmail_create_script ) );
+         bool create_script = has_parm_val( parameters, c_cmd_ciyam_session_system_checkmail_create_script );
 
          vector< string > email_headers;
          if( !headers.empty( ) )
@@ -5910,8 +5911,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_utils_decode )
       {
-         bool url( has_parm_val( parameters, c_cmd_ciyam_session_utils_decode_url ) );
-         bool text( has_parm_val( parameters, c_cmd_ciyam_session_utils_decode_text ) );
+         bool url = has_parm_val( parameters, c_cmd_ciyam_session_utils_decode_url );
+         bool text = has_parm_val( parameters, c_cmd_ciyam_session_utils_decode_text );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_utils_decode_data ) );
 
          if( text )
@@ -5921,8 +5922,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_utils_encode )
       {
-         bool url( has_parm_val( parameters, c_cmd_ciyam_session_utils_encode_url ) );
-         bool text( has_parm_val( parameters, c_cmd_ciyam_session_utils_encode_text ) );
+         bool url = has_parm_val( parameters, c_cmd_ciyam_session_utils_encode_url );
+         bool text = has_parm_val( parameters, c_cmd_ciyam_session_utils_encode_text );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_utils_encode_data ) );
 
          if( text )
@@ -5932,10 +5933,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_utils_decrypt )
       {
-         bool no_ssl( has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_no_ssl ) );
-         bool no_salt( has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_no_salt ) );
-         bool harden_key( has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_harden_key ) );
-         bool pwd_and_data( has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_pwd_and_data ) );
+         bool no_ssl = has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_no_ssl );
+         bool no_salt = has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_no_salt );
+         bool harden_key = has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_harden_key );
+         bool pwd_and_data = has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_pwd_and_data );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_data ) );
          string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_pubkey ) );
 
@@ -5953,10 +5954,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_utils_encrypt )
       {
-         bool no_ssl( has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_no_ssl ) );
-         bool no_salt( has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_no_salt ) );
-         bool harden_key( has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_harden_key ) );
-         bool pwd_and_data( has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_pwd_and_data ) );
+         bool no_ssl = has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_no_ssl );
+         bool no_salt = has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_no_salt );
+         bool harden_key = has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_harden_key );
+         bool pwd_and_data = has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_pwd_and_data );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_data ) );
          string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_pubkey ) );
 
