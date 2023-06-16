@@ -18,6 +18,9 @@ NUM_ARGS=@$NUM_ARGS+1
 STORAGE=$1
 IDENTITY=$2
 ;
+.system_variable @opened_$IDENTITY
+@ifeq "$OUTPUT" "1"
+;
 .system_variable @error_$IDENTITY ""
 ;
 .storage_init $STORAGE
@@ -34,5 +37,6 @@ IDENTITY=$2
 @endif
 ;
 .system_variable @closing_$IDENTITY ""
+@endif
 ;
 @endif

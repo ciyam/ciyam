@@ -18,8 +18,10 @@ NUM_ARGS=@$NUM_ARGS+1
 STORAGE=$1
 IDENTITY=$2
 ;
+.system_variable @opened_$IDENTITY
+@ifeq "$OUTPUT" ""
+;
 .system_variable @error_$IDENTITY ""
-.system_variable @opened_$IDENTITY ""
 ;
 .storage_init $STORAGE
 @ifdef $ERROR
@@ -41,5 +43,6 @@ notifier -start $OUTPUT/$IDENTITY
 @endif
 ;
 .system_variable @opening_$IDENTITY ""
+@endif
 ;
 @endif

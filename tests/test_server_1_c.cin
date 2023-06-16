@@ -73,4 +73,14 @@ system_variable test_c ccc
 system_variable "test c" ccc
 system_variable test*
 system_variable "\"abc\"" abc
+system_variable xxx yyy ""
+system_variable xxx
+system_variable xxx zzz ""
+system_variable xxx
+system_variable xxx zzz yyy
+system_variable xxx
+system_variable xxx "" yyy
+system_variable xxx
+system_variable xxx "" zzz
+system_variable xxx
 .quit
