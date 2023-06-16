@@ -8,7 +8,7 @@ branch objects
 111/bbb* (5.7 kB)
 yyy (5.7 kB)
 zzz (3.1 kB)
-file_remove yyy
+file_remove /yyy
 branch objects
 111/
 111/222/

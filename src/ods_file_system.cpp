@@ -3145,10 +3145,18 @@ bool ods_file_system::remove_items_for_file(
    btree_type::iterator tmp_iter;
    btree_type::item_type tmp_item;
 
-   if( current_folder == string( c_root_folder ) )
-      tmp_item.val = current_folder + name;
+   if( name.empty( ) )
+      throw runtime_error( "unexpected empty file name in 'remove_items_for_file'" );
+
+   if( name[ 0 ] == c_folder )
+      tmp_item.val = name;
    else
-      tmp_item.val = current_folder + c_folder_separator + name;
+   {
+      if( current_folder == string( c_root_folder ) )
+         tmp_item.val = current_folder + name;
+      else
+         tmp_item.val = current_folder + c_folder_separator + name;
+   }
 
    replace( tmp_item.val, c_folder_separator, c_pipe_separator );
 

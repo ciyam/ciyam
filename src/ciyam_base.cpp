@@ -9620,6 +9620,8 @@ void storage_channel_create( const char* p_identity )
 
    ods_file_system ofs( *ods::instance( ) );
 
+   ods::bulk_write bulk_write( *ods::instance( ) );
+
    ofs.set_root_folder( c_storable_folder_name_channels );
 
    string identity;
@@ -9661,6 +9663,8 @@ void storage_channel_destroy( const char* p_identity )
 
    ods_file_system ofs( *ods::instance( ) );
 
+   ods::bulk_write bulk_write( *ods::instance( ) );
+
    ofs.set_root_folder( c_storable_folder_name_channels );
 
    string identity;
@@ -9697,6 +9701,8 @@ string storage_channel_documents( const string& identity )
 
    ods_file_system ofs( *ods::instance( ) );
 
+   ods::bulk_read bulk_read( *ods::instance( ) );
+
    ofs.set_root_folder( c_storable_folder_name_channels );
 
    if( identity.empty( ) )
@@ -9712,6 +9718,88 @@ string storage_channel_documents( const string& identity )
    ofs.branch_objects( "*", ss );
 
    return ss.str( );
+}
+
+string storage_channel_documents_selected( const string& identity )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session || !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   string storage_name( gtp_session->p_storage_handler->get_name( ) );
+
+   if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
+      throw runtime_error( "invalid non-peerchain storage '" + storage_name + "' for listing documents" );
+
+   string retval;
+
+   ods_file_system ofs( *ods::instance( ) );
+
+   ods::bulk_read bulk_read( *ods::instance( ) );
+
+   ofs.set_root_folder( c_storable_folder_name_channels );
+
+   if( identity.empty( ) )
+      throw runtime_error( "unexpected null identity in 'storage_channel_documents'" );
+
+   if( !ofs.has_folder( identity ) )
+      throw runtime_error( "channel folder for '" + identity + "' was not found" );
+
+   ofs.set_folder( identity );
+
+   stringstream ss;
+
+   ofs.branch_objects( "*", ss );
+
+   string all_objects( ss.str( ) );
+
+   map< string, string > file_sizes;
+
+   if( !all_objects.empty( ) )
+   {
+      vector< string > objects;
+
+      split( all_objects, objects, '\n' );
+
+      for( size_t i = 0; i < objects.size( ); i++ )
+      {
+         string next( objects[ i ] );
+
+         string::size_type pos = next.rfind( " (" );
+
+         if( pos != string::npos )
+            file_sizes.insert( make_pair( next.substr( 0, pos ), next.substr( pos ) ) );
+      }
+   }
+
+   ofs.set_folder( c_channel_folder_submitting );
+
+   if( ofs.has_file( c_channel_selections ) )
+   {
+      string selections;
+
+      ofs.fetch_from_text_file( c_channel_selections, selections );
+
+      if( !selections.empty( ) )
+      {
+         vector< string > all_selections;
+
+         split( selections, all_selections, '\n' );
+
+         for( size_t i = 0; i < all_selections.size( ); i++ )
+         {
+            string next_selection( all_selections[ i ] );
+
+            if( !retval.empty( ) )
+               retval += '\n';
+
+            retval += next_selection + file_sizes[ next_selection ];
+         }
+      }
+   }
+
+   return retval;
 }
 
 void storage_channel_documents_open( const char* p_identity )
@@ -9755,6 +9843,8 @@ void storage_channel_documents_open( const char* p_identity )
    string path( get_system_variable(
     get_special_var_name( e_special_var_opened_files ) ) + '/' + identity );
 
+   string prefix( path + '/' );
+
    create_dir( path );
 
    export_objects( ofs, path );
@@ -9774,7 +9864,7 @@ void storage_channel_documents_open( const char* p_identity )
          split( selections, all_selections, '\n' );
 
          for( size_t i = 0; i < all_selections.size( ); i++ )
-            set_system_variable( all_selections[ i ], string( 1, c_item_selection_marker ) );
+            set_system_variable( prefix + all_selections[ i ], string( 1, c_item_selection_marker ) );
       }
    }
 }
@@ -9848,6 +9938,9 @@ void storage_channel_documents_close( const char* p_identity )
          string next_name, next_value;
 
          next_name = variable_name_from_name_and_value( next_line, &next_value );
+
+         if( next_name.find( prefix ) == 0 )
+            next_name.erase( 0, prefix.length( ) );
 
          if( !next_value.empty( ) && next_value[ 0 ] == '[' )
          {
