@@ -134,6 +134,8 @@ const char* const c_server_folder_shared = "shared";
 const char* const c_server_command_mutexes = "mutexes";
 const char* const c_server_command_sessions = "sessions";
 
+const char* const c_channel_files = ".files";
+const char* const c_channel_prepared = "prepared";
 const char* const c_channel_selections = "selections";
 const char* const c_channel_folder_submitting = ".submitting";
 
@@ -9718,6 +9720,113 @@ string storage_channel_documents( const string& identity )
    ofs.branch_objects( "*", ss );
 
    return ss.str( );
+}
+
+string storage_channel_documents_prepare( const string& identity )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session || !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   string storage_name( gtp_session->p_storage_handler->get_name( ) );
+
+   if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
+      throw runtime_error( "invalid non-peerchain storage '" + storage_name + "' for listing documents" );
+
+   string retval;
+
+   string blockchain_identity( get_raw_system_variable( '$' + identity + "_identity" ) );
+
+   if( blockchain_identity.empty( ) )
+      throw runtime_error( "blockchain identity for '"
+       + identity + "' not found in 'storage_channel_documents_prepare'" );
+
+   if( dir_exists( blockchain_identity ) )
+      throw runtime_error( "unexpected blockchain identity directory '"
+       + blockchain_identity + "' for channel '" + identity + "' already exists" );
+
+   string bundle_file_name( blockchain_identity + ".bun.gz" );
+
+   if( file_exists( bundle_file_name ) )
+      file_remove( bundle_file_name );
+
+   ods_file_system ofs( *ods::instance( ) );
+
+   ods::bulk_write bulk_write( *ods::instance( ) );
+
+   ofs.set_root_folder( c_storable_folder_name_channels );
+
+   if( identity.empty( ) )
+      throw runtime_error( "unexpected null identity in 'storage_channel_documents'" );
+
+   if( !ofs.has_folder( identity ) )
+      throw runtime_error( "channel folder for '" + identity + "' was not found" );
+
+   string selections;
+
+   ofs.set_folder( identity );
+
+   ofs.set_folder( c_channel_folder_submitting );
+
+   if( ofs.has_file( c_channel_selections ) )
+   {
+      ofs.fetch_from_text_file( c_channel_selections, selections );
+
+      ofs.set_folder( ".." );
+
+      string files;
+
+      create_dir( blockchain_identity );
+
+      if( !selections.empty( ) )
+      {
+         vector< string > all_selections;
+
+         split( selections, all_selections, '\n' );
+
+         for( size_t i = 0; i < all_selections.size( ); i++ )
+         {
+            string next_selection( all_selections[ i ] );
+
+            string next_item_num( to_comparable_string( i, false, 6 ) );
+
+            if( !files.empty( ) )
+               files += '\n';
+            files += ( next_item_num + ' ' + next_selection );
+
+            ofs.get_file( next_selection, blockchain_identity + '/' + next_item_num );
+         }
+      }
+
+      write_file( blockchain_identity + '/' + string( c_channel_files ), files );
+
+#ifdef _WIN32
+      string cmd( "bundle" );
+#else
+      string cmd( "./bundle" );
+#endif
+
+      cmd += " -qq " + blockchain_identity + " \"" + blockchain_identity + "/*\"";
+
+      system( cmd.c_str( ) );
+
+      if( file_exists( blockchain_identity + ".bun.gz" ) )
+         retval = blockchain_identity;
+
+      ods::transaction ods_tx( *ods::instance( ) );
+
+      ofs.set_folder( c_channel_folder_submitting );
+
+      ofs.remove_file( c_channel_selections );
+      ofs.store_as_text_file( c_channel_prepared, selections );
+
+      ods_tx.commit( );
+
+      delete_directory_files( blockchain_identity, true );
+   }
+
+   return retval;
 }
 
 string storage_channel_documents_selected( const string& identity )

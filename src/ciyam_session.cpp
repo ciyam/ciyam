@@ -5443,6 +5443,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool open = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_open );
          bool close = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_close );
+         bool prepare = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_prepare );
          bool selected = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_selected );
          string identity( get_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_identity ) );
 
@@ -5450,8 +5451,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             storage_channel_documents_open( identity.c_str( ) );
          else if( close )
             storage_channel_documents_close( identity.c_str( ) );
-         else if ( !selected )
+         else if ( !prepare && !selected )
             response = storage_channel_documents( identity );
+         else if( !selected )
+            response = storage_channel_documents_prepare( identity );
          else
             response = storage_channel_documents_selected( identity );
       }
