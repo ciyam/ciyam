@@ -14,6 +14,6 @@ del ~generate_next_block
 goto end
 
 :usage
-echo Usage: generate_next_block [<identity> else "-hub", "-backup" or "-shared" [tree tag]]
+echo Usage: generate_next_block [<identity> else "-hub", "-backup" or "-shared" [[seed] [[tree tag]]]]
 
 :end

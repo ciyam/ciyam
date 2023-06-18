@@ -252,11 +252,11 @@ FILES_AREA_DIR=$OUTPUT
 ~mkdir $FILES_AREA_DIR/$IDENT
 @ifdef $CHANNEL
 ~mkdir $FILES_AREA_DIR/$REVERSED
-.file_archive -add $FILES_AREA_DIR/$IDENT 100MB $IDENT
-.file_archive -add $FILES_AREA_DIR/$REVERSED 100MB $REVERSED
+.file_archive -add $FILES_AREA_DIR/$IDENT 1GB $IDENT
+.file_archive -add $FILES_AREA_DIR/$REVERSED 1GB $REVERSED
 @else
 @ifdef $SHARED
-.file_archive -add $FILES_AREA_DIR/$IDENT 5GB $IDENT
+.file_archive -add $FILES_AREA_DIR/$IDENT 10GB $IDENT
 .system_variable >@blockchain_shared_archive $FILES_AREA_DIR/$IDENT
 @else
 .file_archive -add $FILES_AREA_DIR/$IDENT 100GB $IDENT
