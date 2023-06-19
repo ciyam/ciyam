@@ -153,6 +153,7 @@ enum special_var
    e_special_var_last_file_put,
    e_special_var_num_put_files,
    e_special_var_rewind_height,
+   e_special_var_shared_secret,
    e_special_var_sub_directory,
    e_special_var_update_fields,
    e_special_var_files_area_dir,
