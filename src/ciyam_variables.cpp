@@ -645,6 +645,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_rewind_height );
       break;
 
+      case e_special_var_shared_secret:
+      s = string( c_special_variable_shared_secret );
+      break;
+
       case e_special_var_sub_directory:
       s = string( c_special_variable_sub_directory );
       break;

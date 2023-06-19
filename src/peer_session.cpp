@@ -320,10 +320,18 @@ bool is_targeted_identity( const string& identity, const string& targeted_identi
    string password;
    password.reserve( 256 );
 
-   get_peerchain_info( identity, 0, &password );
+   size_t num_rounds = 1000000;
+
+   password = get_system_variable(
+    get_special_var_name( e_special_var_shared_secret ) + '_' + identity );
+
+   if( !password.empty( ) )
+      num_rounds = 1;
+   else
+      get_peerchain_info( identity, 0, &password );
 
    // NOTE: The following needs to be equivalent to the application protocol command:
-   // .crypto_hash -x=1000000 @encrypted_password -s=<height>
+   // .crypto_hash -x=$NUM_ROUNDS @encrypted_password -s=<height>
    // as is currently executed in the application protocol script "bc_gen_block.cin".
    decrypt_data( password, password );
 
@@ -332,7 +340,7 @@ bool is_targeted_identity( const string& identity, const string& targeted_identi
    sha256 hash( password );
    string digest( hash.get_digest_as_string( ) );
 
-   for( size_t i = 0; i < 1000000; i++ )
+   for( size_t i = 0; i < num_rounds; i++ )
    {
       hash.update( digest + password );
       hash.get_digest_as_string( digest );

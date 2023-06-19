@@ -228,15 +228,18 @@ TREE_ROOT_HASH_ENC=$OUTPUT
 NUM_TREE_ITEMS=$OUTPUT
 ;
 TARGET_EXTRA=
-@ifndef $CHANNEL
 @ifdef $ENCRYPTED_PASSWORD
 .system_variable $ENCRYPTED_PASSWORD
 .session_variable @encrypted_password "$OUTPUT"
-.crypto_hash -x=1000000 @encrypted_password -s=$HEIGHT
+@ifdef $CHANNEL
+NUM_ROUNDS=1
+@else
+NUM_ROUNDS=1000000
+@endif
+.crypto_hash -x=$NUM_ROUNDS @encrypted_password -s=$HEIGHT
 TARGET=@substr:0,9:$OUTPUT
 TARGET_EXTRA=,t=$TARGET
 .session_variable @encrypted_password ""
-@endif
 @endif
 ;
 .file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS$TARGET_EXTRA,v=1\n\
