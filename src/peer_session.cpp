@@ -84,6 +84,8 @@ const char* c_ellipsis = "...";
 
 const char* const c_dummy_suffix = ".dummy";
 
+const char* const c_identity_suffix = "_identity";
+
 const char* const c_dummy_peer_tag = "peer";
 const char* const c_dummy_support_tag = "support";
 
@@ -5557,34 +5559,6 @@ void peer_listener::on_start( )
          {
             TRACE_LOG( TRACE_ANYTHING, "peer listener started on tcp port " + to_string( port ) );
 
-            if( !blockchains.empty( ) )
-            {
-               vector< string > all_identities;
-               vector< string > all_blockchains;
-
-               split( blockchains, all_blockchains );
-               split( unprefixed_blockchains, all_identities );
-
-               if( all_identities.size( ) != all_blockchains.size( ) )
-                  throw runtime_error( "unexpected all_identities.size( ) != all_blockchains.size( )" );
-
-               for( size_t i = 0; i < all_identities.size( ); i++ )
-               {
-                  string next_identity( all_identities[ i ] );
-                  string next_blockchain( all_blockchains[ i ] );
-
-                  if( has_tag( next_blockchain + c_zenith_suffix ) )
-                  {
-                     string zenith_hash( tag_file_hash( next_blockchain + c_zenith_suffix ) );
-
-                     size_t blockchain_height = 0;
-
-                     if( get_block_height_from_tags( next_blockchain, zenith_hash, blockchain_height ) )
-                        output_synchronised_progress_message( next_identity, blockchain_height );
-                  }
-               }
-            }
-
             size_t num_iterations = 0;
 
             while( s && !g_server_shutdown )
@@ -5795,6 +5769,41 @@ string unprefixed_blockchains( const string& blockchains )
    replace( identities, c_bc_prefix, "" );
 
    return identities;
+}
+
+string peer_channel_height( const string& identity, bool minimal, bool reversed )
+{
+   string extra, retval;
+
+   string channel_identity( get_system_variable( "$" + identity + c_identity_suffix ) );
+
+   if( !channel_identity.empty( ) )
+   {
+      if( reversed )
+         reverse( channel_identity.begin( ), channel_identity.end( ) );
+
+      string channel_blockchain( c_bc_prefix + channel_identity );
+
+      string channel_zenith_tag( channel_blockchain + c_zenith_suffix );
+
+      if( !minimal )
+      {
+         extra += string( " " );
+         retval = channel_identity;
+      }
+
+      if( has_tag( channel_zenith_tag ) )
+      {
+         size_t blockchain_height = 0;
+
+         string channel_zenith_hash( tag_file_hash( channel_zenith_tag ) );
+
+         if( get_block_height_from_tags( channel_blockchain, channel_zenith_hash, blockchain_height ) )
+            retval += extra + to_string( blockchain_height );
+      }
+   }
+
+   return retval;
 }
 
 void create_peer_listener( int port, const string& blockchains )
@@ -6197,6 +6206,36 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
 void init_peer_sessions( int start_listeners )
 {
+   string all_tags( list_file_tags( c_bc_prefix + string( "*" ) + c_zenith_suffix ) );
+
+   // NOTE: Set system variables for the current height blockchains with a zenith tag.
+   if( !all_tags.empty( ) )
+   {
+      vector< string > tags;
+      split( all_tags, tags, '\n' );
+
+      for( size_t i = 0; i < tags.size( ); i++ )
+      {
+         string next_tag( tags[ i ] );
+
+         string::size_type pos = next_tag.find( c_zenith_suffix );
+
+         if( pos != string::npos )
+         {
+            string next_blockchain( next_tag.substr( 0, pos ) );
+
+            string next_identity( replaced( next_blockchain, c_bc_prefix, "" ) );
+
+            size_t blockchain_height = 0;
+
+            string zenith_hash( tag_file_hash( next_tag ) );
+
+            if( get_block_height_from_tags( next_blockchain, zenith_hash, blockchain_height ) )
+               output_synchronised_progress_message( next_identity, blockchain_height );
+         }
+      }
+   }
+
    if( start_listeners )
    {
       int test_peer_port = get_test_peer_port( );
