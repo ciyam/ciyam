@@ -159,6 +159,7 @@ enum special_var
    e_special_var_files_area_dir,
    e_special_var_peer_initiator,
    e_special_var_peer_responder,
+   e_special_var_blockchain_user,
    e_special_var_ciyam_list_hash,
    e_special_var_notifier_events,
    e_special_var_paired_identity,

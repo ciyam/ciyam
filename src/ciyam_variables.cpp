@@ -152,6 +152,7 @@ const char* const c_special_variable_files_area_dir = "@files_area_dir";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
 const char* const c_special_variable_sys_var_prefix = "@sys_var_prefix";
+const char* const c_special_variable_blockchain_user = "@blockchain_user";
 const char* const c_special_variable_ciyam_list_hash = "@ciyam_list_hash";
 const char* const c_special_variable_notifier_events = "@notifier_events";
 const char* const c_special_variable_paired_identity = "@paired_identity";
@@ -667,6 +668,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_peer_responder:
       s = string( c_special_variable_peer_responder );
+      break;
+
+      case e_special_var_blockchain_user:
+      s = string( c_special_variable_blockchain_user );
       break;
 
       case e_special_var_ciyam_list_hash:

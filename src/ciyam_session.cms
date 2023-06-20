@@ -101,7 +101,7 @@ storage_file_export "export an attached file from the files area" <val//hash><va
 storage_file_import "import an attached file into the files area" <val//module><val//mclass><val//filename>[<val//tag>]
 storage_channel_create "create a new identity channel" <val//identity>
 storage_channel_destroy "destroy an existing identity channel" <val//identity>
-storage_channel_documents "list objects within or open/close a channel documents area" [<opt/-open/open>|<opt/-close/close>|<opt/-prepare/prepare>|<opt/-selected/selected>]<val//identity>
+storage_channel_documents "list objects within or open/close/updated/prepare a channel documents area" [<opt/-open/open>|<opt/-close/close>|<opt/-update/update>|<opt/-prepare/prepare>|<opt/-updated/updated>|<opt/-selected/selected>]<val//identity>
 storage_transaction_start "start a transaction in the current storage"
 storage_transaction_commit "commit a transaction in the current storage"
 storage_transaction_rollback "rollback a transaction in the current storage"

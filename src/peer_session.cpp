@@ -4193,6 +4193,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         num_items_found = 0;
                      else
                      {
+                        bool is_user = !get_session_variable(
+                         get_special_var_name( e_special_var_blockchain_user ) ).empty( );
+
                         bool is_fetching = !get_session_variable(
                          get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
 
@@ -4202,8 +4205,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         // NOTE: If height matches the current zenith then skip checking for all items.
                         bool has_all_tree_items = ( socket_handler.get_blockchain_height( ) == blockchain_height );
 
-                        // NOTE: Unless incomplete will not check whether all tree items are present (to minimise file transfers).
-                        if( !is_fetching && was_incomplete && !has_all_tree_items )
+                        // NOTE: Unless is user type or incomplete skip checking for all tree items (to minimise file transfers).
+                        if( !is_fetching && ( is_user || was_incomplete ) && !has_all_tree_items )
                            has_all_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, &socket_handler );
 
                         if( !has_all_tree_items )
@@ -5258,6 +5261,9 @@ void peer_session::on_start( )
 
          set_session_progress_output( progress_message );
       }
+
+      if( is_user )
+         set_session_variable( get_special_var_name( e_special_var_blockchain_user ), c_true_value );
 
       if( is_owner )
          set_session_variable( get_special_var_name( e_special_var_blockchain_is_owner ), c_true_value );
