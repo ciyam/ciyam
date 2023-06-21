@@ -17,11 +17,14 @@ NUM_ARGS=@$NUM_ARGS+1
 #Usage: fetch_from_channel.cin <storage> <identity>
 @else
 ;
+STORAGE=$1
+IDENTITY=$2
+;
 .system_variable $$%IDENTITY%_identity
 BLOCKCHAIN=$OUTPUT
 REVERSED=*!reverse?$BLOCKCHAIN
 ;
-.storage_init $1
+.storage_init $STORAGE
 @ifndef $ERROR
 .storage_channel_documents -height $IDENTITY
 ;
