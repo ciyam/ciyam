@@ -1,0 +1,31 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "2"
+#Usage: prepare_for_channel.cin <storage> <identity>
+@else
+;
+STORAGE=$1
+IDENTITY=$2
+;
+.storage_init $STORAGE
+.storage_channel_documents -prepare $IDENTITY
+@ifdef $OUTPUT
+BLOCKCHAIN=$OUTPUT
+ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
+<<import_files.cin . $BLOCKCHAIN.tree : $BLOCKCHAIN.bun.gz
+~rm $BLOCKCHAIN.bun.gz
+<<generate_next_block.cin $BLOCKCHAIN @sid $BLOCKCHAIN.tree
+<<block_tree_relegate.cin $BLOCKCHAIN $BLOCKCHAIN.tree
+;
+@endif
