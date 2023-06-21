@@ -115,6 +115,7 @@ enum special_var
    e_special_var_notifier,
    e_special_var_peer_hub,
    e_special_var_progress,
+   e_special_var_updating,
    e_special_var_args_file,
    e_special_var_crypt_key,
    e_special_var_decrement,

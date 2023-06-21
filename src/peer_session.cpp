@@ -3723,7 +3723,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       if( !get_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ).empty( ) )
          process_queued_hub_using_peerchains( identity );
 
-      if( !zenith_tree_hash.empty( ) )
+      if( !zenith_tree_hash.empty( )
+       && get_session_variable( get_special_var_name( e_special_var_blockchain_user ) ).empty( ) )
       {
          string targeted_identity( get_session_variable(
           get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
@@ -5777,7 +5778,7 @@ string unprefixed_blockchains( const string& blockchains )
    return identities;
 }
 
-string peer_channel_height( const string& identity, bool minimal, bool reversed )
+string peer_channel_height( const string& identity, bool minimal, bool reversed, size_t minimum_height )
 {
    string extra, retval;
 
@@ -5805,7 +5806,7 @@ string peer_channel_height( const string& identity, bool minimal, bool reversed 
          string channel_zenith_hash( tag_file_hash( channel_zenith_tag ) );
 
          if( get_block_height_from_tags( channel_blockchain, channel_zenith_hash, blockchain_height ) )
-            retval += extra + to_string( blockchain_height );
+            retval += extra + to_string( max( minimum_height, blockchain_height ) );
       }
    }
 

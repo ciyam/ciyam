@@ -205,7 +205,7 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
 
    void link_file( const std::string& name, const std::string& source );
 
-   void move_file( const std::string& name, const std::string& destination );
+   void move_file( const std::string& source, const std::string& destination );
 
    bool store_file( const std::string& name, const std::string& source,
     std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0, bool force_write = false );

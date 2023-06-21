@@ -596,7 +596,7 @@ bool CIYAM_BASE_DECL_SPEC storage_locked_for_admin( );
 void CIYAM_BASE_DECL_SPEC storage_channel_create( const char* p_identity = 0 );
 void CIYAM_BASE_DECL_SPEC storage_channel_destroy( const char* p_identity = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC storage_channel_documents( const std::string& identity );
+std::string CIYAM_BASE_DECL_SPEC storage_channel_documents( const std::string& identity, bool fetched = false );
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_update( const std::string& identity );
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_prepare( const std::string& identity );
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_specific( const std::string& identity, bool updated = false );

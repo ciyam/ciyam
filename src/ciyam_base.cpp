@@ -135,6 +135,7 @@ const char* const c_server_command_mutexes = "mutexes";
 const char* const c_server_command_sessions = "sessions";
 
 const char* const c_channel_files = ".files";
+const char* const c_channel_fetched = "fetched";
 const char* const c_channel_updated = "updated";
 const char* const c_channel_prepared = "prepared";
 const char* const c_channel_selections = "selections";
@@ -9691,7 +9692,7 @@ void storage_channel_destroy( const char* p_identity )
    ofs.remove_folder( identity, 0, true );
 }
 
-string storage_channel_documents( const string& identity )
+string storage_channel_documents( const string& identity, bool fetched )
 {
    guard g( g_mutex );
 
@@ -9717,11 +9718,30 @@ string storage_channel_documents( const string& identity )
 
    ofs.set_folder( identity );
 
-   stringstream ss;
+   string retval;
 
-   ofs.branch_objects( "*", ss );
+   if( !fetched )
+   {
+      stringstream ss;
 
-   return ss.str( );
+      ofs.branch_objects( "*", ss );
+
+      retval = ss.str( );
+   }
+   else
+   {
+      int64_t height_fetched = 0;
+
+      string fetched_file_path( c_channel_folder_ciyam );
+      fetched_file_path += '/' + string( c_channel_fetched );
+
+      if( ofs.has_file( fetched_file_path ) )
+         ofs.fetch_from_text_file( fetched_file_path, height_fetched );
+
+      retval = to_string( height_fetched );
+   }
+
+   return retval;
 }
 
 string storage_channel_documents_update( const string& identity )
@@ -9753,19 +9773,35 @@ string storage_channel_documents_update( const string& identity )
       throw runtime_error( "unexpected blockchain identity directory '"
        + blockchain_identity + "' for channel '" + identity + "' already exists" );
 
+   ods_file_system ofs( *ods::instance( ) );
+
+   ods::bulk_write bulk_write( *ods::instance( ) );
+
+   ofs.set_root_folder( c_storable_folder_name_channels );
+
+   if( !ofs.has_folder( identity ) )
+      throw runtime_error( "channel folder for '" + identity + "' was not found" );
+
+   int64_t height_fetched = 0;
+
+   string fetched_file_path( c_channel_folder_ciyam );
+   fetched_file_path += '/' + string( c_channel_fetched );
+
+   if( ofs.has_file( fetched_file_path ) )
+      ofs.fetch_from_text_file( fetched_file_path, height_fetched );
+
+   string height_updating( get_system_variable(
+    get_special_var_name( e_special_var_updating ) + '_' + identity ) );
+
+   if( height_updating.empty( ) )
+      ++height_fetched;
+   else
+      height_fetched = from_string< int64_t >( height_updating );
+
    string bundle_file_name( blockchain_identity + ".bun.gz" );
 
    if( file_exists( bundle_file_name ) )
    {
-      ods_file_system ofs( *ods::instance( ) );
-
-      ods::bulk_write bulk_write( *ods::instance( ) );
-
-      ofs.set_root_folder( c_storable_folder_name_channels );
-
-      if( !ofs.has_folder( identity ) )
-         throw runtime_error( "channel folder for '" + identity + "' was not found" );
-
       create_dir( blockchain_identity );
 
 #ifdef _WIN32
@@ -9774,7 +9810,7 @@ string storage_channel_documents_update( const string& identity )
       string cmd( "./unbundle" );
 #endif
 
-      cmd += " -qq " + blockchain_identity + " -d " + blockchain_identity;
+      cmd += " -qq " + bundle_file_name + " -d " + blockchain_identity;
 
       system( cmd.c_str( ) );
 
@@ -9837,16 +9873,17 @@ string storage_channel_documents_update( const string& identity )
                }
             }
 
-            string all_paths;
+            string all_file_paths;
             for( set< string >::iterator i = paths.begin( ); i != paths.end( ); ++i )
             {
-               if( !all_paths.empty( ) )
-                  all_paths += '\n';
+               if( !all_file_paths.empty( ) )
+                  all_file_paths += '\n';
 
-               all_paths += *i;
+               all_file_paths += *i;
             }
 
-            ofs.store_as_text_file( c_channel_updated, all_paths );
+            ofs.store_as_text_file( c_channel_fetched, height_fetched );
+            ofs.store_as_text_file( c_channel_updated, all_file_paths );
 
             ods_tx.commit( );
 

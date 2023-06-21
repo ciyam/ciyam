@@ -107,6 +107,7 @@ const char* const c_special_variable_key_info = "@key_info";
 const char* const c_special_variable_notifier = "@notifier";
 const char* const c_special_variable_peer_hub = "@peer_hub";
 const char* const c_special_variable_progress = "@progress";
+const char* const c_special_variable_updating = "@updating";
 const char* const c_special_variable_args_file = "@args_file";
 const char* const c_special_variable_crypt_key = "@crypt_key";
 const char* const c_special_variable_decrement = "@decrement";
@@ -492,6 +493,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_progress:
       s = string( c_special_variable_progress );
+      break;
+
+      case e_special_var_updating:
+      s = string( c_special_variable_updating );
       break;
 
       case e_special_var_args_file:

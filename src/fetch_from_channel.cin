@@ -1,0 +1,74 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+<std.fissile
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "2"
+#Usage: fetch_from_channel.cin <storage> <identity>
+@else
+;
+.system_variable $$%IDENTITY%_identity
+BLOCKCHAIN=$OUTPUT
+REVERSED=*!reverse?$BLOCKCHAIN
+;
+.storage_init $1
+@ifndef $ERROR
+.storage_channel_documents -height $IDENTITY
+;
+@ifndef $ERROR
+HEIGHT=$OUTPUT
+;
+.peer_channel_height -min -rev $IDENTITY $HEIGHT
+@ifdef $OUTPUT
+HIGHEST=$OUTPUT
+;
+.system_variable @files_area_dir
+.session_variable @blockchain_archive_path $OUTPUT/$REVERSED
+;
+@:LOOP
+;
+@label NEXT
+@ifeq $HEIGHT $HIGHEST
+@label DONE
+@endif
+;
+@skip
+;
+@:NEXT
+; NOTE: "block_tree_hash" will set HEIGHT so is using another
+; environment variable name to prevent incrementing it twice.
+NEXT_HEIGHT=@$HEIGHT+1
+#Processing block $NEXT_HEIGHT/$HIGHEST...
+<block_tree_hash.cin $REVERSED $NEXT_HEIGHT
+;
+@ifdef $OUTPUT
+<tree_list.cin $OUTPUT 0 $REVERSED.bun.gz
+BUNDLE_HASH=%OUTPUT:2%
+ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
+;
+<export_files.cin $BUNDLE_HASH .
+.system_variable @updating_$IDENTITY $HEIGHT
+.storage_channel_documents -update $IDENTITY
+@endif
+;
+!!@:LOOP
+;
+@:DONE
+;
+.system_variable @updating_$IDENTITY ""
+;
+@endif
+@endif
+@endif
+;
+@endif
