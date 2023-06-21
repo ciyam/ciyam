@@ -1,5 +1,5 @@
-cd 111/222/333
-file_remove ggg
+cd 111/222
+file_remove 333/ggg
 file_remove /111/222/ddd
 cd /
 file_remove 111/aaa

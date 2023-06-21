@@ -862,9 +862,13 @@ void ods_file_system::add_file( const string& name,
 
       string value( current_folder );
 
+      value += c_folder + name;
+
       replace( value, c_folder_separator, c_pipe_separator );
 
-      value += string( c_folder_separator ) + name;
+      string::size_type ppos = value.rfind( c_pipe_separator );
+
+      value[ ppos ] = c_folder;
 
       auto_ptr< ods::bulk_write > ap_bulk;
 
@@ -978,9 +982,13 @@ void ods_file_system::get_file( const string& name,
 
    string value( current_folder );
 
+   value += c_folder + name;
+
    replace( value, c_folder_separator, c_pipe_separator );
 
-   value += string( c_folder_separator ) + name;
+   string::size_type ppos = value.rfind( c_pipe_separator );
+
+   value[ ppos ] = c_folder;
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
@@ -1037,9 +1045,13 @@ bool ods_file_system::has_file( const string& name,
 
    string value( current_folder );
 
+   value += c_folder + name;
+
    replace( value, c_folder_separator, c_pipe_separator );
 
-   value += string( c_folder_separator ) + name;
+   string::size_type ppos = value.rfind( c_pipe_separator );
+
+   value[ ppos ] = c_folder;
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
@@ -1157,9 +1169,13 @@ void ods_file_system::link_file( const string& name, const string& source )
    {
       string value( current_folder );
 
+      value += c_folder + name;
+
       replace( value, c_folder_separator, c_pipe_separator );
 
-      value += string( c_folder_separator ) + name;
+      string::size_type ppos = value.rfind( c_pipe_separator );
+
+      value[ ppos ] = c_folder;
 
       auto_ptr< ods::bulk_write > ap_bulk;
 
@@ -1215,10 +1231,9 @@ void ods_file_system::link_file( const string& name, const string& source )
 
             replace( source_value, c_folder_separator, c_pipe_separator );
 
-            string::size_type rpos = source_value.rfind( c_pipe_separator );
+            string::size_type ppos = source_value.rfind( c_pipe_separator );
 
-            if( rpos != string::npos )
-               source_value[ rpos ] = c_folder;
+            source_value[ ppos ] = c_folder;
 
             tmp_item.val = source_value;
 
@@ -1258,11 +1273,15 @@ void ods_file_system::link_file( const string& name, const string& source )
    }
 }
 
-void ods_file_system::move_file( const string& name, const string& destination )
+void ods_file_system::move_file( const string& source, const string& destination )
 {
+   string::size_type pos = source.rfind( c_folder );
+
+   string src_name( source.substr( pos == string::npos ? 0 : pos + 1 ) );
+
    string dest( destination );
 
-   string::size_type pos = dest.rfind( c_folder );
+   pos = dest.rfind( c_folder );
 
    string dest_name( dest.substr( pos == string::npos ? 0 : pos + 1 ) );
 
@@ -1294,15 +1313,20 @@ void ods_file_system::move_file( const string& name, const string& destination )
       btree_trans_type bt_tx( bt );
 
       string value( current_folder );
+
+      value += c_folder + source;
+
       replace( value, c_folder_separator, c_pipe_separator );
 
-      value += string( c_folder_separator ) + name;
+      string::size_type ppos = value.rfind( c_pipe_separator );
+
+      value[ ppos ] = c_folder;
 
       tmp_item.val = value;
       tmp_iter = bt.find( tmp_item );
 
       if( tmp_iter == bt.end( ) )
-         throw runtime_error( "file '" + name + "' not found" );
+         throw runtime_error( "file '" + source + "' not found" );
       else
       {
          tmp_item = *tmp_iter;
@@ -1330,7 +1354,7 @@ void ods_file_system::move_file( const string& name, const string& destination )
             }
          }
          else
-            dest_name = name;
+            dest_name = src_name;
 
          if( !dest_folder.empty( ) )
          {

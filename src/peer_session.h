@@ -128,7 +128,7 @@ class mutex;
 mutex& CIYAM_BASE_DECL_SPEC get_mutex_for_peer_session( );
 
 std::string CIYAM_BASE_DECL_SPEC peer_channel_height(
- const std::string& identity, bool minimal = false, bool reversed = false );
+ const std::string& identity, bool minimal = false, bool reversed = false, size_t minimum_height = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC prefixed_blockchains( const std::string& blockchains );
 std::string CIYAM_BASE_DECL_SPEC unprefixed_blockchains( const std::string& blockchains );

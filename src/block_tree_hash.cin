@@ -22,16 +22,20 @@ IDENT=$OUTPUT
 IDENT=$OUTPUT
 @endif
 ;
-@ifndef $HEIGHT
-HEIGHT=zenith
+SUFFIX=
+;
+@ifdef $HEIGHT
+SUFFIX=.blk
+@else
+SUFFIX=zenith
 @endif
 ;
 @ifeq "$IDENT" ""
 #No local blockchain identity was found.
 @else
-.file_hash bc.$IDENT.$HEIGHT
+.file_hash -q bc.$IDENT.$HEIGHT$SUFFIX
 ;
-@ifndef $ERROR
+@ifdef $OUTPUT
 .file_info -content $OUTPUT
 .regex "\n$ATTR:(.*)\n" "$OUTPUT"
 ;
