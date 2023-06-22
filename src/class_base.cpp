@@ -1303,6 +1303,18 @@ string class_base::get_attached_file_path( const string& file_name ) const
    return path;
 }
 
+string genesis_block_hash( const string& identity )
+{
+   string retval;
+
+   string tag_name( c_bc_prefix + identity + string( ".0" ) + c_blk_suffix );
+
+   if( has_files_area_tag( tag_name, e_file_type_blob ) )
+      retval = get_files_area_hash_for_tag( tag_name );
+
+   return retval;
+}
+
 bool has_files_area_tag( const string& tag, file_type type )
 {
    return has_tag( tag, type );

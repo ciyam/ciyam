@@ -103,14 +103,14 @@ FILES_AREA_DIR=$OUTPUT
 ;
 ~mkdir $FILES_AREA_DIR/$IDENTITY
 @ifdef $SHARED_ONLY
-.file_archive -add $FILES_AREA_DIR/$IDENTITY 5GB $IDENTITY
+.file_archive -add $FILES_AREA_DIR/$IDENTITY 10GB $IDENTITY
 @else
 .file_archive -add $FILES_AREA_DIR/$IDENTITY 100GB $IDENTITY
 @endif
 ;
 @ifndef $IS_ONLY
 ~mkdir $FILES_AREA_DIR/$REVERSED
-.file_archive -add $FILES_AREA_DIR/$REVERSED 5GB $REVERSED
+.file_archive -add $FILES_AREA_DIR/$REVERSED 10GB $REVERSED
 @endif
 @endif
 ;

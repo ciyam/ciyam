@@ -1,23 +1,21 @@
 `{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_from_variable)] `{`$arg_id`}
+   // NOTE: Empty code block for scope purposes.
+   {
 `{`@eq`(`$arg_system`,`'true`'`)\
-   if( !get_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`} ).empty( ) )
+      string value( get_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`} ) );
 `,`@eq`(`$arg_session`,`'true`'`)\
-   if( !get_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`} ).empty( ) )
+      string value( get_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`} ) );
 `,\
-   if( !get_obj( ).get_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`} ).empty( ) )
+      string value( get_obj( ).get_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`} ) );
+`}
+      if( !value.empty( ) )
+         get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( value ) );
+`{`!`@eq`(`$arg_sfield`,`'`'`)\
+      else
+         get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) );
 `}\
-      get_obj( ).`{`$arg_field`}( from_string< typeof(
-`{`@eq`(`$arg_system`,`'true`'`)\
-       get_obj( ).`{`$arg_field`}( ) ) >( get_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`} ) ) );
-`,`@eq`(`$arg_session`,`'true`'`)\
-       get_obj( ).`{`$arg_field`}( ) ) >( get_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`} ) ) );
-`,\
-       get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`} ) ) );
-`}`{`!`@eq`(`$arg_sfield`,`'`'`)\
-   else
-      get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) );
-`}\
+   }
    // [(finish transient_field_from_variable)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\

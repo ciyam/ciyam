@@ -1220,6 +1220,8 @@ std::string CIYAM_BASE_DECL_SPEC get_attached_file_path(
 std::string CIYAM_BASE_DECL_SPEC get_attached_file_path(
  const std::string& module_id, const std::string& class_id, const std::string& file_name );
 
+std::string CIYAM_BASE_DECL_SPEC genesis_block_hash( const std::string& identity );
+
 bool CIYAM_BASE_DECL_SPEC has_files_area_tag( const std::string& tag, file_type type = e_file_type_any );
 
 bool CIYAM_BASE_DECL_SPEC has_files_area_file( const std::string& hash, bool include_archives = true );
