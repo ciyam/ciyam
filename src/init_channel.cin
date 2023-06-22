@@ -10,6 +10,5 @@
 @ifndef $OUTPUT
 <<bc_gen.cin $1 @sid
 .system_variable >$$$1_identity $IDENT
-.system_variable >$$$1_initial $BLOCK_HASH
 @endif
 @endif

@@ -13,7 +13,6 @@ IDENT=$1
 ;
 PREFIX=$$
 ;
-INITIAL_VAR=%PREFIX%$%IDENT%_initial
 IDENTITY_VAR=%PREFIX%$%IDENT%_identity
 ;
 .system_variable $IDENTITY_VAR
@@ -35,7 +34,6 @@ FILES_AREA_DIR=$OUTPUT
 .file_kill -q -p=bc.$REVERSED.*
 ;
 .system_variable @error_$IDENT ""
-.system_variable >$INITIAL_VAR ""
 .system_variable >$IDENTITY_VAR ""
 ;
 #Removed archive and all blockchain files for '$CHANNEL'.
