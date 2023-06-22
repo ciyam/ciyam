@@ -114,6 +114,8 @@ const size_t c_initial_timeout = 25000;
 const size_t c_request_timeout = 30000;
 const size_t c_support_timeout = 10000;
 
+const size_t c_num_hash_rounds = 1000000;
+
 const size_t c_num_check_disconnected = 8;
 
 enum op
@@ -322,15 +324,7 @@ bool is_targeted_identity( const string& identity, const string& targeted_identi
    string password;
    password.reserve( 256 );
 
-   size_t num_rounds = 1000000;
-
-   password = get_system_variable(
-    get_special_var_name( e_special_var_shared_secret ) + '_' + identity );
-
-   if( !password.empty( ) )
-      num_rounds = 1;
-   else
-      get_peerchain_info( identity, 0, &password );
+   get_peerchain_info( identity, 0, &password );
 
    // NOTE: The following needs to be equivalent to the application protocol command:
    // .crypto_hash -x=$NUM_ROUNDS @encrypted_password -s=<height>
@@ -342,7 +336,7 @@ bool is_targeted_identity( const string& identity, const string& targeted_identi
    sha256 hash( password );
    string digest( hash.get_digest_as_string( ) );
 
-   for( size_t i = 0; i < num_rounds; i++ )
+   for( size_t i = 0; i < c_num_hash_rounds; i++ )
    {
       hash.update( digest + password );
       hash.get_digest_as_string( digest );
@@ -2267,6 +2261,9 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 {
    bool has_hind_hash = false;
 
+   bool is_user = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_user ) ).empty( );
+
    bool is_owner = !get_session_variable(
     get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
 
@@ -2412,7 +2409,8 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                      string own_identity( get_system_variable(
                       get_special_var_name( e_special_var_blockchain_shared_identity ) ) );
 
-                     if( ( identity == own_identity ) || !is_targeted_identity( identity, targeted_identity, height ) )
+                     if( !is_user && ( ( identity == own_identity )
+                      || !is_targeted_identity( identity, targeted_identity, height ) ) )
                      {
                         fetch_tree_root = false;
 
