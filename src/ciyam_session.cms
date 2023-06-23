@@ -99,7 +99,7 @@ storage_cache_clear "clear the storage record cache"
 storage_cache_limit "get/set storage record cache limit" [<oval//new_limit>]
 storage_file_export "export an attached file from the files area" <val//hash><val//module><val//mclass><val//filename>
 storage_file_import "import an attached file into the files area" <val//module><val//mclass><val//filename>[<val//tag>]
-storage_channel_create "create a new identity channel" <val//identity>
+storage_channel_create "create a new identity channel" <val//identity><val//channel_information>
 storage_channel_destroy "destroy an existing identity channel" <val//identity>
 storage_channel_documents "list objects within or open/close/updated/prepare a channel documents area" [<opt/-open/open>|<opt/-close/close>|<opt/-height/height>|<opt/-update/update>|<opt/-prepare/prepare>|<opt/-updated/updated>|<opt/-selected/selected>]<val//identity>
 storage_transaction_start "start a transaction in the current storage"
