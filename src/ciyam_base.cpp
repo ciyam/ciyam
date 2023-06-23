@@ -135,9 +135,13 @@ const char* const c_server_command_mutexes = "mutexes";
 const char* const c_server_command_sessions = "sessions";
 
 const char* const c_channel_files = ".files";
+
+const char* const c_channel_readme = "README.md";
+
 const char* const c_channel_fetched = "fetched";
 const char* const c_channel_updated = "updated";
 const char* const c_channel_prepared = "prepared";
+const char* const c_channel_peer_info = "peer_info";
 const char* const c_channel_selections = "selections";
 
 const char* const c_channel_folder_ciyam = ".ciyam";
@@ -9611,7 +9615,7 @@ bool storage_locked_for_admin( )
    return gtp_session->p_storage_handler->get_is_locked_for_admin( );
 }
 
-void storage_channel_create( const char* p_identity )
+void storage_channel_create( const char* p_identity, const char* p_channel_information )
 {
    guard g( g_mutex );
 
@@ -9649,9 +9653,22 @@ void storage_channel_create( const char* p_identity )
    ofs.add_folder( identity );
 
    ofs.set_folder( identity );
-   ofs.add_file( "README.md", "channel_readme.md" );
+   ofs.add_file( c_channel_readme, "channel_readme.md" );
 
    ofs.add_folder( c_channel_folder_ciyam );
+   ofs.set_folder( c_channel_folder_ciyam );
+
+   string channel_information;
+
+   if( p_channel_information && ( *p_channel_information != 0 ) )
+      channel_information = *p_channel_information;
+   else
+      channel_information = get_session_variable( get_special_var_name( e_special_var_arg2 ) );
+
+   if( channel_information.empty( ) )
+      throw runtime_error( "channel information not found for 'storage_channel_create'" );
+
+   ofs.store_as_text_file( c_channel_peer_info, channel_information );
 }
 
 void storage_channel_destroy( const char* p_identity )
@@ -9690,6 +9707,40 @@ void storage_channel_destroy( const char* p_identity )
    check_with_regex( c_special_regex_for_peerchain_identity, identity );
 
    ofs.remove_folder( identity, 0, true );
+}
+
+void storage_channel_update( )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session || !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   string storage_name( gtp_session->p_storage_handler->get_name( ) );
+
+   if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
+      throw runtime_error( "invalid non-peerchain storage '" + storage_name + "' for channel update" );
+
+   ods_file_system ofs( *ods::instance( ) );
+
+   ods::bulk_write bulk_write( *ods::instance( ) );
+
+   ofs.set_root_folder( c_storable_folder_name_channels );
+
+   string identity( get_session_variable( get_special_var_name( e_special_var_arg1 ) ) );
+
+   if( identity.empty( ) )
+      throw runtime_error( "identity not found for 'storage_channel_update'" );
+
+   string channel_information( get_session_variable( get_special_var_name( e_special_var_arg2 ) ) );
+
+   if( channel_information.empty( ) )
+      throw runtime_error( "channel information not found for 'storage_channel_update'" );
+
+   ofs.set_folder( identity );
+   ofs.set_folder( c_channel_folder_ciyam );
+
+   ofs.store_as_text_file( c_channel_peer_info, channel_information );
 }
 
 string storage_channel_documents( const string& identity, bool fetched )

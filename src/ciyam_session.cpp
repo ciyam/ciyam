@@ -5444,8 +5444,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_storage_channel_create )
       {
          string identity( get_parm_val( parameters, c_cmd_ciyam_session_storage_channel_create_identity ) );
+         string channel_information( get_parm_val( parameters, c_cmd_ciyam_session_storage_channel_create_channel_information ) );
 
-         storage_channel_create( identity.c_str( ) );
+         storage_channel_create( identity.c_str( ), channel_information.c_str( ) );
       }
       else if( command == c_cmd_ciyam_session_storage_channel_destroy )
       {
