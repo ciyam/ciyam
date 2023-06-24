@@ -1202,6 +1202,11 @@ string get_system_variable( const string& name_or_expr )
    return expr.get_value( );
 }
 
+bool has_system_variable( const string& name_or_expr )
+{
+   return !get_system_variable( name_or_expr ).empty( );
+}
+
 void set_system_variable( const string& name, const string& value, bool is_init, progress* p_progress )
 {
    guard g( g_mutex );
