@@ -5881,6 +5881,8 @@ peer_session* create_peer_initiator(
    {
       explicit_paired_identity = identity.substr( pos + 1 );
       identity.erase( pos );
+
+      replace( explicit_paired_identity, c_bc_prefix, "" );
    }
 
    if( !is_interactive && !p_main_session )
@@ -6046,29 +6048,32 @@ void peer_session_starter::on_start( )
          if( g_server_shutdown || has_max_peers( ) )
             break;
 
-         string identities( get_system_variable( get_special_var_name( e_special_var_queue_peers ) ) );
+         string entries( get_system_variable( get_special_var_name( e_special_var_queue_peers ) ) );
 
-         if( identities.empty( ) )
+         if( entries.empty( ) )
             msleep( c_wait_sleep_time );
          else
          {
             bool is_listener = false;
-            vector< string > all_identities;
+            vector< string > all_entries;
 
-            // NOTE: If first identity is prefixed with '!' then will always start listeners.
-            if( identities[ 0 ] == '!' )
+            // NOTE: If first entry is prefixed with '!' then will start all as listeners.
+            if( entries[ 0 ] == '!' )
             {
                is_listener = true;
-               identities.erase( 0, 1 );
+               entries.erase( 0, 1 );
             }
 
-            split( identities, all_identities );
+            split( entries, all_entries );
 
-            for( size_t i = 0; i < all_identities.size( ); i++ )
+            for( size_t i = 0; i < all_entries.size( ); i++ )
             {
-               string identity( all_identities[ i ] );
+               string next_entry( all_entries[ i ] );
 
-               string peer_info( get_peerchain_info( identity, is_listener ? 0 : &is_listener ) );
+               string peer_info( next_entry );
+
+               if( peer_info.find( '=' ) == string::npos )
+                  peer_info = get_peerchain_info( next_entry, is_listener ? 0 : &is_listener );
 
                if( !peer_info.empty( ) )
                {
@@ -6115,12 +6120,15 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    if( pos == string::npos )
       throw runtime_error( "unexpected peer_info '" + peer_info + "'" );
 
-   size_t peer_type = from_string< size_t >( info.substr( pos + 1 ) );
+   int peer_type = from_string< int >( info.substr( pos + 1 ) );
+
+   bool create_reversed = ( ( peer_type == -1 ) || ( peer_type == 0 ) );
 
    peerchain_type chain_type = e_peerchain_type_backup;
+   peerchain_type reversed_chain_type = e_peerchain_type_shared;
 
-   if( peer_type == 4 )
-      chain_type = e_peerchain_type_hub;
+   if( peer_type == -1 )
+      chain_type = reversed_chain_type = e_peerchain_type_user;
    else if( peer_type == 3 )
       chain_type = e_peerchain_type_shared;
 
@@ -6144,16 +6152,20 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
+   string paired_suffix;
+
+   if( chain_type == e_peerchain_type_user )
+      paired_suffix = ':' + identity;
+
    set_system_variable( c_error_message_prefix + identity, "" );
 
    temporary_system_variable tmp_blockchain_connect( identity, c_true_value );
 
-   // NOTE: First create main sessions for both the local and hosted blockchains (except for peerchain hubs which
-   // do not have a paired session).
-   peer_session* p_local_main = create_peer_initiator( blockchain, info, false,
-    ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, 0, chain_type );
+   // NOTE: First create main sessions for both the local and hosted blockchains.
+   peer_session* p_local_main = create_peer_initiator( blockchain + paired_suffix, info,
+    false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, 0, chain_type );
 
-   if( p_local_main && ( peer_type != 4 ) )
+   if( p_local_main && ( peer_type >= 0 ) )
    {
       peer_session* p_hosted_main = create_peer_initiator( blockchain, info, false,
        ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, chain_type );
@@ -6173,24 +6185,23 @@ void peer_session_starter::start_peer_session( const string& peer_info )
       }
    }
 
-   // NOTE: If peer type is combined then will also create shared blockchain sessions.
-   if( peer_type == 0 )
+   // NOTE: If peer type is user or combined then will also create reversed identity sessions.
+   if( create_reversed )
    {
-      // NOTE: Shared blockchain sessions use the identity value in reverse.
       string reversed( identity );
       reverse( reversed.begin( ), reversed.end( ) );
 
-      string shared_chain( c_bc_prefix + reversed );
+      string reversed_chain( c_bc_prefix + reversed );
 
-      peer_session* p_local_shared = create_peer_initiator( shared_chain, info, false,
-       ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, 0, e_peerchain_type_shared );
+      peer_session* p_local_shared = create_peer_initiator( reversed_chain + paired_suffix, info,
+       false, ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, 0, reversed_chain_type );
 
-      if( p_local_shared )
+      if( p_local_shared && ( peer_type >= 0 ) )
       {
          p_local_shared->set_backup_identity( identity );
 
-         peer_session* p_hosted_shared = create_peer_initiator( shared_chain, info, false,
-          ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, e_peerchain_type_shared );
+         peer_session* p_hosted_shared = create_peer_initiator( reversed_chain, info, false,
+          ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, 0, reversed_chain_type );
 
          if( p_hosted_shared )
          {
@@ -6198,11 +6209,11 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
             if( num_for_support )
             {
-               create_peer_initiator( shared_chain, info, false,
-                num_for_support, false, false, p_local_shared, e_peerchain_type_shared );
+               create_peer_initiator( reversed_chain, info, false,
+                num_for_support, false, false, p_local_shared, reversed_chain_type );
 
-               create_peer_initiator( shared_chain, info, false,
-                num_for_support, false, true, p_hosted_shared, e_peerchain_type_shared );
+               create_peer_initiator( reversed_chain, info, false,
+                num_for_support, false, true, p_hosted_shared, reversed_chain_type );
             }
          }
       }

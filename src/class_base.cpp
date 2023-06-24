@@ -5780,8 +5780,15 @@ void disuse_peerchain( const string& identity, bool no_delay )
    }
 }
 
-void connect_peerchain( const string& identity, bool no_delay )
+void connect_peerchain( const string& connect_info, bool no_delay )
 {
+   string identity( connect_info );
+
+   string::size_type pos = identity.find_first_of( "+=" );
+
+   if( pos != string::npos )
+      identity.erase( pos );
+
    set_variable_checker check_not_has(
     e_variable_check_type_no_session_has, identity );
 
@@ -5789,7 +5796,7 @@ void connect_peerchain( const string& identity, bool no_delay )
     e_variable_check_type_not_has_other_system, '~' + identity, &check_not_has );
 
    if( set_system_variable( get_special_var_name(
-    e_special_var_queue_peers ), identity, check_not_has_either ) )
+    e_special_var_queue_peers ), connect_info, check_not_has_either ) )
    {
       if( !no_delay )
          msleep( c_peer_sleep_time * 10 );
