@@ -5741,6 +5741,11 @@ void get_mnemonics_or_hex_seed( string& s, const string& mnemonics_or_hex_seed )
    }
 }
 
+int64_t channel_height_fetched( const string& identity )
+{
+   return from_string< int64_t >( storage_channel_documents_fetched( identity ) );
+}
+
 void use_peerchain( const string& identity, bool no_delay )
 {
    guard g( g_mutex, "use_peerchain" );

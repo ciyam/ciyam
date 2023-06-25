@@ -1565,6 +1565,8 @@ inline std::string get_mnemonics_or_hex_seed( const std::string& mnemonics_or_he
    return s;
 }
 
+int64_t CIYAM_BASE_DECL_SPEC channel_height_fetched( const std::string& identity );
+
 void CIYAM_BASE_DECL_SPEC use_peerchain( const std::string& identity, bool no_delay = false );
 void CIYAM_BASE_DECL_SPEC disuse_peerchain( const std::string& identity, bool no_delay = false );
 void CIYAM_BASE_DECL_SPEC connect_peerchain( const std::string& connect_info, bool no_delay = false );

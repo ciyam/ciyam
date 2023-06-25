@@ -110,6 +110,11 @@
   <arguments>tree_insert_file.cin @tag @type @branch @sub_directory @name @path @tag_prefix
  </script>
  <script/>
+  <name>fetch_from_channel
+  <filename>*script*
+  <arguments>fetch_from_channel.cin @storage @identity
+ </script>
+ <script/>
   <name>tree_insert_branch
   <filename>*script*
   <arguments>tree_insert_branch.cin @tree @trunk @branch
@@ -128,6 +133,11 @@
   <name>install_application
   <filename>*script*
   <arguments>install_application.cin @grp @uid @name @key @script @package_install_extra
+ </script>
+ <script/>
+  <name>prepare_for_channel
+  <filename>*script*
+  <arguments>prepare_for_channel.cin @storage @identity
  </script>
  <script/>
   <name>create_peerchain_entry
