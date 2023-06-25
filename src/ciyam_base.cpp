@@ -9743,6 +9743,11 @@ void storage_channel_update( )
    ofs.store_as_text_file( c_channel_peer_info, channel_information );
 }
 
+int64_t storage_channel_received_height( const string& identity )
+{
+   return from_string< int64_t >( peer_channel_height( identity, true, true ) );
+}
+
 string storage_channel_documents( const string& identity, bool fetched )
 {
    guard g( g_mutex );
@@ -9764,32 +9769,32 @@ string storage_channel_documents( const string& identity, bool fetched )
    if( identity.empty( ) )
       throw runtime_error( "unexpected null identity in 'storage_channel_documents'" );
 
-   if( !ofs.has_folder( identity ) )
-      throw runtime_error( "channel folder for '" + identity + "' was not found" );
-
-   ofs.set_folder( identity );
-
    string retval;
 
-   if( !fetched )
+   if( ofs.has_folder( identity ) )
    {
-      stringstream ss;
+      ofs.set_folder( identity );
 
-      ofs.branch_objects( "*", ss );
+      if( !fetched )
+      {
+         stringstream ss;
 
-      retval = ss.str( );
-   }
-   else
-   {
-      int64_t height_fetched = 0;
+         ofs.branch_objects( "*", ss );
 
-      string fetched_file_path( c_channel_folder_ciyam );
-      fetched_file_path += '/' + string( c_channel_fetched );
+         retval = ss.str( );
+      }
+      else
+      {
+         int64_t height_fetched = 0;
 
-      if( ofs.has_file( fetched_file_path ) )
-         ofs.fetch_from_text_file( fetched_file_path, height_fetched );
+         string fetched_file_path( c_channel_folder_ciyam );
+         fetched_file_path += '/' + string( c_channel_fetched );
 
-      retval = to_string( height_fetched );
+         if( ofs.has_file( fetched_file_path ) )
+            ofs.fetch_from_text_file( fetched_file_path, height_fetched );
+
+         retval = to_string( height_fetched );
+      }
    }
 
    return retval;
