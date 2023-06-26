@@ -80,8 +80,6 @@ const char c_progress_output_prefix = '%';
 
 const char* const c_hello = "hello";
 
-const char* c_ellipsis = "...";
-
 const char* const c_dummy_suffix = ".dummy";
 
 const char* const c_identity_suffix = "_identity";

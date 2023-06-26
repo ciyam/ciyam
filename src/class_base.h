@@ -1572,6 +1572,8 @@ void CIYAM_BASE_DECL_SPEC disuse_peerchain( const std::string& identity, bool no
 void CIYAM_BASE_DECL_SPEC connect_peerchain( const std::string& connect_info, bool no_delay = false );
 void CIYAM_BASE_DECL_SPEC disconnect_peerchain( const std::string& identity, bool no_delay = false );
 
+bool CIYAM_BASE_DECL_SPEC is_synchronising_peerchain( const std::string& identity );
+
 bool CIYAM_BASE_DECL_SPEC active_external_service( const std::string& ext_key );
 
 std::string CIYAM_BASE_DECL_SPEC get_external_extra( const std::string& ext_key, const std::string& extra );

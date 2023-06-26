@@ -5791,8 +5791,13 @@ void connect_peerchain( const string& connect_info, bool no_delay )
 
    string::size_type pos = identity.find_first_of( "+=" );
 
+   bool is_peerchain_cache = false;
+
    if( pos != string::npos )
+   {
       identity.erase( pos );
+      is_peerchain_cache = true;
+   }
 
    set_variable_checker check_not_has(
     e_variable_check_type_no_session_has, identity );
@@ -5804,7 +5809,7 @@ void connect_peerchain( const string& connect_info, bool no_delay )
     e_special_var_queue_peers ), connect_info, check_not_has_either ) )
    {
       if( !no_delay )
-         msleep( c_peer_sleep_time * 10 );
+         msleep( c_peer_sleep_time * ( is_peerchain_cache ? 5 : 10 ) );
    }
 }
 
@@ -5821,6 +5826,15 @@ void disconnect_peerchain( const string& identity, bool no_delay )
       if( !no_delay )
          msleep( c_peer_sleep_time * 5 );
    }
+}
+
+bool is_synchronising_peerchain( const string& identity )
+{
+   string progress_variable( '%' + identity );
+
+   string progress( get_raw_system_variable( progress_variable ) );
+
+   return ( progress.find( c_ellipsis ) != string::npos );
 }
 
 bool active_external_service( const string& ext_key )

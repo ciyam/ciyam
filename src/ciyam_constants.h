@@ -28,6 +28,8 @@ const char* const c_false_value = "0";
 
 const char* const c_dummy = "dummy";
 
+const char* const c_ellipsis = "...";
+
 const char* const c_watching = "[watching]";
 const char* const c_finishing = "[finishing]";
 

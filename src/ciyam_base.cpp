@@ -135,6 +135,7 @@ const char* const c_server_command_mutexes = "mutexes";
 const char* const c_server_command_sessions = "sessions";
 
 const char* const c_channel_files = ".files";
+const char* const c_channel_fetch = ".fetch";
 
 const char* const c_channel_readme = "README.md";
 
@@ -10004,13 +10005,23 @@ string storage_channel_documents_prepare( const string& identity )
 
    if( ofs.has_file( c_channel_selections ) )
    {
+      create_dir( blockchain_identity );
+
+      int64_t height_fetched = 0;
+
+      string fetched_file( c_channel_fetched );
+
+      if( ofs.has_file( fetched_file ) )
+         ofs.fetch_from_text_file( fetched_file, height_fetched );
+
+      write_file( blockchain_identity + '/'
+       + string( c_channel_fetch ), to_string( height_fetched ) );
+
       ofs.fetch_from_text_file( c_channel_selections, selections );
 
       ofs.set_folder( ".." );
 
       string files;
-
-      create_dir( blockchain_identity );
 
       if( !selections.empty( ) )
       {
