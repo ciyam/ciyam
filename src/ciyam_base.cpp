@@ -9750,7 +9750,7 @@ int64_t storage_channel_received_height( const string& identity )
    return from_string< int64_t >( peer_channel_height( identity, true, true ) );
 }
 
-string storage_channel_documents( const string& identity, bool fetched )
+string storage_channel_documents( const string& identity, bool height, bool fetched )
 {
    guard g( g_mutex );
 
@@ -9777,7 +9777,7 @@ string storage_channel_documents( const string& identity, bool fetched )
    {
       ofs.set_folder( identity );
 
-      if( !fetched )
+      if( !height )
       {
          stringstream ss;
 
@@ -9787,22 +9787,24 @@ string storage_channel_documents( const string& identity, bool fetched )
       }
       else
       {
-         int64_t height_fetched = 0;
+         int64_t height = 0;
 
-         string fetched_file_path( c_channel_folder_ciyam );
-         fetched_file_path += '/' + string( c_channel_fetched );
+         string height_file_name( fetched ? c_channel_fetched : c_channel_submitted );
 
-         if( ofs.has_file( fetched_file_path ) )
-            ofs.fetch_from_text_file( fetched_file_path, height_fetched );
+         string height_file_path( c_channel_folder_ciyam );
+         height_file_path += '/' + height_file_name;
 
-         retval = to_string( height_fetched );
+         if( ofs.has_file( height_file_path ) )
+            ofs.fetch_from_text_file( height_file_path, height );
+
+         retval = to_string( height );
       }
    }
 
    return retval;
 }
 
-string storage_channel_documents_update( const string& identity )
+string storage_channel_documents_update( const string& identity, bool submitted )
 {
    guard g( g_mutex );
 
@@ -9825,7 +9827,8 @@ string storage_channel_documents_update( const string& identity )
       throw runtime_error( "blockchain identity for '"
        + identity + "' not found in 'storage_channel_documents_update'" );
 
-   reverse( blockchain_identity.begin( ), blockchain_identity.end( ) );
+   if( !submitted )
+      reverse( blockchain_identity.begin( ), blockchain_identity.end( ) );
 
    if( dir_exists( blockchain_identity ) )
       throw runtime_error( "unexpected blockchain identity directory '"
@@ -9840,21 +9843,21 @@ string storage_channel_documents_update( const string& identity )
    if( !ofs.has_folder( identity ) )
       throw runtime_error( "channel folder for '" + identity + "' was not found" );
 
-   int64_t height_fetched = 0;
+   int64_t height = 0;
 
-   string fetched_file_path( c_channel_folder_ciyam );
-   fetched_file_path += '/' + string( c_channel_fetched );
+   string height_file_path( c_channel_folder_ciyam );
+   height_file_path += '/' + string( !submitted ? c_channel_fetched : c_channel_submitted );
 
-   if( ofs.has_file( fetched_file_path ) )
-      ofs.fetch_from_text_file( fetched_file_path, height_fetched );
+   if( ofs.has_file( height_file_path ) )
+      ofs.fetch_from_text_file( height_file_path, height );
 
    string height_updating( get_system_variable(
     get_special_var_name( e_special_var_updating ) + '_' + identity ) );
 
    if( height_updating.empty( ) )
-      ++height_fetched;
+      ++height;
    else
-      height_fetched = from_string< int64_t >( height_updating );
+      height = from_string< int64_t >( height_updating );
 
    string bundle_file_name( blockchain_identity + ".bun.gz" );
 
@@ -9940,8 +9943,8 @@ string storage_channel_documents_update( const string& identity )
                all_file_paths += *i;
             }
 
-            ofs.store_as_text_file( c_channel_fetched, height_fetched );
             ofs.store_as_text_file( c_channel_updated, all_file_paths );
+            ofs.store_as_text_file( ( !submitted ? c_channel_fetched : c_channel_submitted ), height );
 
             ods_tx.commit( );
 

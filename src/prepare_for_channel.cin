@@ -24,7 +24,7 @@ HEIGHT=@$HEIGHT+1
 .system_variable @preparing_$IDENTITY $HEIGHT
 ;
 .storage_init $STORAGE
-.storage_channel_documents -prepare $IDENTITY
+.storage_channel_documents -prepare_for_submit $IDENTITY
 @ifdef $OUTPUT
 BLOCKCHAIN=$OUTPUT
 ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY

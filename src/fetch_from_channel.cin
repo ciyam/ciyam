@@ -26,7 +26,7 @@ REVERSED=*!reverse?$BLOCKCHAIN
 ;
 .storage_init $STORAGE
 @ifndef $ERROR
-.storage_channel_documents -height $IDENTITY
+.storage_channel_documents -fetched $IDENTITY
 ;
 @ifndef $ERROR
 HEIGHT=$OUTPUT
@@ -61,7 +61,7 @@ ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
 ;
 <export_files.cin $BUNDLE_HASH .
 .system_variable @updating_$IDENTITY $HEIGHT
-.storage_channel_documents -update $IDENTITY
+.storage_channel_documents -update_fetched $IDENTITY
 .system_variable @shared_secret_$REVERSED ""
 @endif
 ;
