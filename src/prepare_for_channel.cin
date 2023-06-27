@@ -18,6 +18,11 @@ NUM_ARGS=@$NUM_ARGS+1
 STORAGE=$1
 IDENTITY=$2
 ;
+.peer_channel_height -min $IDENTITY
+HEIGHT=$OUTPUT
+HEIGHT=@$HEIGHT+1
+.system_variable @preparing_$IDENTITY $HEIGHT
+;
 .storage_init $STORAGE
 .storage_channel_documents -prepare $IDENTITY
 @ifdef $OUTPUT
@@ -29,5 +34,6 @@ ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 <<block_tree_relegate.cin $BLOCKCHAIN $BLOCKCHAIN.tree
 .system_variable @shared_secret_$IDENTITY ""
 @endif
+.system_variable @preparing_$IDENTITY ""
 ;
 @endif

@@ -143,6 +143,7 @@ const char* const c_channel_fetched = "fetched";
 const char* const c_channel_updated = "updated";
 const char* const c_channel_prepared = "prepared";
 const char* const c_channel_peer_info = "peer_info";
+const char* const c_channel_submitted = "submitted";
 const char* const c_channel_selections = "selections";
 
 const char* const c_channel_folder_ciyam = ".ciyam";
@@ -9822,7 +9823,7 @@ string storage_channel_documents_update( const string& identity )
 
    if( blockchain_identity.empty( ) )
       throw runtime_error( "blockchain identity for '"
-       + identity + "' not found in 'storage_channel_documents_prepare'" );
+       + identity + "' not found in 'storage_channel_documents_update'" );
 
    reverse( blockchain_identity.begin( ), blockchain_identity.end( ) );
 
@@ -10001,6 +10002,22 @@ string storage_channel_documents_prepare( const string& identity )
 
    ofs.set_folder( identity );
 
+   int64_t height_submitted = 0;
+
+   string submitted_file_path( c_channel_folder_ciyam );
+   submitted_file_path += '/' + string( c_channel_submitted );
+
+   if( ofs.has_file( submitted_file_path ) )
+      ofs.fetch_from_text_file( submitted_file_path, height_submitted );
+
+   string height_preparing( get_system_variable(
+    get_special_var_name( e_special_var_preparing ) + '_' + identity ) );
+
+   if( height_preparing.empty( ) )
+      ++height_submitted;
+   else
+      height_submitted = from_string< int64_t >( height_preparing );
+
    ofs.set_folder( c_channel_folder_ciyam );
 
    if( ofs.has_file( c_channel_selections ) )
@@ -10064,6 +10081,8 @@ string storage_channel_documents_prepare( const string& identity )
 
       ofs.remove_file( c_channel_selections );
       ofs.store_as_text_file( c_channel_prepared, selections );
+
+      ofs.store_as_text_file( c_channel_submitted, height_submitted );
 
       ods_tx.commit( );
 
