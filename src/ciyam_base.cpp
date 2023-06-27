@@ -10115,69 +10115,69 @@ string storage_channel_documents_specific( const string& identity, bool updated 
    if( identity.empty( ) )
       throw runtime_error( "unexpected null identity in 'storage_channel_documents'" );
 
-   if( !ofs.has_folder( identity ) )
-      throw runtime_error( "channel folder for '" + identity + "' was not found" );
-
-   ofs.set_folder( identity );
-
-   stringstream ss;
-
-   ofs.branch_objects( "*", ss );
-
-   string all_objects( ss.str( ) );
-
-   map< string, string > file_sizes;
-
-   if( !all_objects.empty( ) )
+   if( ofs.has_folder( identity ) )
    {
-      vector< string > objects;
+      ofs.set_folder( identity );
 
-      split( all_objects, objects, '\n' );
+      stringstream ss;
 
-      for( size_t i = 0; i < objects.size( ); i++ )
+      ofs.branch_objects( "*", ss );
+
+      string all_objects( ss.str( ) );
+
+      map< string, string > file_sizes;
+
+      if( !all_objects.empty( ) )
       {
-         string next( objects[ i ] );
+         vector< string > objects;
 
-         string::size_type pos = next.rfind( " (" );
+         split( all_objects, objects, '\n' );
 
-         if( pos != string::npos )
-            file_sizes.insert( make_pair( next.substr( 0, pos ), next.substr( pos ) ) );
-      }
-   }
-
-   ofs.set_folder( c_channel_folder_ciyam );
-
-   bool has_specifics = false;
-
-   if( updated && ofs.has_file( c_channel_updated ) )
-      has_specifics = true;
-
-   if( !updated && ofs.has_file( c_channel_selections ) )
-      has_specifics = true;
-
-   if( has_specifics )
-   {
-      string specifics;
-
-      if( updated )
-         ofs.fetch_from_text_file( c_channel_updated, specifics );
-      else
-         ofs.fetch_from_text_file( c_channel_selections, specifics );
-
-      if( !specifics.empty( ) )
-      {
-         vector< string > all_specifics;
-
-         split( specifics, all_specifics, '\n' );
-
-         for( size_t i = 0; i < all_specifics.size( ); i++ )
+         for( size_t i = 0; i < objects.size( ); i++ )
          {
-            string next_specific( all_specifics[ i ] );
+            string next( objects[ i ] );
 
-            if( !retval.empty( ) )
-               retval += '\n';
+            string::size_type pos = next.rfind( " (" );
 
-            retval += next_specific + file_sizes[ next_specific ];
+            if( pos != string::npos )
+               file_sizes.insert( make_pair( next.substr( 0, pos ), next.substr( pos ) ) );
+         }
+      }
+
+      ofs.set_folder( c_channel_folder_ciyam );
+
+      bool has_specifics = false;
+
+      if( updated && ofs.has_file( c_channel_updated ) )
+         has_specifics = true;
+
+      if( !updated && ofs.has_file( c_channel_selections ) )
+         has_specifics = true;
+
+      if( has_specifics )
+      {
+         string specifics;
+
+         if( updated )
+            ofs.fetch_from_text_file( c_channel_updated, specifics );
+         else
+            ofs.fetch_from_text_file( c_channel_selections, specifics );
+
+         if( !specifics.empty( ) )
+         {
+            vector< string > all_specifics;
+
+            split( specifics, all_specifics, '\n' );
+
+            for( size_t i = 0; i < all_specifics.size( ); i++ )
+            {
+               string next_specific( all_specifics[ i ] );
+
+               if( !retval.empty( ) )
+                  retval += '\n';
+
+               retval += next_specific + file_sizes[ next_specific ];
+            }
          }
       }
    }
