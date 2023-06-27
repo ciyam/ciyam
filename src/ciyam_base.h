@@ -600,14 +600,21 @@ void CIYAM_BASE_DECL_SPEC storage_channel_update( );
 
 int64_t CIYAM_BASE_DECL_SPEC storage_channel_received_height( const std::string& identity );
 
-std::string CIYAM_BASE_DECL_SPEC storage_channel_documents( const std::string& identity, bool fetched = false );
-std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_update( const std::string& identity );
+std::string CIYAM_BASE_DECL_SPEC storage_channel_documents(
+ const std::string& identity, bool height = false, bool fetched = false );
+
+std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_update( const std::string& identity, bool submitted = false );
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_prepare( const std::string& identity );
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_specific( const std::string& identity, bool updated = false );
 
 inline std::string storage_channel_documents_fetched( const std::string& identity )
 {
-   return storage_channel_documents( identity, true );
+   return storage_channel_documents( identity, true, true );
+}
+
+inline std::string storage_channel_documents_submitted( const std::string& identity )
+{
+   return storage_channel_documents( identity, true, false );
 }
 
 inline std::string storage_channel_documents_updated( const std::string& identity )
