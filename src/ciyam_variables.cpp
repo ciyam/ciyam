@@ -116,6 +116,7 @@ const char* const c_special_variable_increment = "@increment";
 const char* const c_special_variable_list_hash = "@list_hash";
 const char* const c_special_variable_peer_port = "@peer_port";
 const char* const c_special_variable_peer_user = "@peer_user";
+const char* const c_special_variable_preparing = "@preparing";
 const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_blockchain = "@blockchain";
 const char* const c_special_variable_extra_info = "@extra_info";
@@ -529,6 +530,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_peer_user:
       s = string( c_special_variable_peer_user );
+      break;
+
+      case e_special_var_preparing:
+      s = string( c_special_variable_preparing );
       break;
 
       case e_special_var_val_error:
