@@ -27,6 +27,7 @@ const char* const c_true_value = "1";
 const char* const c_false_value = "0";
 
 const char* const c_dummy = "dummy";
+const char* const c_error = "error";
 
 const char* const c_ellipsis = "...";
 

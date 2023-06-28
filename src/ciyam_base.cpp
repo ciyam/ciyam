@@ -9871,9 +9871,34 @@ string storage_channel_documents_update( const string& identity, bool submitted 
       string cmd( "./unbundle" );
 #endif
 
-      cmd += " -qq " + bundle_file_name + " -d " + blockchain_identity;
+      string temp_file( "~" + uuid( ).as_string( ) );
+
+      cmd += " -qq " + bundle_file_name + " -d " + blockchain_identity + " 2>" + temp_file;
 
       system( cmd.c_str( ) );
+
+      if( exists_file( temp_file ) )
+      {
+         string error_output( load_file( temp_file ) );
+
+         file_remove( temp_file );
+
+         // NOTE: If errors then throw an exception with the first error line.
+         if( !error_output.empty( ) )
+         {
+            remove_dir( blockchain_identity );
+
+            error_output = error_output.substr( 0, error_output.find( '\n' ) );
+
+            string error_prefix( c_error );
+            error_prefix += string( ": " );
+
+            if( lower( error_output ).find( error_prefix ) == 0 )
+               error_output.erase( 0, error_prefix.length( ) );
+
+            throw runtime_error( !error_output.empty( ) ? error_output.c_str( ) : "unexpected unknonwn error" );
+         }
+      }
 
       string updated;
       string files_name( blockchain_identity + '/' + c_channel_files );
