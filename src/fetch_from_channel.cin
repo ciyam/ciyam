@@ -60,7 +60,7 @@ BUNDLE_HASH=%OUTPUT:2%
 ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
 ;
 <export_files.cin $BUNDLE_HASH .
-.system_variable @updating_$IDENTITY $HEIGHT
+.session_variable @updating_$IDENTITY $HEIGHT
 .storage_channel_documents -update_fetched $IDENTITY
 @endif
 ;
