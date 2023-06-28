@@ -4260,9 +4260,11 @@ void clear_file_archive( const string& name )
    }
 }
 
-void remove_file_archive( const string& name, bool destroy_files, bool remove_directory )
+void remove_file_archive( const string& name, bool destroy_files, bool remove_directory, progress* p_progress )
 {
    guard g( g_mutex );
+
+   date_time dtm( date_time::local( ) );
 
    system_ods_bulk_write ods_bulk_write;
 
@@ -4304,6 +4306,20 @@ void remove_file_archive( const string& name, bool destroy_files, bool remove_di
                file_remove( path + '/' + next );
 
                g_archive_file_info[ name ].remove_file( next );
+
+               if( p_progress )
+               {
+                  date_time now( date_time::local( ) );
+
+                  uint64_t elapsed = seconds_between( dtm, now );
+
+                  if( elapsed >= 1 )
+                  {
+                     p_progress->output_progress( "." );
+
+                     dtm = now;
+                  }
+               }
             }
 
             if( remove_directory )
@@ -4321,12 +4337,14 @@ void remove_file_archive( const string& name, bool destroy_files, bool remove_di
    g_archive_file_info.erase( name );
 }
 
-void repair_file_archive( const string& name )
+void repair_file_archive( const string& name, progress* p_progress )
 {
    guard g( g_mutex, "repair_file_archive" );
 
    g_archive_file_info.erase( name );
    g_archive_file_info.insert( make_pair( name, archive_file_info( ) ) );
+
+   date_time dtm( date_time::local( ) );
 
    system_ods_bulk_write ods_bulk_write;
 
@@ -4380,6 +4398,20 @@ void repair_file_archive( const string& name )
                int64_t tm_val = last_modification_time( fs.get_full_name( ) );
 
                g_archive_file_info[ name ].add_file( file_name, tm_val );
+            }
+
+            if( p_progress )
+            {
+               date_time now( date_time::local( ) );
+
+               uint64_t elapsed = seconds_between( dtm, now );
+
+               if( elapsed >= 1 )
+               {
+                  p_progress->output_progress( "." );
+
+                  dtm = now;
+               }
             }
          }
 

@@ -2221,22 +2221,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else if( clear )
             clear_file_archive( name );
          else if( remove || destroy )
-         {
-            // NOTE: To make sure that the console client doesn't time out issue a progress message.
-            if( remove )
-               handler.output_progress( "(removing file archive)" );
-            else
-               handler.output_progress( "(destroying file archive)" );
-
-            remove_file_archive( name, destroy );
-         }
+            remove_file_archive( name, destroy, false, &handler );
          else if( repair )
-         {
-            // NOTE: To make sure that the console client doesn't time out issue a progress message.
-            handler.output_progress( "(repairing file archive)" );
-
-            repair_file_archive( name );
-         }
+            repair_file_archive( name, &handler );
       }
       else if( command == c_cmd_ciyam_session_file_archives )
       {

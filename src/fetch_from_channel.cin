@@ -68,7 +68,6 @@ ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
 ;
 @:DONE
 ;
-.system_variable @updating_$IDENTITY ""
 .system_variable @shared_secret_$REVERSED ""
 ;
 @endif
