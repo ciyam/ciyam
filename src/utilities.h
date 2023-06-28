@@ -273,7 +273,12 @@ int vmem_used( );
 
 std::string get_cwd( bool change_backslash_to_forwardslash = false );
 
-void set_cwd( const std::string& path, bool* p_rc = 0 );
+void set_cwd( const char* p_name, bool* p_rc = 0 );
+
+inline void set_cwd( const std::string& path, bool* p_rc = 0 )
+{
+   set_cwd( path.c_str( ), p_rc );
+}
 
 enum dir_perms
 {
@@ -285,13 +290,26 @@ enum dir_perms
    e_dir_perms_confidential = 5
 };
 
-void create_dir( const std::string& path, bool* p_rc = 0, dir_perms perms = e_dir_perms_default, int um = STANDARD_UMASK );
+void create_dir( const char* p_name, bool* p_rc = 0, dir_perms perms = e_dir_perms_default, int um = STANDARD_UMASK );
+
+inline void create_dir( const std::string& path,
+ bool* p_rc = 0, dir_perms perms = e_dir_perms_default, int um = STANDARD_UMASK )
+{
+   create_dir( path.c_str( ), p_rc, perms, um );
+}
 
 bool dir_exists( const char* p_name, bool check_link_target = true );
 
 inline bool dir_exists( const std::string& name, bool check_link_target = true )
 {
    return dir_exists( name.c_str( ), check_link_target );
+}
+
+void remove_dir( const char* p_name, bool* p_rc = 0 );
+
+inline void remove_dir( const std::string& path, bool* p_rc = 0 )
+{
+   remove_dir( path.c_str( ), p_rc );
 }
 
 bool file_touch( const char* p_name,

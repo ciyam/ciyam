@@ -61,6 +61,7 @@ typedef int mode_t;
 #  define _close close
 #  define _chdir chdir
 #  define _mkdir mkdir
+#  define _rmdir rmdir
 #  define _utime utime
 #  define _getcwd getcwd
 #  define _putenv putenv
@@ -307,26 +308,26 @@ string get_cwd( bool change_backslash_to_forwardslash )
    return buf;
 }
 
-void set_cwd( const string& path, bool* p_rc )
+void set_cwd( const char* p_name, bool* p_rc )
 {
-   if( _chdir( path.c_str( ) ) != 0 )
+   if( _chdir( p_name ) != 0 )
    {
       if( p_rc )
          *p_rc = false;
       else
-         throw runtime_error( "unable to _chdir to '" + path + "'" );
+         throw runtime_error( "unable to set cwd to '" + string( p_name ) + "'" );
    }
    else if( p_rc )
       *p_rc = true;
 }
 
-void create_dir( const string& path, bool* p_rc, dir_perms perms, int um )
+void create_dir( const char* p_name, bool* p_rc, dir_perms perms, int um )
 {
 #ifdef _WIN32
    ( void )perms;
    ( void )umask;
 
-   if( _mkdir( path.c_str( ) ) != 0 )
+   if( _mkdir( p_name ) != 0 )
 #else
    int oum = umask( um );
    int pval = c_default_directory_perms;
@@ -354,7 +355,7 @@ void create_dir( const string& path, bool* p_rc, dir_perms perms, int um )
       break;
    }
 
-   if( _mkdir( path.c_str( ), pval ) )
+   if( _mkdir( p_name, pval ) )
 #endif
    {
       if( p_rc )
@@ -364,7 +365,7 @@ void create_dir( const string& path, bool* p_rc, dir_perms perms, int um )
 #ifndef _WIN32
          umask( oum );
 #endif
-         throw runtime_error( "unable to create '" + path + "' directory" );
+         throw runtime_error( "unable to create directory '" + string( p_name ) + "'" );
       }
    }
    else
@@ -402,6 +403,17 @@ bool dir_exists( const char* p_name, bool check_link_target )
 #endif
 
    return rc;
+}
+
+void remove_dir( const char* p_name, bool* p_rc )
+{
+   if( _rmdir( p_name ) != 0 )
+   {
+      if( p_rc )
+         *p_rc = false;
+      else
+         throw runtime_error( "unable to remove directory '" + string( p_name ) + "'" );
+   }
 }
 
 bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists )
