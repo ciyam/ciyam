@@ -6,6 +6,7 @@
 <std.fissile
 ;
 HUB=
+DEMO=
 SEED=$2
 OTHER=
 SHARED=
@@ -27,6 +28,13 @@ CHANNEL=1
 @ifeq "$SEED" ""
 #Usage: bc_gen.cin -hub|-backup|-shared|<other_ident> <seed>
 @else
+;
+@ifeq "$OTHER" "6b24210e8"
+DEMO=1
+@endif
+@ifeq "$OTHER" "6f2680b40"
+DEMO=1
+@endif
 ;
 @ifeq "$SEED" "de604cee0755a3d81944ea96aed12681"
 MULTIPLE=5
@@ -164,9 +172,9 @@ DEC=0
 HEX=@dechex:$DEC
 START=@substr:0,8:$IDENT
 IDENT=$START$HEX
+@endif
+@endif
 ;
-@endif
-@endif
 @else
 .system_variable @blockchain_backup_identity
 @ifndef $OUTPUT
@@ -249,17 +257,40 @@ BLOCK_HASH=$OUTPUT
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
+@ifeq "$IDENT" "6b24210e8"
+DEMO=1
+@endif
+@ifeq "$IDENT" "8e01242b6"
+DEMO=1
+@endif
+@ifeq "$IDENT" "6f2680b40"
+DEMO=1
+@endif
+@ifeq "$IDENT" "04b0862f6"
+DEMO=1
+@endif
+;
+@ifdef $DEMO
+BACKUP_SIZE=10GB
+SHARED_SIZE=1GB
+CHANNEL_SIZE=100MB
+@else
+BACKUP_SIZE=100GB
+SHARED_SIZE=10GB
+CHANNEL_SIZE=1GB
+@endif
+;
 ~mkdir $FILES_AREA_DIR/$IDENT
 @ifdef $CHANNEL
 ~mkdir $FILES_AREA_DIR/$REVERSED
-.file_archive -add $FILES_AREA_DIR/$IDENT 1GB $IDENT
-.file_archive -add $FILES_AREA_DIR/$REVERSED 1GB $REVERSED
+.file_archive -add $FILES_AREA_DIR/$IDENT $CHANNEL_SIZE $IDENT
+.file_archive -add $FILES_AREA_DIR/$REVERSED $CHANNEL_SIZE $REVERSED
 @else
 @ifdef $SHARED
-.file_archive -add $FILES_AREA_DIR/$IDENT 10GB $IDENT
+.file_archive -add $FILES_AREA_DIR/$IDENT $SHARED_SIZE $IDENT
 .system_variable >@blockchain_shared_archive $FILES_AREA_DIR/$IDENT
 @else
-.file_archive -add $FILES_AREA_DIR/$IDENT 100GB $IDENT
+.file_archive -add $FILES_AREA_DIR/$IDENT $BACKUP_SIZE $IDENT
 @ifndef $ERROR
 .system_variable >@blockchain_backup_archive $FILES_AREA_DIR/$IDENT
 @endif
