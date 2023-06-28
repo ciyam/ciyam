@@ -9851,7 +9851,7 @@ string storage_channel_documents_update( const string& identity, bool submitted 
    if( ofs.has_file( height_file_path ) )
       ofs.fetch_from_text_file( height_file_path, height );
 
-   string height_updating( get_system_variable(
+   string height_updating( get_session_variable(
     get_special_var_name( e_special_var_updating ) + '_' + identity ) );
 
    if( height_updating.empty( ) )
