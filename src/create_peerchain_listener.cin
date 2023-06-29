@@ -23,7 +23,7 @@ DESCRIPTION=$2
 REVERSED=*!reverse?$IDENTITY
 ;
 PEER_HUB=
-PEER_TYPE=0
+PEER_TYPE=1
 ;
 .system_variable @blockchain_peer_hub_identity
 @ifeq "$IDENTITY" "$OUTPUT"
