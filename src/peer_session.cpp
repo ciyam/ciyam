@@ -2402,21 +2402,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 
                if( fetch_tree_root )
                {
-                  if( is_shared )
-                  {
-                     string own_identity( get_system_variable(
-                      get_special_var_name( e_special_var_blockchain_shared_identity ) ) );
-
-                     if( !is_user && ( ( identity == own_identity )
-                      || !is_targeted_identity( identity, targeted_identity, height ) ) )
-                     {
-                        fetch_tree_root = false;
-
-                        set_session_variable(
-                         get_special_var_name( e_special_var_blockchain_zenith_tree_hash ), "" );
-                     }
-                  }
-                  else if( !hub_identity.empty( ) )
+                  if( !is_shared && !hub_identity.empty( ) )
                   {
                      fetch_tree_root = false;
 
@@ -3728,17 +3714,20 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          if( !targeted_identity.empty( )
           && ( targeted_identity[ 0 ] != '@' ) && ( blockchain_height == blockchain_height_other ) )
          {
-            tag_file( blockchain + c_shared_suffix, block_processing );
+            if( is_targeted_identity( identity, targeted_identity, blockchain_height ) )
+            {
+               tag_file( blockchain + c_shared_suffix, block_processing );
 
-            string backup_identity( get_session_variable(
-             get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+               string backup_identity( get_session_variable(
+                get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
-            if( backup_identity.empty( ) )
-               set_system_variable( get_special_var_name(
-                e_special_var_export_needed ) + '_' + identity, identity );
-            else
-               set_system_variable( get_special_var_name(
-                e_special_var_export_needed ) + '_' + backup_identity, identity );
+               if( backup_identity.empty( ) )
+                  set_system_variable( get_special_var_name(
+                   e_special_var_export_needed ) + '_' + identity, identity );
+               else
+                  set_system_variable( get_special_var_name(
+                   e_special_var_export_needed ) + '_' + backup_identity, identity );
+            }
          }
       }
    }
