@@ -3295,9 +3295,9 @@ string formatted_value( const string& value, const string& field_type )
          udate today( udate::standard( ) );
 
          if( formatted_value == c_date_today )
-            formatted_value == today.as_string( );
+            formatted_value = today.as_string( );
          else if( formatted_value == c_date_tomorrow )
-            formatted_value == ( ++today ).as_string( );
+            formatted_value = ( ++today ).as_string( );
 
          formatted_value = udate( formatted_value ).as_string( true );
       }
