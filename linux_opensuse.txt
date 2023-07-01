@@ -218,6 +218,13 @@ Next follow these instructions:
 
 rm ciyam.dat ciyam.hdr ciyam.idx ciyam.log ciyam.sql ciyam.tlg ciyam.modules.lst
 
+NOTE: If having permission issues with 'root'@'localhost' for MySQL try the following:
+
+sudo mysql -u root
+SET PASSWORD FOR 'root'@'localhost' = '';
+exit
+sudo service mysql restart
+
 Installing the CIYAM "systemd" Service
 --------------------------------------
 

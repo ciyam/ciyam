@@ -34,8 +34,16 @@ PUB2499_HASH=$OUTPUT
 ;
 .file_kill -q -p=bc.$IDENTITY.*
 ;
+.file_archives -path_only $IDENTITY
+@ifdef $OUTPUT
 ~rm -f files/$IDENTITY/*
 .file_archive -repair $IDENTITY
+@endif
+;
+.file_repo_entries -total $IDENTITY
+@ifneq "$OUTPUT" "0"
+.file_repo_entries -remove_all $IDENTITY
+@endif
 ;
 .file_tag $GENESIS_HASH bc.$IDENTITY.0.blk,bc.$IDENTITY.zenith
 .file_tag $PUB0000_HASH bc.$IDENTITY.0.pub
