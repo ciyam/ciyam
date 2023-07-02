@@ -18,4 +18,14 @@ folder_remove -r ghi
 branch folders
 branch objects
 dump
+folder_add xxx
+folder_add xxx/.yyy
+folder_add xxx/.yyy/zzz
+branch objects
+branch -f objects
+folder_remove xxx
+folder_remove -r xxx
+branch folders
+branch objects
+dump
 exit

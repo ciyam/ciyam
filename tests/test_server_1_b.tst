@@ -169,9 +169,9 @@ system_variable *test1*
 @:test1/000002 test1/y
 @:test1/000003 test1/z
 test1/ [000000]none
-test1/x [000001]created
-test1/y [000002]created
-test1/z [000003]created
+test1/x [000001]#created
+test1/y [000002]#created
+test1/z [000003]#created
 ~touch test1/x
 ~touch test1/y
 ~touch test1/z
@@ -182,9 +182,9 @@ system_variable *test1*
 @:test1/000002 test1/y
 @:test1/000003 test1/z
 test1/ [000000]none
-test1/x [000001]created
-test1/y [000002]created
-test1/z [000003]created
+test1/x [000001]#created
+test1/y [000002]#created
+test1/z [000003]#created
 ~rm test1/x
 ~rm test1/y
 ~rm test1/z
@@ -198,28 +198,28 @@ system_variable *test1*
 @:test1/000000 test1/
 @:test1/000004 test1/x
 test1/ [000000]none
-test1/x [000004]created
+test1/x [000004]#created
 ~mv test1/x test1/xx
 system_variable *test1*
 @:test1/ [watching]
 @:test1/000000 test1/
 @:test1/000004 test1/xx
 test1/ [000000]none
-test1/xx [000004]created
+test1/xx [000004]#created
 ~mv test1/xx test1/xxx
 system_variable *test1*
 @:test1/ [watching]
 @:test1/000000 test1/
 @:test1/000004 test1/xxx
 test1/ [000000]none
-test1/xxx [000004]created
+test1/xxx [000004]#created
 ~mv test1/xxx test1/x
 system_variable *test1*
 @:test1/ [watching]
 @:test1/000000 test1/
 @:test1/000004 test1/x
 test1/ [000000]none
-test1/x [000004]created
+test1/x [000004]#created
 notifier -finish test1
 system_variable *test1*
 ~mkdir test1/xxx
@@ -239,8 +239,8 @@ system_variable *test1*
 @:test1/000001 test1/xxx/
 @:test1/000002 test1/zzz/
 test1/ [000000]none
-test1/xxx/ [000001]created
-test1/zzz/ [000002]created
+test1/xxx/ [000001]#created
+test1/zzz/ [000002]#created
 ~mv test1/zzz test1/yyy
 system_variable *test1*
 @:test1/ [watching]
@@ -248,8 +248,8 @@ system_variable *test1*
 @:test1/000001 test1/xxx/
 @:test1/000002 test1/yyy/
 test1/ [000000]none
-test1/xxx/ [000001]created
-test1/yyy/ [000002]created
+test1/xxx/ [000001]#created
+test1/yyy/ [000002]#created
 ~mkdir test1/yyy/zzz
 system_variable *test1*
 @:test1/ [watching]
@@ -258,9 +258,9 @@ system_variable *test1*
 @:test1/000002 test1/yyy/
 @:test1/000003 test1/yyy/zzz/
 test1/ [000000]none
-test1/xxx/ [000001]created
-test1/yyy/ [000002]created
-test1/yyy/zzz/ [000003]created
+test1/xxx/ [000001]#created
+test1/yyy/ [000002]#created
+test1/yyy/zzz/ [000003]#created
 ~touch test1/yyy/zzz/abc
 system_variable *test1*
 @:test1/ [watching]
@@ -270,10 +270,10 @@ system_variable *test1*
 @:test1/000003 test1/yyy/zzz/
 @:test1/000004 test1/yyy/zzz/abc
 test1/ [000000]none
-test1/xxx/ [000001]created
-test1/yyy/ [000002]created
-test1/yyy/zzz/ [000003]created
-test1/yyy/zzz/abc [000004]created
+test1/xxx/ [000001]#created
+test1/yyy/ [000002]#created
+test1/yyy/zzz/ [000003]#created
+test1/yyy/zzz/abc [000004]#created
 ~mv test1/yyy test1/xxx
 system_variable *test1*
 @:test1/ [watching]
@@ -283,10 +283,10 @@ system_variable *test1*
 @:test1/000003 test1/xxx/yyy/zzz/
 @:test1/000004 test1/xxx/yyy/zzz/abc
 test1/ [000000]none
-test1/xxx/ [000001]created
-test1/xxx/yyy/ [000002]created
-test1/xxx/yyy/zzz/ [000003]created
-test1/xxx/yyy/zzz/abc [000004]created
+test1/xxx/ [000001]#created
+test1/xxx/yyy/ [000002]#created
+test1/xxx/yyy/zzz/ [000003]#created
+test1/xxx/yyy/zzz/abc [000004]#created
 ~touch test1/xxx/yyy/zzz/def
 system_variable *test1*
 @:test1/ [watching]
@@ -297,11 +297,11 @@ system_variable *test1*
 @:test1/000004 test1/xxx/yyy/zzz/abc
 @:test1/000005 test1/xxx/yyy/zzz/def
 test1/ [000000]none
-test1/xxx/ [000001]created
-test1/xxx/yyy/ [000002]created
-test1/xxx/yyy/zzz/ [000003]created
-test1/xxx/yyy/zzz/abc [000004]created
-test1/xxx/yyy/zzz/def [000005]created
+test1/xxx/ [000001]#created
+test1/xxx/yyy/ [000002]#created
+test1/xxx/yyy/zzz/ [000003]#created
+test1/xxx/yyy/zzz/abc [000004]#created
+test1/xxx/yyy/zzz/def [000005]#created
 notifier -finish test1
 ~rm -r test1/xxx
 ~touch test1/x
@@ -384,7 +384,7 @@ system_variable *test1*
 test1/xxx/ [000000]none
 test1/xxx/111 [000002]deleted
 test1/xxx/222 [000001]deleted
-test1/xxx/333 [000003]created
+test1/xxx/333 [000003]#created
 ~rm test1/xxx/333
 system_variable *test1*
 @:test1/xxx/ [watching]

@@ -75,8 +75,6 @@ namespace
 
 const string c_nul_key( 1, '\0' );
 
-const char c_item_selection_marker = '#';
-
 const char c_module_prefix_separator = '_';
 const char c_module_order_prefix_separator = '.';
 
@@ -2623,7 +2621,7 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
       if( indirect_row_data.find( prefix ) == 0 )
          indirect_row_data.erase( 0, prefix.length( ) );
 
-      if( !indirect_row_data.empty( ) && ( indirect_row_data[ 0 ] == c_item_selection_marker ) )
+      if( !indirect_row_data.empty( ) && ( indirect_row_data[ 0 ] == c_notifier_select_char ) )
          indirect_row_data.erase( 0, 1 );
 
       if( persistence_extra.find( c_notifier_prefix ) == 0 )
@@ -10275,7 +10273,7 @@ void storage_channel_documents_open( const char* p_identity )
          split( selections, all_selections, '\n' );
 
          for( size_t i = 0; i < all_selections.size( ); i++ )
-            set_system_variable( prefix + all_selections[ i ], string( 1, c_item_selection_marker ) );
+            set_system_variable( prefix + all_selections[ i ], string( 1, c_notifier_select_char ) );
       }
    }
 }
@@ -10363,7 +10361,7 @@ void storage_channel_documents_close( const char* p_identity )
             next_value.erase( 0, pos + 1 );
          }
 
-         if( !next_value.empty( ) && ( next_value[ 0 ] == c_item_selection_marker ) )
+         if( !next_value.empty( ) && ( next_value[ 0 ] == c_notifier_select_char ) )
          {
             is_selected = true;
             next_value.erase( 0, 1 );
@@ -10454,9 +10452,9 @@ void storage_channel_document_submit( const string& file_path )
          notifier_value.erase( 0, pos + 1 );
       }
 
-      if( !notifier_value.empty( ) && ( notifier_value[ 0 ] != c_item_selection_marker ) )
+      if( !notifier_value.empty( ) && ( notifier_value[ 0 ] != c_notifier_select_char ) )
       {
-         notifier_value = c_item_selection_marker + notifier_value;
+         notifier_value = c_notifier_select_char + notifier_value;
 
          set_system_variable( file_path, prefix + notifier_value );
       }
@@ -10482,7 +10480,7 @@ void storage_channel_document_unsubmit( const string& file_path )
          notifier_value.erase( 0, pos + 1 );
       }
 
-      if( !notifier_value.empty( ) && ( notifier_value[ 0 ] == c_item_selection_marker ) )
+      if( !notifier_value.empty( ) && ( notifier_value[ 0 ] == c_notifier_select_char ) )
       {
          notifier_value.erase( 0, 1 );
 
@@ -10509,7 +10507,7 @@ bool storage_channel_document_submitting( const string& file_path )
          notifier_value.erase( 0, pos + 1 );
       }
 
-      if( !notifier_value.empty( ) && ( notifier_value[ 0 ] == c_item_selection_marker ) )
+      if( !notifier_value.empty( ) && ( notifier_value[ 0 ] == c_notifier_select_char ) )
          retval = true;
    }
 

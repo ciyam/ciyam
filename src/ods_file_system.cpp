@@ -1707,12 +1707,24 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
 {
    btree_type& bt( p_impl->bt );
 
-   if( valid_file_name( name ) != name )
+   string folder_name( name );
+
+   auto_ptr< temporary_set_folder > ap_temp_folder;
+
+   string::size_type pos = folder_name.rfind( c_folder );
+
+   if( pos != string::npos )
+   {
+      ap_temp_folder.reset( new temporary_set_folder( *this, folder_name.substr( 0, pos ) ) );
+      folder_name.erase( 0, pos + 1 );
+   }
+
+   if( valid_file_name( folder_name ) != folder_name )
    {
       if( !p_os )
-         throw runtime_error( "invalid folder name '" + name + "'" );
+         throw runtime_error( "invalid folder name '" + folder_name + "'" );
       else
-         *p_os << "*** invalid folder name '" << name << "' ***" << endl;
+         *p_os << "*** invalid folder name '" << folder_name << "' ***" << endl;
    }
    else
    {
@@ -1742,28 +1754,28 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
       if( current_folder == string( c_root_folder ) )
       {
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
-         tmp_item.val = c_pipe + name;
+         tmp_item.val = c_pipe + folder_name;
          tmp_iter = bt.find( tmp_item );
 
          if( tmp_iter != bt.end( ) )
          {
             if( !p_os )
-               throw runtime_error( "a file with the name '" + name + "' already exists" );
+               throw runtime_error( "a file with the name '" + folder_name + "' already exists" );
             else
-               *p_os << "*** a file with the name '" << name << "' already exists ***" << endl;
+               *p_os << "*** a file with the name '" << folder_name << "' already exists ***" << endl;
          }
          else
 #endif
          {
-            tmp_item.val = current_folder + name;
+            tmp_item.val = current_folder + folder_name;
             tmp_iter = bt.find( tmp_item );
 
             if( tmp_iter != bt.end( ) )
             {
                if( !p_os )
-                  throw runtime_error( "folder '" + name + "' already exists" );
+                  throw runtime_error( "folder '" + folder_name + "' already exists" );
                else
-                  *p_os << "*** folder '" << name << "' already exists ***" << endl;
+                  *p_os << "*** folder '" << folder_name << "' already exists ***" << endl;
             }
             else
             {
@@ -1787,10 +1799,10 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
       }
       else
       {
-         string name_1( current_folder + c_folder + name );
-         string name_2( replaced( current_folder, c_folder_separator, c_colon_separator ) + c_folder + name );
+         string name_1( current_folder + c_folder + folder_name );
+         string name_2( replaced( current_folder, c_folder_separator, c_colon_separator ) + c_folder + folder_name );
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
-         string name_x( replaced( current_folder, c_folder_separator, c_pipe_separator ) + c_folder + name );
+         string name_x( replaced( current_folder, c_folder_separator, c_pipe_separator ) + c_folder + folder_name );
 
          tmp_item.val = name_x;
          tmp_iter = bt.find( tmp_item );
@@ -1798,9 +1810,9 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
          if( tmp_iter != bt.end( ) )
          {
             if( !p_os )
-               throw runtime_error( "a file with the name '" + name + "' already exists" );
+               throw runtime_error( "a file with the name '" + folder_name + "' already exists" );
             else
-               *p_os << "*** a file with the name '" << name << "' already exists ***" << endl;
+               *p_os << "*** a file with the name '" << folder_name << "' already exists ***" << endl;
          }
          else
 #endif
@@ -1811,9 +1823,9 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
             if( tmp_iter != bt.end( ) )
             {
                if( !p_os )
-                  throw runtime_error( "folder '" + name + "' already exists" );
+                  throw runtime_error( "folder '" + folder_name + "' already exists" );
                else
-                  *p_os << "*** folder '" << name << "' already exists ***" << endl;
+                  *p_os << "*** folder '" << folder_name << "' already exists ***" << endl;
             }
             else
             {
@@ -2051,6 +2063,7 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
       okay = false;
    else
    {
+      restorable< bool > skip_hidden( p_impl->skip_hidden, false );
       restorable< string > tmp_current_folder( current_folder, tmp_folder );
 
       vector< string > child_folders;
@@ -2733,7 +2746,8 @@ void ods_file_system::branch_files_or_objects( ostream& os, const string& folder
 
    deque< string > folders;
 
-   restorable< bool > skip_hidden( p_impl->skip_hidden, !full );
+   // NOTE: If is not skipping already then only include hidden objects if is a 'full' list.
+   restorable< bool > skip_hidden( p_impl->skip_hidden, ( !full && p_impl->skip_hidden ) );
 
    bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
