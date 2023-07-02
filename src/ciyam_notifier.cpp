@@ -520,6 +520,21 @@ void ciyam_notifier::on_start( )
                      {
                         set_system_variable( var_name, "" );
                         var_name = old_value.substr( prefix.length( ) );
+
+                        // NOTE: If a file was renamed but another with the original
+                        // name had been created then will handle as a modification.
+                        if( has_system_variable( var_name ) )
+                        {
+                           string prior_value( get_raw_system_variable( var_name ) );
+
+                           string prior_unique;
+                           get_value_and_unique( prior_value, &prior_unique );
+
+                           value = c_notifier_modified;
+                           tagged_extra = c_notifier_selection;
+
+                           set_system_variable( watch_variable_name + prior_unique, "" );
+                        }
                      }
                   }
 
