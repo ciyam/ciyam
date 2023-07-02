@@ -426,6 +426,45 @@ system_variable *test1/xxx*
 @:test1/xxx/000001 test1/xxx/111
 test1/xxx/ [000000]none
 test1/xxx/111 [000001]deleted
+notifier -finish test1/xxx
+~touch test1/xxx/111
+notifier -start test1/xxx
+system_variable *test1/xxx*
+@:test1/xxx/ [watching]
+@:test1/xxx/000000 test1/xxx/
+@:test1/xxx/000001 test1/xxx/111
+test1/xxx/ [000000]none
+test1/xxx/111 [000001]none
+~mv test1/xxx/111 test1/xxx/222
+system_variable *test1/xxx*
+@:test1/xxx/ [watching]
+@:test1/xxx/000000 test1/xxx/
+@:test1/xxx/000001 test1/xxx/222
+test1/xxx/ [000000]none
+test1/xxx/222 [000001]moved_from|test1/xxx/111
+~touch test1/xxx/111
+system_variable *test1/xxx*
+@:test1/xxx/ [watching]
+@:test1/xxx/000000 test1/xxx/
+@:test1/xxx/000001 test1/xxx/222
+@:test1/xxx/000002 test1/xxx/111
+test1/xxx/ [000000]none
+test1/xxx/111 [000002]#created
+test1/xxx/222 [000001]moved_from|test1/xxx/111
+~rm test1/xxx/222
+system_variable *test1/xxx*
+@:test1/xxx/ [watching]
+@:test1/xxx/000000 test1/xxx/
+@:test1/xxx/000001 test1/xxx/111
+test1/xxx/ [000000]none
+test1/xxx/111 [000001]#modified
+~rm test1/xxx/111
+system_variable *test1/xxx*
+@:test1/xxx/ [watching]
+@:test1/xxx/000000 test1/xxx/
+@:test1/xxx/000001 test1/xxx/111
+test1/xxx/ [000000]none
+test1/xxx/111 [000001]deleted
 notifier -finish test1
 ~rmdir test1/xxx
 file_put 1K*test.jpg test
