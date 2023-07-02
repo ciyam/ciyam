@@ -462,6 +462,8 @@ void ciyam_notifier::on_start( )
 
                   bool skip = false;
 
+                  string tagged_extra;
+
                   if( old_value == c_notifier_created )
                   {
                      if( value == "attrib" )
@@ -471,7 +473,10 @@ void ciyam_notifier::on_start( )
                         if( value == "delete" )
                            value = "";
                         else if( !value.empty( ) )
+                        {
                            value = c_notifier_created;
+                           tagged_extra = c_notifier_selection;
+                        }
                      }
                   }
                   else if( value == "attrib" )
@@ -480,7 +485,10 @@ void ciyam_notifier::on_start( )
                       || ( old_value.find( modified_from_prefix ) == 0 ) )
                         value = old_value;
                      else
+                     {
                         value = c_notifier_modified;
+                        tagged_extra = c_notifier_selection;
+                     }
                   }
                   else if( value == "create" )
                   {
@@ -488,9 +496,14 @@ void ciyam_notifier::on_start( )
                         value = c_notifier_created;
                      else
                         value = c_notifier_modified;
+
+                     tagged_extra = c_notifier_selection;
                   }
                   else if( value == "modify" )
+                  {
                      value = c_notifier_modified;
+                     tagged_extra = c_notifier_selection;
+                  }
                   else if( value == "delete" )
                   {
                      string prefix;
@@ -509,6 +522,9 @@ void ciyam_notifier::on_start( )
                         var_name = old_value.substr( prefix.length( ) );
                      }
                   }
+
+                  if( extra.empty( ) )
+                     extra = tagged_extra;
 
                   if( value == "delete_self" )
                   {

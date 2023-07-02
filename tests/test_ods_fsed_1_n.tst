@@ -73,4 +73,32 @@ Dumping level #0
          lft_link = -1, rgt_link = -1
 Item #0, data = /zzz, link = -1
 Item #1, data = :/zzz, link = -1
+folder_add xxx
+folder_add xxx/.yyy
+folder_add xxx/.yyy/zzz
+branch objects
+xxx/
+zzz/
+branch -f objects
+/xxx/
+/xxx/.yyy/
+/xxx/.yyy/zzz/
+/zzz/
+folder_remove xxx
+error: cannot remove 'xxx' as it has one or more child folders
+folder_remove -r xxx
+branch folders
+zzz
+branch objects
+zzz/
+dump
+Total index levels = 0
+Total number of nodes = 1
+Total number of items = 2
+
+Dumping level #0
+[Node 1] flags = 3, dge_link = -1
+         lft_link = -1, rgt_link = -1
+Item #0, data = /zzz, link = -1
+Item #1, data = :/zzz, link = -1
 exit

@@ -34,7 +34,10 @@ const char* const c_ellipsis = "...";
 const char* const c_watching = "[watching]";
 const char* const c_finishing = "[finishing]";
 
+const char c_notifier_select_char = '#';
+
 const char* const c_notifier_prefix = "@:";
+const char* const c_notifier_selection = "#";
 
 const char* const c_ciyam_tag = "ciyam";
 const char* const c_ciyam_logs_tag = "ciyam.logs";

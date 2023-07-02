@@ -78,6 +78,7 @@ sudo vi /usr/etc/ssh/sshd_config
 PasswordAuthentication yes
 
 sudo service sshd restart
+sudo service firewalld restart
 
 git clone https://github.com/ciyam/fcgi.git
 
@@ -252,3 +253,41 @@ sudo systemctl enable ciyamd
 
 sudo service ciyamd start
 sudo service ciyamd status
+
+Installing Syncthing User Service
+---------------------------------
+
+sudo zypper install syncthing
+
+sudo vi /usr/lib/firewalld/services/syncthing.xml
+(change TCP/UDP ports to 13031)
+
+mkdir .config/systemd
+mkdir .config/systemd/user
+cp /usr/lib/systemd/system/syncthing* ~/.config/systemd/user
+
+vi ~/.config/systemd/user/syncthing@.service
+[syncthing@.service]
+...
+#User=%i
+...
+WantedBy=default.target
+[syncthing@.service]
+
+systemctl --user enable syncthing.service
+systemctl --user start syncthing.service
+systemctl --user status syncthing.service
+
+Start a tunnel in order to access the Web UI in the host OS:
+ssh -L8384:127.0.0.1:8384 -p 2222 tux@localhost
+
+In local browser: localhost:8384
+* Settings/Connections
+Sync Protocol Listen Addresses
+tcp://:13031
+
+systemctl --user restart syncthing.service
+systemctl --user status syncthing.service
+
+sudo service firewalld restart
+sudo service firewalld status
