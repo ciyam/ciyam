@@ -35,6 +35,7 @@ const char* const c_watching = "[watching]";
 const char* const c_finishing = "[finishing]";
 
 const char c_notifier_select_char = '#';
+const char c_notifier_unselect_char = '=';
 
 const char* const c_notifier_prefix = "@:";
 const char* const c_notifier_selection = "#";

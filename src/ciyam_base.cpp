@@ -2624,6 +2624,9 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
       if( !indirect_row_data.empty( ) && ( indirect_row_data[ 0 ] == c_notifier_select_char ) )
          indirect_row_data.erase( 0, 1 );
 
+      if( !indirect_row_data.empty( ) && ( indirect_row_data[ 0 ] == c_notifier_unselect_char ) )
+         indirect_row_data.erase( 0, 1 );
+
       if( persistence_extra.find( c_notifier_prefix ) == 0 )
          persistence_extra.erase( 0, strlen( c_notifier_prefix ) );
 
@@ -9936,7 +9939,39 @@ string storage_channel_documents_update( const string& identity, bool submitted 
 
                paths.insert( next_file_path );
 
-               ofs.store_file( next_file_path, local_file );
+               pos = next_file_path.rfind( '/' );
+
+               bool has_stored = false;
+
+               if( ( pos != 0 ) && ( pos != string::npos ) )
+               {
+                  string file_name( next_file_path.substr( pos + 1 ) );
+                  string all_folders( next_file_path.substr( 0, pos ) );
+
+                  vector< string > folders;
+                  split( all_folders, folders, '/' );
+
+                  string folder( ofs.get_folder( ) );
+
+                  for( size_t i = 0; i < folders.size( ); i++ )
+                  {
+                     string next_folder( folders[ i ] );
+
+                     if( !ofs.has_folder( next_folder ) )
+                     {
+                        ofs.add_folder( next_folder );
+                        ofs.set_folder( next_folder );
+                     }
+                  }
+
+                  ofs.store_file( file_name, local_file );
+
+                  has_stored = true;
+                  ofs.set_folder( folder );
+               }
+
+               if( !has_stored )
+                  ofs.store_file( next_file_path, local_file );
             }
 
             ofs.set_folder( c_channel_folder_ciyam );
@@ -10483,6 +10518,8 @@ void storage_channel_document_unsubmit( const string& file_path )
       if( !notifier_value.empty( ) && ( notifier_value[ 0 ] == c_notifier_select_char ) )
       {
          notifier_value.erase( 0, 1 );
+
+         notifier_value = c_notifier_unselect_char + notifier_value;
 
          set_system_variable( file_path, prefix + notifier_value );
       }
