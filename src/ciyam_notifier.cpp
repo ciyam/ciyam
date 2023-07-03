@@ -461,6 +461,11 @@ void ciyam_notifier::on_start( )
                   }
 
                   bool skip = false;
+                  bool is_folder = false;
+
+                  if( !var_name.empty( )
+                   && ( var_name[ var_name.length( ) - 1 ] == '/' ) )
+                     is_folder = true;
 
                   string tagged_extra;
 
@@ -475,7 +480,9 @@ void ciyam_notifier::on_start( )
                         else if( !value.empty( ) )
                         {
                            value = c_notifier_created;
-                           tagged_extra = c_notifier_selection;
+
+                           if( !is_folder )
+                              tagged_extra = c_notifier_selection;
                         }
                      }
                   }
@@ -487,7 +494,9 @@ void ciyam_notifier::on_start( )
                      else
                      {
                         value = c_notifier_modified;
-                        tagged_extra = c_notifier_selection;
+
+                        if( !is_folder )
+                           tagged_extra = c_notifier_selection;
                      }
                   }
                   else if( value == "create" )
@@ -497,12 +506,15 @@ void ciyam_notifier::on_start( )
                      else
                         value = c_notifier_modified;
 
-                     tagged_extra = c_notifier_selection;
+                     if( !is_folder )
+                        tagged_extra = c_notifier_selection;
                   }
                   else if( value == "modify" )
                   {
                      value = c_notifier_modified;
-                     tagged_extra = c_notifier_selection;
+
+                     if( !is_folder )
+                        tagged_extra = c_notifier_selection;
                   }
                   else if( value == "delete" )
                   {

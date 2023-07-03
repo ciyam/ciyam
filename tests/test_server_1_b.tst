@@ -239,8 +239,8 @@ system_variable *test1*
 @:test1/000001 test1/xxx/
 @:test1/000002 test1/zzz/
 test1/ [000000]none
-test1/xxx/ [000001]#created
-test1/zzz/ [000002]#created
+test1/xxx/ [000001]created
+test1/zzz/ [000002]created
 ~mv test1/zzz test1/yyy
 system_variable *test1*
 @:test1/ [watching]
@@ -248,8 +248,8 @@ system_variable *test1*
 @:test1/000001 test1/xxx/
 @:test1/000002 test1/yyy/
 test1/ [000000]none
-test1/xxx/ [000001]#created
-test1/yyy/ [000002]#created
+test1/xxx/ [000001]created
+test1/yyy/ [000002]created
 ~mkdir test1/yyy/zzz
 system_variable *test1*
 @:test1/ [watching]
@@ -258,9 +258,9 @@ system_variable *test1*
 @:test1/000002 test1/yyy/
 @:test1/000003 test1/yyy/zzz/
 test1/ [000000]none
-test1/xxx/ [000001]#created
-test1/yyy/ [000002]#created
-test1/yyy/zzz/ [000003]#created
+test1/xxx/ [000001]created
+test1/yyy/ [000002]created
+test1/yyy/zzz/ [000003]created
 ~touch test1/yyy/zzz/abc
 system_variable *test1*
 @:test1/ [watching]
@@ -270,9 +270,9 @@ system_variable *test1*
 @:test1/000003 test1/yyy/zzz/
 @:test1/000004 test1/yyy/zzz/abc
 test1/ [000000]none
-test1/xxx/ [000001]#created
-test1/yyy/ [000002]#created
-test1/yyy/zzz/ [000003]#created
+test1/xxx/ [000001]created
+test1/yyy/ [000002]created
+test1/yyy/zzz/ [000003]created
 test1/yyy/zzz/abc [000004]#created
 ~mv test1/yyy test1/xxx
 system_variable *test1*
@@ -283,9 +283,9 @@ system_variable *test1*
 @:test1/000003 test1/xxx/yyy/zzz/
 @:test1/000004 test1/xxx/yyy/zzz/abc
 test1/ [000000]none
-test1/xxx/ [000001]#created
-test1/xxx/yyy/ [000002]#created
-test1/xxx/yyy/zzz/ [000003]#created
+test1/xxx/ [000001]created
+test1/xxx/yyy/ [000002]created
+test1/xxx/yyy/zzz/ [000003]created
 test1/xxx/yyy/zzz/abc [000004]#created
 ~touch test1/xxx/yyy/zzz/def
 system_variable *test1*
@@ -297,9 +297,9 @@ system_variable *test1*
 @:test1/000004 test1/xxx/yyy/zzz/abc
 @:test1/000005 test1/xxx/yyy/zzz/def
 test1/ [000000]none
-test1/xxx/ [000001]#created
-test1/xxx/yyy/ [000002]#created
-test1/xxx/yyy/zzz/ [000003]#created
+test1/xxx/ [000001]created
+test1/xxx/yyy/ [000002]created
+test1/xxx/yyy/zzz/ [000003]created
 test1/xxx/yyy/zzz/abc [000004]#created
 test1/xxx/yyy/zzz/def [000005]#created
 notifier -finish test1
