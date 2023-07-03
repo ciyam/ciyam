@@ -9957,7 +9957,9 @@ string storage_channel_documents_update( const string& identity, bool submitted 
                   {
                      string next_folder( folders[ i ] );
 
-                     if( !ofs.has_folder( next_folder ) )
+                     if( ofs.has_folder( next_folder ) )
+                        ofs.set_folder( next_folder );
+                     else
                      {
                         ofs.add_folder( next_folder );
                         ofs.set_folder( next_folder );
