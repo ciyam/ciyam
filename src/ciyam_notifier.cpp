@@ -249,7 +249,7 @@ void ciyam_notifier::on_start( )
 
             for( size_t i = 0; i < all_events.size( ); i++ )
             {
-               string extra, value, old_value, unique_value;
+               string extra, value, old_value, tagged_extra, unique_value;
 
                string next_event( all_events[ i ] );
 
@@ -275,7 +275,6 @@ void ciyam_notifier::on_start( )
                   }
 
                   next_event.erase( 0, 1 );
-
                }
 
                if( !next_event.empty( ) && reportable_event )
@@ -283,6 +282,12 @@ void ciyam_notifier::on_start( )
                   string::size_type pos = next_event.find( '|' );
 
                   string var_name( next_event.substr( 0, pos ) );
+
+                  bool is_folder = false;
+
+                  if( !var_name.empty( )
+                   && ( var_name[ var_name.length( ) - 1 ] == '/' ) )
+                     is_folder = true;
 
                   old_value = get_value_from_system_variable( var_name, &unique_value );
 
@@ -308,6 +313,7 @@ void ciyam_notifier::on_start( )
                      if( pos != string::npos )
                      {
                         string cookie_id( next_event.substr( pos + 1 ) );
+
                         next_event.erase( 0, pos + 1 );
 
                         if( cookie_id != "0" )
@@ -326,7 +332,7 @@ void ciyam_notifier::on_start( )
                                  if( !unique_value.empty( ) )
                                     cookie_id_unique_values.insert( make_pair( cookie_id, unique_value + extra ) );
 
-                                 if( var_name.empty( ) || ( var_name[ var_name.length( ) - 1 ] != '/' ) )
+                                 if( !is_folder || var_name.empty( ) )
                                     cookie_id_original_names.insert( make_pair( cookie_id, "" ) );
                                  else
                                     cookie_id_original_names.insert( make_pair( cookie_id, c_created + var_name ) );
@@ -383,6 +389,9 @@ void ciyam_notifier::on_start( )
 
                               if( original_name.empty( ) )
                               {
+                                 if( !is_folder )
+                                    tagged_extra = c_notifier_selection;
+
                                  if( old_value.empty( ) )
                                     value = c_notifier_created;
                                  else
@@ -420,7 +429,9 @@ void ciyam_notifier::on_start( )
                                  // been prefixed by the original name (if it is a folder).
                                  set_system_variable( original_name, "" );
 
-                                 if( original_name[ original_name.length( ) - 1 ] == '/' )
+                                 if( !is_folder )
+                                    tagged_extra = c_notifier_selection;
+                                 else
                                  {
                                     string all_prefixed_variables( get_raw_system_variable( original_name + "*" ) );
 
@@ -461,13 +472,6 @@ void ciyam_notifier::on_start( )
                   }
 
                   bool skip = false;
-                  bool is_folder = false;
-
-                  if( !var_name.empty( )
-                   && ( var_name[ var_name.length( ) - 1 ] == '/' ) )
-                     is_folder = true;
-
-                  string tagged_extra;
 
                   if( old_value == c_notifier_created )
                   {

@@ -318,7 +318,7 @@ system_variable *test1*
 @:test1/000000 test1/
 @:test1/000001 test1/y
 test1/ [000000]none
-test1/y [000001]moved_from|test1/x
+test1/y [000001]#moved_from|test1/x
 ~touch test1/z
 ~mv test1/z test1/y
 system_variable *test1*
@@ -326,7 +326,7 @@ system_variable *test1*
 @:test1/000000 test1/
 @:test1/000001 test1/y
 test1/ [000000]none
-test1/y [000001]modified_from|test1/x
+test1/y [000001]#modified_from|test1/x
 ~rm test1/y
 system_variable *test1*
 @:test1/ [watching]
@@ -441,7 +441,7 @@ system_variable *test1/xxx*
 @:test1/xxx/000000 test1/xxx/
 @:test1/xxx/000001 test1/xxx/222
 test1/xxx/ [000000]none
-test1/xxx/222 [000001]moved_from|test1/xxx/111
+test1/xxx/222 [000001]#moved_from|test1/xxx/111
 ~touch test1/xxx/111
 system_variable *test1/xxx*
 @:test1/xxx/ [watching]
@@ -450,7 +450,7 @@ system_variable *test1/xxx*
 @:test1/xxx/000002 test1/xxx/111
 test1/xxx/ [000000]none
 test1/xxx/111 [000002]#created
-test1/xxx/222 [000001]moved_from|test1/xxx/111
+test1/xxx/222 [000001]#moved_from|test1/xxx/111
 ~rm test1/xxx/222
 system_variable *test1/xxx*
 @:test1/xxx/ [watching]
