@@ -9912,12 +9912,14 @@ string storage_channel_documents_update( const string& identity, bool submitted 
          {
             ods::transaction ods_tx( *ods::instance( ) );
 
-            ofs.set_folder( identity );
+            temporary_force_write ofs_force_write( ofs );
 
             vector< string > files;
 
             set< string > paths;
             split( all_files, files, '\n' );
+
+            ofs.set_folder( identity );
 
             for( size_t i = 0; i < files.size( ); i++ )
             {

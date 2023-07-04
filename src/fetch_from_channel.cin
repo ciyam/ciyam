@@ -20,39 +20,93 @@ NUM_ARGS=@$NUM_ARGS+1
 STORAGE=$1
 IDENTITY=$2
 ;
+.session_variable @uuid
+UUID=$OUTPUT
+;
 .system_variable $$%IDENTITY%_identity
 BLOCKCHAIN=$OUTPUT
 REVERSED=*!reverse?$BLOCKCHAIN
 ;
 .storage_init $STORAGE
+;
 @ifndef $ERROR
 .storage_channel_documents -fetched $IDENTITY
+FETCH_HEIGHT=$OUTPUT
+.storage_channel_documents -submitted $IDENTITY
+SUBMIT_HEIGHT=$OUTPUT
 ;
 @ifndef $ERROR
-HEIGHT=$OUTPUT
-;
-.peer_channel_height -min -rev $IDENTITY $HEIGHT
+.peer_channel_height -minimal $IDENTITY $SUBMIT_HEIGHT
 @ifdef $OUTPUT
-HIGHEST=$OUTPUT
+SUBMIT_HIGHEST=$OUTPUT
+;
+.peer_channel_height -minimal -reversed $IDENTITY $FETCH_HEIGHT
+@ifdef $OUTPUT
+FETCH_HIGHEST=$OUTPUT
+;
+SUBMIT_AFTER_FETCH=
 ;
 .system_variable @files_area_dir
-.session_variable @blockchain_archive_path $OUTPUT/$REVERSED
+FILES_AREA_DIR=$OUTPUT
 ;
-@:LOOP
+@:PRE_LOOP
 ;
-@label NEXT
-@ifeq $HEIGHT $HIGHEST
-@label DONE
+@ifneq "$SUBMIT_HEIGHT" "$SUBMIT_HIGHEST"
+.session_variable @blockchain_archive_path $FILES_AREA_DIR/$BLOCKCHAIN
+;
+SUBMIT_HEIGHT=@$SUBMIT_HEIGHT+1
+#Processing submit block $SUBMIT_HEIGHT/$SUBMIT_HIGHEST...
+<block_tree_hash.cin $BLOCKCHAIN $SUBMIT_HEIGHT
+;
+@ifdef $OUTPUT
+<tree_list.cin $OUTPUT 0 $BLOCKCHAIN.bun.gz
+BUNDLE_HASH=%OUTPUT:2%
+ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
+;
+<export_files.cin $BUNDLE_HASH .
+~mkdir $UUID
+~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID
+SUBMIT_AFTER_FETCH=@file:$UUID/.fetch
+~rm $UUID/.fetch
+~rmdir $UUID
+PRE_IS_DONE=@$SUBMIT_AFTER_FETCH>$FETCH_HEIGHT
+@ifeq $PRE_IS_DONE 0
+.session_variable @updating_$IDENTITY $SUBMIT_HEIGHT
+.storage_channel_documents -update_submitted $IDENTITY
+@endif
+@endif
+;
+@else
+PRE_IS_DONE=1
+@endif
+;
+@label PRE_NEXT
+@ifeq "$PRE_IS_DONE" "1"
+@label PRE_DONE
 @endif
 ;
 @skip
 ;
-@:NEXT
-; NOTE: "block_tree_hash" will set HEIGHT so is using another
-; environment variable name to prevent incrementing it twice.
-NEXT_HEIGHT=@$HEIGHT+1
-#Processing block $NEXT_HEIGHT/$HIGHEST...
-<block_tree_hash.cin $REVERSED $NEXT_HEIGHT
+@:PRE_NEXT
+!!@:PRE_LOOP
+;
+@:PRE_DONE
+;
+@:FETCH_LOOP
+;
+@label NEXT_FETCH
+@ifeq $FETCH_HEIGHT $FETCH_HIGHEST
+@label FETCH_DONE
+@endif
+;
+@skip
+;
+@:NEXT_FETCH
+.session_variable @blockchain_archive_path $FILES_AREA_DIR/$REVERSED
+;
+FETCH_HEIGHT=@$FETCH_HEIGHT+1
+#Processing fetch block $FETCH_HEIGHT/$FETCH_HIGHEST...
+<block_tree_hash.cin $REVERSED $FETCH_HEIGHT
 ;
 @ifdef $OUTPUT
 <tree_list.cin $OUTPUT 0 $REVERSED.bun.gz
@@ -60,16 +114,64 @@ BUNDLE_HASH=%OUTPUT:2%
 ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
 ;
 <export_files.cin $BUNDLE_HASH .
-.session_variable @updating_$IDENTITY $HEIGHT
+.session_variable @updating_$IDENTITY $FETCH_HEIGHT
 .storage_channel_documents -update_fetched $IDENTITY
 @endif
 ;
-!!@:LOOP
+NESTED_DONE=
+@:NESTED_LOOP
 ;
-@:DONE
+@ifeq "$FETCH_HEIGHT" "$SUBMIT_AFTER_FETCH"
+.session_variable @updating_$IDENTITY $SUBMIT_HEIGHT
+.storage_channel_documents -update_submitted $IDENTITY
+;
+@ifneq "$SUBMIT_HEIGHT" "$SUBMIT_HIGHEST"
+.session_variable @blockchain_archive_path $FILES_AREA_DIR/$BLOCKCHAIN
+;
+SUBMIT_HEIGHT=@$SUBMIT_HEIGHT+1
+#Processing submit block $SUBMIT_HEIGHT/$SUBMIT_HIGHEST...
+<block_tree_hash.cin $BLOCKCHAIN $SUBMIT_HEIGHT
+;
+@ifdef $OUTPUT
+<tree_list.cin $OUTPUT 0 $BLOCKCHAIN.bun.gz
+BUNDLE_HASH=%OUTPUT:2%
+ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
+;
+<export_files.cin $BUNDLE_HASH .
+~mkdir $UUID
+~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID
+SUBMIT_AFTER_FETCH=@file:$UUID/.fetch
+NESTED_DONE=@$SUBMIT_AFTER_FETCH>$FETCH_HEIGHT
+~rm $UUID/.fetch
+~rmdir $UUID
+@endif
+;
+@else
+NESTED_DONE=1
+@endif
+@else
+NESTED_DONE=1
+@endif
+;
+@label NESTED_NEXT
+@ifeq "$NESTED_DONE" "1"
+@label NESTED_DONE
+@endif
+;
+@skip
+;
+@:NESTED_NEXT
+!!@:NESTED_LOOP
+;
+@:NESTED_DONE
+;
+!!@:FETCH_LOOP
+;
+@:FETCH_DONE
 ;
 .system_variable @shared_secret_$REVERSED ""
 ;
+@endif
 @endif
 @endif
 @endif

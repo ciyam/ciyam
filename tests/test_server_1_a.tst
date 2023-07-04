@@ -102,6 +102,36 @@ Empty...
 0
 1
 2
+RESULT=@123=123
+1
+RESULT=@123<123
+0
+RESULT=@123<=123
+1
+RESULT=@123>123
+0
+RESULT=@123>=123
+1
+RESULT=@122=123
+0
+RESULT=@122<123
+1
+RESULT=@122<=123
+1
+RESULT=@122>123
+0
+RESULT=@122>=123
+0
+RESULT=@123=122
+0
+RESULT=@123<122
+0
+RESULT=@123<=122
+0
+RESULT=@123>122
+1
+RESULT=@123>=122
+1
 ifdef true
 ifndef false
 ifdef false
@@ -185,7 +215,7 @@ j
 6	#j
 1	#b
 2	#f
-depth is 0 at line #273
+depth is 0 at line #324
 Looping with aaa
 Looping with bbb
 Looping with ccc
@@ -211,11 +241,11 @@ CONT
 CONT
 CONT
 DONE
-depth is 1 at line #312
+depth is 1 at line #363
 END
-depth is 1 at line #339
-depth is 2 at line #341
-depth is 3 at line #343 TRUE
+depth is 1 at line #390
+depth is 2 at line #392
+depth is 3 at line #394 TRUE
 docs
 src
 src/haru

@@ -5791,12 +5791,12 @@ void connect_peerchain( const string& connect_info, bool no_delay )
 
    string::size_type pos = identity.find_first_of( "+=" );
 
-   bool is_peerchain_cache = false;
+   bool is_peerchain_folder = false;
 
    if( pos != string::npos )
    {
       identity.erase( pos );
-      is_peerchain_cache = true;
+      is_peerchain_folder = true;
    }
 
    set_variable_checker check_not_has(
@@ -5809,7 +5809,7 @@ void connect_peerchain( const string& connect_info, bool no_delay )
     e_special_var_queue_peers ), connect_info, check_not_has_either ) )
    {
       if( !no_delay )
-         msleep( c_peer_sleep_time * ( is_peerchain_cache ? 5 : 10 ) );
+         msleep( c_peer_sleep_time * ( is_peerchain_folder ? 2 : 5 ) );
    }
 }
 
@@ -5824,7 +5824,7 @@ void disconnect_peerchain( const string& identity, bool no_delay )
    if( set_system_variable( '~' + identity, c_true_value, check_not_has ) )
    {
       if( !no_delay )
-         msleep( c_peer_sleep_time * 5 );
+         msleep( c_peer_sleep_time );
    }
 }
 

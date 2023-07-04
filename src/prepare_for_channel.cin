@@ -18,7 +18,7 @@ NUM_ARGS=@$NUM_ARGS+1
 STORAGE=$1
 IDENTITY=$2
 ;
-.peer_channel_height -min $IDENTITY
+.peer_channel_height -minimal $IDENTITY
 HEIGHT=$OUTPUT
 HEIGHT=@$HEIGHT+1
 .system_variable @preparing_$IDENTITY $HEIGHT

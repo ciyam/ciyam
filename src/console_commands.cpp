@@ -2620,7 +2620,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          // NOTE: For environment variable assignment VAR=@file:<fname> allows the variable to be set
          // to the file's content or even to the output of a system call using VAR=@file:~<cmd> (with
          // both the stdout and stderr output being redirected to a temporary file). Another usage is
-         // VAR=@<expression>[:+-*/] where the expression can be a special symbol (such as "unix" for
+         // VAR=@<expression>[<op>:] where the expression can be a special symbol (such as "unix" for
          // unix time stamp) or a single simple math operation between two numbers. This is useful to
          // work out the unix time stamp value one hour from the current time with the following:
          //
@@ -2701,7 +2701,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                if( !str.empty( ) )
                {
-                  pos = str.find_first_of( "+-*/#:" );
+                  pos = str.find_first_of( "+-*/#=<>:" );
 
                   int64_t val = 0;
                   int64_t rval = 0;
@@ -2722,6 +2722,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   {
                      char op = str[ pos ];
 
+                     bool or_equal = false;
                      bool is_negative = false;
                      bool was_transform = false;
 
@@ -2729,10 +2730,18 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                      {
                         char ch = str[ i ];
 
-                        if( ch == '-' && ( i == pos + 1 ) )
+                        if( i == pos + 1 )
                         {
-                           is_negative = true;
-                           continue;
+                           if( ch == '=' )
+                           {
+                              or_equal = true;
+                              continue;
+                           }
+                           else if( ch == '-' )
+                           {
+                              is_negative = true;
+                              continue;
+                           }
                         }
 
                         if( ch >= '0' && ch <= '9' )
@@ -3127,6 +3136,18 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                            case '#':
                            val = ( val % rval );
+                           break;
+
+                           case '=':
+                           val = ( val == rval );
+                           break;
+
+                           case '<':
+                           val = ( !or_equal ? val < rval : val <= rval );
+                           break;
+
+                           case '>':
+                           val = ( !or_equal ? val > rval : val >= rval );
                            break;
                         }
 
