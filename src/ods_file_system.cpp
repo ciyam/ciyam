@@ -503,11 +503,13 @@ string process_rename_expressions(
 
 struct ods_file_system::impl
 {
-   impl( ods& o ) : bt( o ), skip_hidden( true ), for_regression_tests( false ), next_transaction_id( 0 ) { }
+   impl( ods& o ) : bt( o ), force_write( false ), skip_hidden( true ), for_regression_tests( false ), next_transaction_id( 0 ) { }
 
    btree_type bt;
 
+   bool force_write;
    bool skip_hidden;
+
    bool for_regression_tests;
 
    int64_t next_transaction_id;
@@ -1426,6 +1428,9 @@ bool ods_file_system::store_file( const string& name,
    if( file_name.empty( ) )
       file_name = name;
 
+   if( !force_write )
+      force_write = p_impl->force_write;
+
    btree_type& bt( p_impl->bt );
 
    auto_ptr< ods::bulk_write > ap_bulk;
@@ -1452,10 +1457,10 @@ bool ods_file_system::store_file( const string& name,
       changed = true;
       add_file( name, source, p_os, p_is, p_progress );
    }
-   else if( p_is || force_write || ( perms != old_perms ) || ( tm_val != old_tm_val ) )
+   else if( p_is || !tm_val || force_write || ( perms != old_perms ) || ( tm_val != old_tm_val ) )
    {
       changed = true;
-      replace_file( name, source, p_os, p_is, p_progress );
+      replace_file( name, source, p_os, p_is, p_progress, force_write );
    }
 
    return changed;
@@ -1494,12 +1499,16 @@ void ods_file_system::remove_file( const string& name, ostream* p_os, progress* 
    }
 }
 
-void ods_file_system::replace_file( const string& name, const string& source, ostream* p_os, istream* p_is, progress* p_progress )
+void ods_file_system::replace_file( const string& name,
+ const string& source, ostream* p_os, istream* p_is, progress* p_progress, bool force_write )
 {
    string file_name( source );
 
    if( file_name.empty( ) )
       file_name = name;
+
+   if( !force_write )
+      force_write = p_impl->force_write;
 
    btree_type& bt( p_impl->bt );
 
@@ -1598,7 +1607,7 @@ void ods_file_system::replace_file( const string& name, const string& source, os
                tmp_item.get_file( ).set_id( id );
             }
 
-            if( !old_tm_val || ( tm_val != old_tm_val ) )
+            if( force_write || !old_tm_val || ( tm_val != old_tm_val ) )
                tmp_item.get_file(
                 new storable_file_extra( file_name, 0, p_progress ) ).store( e_oid_pointer_opt_force_write_skip_read );
          }
@@ -1618,6 +1627,7 @@ void ods_file_system::replace_file( const string& name, const string& source, os
             *p_os << "Enter multi-line content followed by a line with just a single dot (.) to finish:" << endl;
 
          bool first = true;
+
          while( getline( *p_is, next ) )
          {
             if( next == "." )
@@ -2057,7 +2067,7 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
 
    btree_trans_type bt_tx( bt );
 
-   string tmp_folder( determine_folder( name, true, true ) );
+   string tmp_folder( determine_folder( name, false, true ) );
 
    if( tmp_folder.empty( ) )
       okay = false;
@@ -3376,16 +3386,30 @@ bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_n
    return okay;
 }
 
+temporary_force_write::temporary_force_write( ods_file_system& ofs )
+ :
+ ofs( ofs ),
+ old_force_write( ofs.p_impl->force_write )
+{
+   ofs.p_impl->force_write = true;
+}
+
+temporary_force_write::~temporary_force_write( )
+{
+   ofs.p_impl->force_write = old_force_write;
+}
+
 temporary_include_hidden::temporary_include_hidden( ods_file_system& ofs )
  :
- ofs( ofs )
+ ofs( ofs ),
+ old_skip_hidden( ofs.p_impl->skip_hidden )
 {
    ofs.p_impl->skip_hidden = false;
 }
 
 temporary_include_hidden::~temporary_include_hidden( )
 {
-   ofs.p_impl->skip_hidden = true;
+   ofs.p_impl->skip_hidden = old_skip_hidden;
 }
 
 void export_objects( ods_file_system& ofs, const string& directory,

@@ -2713,7 +2713,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_peer_channel_height )
       {
          bool minimal = has_parm_val( parameters, c_cmd_ciyam_session_peer_channel_height_minimal );
-         bool reverse = has_parm_val( parameters, c_cmd_ciyam_session_peer_channel_height_reverse );
+         bool reversed = has_parm_val( parameters, c_cmd_ciyam_session_peer_channel_height_reversed );
          string identity( get_parm_val( parameters, c_cmd_ciyam_session_peer_channel_height_identity ) );
          string minimum_height( get_parm_val( parameters, c_cmd_ciyam_session_peer_channel_height_minimum_height ) );
 
@@ -2722,7 +2722,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !minimum_height.empty( ) )
             minimum = from_string< size_t >( minimum_height );
 
-         response = peer_channel_height( identity, minimal, reverse, minimum );
+         response = peer_channel_height( identity, minimal, reversed, minimum );
       }
       else if( command == c_cmd_ciyam_session_perform_fetch )
       {

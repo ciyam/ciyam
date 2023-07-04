@@ -30,6 +30,7 @@ class ods;
 
 struct progress;
 
+struct temporary_force_write;
 struct temporary_include_hidden;
 
 class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
@@ -38,6 +39,7 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    ods_file_system( ods& o, int64_t i = 0, bool for_regression_tests = false );
    ~ods_file_system( );
 
+   friend struct temporary_force_write;
    friend struct temporary_include_hidden;
 
    inline std::string get_folder( ) const { return current_folder; }
@@ -226,12 +228,12 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
     std::ostream* p_os = 0, progress* p_progress = 0, bool is_prefix = false );
 
    void replace_file( const std::string& name,
-    const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 );
+    const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0, bool force_write = false );
 
    inline void replace_file( const std::string& name,
-    std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 )
+    std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0, bool force_write = false )
    {
-      replace_file( name, "", p_os, p_is, p_progress );
+      replace_file( name, "", p_os, p_is, p_progress, force_write );
    }
 
    void store_as_text_file( const std::string& name, int32_t val );
@@ -330,12 +332,24 @@ struct temporary_set_folder
    std::string old_folder;
 };
 
+struct temporary_force_write
+{
+   temporary_force_write( ods_file_system& ofs );
+   ~temporary_force_write( );
+
+   ods_file_system& ofs;
+
+   bool old_force_write;
+};
+
 struct temporary_include_hidden
 {
    temporary_include_hidden( ods_file_system& ofs );
    ~temporary_include_hidden( );
 
    ods_file_system& ofs;
+
+   bool old_skip_hidden;
 };
 
 void ODS_FILE_SYSTEM_DECL_SPEC export_objects( ods_file_system& ofs,
