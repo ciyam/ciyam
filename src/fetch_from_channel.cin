@@ -27,6 +27,23 @@ UUID=$OUTPUT
 BLOCKCHAIN=$OUTPUT
 REVERSED=*!reverse?$BLOCKCHAIN
 ;
+.wait 500
+@:WAIT_LOOP
+;
+@label WAIT_NEXT
+.session_variable -num_found $BLOCKCHAIN
+@ifeq "$OUTPUT" "0"
+@label WAIT_DONE
+@endif
+;
+@skip
+;
+@:WAIT_NEXT
+.wait 250
+!!@:WAIT_LOOP
+;
+@:WAIT_DONE
+;
 .storage_init $STORAGE
 ;
 @ifndef $ERROR

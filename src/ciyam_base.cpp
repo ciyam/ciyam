@@ -329,6 +329,7 @@ struct session
     id( id ),
     slot( slot ),
     sql_count( 0 ),
+    sync_time( 0 ),
     cache_count( 0 ),
     next_handle( 0 ),
     p_tx_helper( 0 ),
@@ -410,6 +411,8 @@ struct session
    size_t sql_count;
    size_t cache_count;
    size_t next_handle;
+
+   int64_t sync_time;
 
    bool is_captured;
    bool running_script;
@@ -6760,6 +6763,52 @@ void set_last_session_cmd( const string& cmd )
    }
 }
 
+bool set_session_sync_time( const string* p_check_blockchain, bool matching_own_ip_address, int num_seconds )
+{
+   guard g( g_session_mutex );
+
+   bool retval = false;
+
+   if( gtp_session )
+   {
+      string blockchain( gtp_session->blockchain );
+
+      gtp_session->sync_time = unix_time( );
+
+      if( p_check_blockchain )
+      {
+         for( size_t i = 0; i < g_max_sessions; i++ )
+         {
+            if( g_sessions[ i ]
+             && g_sessions[ i ]->id != gtp_session->id
+             && ( *p_check_blockchain == g_sessions[ i ]->blockchain )
+             && ( !matching_own_ip_address || ( g_sessions[ i ]->ip_addr == gtp_session->ip_addr ) ) )
+            {
+               int64_t other_sync_time = g_sessions[ i ]->sync_time;
+
+               if( other_sync_time )
+               {
+                  int64_t time_diff = 0;
+
+                  if( gtp_session->sync_time > other_sync_time )
+                     time_diff = gtp_session->sync_time - other_sync_time;
+                  else
+                     time_diff = other_sync_time - gtp_session->sync_time;
+
+                  if( time_diff <= num_seconds )
+                  {
+                     retval = true;
+                     break;
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   return retval;
+}
+
 void condemn_session( size_t sess_id, int num_seconds, bool force_uncapture, bool wait_until_term )
 {
    guard g( g_session_mutex );
@@ -8227,15 +8276,22 @@ bool has_any_session_variable( const string& name, const string& value )
    return false;
 }
 
-size_t num_have_session_variable( const string& name )
+size_t num_have_session_variable( const string& name, bool matching_own_ip_address )
 {
    guard g( g_session_mutex );
+
+   string own_ip_addr;
+
+   if( gtp_session && matching_own_ip_address )
+      own_ip_addr = gtp_session->ip_addr;
 
    size_t total = 0;
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
       if( g_sessions[ i ]
+       && ( !matching_own_ip_address
+       || ( g_sessions[ i ]->ip_addr == own_ip_addr ) )
        && ( ( g_sessions[ i ]->variables.count( name ) )
        || ( g_sessions[ i ]->deque_variables.count( name ) ) ) )
          ++total;
@@ -8245,15 +8301,22 @@ size_t num_have_session_variable( const string& name )
 }
 
 size_t num_have_session_variable( const string& name,
- const string& value, vector< string >* p_identities )
+ const string& value, vector< string >* p_identities, bool matching_own_ip_address )
 {
    guard g( g_session_mutex );
+
+   string own_ip_addr;
+
+   if( gtp_session && matching_own_ip_address )
+      own_ip_addr = gtp_session->ip_addr;
 
    size_t total = 0;
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
       if( g_sessions[ i ]
+       && ( !matching_own_ip_address
+       || ( g_sessions[ i ]->ip_addr == own_ip_addr ) )
        && g_sessions[ i ]->variables.count( name )
        && g_sessions[ i ]->variables[ name ] == value )
       {

@@ -500,7 +500,7 @@ void check_shared_for_support_session( const string& blockchain )
    vector< string > identities;
 
    if( num_have_session_variable(
-    get_special_var_name( e_special_var_peer ), blockchain, &identities ) )
+    get_special_var_name( e_special_var_peer ), blockchain, &identities, true ) )
    {
       size_t index = 0;
       size_t lowest = 0;
@@ -911,7 +911,7 @@ void check_for_missing_other_sessions( const date_time& now )
 
          if( unix_time( now ) >= time_val )
          {
-            if( num_have_session_variable( paired_identity ) < 2 )
+            if( num_have_session_variable( paired_identity, true ) < 2 )
             {
                condemn_this_session( );
 
@@ -921,7 +921,7 @@ void check_for_missing_other_sessions( const date_time& now )
             string backup_identity( get_session_variable(
              get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
-            if( !backup_identity.empty( ) && num_have_session_variable( backup_identity ) < 2 )
+            if( !backup_identity.empty( ) && num_have_session_variable( backup_identity, true ) < 2 )
             {
                condemn_this_session( );
 
@@ -939,7 +939,7 @@ void check_for_missing_other_sessions( const date_time& now )
       string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
       if( !num_have_session_variable(
-       get_special_var_name( e_special_var_blockchain_peer_hub_identity ), identity ) )
+       get_special_var_name( e_special_var_blockchain_peer_hub_identity ), identity, 0, true ) )
       {
          condemn_this_session( );
 
@@ -2975,7 +2975,7 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
                is_only_session = ( num_have_session_variable( paired_identity ) < 2 );
 
                if( !is_only_session && !backup_identity.empty( ) 
-                && ( num_have_session_variable( backup_identity ) < 2 ) )
+                && ( num_have_session_variable( backup_identity, true ) < 2 ) )
                   is_missing_backup = true;
             }
 
@@ -3343,7 +3343,26 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             elapsed = ( seconds )( now - dtm_sent_not_found );
 
             if( elapsed < 1.0 )
+            {
                msleep( c_peer_sleep_time );
+
+               // NOTE: For "user" type blockchains that are paired will automatically
+               // condemn this session if both sessions are found to be sleeping here.
+               if( !get_session_variable(
+                get_special_var_name( e_special_var_blockchain_user ) ).empty( ) )
+               {
+                  string paired_identity( get_session_variable(
+                   get_special_var_name( e_special_var_paired_identity ) ) );
+
+                  if( set_session_sync_time( ( identity != paired_identity ? &paired_identity : 0 ), true ) )
+                  {
+                     // NOTE: For testing purposes this system variable can be set to keep the sessions alive.
+                     if( get_raw_system_variable(
+                      get_special_var_name( e_special_var_keep_user_peers_alive ) ).empty( ) )
+                        condemn_this_session( );
+                  }
+               }
+            }
          }
       }
    }
@@ -4461,10 +4480,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( socket_handler.get_is_time_for_check( ) )
          {
-            is_only_session = ( num_have_session_variable( paired_identity ) < 2 );
+            is_only_session = ( num_have_session_variable( paired_identity, true ) < 2 );
 
             if( !is_only_session && !backup_identity.empty( ) 
-             && ( num_have_session_variable( backup_identity ) < 2 ) )
+             && ( num_have_session_variable( backup_identity, true ) < 2 ) )
                is_missing_backup = true;
          }
 
@@ -5238,8 +5257,8 @@ void peer_session::on_start( )
       {
          set_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ), c_true_value );
 
-         if( num_have_session_variable(
-          get_special_var_name( e_special_var_blockchain_peer_hub_identity ), unprefixed_blockchain ) )
+         if( num_have_session_variable( get_special_var_name(
+          e_special_var_blockchain_peer_hub_identity ), unprefixed_blockchain, 0, true ) )
             set_session_variable( get_special_var_name( e_special_var_peer_is_dependent ), c_true_value );
 
          string progress_message(

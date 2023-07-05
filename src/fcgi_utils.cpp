@@ -1557,7 +1557,11 @@ void output_actions( ostream& os,
       if( is_default && p_default )
          *p_default = next_id;
 
+      if( num_actions_output )
+         os << '\n';
+
       ++num_actions_output;
+
       os << "<input id=\"" << next_id << "\" name=\"" << next_id
        << "\" type=\"button\" class=\"button\" value=\"" << escape_markup( next_label ) << "\" onclick=\"";
 
@@ -1567,6 +1571,8 @@ void output_actions( ostream& os,
 
       if( child_class.empty( ) )
       {
+         os << "this.style.display = 'none'; ";
+
          if( use_url_checksum )
          {
             string checksum_values( action + cmd
@@ -1650,9 +1656,6 @@ void output_actions( ostream& os,
 
       os << "\" style=\"cursor:pointer\">";
    }
-
-   if( num_actions_output == 0 )
-      os << "&nbsp;";
 }
 
 void parse_field_extra( const string& extra, map< string, string >& extra_data )
