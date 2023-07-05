@@ -184,6 +184,7 @@ const char* const c_special_variable_blockchain_hind_hash = "@blockchain_hind_ha
 const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_ratios";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_blockchain_time_value = "@blockchain_time_value";
+const char* const c_special_variable_keep_user_peers_alive = "@keep_user_peers_alive";
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
 const char* const c_special_variable_blockchain_is_checking = "@blockchain_is_checking";
@@ -798,6 +799,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_time_value:
       s = string( c_special_variable_blockchain_time_value );
+      break;
+
+      case e_special_var_keep_user_peers_alive:
+      s = string( c_special_variable_keep_user_peers_alive );
       break;
 
       case e_special_var_package_install_extra:

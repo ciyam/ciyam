@@ -785,7 +785,7 @@ bool output_view_form( ostream& os, const string& act,
              || view_extras.count( c_view_type_extra_ignore_unactionable ) ) )
             {
                if( had_any )
-                  os << c_nbsp;
+                  os << '\n';
                else
                   had_any = true;
 
