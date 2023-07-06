@@ -36,8 +36,7 @@ PUB2499_HASH=$OUTPUT
 ;
 .file_archives -path_only $IDENTITY
 @ifdef $OUTPUT
-~rm -f files/$IDENTITY/*
-.file_archive -repair $IDENTITY
+.file_archive -clear $IDENTITY
 @endif
 ;
 .file_repo_entries -total $IDENTITY

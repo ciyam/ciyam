@@ -23,8 +23,10 @@ HAS_REPO_LIST_INFO=1
 @ifndef $HAS_REPO_LIST_INFO
 .system_variable @blockchain_shared_identity
 @ifdef $OUTPUT
-@ifdef $ENCRYPTED_PASSWORD
+@ifdef $USE_SHARED_ARCHIVE
 .file_archive -clear $OUTPUT
+@endif
+@ifdef $ENCRYPTED_PASSWORD
 .system_variable $ENCRYPTED_PASSWORD
 .session_variable @encrypted_password "$OUTPUT"
 @endif

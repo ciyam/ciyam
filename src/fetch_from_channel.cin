@@ -27,12 +27,15 @@ UUID=$OUTPUT
 BLOCKCHAIN=$OUTPUT
 REVERSED=*!reverse?$BLOCKCHAIN
 ;
-.wait 500
+; NOTE: Is setting this session variable here so that the FCGI UI
+; will continue to wait until this script has finished executing.
+.session_variable $BLOCKCHAIN 1
+;
 @:WAIT_LOOP
 ;
 @label WAIT_NEXT
 .session_variable -num_found $BLOCKCHAIN
-@ifeq "$OUTPUT" "0"
+@ifeq "$OUTPUT" "1"
 @label WAIT_DONE
 @endif
 ;
