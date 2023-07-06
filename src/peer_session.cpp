@@ -3359,7 +3359,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      // NOTE: For testing purposes this system variable can be set to keep the sessions alive.
                      if( get_raw_system_variable(
                       get_special_var_name( e_special_var_keep_user_peers_alive ) ).empty( ) )
+                     {
                         condemn_this_session( );
+
+                        TRACE_LOG( TRACE_SESSIONS, "*** condemned session due to paired session sync ***" );
+                     }
                   }
                }
             }
