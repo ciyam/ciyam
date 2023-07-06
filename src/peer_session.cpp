@@ -2510,8 +2510,7 @@ class socket_command_handler : public command_handler
    {
       had_usage = false;
 
-      dtm_rcvd_not_found = dtm_sent_not_found
-       = ( date_time::standard( ) - ( seconds )( c_peer_sleep_time / 1000.0 ) );
+      dtm_rcvd_not_found = dtm_sent_not_found = ( date_time::standard( ) - ( seconds )1.0 );
 
       is_responder = ( session_state == e_peer_state_responder );
 
