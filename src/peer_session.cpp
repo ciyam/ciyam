@@ -4785,13 +4785,15 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 }
 
 #ifdef SSL_SUPPORT
-peer_session* construct_session( const date_time& dtm, bool is_responder,
- auto_ptr< ssl_socket >& ap_socket, const string& addr_info, bool is_for_support = false,
- peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any )
+peer_session* construct_session(
+ const date_time& dtm, bool is_responder, auto_ptr< ssl_socket >& ap_socket,
+ const string& addr_info, bool is_for_support = false, peer_extra extra = e_peer_extra_none,
+ const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any, bool has_support_sessions = false )
 #else
-peer_session* construct_session( const date_time& dtm, bool is_responder,
- auto_ptr< tcp_socket >& ap_socket, const string& addr_info, bool is_for_support = false,
- peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any )
+peer_session* construct_session(
+ const date_time& dtm, bool is_responder, auto_ptr< tcp_socket >& ap_socket,
+ const string& addr_info, bool is_for_support = false, peer_extra extra = e_peer_extra_none,
+ const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any, bool has_support_sessions = false )
 #endif
 {
    peer_session* p_session = 0;
@@ -4818,7 +4820,7 @@ peer_session* construct_session( const date_time& dtm, bool is_responder,
     || addr_info.substr( 0, pos ) == c_local_ip_addr
     || addr_info.substr( 0, pos ) == c_local_ip_addr_for_ipv6 )
       p_session = new peer_session( unix_time( dtm ),
-       is_responder, ap_socket, addr_info, is_for_support, extra, p_identity, chain_type );
+       is_responder, ap_socket, addr_info, is_for_support, extra, p_identity, chain_type, has_support_sessions );
 
    return p_session;
 }
@@ -4826,13 +4828,13 @@ peer_session* construct_session( const date_time& dtm, bool is_responder,
 }
 
 #ifdef SSL_SUPPORT
-peer_session::peer_session( int64_t time_val,
- bool is_responder, auto_ptr< ssl_socket >& ap_socket, const string& addr_info,
- bool is_for_support, peer_extra extra, const char* p_identity, peerchain_type chain_type )
+peer_session::peer_session( int64_t time_val, bool is_responder,
+ auto_ptr< ssl_socket >& ap_socket, const string& addr_info, bool is_for_support,
+ peer_extra extra, const char* p_identity, peerchain_type chain_type, bool has_support_sessions )
 #else
-peer_session::peer_session( int64_t time_val,
- bool is_responder, auto_ptr< tcp_socket >& ap_socket, const string& addr_info,
- bool is_for_support, peer_extra extra, const char* p_identity, peerchain_type chain_type )
+peer_session::peer_session( int64_t time_val, bool is_responder,
+ auto_ptr< tcp_socket >& ap_socket, const string& addr_info, bool is_for_support,
+ peer_extra extra, const char* p_identity, peerchain_type chain_type, bool has_support_sessions )
 #endif
  :
  is_hub( false ),
@@ -4846,7 +4848,8 @@ peer_session::peer_session( int64_t time_val,
  is_for_support( is_for_support ),
  other_is_owner( false ),
  both_are_owners( false ),
- has_support_sessions( false )
+ needs_key_exchange( false ),
+ has_support_sessions( has_support_sessions )
 {
    if( !( *this->ap_socket ) )
       throw runtime_error( "unexpected invalid socket in peer_session::peer_session" );
@@ -4917,6 +4920,9 @@ peer_session::peer_session( int64_t time_val,
             pid += '@' + identity;
       }
 
+      if( has_support_sessions )
+         pid += '+';
+
       if( is_owner && !is_for_support )
          pid += '!';
 
@@ -4928,12 +4934,28 @@ peer_session::peer_session( int64_t time_val,
 
       this->ap_socket->read_line( pid, c_request_timeout, c_max_greeting_size, p_sock_progress );
 
-      string::size_type pos = pid.find( '!' );
+      string::size_type pos = pid.find( c_key_exchange_suffix );
+
+      if( pos != string::npos )
+      {
+         pid.erase( pos );
+         needs_key_exchange = true;
+      }
+
+      pos = pid.find( '!' );
 
       if( pos != string::npos )
       {
          pid.erase( pos );
          other_is_owner = true;
+      }
+
+      pos = pid.find( '+' );
+
+      if( pos != string::npos )
+      {
+         pid.erase( pos );
+         has_support_sessions = true;
       }
 
       pos = pid.find( ':' );
@@ -5207,54 +5229,44 @@ void peer_session::on_start( )
 
       init_session( cmd_handler, true, &ip_addr, &unprefixed_blockchain, from_string< int >( port ), is_for_support );
 
-      string slot_and_pubkey( get_session_variable( get_special_var_name( e_special_var_slot ) ) );
-      slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
-
-      string slotx, pubkeyx, slotx_and_pubkeyx;
-
-      // NOTE: After handshake exchange public keys then commence peer protocol.
-      if( is_responder )
+      if( needs_key_exchange )
       {
-         ap_socket->write_line( slot_and_pubkey, c_request_timeout, p_sock_progress );
+         string slot_and_pubkey( get_session_variable( get_special_var_name( e_special_var_slot ) ) );
+         slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
 
-         ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout, c_max_pubkey_size, p_sock_progress );
+         string slotx, pubkeyx, slotx_and_pubkeyx;
+
+         // NOTE: After handshake exchange public keys then commence peer protocol.
+         if( is_responder )
+         {
+            ap_socket->write_line( slot_and_pubkey, c_request_timeout, p_sock_progress );
+
+            ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout, c_max_pubkey_size, p_sock_progress );
+         }
+         else
+         {
+            ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout, c_max_pubkey_size, p_sock_progress );
+
+            ap_socket->write_line( slot_and_pubkey, c_request_timeout, p_sock_progress );
+         }
+
+         string::size_type pos = slotx_and_pubkeyx.find( '-' );
+
+         if( pos != string::npos )
+         {
+            slotx = slotx_and_pubkeyx.substr( 0, pos );
+            pubkeyx = slotx_and_pubkeyx.substr( pos + 1 );
+         }
+
+         if( slotx.empty( ) )
+            slotx = string( c_none );
+
+         set_session_variable(
+          get_special_var_name( e_special_var_slotx ), slotx );
+
+         set_session_variable(
+          get_special_var_name( e_special_var_pubkeyx ), pubkeyx );
       }
-      else
-      {
-         ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout, c_max_pubkey_size, p_sock_progress );
-
-         if( has_support_sessions )
-            slot_and_pubkey += '+';
-
-         ap_socket->write_line( slot_and_pubkey, c_request_timeout, p_sock_progress );
-      }
-
-      string::size_type pos = slotx_and_pubkeyx.find( '+' );
-
-      if( pos != string::npos )
-      {
-         if( !is_for_support )
-            has_support_sessions = true;
-
-         slotx_and_pubkeyx.erase( pos );
-      }
-
-      pos = slotx_and_pubkeyx.find( '-' );
-
-      if( pos != string::npos )
-      {
-         slotx = slotx_and_pubkeyx.substr( 0, pos );
-         pubkeyx = slotx_and_pubkeyx.substr( pos + 1 );
-      }
-
-      if( slotx.empty( ) )
-         slotx = string( c_none );
-
-      set_session_variable(
-       get_special_var_name( e_special_var_slotx ), slotx );
-
-      set_session_variable(
-       get_special_var_name( e_special_var_pubkeyx ), pubkeyx );
 
       string archive_path;
 
@@ -5987,20 +5999,21 @@ peer_session* create_peer_initiator(
             else if( !explicit_paired_identity.empty( ) )
                p_identity = explicit_paired_identity.c_str( );
 
+            bool has_support_sessions = false;
+
+            if( !p_main_session && ( num_for_support || will_have_support ) )
+               has_support_sessions = true;
+
             peer_session* p_session = construct_session( dtm, false, ap_socket,
-             ip_addr + "=" + session_blockchain + ":" + to_string( port ), p_main_session, extra, p_identity, chain_type );
+             ip_addr + "=" + session_blockchain + ":" + to_string( port ),
+             p_main_session, extra, p_identity, chain_type, has_support_sessions );
 
             if( !p_session )
                break;
             else
             {
                if( !p_main_session )
-               {
                   p_main_session = p_session;
-
-                  if( num_for_support || will_have_support )
-                     p_main_session->set_has_support_sessions( );
-               }
 
                p_session->start( );
             }

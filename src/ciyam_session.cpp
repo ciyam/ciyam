@@ -6155,6 +6155,7 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
  :
  is_local( false ),
  pid_is_self( false ),
+ needs_key_exchange( false ),
  ip_addr( ip_addr )
 {
    ap_socket.reset( p_socket );
@@ -6167,6 +6168,14 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
 
    string pid;
    ap_socket->read_line( pid, c_request_timeout );
+
+   string::size_type pos = pid.find( c_key_exchange_suffix );
+
+   if( pos != string::npos )
+   {
+      pid.erase( pos );
+      needs_key_exchange = true;
+   }
 
    if( is_local && pid == to_string( get_pid( ) ) )
       pid_is_self = true;
@@ -6182,6 +6191,7 @@ ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket, const string& i
  :
  is_local( false ),
  pid_is_self( false ),
+ needs_key_exchange( false ),
  ip_addr( ip_addr ),
  ap_socket( ap_socket )
 {
@@ -6193,6 +6203,14 @@ ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket, const string& i
 
    string pid;
    this->ap_socket->read_line( pid, c_request_timeout );
+
+   string::size_type pos = pid.find( c_key_exchange_suffix );
+
+   if( pos != string::npos )
+   {
+      pid.erase( pos );
+      needs_key_exchange = true;
+   }
 
    if( is_local && pid == to_string( get_pid( ) ) )
       pid_is_self = true;
@@ -6223,32 +6241,35 @@ void ciyam_session::on_start( )
 
       init_session( cmd_handler, false, &ip_addr );
 
-      string slot_and_pubkey( get_session_variable( get_special_var_name( e_special_var_slot ) ) );
-
-      slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
-
-      // NOTE: After handshake exchange public keys then commence application protocol.
-      ap_socket->write_line( slot_and_pubkey );
-
-      string slotx, pubkeyx, slotx_and_pubkeyx;
-      ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout );
-
-      string::size_type pos = slotx_and_pubkeyx.find( '-' );
-
-      if( pos != string::npos )
+      if( needs_key_exchange )
       {
-         slotx = slotx_and_pubkeyx.substr( 0, pos );
-         pubkeyx = slotx_and_pubkeyx.substr( pos + 1 );
+         string slot_and_pubkey( get_session_variable( get_special_var_name( e_special_var_slot ) ) );
+
+         slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
+
+         // NOTE: After handshake exchange public keys then commence application protocol.
+         ap_socket->write_line( slot_and_pubkey );
+
+         string slotx, pubkeyx, slotx_and_pubkeyx;
+         ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout );
+
+         string::size_type pos = slotx_and_pubkeyx.find( '-' );
+
+         if( pos != string::npos )
+         {
+            slotx = slotx_and_pubkeyx.substr( 0, pos );
+            pubkeyx = slotx_and_pubkeyx.substr( pos + 1 );
+         }
+
+         if( slotx.empty( ) )
+            slotx = string( c_none );
+
+         if( pubkeyx.empty( ) )
+            pubkeyx = string( c_none );
+
+         set_session_variable( get_special_var_name( e_special_var_slotx ), slotx );
+         set_session_variable( get_special_var_name( e_special_var_pubkeyx ), pubkeyx );
       }
-
-      if( slotx.empty( ) )
-         slotx = string( c_none );
-
-      if( pubkeyx.empty( ) )
-         pubkeyx = string( c_none );
-
-      set_session_variable( get_special_var_name( e_special_var_slotx ), slotx );
-      set_session_variable( get_special_var_name( e_special_var_pubkeyx ), pubkeyx );
 
       socket_command_processor processor( *ap_socket, cmd_handler );
       processor.process_commands( );

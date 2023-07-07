@@ -1700,7 +1700,7 @@ int main( int argc, char* argv[ ] )
             if( !no_udp && ( local_udp || !is_default ) && usocket.open( ) )
                usocket.set_reuse_addr( );
 
-            if( socket.write_line( to_string( g_pid ), c_pid_timeout ) <= 0 )
+            if( socket.write_line( to_string( g_pid ) + c_key_exchange_suffix, c_pid_timeout ) <= 0 )
             {
                string error;
                if( socket.had_timeout( ) )

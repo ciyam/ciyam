@@ -48,12 +48,14 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    public:
 #  ifdef SSL_SUPPORT
    peer_session( int64_t time_val, bool is_responder,
-    std::auto_ptr< ssl_socket >& ap_socket, const std::string& addr_info, bool is_for_support = false,
-   peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any );
+    std::auto_ptr< ssl_socket >& ap_socket, const std::string& addr_info,
+    bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0,
+    peerchain_type chain_type = e_peerchain_type_any, bool has_support_sessions = false );
 #  else
    peer_session( int64_t time_val, bool is_responder,
-    std::auto_ptr< tcp_socket >& ap_socket, const std::string& addr_info, bool is_for_support = false,
-   peer_extra extra = e_peer_extra_none, const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any );
+    std::auto_ptr< tcp_socket >& ap_socket, const std::string& addr_info,
+    bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0,
+    peerchain_type chain_type = e_peerchain_type_any, bool has_support_sessions = false );
 #  endif
 
    ~peer_session( );
@@ -61,8 +63,6 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    void on_start( );
 
    void set_backup_identity( const std::string& identity ) { backup_identity = identity; }
-
-   void set_has_support_sessions( ) { has_support_sessions = true; }
 
    static void increment_session_count( );
    static void decrement_session_count( );
@@ -79,6 +79,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 
    bool other_is_owner;
    bool both_are_owners;
+   bool needs_key_exchange;
    bool has_support_sessions;
 
    int64_t time_val;
