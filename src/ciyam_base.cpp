@@ -6763,7 +6763,8 @@ void set_last_session_cmd( const string& cmd )
    }
 }
 
-bool set_session_sync_time( const string* p_check_blockchain, bool matching_own_ip_address, int num_seconds )
+bool set_session_sync_time( const string* p_check_blockchain,
+ bool matching_own_ip_address, int num_seconds, const string* p_sync_var_name )
 {
    guard g( g_session_mutex );
 
@@ -6798,6 +6799,13 @@ bool set_session_sync_time( const string* p_check_blockchain, bool matching_own_
                   if( time_diff <= num_seconds )
                   {
                      retval = true;
+
+                     if( p_sync_var_name && !p_sync_var_name->empty( ) )
+                     {
+                        gtp_session->variables[ *p_sync_var_name ] = c_true_value;
+                        g_sessions[ i ]->variables[ *p_sync_var_name ] = c_true_value;
+                     }
+
                      break;
                   }
                }

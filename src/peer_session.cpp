@@ -3345,25 +3345,17 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             {
                msleep( c_peer_sleep_time );
 
-               // NOTE: For "user" type blockchains that are paired will automatically
-               // condemn this session if both sessions are found to be sleeping here.
+               // NOTE: When blockchain type is "user" then both this and the paired session can
+               // automatically be terminated if both were found sleeping here (within a second).
                if( !get_session_variable(
                 get_special_var_name( e_special_var_blockchain_user ) ).empty( ) )
                {
                   string paired_identity( get_session_variable(
                    get_special_var_name( e_special_var_paired_identity ) ) );
 
-                  if( set_session_sync_time( ( identity != paired_identity ? &paired_identity : 0 ), true ) )
-                  {
-                     // NOTE: For testing purposes this system variable can be set to keep the sessions alive.
-                     if( get_raw_system_variable(
-                      get_special_var_name( e_special_var_keep_user_peers_alive ) ).empty( ) )
-                     {
-                        condemn_this_session( );
+                  string synchronised( get_special_var_name( e_special_var_synchronised ) );
 
-                        TRACE_LOG( TRACE_SESSIONS, "*** condemned session due to paired session sync ***" );
-                     }
-                  }
+                  set_session_sync_time( ( identity != paired_identity ? &paired_identity : 0 ), true, 1, &synchronised );
                }
             }
          }
@@ -4445,6 +4437,22 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    handler.issue_command_response( response, !send_okay_response );
 
    bool has_issued_bye = false;
+
+   if( !get_raw_session_variable( get_special_var_name( e_special_var_synchronised ) ).empty( ) )
+   {
+      // NOTE: For testing purposes this system variable can be set to keep the sessions alive.
+      if( get_raw_system_variable(
+       get_special_var_name( e_special_var_keep_user_peers_alive ) ).empty( ) )
+      {
+         has_issued_bye = true;
+
+         send_okay_response = false;
+
+         socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_sock_progress );
+
+         TRACE_LOG( TRACE_SESSIONS, "*** condemning session due to paired session sync ***" );
+      }
+   }
 
    // NOTE: If a disconnect has been actioned for the paired identity then issue
    // a "bye" after condemning this session and (unless still connecting) do the
