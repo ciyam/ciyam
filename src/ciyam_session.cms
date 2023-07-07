@@ -3,7 +3,7 @@ crypto_hash "output hash digest for data or file content" [<opt/-512/sha512>][<o
 crypto_keys "output an address and its corresponding key pair" <val//extkey>[<opt/-b64/base64>][<opt/-decrypt/decrypt>][<opt/-uncompressed/uncompressed>][<val//secret>]
 crypto_seed "output seed mnemonics or a hex seed value" [<val//mnemonics_or_hex_seed>]
 crypto_sign "sign a message" <val//privkey>[<opt/-hex/hex_decode>]<val//message>
-crypto_chain "output a hash chain" <val//length>[<opt/-b64/base64>][<val//secret>]
+crypto_chain "output a hash chain" <val//length>[<opt/-b64/base64>][<opt/-hind/hind_only>][<val//secret>]
 crypto_verify "verify a signed message" <val//pubkey>[<opt/-hex/hex_decode>]<val//message><val//signature>
 crypto_lamport "perform lamport key ops" [<opt/-sign/sign>|<opt/-verify/verify>]<val//filename>[<val//mnemonics_or_hex_seed>[<val//additional_entropy_text>]]
 crypto_pub_key "output a public key" [<opt/-uncompressed/uncompressed>]<val//privkey>
