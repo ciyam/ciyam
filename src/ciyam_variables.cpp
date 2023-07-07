@@ -141,6 +141,7 @@ const char* const c_special_variable_backup_files = "@backup_files";
 const char* const c_special_variable_block_height = "@block_height";
 const char* const c_special_variable_opened_files = "@opened_files";
 const char* const c_special_variable_shared_files = "@shared_files";
+const char* const c_special_variable_synchronised = "@synchronised";
 const char* const c_special_variable_app_directory = "@app_directory";
 const char* const c_special_variable_export_needed = "@export_needed";
 const char* const c_special_variable_import_needed = "@import_needed";
@@ -631,6 +632,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_shared_files:
       s = string( c_special_variable_shared_files );
+      break;
+
+      case e_special_var_synchronised:
+      s = string( c_special_variable_synchronised );
       break;
 
       case e_special_var_app_directory:

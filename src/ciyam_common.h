@@ -149,6 +149,7 @@ enum special_var
    e_special_var_block_height,
    e_special_var_opened_files,
    e_special_var_shared_files,
+   e_special_var_synchronised,
    e_special_var_app_directory,
    e_special_var_export_needed,
    e_special_var_import_needed,

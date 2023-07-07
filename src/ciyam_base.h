@@ -364,8 +364,8 @@ void CIYAM_BASE_DECL_SPEC set_session_progress_output( const std::string& progre
 
 void CIYAM_BASE_DECL_SPEC set_last_session_cmd( const std::string& cmd );
 
-bool CIYAM_BASE_DECL_SPEC set_session_sync_time(
- const std::string* p_check_blockchain = 0, bool matching_own_ip_address = false, int num_seconds = 1 );
+bool CIYAM_BASE_DECL_SPEC set_session_sync_time( const std::string* p_check_blockchain = 0,
+ bool matching_own_ip_address = false, int num_seconds = 1, const std::string* p_sync_var_name = 0 );
 
 void CIYAM_BASE_DECL_SPEC condemn_session(
  size_t sess_id, int num_seconds, bool force_uncapture, bool wait_until_term );
