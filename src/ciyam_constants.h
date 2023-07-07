@@ -34,6 +34,8 @@ const char* const c_ellipsis = "...";
 const char* const c_watching = "[watching]";
 const char* const c_finishing = "[finishing]";
 
+const char c_key_exchange_suffix = '*';
+
 const char c_notifier_select_char = '#';
 const char c_notifier_unselect_char = '=';
 
