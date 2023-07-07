@@ -188,8 +188,8 @@ PUB_KEY_HASH_ENC=$PUB_KEY_HASH_ENC,$OUTPUT
 @skip
 ;
 .crypto_hash @sid -s=#%HEIGHT%
-.crypto_chain 1440 -b64 $OUTPUT
-HIND_HASH_ENC=%OUTPUT:1440%
+.crypto_chain 1440 -b64 -hind $OUTPUT
+HIND_HASH_ENC=$OUTPUT
 ;
 .file_crypt bc.$IDENT.$LAST.key @sid
 .file_get bc.$IDENT.$LAST.key $UUID.key

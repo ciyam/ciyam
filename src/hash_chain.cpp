@@ -299,7 +299,7 @@ bool check_if_valid_hash_pair( const string& current, const string& previous, bo
    return previous == ( base64 ? base64::encode( buffer, c_hash_buf_size ) : hex_encode( buffer, c_hash_buf_size ) );
 }
 
-string generate_hash_chain( size_t length, bool base64, const char* p_secret, char separator )
+string generate_hash_chain( size_t length, bool base64, const char* p_secret, char separator, bool hind_only )
 {
    string retval;
    unsigned char buffer[ c_hash_buf_size ];
@@ -315,13 +315,26 @@ string generate_hash_chain( size_t length, bool base64, const char* p_secret, ch
 
    for( size_t i = 0; i < length; i++ )
    {
-      if( !retval.empty( ) )
-         retval += separator;
-
-      if( !base64 )
-         retval += hash.get_digest_as_string( );
+      if( hind_only )
+      {
+         if( i == length - 1 )
+         {
+            if( !base64 )
+               retval = hash.get_digest_as_string( );
+            else
+               retval = base64::encode( buffer, c_hash_buf_size );
+         }
+      }
       else
-         retval += base64::encode( buffer, c_hash_buf_size );
+      {
+         if( !retval.empty( ) )
+            retval += separator;
+
+         if( !base64 )
+            retval += hash.get_digest_as_string( );
+         else
+            retval += base64::encode( buffer, c_hash_buf_size );
+      }
 
       hash.update( buffer, c_hash_buf_size );
       hash.copy_digest_to_buffer( buffer );

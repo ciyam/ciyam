@@ -33,6 +33,7 @@ class hash_chain
 
 bool check_if_valid_hash_pair( const std::string& current, const std::string& previous, bool base64 = false );
 
-std::string generate_hash_chain( size_t length, bool base64 = false, const char* p_secret = 0, char separator = '\n' );
+std::string generate_hash_chain( size_t length,
+ bool base64 = false, const char* p_secret = 0, char separator = '\n', bool hind_only = false );
 
 #endif

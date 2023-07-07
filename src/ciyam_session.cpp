@@ -1497,9 +1497,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          size_t length = from_string< size_t >( get_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_length ) );
          bool use_base64 = has_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_base64 );
+         bool hind_only = has_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_hind_only );
          string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_secret ) );
 
-         response = generate_hash_chain( length, use_base64, secret.empty( ) ? 0 : secret.c_str( ) );
+         response = generate_hash_chain( length, use_base64, secret.empty( ) ? 0 : secret.c_str( ), '\n', hind_only );
       }
       else if( command == c_cmd_ciyam_session_crypto_verify )
       {

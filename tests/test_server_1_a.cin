@@ -46,6 +46,10 @@ TSY=yyy
 #%%TSX%%TSY
 #%TSX%%%%TSY%
 #%%%TSX%%%%TSY%%%
+crypto_chain 5 abc
+crypto_chain 5 -hind abc
+crypto_chain 5 -b64 abc
+crypto_chain 5 -b64 -hind abc
 crypto_keys XBT test
 addr=%OUTPUT:1%
 pubkey=%OUTPUT:2%

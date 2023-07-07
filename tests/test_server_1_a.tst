@@ -44,6 +44,22 @@ xxxyyy
 %TSX%TSY
 xxx%yyy
 %xxx%yyy%
+crypto_chain 5 abc
+ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb
+bf5d3affb73efd2ec6c36ad3112dd933efed63c4e1cbffcfa88e2759c144f2d8
+eb48bdfa15fc43dbea3aabb1ee847b6e69232c0f0d9705935e50d60cce77877f
+d75293db81814e1fd81644f9b40cea3d0d8095acb34538596001de2b7461f6f8
+66f0b2d702f8bfc1f2f9b5d8d9d63e6ec6d28aaf389f25d23a6fe4c717824de1
+crypto_chain 5 -hind abc
+66f0b2d702f8bfc1f2f9b5d8d9d63e6ec6d28aaf389f25d23a6fe4c717824de1
+crypto_chain 5 -b64 abc
+ypeBEsobvcr6wjGzmiPcTaeG7/gUfE5yuYB3ha/uSLs=
+v106/7c+/S7Gw2rTES3ZM+/tY8Thy//PqI4nWcFE8tg=
+60i9+hX8Q9vqOqux7oR7bmkjLA8NlwWTXlDWDM53h38=
+11KT24GBTh/YFkT5tAzqPQ2AlayzRThZYAHeK3Rh9vg=
+ZvCy1wL4v8Hy+bXY2dY+bsbSiq84nyXSOm/kxxeCTeE=
+crypto_chain 5 -b64 -hind abc
+ZvCy1wL4v8Hy+bXY2dY+bsbSiq84nyXSOm/kxxeCTeE=
 crypto_keys XBT test
 1Hri98tpTekszQQTBnKbBrMsecrjik4PX8
 02b0dbb9b8c580f2cc7b45aaf10d8353cea7880903e1f07ce996614260c55db4a1
@@ -215,7 +231,7 @@ j
 6	#j
 1	#b
 2	#f
-depth is 0 at line #324
+depth is 0 at line #328
 Looping with aaa
 Looping with bbb
 Looping with ccc
@@ -241,11 +257,11 @@ CONT
 CONT
 CONT
 DONE
-depth is 1 at line #363
+depth is 1 at line #367
 END
-depth is 1 at line #390
-depth is 2 at line #392
-depth is 3 at line #394 TRUE
+depth is 1 at line #394
+depth is 2 at line #396
+depth is 3 at line #398 TRUE
 docs
 src
 src/haru
