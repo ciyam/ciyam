@@ -1283,7 +1283,8 @@ void request_handler::process_request( )
                   {
                      p_session_info->p_socket->set_no_delay( );
 
-                     if( p_session_info->p_socket->write_line( to_string( get_pid( ) ), c_pid_timeout ) <= 0 )
+                     if( p_session_info->p_socket->write_line(
+                      to_string( get_pid( ) ) + c_key_exchange_suffix, c_pid_timeout ) <= 0 )
                      {
                         string error;
 
