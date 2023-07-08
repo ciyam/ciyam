@@ -4955,7 +4955,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
       if( pos != string::npos )
       {
          pid.erase( pos );
-         has_support_sessions = true;
+         this->has_support_sessions = true;
       }
 
       pos = pid.find( ':' );
