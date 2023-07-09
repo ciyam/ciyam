@@ -3551,7 +3551,7 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
 bool store_file( const string& hash,
  tcp_socket& socket, const char* p_tag, progress* p_sock_progress,
  bool allow_core_file, size_t max_bytes, bool allow_missing_items,
- string* p_file_data, size_t* p_total_bytes, progress* p_progress )
+ string* p_file_data, size_t* p_total_bytes, progress* p_progress, string* p_raw_file_data )
 {
    string tag_name;
    if( p_tag )
@@ -3622,6 +3622,12 @@ bool store_file( const string& hash,
 
       if( p_total_bytes )
          *p_total_bytes = total_bytes;
+
+      if( p_raw_file_data )
+      {
+         p_raw_file_data->reserve( file_buffer.get_size( ) );
+         file_buffer.copy_to_string( *p_raw_file_data, 0, total_bytes );
+      }
 
       if( !is_existing )
       {
