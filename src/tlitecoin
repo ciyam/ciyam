@@ -8,7 +8,7 @@ if [ $# -lt 1 ]; then
  echo Usage: tlitecoin [command] [[arg1 [arg2 [...]]]
 else
  if [ "$TLITECOIN" = "" ]; then
-  TLITECOIN="./litecoin-cli -rpcpassword=not_what_you_think_it_is -datadir=/home/tux/.litecoin -regtest"
+  TLITECOIN="./litecoin-cli -rpcpassword=not_what_you_think_it_is -datadir=/home/$USER/.litecoin -regtest"
  fi
  $TLITECOIN "$@"
 fi
