@@ -2815,9 +2815,10 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
    }
    else
    {
-      string file_data;
+      string file_data, raw_file_data;
 
-      store_file( hash, socket, 0, p_sock_progress, true, 0, true, &file_data, &num_bytes );
+      if( !store_file( hash, socket, 0, p_sock_progress, true, 0, true, &file_data, &num_bytes, 0, &raw_file_data ) )
+         throw runtime_error( "unexpected file '" + hash + "' already exists" );
 
       *p_file_data = file_data;
 
@@ -2831,7 +2832,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
          {
             guard g( g_mutex, "get_file" );
 
-            create_raw_file_in_archive( identity, hash, file_data );
+            create_raw_file_in_archive( identity, hash, raw_file_data );
          }
       }
    }

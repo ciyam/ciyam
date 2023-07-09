@@ -29,7 +29,7 @@ cp ciyamd /etc/init.d
 
 ps ax | grep ciyamd | awk '{print $1}' | xargs kill 2>/dev/null
 
-DESTPATH="/home/tux/ciyam/src"
+DESTPATH="/home/$USER/ciyam/src"
 
 ln -s "${DESTPATH}/ciyam_server" "/usr/bin/"
 ln -s "${DESTPATH}/ciyam_base.so" "/usr/lib64/"
