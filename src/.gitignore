@@ -157,8 +157,6 @@ Meta.modules.lst
 # Ignore storage backups.
 *.backup.bun.gz
 
-# Ignore customised environment init file.
+# Ignore service and customised environment init file.
+ciyamd.service
 ciyam_init_cmd.bat
-
-# Ignore sample blockchain files directories.
-bc.e3733d121
