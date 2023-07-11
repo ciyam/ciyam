@@ -60,13 +60,6 @@ v106/7c+/S7Gw2rTES3ZM+/tY8Thy//PqI4nWcFE8tg=
 ZvCy1wL4v8Hy+bXY2dY+bsbSiq84nyXSOm/kxxeCTeE=
 crypto_chain 5 -b64 -hind abc
 ZvCy1wL4v8Hy+bXY2dY+bsbSiq84nyXSOm/kxxeCTeE=
-crypto_keys XBT test
-1Hri98tpTekszQQTBnKbBrMsecrjik4PX8
-02b0dbb9b8c580f2cc7b45aaf10d8353cea7880903e1f07ce996614260c55db4a1
-0f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
-addr is: 1Hri98tpTekszQQTBnKbBrMsecrjik4PX8
-pubkey is 02b0dbb9b8c580f2cc7b45aaf10d8353cea7880903e1f07ce996614260c55db4a1
-privkey is 0f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
 PWD is: abc
 PWD now: ***
 abcXXX
@@ -231,7 +224,7 @@ j
 6	#j
 1	#b
 2	#f
-depth is 0 at line #328
+depth is 0 at line #321
 Looping with aaa
 Looping with bbb
 Looping with ccc
@@ -257,11 +250,11 @@ CONT
 CONT
 CONT
 DONE
-depth is 1 at line #367
+depth is 1 at line #360
 END
-depth is 1 at line #394
-depth is 2 at line #396
-depth is 3 at line #398 TRUE
+depth is 1 at line #387
+depth is 2 at line #389
+depth is 3 at line #391 TRUE
 docs
 src
 src/haru

@@ -49,7 +49,7 @@ else
  fi
 
  if [ ! -f ciyamd.service ]; then
-  ./xrep @ciyamd.service.xrep uid=$USER >ciyamd.service
+  ./init_service
  fi
 
  ./xrep @config.h.xrep >config.h.new
