@@ -4,27 +4,32 @@ Linux OpenSUSE Specific Instructions
 https://get.opensuse.org/tumbleweed
 (download the .ISO image to use with VirtualBox as the install CD/DVD)
 
-Create the user "tux" when installing then (firstly for sudo without password):
+Create the user "admin" when installing then (firstly for sudo without password):
 
 sudo vi /etc/sudoers
 [add the following line]
-tux ALL=(ALL) NOPASSWD:ALL
+admin ALL=(ALL) NOPASSWD:ALL
 
 (to disable "smart indenting")
 sudo mv /usr/share/vim/current/indent.vim /usr/share/vim/current/indent.vim.sav
 
 (to create "clip" for copying text to the clipboard)
 vi bin/clip
+[clip]
 if [ $# -lt 1 ]; then
  echo "Usage: clip [\"text\""
 else
  echo -n "$1" | xclip -selection clipboard -display "$DISPLAY"
 fi
+[clip]
+chmod a+x bin/clip
 
 Updgrade to latest version (will have to reboot after):
 
 sudo zypper dup
 
+Install Guest Additions (normally automatic)
+--------------------------------------------
 Change the CD/DVD to Guest Additions then mount, install and reboot:
 
 sudo mount /dev/cdrom /mnt
@@ -32,7 +37,8 @@ cd /mnt
 sudo ./VBoxLinuxAdditions.run 
 sudo reboot
 
-Next install all required packages for CIYAM Software Manufacturing:
+Install all required packages for CIYAM Software Manufacturing
+--------------------------------------------------------------
 
 sudo zypper install make
 sudo zypper install gcc-c++
@@ -101,50 +107,21 @@ export MYSQL_EXEC="sudo mysql"
 echo 'export MYSQL_EXEC="sudo mysql"' >> .bashrc
 echo 'export MYSQL_EXEC="sudo mysql"' >> .profile
 
-export CIYAM_USER=tux
-echo 'export CIYAM_USER=tux' >> .bashrc
-echo 'export CIYAM_USER=tux' >> .profile
+export CIYAM_USER=admin
+echo 'export CIYAM_USER=admin' >> .bashrc
+echo 'export CIYAM_USER=admin' >> .profile
 
-Add the "vboxsf" and "www" groups for "tux" user and change the default
------------------------------------------------------------------------
-sudo usermod -a -G vboxsf tux
-sudo usermod -g vboxsf tux
+Add the "vboxsf" and "www" groups for "admin" user and change the default
+-------------------------------------------------------------------------
+sudo usermod -a -G vboxsf admin
+sudo usermod -g vboxsf admin
 newgrp - vboxsf
-sudo usermod -a -G www tux
-sudo usermod -g www tux
+sudo usermod -a -G www admin
+sudo usermod -g www admin
 newgrp - www
 
 sudo chmod g+w /srv/www/htdocs
 sudo chown wwwrun:www /srv/www/htdocs
-
-Create opened staging area ext4 file system and automount entry
----------------------------------------------------------------
-sudo fallocate -l 10M opened.img
-sudo mkfs.ext4 opened.img
-
-sudo vi /etc/fstab
-[append the following line]
-/home/tux/opened.img  /home/tux/opened ext4 loop 0 0
-
-sudo mkdir opened
-cd opened
-sudo vi README.md
-
-[README.md]
-CIYAM Opened Files Area
-=======================
-
-If you are reading this then a backup or restore is now active - please disconnect and try again later.
-
-NOTE: If still seeing this after being disconnected for an hour then this device may require rebooting.
-[README.md]
-
-cd ..
-
-sudo mount opened.img opened
-sudo chown -R tux:www opened
-
-sudo umount opened
 
 Create backup staging area ext4 file system and automount entry
 ---------------------------------------------------------------
@@ -153,27 +130,28 @@ sudo mkfs.ext4 backup.img
 
 sudo vi /etc/fstab
 [append the following line]
-/home/tux/backup.img  /home/tux/backup ext4 loop 0 0
+/home/admin/backup.img  /home/admin/backup ext4 loop 0 0
 
 sudo mkdir backup
-cd backup
-sudo vi README.md
-
-[README.md]
-CIYAM Backup Staging Area
-=========================
-
-If you are reading this then a backup or restore is now active - please disconnect and try again later.
-
-NOTE: If still seeing this after being disconnected for an hour then this device may require rebooting.
-[README.md]
-
-cd ..
-
 sudo mount backup.img backup
-sudo chown -R tux:www backup
+sudo chown -R admin:www backup
 
 sudo umount backup
+
+Create opened staging area ext4 file system and automount entry
+---------------------------------------------------------------
+sudo fallocate -l 10M opened.img
+sudo mkfs.ext4 opened.img
+
+sudo vi /etc/fstab
+[append the following line]
+/home/admin/opened.img  /home/admin/opened ext4 loop 0 0
+
+sudo mkdir opened
+sudo mount opened.img opened
+sudo chown -R admin:www opened
+
+sudo umount opened
 
 Create shared staging area ext4 file system and automount entry
 ---------------------------------------------------------------
@@ -182,25 +160,11 @@ sudo mkfs.ext4 shared.img
 
 sudo vi /etc/fstab
 [append the following line]
-/home/tux/shared.img  /home/tux/shared ext4 loop 0 0
+/home/admin/shared.img  /home/admin/shared ext4 loop 0 0
 
 sudo mkdir shared
-cd shared
-sudo vi README.md
-
-[README.md]
-CIYAM Shared Staging Area
-=========================
-
-If you are reading this then an import or export is now active - please disconnect and try again later.
-
-NOTE: If still seeing this after being disconnected for an hour then this device may require rebooting.
-[REAMDE.md]
-
-cd ..
-
 sudo mount shared.img shared
-sudo chown -R tux:www shared
+sudo chown -R admin:www shared
 
 sudo umount shared
 
@@ -209,7 +173,9 @@ Clone the CIYAM Software Manufacturing repository
 
 git clone https://github.com/ciyam/ciyam
 
-sudo cp ciyam/backup_readme.md /home/tux/backup/README.md
+sudo cp ciyam/backup_readme.md /home/admin/backup/README.md
+sudo cp ciyam/opened_readme.md /home/admin/opened/README.md
+sudo cp ciyam/shared_readme.md /home/admin/shared/README.md
 
 cd ciyam/src
 
@@ -279,7 +245,7 @@ systemctl --user start syncthing.service
 systemctl --user status syncthing.service
 
 Start a tunnel in order to access the Web UI in the host OS:
-ssh -L8384:127.0.0.1:8384 -p 2222 tux@localhost
+ssh -L8384:127.0.0.1:8384 -p 2222 admin@localhost
 
 In local browser: localhost:8384
 * Settings/Connections
