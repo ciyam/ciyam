@@ -11,6 +11,7 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <csignal>
 #  include <stdexcept>
+#  include <set>
 #  include <vector>
 #  include <sstream>
 #endif
@@ -145,6 +146,8 @@ void ciyam_notifier::on_start( )
 
          path_to_dir.erase( pos );
 
+         set< string > names;
+
          do
          {
             string next_dir( dfsi.get_path_name( ) );
@@ -165,12 +168,7 @@ void ciyam_notifier::on_start( )
                if( next_dir != watch_root )
                   n.add_watch( next_dir );
 
-               string unique( get_next_unique( ) );
-
-               string prefix( '[' + unique + ']' );
-
-               set_system_variable( next_dir + '/', prefix + c_notifier_none );
-               set_system_variable( watch_variable_name + unique, next_dir + '/' );
+               names.insert( next_dir + '/' );
 
                while( fs.has_next( ) )
                {
@@ -188,18 +186,22 @@ void ciyam_notifier::on_start( )
 
                      next_file.erase( 0, path_to_dir.length( ) );
 
-                     string unique( get_next_unique( ) );
-
-                     string prefix( '[' + unique + ']' );
-
-                     string extra( get_raw_system_variable( next_file ) );
-
-                     set_system_variable( next_file, prefix + extra + c_notifier_none );
-                     set_system_variable( watch_variable_name + unique, next_file );
+                     names.insert( next_file );
                   }
                }
             }
          } while( dfsi.has_next( ) );
+
+         // NOTE: Ensure items are ordered so that unique values are repeatable for testing.
+         for( set< string >::const_iterator ci = names.begin( ); ci != names.end( ); ++ci )
+         {
+            string unique( get_next_unique( ) );
+
+            string prefix( '[' + unique + ']' );
+
+            set_system_variable( *ci, prefix + c_notifier_none );
+            set_system_variable( watch_variable_name + unique, *ci );
+         }
       }
 
       set_system_variable( watch_variable_name, c_watching );
