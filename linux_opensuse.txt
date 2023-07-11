@@ -201,7 +201,7 @@ Meta DB has been created.
 vi autoscript.sio
 (uncomment out the various "check" scripts)
 
-./xrep @ciyamd.service.xrep uid=$USER >ciyamd.service
+./init_service
 sudo cp ciyamd.service /etc/systemd/system
 
 sudo vi /etc/systemd/system/ciyamd.service

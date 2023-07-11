@@ -13,6 +13,10 @@ else
 
  if [ "$MYSQL_EXEC" = "" ]; then
   MYSQL_EXEC=mysql
+
+  if [ -f /usr/bin/mariadb ]; then
+   MYSQL_EXEC=mariadb
+  fi
  fi
 
  if [ "$2" = "." ]; then

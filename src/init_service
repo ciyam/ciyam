@@ -1,0 +1,21 @@
+#!/bin/sh
+# Copyright (c) 2023 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+MYSQL=
+
+if [ -f /usr/bin/mysql ]; then
+ MYSQL=mysql
+fi
+
+if [ -f /usr/bin/mariadb ]; then
+ MYSQL=mariadb
+fi
+
+if [ "$MYSQL" = "" ]; then
+ echo "Error: Neither MySQL (nor MariaDB) program was found (not installed?)."
+else
+ ./xrep @ciyamd.service.xrep uid=$USER mysql=$MYSQL >ciyamd.service
+fi

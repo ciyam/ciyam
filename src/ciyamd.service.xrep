@@ -7,7 +7,7 @@ Type=forking
 Restart=always
 RestartSec=10
 User=`{`$uid`}
-Environment="MYSQL_EXEC=sudo mysql"
+Environment="MYSQL_EXEC=sudo `{`$mysql`}"
 Environment="WEBDIR=/srv/www/htdocs"
 Environment="CIYAM_USER=`{`$uid`}"
 ExecStartPre=
