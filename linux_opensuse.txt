@@ -2,18 +2,27 @@ Linux OpenSUSE Specific Instructions
 ====================================
 
 https://get.opensuse.org/tumbleweed
-(download the .ISO image to use with VirtualBox as the install CD/DVD)
+(download the .ISO image to use with VirtualBox as the boot install CD/DVD)
 
-Create the user "admin" when installing then (firstly for sudo without password):
+Create a New machine in VirtualBox with 4096 MB of memory and create a virtual disk
+that is at least 528 GB in size. After create from General set the Shared Clipboard
+to bidirectional and in System remove Floppy from the Boot Order.
+
+The Xfce GUI is recommended (due to being smaller but having decent functionality).
+
+Create the user "admin" when installing and in order to use sudo without a password:
 
 sudo vi /etc/sudoers
 [add the following line]
 admin ALL=(ALL) NOPASSWD:ALL
 
-(to disable "smart indenting")
+(to disable "smart indenting" in vim)
 sudo mv /usr/share/vim/current/indent.vim /usr/share/vim/current/indent.vim.sav
 
-(to create "clip" for copying text to the clipboard)
+(and to ensure that auto-commenting doesn't occur in vim either)
+echo "set fo-=ro" >>.vimrc
+
+(to create "clip" for copying text to the clipboard when not using Xfce)
 vi bin/clip
 [clip]
 if [ $# -lt 1 ]; then
@@ -78,6 +87,7 @@ sudo vi /usr/lib/firewalld/services/ciyam.xml
 sudo firewall-cmd --reload
 
 NOTE: Use "yast" to add "ciyam", "http" and "ssh" to the public zone of the firewall.
+sudo yast
 
 sudo vi /usr/etc/ssh/sshd_config
 [uncomment out the following line]
@@ -201,7 +211,7 @@ Meta DB has been created.
 vi autoscript.sio
 (uncomment out the various "check" scripts)
 
-./init_service
+(if no ciyamd.service then ./init_service)
 sudo cp ciyamd.service /etc/systemd/system
 
 sudo vi /etc/systemd/system/ciyamd.service
@@ -219,6 +229,14 @@ sudo systemctl enable ciyamd
 
 sudo service ciyamd start
 sudo service ciyamd status
+
+Port Forwarding to access the VM from its Host
+----------------------------------------------
+(Network -> Advanced -> Port Forwarding)
+CIYAM    TCP   127.0.0.1   12021    10.0.2.15   12021
+HTTP     TCP   127.0.0.1   8888     10.0.2.15   80
+SSHP     TCP   127.0.0.1   2222     10.0.2.15   22
+SYNC     TCP   127.0.0.1   13031    10.0.2.15   13031
 
 Installing Syncthing User Service
 ---------------------------------
