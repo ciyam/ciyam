@@ -5475,7 +5475,9 @@ string crypto_p2sh_address( const string& ext_key, const string& hex_script )
 {
 #ifdef SSL_SUPPORT
    external_client client_info;
-   get_external_client_info( ext_key, client_info );
+
+   if( !ext_key.empty( ) )
+      get_external_client_info( ext_key, client_info );
 
    crypto_info info;
    get_crypto_info( client_info.extra_info, info );
@@ -5493,7 +5495,9 @@ string create_address_key_pair( const string& ext_key,
    private_key new_key;
 
    external_client client_info;
-   get_external_client_info( ext_key, client_info );
+
+   if( !ext_key.empty( ) )
+      get_external_client_info( ext_key, client_info );
 
    crypto_info info;
    get_crypto_info( client_info.extra_info, info );
@@ -5514,7 +5518,9 @@ string create_address_key_pair( const string& ext_key,
    auto_ptr< private_key > ap_new_key;
 
    external_client client_info;
-   get_external_client_info( ext_key, client_info );
+
+   if( !ext_key.empty( ) )
+      get_external_client_info( ext_key, client_info );
 
    crypto_info info;
    get_crypto_info( client_info.extra_info, info );
