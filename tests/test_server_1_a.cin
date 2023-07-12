@@ -50,6 +50,13 @@ crypto_chain 5 abc
 crypto_chain 5 -hind abc
 crypto_chain 5 -b64 abc
 crypto_chain 5 -b64 -hind abc
+crypto_keys test
+addr=%OUTPUT:1%
+pubkey=%OUTPUT:2%
+privkey=%OUTPUT:3%
+#addr is: $addr
+#pubkey is: $pubkey
+#privkey is: $privkey
 PWD=abc
 #PWD is: $~PWD
 #PWD now: $PWD
