@@ -2116,11 +2116,7 @@ void `{`$full_class_name`}::impl::post_init( )
    ( void )state;
 
 `{`?`$all_post_init_specifications`[`$all_post_init_specifications`%,`,\
-`{`@eq`(`'\1`'`,`'field_bool_acct_minting`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
-`{`#field_bool_acct_minting.spec.xrep section=post_init class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_spfield=$specification_\0_spfield`}
-`,\
-`@eq`(`'\1`'`,`'field_bool_dtm`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
+`{`@eq`(`'\1`'`,`'field_bool_dtm`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#field_bool_dtm.spec.xrep section=post_init class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
  arg_amount=$specification_\0_amount arg_type=$specification_\0_type arg_older=$specification_\0_older`}
@@ -2323,10 +2319,6 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `{`#default_to_variable.spec.xrep section=to_or_for_store class_name=$class_name arg_id=$specification_\0_id\
  arg_value=$specification_\0_value arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield\
  arg_inc_clones=$specification_\0_inc_clones arg_system=$specification_\0_system arg_session=$specification_\0_session`}\
-`,\
-`@eq`(`'\1`'`,`'field_bool_acct_minting`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
-`{`#field_bool_acct_minting.spec.xrep section=to_or_for_store class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_spfield=$specification_\0_spfield`}\
 `,\
 `@eq`(`'\1`'`,`'field_bool_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#field_bool_dtm.spec.xrep section=to_or_for_store class_name=$class_name\
@@ -2678,10 +2670,6 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `{`#destroy_children.spec.xrep section=for_store class_name=$class_name\
  arg_id=$specification_\0_id arg_child=$specification_\0_child arg_tfield=$specification_\0_tfield arg_output_arg= arg_output_field=\
  arg_separator=$specification_\0_separator arg_use_test_field_as_suffix=$specification_\0_use_test_field_as_suffix`}\
-`,\
-`@eq`(`'\1`'`,`'field_bool_acct_minting`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
-`{`#field_bool_acct_minting.spec.xrep section=to_or_for_store class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_spfield=$specification_\0_spfield`}\
 `,\
 `@eq`(`'\1`'`,`'field_bool_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_bool_dtm.spec.xrep section=to_or_for_store class_name=$class_name\
