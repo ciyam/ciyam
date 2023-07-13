@@ -99,12 +99,16 @@ inline string get_value_from_system_variable( const string& var_name, string* p_
 
 }
 
-ciyam_notifier::ciyam_notifier( const string& watch_root, const string* p_paths_and_time_stamps )
+ciyam_notifier::ciyam_notifier( const string& watch_root,
+ const string* p_initial_selections, const string* p_paths_and_time_stamps )
  :
  unique( 0 ),
  has_existing( false ),
  watch_root( watch_root )
 {
+   if( p_initial_selections )
+      initial_selections = *p_initial_selections;
+
    if( p_paths_and_time_stamps )
    {
       has_existing = true;
@@ -126,7 +130,11 @@ void ciyam_notifier::on_start( )
    string watch_root_name( watch_root );
    string watch_variable_name( c_notifier_prefix + watch_root );
 
+   set< string > selections;
    map< string, string > existing_files;
+
+   if( !initial_selections.empty( ) )
+      split( initial_selections, selections, '\n' );
 
    if( !paths_and_time_stamps.empty( ) )
    {
@@ -135,6 +143,8 @@ void ciyam_notifier::on_start( )
       split( paths_and_time_stamps, lines, '\n' );
 
       // FUTURE: In order to detect files that had been renamed file hashes could be provided.
+      // Also if the system variable information is stored in a hidden file after notification
+      // event processing then all change information could potentially be correctly restored.
       for( size_t i = 0; i < lines.size( ); i++ )
       {
          string next_line( lines[ i ] );
@@ -233,6 +243,9 @@ void ciyam_notifier::on_start( )
 
             string path( *ci );
 
+            // NOTE: An alternative to "initial_selections".
+            extra_prefix = get_raw_system_variable( path );
+
             if( has_existing && !path.empty( ) )
             {
                if( existing_files.count( path ) )
@@ -256,6 +269,10 @@ void ciyam_notifier::on_start( )
                   extra_prefix = c_notifier_selection;
                }
             }
+
+            if( path.length( ) > watch_root_name.length( )
+             && selections.count( path.substr( watch_root_name.length( ) ) ) )
+               extra_prefix = c_notifier_selection;
 
             set_system_variable( path, prefix + extra_prefix + value );
             set_system_variable( watch_variable_name + unique, path );

@@ -10241,7 +10241,7 @@ string storage_channel_documents_prepare( const string& identity )
    return retval;
 }
 
-string storage_channel_documents_specific( const string& identity, bool updated )
+string storage_channel_documents_specific( const string& identity, bool updated, bool include_sizes )
 {
    guard g( g_mutex );
 
@@ -10268,28 +10268,31 @@ string storage_channel_documents_specific( const string& identity, bool updated 
    {
       ofs.set_folder( identity );
 
-      stringstream ss;
-
-      ofs.branch_objects( "*", ss );
-
-      string all_objects( ss.str( ) );
-
       map< string, string > file_sizes;
 
-      if( !all_objects.empty( ) )
+      if( include_sizes )
       {
-         vector< string > objects;
+         stringstream ss;
 
-         split( all_objects, objects, '\n' );
+         ofs.branch_objects( "*", ss );
 
-         for( size_t i = 0; i < objects.size( ); i++ )
+         string all_objects( ss.str( ) );
+
+         if( !all_objects.empty( ) )
          {
-            string next( objects[ i ] );
+            vector< string > objects;
 
-            string::size_type pos = next.rfind( " (" );
+            split( all_objects, objects, '\n' );
 
-            if( pos != string::npos )
-               file_sizes.insert( make_pair( next.substr( 0, pos ), next.substr( pos ) ) );
+            for( size_t i = 0; i < objects.size( ); i++ )
+            {
+               string next( objects[ i ] );
+
+               string::size_type pos = next.rfind( " (" );
+
+               if( pos != string::npos )
+                  file_sizes.insert( make_pair( next.substr( 0, pos ), next.substr( pos ) ) );
+            }
          }
       }
 
@@ -10325,7 +10328,10 @@ string storage_channel_documents_specific( const string& identity, bool updated 
                if( !retval.empty( ) )
                   retval += '\n';
 
-               retval += next_specific + file_sizes[ next_specific ];
+               if( !include_sizes )
+                  retval += next_specific;
+               else
+                  retval += next_specific + file_sizes[ next_specific ];
             }
          }
       }
@@ -10466,7 +10472,6 @@ void storage_channel_documents_close( const char* p_identity )
 
       if( !next_line.empty( ) )
       {
-         bool is_selected = false;
          string next_name, next_value;
 
          next_name = variable_name_from_name_and_value( next_line, &next_value );
@@ -10484,15 +10489,13 @@ void storage_channel_documents_close( const char* p_identity )
             next_value.erase( 0, pos + 1 );
          }
 
+         string next_selected;
+
          if( !next_value.empty( ) && ( next_value[ 0 ] == c_notifier_select_char ) )
          {
-            is_selected = true;
             next_value.erase( 0, 1 );
 
-            if( !all_selected.empty( ) )
-               all_selected += '\n';
-
-            all_selected += next_name;
+            next_selected = next_name;
          }
 
          if( next_name.find( prefix ) == 0 )
@@ -10505,6 +10508,8 @@ void storage_channel_documents_close( const char* p_identity )
 
             if( notifier_op == c_notifier_deleted )
             {
+               next_selected.erase( );
+
                if( pos != string::npos )
                {
                   next_name = next_value.substr( pos + 1 );
@@ -10537,6 +10542,14 @@ void storage_channel_documents_close( const char* p_identity )
                      ofs.remove_folder( old_name, 0, true );
                }
             }
+         }
+
+         if( !next_selected.empty( ) )
+         {
+            if( !all_selected.empty( ) )
+               all_selected += '\n';
+
+            all_selected += next_selected;
          }
       }
    }
@@ -10592,6 +10605,7 @@ bool storage_channel_documents_opened( const string& identity )
                 get_special_var_name( e_special_var_style_extended ), c_true_value );
 
                string all_documents( storage_channel_documents( identity ) );
+               string all_selections( storage_channel_documents_specific( identity, false, false ) );
 
                vector< string > documents;
 
@@ -10607,40 +10621,40 @@ bool storage_channel_documents_opened( const string& identity )
                   {
                      string::size_type pos = next_document.rfind( " (" );
 
-                     if( pos == string::npos )
-                        throw runtime_error( "unexpected next_document '" + next_document + "'" );
+                     if( pos != string::npos )
+                     {
+                        string extended_information( next_document.substr( pos + 1 ) );
+                        next_document.erase( pos );
 
-                     string extended_information( next_document.substr( pos + 1 ) );
-                     next_document.erase( pos );
+                        pos = extended_information.find( ") " );
 
-                     pos = extended_information.find( ") " );
+                        if( pos == string::npos )
+                           throw runtime_error( "unexpected extended_information '" + extended_information + "'" );
 
-                     if( pos == string::npos )
-                        throw runtime_error( "unexpected extended_information '" + extended_information + "'" );
+                        string size( extended_information.substr( 1, pos - 1 ) );
 
-                     string size( extended_information.substr( 1, pos - 1 ) );
+                        extended_information.erase( 0, pos + 2 );
 
-                     extended_information.erase( 0, pos + 2 );
+                        pos = extended_information.find( ' ' );
 
-                     pos = extended_information.find( ' ' );
+                        if( pos == string::npos )
+                           throw runtime_error( "unexpected extended_information '" + extended_information + "'" );
 
-                     if( pos == string::npos )
-                        throw runtime_error( "unexpected extended_information '" + extended_information + "'" );
+                        string perms( extended_information.substr( 0, pos ) );
 
-                     string perms( extended_information.substr( 0, pos ) );
+                        string date_and_time( extended_information.substr( pos + 1 ) );
 
-                     string date_and_time( extended_information.substr( pos + 1 ) );
+                        replace( next_document, '/' + string( c_storable_folder_name_channels ), opened_files_directory );
 
-                     replace( next_document, '/' + string( c_storable_folder_name_channels ), opened_files_directory );
+                        if( !paths_and_time_stamps.empty( ) )
+                           paths_and_time_stamps += '\n';
 
-                     if( !paths_and_time_stamps.empty( ) )
-                        paths_and_time_stamps += '\n';
-
-                     paths_and_time_stamps += ( next_document + '@' + date_and_time );
+                        paths_and_time_stamps += ( next_document + '@' + date_and_time );
+                     }
                   }
                }
 
-               ciyam_notifier* p_notifier = new ciyam_notifier( identity_directory, &paths_and_time_stamps );
+               ciyam_notifier* p_notifier = new ciyam_notifier( identity_directory, &all_selections, &paths_and_time_stamps );
 
                p_notifier->start( );
 

@@ -608,7 +608,9 @@ std::string CIYAM_BASE_DECL_SPEC storage_channel_documents(
 
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_update( const std::string& identity, bool submitted = false );
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_prepare( const std::string& identity );
-std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_specific( const std::string& identity, bool updated = false );
+
+std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_specific(
+ const std::string& identity, bool updated = false, bool include_sizes = true );
 
 inline std::string storage_channel_documents_fetched( const std::string& identity )
 {
