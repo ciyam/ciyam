@@ -57,6 +57,7 @@
 #include "peer_session.h"
 #include "ciyam_strings.h"
 #include "ciyam_session.h"
+#include "ciyam_notifier.h"
 #include "ciyam_variables.h"
 #include "command_handler.h"
 #include "dynamic_library.h"
@@ -9853,7 +9854,19 @@ string storage_channel_documents( const string& identity, bool height, bool fetc
       {
          stringstream ss;
 
-         ofs.branch_objects( "*", ss );
+         ods_file_system::branch_style style = ods_file_system::e_branch_style_default;
+
+         temporary_include_hidden include_hidden( ofs, false );
+
+         if( !get_raw_session_variable(
+          get_special_var_name( e_special_var_style_brief ) ).empty( ) )
+            style = ods_file_system::e_branch_style_brief;
+
+         if( !get_raw_session_variable(
+          get_special_var_name( e_special_var_style_extended ) ).empty( ) )
+            style = ods_file_system::e_branch_style_extended;
+
+         ofs.branch_objects( "*", ss, style );
 
          retval = ss.str( );
       }
@@ -10422,7 +10435,7 @@ void storage_channel_documents_close( const char* p_identity )
       throw runtime_error( "identity not found for 'storage_channel_documents_close'" );
 
    if( identity.empty( ) )
-      throw runtime_error( "identity not found for 'storage_channel_documents_open'" );
+      throw runtime_error( "identity not found for 'storage_channel_documents_close'" );
 
    if( !ofs.has_folder( identity ) )
       throw runtime_error( "channel folder for '" + identity + "' was not found" );
@@ -10541,6 +10554,121 @@ void storage_channel_documents_close( const char* p_identity )
    ods_tx.commit( );
 
    delete_directory_files( path, true );
+}
+
+bool storage_channel_documents_opened( const string& identity )
+{
+   bool retval = false;
+
+   if( !identity.empty( ) )
+   {
+      guard g( g_mutex );
+
+      if( !gtp_session || !gtp_session->p_storage_handler->get_ods( ) )
+         throw runtime_error( "no storage is currently linked" );
+
+      string storage_name( gtp_session->p_storage_handler->get_name( ) );
+
+      if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
+         throw runtime_error( "invalid non-peerchain storage '" + storage_name + "' for check opened documents" );
+
+      string opened_variable_name( get_special_var_name( e_special_var_opened ) + '_' + identity );
+      string opening_variable_name( get_special_var_name( e_special_var_opening ) + '_' + identity );
+
+      if( !get_raw_system_variable( opened_variable_name ).empty( ) )
+         retval = true;
+      else if( get_raw_system_variable( opening_variable_name ).empty( ) )
+      {
+         string opened_files_directory( get_raw_system_variable(
+          get_special_var_name( e_special_var_opened_files ) ) );
+
+         if( !opened_files_directory.empty( ) )
+         {
+            string identity_directory( opened_files_directory + '/' + identity );
+
+            if( dir_exists( identity_directory ) )
+            {
+               temporary_session_variable tmp_style_extended(
+                get_special_var_name( e_special_var_style_extended ), c_true_value );
+
+               string all_documents( storage_channel_documents( identity ) );
+
+               vector< string > documents;
+
+               split( all_documents, documents, '\n' );
+
+               string paths_and_time_stamps;
+
+               for( size_t i = 0; i < documents.size( ); i++ )
+               {
+                  string next_document( documents[ i ] );
+
+                  if( !next_document.empty( ) )
+                  {
+                     string::size_type pos = next_document.rfind( " (" );
+
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected next_document '" + next_document + "'" );
+
+                     string extended_information( next_document.substr( pos + 1 ) );
+                     next_document.erase( pos );
+
+                     pos = extended_information.find( ") " );
+
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected extended_information '" + extended_information + "'" );
+
+                     string size( extended_information.substr( 1, pos - 1 ) );
+
+                     extended_information.erase( 0, pos + 2 );
+
+                     pos = extended_information.find( ' ' );
+
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected extended_information '" + extended_information + "'" );
+
+                     string perms( extended_information.substr( 0, pos ) );
+
+                     string date_and_time( extended_information.substr( pos + 1 ) );
+
+                     replace( next_document, '/' + string( c_storable_folder_name_channels ), opened_files_directory );
+
+                     if( !paths_and_time_stamps.empty( ) )
+                        paths_and_time_stamps += '\n';
+
+                     paths_and_time_stamps += ( next_document + '@' + date_and_time );
+                  }
+               }
+
+               ciyam_notifier* p_notifier = new ciyam_notifier( identity_directory, &paths_and_time_stamps );
+
+               p_notifier->start( );
+
+               bool has_notifier_variables = false;
+
+               for( size_t i = 0; i < c_max_notifer_checks; i++ )
+               {
+                  msleep( c_notifer_check_wait );
+
+                  if( !get_raw_system_variable( c_notifier_prefix + identity_directory + '/' ).empty( ) )
+                  {
+                     has_notifier_variables = true;
+                     break;
+                  }
+               }
+
+               if( has_notifier_variables )
+               {
+                  retval = true;
+
+                  set_system_variable( opened_variable_name, c_true_value );
+               }
+            }
+         }
+      }
+   }
+
+   return retval;
 }
 
 void storage_channel_document_submit( const string& file_path )

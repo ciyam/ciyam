@@ -23,7 +23,7 @@
 class CIYAM_BASE_DECL_SPEC ciyam_notifier : public thread
 {
    public:
-   ciyam_notifier( const std::string& watch_root );
+   ciyam_notifier( const std::string& watch_root, const std::string* p_paths_and_time_stamps = 0 );
    ~ciyam_notifier( );
 
    void on_start( );
@@ -32,8 +32,10 @@ class CIYAM_BASE_DECL_SPEC ciyam_notifier : public thread
 
    private:
    size_t unique;
+   bool has_existing;
 
    std::string watch_root;
+   std::string paths_and_time_stamps;
 };
 
 #endif

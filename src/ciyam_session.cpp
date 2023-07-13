@@ -89,9 +89,6 @@ const size_t c_udp_wait_repeats = 10;
 
 const int c_pdf_default_limit = 10000;
 
-const size_t c_notifer_check_wait = 50; // i.e. 1/20 sec
-const size_t c_max_notifer_checks = 100;
-
 const size_t c_secret_reserve_size = 256;
 const size_t c_response_reserve_size = 1024;
 
@@ -5469,6 +5466,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool open = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_open );
          bool close = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_close );
+         bool opened = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_opened );
          bool fetched = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_fetched );
          bool updated = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_updated );
          bool selected = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_selected );
@@ -5482,6 +5480,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             storage_channel_documents_open( identity.c_str( ) );
          else if( close )
             storage_channel_documents_close( identity.c_str( ) );
+         else if( opened )
+            response = to_string( storage_channel_documents_opened( identity ) );
          else if ( !updated && !selected && !update_fetched && !update_submitted && !prepare_for_submit )
             response = storage_channel_documents( identity, fetched | submitted, fetched );
          else if( update_fetched || update_submitted )

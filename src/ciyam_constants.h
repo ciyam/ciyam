@@ -42,6 +42,9 @@ const char c_notifier_unselect_char = '=';
 const char* const c_notifier_prefix = "@:";
 const char* const c_notifier_selection = "#";
 
+const size_t c_notifer_check_wait = 50; // i.e. 1/20 sec
+const size_t c_max_notifer_checks = 100;
+
 const char* const c_ciyam_tag = "ciyam";
 const char* const c_ciyam_logs_tag = "ciyam.logs";
 

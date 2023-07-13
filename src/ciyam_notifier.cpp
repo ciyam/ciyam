@@ -21,6 +21,7 @@
 #include "ciyam_notifier.h"
 
 #include "notifier.h"
+#include "date_time.h"
 #include "utilities.h"
 #include "ciyam_base.h"
 #include "fs_iterator.h"
@@ -98,11 +99,17 @@ inline string get_value_from_system_variable( const string& var_name, string* p_
 
 }
 
-ciyam_notifier::ciyam_notifier( const string& watch_root )
+ciyam_notifier::ciyam_notifier( const string& watch_root, const string* p_paths_and_time_stamps )
  :
  unique( 0 ),
+ has_existing( false ),
  watch_root( watch_root )
 {
+   if( p_paths_and_time_stamps )
+   {
+      has_existing = true;
+      paths_and_time_stamps = *p_paths_and_time_stamps;
+   }
 }
 
 ciyam_notifier::~ciyam_notifier( )
@@ -118,6 +125,28 @@ void ciyam_notifier::on_start( )
 
    string watch_root_name( watch_root );
    string watch_variable_name( c_notifier_prefix + watch_root );
+
+   map< string, string > existing_files;
+
+   if( !paths_and_time_stamps.empty( ) )
+   {
+      vector< string > lines;
+
+      split( paths_and_time_stamps, lines, '\n' );
+
+      // FUTURE: In order to detect files that had been renamed file hashes could be provided.
+      for( size_t i = 0; i < lines.size( ); i++ )
+      {
+         string next_line( lines[ i ] );
+
+         string::size_type pos = next_line.rfind( '@' );
+
+         if( pos == string::npos )
+            throw runtime_error( "unexpected file info next line '" + next_line + "'" );
+
+         existing_files.insert( make_pair( next_line.substr( 0, pos ), next_line.substr( pos + 1 ) ) );
+      }
+   }
 
    try
    {
@@ -199,8 +228,50 @@ void ciyam_notifier::on_start( )
 
             string prefix( '[' + unique + ']' );
 
-            set_system_variable( *ci, prefix + c_notifier_none );
-            set_system_variable( watch_variable_name + unique, *ci );
+            string value( c_notifier_none );
+            string extra_prefix;
+
+            string path( *ci );
+
+            if( has_existing && !path.empty( ) )
+            {
+               if( existing_files.count( path ) )
+               {
+                  date_time dtm( existing_files[ path ] );
+
+                  int64_t tm_val = last_modification_time( path );
+                  int64_t tm_oval = unix_time( dtm );
+
+                  if( tm_val != tm_oval )
+                  {
+                     value = c_notifier_modified;
+                     extra_prefix = c_notifier_selection;
+                  }
+
+                  existing_files.erase( path );
+               }
+               else if( path[ path.length( ) - 1 ] != '/' )
+               {
+                  value = c_notifier_created;
+                  extra_prefix = c_notifier_selection;
+               }
+            }
+
+            set_system_variable( path, prefix + extra_prefix + value );
+            set_system_variable( watch_variable_name + unique, path );
+         }
+
+         if( !existing_files.empty( ) )
+         {
+            for( map< string, string >::const_iterator ci = existing_files.begin( ); ci != existing_files.end( ); ++ci )
+            {
+               string unique( get_next_unique( ) );
+
+               string prefix( '[' + unique + ']' );
+
+               set_system_variable( ci->first, prefix + c_notifier_deleted );
+               set_system_variable( watch_variable_name + unique, ci->first );
+            }
          }
       }
 

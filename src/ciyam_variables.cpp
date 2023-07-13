@@ -87,6 +87,7 @@ const char* const c_special_variable_branch = "@branch";
 const char* const c_special_variable_cloned = "@cloned";
 const char* const c_special_variable_images = "@images";
 const char* const c_special_variable_module = "@module";
+const char* const c_special_variable_opened = "@opened";
 const char* const c_special_variable_pubkey = "@pubkey";
 const char* const c_special_variable_return = "@return";
 const char* const c_special_variable_script = "@script";
@@ -94,6 +95,7 @@ const char* const c_special_variable_do_exec = "@do_exec";
 const char* const c_special_variable_ip_addr = "@ip_addr";
 const char* const c_special_variable_is_last = "@is_last";
 const char* const c_special_variable_message = "@message";
+const char* const c_special_variable_opening = "@opening";
 const char* const c_special_variable_package = "@package";
 const char* const c_special_variable_pubkeyx = "@pubkeyx";
 const char* const c_special_variable_restore = "@restore";
@@ -136,6 +138,7 @@ const char* const c_special_variable_permissions = "@permissions";
 const char* const c_special_variable_queue_peers = "@queue_peers";
 const char* const c_special_variable_skip_update = "@skip_update";
 const char* const c_special_variable_state_names = "@state_names";
+const char* const c_special_variable_style_brief = "@style_brief";
 const char* const c_special_variable_transaction = "@transaction";
 const char* const c_special_variable_backup_files = "@backup_files";
 const char* const c_special_variable_block_height = "@block_height";
@@ -154,6 +157,7 @@ const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_files_area_dir = "@files_area_dir";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
+const char* const c_special_variable_style_extended = "@style_extended";
 const char* const c_special_variable_sys_var_prefix = "@sys_var_prefix";
 const char* const c_special_variable_blockchain_user = "@blockchain_user";
 const char* const c_special_variable_ciyam_list_hash = "@ciyam_list_hash";
@@ -418,6 +422,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_module );
       break;
 
+      case e_special_var_opened:
+      s = string( c_special_variable_opened );
+      break;
+
       case e_special_var_pubkey:
       s = string( c_special_variable_pubkey );
       break;
@@ -444,6 +452,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_message:
       s = string( c_special_variable_message );
+      break;
+
+      case e_special_var_opening:
+      s = string( c_special_variable_opening );
       break;
 
       case e_special_var_package:
@@ -614,6 +626,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_state_names );
       break;
 
+      case e_special_var_style_brief:
+      s = string( c_special_variable_style_brief );
+      break;
+
       case e_special_var_transaction:
       s = string( c_special_variable_transaction );
       break;
@@ -684,6 +700,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_peer_responder:
       s = string( c_special_variable_peer_responder );
+      break;
+
+      case e_special_var_style_extended:
+      s = string( c_special_variable_style_extended );
       break;
 
       case e_special_var_blockchain_user:
