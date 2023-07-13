@@ -633,6 +633,8 @@ inline std::string storage_channel_documents_selected( const std::string& identi
 void CIYAM_BASE_DECL_SPEC storage_channel_documents_open( const char* p_identity = 0 );
 void CIYAM_BASE_DECL_SPEC storage_channel_documents_close( const char* p_identity = 0 );
 
+bool CIYAM_BASE_DECL_SPEC storage_channel_documents_opened( const std::string& identity );
+
 void CIYAM_BASE_DECL_SPEC storage_channel_document_submit( const std::string& file_path );
 void CIYAM_BASE_DECL_SPEC storage_channel_document_unsubmit( const std::string& file_path );
 

@@ -4414,6 +4414,10 @@ void `{`$full_class_name`}::get_required_field_names(
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
  arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield`}\
 `,\
+`@eq`(`'\1`'`,`'transient_field_to_value`'`)`&`!`@eq`(`'`'`,`$specification_\0_tfield`)
+`{`#transient_field_to_value.spec.xrep section=get_required_field_names\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
+`,\
 `@eq`(`'\1`'`,`'transient_field_value_if_uid_in_set`'`)
 `{`#transient_field_value_if_uid_in_set.spec.xrep section=get_required_field_names\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield`}\

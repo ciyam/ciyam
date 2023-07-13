@@ -334,7 +334,7 @@ struct temporary_set_folder
 
 struct temporary_force_write
 {
-   temporary_force_write( ods_file_system& ofs );
+   temporary_force_write( ods_file_system& ofs, bool force_write = true );
    ~temporary_force_write( );
 
    ods_file_system& ofs;
@@ -344,7 +344,7 @@ struct temporary_force_write
 
 struct temporary_include_hidden
 {
-   temporary_include_hidden( ods_file_system& ofs );
+   temporary_include_hidden( ods_file_system& ofs, bool include_hidden = true );
    ~temporary_include_hidden( );
 
    ods_file_system& ofs;

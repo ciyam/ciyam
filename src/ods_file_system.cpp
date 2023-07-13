@@ -503,12 +503,25 @@ string process_rename_expressions(
 
 struct ods_file_system::impl
 {
-   impl( ods& o ) : bt( o ), force_write( false ), skip_hidden( true ), for_regression_tests( false ), next_transaction_id( 0 ) { }
+   impl( ods& o )
+    :
+    bt( o ),
+    force_write( false ),
+    skip_hidden( true ),
+    force_write_count( 0 ),
+    skip_hidden_count( 0 ),
+    for_regression_tests( false ),
+    next_transaction_id( 0 )
+   {
+   }
 
    btree_type bt;
 
    bool force_write;
    bool skip_hidden;
+
+   size_t force_write_count;
+   size_t skip_hidden_count;
 
    bool for_regression_tests;
 
@@ -2756,8 +2769,13 @@ void ods_file_system::branch_files_or_objects( ostream& os, const string& folder
 
    deque< string > folders;
 
-   // NOTE: If is not skipping already then only include hidden objects if is a 'full' list.
-   restorable< bool > skip_hidden( p_impl->skip_hidden, ( !full && p_impl->skip_hidden ) );
+   bool skip_hidden = p_impl->skip_hidden;
+
+   // NOTE: If not determined already then only include hidden objects if is a 'full' list.
+   if( !p_impl->skip_hidden_count )
+      skip_hidden = !full;
+
+   restorable< bool > temp_skip_hidden( p_impl->skip_hidden, skip_hidden );
 
    bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
@@ -3386,29 +3404,33 @@ bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_n
    return okay;
 }
 
-temporary_force_write::temporary_force_write( ods_file_system& ofs )
+temporary_force_write::temporary_force_write( ods_file_system& ofs, bool force_write )
  :
  ofs( ofs ),
  old_force_write( ofs.p_impl->force_write )
 {
-   ofs.p_impl->force_write = true;
+   ++ofs.p_impl->force_write_count;
+   ofs.p_impl->force_write = force_write;
 }
 
 temporary_force_write::~temporary_force_write( )
 {
+   --ofs.p_impl->force_write_count;
    ofs.p_impl->force_write = old_force_write;
 }
 
-temporary_include_hidden::temporary_include_hidden( ods_file_system& ofs )
+temporary_include_hidden::temporary_include_hidden( ods_file_system& ofs, bool include_hidden )
  :
  ofs( ofs ),
  old_skip_hidden( ofs.p_impl->skip_hidden )
 {
-   ofs.p_impl->skip_hidden = false;
+   ++ofs.p_impl->skip_hidden_count;
+   ofs.p_impl->skip_hidden = !include_hidden;
 }
 
 temporary_include_hidden::~temporary_include_hidden( )
 {
+   --ofs.p_impl->skip_hidden_count;
    ofs.p_impl->skip_hidden = old_skip_hidden;
 }
 
