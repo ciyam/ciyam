@@ -40,7 +40,11 @@
       actions += '/';
 `}\
       actions += c_procedure_id_`{`$arg_procedure`};
-`{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
+`{`!`@eq`(`$arg_arg1`,`'`'`)\
+      actions += "+`{`$arg_arg1`}";
+`}`{`!`@eq`(`$arg_arg2`,`'`'`)\
+      actions += "+`{`$arg_arg2`}";
+`}`{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
       actions += "$" + get_obj( ).get_class_id( );
 `}`{`!`@eq`(`$arg_ofield`,`'`'`)`&`!`@eq`(`$arg_vfield`,`'`'`)\
       actions += "." + string( c_field_id_`{`$arg_ofield`} ) + "=" + to_string( get_obj( ).`{`$arg_vfield`}( ) );
