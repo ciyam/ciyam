@@ -605,10 +605,18 @@ void ciyam_notifier::on_start( )
                   }
                   else if( value == "modify" )
                   {
-                     value = c_notifier_modified;
+                     if( extra == string( 1, c_notifier_mod_ignore_char ) )
+                     {
+                        extra.erase( );
+                        value = c_notifier_none;
+                     }
+                     else
+                     {
+                        value = c_notifier_modified;
 
-                     if( !is_folder )
-                        tagged_extra = c_notifier_selection;
+                        if( !is_folder )
+                           tagged_extra = c_notifier_selection;
+                     }
                   }
                   else if( value == "delete" )
                   {

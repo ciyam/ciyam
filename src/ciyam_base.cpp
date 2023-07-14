@@ -10743,6 +10743,80 @@ void storage_channel_document_unsubmit( const string& file_path )
    }
 }
 
+void storage_channel_document_restore( const string& identity_path )
+{
+   if( !identity_path.empty( ) )
+   {
+      guard g( g_mutex );
+
+      if( !gtp_session || !gtp_session->p_storage_handler->get_ods( ) )
+         throw runtime_error( "no storage is currently linked" );
+
+      string opened_files_path( get_system_variable( get_special_var_name( e_special_var_opened_files ) ) );
+
+      if( identity_path.find( opened_files_path ) != 0 )
+         throw runtime_error( "unexpected identity_path '" + identity_path + "' in storage_channel_document_restore" );
+
+      string::size_type pos = identity_path.find( '/', opened_files_path.length( ) + 1 );
+
+      if( pos == string::npos )
+         throw runtime_error( "unexpected identity_path '" + identity_path + "' in storage_channel_document_restore" );
+
+      string identity( identity_path.substr( opened_files_path.length( ) + 1, pos - opened_files_path.length( ) - 1 ) );
+      string file_path( identity_path.substr( pos + 1 ) );
+
+      string storage_name( gtp_session->p_storage_handler->get_name( ) );
+
+      if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
+         throw runtime_error( "invalid non-peerchain storage '" + storage_name + "' for restoring documents" );
+
+      ods_file_system ofs( *ods::instance( ) );
+
+      ods::bulk_read bulk_read( *ods::instance( ) );
+
+      ofs.set_root_folder( c_storable_folder_name_channels );
+
+      string destination( opened_files_path + '/' + identity + '/' + file_path );
+
+      ofs.set_folder( identity );
+
+      // NOTE: The 'mod_ignore" is being used so that the notifier will
+      // ignore the "modify" event after the file data is written.
+      //
+      // FUTURE: A different ignore will be needed for a zero length
+      // file (as only 'create' and 'attrib' events are triggered).
+      string notifier_value( get_raw_system_variable( destination ) );
+
+      if( !notifier_value.empty( ) )
+      {
+         string prefix;
+
+         string::size_type pos = notifier_value.find( ']' );
+
+         if( notifier_value[ 0 ] == '[' )
+         {
+            if( pos == string::npos )
+               throw runtime_error( "unexpected notifier value '" + notifier_value + "' for '" + file_path + "'" );
+
+            prefix = notifier_value.substr( 0, pos + 1 );
+            notifier_value.erase( 0, pos + 1 );
+         }
+
+         if( !notifier_value.empty( ) )
+         {
+            if( !( notifier_value[ 0 ] >= 'a' ) && ( notifier_value[ 0 ] <= 'z' ) )
+               notifier_value.erase( 0, 1 );
+
+            notifier_value = c_notifier_mod_ignore_char + notifier_value;
+
+            set_system_variable( destination, prefix + notifier_value );
+         }
+      }
+
+      ofs.get_file( file_path, destination );
+   }
+}
+
 bool storage_channel_document_submitting( const string& file_path )
 {
    bool retval = false;

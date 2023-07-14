@@ -2707,6 +2707,50 @@ bool is_valid_value( const string& s, primitive p,
    return rc;
 }
 
+bool is_valid_file_name( const string& name, bool allow_directory_path )
+{
+   bool retval = true;
+
+   if( name.empty( ) )
+      retval = false;
+   else
+   {
+      string::size_type pos = name.rfind( '/' );
+
+      if( pos == name.length( ) - 1 )
+         retval = false;
+      else
+      {
+         vector< string > names;
+
+         if( pos == string::npos )
+            names.push_back( name );
+         else if( !allow_directory_path )
+            retval = false;
+         else
+         {
+            split( name, names, '/' );
+
+            for( size_t i = 0; i < names.size( ); i++ )
+            {
+               string next_name( names[ i ] );
+
+               bool has_utf8 = true;
+
+               if( next_name.empty( )
+                || ( valid_file_name( next_name, &has_utf8 ) != next_name ) )
+               {
+                  retval = false;
+                  break;
+               }
+            }
+         }
+      }
+   }
+
+   return retval;
+}
+
 string sql_quote( const string& s )
 {
    // NOTE: Always use '' rather than NULL here as it is expected
