@@ -240,6 +240,9 @@ const char* const c_storable_folder_name_channels = "channels";
 
 const char* const c_temporary_special_variable_suffix = "_temporary";
 
+const char* const c_demo_sid_1 = "729c82d85a1da11074ea60a42ded01ece34928592aa8620a67c364d7fc70a3fb";
+const char* const c_demo_sid_2 = "b7560eb88fdbc58bd76a6b1a33e07dc39f22e1b834cf470398a0ecf0fc16ca78";
+
 string g_sid;
 
 #include "sid.enc"
@@ -5339,6 +5342,11 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          }
       }
 
+      string extra;
+
+      if( ( sid == c_demo_sid_1 ) || ( sid == c_demo_sid_2 ) )
+         extra = "-demo ";
+
       clear_key( sid );
 
       if( p_encrypted_sid && !file_exists( c_server_sid_file ) )
@@ -5350,7 +5358,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          if( !user.empty( ) )
          {
-            string cmd( "./set_password \"" + user + "\" \"" + info + "\"" );
+            string cmd( "./set_password " + extra + "\"" + user + "\" \"" + info + "\"" );
             system( cmd.c_str( ) );
          }
 #endif
