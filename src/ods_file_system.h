@@ -201,7 +201,7 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    }
 
    bool has_file( const std::string& name, bool is_prefix = false,
-    std::string* p_suffix = 0, std::string* p_perms = 0, int64_t* p_tm_val = 0 );
+    std::string* p_suffix = 0, std::string* p_perms = 0, int64_t* p_tm_val = 0, int64_t* p_num_bytes = 0 );
 
    std::string last_file_name_with_prefix( const std::string& prefix );
 
