@@ -282,12 +282,50 @@ void ciyam_notifier::on_start( )
          {
             for( map< string, string >::const_iterator ci = existing_files.begin( ); ci != existing_files.end( ); ++ci )
             {
+               string next_file( ci->first );
+               string next_path( next_file );
+
+               string::size_type pos = next_path.rfind( '/' );
+
+               // NOTE: Create system variables for missing folders needed for the next file.
+               if( pos != string::npos )
+               {
+                  next_path.erase( pos );
+
+                  if( next_path.length( ) > watch_root.length( ) )
+                  {
+                     next_path.erase( 0, watch_root.length( ) );
+
+                     vector< string > directories;
+                     split( next_path, directories, '/' );
+
+                     string directory_path( watch_root );
+
+                     for( size_t i = 0; i < directories.size( ); i++ )
+                     {
+                        string next_directory( directories[ i ] );
+
+                        directory_path += next_directory + '/';
+
+                        if( get_raw_system_variable( directory_path ).empty( ) )
+                        {
+                           string unique( get_next_unique( ) );
+
+                           string prefix( '[' + unique + ']' );
+
+                           set_system_variable( directory_path, prefix + c_notifier_deleted );
+                           set_system_variable( watch_variable_name + unique, directory_path );
+                        }
+                     }
+                  }
+               }
+
                string unique( get_next_unique( ) );
 
                string prefix( '[' + unique + ']' );
 
-               set_system_variable( ci->first, prefix + c_notifier_deleted );
-               set_system_variable( watch_variable_name + unique, ci->first );
+               set_system_variable( next_file, prefix + c_notifier_deleted );
+               set_system_variable( watch_variable_name + unique, next_file );
             }
          }
       }
@@ -299,6 +337,12 @@ void ciyam_notifier::on_start( )
       TRACE_LOG( TRACE_SESSIONS, "notifier started for '" + watch_root + "'" );
 
       string events;
+
+      string mod_ignore_extra( string( 1, c_notifier_mod_ignore_char ) );
+      string new_ignore_extra( string( 1, c_notifier_new_ignore_char ) );
+
+      string mod_sel_ignore_extra( string( 1, c_notifier_mod_sel_ignore_char ) );
+      string new_sel_ignore_extra( string( 1, c_notifier_new_sel_ignore_char ) );
 
       string moved_from_prefix( string( c_notifier_moved_from ) + '|' );
       string modified_from_prefix( string( c_notifier_modified_from ) + '|' );
@@ -595,18 +639,37 @@ void ciyam_notifier::on_start( )
                   }
                   else if( value == "create" )
                   {
-                     if( old_value != c_notifier_deleted ) 
-                        value = c_notifier_created;
-                     else
-                        value = c_notifier_modified;
+                     if( ( extra == new_ignore_extra ) || ( extra == new_sel_ignore_extra ) )
+                     {
+                        if( extra == new_sel_ignore_extra )
+                           tagged_extra = c_notifier_selection;
 
-                     if( !is_folder )
-                        tagged_extra = c_notifier_selection;
+                        extra.erase( );
+                        value = c_notifier_none;
+                     }
+                     else
+                     {
+                        if( old_value != c_notifier_deleted ) 
+                           value = c_notifier_created;
+                        else
+                        {
+                           if( is_folder )
+                              value = c_notifier_none;
+                           else
+                              value = c_notifier_modified;
+                        }
+
+                        if( !is_folder )
+                           tagged_extra = c_notifier_selection;
+                     }
                   }
                   else if( value == "modify" )
                   {
-                     if( extra == string( 1, c_notifier_mod_ignore_char ) )
+                     if( ( extra == mod_ignore_extra ) || ( extra == mod_sel_ignore_extra ) )
                      {
+                        if( extra == mod_sel_ignore_extra )
+                           tagged_extra = c_notifier_selection;
+
                         extra.erase( );
                         value = c_notifier_none;
                      }

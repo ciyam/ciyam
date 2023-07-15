@@ -10780,12 +10780,27 @@ void storage_channel_document_restore( const string& identity_path )
 
       ofs.set_folder( identity );
 
-      // NOTE: The 'mod_ignore" is being used so that the notifier will
-      // ignore the "modify" event after the file data is written.
-      //
-      // FUTURE: A different ignore will be needed for a zero length
-      // file (as only 'create' and 'attrib' events are triggered).
+      set< string > selected;
+
+      ofs.set_folder( c_channel_folder_ciyam );
+
+      if( ofs.has_file( c_channel_selections ) )
+      {
+         string all_selected;
+
+         ofs.fetch_from_text_file( c_channel_selections, all_selected );
+
+         if( !all_selected.empty( ) )
+            split( all_selected, selected, '\n' );
+      }
+
+      ofs.set_folder( ".." );
+
       string notifier_value( get_raw_system_variable( destination ) );
+
+      int64_t num_bytes = 0;
+
+      ofs.has_file( file_path, false, 0, 0, 0, &num_bytes );
 
       if( !notifier_value.empty( ) )
       {
@@ -10807,9 +10822,68 @@ void storage_channel_document_restore( const string& identity_path )
             if( !( notifier_value[ 0 ] >= 'a' ) && ( notifier_value[ 0 ] <= 'z' ) )
                notifier_value.erase( 0, 1 );
 
-            notifier_value = c_notifier_mod_ignore_char + notifier_value;
+            // NOTE: Set a special tag for the notifier to ignore either a create
+            // or modify event (depending whether or not the file is zero length)
+            // and also to indicate whether or not the file should be selected.
+            if( num_bytes )
+            {
+               if( !selected.count( file_path ) )
+                  notifier_value = c_notifier_mod_ignore_char + notifier_value;
+               else
+                  notifier_value = c_notifier_mod_sel_ignore_char + notifier_value;
+            }
+            else
+            {
+               if( !selected.count( file_path ) )
+                  notifier_value = c_notifier_new_ignore_char + notifier_value;
+               else
+                  notifier_value = c_notifier_new_sel_ignore_char + notifier_value;
+            }
 
             set_system_variable( destination, prefix + notifier_value );
+         }
+      }
+
+      string path_to_file( destination );
+
+      pos = path_to_file.rfind( '/' );
+
+      if( pos != string::npos )
+      {
+         path_to_file.erase( pos );
+         vector< string > directories;
+
+         if( !path_to_file.empty( ) )
+         {
+            split( path_to_file, directories, '/' );
+
+            string directory_path;
+
+            for( size_t i = 0; i < directories.size( ); i++ )
+            {
+               string next_directory( directories[ i ] );
+
+               if( !directory_path.empty( ) )
+                  directory_path += '/';
+
+               directory_path += next_directory;
+
+               if( !dir_exists( directory_path ) )
+               {
+                  create_dir( directory_path );
+
+                  // NOTE: Wait for the notifier to add its watch for each directory.
+                  for( int i = 0; i < c_max_notifer_checks; i++ )
+                  {
+                     string notifier_value( get_raw_system_variable( directory_path + '/' ) );
+
+                     if( notifier_value.find( c_notifier_deleted ) == string::npos )
+                        break;
+
+                     msleep( c_notifer_check_wait );
+                  }
+               }
+            }
          }
       }
 

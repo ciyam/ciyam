@@ -1051,8 +1051,8 @@ void ods_file_system::get_file( const string& name,
    }
 }
 
-bool ods_file_system::has_file( const string& name,
- bool is_prefix, string* p_suffix, string* p_perms, int64_t* p_tm_val )
+bool ods_file_system::has_file( const string& name, bool is_prefix,
+ string* p_suffix, string* p_perms, int64_t* p_tm_val, int64_t* p_num_bytes )
 {
    bool retval = false;
 
@@ -1115,6 +1115,14 @@ bool ods_file_system::has_file( const string& name,
          if( p_tm_val )
             *p_tm_val = tmp_item.get_time( );
       }
+   }
+
+   if( retval && p_num_bytes )
+   {
+      *p_num_bytes = 0;
+
+      if( i->get_file( ).get_id( ).get_num( ) )
+         *p_num_bytes = o.get_size( i->get_file( ).get_id( ) );
    }
 
    return retval;
