@@ -2238,12 +2238,6 @@ void Meta_Application::impl::impl_Generate( )
 
       outupg << "#Starting DB Rebuild...\n";
 
-      if( !get_obj( ).Blockchain_Id( ).empty( ) )
-      {
-         string bc_var_name( get_special_var_name( e_special_var_blockchain ) );
-         outupg << "session_variable " << bc_var_name << " " << get_obj( ).Blockchain_Id( ) << "\n";
-      }
-
       outupg << "storage_restore -rebuild " << get_obj( ).Name( ) << "\n";
 
       outupg << "#Finished DB Rebuild...\n";

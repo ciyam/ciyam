@@ -19,24 +19,24 @@ IDENTITY_VAR=%PREFIX%$%IDENT%_identity
 ;
 @ifdef "$OUTPUT"
 CHANNEL=$OUTPUT
-REVERSED=*!reverse?$CHANNEL
+REVERSE=*!reverse?$CHANNEL
 ;
 .file_archive -destroy $CHANNEL
-.file_archive -destroy $REVERSED
+.file_archive -destroy $REVERSE
 ;
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
 ~rmdir $FILES_AREA_DIR/$CHANNEL
-~rmdir $FILES_AREA_DIR/$REVERSED
+~rmdir $FILES_AREA_DIR/$REVERSE
 ;
 .file_kill -q -p=bc.$CHANNEL.*
-.file_kill -q -p=bc.$REVERSED.*
+.file_kill -q -p=bc.$REVERSE.*
 ;
 .system_variable @error_$IDENT ""
 .system_variable >$IDENTITY_VAR ""
 ;
-#Removed archive and all blockchain files for '$CHANNEL'.
+#Removed archive and all blockchain files for '$IDENT' ($CHANNEL/$REVERSE).
 @endif
 ;
 @endif

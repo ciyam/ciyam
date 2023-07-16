@@ -53,7 +53,13 @@ get_session_variable( "`{`$arg_session_var`}" ), `}`}get_obj( ).`{`$arg_fvalue`}
       temporary_session_variable tmp_session_errors_only(
        get_special_var_name( e_special_var_errors_only ), "1" );
 `}
-      `{`!`@eq`(`$arg_pre_func`,`'`'`)`{`$arg_pre_func`}( ), `}run_script( "`{`$arg_script`}",\
+      string script_name( "`{`$arg_script`}" );
+`{`!`@eq`(`$arg_restore_script`,`'`'`)
+      if( storage_locked_for_admin( ) )
+         script_name = string( "`{`$arg_restore_script`}" );
+`}\
+
+      `{`!`@eq`(`$arg_pre_func`,`'`'`)`{`$arg_pre_func`}( ), `}run_script( script_name,\
  `{`@eq`(`$arg_async`,`'`'`)false`,true`}, `{`@eq`(`$arg_delay`,`'`'`)false`,true`}, `{`@eq`(`$arg_logging_none`,`'`'`)false`,true`} );
    }
    // [(finish trigger_execute)] `{`$arg_id`}
