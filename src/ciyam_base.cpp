@@ -126,6 +126,8 @@ const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
+const char* const c_server_password_info = "password.info";
+
 const char* const c_server_folder_backup = "backup";
 const char* const c_server_folder_opened = "opened";
 const char* const c_server_folder_shared = "shared";
@@ -5351,17 +5353,18 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
       if( p_encrypted_sid && !file_exists( c_server_sid_file ) )
       {
-         write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
-
 #ifndef _WIN32
          string user( get_environment_variable( c_env_var_ciyam_user ) );
 
          if( !user.empty( ) )
          {
-            string cmd( "./set_password " + extra + "\"" + user + "\" \"" + info + "\"" );
+            write_file( c_server_password_info, info );
+
+            string cmd( "./set_password " + extra + "\"" + user + "\" password.data" );
             system( cmd.c_str( ) );
          }
 #endif
+         write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
 
          if( get_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
             run_init_script = true;

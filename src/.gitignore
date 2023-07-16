@@ -106,6 +106,7 @@ create_demo_*_application.cin
 create_blockchain_*_application.cin
 
 # Except specs with matching file names.
+!password.info
 !for_each.spec.xrep
 !for_clone.spec.xrep
 !for_destroy.spec.xrep
