@@ -196,9 +196,6 @@ Next follow these instructions:
 
 ***** https://github.com/ciyam/ciyam/blob/master/getting_started.txt  *****
 
-chmod o-r password.info
-chmod g-r password.info
-
 rm ciyam.dat ciyam.hdr ciyam.idx ciyam.log ciyam.sql ciyam.tlg ciyam.modules.lst
 
 NOTE: If having permission issues with 'root'@'localhost' for MySQL try the following:

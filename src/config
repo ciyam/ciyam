@@ -42,6 +42,9 @@ else
   chmod a+x ~config.sh
   ./~config.sh
   rm ~config.sh
+
+  chmod o-r password.info
+  chmod g-r password.info
  fi
 
  if [ ! -f ciyamd ]; then
