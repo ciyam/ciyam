@@ -5360,7 +5360,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          {
             write_file( c_server_password_info, info );
 
-            string cmd( "./set_password " + extra + "\"" + user + "\" password.data" );
+            string cmd( "./set_password " + extra + "\"" + user + "\" " + string( c_server_password_info ) );
             system( cmd.c_str( ) );
          }
 #endif

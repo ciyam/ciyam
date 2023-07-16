@@ -11,7 +11,7 @@ else
 
  if [ "$password" = "password.info" ]; then
   password=$(<password.info)
-  echo "temporary_password_file_for_admin_only_access" >password.info
+  echo -n "temporary_password_file_for_admin_only_access" >password.info
  fi
 
  sudo useradd -g users -m $user_id
