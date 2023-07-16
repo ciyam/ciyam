@@ -1,0 +1,21 @@
+#!/bin/sh
+# Copyright (c) 2023 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+if [ $# -lt 2 ]; then
+ echo Usage: add_user [user] [password]
+else
+ user_id=$1
+ password=$2
+
+ sudo useradd -g users -m $user_id
+ sudo usermod -a -G www $user_id
+ sudo usermod -g www $user_id
+
+ echo "$user_id:$password" | sudo chpasswd
+ sudo chage -d 1 $user_id
+
+ sudo ln -s /home/admin/opened /home/$user_id/opened
+ sudo chown -h $user_id:www /home/$user_id/opened
+fi
