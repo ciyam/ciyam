@@ -1,0 +1,28 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+<std.fissile
+;
+@ifeq "$1" ""
+#Usage: reset_channel.cin <identity>
+@else
+;
+.system_variable $$$1_identity
+CHANNEL=$OUTPUT
+@ifdef $CHANNEL
+REVERSE=*!reverse?$CHANNEL
+;
+#Resetting archive and blockchain files for '$1' ($CHANNEL/$REVERSE).
+.file_tags bc.$CHANNEL.zenith*
+<<bc_reset.cin $CHANNEL
+;
+.file_tags bc.$REVERSE.zenith*
+@ifdef $OUTPUT
+<<bc_reset.cin $REVERSE
+@endif
+;
+@endif
+;
+@endif

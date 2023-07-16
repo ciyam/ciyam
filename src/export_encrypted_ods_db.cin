@@ -22,6 +22,6 @@ PASSWORD=$OUTPUT
 ~echo $~PASSWORD | xclip
 #(password is on the clipboard)
 ;
-~./ods_fsed -quiet -p "-exec=export $1" $1
+~./ods_fsed -quiet -p -x "-exec=export $1" $1
 ~echo "" | xclip
 @endif

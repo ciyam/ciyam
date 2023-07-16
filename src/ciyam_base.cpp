@@ -1786,6 +1786,7 @@ void perform_storage_op( storage_op op,
       throw runtime_error( "current storage needs to be terminated before another can be linked to" );
 
    bool was_constructed = false;
+
    if( g_storage_handler_index.find( name ) != g_storage_handler_index.end( ) )
    {
       if( op == e_storage_op_create )
@@ -1799,6 +1800,7 @@ void perform_storage_op( storage_op op,
    else
    {
       size_t slot = 0;
+
       for( slot = 1; slot < g_max_storage_handlers; slot++ )
       {
          if( !g_storage_handlers[ slot ] )
@@ -1834,20 +1836,23 @@ void perform_storage_op( storage_op op,
 
          bool has_exported_objects = false;
 
-         if( g_encrypted_identity && g_ods_use_encrypted
+         if( g_encrypted_identity
           && ( name != c_meta_storage_name ) && ( name != c_ciyam_storage_name ) )
          {
-            get_sid( sid );
-
-            sha256 hash( sid + name );
-            sid = hash.get_digest_as_string( );
-
-            p_password = sid.c_str( );
-
             if( dir_exists( name ) )
             {
                has_exported_objects = true;
                open_mode = ods::e_open_mode_create_if_not_exist;
+            }
+
+            if( g_ods_use_encrypted )
+            {
+               get_sid( sid );
+
+               sha256 hash( sid + name );
+               sid = hash.get_digest_as_string( );
+
+               p_password = sid.c_str( );
             }
          }
 
@@ -1888,7 +1893,8 @@ void perform_storage_op( storage_op op,
 
             ap_handler->get_root( ).module_directory = directory;
 
-            string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
+            string blockchain( get_raw_system_variable(
+             get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
             bool is_peerchain_application = false;
 

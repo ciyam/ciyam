@@ -67,6 +67,11 @@
   <arguments>close_channel.cin @storage @identity
  </script>
  <script/>
+  <name>reset_channel
+  <filename>*script*
+  <arguments>reset_channel.cin @identity
+ </script>
+ <script/>
   <name>shared_export
   <filename>shared_export
  </script>
