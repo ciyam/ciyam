@@ -9,11 +9,18 @@ else
  user_id=$1
  password=$2
 
+ if [ "$password" = "password.info" ]; then
+  password=$(<password.info)
+  echo "temporary_password_file_for_admin_only_access" >password.info
+ fi
+
  sudo useradd -g users -m $user_id
  sudo usermod -a -G www $user_id
  sudo usermod -g www $user_id
 
- echo "$user_id:$password" | sudo chpasswd
+ sudo chmod g+rx /home/$user_id
+
+ sudo chpasswd <<< "$user_id:$password"
  sudo chage -d 1 $user_id
 
  sudo ln -s /home/admin/opened /home/$user_id/opened
