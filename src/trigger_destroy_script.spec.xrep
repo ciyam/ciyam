@@ -11,7 +11,9 @@
 
 `}\
 `{`$i`}   `{`!`@eq`(`$arg_pre_func`,`'`'`)`{`$arg_pre_func`}( ), `}run_script( "`{`$arg_script_name`}", `{`@eq`(`$arg_async`,`'`'`)false`,true`} );
-`{`!`@eq`(`$arg_field`,`'`'`)\
+`{`!`@eq`(`$arg_add_dead_key`,`'`'`)\
+`{`$i`}   storage_add_dead_key( get_obj( ).get_class_id( ), get_obj( ).get_key( ) );
+`}`{`!`@eq`(`$arg_field`,`'`'`)\
    }
 `}\
    // [(finish trigger_destroy_script)] `{`$arg_id`}
