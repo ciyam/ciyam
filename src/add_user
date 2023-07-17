@@ -15,15 +15,11 @@ else
  fi
 
  sudo useradd -g users -m $user_id
- sudo usermod -a -G www $user_id
- sudo usermod -g www $user_id
-
- sudo chmod g+rx /home/$user_id
 
  sudo chpasswd <<< "$user_id:$password"
 # NOTE: Use this to limit password usage for 1 day.
 # sudo chage -d 1 $user_id
 
  sudo ln -s /home/admin/opened /home/$user_id/opened
- sudo chown -h $user_id:www /home/$user_id/opened
+ sudo chown -h $user_id:users /home/$user_id/opened
 fi
