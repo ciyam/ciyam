@@ -1961,9 +1961,6 @@ void perform_storage_op( storage_op op,
                   if( pos == string::npos )
                      throw runtime_error( "unexpected invalid dead key format '" + next + "'" );
 
-
-                  string class_id = next.substr( 0, pos );
-
                   ap_handler->get_dead_keys( ).insert( next );
                }
             }
