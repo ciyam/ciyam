@@ -1303,6 +1303,14 @@ std::string CIYAM_BASE_DECL_SPEC encrypt( const std::string& pw, const std::stri
 std::string CIYAM_BASE_DECL_SPEC shared_decrypt( const std::string& pk, const std::string& s );
 std::string CIYAM_BASE_DECL_SPEC shared_encrypt( const std::string& pk, const std::string& s );
 
+inline std::string hashed_decrypt( const std::string& s, bool use_sha256 = false )
+{
+   if( !use_sha256 )
+      return hash_sha1( decrypt( s ) );
+   else
+      return hash_sha256( decrypt( s ) );
+}
+
 std::string CIYAM_BASE_DECL_SPEC totp_pin( const std::string& secret );
 std::string CIYAM_BASE_DECL_SPEC totp_secret( const std::string& unique );
 
