@@ -3,8 +3,8 @@
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-if [ $# -lt 2 ]; then
- echo Usage: add_user [user] [password]
+if [ $# -lt 1 ]; then
+ echo Usage: add_user [user_id] [[password]]
 else
  user_id=$1
  password=$2
@@ -16,9 +16,11 @@ else
 
  sudo useradd -g users -m $user_id
 
- sudo chpasswd <<< "$user_id:$password"
+ if [ ! "$password" = "" ]; then
+  sudo chpasswd <<< "$user_id:$password"
 # NOTE: Use this to limit password usage for 1 day.
 # sudo chage -d 1 $user_id
+ fi
 
  sudo ln -s /home/admin/opened /home/$user_id/opened
  sudo chown -h $user_id:users /home/$user_id/opened

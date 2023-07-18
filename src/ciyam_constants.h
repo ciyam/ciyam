@@ -101,6 +101,10 @@ const char* const c_timezones_file = "timezones.sio";
 const char* const c_autoscript_file = "autoscript.sio";
 const char* const c_manuscript_file = "manuscript.sio";
 
+const char* const c_password_info_file = "password.info";
+
+const char* const c_env_var_ciyam_user = "CIYAM_USER";
+
 const char* const c_notifier_none = "none";
 const char* const c_notifier_created = "created";
 const char* const c_notifier_deleted = "deleted";

@@ -1246,6 +1246,9 @@ void CIYAM_BASE_DECL_SPEC delete_directory_tree( const std::string& path );
 void CIYAM_BASE_DECL_SPEC create_directories_for_file_name( const std::string& file_name );
 std::string CIYAM_BASE_DECL_SPEC get_directory_for_file_name( const std::string& file_name );
 
+void CIYAM_BASE_DECL_SPEC add_user( const std::string* p_user_id = 0 );
+std::string CIYAM_BASE_DECL_SPEC generate_password( const std::string& user_id );
+
 void CIYAM_BASE_DECL_SPEC remove_gpg_key( const std::string& gpg_key_id, bool ignore_error = false );
 
 void CIYAM_BASE_DECL_SPEC locate_gpg_key( const std::string& email, std::string& gpg_key_id, std::string& gpg_fingerprint );

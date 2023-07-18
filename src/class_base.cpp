@@ -3138,6 +3138,48 @@ string get_directory_for_file_name( const string& file_name )
    return directory;
 }
 
+void add_user( const string* p_user_id )
+{
+#ifdef _WIN32
+   ( void )p_user_id;
+#else
+   string user( get_environment_variable( c_env_var_ciyam_user ) );
+
+   string user_id;
+
+   if( p_user_id )
+      user_id = *p_user_id;
+   else
+      user_id = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+
+   if( !user.empty( ) )
+   {
+      if( user_id.empty( ) )
+         throw runtime_error( "unexpected missing user_id in 'add_user'" );
+
+      string cmd( "./add_user \"" + user_id + "\"" );
+      system( cmd.c_str( ) );
+   }
+#endif
+}
+
+string generate_password( const string& user_id )
+{
+   string pwd( uuid( ).as_string( ) );
+
+   string user( get_environment_variable( c_env_var_ciyam_user ) );
+
+   if( !user.empty( ) )
+   {
+      write_file( c_password_info_file, pwd );
+
+      string cmd( "./set_password \"" + user_id + "\" password.info" );
+      system( cmd.c_str( ) );
+   }
+
+   return pwd;
+}
+
 void remove_gpg_key( const string& gpg_key_id, bool ignore_error )
 {
    guard g( g_mutex );
