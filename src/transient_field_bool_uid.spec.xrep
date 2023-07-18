@@ -1,13 +1,8 @@
-`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_bool_uid)] `{`$arg_id`}
-`{`!`@eq`(`$arg_admin`,`'`'`)`&`!`@eq`(`$arg_system`,`'`'`)\
-   if( is_admin_uid( ) || is_system_uid( ) )
-`,\
-`{`!`@eq`(`$arg_admin`,`'`'`)\
-   if( is_admin_uid( ) )
-`,\
-   if( is_system_uid( ) )
-`}`}\
+   if( `{`!`@eq`(`$arg_init`,`'`'`)is_init_uid( )`{`!`@eq`(`$arg_admin`,`'`'`) || is_admin_uid( )`}`{`!`@eq`(`$arg_system`,`'`'`) || is_system_uid( )`}\
+`,`{`!`@eq`(`$arg_admin`,`'`'`)is_admin_uid( )`{`!`@eq`(`$arg_system`,`'`'`) || is_system_uid( )`}\
+`,is_system_uid( )`}`} )
       get_obj( ).`{`$arg_field`}( true );
    else
       get_obj( ).`{`$arg_field`}( false );

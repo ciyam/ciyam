@@ -119,14 +119,10 @@ const int c_max_file_buffer_expansion = 2;
 const char* const c_str_none = "(none)";
 const char* const c_str_peer = "(peer)";
 
-const char* const c_env_var_ciyam_user = "CIYAM_USER";
-
 const char* const c_server_log_file = "ciyam_server.log";
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
-
-const char* const c_server_password_info = "password.info";
 
 const char* const c_server_folder_backup = "backup";
 const char* const c_server_folder_opened = "opened";
@@ -5361,9 +5357,9 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          if( !user.empty( ) )
          {
-            write_file( c_server_password_info, info );
+            write_file( c_password_info_file, info );
 
-            string cmd( "./set_password " + extra + "\"" + user + "\" " + string( c_server_password_info ) );
+            string cmd( "./set_password " + extra + "\"" + user + "\" " + string( c_password_info_file ) );
             system( cmd.c_str( ) );
          }
 #endif

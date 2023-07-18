@@ -1030,7 +1030,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `,\
 `@eq`(`'\\1`'`,`'for_function`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_function.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
- arg_id=$specification_\\0_id arg_procedure=$specification_\\0_procedure\
+ arg_id=$specification_\\0_id arg_procedure=$specification_\\0_procedure arg_procedure_arg=$specification_\\0_procedure_arg\
  arg_field=$specification_\\0_field arg_func_name=$specification_\\0_func_name arg_skip_restore=$specification_\\0_skip_restore`}\
 `,\
 `@eq`(`'\\1`'`,`'for_move_children`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
@@ -1929,9 +1929,10 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#transient_field_bool_is_in_op.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_value=$specification_\0_value`}\
 `,\
-`@eq`(`'\1`'`,`'transient_field_bool_uid`'`)
+`@eq`(`'\1`'`,`'transient_field_bool_uid`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_bool_uid.spec.xrep section=after_fetch class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_admin=$specification_\0_admin arg_system=$specification_\0_system`}\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_init=$specification_\0_init\
+ arg_admin=$specification_\0_admin arg_system=$specification_\0_system`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_concat`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_concat.spec.xrep section=after_fetch class_name=$class_name\
@@ -2204,6 +2205,11 @@ void `{`$full_class_name`}::impl::post_init( )
 `@eq`(`'\1`'`,`'transient_field_bool_is_in_op`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_bool_is_in_op.spec.xrep section=post_init class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_value=$specification_\0_value`}
+`,\
+`@eq`(`'\1`'`,`'transient_field_bool_uid`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
+`{`#transient_field_bool_uid.spec.xrep section=post_init class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_init=$specification_\0_init\
+ arg_admin=$specification_\0_admin arg_system=$specification_\0_system`}
 `,\
 `@eq`(`'\1`'`,`'transient_field_concat`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_concat.spec.xrep section=post_init class_name=$class_name\
