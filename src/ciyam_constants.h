@@ -33,6 +33,7 @@ const char* const c_ellipsis = "...";
 
 const char* const c_watching = "[watching]";
 const char* const c_finishing = "[finishing]";
+const char* const c_suspended = "[suspended]";
 
 const char c_key_exchange_suffix = '*';
 

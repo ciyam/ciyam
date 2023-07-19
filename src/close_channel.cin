@@ -29,6 +29,7 @@ IDENTITY=$2
 @else
 .system_variable @opened_files
 OPENED_FILES=$OUTPUT
+.notifier -suspend $OPENED_FILES/$IDENTITY
 @ifdef $CIYAM_USER
 ~sudo chown -R $CIYAM_USER:www $OPENED_FILES/$IDENTITY
 @endif

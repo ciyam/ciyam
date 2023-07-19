@@ -465,6 +465,38 @@ system_variable *test1/xxx*
 @:test1/xxx/000001 test1/xxx/111
 test1/xxx/ [000000]none
 test1/xxx/111 [000001]deleted
+notifier -finish test1/xxx
+~touch test1/xxx/111
+notifier -start test1/xxx
+system_variable *test1/xxx*
+@:test1/xxx/ [watching]
+@:test1/xxx/000000 test1/xxx/
+@:test1/xxx/000001 test1/xxx/111
+test1/xxx/ [000000]none
+test1/xxx/111 [000001]none
+notifier -suspend test1/xxx
+~touch test1/xxx/111
+system_variable *test1/xxx*
+@:test1/xxx/ [suspended]
+@:test1/xxx/000000 test1/xxx/
+@:test1/xxx/000001 test1/xxx/111
+test1/xxx/ [000000]none
+test1/xxx/111 [000001]none
+notifier -unsuspend test1/xxx
+~touch test1/xxx/111
+system_variable *test1/xxx*
+@:test1/xxx/ [watching]
+@:test1/xxx/000000 test1/xxx/
+@:test1/xxx/000001 test1/xxx/111
+test1/xxx/ [000000]none
+test1/xxx/111 [000001]#modified
+~rm test1/xxx/111
+system_variable *test1/xxx*
+@:test1/xxx/ [watching]
+@:test1/xxx/000000 test1/xxx/
+@:test1/xxx/000001 test1/xxx/111
+test1/xxx/ [000000]none
+test1/xxx/111 [000001]deleted
 notifier -finish test1
 ~rmdir test1/xxx
 file_put 1K*test.jpg test
