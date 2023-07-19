@@ -121,12 +121,11 @@ export CIYAM_USER=admin
 echo 'export CIYAM_USER=admin' >> .bashrc
 echo 'export CIYAM_USER=admin' >> .profile
 
-Change default group to "www" then add the "users" and "vboxsf" groups
-----------------------------------------------------------------------
+Change default group to "www" then add the "users" group
+--------------------------------------------------------
 sudo usermod -g www admin
 newgrp - www
 sudo usermod -a -G users admin
-sudo usermod -a -G vboxsf admin
 
 (to confirm logout and back in then type "groups" and touch a new file)
 
