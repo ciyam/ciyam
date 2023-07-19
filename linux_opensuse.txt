@@ -134,6 +134,15 @@ sudo chmod a+rx /home/admin
 sudo chmod g+w /srv/www/htdocs
 sudo chown wwwrun:www /srv/www/htdocs
 
+(if initially created may want to remove the following folders)
+rmdir Documents
+rmdir Downloads
+rmdir Music
+rmdir Pictures
+rmdir Public
+rmdir Videos
+rmdir Templates
+
 Create backup staging area ext4 file system and automount entry
 ---------------------------------------------------------------
 sudo fallocate -l 10M backup.img
