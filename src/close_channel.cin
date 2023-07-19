@@ -27,6 +27,11 @@ IDENTITY=$2
 @ifdef $ERROR
 .system_variable @error_$IDENTITY "$ERROR"
 @else
+.system_variable @opened_files
+OPENED_FILES=$OUTPUT
+@ifdef $CIYAM_USER
+~sudo chown -R $CIYAM_USER:www $OPENED_FILES/$IDENTITY
+@endif
 .storage_channel_documents -close $IDENTITY
 @ifdef $ERROR
 .system_variable @error_$IDENTITY "$ERROR"

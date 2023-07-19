@@ -81,6 +81,8 @@ if [ ! -f ~shared ]; then
 
  sudo chown root:root $SHARED_IMAGE
  sudo mount $SHARED_IMAGE $SHARED_PATH
+ sudo chown -R $USER:www $SHARED_PATH
+ sudo chmod -R o-rx $SHARED_PATH
 
  echo `date +%s` > $IMPORTED_TIME_FILE
 
