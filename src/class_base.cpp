@@ -3165,7 +3165,7 @@ void add_user( const string* p_user_id )
 
 string generate_password( const string& user_id )
 {
-   string pwd( uuid( ).as_string( ) );
+   string pwd( base64::encode( hex_decode( uuid( ).as_string( ) ), true ) );
 
    string user( get_environment_variable( c_env_var_ciyam_user ) );
 
