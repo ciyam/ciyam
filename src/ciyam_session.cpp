@@ -5617,6 +5617,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool is_start = has_parm_val( parameters, c_cmd_ciyam_session_system_notifier_start );
          bool is_finish = has_parm_val( parameters, c_cmd_ciyam_session_system_notifier_finish );
+         bool is_suspend = has_parm_val( parameters, c_cmd_ciyam_session_system_notifier_suspend );
+         bool is_unsuspend = has_parm_val( parameters, c_cmd_ciyam_session_system_notifier_unsuspend );
          string file_or_directory( get_parm_val( parameters, c_cmd_ciyam_session_system_notifier_file_or_directory ) );
 
          if( is_finish )
@@ -5631,6 +5633,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( !get_raw_system_variable( var_name ).empty( ) )
             {
                set_system_variable( var_name, c_finishing, c_watching );
+               set_system_variable( var_name, c_finishing, c_suspended );
 
                bool okay = false;
 
@@ -5648,6 +5651,26 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !okay )
                   throw runtime_error( "system variable not cleared for '" + file_or_directory + "'" );
             }
+         }
+         else if( is_suspend )
+         {
+            string var_name( c_notifier_prefix + file_or_directory );
+
+            if( get_raw_system_variable( var_name ).empty( ) )
+               var_name += '/';
+
+            if( get_raw_system_variable( var_name ) == c_watching )
+               set_system_variable( var_name, c_suspended );
+         }
+         else if( is_unsuspend )
+         {
+            string var_name( c_notifier_prefix + file_or_directory );
+
+            if( get_raw_system_variable( var_name ).empty( ) )
+               var_name += '/';
+
+            if( get_raw_system_variable( var_name ) == c_suspended )
+               set_system_variable( var_name, c_watching );
          }
          else
          {

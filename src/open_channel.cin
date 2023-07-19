@@ -37,12 +37,12 @@ OPENED_FILES=$OUTPUT
 ~sudo chmod -R o-rx $OPENED_FILES/$IDENTITY
 .system_variable @opening_user_$IDENTITY
 @ifdef $OUTPUT
-~chown -R $OUTPUT:users $OPENED_FILES/$IDENTITY
+~sudo chown -R $OUTPUT:users $OPENED_FILES/$IDENTITY
 @endif
 @endif
 .system_variable @opened_$IDENTITY 1
 ;
-notifier -start $OPENED_FILES/$IDENTITY
+.notifier -start $OPENED_FILES/$IDENTITY
 @ifdef $ERROR
 .system_variable @error_$IDENTITY "$ERROR"
 @endif

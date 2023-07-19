@@ -373,7 +373,8 @@ void ciyam_notifier::on_start( )
 
             vector< string > all_events;
 
-            split( events, all_events, '\n' );
+            if( get_system_variable( watch_variable_name ) != c_suspended )
+               split( events, all_events, '\n' );
 
             events.erase( );
 
