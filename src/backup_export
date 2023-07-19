@@ -60,6 +60,8 @@ if [ ! -f ~backup ]; then
 
  sudo chown root:root $BACKUP_IMAGE
  sudo mount $BACKUP_IMAGE $BACKUP_PATH
+ sudo chown -R $USER:www $BACKUP_PATH
+ sudo chmod -R o-rx $BACKUP_PATH
 
  BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_backup_height`
 
