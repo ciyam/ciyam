@@ -10615,6 +10615,13 @@ bool storage_channel_documents_opened( const string& identity )
 
             if( dir_exists( identity_directory ) )
             {
+               string user( file_user( identity_directory ) );
+
+               // NOTE: Restores the "@opened_user_<identity>" system
+               // variable (that was set in the "open_channel" script).
+               set_system_variable( get_special_var_name(
+                e_special_var_opened_user ) + '_' + identity, user );
+
                temporary_session_variable tmp_style_extended(
                 get_special_var_name( e_special_var_style_extended ), c_true_value );
 
@@ -11071,6 +11078,9 @@ void set_uid( const string& uid )
    {
       gtp_session->uid = s;
       set_session_variable( get_special_var_name( e_special_var_uid ), user_key );
+
+      if( pos != string::npos )
+         set_session_variable( get_special_var_name( e_special_var_user ), s.substr( pos + 1 ) );
    }
 }
 

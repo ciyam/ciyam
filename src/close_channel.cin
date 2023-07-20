@@ -38,6 +38,8 @@ OPENED_FILES=$OUTPUT
 .system_variable @error_$IDENTITY "$ERROR"
 @else
 .notifier -finish $OPENED_FILES/$IDENTITY
+;
+.system_variable @opened_user_$IDENTITY ""
 .system_variable @opened_$IDENTITY ""
 @endif
 .storage_term

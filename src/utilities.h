@@ -359,6 +359,12 @@ inline int64_t file_size( const std::string& name, unsigned char* p_hdr = 0, siz
    return file_size( name.c_str( ), p_hdr, hdr_size );
 }
 
+std::string file_user( const char* p_name );
+inline std::string file_user( const std::string& name ) { return file_user( name.c_str( ) ); }
+
+std::string file_group( const char* p_name );
+inline std::string file_group( const std::string& name ) { return file_group( name.c_str( ) ); }
+
 std::string file_perms( const char* p_name );
 inline std::string file_perms( const std::string& name ) { return file_perms( name.c_str( ) ); }
 

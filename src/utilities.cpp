@@ -22,6 +22,8 @@
 #  include <stdexcept>
 #  include <sys/stat.h>
 #  ifdef __GNUG__
+#     include <grp.h>
+#     include <pwd.h>
 #     include <fcntl.h>
 #     include <utime.h>
 #     include <unistd.h>
@@ -532,6 +534,48 @@ int64_t file_size( const char* p_name, unsigned char* p_hdr, size_t hdr_size )
 #endif
 
    return retval;
+}
+
+string file_user( const char* p_name )
+{
+   string str;
+   struct stat statbuf;
+   int rc = stat( p_name, &statbuf );
+
+   if( rc != 0 )
+      throw runtime_error( "unable to stat '" + to_string( p_name ) + "'" );
+
+#ifdef __GNUG__
+   struct passwd* p_passwd = getpwuid( statbuf.st_uid );
+
+   if( p_passwd )
+      str = p_passwd->pw_name;
+#else
+#  error need getpwuid equivelent for this compiler
+#endif
+
+   return str;
+}
+
+string file_group( const char* p_name )
+{
+   string str;
+   struct stat statbuf;
+   int rc = stat( p_name, &statbuf );
+
+   if( rc != 0 )
+      throw runtime_error( "unable to stat '" + to_string( p_name ) + "'" );
+
+#ifdef __GNUG__
+   struct group* p_group = getgrgid( statbuf.st_gid );
+
+   if( p_group )
+      str = p_group->gr_name;
+#else
+#  error need getpwuid equivelent for this compiler
+#endif
+
+   return str;
 }
 
 string file_perms( const char* p_name )

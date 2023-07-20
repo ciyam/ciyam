@@ -71,6 +71,7 @@ const char* const c_special_variable_port = "@port";
 const char* const c_special_variable_size = "@size";
 const char* const c_special_variable_slot = "@slot";
 const char* const c_special_variable_type = "@type";
+const char* const c_special_variable_user = "@user";
 const char* const c_special_variable_uuid = "@uuid";
 const char* const c_special_variable_algos = "@algos";
 const char* const c_special_variable_array = "@array";
@@ -132,6 +133,7 @@ const char* const c_special_variable_application = "@application";
 const char* const c_special_variable_errors_only = "@errors_only";
 const char* const c_special_variable_file_hashes = "@file_hashes";
 const char* const c_special_variable_init_log_id = "@init_log_id";
+const char* const c_special_variable_opened_user = "@opened_user";
 const char* const c_special_variable_output_file = "@output_file";
 const char* const c_special_variable_path_prefix = "@path_prefix";
 const char* const c_special_variable_permissions = "@permissions";
@@ -356,6 +358,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_type:
       s = string( c_special_variable_type );
+      break;
+
+      case e_special_var_user:
+      s = string( c_special_variable_user );
       break;
 
       case e_special_var_uuid:
@@ -600,6 +606,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_init_log_id:
       s = string( c_special_variable_init_log_id );
+      break;
+
+      case e_special_var_opened_user:
+      s = string( c_special_variable_opened_user );
       break;
 
       case e_special_var_output_file:
