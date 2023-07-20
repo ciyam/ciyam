@@ -45,6 +45,13 @@ OPENED_FILES=$OUTPUT
 .storage_term
 @endif
 ;
+@ifndef $ERROR
+.system_variable @shared_secret_$IDENTITY
+@ifdef $OUTPUT
+<<prepare_for_channel.cin $STORAGE $IDENTITY
+@endif
+@endif
+;
 .system_variable @closing_$IDENTITY ""
 @endif
 ;

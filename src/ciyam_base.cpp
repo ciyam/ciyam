@@ -10583,6 +10583,75 @@ void storage_channel_documents_close( const char* p_identity )
    delete_directory_files( path, true );
 }
 
+bool storage_channel_documents_marked( const string& identity )
+{
+   bool retval = false;
+
+   if( !identity.empty( ) )
+   {
+      guard g( g_mutex );
+
+      if( !gtp_session || !gtp_session->p_storage_handler->get_ods( ) )
+         throw runtime_error( "no storage is currently linked" );
+
+      string storage_name( gtp_session->p_storage_handler->get_name( ) );
+
+      if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
+         throw runtime_error( "invalid non-peerchain storage '" + storage_name + "' for check opened documents" );
+
+      string opened_variable_name( get_special_var_name( e_special_var_opened ) + '_' + identity );
+
+      if( !get_raw_system_variable( opened_variable_name ).empty( ) )
+      {
+         string prefix( get_raw_system_variable(
+          get_special_var_name( e_special_var_opened_files ) ) + '/' + identity + '/' );
+
+         string all_selected;
+
+         string all_file_lines( get_raw_system_variable( prefix + "?*" ) );
+
+         vector< string > file_lines;
+
+         split( all_file_lines, file_lines, '\n' );
+
+         for( size_t i = 0; i < file_lines.size( ); i++ )
+         {
+            string next_line( file_lines[ i ] );
+
+            if( !next_line.empty( ) )
+            {
+               string next_name, next_value;
+
+               next_name = variable_name_from_name_and_value( next_line, &next_value );
+
+               if( next_name.find( prefix ) == 0 )
+                  next_name.erase( 0, prefix.length( ) );
+
+               if( !next_value.empty( ) && next_value[ 0 ] == '[' )
+               {
+                  string::size_type pos = next_value.find( ']' );
+
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected next_value '" + next_value + "' in storage_channel_documents_close" );
+
+                  next_value.erase( 0, pos + 1 );
+               }
+
+               string next_selected;
+
+               if( !next_value.empty( ) && ( next_value[ 0 ] == c_notifier_select_char ) )
+               {
+                  retval = true;
+                  break;
+               }
+            }
+         }
+      }
+   }
+
+   return retval;
+}
+
 bool storage_channel_documents_opened( const string& identity )
 {
    bool retval = false;

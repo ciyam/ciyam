@@ -24,6 +24,9 @@ HEIGHT=@$HEIGHT+1
 .system_variable @preparing_$IDENTITY $HEIGHT
 ;
 .storage_init $STORAGE
+@ifdef $ERROR
+.system_variable @error_$IDENTITY "$ERROR"
+@else
 .storage_channel_documents -prepare_for_submit $IDENTITY
 @ifdef $OUTPUT
 BLOCKCHAIN=$OUTPUT
@@ -33,6 +36,8 @@ ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 <<generate_next_block.cin $BLOCKCHAIN @sid $BLOCKCHAIN.tree
 <<block_tree_relegate.cin $BLOCKCHAIN $BLOCKCHAIN.tree
 .system_variable @shared_secret_$IDENTITY ""
+@endif
+.storage_term
 @endif
 .system_variable @preparing_$IDENTITY ""
 ;
