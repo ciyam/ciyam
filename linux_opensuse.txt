@@ -52,6 +52,7 @@ Install all required packages for CIYAM Software Manufacturing
 sudo zypper install make
 sudo zypper install gcc-c++
 sudo zypper install git-core
+sudo zypper install qrencode
 sudo zypper install png++-devel
 sudo zypper install libharu-devel
 sudo zypper install readline-devel
