@@ -33,11 +33,12 @@ IDENTITY=$2
 @else
 .system_variable @opened_files
 OPENED_FILES=$OUTPUT
+.system_variable @opening_user_$IDENTITY
+OPENING_USER=$OUTPUT
 @ifdef $CIYAM_USER
 ~sudo chmod -R o-rx $OPENED_FILES/$IDENTITY
-.system_variable @opening_user_$IDENTITY
-@ifdef $OUTPUT
-~sudo chown -R $OUTPUT:users $OPENED_FILES/$IDENTITY
+@ifdef $OPENING_USER
+~sudo chown -R $OPENING_USER:users $OPENED_FILES/$IDENTITY
 @endif
 @endif
 .system_variable @opened_$IDENTITY 1
@@ -51,6 +52,8 @@ OPENED_FILES=$OUTPUT
 @endif
 ;
 .system_variable @opening_user_$IDENTITY ""
+.system_variable @opened_user_$IDENTITY $OPENING_USER
+;
 .system_variable @opening_$IDENTITY ""
 @endif
 ;
