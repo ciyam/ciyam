@@ -589,9 +589,6 @@ std::string CIYAM_BASE_DECL_SPEC storage_module_directory( );
 std::string CIYAM_BASE_DECL_SPEC storage_web_root( bool expand, bool check_is_linked = false );
 void CIYAM_BASE_DECL_SPEC storage_web_root( const std::string& new_root );
 
-void CIYAM_BASE_DECL_SPEC storage_process_undo(
- uint64_t new_height, std::map< std::string, std::string >& file_info );
-
 void CIYAM_BASE_DECL_SPEC storage_lock_all_tables( );
 void CIYAM_BASE_DECL_SPEC storage_unlock_all_tables( );
 
@@ -1011,9 +1008,6 @@ void CIYAM_BASE_DECL_SPEC insert_log_blobs_into_tree( const std::string& tree_ta
 
 void CIYAM_BASE_DECL_SPEC append_transaction_log_lines_to_blob_files( const std::string& log_blog_file_prefix,
  const std::vector< std::string >& log_lines, bool is_restoring = false, bool remove_existing_blobs = false );
-
-void CIYAM_BASE_DECL_SPEC append_transaction_for_blockchain_application(
- const std::string& application, const std::string& transaction_hash );
 
 class CIYAM_BASE_DECL_SPEC transaction
 {
