@@ -419,7 +419,6 @@ std::string CIYAM_BASE_DECL_SPEC get_default_storage( );
 void CIYAM_BASE_DECL_SPEC set_default_storage( const std::string& name );
 
 std::string CIYAM_BASE_DECL_SPEC get_session_blockchain( );
-bool CIYAM_BASE_DECL_SPEC get_session_is_using_blockchain( );
 
 unsigned int CIYAM_BASE_DECL_SPEC get_num_sessions_for_blockchain( const std::string& blockchain );
 
@@ -427,6 +426,8 @@ inline bool any_session_has_blockchain( const std::string& blockchain )
 {
    return ( get_num_sessions_for_blockchain( blockchain ) > 0 );
 }
+
+bool CIYAM_BASE_DECL_SPEC get_storage_using_verbose_logging( );
 
 unsigned int CIYAM_BASE_DECL_SPEC get_session_timeout( );
 void CIYAM_BASE_DECL_SPEC set_session_timeout( unsigned int seconds );

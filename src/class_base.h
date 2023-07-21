@@ -1529,8 +1529,7 @@ std::string CIYAM_BASE_DECL_SPEC remove_html_scripts( const std::string& html );
 
 std::string CIYAM_BASE_DECL_SPEC convert_html_to_text( const std::string& html );
 
-std::string CIYAM_BASE_DECL_SPEC create_html_embedded_image(
- const std::string& source_file, bool is_encrypted = false );
+std::string CIYAM_BASE_DECL_SPEC create_html_embedded_image( const std::string& source_file );
 
 std::string CIYAM_BASE_DECL_SPEC crypto_digest( const std::string& data,
  bool use_sha512 = false, bool decode_hex_data = false, size_t extra_rounds = 0, const std::string* p_update = 0 );

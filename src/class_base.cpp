@@ -5015,7 +5015,7 @@ string convert_html_to_text( const string& html )
    return extract_text_from_html( html );
 }
 
-string create_html_embedded_image( const string& source_file, bool is_encrypted )
+string create_html_embedded_image( const string& source_file )
 {
    string s, file_ext;
    string::size_type pos = source_file.find( "." );
@@ -5024,21 +5024,6 @@ string create_html_embedded_image( const string& source_file, bool is_encrypted 
    {
       file_ext = source_file.substr( pos + 1 );
       string buffer( buffer_file( source_file ) );
-
-      if( is_encrypted )
-      {
-         string uid( get_raw_session_variable( get_special_var_name( e_special_var_uid ) ) );
-         string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
-         stringstream sstr( buffer );
-
-         string key( harden_key_with_hash_rounds(
-          get_crypt_key_for_blockchain_account( blockchain, uid ), file_name_without_path( source_file, true ) ) );
-
-         crypt_stream( sstr, key );
-
-         buffer = sstr.str( );
-      }
 
       s = "data:image/" + file_ext + ";base64," + base64::encode( buffer );
    }
