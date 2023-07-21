@@ -74,7 +74,7 @@ namespace
 
 #include "ciyam_constants.h"
 
-const string c_nul_key( 1, '\0' );
+const string c_null_key( 1, '\0' );
 
 const char c_module_prefix_separator = '_';
 const char c_module_order_prefix_separator = '.';
@@ -134,8 +134,6 @@ const char* const c_server_command_sessions = "sessions";
 const char* const c_channel_files = ".files";
 const char* const c_channel_fetch = ".fetch";
 
-const char* const c_channel_readme = "README.md";
-
 const char* const c_channel_fetched = "fetched";
 const char* const c_channel_updated = "updated";
 const char* const c_channel_prepared = "prepared";
@@ -144,6 +142,9 @@ const char* const c_channel_submitted = "submitted";
 const char* const c_channel_selections = "selections";
 
 const char* const c_channel_folder_ciyam = ".ciyam";
+
+const char* const c_channel_readme_file = "README.md";
+const char* const c_channel_readme_source = "channel_readme.md";
 
 const char* const c_section_mbox = "mbox";
 const char* const c_section_pop3 = "pop3";
@@ -1879,6 +1880,8 @@ void perform_storage_op( storage_op op,
             import_objects( ofs, name );
 
             tx.commit( );
+
+            delete_directory_files( name, true );
          }
 
          if( ap_ods->is_new( ) && !has_exported_objects )
@@ -3915,7 +3918,7 @@ void append_transaction_log_command( storage_handler& handler,
     && ( log_even_when_locked || handler.get_alternative_log_file( ) || !handler.get_is_locked_for_admin( ) ) )
    {
       string log_filename( handler.get_name( ) );
-      log_filename += ".log";
+      log_filename += c_log_file_ext;
 
       bool is_new = false;
       if( !file_exists( log_filename ) )
@@ -4019,7 +4022,7 @@ void append_transaction_log_command( storage_handler& handler,
          is_restoring = true;
 
       if( gtp_session->has_ciyam_logs_list_tag )
-         append_transaction_log_lines_to_blob_files( handler.get_name( ) + ".log", tx_log_lines, is_restoring );
+         append_transaction_log_lines_to_blob_files( handler.get_name( ) + c_log_file_ext, tx_log_lines, is_restoring );
 
       log_file.flush( );
       if( !log_file.good( ) )
@@ -8734,10 +8737,10 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
          ofs.store_as_text_file( c_storable_file_name_trunc_n,
           gtp_session->p_storage_handler->get_root( ).truncation_count );
 
-         string truncated_log_name( handler.get_name( ) + ".log" + osstr.str( ) );
+         string truncated_log_name( handler.get_name( ) + c_log_file_ext + osstr.str( ) );
 
          file_remove( truncated_log_name );
-         file_rename( handler.get_name( ) + ".log", truncated_log_name );
+         file_rename( handler.get_name( ) + c_log_file_ext, truncated_log_name );
 
          transaction_log_command( ";truncated at "
           + date_time::local( ).as_string( e_time_format_hhmmss, true ) );
@@ -9062,7 +9065,7 @@ void slice_storage_log( command_handler& cmd_handler, const string& name, const 
                throw runtime_error( "unable to open '" + next_log_file_name + "' for output" );
          }
 
-         string log_file_name( name + ".log" );
+         string log_file_name( name + c_log_file_ext );
          ifstream inpf( log_file_name.c_str( ) );
 
          if( !inpf )
@@ -9192,8 +9195,8 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
       if( !has_ltf_entries )
          remove_file( new_ltf_file_name );
 
-      string log_file_name( name + ".log" );
-      string new_log_file_name( name + ".log.new" );
+      string log_file_name( name + c_log_file_ext );
+      string new_log_file_name( log_file_name + ".new" );
 
       ifstream logs( log_file_name.c_str( ) );
       if( !logs )
@@ -9213,7 +9216,7 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
       {
          for( size_t i = 0; i < module_list.size( ); i++ )
          {
-            string next_log_file_name( module_list[ i ] + ".log" );
+            string next_log_file_name( module_list[ i ] + c_log_file_ext );
             module_log_files.push_back( make_pair( new ifstream( next_log_file_name.c_str( ) ), "" ) );
          }
 
@@ -9554,7 +9557,7 @@ void storage_process_undo( uint64_t new_height, map< string, string >& file_info
       }
    }
 
-   string log_name( gtp_session->p_storage_handler->get_name( ) + ".log" );
+   string log_name( gtp_session->p_storage_handler->get_name( ) + c_log_file_ext );
    string new_log_name( log_name + ".new" );
 
    if( file_exists( new_undo_sql ) )
@@ -9742,7 +9745,9 @@ void storage_channel_create( const char* p_identity, const char* p_channel_infor
    ofs.add_folder( identity );
 
    ofs.set_folder( identity );
-   ofs.add_file( c_channel_readme, "channel_readme.md" );
+
+   string perms( "r--r-----" );
+   ofs.add_file( c_channel_readme_file, c_channel_readme_source, 0, 0, 0, &perms );
 
    ofs.add_folder( c_channel_folder_ciyam );
    ofs.set_folder( c_channel_folder_ciyam );
@@ -12568,7 +12573,7 @@ string exec_bulk_ops( const string& module,
       if( !inpf )
          throw runtime_error( "unable to open '" + filename + "' for input" );
 
-      string log_file_name( filename.substr( 0, filename.find_last_of( "." ) ) + ".log" );
+      string log_file_name( filename.substr( 0, filename.find_last_of( "." ) ) + c_log_file_ext );
       outf.open( log_file_name.c_str( ), ios::out );
       if( !outf )
          throw runtime_error( "unable to open '" + log_file_name + "' for output" );
@@ -14930,7 +14935,7 @@ bool perform_instance_iterate( class_base& instance,
       throw runtime_error( "cannot begin iteration whilst currently perfoming an instance operation" );
    else
    {
-      if( row_limit >= 0 && key_info != c_nul_key )
+      if( row_limit >= 0 && key_info != c_null_key )
       {
          vector< string > field_info;
          vector< string > order_info;
@@ -15276,7 +15281,7 @@ bool perform_instance_iterate( class_base& instance,
                limit = row_cache_limit;
 
             string start_from( key_info );
-            if( key_info == c_nul_key )
+            if( key_info == c_null_key )
                start_from = instance.get_key( );
 
             if( persistence_type == 1 )
@@ -15421,12 +15426,12 @@ bool perform_instance_iterate( class_base& instance,
                + to_string( persistence_type ) + " in perform_instance_iterate" );
 
          // NOTE: Put a dummy row at the end to stop iteration.
-         if( query_finished && ( found_next || key_info != c_nul_key ) )
+         if( query_finished && ( found_next || key_info != c_null_key ) )
             rows.push_back( vector< string >( ) );
 
          instance_accessor.row_cache( ) = rows;
 
-         if( key_info == c_nul_key )
+         if( key_info == c_null_key )
          {
             if( !found_next )
                found = false;
@@ -15512,6 +15517,6 @@ bool perform_instance_iterate_next( class_base& instance )
    if( found || cache_depleted )
       return found;
    else
-      return perform_instance_iterate( instance, c_nul_key, "", "", "", "",
+      return perform_instance_iterate( instance, c_null_key, "", "", "", "",
        instance.get_is_in_forwards_iteration( ) ? e_iter_direction_forwards : e_iter_direction_backwards, false, -1 );
 }

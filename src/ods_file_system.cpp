@@ -859,7 +859,7 @@ void ods_file_system::branch_folders( const string& expr, ostream& os, branch_st
 }
 
 void ods_file_system::add_file( const string& name,
- const string& source, ostream* p_os, istream* p_is, progress* p_progress )
+ const string& source, ostream* p_os, istream* p_is, progress* p_progress, const string* p_perms )
 {
    string file_name( source );
 
@@ -930,7 +930,7 @@ void ods_file_system::add_file( const string& name,
             {
                if( file_name != "*" )
                {
-                  tmp_item.set_perms( file_perms( file_name ) );
+                  tmp_item.set_perms( p_perms ? *p_perms : file_perms( file_name ) );
 
                   // NOTE: Omits the unix time for regression tests.
                   if( !p_impl->for_regression_tests )
