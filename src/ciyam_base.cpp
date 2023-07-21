@@ -1316,6 +1316,7 @@ struct scoped_lock_holder
    }
 
    storage_handler& handler;
+
    size_t lock_handle;
 };
 
@@ -3893,16 +3894,6 @@ void append_undo_sql_statements( storage_handler& handler )
       ofstream outf( undo_sql_filename.c_str( ), ios::out | ios::app );
       if( !outf )
          throw runtime_error( "unable to open '" + undo_sql_filename + "' for output" );
-
-      string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
-      if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
-      {
-         string filename( handler.get_name( ) + ".txs.log" );
-
-         if( !file_exists( filename ) )
-            outf << "#" << c_block_prefix << ' ' << c_unconfirmed_revision << '\n';
-      }
 
       for( size_t i = 0; i < gtp_session->sql_undo_statements.size( ); i++ )
          outf << escaped( gtp_session->sql_undo_statements[ i ], "\"", c_nul, "rn\r\n" ) << '\n';
@@ -9363,18 +9354,6 @@ void storage_identity( const string& new_identity )
    gtp_session->p_storage_handler->get_root( ).identity = new_identity;
 }
 
-string storage_blockchain( )
-{
-   string s, identity( storage_identity( ) );
-
-   string::size_type pos = identity.find( ':' );
-
-   if( pos != string::npos )
-      s = identity.substr( pos + 1 );
-
-   return s;
-}
-
 string storage_module_directory( )
 {
    return gtp_session->p_storage_handler->get_root( ).module_directory;
@@ -9415,204 +9394,6 @@ void storage_web_root( const string& new_root )
       gtp_session->transaction_log_command = ";web_root ==> " + new_root;
       append_transaction_log_command( *gtp_session->p_storage_handler );
    }
-}
-
-void storage_process_undo( uint64_t new_height, map< string, string >& file_info )
-{
-   guard g( g_mutex );
-
-   storage_handler& handler( *gtp_session->p_storage_handler );
-
-   string undo_sql( gtp_session->p_storage_handler->get_name( ) + ".undo.sql" );
-   string local_txs( gtp_session->p_storage_handler->get_name( ) + ".txs.log" );
-
-   string new_undo_sql( undo_sql + ".new" );
-
-   bool okay = true;
-   bool local_only = false;
-
-   // NOTE: If the request was to undo local txs then only proceed if there are any.
-   if( new_height == c_unconfirmed_revision )
-   {
-      if( !file_exists( local_txs ) )
-         okay = false;
-      else
-         local_only = true;
-   }
-
-   if( okay && gtp_session->ap_db.get( ) )
-   {
-      ifstream inpf( undo_sql.c_str( ) );
-      if( !inpf )
-         throw runtime_error( "unable to open file '" + undo_sql + "' for input in storage_process_undo" );
-
-      ofstream outf( new_undo_sql.c_str( ) );
-      if( !outf )
-         throw runtime_error( "unable to open file '" + new_undo_sql + "' for output in storage_process_undo" );
-
-      deque< string > undo_statements;
-
-      string block_marker( "#" + string( c_block_prefix ) + " " );
-
-      string next;
-      bool found_rewind_point = false;
-      while( getline( inpf, next ) )
-      {
-         string::size_type pos = next.find( block_marker );
-         if( pos == 0 )
-         {
-            if( !found_rewind_point )
-            {
-               uint64_t height = from_string< uint64_t >( next.substr( pos + block_marker.size( ) ) );
-
-               if( height >= new_height )
-                  found_rewind_point = true;
-            }
-         }
-         else if( found_rewind_point )
-            undo_statements.push_front( next );
-
-         if( !found_rewind_point )
-            outf << next << '\n';
-      }
-
-      if( !found_rewind_point )
-         throw runtime_error( "unexpected rewind point " + to_string( new_height ) + " not found" );
-
-      outf.flush( );
-      if( !outf.good( ) )
-         throw runtime_error( "*** unexpected error occurred writing to new undo sql ***" );
-
-      inpf.close( );
-      outf.close( );
-
-      string storage_files_dir( get_web_root( ) );
-      storage_files_dir += '/' + lower( gtp_session->p_storage_handler->get_name( ) ) + '/' + string( c_files_directory );
-
-      for( size_t i = 0; i < undo_statements.size( ); i++ )
-      {
-         string next_statement( unescaped( undo_statements[ i ], "rn\r\n" ) );
-
-         if( !next_statement.empty( ) && next_statement[ 0 ] == '#' )
-         {
-            if( next_statement.find( c_file_kill_command ) == 1 )
-            {
-               // NOTE: Expected format is: #file_kill <hash> <module_id> <class_id> <filename>
-               vector< string > parts;
-               split( next_statement, parts, ' ' );
-
-               if( parts.size( ) != 5 )
-                  throw runtime_error( "invalid file_kill: " + next_statement );
-
-               file_info[ storage_files_dir + '/' + parts[ 2 ] + '/' + parts[ 3 ] + '/' + parts[ 4 ] ] = string( );
-            }
-            else if( next_statement.find( c_file_copy_command ) == 1 )
-            {
-               // NOTE: Expected format is: #file_copy <hash> <module_id> <class_id> <filename>
-               vector< string > parts;
-               split( next_statement, parts, ' ' );
-
-               if( parts.size( ) != 5 )
-                  throw runtime_error( "invalid file_copy: " + next_statement );
-
-               file_info[ storage_files_dir + '/' + parts[ 2 ] + '/' + parts[ 3 ] + '/' + parts[ 4 ] ] = parts[ 1 ];
-            }
-
-            continue;
-         }
-
-         TRACE_LOG( TRACE_SQLSTMTS, next_statement );
-         exec_sql( *gtp_session->ap_db, next_statement );
-      }
-   }
-
-   string log_name( gtp_session->p_storage_handler->get_name( ) + c_log_file_ext );
-   string new_log_name( log_name + ".new" );
-
-   if( file_exists( new_undo_sql ) )
-   {
-      remove_file( undo_sql );
-      rename_file( new_undo_sql, undo_sql );
-
-      if( handler.get_log_file( ).is_open( ) )
-         handler.get_log_file( ).close( );
-
-      ifstream inpf( log_name.c_str( ) );
-      if( !inpf )
-         throw runtime_error( "unable to open '" + log_name + "' for input" );
-
-      ofstream outf( new_log_name.c_str( ) );
-      if( !outf )
-         throw runtime_error( "unable to open '" + new_log_name + "' for output" );
-
-      string block_marker( ";" + string( c_block_prefix ) + " " );
-
-      string next;
-      bool finished = false;
-      while( getline( inpf, next ) )
-      {
-         string::size_type pos = next.find( ']' );
-         if( pos != string::npos && next.find( block_marker ) == pos + 1 )
-         {
-            uint64_t block = from_string< uint64_t >( next.substr( pos + block_marker.length( ) ) );
-
-            if( block >= new_height )
-               finished = true;
-         }
-
-         if( finished )
-         {
-            if( pos != string::npos && !local_only )
-               outf << next.substr( 0, pos + 1 ) << ";rewind " << to_string( new_height ) << "\n";
-            break;
-         }
-
-         outf << next << '\n';
-      }
-
-      outf.flush( );
-      if( !outf.good( ) )
-         throw runtime_error( "*** unexpected error occurred writing to new transaction log ***" );
-
-      inpf.close( );
-      outf.close( );
-   }
-
-   if( file_exists( new_log_name ) )
-   {
-#ifdef _WIN32
-      // NOTE: Due to file locking inheritence in Win32 if this function is called from a script
-      // then it may not be possible to delete or rename the application log file so instead the
-      // file is truncated then the new content copied.
-      ofstream outf( log_name.c_str( ), ios::out | ios::trunc );
-      if( !outf )
-         throw runtime_error( "unable to open '" + log_name + "' for output" );
-
-      ifstream inpf( new_log_name.c_str( ) );
-
-      string next;
-      while( getline( inpf, next ) )
-         outf << next << '\n';
-
-      outf.flush( );
-      if( !outf.good( ) )
-         throw runtime_error( "*** unexpected error occurred writing to application log ***" );
-
-      inpf.close( );
-      outf.close( );
-
-      remove_file( new_log_name );
-#else
-      remove_file( log_name );
-      rename_file( new_log_name, log_name );
-#endif
-   }
-
-   if( file_exists( local_txs ) )
-      remove_file( local_txs );
-
-   if( file_exists( local_txs + ".new" ) )
-      rename_file( local_txs + ".new", local_txs );
 }
 
 void storage_lock_all_tables( )
@@ -13445,10 +13226,10 @@ string instance_get_fields_and_values( size_t handle, const string& context, con
    class_base& instance( get_class_base_from_handle( handle, context ) );
    class_base_accessor instance_accessor( instance );
 
-   bool is_traditional_app( storage_blockchain( ).empty( ) );
+   bool using_verbose_logging = get_storage_using_verbose_logging( );
 
    return instance.get_fields_and_values(
-    is_traditional_app ? class_base::e_field_label_type_full_id : class_base::e_field_label_type_short_id );
+    using_verbose_logging ? class_base::e_field_label_type_full_id : class_base::e_field_label_type_short_id );
 }
 
 bool instance_persistence_type_is_sql( size_t handle )
@@ -13808,17 +13589,6 @@ void transaction_log_command( const string& log_command,
    }
    else
    {
-      string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
-      if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
-      {
-         string filename( gtp_session->p_storage_handler->get_name( ) + ".txs.log" );
-
-         if( !file_exists( filename ) )
-            gtp_session->transaction_log_command = ';'
-             + string( c_block_prefix ) + ' ' + to_string( c_unconfirmed_revision );
-      }
-
       if( replace_current )
          gtp_session->transaction_log_command = log_command;
       else
@@ -13936,24 +13706,6 @@ void append_transaction_log_lines_to_blob_files(
              true, c_ciyam_logs_tag + separator + log_blob_file_prefix, c_ciyam_logs_tag, "" );
       }
    }
-}
-
-void append_transaction_for_blockchain_application(
- const string& application, const string& transaction_hash )
-{
-   guard g( g_mutex );
-
-   string filename( application + ".txs.log" );
-
-   ofstream outf( filename.c_str( ), ios::out | ios::app );
-   if( !outf )
-      throw runtime_error( "unable to open '" + filename + "' for append" );
-
-   outf << transaction_hash << '\n';
-
-   outf.flush( );
-   if( !outf.good( ) )
-      throw runtime_error( "*** unexpected error occurred appending local tx hash ***" );
 }
 
 transaction::transaction( bool is_not_dummy )
