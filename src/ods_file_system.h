@@ -174,17 +174,18 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    }
 
    void add_file( const std::string& name, const std::string& source,
-    std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 );
+    std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0, const std::string* p_perms = 0 );
 
    inline void add_file( const std::string& name,
-    std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 )
+    std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0, const std::string* p_perms = 0 )
    {
-      add_file( name, "", p_os, p_is, p_progress );
+      add_file( name, "", p_os, p_is, p_progress, p_perms );
    }
 
-   inline void add_file( const std::string& name, std::istream* p_is, progress* p_progress = 0 )
+   inline void add_file( const std::string& name,
+    std::istream* p_is, progress* p_progress = 0, const std::string* p_perms = 0 )
    {
-      add_file( name, "", 0, p_is, p_progress );
+      add_file( name, "", 0, p_is, p_progress, p_perms );
    }
 
    void get_file( const std::string& name,
