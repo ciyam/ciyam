@@ -737,7 +737,9 @@ class storage_handler
     p_bulk_write( 0 ),
     next_lock_handle( 1 ),
     p_alternative_log_file( 0 ),
-    is_locked_for_admin( false )
+    is_locked_for_admin( false ),
+    has_sql_undo_support( false ),
+    uses_verbose_logging( true )
    {
    }
 
@@ -761,7 +763,9 @@ class storage_handler
    storage_root& get_root( ) { return root; }
    const storage_root& get_root( ) const { return root; }
 
-   bool is_using_blockchain( ) const { return root.identity.find( ':' ) != string::npos; }
+   bool supports_sql_undo( ) const { return has_sql_undo_support; }
+
+   bool is_using_verbose_logging( ) const { return uses_verbose_logging; }
 
    bool get_is_locked_for_admin( ) const { return is_locked_for_admin; }
    void set_is_locked_for_admin( bool lock_for_admin = true ) { is_locked_for_admin = lock_for_admin; }
@@ -814,6 +818,8 @@ class storage_handler
    size_t next_lock_handle;
 
    bool is_locked_for_admin;
+   bool has_sql_undo_support;
+   bool uses_verbose_logging;
 
    mutable mutex lock_mutex;
    mutable mutex cache_mutex;
@@ -1352,8 +1358,6 @@ const char* const c_ciyam_storage_name = "ciyam";
 
 const char* const c_default_storage_name = "<none>";
 const char* const c_default_storage_identity = "<default>";
-
-map< string, map< string, string > > g_crypt_keys;
 
 auto_ptr< ods > gap_ods;
 auto_ptr< ods_file_system > gap_ofs;
@@ -7162,11 +7166,6 @@ string get_session_blockchain( )
    return gtp_session->blockchain;
 }
 
-bool get_session_is_using_blockchain( )
-{
-   return gtp_session->p_storage_handler->is_using_blockchain( );
-}
-
 unsigned int get_num_sessions_for_blockchain( const string& blockchain )
 {
    guard g( g_session_mutex );
@@ -7183,6 +7182,11 @@ unsigned int get_num_sessions_for_blockchain( const string& blockchain )
    }
 
    return num_sessions;
+}
+
+bool get_storage_using_verbose_logging( )
+{
+   return gtp_session->p_storage_handler->is_using_verbose_logging( );
 }
 
 void add_peer_file_hash_for_get( const string& hash,
@@ -7686,16 +7690,6 @@ string get_raw_session_variable( const string& name, size_t sess_id )
       }
       else if( name == get_special_var_name( e_special_var_storage ) )
          retval = get_default_storage( );
-      else if( name == get_special_var_name( e_special_var_crypt_key ) )
-      {
-         if( gtp_session
-          && gtp_session->variables.count( get_special_var_name( e_special_var_uid ) )
-          && gtp_session->variables.count( get_special_var_name( e_special_var_blockchain ) )
-          && has_crypt_key_for_blockchain_account(
-          gtp_session->variables[ get_special_var_name( e_special_var_blockchain ) ],
-          gtp_session->variables[ get_special_var_name( e_special_var_uid ) ] ) )
-            retval = c_true_value;
-      }
    }
 
    if( gtp_session && !name.empty( ) && name[ 0 ] == '@' )
@@ -8505,31 +8499,6 @@ string get_udp_recv_file_chunk_info( size_t& chunk, bool chunk_specified, size_t
    return retval;
 }
 
-bool has_crypt_key_for_blockchain_account( const string& blockchain, const string& account )
-{
-   guard g( g_mutex );
-
-   return g_crypt_keys[ blockchain ].count( account );
-}
-
-string get_crypt_key_for_blockchain_account( const string& blockchain, const string& account )
-{
-   guard g( g_mutex );
-
-   return g_crypt_keys[ blockchain ][ account ];
-}
-
-void set_crypt_key_for_blockchain_account(
- const string& blockchain, const string& account, const string& crypt_key )
-{
-   guard g( g_mutex );
-
-   if( crypt_key.empty( ) && g_crypt_keys[ blockchain ].count( account ) )
-      g_crypt_keys[ blockchain ].erase( account );
-
-   g_crypt_keys[ blockchain ][ account ] = crypt_key;
-}
-
 void init_storage( const string& name,
  const string& directory, command_handler& cmd_handler, bool lock_for_admin )
 {
@@ -8889,7 +8858,7 @@ void storage_comment( const string& comment )
             append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id + 1 );
       }
 
-      if( handler.is_using_blockchain( ) )
+      if( handler.supports_sql_undo( ) )
       {
          string block_comment( string( c_block_prefix ) + ' ' );
          string file_copy_comment( string( c_file_copy_command ) + ' ' );
@@ -12546,7 +12515,7 @@ string exec_bulk_ops( const string& module,
       module_id = gtp_session->modules_by_name.find( module )->second;
    }
 
-   bool is_using_blockchain = gtp_session->p_storage_handler->is_using_blockchain( );
+   bool is_using_verbose_logging = gtp_session->p_storage_handler->is_using_verbose_logging( );
 
    string class_id = get_class_id_for_id_or_name( module_id, mclass );
 
@@ -12901,10 +12870,10 @@ string exec_bulk_ops( const string& module,
 
             if( !destroy_record && !found_instance )
             {
-               if( has_key_field )
-                  key = values[ key_field_num ];
+               if( !has_key_field )
+                  key = gen_key( "" );
                else
-                  key = gen_key( "", !is_using_blockchain );
+                  key = values[ key_field_num ];
 
                op_create_rc rc;
                op_instance_create( handle, "", key, false, &rc );
@@ -12928,7 +12897,7 @@ string exec_bulk_ops( const string& module,
 
             string class_id_to_log( class_id );
 
-            if( is_using_blockchain && class_id_to_log.find( module_id ) == 0 )
+            if( !is_using_verbose_logging && class_id_to_log.find( module_id ) == 0 )
                class_id_to_log.erase( 0, module_id.length( ) );
 
             next_log_line += " " + uid + " " + dtm + " " + module_id + " " + class_id_to_log + " " + key;
@@ -12959,7 +12928,7 @@ string exec_bulk_ops( const string& module,
 
                   string value;
 
-                  if( is_using_blockchain )
+                  if( !is_using_verbose_logging )
                   {
                      string method_name_and_args( "get " );
                      method_name_and_args += fields[ i ];
@@ -12967,9 +12936,9 @@ string exec_bulk_ops( const string& module,
                      value = execute_object_command( handle, "", method_name_and_args );
                   }
 
-                  // NOTE: Field values that are unchanged are omitted from the log as are values
-                  // for all transient fields (unless used with initial data).
-                  if( !is_using_blockchain
+                  // NOTE: If not using verbose logging then field values that are unchanged are omitted from
+                  // logging along with values for all transient fields (unless being used with initial data).
+                  if( is_using_verbose_logging
                    || ( ( !is_transient || is_init_uid( ) ) && value != values[ i ] ) )
                   {
                      string method_name_and_args( "set " );
@@ -12983,9 +12952,10 @@ string exec_bulk_ops( const string& module,
 
                      string field_id_to_log( fields[ i ] );
 
-                     if( is_using_blockchain && field_id_to_log.find( module_id ) == 0 )
+                     if( !is_using_verbose_logging && field_id_to_log.find( module_id ) == 0 )
                      {
                         field_id_to_log.erase( 0, module_id.length( ) );
+
                         if( field_id_to_log.find( class_id_to_log ) == 0 )
                            field_id_to_log.erase( 0, class_id_to_log.length( ) );
                      }
@@ -13006,9 +12976,10 @@ string exec_bulk_ops( const string& module,
 
                   string field_id_to_log( fixed_fields[ i ] );
 
-                  if( is_using_blockchain && field_id_to_log.find( module_id ) == 0 )
+                  if( !is_using_verbose_logging && field_id_to_log.find( module_id ) == 0 )
                   {
                      field_id_to_log.erase( 0, module_id.length( ) );
+
                      if( field_id_to_log.find( class_id_to_log ) == 0 )
                         field_id_to_log.erase( 0, class_id_to_log.length( ) );
                   }
@@ -13612,7 +13583,7 @@ void transaction_commit( )
 
    storage_handler& handler( *gtp_session->p_storage_handler );
 
-   bool is_using_blockchain = handler.is_using_blockchain( );
+   bool supports_sql_undo = handler.supports_sql_undo( );
 
    // NOTE: Scope for guard object.
    {
@@ -13628,7 +13599,7 @@ void transaction_commit( )
          if( gtp_session->p_tx_helper )
             gtp_session->p_tx_helper->at_commit( );
 
-         if( is_using_blockchain && !is_init_uid( ) )
+         if( supports_sql_undo && !is_init_uid( ) )
             append_undo_sql_statements( handler );
 
          append_transaction_log_command( handler );
@@ -14569,7 +14540,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             }
          }
 
-         bool is_using_blockchain = handler.is_using_blockchain( );
+         bool supports_sql_undo = handler.supports_sql_undo( );
 
          if( persistence_type == 0 ) // i.e. SQL persistence
          {
@@ -14578,7 +14549,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
             vector< string >* p_sql_undo_stmts = 0;
 
-            if( is_using_blockchain )
+            if( supports_sql_undo )
                p_sql_undo_stmts = &sql_undo_stmts;
 
             if( !instance_accessor.get_sql_stmts( sql_stmts, gtp_session->tx_key_info, p_sql_undo_stmts ) )
@@ -14607,7 +14578,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
             executing_sql = false;
 
-            if( is_using_blockchain )
+            if( supports_sql_undo )
                gtp_session->sql_undo_statements.insert(
                 gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
          }

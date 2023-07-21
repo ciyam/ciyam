@@ -891,7 +891,8 @@ void import_package( const string& module,
  const string& replace_info, const string& skip_field_info, bool new_only, bool for_remove )
 {
    string module_id( loaded_module_id( module ) );
-   bool is_using_blockchain = get_session_is_using_blockchain( );
+
+   bool using_verbose_logging = get_storage_using_verbose_logging( );
 
    map< string, map< string, string > > skip_fields;
    read_skip_fields( module_id, skip_field_info, skip_fields );
@@ -976,7 +977,7 @@ void import_package( const string& module,
          }
 
          if( replace_with == c_key_field )
-            replace_with = gen_key( "", !is_using_blockchain );
+            replace_with = gen_key( "", true );
          else
          {
             while( search_replaces_map.count( replace_with ) )
@@ -1245,7 +1246,7 @@ void import_package( const string& module,
 
                      string class_id_to_log( mclass );
 
-                     if( is_using_blockchain && class_id_to_log.find( module_id ) == 0 )
+                     if( !using_verbose_logging && class_id_to_log.find( module_id ) == 0 )
                         class_id_to_log.erase( 0, module_id.length( ) );
 
                      next_log_line += " " + uid + " " + dtm + " "
@@ -1283,7 +1284,7 @@ void import_package( const string& module,
 
                         string value;
 
-                        if( is_using_blockchain )
+                        if( !using_verbose_logging )
                         {
                            string method_name_and_args( "get " );
                            method_name_and_args += fields[ i ];
@@ -1291,7 +1292,7 @@ void import_package( const string& module,
                            value = execute_object_command( handle, "", method_name_and_args );
                         }
 
-                        if( !is_using_blockchain || value != field_values[ i ] )
+                        if( using_verbose_logging || value != field_values[ i ] )
                         {
                            string method_name_and_args( "set " );
                            method_name_and_args += fields[ i ] + " ";
@@ -1302,9 +1303,10 @@ void import_package( const string& module,
 
                            string field_id_to_log( fields[ i ] );
 
-                           if( is_using_blockchain && field_id_to_log.find( module_id ) == 0 )
+                           if( !using_verbose_logging && field_id_to_log.find( module_id ) == 0 )
                            {
                               field_id_to_log.erase( 0, module_id.length( ) );
+
                               if( field_id_to_log.find( class_id_to_log ) == 0 )
                                  field_id_to_log.erase( 0, class_id_to_log.length( ) );
                            }
