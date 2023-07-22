@@ -8851,7 +8851,7 @@ void storage_comment( const string& comment )
 
       if( handler.supports_sql_undo( ) )
       {
-         string block_comment( string( c_block_prefix ) + ' ' );
+         string block_comment( string( c_label_prefix ) + ' ' );
          string file_copy_comment( string( c_file_copy_command ) + ' ' );
          string file_kill_comment( string( c_file_kill_command ) + ' ' );
 
@@ -8888,6 +8888,185 @@ void storage_comment( const string& comment )
              + replace( new_comment, file_kill_comment, file_copy_comment ) );
          }
       }
+   }
+}
+
+void storage_process_undo( const string& label, map< string, string >& file_info )
+{
+   guard g( g_mutex );
+
+   storage_handler& handler( *gtp_session->p_storage_handler );
+
+   string undo_sql( gtp_session->p_storage_handler->get_name( ) + ".undo.sql" );
+
+   string new_undo_sql( undo_sql + ".new" );
+
+   bool okay = true;
+
+   if( okay && gtp_session->ap_db.get( ) )
+   {
+      ifstream inpf( undo_sql.c_str( ) );
+      if( !inpf )
+         throw runtime_error( "unable to open file '" + undo_sql + "' for input in storage_process_undo" );
+
+      ofstream outf( new_undo_sql.c_str( ) );
+      if( !outf )
+         throw runtime_error( "unable to open file '" + new_undo_sql + "' for output in storage_process_undo" );
+
+      deque< string > undo_statements;
+
+      string block_marker( "#" + string( c_label_prefix ) + " " );
+
+      string next;
+      bool found_rewind_point = false;
+
+      while( getline( inpf, next ) )
+      {
+         string::size_type pos = next.find( block_marker );
+         if( pos == 0 )
+         {
+            if( !found_rewind_point )
+            {
+               if( label == next.substr( pos + block_marker.size( ) ) )
+                  found_rewind_point = true;
+            }
+         }
+         else if( found_rewind_point )
+            undo_statements.push_front( next );
+
+         if( !found_rewind_point )
+            outf << next << '\n';
+      }
+
+      if( !found_rewind_point )
+         throw runtime_error( "unexpected rewind point " + label + " not found" );
+
+      outf.flush( );
+      if( !outf.good( ) )
+         throw runtime_error( "*** unexpected error occurred writing to new undo sql ***" );
+
+      inpf.close( );
+      outf.close( );
+
+      string storage_files_dir( get_web_root( ) );
+      storage_files_dir += '/' + lower( gtp_session->p_storage_handler->get_name( ) ) + '/' + string( c_files_directory );
+
+      for( size_t i = 0; i < undo_statements.size( ); i++ )
+      {
+         string next_statement( unescaped( undo_statements[ i ], "rn\r\n" ) );
+
+         if( !next_statement.empty( ) && next_statement[ 0 ] == '#' )
+         {
+            if( next_statement.find( c_file_kill_command ) == 1 )
+            {
+               // NOTE: Expected format is: #file_kill <hash> <module_id> <class_id> <filename>
+               vector< string > parts;
+               split( next_statement, parts, ' ' );
+
+               if( parts.size( ) != 5 )
+                  throw runtime_error( "invalid file_kill: " + next_statement );
+
+               file_info[ storage_files_dir + '/' + parts[ 2 ] + '/' + parts[ 3 ] + '/' + parts[ 4 ] ] = string( );
+            }
+            else if( next_statement.find( c_file_copy_command ) == 1 )
+            {
+               // NOTE: Expected format is: #file_copy <hash> <module_id> <class_id> <filename>
+               vector< string > parts;
+               split( next_statement, parts, ' ' );
+
+               if( parts.size( ) != 5 )
+                  throw runtime_error( "invalid file_copy: " + next_statement );
+
+               file_info[ storage_files_dir + '/' + parts[ 2 ] + '/' + parts[ 3 ] + '/' + parts[ 4 ] ] = parts[ 1 ];
+            }
+
+            continue;
+         }
+
+         TRACE_LOG( TRACE_SQLSTMTS, next_statement );
+         exec_sql( *gtp_session->ap_db, next_statement );
+      }
+   }
+
+   string log_name( gtp_session->p_storage_handler->get_name( ) + c_log_file_ext );
+   string new_log_name( log_name + ".new" );
+
+   if( file_exists( new_undo_sql ) )
+   {
+      remove_file( undo_sql );
+      rename_file( new_undo_sql, undo_sql );
+
+      if( handler.get_log_file( ).is_open( ) )
+         handler.get_log_file( ).close( );
+
+      ifstream inpf( log_name.c_str( ) );
+      if( !inpf )
+         throw runtime_error( "unable to open '" + log_name + "' for input" );
+
+      ofstream outf( new_log_name.c_str( ) );
+      if( !outf )
+         throw runtime_error( "unable to open '" + new_log_name + "' for output" );
+
+      string block_marker( ";" + string( c_label_prefix ) + " " );
+
+      string next;
+      bool finished = false;
+
+      while( getline( inpf, next ) )
+      {
+         string::size_type pos = next.find( ']' );
+         if( pos != string::npos && next.find( block_marker ) == pos + 1 )
+         {
+            if( label == next.substr( pos + block_marker.length( ) ) )
+               finished = true;
+         }
+
+         if( finished )
+         {
+            if( pos != string::npos )
+               outf << next.substr( 0, pos + 1 ) << ";rewind " << label << "\n";
+            break;
+         }
+
+         outf << next << '\n';
+      }
+
+      outf.flush( );
+      if( !outf.good( ) )
+         throw runtime_error( "*** unexpected error occurred writing to new transaction log ***" );
+
+      inpf.close( );
+      outf.close( );
+   }
+
+   if( file_exists( new_log_name ) )
+   {
+#ifdef _WIN32
+      // NOTE: Due to file locking inheritence in Win32 if this function is called from a script
+      // then it may not be possible to delete or rename the application log file so instead the
+      // file is truncated then the new content copied.
+      ofstream outf( log_name.c_str( ), ios::out | ios::trunc );
+      if( !outf )
+         throw runtime_error( "unable to open '" + log_name + "' for output" );
+
+      ifstream inpf( new_log_name.c_str( ) );
+
+      string next;
+      while( getline( inpf, next ) )
+         outf << next << '\n';
+
+      outf.flush( );
+      if( !outf.good( ) )
+         throw runtime_error( "*** unexpected error occurred writing to application log ***" );
+
+      inpf.close( );
+      outf.close( );
+
+      remove_file( new_log_name );
+#else
+      remove_file( log_name );
+      rename_file( new_log_name, log_name );
+#endif
    }
 }
 
