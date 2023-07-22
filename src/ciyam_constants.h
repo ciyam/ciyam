@@ -142,9 +142,6 @@ const char* const c_label_prefix = "label";
 
 const char* const c_files_directory = "files";
 
-const char* const c_file_copy_command = "file_copy";
-const char* const c_file_kill_command = "file_kill";
-
 const char* const c_application_script_prefix = "app_script:";
 
 const size_t c_peer_sleep_time = 500; // i.e. 0.5 secs

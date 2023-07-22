@@ -8849,13 +8849,11 @@ void storage_comment( const string& comment )
 
       if( handler.supports_sql_undo( ) )
       {
-         string block_comment( string( c_label_prefix ) + ' ' );
-         string file_copy_comment( string( c_file_copy_command ) + ' ' );
-         string file_kill_comment( string( c_file_kill_command ) + ' ' );
+         string label_comment( string( c_label_prefix ) + ' ' );
 
          string new_comment( comment );
 
-         if( comment.find( block_comment ) == 0 )
+         if( comment.find( label_comment ) == 0 )
          {
             if( storage_locked_for_admin( ) && identity.next_id + 1 >= c_tx_id_standard )
                gtp_session->sql_undo_statements.push_back( "#" + comment );
@@ -8874,16 +8872,6 @@ void storage_comment( const string& comment )
                if( !outf.good( ) )
                   throw runtime_error( "*** unexpected error occurred writing to undo sql ***" );
             }
-         }
-         else if( comment.find( file_copy_comment ) == 0 )
-         {
-            gtp_session->sql_undo_statements.push_back( "#"
-             + replace( new_comment, file_copy_comment, file_kill_comment ) );
-         }
-         else if( comment.find( file_kill_comment ) == 0 )
-         {
-            gtp_session->sql_undo_statements.push_back( "#"
-             + replace( new_comment, file_kill_comment, file_copy_comment ) );
          }
       }
    }
@@ -8953,36 +8941,11 @@ void storage_process_undo( const string& label, map< string, string >& file_info
       {
          string next_statement( unescaped( undo_statements[ i ], "rn\r\n" ) );
 
-         if( !next_statement.empty( ) && next_statement[ 0 ] == '#' )
+         if( !next_statement.empty( ) )
          {
-            if( next_statement.find( c_file_kill_command ) == 1 )
-            {
-               // NOTE: Expected format is: #file_kill <hash> <module_id> <class_id> <filename>
-               vector< string > parts;
-               split( next_statement, parts, ' ' );
-
-               if( parts.size( ) != 5 )
-                  throw runtime_error( "invalid file_kill: " + next_statement );
-
-               file_info[ storage_files_dir + '/' + parts[ 2 ] + '/' + parts[ 3 ] + '/' + parts[ 4 ] ] = string( );
-            }
-            else if( next_statement.find( c_file_copy_command ) == 1 )
-            {
-               // NOTE: Expected format is: #file_copy <hash> <module_id> <class_id> <filename>
-               vector< string > parts;
-               split( next_statement, parts, ' ' );
-
-               if( parts.size( ) != 5 )
-                  throw runtime_error( "invalid file_copy: " + next_statement );
-
-               file_info[ storage_files_dir + '/' + parts[ 2 ] + '/' + parts[ 3 ] + '/' + parts[ 4 ] ] = parts[ 1 ];
-            }
-
-            continue;
+            TRACE_LOG( TRACE_SQLSTMTS, next_statement );
+            exec_sql( *gtp_session->ap_db, next_statement );
          }
-
-         TRACE_LOG( TRACE_SQLSTMTS, next_statement );
-         exec_sql( *gtp_session->ap_db, next_statement );
       }
    }
 
