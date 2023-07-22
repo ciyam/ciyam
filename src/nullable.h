@@ -14,7 +14,7 @@
 
 #  define ALLOW_NULL_EQUALITY
 
-const char* const c_null_output_value = "<nul>";
+const char* const c_null_output_value = "<null>";
 const char* const c_null_exception_message = "is null";
 
 template< typename T > class nullable

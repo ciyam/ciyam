@@ -127,4 +127,3 @@ void execute_command( date_time& n, const string& cmd_and_args, string& retval )
 
    retval = cmd_handler.get_retval( );
 }
-

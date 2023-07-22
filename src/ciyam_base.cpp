@@ -220,6 +220,9 @@ const char* const c_expand_store = "%store%";
 const char* const c_uid_anon = "anon";
 const char* const c_uid_unknown = "<unknown>";
 
+const char* const c_meta_storage_name = "Meta";
+const char* const c_ciyam_storage_name = "ciyam";
+
 const char* const c_dead_keys_ext = ".dead_keys.lst";
 
 const char* const c_default_pem_password = "password";
@@ -764,7 +767,7 @@ class storage_handler
 
    bool supports_sql_undo( ) const { return has_sql_undo_support; }
 
-   bool is_using_verbose_logging( ) const { return ( root.type == e_storage_type_standard ); }
+   bool is_using_verbose_logging( ) const { return ( name == c_meta_storage_name ); }
 
    bool get_is_locked_for_admin( ) const { return is_locked_for_admin; }
    void set_is_locked_for_admin( bool lock_for_admin = true ) { is_locked_for_admin = lock_for_admin; }
@@ -1351,9 +1354,6 @@ size_t g_files_area_item_max_size = c_files_area_item_max_size_default;
 
 size_t g_num_recv_stream_sessions = c_num_recv_stream_sessions_default;
 size_t g_num_send_stream_sessions = c_num_send_stream_sessions_default;
-
-const char* const c_meta_storage_name = "Meta";
-const char* const c_ciyam_storage_name = "ciyam";
 
 const char* const c_default_storage_name = "<none>";
 const char* const c_default_storage_identity = "<default>";
@@ -12470,6 +12470,7 @@ string exec_bulk_ops( const string& module,
    }
 
    size_t handle = create_object_instance( module_id, class_id, 0, false );
+
    try
    {
       vector< string > fields;
@@ -12545,10 +12546,10 @@ string exec_bulk_ops( const string& module,
             vector< string > fixed_field_value_pairs;
             split( fixed_field_values, fixed_field_value_pairs );
 
-            string::size_type pos;
             for( size_t i = 0; i < fixed_field_value_pairs.size( ); i++ )
             {
-               pos = fixed_field_value_pairs[ i ].find( '=' );
+               string::size_type pos = fixed_field_value_pairs[ i ].find( '=' );
+
                if( pos == string::npos )
                   throw runtime_error( "unexpected field=value pair format '" + fixed_field_value_pairs[ i ] + "'" );
 
@@ -12558,7 +12559,9 @@ string exec_bulk_ops( const string& module,
          }
 
          string next;
+
          size_t errors = 0;
+
          bool is_first = true;
          bool can_fetch = false;
          bool has_key_field = false;
@@ -12640,13 +12643,14 @@ string exec_bulk_ops( const string& module,
             if( next.empty( ) )
                continue;
 
-            bool destroy_record( destroy_records );
+            bool destroy_record = destroy_records;
 
             size_t num_values = 0;
             vector< string > values;
 
             size_t continuation_offset = 0;
             bool last_value_incomplete = false;
+
             while( true )
             {
                num_values = split_csv_values( next, values, last_value_incomplete, continuation_offset );
@@ -12700,8 +12704,10 @@ string exec_bulk_ops( const string& module,
             }
 
             string next_log_line;
+
             bool found_instance = false;
             bool skipping_fk_checks = false;
+
             if( can_fetch )
             {
                string key_info;
@@ -12711,8 +12717,10 @@ string exec_bulk_ops( const string& module,
                else
                {
                   size_t num_fixed = 0;
+
                   string key_info_fields;
                   string key_info_values;
+
                   for( size_t i = 0; i < num_values; i++ )
                   {
                      if( sorted_key_fields.count( fields[ i ] ) )
@@ -12828,42 +12836,53 @@ string exec_bulk_ops( const string& module,
                next_log_line += " ";
 
                string log_field_value_pairs;
+
                for( size_t i = 0; i < num_values; i++ )
                {
                   if( ( has_key_field && i == key_field_num ) || fields[ i ] == c_ignore_field )
                      continue;
 
                   bool is_transient = false;
+                  bool was_date_time = false;
 
-                  string type_name = get_field_type_name( handle, "", fields[ i ], &is_transient );
+                  string type_name( get_field_type_name( handle, "", fields[ i ], &is_transient ) );
 
-                  if( !values[ i ].empty( )
-                   && ( type_name == "date_time" || type_name == "tdatetime" ) )
+                  if( type_name == "date_time" || type_name == "tdatetime" )
                   {
-                     // NOTE: If a date_time string starts with 'U' then it is considered as already being UTC.
-                     if( values[ i ][ 0 ] == 'U' )
-                        values[ i ].erase( 0, 1 );
-                     else if( !tz_name.empty( ) )
-                        values[ i ] = local_to_utc( date_time( values[ i ] ), tz_name ).as_string( );
+                     was_date_time = true;
+
+                     if( !values[ i ].empty( ) )
+                     {
+                        // NOTE: If a date_time string starts with 'U' then it is considered as already being UTC.
+                        if( values[ i ][ 0 ] == 'U' )
+                           values[ i ].erase( 0, 1 );
+                        else if( !tz_name.empty( ) )
+                           values[ i ] = local_to_utc( date_time( values[ i ] ), tz_name ).as_string( );
+                     }
                   }
 
-                  string value;
+                  string value, method_name_and_args( "get " );
 
                   if( !is_using_verbose_logging )
                   {
-                     string method_name_and_args( "get " );
                      method_name_and_args += fields[ i ];
 
                      value = execute_object_command( handle, "", method_name_and_args );
+
+                     if( !value.empty( ) && was_date_time )
+                     {
+                        method_name_and_args = "cmd " + fields[ i ] + " raw";
+                        value = execute_object_command( handle, "", method_name_and_args );
+                     }
                   }
 
-                  // NOTE: If not using verbose logging then field values that are unchanged are omitted from
-                  // logging along with values for all transient fields (unless being used with initial data).
-                  if( is_using_verbose_logging
-                   || ( ( !is_transient || is_init_uid( ) ) && value != values[ i ] ) )
+                  // NOTE: If not using verbose logging then unchanged field values will be omitted.
+                  if( is_using_verbose_logging || ( value != values[ i ] ) )
                   {
                      string method_name_and_args( "set " );
+
                      method_name_and_args += fields[ i ] + " ";
+
                      method_name_and_args += "\"" + escaped( escaped( values[ i ] ), "\"", c_nul ) + "\"";
 
                      execute_object_command( handle, "", method_name_and_args );
@@ -12889,7 +12908,9 @@ string exec_bulk_ops( const string& module,
                for( size_t i = 0; i < fixed_fields.size( ); i++ )
                {
                   string method_name_and_args( "set " );
+
                   method_name_and_args += fixed_fields[ i ] + " ";
+
                   method_name_and_args += "\"" + escaped( escaped( fixed_values[ i ] ), "\"", c_nul ) + "\"";
 
                   if( !log_field_value_pairs.empty( ) )
