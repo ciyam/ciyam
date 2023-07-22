@@ -3291,6 +3291,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( !method.empty( ) )
                transaction_start( );
 
+            bool using_verbose_logging = get_storage_using_verbose_logging( );
+
             size_t handle = create_object_instance( module, mclass, 0, false );
 
             try
@@ -3325,13 +3327,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   {
                      bool is_encrypted = false;
                      bool is_transient = false;
+                     bool was_date_time = false;
 
                      string type_name( get_field_type_name( handle, "", i->first, &is_encrypted, &is_transient ) );
 
-                     if( !i->second.empty( ) && !tz_name.empty( ) )
+                     if( !i->second.empty( ) )
                      {
                         if( type_name == "date_time" || type_name == "tdatetime" )
-                           i->second = convert_local_to_utc( i->second, tz_name );
+                        {
+                           was_date_time = true;
+
+                           if( !tz_name.empty( ) )
+                              i->second = convert_local_to_utc( i->second, tz_name );
+                        }
                      }
 
                      if( !is_system_uid( ) && !storage_locked_for_admin( ) )
@@ -3346,7 +3354,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         check_instance_field_permission( module, handle, true, scope_and_perm_info );
                      }
 
-                     string value, method_name_and_args( "set " );
+                     string value, method_name_and_args;
+
+                     if( !using_verbose_logging )
+                     {
+                        method_name_and_args = string( was_date_time ? "cmd " : "get " );
+                        method_name_and_args += i->first;
+
+                        if( was_date_time )
+                           method_name_and_args += " raw";
+
+                        value = execute_object_command( handle, "", method_name_and_args );
+                     }
+
+                     method_name_and_args = "set ";
 
                      method_name_and_args += i->first + " ";
                      method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
@@ -3354,6 +3375,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      execute_object_command( handle, "", method_name_and_args );
 
                      fields_set.insert( i->first );
+
+                     if( !using_verbose_logging )
+                     {
+                        // NOTE: Field values that are the same as the default ones are omitted from the log
+                        // as are values for all transient fields (unless used with initial data).
+                        if( ( !is_transient || is_init_uid( ) ) && value != i->second )
+                        {
+                           if( !field_values_to_log.empty( ) )
+                              field_values_to_log += ",";
+
+                           string field_id( get_shortened_field_id( module, mclass, i->first ) );
+
+                           field_values_to_log += field_id + '=';
+                           field_values_to_log += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
+                        }
+                     }
                   }
                }
 
@@ -3361,6 +3398,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   check_instance_op_permission( module, handle, get_create_instance_info( handle, "" ) );
 
                remove_uid_extra_from_log_command( next_command );
+
+               if( !using_verbose_logging )
+               {
+                  replace_field_values_to_log( next_command, field_values_to_log );
+                  replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
+               }
 
                if( instance_persistence_type_is_sql( handle ) )
                   transaction_log_command( next_command );
@@ -3511,6 +3554,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             size_t handle = create_object_instance( module, mclass,
              0, get_module_class_has_derivations( module, mclass ) );
 
+            bool using_verbose_logging = get_storage_using_verbose_logging( );
+
             try
             {
                set_dtm( dtm );
@@ -3519,11 +3564,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_class( mclass );
                set_module( module );
                set_tz_name( tz_name );
-
-               vector< string > file_info;
-               vector< string > file_names;
-               vector< string > file_hashes;
-               vector< string > files_to_remove;
 
                map< string, string > field_scope_and_perm_info_by_id;
                map< string, string > field_scope_and_perm_info_by_name;
@@ -3575,14 +3615,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      bool is_encrypted = false;
                      bool is_transient = false;
                      bool is_file_field = false;
+                     bool was_date_time = false;
 
                      string type_name( get_field_type_name(
                       handle, "", i->first, &is_encrypted, &is_transient, &is_file_field ) );
 
-                     if( !i->second.empty( ) && !tz_name.empty( ) )
+                     if( !i->second.empty( ) )
                      {
                         if( type_name == "date_time" || type_name == "tdatetime" )
-                           i->second = convert_local_to_utc( i->second, tz_name );
+                        {
+                           was_date_time = true;
+
+                           if( !tz_name.empty( ) )
+                              i->second = convert_local_to_utc( i->second, tz_name );
+                        }
                      }
 
                      if( !is_system_uid( ) && !storage_locked_for_admin( ) )
@@ -3597,7 +3643,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         check_instance_field_permission( module, handle, false, scope_and_perm_info );
                      }
 
-                     string method_name_and_args( "set " );
+                     string value, method_name_and_args;
+
+                     if( !using_verbose_logging )
+                     {
+                        method_name_and_args = string( was_date_time ? "cmd " : "get " );
+                        method_name_and_args += i->first;
+
+                        if( was_date_time )
+                           method_name_and_args += " raw";
+
+                        value = execute_object_command( handle, "", method_name_and_args );
+                     }
+
+                     method_name_and_args = "set ";
 
                      method_name_and_args += i->first + " ";
                      method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
@@ -3605,37 +3664,31 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      execute_object_command( handle, "", method_name_and_args );
 
                      fields_set.insert( i->first );
+
+                     if( !using_verbose_logging )
+                     {
+                        // NOTE: Field values that are the same as the default ones are omitted from the log
+                        // as are values for all transient fields (unless used with initial data).
+                        if( ( !is_transient || is_init_uid( ) ) && value != i->second )
+                        {
+                           if( !field_values_to_log.empty( ) )
+                              field_values_to_log += ",";
+
+                           string field_id( get_shortened_field_id( module, mclass, i->first ) );
+
+                           field_values_to_log += field_id + '=';
+                           field_values_to_log += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
+                        }
+                     }
                   }
                }
 
                remove_uid_extra_from_log_command( next_command );
 
-               if( !file_names.empty( ) )
+               if( !using_verbose_logging )
                {
-                  string all_file_names;
-
-                  for( size_t i = 0; i < file_names.size( ); i++ )
-                  {
-                     if( !all_file_names.empty( ) )
-                        all_file_names += "\n";
-                     all_file_names += file_names[ i ];
-                  }
-
-                  set_session_variable( get_special_var_name( e_special_var_file_names ), all_file_names );
-               }
-
-               if( !file_hashes.empty( ) )
-               {
-                  string all_file_hashes;
-
-                  for( size_t i = 0; i < file_hashes.size( ); i++ )
-                  {
-                     if( !all_file_hashes.empty( ) )
-                        all_file_hashes += "\n";
-                     all_file_hashes += file_hashes[ i ];
-                  }
-
-                  set_session_variable( get_special_var_name( e_special_var_file_hashes ), all_file_hashes );
+                  replace_field_values_to_log( next_command, field_values_to_log );
+                  replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
                }
 
                if( instance_persistence_type_is_sql( handle ) )
@@ -3652,9 +3705,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   response = instance_execute( handle, "", key, method_name );
                   transaction_commit( );
                }
-
-               for( size_t i = 0; i < files_to_remove.size( ); i++ )
-                  file_remove( files_to_remove[ i ] );
 
                destroy_object_instance( handle );
             }
@@ -3967,6 +4017,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             size_t handle = create_object_instance( module, mclass,
              0, get_module_class_has_derivations( module, mclass ) );
 
+            bool using_verbose_logging = get_storage_using_verbose_logging( );
+
             if( !instance_persistence_type_is_sql( handle ) )
                log_transaction = false;
 
@@ -4062,13 +4114,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      {
                         bool is_encrypted = false;
                         bool is_transient = false;
+                        bool was_date_time = false;
 
                         string type_name( get_field_type_name( handle, "", j->first, &is_encrypted, &is_transient ) );
 
-                        if( !j->second.empty( ) && !tz_name.empty( ) )
+                        if( !j->second.empty( ) )
                         {
                            if( type_name == "date_time" || type_name == "tdatetime" )
-                              j->second = convert_local_to_utc( j->second, tz_name );
+                           {
+                              was_date_time = true;
+
+                              if( !tz_name.empty( ) )
+                                 j->second = convert_local_to_utc( j->second, tz_name );
+                           }
                         }
 
                         if( !is_system_uid( ) && !storage_locked_for_admin( ) )
@@ -4083,17 +4141,59 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                            check_instance_field_permission( module, handle, true, scope_and_perm_info );
                         }
 
-                        string method_name_and_args( "set " );
+                        string value, method_name_and_args;
+
+                        if( !using_verbose_logging )
+                        {
+                           method_name_and_args = string( was_date_time ? "cmd " : "get " );
+                           method_name_and_args += j->first;
+
+                           if( was_date_time )
+                              method_name_and_args += " raw";
+
+                           value = execute_object_command( handle, "", method_name_and_args );
+                        }
+
+                        method_name_and_args = "set ";
+
                         method_name_and_args += j->first + " ";
                         method_name_and_args += "\"" + escaped( j->second, "\"", c_nul ) + "\"";
 
                         execute_object_command( handle, "", method_name_and_args );
+
+                        if( i == 0 && log_transaction && !using_verbose_logging )
+                        {
+                           // NOTE: Field values that are the same as the default ones are omitted from the log
+                           // as are values for all transient fields (unless used with initial data).
+                           if( ( !is_transient || is_init_uid( ) ) && value != j->second )
+                           {
+                              if( !field_values_to_log.empty( ) )
+                                 field_values_to_log += ",";
+
+                              string field_id( get_shortened_field_id( module, mclass, j->first ) );
+
+                              field_values_to_log += field_id + '=';
+                              field_values_to_log += escaped( escaped( j->second, "," ), ",\"", c_nul, "rn\r\n" );
+                           }
+                        }
                      }
                   }
 
                   if( i == 0 && log_transaction && !log_as_update )
                   {
                      remove_uid_extra_from_log_command( next_command );
+
+                     if( !using_verbose_logging )
+                     {
+                        string::size_type rpos = 0;
+
+                        if( !field_values_to_log.empty( ) )
+                           replace_field_values_to_log( next_command, field_values_to_log, "-v=", &rpos );
+
+                        replace_method_with_shortened_id( next_command, method, rpos, module, mclass, method_id );
+
+                        replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
+                     }
 
                      transaction_log_command( next_command );
                   }
