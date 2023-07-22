@@ -3964,9 +3964,9 @@ void append_transaction_log_command( storage_handler& handler,
       if( init_log_id == c_true || init_log_id == c_true_value )
          use_init_tx_id = true;
 
-      // NOTE: When log file is truncated during a backup no transaction is active, so
+      // NOTE: When log file is truncated during a backup no transaction is active so
       // change the tx id to 'initial' to ensure that a restore is able to understand
-      // it's dealing with a partial log file.
+      // it is dealing with a partial log file.
       if( use_tx_id )
          tx_id = use_tx_id;
       else if( load_module_id )
@@ -10969,18 +10969,19 @@ string gen_key( const char* p_suffix, bool append_slot_num )
    {
       date_time dtm( date_time::standard( ) );
 
-      if( !append_slot_num )
-         key = dtm.as_string( );
-      else
+      key = dtm.as_string( );
+
+      if( append_slot_num )
       {
          size_t num( gtp_session->slot );
 
          char sss[ ] = "sss";
+
          sss[ 0 ] = '0' + ( num / 100 );
          sss[ 1 ] = '0' + ( ( num % 100 ) / 10 );
          sss[ 2 ] = '0' + ( num % 10 );
 
-         key = dtm.as_string( ) + string( sss );
+         key += string( sss );
       }
 
       if( p_suffix )
