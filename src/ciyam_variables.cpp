@@ -123,7 +123,6 @@ const char* const c_special_variable_preparing = "@preparing";
 const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_blockchain = "@blockchain";
 const char* const c_special_variable_extra_info = "@extra_info";
-const char* const c_special_variable_file_names = "@file_names";
 const char* const c_special_variable_permission = "@permission";
 const char* const c_special_variable_queue_puts = "@queue_puts";
 const char* const c_special_variable_session_id = "@session_id";
@@ -131,7 +130,6 @@ const char* const c_special_variable_tag_prefix = "@tag_prefix";
 const char* const c_special_variable_allow_async = "@allow_async";
 const char* const c_special_variable_application = "@application";
 const char* const c_special_variable_errors_only = "@errors_only";
-const char* const c_special_variable_file_hashes = "@file_hashes";
 const char* const c_special_variable_init_log_id = "@init_log_id";
 const char* const c_special_variable_opened_user = "@opened_user";
 const char* const c_special_variable_output_file = "@output_file";
@@ -568,10 +566,6 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_extra_info );
       break;
 
-      case e_special_var_file_names:
-      s = string( c_special_variable_file_names );
-      break;
-
       case e_special_var_permission:
       s = string( c_special_variable_permission );
       break;
@@ -598,10 +592,6 @@ string get_special_var_name( special_var var )
 
       case e_special_var_errors_only:
       s = string( c_special_variable_errors_only );
-      break;
-
-      case e_special_var_file_hashes:
-      s = string( c_special_variable_file_hashes );
       break;
 
       case e_special_var_init_log_id:
