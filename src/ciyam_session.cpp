@@ -2930,7 +2930,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                // NOTE: Field values are being set here as they may be required for
                // determining details to be used for performing the iteration query.
                string method_name_and_args( "set " );
+
                method_name_and_args += i->first + " ";
+
                method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
 
                execute_object_command( handle, context, method_name_and_args );
@@ -2984,7 +2986,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   if( !i->first.empty( ) && i->first[ 0 ] != '@' )
                   {
                      string method_name_and_args( "set " );
+
                      method_name_and_args += i->first + " ";
+
                      method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
 
                      execute_object_command( handle, context, method_name_and_args );
@@ -3057,7 +3061,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         if( !i->first.empty( ) && i->first[ 0 ] != '@' )
                         {
                            string method_name_and_args( "set " );
+
                            method_name_and_args += i->first + " ";
+
                            method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
 
                            execute_object_command( handle, context, method_name_and_args );
@@ -3354,22 +3360,25 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         check_instance_field_permission( module, handle, true, scope_and_perm_info );
                      }
 
-                     string value, method_name_and_args;
+                     string value, method_name_and_args( "get " );
 
                      if( !using_verbose_logging )
                      {
-                        method_name_and_args = string( was_date_time ? "cmd " : "get " );
                         method_name_and_args += i->first;
 
-                        if( was_date_time )
-                           method_name_and_args += " raw";
-
                         value = execute_object_command( handle, "", method_name_and_args );
+
+                        if( !value.empty( ) && was_date_time )
+                        {
+                           method_name_and_args = "cmd " + i->first + " raw";
+                           value = execute_object_command( handle, "", method_name_and_args );
+                        }
                      }
 
                      method_name_and_args = "set ";
 
                      method_name_and_args += i->first + " ";
+
                      method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
 
                      execute_object_command( handle, "", method_name_and_args );
@@ -3378,9 +3387,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      if( !using_verbose_logging )
                      {
-                        // NOTE: Field values that are the same as the default ones are omitted from the log
-                        // as are values for all transient fields (unless used with initial data).
-                        if( ( !is_transient || is_init_uid( ) ) && value != i->second )
+                        // NOTE: If not using verbose logging then unchanged field values will be omitted.
+                        if( value != i->second )
                         {
                            if( !field_values_to_log.empty( ) )
                               field_values_to_log += ",";
@@ -3643,22 +3651,25 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         check_instance_field_permission( module, handle, false, scope_and_perm_info );
                      }
 
-                     string value, method_name_and_args;
+                     string value, method_name_and_args( "get " );
 
                      if( !using_verbose_logging )
                      {
-                        method_name_and_args = string( was_date_time ? "cmd " : "get " );
                         method_name_and_args += i->first;
 
-                        if( was_date_time )
-                           method_name_and_args += " raw";
-
                         value = execute_object_command( handle, "", method_name_and_args );
+
+                        if( !value.empty( ) && was_date_time )
+                        {
+                           method_name_and_args = "cmd " + i->first + " raw";
+                           value = execute_object_command( handle, "", method_name_and_args );
+                        }
                      }
 
                      method_name_and_args = "set ";
 
                      method_name_and_args += i->first + " ";
+
                      method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
 
                      execute_object_command( handle, "", method_name_and_args );
@@ -3667,9 +3678,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      if( !using_verbose_logging )
                      {
-                        // NOTE: Field values that are the same as the default ones are omitted from the log
-                        // as are values for all transient fields (unless used with initial data).
-                        if( ( !is_transient || is_init_uid( ) ) && value != i->second )
+                        // NOTE: If not using verbose logging then unchanged field values will be omitted.
+                        if( value != i->second )
                         {
                            if( !field_values_to_log.empty( ) )
                               field_values_to_log += ",";
@@ -3830,7 +3840,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( !i->first.empty( ) && i->first[ 0 ] != '@' )
                      {
                         string method_name_and_args( "set " );
+
                         method_name_and_args += i->first + " ";
+
                         method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
 
                         execute_object_command( handle, "", method_name_and_args );
@@ -4141,31 +4153,33 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                            check_instance_field_permission( module, handle, true, scope_and_perm_info );
                         }
 
-                        string value, method_name_and_args;
+                        string value, method_name_and_args( "get " );
 
                         if( !using_verbose_logging )
                         {
-                           method_name_and_args = string( was_date_time ? "cmd " : "get " );
                            method_name_and_args += j->first;
 
-                           if( was_date_time )
-                              method_name_and_args += " raw";
-
                            value = execute_object_command( handle, "", method_name_and_args );
+
+                           if( !value.empty( ) && was_date_time )
+                           {
+                              method_name_and_args = "cmd " + j->first + " raw";
+                              value = execute_object_command( handle, "", method_name_and_args );
+                           }
                         }
 
                         method_name_and_args = "set ";
 
                         method_name_and_args += j->first + " ";
+
                         method_name_and_args += "\"" + escaped( j->second, "\"", c_nul ) + "\"";
 
                         execute_object_command( handle, "", method_name_and_args );
 
                         if( i == 0 && log_transaction && !using_verbose_logging )
                         {
-                           // NOTE: Field values that are the same as the default ones are omitted from the log
-                           // as are values for all transient fields (unless used with initial data).
-                           if( ( !is_transient || is_init_uid( ) ) && value != j->second )
+                           // NOTE: If not using verbose logging then unchanged field values will be omitted.
+                           if( value != j->second )
                            {
                               if( !field_values_to_log.empty( ) )
                                  field_values_to_log += ",";
