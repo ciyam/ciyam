@@ -738,8 +738,7 @@ class storage_handler
     next_lock_handle( 1 ),
     p_alternative_log_file( 0 ),
     is_locked_for_admin( false ),
-    has_sql_undo_support( false ),
-    uses_verbose_logging( true )
+    has_sql_undo_support( false )
    {
    }
 
@@ -765,7 +764,7 @@ class storage_handler
 
    bool supports_sql_undo( ) const { return has_sql_undo_support; }
 
-   bool is_using_verbose_logging( ) const { return uses_verbose_logging; }
+   bool is_using_verbose_logging( ) const { return ( root.type == e_storage_type_standard ); }
 
    bool get_is_locked_for_admin( ) const { return is_locked_for_admin; }
    void set_is_locked_for_admin( bool lock_for_admin = true ) { is_locked_for_admin = lock_for_admin; }
@@ -819,7 +818,6 @@ class storage_handler
 
    bool is_locked_for_admin;
    bool has_sql_undo_support;
-   bool uses_verbose_logging;
 
    mutable mutex lock_mutex;
    mutable mutex cache_mutex;
