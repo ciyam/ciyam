@@ -106,6 +106,7 @@ storage_transaction_start "start a transaction in the current storage"
 storage_transaction_commit "commit a transaction in the current storage"
 storage_transaction_rollback "rollback a transaction in the current storage"
 system_trace|trace "get/set system trace flags" [<val//new_flags>]
+system_gen_key|gen_key "generate one or more key values" [<val/-num=/num_keys>]
 system_mutexes|mutexes "list system mutexes and their session lock ids"
 system_version|version "display protocol version"
 system_identity|identity "get/set system identity information" [<opt/-md5/md5>][<opt/-raw/raw>][<val/-k=/pubkey>][<val//info>][<val//encrypted>]

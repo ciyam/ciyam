@@ -671,7 +671,7 @@ class CIYAM_BASE_DECL_SPEC system_ods_bulk_write
    impl* p_impl;
 };
 
-std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0, bool append_slot_num = true );
+std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC get_uid( bool remove_display_name = true );
 void CIYAM_BASE_DECL_SPEC set_uid( const std::string& uid );
@@ -711,9 +711,6 @@ void CIYAM_BASE_DECL_SPEC set_tmp_directory( const std::string& tmp_directory );
 
 std::string CIYAM_BASE_DECL_SPEC get_session_secret( );
 void CIYAM_BASE_DECL_SPEC set_session_secret( const std::string& secret );
-
-void CIYAM_BASE_DECL_SPEC set_session_mint_account( const std::string& account );
-bool CIYAM_BASE_DECL_SPEC uid_matches_session_mint_account( );
 
 void CIYAM_BASE_DECL_SPEC session_shared_decrypt(
  std::string& data, const std::string& pubkey, const std::string& message );

@@ -301,6 +301,11 @@ mutex g_trace_mutex;
 mutex g_mapping_mutex;
 mutex g_session_mutex;
 
+string g_key_date_time;
+
+size_t g_key_count;
+int64_t g_key_tm_val;
+
 bool g_hardened_identity;
 bool g_encrypted_identity;
 
@@ -372,6 +377,9 @@ struct session
       if( p_blockchain )
          blockchain = *p_blockchain;
 
+      backup_identity = get_raw_system_variable(
+       get_special_var_name( e_special_var_blockchain_backup_identity ) );
+
       last_cmd = string( c_str_none );
 
       dtm_created = date_time::local( );
@@ -406,8 +414,10 @@ struct session
    string last_cmd;
 
    string secret;
-   string account;
+
    string blockchain;
+
+   string backup_identity;
 
    set< string > perms;
 
@@ -10961,35 +10971,83 @@ system_ods_bulk_write::~system_ods_bulk_write( )
    delete p_impl;
 }
 
-string gen_key( const char* p_suffix, bool append_slot_num )
+string gen_key( const char* p_suffix )
 {
    string key;
 
-   if( gtp_session )
+   if( !gtp_session )
+      throw runtime_error( "unexpected non-session call made to 'gen_key'" );
+   else
    {
-      date_time dtm( date_time::standard( ) );
+      guard g( g_mutex );
 
-      key = dtm.as_string( );
-
-      if( append_slot_num )
+      if( gtp_session->p_storage_handler->get_root( ).type == e_storage_type_standard )
       {
-         size_t num( gtp_session->slot );
+         while( true )
+         {
+            date_time dtm( date_time::standard( ) );
 
-         char sss[ ] = "sss";
+            key = dtm.as_string( );
 
-         sss[ 0 ] = '0' + ( num / 100 );
-         sss[ 1 ] = '0' + ( ( num % 100 ) / 10 );
-         sss[ 2 ] = '0' + ( num % 10 );
+            size_t num( gtp_session->slot );
 
-         key += string( sss );
+            char sss[ ] = "sss";
+
+            sss[ 0 ] = '0' + ( num / 100 );
+            sss[ 1 ] = '0' + ( ( num % 100 ) / 10 );
+            sss[ 2 ] = '0' + ( num % 10 );
+
+            key += string( sss );
+
+            if( g_key_date_time.empty( ) )
+            {
+               g_key_date_time = key;
+               break;
+            }
+            else if( g_key_date_time != key )
+            {
+               g_key_date_time = key;
+               break;
+            }
+            else
+               msleep( 10 );
+         }
+
+         if( p_suffix )
+            key += string( p_suffix );
       }
+      else
+      {
+         while( true )
+         {
+            int64_t now = unix_time( );
 
-      if( p_suffix )
-         key += string( p_suffix );
+            if( now != g_key_tm_val )
+            {
+               g_key_count = 0;
+               g_key_tm_val = now;
 
-      // KLUDGE: Time granularity restrictions (at least under Win32) prevent more than one key being created
-      // every 20 milliseconds within each session so add a delay to ensure duplicates will not be generated.
-      msleep( 20 );
+               break;
+            }
+            else
+            {
+               // NOTE: Supports 000-fff suffixes to the unix time value
+               // (and will reset it after waiting for the next second).
+               if( g_key_count >= 4095 )
+                  msleep( 10 );
+               else
+               {
+                  ++g_key_count;
+                  break;
+               }
+            }
+         }
+
+         ostringstream osstr;
+         osstr << hex << g_key_tm_val << setw( 3 ) << setfill( '0' ) << g_key_count;
+
+         key = osstr.str( ) + gtp_session->backup_identity;
+      }
    }
 
    return key;
@@ -11210,19 +11268,6 @@ string get_session_secret( )
 void set_session_secret( const string& secret )
 {
    gtp_session->secret = secret;
-}
-
-void set_session_mint_account( const string& account )
-{
-   gtp_session->account = account;
-}
-
-bool uid_matches_session_mint_account( )
-{
-   if( get_uid( ) == gtp_session->account )
-      return true;
-   else
-      return false;
 }
 
 void session_shared_decrypt( string& data, const string& pubkey, const string& message )
@@ -12200,11 +12245,6 @@ string get_field_values( size_t handle,
             bool is_encrypted = false;
             string type_name = get_field_type_name( handle, context, field, &is_encrypted );
 
-            if( is_encrypted
-             && decrypt_for_blockchain_minter
-             && uid_matches_session_mint_account( ) )
-               next_value = decrypt( next_value );
-
             if( type_name == "date_time" || type_name == "tdatetime" )
             {
                date_time dt( next_value );
@@ -12801,7 +12841,7 @@ string exec_bulk_ops( const string& module,
             if( !destroy_record && !found_instance )
             {
                if( !has_key_field )
-                  key = gen_key( "" );
+                  key = gen_key( );
                else
                   key = values[ key_field_num ];
 

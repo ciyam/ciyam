@@ -3193,7 +3193,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // NOTE: If no key was provided then automatically generate a key.
          if( key.empty( ) || key[ 0 ] == ' ' )
          {
-            string new_key( gen_key( 0, true ) );
+            string new_key( gen_key( ) );
 
             size_t remove_length = 2; // i.e. To remove "" if that is how the key was provided.
             string::size_type spos = next_command.find( uid ) + uid.length( ) + 1;
@@ -5633,6 +5633,32 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = osstr.str( );
       }
+      else if( command == c_cmd_ciyam_session_system_gen_key )
+      {
+         string num_keys( get_parm_val( parameters, c_cmd_ciyam_session_system_gen_key_num_keys ) );
+
+         size_t num_val = 1;
+
+         if( !num_keys.empty( ) )
+            num_val = from_string< size_t >( num_keys );
+
+         for( size_t i = 0; i < num_val; i++ )
+         {
+            if( i > 0 )
+               response += '\n';
+            response += gen_key( );
+         }
+      }
+      else if( command == c_cmd_ciyam_session_system_mutexes )
+      {
+         ostringstream osstr;
+
+         list_trace_mutex_lock_ids( osstr, &g_mutex, "ciyam_session::g_mutex = " );
+
+         response = osstr.str( );
+      }
+      else if( command == c_cmd_ciyam_session_system_version )
+         response = c_protocol_version;
       else if( command == c_cmd_ciyam_session_system_identity )
       {
          bool is_md5 = has_parm_val( parameters, c_cmd_ciyam_session_system_identity_md5 );
@@ -5691,16 +5717,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          get_identity( response, !is_raw, false, is_md5, p_pubkey );
       }
-      else if( command == c_cmd_ciyam_session_system_mutexes )
-      {
-         ostringstream osstr;
-
-         list_trace_mutex_lock_ids( osstr, &g_mutex, "ciyam_session::g_mutex = " );
-
-         response = osstr.str( );
-      }
-      else if( command == c_cmd_ciyam_session_system_version )
-         response = c_protocol_version;
       else if( command == c_cmd_ciyam_session_system_log_tail )
       {
          bool is_script = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_script );
