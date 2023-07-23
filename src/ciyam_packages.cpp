@@ -977,7 +977,7 @@ void import_package( const string& module,
          }
 
          if( replace_with == c_key_field )
-            replace_with = gen_key( "", true );
+            replace_with = gen_key( );
          else
          {
             while( search_replaces_map.count( replace_with ) )
