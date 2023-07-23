@@ -301,8 +301,6 @@ mutex g_trace_mutex;
 mutex g_mapping_mutex;
 mutex g_session_mutex;
 
-string g_key_date_time;
-
 size_t g_key_count;
 int64_t g_key_tm_val;
 
@@ -339,8 +337,10 @@ struct session
     :
     id( id ),
     slot( slot ),
+    key_count( 0 ),
     sql_count( 0 ),
     sync_time( 0 ),
+    key_tm_val( 0 ),
     cache_count( 0 ),
     next_handle( 0 ),
     p_tx_helper( 0 ),
@@ -417,6 +417,8 @@ struct session
 
    string blockchain;
 
+   string key_date_time;
+
    string backup_identity;
 
    set< string > perms;
@@ -424,11 +426,15 @@ struct session
    string tmp_directory;
    string progress_output;
 
+   size_t key_count;
+
    size_t sql_count;
    size_t cache_count;
    size_t next_handle;
 
    int64_t sync_time;
+
+   int64_t key_tm_val;
 
    bool is_captured;
    bool running_script;
@@ -10973,51 +10979,72 @@ system_ods_bulk_write::~system_ods_bulk_write( )
 
 string gen_key( const char* p_suffix )
 {
-   string key;
+   string key( 20, '\0' );
 
    if( !gtp_session )
       throw runtime_error( "unexpected non-session call made to 'gen_key'" );
    else
    {
-      guard g( g_mutex );
-
       if( gtp_session->p_storage_handler->get_root( ).type == e_storage_type_standard )
       {
+         // NOTE: For non-peerchain storages don't need a guard as each
+         // key has its slot number appended (so only need to check the
+         // time stamp to ensure up to 1000 keys can be created in each
+         // session per second).
          while( true )
          {
-            date_time dtm( date_time::standard( ) );
+            int64_t now = unix_time( );
 
-            key = dtm.as_string( );
-
-            size_t num( gtp_session->slot );
-
-            char sss[ ] = "sss";
-
-            sss[ 0 ] = '0' + ( num / 100 );
-            sss[ 1 ] = '0' + ( ( num % 100 ) / 10 );
-            sss[ 2 ] = '0' + ( num % 10 );
-
-            key += string( sss );
-
-            if( g_key_date_time.empty( ) )
+            if( now != gtp_session->key_tm_val )
             {
-               g_key_date_time = key;
-               break;
-            }
-            else if( g_key_date_time != key )
-            {
-               g_key_date_time = key;
+               gtp_session->key_count = 0;
+               gtp_session->key_tm_val = now;
+
                break;
             }
             else
-               msleep( 10 );
+            {
+               // NOTE: Supports 000-999 suffixes to the unix time value
+               // (and will reset it after waiting for the next second).
+               if( gtp_session->key_count >= 999 )
+                  msleep( 10 );
+               else
+               {
+                  ++gtp_session->key_count;
+                  break;
+               }
+            }
          }
+
+         date_time dtm( gtp_session->key_tm_val );
+
+         key = dtm.as_string( e_time_format_hhmmss );
+
+         char sss[ ] = "sss";
+
+         size_t count = gtp_session->key_count;
+
+         sss[ 0 ] = '0' + ( count / 100 );
+         sss[ 1 ] = '0' + ( ( count % 100 ) / 10 );
+         sss[ 2 ] = '0' + ( count % 10 );
+
+         key += string( sss );
+
+         size_t num = gtp_session->slot;
+
+         sss[ 0 ] = '0' + ( num / 100 );
+         sss[ 1 ] = '0' + ( ( num % 100 ) / 10 );
+         sss[ 2 ] = '0' + ( num % 10 );
+
+         key += string( sss );
 
          if( p_suffix )
             key += string( p_suffix );
       }
       else
       {
+         guard g( g_mutex );
+
          while( true )
          {
             int64_t now = unix_time( );
