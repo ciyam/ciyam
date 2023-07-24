@@ -8893,7 +8893,7 @@ void storage_comment( const string& comment )
    }
 }
 
-void storage_process_undo( const string& label, map< string, string >& file_info )
+void storage_process_rewind( const string& label, map< string, string >& file_info )
 {
    guard g( g_mutex );
 
@@ -8909,11 +8909,11 @@ void storage_process_undo( const string& label, map< string, string >& file_info
    {
       ifstream inpf( undo_sql.c_str( ) );
       if( !inpf )
-         throw runtime_error( "unable to open file '" + undo_sql + "' for input in storage_process_undo" );
+         throw runtime_error( "unable to open file '" + undo_sql + "' for input in storage_process_rewind" );
 
       ofstream outf( new_undo_sql.c_str( ) );
       if( !outf )
-         throw runtime_error( "unable to open file '" + new_undo_sql + "' for output in storage_process_undo" );
+         throw runtime_error( "unable to open file '" + new_undo_sql + "' for output in storage_process_rewind" );
 
       deque< string > undo_statements;
 
@@ -10889,6 +10889,8 @@ void storage_channel_document_restore( const string& identity_path )
       }
 
       ofs.get_file( file_path, destination );
+
+      msleep( c_notifer_check_wait );
    }
 }
 

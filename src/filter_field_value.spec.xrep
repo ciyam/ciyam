@@ -6,11 +6,12 @@
     && `}`{`@eq`(`$arg_print_only`,`'true`'`)!get_obj( ).get_variable( get_special_var_name( e_special_var_print ) ).empty( )
     && `}get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
    {
+`{`@eq`(`$arg_fistexttype`,`'0`'`)`$value`=`'`{`$arg_value`}`'`,`$value`=`'"`{`$arg_value`}"`'`}\
 `{`@eq`(`$arg_spfield`,`'`'`)\
-      if( get_obj( ).`{`$arg_field`}( ) == `{`$arg_value`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+      if( get_obj( ).`{`$arg_field`}( ) == `{`$value`}`{`!`@eq`(`$arg_modifier`,`'`'`)
        && ( state & c_modifier_`{`$arg_modifier`} )`} )
 `,\
-      if( get_obj( ).`{`$arg_field`}( ) == `{`$arg_value`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+      if( get_obj( ).`{`$arg_field`}( ) == `{`$value`}`{`!`@eq`(`$arg_modifier`,`'`'`)
        && ( state & c_modifier_`{`$arg_modifier`} )`} && ( !get_obj( ).get_graph_parent( )
        || ( get_obj( ).get_graph_parent( )->get_class_id( ) == get_obj( ).`{`$arg_spfield`}( ).get_class_id( ) ) ) )
 `}\
