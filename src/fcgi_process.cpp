@@ -1821,7 +1821,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             // FUTURE: Currently logic that requires a permission for an "admin" list is not supported
             // (i.e. either the user is "admin" OR has the "perm"). If this is to be changed then this
             // code would need to be changed.
-            if( !has_perm && p_session_info->is_admin_user && lmci->second->type == c_list_type_admin )
+            if( !has_perm && p_session_info->is_admin_user && ( lmci->second->type == c_list_type_admin ) )
                has_perm = true;
 
             if( has_perm && lmci->second->extras.count( c_list_type_extra_show_if_default_other ) )
@@ -1837,15 +1837,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
             // NOTE: For the "admin" user only display lists specifically targeted for "admin"
             // (to reduce unnecessary clutter as "admin" is not intended for "standard" usage).
-            if( p_session_info->is_admin_user && lmci->second->type != c_list_type_admin
-             && lmci->second->type != c_list_type_child_admin && lmci->second->type != c_list_type_child_admin_owner )
-            {
-               if( !lmci->second->extras.count( c_list_type_extra_admin_new )
-                && !lmci->second->extras.count( c_list_type_extra_admin_owner_new )
-                && !lmci->second->extras.count( c_list_type_extra_admin_erase )
-                && !lmci->second->extras.count( c_list_type_extra_admin_owner_erase ) )
-                  has_perm = false;
-            }
+            if( p_session_info->is_admin_user
+             && ( lmci->second->type != c_list_type_admin && lmci->second->type != c_list_type_child_admin ) )
+               has_perm = false;
 
             if( using_anonymous && !lmci->second->extras.count( c_list_type_extra_allow_anonymous ) )
                has_perm = false;
