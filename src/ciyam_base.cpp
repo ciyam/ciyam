@@ -337,10 +337,8 @@ struct session
     :
     id( id ),
     slot( slot ),
-    key_count( 0 ),
     sql_count( 0 ),
     sync_time( 0 ),
-    key_tm_val( 0 ),
     cache_count( 0 ),
     next_handle( 0 ),
     p_tx_helper( 0 ),
@@ -426,15 +424,11 @@ struct session
    string tmp_directory;
    string progress_output;
 
-   size_t key_count;
-
    size_t sql_count;
    size_t cache_count;
    size_t next_handle;
 
    int64_t sync_time;
-
-   int64_t key_tm_val;
 
    bool is_captured;
    bool running_script;
@@ -1337,7 +1331,6 @@ struct scoped_lock_holder
    size_t lock_handle;
 };
 
-// NOTE: If max. sessions is set to a value greater than 1000 then "gen_key" will need to be changed.
 const size_t c_max_sessions_limit = 1000;
 const size_t c_min_sessions_limit = 10;
 
@@ -10987,20 +10980,21 @@ string gen_key( const char* p_suffix )
       throw runtime_error( "unexpected non-session call made to 'gen_key'" );
    else
    {
+      guard g( g_mutex );
+
       if( gtp_session->p_storage_handler->get_root( ).type == e_storage_type_standard )
       {
-         // NOTE: For non-peerchain storages don't need a guard as each
-         // key has its slot number appended (so only need to check the
-         // time stamp to ensure up to 1000 keys can be created in each
-         // session per second).
+         // NOTE: For non-peerchain storages uses human readable format
+         // (rather than hexadeciaml) for keys (which limits the number
+         // of keys that can be generated to 1000 per second).
          while( true )
          {
             int64_t now = unix_time( );
 
-            if( now != gtp_session->key_tm_val )
+            if( now != g_key_tm_val )
             {
-               gtp_session->key_count = 0;
-               gtp_session->key_tm_val = now;
+               g_key_count = 0;
+               g_key_tm_val = now;
 
                break;
             }
@@ -11008,44 +11002,36 @@ string gen_key( const char* p_suffix )
             {
                // NOTE: Supports 000-999 suffixes to the unix time value
                // (and will reset it after waiting for the next second).
-               if( gtp_session->key_count >= 999 )
+               if( g_key_count >= 999 )
                   msleep( 10 );
                else
                {
-                  ++gtp_session->key_count;
+                  ++g_key_count;
                   break;
                }
             }
          }
 
-         date_time dtm( gtp_session->key_tm_val );
+         date_time dtm( g_key_tm_val );
 
          key = dtm.as_string( e_time_format_hhmmss );
 
-         char sss[ ] = "sss";
+         // NOTE: Leave three trailing zeroes so that
+         // each key can have 999 further derivations
+         // (such as automatic creation of of records
+         // in Meta for Classes and Fields).
+         char ccc[ ] = "ccc000";
 
-         size_t count = gtp_session->key_count;
+         size_t count = g_key_count;
 
-         sss[ 0 ] = '0' + ( count / 100 );
-         sss[ 1 ] = '0' + ( ( count % 100 ) / 10 );
-         sss[ 2 ] = '0' + ( count % 10 );
+         ccc[ 0 ] = '0' + ( count / 100 );
+         ccc[ 1 ] = '0' + ( ( count % 100 ) / 10 );
+         ccc[ 2 ] = '0' + ( count % 10 );
 
-         key += string( sss );
-
-         size_t num = gtp_session->slot;
-
-         sss[ 0 ] = '0' + ( num / 100 );
-         sss[ 1 ] = '0' + ( ( num % 100 ) / 10 );
-         sss[ 2 ] = '0' + ( num % 10 );
-
-         key += string( sss );
-
-         if( p_suffix )
-            key += string( p_suffix );
+         key += string( ccc );
       }
       else
       {
-         guard g( g_mutex );
 
          while( true )
          {
@@ -11077,6 +11063,9 @@ string gen_key( const char* p_suffix )
 
          key = osstr.str( ) + gtp_session->backup_identity;
       }
+
+      if( p_suffix )
+         key += string( p_suffix );
    }
 
    return key;
