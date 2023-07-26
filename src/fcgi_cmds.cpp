@@ -72,7 +72,7 @@ string get_uid_info( const session_info& sess_info, bool quote_if_has_space_in_n
    }
    else
    {
-      uid_info = "init!";
+      uid_info = "anon!";
       uid_info += c_default_security_level;
    }
 
@@ -89,6 +89,7 @@ void read_module_strings( module_info& info, tcp_socket& socket )
 
    info.strings.clear( );
    int timeout = c_initial_response_timeout;
+
    while( true )
    {
       string response;
@@ -2841,10 +2842,9 @@ void save_record( const string& module_id,
             field_values += ',';
 
             // NOTE: The 'field_hash' extra is only expected to be used as a hidden extra field when
-            // a field that would normally be indexed (such as a name field) is being encrypted (for
-            // use in blockchain application). By creating a hash of the field value (along with the
-            // user's password hash to prevent dictionary attacks to decrypt the values) it is still
-            // possible to effectively create a unique index for the field value that it applies to.
+            // a field that needs to be unique (such as a name field) has been encrypted. The use of
+            // the hashed field value (after combining it with with the user's password hash) allows
+            // this field to be indexed preventing the unencrypted field value from being used twice.
             if( view.field_hash_fields.count( i->first ) )
             {
                string src_and_dest( i->second );
@@ -2914,4 +2914,3 @@ void save_record( const string& module_id,
       }
    }
 }
-

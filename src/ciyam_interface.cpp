@@ -1697,13 +1697,16 @@ void request_handler::process_request( )
 
                         string error_message;
 
+                        // NOTE: Temporarily assumes the "admin" user in order to update the password.
+                        restorable< string > temp_user_key( p_session_info->user_key, c_admin_user_key );
+
                         if( !perform_update( module_id, mod_info.user_class_id,
                          c_admin_user_key, pwd_field_value_pairs, *p_session_info, &error_message ) )
                         {
                            if( !error_message.empty( ) )
                               throw error_message;
                            else
-                              throw runtime_error( "unexpected server error occurred." );
+                              throw runtime_error( "unexpected server error occurred trying to update 'admin' password" );
                         }
 
                         clear_key( g_id_pwd );
