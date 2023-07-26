@@ -72,7 +72,7 @@ string get_uid_info( const session_info& sess_info, bool quote_if_has_space_in_n
    }
    else
    {
-      uid_info = "anon!";
+      uid_info = "init!";
       uid_info += c_default_security_level;
    }
 
