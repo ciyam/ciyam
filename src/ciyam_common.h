@@ -187,6 +187,7 @@ enum special_var
    e_special_var_encrypted_password,
    e_special_var_extra_field_values,
    e_special_var_file_info_buffered,
+   e_special_var_fixed_field_values,
    e_special_var_generate_hub_block,
    e_special_var_repo_entry_missing,
    e_special_var_blockchain_is_owner,

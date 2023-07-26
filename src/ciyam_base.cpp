@@ -3092,6 +3092,7 @@ void split_key_info( const string& key_info,
  vector< string >& order_info, bool do_not_add_key_to_order )
 {
    string::size_type pos = key_info.find( ' ' );
+
    if( pos == string::npos )
    {
       if( !key_info.empty( ) )
@@ -12537,6 +12538,14 @@ string exec_bulk_ops( const string& module,
 
       if( is_export )
       {
+         if( !fixed_field_values.empty( ) )
+         {
+            class_base& instance( get_class_base_from_handle( handle, "" ) );
+
+            instance.set_variable( get_special_var_name(
+             e_special_var_fixed_field_values ), fixed_field_values );
+         }
+
          if( export_fields == "*" )
          {
             fields.push_back( c_key_field );
@@ -14789,8 +14798,10 @@ void perform_instance_fetch( class_base& instance,
       if( persistence_type == 0 ) // i.e. SQL persistence
       {
          string sql;
+
          vector< string > field_info;
          vector< string > order_info;
+
          vector< pair< string, string > > query_info;
          vector< pair< string, string > > fixed_info;
          vector< pair< string, string > > paging_info;
@@ -14882,6 +14893,7 @@ bool perform_instance_iterate( class_base& instance,
       {
          vector< string > field_info;
          vector< string > order_info;
+
          vector< pair< string, string > > query_info;
          vector< pair< string, string > > fixed_info;
          vector< pair< string, string > > paging_info;
@@ -14935,6 +14947,7 @@ bool perform_instance_iterate( class_base& instance,
             // state correctly then these fields are appended to the field list.
             set< string > required_fields;
             set< string > field_dependents;
+
             instance.get_required_field_names( required_fields, false, &field_dependents );
 
             int iterations = 0;
@@ -15004,8 +15017,43 @@ bool perform_instance_iterate( class_base& instance,
             }
          }
 
+         // NOTE: Fixed info can be provided either through an object variable
+         // or by the "add_extra_field_info" virtual function in "class_base".
+         string fixed_field_values( instance.get_variable(
+          get_special_var_name( e_special_var_fixed_field_values ) ) );
+
+         string extra_order_field;
+
+         if( !fixed_field_values.empty( ) )
+         {
+            vector< string > field_and_values;
+
+            split( fixed_field_values, field_and_values );
+
+            for( size_t i = 0; i < field_and_values.size( ); i++ )
+            {
+               string next_pair( field_and_values[ i ] );
+
+               string::size_type pos = next_pair.find( '=' );
+
+               if( pos == string::npos )
+                  extra_order_field = next_pair;
+               else
+                  fixed_info.push_back( make_pair( next_pair.substr( 0, pos ), next_pair.substr( pos + 1 ) ) );
+            }
+         }
+
          instance_accessor.add_extra_fixed_info( fixed_info );
          instance_accessor.add_extra_paging_info( paging_info );
+
+         for( size_t i = 0; i < fixed_info.size( ); i++ )
+            order_info.push_back( fixed_info[ i ].first );
+
+         for( size_t i = 0; i < paging_info.size( ); i++ )
+            order_info.push_back( paging_info[ i ].first );
+
+         if( !extra_order_field.empty( ) )
+            order_info.push_back( extra_order_field );
 
          // NOTE: If the key info contains any transient field names (for ordering)
          // then these need to be replaced by zero or more persistent field names.
