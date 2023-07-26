@@ -27,7 +27,7 @@
 `,\
       string child_key( get_obj( ).get_key( ) + "_" + get_dtm( ) );
 `}`,\
-      string child_key( get_obj( ).get_key( ) + "_" + get_obj( ).`{`$arg_tfield`}( ).get_key( ) );
+      string child_key( get_obj( ).get_key( ) + "_" + get_obj( ).`{`$arg_tfield`}( ) );
 `}`,\
       string child_key( construct_key_from_int( get_obj( ).get_key( ), get_obj( ).`{`$arg_key_suffix`}( ) ) );
 `}`{`@eq`(`$arg_append_loopval`,`'true`'`)
