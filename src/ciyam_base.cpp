@@ -9908,6 +9908,11 @@ string storage_channel_documents_update( const string& identity, bool submitted 
       string updated;
       string files_name( blockchain_identity + '/' + c_channel_files );
 
+      string user_info_name( blockchain_identity + "/." + string( c_channel_user_info ) + c_csv_file_ext );
+
+      if( file_exists( user_info_name ) )
+         copy_file( user_info_name, blockchain_identity + '.' + c_channel_user_info + string( c_csv_file_ext ) );
+
       if( file_exists( files_name ) )
       {
          string all_files( buffer_file( files_name ) );
