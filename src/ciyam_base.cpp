@@ -138,6 +138,7 @@ const char* const c_channel_fetched = "fetched";
 const char* const c_channel_updated = "updated";
 const char* const c_channel_prepared = "prepared";
 const char* const c_channel_peer_info = "peer_info";
+const char* const c_channel_user_info = "user_info";
 const char* const c_channel_submitted = "submitted";
 const char* const c_channel_selections = "selections";
 
@@ -10066,11 +10067,10 @@ string storage_channel_documents_prepare( const string& identity )
    if( !ofs.has_folder( identity ) )
       throw runtime_error( "channel folder for '" + identity + "' was not found" );
 
-   string selections;
-
    ofs.set_folder( identity );
 
    int64_t height_submitted = 0;
+   bool has_created_directory = false;
 
    string submitted_file_path( c_channel_folder_ciyam );
    submitted_file_path += '/' + string( c_channel_submitted );
@@ -10088,9 +10088,144 @@ string storage_channel_documents_prepare( const string& identity )
 
    ofs.set_folder( c_channel_folder_ciyam );
 
+   string user_info_name( identity + c_csv_file_ext );
+
+   if( file_exists( user_info_name ) )
+   {
+      string new_user_info( buffer_file( user_info_name ) );
+
+      file_remove( user_info_name );
+
+      string user_changes;
+
+      string all_user_info;
+      string all_column_names;
+
+      bool append_all_as_changes = false;
+
+      vector< string > lines;
+
+      map< string, string > new_info_keyed;
+      map< string, string > keyed_user_info;
+
+      split( new_user_info, lines, '\n' );
+
+      for( size_t i = 0; i < lines.size( ); i++ )
+      {
+         string next_line( lines[ i ] );
+
+         if( i == 0 )
+            all_column_names = next_line;
+         else
+         {
+            if( !next_line.empty( ) )
+            {
+               string::size_type pos = next_line.find( ',' );
+               if( pos == string::npos )
+                  throw runtime_error( "unexpected new user info line '" + next_line + "'" );
+
+               string key( next_line.substr( 0, pos ) );
+               string data( next_line.substr( pos + 1 ) );
+
+               new_info_keyed.insert( make_pair( key, data ) );
+
+               keyed_user_info.insert( make_pair( key, data ) );
+            }
+         }
+      }
+
+      if( !ofs.has_file( c_channel_user_info ) )
+      {
+         append_all_as_changes = true;
+         user_changes = all_column_names;
+      }
+      else
+      {
+         lines.clear( );
+         user_changes.erase( );
+         all_user_info.erase( );
+
+         string old_user_info;
+
+         ofs.fetch_from_text_file( c_channel_user_info, old_user_info );
+
+         map< string, string > old_info_keyed;
+
+         split( old_user_info, lines, '\n' );
+
+         for( size_t i = 0; i < lines.size( ); i++ )
+         {
+            string next_line( lines[ i ] );
+
+            if( !next_line.empty( ) )
+            {
+               if( i == 0 )
+               {
+                  if( next_line != all_column_names )
+                     throw runtime_error( "unexpected next_line != all_column_names" );
+               }
+               else
+               {
+                  string::size_type pos = next_line.find( ',' );
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected old user info line '" + next_line + "'" );
+
+                  string key( next_line.substr( 0, pos ) );
+                  string data( next_line.substr( pos + 1 ) );
+
+                  old_info_keyed.insert( make_pair( key, data ) );
+
+                  if( !keyed_user_info.count( key ) )
+                     keyed_user_info.insert( make_pair( key, data ) );
+               }
+            }
+         }
+
+         for( map< string, string >::const_iterator ci = new_info_keyed.begin( ); ci != new_info_keyed.end( ); ++ci )
+         {
+            bool append_change = false;
+
+            if( old_info_keyed[ ci->first ] != ci->second )
+               append_change = true;
+
+            if( append_change )
+            {
+               if( user_changes.empty( ) )
+                  user_changes = all_column_names;
+
+               user_changes += '\n' + ci->first + ',' + ci->second;
+            }
+         }
+      }
+
+      for( map< string, string >::const_iterator ci = keyed_user_info.begin( ); ci != keyed_user_info.end( ); ++ci )
+      {
+         if( all_user_info.empty( ) )
+            all_user_info = all_column_names;
+
+         all_user_info += '\n' + ci->first + ',' + ci->second;
+
+         if( append_all_as_changes )
+            user_changes += '\n' + ci->first + ',' + ci->second;
+      }
+
+      if( !user_changes.empty( ) )
+      {
+         ofs.store_as_text_file( c_channel_user_info, all_user_info );
+
+         create_dir( blockchain_identity );
+         has_created_directory = true;
+
+         write_file( blockchain_identity + string( "/." ) + c_channel_user_info + string( c_csv_file_ext ), user_changes );
+      }
+   }
+
+   string selections;
+
    if( ofs.has_file( c_channel_selections ) )
    {
-      create_dir( blockchain_identity );
+      if( !has_created_directory )
+         create_dir( blockchain_identity );
 
       int64_t height_fetched = 0;
 

@@ -86,6 +86,12 @@ ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
 <export_files.cin $BUNDLE_HASH .
 ~mkdir $UUID
 ~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID
+.module_list
+LINES=@repstr: /\n:$OUTPUT
+MODULE=%LINES:2%
+.perform_bulk_ops admin @now $MODULE Peerchain_Folder_User $UUID/.user_info.csv -f=Peerchain_Folder=$IDENTITY,Local=0,User=admin
+~rm $UUID/.user_info.csv
+~rm $UUID/.user_info.log
 SUBMIT_AFTER_FETCH=@file:$UUID/.fetch
 ~rm $UUID/.fetch
 ~rmdir $UUID
