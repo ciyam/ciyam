@@ -86,12 +86,6 @@ ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
 <export_files.cin $BUNDLE_HASH .
 ~mkdir $UUID
 ~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID
-.module_list
-LINES=@repstr: /\n:$OUTPUT
-MODULE=%LINES:2%
-.perform_bulk_ops admin @now $MODULE Peerchain_Folder_User $UUID/.user_info.csv -f=Peerchain_Folder=$IDENTITY,Local=0,User=admin
-~rm $UUID/.user_info.csv
-~rm $UUID/.user_info.log
 SUBMIT_AFTER_FETCH=@file:$UUID/.fetch
 ~rm $UUID/.fetch
 ~rmdir $UUID
@@ -140,8 +134,20 @@ BUNDLE_HASH=%OUTPUT:2%
 ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
 ;
 <export_files.cin $BUNDLE_HASH .
+;
 .session_variable @updating_$IDENTITY $FETCH_HEIGHT
 .storage_channel_documents -update_fetched $IDENTITY
+;
+USER_INFO_FILE=@files::$REVERSED.user_info.csv
+@ifdef $USER_INFO_FILE
+.module_list
+LINES=@repstr: /\n:$OUTPUT
+MODULE=%LINES:2%
+.perform_bulk_ops admin @now $MODULE Peerchain_Folder_User $REVERSED.user_info.csv -f=Peerchain_Folder=$IDENTITY,Local=0,User=admin
+~rm $REVERSED.user_info.csv
+~rm $REVERSED.user_info.log
+@endif
+;
 @endif
 ;
 NESTED_DONE=
