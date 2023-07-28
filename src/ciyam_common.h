@@ -131,6 +131,7 @@ enum special_var
    e_special_var_val_error,
    e_special_var_blockchain,
    e_special_var_extra_info,
+   e_special_var_key_suffix,
    e_special_var_permission,
    e_special_var_queue_puts,
    e_special_var_session_id,
