@@ -11,12 +11,12 @@ pc guest 20120102 100 136100 guest_user "136101=User,136107=User,302810=User,302
 guest_user
 pe guest 20120102 100 136100 "-v=@async=false,@message=Installing User Package..." guest_user =1.0 -136410
 pf 100 106100 "106104 " 106101,106102,106104 -min
-System_Blockchain,System_Blockchain,M001C100
+System_Peerchain,System_Peerchain,M001C100
 User,User,M001C101
-Peerchain_Folder,Peerchain_Folders,M001C102
-Peerchain_Folder_Item,Peerchain_Folder_Items,M001C103
-Peerchain_Folder_User,Peerchain_Folder_User,M001C104
-Peerchain_Node,Peerchain_Nodes,M001C105
+Peerchain_Node,Peerchain_Nodes,M001C102
+Peerchain_Node_Item,Peerchain_Node_Items,M001C103
+Peerchain_Node_User,Peerchain_Node_User,M001C104
+Peerchain_Base,Peerchain_Bases,M001C105
 pf 100 107100 "107110 " 107101,107110 -min
 Name,M001C100F100
 Restore_In_Progress,M001C100F101
@@ -140,7 +140,7 @@ Submit_Synchronising,M001C102F145
 Synchronising,M001C102F146
 Current_User,M001C102F147
 Current_Uid,M001C102F148
-Peerchain_Folder,M001C103F100
+Peerchain_Node,M001C103F100
 Original_Name,M001C103F101
 Submitting,M001C103F102
 Item_Name,M001C103F103
@@ -156,7 +156,7 @@ Actions,M001C103F112
 Change,M001C103F113
 File,M001C103F114
 Folder,M001C103F115
-Peerchain_Folder,M001C104F100
+Peerchain_Node,M001C104F100
 User,M001C104F101
 Active,M001C104F102
 Local,M001C104F103
