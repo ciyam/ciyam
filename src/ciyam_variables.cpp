@@ -123,6 +123,7 @@ const char* const c_special_variable_preparing = "@preparing";
 const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_blockchain = "@blockchain";
 const char* const c_special_variable_extra_info = "@extra_info";
+const char* const c_special_variable_key_suffix = "@key_suffix";
 const char* const c_special_variable_permission = "@permission";
 const char* const c_special_variable_queue_puts = "@queue_puts";
 const char* const c_special_variable_session_id = "@session_id";
@@ -565,6 +566,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_extra_info:
       s = string( c_special_variable_extra_info );
+      break;
+
+      case e_special_var_key_suffix:
+      s = string( c_special_variable_key_suffix );
       break;
 
       case e_special_var_permission:

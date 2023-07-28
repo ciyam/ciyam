@@ -12916,6 +12916,32 @@ string exec_bulk_ops( const string& module,
             bool found_instance = false;
             bool skipping_fk_checks = false;
 
+            string key_suffix( get_raw_session_variable(
+             get_special_var_name( e_special_var_key_suffix ) ) );
+
+            if( !key_suffix.empty( ) )
+            {
+               bool has_key_suffix = false;
+
+               string key_value;
+
+               if( has_key_field )
+               {
+                  key_value = values[ key_field_num ];
+
+                  string::size_type pos = key_value.find( key_suffix );
+
+                  if( pos != string::npos )
+                  {
+                     if( pos + key_suffix.length( ) == key_value.length( ) )
+                        has_key_suffix = true;
+                  }
+               }
+
+               if( !has_key_suffix )
+                  throw runtime_error( "key suffix '" + key_suffix + "' not found in key value '" + key_value + "'" );
+            }
+
             if( can_fetch )
             {
                string key_info;
