@@ -3107,6 +3107,7 @@ void split_key_info( const string& key_info,
    else
    {
       int num_fixed = 0;
+
       string fields( key_info.substr( 0, pos ) );
       string values( key_info.substr( pos + 1 ) );
 
@@ -3133,6 +3134,7 @@ void split_key_info( const string& key_info,
          {
             if( order_info.size( ) <= order_provided + 1 )
                throw runtime_error( "missing expected ordering field" );
+
             fixed_info.push_back( make_pair( order_info[ order_provided ], string( ) ) );
          }
       }
@@ -15160,7 +15162,6 @@ bool perform_instance_iterate( class_base& instance,
 
             if( !is_transient )
             {
-               order_info.push_back( fk_field );
                string parent_key_value( instance.get_graph_parent( )->get_key( ) );
 
                // NOTE: If the parent key value has one or more pipe separators then
@@ -15229,6 +15230,7 @@ bool perform_instance_iterate( class_base& instance,
          string final_key_info;
 
          size_t pos = keys.find_first_of( " #" );
+
          if( pos != string::npos )
          {
             extra_key_info = keys.substr( pos );
@@ -15260,6 +15262,7 @@ bool perform_instance_iterate( class_base& instance,
 
             bool first_extra = true;
             vector< string > final_keys;
+
             for( size_t i = 0; i < all_keys.size( ); i++ )
             {
                string next( all_keys[ i ] );

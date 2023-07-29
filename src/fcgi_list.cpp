@@ -181,6 +181,8 @@ void setup_list_fields( list_source& list,
          field_id_counts[ fld.field ] = field_id_counts[ fld.field ] + 1;
    }
 
+   size_t index_count = 0;
+
    bool allow_sorting = true;
    bool check_for_indexed = false;
 
@@ -296,9 +298,12 @@ void setup_list_fields( list_source& list,
          {
             list.hidden_fields.insert( value_id );
 
+            if( !index_count && fld.indexed )
+               index_count = fld.index_count;
+
             // NOTE: If the first field was hidden and indexed then user selectable ordering will not
             // be permitted (as it is being assumed that this field is being used for fixed ordering).
-            if( i == 0 && fld.indexed )
+            if( i == 0 && fld.indexed && ( fld.index_count == 1 ) )
                allow_sorting = false;
          }
 
@@ -429,10 +434,11 @@ void setup_list_fields( list_source& list,
           && !extra_data.count( c_field_extra_print_summary )
           && !extra_data.count( c_field_extra_print_only_summary ) )
          {
-            if( allow_sorting )
+            if( !is_hidden && allow_sorting )
                list.sort_fields.insert( field_id );
 
             string field_ids;
+
             for( int j = 0; j < fld.index_count; j++ )
             {
                if( i + j >= ( list.lici->second )->fields.size( ) )
@@ -444,6 +450,16 @@ void setup_list_fields( list_source& list,
             }
 
             list.index_fields.push_back( make_pair( field_ids, fld.unique ) );
+         }
+
+         // NOTE: If an index begins with one or more hidden fields
+         // then uses the first non-hidden field as the sort field.
+         if( index_count )
+         {
+            --index_count;
+
+            if( !is_hidden && !index_count && allow_sorting )
+               list.sort_fields.insert( field_id );
          }
 
          if( extra_data.count( c_field_extra_encrypted ) )
