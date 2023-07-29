@@ -5573,6 +5573,7 @@ void Meta_Model::impl::impl_Generate( )
             if( get_obj( ).child_List( ).Class( ).child_Modifier( ).iterate_forwards( modifier_key_info ) )
             {
                uint64_t flag_value( UINT64_C( 0x100 ) );
+
                do
                {
                   ostringstream osstr;
@@ -5782,6 +5783,7 @@ void Meta_Model::impl::impl_Generate( )
             if( get_obj( ).child_List( ).Class( ).child_Index( ).iterate_forwards( ) )
             {
                map< string, bool > indexes;
+
                do
                {
                   string next_index( get_obj( ).child_List( ).Class( ).child_Index( ).Field_1( ).Id( ) );
@@ -5805,6 +5807,7 @@ void Meta_Model::impl::impl_Generate( )
                // NOTE: If a transient relationship was used for a "view_child" then there is no
                // point searching for an Index starting with that field (as there can't be one).
                string parent_field_id;
+
                if( !get_obj( ).child_List( ).Parent_Field( ).Transient( ) )
                   parent_field_id = pfield_id;
 
