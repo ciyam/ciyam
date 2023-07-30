@@ -1033,12 +1033,13 @@ void class_base::finish_review( )
    cleanup_dynamic_instance( );
 }
 
-void class_base::perform_fetch( const string& key_info, perform_fetch_rc* p_rc, bool force )
+void class_base::perform_fetch(
+ const string& key_info, perform_fetch_rc* p_rc, bool force, bool sys_only_fields )
 {
    instance_fetch_rc rc;
 
    // NOTE: If "force" is true then will not fetch from the record cache.
-   perform_instance_fetch( *this, key_info, p_rc ? &rc : 0, false, force );
+   perform_instance_fetch( *this, key_info, p_rc ? &rc : 0, sys_only_fields, force );
 
    if( p_rc )
       *p_rc = ( perform_fetch_rc )( int )rc;

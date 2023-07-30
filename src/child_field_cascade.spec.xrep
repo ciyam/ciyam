@@ -9,7 +9,7 @@
       if( `{`?`$arg_field_list`[`$arg_field_list`%,`,get_obj( ).has_field_changed( c_field_id_\\1 )`+
        || `]`} )
       {
-         if( get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( true, 0, e_sql_optimisation_unordered ) )
+         if( get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( "", "@key", true, 0, e_sql_optimisation_unordered ) )
          {
             do
             {
