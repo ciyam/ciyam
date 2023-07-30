@@ -1661,7 +1661,8 @@ void `{`$full_class_name`}::impl::validate(
  arg_id=$specification_\0_id arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield\
  arg_tfield=$specification_\0_tfield arg_message=$specification_\0_message arg_fk_cclass=$specification_\0_fk_cclass\
  arg_fk_child=$specification_\0_fk_child arg_fk_sfield=$specification_\0_fk_sfield arg_id=$specification_\0_id\
- arg_fk_spfield=$specification_\0_fk_spfield arg_check_reverse_also=$specification_\0_check_reverse_also`}\
+ arg_fk_spfield=$specification_\0_fk_spfield arg_check_reverse_also=$specification_\0_check_reverse_also\
+ arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only arg_allow_internal=$specification_\0_allow_internal`}\
 `,\
 `@eq`(`'\1`'`,`'check_list_duplicates`'`)
 `{`#check_list_duplicates.spec.xrep section=validate class_name=$class_name\

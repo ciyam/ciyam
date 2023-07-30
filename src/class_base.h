@@ -254,8 +254,12 @@ class CIYAM_BASE_DECL_SPEC class_base
    void begin_review( const std::string& key, begin_review_rc* p_rc = 0 );
    void finish_review( );
 
-   void perform_fetch( perform_fetch_rc* p_rc = 0, bool force = false ) { perform_fetch( get_key( ), p_rc ); }
-   void perform_fetch( const std::string& key_info, perform_fetch_rc* p_rc = 0, bool force = false );
+   inline void perform_fetch( perform_fetch_rc* p_rc = 0, bool force = false, bool sys_only_fields = false )
+   {
+      perform_fetch( get_key( ), p_rc, force, sys_only_fields );
+   }
+
+   void perform_fetch( const std::string& key_info, perform_fetch_rc* p_rc = 0, bool force = false, bool sys_only_fields = false );
 
    void perform_lazy_fetch( );
    void ensure_original_fetch( );
