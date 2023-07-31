@@ -3090,7 +3090,7 @@ void setup_select_columns( class_base& instance, const vector< string >& field_i
 void split_key_info( const string& key_info,
  vector< pair< string, string > >& fixed_info,
  vector< pair< string, string > >& paging_info,
- vector< string >& order_info, bool do_not_add_key_to_order )
+ vector< string >& order_info, bool order_required )
 {
    string::size_type pos = key_info.find( ' ' );
 
@@ -3101,7 +3101,7 @@ void split_key_info( const string& key_info,
 
       // NOTE: The primary key is always being added to the end of the order info as it
       // is not known here if the query will have repeatably ordered results without it.
-      if( !do_not_add_key_to_order )
+      if( order_required )
          order_info.push_back( "Key_" );
    }
    else
@@ -3123,8 +3123,7 @@ void split_key_info( const string& key_info,
 
       // NOTE: The primary key is always being added to the end of the order info as it
       // is not known here if the query will have repeatably ordered results without it.
-      if( !do_not_add_key_to_order )
-         order_info.push_back( "Key_" );
+      order_info.push_back( "Key_" );
 
       if( values.empty( ) )
       {
@@ -3389,6 +3388,7 @@ string construct_sql_select(
    else
    {
       sql_fields_and_table += "C_Key_,C_Ver_,C_Rev_,C_Typ_";
+
       for( size_t i = 0; i < field_info.size( ); i++ )
       {
          string next_field( field_info[ i ] );
@@ -3430,8 +3430,10 @@ string construct_sql_select(
          }
 
          bool is_sub_select = false;
-         string sub_select_sql_prefix, sub_select_sql_suffix;
+
          class_base* p_instance( &instance );
+
+         string sub_select_sql_prefix, sub_select_sql_suffix;
 
          // NOTE: If a child sub-context & field has been provided then one or more sub-selects
          // (depending upon the operator used) will be included in the generated SQL expression.
@@ -14974,7 +14976,7 @@ void perform_instance_fetch( class_base& instance,
          vector< pair< string, string > > fixed_info;
          vector< pair< string, string > > paging_info;
 
-         split_key_info( key_info, fixed_info, paging_info, order_info, true );
+         split_key_info( key_info, fixed_info, paging_info, order_info, false );
 
          sql = construct_sql_select( instance, field_info, order_info,
           query_info, fixed_info, paging_info, "", false, true, 1, only_sys_fields, "" );
@@ -15329,7 +15331,7 @@ bool perform_instance_iterate( class_base& instance,
          }
 
          split_key_info( final_key_info, fixed_info,
-          paging_info, order_info, ( optimisation == e_sql_optimisation_unordered ) );
+          paging_info, order_info, ( optimisation != e_sql_optimisation_unordered ) );
 
          if( !query.empty( ) )
          {
