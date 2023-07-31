@@ -458,8 +458,11 @@ void setup_list_fields( list_source& list,
          {
             --index_count;
 
-            if( !is_hidden && !index_count && allow_sorting )
+            if( !is_hidden && allow_sorting )
+            {
+               index_count = 0;
                list.sort_fields.insert( field_id );
+            }
          }
 
          if( extra_data.count( c_field_extra_encrypted ) )
