@@ -54,8 +54,12 @@
 `{`$i`}      string message( get_module_string( "`{`$arg_id`}_message" ) );
 
 `{`$i`}      message = search_replace( message, "@class", get_obj( ).get_display_name( ) );
+`{`!`@eq`(`$arg_field`,`'`'`)\
+`{`$i`}      message = search_replace( message, "@field", get_obj( ).get_field_display_name( "`{`$arg_field`}") );
+`}\
 `{`$i`}      message = search_replace( message, "@source_field", get_obj( ).`{`$arg_sfield`}( ) );
 `{`!`@eq`(`$arg_spfield`,`'`'`)\
+`{`$i`}      message = search_replace( message, "@source_class", get_obj( ).`{`$arg_spfield`}( ).get_display_name( ) );
 `{`$i`}      message = search_replace( message, "@source_parent", get_obj( ).get_field_display_name( "`{`$arg_spfield`}" ) );
 `{`!`@eq`(`$arg_scfield`,`'`'`)\
 `{`$i`}      message = search_replace( message, "@source_child", get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) );

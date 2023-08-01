@@ -1,0 +1,29 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+   // [(start trigger_set_variable)] `{`$arg_id`}
+`{`!`@eq`(`$arg_create_only`,`'`'`)`|`!`@eq`(`$arg_update_only`,`'`'`)\
+   if( `{`!`@eq`(`$arg_update_only`,`'`'`)!`}is_create )
+`,\
+   // NOTE: Empty code block for scope purposes.
+`}\
+   {
+      bool set_value = `{`@eq`(`$arg_tfield`,`'`'`)true`,get_obj( ).`{`$arg_tfield`}( )`};
+
+      if( set_value )
+`{`@eq`(`$arg_system`,`'true`'`)\
+         set_system_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_field`}( ) );
+`,`@eq`(`$arg_session`,`'true`'`)\
+         set_session_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_field`}( ) );
+`,\
+         get_obj( ).set_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_field`}( ) );
+`}`{`!`@eq`(`$arg_ofield`,`'`'`)\
+      else
+`{`@eq`(`$arg_system`,`'true`'`)\
+         set_system_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_ofield`}( ) );
+`,`@eq`(`$arg_session`,`'true`'`)\
+         set_session_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_ofield`}( ) );
+`,\
+         get_obj( ).set_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_ofield`}( ) );
+`}`}\
+   }
+   // [(finish trigger_set_variable)] `{`$arg_id`}
+`}

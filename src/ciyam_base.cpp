@@ -14844,13 +14844,14 @@ void finish_instance_op( class_base& instance, bool apply_changes,
       }
       catch( exception& e )
       {
-         string field;
+         string field, second;
 
          perform_op_cancel( handler, instance, op );
 
          // NOTE: A failed INSERT or UPDATE could be due to a unique index violation
          // so query all unique indexes to determine if indeed this has occurred and
-         // if so then report the error against the last field of the smallest index.
+         // if so then report the error against the last field of the smallest index
+         // (or last two if the variable "@display_last_two_for_duplicate" is set).
          if( executing_sql
           && ( op == class_base::e_op_type_create || op == class_base::e_op_type_update ) )
          {
@@ -14896,6 +14897,9 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                   {
                      num_columns = unique_index_columns.size( );
                      field = unique_index_columns[ unique_index_columns.size( ) - 1 ].substr( 2 );
+
+                     if( unique_index_columns.size( ) > 1 )
+                        second = unique_index_columns[ unique_index_columns.size( ) - 2 ].substr( 2 );
                   }
                }
             }
@@ -14907,11 +14911,26 @@ void finish_instance_op( class_base& instance, bool apply_changes,
          {
             TRACE_LOG( TRACE_SQLSTMTS, e.what( ) );
 
-            throw runtime_error( get_string_message(
-             GS( c_str_index_duplicate ), make_pair( c_str_parm_index_duplicate_field,
-             instance.get_field_display_name( instance_accessor.get_field_id( field ) ) ),
-             make_pair( c_str_parm_index_duplicate_value,
-             instance.get_field_value( instance.get_field_num( field ) ) ),
+            string names;
+            string values;
+
+            if( !second.empty( ) && !instance.get_variable(
+             get_special_var_name( e_special_var_display_last_two_for_duplicate ) ).empty( ) )
+            {
+               values += instance.get_field_value( instance.get_field_num( second ) );
+               values += ',';
+
+               names += instance.get_field_display_name( instance_accessor.get_field_id( second ) );
+               names += ' ' + GS( c_str_and ) + ' ';
+            }
+
+            values += instance.get_field_value( instance.get_field_num( field ) );
+            names += instance.get_field_display_name( instance_accessor.get_field_id( field ) );
+
+            throw runtime_error(
+             get_string_message( GS( c_str_index_duplicate ),
+             make_pair( c_str_parm_index_duplicate_field, names ),
+             make_pair( c_str_parm_index_duplicate_value, values ),
              make_pair( c_str_parm_index_duplicate_class, instance.get_display_name( ) ) ) );
          }
       }

@@ -233,6 +233,7 @@ enum special_var
    e_special_var_blockchain_peer_has_supporters,
    e_special_var_blockchain_primary_pubkey_hash,
    e_special_var_blockchain_signature_file_hash,
+   e_special_var_display_last_two_for_duplicate,
    e_special_var_blockchain_tertiary_pubkey_hash,
    e_special_var_blockchain_secondary_pubkey_hash
 };
