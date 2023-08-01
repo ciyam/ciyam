@@ -7,6 +7,8 @@
 #ifndef CIYAM_STRINGS_H
 #  define CIYAM_STRINGS_H
 
+const char* const c_str_or = "or";
+const char* const c_str_and = "and";
 const char* const c_str_page = "Page";
 const char* const c_str_true = "True";
 const char* const c_str_false = "False";
@@ -37,7 +39,7 @@ const char* const c_str_parm_version_mismatch_expected = "{@expected}";
 const char* const c_str_permission_denied = "Permission denied.";
 const char* const c_str_record_constrained = "This record cannot be destroyed as it is being used by one or more {@class} records.";
 const char* const c_str_parm_record_constrained_class = "{@class}";
-const char* const c_str_index_duplicate = "This {@field} [key: {@value}] is already being used by another {@class} record.";
+const char* const c_str_index_duplicate = "This {@field} [val: {@value}] is already being used by another {@class} record.";
 const char* const c_str_parm_index_duplicate_field = "{@field}";
 const char* const c_str_parm_index_duplicate_value = "{@value}";
 const char* const c_str_parm_index_duplicate_class = "{@class}";

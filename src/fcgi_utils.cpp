@@ -498,6 +498,9 @@ string remove_key( const string& src )
    string str( src );
    string::size_type pos = str.find( " [key: " );
 
+   if( pos == string::npos )
+      pos = str.find( " [val: " );
+
    if( pos != string::npos )
    {
       string::size_type epos = str.find( "] ", pos + 1 );
