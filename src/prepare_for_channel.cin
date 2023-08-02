@@ -30,7 +30,7 @@ HEIGHT=@$HEIGHT+1
 .module_list
 LINES=@repstr: /\n:$OUTPUT
 MODULE=%LINES:2%
-.perform_bulk_ops admin @now $MODULE Peerchain_Node_User $IDENTITY.csv -f=Peerchain_Node=$IDENTITY,Local=1,Name -export=@key,Active,Name
+.perform_bulk_ops admin @now $MODULE Peerchain_User $IDENTITY.csv -f=Peerchain=$IDENTITY,Local=1,Name -export=@key,Active,Name
 .storage_channel_documents -prepare_for_submit $IDENTITY
 @ifdef $OUTPUT
 BLOCKCHAIN=$OUTPUT
