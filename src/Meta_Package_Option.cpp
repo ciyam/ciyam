@@ -3671,6 +3671,10 @@ bool Meta_Package_Option::impl::is_filtered( ) const
    ( void )state;
 
    // [<start is_filtered>]
+//nyi
+   if( !get_obj( ).Package( ).Model( ).Type( )
+    && ( get_obj( ).Name( ) == "@use_demo_data" ) )
+      return true;
    // [<finish is_filtered>]
 
    return false;

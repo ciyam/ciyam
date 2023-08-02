@@ -5030,7 +5030,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>
+     <modifiers>100:relegate
     </field>
     <field/>
      <name>field_model_allow_anonymous_access

@@ -2674,7 +2674,7 @@
 `{`$specification_Model_view_field009`=`'105115`'`}
 `{`$specification_Model_view_ftype009`=`'bool`'`}
 `{`$specification_Model_view_extra009`=`'`'`}
-`{`$specification_Model_view_fmods009`=`'`'`}
+`{`$specification_Model_view_fmods009`=`'100:relegate`'`}
 `{`$specification_Model_view_fname009`=`'field_model_use_package_demo_data`'`}
 `{`$specification_Model_view_fmand009`=`'true`'`}
 `{`$specification_Model_view_field010`=`'105116`'`}
