@@ -13,11 +13,11 @@ pe guest 20120102 100 136100 "-v=@async=false,@message=Installing User Package..
 pf 100 106100 "106104 " 106101,106102,106104 -min
 System_Peerchain,System_Peerchain,M001C100
 User,User,M001C101
-Peerchain_Node,Peerchain_Nodes,M001C102
-Peerchain_Node_Item,Peerchain_Node_Items,M001C103
-Peerchain_Node_User,Peerchain_Node_User,M001C104
+Peerchain,Peerchains,M001C102
+Peerchain_Item,Peerchain_Items,M001C103
+Peerchain_User,Peerchain_User,M001C104
 Contact,Contacts,M001C105
-Peerchain_Base,Peerchain_Bases,M001C106
+Core_Peer,Core_Peers,M001C106
 pf 100 107100 "107110 " 107101,107110 -min
 Name,M001C100F100
 Restore_In_Progress,M001C100F101
@@ -118,7 +118,7 @@ Host_And_Port_Info,M001C102F122
 Files_Received,M001C102F123
 Host_Name,M001C102F124
 Hub_Identity,M001C102F125
-Peerchain_Type,M001C102F126
+Core_Peer_Type,M001C102F126
 Port_Number,M001C102F127
 Receive_Chain_Id,M001C102F128
 Receive_Checksum,M001C102F129
@@ -141,7 +141,7 @@ Submit_Synchronising,M001C102F145
 Synchronising,M001C102F146
 Current_User,M001C102F147
 Current_Uid,M001C102F148
-Peerchain_Node,M001C103F100
+Peerchain,M001C103F100
 Original_Name,M001C103F101
 Submitting,M001C103F102
 Item_Name,M001C103F103
@@ -157,7 +157,7 @@ Actions,M001C103F112
 Change,M001C103F113
 File,M001C103F114
 Folder,M001C103F115
-Peerchain_Node,M001C104F100
+Peerchain,M001C104F100
 User,M001C104F101
 Active,M001C104F102
 Dummy_1,M001C104F103
@@ -165,7 +165,7 @@ External,M001C104F104
 Identity,M001C104F105
 Local,M001C104F106
 Name,M001C104F107
-Peerchain_Node,M001C105F100
+Peerchain,M001C105F100
 Peerchain_User,M001C105F101
 Local_User,M001C105F102
 Owner,M001C105F103
@@ -198,7 +198,7 @@ Initial_Shared_Hash,M001C106F116
 Host_Name,M001C106F117
 Hub_Checksum,M001C106F118
 Identity,M001C106F119
-Peerchain_Type,M001C106F120
+Core_Peer_Type,M001C106F120
 Port_Number,M001C106F121
 Shared_Secret,M001C106F122
 Connection_Type,M001C106F123
@@ -222,7 +222,7 @@ Minutes,E110
 Occurrence,E111
 Orientation,E112
 Peerchain_Connection,E113
-Peerchain_Type,E114
+Core_Peer_Type,E114
 Peerchain_Status,E115
 Folder_Status,E116
 Change_Password_Seconds,E117
