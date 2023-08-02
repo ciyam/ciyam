@@ -292,7 +292,7 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    bool filtered( ) const;
 
-   bool has_transient_filter_fields( ) const { return !transient_filter_field_values.empty( ); }
+   bool has_transient_filter_fields( ) const;
 
    std::string get_validation_errors( validation_errors_type type = e_validation_errors_type_all );
 

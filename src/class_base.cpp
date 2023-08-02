@@ -1203,6 +1203,15 @@ void class_base::copy_original_field_values( const class_base& src )
       set_field_value( i, src.original_values[ i ] );
 }
 
+bool class_base::has_transient_filter_fields( ) const
+{
+   // NOTE: Enforce Meta_Package_Option to always call "is_filtered".
+   if( get_class_id( ) == "137100" )
+      return true;
+   else
+      return !transient_filter_field_values.empty( );
+}
+
 bool class_base::filtered( ) const
 {
    if( !transient_filter_field_values.empty( ) )
@@ -1214,6 +1223,10 @@ bool class_base::filtered( ) const
             return true;
       }
    }
+
+   // NOTE: Enforce Meta_Package_Option to always call "is_filtered".
+   if( get_class_id( ) == "137100" )
+      return is_filtered( );
 
    return filters.empty( ) ? false : is_filtered( );
 }
