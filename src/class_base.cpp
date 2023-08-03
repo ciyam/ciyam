@@ -3474,6 +3474,56 @@ string replace_leading_cols_with_ws( const string& s, const string& sep, size_t 
    return retval;
 }
 
+string insert_or_remove_list_item( const string& item, const string& list )
+{
+   if( item.empty( ) )
+      return list;
+   else
+   {
+      vector< string > items;
+
+      string input( list );
+
+      if( !input.empty( ) )
+      {
+         replace( input, ", ", "," );
+         split( input, items );
+      }
+
+      string retval;
+
+      bool found = false;
+
+      for( size_t i = 0; i < items.size( ); i++ )
+      {
+         string next( items[ i ] );
+
+         if( !next.empty( ) )
+         {
+            if( next == item )
+               found = true;
+            else
+            {
+               if( !retval.empty( ) )
+                  retval += ',';
+               retval += next;
+            }
+         }
+      }
+
+      if( !found )
+      {
+         if( !retval.empty( ) )
+            retval += ',';
+         retval += item;
+      }
+
+      replace( retval, ",", ", " );
+
+      return retval;
+   }
+}
+
 string decode_hex( const string& s )
 {
    return hex_decode( s );
