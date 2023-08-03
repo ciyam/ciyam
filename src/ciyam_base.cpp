@@ -3466,7 +3466,28 @@ string construct_sql_select(
 
          get_field_name( *p_instance, field_name, &is_sql_numeric, &field_type );
 
+         vector< string > replacements;
+         instance.get_transient_replacement_field_names( field_name, replacements );
+
+         string columns;
+
+         if( replacements.empty( ) )
+            columns = "C_" + field_name;
+         else
+         {
+            for( size_t j = 0; j < replacements.size( ); j++ )
+            {
+               if( !columns.empty( ) )
+                  columns += ',';
+
+               columns += "C_" + get_field_name( instance, replacements[ j ] );
+            }
+
+            columns = "CONCAT(" + columns + ")";
+         }
+
          bool was_like = false;
+
          if( field_values.length( ) >= 2 )
          {
             if( field_values[ 0 ] == '*' && field_values[ field_values.length( ) - 1 ] == '*' )
@@ -3479,7 +3500,7 @@ string construct_sql_select(
                field_values = '%' + field_values + '%';
 
                // NOTE: For end-user convenience LIKE queries are performed case-insensitively.
-               sql += "LOWER(C_" + field_name + ") " + invert_prefix + "LIKE " + sql_quote( lower( field_values ) );
+               sql += "LOWER(" + columns + ") " + invert_prefix + "LIKE " + sql_quote( lower( field_values ) );
             }
             else if( field_values[ field_values.length( ) - 1 ] == '*' )
             {
@@ -3489,7 +3510,7 @@ string construct_sql_select(
 
                field_values += '%';
 
-               sql += "C_" + field_name + " " + invert_prefix + "LIKE " + sql_quote( field_values );
+               sql += columns + " " + invert_prefix + "LIKE " + sql_quote( field_values );
             }
          }
 
@@ -3498,7 +3519,8 @@ string construct_sql_select(
             string::size_type pos = field_values.find( ".." );
             if( pos != string::npos )
             {
-               sql += "C_" + field_name + invert_prefix + " BETWEEN ";
+               sql += columns + invert_prefix + " BETWEEN ";
+
                if( is_sql_numeric )
                {
                   sql += field_values.substr( 0, pos );
@@ -3515,12 +3537,14 @@ string construct_sql_select(
             else
             {
                pos = field_values.find( '|' );
+
                if( pos == string::npos )
                {
                   pos = field_values.find( '&' );
+
                   if( pos == string::npos )
                   {
-                     sql += "C_" + field_name + ( invert ? " <> " : " = " );
+                     sql += columns + ( invert ? " <> " : " = " );
 
                      sql += is_sql_numeric ? field_values : sql_quote( formatted_value( field_values, field_type ) );
                   }
@@ -3530,6 +3554,7 @@ string construct_sql_select(
                         throw runtime_error( "unexpected '&' operator found in '" + field_values + "'" );
 
                      bool is_first = true;
+
                      while( true )
                      {
                         if( is_first )
@@ -3541,7 +3566,7 @@ string construct_sql_select(
                            sql += sub_select_sql_prefix;
                         }
 
-                        sql += "C_" + field_name + ( invert ? " <> " : " = " );
+                        sql += columns + ( invert ? " <> " : " = " );
 
                         string next_value( field_values.substr( 0, pos ) );
                         sql += is_sql_numeric ? next_value : sql_quote( formatted_value( next_value, field_type ) );
@@ -3556,7 +3581,8 @@ string construct_sql_select(
                }
                else
                {
-                  sql += "C_" + field_name + " " + invert_prefix + "IN (";
+                  sql += columns + " " + invert_prefix + "IN (";
+
                   while( true )
                   {
                      string next_value( field_values.substr( 0, pos ) );
