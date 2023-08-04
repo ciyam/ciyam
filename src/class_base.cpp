@@ -3474,7 +3474,7 @@ string replace_leading_cols_with_ws( const string& s, const string& sep, size_t 
    return retval;
 }
 
-string insert_or_remove_list_item( const string& item, const string& list )
+string insert_or_remove_list_item( const string& item, const string& list, bool items_are_keys )
 {
    if( item.empty( ) )
       return list;
@@ -3486,7 +3486,8 @@ string insert_or_remove_list_item( const string& item, const string& list )
 
       if( !input.empty( ) )
       {
-         replace( input, ", ", "," );
+         if( !items_are_keys )
+            replace( input, ", ", "," );
          split( input, items );
       }
 
@@ -3518,7 +3519,8 @@ string insert_or_remove_list_item( const string& item, const string& list )
          retval += item;
       }
 
-      replace( retval, ",", ", " );
+      if( !items_are_keys )
+         replace( retval, ",", ", " );
 
       return retval;
    }
