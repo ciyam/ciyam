@@ -1290,7 +1290,13 @@ inline std::string unquoted_literal( const std::string& s, char esc = '\\' ) { r
 
 std::string CIYAM_BASE_DECL_SPEC replace_leading_cols_with_ws( const std::string& s, const std::string& sep, size_t num_spaces );
 
-std::string CIYAM_BASE_DECL_SPEC insert_or_remove_list_item( const std::string& item, const std::string& list );
+std::string CIYAM_BASE_DECL_SPEC insert_or_remove_list_item(
+ const std::string& item, const std::string& list, bool items_are_keys = false );
+
+inline std::string insert_or_remove_list_key( const std::string& key, const std::string& list )
+{
+   return insert_or_remove_list_item( key, list, true );
+}
 
 std::string CIYAM_BASE_DECL_SPEC decode_hex( const std::string& s );
 std::string CIYAM_BASE_DECL_SPEC encode_hex( const std::string& s );
