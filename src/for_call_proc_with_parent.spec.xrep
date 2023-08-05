@@ -1,0 +1,13 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_call_proc_with_parent)] `{`$arg_id`}
+   class_pointer< `{`$module_name`}_`{`$arg_pclass`} > cp_source( e_create_instance );
+
+   cp_source->begin_review( `{`$arg_procedure_arg`} );
+
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_ochild_field`,`'`'`)`{`$i`=`'   `'`}\
+   if( cp_source->`{`$arg_ochild_field`}( ) )
+`}`{`$i`}   get_obj( ).`{`$arg_other_procedure`}( cp_source->`{`$arg_child_field`}( ) );
+
+   cp_source->finish_review( );
+   // [(finish for_call_proc_with_parent)] `{`$arg_id`}
+`}
