@@ -1,0 +1,28 @@
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start fk_link_to_new_or_existing_child)] `{`$arg_id`}
+   if( `{`@eq`(`$arg_check_clone`,`'true`'`)!is_null( get_obj( ).get_clone_key( ) )
+    && `}!is_null( get_obj( ).`{`$arg_ofield`}( ) ) && is_null( get_obj( ).`{`$arg_field`}( ) ) )
+   {
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_scfield`} ) );
+      key_info += "," + string( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_oscfield`} ) );
+      key_info += "#2 " + get_obj( ).`{`$arg_sfield`}( ).get_key( ) + "," + get_obj( ).`{`$arg_ofield`}( ).get_key( );
+
+      class_pointer< `{`$module_name`}_`{`$arg_spclass`} > cp_source( e_create_instance );
+
+      perform_fetch_rc rc;
+      cp_source->perform_fetch( key_info, &rc, false, true );
+
+      if( rc != e_perform_fetch_rc_okay )
+      {
+         cp_source->op_create( get_obj( ).get_key( ) + "_C" );
+
+         cp_source->`{`$arg_scfield`}( get_obj( ).`{`$arg_sfield`}( ) );
+         cp_source->`{`$arg_o2scfield`}( get_obj( ).`{`$arg_ofield`}( ).get_key( ) );
+
+         cp_source->op_apply( );
+      }
+
+      get_obj( ).`{`$arg_field`}( cp_source->get_key( ) );
+   }
+   // [(finish fk_link_to_new_or_existing_child)] `{`$arg_id`}
+`}
