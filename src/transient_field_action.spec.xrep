@@ -199,7 +199,7 @@ get_perms( ).count( "`{`$arg_permission_id`}" )`{`!`@eq`(`$arg_altfield`,`'`'`) 
 `{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
       actions += "$" + get_obj( ).get_class_id( );
 `}`{`!`@eq`(`$arg_ofield`,`'`'`)`&`!`@eq`(`$arg_vfield`,`'`'`)\
-         actions += "." + string( c_field_id_`{`$arg_ofield`} ) + "=" + to_string( get_obj( ).`{`$arg_vfield`}( ) );
+      actions += "." + string( c_field_id_`{`$arg_ofield`} ) + "=" + to_string( get_obj( ).`{`$arg_vfield`}( ) );
 `}`{`@eq`(`$arg_edit_record`,`'true`'`)
       actions += "*@id";
 `}`{`@eq`(`$arg_clone_record`,`'true`'`)
