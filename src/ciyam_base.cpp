@@ -1547,7 +1547,7 @@ struct reconstruct_trace_progress : progress
          file_touch( stop_file, 0, true );
 
       // FUTURE: This message should be handled as a server string message.
-      string message( "(starting restore for ODS DB '" + name + "'...)" );
+      string message( "(starting restore for ODS DB '" + name + "'..." );
 
       TRACE_LOG( TRACE_ANYTHING, message );
    }
@@ -1566,7 +1566,7 @@ struct reconstruct_trace_progress : progress
    ~reconstruct_trace_progress( )
    {
       // FUTURE: This message should be handled as a server string message.
-      string message( "(...finished restore for ODS DB '" + name + "')" );
+      string message( "...finished restore for ODS DB '" + name + "')" );
 
       TRACE_LOG( TRACE_ANYTHING, message );
 
