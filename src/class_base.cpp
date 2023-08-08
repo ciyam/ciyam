@@ -1169,6 +1169,16 @@ void class_base::set_instance( const string& key )
    set_key( key );
 }
 
+bool class_base::get_is_for_peer( ) const
+{
+   return has_variable( get_special_var_name( e_special_var_identity ) );
+}
+
+void class_base::set_is_for_peer( const string& identity )
+{
+   set_variable( get_special_var_name( e_special_var_identity ), identity );
+}
+
 void class_base::copy_all_field_values( const class_base& src )
 {
    if( get_class_id( ) != src.get_class_id( ) )
@@ -1234,6 +1244,7 @@ bool class_base::filtered( ) const
 string class_base::get_validation_errors( validation_errors_type type )
 {
    string retval;
+
    for( validation_error_iterator vei = validation_errors.begin( ), end = validation_errors.end( ); vei != end; ++vei )
    {
       if( !retval.empty( ) )
@@ -1405,6 +1416,11 @@ bool class_base::has_field_changed( int field ) const
 string class_base::get_raw_variable( const string& name ) const
 {
    return p_impl->variables[ name ];
+}
+
+bool class_base::has_variable( const string& name ) const
+{
+   return p_impl->variables.count( name );
 }
 
 string class_base::get_variable( const string& name_or_expr ) const

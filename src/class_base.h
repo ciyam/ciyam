@@ -287,6 +287,10 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    void set_instance( const std::string& key );
 
+   bool get_is_for_peer( ) const;
+
+   void set_is_for_peer( const std::string& identity );
+
    void copy_all_field_values( const class_base& src );
    void copy_original_field_values( const class_base& src );
 
@@ -365,6 +369,8 @@ class CIYAM_BASE_DECL_SPEC class_base
    inline const std::string& get_graph_parent_fk_field( ) const { return graph_parent_fk_field; }
 
    virtual std::string get_raw_variable( const std::string& name ) const;
+
+   bool has_variable( const std::string& name ) const;
 
    std::string get_variable( const std::string& name_or_expr ) const;
    void set_variable( const std::string& name, const std::string& value );

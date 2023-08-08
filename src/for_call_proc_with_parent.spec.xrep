@@ -7,7 +7,10 @@
 `{`$i`=`'`'`}`{`!`@eq`(`$arg_ochild_field`,`'`'`)`{`$i`=`'   `'`}\
    if( cp_source->`{`$arg_ochild_field`}( ) )
 `}`{`$i`}   get_obj( ).`{`$arg_other_procedure`}( cp_source->`{`$arg_child_field`}( ) );
-
+`{`!`@eq`(`$arg_ochild_field`,`'`'`)\
+   else
+      get_obj( ).`{`$arg_other_procedure_2`}( cp_source->`{`$arg_o2child_field`}( ) );
+`}
    cp_source->finish_review( );
    // [(finish for_call_proc_with_parent)] `{`$arg_id`}
 `}

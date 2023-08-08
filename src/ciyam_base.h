@@ -1001,6 +1001,8 @@ void CIYAM_BASE_DECL_SPEC transaction_log_command(
 
 void CIYAM_BASE_DECL_SPEC append_transaction_log_command( const std::string& log_command );
 
+void CIYAM_BASE_DECL_SPEC append_peerchain_tx_log_command( const std::string& identity, const std::string& log_command );
+
 void CIYAM_BASE_DECL_SPEC insert_log_blobs_into_tree( const std::string& tree_tag, const std::string& log_blob_file_prefix );
 
 void CIYAM_BASE_DECL_SPEC append_transaction_log_lines_to_blob_files( const std::string& log_blog_file_prefix,
