@@ -480,6 +480,8 @@ struct session
    string transaction_log_command;
    transaction_commit_helper* p_tx_helper;
 
+   map< string, string > peerchain_tx_log_command;
+
    string last_set_item;
    set< string > set_items;
 
@@ -14014,15 +14016,10 @@ void transaction_log_command( const string& log_command,
    }
    else
    {
-      if( replace_current )
-         gtp_session->transaction_log_command = log_command;
+      if( !replace_current )
+         append_transaction_log_command( log_command );
       else
-      {
-         if( !gtp_session->transaction_log_command.empty( ) )
-            gtp_session->transaction_log_command += '\n';
-
-         gtp_session->transaction_log_command += log_command;
-      }
+         gtp_session->transaction_log_command = log_command;
 
       if( p_tx_helper )
          gtp_session->p_tx_helper = p_tx_helper;
@@ -14035,7 +14032,19 @@ void append_transaction_log_command( const string& log_command )
    {
       if( !gtp_session->transaction_log_command.empty( ) )
          gtp_session->transaction_log_command += '\n';
+
       gtp_session->transaction_log_command += log_command;
+   }
+}
+
+void append_peerchain_tx_log_command( const string& identity, const string& log_command )
+{
+   if( !log_command.empty( ) )
+   {
+      if( !gtp_session->peerchain_tx_log_command[ identity ].empty( ) )
+         gtp_session->peerchain_tx_log_command[ identity ] += '\n';
+
+      gtp_session->peerchain_tx_log_command[ identity ] += log_command;
    }
 }
 
@@ -14719,121 +14728,134 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
          bool supports_sql_undo = handler.supports_sql_undo( );
 
-         if( persistence_type == 0 ) // i.e. SQL persistence
+         string identity_var_name( get_special_var_name( e_special_var_identity ) );
+
+         if( instance.has_variable( identity_var_name ) )
          {
-            vector< string > sql_stmts;
-            vector< string > sql_undo_stmts;
+            string identity( instance.get_raw_variable( identity_var_name ) );
 
-            vector< string >* p_sql_undo_stmts = 0;
+            string log_command( instance.get_fields_and_values( class_base::e_field_label_type_short_id, true ) );
 
-            if( supports_sql_undo )
-               p_sql_undo_stmts = &sql_undo_stmts;
-
-            if( !instance_accessor.get_sql_stmts( sql_stmts, gtp_session->tx_key_info, p_sql_undo_stmts ) )
-               throw runtime_error( "unexpected get_sql_stmts failure" );
-
-            // NOTE: If updating but no fields apart from the revision one were changed (by any
-            // derivation) then all update statements are discarded to skip the unnecessary SQL.
-            if( op == class_base::e_op_type_update && instance_accessor.has_skipped_empty_update( ) )
-               sql_stmts.clear( );
-
-            if( !sql_stmts.empty( ) && gtp_session->ap_db.get( ) )
-            {
-               executing_sql = true;
-
-               for( size_t i = 0; i < sql_stmts.size( ); i++ )
-               {
-                  if( sql_stmts[ i ].empty( ) )
-                     continue;
-
-                  TRACE_LOG( TRACE_SQLSTMTS, sql_stmts[ i ] );
-                  exec_sql( *gtp_session->ap_db, sql_stmts[ i ] );
-
-                  ++gtp_session->sql_count;
-               }
-            }
-
-            executing_sql = false;
-
-            if( supports_sql_undo )
-               gtp_session->sql_undo_statements.insert(
-                gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
-         }
-         else if( persistence_type == 1 ) // i.e. ODS global persistence
-         {
-            if( instance.get_variable( get_special_var_name( e_special_var_skip_persistance ) ).empty( )
-             && ( op == class_base::e_op_type_create || op == class_base::e_op_type_update || op == class_base::e_op_type_destroy ) )
-            {
-               string persistence_extra( instance.get_persistence_extra( ) );
-
-               string root_child_folder( persistence_extra );
-               bool is_file_not_folder( global_storage_persistence_is_file( root_child_folder ) );
-
-               ods::bulk_write bulk_write( *gap_ods );
-               scoped_ods_instance ods_instance( *gap_ods );
-
-               gap_ofs->set_root_folder( root_child_folder );
-
-               if( op == class_base::e_op_type_destroy )
-               {
-                  if( is_file_not_folder && gap_ofs->has_file( instance.get_key( ) ) )
-                     gap_ofs->remove_file( instance.get_key( ) );
-                  else if( !is_file_not_folder && gap_ofs->has_folder( instance.get_key( ) ) )
-                     gap_ofs->remove_folder( instance.get_key( ), 0, true );
-               }
-               else
-               {
-                  stringstream sio_data;
-                  auto_ptr< sio_writer > ap_sio_writer;
-
-                  if( is_file_not_folder )
-                     ap_sio_writer.reset( new sio_writer( sio_data ) );
-
-                  bool had_any_non_transients = false;
-                  int num_fields = instance.get_num_fields( );
-
-                  if( !is_file_not_folder )
-                  {
-                     if( !gap_ofs->has_folder( instance.get_key( ) ) )
-                        gap_ofs->add_folder( instance.get_key( ) );
-
-                     gap_ofs->set_folder( instance.get_key( ) );
-                  }
-
-                  // NOTE: If is stored as a file then attributes are expected to be
-                  // in the format of a structured I/O file otherwise each attribute
-                  // is expected to be a file within the record's folder.
-                  for( int i = 0; i < num_fields; i++ )
-                  {
-                     if( instance.is_field_transient( i ) )
-                        continue;
-
-                     had_any_non_transients = true;
-
-                     string data( instance.get_field_value( i ) );
-                     string attribute_name( lower( instance.get_field_name( i ) ) );
-
-                     if( !is_file_not_folder )
-                        gap_ofs->store_as_text_file( attribute_name, data );
-                     else
-                        ap_sio_writer->write_attribute( attribute_name, data );
-                  }
-
-                  if( is_file_not_folder )
-                  {
-                     if( had_any_non_transients )
-                     {
-                        ap_sio_writer->finish_sections( );
-                        gap_ofs->store_file( instance.get_key( ), 0, &sio_data );
-                     }
-                     else
-                        gap_ofs->store_file( instance.get_key( ), c_file_zero_length );
-                  }
-               }
-            }
+            append_peerchain_tx_log_command( identity, log_command );
          }
          else
-            throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in finish_instance_op" );
+         {
+            if( persistence_type == 0 ) // i.e. SQL persistence
+            {
+               vector< string > sql_stmts;
+               vector< string > sql_undo_stmts;
+
+               vector< string >* p_sql_undo_stmts = 0;
+
+               if( supports_sql_undo )
+                  p_sql_undo_stmts = &sql_undo_stmts;
+
+               if( !instance_accessor.get_sql_stmts( sql_stmts, gtp_session->tx_key_info, p_sql_undo_stmts ) )
+                  throw runtime_error( "unexpected get_sql_stmts failure" );
+
+               // NOTE: If updating but no fields apart from the revision one were changed (by any
+               // derivation) then all update statements are discarded to skip the unnecessary SQL.
+               if( op == class_base::e_op_type_update && instance_accessor.has_skipped_empty_update( ) )
+                  sql_stmts.clear( );
+
+               if( !sql_stmts.empty( ) && gtp_session->ap_db.get( ) )
+               {
+                  executing_sql = true;
+
+                  for( size_t i = 0; i < sql_stmts.size( ); i++ )
+                  {
+                     if( sql_stmts[ i ].empty( ) )
+                        continue;
+
+                     TRACE_LOG( TRACE_SQLSTMTS, sql_stmts[ i ] );
+                     exec_sql( *gtp_session->ap_db, sql_stmts[ i ] );
+
+                     ++gtp_session->sql_count;
+                  }
+               }
+
+               executing_sql = false;
+
+               if( supports_sql_undo )
+                  gtp_session->sql_undo_statements.insert(
+                   gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
+            }
+            else if( persistence_type == 1 ) // i.e. ODS global persistence
+            {
+               if( instance.get_variable( get_special_var_name( e_special_var_skip_persistance ) ).empty( )
+                && ( op == class_base::e_op_type_create || op == class_base::e_op_type_update || op == class_base::e_op_type_destroy ) )
+               {
+                  string persistence_extra( instance.get_persistence_extra( ) );
+
+                  string root_child_folder( persistence_extra );
+                  bool is_file_not_folder( global_storage_persistence_is_file( root_child_folder ) );
+
+                  ods::bulk_write bulk_write( *gap_ods );
+                  scoped_ods_instance ods_instance( *gap_ods );
+
+                  gap_ofs->set_root_folder( root_child_folder );
+
+                  if( op == class_base::e_op_type_destroy )
+                  {
+                     if( is_file_not_folder && gap_ofs->has_file( instance.get_key( ) ) )
+                        gap_ofs->remove_file( instance.get_key( ) );
+                     else if( !is_file_not_folder && gap_ofs->has_folder( instance.get_key( ) ) )
+                        gap_ofs->remove_folder( instance.get_key( ), 0, true );
+                  }
+                  else
+                  {
+                     stringstream sio_data;
+                     auto_ptr< sio_writer > ap_sio_writer;
+
+                     if( is_file_not_folder )
+                        ap_sio_writer.reset( new sio_writer( sio_data ) );
+
+                     bool had_any_non_transients = false;
+                     int num_fields = instance.get_num_fields( );
+
+                     if( !is_file_not_folder )
+                     {
+                        if( !gap_ofs->has_folder( instance.get_key( ) ) )
+                           gap_ofs->add_folder( instance.get_key( ) );
+
+                        gap_ofs->set_folder( instance.get_key( ) );
+                     }
+
+                     // NOTE: If is stored as a file then attributes are expected to be
+                     // in the format of a structured I/O file otherwise each attribute
+                     // is expected to be a file within the record's folder.
+                     for( int i = 0; i < num_fields; i++ )
+                     {
+                        if( instance.is_field_transient( i ) )
+                           continue;
+
+                        had_any_non_transients = true;
+
+                        string data( instance.get_field_value( i ) );
+                        string attribute_name( lower( instance.get_field_name( i ) ) );
+
+                        if( !is_file_not_folder )
+                           gap_ofs->store_as_text_file( attribute_name, data );
+                        else
+                           ap_sio_writer->write_attribute( attribute_name, data );
+                     }
+
+                     if( is_file_not_folder )
+                     {
+                        if( had_any_non_transients )
+                        {
+                           ap_sio_writer->finish_sections( );
+                           gap_ofs->store_file( instance.get_key( ), 0, &sio_data );
+                        }
+                        else
+                           gap_ofs->store_file( instance.get_key( ), c_file_zero_length );
+                     }
+                  }
+               }
+            }
+            else
+               throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in finish_instance_op" );
+         }
 
          // NOTE: In order to be able to create child records (or to review the just created instance)
          // the "create" lock is downgraded to an "update" lock after the SQL is executed but prior to

@@ -1,0 +1,27 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_clone_peer)] `{`$arg_id`}
+   if( !storage_locked_for_admin( ) )
+   {
+      get_obj( ).op_update( );
+
+      string key_info( gen_key( ) + string( " " ) + get_obj( ).get_key( ) );
+
+      class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
+
+      cp_source->op_create( key_info );
+
+      cp_source->`{`$arg_field`}( `{`$arg_value`} );
+
+      cp_source->`{`$arg_spfield`}( `{`$arg_procedure_arg`} );
+      cp_source->set_is_for_peer( cp_source->`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) );
+
+      cp_source->set_variable( get_special_var_name(
+       e_special_var_total_child_field_in_parent ), c_true_value );
+
+      cp_source->op_apply( );
+
+      get_obj( ).`{`$arg_ofield`}( get_obj( ).`{`$arg_o2field`}( ) );
+      get_obj( ).op_apply( );
+   }
+   // [(finish for_peer_clone)] `{`$arg_id`}
+`}
