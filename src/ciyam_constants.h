@@ -221,6 +221,7 @@ const char* const c_file_type_core_block_detail_unix_block_time_value_prefix = "
 const char* const c_sys = "sys";
 const char* const c_auto = "auto";
 const char* const c_init = "init";
+const char* const c_peer = "peer";
 const char* const c_admin = "admin";
 
 const char* const c_both = "both";

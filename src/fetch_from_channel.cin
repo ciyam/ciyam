@@ -144,7 +144,7 @@ USER_INFO_FILE=@files::$REVERSED.user_info.csv
 LINES=@repstr: /\n:$OUTPUT
 MODULE=%LINES:2%
 .session_variable @key_suffix $IDENTITY
-.perform_bulk_ops admin @now $MODULE Peerchain_User $REVERSED.user_info.csv -f=Peerchain=$IDENTITY,Local=0,User=admin
+.perform_bulk_ops peer @now $MODULE Peerchain_User $REVERSED.user_info.csv -f=Peerchain=$IDENTITY,Local=0,User=admin
 ~rm $REVERSED.user_info.csv
 ~rm $REVERSED.user_info.log
 @endif

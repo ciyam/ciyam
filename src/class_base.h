@@ -396,7 +396,7 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    std::string get_fields_and_values(
     field_label_type label_type = e_field_label_type_full_id,
-    bool include_unchanged = false, bool include_transients = false ) const;
+    bool include_defaults = false, bool include_transients = false ) const;
 
    virtual std::string get_field_value( int field ) const = 0;
    virtual void set_field_value( int field, const std::string& value ) = 0;

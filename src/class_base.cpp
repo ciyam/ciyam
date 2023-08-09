@@ -1499,7 +1499,7 @@ string class_base::get_short_field_id( int field ) const
 }
 
 string class_base::get_fields_and_values(
- field_label_type label_type, bool include_unchanged, bool include_transients ) const
+ field_label_type label_type, bool include_defaults, bool include_transients ) const
 {
    string str;
 
@@ -1508,7 +1508,7 @@ string class_base::get_fields_and_values(
 
    for( size_t i = 0; i < num_fields; i++ )
    {
-      if( ( ( include_unchanged || has_field_changed( i ) )
+      if( ( ( include_defaults || !is_field_default( i ) )
        && ( include_transients || !is_field_transient( i ) ) )
        || ( !graph_parent_fk_field.empty( ) && graph_parent_fk_field == get_field_id( i ) ) )
       {
