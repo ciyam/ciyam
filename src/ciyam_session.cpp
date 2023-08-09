@@ -310,6 +310,7 @@ void replace_field_values_to_log( string& next_command,
    if( p_prefix )
    {
       string::size_type pos = next_command.find( p_prefix );
+
       if( pos != string::npos )
       {
          char eos = ' ';
@@ -332,6 +333,7 @@ void replace_field_values_to_log( string& next_command,
    else
    {
       string::size_type pos = next_command.find( '"' );
+
       if( pos != string::npos )
       {
          string::size_type rpos = next_command.rfind( '"' );
@@ -4201,8 +4203,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      {
                         string::size_type rpos = 0;
 
-                        if( !field_values_to_log.empty( ) )
-                           replace_field_values_to_log( next_command, field_values_to_log, "-v=", &rpos );
+                        replace_field_values_to_log( next_command, field_values_to_log, "-v=", &rpos );
+
+                        if( field_values_to_log.empty( ) )
+                           replace( next_command, " \"-v=\"", "" );
 
                         replace_method_with_shortened_id( next_command, method, rpos, module, mclass, method_id );
 

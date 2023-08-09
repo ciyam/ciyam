@@ -218,7 +218,6 @@ const char* const c_special_variable_blockchain_shared_identity = "@blockchain_s
 const char* const c_special_variable_blockchain_waiting_for_hub = "@blockchain_waiting_for_hub";
 const char* const c_special_variable_blockchain_block_processing = "@blockchain_block_processing";
 const char* const c_special_variable_blockchain_zenith_tree_hash = "@blockchain_zenith_tree_hash";
-const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 const char* const c_special_variable_totals_exclude_hidden_blobs = "@totals_exclude_hidden_blobs";
 const char* const c_special_variable_blockchain_height_processing = "@blockchain_height_processing";
 const char* const c_special_variable_blockchain_peer_hub_identity = "@blockchain_peer_hub_identity";
@@ -229,6 +228,7 @@ const char* const c_special_variable_blockchain_signature_file_hash = "@blockcha
 const char* const c_special_variable_display_last_two_for_duplicate = "@display_last_two_for_duplicate";
 const char* const c_special_variable_blockchain_tertiary_pubkey_hash = "@blockchain_tertiary_pubkey_hash";
 const char* const c_special_variable_blockchain_secondary_pubkey_hash = "@blockchain_secondary_pubkey_hash";
+const char* const c_special_variable_skip_total_child_field_in_parent = "@skip_total_child_field_in_parent";
 
 trace_mutex g_mutex;
 
@@ -945,10 +945,6 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_blockchain_zenith_tree_hash );
       break;
 
-      case e_special_var_total_child_field_in_parent:
-      s = string( c_special_variable_total_child_field_in_parent );
-      break;
-
       case e_special_var_totals_exclude_hidden_blobs:
       s = string( c_special_variable_totals_exclude_hidden_blobs );
       break;
@@ -987,6 +983,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_secondary_pubkey_hash:
       s = string( c_special_variable_blockchain_secondary_pubkey_hash );
+      break;
+
+      case e_special_var_skip_total_child_field_in_parent:
+      s = string( c_special_variable_skip_total_child_field_in_parent );
       break;
 
       default:

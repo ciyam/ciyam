@@ -7,7 +7,7 @@
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && is_null( get_obj( ).`{`$arg_tfield`}( ) )
 `}\
-    && get_obj( ).get_variable( get_special_var_name( e_special_var_total_child_field_in_parent ) ).empty( ) )
+    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_total_child_field_in_parent ) ).empty( ) )
    {
       class_base* p_parent = get_obj( ).get_graph_parent( );
 
@@ -87,7 +87,7 @@
 `{`!`@eq`(`$arg_sfield`,`'`'`)\
     && get_obj( ).`{`$arg_sfield`}( )
 `}\
-    && get_obj( ).get_variable( get_special_var_name( e_special_var_total_child_field_in_parent ) ).empty( )
+    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_total_child_field_in_parent ) ).empty( )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && ( get_obj( ).`{`$arg_tfield`}( ).has_changed( )
     && is_null( get_obj( ).get_original_field_value( c_field_id_`{`$arg_tfield`} ) ) )
@@ -129,7 +129,7 @@
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && is_null( get_obj( ).`{`$arg_tfield`}( ) )
 `}\
-    && get_obj( ).get_variable( get_special_var_name( e_special_var_total_child_field_in_parent ) ).empty( ) )
+    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_total_child_field_in_parent ) ).empty( ) )
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - get_obj( ).`{`$arg_nfield`}( ) );

@@ -680,6 +680,7 @@ bool CIYAM_BASE_DECL_SPEC is_sys_uid( );
 bool CIYAM_BASE_DECL_SPEC is_anon_uid( );
 bool CIYAM_BASE_DECL_SPEC is_auto_uid( );
 bool CIYAM_BASE_DECL_SPEC is_init_uid( );
+bool CIYAM_BASE_DECL_SPEC is_peer_uid( );
 bool CIYAM_BASE_DECL_SPEC is_admin_uid( );
 
 bool CIYAM_BASE_DECL_SPEC is_system_uid( );

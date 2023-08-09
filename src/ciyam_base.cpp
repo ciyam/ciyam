@@ -480,7 +480,7 @@ struct session
    string transaction_log_command;
    transaction_commit_helper* p_tx_helper;
 
-   map< string, string > peerchain_tx_log_command;
+   vector< string > peerchain_log_commands;
 
    string last_set_item;
    set< string > set_items;
@@ -573,6 +573,7 @@ struct op_lock
    int64_t transaction_level;
 
    session* p_session;
+
    class_base* p_class_base;
    class_base* p_root_class;
 };
@@ -1802,10 +1803,10 @@ void perform_storage_op( storage_op op,
    if( g_storage_handler_index.find( name ) != g_storage_handler_index.end( ) )
    {
       if( op == e_storage_op_create )
-         throw runtime_error( "storage '" + name + "' cannot be created as it's already in use" );
+         throw runtime_error( "storage '" + name + "' cannot be created as it is currently in use" );
 
       if( lock_for_admin )
-         throw runtime_error( "storage '" + name + "' cannot be administered as it's already in use" );
+         throw runtime_error( "storage '" + name + "' cannot be administered as it is currently in use" );
 
       p_new_handler = g_storage_handlers[ g_storage_handler_index[ name ] ];
    }
@@ -1820,13 +1821,13 @@ void perform_storage_op( storage_op op,
       }
 
       if( !slot || slot == g_max_storage_handlers )
-         throw runtime_error( "max. permitted concurrent storage handlers already active" );
+         throw runtime_error( "max. permitted concurrent storage handlers currently active" );
 
       if( gtp_session->ap_storage_name_lock.get( ) )
          gtp_session->ap_storage_name_lock.reset( );
 
       if( name == g_storage_name_lock )
-         throw runtime_error( "storage '" + name + "' cannot be administered as it's already in use" );
+         throw runtime_error( "storage '" + name + "' cannot be administered as it is currently in use" );
 
       bool file_not_found = false;
 
@@ -3944,6 +3945,42 @@ void append_undo_sql_statements( storage_handler& handler )
          throw runtime_error( "*** unexpected error occurred writing to undo sql ***" );
 
       outf.close( );
+   }
+}
+
+void append_peerchain_log_commands( )
+{
+   size_t num_commands = gtp_session->peerchain_log_commands.size( );
+
+   if( num_commands )
+   {
+      guard g( g_mutex );
+   
+      for( size_t i = 0; i < num_commands; i++ )
+      {
+         string next_command( gtp_session->peerchain_log_commands[ i ] );
+
+         string::size_type pos = next_command.find( '=' );
+
+         if( pos == string::npos )
+            throw runtime_error( "unexpected format for peerchain tx log command '" + next_command + "'" );
+
+         string identity_log( next_command.substr( 0, pos ) + c_log_file_ext );
+
+         next_command.erase( 0, pos + 1 );
+
+         ofstream outf( identity_log.c_str( ), ios::out | ios::app );
+
+         outf << next_command << '\n';
+
+         outf.flush( );
+         if( !outf.good( ) )
+            throw runtime_error( "*** unexpected error occurred writing to peerchain tx log for '" + identity_log + "' ***" );
+
+         outf.close( );
+      }
+
+      gtp_session->peerchain_log_commands.clear( );
    }
 }
 
@@ -8850,7 +8887,7 @@ void storage_admin_name_lock( const string& name )
    if( gtp_session )
    {
       if( g_storage_handler_index.find( name ) != g_storage_handler_index.end( ) )
-         throw runtime_error( "storage '" + name + "' cannot be administered as it's already in use" );
+         throw runtime_error( "storage '" + name + "' cannot be administered as it is currently in use" );
 
       // NOTE: If this session has an existing lock name then that will need to be removed first.
       if( gtp_session->ap_storage_name_lock.get( ) )
@@ -11318,6 +11355,11 @@ bool is_init_uid( )
    return get_uid( ) == c_init;
 }
 
+bool is_peer_uid( )
+{
+   return get_uid( ) == c_peer;
+}
+
 bool is_admin_uid( )
 {
    return get_uid( ) == c_admin;
@@ -11326,9 +11368,10 @@ bool is_admin_uid( )
 bool is_system_uid( )
 {
    bool rc = false;
+
    string uid( get_uid( ) );
 
-   if( uid == c_sys || uid == c_auto || uid == c_init )
+   if( ( uid == c_sys ) || ( uid == c_auto ) || ( uid == c_init ) || ( uid == c_peer ) )
       rc = true;
 
    return rc;
@@ -13810,6 +13853,9 @@ void transaction_commit( )
          if( supports_sql_undo && !is_init_uid( ) )
             append_undo_sql_statements( handler );
 
+         if( handler.get_root( ).type == e_storage_type_peerchain )
+            append_peerchain_log_commands( );
+
          append_transaction_log_command( handler );
 
          if( gtp_session->ap_db.get( ) )
@@ -14026,6 +14072,12 @@ void transaction_log_command( const string& log_command,
    }
 }
 
+void append_peerchain_log_command( const string& identity, const string& log_command )
+{
+   if( !log_command.empty( ) )
+      gtp_session->peerchain_log_commands.push_back( identity + '=' + log_command );
+}
+
 void append_transaction_log_command( const string& log_command )
 {
    if( !log_command.empty( ) )
@@ -14034,17 +14086,6 @@ void append_transaction_log_command( const string& log_command )
          gtp_session->transaction_log_command += '\n';
 
       gtp_session->transaction_log_command += log_command;
-   }
-}
-
-void append_peerchain_tx_log_command( const string& identity, const string& log_command )
-{
-   if( !log_command.empty( ) )
-   {
-      if( !gtp_session->peerchain_tx_log_command[ identity ].empty( ) )
-         gtp_session->peerchain_tx_log_command[ identity ] += '\n';
-
-      gtp_session->peerchain_tx_log_command[ identity ] += log_command;
    }
 }
 
@@ -14734,9 +14775,32 @@ void finish_instance_op( class_base& instance, bool apply_changes,
          {
             string identity( instance.get_raw_variable( identity_var_name ) );
 
-            string log_command( instance.get_fields_and_values( class_base::e_field_label_type_short_id, true ) );
+            string class_id( instance.get_class_id( ) );
+            string module_id( instance.get_module_id( ) );
 
-            append_peerchain_tx_log_command( identity, log_command );
+            if( class_id.find( module_id ) == 0 )
+               class_id.erase( 0, module_id.length( ) );
+
+            string log_command;
+
+            if( op == class_base::e_op_type_create )
+               log_command += "pc";
+            else if( op == class_base::e_op_type_update )
+               log_command += "pu";
+            else if( op == class_base::e_op_type_destroy )
+               log_command += "pd";
+
+            log_command += ' ';
+            log_command += c_peer;
+
+            log_command += ' ';
+            log_command += date_time::standard( ).as_string( );
+
+            log_command += ' ' + module_id + ' ' + class_id + ' ' + instance.get_key( );
+
+            log_command += " \"" + instance.get_fields_and_values( class_base::e_field_label_type_short_id ) + "\"";
+
+            append_peerchain_log_command( identity, log_command );
          }
          else
          {

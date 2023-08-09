@@ -225,7 +225,6 @@ enum special_var
    e_special_var_blockchain_waiting_for_hub,
    e_special_var_blockchain_block_processing,
    e_special_var_blockchain_zenith_tree_hash,
-   e_special_var_total_child_field_in_parent,
    e_special_var_totals_exclude_hidden_blobs,
    e_special_var_blockchain_height_processing,
    e_special_var_blockchain_peer_hub_identity,
@@ -235,7 +234,8 @@ enum special_var
    e_special_var_blockchain_signature_file_hash,
    e_special_var_display_last_two_for_duplicate,
    e_special_var_blockchain_tertiary_pubkey_hash,
-   e_special_var_blockchain_secondary_pubkey_hash
+   e_special_var_blockchain_secondary_pubkey_hash,
+   e_special_var_skip_total_child_field_in_parent
 };
 
 enum compare_op
