@@ -22,8 +22,8 @@
 
             subject = search_replace( subject, "@subject", get_obj( ).`{`$arg_field`}( ) );
 
-`{`!`@eq`(`$arg_o2field`,`'`'`)`&`!`@eq`(`$arg_user_id`,`'`'`)\
-            message = search_replace( message, "@from", get_obj( ).`{`$arg_o2field`}( ).`{`$arg_user_id`}( ) );
+`{`!`@eq`(`$arg_o2field`,`'`'`)\
+            message = search_replace( message, "@from", get_obj( ).`{`$arg_o2field`}( )`{`!`@eq`(`$arg_o2cfield`,`'`'`).`{`$arg_o2cfield`}( )`} );
 `}\
             message = search_replace( message, "@subject", get_obj( ).`{`$arg_field`}( ) );
             message = search_replace( message, "@no_reply", get_module_string( c_str_no_reply_email_text ) );
