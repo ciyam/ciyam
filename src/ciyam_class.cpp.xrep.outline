@@ -1062,9 +1062,9 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `@eq`(`'\\1`'`,`'for_send_email_notification`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_send_email_notification.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
  arg_id=$specification_\\0_id arg_field=$specification_\\0_field arg_ofield=$specification_\\0_ofield\
- arg_o2field=$specification_\\0_o2field arg_tfield=$specification_\\0_tfield\
+ arg_o2field=$specification_\\0_o2field arg_o2cfield=$specification_\\0_o2cfield arg_tfield=$specification_\\0_tfield\
  arg_sfield=$specification_\\0_sfield arg_spfield=$specification_\\0_spfield\
- arg_user_id=$specification_\\0_user_id arg_email_wanted=$specification_\\0_email_wanted\
+ arg_user_name=$specification_\\0_user_name arg_email_wanted=$specification_\\0_email_wanted\
  arg_email_address=$specification_\\0_email_address arg_email_failure=$specification_\\0_email_failure`}\
 `,\
 `@eq`(`'\\1`'`,`'for_set_variable`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
@@ -2931,7 +2931,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
  arg_sfield=$specification_\0_sfield arg_spclass=$specification_\0_spclass arg_spfield=$specification_\0_spfield\
  arg_scfield=$specification_\0_scfield arg_oscfield=$specification_\0_oscfield arg_o2scfield=$specification_\0_o2scfield\
- arg_check_clone=$specification_\0_check_clone`}\
+ arg_create_only=$specification_\0_create_only arg_check_clone=$specification_\0_check_clone`}\
 `,\
 `@eq`(`'\1`'`,`'fk_link_via_user_info`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#fk_link_via_user_info.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
