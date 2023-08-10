@@ -1,0 +1,29 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+   // [(start fk_link_via_user_info)] `{`$arg_id`}
+`{`!`@eq`(`$arg_modifier`,`'`'`)\
+   if( state & c_modifier_`{`$arg_modifier`} )
+`,\
+   // NOTE: Empty code block for scope purposes.
+`}\
+   {
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_scfield`} ) );
+      key_info += "," + string( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_oscfield`} ) );
+
+      string user_id( get_session_variable( get_special_var_name( e_special_var_uid ) ) );
+      string user_name( get_session_variable( get_special_var_name( e_special_var_user ) ) );
+
+      key_info += "#2 " + user_id + ',' + search_replace( user_name, ",", "\\\\," );
+
+      class_pointer< `{`$module_name`}_`{`$arg_spclass`} > cp_source( e_create_instance );
+
+      perform_fetch_rc rc;
+      cp_source->perform_fetch( key_info, &rc, false, true );
+
+      if( rc == e_perform_fetch_rc_okay )
+         get_obj( ).`{`$arg_spfield`}( cp_source->get_key( ) );
+      else
+         // FUTURE: This should be a module string.
+         throw runtime_error( "Unable to find " + cp_source->get_display_name( ) + " record for '" + user_name + "'." );
+   }
+   // [(finish fk_link_via_user_info)] `{`$arg_id`}
+`}
