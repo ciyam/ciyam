@@ -3303,7 +3303,7 @@ void output_list_form( ostream& os,
                   os << "&" << c_param_chksum << "=" << get_checksum( sess_info, checksum_values );
                }
 
-               os << "\">";
+               os << "\" onclick=\"javascript:replace_with_scroll_info( true );\">";
             }
 
             if( !is_printable && !cell_data.empty( ) && ( source.url_fields.count( source_value_id )

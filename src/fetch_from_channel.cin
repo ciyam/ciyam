@@ -149,6 +149,14 @@ MODULE=%LINES:2%
 ~rm $REVERSED.user_info.log
 @endif
 ;
+.system_variable @blockchain_backup_identity
+BACKUP_IDENTITY=$OUTPUT
+APP_LOG_INFO_FILE=@files::$BACKUP_IDENTITY.log
+@ifdef $APP_LOG_INFO_FILE
+<$BACKUP_IDENTITY.log
+~rm $BACKUP_IDENTITY.log
+@endif
+;
 @endif
 ;
 NESTED_DONE=
