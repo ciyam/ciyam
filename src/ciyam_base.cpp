@@ -10301,6 +10301,11 @@ string storage_channel_documents_prepare( const string& identity )
       if( !has_created_directory )
          create_dir( blockchain_identity );
 
+      string identity_log_file_name( identity + c_log_file_ext );
+
+      if( file_exists( identity_log_file_name ) )
+         file_rename( identity_log_file_name, blockchain_identity + '/' + identity_log_file_name );
+
       int64_t height_fetched = 0;
 
       string fetched_file( c_channel_fetched );

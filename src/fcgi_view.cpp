@@ -3076,7 +3076,7 @@ bool output_view_form( ostream& os, const string& act,
                      os << "&" << c_param_chksum << "=" << get_checksum( sess_info, checksum_values );
                   }
 
-                  os << "\">";
+                  os << "\" onclick=\"javascript:replace_with_scroll_info( true );\">";
                }
             }
 

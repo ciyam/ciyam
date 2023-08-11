@@ -157,7 +157,7 @@ function refresh( back )
       history.go( -1 );
 }
 
-function replace_with_scroll_info( )
+function replace_with_scroll_info( history )
 {
    if( qsContext.length > 0 )
       insert_scroll_info( );
@@ -176,7 +176,10 @@ function replace_with_scroll_info( )
       new_href += qsContext;
    }
 
-   window.location.replace( new_href );
+   if( history != true )
+      window.location.replace( new_href );
+   else
+      window.history.replaceState( null, null, new_href );
 }
 
 function auto_refresh( )
