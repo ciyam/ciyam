@@ -1,9 +1,9 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_clone_peer)] `{`$arg_id`}
+   get_obj( ).op_update( );
+
    if( !storage_locked_for_admin( ) )
    {
-      get_obj( ).op_update( );
-
       string key_info( gen_key( ) + string( " " ) + get_obj( ).get_key( ) );
 
       class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
@@ -20,8 +20,10 @@
 
       cp_source->op_apply( );
 
-      get_obj( ).`{`$arg_ofield`}( get_obj( ).`{`$arg_o2field`}( ) );
-      get_obj( ).op_apply( );
    }
+
+   get_obj( ).`{`$arg_ofield`}( get_obj( ).`{`$arg_o2field`}( ) );
+
+   get_obj( ).op_apply( );
    // [(finish for_peer_clone)] `{`$arg_id`}
 `}
