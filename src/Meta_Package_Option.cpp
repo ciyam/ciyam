@@ -3063,7 +3063,8 @@ uint64_t Meta_Package_Option::impl::get_state( ) const
 
    // [<start get_state>]
 //nyi
-   if( get_obj( ).Package( ).Actions( ).empty( ) )
+   if( get_obj( ).Package( ).Actions( ).empty( )
+    || ( get_obj( ).Name( ).find( "@" ) == 0 ) )
       state |= ( c_state_uneditable | c_state_undeletable );
    // [<finish get_state>]
 
