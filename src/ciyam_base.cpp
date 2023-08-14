@@ -5284,7 +5284,7 @@ void get_identity( string& s, bool append_max_user_limit,
    if( append_max_user_limit )
       s += "!" + to_string( g_max_user_limit );
 
-   if( p_pubkey && !encrypted && g_encrypted_identity )
+   if( p_pubkey && !encrypted )
    {
 #ifndef SSL_SUPPORT
       s += ' ' + sid;
