@@ -1532,6 +1532,8 @@ void request_handler::process_request( )
 
                         g_id = get_id_from_server_identity( server_identity.c_str( ) );
 
+                        string chk_id( get_id_from_server_identity( g_id.c_str( ) ) );
+
                         string encrypted_identity;
 
                         if( file_exists( eid_file_name.c_str( ) ) )
@@ -1547,7 +1549,7 @@ void request_handler::process_request( )
 
                         // NOTE: If is the first time but the identity matches what had already
                         // been saved previously then do not output the "system identity" form.
-                        if( old_id == g_id || !g_seed.empty( ) )
+                        if( !g_seed.empty( ) || ( ( old_id == g_id ) || ( old_id == chk_id ) ) )
                         {
                            set_server_sid( sid );
 
@@ -1567,6 +1569,8 @@ void request_handler::process_request( )
 
                            if( was_unlock )
                               display_error = false;
+                           else if( old_id == chk_id )
+                              login_refresh = true;
                         }
                         else
                         {
