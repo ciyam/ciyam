@@ -175,7 +175,7 @@ Peerchain_Identity,M001C105F115
 Peerchain_User_Key,M001C105F116
 Actions,M001C106F100
 Active,M001C106F101
-Blockchain_Checksum,M001C106F102
+Peerchain_Checksum,M001C106F102
 Blockchain_Hashes,M001C106F103
 Chain_Id,M001C106F104
 Import_Needed,M001C106F105
