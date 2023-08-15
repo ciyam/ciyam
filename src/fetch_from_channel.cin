@@ -153,7 +153,10 @@ MODULE=%LINES:2%
 BACKUP_IDENTITY=$OUTPUT
 APP_LOG_INFO_FILE=@files::$BACKUP_IDENTITY.log
 @ifdef $APP_LOG_INFO_FILE
+.session_variable @key_suffix $IDENTITY
+ system_restrict $UUID perform_create
 <$BACKUP_IDENTITY.log
+ system_restrict $UUID ""
 ~rm $BACKUP_IDENTITY.log
 @endif
 ;

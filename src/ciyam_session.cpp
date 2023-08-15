@@ -165,6 +165,25 @@ inline string convert_local_to_utc( const string& local, const string& tz_name )
    return s;
 }
 
+void check_key_has_suffix( const string& key, const string& suffix )
+{
+   if( !suffix.empty( ) )
+   {
+      bool has_suffix = false;
+
+      string::size_type pos = key.find( suffix );
+
+      if( pos != string::npos )
+      {
+         if( pos + suffix.length( ) == key.length( ) )
+            has_suffix = true;
+      }
+
+      if( !has_suffix )
+         throw runtime_error( "key suffix '" + suffix + "' not found in key value '" + key + "'" );
+   }
+}
+
 void check_not_possible_protocol_response( const string& value )
 {
    string response( c_response_okay );
@@ -1156,6 +1175,41 @@ class socket_command_handler : public command_handler
       }
    }
 
+   bool has_restricted_commands( ) const
+   {
+      return !restricted_commands.empty( );
+   }
+
+   void check_restricted_command( const string& cmd ) const
+   {
+      if( !restricted_commands.count( cmd ) )
+         throw runtime_error( "command '" + cmd + "' is not currently permitted" );
+   }
+
+   void set_restricted_commands( const string& key, const string& cmds )
+   {
+      if( key.empty( ) )
+         throw runtime_error( "restriction key value required" );
+
+      if( !restricted_key.empty( ) && ( key != restricted_key ) )
+         throw runtime_error( "incorrect restriction key value" );
+
+      if( restricted_key.empty( ) )
+         restricted_key = key;
+
+      if( cmds.empty( ) )
+         restricted_commands.clear( );
+      else
+      {
+         split( cmds, restricted_commands );
+
+         // NOTE: Always allow the restrict command itself (to unlock) and
+         // also ensure that "session_terminate" will always be permitted.
+         restricted_commands.insert( c_cmd_ciyam_session_system_restrict );
+         restricted_commands.insert( c_cmd_ciyam_session_session_terminate );
+      }
+   }
+
    map< string, string >& get_transformations( ) { return transformations; }
 
    void output_progress( const string& message, unsigned long num = 0, unsigned long total = 0 )
@@ -1221,6 +1275,9 @@ class socket_command_handler : public command_handler
 
    string next_command;
    string restore_error;
+
+   string restricted_key;
+   set< string > restricted_commands;
 
    map< string, string > transformations;
 };
@@ -1388,6 +1445,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             // FUTURE: This message should be handled as a server string message.
             throw runtime_error( "Session RPC access denied." );
       }
+
+      if( socket_handler.has_restricted_commands( ) )
+         socket_handler.check_restricted_command( command );
 
       if( command == c_cmd_ciyam_session_crypto_addr )
       {
@@ -3191,6 +3251,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             tz_name = get_timezone( );
 
          set_dtm_if_now( dtm, next_command );
+
+         string key_suffix( get_raw_session_variable( get_special_var_name( e_special_var_key_suffix ) ) );
+
+         if( !key_suffix.empty( ) )
+            check_key_has_suffix( key, key_suffix );
 
          // NOTE: If no key was provided then automatically generate a key.
          if( key.empty( ) || key[ 0 ] == ' ' )
@@ -5933,6 +5998,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             response = get_system_variable( name_or_expr );
             check_not_possible_protocol_response( response );
          }
+      }
+      else if( command == c_cmd_ciyam_session_system_restrict )
+      {
+         string key( get_parm_val( parameters, c_cmd_ciyam_session_system_restrict_key ) );
+         string commands( get_parm_val( parameters, c_cmd_ciyam_session_system_restrict_commands ) );
+
+         socket_handler.set_restricted_commands( key, commands );
       }
       else if( command == c_cmd_ciyam_session_system_checkmail )
       {
