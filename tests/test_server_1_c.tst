@@ -171,3 +171,15 @@ zzz
 system_variable xxx "" zzz
 1
 system_variable xxx
+system_restrict abc "session_variable"
+system_variable xxx
+Error: command 'system_variable' is not currently permitted
+session_variable xxx
+system_restrict def ""
+Error: incorrect restriction key value
+system_variable xxx
+Error: command 'system_variable' is not currently permitted
+session_variable xxx
+system_restrict abc ""
+session_variable xxx
+system_variable xxx
