@@ -1,0 +1,58 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#Usage: prepare_channels.cin <storage>
+@else
+STORAGE=$1
+;
+.storage_init $STORAGE
+@ifndef $ERROR
+.module_list
+MODULES=$OUTPUT
+MODULES=@repstr: /\n:$MODULES
+MODULE=%MODULES:2%
+.pf $MODULE Peer_Node "" Identity,Shared_Secret -min
+LINES=$OUTPUT
+.session_variable @deque "~$LINES"
+.storage_term
+;
+@ifdef $LINES
+@:LOOP
+;
+@label NEXT
+.session_variable @deque front
+NEXT_LINE=$OUTPUT
+;
+@ifndef $NEXT_LINE
+@label DONE
+@endif
+;
+@skip
+;
+@:NEXT
+NEXT_LINE=@repstr:,/\n:$NEXT_LINE
+IDENTITY=%NEXT_LINE:1%
+SHARED_SECRET=%NEXT_LINE:2%
+;
+APP_LOG_INFO_FILE=@files::$IDENTITY.log
+;
+@ifdef $APP_LOG_INFO_FILE
+.system_variable @shared_secret_$IDENTITY $SHARED_SECRET
+<<prepare_for_channel.cin $STORAGE $IDENTITY
+@endif
+;
+.session_variable @deque pop_front
+!!@:LOOP
+@:END_LOOP
+;
+APP_DIR=@lower:$STORAGE
+~rm -f $WEBDIR/$APP_DIR/needs_submit
+;
+@:DONE
+@endif
+;
+@endif
+@endif

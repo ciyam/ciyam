@@ -80,6 +80,11 @@
   <filename>shared_import
  </script>
  <script/>
+  <name>fetch_channels
+  <filename>*script*
+  <arguments>fetch_channels.cin @storage
+ </script>
+ <script/>
   <name>remove_archive
   <filename>*script*
   <arguments>remove_archive.cin @name
@@ -108,6 +113,11 @@
   <name>install_package
   <filename>*script*
   <arguments>install_package.cin @storage @name @package_install_extra
+ </script>
+ <script/>
+  <name>prepare_channels
+  <filename>*script*
+  <arguments>prepare_channels.cin @storage
  </script>
  <script/>
   <name>tree_insert_file
