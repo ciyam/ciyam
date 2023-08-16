@@ -124,6 +124,8 @@ const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
+const char* const c_needs_submit_file = "needs_submit";
+
 const char* const c_server_folder_backup = "backup";
 const char* const c_server_folder_opened = "opened";
 const char* const c_server_folder_shared = "shared";
@@ -10304,12 +10306,12 @@ string storage_channel_documents_prepare( const string& identity )
 
    string selections;
 
-   if( ofs.has_file( c_channel_selections ) )
+   string identity_log_file_name( identity + c_log_file_ext );
+
+   if( has_created_directory || ofs.has_file( c_channel_selections ) || file_exists( identity_log_file_name ) )
    {
       if( !has_created_directory )
          create_dir( blockchain_identity );
-
-      string identity_log_file_name( identity + c_log_file_ext );
 
       if( file_exists( identity_log_file_name ) )
          file_rename( identity_log_file_name, blockchain_identity + '/' + identity_log_file_name );
@@ -10324,7 +10326,8 @@ string storage_channel_documents_prepare( const string& identity )
       write_file( blockchain_identity + '/'
        + string( c_channel_fetch ), to_string( height_fetched ) );
 
-      ofs.fetch_from_text_file( c_channel_selections, selections );
+      if( ofs.has_file( c_channel_selections ) )
+         ofs.fetch_from_text_file( c_channel_selections, selections );
 
       ofs.set_folder( ".." );
 
@@ -14814,6 +14817,9 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             log_command += " \"" + instance.get_fields_and_values( class_base::e_field_label_type_short_id ) + "\"";
 
             append_peerchain_log_command( identity, log_command );
+
+            file_touch( get_web_root( ) + '/'
+             + lower( gtp_session->p_storage_handler->get_name( ) ) + '/' + string( c_needs_submit_file ), 0, true );
          }
          else
          {

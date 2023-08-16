@@ -1,0 +1,60 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#Usage: fetch_channels.cin <storage>
+@else
+STORAGE=$1
+;
+.storage_init $STORAGE
+@ifndef $ERROR
+.module_list
+MODULES=$OUTPUT
+MODULES=@repstr: /\n:$MODULES
+MODULE=%MODULES:2%
+.pf $MODULE Peer_Node "" Identity,Shared_Secret,Submit_Chain_Id,Receive_Chain_Id,Host_Name,Port_Number -min
+LINES=$OUTPUT
+.session_variable @deque "~$LINES"
+.storage_term
+;
+@ifdef $LINES
+@:LOOP
+;
+@label NEXT
+.session_variable @deque front
+NEXT_LINE=$OUTPUT
+;
+@ifndef $NEXT_LINE
+@label DONE
+@endif
+;
+@skip
+;
+@:NEXT
+NEXT_LINE=@repstr:,/\n:$NEXT_LINE
+IDENTITY=%NEXT_LINE:1%
+SHARED_SECRET=%NEXT_LINE:2%
+SUBMIT_IDENTITY=%NEXT_LINE:3%
+RECEIVE_IDENTITY=%NEXT_LINE:4%
+HOST_NAME=%NEXT_LINE:5%
+HOST_PORT=%NEXT_LINE:6%
+;
+.peer_connect $RECEIVE_IDENTITY:$SUBMIT_IDENTITY $HOST_NAME-$HOST_PORT -user
+.wait 1000
+;
+.system_variable @shared_secret_$IDENTITY $SHARED_SECRET
+ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
+;
+<<fetch_from_channel.cin $STORAGE $IDENTITY
+;
+.session_variable @deque pop_front
+!!@:LOOP
+@:END_LOOP
+;
+@:DONE
+@endif
+;
+@endif
+@endif

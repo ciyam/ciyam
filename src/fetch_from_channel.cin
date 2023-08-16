@@ -81,7 +81,10 @@ SUBMIT_HEIGHT=@$SUBMIT_HEIGHT+1
 @ifdef $OUTPUT
 <tree_list.cin $OUTPUT 0 $BLOCKCHAIN.bun.gz
 BUNDLE_HASH=%OUTPUT:2%
+;
+@ifndef $ENCRYPTED_PASSWORD
 ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
+@endif
 ;
 <export_files.cin $BUNDLE_HASH .
 ~mkdir $UUID
@@ -131,7 +134,10 @@ FETCH_HEIGHT=@$FETCH_HEIGHT+1
 @ifdef $OUTPUT
 <tree_list.cin $OUTPUT 0 $REVERSED.bun.gz
 BUNDLE_HASH=%OUTPUT:2%
+;
+@ifndef $ENCRYPTED_PASSWORD
 ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
+@endif
 ;
 <export_files.cin $BUNDLE_HASH .
 ;
@@ -179,7 +185,10 @@ SUBMIT_HEIGHT=@$SUBMIT_HEIGHT+1
 @ifdef $OUTPUT
 <tree_list.cin $OUTPUT 0 $BLOCKCHAIN.bun.gz
 BUNDLE_HASH=%OUTPUT:2%
+;
+@ifndef $ENCRYPTED_PASSWORD
 ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
+@endif
 ;
 <export_files.cin $BUNDLE_HASH .
 ~mkdir $UUID
@@ -213,7 +222,9 @@ NESTED_DONE=1
 ;
 @:FETCH_DONE
 ;
-.system_variable @shared_secret_$REVERSED ""
+@ifdef $ENCRYPTED_PASSWORD
+.system_variable $ENCRYPTED_PASSWORD ""
+@endif
 ;
 @endif
 @endif

@@ -67,6 +67,11 @@ const char* const c_str_file = "ciyam_interface.txt";
 const char* const c_action_ident_key_id = "@id";
 const char* const c_action_child_key_user = "@user";
 
+const char* const c_action_parm_rfields = "@rfields";
+const char* const c_action_parm_rvalues = "@rvalues";
+
+const char* const c_action_parm_file_existence = "@file:";
+
 const char* const c_nbsp = "&nbsp;";
 
 string g_nbsp( c_nbsp );
@@ -1136,20 +1141,25 @@ bool has_perm_extra( const string& perm_extra,
    return has_perm_extra;
 }
 
-void replace_action_parms( string& id, string& action,
+bool replace_action_parms( string& id, string& action,
  const string& restrict_fields, const string& restrict_values )
 {
+   bool retval = true;
+
    string::size_type spos = 0;
+
    while( !( ( action[ spos ] >= '0' && action[ spos ] <= '9' )
     || ( action[ spos ] >= 'A' && action[ spos ] <= 'Z' ) || ( action[ spos ] >= 'a' && action[ spos ] <= 'z' ) ) )
       ++spos;
 
    id = action.substr( spos );
+
    string::size_type pos = id.find( '+' );
    if( pos != string::npos )
       id.erase( pos );
 
    pos = action.find( '+' );
+
    if( pos != string::npos )
    {
       string parameters( action.substr( pos + 1 ) );
@@ -1163,13 +1173,39 @@ void replace_action_parms( string& id, string& action,
       {
          if( j > 0 )
             str += ';';
-         string next;
-         if( parms[ j ] == "@rfields" )
+
+         string next( parms[ j ] );
+
+         if( next == c_action_parm_rfields )
             next = restrict_fields;
-         else if( parms[ j ] == "@rvalues" )
+         else if( next == c_action_parm_rvalues )
             next = restrict_values;
          else
-            next = parms[ j ];
+         {
+            pos = next.find( c_action_parm_file_existence );
+
+            if( pos != string::npos )
+            {
+               string file_name( next.substr( strlen( c_action_parm_file_existence ) ) );
+
+               bool exists = true;
+
+               if( !file_name.empty( ) && file_name[ 0 ] == '!' )
+               {
+                  exists = false;
+                  file_name.erase( 0, 1 );
+               }
+
+               if( ( exists && !file_exists( file_name ) )
+                || ( !exists && file_exists( file_name ) ) )
+               {
+                  retval = false;
+                  break;
+               }
+
+               continue;
+            }
+         }
 
          if( next.empty( ) )
             next = "~";
@@ -1177,8 +1213,11 @@ void replace_action_parms( string& id, string& action,
          str += next;
       }
 
-      action += ":" + str;
+      if( !str.empty( ) )
+         action += ":" + str;
    }
+
+   return retval;
 }
 
 string remove_links( const string& s )

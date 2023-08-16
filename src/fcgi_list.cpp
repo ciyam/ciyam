@@ -1723,8 +1723,6 @@ void output_list_form( ostream& os,
                      next_action.erase( 0, 1 );
                   }
 
-                  os << "&nbsp;";
-
                   string next_id( next_action );
 
                   bool is_reverse( source.is_reverse );
@@ -1734,7 +1732,10 @@ void output_list_form( ostream& os,
                   determine_fixed_query_info( restrict_fields, restrict_values,
                    num_fixed_key_values, is_reverse, source, source.pfield, parent_key, list_selections, sess_info );
 
-                  replace_action_parms( next_id, next_action, restrict_fields, restrict_values );
+                  if( !replace_action_parms( next_id, next_action, restrict_fields, restrict_values ) )
+                     continue;
+
+                  os << "&nbsp;";
 
                   string next_label( get_display_string( "procedure_" + next_id ) );
 
@@ -1759,7 +1760,9 @@ void output_list_form( ostream& os,
 
                   os << "', '" << c_param_keepchecks << "', '" << keep_checks;
 
-                  if( use_url_checksum )
+                  if( !use_url_checksum )
+                     os << "', '', '";
+                  else
                      os << "', '" << c_param_chksum << "', '" << new_checksum_value;
 
                   os << "', " << ( ignore_selections ? "true" : "false" ) << " );\" style=\"cursor:pointer\"/>";
