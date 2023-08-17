@@ -1732,10 +1732,13 @@ void output_list_form( ostream& os,
                   determine_fixed_query_info( restrict_fields, restrict_values,
                    num_fixed_key_values, is_reverse, source, source.pfield, parent_key, list_selections, sess_info );
 
-                  if( !replace_action_parms( next_id, next_action, restrict_fields, restrict_values ) )
+                  bool no_log = false;
+
+                  if( !replace_action_parms( next_id, next_action, restrict_fields, restrict_values, &no_log ) )
                      continue;
 
-                  os << "&nbsp;";
+                  if( no_log )
+                     next_action = '_' + next_action;
 
                   string next_label( get_display_string( "procedure_" + next_id ) );
 
@@ -1755,7 +1758,7 @@ void output_list_form( ostream& os,
                   }
 
                   os << "<input type=\"button\" class=\"button\" value=\"" << next_label
-                   << "\" onclick=\"list_exec_action( document." << source.id << ", '"
+                   << "\" onclick=\"this.style.display = 'none'; list_exec_action( document." << source.id << ", '"
                    << source.cid << "', '" << source.id << "', '" << next_action;
 
                   os << "', '" << c_param_keepchecks << "', '" << keep_checks;

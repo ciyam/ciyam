@@ -14,7 +14,7 @@ STORAGE=$1
 MODULES=$OUTPUT
 MODULES=@repstr: /\n:$MODULES
 MODULE=%MODULES:2%
-.pf $MODULE Peer_Node "" Identity,Shared_Secret -min
+.pf $MODULE Peer_Node "" Identity,Shared_Secret,Submit_Chain_Id,Receive_Chain_Id,Host_Name,Port_Number -min
 LINES=$OUTPUT
 .session_variable @deque "~$LINES"
 .storage_term
@@ -36,12 +36,17 @@ NEXT_LINE=$OUTPUT
 NEXT_LINE=@repstr:,/\n:$NEXT_LINE
 IDENTITY=%NEXT_LINE:1%
 SHARED_SECRET=%NEXT_LINE:2%
+SUBMIT_IDENTITY=%NEXT_LINE:3%
+RECEIVE_IDENTITY=%NEXT_LINE:4%
+HOST_NAME=%NEXT_LINE:5%
+HOST_PORT=%NEXT_LINE:6%
 ;
 APP_LOG_INFO_FILE=@files::$IDENTITY.log
 ;
 @ifdef $APP_LOG_INFO_FILE
 .system_variable @shared_secret_$IDENTITY $SHARED_SECRET
 <<prepare_for_channel.cin $STORAGE $IDENTITY
+.peer_connect $SUBMIT_IDENTITY:$RECEIVE_IDENTITY $HOST_NAME-$HOST_PORT -user
 @endif
 ;
 .session_variable @deque pop_front
