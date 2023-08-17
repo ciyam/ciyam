@@ -8,6 +8,9 @@
 @else
 STORAGE=$1
 ;
+.system_variable @skip_fetch_connects
+SKIP_CONNECTS=$OUTPUT
+;
 .storage_init $STORAGE
 @ifndef $ERROR
 .module_list
@@ -41,8 +44,10 @@ RECEIVE_IDENTITY=%NEXT_LINE:4%
 HOST_NAME=%NEXT_LINE:5%
 HOST_PORT=%NEXT_LINE:6%
 ;
+@ifndef $SKIP_CONNECTS
 .peer_connect $RECEIVE_IDENTITY:$SUBMIT_IDENTITY $HOST_NAME-$HOST_PORT -user
-.wait 1000
+.wait 500
+@endif
 ;
 .system_variable @shared_secret_$IDENTITY $SHARED_SECRET
 ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
@@ -55,6 +60,8 @@ ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 ;
 @:DONE
 @endif
+;
+.system_variable @skip_fetch_connects ""
 ;
 @endif
 @endif

@@ -9814,6 +9814,11 @@ int64_t storage_channel_received_height( const string& identity )
    return from_string< int64_t >( peer_channel_height( identity, true, true ) );
 }
 
+int64_t storage_channel_submitted_height( const string& identity )
+{
+   return from_string< int64_t >( peer_channel_height( identity, true, false ) );
+}
+
 string storage_channel_documents( const string& identity, bool height, bool fetched )
 {
    guard g( g_mutex );

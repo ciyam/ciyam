@@ -600,6 +600,7 @@ void CIYAM_BASE_DECL_SPEC storage_channel_destroy( const char* p_identity = 0 );
 void CIYAM_BASE_DECL_SPEC storage_channel_update( );
 
 int64_t CIYAM_BASE_DECL_SPEC storage_channel_received_height( const std::string& identity );
+int64_t CIYAM_BASE_DECL_SPEC storage_channel_submitted_height( const std::string& identity );
 
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents(
  const std::string& identity, bool height = false, bool fetched = false );

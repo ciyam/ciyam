@@ -143,7 +143,7 @@ bool has_perm_extra( const std::string& perm_extra,
  const std::map< std::string, std::string >& source_extras, const session_info& sess_info );
 
 bool replace_action_parms( std::string& id, std::string& action,
- const std::string& restrict_fields, const std::string& restrict_values );
+ const std::string& restrict_fields, const std::string& restrict_values, bool* p_no_log = 0 );
 
 std::string remove_links( const std::string& s );
 
