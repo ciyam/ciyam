@@ -1,0 +1,33 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+;
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "2"
+#Usage: enable_hosted_channel.cin <ident> <other>
+@else
+;
+IDENT=$1
+OTHER=$2
+;
+<bc_channel_identity.cin $IDENT $OTHER
+;
+.system_variable @peer_port
+PEER_PORT=$OUTPUT
+@ifeq "$PEER_PORT" ""
+#Error: Found empty '@peer_port' system variable value.
+@else
+.peer_listen $PEER_PORT $COMBINED,$REVERSED
+#Added $COMBINED and $REVERSED to the peer listener.
+@endif
+;
+@endif

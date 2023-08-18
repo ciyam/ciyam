@@ -11,9 +11,18 @@ else
   echo "Error: Directory '$1' does not exist."
  else
   cp document.css "$1"
+
   cp name_small.png "$1"
   cp logo-gryscl-128.png "$1"
   cp background_texture.png "$1"
+
+  [ -d "$1/fonts" ] ||
+  {
+   mkdir "$1/fonts"
+   ./unbundle -qq fonts -d "$1/fonts"
+  }
+
   cp *.html "$1"
+
  fi
 fi
