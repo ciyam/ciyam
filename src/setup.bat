@@ -31,6 +31,11 @@ mkdir "%install_path%\css"
 unbundle -qq css -d "%install_path%\css"
 
 :skip_css
+if exist "%install_path%\fonts" goto skip_fonts
+mkdir "%install_path%\fonts"
+unbundle -qq fonts -d "%install_path%\fonts"
+
+:skip_fonts
 if exist "%install_path%\images" goto skip_images
 mkdir "%install_path%\images"
 unbundle -qq images -d "%install_path%\images"

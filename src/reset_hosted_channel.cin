@@ -1,0 +1,37 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+;
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "2"
+#Usage: reset_hosted_channel.cin <ident> <other>
+@else
+;
+IDENT=$1
+OTHER=$2
+;
+<bc_channel_identity.cin $IDENT $OTHER
+;
+#Resetting channel archives and blockchain files for $COMBINED and $REVERSED.
+;
+.file_tags bc.$COMBINED.zenith*
+@ifdef $OUTPUT
+<bc_reset.cin $COMBINED
+@endif
+;
+
+.file_tags bc.$REVERSED.zenith*
+@ifdef $OUTPUT
+<bc_reset.cin $REVERSED
+@endif
+;
+@endif

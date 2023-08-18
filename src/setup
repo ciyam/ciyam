@@ -29,6 +29,11 @@ else
    mkdir $WEBDIR/$2/css
    ./unbundle -qq css -d $WEBDIR/$2/css
   }
+  [ -d $WEBDIR/$2/fonts ] ||
+  {
+   mkdir $WEBDIR/$2/fonts
+   ./unbundle -qq fonts -d $WEBDIR/$2/fonts
+  }
   [ -d $WEBDIR/$2/images ] ||
   {
    mkdir $WEBDIR/$2/images

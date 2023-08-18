@@ -11,12 +11,16 @@
 ;
 .system_variable $$$1_identity
 CHANNEL=$OUTPUT
+;
 @ifdef $CHANNEL
 REVERSE=*!reverse?$CHANNEL
 ;
-#Resetting archive and blockchain files for '$1' ($CHANNEL/$REVERSE).
+#Resetting archives and blockchain files for '$1' ($CHANNEL/$REVERSE).
+;
 .file_tags bc.$CHANNEL.zenith*
+@ifdef $OUTPUT
 <<bc_reset.cin $CHANNEL
+@endif
 ;
 .file_tags bc.$REVERSE.zenith*
 @ifdef $OUTPUT

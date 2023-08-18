@@ -9,9 +9,16 @@ if '%1' == '' goto usage
 if not exist "%1\" goto error
 
 copy document.css "%1"  >nul
+
 copy name_small.png "%1"  >nul
 copy logo-gryscl-128.png "%1"  >nul
 copy background_texture.png "%1"  >nul
+
+if exist "%1\fonts" goto skip_fonts
+mkdir "%1\fonts"
+unbundle -qq fonts -d "%1\fonts"
+
+:skip_fonts
 copy *.html "%1"  >nul
 
 goto end
