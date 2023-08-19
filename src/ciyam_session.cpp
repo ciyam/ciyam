@@ -6113,6 +6113,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = osstr.str( );
       }
+      else if( command == c_cmd_ciyam_session_system_trace_message )
+      {
+         string message_text( get_parm_val( parameters, c_cmd_ciyam_session_system_trace_message_text ) );
+
+         log_trace_message( TRACE_ANYTHING, message_text );
+      }
       else if( command == c_cmd_ciyam_session_test )
       {
          string arg_1( get_parm_val( parameters, c_cmd_ciyam_session_test_arg_1 ) );

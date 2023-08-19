@@ -9942,12 +9942,7 @@ string storage_channel_documents_update( const string& identity, bool submitted 
 
    string bundle_file_name( blockchain_identity + ".bun.gz" );
 
-   if( !file_exists( bundle_file_name ) )
-   {
-      if( !submitted )
-         ofs.store_as_text_file( c_channel_fetched, height );
-   }
-   else
+   if( file_exists( bundle_file_name ) )
    {
       create_dir( blockchain_identity );
 
@@ -10107,9 +10102,21 @@ string storage_channel_documents_update( const string& identity, bool submitted 
 
             retval = updated;
          }
-      }
+         else
+         {
+            ofs.set_folder( identity );
+            ofs.set_folder( c_channel_folder_ciyam );
+         }
 
-      ofs.store_as_text_file( ( !submitted ? c_channel_fetched : c_channel_submitted ), height );
+         ofs.store_as_text_file( ( !submitted ? c_channel_fetched : c_channel_submitted ), height );
+      }
+      else
+      {
+         ofs.set_folder( identity );
+         ofs.set_folder( c_channel_folder_ciyam );
+
+         ofs.store_as_text_file( ( !submitted ? c_channel_fetched : c_channel_submitted ), height );
+      }
 
       ods_tx.commit( );
 
