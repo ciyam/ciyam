@@ -1733,8 +1733,9 @@ void output_list_form( ostream& os,
                    num_fixed_key_values, is_reverse, source, source.pfield, parent_key, list_selections, sess_info );
 
                   bool no_log = false;
+                  bool not_changing = false;
 
-                  if( !replace_action_parms( next_id, next_action, restrict_fields, restrict_values, &no_log ) )
+                  if( !replace_action_parms( next_id, next_action, restrict_fields, restrict_values, &no_log, &not_changing ) )
                      continue;
 
                   if( no_log )
@@ -1757,9 +1758,13 @@ void output_list_form( ostream& os,
                      new_checksum_value = get_checksum( sess_info, checksum_values );
                   }
 
-                  os << "<input type=\"button\" class=\"button\" value=\"" << next_label
-                   << "\" onclick=\"this.style.display = 'none'; list_exec_action( document." << source.id << ", '"
-                   << source.cid << "', '" << source.id << "', '" << next_action;
+                  os << "<input type=\"button\" class=\"button\" value=\"" << next_label;
+                  
+                  if( not_changing )
+                     os << "\" not_changing=\"" << c_true_value;
+
+                  os << "\" onclick=\"this.style.display = 'none'; list_exec_action( document."
+                   << source.id << ", '" << source.cid << "', '" << source.id << "', '" << next_action;
 
                   os << "', '" << c_param_keepchecks << "', '" << keep_checks;
 

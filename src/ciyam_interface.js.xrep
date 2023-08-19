@@ -192,6 +192,8 @@ function auto_refresh( )
       {
          show_auto_progress( );
          hasShownAutoProgress = true;
+
+         hide_not_changing( document.getElementById( "list" ) );
       }
 
       auto_refresh_seconds -= 1;
@@ -2151,9 +2153,22 @@ function confirm_delete( frm )
    return false;
 }
 
+function hide_not_changing( form )
+{
+   if( form != null )
+   {
+      for( var i = 0; i < form.elements.length; i++ )
+      {
+         if( form.elements[ i ].getAttribute( 'not_changing' ) == '1' )
+            form.elements[ i ].style.display = 'none';
+      }
+   }
+}
+
 function disable_form( f )
 {
    f.style.cursor = 'wait';
+
    if( f.elements )
    {
       for( i = 0; i < f.elements.length; i++ )
@@ -2167,6 +2182,7 @@ function disable_form( f )
 function enable_form( f )
 {
    f.style.cursor = 'default';
+
    if( f.elements )
    {
       for( i = 0; i < f.elements.length; i++ )
@@ -2177,4 +2193,3 @@ function enable_form( f )
       }
    }
 }
-
