@@ -83,13 +83,13 @@ system_variable xxx "" yyy
 system_variable xxx
 system_variable xxx "" zzz
 system_variable xxx
-system_restrict abc "session_variable"
+session_restrict abc "session_variable"
 system_variable xxx
 session_variable xxx
-system_restrict def ""
+session_restrict def ""
 system_variable xxx
 session_variable xxx
-system_restrict abc ""
+session_restrict abc ""
 session_variable xxx
 system_variable xxx
 .quit

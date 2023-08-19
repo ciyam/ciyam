@@ -27,6 +27,10 @@ UUID=$OUTPUT
 BLOCKCHAIN=$OUTPUT
 REVERSED=*!reverse?$BLOCKCHAIN
 ;
+@ifndef $ENCRYPTED_PASSWORD
+ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
+@endif
+;
 ; NOTE: Is setting this session variable here so that the FCGI UI
 ; will continue to wait until this script has finished executing.
 .session_variable $BLOCKCHAIN 1
@@ -82,10 +86,6 @@ SUBMIT_HEIGHT=@$SUBMIT_HEIGHT+1
 <tree_list.cin $OUTPUT 0 $BLOCKCHAIN.bun.gz
 BUNDLE_HASH=%OUTPUT:2%
 ;
-@ifndef $ENCRYPTED_PASSWORD
-ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
-@endif
-;
 <export_files.cin $BUNDLE_HASH .
 ~mkdir $UUID
 ~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID
@@ -135,10 +135,6 @@ FETCH_HEIGHT=@$FETCH_HEIGHT+1
 <tree_list.cin $OUTPUT 0 $REVERSED.bun.gz
 BUNDLE_HASH=%OUTPUT:2%
 ;
-@ifndef $ENCRYPTED_PASSWORD
-ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
-@endif
-;
 <export_files.cin $BUNDLE_HASH .
 ;
 .session_variable @updating_$IDENTITY $FETCH_HEIGHT
@@ -160,9 +156,9 @@ BACKUP_IDENTITY=$OUTPUT
 APP_LOG_INFO_FILE=@files::$BACKUP_IDENTITY.log
 @ifdef $APP_LOG_INFO_FILE
 .session_variable @key_suffix $IDENTITY
- system_restrict $UUID perform_create
+ session_restrict $UUID perform_create
 <$BACKUP_IDENTITY.log
- system_restrict $UUID ""
+ session_restrict $UUID ""
 ~rm $BACKUP_IDENTITY.log
 @endif
 ;
@@ -185,10 +181,6 @@ SUBMIT_HEIGHT=@$SUBMIT_HEIGHT+1
 @ifdef $OUTPUT
 <tree_list.cin $OUTPUT 0 $BLOCKCHAIN.bun.gz
 BUNDLE_HASH=%OUTPUT:2%
-;
-@ifndef $ENCRYPTED_PASSWORD
-ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
-@endif
 ;
 <export_files.cin $BUNDLE_HASH .
 ~mkdir $UUID

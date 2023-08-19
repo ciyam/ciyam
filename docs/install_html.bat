@@ -16,7 +16,7 @@ copy background_texture.png "%1"  >nul
 
 if exist "%1\fonts" goto skip_fonts
 mkdir "%1\fonts"
-unbundle -qq fonts -d "%1\fonts"
+..\src\unbundle -qq ..\src\fonts -d "%1\fonts"
 
 :skip_fonts
 copy *.html "%1"  >nul

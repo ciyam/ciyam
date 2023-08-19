@@ -1205,7 +1205,7 @@ class socket_command_handler : public command_handler
 
          // NOTE: Always allow the restrict command itself (to unlock) and
          // also ensure that "session_terminate" will always be permitted.
-         restricted_commands.insert( c_cmd_ciyam_session_system_restrict );
+         restricted_commands.insert( c_cmd_ciyam_session_session_restrict );
          restricted_commands.insert( c_cmd_ciyam_session_session_terminate );
       }
    }
@@ -4596,6 +4596,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = to_string( val );
       }
+      else if( command == c_cmd_ciyam_session_session_restrict )
+      {
+         string key( get_parm_val( parameters, c_cmd_ciyam_session_session_restrict_key ) );
+         string commands( get_parm_val( parameters, c_cmd_ciyam_session_session_restrict_commands ) );
+
+         socket_handler.set_restricted_commands( key, commands );
+      }
       else if( command == c_cmd_ciyam_session_session_variable )
       {
          string sess_id( get_parm_val( parameters, c_cmd_ciyam_session_session_variable_sess_id ) );
@@ -5998,13 +6005,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             response = get_system_variable( name_or_expr );
             check_not_possible_protocol_response( response );
          }
-      }
-      else if( command == c_cmd_ciyam_session_system_restrict )
-      {
-         string key( get_parm_val( parameters, c_cmd_ciyam_session_system_restrict_key ) );
-         string commands( get_parm_val( parameters, c_cmd_ciyam_session_system_restrict_commands ) );
-
-         socket_handler.set_restricted_commands( key, commands );
       }
       else if( command == c_cmd_ciyam_session_system_checkmail )
       {
