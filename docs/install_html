@@ -19,7 +19,7 @@ else
   [ -d "$1/fonts" ] ||
   {
    mkdir "$1/fonts"
-   ./unbundle -qq fonts -d "$1/fonts"
+   ../src/unbundle -qq ../src/fonts -d "$1/fonts"
   }
 
   cp *.html "$1"

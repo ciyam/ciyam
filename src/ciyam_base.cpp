@@ -9942,7 +9942,12 @@ string storage_channel_documents_update( const string& identity, bool submitted 
 
    string bundle_file_name( blockchain_identity + ".bun.gz" );
 
-   if( file_exists( bundle_file_name ) )
+   if( !file_exists( bundle_file_name ) )
+   {
+      if( !submitted )
+         ofs.store_as_text_file( c_channel_fetched, height );
+   }
+   else
    {
       create_dir( blockchain_identity );
 
@@ -9997,14 +10002,14 @@ string storage_channel_documents_update( const string& identity, bool submitted 
       if( !submitted && file_exists( app_log_file_name ) )
          file_rename( app_log_file_name, backup_identity + c_log_file_ext );
 
+      ods::transaction ods_tx( *ods::instance( ) );
+
       if( file_exists( files_name ) )
       {
          string all_files( buffer_file( files_name ) );
 
          if( !all_files.empty( ) )
          {
-            ods::transaction ods_tx( *ods::instance( ) );
-
             temporary_force_write ofs_force_write( ofs );
 
             vector< string > files;
@@ -10099,13 +10104,14 @@ string storage_channel_documents_update( const string& identity, bool submitted 
             }
 
             ofs.store_as_text_file( c_channel_updated, all_file_paths );
-            ofs.store_as_text_file( ( !submitted ? c_channel_fetched : c_channel_submitted ), height );
-
-            ods_tx.commit( );
 
             retval = updated;
          }
       }
+
+      ofs.store_as_text_file( ( !submitted ? c_channel_fetched : c_channel_submitted ), height );
+
+      ods_tx.commit( );
 
       file_remove( bundle_file_name );
 

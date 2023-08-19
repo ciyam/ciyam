@@ -46,7 +46,7 @@ HOST_PORT=%NEXT_LINE:6%
 ;
 @ifndef $SKIP_CONNECTS
 .peer_connect $RECEIVE_IDENTITY:$SUBMIT_IDENTITY $HOST_NAME-$HOST_PORT -user
-.wait 500
+.wait 2500
 @endif
 ;
 .system_variable @shared_secret_$IDENTITY $SHARED_SECRET
