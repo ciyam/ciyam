@@ -70,6 +70,7 @@ const char* const c_action_child_key_user = "@user";
 const char* const c_action_parm_no_log = "@no_log";
 const char* const c_action_parm_rfields = "@rfields";
 const char* const c_action_parm_rvalues = "@rvalues";
+const char* const c_action_parm_not_changing = "@not_changing";
 
 const char* const c_action_parm_file_existence = "@file:";
 
@@ -1143,7 +1144,7 @@ bool has_perm_extra( const string& perm_extra,
 }
 
 bool replace_action_parms( string& id, string& action,
- const string& restrict_fields, const string& restrict_values, bool* p_no_log )
+ const string& restrict_fields, const string& restrict_values, bool* p_no_log, bool* p_not_changing )
 {
    bool retval = true;
 
@@ -1188,6 +1189,13 @@ bool replace_action_parms( string& id, string& action,
             next = restrict_fields;
          else if( next == c_action_parm_rvalues )
             next = restrict_values;
+         else if( next == c_action_parm_not_changing )
+         {
+            if( p_not_changing )
+               *p_not_changing = true;
+
+            continue;
+         }
          else
          {
             pos = next.find( c_action_parm_file_existence );
