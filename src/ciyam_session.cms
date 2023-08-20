@@ -125,7 +125,7 @@ system_runscript|runscript "run an external script or program" <val//script_name
 system_smtp_info|smtp_info "retrieves the system sendmail sender address"
 system_timezones|timezones "display a list of known timezones"
 system_trace_flags|trace_flags "view available system trace flags"
-system_trace_message|trace_message "output a message to the server trace log" <val//text>
+system_trace_message|trace_message "output a message to the server trace log" [<val/-f=/flag>]<val//text>
 test "test command for prototyping" [<oval//arg_1>][<oval//arg_2>][<oval//arg_3>]
 utc_now "get the current UTC time"
 utc_offset "get UTC offset for a timezone" <val//tz_name><val//local_time>

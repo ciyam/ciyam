@@ -2385,7 +2385,7 @@
 `{`$specification_List_Field_view_field033`=`'124126`'`}
 `{`$specification_List_Field_view_ftype033`=`'bool`'`}
 `{`$specification_List_Field_view_extra033`=`'`'`}
-`{`$specification_List_Field_view_fmods033`=`'800000:relegate,2000:relegate`'`}
+`{`$specification_List_Field_view_fmods033`=`'800000:relegate,2000:relegate,200000000:relegate`'`}
 `{`$specification_List_Field_view_fname033`=`'field_list_field_retain_selected_rows`'`}
 `{`$specification_List_Field_view_fmand033`=`'true`'`}
 `{`$specification_List_Field_view_field034`=`'124127`'`}

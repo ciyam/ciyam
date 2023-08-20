@@ -9026,6 +9026,10 @@
         <id>500878
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500889b
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>

@@ -1243,7 +1243,10 @@ void request_handler::process_request( )
          bool has_set_identity = false;
 
          if( module_name == "Meta" )
+         {
             is_meta_module = true;
+            p_session_info->is_meta_module = true;
+         }
 
          string id_file_name( c_id_file );
          string eid_file_name( c_eid_file );

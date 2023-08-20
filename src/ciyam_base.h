@@ -64,20 +64,20 @@ if( ( flag == TRACE_ANYTHING ) || ( get_trace_flags( ) & flag ) )\
 
 #  define TEMP_TRACE( message ) TRACE_LOG( TRACE_ANYTHING, message )
 
-unsigned CIYAM_BASE_DECL_SPEC get_trace_flags( );
-void CIYAM_BASE_DECL_SPEC set_trace_flags( unsigned flags );
+uint64_t CIYAM_BASE_DECL_SPEC get_trace_flags( );
+void CIYAM_BASE_DECL_SPEC set_trace_flags( uint64_t flags );
 
-extern "C" void CIYAM_BASE_DECL_SPEC trace_flags( unsigned flags );
+extern "C" void CIYAM_BASE_DECL_SPEC trace_flags( uint64_t flags );
 
-typedef void ( *fp_trace_flags )( unsigned );
+typedef void ( *fp_trace_flags )( uint64_t );
 
 void CIYAM_BASE_DECL_SPEC list_trace_flags( std::vector< std::string >& flag_names );
 
-void CIYAM_BASE_DECL_SPEC log_trace_message( unsigned flag, const std::string& message );
+void CIYAM_BASE_DECL_SPEC log_trace_message( uint64_t flag, const std::string& message );
 
-extern "C" void CIYAM_BASE_DECL_SPEC log_trace_string( unsigned flag, const char* p_message );
+extern "C" void CIYAM_BASE_DECL_SPEC log_trace_string( uint64_t flag, const char* p_message );
 
-typedef void ( *fp_log_trace_string )( unsigned, const char* );
+typedef void ( *fp_log_trace_string )( uint64_t, const char* );
 
 class CIYAM_BASE_DECL_SPEC trace_mutex : public mutex
 {

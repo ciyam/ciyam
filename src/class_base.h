@@ -1224,6 +1224,8 @@ void CIYAM_BASE_DECL_SPEC copy_class_files_for_clone(
 std::string CIYAM_BASE_DECL_SPEC get_app_dir( );
 std::string CIYAM_BASE_DECL_SPEC get_app_file( const std::string& module_name );
 
+bool CIYAM_BASE_DECL_SPEC has_web_file( const std::string& file_name );
+
 std::string CIYAM_BASE_DECL_SPEC get_attached_file_dir( );
 
 std::string CIYAM_BASE_DECL_SPEC get_attached_file_path(

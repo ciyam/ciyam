@@ -3114,7 +3114,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          {
             string seconds;
 
-            if( p_session_info->ip_addr == string( c_local_ip_addr ) )
+            bool is_blockchain_application = false;
+
+            if( !p_session_info->is_meta_module
+             && !get_storage_info( ).blockchain.empty( ) )
+               is_blockchain_application = true;
+
+            if( !is_blockchain_application
+             && p_session_info->ip_addr == string( c_local_ip_addr ) )
                seconds = to_string( c_auto_refresh_seconds_local );
             else
                seconds = to_string( c_auto_refresh_seconds_remote );

@@ -4748,7 +4748,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800000:relegate,2000:relegate
+     <modifiers>800000:relegate,2000:relegate,200000000:relegate
     </field>
     <field/>
      <name>field_list_field_non_instance_procedure

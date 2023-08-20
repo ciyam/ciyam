@@ -25,22 +25,27 @@ UUID=$OUTPUT
 ;
 .system_variable $$%IDENTITY%_identity
 BLOCKCHAIN=$OUTPUT
-REVERSED=*!reverse?$BLOCKCHAIN
+IN_REVERSE=*!reverse?$BLOCKCHAIN
 ;
 @ifndef $ENCRYPTED_PASSWORD
-ENCRYPTED_PASSWORD=@shared_secret_$REVERSED
+ENCRYPTED_PASSWORD=@shared_secret_$IN_REVERSE
 @endif
 ;
-; NOTE: Is setting this session variable here so that the FCGI UI
+; NOTE: Is setting the session variables here so that the FCGI UI
 ; will continue to wait until this script has finished executing.
 .session_variable $BLOCKCHAIN 1
+.session_variable $IN_REVERSE 1
 ;
+; NOTE: Wait for both the submit and receive peers to synchronise.
 @:WAIT_LOOP
 ;
 @label WAIT_NEXT
 .session_variable -num_found $BLOCKCHAIN
 @ifeq "$OUTPUT" "1"
+.session_variable -num_found $IN_REVERSE
+@ifeq "$OUTPUT" "1"
 @label WAIT_DONE
+@endif
 @endif
 ;
 @skip
@@ -125,14 +130,14 @@ PRE_IS_DONE=1
 @skip
 ;
 @:NEXT_FETCH
-.session_variable @blockchain_archive_path $FILES_AREA_DIR/$REVERSED
+.session_variable @blockchain_archive_path $FILES_AREA_DIR/$IN_REVERSE
 ;
 FETCH_HEIGHT=@$FETCH_HEIGHT+1
 #Processing fetch block $FETCH_HEIGHT/$FETCH_HIGHEST...
-<block_tree_hash.cin $REVERSED $FETCH_HEIGHT
+<block_tree_hash.cin $IN_REVERSE $FETCH_HEIGHT
 ;
 @ifdef $OUTPUT
-<tree_list.cin $OUTPUT 0 $REVERSED.bun.gz
+<tree_list.cin $OUTPUT 0 $IN_REVERSE.bun.gz
 BUNDLE_HASH=%OUTPUT:2%
 ;
 <export_files.cin $BUNDLE_HASH .
@@ -140,15 +145,15 @@ BUNDLE_HASH=%OUTPUT:2%
 .session_variable @updating_$IDENTITY $FETCH_HEIGHT
 .storage_channel_documents -update_fetched $IDENTITY
 ;
-USER_INFO_FILE=@files::$REVERSED.user_info.csv
+USER_INFO_FILE=@files::$IN_REVERSE.user_info.csv
 @ifdef $USER_INFO_FILE
 .module_list
 LINES=@repstr: /\n:$OUTPUT
 MODULE=%LINES:2%
 .session_variable @key_suffix $IDENTITY
-.perform_bulk_ops peer @now $MODULE Peer_Node_User $REVERSED.user_info.csv -f=Peer_Node=$IDENTITY,Local=0,User=admin
-~rm $REVERSED.user_info.csv
-~rm $REVERSED.user_info.log
+.perform_bulk_ops peer @now $MODULE Peer_Node_User $IN_REVERSE.user_info.csv -f=Peer_Node=$IDENTITY,Local=0,User=admin
+~rm $IN_REVERSE.user_info.csv
+~rm $IN_REVERSE.user_info.log
 @endif
 ;
 .system_variable @blockchain_backup_identity

@@ -4499,7 +4499,7 @@ bool timezones_file_has_changed( )
    return changed;
 }
 
-unsigned g_trace_flags;
+uint64_t g_trace_flags;
 
 string instance_op_name( instance_op op )
 {
@@ -4563,17 +4563,17 @@ string instance_op_name( class_base::op_type op )
 
 }
 
-unsigned get_trace_flags( )
+uint64_t get_trace_flags( )
 {
    return g_trace_flags;
 }
 
-void set_trace_flags( unsigned flags )
+void set_trace_flags( uint64_t flags )
 {
    g_trace_flags = flags;
 }
 
-void trace_flags( unsigned flags )
+void trace_flags( uint64_t flags )
 {
    set_trace_flags( flags );
 }
@@ -4598,7 +4598,7 @@ void list_trace_flags( vector< string >& flag_names )
    flag_names.push_back( "notifier" ); // TRACE_NOTIFIER
 }
 
-void log_trace_message( unsigned flag, const string& message )
+void log_trace_message( uint64_t flag, const string& message )
 {
    guard g( g_trace_mutex );
 
@@ -4703,7 +4703,7 @@ void log_trace_message( unsigned flag, const string& message )
    }
 }
 
-void log_trace_string( unsigned flag, const char* p_message )
+void log_trace_string( uint64_t flag, const char* p_message )
 {
    log_trace_message( flag, p_message );
 }
