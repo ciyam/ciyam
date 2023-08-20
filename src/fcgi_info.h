@@ -509,6 +509,7 @@ struct session_info
    bool locked;
    bool logged_in;
    bool needs_pin;
+   bool is_meta_module;
 
 #  ifdef SSL_SUPPORT
    ssl_socket* p_socket;

@@ -1357,7 +1357,7 @@ modifier_add -id=500888 List_Field Is_Restrict_Search Use_Source_Parent:relegate
 modifier_add -id=500888a List_Field Is_Not_Restrict_Search Exact_Match_Only:relegate
 modifier_add -id=500889 List_Field Hide_Link_Permission_Field Link_{Permission}:relegate
 modifier_add -id=500889a List_Field Hide_View_Parent_Extra View_Parent_Extra:relegate
-modifier_add -id=500889b List_Field Is_Non_Instance_Procedure Omit_Versions:relegate,Reverse_Order:relegate
+modifier_add -id=500889b List_Field Is_Non_Instance_Procedure Omit_Versions:relegate,Reverse_Order:relegate,Retain_Selected_Rows:relegate
 modifier_add -id=500889c List_Field Protect_Access Access_Restriction:protect,Access_{Permission}:protect
 modifier_add -id=500900 Class Is_Alias Name:protect,Plural:protect,Type:protect,Extra:protect\
 ,Static_Instance_Key:protect,@class:lowlight1,Delay_Initial_Records:relegate

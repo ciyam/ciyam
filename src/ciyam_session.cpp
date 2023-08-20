@@ -5698,7 +5698,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             istringstream isstr( new_flags );
 
-            int trace_flags;
+            uint64_t trace_flags;
             isstr >> hex >> trace_flags;
 
             set_trace_flags( trace_flags );
@@ -6115,9 +6115,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_system_trace_message )
       {
+         string message_flag( get_parm_val( parameters, c_cmd_ciyam_session_system_trace_message_flag ) );
          string message_text( get_parm_val( parameters, c_cmd_ciyam_session_system_trace_message_text ) );
 
-         log_trace_message( TRACE_ANYTHING, message_text );
+         uint64_t trace_flag = TRACE_ANYTHING;
+
+         if( !message_flag.empty( ) )
+         {
+            istringstream isstr( message_flag );
+
+            isstr >> hex >> trace_flag;
+         }
+
+         if( get_trace_flags( ) & trace_flag )
+            log_trace_message( trace_flag, message_text );
       }
       else if( command == c_cmd_ciyam_session_test )
       {

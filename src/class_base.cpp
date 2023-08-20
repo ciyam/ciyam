@@ -3048,9 +3048,18 @@ void copy_class_files_for_clone(
    }
 }
 
+bool has_web_file( const string& file_name )
+{
+   string file_path( storage_web_root( true ) );
+
+   file_path += '/' + file_name;
+
+   return file_exists( file_path );
+}
+
 string get_attached_file_dir( )
 {
-   return string( c_files_directory );
+   return storage_web_root( true );
 }
 
 string get_attached_file_path( const string& module_id, const string& class_id )
