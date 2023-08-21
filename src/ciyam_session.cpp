@@ -1744,7 +1744,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // NOTE: If a tag is in the form "xxx:yyy" then "xxx" is assumed to be an
          // archive name for the purposes of creating test raw files in an archive
          // and if data is just digits then will instead be a considered as a size
-         // for a string of dots.
+         // for a string of dots (if ":yyy" then instead uses random characters).
          if( pos != string::npos )
          {
             archive = tag.substr( 0, pos );
@@ -1762,7 +1762,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
 
             if( is_size )
-               data = string( from_string< size_t >( data ), '.' );
+            {
+               if( !archive.empty( ) )
+                  data = string( from_string< size_t >( data ), '.' );
+               else
+               {
+                  size_t num_bytes = from_string< size_t >( data );
+                  data.erase( );
+
+                  for( size_t i = 0; i < num_bytes; i++ )
+                     data += ( char )( 32 + ( rand( ) % 95 ) );
+               }
+            }
          }
 
          check_not_possible_protocol_response( tag );
@@ -2269,10 +2280,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool clear = has_parm_val( parameters, c_cmd_ciyam_session_file_archive_clear );
          bool remove = has_parm_val( parameters, c_cmd_ciyam_session_file_archive_remove );
          bool repair = has_parm_val( parameters, c_cmd_ciyam_session_file_archive_repair );
+         bool resize = has_parm_val( parameters, c_cmd_ciyam_session_file_archive_resize );
          bool destroy = has_parm_val( parameters, c_cmd_ciyam_session_file_archive_destroy );
          string name( get_parm_val( parameters, c_cmd_ciyam_session_file_archive_name ) );
          string path( get_parm_val( parameters, c_cmd_ciyam_session_file_archive_path ) );
          string size_limit( get_parm_val( parameters, c_cmd_ciyam_session_file_archive_size_limit ) );
+         string new_size_limit( get_parm_val( parameters, c_cmd_ciyam_session_file_archive_new_size_limit ) );
 
          possibly_expected_error = true;
 
@@ -2284,6 +2297,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             remove_file_archive( name, destroy, false, &handler );
          else if( repair )
             repair_file_archive( name, &handler );
+         else if( resize )
+            resize_file_archive( name, unformat_bytes( new_size_limit ), &handler );
       }
       else if( command == c_cmd_ciyam_session_file_archives )
       {
@@ -2326,6 +2341,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                num = from_string< uint32_t >( num_files );
 
             int64_t size = 0;
+
             if( !size_limit.empty( ) )
                size = unformat_bytes( size_limit );
 
@@ -2347,6 +2363,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string days_ahead( get_parm_val( parameters, c_cmd_ciyam_session_file_retrieve_days_ahead ) );
 
          size_t days = 0;
+
          if( !days_ahead.empty( ) )
             days = from_string< size_t >( days_ahead );
 

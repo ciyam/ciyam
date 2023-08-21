@@ -415,6 +415,14 @@ file_put test.jpg
 file_put test1.jpg
 file_put test2.jpg
 file_archives
+file_archive -resize 2MB test1
+file_raw -text blob 999999 test1:xyz
+file_kill xyz
+file_archives
+file_archive -resize 3MB test1
+file_archives
+file_archive -resize 1MB test1
+file_archives
 file_archive -destroy test1
 session_variable @blockchain_archive_path ""
 #~rmdir test1
