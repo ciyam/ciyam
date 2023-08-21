@@ -3092,12 +3092,12 @@ string list_file_tags(
 
             int64_t next_bytes = file_bytes( i->second.get_hash_string( ) );
 
-            if( max_bytes && num_bytes + next_bytes > max_bytes )
+            if( max_bytes && ( num_bytes + next_bytes > max_bytes ) )
                continue;
 
             ++num_tags;
 
-            if( !min_bytes || next_bytes < min_bytes )
+            if( !min_bytes || ( next_bytes < min_bytes ) )
                min_bytes = next_bytes;
 
             num_bytes += next_bytes;
@@ -4181,7 +4181,7 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
 
    if( size_limit < min_limit )
       // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "Archive minimum size must be at least " + to_string( min_limit ) + " bytes." );
+      throw runtime_error( "Archive minimum size must be at least " + format_bytes( min_limit ) + " bytes." );
 
    string status_info( get_archive_status( path ) );
 
@@ -4428,6 +4428,82 @@ void repair_file_archive( const string& name, progress* p_progress )
 
          ods_fs.store_as_text_file( c_file_archive_size_avail, size_avail );
          ods_fs.store_as_text_file( c_file_archive_size_limit, size_limit );
+      }
+
+      ods_tx.commit( );
+   }
+}
+
+void resize_file_archive( const string& name, int64_t new_size_limit, progress* p_progress )
+{
+   guard g( g_mutex, "resize_file_archive" );
+
+   int64_t min_limit = get_files_area_item_max_size( );
+
+   if( new_size_limit < min_limit )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Archive minimum size must be at least " + format_bytes( min_limit ) + " bytes." );
+
+   system_ods_bulk_write ods_bulk_write;
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_archives_folder );
+
+   if( !ods_fs.has_folder( name ) )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Archive '" + name + "' not found." );
+   else
+   {
+      ods::transaction ods_tx( system_ods_instance( ) );
+
+      ods_fs.set_folder( name );
+
+      string path;
+      ods_fs.fetch_from_text_file( c_file_archive_path, path );
+
+      int64_t size_avail = 0;
+      ods_fs.fetch_from_text_file( c_file_archive_size_avail, size_avail );
+
+      int64_t size_limit = 0;
+      ods_fs.fetch_from_text_file( c_file_archive_size_limit, size_limit );
+
+      int64_t bytes_used = ( size_limit - size_avail );
+
+      string status_info;
+      ods_fs.fetch_from_text_file( c_file_archive_status_info, status_info );
+
+      string new_status_info( get_archive_status( path ) );
+
+      if( trim( status_info ) != new_status_info )
+         ods_fs.store_as_text_file( c_file_archive_status_info, new_status_info, c_status_info_pad_len );
+
+      if( new_status_info == string( c_okay ) )
+      {
+         if( bytes_used > new_size_limit )
+         {
+            while( true )
+            {
+               string next( g_archive_file_info[ name ].get_oldest_file( ) );
+
+               if( next.empty( ) )
+                  break;
+
+               bytes_used -= file_size( path + '/' + next );
+
+               file_remove( path + '/' + next );
+
+               g_archive_file_info[ name ].remove_file( next );
+
+               if( bytes_used <= new_size_limit )
+                  break;
+            }
+         }
+
+         size_avail = ( new_size_limit - bytes_used );
+
+         ods_fs.store_as_text_file( c_file_archive_size_avail, size_avail );
+         ods_fs.store_as_text_file( c_file_archive_size_limit, new_size_limit );
       }
 
       ods_tx.commit( );

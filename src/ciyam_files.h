@@ -194,6 +194,8 @@ void CIYAM_BASE_DECL_SPEC remove_file_archive(
 
 void CIYAM_BASE_DECL_SPEC repair_file_archive( const std::string& name, progress* p_progress = 0 );
 
+void CIYAM_BASE_DECL_SPEC resize_file_archive( const std::string& name, int64_t new_size_limit, progress* p_progress = 0 );
+
 void CIYAM_BASE_DECL_SPEC archives_status_update( const std::string& name );
 
 bool CIYAM_BASE_DECL_SPEC file_has_been_blacklisted( const std::string& hash );

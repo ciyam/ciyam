@@ -860,6 +860,18 @@ file_put test1.jpg
 file_put test2.jpg
 file_archives
 test1 [okay      ] (514.6 kB/1.0 MB) test1
+file_archive -resize 2MB test1
+file_raw -text blob 999999 test1:xyz
+ce1c6591009b0d60009de10e9b0da944897ea5dd1bc6edb1a930aa0065631c30
+file_kill xyz
+file_archives
+test1 [okay      ] (1.5 MB/2.0 MB) test1
+file_archive -resize 3MB test1
+file_archives
+test1 [okay      ] (1.5 MB/3.0 MB) test1
+file_archive -resize 1MB test1
+file_archives
+test1 [okay      ] (1.0 MB/1.0 MB) test1
 file_archive -destroy test1
 session_variable @blockchain_archive_path ""
 ~rmdir test1
