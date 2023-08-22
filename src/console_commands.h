@@ -54,6 +54,9 @@ class console_command_handler : public command_handler
 
    size_t line_number;
 
+   size_t history_offset;
+   size_t max_history_lines;
+
    std::ostream* p_std_err;
    std::ostream* p_std_out;
 
@@ -61,6 +64,7 @@ class console_command_handler : public command_handler
 
    size_t description_offset;
 
+   bool is_reading_input;
    bool is_skipping_to_label;
    bool is_executing_commands;
    bool allow_history_addition;

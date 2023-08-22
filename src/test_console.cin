@@ -1,0 +1,84 @@
+@depth
+@label L1
+TEST=aaa
+;
+@:LOOP
+#Looping with $TEST
+@skip
+;
+@:L1
+@label L2
+TEST=bbb
+!!@:LOOP
+;
+@:L2
+@label L3
+TEST=ccc
+!!@:LOOP
+;
+@:L3
+@label L4
+TEST=ddd
+!!@:LOOP
+;
+@:L4
+;
+X=XXX
+@:MAIN_LOOP
+Y=YYY
+;
+@ifeq "$X" "XX"
+Y=YYYY
+@endif
+;
+@ifeq "$X" "X"
+Y=YYYYY
+@endif
+;
+@label NEXT
+@ifndef $X
+@depth
+@label END
+@endif
+;
+@label
+@skip
+@:NEXT
+#$X $Y
+X=@substr:1:$X
+;
+@:INNER_LOOP
+@label CONT
+@ifndef $Y
+@label DONE
+@endif
+;
+@label
+@skip
+@:CONT
+Y=@substr:1:$Y
+!!@:INNER_LOOP
+@:DONE
+;
+!!@:MAIN_LOOP
+@:END
+;
+@ifndef $XXX
+@depth
+@ifndef $YYY
+@depth
+@ifndef $ZZZ
+@depth TRUE
+@else
+@depth FALSE
+@endif
+@endif
+@endif
+!
+!=11
+!
+#one
+#two
+#three
+!=3
+!

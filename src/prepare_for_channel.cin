@@ -35,10 +35,10 @@ MODULE=%LINES:2%
 @ifdef $OUTPUT
 BLOCKCHAIN=$OUTPUT
 ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
-<<import_files.cin . $BLOCKCHAIN.tree : $BLOCKCHAIN.bun.gz
+<import_files.cin . $BLOCKCHAIN.tree : $BLOCKCHAIN.bun.gz
 ~rm $BLOCKCHAIN.bun.gz
-<<generate_next_block.cin $BLOCKCHAIN @sid $BLOCKCHAIN.tree
-<<block_tree_relegate.cin $BLOCKCHAIN $BLOCKCHAIN.tree
+<generate_next_block.cin $BLOCKCHAIN @sid $BLOCKCHAIN.tree
+<block_tree_relegate.cin $BLOCKCHAIN $BLOCKCHAIN.tree
 .system_variable @shared_secret_$IDENTITY ""
 @endif
 .storage_term

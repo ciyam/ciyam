@@ -2373,8 +2373,11 @@ console_command_handler::console_command_handler( )
  line_number( 0 ),
  p_std_err( &cerr ),
  p_std_out( &cout ),
+ history_offset( 0 ),
+ max_history_lines( c_max_history ),
  description_offset( 0 ),
  num_custom_startup_options( 0 ),
+ is_reading_input( false ),
  is_skipping_to_label( false ),
  is_executing_commands( false ),
  allow_history_addition( true ),
@@ -3196,17 +3199,26 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             else if( str[ 0 ] == c_read_input_prefix )
             {
                size_t file_name_offset = 1;
-               auto_ptr< restorable< bool > > ap_tmp_permit_history_addition;
+               bool keep_added_history = false;
+
+               size_t virtual_history_size = command_history.size( ) + history_offset;
 
                // NOTE: If the read input prefix is repeated then each command read from the input file will
                // be added to the history rather than adding the read input line itself as the history item.
                if( str.size( ) > 1 && str[ 1 ] == c_read_input_prefix )
                {
                   ++file_name_offset;
+
                   add_to_history = false;
+                  keep_added_history = true;
+
+#ifdef __GNUG__
+#  ifdef RDLINE_SUPPORT
+                  if( isatty( STDIN_FILENO ) )
+                     add_history( str.c_str( ) );
+#  endif
+#endif
                }
-               else
-                  ap_tmp_permit_history_addition.reset( new restorable< bool >( allow_history_addition, false ) );
 
                vector< string > new_args;
                size_t num_new_args = setup_arguments( str.c_str( ) + file_name_offset, new_args );
@@ -3234,12 +3246,16 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                restorable< string > tmp_script_file( script_file, new_args[ 0 ] );
                restorable< vector< bool > > tmp_completed( completed, dummy_vector );
                restorable< vector< bool > > tmp_conditions( conditions, dummy_vector );
+               restorable< bool > tmp_is_reading_input( is_reading_input, true );
                restorable< bool > tmp_executing_commands( is_executing_commands, false );
+               restorable< bool > tmp_allow_history_addition( allow_history_addition, true );
+               restorable< size_t > tmp_max_history_lines( max_history_lines, c_max_history );
                restorable< vector< bool > > tmp_dummy_conditions( dummy_conditions, dummy_vector );
                restorable< vector< size_t > > tmp_lines_for_conditions( lines_for_conditions, dummy_lines_vector );
 
                string next;
                string next_command;
+
                bool is_first = true;
 
                while( getline( inpf, next ) )
@@ -3279,6 +3295,19 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   throw runtime_error( "unexpected error occurred whilst reading '" + new_args[ 0 ] + "'" + error_context );
 
                str.erase( );
+
+               if( !keep_added_history )
+               {
+                  size_t offset = virtual_history_size;
+
+                  if( virtual_history_size <= history_offset )
+                     offset = 0;
+                  else
+                     offset -= history_offset;
+
+                  command_history.erase( command_history.begin( ) + offset, command_history.end( ) );
+                  history_line_number.erase( history_line_number.begin( ) + offset, history_line_number.end( ) );
+               }
             }
             else if( str[ 0 ] == c_write_output_prefix )
             {
@@ -3344,7 +3373,33 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             {
                add_to_history = false;
 
-               if( command_history.size( ) )
+               // NOTE: Use "!=" to display or "!=N" to set the max history size.
+               if( str.size( ) > 1 && str[ 1 ] == '=' )
+               {
+                  if( str.size( ) == 2 )
+                     cout << max_history_lines << '\n';
+                  else
+                  {
+                     max_history_lines = from_string< size_t >( str.substr( 2 ) );
+
+                     if( !max_history_lines )
+                     {
+                        history_offset = 0;
+
+                        command_history.clear( );
+                        history_line_number.clear( );
+                     }
+
+                     while( command_history.size( ) > max_history_lines )
+                     {
+                        ++history_offset;
+
+                        command_history.pop_front( );
+                        history_line_number.pop_front( );
+                     }
+                  }
+               }
+               else if( command_history.size( ) )
                {
                   if( str.size( ) > 1 )
                   {
@@ -3391,6 +3446,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         bool is_old_loop = false;
 
                         string::size_type pos = str.find( '#' );
+
                         if( pos != string::npos )
                         {
                            r = ( int )atoi( str.substr( pos + 1 ).c_str( ) );
@@ -3523,6 +3579,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            {
                               if( !is_range )
                               {
+                                 history_offset = 0;
+
                                  command_history.clear( );
                                  history_line_number.clear( );
                               }
@@ -3775,19 +3833,33 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          {
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
-            if( isatty( STDIN_FILENO ) )
+            if( !is_reading_input && isatty( STDIN_FILENO ) )
                add_history( str_for_history.c_str( ) );
 #  endif
 #endif
-
-            command_history.push_back( str_for_history );
-            history_line_number.push_back( line_number );
-
-            if( command_history.size( ) > c_max_history )
+            if( max_history_lines )
             {
-               command_history.pop_front( );
-               history_line_number.pop_front( );
+               command_history.push_back( str_for_history );
+               history_line_number.push_back( line_number );
             }
+         }
+      }
+
+      if( !max_history_lines )
+      {
+         history_offset = 0;
+
+         command_history.clear( );
+         history_line_number.clear( );
+      }
+      else
+      {
+         while( command_history.size( ) > max_history_lines )
+         {
+            ++history_offset;
+
+            command_history.pop_front( );
+            history_line_number.pop_front( );
          }
       }
    }
@@ -3819,7 +3891,7 @@ void console_command_handler::handle_special_command( const string& cmd_and_args
       command_history.push_back( cmd_and_args );
       history_line_number.push_back( line_number );
 
-      if( command_history.size( ) > c_max_history )
+      if( command_history.size( ) > max_history_lines )
       {
          command_history.pop_front( );
          history_line_number.pop_front( );

@@ -9,7 +9,7 @@
 .system_variable $$$1
 @ifndef $OUTPUT
 #Creating channel for identity '$1'.
-<<bc_gen.cin $1 @sid
+<bc_gen.cin $1 @sid
 .system_variable >$$$1_identity $IDENT
 @endif
 @endif

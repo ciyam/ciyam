@@ -76,7 +76,7 @@ BLK_HEIGHT=@$BLK_HEIGHT-1
 ; FUTURE: This message should be handled as a server string.
 .system_variable %$IDENT "Currently at height $HEIGHT"
 @ifneq "$SEED" ""
-<<bc_gen_keys.cin $SEED $IDENT $HEIGHT
+<bc_gen_keys.cin $SEED $IDENT $HEIGHT
 @endif
 @endif
 ;
