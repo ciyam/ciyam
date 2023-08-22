@@ -794,6 +794,7 @@ struct list_source : source
     is_reverse( false ),
     unique_index( false ),
     print_limited( false ),
+    can_action_any( false ),
     can_delete_any( false ),
     new_record_list_has_view_id( false )
    {
@@ -806,6 +807,8 @@ struct list_source : source
    bool is_reverse;
 
    bool print_limited;
+
+   bool can_action_any;
    bool can_delete_any;
 
    std::string pfield_list;

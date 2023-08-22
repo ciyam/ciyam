@@ -166,12 +166,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
  bool is_new_record, bool was_invalid, bool skip_force_fields, bool created_session, bool allow_module_switching, int vtab_num )
 {
    int vtabc_num = 1;
+
    if( !vtabc.empty( ) )
       vtabc_num = atoi( vtabc.c_str( ) );
 
    set< string > specials;
 
    int back_count = 1;
+
    if( !bcount.empty( ) )
    {
       back_count = atoi( bcount.c_str( ) );
@@ -180,6 +182,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
    }
 
    bool keep_checks = false;
+
    if( keepchecks == c_true_value )
       keep_checks = true;
 
@@ -1258,8 +1261,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          }
       }
 
-      if( !populate_list_info( list, list_selections, list_search_text, list_search_values,
-       list_page_info, listsort, "", ( cmd == c_cmd_plist ), 0, "", &specials, *p_session_info ) )
+      if( !populate_list_info( list,
+       list_selections, list_search_text, list_search_values, list_page_info,
+       listsort, "", ( cmd == c_cmd_plist ), 0, "", &specials, *p_session_info ) )
          had_send_or_recv_error = true;
 
       string link_name( get_view_or_list_header( qlink, olist.name, mod_info, *p_session_info, &list.name ) );
