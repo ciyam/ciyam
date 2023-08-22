@@ -45,7 +45,7 @@ APP_LOG_INFO_FILE=@files::$IDENTITY.log
 ;
 @ifdef $APP_LOG_INFO_FILE
 .system_variable @shared_secret_$IDENTITY $SHARED_SECRET
-<<prepare_for_channel.cin $STORAGE $IDENTITY
+<prepare_for_channel.cin $STORAGE $IDENTITY
 .peer_connect $SUBMIT_IDENTITY:$RECEIVE_IDENTITY $HOST_NAME-$HOST_PORT -user
 @endif
 ;

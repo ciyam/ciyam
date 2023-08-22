@@ -48,7 +48,7 @@ OPENED_FILES=$OUTPUT
 @ifndef $ERROR
 .system_variable @shared_secret_$IDENTITY
 @ifdef $OUTPUT
-<<prepare_for_channel.cin $STORAGE $IDENTITY
+<prepare_for_channel.cin $STORAGE $IDENTITY
 @endif
 @endif
 ;

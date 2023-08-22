@@ -53,7 +53,7 @@ BLK_HEIGHT=@repstr:blk\:h=/:$HEIGHT_INFO
 NEW_HEIGHT=@$BLK_HEIGHT+1
 ;
 @ifdef $PEER_HUB
-<<bc_gen_put_list.cin $IDENT $NEW_HEIGHT
+<bc_gen_put_list.cin $IDENT $NEW_HEIGHT
 .file_tags bc.$IDENT.$NEW_HEIGHT.opl*
 @ifndef $OUTPUT
 HAS_NO_OPL=1

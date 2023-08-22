@@ -52,7 +52,7 @@ HOST_PORT=%NEXT_LINE:6%
 .system_variable @shared_secret_$IDENTITY $SHARED_SECRET
 ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 ;
-<<fetch_from_channel.cin $STORAGE $IDENTITY
+<fetch_from_channel.cin $STORAGE $IDENTITY
 ;
 .session_variable @deque pop_front
 !!@:LOOP

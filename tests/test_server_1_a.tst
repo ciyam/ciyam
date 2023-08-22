@@ -231,7 +231,7 @@ j
 6	#j
 1	#b
 2	#f
-depth is 0 at line #328
+depth is 0 at line #1
 Looping with aaa
 Looping with bbb
 Looping with ccc
@@ -257,11 +257,105 @@ CONT
 CONT
 CONT
 DONE
-depth is 1 at line #367
+depth is 1 at line #40
 END
-depth is 1 at line #394
-depth is 2 at line #396
-depth is 3 at line #398 TRUE
+depth is 1 at line #67
+depth is 2 at line #69
+depth is 3 at line #71 TRUE
+1	;
+2	@depth
+3	@label L1
+4	TEST=aaa
+5	;
+6	@:LOOP
+7	#Looping with $TEST
+8	@skip
+9	;
+10	@:L1
+11	@label L2
+12	TEST=bbb
+13	!!@:LOOP
+14	;
+15	@:L2
+16	@label L3
+17	TEST=ccc
+18	!!@:LOOP
+19	;
+20	@:L3
+21	@label L4
+22	TEST=ddd
+23	!!@:LOOP
+24	;
+25	@:L4
+26	;
+27	X=XXX
+28	@:MAIN_LOOP
+29	Y=YYY
+30	;
+31	@ifeq "$X" "XX"
+32	Y=YYYY
+33	@endif
+34	;
+35	@ifeq "$X" "X"
+36	Y=YYYYY
+37	@endif
+38	;
+39	@label NEXT
+40	@ifndef $X
+41	@depth
+42	@label END
+43	@endif
+44	;
+45	@label
+46	@skip
+47	@:NEXT
+48	#$X $Y
+49	X=@substr:1:$X
+50	;
+51	@:INNER_LOOP
+52	@label CONT
+53	@ifndef $Y
+54	@label DONE
+55	@endif
+56	;
+57	@label
+58	@skip
+59	@:CONT
+60	Y=@substr:1:$Y
+61	!!@:INNER_LOOP
+62	@:DONE
+63	;
+64	!!@:MAIN_LOOP
+65	@:END
+66	;
+67	@ifndef $XXX
+68	@depth
+69	@ifndef $YYY
+70	@depth
+71	@ifndef $ZZZ
+72	@depth TRUE
+73	@else
+74	@depth FALSE
+75	@endif
+76	@endif
+77	@endif
+1	@ifndef $XXX
+2	@depth
+3	@ifndef $YYY
+4	@depth
+5	@ifndef $ZZZ
+6	@depth TRUE
+7	@else
+8	@depth FALSE
+9	@endif
+10	@endif
+11	@endif
+one
+two
+three
+1	#one
+2	#two
+3	#three
 docs
 src
 src/haru

@@ -19,12 +19,12 @@ REVERSE=*!reverse?$CHANNEL
 ;
 .file_tags bc.$CHANNEL.zenith*
 @ifdef $OUTPUT
-<<bc_reset.cin $CHANNEL
+<bc_reset.cin $CHANNEL
 @endif
 ;
 .file_tags bc.$REVERSE.zenith*
 @ifdef $OUTPUT
-<<bc_reset.cin $REVERSE
+<bc_reset.cin $REVERSE
 @endif
 ;
 @endif
