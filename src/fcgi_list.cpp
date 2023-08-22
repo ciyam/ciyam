@@ -1537,6 +1537,7 @@ void output_list_form( ostream& os,
 
    bool had_data = false;
    bool has_text_search = ( extras.count( c_list_type_extra_text_search ) > 0 );
+
    string new_record_fields;
    string new_record_values;
 
@@ -2479,7 +2480,7 @@ void output_list_form( ostream& os,
    if( list_type != c_list_type_home && !sess_info.is_read_only && !sess_info.user_id.empty( ) )
    {
       if( !is_printable )
-         display_list_checks = allow_list_actions;
+         display_list_checks = ( allow_list_actions && source.can_action_any );
       else if( print_list_opts.count( c_list_print_opt_show_checks ) )
          display_list_checks = true;
 
@@ -2489,12 +2490,7 @@ void output_list_form( ostream& os,
       if( display_list_checks )
       {
          os << "  <th class=\"list\" width=\"25\" align=\"center\">";
-
-         if( !display_list_checks )
-            os << "&nbsp;";
-         else
-            os << "<input type=\"checkbox\" name=\"all\" onclick=\"check_or_uncheck_all( document." << source.id << ", this );\"/>";
-
+         os << "<input type=\"checkbox\" name=\"all\" onclick=\"check_or_uncheck_all( document." << source.id << ", this );\"/>";
          os << "</th>\n";
 
       }
