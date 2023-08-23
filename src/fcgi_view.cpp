@@ -892,6 +892,7 @@ bool output_view_form( ostream& os, const string& act,
 #endif
 
          bool go_back_after_save = false;
+
          if( view_extras.count( c_view_type_extra_auto_back ) )
             go_back_after_save = true;
 
@@ -2529,8 +2530,13 @@ bool output_view_form( ostream& os, const string& act,
                   string verification_file( string( c_files_directory ) + "/"
                    + string( c_tmp_directory ) + "/" + sess_info.session_id + "/" + data + "-" + source_field_id );
 
-                  ofstream outf( verification_file.c_str( ), ios::out | ios::binary );
-                  outf << upload_info;
+                  if( sess_info.was_file_remove )
+                     file_remove( verification_file );
+                  else
+                  {
+                     ofstream outf( verification_file.c_str( ), ios::out | ios::binary );
+                     outf << upload_info;
+                  }
 #endif
                   os << "\n<input type=\"" << "file\" name=\"" << upload_info << "\"/>\n";
                   os << "<input type=\"submit\" class=\"button\" value=\"" << GDS( c_display_attach ) << "\"/>";
@@ -3192,4 +3198,3 @@ bool output_view_form( ostream& os, const string& act,
 
    return is_editable;
 }
-

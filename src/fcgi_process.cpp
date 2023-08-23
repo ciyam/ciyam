@@ -56,6 +56,7 @@ extern string g_display_change_password;
 extern string g_display_sign_up_for_an_account;
 
 extern size_t get_num_sessions( );
+
 extern void add_session_info( const string& session_id, session_info* p_session_info );
 
 namespace
@@ -177,6 +178,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
    if( !bcount.empty( ) )
    {
       back_count = atoi( bcount.c_str( ) );
+
       if( back_count < 1 )
          back_count = 1;
    }
@@ -338,6 +340,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
       string item_key( data );
       string set_field_values;
+
       if( is_new_record )
       {
          // NOTE: If editing a record with fixed field values then set these fields in the fetch.
@@ -1077,16 +1080,17 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                string class_id( ( vici->second )->cid );
                string module_id( get_module_id_for_attached_file( view ) );
 
-               string relative_prefix( string( c_files_directory ) + "/" + module_id + "/" + class_id + "/" );
+               string relative_prefix( string( c_files_directory ) + "/" + module_id + "/" + class_id );
 
                string new_file_info( relative_prefix + "/" + session_id );
 
-               if( act == c_act_remove || file_exists( new_file_info.c_str( ) ) )
+               if( act == c_act_remove || file_exists( new_file_info ) )
                {
                   string new_file;
+
                   bool okay = false;
 
-                  if( file_exists( new_file_info.c_str( ) ) )
+                  if( file_exists( new_file_info ) )
                   {
                      ifstream inpf( new_file_info.c_str( ) );
                      getline( inpf, new_file );
@@ -1097,6 +1101,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   // NOTE: It is expected that the file name in the "new_file_info" will be prefixed
                   // by the file's path so this will now be removed for the attached file field value.
                   string new_file_name( new_file );
+
                   if( !new_file_name.empty( ) && new_file_name[ 0 ] == '>' )
                   {
                      size_t max_size = atoi( new_file_name.substr( 1 ).c_str( ) );
@@ -1153,8 +1158,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         {
                            string old_file( relative_prefix + "/" + view.field_values[ file_field_id ] );
 
-                           if( old_file != new_file && file_exists( old_file.c_str( ) ) )
-                              remove( old_file.c_str( ) );
+                           if( old_file != new_file && file_exists( old_file ) )
+                              file_remove( old_file );
                         }
 
                         if( !new_file.empty( ) )
@@ -1168,7 +1173,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      else
                      {
                         if( !new_file.empty( ) )
-                           remove( new_file.c_str( ) );
+                           file_remove( new_file );
 
                         if( error_message.length( ) > strlen( c_response_error_prefix )
                          && error_message.substr( 0, strlen( c_response_error_prefix ) ) == c_response_error_prefix )
@@ -1177,8 +1182,11 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      }
                   }
 
-                  if( file_exists( new_file_info.c_str( ) ) )
-                     remove( new_file_info.c_str( ) );
+                  if( file_exists( new_file_info ) )
+                  {
+                     file_remove( new_file_info );
+                     p_session_info->was_file_remove = true;
+                  }
                }
             }
          }
@@ -1235,6 +1243,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          specials.insert( special );
 
          size_t last_size = specials.size( );
+
          while( true )
          {
             for( set< string >::iterator si = specials.begin( ); si != specials.end( ); ++si )
@@ -1257,6 +1266,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
             if( specials.size( ) == last_size )
                break;
+
             last_size = specials.size( );
          }
       }
@@ -1798,7 +1808,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          }
 
          string user_group;
-         bool is_admin_user;
+
+         bool is_admin_user = false;
 
          if( using_anonymous )
          {
@@ -2718,7 +2729,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          extra_content << "</span>";
 
          if( cmd != c_cmd_pview )
-            extra_content << "<span class=\"alignright\"><a href=\"javascript:history.go( -"
+            extra_content << "<span class=\"alignright\"><a href=\"javascript:go_back( "
              << back_count << " );\">" << GDS( c_display_back ) << "</a></span>";
 
          extra_content << "</h3></div>\n";
@@ -2781,6 +2792,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
              extra_content_func, use_url_checksum, !qlink.empty( ), show_opts, cmd == c_cmd_pview,
              back_count, pdf_view_file_name, is_owner, extra_html_content, has_any_changing_records );
 
+            p_session_info->was_file_remove = false;
+
             extra_content_func += "dataFieldList = '" + edit_field_list + "';\n";
 
             uint64_t state( view.state );
@@ -2789,7 +2802,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                state |= c_state_uneditable;
 
             // NOTE: For new records (and currently for "printable" views) do not output child lists.
-            // FUTURE: For "printable" views it makes sense to be able to have child lists although
+            // FUTURE: For "printable" views it makes sense to be able to support child lists however
             // they should be identified differently (perhaps as "printchild") as the normal sublists
             // may not be applicable to the printed version.
             if( !is_new_record && cmd != c_cmd_pview )
@@ -2955,6 +2968,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   extra_content << "<div class=\"menu width-fix width-fix-view childlistborder\">\n";
 
                n = 0;
+
                for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
                {
                   if( children_not_permitted.count( i->first ) )
@@ -3001,7 +3015,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
              << get_view_or_list_header( qlink, olist.name, mod_info, *p_session_info, &list.name ) << "</span>";
 
             if( cmd != c_cmd_plist )
-               extra_content << "<span class=\"alignright\"><a href=\"javascript:history.go( -"
+               extra_content << "<span class=\"alignright\"><a href=\"javascript:go_back( "
                 << back_count << " );\">" << GDS( c_display_back ) << "</a></span>";
 
             extra_content << "</h3></div>\n";
@@ -3168,7 +3182,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          if( act != c_act_remove )
             extra_content_func += "sessionStorage.setItem( 'uploaded', 'true' );\n";
 
-         extra_content_func += "refresh( false );\n"; // KLUDGE: Refresh so current version is viewed (otherwise actions will fail).
+         // KLUDGE: Refresh in order to see an uploaded file and/or read the updated record.
+         extra_content_func += "refresh( false );\n";
       }
 
       // NOTE: Erase any existing cookie value first.
@@ -3268,4 +3283,3 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          extra_content_func += "\nscroll_page( " + scrollx + ", " + scrolly + " );";
    }
 }
-
