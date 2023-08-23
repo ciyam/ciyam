@@ -4100,4 +4100,3 @@ void output_list_form( ostream& os,
 
    os << "\n";
 }
-

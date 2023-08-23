@@ -351,6 +351,7 @@ session_info::session_info( storage_info& si )
  logged_in( false ),
  needs_pin( false ),
  is_meta_module( false ),
+ was_file_remove( false ),
  change_pwd_tm( 0 ),
  checksum_serial( 0 ),
  pwd_encrypted( true ),

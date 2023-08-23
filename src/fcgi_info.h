@@ -510,6 +510,7 @@ struct session_info
    bool logged_in;
    bool needs_pin;
    bool is_meta_module;
+   bool was_file_remove;
 
 #  ifdef SSL_SUPPORT
    ssl_socket* p_socket;

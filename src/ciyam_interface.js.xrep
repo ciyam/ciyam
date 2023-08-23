@@ -146,6 +146,14 @@ function clear_local_storage( )
    }
 }
 
+function go_back( num )
+{
+   if( can_write_to_session_storage( ) )
+      sessionStorage.setItem( 'back', num );
+
+   history.go( num * -1 );
+}
+
 function refresh( back )
 {
    if( isIE )
@@ -448,6 +456,13 @@ function load2( )
    // reload to occur when going back in history.
    window.onunload = function( ){ };
 
+   // NOTE: If 'go_back' was executed but the current location has not changed then will force another 'back'.
+   if( ( sessionStorage.getItem( 'back' ) != '' ) && ( location.href == sessionStorage.getItem( 'old_href' ) ) )
+      history.go( -1 );
+
+   sessionStorage.setItem( 'back', '' );
+   sessionStorage.setItem( 'old_href', '' );
+
    if( typeof window.ActiveXObject != 'undefined' )
    {
       xmlReq = new ActiveXObject( 'Microsoft.XMLHTTP' );
@@ -462,6 +477,7 @@ function load2( )
    var session_id = '';
    var has_session = false;
    var all_cookies = document.cookie.split( ';' );
+
    for( i = 0; i < all_cookies.length; i++ )
    {
       var next_cookie = all_cookies[ i ].split( '=' );
@@ -815,11 +831,7 @@ function process( )
       {
          sessionStorage.removeItem( 'uploaded' );
 
-         // KLUDGE: After a file upload the history (for non-Chrome browsers) ends up having a
-         // repeat that is therefore being removed here (this will probably need to have a bit
-         // more tweaking in the future).
-         if( window.chrome == null )
-            history.go( -1 );
+         sessionStorage.setItem( 'old_href', location.href );
       }
    }
    
@@ -916,6 +928,7 @@ function query_update( qvar, qval, keep_location )
    var qvars = qsContext.split( '&' );
 
    qsContext = '';
+
    for( var i = 0; i < qvars.length; i++ )
    {
       var skip = false;

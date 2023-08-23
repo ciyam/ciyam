@@ -1664,6 +1664,7 @@ void output_actions( ostream& os,
 
          if( go_back )
             os << "&back=1";
+
          os << "&exec=" << next_action << "', false );";
 
          if( use_url_checksum )
@@ -2044,4 +2045,3 @@ void determine_fixed_query_info( string& fixed_fields,
       }
    }
 }
-
