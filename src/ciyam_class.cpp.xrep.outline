@@ -1004,7 +1004,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_key_suffix=$specification_\\0_key_suffix arg_use_trans=$specification_\\0_use_trans\
  arg_clone_only=$specification_\\0_clone_only arg_proc_arg_is_key_suffix=$specification_\\0_proc_arg_is_key_suffix\
  arg_spclass=$specification_\\0_spclass arg_use_proc_arg_for_source=$specification_\\0_use_proc_arg_for_source\
- arg_field_value_for_both=$specification_\\0_field_value_for_both`}\
+ arg_field_value_for_both=$specification_\\0_field_value_for_both arg_key_from_update_value=$specification_\\0_key_from_update_value`}\
 `,\
 `@eq`(`'\\1`'`,`'for_clone_peer`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_clone_peer.spec.xrep section=procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name\
@@ -3130,6 +3130,13 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `{`#field_from_child_concat.spec.xrep section=after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_cfield=$specification_\0_cfield arg_ofield=$specification_\0_ofield\
  arg_pfield=$specification_\0_pfield arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'file_attachments`'`)
+`{`#file_attachments.spec.xrep section=after_store arg_id=$specification_\0_id\
+ arg_field=$specification_\0_field arg_field_id=$specification_\0_field_id arg_child=$specification_\0_child\
+ arg_sfield=$specification_\0_sfield arg_sfield_id=$specification_\0_sfield_id arg_cfield=$specification_\0_cfield\
+ arg_cfield_id=$specification_\0_cfield_id arg_csfield=$specification_\0_csfield\
+ arg_csfield_id=$specification_\0_csfield_id arg_cspfield=$specification_\0_cspfield`}\
 `,\
 `@eq`(`'\1`'`,`'total_child_field_in_parent`'`)`&`@eq`(`$specification_\0_after_self`,`'true`'`)
 `{`#total_child_field_in_parent.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\

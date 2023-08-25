@@ -456,12 +456,22 @@ function load2( )
    // reload to occur when going back in history.
    window.onunload = function( ){ };
 
-   // NOTE: If 'go_back' was executed but the current location has not changed then will force another 'back'.
-   if( ( sessionStorage.getItem( 'back' ) != '' ) && ( location.href == sessionStorage.getItem( 'old_href' ) ) )
-      history.go( -1 );
+   // NOTE: If 'go_back' was executed but the current location has not changed then will keep jumping back through
+   // the browser history until either the location has changed or the 'back' count value has decremented to zero.
+   if( ( sessionStorage.getItem( 'back' ) != null ) && ( location.href == sessionStorage.getItem( 'old_href' ) ) )
+   {
+      var num_back = sessionStorage.getItem( 'back' );
 
-   sessionStorage.setItem( 'back', '' );
-   sessionStorage.setItem( 'old_href', '' );
+      if( num_back == 0 )
+         sessionStorage.removeItem( 'back' );
+      else
+         sessionStorage.setItem( 'back', num_back - 1 );
+
+      history.go( -1 );
+   }
+
+   sessionStorage.removeItem( 'back' );
+   sessionStorage.removeItem( 'old_href' );
 
    if( typeof window.ActiveXObject != 'undefined' )
    {

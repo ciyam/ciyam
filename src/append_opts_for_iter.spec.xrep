@@ -1,4 +1,5 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
+`{`$separator`=`$arg_separator`}`{`@eq`(`$separator`,`'@CR`'`)`$separator`=`'\\r`'`}`{`@eq`(`$separator`,`'@LF`'`)`$separator`=`'\\n`'`}\
 `{`$is_user`=`'`'`}`{`@eq`(`$arg_rvalue`,`'@user`'`)`$is_user`=`'1`'`}\
 `{`$is_group`=`'`'`}`{`@eq`(`$arg_rvalue`,`'@group`'`)`$is_group`=`'1`'`}\
    // [(start append_opts_for_iter)] `{`$arg_id`}
@@ -68,7 +69,7 @@
          for( map< string, string >::iterator i = parts.begin( ); i!= parts.end( ); ++i )
          {
             if( !str.empty( ) )
-               str += "`{`$arg_separator`}";
+               str += "`{`$separator`}";
 
             str += i->second;
          }      

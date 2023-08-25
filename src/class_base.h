@@ -1337,6 +1337,8 @@ inline std::string hashed_decrypt( const std::string& s, bool use_sha256 = false
 std::string CIYAM_BASE_DECL_SPEC totp_pin( const std::string& secret );
 std::string CIYAM_BASE_DECL_SPEC totp_secret( const std::string& unique );
 
+std::string CIYAM_BASE_DECL_SPEC file_extension( const std::string& str );
+
 std::string CIYAM_BASE_DECL_SPEC valid_utf8_filename( const std::string& str );
 std::string CIYAM_BASE_DECL_SPEC valid_non_utf8_filename( const std::string& str );
 

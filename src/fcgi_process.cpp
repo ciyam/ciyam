@@ -1087,13 +1087,22 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                if( act == c_act_remove || file_exists( new_file_info ) )
                {
                   string new_file;
-
-                  bool okay = false;
+                  string new_source;
 
                   if( file_exists( new_file_info ) )
                   {
                      ifstream inpf( new_file_info.c_str( ) );
                      getline( inpf, new_file );
+
+                     string::size_type pos = new_file.find( ' ' );
+
+                     // NOTE: The new source is the file name that
+                     // came from the browser (without extension).
+                     if( pos != string::npos )
+                     {
+                        new_source = new_file.substr( pos + 1 );
+                        new_file.erase( pos );
+                     }
                   }
 
                   vector< pair< string, string > > field_value_pairs;
@@ -1121,6 +1130,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         new_file_name = new_file.substr( pos + 1 );
 
                      string file_field_id;
+
                      if( new_file_name.empty( ) )
                         file_field_id = app;
                      else
@@ -1137,6 +1147,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      }
 
                      field_value_pairs.push_back( make_pair( file_field_id, new_file_name ) );
+
+                     if( !new_source.empty( ) && !view.filename_field.empty( ) )
+                        field_value_pairs.push_back( make_pair( view.filename_field, valid_file_name( new_source ) ) );
 
                      // NOTE: If a "modified" date/time field exists then update this to the current
                      // date/time.
@@ -1162,13 +1175,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                               file_remove( old_file );
                         }
 
-                        if( !new_file.empty( ) )
-                        {
-                           okay = true;
-                           view.new_file_name = new_file;
-                        }
-                        else
+                        if( new_file.empty( ) )
                            view.new_file_name = ".";
+                        else
+                           view.new_file_name = new_file;
                      }
                      else
                      {
@@ -1184,7 +1194,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                   if( file_exists( new_file_info ) )
                   {
+                     // NOTE: If this file removal is omitted
+                     // then the UI will be caught in a loop.
                      file_remove( new_file_info );
+
                      p_session_info->was_file_remove = true;
                   }
                }
