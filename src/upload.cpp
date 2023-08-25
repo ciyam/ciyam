@@ -158,6 +158,7 @@ void request_handler::process_request( )
 
    size_t size = 0;
    size_t length = 0;
+
    if( p_param )
    {
       FCGX_FPrintF( p_out, "<p>Found CONTENT_LENGTH: %s</p>\n", p_param );
@@ -209,12 +210,15 @@ void request_handler::process_request( )
       }
 
       string ext;
-      pos = file_source.find( "." );
+      pos = file_source.rfind( "." );
 
       if( pos == string::npos )
          FCGX_FPrintF( p_out, "<p>*** unexpected file extension not found in '%s' ***</p>", file_source.c_str( ) );
       else
+      {
          ext = file_source.substr( pos );
+         file_source.erase( pos );
+      }
 
       // NOTE: Format for upload name is [<sid>:][<dir>;]<dest>[?<limit>] where:
       // <sid> is the session id (used as a confirmation output file which will contain the file name)
@@ -350,10 +354,11 @@ void request_handler::process_request( )
          file_info += "/" + session_id;
 
          ofstream outf( file_info.c_str( ) );
+
          if( max_size_exceeded )
             outf << ">" << max_size << endl;
          else if( !ext.empty( ) )
-            outf << file_name;
+            outf << file_name << " " << file_source;
       }
    }
 

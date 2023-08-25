@@ -3755,6 +3755,18 @@ string totp_secret( const string& unique )
    return totp_secret_key( unique );
 }
 
+string file_extension( const string& str )
+{
+   string retval;
+
+   string::size_type pos = str.rfind( '.' );
+
+   if( pos != string::npos )
+      retval = str.substr( pos );
+
+   return retval;
+}
+
 string valid_utf8_filename( const string& str )
 {
    bool has_utf8 = false;

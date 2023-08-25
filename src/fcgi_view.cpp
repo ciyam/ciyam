@@ -273,6 +273,9 @@ void setup_view_fields( view_source& view,
          if( extra_data.count( c_field_extra_special ) )
             view.special_field = value_id;
 
+         if( extra_data.count( c_field_extra_filename ) )
+            view.filename_field = value_id;
+
          if( has_perm_extra( c_field_extra_link, extra_data, sess_info ) )
             view.link_fields.insert( value_id );
 

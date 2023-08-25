@@ -31,9 +31,17 @@ cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`}, next_copy_num ) );
 `{`$i`}   get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( next_copy_num + 1 );
 `{`$i`}   get_obj( ).`{`$arg_spfield`}( ).op_apply( );
 `,
+`{`@eq`(`$arg_key_from_update_value`,`'true`'`)\
+`{`$i`}   int next_copy_num = get_obj( ).`{`$arg_svalue`}( );
+
+`{`$i`}   string key_info( construct_key_from_int(
+`{`$i`}    get_obj( ).get_key( ) + "`{`$suffix`}", next_copy_num )\
+ + string( " " ) + get_obj( ).get_key( ) );
+
+`{`$i`}   get_obj( ).`{`$arg_svalue`}( next_copy_num + 1 );`,\
 `{`$i`}   string key_info( get_obj( ).get_key( ) + "`{`$suffix`}"\
 `{`!`@eq`(`$arg_proc_arg_is_key_suffix`,`'`'`) + `{`!`@eq`(`$arg_spfield`,`'`'`)`&`@eq`(`$arg_use_proc_arg_for_source`,`'true`'`)\
-cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).get_key( ) );
+cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).get_key( ) );`}
 `}
 `{`@eq`(`$arg_fldval`,`'`'`)\
 `{`$i`}   class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
