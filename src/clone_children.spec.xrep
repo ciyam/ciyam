@@ -1,6 +1,6 @@
 `{`@eq`(`'after_store`'`,`$section`)\
    // [(start clone_children)] `{`$arg_id`}
-   if( !get_obj( ).get_clone_key( ).empty( ) )
+   if( !get_obj( ).get_clone_key( ).empty( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
    {
       class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
 
@@ -15,16 +15,16 @@
 `}
          do
          {
-`{`!`@eq`(`$arg_tfield`,`'`'`)\
-`{`@eq`(`$arg_tvalue`,`'`'`)\
-`{`@eq`(`$arg_tfistexttype`,`'0`'`)\
-            if( !cp_source->child_`{`$arg_child`}( ).`{`$arg_tfield`}( ) )
+`{`!`@eq`(`$arg_ctfield`,`'`'`)\
+`{`@eq`(`$arg_ctvalue`,`'`'`)\
+`{`@eq`(`$arg_ctfistexttype`,`'0`'`)\
+            if( !cp_source->child_`{`$arg_child`}( ).`{`$arg_ctfield`}( ) )
 `,\
-            if( is_null( cp_source->child_`{`$arg_child`}( ).`{`$arg_tfield`}( ) ) )
+            if( is_null( cp_source->child_`{`$arg_child`}( ).`{`$arg_ctfield`}( ) ) )
 `}\
                continue;
 `,
-            if( cp_source->child_`{`$arg_child`}( ).`{`$arg_tfield`}( ) != `{`$arg_tvalue`} )
+            if( cp_source->child_`{`$arg_child`}( ).`{`$arg_ctfield`}( ) != `{`$arg_ctvalue`} )
                continue;
 `}
 `}\
