@@ -9995,7 +9995,42 @@ string storage_channel_documents_update( const string& identity, bool submitted 
       string app_log_file_name( blockchain_identity + '/' + backup_identity + c_log_file_ext );
 
       if( !submitted && file_exists( app_log_file_name ) )
+      {
          file_rename( app_log_file_name, backup_identity + c_log_file_ext );
+
+         file_filter ff;
+         fs_iterator fs( blockchain_identity, &ff );
+
+         while( fs.has_next( ) )
+         {
+            string dest_file( fs.get_name( ) );
+
+            string::size_type pos = dest_file.find( '.' );
+
+            if( pos != string::npos && dest_file[ 0 ] == 'M' )
+            {
+               string class_id( dest_file.substr( 0, pos ) );
+
+               dest_file.erase( 0, pos + 1 );
+
+               pos = class_id.find( 'C' );
+
+               if( pos == string::npos )
+                  throw runtime_error( "unexpected file name '" + fs.get_name( ) + "' in storage_channel_documents_update" );
+
+               string module_id( class_id.substr( 0, pos ) );
+
+               string dest_directory( get_web_root( ) + '/' + lower( storage_name )
+                + '/' + string( c_files_directory ) + '/' + module_id + '/' + class_id );
+
+               create_directories( dest_directory );
+
+               dest_file = dest_directory + '/' + dest_file;
+
+               file_rename( blockchain_identity + '/' + fs.get_name( ), dest_file );
+            }
+         }
+      }
 
       ods::transaction ods_tx( *ods::instance( ) );
 
@@ -10333,6 +10368,17 @@ string storage_channel_documents_prepare( const string& identity )
 
       if( file_exists( identity_log_file_name ) )
          file_rename( identity_log_file_name, blockchain_identity + '/' + identity_log_file_name );
+
+      string identity_files_dir( identity + c_files_ext );
+
+      if( dir_exists( identity_files_dir ) )
+      {
+         file_filter ff;
+         fs_iterator fs( identity_files_dir, &ff );
+
+         while( fs.has_next( ) )
+            file_rename( identity_files_dir + '/' + fs.get_name( ), blockchain_identity + '/' + fs.get_name( ) );
+      }
 
       int64_t height_fetched = 0;
 
@@ -14803,11 +14849,9 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
          bool supports_sql_undo = handler.supports_sql_undo( );
 
-         string identity_var_name( get_special_var_name( e_special_var_identity ) );
-
-         if( instance.has_variable( identity_var_name ) )
+         if( instance.get_is_for_peer( ) )
          {
-            string identity( instance.get_raw_variable( identity_var_name ) );
+            string identity( instance.get_peer_identity( ) );
 
             string class_id( instance.get_class_id( ) );
             string module_id( instance.get_module_id( ) );

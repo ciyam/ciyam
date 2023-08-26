@@ -1175,12 +1175,17 @@ void class_base::set_instance( const string& key )
 
 bool class_base::get_is_for_peer( ) const
 {
-   return has_variable( get_special_var_name( e_special_var_identity ) );
+   return get_graph_root( )->has_variable( get_special_var_name( e_special_var_identity ) );
+}
+
+string class_base::get_peer_identity( ) const
+{
+   return get_graph_root( )->get_variable( get_special_var_name( e_special_var_identity ) );
 }
 
 void class_base::set_is_for_peer( const string& identity )
 {
-   set_variable( get_special_var_name( e_special_var_identity ), identity );
+   get_graph_root( )->set_variable( get_special_var_name( e_special_var_identity ), identity );
 }
 
 void class_base::copy_all_field_values( const class_base& src )
@@ -1397,6 +1402,20 @@ class_base* class_base::get_graph_root( )
 {
    class_base* p_last( this );
    class_base* p_next( p_graph_parent );
+
+   while( p_next )
+   {
+      p_last = p_next;
+      p_next = p_next->p_graph_parent;
+   }
+
+   return p_last;
+}
+
+const class_base* class_base::get_graph_root( ) const
+{
+   const class_base* p_last( this );
+   const class_base* p_next( p_graph_parent );
 
    while( p_next )
    {
@@ -2317,6 +2336,20 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
       set_variable( c_object_variable_skip_fk_handling, "" );
    }
 
+   // NOTE: Records being created for peers also will bypass FK existence checking
+   // as the FK records might also be peer targeted records (which will not exist).
+   if( get_is_for_peer( ) )
+   {
+      skip_fk_handling = true;
+
+      if( p_graph_parent && is_singular && !is_fetching && !graph_parent_fk_field.empty( ) )
+      {
+         if( !p_graph_parent->in_op_begin
+          && ( p_graph_parent->op == e_op_type_create || p_graph_parent->op == e_op_type_update ) )
+            p_graph_parent->set_foreign_key_value( graph_parent_fk_field, new_key );
+      }
+   }
+
    if( ( get_persistence_type( ) == 0 ) // i.e. SQL persistence
     && ( new_key.size( ) > c_max_key_length ) )
       throw runtime_error( new_key + " exceeds max key length of " + to_string( c_max_key_length ) );
@@ -2977,7 +3010,8 @@ void link_file( const string& source, const string& name )
 }
 
 string copy_class_file( const string& src_path,
- const string& dest_class_id, const string& dest_file_name, bool copy_only_if_missing, bool return_full_path )
+ const string& dest_class_id, const string& dest_file_name,
+ bool copy_only_if_missing, bool return_full_path, const string* p_dest_directory )
 {
    string dest_path( src_path );
 
@@ -3003,7 +3037,15 @@ string copy_class_file( const string& src_path,
 
    dest_path.erase( pos + 1 );
 
-   dest_path += dest_class_id + "/" + dest_file_name + ext;
+   if( !p_dest_directory || p_dest_directory->empty( ) )
+      dest_path += dest_class_id + '/' + dest_file_name + ext;
+   else
+   {
+      if( !dir_exists( *p_dest_directory ) )
+         create_dir( *p_dest_directory );
+
+      dest_path = *p_dest_directory + '/' + dest_class_id + '.' + dest_file_name + ext;
+   }
 
    if( !copy_only_if_missing || ( exists_file( src_path ) && !exists_file( dest_path ) ) )
       copy_file( src_path, dest_path );
@@ -3037,14 +3079,22 @@ void copy_class_files( const class_base& src, class_base& dest )
 void copy_class_files_for_clone(
  const vector< pair< string, string > >& file_field_name_and_values, class_base& dest )
 {
-   for( size_t i = 0; i < file_field_name_and_values.size( ); i++ )
-   {
-      string next_file( file_field_name_and_values[ i ].second );
+   string dest_directory;
 
-      if( !next_file.empty( ) )
-         dest.set_field_value( dest.get_field_num( file_field_name_and_values[ i ].first ),
-          copy_class_file( dest.get_attached_file_path( next_file ),
-          dest.get_class_id( ), dest.get_key( ), storage_locked_for_admin( ) ) );
+   if( dest.get_is_for_peer( ) )
+      dest_directory = dest.get_peer_identity( ) + c_files_ext;
+
+   if( dest_directory.empty( ) || !storage_locked_for_admin( ) )
+   {
+      for( size_t i = 0; i < file_field_name_and_values.size( ); i++ )
+      {
+         string next_file( file_field_name_and_values[ i ].second );
+
+         if( !next_file.empty( ) )
+            dest.set_field_value( dest.get_field_num( file_field_name_and_values[ i ].first ),
+             copy_class_file( dest.get_attached_file_path( next_file ), dest.get_class_id( ),
+              dest.get_key( ), storage_locked_for_admin( ), false, ( dest_directory.empty( ) ? 0 : &dest_directory ) ) );
+      }
    }
 }
 
