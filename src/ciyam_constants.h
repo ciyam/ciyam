@@ -69,6 +69,8 @@ const char* const c_repository_info_suffix = ".info";
 
 const char* const c_two_spaces = "  ";
 
+const char* const c_files_ext = ".files";
+
 const char* const c_csv_file_ext = ".csv";
 const char* const c_log_file_ext = ".log";
 
