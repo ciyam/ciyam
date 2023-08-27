@@ -10020,12 +10020,10 @@ string storage_channel_documents_update( const string& identity, bool submitted 
 
                string module_id( class_id.substr( 0, pos ) );
 
-               string dest_directory( get_web_root( ) + '/' + lower( storage_name )
-                + '/' + string( c_files_directory ) + '/' + module_id + '/' + class_id );
+               dest_file = get_web_root( ) + '/' + lower( storage_name )
+                + '/' + string( c_files_directory ) + '/' + module_id + '/' + class_id + '/' + dest_file;
 
-               create_directories( dest_directory );
-
-               dest_file = dest_directory + '/' + dest_file;
+               create_directories( dest_file );
 
                file_rename( blockchain_identity + '/' + fs.get_name( ), dest_file );
             }
@@ -12935,6 +12933,11 @@ string exec_bulk_ops( const string& module,
          size_t key_field_num = 0;
          size_t transaction_id = 0;
 
+         string last_suffixed_key;
+
+         string key_suffix( get_raw_session_variable(
+          get_special_var_name( e_special_var_key_suffix ) ) );
+
          while( getline( inpf, next ) )
          {
             remove_trailing_cr_from_text_file_line( next, is_first );
@@ -13071,9 +13074,6 @@ string exec_bulk_ops( const string& module,
             bool found_instance = false;
             bool skipping_fk_checks = false;
 
-            string key_suffix( get_raw_session_variable(
-             get_special_var_name( e_special_var_key_suffix ) ) );
-
             if( !key_suffix.empty( ) )
             {
                bool has_key_suffix = false;
@@ -13089,7 +13089,15 @@ string exec_bulk_ops( const string& module,
                   if( pos != string::npos )
                   {
                      if( pos + key_suffix.length( ) == key_value.length( ) )
+                     {
                         has_key_suffix = true;
+                        last_suffixed_key = key;
+                     }
+                     else if( !last_suffixed_key.empty( ) )
+                     {
+                        if( key_value.find( last_suffixed_key ) == 0 )
+                           has_key_suffix = true;
+                     }
                   }
                }
 

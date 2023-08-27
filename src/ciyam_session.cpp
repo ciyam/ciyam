@@ -175,8 +175,21 @@ void check_key_has_suffix( const string& key, const string& suffix )
 
       if( pos != string::npos )
       {
+         string last_suffix_key_var_name(
+          get_special_var_name( e_special_var_last_suffixed_key ) );
+
          if( pos + suffix.length( ) == key.length( ) )
+         {
             has_suffix = true;
+            set_session_variable( last_suffix_key_var_name, key );
+         }
+         else
+         {
+            string last_suffixed_key( get_raw_session_variable( last_suffix_key_var_name ) );
+
+            if( !last_suffixed_key.empty( ) && ( key.find( last_suffixed_key ) == 0 ) )
+               has_suffix = true;
+         }
       }
 
       if( !has_suffix )

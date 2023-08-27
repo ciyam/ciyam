@@ -53,11 +53,11 @@ APP_LOG_INFO_FILE=@files::$IDENTITY.log
 !!@:LOOP
 @:END_LOOP
 ;
-APP_DIR=@lower:$STORAGE
-~rm -f $WEBDIR/$APP_DIR/needs_submit
-;
 @:DONE
 @endif
+;
+APP_DIR=@lower:$STORAGE
+~rm -f $WEBDIR/$APP_DIR/needs_submit
 ;
 @endif
 @endif

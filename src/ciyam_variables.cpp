@@ -156,6 +156,7 @@ const char* const c_special_variable_shared_secret = "@shared_secret";
 const char* const c_special_variable_sub_directory = "@sub_directory";
 const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_files_area_dir = "@files_area_dir";
+const char* const c_special_variable_peer_clone_key = "@peer_clone_key";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
 const char* const c_special_variable_style_extended = "@style_extended";
@@ -174,6 +175,7 @@ const char* const c_special_variable_trace_session_id = "@trace_session_id";
 const char* const c_special_variable_blockchain_height = "@blockchain_height";
 const char* const c_special_variable_blockchain_is_hub = "@blockchain_is_hub";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
+const char* const c_special_variable_last_suffixed_key = "@last_suffixed_key";
 const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_peer_is_dependent = "@peer_is_dependent";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
@@ -701,6 +703,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_files_area_dir );
       break;
 
+      case e_special_var_peer_clone_key:
+      s = string( c_special_variable_peer_clone_key );
+      break;
+
       case e_special_var_peer_initiator:
       s = string( c_special_variable_peer_initiator );
       break;
@@ -767,6 +773,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_fields_and_values:
       s = string( c_special_variable_fields_and_values );
+      break;
+
+      case e_special_var_last_suffixed_key:
+      s = string( c_special_variable_last_suffixed_key );
       break;
 
       case e_special_var_package_type_path:
