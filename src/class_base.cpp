@@ -2337,8 +2337,10 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
    }
 
    // NOTE: Records being created for peers also will bypass FK existence checking
-   // as the FK records might also be peer targeted records (which will not exist).
-   if( get_is_for_peer( ) )
+   // if the FK record was marked as a peer targeted record (as it will not exist).
+   if( get_is_for_peer( )
+    && ( new_key == get_session_variable(
+    get_special_var_name( e_special_var_peer_clone_key ) ) ) )
    {
       skip_fk_handling = true;
 

@@ -4,7 +4,11 @@
 
    if( !storage_locked_for_admin( ) )
    {
-      string key_info( gen_key( ) + string( " " ) + get_obj( ).get_key( ) );
+      string new_key( gen_key( ) );
+      string key_info( new_key + string( " " ) + get_obj( ).get_key( ) );
+
+      temporary_session_variable tmp_peer_clone_key(
+       get_special_var_name( e_special_var_peer_clone_key ), new_key );
 
       class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
 
@@ -19,7 +23,6 @@
        e_special_var_skip_total_child_field_in_parent ), c_true_value );
 
       cp_source->op_apply( );
-
    }
 
    get_obj( ).`{`$arg_ofield`}( get_obj( ).`{`$arg_o2field`}( ) );
