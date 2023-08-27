@@ -10023,9 +10023,11 @@ string storage_channel_documents_update( const string& identity, bool submitted 
                dest_file = get_web_root( ) + '/' + lower( storage_name )
                 + '/' + string( c_files_directory ) + '/' + module_id + '/' + class_id + '/' + dest_file;
 
-               create_directories( dest_file );
+               create_directories( dest_file, c_web_files_dir_perm_val, WEB_FILES_UMASK );
 
-               file_rename( blockchain_identity + '/' + fs.get_name( ), dest_file );
+               // NOTE: If renaming fails (perhaps due to perms) then try to copy the file instead.
+               if( !file_rename( blockchain_identity + '/' + fs.get_name( ), dest_file ) )
+                  file_copy( blockchain_identity + '/' + fs.get_name( ), dest_file );
             }
          }
       }

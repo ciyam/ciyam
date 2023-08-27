@@ -161,7 +161,7 @@ function refresh( back )
    else
       window.location.replace( window.location );
 
-   if( isMoz && back != false )
+   if( isMoz && back )
       history.go( -1 );
 }
 
