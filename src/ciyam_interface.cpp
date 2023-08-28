@@ -1640,7 +1640,7 @@ void request_handler::process_request( )
                               str_replace( no_identity_html, c_identity_retry_message,
                                string_message( GDS( c_display_click_here_to_retry ),
                                make_pair( c_display_click_here_to_retry_parm_href,
-                               "<a href=\"javascript:refresh( )\">" ), "</a>" ) );
+                               "<a href=\"javascript:refresh( false )\">" ), "</a>" ) );
 
                               output_form( module_name, extra_content,
                                no_identity_html, "", false, GDS( c_display_identity_missing ) );
@@ -2862,7 +2862,7 @@ void request_handler::process_request( )
             osstr << "<p align=\"center\">"
              << string_message( GDS( c_display_click_here_to_go_back ),
              make_pair( c_display_click_here_to_go_back_parm_href,
-             "<a href=\"javascript:refresh( )\">" ), "</a>" ) << "</p>\n";
+             "<a href=\"javascript:refresh( true )\">" ), "</a>" ) << "</p>\n";
          }
          else if( login_refresh )
          {
@@ -2923,7 +2923,7 @@ void request_handler::process_request( )
             extra_content << "<p align=\"center\">"
              << string_message( GDS( c_display_click_here_to_retry ),
              make_pair( c_display_click_here_to_retry_parm_href,
-             "<a href=\"javascript:refresh( )\">" ), "</a>" ) << "</p>\n";
+             "<a href=\"javascript:refresh( false )\">" ), "</a>" ) << "</p>\n";
          }
 
          extra_content << g_footer_html;

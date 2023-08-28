@@ -133,6 +133,9 @@ const char* const c_server_folder_shared = "shared";
 const char* const c_server_command_mutexes = "mutexes";
 const char* const c_server_command_sessions = "sessions";
 
+const char* const c_perms_r_r = "r--r-----";
+const char* const c_perms_rw_rw_r = "rw-rw-r--";
+
 const char* const c_channel_files = ".files";
 const char* const c_channel_fetch = ".fetch";
 
@@ -9718,7 +9721,7 @@ void storage_channel_create( const char* p_identity, const char* p_channel_infor
 
    ofs.set_folder( identity );
 
-   string perms( "r--r-----" );
+   string perms( c_perms_r_r );
    ofs.add_file( c_channel_readme_file, c_channel_readme_source, 0, 0, 0, &perms );
 
    ofs.add_folder( c_channel_folder_ciyam );
@@ -10023,11 +10026,20 @@ string storage_channel_documents_update( const string& identity, bool submitted 
                dest_file = get_web_root( ) + '/' + lower( storage_name )
                 + '/' + string( c_files_directory ) + '/' + module_id + '/' + class_id + '/' + dest_file;
 
+               pos = dest_file.find( identity );
+
+               // NOTE: Attached files must contain the peer's identity (otherwise
+               // could replace files created for own identity or for other peers).
+               if( pos == string::npos )
+                  continue;
+
                create_directories( dest_file, c_web_files_dir_perm_val, WEB_FILES_UMASK );
 
                // NOTE: If renaming fails (perhaps due to perms) then try to copy the file instead.
                if( !file_rename( blockchain_identity + '/' + fs.get_name( ), dest_file ) )
                   file_copy( blockchain_identity + '/' + fs.get_name( ), dest_file );
+
+               file_perms( dest_file, c_perms_rw_rw_r );
             }
          }
       }
