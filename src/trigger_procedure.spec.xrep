@@ -1,0 +1,18 @@
+`{`@eq`(`'for_or_after_store`'`,`$section`)\
+   // [(start trigger_procedure)] `{`$arg_id`}
+`{`!`@eq`(`$arg_create_only`,`'`'`)`|`!`@eq`(`$arg_update_only`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$arg_skip_restore`,`'`'`)\
+   if( `{`!`@eq`(`$arg_create_only`,`'`'`)is_create`{`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$arg_skip_restore`,`'`'`) && `}`}\
+`{`!`@eq`(`$arg_update_only`,`'`'`)!is_create`{`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$arg_skip_restore`,`'`'`) && `}`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_skip_restore`,`'`'`) && `}`}\
+`{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )`} )
+`,\
+   // NOTE: Empty code block for scope purposes.
+`}\
+   {
+      temporary_session_variable tmp_session_key_var(
+       get_special_var_name( e_special_var_trigger ), "`{`$arg_procedure`}" );
+
+      get_obj( ).`{`$arg_procedure`}(`{`!`@eq`(`$arg_arg1`,`'`'`) get_obj( ).`{`$arg_arg1`}( )`{`!`@eq`(`$arg_arg2`,`'`'`), get_obj( ).`{`$arg_arg2`}( )`}`} );
+   }
+   // [(finish trigger_procedure)] `{`$arg_id`}
+`}

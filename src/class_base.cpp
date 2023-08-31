@@ -929,7 +929,7 @@ bool class_base::is_valid( bool is_internal, set< string >* p_fields_set )
 
    TRACE_LOG( TRACE_CLASSOPS, "is_valid( ) [class: "
     + get_class_name( ) + " ] is_internal = " + to_string( is_internal )
-    + " calling ***post_init*** and then ***" + string( !p_fields_set ? "validate" : "validate_set_fields" ) + "***" );
+    + " calling post_init( ) and then " + string( !p_fields_set ? "validate" : "validate_set_fields" ) + "( )" );
 
    post_init( );
 
@@ -5961,12 +5961,12 @@ void connect_peerchain( const string& connect_info, bool no_delay )
 
    string::size_type pos = identity.find_first_of( "+=" );
 
-   bool is_peerchain_folder = false;
+   bool is_peer_node = false;
 
    if( pos != string::npos )
    {
+      is_peer_node = true;
       identity.erase( pos );
-      is_peerchain_folder = true;
    }
 
    set_variable_checker check_not_has(
@@ -5979,7 +5979,7 @@ void connect_peerchain( const string& connect_info, bool no_delay )
     e_special_var_queue_peers ), connect_info, check_not_has_either ) )
    {
       if( !no_delay )
-         msleep( c_peer_sleep_time * ( is_peerchain_folder ? 2 : 5 ) );
+         msleep( c_peer_sleep_time * ( is_peer_node ? 2 : 5 ) );
    }
 }
 

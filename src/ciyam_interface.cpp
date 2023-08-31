@@ -2480,6 +2480,7 @@ void request_handler::process_request( )
             bool skip_force_fields = false;
 
             bool is_in_edit = false;
+
             if( act == c_act_edit || act == c_act_save
              || act == c_act_cont || ( is_new_record && ( act.empty( ) || act == c_act_undo ) ) )
                is_in_edit = true;
@@ -2585,6 +2586,8 @@ void request_handler::process_request( )
 
                            setup_view_fields( non_edit_view, *vici->second,
                             mod_info, *p_session_info, ident, login_opts, module_id, module_ref, false, false );
+
+                           is_in_edit = false;
 
                            view = non_edit_view;
                         }

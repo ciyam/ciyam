@@ -9980,7 +9980,13 @@ string storage_channel_documents_update( const string& identity, bool submitted 
             if( lower( error_output ).find( error_prefix ) == 0 )
                error_output.erase( 0, error_prefix.length( ) );
 
-            throw runtime_error( !error_output.empty( ) ? error_output.c_str( ) : "unexpected unknonwn error" );
+            // NOTE: If the error message includes "bundle header" then most likely an
+            // incorrect shared secret is the issue so issue a more appropriate error.
+            if( error_output.find( " bundle header " ) != string::npos )
+               // FUTURE: This message should be handled as a server string message.
+               throw runtime_error( "Found invalid/corrupt peer data (incorrect shared secret?)." );
+            else
+               throw runtime_error( !error_output.empty( ) ? error_output.c_str( ) : "unexpected unknonwn error" );
          }
       }
 

@@ -1837,6 +1837,10 @@ int main( int argc, char* argv[ ] )
       cerr << "error: unexpected unknown exception caught" << endl;
    }
 
+   // NOTE: Return an error if a script has set the ERROR variable.
+   if( !get_environment_variable( c_env_var_error ).empty( ) )
+      g_had_error = true;
+
 #ifdef SSL_SUPPORT
    term_ssl( );
 #endif

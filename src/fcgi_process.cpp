@@ -250,6 +250,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
          string perms;
          map< string, string >::const_iterator i;
+
          for( i = p_session_info->user_perms.begin( ); i != p_session_info->user_perms.end( ); ++i )
          {
             if( !perms.empty( ) )
@@ -392,6 +393,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       }
 
       bool was_user_force_field = false;
+
       if( is_new_record || act == c_act_edit || act == c_act_exec || act == c_act_view )
       {
          // NOTE: In the case where an edit occurs via an action a field assignment may

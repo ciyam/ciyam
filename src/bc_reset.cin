@@ -49,6 +49,7 @@ PUB2499_HASH=$OUTPUT
 .file_tag $PUB0049_HASH bc.$IDENTITY.49.pub
 .file_tag $PUB2499_HASH bc.$IDENTITY.2499.pub
 ;
+.system_variable "#$IDENTITY" ""
 .system_variable "%%$IDENTITY" "Currently at height 0"
 @endif
 @endif
