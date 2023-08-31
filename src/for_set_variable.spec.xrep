@@ -2,14 +2,18 @@
    // [(start for_set_variable)] `{`$arg_id`}
 `{`@eq`(`$arg_system`,`'true`'`)\
 `{`@eq`(`$arg_check_null`,`'`'`)\
-   set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`}, to_string( get_obj( ).`{`$arg_field`}( ) ) );
+   set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
+ + get_obj( ).`{`$arg_ofield`}( )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}, to_string( get_obj( ).`{`$arg_field`}( ) ) );
 `,\
-   if( !set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`}, to_string( get_obj( ).`{`$arg_field`}( ) ), string( "" ) ) )
+   if( !set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
+ + get_obj( ).`{`$arg_ofield`}( )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}, to_string( get_obj( ).`{`$arg_field`}( ) ), string( "" ) ) )
       return;
 `}`,`@eq`(`$arg_session`,`'true`'`)\
-   set_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`}, to_string( get_obj( ).`{`$arg_field`}( ) ) );
+   set_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
+ + get_obj( ).`{`$arg_ofield`}( )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}, to_string( get_obj( ).`{`$arg_field`}( ) ) );
 `,\
-   get_obj( ).set_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`}, to_string( get_obj( ).`{`$arg_field`}( ) ) );
+   get_obj( ).set_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
+ + get_obj( ).`{`$arg_ofield`}( )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}, to_string( get_obj( ).`{`$arg_field`}( ) ) );
 `}\
    // [(finish for_set_variable)] `{`$arg_id`}
 `}

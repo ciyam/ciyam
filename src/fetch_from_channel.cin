@@ -25,7 +25,11 @@ UUID=$OUTPUT
 ;
 .system_variable $$%IDENTITY%_identity
 BLOCKCHAIN=$OUTPUT
+;
+@ifdef $BLOCKCHAIN
 IN_REVERSE=*!reverse?$BLOCKCHAIN
+;
+.system_variable $$%IDENTITY%_error ""
 ;
 @ifndef $ENCRYPTED_PASSWORD
 ENCRYPTED_PASSWORD=@shared_secret_$IN_REVERSE
@@ -93,7 +97,14 @@ BUNDLE_HASH=%OUTPUT:2%
 ;
 <export_files.cin $BUNDLE_HASH .
 ~mkdir $UUID
-~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID
+~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID 2>&1
+;
+@ifneq $SYSTEM_RETVAL 0
+~rmdir $UUID
+; FUTURE: This message should be handled as a server string.
+ERROR=Found invalid/corrupt peer data (incorrect shared secret?).
+#$ERROR
+@else
 SUBMIT_AFTER_FETCH=@file:$UUID/.fetch
 ~rm $UUID/.fetch
 ~rmdir $UUID
@@ -103,14 +114,19 @@ PRE_IS_DONE=@$SUBMIT_AFTER_FETCH>$FETCH_HEIGHT
 .storage_channel_documents -update_submitted $IDENTITY
 @endif
 @endif
+@endif
 ;
 @else
 PRE_IS_DONE=1
 @endif
 ;
 @label PRE_NEXT
+@ifdef $ERROR
+@label FETCH_DONE
+@else
 @ifeq "$PRE_IS_DONE" "1"
 @label PRE_DONE
+@endif
 @endif
 ;
 @skip
@@ -176,6 +192,7 @@ NESTED_DONE=
 .session_variable @updating_$IDENTITY $SUBMIT_HEIGHT
 .storage_channel_documents -update_submitted $IDENTITY
 ;
+@ifndef $ERROR
 @ifneq "$SUBMIT_HEIGHT" "$SUBMIT_HIGHEST"
 .session_variable @blockchain_archive_path $FILES_AREA_DIR/$BLOCKCHAIN
 ;
@@ -189,23 +206,39 @@ BUNDLE_HASH=%OUTPUT:2%
 ;
 <export_files.cin $BUNDLE_HASH .
 ~mkdir $UUID
-~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID
+~./unbundle -qq $BLOCKCHAIN .fetch -d $UUID 2>&1
+;
+@ifneq $SYSTEM_RETVAL 0
+~rmdir $UUID
+; FUTURE: This message should be handled as a server string.
+ERROR=Found invalid/corrupt peer data (incorrect shared secret?).
+#$ERROR
+@else
 SUBMIT_AFTER_FETCH=@file:$UUID/.fetch
 NESTED_DONE=@$SUBMIT_AFTER_FETCH>$FETCH_HEIGHT
 ~rm $UUID/.fetch
 ~rmdir $UUID
 @endif
+@endif
 ;
 @else
 NESTED_DONE=1
 @endif
 @else
+@label FETCH_DONE
+@endif
+;
+@else
 NESTED_DONE=1
 @endif
 ;
+@ifdef $ERROR
+@label FETCH_DONE
+@else
 @label NESTED_NEXT
 @ifeq "$NESTED_DONE" "1"
 @label NESTED_DONE
+@endif
 @endif
 ;
 @skip
@@ -219,10 +252,15 @@ NESTED_DONE=1
 ;
 @:FETCH_DONE
 ;
+@ifdef $ERROR
+.system_variable $$%IDENTITY%_error "$ERROR"
+@endif
+;
 @ifdef $ENCRYPTED_PASSWORD
 .system_variable $ENCRYPTED_PASSWORD ""
 @endif
 ;
+@endif
 @endif
 @endif
 @endif

@@ -83,6 +83,7 @@ const char c_pause_message_command_prefix = '^';
 const char c_environment_variable_marker_1 = '$';
 const char c_environment_variable_marker_2 = '%';
 
+const char* const c_env_var_system_retval = "SYSTEM_RETVAL";
 const char* const c_env_var_progress_prefix = "PROGRESS_PREFIX";
 
 const char* const c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
@@ -3365,7 +3366,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             {
                int rc = system( str.c_str( ) + 1 );
 
-               ( void )rc;
+               rc = WEXITSTATUS( rc );
+
+               set_environment_variable( c_env_var_system_retval, to_string( rc ) );
 
                str.erase( );
             }
