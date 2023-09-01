@@ -1,6 +1,6 @@
-CIYAM Channel Files Area
-========================
+CIYAM Peer Node Files Area
+==========================
 
-Files in this directory (and all below it) are specific to this Channel and should therefore not be moved out
-of this area or copied elsewhere. To choose files that will be broadcast over the Channel use the application
-UI prior to performing the Close operation.
+Files in this directory (and all below it) are specific to this Peer Node and should therefore not be moved
+from this area or copied elsewhere. To select which (if any) of these files will be sent to the Peer during
+synchronisation use the application UI prior to clicking Close And Submit.

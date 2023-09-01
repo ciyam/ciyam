@@ -1662,16 +1662,13 @@ void output_actions( ostream& os,
          if( !listarg.empty( ) )
             os << "&listarg=" << listarg;
 
-         if( go_back )
-            os << "&back=1";
-
          os << "&exec=" << next_action << "', false );";
 
          if( use_url_checksum )
             os << " query_update( '" << c_param_chksum << "', old_checksum, true );";
 
          if( go_back )
-            os << " if( !had_act_error ) jump_back = true;";
+            os << " if( !had_act_error ) go_back( 1 );";
       }
       else
       {
