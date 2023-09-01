@@ -899,16 +899,13 @@ bool output_view_form( ostream& os, const string& act,
          if( view_extras.count( c_view_type_extra_auto_back ) )
             go_back_after_save = true;
 
-         if( go_back_after_save )
-            os << " + '&back=1'";
-
          os << " + '&exec=" << exec << "&flags=" << source.state << "', false );";
 
          if( use_url_checksum )
             os << " query_update( '" << c_param_chksum << "', query_value( '" << c_param_ochksum << "' ), true ); ";
 
          if( go_back_after_save )
-            os << " if( !had_act_error ) jump_back = true;";
+            os << " if( !had_act_error ) go_back( 1 );";
 
          os << "\" style=\"cursor:pointer\"/>";
 
