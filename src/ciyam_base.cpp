@@ -10243,7 +10243,7 @@ string storage_channel_documents_prepare( const string& identity )
 
    ofs.set_folder( c_channel_folder_ciyam );
 
-   string user_info_name( identity + c_csv_file_ext );
+   string user_info_name( identity + '.' + string( c_channel_user_info ) + c_csv_file_ext );
 
    if( file_exists( user_info_name ) )
    {

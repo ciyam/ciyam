@@ -455,38 +455,43 @@ function load2( )
    // reload to occur when going back in history.
    window.onunload = function( ){ };
 
-   var new_href = location.href;
-   var pos = new_href.indexOf( '&scrollx' );
+   var pos = qsFurther.indexOf( 'act=' );
 
-   if( pos >= 0 )
-      new_href = new_href.substr( 0, pos );
-   
-   var old_href = sessionStorage.getItem( 'old_href' );
-   
-   if( old_href != null )
+   if( pos != 0 )
    {
-      pos = old_href.indexOf( '&scrollx' );
-   
+      var new_href = location.href;
+      pos = new_href.indexOf( '&scrollx' );
+
       if( pos >= 0 )
-         old_href = old_href.substr( 0, pos );
-   }
+         new_href = new_href.substr( 0, pos );
 
-   if( sessionStorage.getItem( 'back' ) != null )
-   {
-      // NOTE: It is possible that one or more extra repeated
-      // history entries exist (due to file attach refreshes)
-      // so if the new href location matches that captured at
-      // after the attach refresh then go back.
-      if( new_href == old_href )
+      var old_href = sessionStorage.getItem( 'old_href' );
+      
+      if( old_href != null )
       {
-         history.go( -1 );
-         return;
+         pos = old_href.indexOf( '&scrollx' );
+      
+         if( pos >= 0 )
+            old_href = old_href.substr( 0, pos );
       }
 
-      sessionStorage.removeItem( 'back' );
-      sessionStorage.removeItem( 'old_href' );
-   }
+      if( sessionStorage.getItem( 'back' ) != null )
+      {
+         // NOTE: It is possible that one or more extra repeated
+         // history entries exist (due to file attach refreshes)
+         // so if the new href location matches that captured at
+         // after the attach refresh then go back.
+         if( new_href == old_href )
+         {
+            history.go( -1 );
+            return;
+         }
 
+         sessionStorage.removeItem( 'back' );
+         sessionStorage.removeItem( 'old_href' );
+      }
+   }
+   
    if( typeof window.ActiveXObject != 'undefined' )
    {
       xmlReq = new ActiveXObject( 'Microsoft.XMLHTTP' );
@@ -525,6 +530,7 @@ function load2( )
    var is_login = false;
    var non_cookie = false;
    var qvars = qs_both.split( '&' );
+
    for( var i = 0; i < qvars.length; i++ )
    {
       var uhash = 'userhash=';
