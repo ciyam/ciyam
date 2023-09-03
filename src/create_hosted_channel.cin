@@ -12,13 +12,13 @@ ERROR=1
 @endif
 ;
 @ifeq "$ERROR" "1"
-#Usage: bc_create_channel.cin <ident> <other>
+#Usage: create_hosted_channel.cin <ident> <other>
 @else
 ;
 IDENT=$1
 OTHER=$2
 ;
-<bc_channel_identity.cin $IDENT $OTHER
+<channel_identity.cin $IDENT $OTHER
 ;
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
