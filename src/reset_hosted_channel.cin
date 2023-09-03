@@ -19,7 +19,7 @@ NUM_ARGS=@$NUM_ARGS+1
 IDENT=$1
 OTHER=$2
 ;
-<bc_channel_identity.cin $IDENT $OTHER
+<channel_identity.cin $IDENT $OTHER
 ;
 #Resetting channel archives and blockchain files for $COMBINED and $REVERSED.
 ;

@@ -58,7 +58,7 @@ ERROR=No backup blockchain identity was found.
 @label END
 @else
 IDENT=$OUTPUT
-<bc_channel_identity.cin $IDENT $OTHER
+<channel_identity.cin $IDENT $OTHER
 @endif
 ;
 IDENT=$COMBINED

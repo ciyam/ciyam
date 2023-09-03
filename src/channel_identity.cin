@@ -14,7 +14,7 @@ ERROR=1
 @endif
 ;
 @ifeq "$ERROR" "1"
-#Usage: bc_channel_identity.cin <ident> <other>
+#Usage: channel_identity.cin <ident> <other>
 @else
 ;
 IDENT=$1

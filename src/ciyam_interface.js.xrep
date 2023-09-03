@@ -34,6 +34,7 @@ if( secureOnly && source[ 0 ] != 'https' )
 
 var scrollTop = 0;
 var scrollLeft = 0;
+var goBackTimer = 25;
 var pageFadeMin = 50;
 var pageFadeRate = 5;
 var pageFadeTimer = 15;
@@ -150,7 +151,7 @@ function go_back( num )
    if( can_write_to_session_storage( ) )
       sessionStorage.setItem( 'back', num );
 
-   history.go( num * -1 );
+   window.setTimeout( 'history.go( ' + ( num * -1 ) + ' )', goBackTimer );
 }
 
 function refresh( back )
