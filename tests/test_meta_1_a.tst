@@ -223,7 +223,7 @@ System_Secret,M001C106F129
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000
-Blockchain_Status,E100
+Peer_Status,E100
 Currency,E101
 Day_Type,E102
 Customary_Event,E103
@@ -236,13 +236,12 @@ Day_Of_Week,E109
 Minutes,E110
 Occurrence,E111
 Orientation,E112
-Peerchain_Connection,E113
+Peer_Connection,E113
 Core_Peer_Type,E114
-Peerchain_Status,E115
-Folder_Status,E116
-Change_Password_Seconds,E117
-Change_Type,E118
-Contact_Type,E119
+Peer_Node_Status,E115
+Change_Password_Seconds,E116
+Change_Type,E117
+Contact_Type,E118
 pf 100 102100 "102111 " 102101,102111 -min
 string,T000
 string,T000
