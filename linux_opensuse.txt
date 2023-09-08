@@ -90,6 +90,10 @@ sudo firewall-cmd --reload
 NOTE: Use "yast" to add "ciyam", "http" and "ssh" to the public zone of the firewall.
 sudo yast
 
+sudo firewall-cmd --state
+sudo firewall-cmd --get-default-zone
+sudo firewall-cmd --list-all
+
 sudo vi /usr/etc/ssh/sshd_config
 [uncomment out the following line]
 PasswordAuthentication yes
