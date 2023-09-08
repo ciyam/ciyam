@@ -1,8 +1,10 @@
 `{`@eq`(`'for_store`'`,`$section`)\
    // [(start fk_link_to_new_or_existing)] `{`$arg_id`}
-   if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}!is_null( get_obj( ).`{`$arg_ofield`}( ) )\
-`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`}\
-`{`@eq`(`$arg_check_clone`,`'true`'`) && !is_null( get_obj( ).get_clone_key( ) )`} )
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && `}`{`@eq`(`$arg_create_only`,`'true`'`)is_create
+    && `}!is_null( get_obj( ).`{`$arg_ofield`}( ) )`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && ( state & c_modifier_`{`$arg_modifier`} )`}`{`@eq`(`$arg_check_clone`,`'true`'`)
+    && !is_null( get_obj( ).get_clone_key( ) )`} )
    {
       string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_scfield`} ) );
       key_info += "," + string( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_oscfield`} ) );

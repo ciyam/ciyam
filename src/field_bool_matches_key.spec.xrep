@@ -1,0 +1,23 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+`{`$op`=`'==`'`}`{`@eq`(`$arg_not_equal`,`'true`'`)`$op`=`'!=`'`}\
+   // [(start field_bool_matches_key)] `{`$arg_id`}
+   if( get_obj( ).`{`$arg_tfield`}( ) `{`$op`} get_obj( ).get_key( ) )
+      get_obj( ).`{`$arg_field`}( true );
+`{`@eq`(`$arg_true_only`,`'`'`)\
+   else
+      get_obj( ).`{`$arg_field`}( false );
+`}\
+   // [(finish field_bool_matches_key)] `{`$arg_id`}
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start field_bool_matches_key)] `{`$arg_id`}
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_tfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+         names.insert( "`{`$arg_tfield`}" );
+   }
+   // [(finish field_bool_matches_key)] `{`$arg_id`}
+`}
