@@ -1,0 +1,26 @@
+#!/bin/sh
+# Copyright (c) 2023 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 1 ]; then
+ echo Usage: prepare_cloned_prototype [name]
+else
+ if [ "$WEBDIR" = "" ]; then
+  echo "Error: Missing environment variable 'WEBDIR'."
+ else
+  sudo service ciyamd stop
+  rm -r files/*
+  rm -f ciyam_server.sid ciyam_server.sid.sav $WEBDIR/meta/identity.txt $WEBDIR/meta/encrypted.txt
+  ./config
+  sudo service ciyamd start
+
+  sleep 0.5
+
+  ./restore Meta
+  rm -f ciyam_server.sid $1.hdr $1.idx $1.dat $1.tlg
+  sudo service ciyamd stop
+  sudo bash -c "echo ${1,,} >/etc/hostname"
+ fi
+fi
