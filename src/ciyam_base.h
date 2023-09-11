@@ -642,6 +642,7 @@ void CIYAM_BASE_DECL_SPEC storage_channel_document_unsubmit( const std::string& 
 
 void CIYAM_BASE_DECL_SPEC storage_channel_document_restore( const std::string& identity_path );
 
+bool CIYAM_BASE_DECL_SPEC storage_channel_document_ignoring( const std::string& file_path );
 bool CIYAM_BASE_DECL_SPEC storage_channel_document_submitting( const std::string& file_path );
 
 ods CIYAM_BASE_DECL_SPEC& storage_ods_instance( );

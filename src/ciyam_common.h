@@ -106,6 +106,7 @@ enum special_var
    e_special_var_message,
    e_special_var_opening,
    e_special_var_package,
+   e_special_var_pending,
    e_special_var_pubkeyx,
    e_special_var_restore,
    e_special_var_slowest,
