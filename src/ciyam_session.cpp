@@ -5687,11 +5687,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool open = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_open );
          bool close = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_close );
          bool opened = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_opened );
-         bool fetched = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_fetched );
-         bool updated = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_updated );
-         bool selected = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_selected );
-         bool submitted = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_submitted );
-         bool update_fetched = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_update_fetched );
+         bool flagged = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_flagged );
+         bool retrieved = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_retrieved );
+         bool submitting = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_submitting );
+         bool height_retrieved = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_height_retrieved );
+         bool height_submitted = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_height_submitted );
+         bool update_retrieved = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_update_retrieved );
          bool update_submitted = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_update_submitted );
          bool prepare_for_submit = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_prepare_for_submit );
          string identity( get_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_identity ) );
@@ -5702,14 +5703,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             storage_channel_documents_close( identity.c_str( ) );
          else if( opened )
             response = to_string( storage_channel_documents_opened( identity ) );
-         else if ( !updated && !selected && !update_fetched && !update_submitted && !prepare_for_submit )
-            response = storage_channel_documents( identity, fetched | submitted, fetched );
-         else if( update_fetched || update_submitted )
+         else if ( !flagged && !update_retrieved && !update_submitted && !prepare_for_submit )
+            response = storage_channel_documents( identity, height_retrieved | height_submitted, height_retrieved );
+         else if( update_retrieved || update_submitted )
             response = storage_channel_documents_update( identity, update_submitted );
-         else if( !updated && !selected )
+         else if( !flagged )
             response = storage_channel_documents_prepare( identity );
          else
-            response = storage_channel_documents_specific( identity, updated );
+            response = storage_channel_documents_specific( identity, retrieved );
       }
       else if( command == c_cmd_ciyam_session_storage_transaction_start )
          transaction_start( );

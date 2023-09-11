@@ -140,12 +140,12 @@ const char* const c_channel_files = ".files";
 const char* const c_channel_fetch = ".fetch";
 
 const char* const c_channel_fetched = "fetched";
+const char* const c_channel_pending = "pending";
 const char* const c_channel_updated = "updated";
-const char* const c_channel_prepared = "prepared";
 const char* const c_channel_peer_info = "peer_info";
 const char* const c_channel_user_info = "user_info";
 const char* const c_channel_submitted = "submitted";
-const char* const c_channel_selections = "selections";
+const char* const c_channel_submitting = "submitting";
 
 const char* const c_channel_folder_ciyam = ".ciyam";
 
@@ -2652,6 +2652,9 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
 
       if( indirect_row_data.find( prefix ) == 0 )
          indirect_row_data.erase( 0, prefix.length( ) );
+
+      if( !indirect_row_data.empty( ) && ( indirect_row_data[ 0 ] == c_notifier_ignore_char ) )
+         indirect_row_data.erase( 0, 1 );
 
       if( !indirect_row_data.empty( ) && ( indirect_row_data[ 0 ] == c_notifier_select_char ) )
          indirect_row_data.erase( 0, 1 );
@@ -10379,7 +10382,7 @@ string storage_channel_documents_prepare( const string& identity )
 
    string identity_log_file_name( identity + c_log_file_ext );
 
-   if( has_created_directory || ofs.has_file( c_channel_selections ) || file_exists( identity_log_file_name ) )
+   if( has_created_directory || ofs.has_file( c_channel_submitting ) || file_exists( identity_log_file_name ) )
    {
       if( !has_created_directory )
          create_dir( blockchain_identity );
@@ -10408,8 +10411,8 @@ string storage_channel_documents_prepare( const string& identity )
       write_file( blockchain_identity + '/'
        + string( c_channel_fetch ), to_string( height_fetched ) );
 
-      if( ofs.has_file( c_channel_selections ) )
-         ofs.fetch_from_text_file( c_channel_selections, selections );
+      if( ofs.has_file( c_channel_submitting ) )
+         ofs.fetch_from_text_file( c_channel_submitting, selections );
 
       ofs.set_folder( ".." );
 
@@ -10454,8 +10457,13 @@ string storage_channel_documents_prepare( const string& identity )
 
       ofs.set_folder( c_channel_folder_ciyam );
 
-      ofs.remove_file( c_channel_selections );
-      ofs.store_as_text_file( c_channel_prepared, selections );
+      ofs.remove_file( c_channel_submitting );
+
+      string pending( get_system_variable(
+       get_special_var_name( e_special_var_pending ) + '_' + identity ) );
+
+      if( !pending.empty( ) )
+         ofs.store_as_text_file( c_channel_pending, selections );
 
       ofs.store_as_text_file( c_channel_submitted, height_submitted );
 
@@ -10529,7 +10537,7 @@ string storage_channel_documents_specific( const string& identity, bool updated,
       if( updated && ofs.has_file( c_channel_updated ) )
          has_specifics = true;
 
-      if( !updated && ofs.has_file( c_channel_selections ) )
+      if( !updated && ofs.has_file( c_channel_submitting ) )
          has_specifics = true;
 
       if( has_specifics )
@@ -10539,7 +10547,7 @@ string storage_channel_documents_specific( const string& identity, bool updated,
          if( updated )
             ofs.fetch_from_text_file( c_channel_updated, specifics );
          else
-            ofs.fetch_from_text_file( c_channel_selections, specifics );
+            ofs.fetch_from_text_file( c_channel_submitting, specifics );
 
          if( !specifics.empty( ) )
          {
@@ -10615,11 +10623,37 @@ void storage_channel_documents_open( const char* p_identity )
 
    ofs.set_folder( c_channel_folder_ciyam );
 
-   if( ofs.has_file( c_channel_selections ) )
+   if( file_exists( prefix + c_channel_readme_file ) )
+      set_system_variable( prefix + c_channel_readme_file, string( 1, c_notifier_ignore_char ) );
+
+   // NOTE: Files "pending approval" are set to read-only.
+   if( ofs.has_file( c_channel_pending ) )
+   {
+      string pending;
+
+      ofs.fetch_from_text_file( c_channel_pending, pending );
+
+      if( !pending.empty( ) )
+      {
+         vector< string > all_pending;
+
+         split( pending, all_pending, '\n' );
+
+         for( size_t i = 0; i < all_pending.size( ); i++ )
+         {
+            string next_pending( all_pending[ i ] );
+            file_perms( prefix + next_pending, c_perms_r_r );
+
+            set_system_variable( prefix + next_pending, string( 1, c_notifier_ignore_char ) );
+         }
+      }
+   }
+
+   if( ofs.has_file( c_channel_submitting ) )
    {
       string selections;
 
-      ofs.fetch_from_text_file( c_channel_selections, selections );
+      ofs.fetch_from_text_file( c_channel_submitting, selections );
 
       if( !selections.empty( ) )
       {
@@ -10679,10 +10713,35 @@ void storage_channel_documents_close( const char* p_identity )
 
    ods::transaction ods_tx( *ods::instance( ) );
 
-   import_objects( ofs, path );
-
    string prefix( get_raw_system_variable(
     get_special_var_name( e_special_var_opened_files ) ) + '/' + identity + '/' );
+
+   ofs.set_folder( c_channel_folder_ciyam );
+
+   // NOTE: Files "pending approval" are removed prior to import.
+   if( ofs.has_file( c_channel_pending ) )
+   {
+      string pending;
+
+      ofs.fetch_from_text_file( c_channel_pending, pending );
+
+      if( !pending.empty( ) )
+      {
+         vector< string > all_pending;
+
+         split( pending, all_pending, '\n' );
+
+         for( size_t i = 0; i < all_pending.size( ); i++ )
+         {
+            string next_pending( all_pending[ i ] );
+            file_remove( prefix + next_pending );
+         }
+      }
+   }
+
+   ofs.set_folder( ".." );
+
+   import_objects( ofs, path );
 
    string all_selected;
 
@@ -10783,9 +10842,9 @@ void storage_channel_documents_close( const char* p_identity )
    ofs.set_folder( c_channel_folder_ciyam );
 
    if( !all_selected.empty( ) )
-      ofs.store_as_text_file( c_channel_selections, all_selected );
-   else if( ofs.has_file( c_channel_selections ) )
-      ofs.remove_file( c_channel_selections );
+      ofs.store_as_text_file( c_channel_submitting, all_selected );
+   else if( ofs.has_file( c_channel_submitting ) )
+      ofs.remove_file( c_channel_submitting );
 
    if( ofs.has_file( c_channel_updated ) )
       ofs.remove_file( c_channel_updated );
@@ -11086,11 +11145,11 @@ void storage_channel_document_restore( const string& identity_path )
 
       ofs.set_folder( c_channel_folder_ciyam );
 
-      if( ofs.has_file( c_channel_selections ) )
+      if( ofs.has_file( c_channel_submitting ) )
       {
          string all_selected;
 
-         ofs.fetch_from_text_file( c_channel_selections, all_selected );
+         ofs.fetch_from_text_file( c_channel_submitting, all_selected );
 
          if( !all_selected.empty( ) )
             split( all_selected, selected, '\n' );
@@ -11193,6 +11252,31 @@ void storage_channel_document_restore( const string& identity_path )
 
       msleep( c_notifer_check_wait );
    }
+}
+
+bool storage_channel_document_ignoring( const string& file_path )
+{
+   bool retval = false;
+
+   string notifier_value( get_raw_system_variable( file_path ) );
+
+   if( !notifier_value.empty( ) )
+   {
+      string::size_type pos = notifier_value.find( ']' );
+
+      if( notifier_value[ 0 ] == '[' )
+      {
+         if( pos == string::npos )
+            throw runtime_error( "unexpected notifier value '" + notifier_value + "' for '" + file_path + "'" );
+
+         notifier_value.erase( 0, pos + 1 );
+      }
+
+      if( !notifier_value.empty( ) && ( notifier_value[ 0 ] == c_notifier_ignore_char ) )
+         retval = true;
+   }
+
+   return retval;
 }
 
 bool storage_channel_document_submitting( const string& file_path )

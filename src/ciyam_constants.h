@@ -37,6 +37,7 @@ const char* const c_suspended = "[suspended]";
 
 const char c_key_exchange_suffix = '*';
 
+const char c_notifier_ignore_char = '!';
 const char c_notifier_select_char = '#';
 const char c_notifier_unselect_char = '=';
 const char c_notifier_mod_ignore_char = '+';

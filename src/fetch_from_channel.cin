@@ -63,9 +63,9 @@ ENCRYPTED_PASSWORD=@shared_secret_$IN_REVERSE
 .storage_init $STORAGE
 ;
 @ifndef $ERROR
-.storage_channel_documents -fetched $IDENTITY
+.storage_channel_documents -height_retrieved $IDENTITY
 FETCH_HEIGHT=$OUTPUT
-.storage_channel_documents -submitted $IDENTITY
+.storage_channel_documents -height_submitted $IDENTITY
 SUBMIT_HEIGHT=$OUTPUT
 ;
 @ifndef $ERROR
@@ -159,7 +159,7 @@ BUNDLE_HASH=%OUTPUT:2%
 <export_files.cin $BUNDLE_HASH .
 ;
 .session_variable @updating_$IDENTITY $FETCH_HEIGHT
-.storage_channel_documents -update_fetched $IDENTITY
+.storage_channel_documents -update_retrieved $IDENTITY
 ;
 USER_INFO_FILE=@files::$IN_REVERSE.user_info.csv
 @ifdef $USER_INFO_FILE
