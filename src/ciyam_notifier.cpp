@@ -338,6 +338,8 @@ void ciyam_notifier::on_start( )
 
       string events;
 
+      string ignore( c_notifier_ignore_char + string( c_notifier_none ) );
+
       string mod_ignore_extra( string( 1, c_notifier_mod_ignore_char ) );
       string new_ignore_extra( string( 1, c_notifier_new_ignore_char ) );
 
@@ -426,6 +428,12 @@ void ciyam_notifier::on_start( )
 
                   old_value = get_value_from_system_variable( var_name, &unique_value );
 
+                  bool is_ignoring = false;
+
+                  if( old_value == ignore )
+                     is_ignoring = true;
+
+
                   // NOTE: The extra string is all characters before the first 'a-z' character.
                   if( !old_value.empty( ) && ( old_value[ 0 ] < 'a' || old_value[ 0 ] > 'z' ) )
                   {
@@ -450,6 +458,12 @@ void ciyam_notifier::on_start( )
                         string cookie_id( next_event.substr( pos + 1 ) );
 
                         next_event.erase( 0, pos + 1 );
+
+                        if( is_ignoring && ( value == "moved_to" || value == "moved_from" ) )
+                        {
+                           cookie_id = "0";
+                           value = old_value;
+                        }
 
                         if( cookie_id != "0" )
                         {
@@ -627,7 +641,8 @@ void ciyam_notifier::on_start( )
                   }
                   else if( value == "attrib" )
                   {
-                     if( ( old_value.find( moved_from_prefix ) == 0 )
+                     if( is_ignoring
+                      || ( old_value.find( moved_from_prefix ) == 0 )
                       || ( old_value.find( modified_from_prefix ) == 0 ) )
                         value = old_value;
                      else
@@ -666,7 +681,9 @@ void ciyam_notifier::on_start( )
                   }
                   else if( value == "modify" )
                   {
-                     if( ( extra == mod_ignore_extra ) || ( extra == mod_sel_ignore_extra ) )
+                     if( is_ignoring )
+                        value = old_value;
+                     else if( ( extra == mod_ignore_extra ) || ( extra == mod_sel_ignore_extra ) )
                      {
                         if( extra == mod_sel_ignore_extra )
                            tagged_extra = c_notifier_selection;
@@ -684,34 +701,39 @@ void ciyam_notifier::on_start( )
                   }
                   else if( value == "delete" )
                   {
-                     string prefix;
-
-                     if( old_value.find( moved_from_prefix ) == 0 )
-                        prefix = moved_from_prefix;
-                     else if( old_value.find( modified_from_prefix ) == 0 )
-                        prefix = modified_from_prefix;
-
-                     extra.erase( );
-                     value = c_notifier_deleted;
-
-                     if( !prefix.empty( ) )
+                     if( is_ignoring )
+                        value = old_value;
+                     else
                      {
-                        set_system_variable( var_name, "" );
-                        var_name = old_value.substr( prefix.length( ) );
+                        string prefix;
 
-                        // NOTE: If a file was renamed but another with the original
-                        // name had been created then will handle as a modification.
-                        if( has_system_variable( var_name ) )
+                        if( old_value.find( moved_from_prefix ) == 0 )
+                           prefix = moved_from_prefix;
+                        else if( old_value.find( modified_from_prefix ) == 0 )
+                           prefix = modified_from_prefix;
+
+                        extra.erase( );
+                        value = c_notifier_deleted;
+
+                        if( !prefix.empty( ) )
                         {
-                           string prior_value( get_raw_system_variable( var_name ) );
+                           set_system_variable( var_name, "" );
+                           var_name = old_value.substr( prefix.length( ) );
 
-                           string prior_unique;
-                           get_value_and_unique( prior_value, &prior_unique );
+                           // NOTE: If a file was renamed but another with the original
+                           // name had been created then will handle as a modification.
+                           if( has_system_variable( var_name ) )
+                           {
+                              string prior_value( get_raw_system_variable( var_name ) );
 
-                           value = c_notifier_modified;
-                           tagged_extra = c_notifier_selection;
+                              string prior_unique;
+                              get_value_and_unique( prior_value, &prior_unique );
 
-                           set_system_variable( watch_variable_name + prior_unique, "" );
+                              value = c_notifier_modified;
+                              tagged_extra = c_notifier_selection;
+
+                              set_system_variable( watch_variable_name + prior_unique, "" );
+                           }
                         }
                      }
                   }

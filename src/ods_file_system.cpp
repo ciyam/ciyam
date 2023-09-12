@@ -1302,6 +1302,11 @@ void ods_file_system::move_file( const string& source, const string& destination
 
    string src_name( source.substr( pos == string::npos ? 0 : pos + 1 ) );
 
+   string src_folder( current_folder );
+
+   if( pos != string::npos )
+      src_folder = source.substr( 0, pos );
+
    string dest( destination );
 
    pos = dest.rfind( c_folder );
@@ -1335,9 +1340,9 @@ void ods_file_system::move_file( const string& source, const string& destination
 
       btree_trans_type bt_tx( bt );
 
-      string value( current_folder );
+      string value( src_folder );
 
-      value += c_folder + source;
+      value += c_folder + src_name;
 
       replace( value, c_folder_separator, c_pipe_separator );
 
