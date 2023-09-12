@@ -5688,6 +5688,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool close = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_close );
          bool opened = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_opened );
          bool flagged = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_flagged );
+         bool pending = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_pending );
          bool retrieved = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_retrieved );
          bool submitting = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_submitting );
          bool height_retrieved = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_height_retrieved );
@@ -5696,6 +5697,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool update_submitted = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_update_submitted );
          bool prepare_for_submit = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_prepare_for_submit );
          string identity( get_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_identity ) );
+
+         channel_documents_type specific_type = e_channel_documents_type_submitting;
+
+         if( pending )
+            specific_type = e_channel_documents_type_pending;
+         else if( retrieved )
+            specific_type = e_channel_documents_type_retrieved;
 
          if( open )
             storage_channel_documents_open( identity.c_str( ) );
@@ -5710,7 +5718,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else if( !flagged )
             response = storage_channel_documents_prepare( identity );
          else
-            response = storage_channel_documents_specific( identity, retrieved );
+            response = storage_channel_documents_specific( identity, specific_type );
       }
       else if( command == c_cmd_ciyam_session_storage_transaction_start )
          transaction_start( );

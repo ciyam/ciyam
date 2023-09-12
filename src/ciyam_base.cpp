@@ -10475,7 +10475,8 @@ string storage_channel_documents_prepare( const string& identity )
    return retval;
 }
 
-string storage_channel_documents_specific( const string& identity, bool updated, bool include_sizes )
+string storage_channel_documents_specific(
+ const string& identity, channel_documents_type type, bool include_sizes )
 {
    guard g( g_mutex );
 
@@ -10534,20 +10535,28 @@ string storage_channel_documents_specific( const string& identity, bool updated,
 
       bool has_specifics = false;
 
-      if( updated && ofs.has_file( c_channel_updated ) )
+      if( ( type == e_channel_documents_type_pending ) && ofs.has_file( c_channel_pending ) )
          has_specifics = true;
 
-      if( !updated && ofs.has_file( c_channel_submitting ) )
+      if( ( type == e_channel_documents_type_retrieved ) && ofs.has_file( c_channel_updated ) )
+         has_specifics = true;
+
+      if( ( type == e_channel_documents_type_submitting ) && ofs.has_file( c_channel_submitting ) )
          has_specifics = true;
 
       if( has_specifics )
       {
          string specifics;
 
-         if( updated )
+         if( type == e_channel_documents_type_pending )
+            ofs.fetch_from_text_file( c_channel_pending, specifics );
+         else if( type == e_channel_documents_type_retrieved )
             ofs.fetch_from_text_file( c_channel_updated, specifics );
-         else
+         else if( type == e_channel_documents_type_submitting )
             ofs.fetch_from_text_file( c_channel_submitting, specifics );
+         else
+            throw runtime_error( "unexpected channel_documents_type #"
+             + to_string( type ) + " in storage_channel_documents_specific" );
 
          if( !specifics.empty( ) )
          {
@@ -10717,6 +10726,9 @@ void storage_channel_documents_close( const char* p_identity )
     get_special_var_name( e_special_var_opened_files ) ) + '/' + identity + '/' );
 
    ofs.set_folder( c_channel_folder_ciyam );
+
+   if( file_exists( prefix + c_channel_readme_file ) )
+      file_remove( prefix + c_channel_readme_file );
 
    // NOTE: Files "pending approval" are removed prior to import.
    if( ofs.has_file( c_channel_pending ) )
@@ -10955,6 +10967,7 @@ bool storage_channel_documents_opened( const string& identity )
 
             if( dir_exists( identity_directory ) )
             {
+               string prefix( identity_directory + '/' );
                string user( file_user( identity_directory ) );
 
                // NOTE: Restores the "@opened_user_<identity>" system
@@ -10965,8 +10978,22 @@ bool storage_channel_documents_opened( const string& identity )
                temporary_session_variable tmp_style_extended(
                 get_special_var_name( e_special_var_style_extended ), c_true_value );
 
+               set_system_variable( prefix + c_channel_readme_file, string( 1, c_notifier_ignore_char ) );
+
+               string all_pending( storage_channel_documents_specific( identity, e_channel_documents_type_pending, false ) );
+
+               if( !all_pending.empty( ) )
+               {
+                  vector< string > pending;
+                  split( all_pending, pending, '\n' );
+
+                  for( size_t i = 0; i < pending.size( ); i++ )
+                     set_system_variable( prefix + pending[ i ], string( 1, c_notifier_ignore_char ) );
+               }
+
+               string all_submitting( storage_channel_documents_specific( identity, e_channel_documents_type_submitting, false ) );
+
                string all_documents( storage_channel_documents( identity ) );
-               string all_selections( storage_channel_documents_specific( identity, false, false ) );
 
                vector< string > documents;
 
@@ -11015,7 +11042,7 @@ bool storage_channel_documents_opened( const string& identity )
                   }
                }
 
-               ciyam_notifier* p_notifier = new ciyam_notifier( identity_directory, &all_selections, &paths_and_time_stamps );
+               ciyam_notifier* p_notifier = new ciyam_notifier( identity_directory, &all_submitting, &paths_and_time_stamps );
 
                p_notifier->start( );
 

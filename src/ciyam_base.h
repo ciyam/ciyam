@@ -608,8 +608,15 @@ std::string CIYAM_BASE_DECL_SPEC storage_channel_documents(
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_update( const std::string& identity, bool submitted = false );
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_prepare( const std::string& identity );
 
-std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_specific(
- const std::string& identity, bool updated = false, bool include_sizes = true );
+enum channel_documents_type
+{
+   e_channel_documents_type_pending,
+   e_channel_documents_type_retrieved,
+   e_channel_documents_type_submitting
+};
+
+std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_specific( const std::string& identity,
+ channel_documents_type type = e_channel_documents_type_submitting, bool include_sizes = true );
 
 inline std::string storage_channel_documents_fetched( const std::string& identity )
 {
@@ -621,14 +628,19 @@ inline std::string storage_channel_documents_submitted( const std::string& ident
    return storage_channel_documents( identity, true, false );
 }
 
-inline std::string storage_channel_documents_updated( const std::string& identity )
+inline std::string storage_channel_documents_pending( const std::string& identity )
 {
-   return storage_channel_documents_specific( identity, true );
+   return storage_channel_documents_specific( identity, e_channel_documents_type_pending );
 }
 
-inline std::string storage_channel_documents_selected( const std::string& identity )
+inline std::string storage_channel_documents_retrieved( const std::string& identity )
 {
-   return storage_channel_documents_specific( identity, false );
+   return storage_channel_documents_specific( identity, e_channel_documents_type_retrieved );
+}
+
+inline std::string storage_channel_documents_submitting( const std::string& identity )
+{
+   return storage_channel_documents_specific( identity, e_channel_documents_type_submitting );
 }
 
 void CIYAM_BASE_DECL_SPEC storage_channel_documents_open( const char* p_identity = 0 );
