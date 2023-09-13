@@ -15,4 +15,27 @@ file_move hhh 111/222/333
 file_move iii 111/222/333
 branch objects
 dump
+file_move 111/aaa .
+file_move 111/ccc .
+file_move 111/222/ddd .
+file_move 111/222/fff .
+file_move 111/222/333/ggg .
+file_move 111/222/333/iii .
+branch objects
+file_move xxx 111
+file_move yyy 111/222
+file_move zzz 111/222/333
+branch objects
+file_move aaa 111
+file_move ccc 111
+file_move ddd 111/222
+file_move fff 111/222
+file_move ggg 111/222/333
+file_move iii 111/222/333
+branch objects
+file_move 111/xxx .
+file_move 111/222/yyy .
+file_move 111/222/333/zzz .
+branch objects
+dump
 exit

@@ -6,7 +6,7 @@ branch "list a branch of files/folders/objects" [<opt/-f/full>|<opt/-b/brief>]<o
 file_add "add a file into the current folder" <val//name>[<opt/-c/cin>|<val//file_name>]
 file_get "get a file from the current folder" <val//name>[<opt/-c/cout>|<val//file_name>]
 file_link "create a soft link to an existing file" <val//name><val//source>
-file_move "move a file to another folder or rename it" <val//name><val//destination>
+file_move "move a file/link to another folder or rename it" <val//name><val//destination>
 file_remove "remove a file from below the current folder" <val//name>
 file_replace "replace the content of an existing file" <val//name>[<opt/-c/cin>|<val//file_name>]
 folder_add "add a folder below the current folder" <val//name>

@@ -58,10 +58,14 @@ const char c_folder = '/';
 
 const char* const c_root_folder = "/";
 const char* const c_parent_folder = "..";
+const char* const c_current_folder = ".";
 
 const char* const c_pipe_separator = "|";
 const char* const c_colon_separator = ":";
 const char* const c_folder_separator = "/";
+
+const char* const c_from_current_folder = "./";
+const char* const c_below_current_folder = "/./";
 
 const char* const c_unchanged_suffix = " *** unchanged ***";
 
@@ -603,6 +607,14 @@ string ods_file_system::determine_folder(
    string new_folder( folder );
    string old_current_folder( current_folder );
 
+   if( new_folder == string( c_current_folder ) )
+      new_folder = current_folder;
+   else if( new_folder.find( c_from_current_folder ) == 0 )
+      new_folder.erase( 0, strlen( c_from_current_folder ) );
+
+   // NOTE: Replaces "xxx/./yyy" with "xxx/yyy".
+   replace( new_folder, c_below_current_folder, c_folder_separator );
+
    // NOTE: Ignore trailing separator (unless is the only character).
    string::size_type pos = new_folder.rfind( c_folder_separator );
 
@@ -732,6 +744,7 @@ void ods_file_system::list_files( const string& expr, vector< string >& list,
       for( size_t i = 0; i < list.size( ); i++ )
       {
          string::size_type pos = list[ i ].find( '*' );
+
          if( pos == string::npos )
             non_link_files.push_back( list[ i ] );
       }
@@ -1051,6 +1064,51 @@ void ods_file_system::get_file( const string& name,
    }
 }
 
+bool ods_file_system::is_link( const string& name )
+{
+   bool retval = false;
+
+   btree_type& bt( p_impl->bt );
+
+   string value( current_folder );
+
+   string::size_type pos = name.find( c_folder );
+
+   if( pos == 0 )
+      value = c_folder + name;
+   else
+      value += c_folder + name;
+
+   replace( value, c_folder_separator, c_pipe_separator );
+
+   string::size_type ppos = value.rfind( c_pipe_separator );
+
+   value[ ppos ] = c_folder;
+
+   auto_ptr< ods::bulk_read > ap_bulk;
+
+   if( !o.is_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_read( o ) );
+
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
+   {
+      o >> bt;
+
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
+   }
+
+   btree_type::item_type tmp_item;
+   btree_type::iterator i = bt.end( );
+
+   tmp_item.val = value;
+
+   i = bt.find( tmp_item );
+
+   retval = ( i != bt.end( ) ) && i->get_is_link( );
+
+   return retval;
+}
+
 bool ods_file_system::has_file( const string& name, bool is_prefix,
  string* p_suffix, string* p_perms, int64_t* p_tm_val, int64_t* p_num_bytes )
 {
@@ -1060,7 +1118,12 @@ bool ods_file_system::has_file( const string& name, bool is_prefix,
 
    string value( current_folder );
 
-   value += c_folder + name;
+   string::size_type pos = name.find( c_folder );
+
+   if( pos == 0 )
+      value = c_folder + name;
+   else
+      value += c_folder + name;
 
    replace( value, c_folder_separator, c_pipe_separator );
 
@@ -1305,7 +1368,7 @@ void ods_file_system::move_file( const string& source, const string& destination
    string src_folder( current_folder );
 
    if( pos != string::npos )
-      src_folder = source.substr( 0, pos );
+      src_folder = determine_folder( source.substr( 0, pos ), false, true );
 
    string dest( destination );
 

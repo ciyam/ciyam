@@ -141,6 +141,10 @@ ciyam.idx
 ciyam.sql
 ciyam.tlg
 modules.lst
+ods_fsed.dat
+ods_fsed.hdr
+ods_fsed.idx
+ods_fsed.tlg
 packages.lst
 ciyam_server.dat
 ciyam_server.hdr
