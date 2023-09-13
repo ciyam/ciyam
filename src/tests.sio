@@ -803,7 +803,7 @@
      <kill>test_ods.tlg
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test -no_sync
       <input>true
       <output>generate
      </test_step>
@@ -835,7 +835,7 @@
      <kill>test_ods.tlg
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test -no_sync
       <input>true
       <output>generate
      </test_step>
@@ -857,7 +857,7 @@
      <description>Test DB compress operation.
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -test -no_sync
       <input>true
       <output>generate
      </test_step>
@@ -883,13 +883,13 @@
      <kill>test_ods.tlg
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -test
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -test -no_sync
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -test
+      <exec>test_ods -quiet -no_prompt -no_stderr -no_progress -p -test -no_sync
       <input>true
       <output>generate
      </test_step>
@@ -1810,7 +1810,7 @@
     </test>
     <test/>
      <name>2
-     <description>Test loading the Meta model, viewing various artifacts and basic object object operations.
+     <description>Test loading the Meta model, viewing various artifacts and basic object operations.
      <test_step/>
       <name>a
       <exec>!ciyam_client -echo -quiet -no_prompt -no_stderr -no_progress
