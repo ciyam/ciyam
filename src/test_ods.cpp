@@ -56,17 +56,17 @@ const char* const c_app_title = "test_ods";
 const char* const c_app_version = "0.1";
 
 const char* const c_cmd_password = "p";
-const char* const c_cmd_exclusive = "x";
+const char* const c_cmd_shared_write_mode = "sw";
 const char* const c_cmd_use_transaction_log = "tlg";
-const char* const c_cmd_use_synchronised_write = "sync";
 const char* const c_cmd_use_for_regression_tests = "test";
+const char* const c_cmd_use_unsynchronised_write = "no_sync";
 const char* const c_cmd_reconstruct_from_transaction_log = "reconstruct";
 
 bool g_encrypted = false;
 bool g_needs_magic = false;
-bool g_shared_write = true;
+bool g_shared_write = false;
 bool g_use_transaction_log = false;
-bool g_use_synchronised_write = false;
+bool g_use_synchronised_write = true;
 bool g_use_for_regression_tests = false;
 bool g_reconstruct_from_transaction_log = false;
 
@@ -355,14 +355,14 @@ class test_ods_startup_functor : public command_functor
    {
       if( command == c_cmd_password )
          g_encrypted = true;
-      else if( command == c_cmd_exclusive )
-         g_shared_write = false;
+      else if( command == c_cmd_shared_write_mode )
+         g_shared_write = true;
       else if( command == c_cmd_use_transaction_log )
          g_use_transaction_log = true;
-      else if( command == c_cmd_use_synchronised_write )
-         g_use_synchronised_write = true;
       else if( command == c_cmd_use_for_regression_tests )
          g_use_for_regression_tests = true;
+      else if( command == c_cmd_use_unsynchronised_write )
+         g_use_synchronised_write = false;
       else if( command == c_cmd_reconstruct_from_transaction_log )
          g_reconstruct_from_transaction_log = true;
    }
@@ -1055,19 +1055,19 @@ int main( int argc, char* argv[ ] )
          startup_command_processor processor( cmd_handler, application_title, 0, argc, argv );
 
          cmd_handler.add_command( c_cmd_password, 1,
-          "", "use encryption password", new test_ods_startup_functor( cmd_handler ) );
+          "", "use crypt password", new test_ods_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_exclusive, 1,
-          "", "use exclusive write access", new test_ods_startup_functor( cmd_handler ) );
+         cmd_handler.add_command( c_cmd_shared_write_mode, 1,
+          "", "use shared write mode", new test_ods_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_use_transaction_log, 1,
           "", "use transaction log file", new test_ods_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_use_synchronised_write, 1,
-          "", "use synchronised file write", new test_ods_startup_functor( cmd_handler ) );
-
          cmd_handler.add_command( c_cmd_use_for_regression_tests, 2,
           "", "use this for regression tests", new test_ods_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_use_unsynchronised_write, 2,
+          "", "use unsynchronised file writing", new test_ods_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_reconstruct_from_transaction_log, 3,
           "", "use to reconstruct from transaction log", new test_ods_startup_functor( cmd_handler ) );
@@ -1075,10 +1075,11 @@ int main( int argc, char* argv[ ] )
          processor.process_commands( );
 
          cmd_handler.remove_command( c_cmd_password );
-         cmd_handler.remove_command( c_cmd_exclusive );
+         cmd_handler.remove_command( c_cmd_shared_write_mode );
          cmd_handler.remove_command( c_cmd_use_transaction_log );
-         cmd_handler.remove_command( c_cmd_use_synchronised_write );
          cmd_handler.remove_command( c_cmd_use_for_regression_tests );
+         cmd_handler.remove_command( c_cmd_use_unsynchronised_write );
+         cmd_handler.remove_command( c_cmd_reconstruct_from_transaction_log );
       }
 
       if( !cmd_handler.has_option_quiet( ) )
