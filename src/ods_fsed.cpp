@@ -44,7 +44,7 @@ const char* const c_app_title = "ods_fsed";
 const char* const c_app_version = "0.1";
 
 const char* const c_cmd_password = "p";
-const char* const c_cmd_exclusive = "x";
+const char* const c_cmd_shared_write_mode = "sw";
 const char* const c_cmd_use_transaction_log = "tlg";
 
 const char* const c_cmd_exec = "exec";
@@ -65,7 +65,7 @@ string g_name( c_app_title );
 string g_exec_cmd;
 
 bool g_encrypted = false;
-bool g_shared_write = true;
+bool g_shared_write = false;
 bool g_use_transaction_log = false;
 bool g_use_for_regression_tests = false;
 bool g_use_unsynchronised_write = false;
@@ -120,8 +120,8 @@ class ods_fsed_startup_functor : public command_functor
       }
       else if( command == c_cmd_password )
          g_encrypted = true;
-      else if( command == c_cmd_exclusive )
-         g_shared_write = false;
+      else if( command == c_cmd_shared_write_mode )
+         g_shared_write = true;
       else if( command == c_cmd_use_transaction_log )
          g_use_transaction_log = true;
       else if( command == c_cmd_use_for_regression_tests )
@@ -662,10 +662,10 @@ int main( int argc, char* argv[ ] )
          startup_command_processor processor( cmd_handler, application_title, 0, argc, argv );
 
          cmd_handler.add_command( c_cmd_password, 1,
-          "", "use encryption password", new ods_fsed_startup_functor( cmd_handler ) );
+          "", "use crypt password", new ods_fsed_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_exclusive, 1,
-          "", "use exclusive write access", new ods_fsed_startup_functor( cmd_handler ) );
+         cmd_handler.add_command( c_cmd_shared_write_mode, 1,
+          "", "use shared write mode", new ods_fsed_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_use_transaction_log, 1,
           "", "use transaction log file", new ods_fsed_startup_functor( cmd_handler ) );
@@ -685,7 +685,7 @@ int main( int argc, char* argv[ ] )
          processor.process_commands( );
 
          cmd_handler.remove_command( c_cmd_password );
-         cmd_handler.remove_command( c_cmd_exclusive );
+         cmd_handler.remove_command( c_cmd_shared_write_mode );
          cmd_handler.remove_command( c_cmd_exec );
          cmd_handler.remove_command( c_cmd_use_transaction_log );
          cmd_handler.remove_command( c_cmd_use_for_regression_tests );
