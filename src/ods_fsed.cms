@@ -5,7 +5,8 @@ objects|list "list matching files and folders" [<opt/-f/full>|<opt/-b/brief>][<v
 branch "list a branch of files/folders/objects" [<opt/-f/full>|<opt/-b/brief>]<opt/files>|<opt/folders>|<opt/objects>[<val//expr>]
 file_add "add a file into the current folder" <val//name>[<opt/-c/cin>|<val//file_name>]
 file_get "get a file from the current folder" <val//name>[<opt/-c/cout>|<val//file_name>]
-file_link "create a soft link to an existing file" <val//name><val//source>
+file_link "create/reverse a soft link to an existing file" <val//name>[<val//source>]
+file_links "list soft links for an existing file" <val//name>
 file_move "move a file/link to another folder or rename it" <val//name><val//destination>
 file_remove "remove a file from below the current folder" <val//name>
 file_replace "replace the content of an existing file" <val//name>[<opt/-c/cin>|<val//file_name>]

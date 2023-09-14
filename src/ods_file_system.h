@@ -99,6 +99,8 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       list_files( "", list, include_links, start_from, inclusive, limit, in_reverse_order );
    }
 
+   void list_links( const std::string& name, std::ostream& os );
+
    void list_folders( const std::string& expr,
     std::vector< std::string >& list, const std::string& start_from,
     bool inclusive = true, size_t limit = 0, bool in_reverse_order = false );
@@ -207,6 +209,8 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
     std::string* p_suffix = 0, std::string* p_perms = 0, int64_t* p_tm_val = 0, int64_t* p_num_bytes = 0 );
 
    std::string last_file_name_with_prefix( const std::string& prefix );
+
+   std::string link_target( const std::string& name );
 
    void link_file( const std::string& name, const std::string& source );
 

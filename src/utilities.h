@@ -399,7 +399,7 @@ inline void file_append( const std::string& src, const std::string& dest )
    file_append( src.c_str( ), dest.c_str( ) );
 }
 
-std::string valid_file_name( const std::string& str, bool* p_has_utf8_chars = 0 );
+std::string valid_file_name( const std::string& str, bool* p_has_utf8_chars = 0, bool allow_path_separators = false );
 
 #  ifdef NEW_BORLAND_VERSION
 #     pragma option push -w-8026

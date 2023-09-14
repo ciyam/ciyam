@@ -55,6 +55,7 @@ namespace
 const char c_pipe = '|';
 const char c_colon = ':';
 const char c_folder = '/';
+const char c_special = '!';
 
 const char* const c_root_folder = "/";
 const char* const c_parent_folder = "..";
@@ -64,6 +65,7 @@ const char* const c_pipe_separator = "|";
 const char* const c_colon_separator = ":";
 const char* const c_folder_separator = "/";
 
+const char* const c_doubled_folder = "//";
 const char* const c_from_current_folder = "./";
 const char* const c_below_current_folder = "/./";
 
@@ -753,6 +755,85 @@ void ods_file_system::list_files( const string& expr, vector< string >& list,
    }
 }
 
+void ods_file_system::list_links( const string& name, ostream& os )
+{
+   if( name.empty( ) )
+      throw runtime_error( "unexpected empty file name in 'file_links'" );
+
+   btree_type& bt( p_impl->bt );
+
+   auto_ptr< ods::bulk_read > ap_bulk;
+
+   if( !o.is_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_read( o ) );
+
+   btree_type::iterator tmp_iter;
+   btree_type::item_type tmp_item;
+
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
+   {
+      o >> bt;
+
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
+   }
+
+   if( name[ 0 ] == c_folder )
+      tmp_item.val = name;
+   else
+   {
+      if( current_folder == string( c_root_folder ) )
+         tmp_item.val = current_folder + name;
+      else
+         tmp_item.val = current_folder + c_folder_separator + name;
+   }
+
+   replace( tmp_item.val, c_folder_separator, c_pipe_separator );
+
+   string::size_type pos = tmp_item.val.rfind( c_pipe_separator );
+
+   if( pos != string::npos )
+   {
+      tmp_item.val[ pos ] = c_folder;
+
+      if( pos == 0 )
+         tmp_item.val = c_pipe + tmp_item.val;
+   }
+
+   tmp_iter = bt.find( tmp_item );
+
+   if( tmp_iter == bt.end( ) )
+      throw runtime_error( "file '" + name + "' not found" );
+   else
+   {
+      oid id( tmp_iter->get_file( ).get_id( ) );
+
+      bool is_link = tmp_iter->get_is_link( );
+
+      if( !is_link )
+      {
+         string link_prefix( to_string( id.get_num( ) ) + c_pipe_separator );
+         tmp_item.val = link_prefix;
+
+         tmp_iter = bt.lower_bound( tmp_item );
+
+         while( tmp_iter != bt.end( ) )
+         {
+            if( tmp_iter->val.find( link_prefix ) != 0 )
+               break;
+
+            string link_name( tmp_iter->val.substr( link_prefix.length( ) - 1 ) );
+
+            replace( link_name, c_pipe_separator, c_folder_separator );
+            replace( link_name, c_doubled_folder, c_root_folder );
+
+            os << link_name << '\n';
+
+            ++tmp_iter;
+         }
+      }
+   }
+}
+
 void ods_file_system::list_folders( const string& expr,
  vector< string >& list, const string& start_from, bool inclusive, size_t limit, bool in_reverse_order )
 {
@@ -1245,35 +1326,117 @@ string ods_file_system::last_file_name_with_prefix( const string& prefix )
    return retval;
 }
 
+string ods_file_system::link_target( const string& name )
+{
+   string retval;
+
+   btree_type& bt( p_impl->bt );
+
+   string::size_type pos = name.rfind( c_folder );
+
+   string dest_name( name.substr( pos == string::npos ? 0 : pos + 1 ) );
+
+   string dest_folder( current_folder );
+
+   auto_ptr< ods::bulk_read > ap_bulk;
+
+   if( !o.is_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_read( o ) );
+
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
+   {
+      o >> bt;
+
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
+   }
+
+   if( pos != string::npos )
+      dest_folder = determine_folder( name.substr( 0, pos ) );
+
+   string value( dest_folder );
+
+   value += c_folder + dest_name;
+
+   replace( value, c_folder_separator, c_pipe_separator );
+
+   string::size_type ppos = value.rfind( c_pipe_separator );
+
+   value[ ppos ] = c_folder;
+
+   btree_type::iterator tmp_iter;
+   btree_type::item_type tmp_item;
+
+   tmp_item.val = value;
+
+   tmp_iter = bt.find( tmp_item );
+
+   if( tmp_iter != bt.end( ) )
+   {
+      tmp_item = *tmp_iter;
+
+      if( tmp_item.get_is_link( ) )
+      {
+         oid id( tmp_item.get_file( ).get_id( ) );
+
+         string special_prefix( to_string( id.get_num( ) ) + c_special );
+
+         tmp_item.val = special_prefix;
+
+         tmp_iter = bt.lower_bound( tmp_item );
+
+         if( ( tmp_iter != bt.end( ) ) && ( tmp_iter->val.find( special_prefix ) == 0 ) )
+         {
+            retval = tmp_iter->val.substr( special_prefix.length( ) );
+
+            replace( retval, c_pipe_separator, c_folder_separator );
+
+            if( !retval.empty( ) && retval[ 0 ] != c_folder )
+               retval = c_folder_separator + retval;
+         }
+      }
+   }
+
+   return retval;
+}
+
 void ods_file_system::link_file( const string& name, const string& source )
 {
    btree_type& bt( p_impl->bt );
 
-   if( valid_file_name( name ) != name )
+   string::size_type pos = name.rfind( c_folder );
+
+   string dest_name( name.substr( pos == string::npos ? 0 : pos + 1 ) );
+
+   string dest_folder( current_folder );
+
+   auto_ptr< ods::bulk_write > ap_bulk;
+
+   if( !o.is_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_write( o ) );
+
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
+   {
+      o >> bt;
+
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
+   }
+
+   if( pos != string::npos )
+      dest_folder = determine_folder( name.substr( 0, pos ) );
+
+   if( valid_file_name( dest_name ) != dest_name )
       throw runtime_error( "invalid file name '" + name + "'" );
    else
    {
-      string value( current_folder );
+      string value( dest_folder );
 
-      value += c_folder + name;
+      value += c_folder + dest_name;
 
       replace( value, c_folder_separator, c_pipe_separator );
 
       string::size_type ppos = value.rfind( c_pipe_separator );
 
       value[ ppos ] = c_folder;
-
-      auto_ptr< ods::bulk_write > ap_bulk;
-
-      if( !o.is_bulk_locked( ) )
-         ap_bulk.reset( new ods::bulk_write( o ) );
-
-      if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
-      {
-         o >> bt;
-
-         p_impl->next_transaction_id = o.get_next_transaction_id( );
-      }
 
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
@@ -1329,10 +1492,30 @@ void ods_file_system::link_file( const string& name, const string& source )
                throw runtime_error( "file '" + source + "' not found" );
             else
             {
+               oid id( tmp_iter->get_file( ).get_id( ) );
+
+               if( !id.get_num( ) )
+                  throw runtime_error( "linking to a zero length file '" + source + "' is not supported" );
+
+               string link_prefix( to_string( id.get_num( ) ) + c_pipe_separator );
+
+               tmp_item.val = link_prefix;
+
+               tmp_iter = bt.lower_bound( tmp_item );
+
+               // NOTE: If is the first link then creates a special object for the source.
+               if( ( tmp_iter == bt.end( ) ) || ( tmp_iter->val.find( link_prefix ) != 0 ) )
+               {
+                  tmp_item.val = to_string( id.get_num( ) ) + c_special + source_value.substr( 1 );
+                  tmp_item.set_is_link( );
+
+                  tmp_item.get_file( ).get_id( ).set_new( );
+
+                  bt.insert( tmp_item );
+               }
+
                tmp_item.val = value;
                tmp_item.set_is_link( );
-
-               oid id( tmp_iter->get_file( ).get_id( ) );
 
                tmp_item.get_file( ).set_id( id );
 
@@ -1367,8 +1550,22 @@ void ods_file_system::move_file( const string& source, const string& destination
 
    string src_folder( current_folder );
 
+   btree_type& bt( p_impl->bt );
+
+   auto_ptr< ods::bulk_write > ap_bulk;
+
+   if( !o.is_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_write( o ) );
+
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
+   {
+      o >> bt;
+
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
+   }
+
    if( pos != string::npos )
-      src_folder = determine_folder( source.substr( 0, pos ), false, true );
+      src_folder = determine_folder( source.substr( 0, pos ) );
 
    string dest( destination );
 
@@ -1376,24 +1573,10 @@ void ods_file_system::move_file( const string& source, const string& destination
 
    string dest_name( dest.substr( pos == string::npos ? 0 : pos + 1 ) );
 
-   btree_type& bt( p_impl->bt );
-
    if( valid_file_name( dest_name ) != dest_name )
       throw runtime_error( "invalid destination file name '" + dest_name + "'" );
    else
    {
-      auto_ptr< ods::bulk_write > ap_bulk;
-
-      if( !o.is_bulk_locked( ) )
-         ap_bulk.reset( new ods::bulk_write( o ) );
-
-      if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
-      {
-         o >> bt;
-
-         p_impl->next_transaction_id = o.get_next_transaction_id( );
-      }
-
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
 
@@ -1490,7 +1673,30 @@ void ods_file_system::move_file( const string& source, const string& destination
                         tmp_item = *tmp_iter;
 
                         bt.erase( tmp_iter );
+
                         tmp_item.val = to_string( id.get_num( ) ) + full_name;
+
+                        tmp_item.get_file( ).get_id( ).set_new( );
+
+                        bt.insert( tmp_item );
+                     }
+                  }
+                  // NOTE: Check and update the special object for the file (if has any links).
+                  else if( id.get_num( ) )
+                  {
+                     tmp_item.val = to_string( id.get_num( ) ) + c_special + value.substr( 1 );
+
+                     tmp_iter = bt.find( tmp_item );
+
+                     if( tmp_iter != bt.end( ) )
+                     {
+                        tmp_item = *tmp_iter;
+
+                        bt.erase( tmp_iter );
+
+                        tmp_item.val = to_string( id.get_num( ) ) + c_special + full_name.substr( 1 );
+
+                        tmp_item.get_file( ).get_id( ).set_new( );
 
                         bt.insert( tmp_item );
                      }
@@ -3260,6 +3466,25 @@ bool ods_file_system::move_files_and_folders( const string& source,
                   bt.erase( tmp_iter );
 
                   tmp_item.val = to_string( id.get_num( ) ) + next_name;
+
+                  tmp_item.get_file( ).get_id( ).set_new( );
+
+                  bt.insert( tmp_item );
+               }
+            }
+            else
+            {
+               // NOTE: Check and update the special object for the file (if has any links).
+               tmp_item.val = to_string( id.get_num( ) ) + c_special + old_name.substr( 1 );
+
+               tmp_iter = bt.find( tmp_item );
+
+               if( tmp_iter != bt.end( ) )
+               {
+                  bt.erase( tmp_iter );
+
+                  tmp_item.val = to_string( id.get_num( ) ) + c_special + next_name.substr( 1 );
+
                   tmp_item.get_file( ).get_id( ).set_new( );
 
                   bt.insert( tmp_item );
@@ -3322,6 +3547,8 @@ bool ods_file_system::remove_items_for_file(
          tmp_iter = bt.end( );
    }
 
+   string item_name( tmp_item.val );
+
    if( tmp_iter == bt.end( ) )
    {
       if( !ignore_not_found )
@@ -3346,34 +3573,69 @@ bool ods_file_system::remove_items_for_file(
             tmp_iter = bt.find( tmp_item );
 
             if( tmp_iter != bt.end( ) )
+            {
                bt.erase( tmp_iter );
+
+               string link_prefix( to_string( id.get_num( ) ) + c_pipe_separator );
+
+               tmp_item.val = link_prefix;
+
+               tmp_iter = bt.lower_bound( tmp_item );
+
+               // NOTE: If no other links exist then remove the special link object.
+               if( tmp_iter == bt.end( ) || tmp_iter->val.find( link_prefix ) != 0 )
+               {
+                  string special_prefix( to_string( id.get_num( ) ) + c_special );
+
+                  tmp_item.val = special_prefix;
+
+                  tmp_iter = bt.lower_bound( tmp_item );
+
+                  if( ( tmp_iter != bt.end( ) ) && ( tmp_iter->val.find( special_prefix ) == 0 ) )
+                     bt.erase( tmp_iter );
+
+                  tmp_item.val = to_string( id.get_num( ) ) + c_special + item_name.substr( 1 );
+               }
+            }
          }
          else
          {
             o.destroy( id );
 
-            string link_prefix( to_string( id.get_num( ) ) + c_pipe_separator );
+            string special_name( to_string( id.get_num( ) ) + c_special + item_name.substr( 1 ) );
 
-            // NOTE: Now need to delete any existing links to the file.
-            while( true )
+            tmp_item.val = special_name;
+
+            tmp_iter = bt.find( tmp_item );
+
+            // NOTE: If has any links then a special link object exists.
+            if( tmp_iter != bt.end( ) )
             {
-               tmp_item.val = link_prefix;
-
-               tmp_iter = bt.lower_bound( tmp_item );
-
-               if( tmp_iter == bt.end( ) || tmp_iter->val.find( link_prefix ) != 0 )
-                  break;
-
-               string link_name = tmp_iter->val.substr( link_prefix.length( ) - 1 );
-
                bt.erase( tmp_iter );
 
-               tmp_item.val = link_name;
+               string link_prefix( to_string( id.get_num( ) ) + c_pipe_separator );
 
-               tmp_iter = bt.find( tmp_item );
+               // NOTE: Now need to delete all existing links to the file.
+               while( true )
+               {
+                  tmp_item.val = link_prefix;
 
-               if( tmp_iter != bt.end( ) )
+                  tmp_iter = bt.lower_bound( tmp_item );
+
+                  if( tmp_iter == bt.end( ) || tmp_iter->val.find( link_prefix ) != 0 )
+                     break;
+
+                  string link_name( tmp_iter->val.substr( link_prefix.length( ) - 1 ) );
+
                   bt.erase( tmp_iter );
+
+                  tmp_item.val = link_name;
+
+                  tmp_iter = bt.find( tmp_item );
+
+                  if( tmp_iter != bt.end( ) )
+                     bt.erase( tmp_iter );
+               }
             }
          }
       }

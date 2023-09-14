@@ -831,7 +831,7 @@ void file_copy( const char* p_src, const char* p_dest, bool append )
    copy_stream( inpf, outf );
 }
 
-string valid_file_name( const string& str, bool* p_has_utf8_chars )
+string valid_file_name( const string& str, bool* p_has_utf8_chars, bool allow_path_separators )
 {
    string s;
 
@@ -871,8 +871,13 @@ string valid_file_name( const string& str, bool* p_has_utf8_chars )
       if( c == '"' )
          s += "'";
 
-      if( c != '"' && c != ':' && c != '?' && c!= '*'
-       && c != '<' && c != '>' && c != '|' && c != '/' && c != '\\' )
+      if( c == '/' )
+      {
+         if( allow_path_separators )
+            s += c;
+      }
+      else  if( c != '"' && c != ':' && c != '?'
+       && c!= '*' && c != '<' && c != '>' && c != '|' && c != '\\' )
          s += c;
    }
 
