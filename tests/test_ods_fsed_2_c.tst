@@ -37,33 +37,54 @@ iii* (6.7 kB)
 xxx (6.7 kB)
 yyy (5.7 kB)
 zzz (3.1 kB)
+file_link ccc
+/xxx
+file_link eee
+/yyy
+file_link ggg
+/zzz
+file_links xxx
+/ccc
+/fff
+/iii
+file_links yyy
+/bbb
+/eee
+/hhh
+file_links zzz
+/aaa
+/ddd
+/ggg
 dump
 Total index levels = 0
 Total number of nodes = 1
-Total number of items = 21
+Total number of items = 24
 
 Dumping level #0
 [Node 2] flags = 3, dge_link = -1
          lft_link = -1, rgt_link = -1
-Item #0, data = 1|/ccc, link = -1
-Item #1, data = 1|/fff, link = -1
-Item #2, data = 1|/iii, link = -1
-Item #3, data = 3|/bbb, link = -1
-Item #4, data = 3|/eee, link = -1
-Item #5, data = 3|/hhh, link = -1
-Item #6, data = 4|/aaa, link = -1
-Item #7, data = 4|/ddd, link = -1
-Item #8, data = 4|/ggg, link = -1
-Item #9, data = |/aaa, link = -1
-Item #10, data = |/bbb, link = -1
-Item #11, data = |/ccc, link = -1
-Item #12, data = |/ddd, link = -1
-Item #13, data = |/eee, link = -1
-Item #14, data = |/fff, link = -1
-Item #15, data = |/ggg, link = -1
-Item #16, data = |/hhh, link = -1
-Item #17, data = |/iii, link = -1
-Item #18, data = |/xxx, link = -1
-Item #19, data = |/yyy, link = -1
-Item #20, data = |/zzz, link = -1
+Item #0, data = 1!/xxx, link = -1
+Item #1, data = 1|/ccc, link = -1
+Item #2, data = 1|/fff, link = -1
+Item #3, data = 1|/iii, link = -1
+Item #4, data = 3!/yyy, link = -1
+Item #5, data = 3|/bbb, link = -1
+Item #6, data = 3|/eee, link = -1
+Item #7, data = 3|/hhh, link = -1
+Item #8, data = 4!/zzz, link = -1
+Item #9, data = 4|/aaa, link = -1
+Item #10, data = 4|/ddd, link = -1
+Item #11, data = 4|/ggg, link = -1
+Item #12, data = |/aaa, link = -1
+Item #13, data = |/bbb, link = -1
+Item #14, data = |/ccc, link = -1
+Item #15, data = |/ddd, link = -1
+Item #16, data = |/eee, link = -1
+Item #17, data = |/fff, link = -1
+Item #18, data = |/ggg, link = -1
+Item #19, data = |/hhh, link = -1
+Item #20, data = |/iii, link = -1
+Item #21, data = |/xxx, link = -1
+Item #22, data = |/yyy, link = -1
+Item #23, data = |/zzz, link = -1
 exit

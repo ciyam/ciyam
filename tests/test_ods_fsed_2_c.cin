@@ -10,5 +10,11 @@ file_link ggg zzz
 file_link hhh yyy
 file_link iii xxx
 branch objects
+file_link ccc
+file_link eee
+file_link ggg
+file_links xxx
+file_links yyy
+file_links zzz
 dump
 exit

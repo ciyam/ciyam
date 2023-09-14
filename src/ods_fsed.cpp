@@ -381,7 +381,16 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          string name( get_parm_val( parameters, c_cmd_ods_fsed_file_link_name ) );
          string source( get_parm_val( parameters, c_cmd_ods_fsed_file_link_source ) );
 
-         ap_ofs->link_file( name, source );
+         if( !source.empty( ) )
+            ap_ofs->link_file( name, source );
+         else
+            *ods_fsed_handler.get_std_out( ) << ap_ofs->link_target( name ) << '\n';
+      }
+      else if( command == c_cmd_ods_fsed_file_links )
+      {
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_file_links_name ) );
+
+         ap_ofs->list_links( name, *ods_fsed_handler.get_std_out( ) );
       }
       else if( command == c_cmd_ods_fsed_file_move )
       {
