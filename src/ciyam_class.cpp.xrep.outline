@@ -1891,9 +1891,10 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `,\
 `@eq`(`'\1`'`,`'transient_field_action_create_from_fk`'`)
 `{`#transient_field_action_create_from_fk.spec.xrep section=after_fetch module_name=$module_name\
- arg_id=$specification_\0_id arg_action=$specification_\0_action arg_actions=$specification_\0_actions arg_fkfield=$specification_\0_fkfield\
- arg_key_sep=$specification_\0_key_sep arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
- arg_spclass=$specification_\0_spclass`}\
+ arg_id=$specification_\0_id arg_action=$specification_\0_action\
+ arg_actions=$specification_\0_actions arg_ofield=$specification_\0_ofield arg_ofisfk=$specification_\0_ofisfk\
+ arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_key_sep=$specification_\0_key_sep\
+ arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield arg_spclass=$specification_\0_spclass`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_action_for_fk_child_match`'`)
 `{`#transient_field_action_for_fk_child_match.spec.xrep section=after_fetch module_name=$module_name\
@@ -4460,7 +4461,7 @@ void `{`$full_class_name`}::get_required_field_names(
 `,\
 `@eq`(`'\1`'`,`'transient_field_action_create_from_fk`'`)
 `{`#transient_field_action_create_from_fk.spec.xrep section=get_required_field_names\
- arg_id=$specification_\0_id arg_actions=$specification_\0_actions arg_fkfield=$specification_\0_fkfield`}\
+ arg_id=$specification_\0_id arg_actions=$specification_\0_actions arg_ofield=$specification_\0_ofield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_action_for_fk_child_match`'`)
 `{`#transient_field_action_for_fk_child_match.spec.xrep section=get_required_field_names\

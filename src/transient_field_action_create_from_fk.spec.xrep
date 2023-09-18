@@ -1,8 +1,9 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
    // [(start transient_field_action_create_from_fk)] `{`$arg_id`}
 `{`$key_sep`=`'%`'`}`{`!`@eq`(`$arg_key_sep`,`'`'`)`$key_sep`=`$arg_key_sep`}\
-   if( !( state & c_state_is_changing )
-    && get_obj( ).needs_field_value( c_field_name_`{`$arg_actions`} ) && !is_null( get_obj( ).`{`$arg_fkfield`}( ) ) )
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && `}!( state & c_state_is_changing )`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`}
+    && get_obj( ).needs_field_value( c_field_name_`{`$arg_actions`} ) && !is_null( get_obj( ).`{`$arg_ofield`}( ) ) )
    {
       string actions( get_obj( ).`{`$arg_actions`}( ) );
 
@@ -12,12 +13,12 @@
 `{`@eq`(`$arg_spfield`,`'`'`)\
       actions += string( c_procedure_id_`{`$arg_action`} )
           + "$" + get_obj( ).get_class_id( ) + "." + string( c_field_id_`{`$arg_sfield`} )
-          + "=" + get_obj( ).`{`$arg_fkfield`}( ).get_key( ) + "`{`$key_sep`}" + get_obj( ).get_key( );
+          + "=" + get_obj( ).`{`$arg_ofield`}( )`{`@eq`(`$arg_ofisfk`,`'1`'`).get_key( ) + "`{`$key_sep`}" + get_obj( ).get_key( )`};
 `,\
       actions += string( c_procedure_id_`{`$arg_action`} )
        + "$" + get_obj( ).`{`$arg_spfield`}( ).get_class_id( ) + "."
        + FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_sfield`} ) + "="
-       + get_obj( ).`{`$arg_fkfield`}( ).get_key( ) + "`{`$key_sep`}" + get_obj( ).get_key( );
+       + get_obj( ).`{`$arg_ofield`}( )`{`@eq`(`$arg_ofisfk`,`'1`'`).get_key( ) + "`{`$key_sep`}" + get_obj( ).get_key( )`};
 `}
       get_obj( ).`{`$arg_actions`}( actions );
    }
@@ -27,11 +28,11 @@
    // [(start transient_field_action_create_from_fk)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_actions`}", dependents ) )
    {
-      dependents.insert( "`{`$arg_fkfield`}" );
+      dependents.insert( "`{`$arg_ofield`}" );
 
-      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_fkfield`} ) )
-       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_fkfield`} ) ) )
-         names.insert( "`{`$arg_fkfield`}" );
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_ofield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_ofield`} ) ) )
+         names.insert( "`{`$arg_ofield`}" );
    }
    // [(finish transient_field_action_create_from_fk)] `{`$arg_id`}
 `}

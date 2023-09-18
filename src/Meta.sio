@@ -3728,6 +3728,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
         <id>600465
         <item>tfield
        </specification>
@@ -17656,6 +17660,10 @@
        </specification>
        <specification/>
         <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
         <item>field
        </specification>
        <specification/>
@@ -37882,6 +37890,7 @@
      <field_info>301430:107113;107100={fpclass}
      <field_info>301435:107101;107100={ofield}
      <field_info>301435:107110;107100={ofield_id}
+     <field_info>301435:107108;107100={ofisfk}
      <field_info>301436:107101;107100={o2field}
      <field_info>301436:107110;107100={o2field_id}
      <field_info>301437:107101;107100={ocfield}

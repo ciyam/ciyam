@@ -7417,6 +7417,7 @@ void Meta_Specification::impl::after_fetch( )
       get_obj( ).add_search_replacement( "Vars", "{fpclass}", to_rep_string( get_obj( ).Field( ).Parent_Class_Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{ofield}", to_rep_string( get_obj( ).Other_Field( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{ofield_id}", to_rep_string( get_obj( ).Other_Field( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{ofisfk}", to_rep_string( get_obj( ).Other_Field( ).Is_Foreign_Key( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{o2field}", to_rep_string( get_obj( ).Other_Field_2( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{o2field_id}", to_rep_string( get_obj( ).Other_Field_2( ).Id( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{ocfield}", to_rep_string( get_obj( ).Other_Class_Field( ).Name( ) ) );
@@ -13762,6 +13763,15 @@ void Meta_Specification::get_required_field_names(
       if( ( use_transients && is_field_transient( e_field_id_Field ) )
        || ( !use_transients && !is_field_transient( e_field_id_Field ) ) )
          names.insert( "Field" );
+   }
+
+   if( needs_field_value( "Vars", dependents ) )
+   {
+      dependents.insert( "Other_Field" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Other_Field ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Other_Field ) ) )
+         names.insert( "Other_Field" );
    }
 
    if( needs_field_value( "Vars", dependents ) )
