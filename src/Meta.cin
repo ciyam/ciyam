@@ -1825,8 +1825,8 @@ specification_add -id=600207 {Specification}_Vars_from_search_replace field_from
 ,{Field}:Name={field},Field_Class:Name={fclass},{Field}:Id={field_id},{Field}:Mandatory={fmandatory}\
 ,{Field}:Transient={ftransient},{Field}:Numeric_Decimals={fdecimals},{Field}:Is_Foreign_Key={fisfk}\
 ,{Field}:Is_Text_Type={fistexttype},{Field}:Parent_Class_Name={fpclass}\
-,Other_Field:Name={ofield},Other_Field:Id={ofield_id},Other_Field_2:Name={o2field},Other_Field_2:Id={o2field_id}\
-,Other_Class_Field:Name={ocfield},Other_Class_Field:Id={ocfield_id}\
+,Other_Field:Name={ofield},Other_Field:Id={ofield_id},Other_Field:Is_Foreign_Key={ofisfk},Other_Field_2:Name={o2field}\
+,Other_Field_2:Id={o2field_id},Other_Class_Field:Name={ocfield},Other_Class_Field:Id={ocfield_id}\
 ,{Modifier}:Name={modifier},Other_Modifier:Name={omodifier},Other_Modifier_2:Name={o2modifier}\
 ,Source_Parent_Class:Name={spclass},Source_Parent:Name={spfield},Source_Parent:Id={spfield_id},Source_Child_Class:Name={scclass}\
 ,Source_Child:Name={scfield},Source_Child:Id={scfield_id},Other_Source_Child:Name={oscfield},Other_Source_Child:Id={oscfield_id}\
