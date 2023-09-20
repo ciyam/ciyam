@@ -1254,7 +1254,7 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `@eq`(`'\1`'`,`'modifier_has_variable`'`)
 `{`#modifier_has_variable.spec.xrep section=get_state\
  arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier arg_value=$specification_\0_value\
- arg_system=$specification_\0_system arg_session=$specification_\0_session`}\
+ arg_field=$specification_\0_field arg_system=$specification_\0_system arg_session=$specification_\0_session`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_key_value`'`)
 `{`#modifier_key_value.spec.xrep section=get_state\
