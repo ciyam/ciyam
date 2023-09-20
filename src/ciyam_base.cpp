@@ -10459,12 +10459,6 @@ string storage_channel_documents_prepare( const string& identity )
 
       ofs.remove_file( c_channel_submitting );
 
-      string pending( get_system_variable(
-       get_special_var_name( e_special_var_pending ) + '_' + identity ) );
-
-      if( !pending.empty( ) )
-         ofs.store_as_text_file( c_channel_pending, selections );
-
       ofs.store_as_text_file( c_channel_submitted, height_submitted );
 
       ods_tx.commit( );
@@ -10854,7 +10848,15 @@ void storage_channel_documents_close( const char* p_identity )
    ofs.set_folder( c_channel_folder_ciyam );
 
    if( !all_selected.empty( ) )
-      ofs.store_as_text_file( c_channel_submitting, all_selected );
+   {
+      string pending( get_system_variable(
+       get_special_var_name( e_special_var_pending ) + '_' + identity ) );
+
+      if( !pending.empty( ) )
+         ofs.store_as_text_file( c_channel_pending, all_selected );
+      else
+         ofs.store_as_text_file( c_channel_submitting, all_selected );
+   }
    else if( ofs.has_file( c_channel_submitting ) )
       ofs.remove_file( c_channel_submitting );
 
@@ -10864,6 +10866,9 @@ void storage_channel_documents_close( const char* p_identity )
    ods_tx.commit( );
 
    delete_directory_files( path, true );
+
+   set_system_variable( get_special_var_name(
+    e_special_var_pending ) + '_' + identity, "" );
 }
 
 bool storage_channel_documents_marked( const string& identity )
