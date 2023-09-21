@@ -608,6 +608,8 @@ std::string CIYAM_BASE_DECL_SPEC storage_channel_documents(
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_update( const std::string& identity, bool submitted = false );
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_prepare( const std::string& identity );
 
+void CIYAM_BASE_DECL_SPEC storage_channel_documents_cancel_pending( const std::string& identity );
+
 enum channel_documents_type
 {
    e_channel_documents_type_pending,
