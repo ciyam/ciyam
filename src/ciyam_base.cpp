@@ -10378,7 +10378,7 @@ string storage_channel_documents_prepare( const string& identity )
       }
    }
 
-   string selections;
+   string submitting;
 
    string identity_log_file_name( identity + c_log_file_ext );
 
@@ -10412,29 +10412,29 @@ string storage_channel_documents_prepare( const string& identity )
        + string( c_channel_fetch ), to_string( height_fetched ) );
 
       if( ofs.has_file( c_channel_submitting ) )
-         ofs.fetch_from_text_file( c_channel_submitting, selections );
+         ofs.fetch_from_text_file( c_channel_submitting, submitting );
 
       ofs.set_folder( ".." );
 
       string files;
 
-      if( !selections.empty( ) )
+      if( !submitting.empty( ) )
       {
-         vector< string > all_selections;
+         vector< string > all_submitting;
 
-         split( selections, all_selections, '\n' );
+         split( submitting, all_submitting, '\n' );
 
-         for( size_t i = 0; i < all_selections.size( ); i++ )
+         for( size_t i = 0; i < all_submitting.size( ); i++ )
          {
-            string next_selection( all_selections[ i ] );
+            string next_submitting( all_submitting[ i ] );
 
             string next_item_num( to_comparable_string( i, false, 6 ) );
 
             if( !files.empty( ) )
                files += '\n';
-            files += ( next_item_num + ' ' + next_selection );
+            files += ( next_item_num + ' ' + next_submitting );
 
-            ofs.get_file( next_selection, blockchain_identity + '/' + next_item_num );
+            ofs.get_file( next_submitting, blockchain_identity + '/' + next_item_num );
          }
       }
 
@@ -10467,6 +10467,46 @@ string storage_channel_documents_prepare( const string& identity )
    }
 
    return retval;
+}
+
+void storage_channel_documents_cancel_pending( const string& identity )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session || !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   if( identity.empty( ) )
+      throw runtime_error( "unexpected null identity in 'storage_channel_documents_cancel_pending'" );
+
+   string storage_name( gtp_session->p_storage_handler->get_name( ) );
+
+   if( gtp_session->p_storage_handler->get_root( ).type != e_storage_type_peerchain )
+      throw runtime_error( "invalid non-peerchain storage '" + storage_name + "' for cancel pending" );
+
+   string retval;
+
+   string blockchain_identity( get_raw_system_variable( '$' + identity + "_identity" ) );
+
+   if( blockchain_identity.empty( ) )
+      throw runtime_error( "blockchain identity for '"
+       + identity + "' not found in 'storage_channel_documents_cancel_pending'" );
+
+   ods_file_system ofs( *ods::instance( ) );
+
+   ods::bulk_write bulk_write( *ods::instance( ) );
+
+   ofs.set_root_folder( c_storable_folder_name_channels );
+
+   if( ofs.has_folder( identity ) )
+      ofs.set_folder( identity );
+   else
+      throw runtime_error( "channel folder for '" + identity + "' was not found" );
+
+   ofs.set_folder( c_channel_folder_ciyam );
+
+   if( ofs.has_file( c_channel_pending ) )
+      ofs.move_file( c_channel_pending, c_channel_submitting );
 }
 
 string storage_channel_documents_specific(
@@ -10654,18 +10694,18 @@ void storage_channel_documents_open( const char* p_identity )
 
    if( ofs.has_file( c_channel_submitting ) )
    {
-      string selections;
+      string submitting;
 
-      ofs.fetch_from_text_file( c_channel_submitting, selections );
+      ofs.fetch_from_text_file( c_channel_submitting, submitting );
 
-      if( !selections.empty( ) )
+      if( !submitting.empty( ) )
       {
-         vector< string > all_selections;
+         vector< string > all_submitting;
 
-         split( selections, all_selections, '\n' );
+         split( submitting, all_submitting, '\n' );
 
-         for( size_t i = 0; i < all_selections.size( ); i++ )
-            set_system_variable( prefix + all_selections[ i ], string( 1, c_notifier_select_char ) );
+         for( size_t i = 0; i < all_submitting.size( ); i++ )
+            set_system_variable( prefix + all_submitting[ i ], string( 1, c_notifier_select_char ) );
       }
    }
 }
@@ -10853,7 +10893,12 @@ void storage_channel_documents_close( const char* p_identity )
        get_special_var_name( e_special_var_pending ) + '_' + identity ) );
 
       if( !pending.empty( ) )
+      {
          ofs.store_as_text_file( c_channel_pending, all_selected );
+
+         if( ofs.has_file( c_channel_submitting ) )
+            ofs.remove_file( c_channel_submitting );
+      }
       else
          ofs.store_as_text_file( c_channel_submitting, all_selected );
    }

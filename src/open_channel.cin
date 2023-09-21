@@ -54,7 +54,8 @@ OPENING_USER=$OUTPUT
 .system_variable @opening_user_$IDENTITY ""
 .system_variable @opened_user_$IDENTITY $OPENING_USER
 ;
-.system_variable @opening_$IDENTITY ""
 @endif
+;
+.system_variable @opening_$IDENTITY ""
 ;
 @endif

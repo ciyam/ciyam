@@ -43,7 +43,8 @@ ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 @endif
 .storage_term
 @endif
-.system_variable @pending_$IDENTITY ""
 .system_variable @preparing_$IDENTITY ""
+;
+.system_variable @opening_$IDENTITY ""
 ;
 @endif
