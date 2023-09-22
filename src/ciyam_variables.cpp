@@ -105,6 +105,7 @@ const char* const c_special_variable_slowest = "@slowest";
 const char* const c_special_variable_storage = "@storage";
 const char* const c_special_variable_tz_name = "@tz_name";
 const char* const c_special_variable_trigger = "@trigger";
+const char* const c_special_variable_waiting = "@waiting";
 const char* const c_special_variable_executed = "@executed";
 const char* const c_special_variable_identity = "@identity";
 const char* const c_special_variable_key_info = "@key_info";
@@ -498,6 +499,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_trigger:
       s = string( c_special_variable_trigger );
+      break;
+
+      case e_special_var_waiting:
+      s = string( c_special_variable_waiting );
       break;
 
       case e_special_var_executed:

@@ -142,10 +142,13 @@ const char* const c_channel_fetch = ".fetch";
 const char* const c_channel_fetched = "fetched";
 const char* const c_channel_pending = "pending";
 const char* const c_channel_updated = "updated";
+const char* const c_channel_waiting = "waiting";
 const char* const c_channel_peer_info = "peer_info";
 const char* const c_channel_user_info = "user_info";
 const char* const c_channel_submitted = "submitted";
 const char* const c_channel_submitting = "submitting";
+
+const char* const c_submit_type_wait = "*wait*";
 
 const char* const c_channel_folder_ciyam = ".ciyam";
 
@@ -10070,9 +10073,17 @@ string storage_channel_documents_update( const string& identity, bool submitted 
 
             ofs.set_folder( identity );
 
+            bool pending_approval = false;
+
             for( size_t i = 0; i < files.size( ); i++ )
             {
                string next_file_info( files[ i ] );
+
+               if( next_file_info == c_submit_type_wait )
+               {
+                  pending_approval = true;
+                  continue;
+               }
 
                string::size_type pos = next_file_info.find( ' ' );
 
@@ -10129,19 +10140,26 @@ string storage_channel_documents_update( const string& identity, bool submitted 
 
             ofs.set_folder( c_channel_folder_ciyam );
 
-            if( ofs.has_file( c_channel_updated ) )
+            string file_paths_name( c_channel_updated );
+
+            if( pending_approval )
+               file_paths_name = string( c_channel_waiting );
+            else
             {
-               string all_existing;
-               ofs.fetch_from_text_file( c_channel_updated, all_existing );
-
-               if( !all_existing.empty( ) )
+               if( ofs.has_file( c_channel_updated ) )
                {
-                  vector< string > existing;
+                  string all_existing;
+                  ofs.fetch_from_text_file( c_channel_updated, all_existing );
 
-                  split( all_existing, existing, '\n' );
+                  if( !all_existing.empty( ) )
+                  {
+                     vector< string > existing;
 
-                  for( size_t i = 0; i < existing.size( ); i++ )
-                     paths.insert( existing[ i ] );
+                     split( all_existing, existing, '\n' );
+
+                     for( size_t i = 0; i < existing.size( ); i++ )
+                        paths.insert( existing[ i ] );
+                  }
                }
             }
 
@@ -10154,7 +10172,7 @@ string storage_channel_documents_update( const string& identity, bool submitted 
                all_file_paths += *i;
             }
 
-            ofs.store_as_text_file( c_channel_updated, all_file_paths );
+            ofs.store_as_text_file( file_paths_name, all_file_paths );
 
             retval = updated;
          }
@@ -10382,7 +10400,8 @@ string storage_channel_documents_prepare( const string& identity )
 
    string identity_log_file_name( identity + c_log_file_ext );
 
-   if( has_created_directory || ofs.has_file( c_channel_submitting ) || file_exists( identity_log_file_name ) )
+   if( has_created_directory || ofs.has_file( c_channel_pending )
+    || ofs.has_file( c_channel_submitting ) || file_exists( identity_log_file_name ) )
    {
       if( !has_created_directory )
          create_dir( blockchain_identity );
@@ -10411,12 +10430,22 @@ string storage_channel_documents_prepare( const string& identity )
       write_file( blockchain_identity + '/'
        + string( c_channel_fetch ), to_string( height_fetched ) );
 
-      if( ofs.has_file( c_channel_submitting ) )
+      string files;
+
+      string waiting( get_system_variable(
+       get_special_var_name( e_special_var_waiting ) + '_' + identity ) );
+
+      if( !waiting.empty( ) && ofs.has_file( c_channel_pending ) )
+      {
+         files = c_submit_type_wait;
+         ofs.fetch_from_text_file( c_channel_pending, submitting );
+      }
+      else if( ofs.has_file( c_channel_submitting ) )
          ofs.fetch_from_text_file( c_channel_submitting, submitting );
 
-      ofs.set_folder( ".." );
+      set_system_variable( get_special_var_name( e_special_var_waiting ) + '_' + identity, "" );
 
-      string files;
+      ofs.set_folder( ".." );
 
       if( !submitting.empty( ) )
       {
@@ -10457,7 +10486,10 @@ string storage_channel_documents_prepare( const string& identity )
 
       ofs.set_folder( c_channel_folder_ciyam );
 
-      ofs.remove_file( c_channel_submitting );
+      if( !waiting.empty( ) )
+         ofs.move_file( c_channel_pending, c_channel_waiting );
+      else
+         ofs.remove_file( c_channel_submitting );
 
       ofs.store_as_text_file( c_channel_submitted, height_submitted );
 
@@ -10572,6 +10604,9 @@ string storage_channel_documents_specific(
       if( ( type == e_channel_documents_type_pending ) && ofs.has_file( c_channel_pending ) )
          has_specifics = true;
 
+      if( ( type == e_channel_documents_type_waiting ) && ofs.has_file( c_channel_waiting ) )
+         has_specifics = true;
+
       if( ( type == e_channel_documents_type_retrieved ) && ofs.has_file( c_channel_updated ) )
          has_specifics = true;
 
@@ -10584,6 +10619,8 @@ string storage_channel_documents_specific(
 
          if( type == e_channel_documents_type_pending )
             ofs.fetch_from_text_file( c_channel_pending, specifics );
+         else if( type == e_channel_documents_type_waiting )
+            ofs.fetch_from_text_file( c_channel_waiting, specifics );
          else if( type == e_channel_documents_type_retrieved )
             ofs.fetch_from_text_file( c_channel_updated, specifics );
          else if( type == e_channel_documents_type_submitting )
@@ -10668,6 +10705,29 @@ void storage_channel_documents_open( const char* p_identity )
 
    if( file_exists( prefix + c_channel_readme_file ) )
       set_system_variable( prefix + c_channel_readme_file, string( 1, c_notifier_ignore_char ) );
+
+   // NOTE: Files "waiting approval" are set to read-only.
+   if( ofs.has_file( c_channel_waiting ) )
+   {
+      string waiting;
+
+      ofs.fetch_from_text_file( c_channel_waiting, waiting );
+
+      if( !waiting.empty( ) )
+      {
+         vector< string > all_waiting;
+
+         split( waiting, all_waiting, '\n' );
+
+         for( size_t i = 0; i < all_waiting.size( ); i++ )
+         {
+            string next_waiting( all_waiting[ i ] );
+            file_perms( prefix + next_waiting, c_perms_r_r );
+
+            set_system_variable( prefix + next_waiting, string( 1, c_notifier_ignore_char ) );
+         }
+      }
+   }
 
    // NOTE: Files "pending approval" are set to read-only.
    if( ofs.has_file( c_channel_pending ) )

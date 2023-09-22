@@ -613,6 +613,7 @@ void CIYAM_BASE_DECL_SPEC storage_channel_documents_cancel_pending( const std::s
 enum channel_documents_type
 {
    e_channel_documents_type_pending,
+   e_channel_documents_type_waiting,
    e_channel_documents_type_retrieved,
    e_channel_documents_type_submitting
 };
@@ -633,6 +634,11 @@ inline std::string storage_channel_documents_submitted( const std::string& ident
 inline std::string storage_channel_documents_pending( const std::string& identity )
 {
    return storage_channel_documents_specific( identity, e_channel_documents_type_pending );
+}
+
+inline std::string storage_channel_documents_waiting( const std::string& identity )
+{
+   return storage_channel_documents_specific( identity, e_channel_documents_type_waiting );
 }
 
 inline std::string storage_channel_documents_retrieved( const std::string& identity )
