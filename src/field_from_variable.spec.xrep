@@ -1,0 +1,24 @@
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start field_from_variable)] `{`$arg_id`}
+   if( field_name == "`{`$arg_field`}" )
+      return true;
+   // [(finish field_from_variable)] `{`$arg_id`}
+`}
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+   // [(start field_from_variable)] `{`$arg_id`}
+`{`@eq`(`$arg_modifier`,`'`'`)\
+   // NOTE: Empty code block for scope purposes.
+`,
+   if( state & c_modifier_`{`$arg_modifier`} )
+`}\
+   {
+`{`@eq`(`$arg_system`,`'true`'`)\
+      get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( get_system_variable( "`{`$arg_value`}" ) ) );
+`,`@eq`(`$arg_session`,`'true`'`)\
+      get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( get_session_variable( "`{`$arg_value`}" ) ) );
+`,\
+      get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_value`}" ) ) );
+`}\
+   }
+   // [(finish field_from_variable)] `{`$arg_id`}
+`}

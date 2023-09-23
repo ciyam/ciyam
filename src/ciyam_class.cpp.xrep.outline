@@ -1547,6 +1547,10 @@ bool `{`$full_class_name`}::impl::value_will_be_provided( const string& field_na
 `{`#field_from_uid.spec.xrep section=value_will_be_provided class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
 `,\
+`@eq`(`'\1`'`,`'field_from_variable`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#field_from_variable.spec.xrep section=value_will_be_provided class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
+`,\
 `@eq`(`'\1`'`,`'field_to_value`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_to_value.spec.xrep section=value_will_be_provided class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
@@ -2532,6 +2536,11 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_spclass=$specification_\0_spclass arg_scfield=$specification_\0_scfield\
  arg_tvalue=$specification_\0_tvalue`}\
 `,\
+`@eq`(`'\1`'`,`'field_from_variable`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
+`{`#field_from_variable.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_value=$specification_\0_value\
+ arg_modifier=$specification_\0_modifier arg_session=$specification_\0_session arg_system=$specification_\0_system`}\
+`,\
 `@eq`(`'\1`'`,`'field_quote_cloned_html`'`)
 `{`#field_quote_cloned_html.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
@@ -2879,6 +2888,11 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `{`#field_from_updating_graph_parent.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_spclass=$specification_\0_spclass arg_scfield=$specification_\0_scfield\
  arg_tvalue=$specification_\0_tvalue`}\
+`,\
+`@eq`(`'\1`'`,`'field_from_variable`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#field_from_variable.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_value=$specification_\0_value\
+ arg_modifier=$specification_\0_modifier arg_session=$specification_\0_session arg_system=$specification_\0_system`}\
 `,\
 `@eq`(`'\1`'`,`'field_swap_fk`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_swap_fk.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
