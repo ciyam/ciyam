@@ -10144,22 +10144,20 @@ string storage_channel_documents_update( const string& identity, bool submitted 
 
             if( pending_approval )
                file_paths_name = string( c_channel_waiting );
-            else
+
+            if( ofs.has_file( file_paths_name ) )
             {
-               if( ofs.has_file( c_channel_updated ) )
+               string all_existing;
+               ofs.fetch_from_text_file( file_paths_name, all_existing );
+
+               if( !all_existing.empty( ) )
                {
-                  string all_existing;
-                  ofs.fetch_from_text_file( c_channel_updated, all_existing );
+                  vector< string > existing;
 
-                  if( !all_existing.empty( ) )
-                  {
-                     vector< string > existing;
+                  split( all_existing, existing, '\n' );
 
-                     split( all_existing, existing, '\n' );
-
-                     for( size_t i = 0; i < existing.size( ); i++ )
-                        paths.insert( existing[ i ] );
-                  }
+                  for( size_t i = 0; i < existing.size( ); i++ )
+                     paths.insert( existing[ i ] );
                }
             }
 
@@ -10486,10 +10484,33 @@ string storage_channel_documents_prepare( const string& identity )
 
       ofs.set_folder( c_channel_folder_ciyam );
 
-      if( !waiting.empty( ) )
-         ofs.move_file( c_channel_pending, c_channel_waiting );
-      else
+      if( ofs.has_file( c_channel_submitting ) )
          ofs.remove_file( c_channel_submitting );
+
+      if( !waiting.empty( ) && !submitting.empty( ) )
+      {
+         set< string > paths;
+         string existing_paths;
+
+         if( ofs.has_file( c_channel_waiting ) )
+            ofs.fetch_from_text_file( c_channel_waiting, existing_paths );
+
+         if( !existing_paths.empty( ) )
+            split( existing_paths, paths, '\n' );
+
+         split( submitting, paths, '\n' );
+
+         string all_file_paths;
+         for( set< string >::iterator i = paths.begin( ); i != paths.end( ); ++i )
+         {
+            if( !all_file_paths.empty( ) )
+               all_file_paths += '\n';
+
+            all_file_paths += *i;
+         }
+
+         ofs.store_as_text_file( c_channel_waiting, all_file_paths );
+      }
 
       ofs.store_as_text_file( c_channel_submitted, height_submitted );
 
