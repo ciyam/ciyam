@@ -4,6 +4,10 @@
 
    if( !storage_locked_for_admin( ) )
    {
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+      if( !is_null( get_obj( ).`{`$arg_tfield`}( ) ) )
+         lock_peer_channel( get_obj( ).`{`$arg_tfield`}( ) );
+`}
       string new_key( gen_key( ) );
       string key_info( new_key + string( " " ) + get_obj( ).get_key( ) );
 
