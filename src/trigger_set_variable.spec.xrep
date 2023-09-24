@@ -11,20 +11,15 @@
 
       if( set_value )
 `{`@eq`(`$arg_system`,`'true`'`)\
-         set_system_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_field`}( ) );
+         set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)
+          + to_string( get_obj( ).`{`$arg_ofield`}( ) )`}, to_string( get_obj( ).`{`$arg_field`}( ) ) );
 `,`@eq`(`$arg_session`,`'true`'`)\
-         set_session_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_field`}( ) );
+         set_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)
+          + to_string( get_obj( ).`{`$arg_ofield`}( ) )`}, to_string( get_obj( ).`{`$arg_field`}( ) ) );
 `,\
-         get_obj( ).set_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_field`}( ) );
-`}`{`!`@eq`(`$arg_ofield`,`'`'`)\
-      else
-`{`@eq`(`$arg_system`,`'true`'`)\
-         set_system_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_ofield`}( ) );
-`,`@eq`(`$arg_session`,`'true`'`)\
-         set_session_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_ofield`}( ) );
-`,\
-         get_obj( ).set_variable( "`{`$arg_variable`}", get_obj( ).`{`$arg_ofield`}( ) );
-`}`}\
+         get_obj( ).set_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)
+          + to_string( get_obj( ).`{`$arg_ofield`}( ) )`}, to_string( get_obj( ).`{`$arg_field`}( ) ) );
+`}\
    }
    // [(finish trigger_set_variable)] `{`$arg_id`}
 `}

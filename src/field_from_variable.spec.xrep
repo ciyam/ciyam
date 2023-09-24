@@ -6,19 +6,18 @@
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start field_from_variable)] `{`$arg_id`}
-`{`@eq`(`$arg_modifier`,`'`'`)\
-   // NOTE: Empty code block for scope purposes.
-`,
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_modifier`,`'`'`)`{`$i`=`'   `'`}\
    if( state & c_modifier_`{`$arg_modifier`} )
 `}\
-   {
 `{`@eq`(`$arg_system`,`'true`'`)\
-      get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( get_system_variable( "`{`$arg_value`}" ) ) );
+`{`$i`}   get_obj( ).`{`$arg_field`}( from_string< typeof(
+`{`$i`}    get_obj( ).`{`$arg_field`}( ) ) >( get_system_variable( "`{`$arg_value`}" ) ) );
 `,`@eq`(`$arg_session`,`'true`'`)\
-      get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( get_session_variable( "`{`$arg_value`}" ) ) );
+`{`$i`}   get_obj( ).`{`$arg_field`}( from_string< typeof(
+`{`$i`}    get_obj( ).`{`$arg_field`}( ) ) >( get_session_variable( "`{`$arg_value`}" ) ) );
 `,\
-      get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_value`}" ) ) );
+`{`$i`}   get_obj( ).`{`$arg_field`}( from_string<
+`{`$i`}    typeof( get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_value`}" ) ) );
 `}\
-   }
    // [(finish field_from_variable)] `{`$arg_id`}
 `}
