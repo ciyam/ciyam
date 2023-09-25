@@ -133,6 +133,7 @@ const char* const c_server_folder_shared = "shared";
 const char* const c_server_command_mutexes = "mutexes";
 const char* const c_server_command_sessions = "sessions";
 
+const char* const c_perms_r = "r--------";
 const char* const c_perms_r_r = "r--r-----";
 const char* const c_perms_rw_rw_r = "rw-rw-r--";
 
@@ -146,9 +147,10 @@ const char* const c_channel_waiting = "waiting";
 const char* const c_channel_peer_info = "peer_info";
 const char* const c_channel_user_info = "user_info";
 const char* const c_channel_submitted = "submitted";
+const char* const c_channel_reviewing = "reviewing";
 const char* const c_channel_submitting = "submitting";
 
-const char* const c_submit_type_wait = "*wait*";
+const char* const c_submit_type_view = "*view*";
 
 const char* const c_channel_folder_ciyam = ".ciyam";
 
@@ -10079,7 +10081,7 @@ string storage_channel_documents_update( const string& identity, bool submitted 
             {
                string next_file_info( files[ i ] );
 
-               if( next_file_info == c_submit_type_wait )
+               if( next_file_info == c_submit_type_view )
                {
                   pending_approval = true;
                   continue;
@@ -10143,7 +10145,7 @@ string storage_channel_documents_update( const string& identity, bool submitted 
             string file_paths_name( c_channel_updated );
 
             if( pending_approval )
-               file_paths_name = string( c_channel_waiting );
+               file_paths_name = string( c_channel_reviewing );
 
             if( ofs.has_file( file_paths_name ) )
             {
@@ -10435,7 +10437,7 @@ string storage_channel_documents_prepare( const string& identity )
 
       if( !waiting.empty( ) && ofs.has_file( c_channel_pending ) )
       {
-         files = c_submit_type_wait;
+         files = c_submit_type_view;
          ofs.fetch_from_text_file( c_channel_pending, submitting );
       }
       else if( ofs.has_file( c_channel_submitting ) )
@@ -10489,27 +10491,32 @@ string storage_channel_documents_prepare( const string& identity )
 
       if( !waiting.empty( ) && !submitting.empty( ) )
       {
-         set< string > paths;
-         string existing_paths;
+         if( !ofs.has_file( c_channel_waiting ) )
+            ofs.move_file( c_channel_pending, c_channel_waiting );
+         else
+         {
+            set< string > paths;
+            string existing_paths;
 
-         if( ofs.has_file( c_channel_waiting ) )
             ofs.fetch_from_text_file( c_channel_waiting, existing_paths );
 
-         if( !existing_paths.empty( ) )
-            split( existing_paths, paths, '\n' );
+            if( !existing_paths.empty( ) )
+               split( existing_paths, paths, '\n' );
 
-         split( submitting, paths, '\n' );
+            split( submitting, paths, '\n' );
 
-         string all_file_paths;
-         for( set< string >::iterator i = paths.begin( ); i != paths.end( ); ++i )
-         {
-            if( !all_file_paths.empty( ) )
-               all_file_paths += '\n';
+            string all_file_paths;
+            for( set< string >::iterator i = paths.begin( ); i != paths.end( ); ++i )
+            {
+               if( !all_file_paths.empty( ) )
+                  all_file_paths += '\n';
 
-            all_file_paths += *i;
+               all_file_paths += *i;
+            }
+
+            ofs.remove_file( c_channel_pending );
+            ofs.store_as_text_file( c_channel_waiting, all_file_paths );
          }
-
-         ofs.store_as_text_file( c_channel_waiting, all_file_paths );
       }
 
       ofs.store_as_text_file( c_channel_submitted, height_submitted );
@@ -10631,6 +10638,9 @@ string storage_channel_documents_specific(
       if( ( type == e_channel_documents_type_retrieved ) && ofs.has_file( c_channel_updated ) )
          has_specifics = true;
 
+      if( ( type == e_channel_documents_type_reviewing ) && ofs.has_file( c_channel_reviewing ) )
+         has_specifics = true;
+
       if( ( type == e_channel_documents_type_submitting ) && ofs.has_file( c_channel_submitting ) )
          has_specifics = true;
 
@@ -10644,6 +10654,8 @@ string storage_channel_documents_specific(
             ofs.fetch_from_text_file( c_channel_waiting, specifics );
          else if( type == e_channel_documents_type_retrieved )
             ofs.fetch_from_text_file( c_channel_updated, specifics );
+         else if( type == e_channel_documents_type_reviewing )
+            ofs.fetch_from_text_file( c_channel_reviewing, specifics );
          else if( type == e_channel_documents_type_submitting )
             ofs.fetch_from_text_file( c_channel_submitting, specifics );
          else
@@ -10769,6 +10781,29 @@ void storage_channel_documents_open( const char* p_identity )
             file_perms( prefix + next_pending, c_perms_r_r );
 
             set_system_variable( prefix + next_pending, string( 1, c_notifier_ignore_char ) );
+         }
+      }
+   }
+
+   // NOTE: Files "being reviewed" are set to read-only (owner only).
+   if( ofs.has_file( c_channel_reviewing ) )
+   {
+      string reviewing;
+
+      ofs.fetch_from_text_file( c_channel_reviewing, reviewing );
+
+      if( !reviewing.empty( ) )
+      {
+         vector< string > all_reviewing;
+
+         split( reviewing, all_reviewing, '\n' );
+
+         for( size_t i = 0; i < all_reviewing.size( ); i++ )
+         {
+            string next_reviewing( all_reviewing[ i ] );
+            file_perms( prefix + next_reviewing, c_perms_r );
+
+            set_system_variable( prefix + next_reviewing, string( 1, c_notifier_ignore_char ) );
          }
       }
    }

@@ -5691,6 +5691,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool pending = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_pending );
          bool waiting = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_waiting );
          bool retrieved = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_retrieved );
+         bool reviewing = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_reviewing );
          bool submitting = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_submitting );
          bool height_retrieved = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_height_retrieved );
          bool height_submitted = has_parm_val( parameters, c_cmd_ciyam_session_storage_channel_documents_height_submitted );
@@ -5707,6 +5708,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             specific_type = e_channel_documents_type_waiting;
          else if( retrieved )
             specific_type = e_channel_documents_type_retrieved;
+         else if( reviewing )
+            specific_type = e_channel_documents_type_reviewing;
 
          if( open )
             storage_channel_documents_open( identity.c_str( ) );

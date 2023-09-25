@@ -615,6 +615,7 @@ enum channel_documents_type
    e_channel_documents_type_pending,
    e_channel_documents_type_waiting,
    e_channel_documents_type_retrieved,
+   e_channel_documents_type_reviewing,
    e_channel_documents_type_submitting
 };
 
@@ -644,6 +645,11 @@ inline std::string storage_channel_documents_waiting( const std::string& identit
 inline std::string storage_channel_documents_retrieved( const std::string& identity )
 {
    return storage_channel_documents_specific( identity, e_channel_documents_type_retrieved );
+}
+
+inline std::string storage_channel_documents_reviewing( const std::string& identity )
+{
+   return storage_channel_documents_specific( identity, e_channel_documents_type_reviewing );
 }
 
 inline std::string storage_channel_documents_submitting( const std::string& identity )
