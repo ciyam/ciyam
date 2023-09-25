@@ -7,7 +7,7 @@
 `}\
    {
       bool set_value = `{`@eq`(`$arg_tfield`,`'`'`)`{`@eq`(`$arg_modifier`,`'`'`)true`,( state & c_modifier_`{`$arg_modifier`} )`}\
-`,get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`} )`};
+`,get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`}`};
 
       if( set_value )
 `{`@eq`(`$arg_system`,`'true`'`)\
