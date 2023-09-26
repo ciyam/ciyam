@@ -5912,29 +5912,6 @@ void get_mnemonics_or_hex_seed( string& s, const string& mnemonics_or_hex_seed )
    }
 }
 
-void lock_peer_channel( const string& identity )
-{
-   if( set_system_variable( get_special_var_name(
-    e_special_var_opening ) + '_' + identity, c_true_value, string( "" ) ) )
-   {
-      if( !get_raw_system_variable( get_special_var_name(
-       e_special_var_opened ) + '_' + identity ).empty( ) )
-      {
-         set_system_variable(
-          get_special_var_name( e_special_var_opening ) + '_' + identity, "" );
-
-         throw runtime_error( "Peer Node '" + identity + "' is currently opened." );
-      }
-   }
-   else
-      throw runtime_error( "Peer Node '" + identity + "' is not currently available." );
-}
-
-int64_t channel_height_fetched( const string& identity )
-{
-   return from_string< int64_t >( storage_channel_documents_fetched( identity ) );
-}
-
 void use_peerchain( const string& identity, bool no_delay )
 {
    guard g( g_mutex, "use_peerchain" );

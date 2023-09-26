@@ -71,6 +71,29 @@ const char* const c_storable_folder_name_channels = "channels";
 
 }
 
+void lock_peer_channel( const string& identity )
+{
+   if( set_system_variable( get_special_var_name(
+    e_special_var_opening ) + '_' + identity, c_true_value, string( "" ) ) )
+   {
+      if( !get_raw_system_variable( get_special_var_name(
+       e_special_var_opened ) + '_' + identity ).empty( ) )
+      {
+         set_system_variable(
+          get_special_var_name( e_special_var_opening ) + '_' + identity, "" );
+
+         throw runtime_error( "Peer Node '" + identity + "' is currently opened." );
+      }
+   }
+   else
+      throw runtime_error( "Peer Node '" + identity + "' is not currently available." );
+}
+
+int64_t channel_height_fetched( const string& identity )
+{
+   return from_string< int64_t >( storage_channel_documents_fetched( identity ) );
+}
+
 void storage_channel_document_submit( const string& file_path )
 {
    string notifier_value( get_raw_system_variable( file_path ) );
