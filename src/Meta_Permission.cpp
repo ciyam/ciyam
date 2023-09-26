@@ -39,6 +39,7 @@
 #include "ciyam_base.h"
 #include "ciyam_common.h"
 #include "class_domains.h"
+#include "ciyam_channels.h"
 #include "module_strings.h"
 #include "ciyam_constants.h"
 #include "ciyam_variables.h"

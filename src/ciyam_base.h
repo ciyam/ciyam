@@ -578,7 +578,7 @@ bool CIYAM_BASE_DECL_SPEC storage_is_dead_key(
 
 void CIYAM_BASE_DECL_SPEC storage_add_dead_key( const std::string& cid, const std::string& key );
 
-std::string CIYAM_BASE_DECL_SPEC storage_name( );
+std::string CIYAM_BASE_DECL_SPEC storage_name( bool* p_is_standard = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC storage_identity( );
 void CIYAM_BASE_DECL_SPEC storage_identity( const std::string& new_identity );
@@ -593,83 +593,6 @@ void CIYAM_BASE_DECL_SPEC storage_lock_all_tables( );
 void CIYAM_BASE_DECL_SPEC storage_unlock_all_tables( );
 
 bool CIYAM_BASE_DECL_SPEC storage_locked_for_admin( );
-
-void CIYAM_BASE_DECL_SPEC storage_channel_create( const char* p_identity = 0, const char* p_channel_information = 0 );
-void CIYAM_BASE_DECL_SPEC storage_channel_destroy( const char* p_identity = 0 );
-
-void CIYAM_BASE_DECL_SPEC storage_channel_update( );
-
-int64_t CIYAM_BASE_DECL_SPEC storage_channel_received_height( const std::string& identity );
-int64_t CIYAM_BASE_DECL_SPEC storage_channel_submitted_height( const std::string& identity );
-
-std::string CIYAM_BASE_DECL_SPEC storage_channel_documents(
- const std::string& identity, bool height = false, bool fetched = false );
-
-std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_update( const std::string& identity, bool submitted = false );
-std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_prepare( const std::string& identity );
-
-void CIYAM_BASE_DECL_SPEC storage_channel_documents_cancel_pending( const std::string& identity );
-
-enum channel_documents_type
-{
-   e_channel_documents_type_pending,
-   e_channel_documents_type_waiting,
-   e_channel_documents_type_retrieved,
-   e_channel_documents_type_reviewing,
-   e_channel_documents_type_submitting
-};
-
-std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_specific( const std::string& identity,
- channel_documents_type type = e_channel_documents_type_submitting, bool include_sizes = true );
-
-inline std::string storage_channel_documents_fetched( const std::string& identity )
-{
-   return storage_channel_documents( identity, true, true );
-}
-
-inline std::string storage_channel_documents_submitted( const std::string& identity )
-{
-   return storage_channel_documents( identity, true, false );
-}
-
-inline std::string storage_channel_documents_pending( const std::string& identity )
-{
-   return storage_channel_documents_specific( identity, e_channel_documents_type_pending );
-}
-
-inline std::string storage_channel_documents_waiting( const std::string& identity )
-{
-   return storage_channel_documents_specific( identity, e_channel_documents_type_waiting );
-}
-
-inline std::string storage_channel_documents_retrieved( const std::string& identity )
-{
-   return storage_channel_documents_specific( identity, e_channel_documents_type_retrieved );
-}
-
-inline std::string storage_channel_documents_reviewing( const std::string& identity )
-{
-   return storage_channel_documents_specific( identity, e_channel_documents_type_reviewing );
-}
-
-inline std::string storage_channel_documents_submitting( const std::string& identity )
-{
-   return storage_channel_documents_specific( identity, e_channel_documents_type_submitting );
-}
-
-void CIYAM_BASE_DECL_SPEC storage_channel_documents_open( const char* p_identity = 0 );
-void CIYAM_BASE_DECL_SPEC storage_channel_documents_close( const char* p_identity = 0 );
-
-bool CIYAM_BASE_DECL_SPEC storage_channel_documents_marked( const std::string& identity );
-bool CIYAM_BASE_DECL_SPEC storage_channel_documents_opened( const std::string& identity );
-
-void CIYAM_BASE_DECL_SPEC storage_channel_document_submit( const std::string& file_path );
-void CIYAM_BASE_DECL_SPEC storage_channel_document_unsubmit( const std::string& file_path );
-
-void CIYAM_BASE_DECL_SPEC storage_channel_document_restore( const std::string& identity_path );
-
-bool CIYAM_BASE_DECL_SPEC storage_channel_document_ignoring( const std::string& file_path );
-bool CIYAM_BASE_DECL_SPEC storage_channel_document_submitting( const std::string& file_path );
 
 ods CIYAM_BASE_DECL_SPEC& storage_ods_instance( );
 

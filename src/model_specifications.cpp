@@ -1740,7 +1740,10 @@ void clone_children_specification::add_specification_data( model& m, specificati
    spec_data.data_pairs.push_back( make_pair( c_data_child, cclass_name ) ); // KLUDGE: Assumes class name is the child name.
    spec_data.data_pairs.push_back( make_pair( c_data_pfield, pfield_name ) );
 
+   spec_data.data_pairs.push_back( make_pair( "ctfield", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "ctvalue", "" ) );
    spec_data.data_pairs.push_back( make_pair( "copy_files", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "ctfistexttype", "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tvalue, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_cpfield, "" ) );
@@ -10183,6 +10186,7 @@ void transient_field_alias_specification::add_specification_data( model& m, spec
    spec_data.data_pairs.push_back( make_pair( c_data_field2, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tfistexttype, "" ) );
+   spec_data.data_pairs.push_back( make_pair( "not_new", "" ) );
    spec_data.data_pairs.push_back( make_pair( "def_value", "" ) );
    spec_data.data_pairs.push_back( make_pair( "iter_only", "" ) );
    spec_data.data_pairs.push_back( make_pair( "check_mod", "" ) );
@@ -10770,4 +10774,3 @@ void update_parent_cascade_specification::add_specification_data( model& m, spec
 string update_parent_cascade_specification::static_class_name( ) { return "update_parent_cascade"; }
 
 DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, update_parent_cascade_specification, static_class_name );
-
