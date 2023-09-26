@@ -20,6 +20,10 @@
 #     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
+void CIYAM_BASE_DECL_SPEC lock_peer_channel( const std::string& identity );
+
+int64_t CIYAM_BASE_DECL_SPEC channel_height_fetched( const std::string& identity );
+
 void CIYAM_BASE_DECL_SPEC storage_channel_document_submit( const std::string& file_path );
 void CIYAM_BASE_DECL_SPEC storage_channel_document_unsubmit( const std::string& file_path );
 
