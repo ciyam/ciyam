@@ -62,6 +62,7 @@
 #include "oid_pointer.h"
 #include "ciyam_common.h"
 #include "crypt_stream.h"
+#include "ciyam_channels.h"
 #include "ciyam_variables.h"
 #include "module_management.h"
 

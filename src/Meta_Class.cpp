@@ -45,6 +45,7 @@
 #include "ciyam_base.h"
 #include "ciyam_common.h"
 #include "class_domains.h"
+#include "ciyam_channels.h"
 #include "module_strings.h"
 #include "ciyam_constants.h"
 #include "ciyam_variables.h"
@@ -4916,7 +4917,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
        || get_obj( ).has_field_changed( c_field_id_Extra )
        || get_obj( ).has_field_changed( c_field_id_Static_Instance_Key ) )
       {
-         if( get_obj( ).child_Class_Source( ).iterate_forwards( true, 0, e_sql_optimisation_unordered ) )
+         if( get_obj( ).child_Class_Source( ).iterate_forwards( "", "@key", true, 0, e_sql_optimisation_unordered ) )
          {
             do
             {
