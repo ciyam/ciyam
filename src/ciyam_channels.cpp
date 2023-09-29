@@ -71,8 +71,10 @@ const char* const c_storable_folder_name_channels = "channels";
 
 }
 
-void lock_peer_channel( const string& identity )
+void lock_peer_channel( const class_base& cb, const string& identity )
 {
+   string class_display_name( cb.get_display_name( ) );
+
    if( set_system_variable( get_special_var_name(
     e_special_var_opening ) + '_' + identity, c_true_value, string( "" ) ) )
    {
@@ -82,11 +84,13 @@ void lock_peer_channel( const string& identity )
          set_system_variable(
           get_special_var_name( e_special_var_opening ) + '_' + identity, "" );
 
-         throw runtime_error( "Peer Node '" + identity + "' is currently opened." );
+         // FUTURE: This message should be handled as a server string message.
+         throw runtime_error( class_display_name + " '" + identity + "' is currently opened." );
       }
    }
    else
-      throw runtime_error( "Peer Node '" + identity + "' is not currently available." );
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( class_display_name + " '" + identity + "' is not currently available." );
 }
 
 int64_t channel_height_fetched( const string& identity )
@@ -1773,6 +1777,121 @@ void storage_channel_documents_cancel_pending( const string& identity )
 
    if( ofs.has_file( c_channel_pending ) )
       ofs.move_file( c_channel_pending, c_channel_submitting );
+}
+
+void storage_channel_documents_reject_reviewing( const char* p_identity, const char* p_file_list_for_rejection )
+{
+   guard g( g_mutex );
+
+   string identity;
+
+   if( p_identity && ( *p_identity != 0 ) )
+      identity = string( p_identity );
+   else
+   {
+      identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+
+      if( identity.empty( ) )
+         identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+   }
+
+   if( identity.empty( ) )
+      throw runtime_error( "unexpected null identity in storage_channel_documents_reject_reviewing" );
+
+   string file_list_for_rejection;
+
+   if( p_file_list_for_rejection && ( *p_file_list_for_rejection != 0 ) )
+      file_list_for_rejection = string( p_file_list_for_rejection );
+   else
+   {
+      file_list_for_rejection = get_session_variable( get_special_var_name( e_special_var_file_list ) );
+
+      if( file_list_for_rejection.empty( ) )
+         file_list_for_rejection = get_session_variable( get_special_var_name( e_special_var_arg2 ) );
+   }
+
+   if( file_list_for_rejection.empty( ) )
+      throw runtime_error( "unexpected null file_list_for_rejection in storage_channel_documents_reject_reviewing" );
+
+   bool is_standard = false;
+
+   string name( storage_name( &is_standard ) );
+
+   if( is_standard )
+      throw runtime_error( "invalid non-peerchain storage '"
+       + name + "' for storage_channel_documents_reject_reviewing" );
+
+   ods_file_system ofs( storage_ods_instance( ) );
+
+   ods::bulk_write bulk_write( storage_ods_instance( ) );
+
+   ofs.set_root_folder( c_storable_folder_name_channels );
+
+   if( ofs.has_folder( identity ) )
+      ofs.set_folder( identity );
+   else
+      throw runtime_error( "channel folder for '" + identity + "' was not found" );
+
+   set< string > rejecting;
+
+   split( file_list_for_rejection, rejecting, '\n' );
+
+   map< string, string > file_sizes;
+
+   stringstream ss;
+
+   ofs.branch_objects( "*", ss );
+
+   string all_objects( ss.str( ) );
+
+   if( !all_objects.empty( ) )
+   {
+      vector< string > objects;
+
+      split( all_objects, objects, '\n' );
+
+      for( size_t i = 0; i < objects.size( ); i++ )
+      {
+         string next( objects[ i ] );
+
+         string::size_type pos = next.rfind( " (" );
+
+         if( pos != string::npos )
+            file_sizes.insert( make_pair( next.substr( 0, pos ), next.substr( pos ) ) );
+      }
+   }
+
+   ofs.set_folder( c_channel_folder_ciyam );
+
+   if( ofs.has_file( c_channel_reviewing ) )
+   {
+      string reviewing;
+      string new_reviewing;
+
+      ofs.fetch_from_text_file( c_channel_reviewing, reviewing );
+      
+      vector< string > all_reviewing;
+
+      split( reviewing, all_reviewing, '\n' );
+
+      for( size_t i = 0; i < all_reviewing.size( ); i++ )
+      {
+         string next( all_reviewing[ i ] );
+
+         if( !rejecting.count( next + file_sizes[ next ] ) )
+         {
+            if( !new_reviewing.empty( ) )
+               new_reviewing += '\n';
+
+            new_reviewing += next;
+         }
+      }
+
+      if( new_reviewing.empty( ) )
+         ofs.remove_file( c_channel_reviewing );
+      else
+         ofs.store_as_text_file( c_channel_reviewing, new_reviewing );
+   }
 }
 
 string storage_channel_documents_specific(

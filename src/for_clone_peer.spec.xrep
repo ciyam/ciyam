@@ -4,9 +4,16 @@
 
    if( !storage_locked_for_admin( ) )
    {
-`{`!`@eq`(`$arg_tfield`,`'`'`)\
+`{`!`@eq`(`$arg_tfield`,`'`'`)
+      auto_ptr< temporary_session_variable > ap_temp_skip_submit_file;
+
       if( !is_null( get_obj( ).`{`$arg_tfield`}( ) ) )
-         lock_peer_channel( get_obj( ).`{`$arg_tfield`}( ) );
+      {
+         lock_peer_channel( get_obj( ), get_obj( ).`{`$arg_tfield`}( ) );
+
+         ap_temp_skip_submit_file.reset( new temporary_session_variable(
+          get_special_var_name( e_special_var_skip_submit_file ), c_true_value ) );
+      }
 `}
       string new_key( gen_key( ) );
       string key_info( new_key + string( " " ) + get_obj( ).get_key( ) );
