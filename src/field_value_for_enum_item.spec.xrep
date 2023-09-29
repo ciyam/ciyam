@@ -8,9 +8,13 @@
 `{`$value`=`$arg_value`}\
 `{`@eq`(`$arg_fistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}\
 `{`@eq`(`$arg_value`,`'@null`'`)`$value`=`'""`'`}\
+`{`$new_create_or_update_only`=`'`'`}\
+`{`!`@eq`(`$arg_new_only`,`'`'`)`$new_create_or_update_only`=`'true`'`}\
+`{`!`@eq`(`$arg_create_only`,`'`'`)`$new_create_or_update_only`=`'true`'`}\
+`{`!`@eq`(`$arg_update_only`,`'`'`)`$new_create_or_update_only`=`'true`'`}\
    // [(start field_value_for_enum_item)] `{`$arg_id`}
-   if( `{`@eq`(`$arg_update_only`,`'true`'`)!`}\
-`{`@eq`(`$arg_update_only`,`'true`'`)`|`@eq`(`$arg_create_only`,`'true`'`)is_create && `}get_obj( ).`{`$arg_sfield`}( ) == c_enum_`{`$arg_enum`}_`{`$arg_enum_item`} )
+   if( `{`!`@eq`(`$new_create_or_update_only`,`'`'`)`{`@eq`(`$arg_update_only`,`'true`'`)!`}\
+`{`@eq`(`$arg_update_only`,`'true`'`)`|`@eq`(`$arg_create_only`,`'true`'`)is_create`,is_null( get_obj( ).get_key( ) )`} && `}get_obj( ).`{`$arg_sfield`}( ) == c_enum_`{`$arg_enum`}_`{`$arg_enum_item`} )
       get_obj( ).`{`$arg_field`}( `{`$value`} );
    // [(finish field_value_for_enum_item)] `{`$arg_id`}
 `}

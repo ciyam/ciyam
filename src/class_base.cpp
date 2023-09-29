@@ -3197,8 +3197,8 @@ string generate_password( const string& user_id )
 {
    string pwd( base64::encode( hex_decode( uuid( ).as_string( ) ), true ) );
 
-   // NOTE: Replace '-' with '!' to simplify clipboard selection in browsers.
-   replace( pwd.begin( ), pwd.end( ), '-', '!' );
+   // NOTE: Remove '-' characters to assist clipboard selection UI.
+   pwd.erase( remove( pwd.begin( ), pwd.end( ), '-' ), pwd.end( ) );
 
    string user( get_environment_variable( c_env_var_ciyam_user ) );
 
