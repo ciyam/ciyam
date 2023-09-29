@@ -116,6 +116,7 @@ const char* const c_special_variable_updating = "@updating";
 const char* const c_special_variable_args_file = "@args_file";
 const char* const c_special_variable_crypt_key = "@crypt_key";
 const char* const c_special_variable_decrement = "@decrement";
+const char* const c_special_variable_file_list = "@file_list";
 const char* const c_special_variable_image_dir = "@image_dir";
 const char* const c_special_variable_increment = "@increment";
 const char* const c_special_variable_list_hash = "@list_hash";
@@ -173,6 +174,7 @@ const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_dummy_time_stamp = "@dummy_time_stamp";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_skip_persistance = "@skip_persistance";
+const char* const c_special_variable_skip_submit_file = "@skip_submit_file";
 const char* const c_special_variable_trace_session_id = "@trace_session_id";
 const char* const c_special_variable_blockchain_height = "@blockchain_height";
 const char* const c_special_variable_blockchain_is_hub = "@blockchain_is_hub";
@@ -545,6 +547,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_decrement );
       break;
 
+      case e_special_var_file_list:
+      s = string( c_special_variable_file_list );
+      break;
+
       case e_special_var_image_dir:
       s = string( c_special_variable_image_dir );
       break;
@@ -767,6 +773,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_skip_persistance:
       s = string( c_special_variable_skip_persistance );
+      break;
+
+      case e_special_var_skip_submit_file:
+      s = string( c_special_variable_skip_submit_file );
       break;
 
       case e_special_var_trace_session_id:

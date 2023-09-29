@@ -20,7 +20,9 @@
 #     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
-void CIYAM_BASE_DECL_SPEC lock_peer_channel( const std::string& identity );
+class class_base;
+
+void CIYAM_BASE_DECL_SPEC lock_peer_channel( const class_base& cb, const std::string& identity );
 
 int64_t CIYAM_BASE_DECL_SPEC channel_height_fetched( const std::string& identity );
 
@@ -53,6 +55,9 @@ std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_update( const std::st
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_prepare( const std::string& identity );
 
 void CIYAM_BASE_DECL_SPEC storage_channel_documents_cancel_pending( const std::string& identity );
+
+void CIYAM_BASE_DECL_SPEC storage_channel_documents_reject_reviewing(
+ const char* p_identity = 0, const char* p_file_list_for_rejection = 0 );
 
 enum channel_documents_type
 {
