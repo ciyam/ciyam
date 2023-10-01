@@ -2961,7 +2961,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                      if( !populate_list_info( child_lists[ i->second ], list_selections,
                       list_search_text, list_search_values, child_list_info, child_list_sort, data,
-                      ( cmd == c_cmd_pview ), &view, child_lists[ i->second ].new_pfield, 0, *p_session_info ) )
+                      ( cmd == c_cmd_pview ), &view, child_lists[ i->second ].new_pfield, 0, *p_session_info, 0, 0, 0, &state ) )
                         had_send_or_recv_error = true;
                   }
                }

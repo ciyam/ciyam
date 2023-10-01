@@ -69,7 +69,7 @@ bool populate_list_info( list_source& list,
  const std::string& listinfo, const std::string& listsort, const std::string& parent_key, bool is_printable,
  const view_source* p_view, const std::string& view_pfield, const std::set< std::string >* p_specials,
  const session_info& sess_info, const std::string* p_pdf_spec_name = 0, const std::string* p_pdf_link_filename = 0,
- std::string* p_pdf_view_file_name = 0 );
+ std::string* p_pdf_view_file_name = 0, uint64_t* p_parent_state = 0 );
 
 void fetch_sys_record( const std::string& module_id, const module_info& mod_info, session_info& sess_info );
 

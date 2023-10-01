@@ -1759,8 +1759,9 @@ void parse_key_ver_rev_state_and_type_info(
 
 void determine_fixed_query_info( string& fixed_fields,
  string& fixed_key_values, int& num_fixed_key_values, bool& is_reverse,
- const list_source& list, const string& fixed_parent_field, const string& fixed_parent_keyval,
- const map< string, string >& list_selections, const session_info& sess_info, string* p_set_field_values )
+ const list_source& list, const string& fixed_parent_field,
+ const string& fixed_parent_keyval, const map< string, string >& list_selections,
+ const session_info& sess_info, string* p_set_field_values, size_t* p_parent_state )
 {
    if( !fixed_parent_field.empty( ) )
    {
@@ -1885,6 +1886,17 @@ void determine_fixed_query_info( string& fixed_fields,
    {
       map< string, string > restrict_extras;
       parse_field_extra( ( list.lici->second )->restricts[ i ].extra, restrict_extras );
+
+      if( p_parent_state && restrict_extras.count( c_list_field_extra_pstate ) )
+      {
+         istringstream isstr( restrict_extras[ c_list_field_extra_pstate ] );
+
+         uint64_t flag;
+         isstr >> hex >> flag;
+
+         if( !( *p_parent_state & flag ) )
+            continue;
+      }
 
       if( ( list.lici->second )->restricts[ i ].operations.count( c_operation_select ) )
       {
