@@ -170,10 +170,12 @@ void parse_key_ver_rev_state_and_type_info(
  const std::string& key_ver_rev_state_and_type_info,
  std::string& key_and_version, uint64_t& state, std::string& type_info );
 
-void determine_fixed_query_info( std::string& fixed_fields,
- std::string& fixed_key_values, int& num_fixed_key_values, bool& is_reverse,
- const list_source& list, const std::string& fixed_parent_field, const std::string& fixed_parent_keyval,
- const std::map< std::string, std::string >& list_selections, const session_info& sess_info, std::string* p_set_field_values = 0 );
+void determine_fixed_query_info(
+ std::string& fixed_fields, std::string& fixed_key_values,
+ int& num_fixed_key_values, bool& is_reverse, const list_source& list,
+ const std::string& fixed_parent_field, const std::string& fixed_parent_keyval,
+ const std::map< std::string, std::string >& list_selections, const session_info& sess_info,
+ std::string* p_set_field_values = 0, uint64_t* p_parent_state = 0 );
 
 #endif
 

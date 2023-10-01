@@ -1424,7 +1424,7 @@ bool populate_list_info( list_source& list,
  const string& listinfo, const string& listsort, const string& parent_key, bool is_printable,
  const view_source* p_view, const string& view_pfield, const set< string >* p_specials,
  const session_info& sess_info, const string* p_pdf_spec_name, const string* p_pdf_link_filename,
- string* p_pdf_view_file_name )
+ string* p_pdf_view_file_name, uint64_t* p_parent_state )
 {
    bool okay = true;
 
@@ -1559,7 +1559,8 @@ bool populate_list_info( list_source& list,
    string set_field_values;
 
    determine_fixed_query_info( fixed_fields, fixed_key_values, num_fixed_key_values,
-    is_reverse, list, fixed_parent_field, fixed_parent_keyval, list_selections, sess_info, &set_field_values );
+    is_reverse, list, fixed_parent_field, fixed_parent_keyval, list_selections, sess_info,
+    &set_field_values, p_parent_state );
 
    if( p_view && ( !p_view->vextra1_id.empty( ) || !p_view->vextra2_id.empty( ) ) )
    {
