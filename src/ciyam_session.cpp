@@ -1461,7 +1461,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
 
       if( socket_handler.has_restricted_commands( ) )
+      {
+         possibly_expected_error = true;
+
          socket_handler.check_restricted_command( command );
+      }
 
       if( command == c_cmd_ciyam_session_crypto_addr )
       {
@@ -4631,6 +4635,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string key( get_parm_val( parameters, c_cmd_ciyam_session_session_restrict_key ) );
          string commands( get_parm_val( parameters, c_cmd_ciyam_session_session_restrict_commands ) );
+
+         possibly_expected_error = true;
 
          socket_handler.set_restricted_commands( key, commands );
       }
