@@ -58,8 +58,10 @@ const size_t c_password_rounds_multiplier = 3;
 // NOTE: This algorithm is an XOR approach for encrypting a stream in place
 // and is very quick. It prevents the key used from being easily discovered
 // by constantly modifying a copy of it and by doing this in a manner which
-// also prevents its length being discovered through frequency analysis.
-void as_crypt_stream( iostream& io, const char* p_key, size_t key_length )
+// also prevents its length being discovered through frequency analysis (by
+// changing the traversal direction of the constantly changing key pad when
+// a byte modulus hits a specific value).
+void bd_crypt_stream( iostream& io, const char* p_key, size_t key_length )
 {
    unsigned char key[ c_max_key_size ];
    unsigned char buf[ c_file_buf_size ];
@@ -72,11 +74,13 @@ void as_crypt_stream( iostream& io, const char* p_key, size_t key_length )
 
    io.seekg( 0, ios::beg );
 
+   key_length = min( key_length, c_max_key_size );
+
    memcpy( key, p_key, key_length );
 
    unsigned char datkey = 0;
 
-   for( size_t i = 0; i < min( key_length, c_max_key_size ); i++ )
+   for( size_t i = 0; i < key_length; i++ )
       datkey += key[ i ];
 
    size_t buflen = c_file_buf_size;
@@ -92,15 +96,12 @@ void as_crypt_stream( iostream& io, const char* p_key, size_t key_length )
       io.seekg( pos, ios::beg );
       io.read( ( char* )buf, buflen );
 
-      unsigned char ch;
-
       for( size_t offset = 0; offset < buflen; offset++ )
       {
-         ch = buf[ offset ];
-         ch ^= datkey;
-         buf[ offset ] = ch;
+         buf[ offset ] ^= datkey;
 
          datkey += ( key[ key_offset ] % 131 );
+
          key[ key_offset ] ^= datkey;
 
          key_offset += dir;
@@ -164,6 +165,8 @@ void cc_crypt_stream( iostream& io, const char* p_key, size_t key_length )
       io.write( ( char* )buf, buflen );
    }
 
+   memset( &ctx, '\0', sizeof( ctx ) );
+
    memset( buf, '\0', c_file_buf_size );
    memset( key_buf, '\0', sizeof( key_buf ) );
 }
@@ -172,7 +175,7 @@ void cc_crypt_stream( iostream& io, const char* p_key, size_t key_length )
 // initialised with the key and then updated with a different constant for
 // each chain. Encryption is simple XOR with both digests which are simply
 // updated with the previous digest after using every byte of the digests.
-void dh_crypt_stream( iostream& io, const char* p_key, size_t key_length )
+void db_crypt_stream( iostream& io, const char* p_key, size_t key_length )
 {
    unsigned char buf[ c_file_buf_size ];
 
