@@ -161,7 +161,7 @@ int main( int argc, char* argv[ ] )
       if( use_chacha20 && use_dbl_hash )
          throw runtime_error( "Can choose either the -cc or -dh option but not both." );
 
-      stream_cipher cipher = e_stream_cipher_at_speed;
+      stream_cipher cipher = e_stream_cipher_bd_shift;
 
       if( use_chacha20 )
          cipher = e_stream_cipher_chacha20;

@@ -15,11 +15,11 @@
 #  include "config.h"
 #  include "ptypes.h"
 
-void as_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
+void bd_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
 
-inline void as_crypt_stream( std::iostream& io, const std::string& key )
+inline void bd_crypt_stream( std::iostream& io, const std::string& key )
 {
-   as_crypt_stream( io, key.c_str( ), key.length( ) );
+   bd_crypt_stream( io, key.c_str( ), key.length( ) );
 }
 
 void cc_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
@@ -29,40 +29,40 @@ inline void cc_crypt_stream( std::iostream& io, const std::string& key )
    cc_crypt_stream( io, key.c_str( ), key.length( ) );
 }
 
-void dh_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
+void db_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
 
-inline void dh_crypt_stream( std::iostream& io, const std::string& key )
+inline void db_crypt_stream( std::iostream& io, const std::string& key )
 {
-   dh_crypt_stream( io, key.c_str( ), key.length( ) );
+   db_crypt_stream( io, key.c_str( ), key.length( ) );
 }
 
 enum stream_cipher
 {
-   e_stream_cipher_at_speed,
+   e_stream_cipher_bd_shift,
    e_stream_cipher_chacha20,
    e_stream_cipher_dbl_hash,
 };
 
 inline void crypt_stream( std::iostream& io, const char* p_key,
- size_t key_length, stream_cipher cipher = e_stream_cipher_at_speed )
+ size_t key_length, stream_cipher cipher = e_stream_cipher_bd_shift )
 {
-   if( cipher == e_stream_cipher_at_speed )
-      as_crypt_stream( io, p_key, key_length );
+   if( cipher == e_stream_cipher_bd_shift )
+      bd_crypt_stream( io, p_key, key_length );
    else if( cipher == e_stream_cipher_chacha20 )
       cc_crypt_stream( io, p_key, key_length );
    else
-      dh_crypt_stream( io, p_key, key_length );
+      db_crypt_stream( io, p_key, key_length );
 }
 
 inline void crypt_stream( std::iostream& io,
- const std::string& key, stream_cipher cipher = e_stream_cipher_at_speed )
+ const std::string& key, stream_cipher cipher = e_stream_cipher_bd_shift )
 {
-   if( cipher == e_stream_cipher_at_speed )
-      as_crypt_stream( io, key.c_str( ), key.length( ) );
+   if( cipher == e_stream_cipher_bd_shift )
+      bd_crypt_stream( io, key.c_str( ), key.length( ) );
    else if( cipher == e_stream_cipher_chacha20 )
       cc_crypt_stream( io, key.c_str( ), key.length( ) );
    else
-      dh_crypt_stream( io, key.c_str( ), key.length( ) );
+      db_crypt_stream( io, key.c_str( ), key.length( ) );
 }
 
 #  ifdef SSL_SUPPORT
@@ -136,4 +136,3 @@ std::string check_for_proof_of_work(
  nonce_difficulty difficulty = e_nonce_difficulty_easy, bool pause_between_passes = true );
 
 #endif
-
