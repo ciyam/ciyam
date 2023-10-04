@@ -12,6 +12,7 @@
     <cpp_files/>
      <filename>base32.cpp
      <filename>base64.cpp
+     <filename>chacha20.cpp
      <filename>char_array.cpp
      <filename>clz.cpp
      <filename>console.cpp

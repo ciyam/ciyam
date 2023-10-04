@@ -37,7 +37,7 @@ using namespace std;
 
 const int c_buffer_size = 1024;
 
-const char* const c_title = "crypt v0.1j";
+const char* const c_title = "crypt v0.1k";
 
 void create_checksum_test_file( fstream& fs, const string& test_file_name )
 {
@@ -81,7 +81,7 @@ int main( int argc, char* argv[ ] )
    if( argc < 2
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "-?" || string( argv[ 1 ] ) == "/?" )
    {
-      cout << c_title << "\nUsage: crypt [-q] [-c] [-d] [-p[s]] [-t] <file> [<program>]" << endl;
+      cout << c_title << "\nUsage: crypt [-q] [-c] [-cc|-dh] [-p[s]] [-t] <file> [<program>]" << endl;
       return 0;
    }
 
@@ -89,8 +89,9 @@ int main( int argc, char* argv[ ] )
    int hash_count = 0;
    bool is_quiet = false;
    bool use_confirm = false;
-   bool use_dblhash = false;
-   bool use_hashing = false;
+   bool use_chacha20 = false;
+   bool use_dbl_hash = false;
+   bool use_pin_hash = false;
    bool use_test_file = false;
    bool use_pin_as_salt = false;
    bool create_test_file = false;
@@ -110,20 +111,25 @@ int main( int argc, char* argv[ ] )
          ++first_arg;
          use_confirm = true;
       }
-      else if( string( argv[ first_arg ] ) == string( "-d" ) )
+      else if( string( argv[ first_arg ] ) == string( "-cc" ) )
       {
          ++first_arg;
-         use_dblhash = true;
+         use_chacha20 = true;
+      }
+      else if( string( argv[ first_arg ] ) == string( "-dh" ) )
+      {
+         ++first_arg;
+         use_dbl_hash = true;
       }
       else if( string( argv[ first_arg ] ) == string( "-p" ) )
       {
          ++first_arg;
-         use_hashing = true;
+         use_pin_hash = true;
       }
       else if( string( argv[ first_arg ] ) == string( "-ps" ) )
       {
          ++first_arg;
-         use_hashing = true;
+         use_pin_hash = true;
          use_pin_as_salt = true;
       }
       else if( string( argv[ first_arg ] ) == string( "-t" ) )
@@ -151,6 +157,16 @@ int main( int argc, char* argv[ ] )
    try
    {
       string file_name( argv[ first_arg ] );
+
+      if( use_chacha20 && use_dbl_hash )
+         throw runtime_error( "Can choose either the -cc or -dh option but not both." );
+
+      stream_cipher cipher = e_stream_cipher_at_speed;
+
+      if( use_chacha20 )
+         cipher = e_stream_cipher_chacha20;
+      else if( use_dbl_hash )
+         cipher = e_stream_cipher_dbl_hash;
 
 #ifdef _WIN32
       FILETIME atime, ctime, mtime;
@@ -193,6 +209,7 @@ int main( int argc, char* argv[ ] )
          string password;
          while( password.empty( ) )
             password = get_password( "Password: " );
+
          if( use_confirm )
          {
             string confirm( get_password( " Confirm: " ) );
@@ -203,13 +220,14 @@ int main( int argc, char* argv[ ] )
             }
          }
 
-         if( use_hashing )
+         if( use_pin_hash )
          {
             string pin( get_password( "Type PIN: " ) );
 
             if( use_confirm )
             {
                string confirm( get_password( " Confirm: " ) );
+
                if( confirm != pin )
                {
                   cerr << "Error: PIN confirmation failed." << endl;
@@ -249,10 +267,7 @@ int main( int argc, char* argv[ ] )
                create_checksum_test_file( fs, test_file_name );
          }
 
-         if( !use_dblhash )
-            crypt_stream( fs, password.c_str( ), password.size( ) );
-         else
-            dh_crypt_stream( fs, password.c_str( ), password.size( ) );
+         crypt_stream( fs, password.c_str( ), password.size( ), cipher );
 
          if( !fs.good( ) )
             throw runtime_error( "Unexpected error occurred whilst writing to file '" + file_name + "'." );
@@ -282,14 +297,12 @@ int main( int argc, char* argv[ ] )
             fs.seekg( 0, ios::beg );
 
             string test_chk = buffer_file( test_file_name );
+
             if( test_chk != md5.hex_digest( ) )
             {
                cerr << "Error: Failed checksum test (reverting file contents)." << endl;
 
-               if( !use_dblhash )
-                  crypt_stream( fs, password.c_str( ), password.size( ) );
-               else
-                  dh_crypt_stream( fs, password.c_str( ), password.size( ) );
+               crypt_stream( fs, password.c_str( ), password.size( ), cipher );
 
                return 2;
             }
@@ -307,10 +320,7 @@ int main( int argc, char* argv[ ] )
 
             fs.open( file_name.c_str( ), ios::in | ios::out | ios::binary );
 
-            if( !use_dblhash )
-               crypt_stream( fs, password.c_str( ), password.size( ) );
-            else
-               dh_crypt_stream( fs, password.c_str( ), password.size( ) );
+            crypt_stream( fs, password.c_str( ), password.size( ), cipher );
 
             if( !fs.good( ) )
             {
