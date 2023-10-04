@@ -15,11 +15,18 @@
 #  include "config.h"
 #  include "ptypes.h"
 
-void crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
+void as_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
 
-inline void crypt_stream( std::iostream& io, const std::string& key )
+inline void as_crypt_stream( std::iostream& io, const std::string& key )
 {
-   crypt_stream( io, key.c_str( ), key.length( ) );
+   as_crypt_stream( io, key.c_str( ), key.length( ) );
+}
+
+void cc_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
+
+inline void cc_crypt_stream( std::iostream& io, const std::string& key )
+{
+   cc_crypt_stream( io, key.c_str( ), key.length( ) );
 }
 
 void dh_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
@@ -27,6 +34,35 @@ void dh_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
 inline void dh_crypt_stream( std::iostream& io, const std::string& key )
 {
    dh_crypt_stream( io, key.c_str( ), key.length( ) );
+}
+
+enum stream_cipher
+{
+   e_stream_cipher_at_speed,
+   e_stream_cipher_chacha20,
+   e_stream_cipher_dbl_hash,
+};
+
+inline void crypt_stream( std::iostream& io, const char* p_key,
+ size_t key_length, stream_cipher cipher = e_stream_cipher_at_speed )
+{
+   if( cipher == e_stream_cipher_at_speed )
+      as_crypt_stream( io, p_key, key_length );
+   else if( cipher == e_stream_cipher_chacha20 )
+      cc_crypt_stream( io, p_key, key_length );
+   else
+      dh_crypt_stream( io, p_key, key_length );
+}
+
+inline void crypt_stream( std::iostream& io,
+ const std::string& key, stream_cipher cipher = e_stream_cipher_at_speed )
+{
+   if( cipher == e_stream_cipher_at_speed )
+      as_crypt_stream( io, key.c_str( ), key.length( ) );
+   else if( cipher == e_stream_cipher_chacha20 )
+      cc_crypt_stream( io, key.c_str( ), key.length( ) );
+   else
+      dh_crypt_stream( io, key.c_str( ), key.length( ) );
 }
 
 #  ifdef SSL_SUPPORT

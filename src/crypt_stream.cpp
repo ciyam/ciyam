@@ -27,6 +27,7 @@
 #include "base64.h"
 #include "sha256.h"
 #include "sha512.h"
+#include "chacha20.h"
 #include "utilities.h"
 
 #ifdef SSL_SUPPORT
@@ -57,10 +58,8 @@ const size_t c_password_rounds_multiplier = 3;
 // NOTE: This algorithm is an XOR approach for encrypting a stream in place
 // and is very quick. It prevents the key used from being easily discovered
 // by constantly modifying a copy of it and by doing this in a manner which
-// also prevents its length being discovered through frequency analysis. It
-// should be noted that the strength of this cypher depends upon the length
-// of the key that is used.
-void crypt_stream( iostream& io, const char* p_key, size_t key_length )
+// also prevents its length being discovered through frequency analysis.
+void as_crypt_stream( iostream& io, const char* p_key, size_t key_length )
 {
    unsigned char key[ c_max_key_size ];
    unsigned char buf[ c_file_buf_size ];
@@ -77,7 +76,7 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length )
 
    unsigned char datkey = 0;
 
-   for( size_t i = 0; i < key_length; i++ )
+   for( size_t i = 0; i < min( key_length, c_max_key_size ); i++ )
       datkey += key[ i ];
 
    size_t buflen = c_file_buf_size;
@@ -124,12 +123,55 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length )
    memset( key, '\0', c_max_key_size );
 }
 
-// NOTE: This stream cypher uses two SHA512 "hash chains" each being first
+// NOTE: Uses the "chacha20" stream cipher (with zero values for both the
+// nonce and starting counter).
+//
+// CHACHA20: RFC 7539 https://www.rfc-editor.org/rfc/rfc7539
+void cc_crypt_stream( iostream& io, const char* p_key, size_t key_length )
+{
+   unsigned char buf[ c_file_buf_size ];
+   unsigned char key_buf[ c_sha256_digest_size ];
+
+   sha256 hash( ( const unsigned char* )p_key, key_length );
+
+   hash.copy_digest_to_buffer( key_buf );
+
+   chacha20_ctx ctx;
+   memset( &ctx, '\0', sizeof( ctx ) );
+
+   // NOTE: Nonce is always been set to zero.
+   chacha20_init_ctx( &ctx, key_buf, ctx.nonce, 0 );
+
+   io.seekg( 0, ios::end );
+
+   size_t length = ( size_t )io.tellg( );
+
+   io.seekg( 0, ios::beg );
+
+   size_t buflen = c_file_buf_size;
+
+   for( size_t pos = 0; pos < length; pos += buflen )
+   {
+      if( length - pos < c_file_buf_size )
+         buflen = length - pos;
+
+      io.seekg( pos, ios::beg );
+      io.read( ( char* )buf, buflen );
+
+      chacha20_xor_next( &ctx, buf, buflen );
+
+      io.seekg( pos, ios::beg );
+      io.write( ( char* )buf, buflen );
+   }
+
+   memset( buf, '\0', c_file_buf_size );
+   memset( key_buf, '\0', sizeof( key_buf ) );
+}
+
+// NOTE: This stream cipher uses two SHA512 "hash chains" each being first
 // initialised with the key and then updated with a different constant for
 // each chain. Encryption is simple XOR with both digests which are simply
 // updated with the previous digest after using every byte of the digests.
-// This is significantly slower than the algorithm above and the length of
-// the key will again determine the strength of the cypher.
 void dh_crypt_stream( iostream& io, const char* p_key, size_t key_length )
 {
    unsigned char buf[ c_file_buf_size ];
