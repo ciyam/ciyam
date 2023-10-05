@@ -1981,6 +1981,8 @@ void storage_channel_documents_reject_reviewing( const char* p_identity, const c
       string reviewing;
       string new_reviewing;
 
+      ods::transaction ods_tx( storage_ods_instance( ) );
+
       ofs.fetch_from_text_file( c_channel_reviewing, reviewing );
       
       vector< string > all_reviewing;
@@ -1991,7 +1993,9 @@ void storage_channel_documents_reject_reviewing( const char* p_identity, const c
       {
          string next( all_reviewing[ i ] );
 
-         if( !rejecting.count( next + file_sizes[ next ] ) )
+         if( rejecting.count( next + file_sizes[ next ] ) )
+            ofs.remove_file( "../" + next );
+         else
          {
             if( !new_reviewing.empty( ) )
                new_reviewing += '\n';
@@ -2004,6 +2008,8 @@ void storage_channel_documents_reject_reviewing( const char* p_identity, const c
          ofs.remove_file( c_channel_reviewing );
       else
          ofs.store_as_text_file( c_channel_reviewing, new_reviewing );
+
+      ods_tx.commit( );
    }
 }
 
