@@ -3,4 +3,9 @@ branch objects
 file_remove /yyy
 branch objects
 dump
+cd 111
+file_remove ../zzz
+cd ..
+branch objects
+dump
 exit

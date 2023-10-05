@@ -3515,19 +3515,22 @@ bool ods_file_system::remove_items_for_file(
    if( name.empty( ) )
       throw runtime_error( "unexpected empty file name in 'remove_items_for_file'" );
 
-   if( name[ 0 ] == c_folder )
-      tmp_item.val = name;
-   else
-   {
-      if( current_folder == string( c_root_folder ) )
-         tmp_item.val = current_folder + name;
-      else
-         tmp_item.val = current_folder + c_folder_separator + name;
-   }
+   string::size_type pos = name.rfind( c_folder );
+
+   string src_name( name.substr( pos == string::npos ? 0 : pos + 1 ) );
+
+   string src_folder( current_folder );
+
+   if( pos != string::npos )
+      src_folder = determine_folder( name.substr( 0, pos ) );
+
+   tmp_item.val = src_folder;
+
+   tmp_item.val += c_folder + src_name;
 
    replace( tmp_item.val, c_folder_separator, c_pipe_separator );
 
-   string::size_type pos = tmp_item.val.rfind( c_pipe_separator );
+   pos = tmp_item.val.rfind( c_pipe_separator );
 
    if( pos != string::npos )
    {
