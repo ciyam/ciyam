@@ -363,18 +363,19 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          bool use_cout( has_parm_val( parameters, c_cmd_ods_fsed_file_get_cout ) );
          string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_get_file_name ) );
 
+         string original_name( name );
          string original_folder( ap_ofs->determine_strip_and_change_folder( name ) );
 
-         if( !name.empty( ) )
-         {
-            console_progress progress;
-            console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+         console_progress progress;
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-            ap_ofs->get_file( name, file_name, ( use_cout ? &cout : 0 ), p_progress );
+         ap_ofs->get_file( name, file_name, ( use_cout ? &cout : 0 ), p_progress );
 
-            if( !original_folder.empty( ) )
-               ap_ofs->set_folder( original_folder );
-         }
+         if( use_cout )
+            cout << endl;
+
+         if( !original_folder.empty( ) )
+            ap_ofs->set_folder( original_folder );
       }
       else if( command == c_cmd_ods_fsed_file_link )
       {

@@ -1147,6 +1147,8 @@ string storage_channel_documents_update( const string& identity, bool submitted 
    if( !ofs.has_folder( identity ) )
       throw runtime_error( "channel folder for '" + identity + "' was not found" );
 
+   ofs.set_folder( identity );
+
    int64_t height = 0;
 
    string height_file_path( c_channel_folder_ciyam );
@@ -1285,8 +1287,6 @@ string storage_channel_documents_update( const string& identity, bool submitted 
             set< string > paths;
             split( all_files, files, '\n' );
 
-            ofs.set_folder( identity );
-
             bool pending_approval = false;
 
             for( size_t i = 0; i < files.size( ); i++ )
@@ -1389,16 +1389,12 @@ string storage_channel_documents_update( const string& identity, bool submitted 
             retval = updated;
          }
          else
-         {
-            ofs.set_folder( identity );
             ofs.set_folder( c_channel_folder_ciyam );
-         }
 
          ofs.store_as_text_file( ( !submitted ? c_channel_fetched : c_channel_submitted ), height );
       }
       else
       {
-         ofs.set_folder( identity );
          ofs.set_folder( c_channel_folder_ciyam );
 
          ofs.store_as_text_file( ( !submitted ? c_channel_fetched : c_channel_submitted ), height );
