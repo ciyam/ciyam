@@ -2,6 +2,16 @@ cd
 /
 label yyy
 file_add yyy mnemonics.txt
+file_permissions yyy
+rw-r--r--
+file_permissions yyy crap
+error: unexpected perms value 'crap'
+file_permissions yyy "rw-rw-r--"
+file_permissions yyy
+rw-rw-r--
+file_permissions yyy "rw-r--r--"
+file_permissions yyy
+rw-r--r--
 branch objects
 xxx (289 B)
 yyy (13.1 kB)

@@ -1874,7 +1874,7 @@ void ods_file_system::permissions_file( const string& name, ostream* p_os )
       tmp_item = *tmp_iter;
 
       if( p_os )
-         *p_os << tmp_item.get_perms( );
+         *p_os << tmp_item.get_perms( ) << endl;
    }
 }
 
