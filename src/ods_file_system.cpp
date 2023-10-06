@@ -690,7 +690,7 @@ string ods_file_system::determine_folder(
          if( bt.find( tmp_item ) == bt.end( ) )
          {
             if( !ignore_not_found )
-               throw runtime_error( "folder '" + folder + "' not found" );
+               throw runtime_error( "folder '" + new_folder + "' not found" );
 
             new_folder.erase( );
          }
@@ -711,7 +711,7 @@ string ods_file_system::determine_strip_and_change_folder( string& name )
       string source_folder( determine_folder( name.substr( 0, pos ), false, true ) );
 
       if( source_folder.empty( ) )
-         name.erase( );
+         throw runtime_error( "file '" + name + "' not found" );
       else
       {
          original_folder = get_folder( );
@@ -1171,8 +1171,6 @@ bool ods_file_system::has_file( const string& name, bool is_prefix,
 
    btree_type& bt( p_impl->bt );
 
-   string value( key_value( name ) );
-
    auto_ptr< ods::bulk_read > ap_bulk;
 
    if( !o.is_bulk_locked( ) )
@@ -1187,6 +1185,8 @@ bool ods_file_system::has_file( const string& name, bool is_prefix,
 
    btree_type::item_type tmp_item;
    btree_type::iterator i = bt.end( );
+
+   string value( key_value( name ) );
 
    tmp_item.val = value;
 
