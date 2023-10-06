@@ -1,6 +1,12 @@
 cd
 label yyy
 file_add yyy mnemonics.txt
+file_permissions yyy
+file_permissions yyy crap
+file_permissions yyy "rw-rw-r--"
+file_permissions yyy
+file_permissions yyy "rw-r--r--"
+file_permissions yyy
 branch objects
 file_get yyy test_ods_fsed_5_c.tmp
 ~diff -q mnemonics.txt test_ods_fsed_5_c.tmp
