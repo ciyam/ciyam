@@ -419,6 +419,16 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 
          ap_ofs->replace_file( name, file_name, 0, ( use_cin ? &cin : 0 ), p_progress );
       }
+      else if( command == c_cmd_ods_fsed_file_permissions )
+      {
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_file_permissions_name ) );
+         string permissions( get_parm_val( parameters, c_cmd_ods_fsed_file_permissions_permissions ) );
+
+         if( permissions.empty( ) )
+            ap_ofs->permissions_file( name, ods_fsed_handler.get_std_out( ) );
+         else
+            ap_ofs->permissions_file( name, permissions, ods_fsed_handler.get_std_out( ) );
+      }
       else if( command == c_cmd_ods_fsed_folder_add )
       {
          string name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_name ) );

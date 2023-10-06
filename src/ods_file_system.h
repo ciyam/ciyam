@@ -243,6 +243,9 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       replace_file( name, "", p_os, p_is, p_progress, force_write );
    }
 
+   void permissions_file( const std::string& name, std::ostream* p_os );
+   void permissions_file( const std::string& name, const std::string& perms, std::ostream* p_os = 0 );
+
    void store_as_text_file( const std::string& name, int32_t val );
    void store_as_text_file( const std::string& name, int64_t val );
    void store_as_text_file( const std::string& name, const std::string& val, size_t pad_to_len = 0 );
@@ -277,6 +280,11 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    };
 
    void force_reload( );
+
+   std::string value_folder_and_file_name( const std::string& provided,
+    std::string* p_folder = 0, std::string* p_file_name = 0 );
+
+   inline std::string key_value( const std::string& provided ) { return value_folder_and_file_name( provided ); }
 
    void perform_match( std::ostream& os,
     const std::string& expr, const std::string& regexpr, size_t* p_count = 0,
@@ -368,4 +376,3 @@ void ODS_FILE_SYSTEM_DECL_SPEC import_objects( ods_file_system& ofs,
  std::ostream* p_os = 0, progress* p_progress = 0, bool force_write = false );
 
 #endif
-

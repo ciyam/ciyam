@@ -969,15 +969,7 @@ void ods_file_system::add_file( const string& name,
       if( !p_is && !file_exists( file_name ) )
          throw runtime_error( "file '" + file_name + "' not found" );
 
-      string value( current_folder );
-
-      value += c_folder + name;
-
-      replace( value, c_folder_separator, c_pipe_separator );
-
-      string::size_type ppos = value.rfind( c_pipe_separator );
-
-      value[ ppos ] = c_folder;
+      string value( key_value( name ) );
 
       auto_ptr< ods::bulk_write > ap_bulk;
 
@@ -1089,15 +1081,7 @@ void ods_file_system::get_file( const string& name,
 
    btree_type& bt( p_impl->bt );
 
-   string value( current_folder );
-
-   value += c_folder + name;
-
-   replace( value, c_folder_separator, c_pipe_separator );
-
-   string::size_type ppos = value.rfind( c_pipe_separator );
-
-   value[ ppos ] = c_folder;
+   string value( key_value( name ) );
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
@@ -1123,7 +1107,10 @@ void ods_file_system::get_file( const string& name,
       if( !p_os )
          throw runtime_error( "file '" + name + "' not found" );
       else
+      {
          *p_os << "*** file '" << name << "' not found ***" << endl;
+         return;
+      }
    }
    else
    {
@@ -1151,20 +1138,7 @@ bool ods_file_system::is_link( const string& name )
 
    btree_type& bt( p_impl->bt );
 
-   string value( current_folder );
-
-   string::size_type pos = name.find( c_folder );
-
-   if( pos == 0 )
-      value = c_folder + name;
-   else
-      value += c_folder + name;
-
-   replace( value, c_folder_separator, c_pipe_separator );
-
-   string::size_type ppos = value.rfind( c_pipe_separator );
-
-   value[ ppos ] = c_folder;
+   string value( key_value( name ) );
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
@@ -1197,20 +1171,7 @@ bool ods_file_system::has_file( const string& name, bool is_prefix,
 
    btree_type& bt( p_impl->bt );
 
-   string value( current_folder );
-
-   string::size_type pos = name.find( c_folder );
-
-   if( pos == 0 )
-      value = c_folder + name;
-   else
-      value += c_folder + name;
-
-   replace( value, c_folder_separator, c_pipe_separator );
-
-   string::size_type ppos = value.rfind( c_pipe_separator );
-
-   value[ ppos ] = c_folder;
+   string value( key_value( name ) );
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
@@ -1332,12 +1293,6 @@ string ods_file_system::link_target( const string& name )
 
    btree_type& bt( p_impl->bt );
 
-   string::size_type pos = name.rfind( c_folder );
-
-   string dest_name( name.substr( pos == string::npos ? 0 : pos + 1 ) );
-
-   string dest_folder( current_folder );
-
    auto_ptr< ods::bulk_read > ap_bulk;
 
    if( !o.is_bulk_locked( ) )
@@ -1350,18 +1305,10 @@ string ods_file_system::link_target( const string& name )
       p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
-   if( pos != string::npos )
-      dest_folder = determine_folder( name.substr( 0, pos ) );
+   string dest_name;
+   string dest_folder;
 
-   string value( dest_folder );
-
-   value += c_folder + dest_name;
-
-   replace( value, c_folder_separator, c_pipe_separator );
-
-   string::size_type ppos = value.rfind( c_pipe_separator );
-
-   value[ ppos ] = c_folder;
+   string value( value_folder_and_file_name( name, &dest_folder, &dest_name ) );
 
    btree_type::iterator tmp_iter;
    btree_type::item_type tmp_item;
@@ -1403,12 +1350,6 @@ void ods_file_system::link_file( const string& name, const string& source )
 {
    btree_type& bt( p_impl->bt );
 
-   string::size_type pos = name.rfind( c_folder );
-
-   string dest_name( name.substr( pos == string::npos ? 0 : pos + 1 ) );
-
-   string dest_folder( current_folder );
-
    auto_ptr< ods::bulk_write > ap_bulk;
 
    if( !o.is_bulk_locked( ) )
@@ -1421,23 +1362,15 @@ void ods_file_system::link_file( const string& name, const string& source )
       p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
-   if( pos != string::npos )
-      dest_folder = determine_folder( name.substr( 0, pos ) );
+   string dest_name;
+   string dest_folder;
+
+   string value( value_folder_and_file_name( name, &dest_folder, &dest_name ) );
 
    if( valid_file_name( dest_name ) != dest_name )
       throw runtime_error( "invalid file name '" + name + "'" );
    else
    {
-      string value( dest_folder );
-
-      value += c_folder + dest_name;
-
-      replace( value, c_folder_separator, c_pipe_separator );
-
-      string::size_type ppos = value.rfind( c_pipe_separator );
-
-      value[ ppos ] = c_folder;
-
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
 
@@ -1465,24 +1398,10 @@ void ods_file_system::link_file( const string& name, const string& source )
             throw runtime_error( "file '" + name + "' already exists" );
          else
          {
-            string::size_type pos = source.rfind( c_folder );
+            string source_name;
+            string source_folder;
 
-            string source_name( source.substr( pos == string::npos ? 0 : pos + 1 ) );
-
-            int rc = 0;
-
-            string source_folder( determine_folder( source.substr( 0, pos ), false, true ) );
-
-            if( source_folder.empty( ) )
-               source_folder = string( c_root_folder );
-
-            string source_value( source_folder + c_folder_separator + source_name );
-
-            replace( source_value, c_folder_separator, c_pipe_separator );
-
-            string::size_type ppos = source_value.rfind( c_pipe_separator );
-
-            source_value[ ppos ] = c_folder;
+            string source_value( value_folder_and_file_name( source, &source_folder, &source_name ) );
 
             tmp_item.val = source_value;
 
@@ -1544,11 +1463,10 @@ void ods_file_system::link_file( const string& name, const string& source )
 
 void ods_file_system::move_file( const string& source, const string& destination )
 {
-   string::size_type pos = source.rfind( c_folder );
+   string src_name;
+   string src_folder;
 
-   string src_name( source.substr( pos == string::npos ? 0 : pos + 1 ) );
-
-   string src_folder( current_folder );
+   string src_value( value_folder_and_file_name( source, &src_folder, &src_name ) );
 
    btree_type& bt( p_impl->bt );
 
@@ -1564,14 +1482,17 @@ void ods_file_system::move_file( const string& source, const string& destination
       p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
-   if( pos != string::npos )
-      src_folder = determine_folder( source.substr( 0, pos ) );
+   string dest_name;
+   string dest_folder;
 
-   string dest( destination );
+   string dest_path( destination );
 
-   pos = dest.rfind( c_folder );
+   if( has_folder( destination ) )
+      dest_path += c_folder + src_name;
+   else if( ( destination == c_parent_folder ) || ( destination == c_current_folder ) )
+      dest_path = current_folder + c_folder + src_name;
 
-   string dest_name( dest.substr( pos == string::npos ? 0 : pos + 1 ) );
+   string dest_value( value_folder_and_file_name( dest_path, &dest_folder, &dest_name ) );
 
    if( valid_file_name( dest_name ) != dest_name )
       throw runtime_error( "invalid destination file name '" + dest_name + "'" );
@@ -1586,17 +1507,7 @@ void ods_file_system::move_file( const string& source, const string& destination
 
       btree_trans_type bt_tx( bt );
 
-      string value( src_folder );
-
-      value += c_folder + src_name;
-
-      replace( value, c_folder_separator, c_pipe_separator );
-
-      string::size_type ppos = value.rfind( c_pipe_separator );
-
-      value[ ppos ] = c_folder;
-
-      tmp_item.val = value;
+      tmp_item.val = src_value;
       tmp_iter = bt.find( tmp_item );
 
       if( tmp_iter == bt.end( ) )
@@ -1608,37 +1519,9 @@ void ods_file_system::move_file( const string& source, const string& destination
          bool is_link = tmp_item.get_is_link( );
          oid id( tmp_item.get_file( ).get_id( ) );
 
-         string dest_folder( determine_folder( dest, false, true ) );
-
-         if( dest_folder.empty( ) )
-         {
-            if( pos == string::npos )
-               dest_folder = current_folder;
-            else if( pos == 0 )
-            {
-               dest.erase( 0, 1 );
-               dest_folder = string( c_root_folder );
-            }
-            else
-            {
-               dest_folder = determine_folder( dest.substr( 0, pos ), false, true );
-
-               if( !dest_folder.empty( ) )
-                  dest_name = dest.substr( pos + 1 );
-            }
-         }
-         else
-            dest_name = src_name;
-
          if( !dest_folder.empty( ) )
          {
-            replace( dest_folder, c_folder_separator, c_pipe_separator );
-
-            dest_folder += string( c_folder_separator );
-
-            string full_name( dest_folder + dest_name );
-
-            tmp_item.val = full_name;
+            tmp_item.val = dest_value;
             tmp_item.get_file( ).set_id( id );
 
             if( is_link )
@@ -1664,7 +1547,7 @@ void ods_file_system::move_file( const string& source, const string& destination
                   // NOTE: If this is a file link then need to also update its special object.
                   if( is_link )
                   {
-                     tmp_item.val = to_string( id.get_num( ) ) + value;
+                     tmp_item.val = to_string( id.get_num( ) ) + src_value;
 
                      tmp_iter = bt.find( tmp_item );
 
@@ -1674,7 +1557,7 @@ void ods_file_system::move_file( const string& source, const string& destination
 
                         bt.erase( tmp_iter );
 
-                        tmp_item.val = to_string( id.get_num( ) ) + full_name;
+                        tmp_item.val = to_string( id.get_num( ) ) + dest_value;
 
                         tmp_item.get_file( ).get_id( ).set_new( );
 
@@ -1684,7 +1567,7 @@ void ods_file_system::move_file( const string& source, const string& destination
                   // NOTE: Check and update the special object for the file (if has any links).
                   else if( id.get_num( ) )
                   {
-                     tmp_item.val = to_string( id.get_num( ) ) + c_special + value.substr( 1 );
+                     tmp_item.val = to_string( id.get_num( ) ) + c_special + src_value.substr( 1 );
 
                      tmp_iter = bt.find( tmp_item );
 
@@ -1694,7 +1577,7 @@ void ods_file_system::move_file( const string& source, const string& destination
 
                         bt.erase( tmp_iter );
 
-                        tmp_item.val = to_string( id.get_num( ) ) + c_special + full_name.substr( 1 );
+                        tmp_item.val = to_string( id.get_num( ) ) + c_special + dest_value.substr( 1 );
 
                         tmp_item.get_file( ).get_id( ).set_new( );
 
@@ -1828,10 +1711,7 @@ void ods_file_system::replace_file( const string& name,
 
    btree_trans_type bt_tx( bt );
 
-   string value( current_folder );
-   replace( value, c_folder_separator, c_pipe_separator );
-
-   value += string( c_folder_separator ) + name;
+   string value( key_value( name ) );
 
    tmp_item.val = value;
 
@@ -1842,7 +1722,10 @@ void ods_file_system::replace_file( const string& name,
       if( !p_os )
          throw runtime_error( "file '" + name + "' not found" );
       else
+      {
          *p_os << "*** file '" << name << "' not found ***" << endl;
+         return;
+      }
    }
    else
    {
@@ -1951,6 +1834,133 @@ void ods_file_system::replace_file( const string& name,
    }
 }
 
+void ods_file_system::permissions_file( const string& name, ostream* p_os )
+{
+   btree_type& bt( p_impl->bt );
+
+   auto_ptr< ods::bulk_read > ap_bulk;
+
+   if( !o.is_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_read( o ) );
+
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
+   {
+      o >> bt;
+
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
+   }
+
+   btree_type::item_type tmp_item;
+   btree_type::iterator tmp_iter = bt.end( );
+
+   string value( key_value( name ) );
+
+   tmp_item.val = value;
+
+   tmp_iter = bt.find( tmp_item );
+
+   if( tmp_iter == bt.end( ) )
+   {
+      if( !p_os )
+         throw runtime_error( "file '" + name + "' not found" );
+      else
+      {
+         *p_os << "*** file '" << name << "' not found ***" << endl;
+         return;
+      }
+   }
+   else
+   {
+      tmp_item = *tmp_iter;
+
+      if( p_os )
+         *p_os << tmp_item.get_perms( );
+   }
+}
+
+void ods_file_system::permissions_file( const string& name, const string& perms, ostream* p_os )
+{
+   string old_perms;
+
+   uint32_t perms_val = perms_to_value( perms );
+
+   if( value_to_perms( perms_val ) != perms )
+   {
+      if( !p_os )
+         throw runtime_error( "invalid file permissions '" + perms + "'" );
+      else
+      {
+         *p_os << "*** invalid file permissions '" << perms << "' ***" << endl;
+         return;
+      }
+   }
+
+   btree_type& bt( p_impl->bt );
+
+   auto_ptr< ods::bulk_write > ap_bulk;
+
+   if( !o.is_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_write( o ) );
+
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
+   {
+      o >> bt;
+
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
+   }
+
+   btree_type::item_type tmp_item;
+   btree_type::iterator tmp_iter = bt.end( );
+
+   string value( key_value( name ) );
+
+   tmp_item.val = value;
+
+   tmp_iter = bt.find( tmp_item );
+
+   if( tmp_iter == bt.end( ) )
+   {
+      if( !p_os )
+         throw runtime_error( "file '" + name + "' not found" );
+      else
+      {
+         *p_os << "*** file '" << name << "' not found ***" << endl;
+         return;
+      }
+   }
+   else
+   {
+      tmp_item = *tmp_iter;
+
+      string old_perms;
+
+      if( tmp_item.perm_val )
+         old_perms = tmp_item.get_perms( );
+
+      if( perms != old_perms )
+      {
+         auto_ptr< ods::transaction > ap_ods_tx;
+
+         if( !o.is_in_transaction( ) )
+            ap_ods_tx.reset( new ods::transaction( o ) );
+
+         btree_trans_type bt_tx( bt );
+
+         tmp_item.set_perms( perms );
+
+         bt.erase( tmp_iter );
+         bt.insert( tmp_item );
+
+         bt_tx.commit( );
+
+         if( ap_ods_tx.get( ) )
+            ap_ods_tx->commit( );
+
+         p_impl->next_transaction_id = o.get_next_transaction_id( );
+      }
+   }
+}
+
 void ods_file_system::store_as_text_file( const string& name, int32_t val )
 {
    string value( to_comparable_string( val, false ) );
@@ -2029,7 +2039,10 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
       if( !p_os )
          throw runtime_error( "invalid folder name '" + folder_name + "'" );
       else
+      {
          *p_os << "*** invalid folder name '" << folder_name << "' ***" << endl;
+         return;
+      }
    }
    else
    {
@@ -2067,7 +2080,10 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
             if( !p_os )
                throw runtime_error( "a file with the name '" + folder_name + "' already exists" );
             else
+            {
                *p_os << "*** a file with the name '" << folder_name << "' already exists ***" << endl;
+               return;
+            }
          }
          else
 #endif
@@ -2080,7 +2096,10 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
                if( !p_os )
                   throw runtime_error( "folder '" + folder_name + "' already exists" );
                else
+               {
                   *p_os << "*** folder '" << folder_name << "' already exists ***" << endl;
+                  return;
+               }
             }
             else
             {
@@ -2117,7 +2136,10 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
             if( !p_os )
                throw runtime_error( "a file with the name '" + folder_name + "' already exists" );
             else
+            {
                *p_os << "*** a file with the name '" << folder_name << "' already exists ***" << endl;
+               return;
+            }
          }
          else
 #endif
@@ -2130,7 +2152,10 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
                if( !p_os )
                   throw runtime_error( "folder '" + folder_name + "' already exists" );
                else
+               {
                   *p_os << "*** folder '" << folder_name << "' already exists ***" << endl;
+                  return;
+               }
             }
             else
             {
@@ -2272,7 +2297,10 @@ void ods_file_system::move_folder( const string& name, const string& destination
       if( !p_os )
          throw runtime_error( "folder '" + name + "' not found" );
       else
+      {
          *p_os << "*** folder '" << name << "' not found ***" << endl;
+         return;
+      }
    }
    else
    {
@@ -2285,14 +2313,20 @@ void ods_file_system::move_folder( const string& name, const string& destination
             if( !p_os )
                throw runtime_error( "folder '" + destination + "' does not exist" );
             else
+            {
                *p_os << "*** folder '" << destination << "' does not exist ***" << endl;
+               return;
+            }
          }
          else if( valid_file_name( destination ) != destination )
          {
             if( !p_os )
                throw runtime_error( "invalid folder name '" + destination + "'" );
             else
+            {
                *p_os << "*** invalid folder name '" << destination << "' ***" << endl;
+               return;
+            }
          }
          else
          {
@@ -2320,7 +2354,10 @@ void ods_file_system::move_folder( const string& name, const string& destination
             if( !p_os )
                throw runtime_error( "a folder cannot be moved below itself" );
             else
+            {
                *p_os << "*** a folder cannot be moved below itself ***" << endl;
+               return;
+            }
          }
          else
             okay = move_files_and_folders( full_name, dest_name, src_is_root, dest_is_root, overwrite );
@@ -2475,7 +2512,10 @@ void ods_file_system::replace_folder( const string& name, ostream* p_os, string*
          if( !p_os )
             throw runtime_error( "cannot replace unknown folder '" + name + "'" );
          else
+         {
             *p_os << "*** cannot replace unknown folder '" << name << "' ***" << endl;
+            return;
+         }
       }
       else
       {
@@ -2565,6 +2605,40 @@ void ods_file_system::dump_node_data( const string& file_name, ostream* p_os )
 void ods_file_system::force_reload( )
 {
    p_impl->next_transaction_id = 0;
+}
+
+string ods_file_system::value_folder_and_file_name( const string& provided, string* p_folder, string* p_file_name )
+{
+   string folder;
+
+   string::size_type pos = provided.rfind( c_folder );
+
+   string file_name( provided.substr( pos == string::npos ? 0 : pos + 1 ) );
+
+   if( pos == string::npos )
+      folder = current_folder;
+   else if( pos == 0 )
+      folder = string( c_root_folder );
+   else
+      folder = determine_folder( provided.substr( 0, pos ) );
+
+   string key( folder );
+
+   key += c_folder + file_name;
+
+   replace( key, c_folder_separator, c_pipe_separator );
+
+   string::size_type ppos = key.rfind( c_pipe_separator );
+
+   key[ ppos ] = c_folder;
+
+   if( p_folder )
+      *p_folder = folder;
+
+   if( p_file_name )
+      *p_file_name = file_name;
+
+   return key;
 }
 
 void ods_file_system::perform_match(
