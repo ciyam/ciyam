@@ -1628,8 +1628,14 @@ void output_actions( ostream& os,
        << "\" type=\"button\" class=\"button\" value=\"" << escape_markup( next_label ) << "\" onclick=\"";
 
       if( needs_confirmation )
+      {
+         // KLUDGE: If not executed before the "confirm" then "go_back" can end up doing nothing.
+         if( go_back )
+            os << "window.onblur = window.onfocus = null; ";
+
          os << "if( confirm( '" << string_message( GDS( c_display_proceed_with_action ),
           make_pair( c_display_proceed_with_action_parm_label, next_label ) ) << "' ) ) { ";
+      }
 
       if( child_class.empty( ) )
       {
