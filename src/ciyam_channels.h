@@ -62,6 +62,12 @@ void CIYAM_BASE_DECL_SPEC storage_channel_documents_reject_waiting(
 void CIYAM_BASE_DECL_SPEC storage_channel_documents_reject_reviewing(
  const char* p_identity = 0, const char* p_file_list_for_rejection = 0 );
 
+void CIYAM_BASE_DECL_SPEC storage_channel_documents_approve_waiting(
+ const char* p_identity = 0, const char* p_file_list_for_approval = 0 );
+
+void CIYAM_BASE_DECL_SPEC storage_channel_documents_approve_reviewing(
+ const char* p_identity = 0, const char* p_file_list_for_approval = 0 );
+
 enum channel_documents_type
 {
    e_channel_documents_type_pending,
