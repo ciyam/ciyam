@@ -2,6 +2,7 @@
    // [(start update_parent)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
    if( !is_null( get_obj( ).`{`$arg_spfield`}( ) )
+    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_parent_updates ) ).empty( )
     && ( !get_obj( ).get_graph_parent( )
     || get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )
 `,\

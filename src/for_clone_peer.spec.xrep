@@ -31,6 +31,9 @@
       cp_source->set_is_for_peer( cp_source->`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) );
 
       cp_source->set_variable( get_special_var_name(
+       e_special_var_skip_parent_updates ), c_true_value );
+
+      cp_source->set_variable( get_special_var_name(
        e_special_var_skip_total_child_field_in_parent ), c_true_value );
 
       cp_source->op_apply( );
