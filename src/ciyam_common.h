@@ -200,6 +200,7 @@ enum special_var
    e_special_var_blockchain_is_owner,
    e_special_var_blockchain_num_puts,
    e_special_var_repo_crypt_password,
+   e_special_var_skip_parent_updates,
    e_special_var_blockchain_hind_hash,
    e_special_var_ods_cache_hit_ratios,
    e_special_var_secondary_validation,

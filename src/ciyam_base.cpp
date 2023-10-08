@@ -12143,12 +12143,14 @@ bool is_create_locked_by_own_session(
     instance.get_lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
 
    bool is_create_locked = ( lock.type == op_lock::e_lock_type_create );
+
    if( !is_create_locked && also_check_tx_lock_type )
       is_create_locked = ( lock.tx_type == op_lock::e_lock_type_create );
 
    if( lock.p_session == gtp_session && is_create_locked )
    {
       rc = true;
+
       if( copy_field_values )
       {
          if( !lock.p_class_base )
