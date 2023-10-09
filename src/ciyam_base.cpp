@@ -6110,15 +6110,15 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 {
    int rc = -1;
 
-   // NOTE: If the name '@none" is provided then just returns zero.
-   if( script_name == get_special_var_name( e_special_var_none ) )
-      return 0;
-
    if( get_script_reconfig( ) && scripts_file_has_changed( ) )
    {
       read_script_info( );
       TRACE_LOG( TRACE_ANYTHING, "[manuscript.sio] updated" );
    }
+
+   // NOTE: If the name '@none" is provided then just returns zero.
+   if( script_name == get_special_var_name( e_special_var_none ) )
+      return 0;
 
    if( !g_scripts.count( script_name ) )
       throw runtime_error( "unknown script '" + script_name + "'" );

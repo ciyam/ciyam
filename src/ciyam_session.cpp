@@ -6479,6 +6479,9 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
       pid_is_self = true;
 
    increment_session_count( );
+
+   // NOTE: Call "run_script" with "@none" to reload "manuscript.sio" if has changed.
+   run_script( get_special_var_name( e_special_var_none ) );
 }
 
 #ifdef SSL_SUPPORT

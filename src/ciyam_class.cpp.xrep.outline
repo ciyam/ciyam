@@ -2606,7 +2606,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'fk_link_via_user_info`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#fk_link_via_user_info.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier arg_spclass=$specification_\0_spclass\
- arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield arg_oscfield=$specification_\0_oscfield`}\
+ arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield`}\
 `,\
 `@eq`(`'\1`'`,`'meta_spec_field_type`'`)
 `{`#meta_spec_field_type.spec.xrep section=to_store class_name=$class_name\
@@ -2970,7 +2970,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'fk_link_via_user_info`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#fk_link_via_user_info.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier arg_spclass=$specification_\0_spclass\
- arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield arg_oscfield=$specification_\0_oscfield`}\
+ arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield`}\
 `,\
 `@eq`(`'\1`'`,`'for_auto_code_user`'`)
 `{`#for_auto_code_user.spec.xrep section=for_store class_name=$class_name module_name=$module_name\
