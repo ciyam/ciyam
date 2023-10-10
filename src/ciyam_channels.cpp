@@ -45,9 +45,6 @@ namespace
 
 trace_mutex g_mutex;
 
-const char* const c_perms_r_r = "r--r-----";
-const char* const c_perms_rw_rw_r = "rw-rw-r--";
-
 const char* const c_channel_files = ".files";
 const char* const c_channel_fetch = ".fetch";
 
@@ -606,9 +603,6 @@ void storage_channel_documents_open( const char* p_identity )
    export_objects( ofs, path );
 
    ofs.set_folder( c_channel_folder_ciyam );
-
-   if( file_exists( prefix + c_channel_readme_file ) )
-      set_system_variable( prefix + c_channel_readme_file, string( 1, c_notifier_ignore_char ) );
 
    // NOTE: Files "pending approval" are set to read-only.
    if( ofs.has_file( c_channel_pending ) )

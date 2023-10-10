@@ -186,6 +186,7 @@ void ciyam_notifier::on_start( )
          path_to_dir.erase( pos );
 
          set< string > names;
+         set< string > ignores;
 
          do
          {
@@ -225,6 +226,11 @@ void ciyam_notifier::on_start( )
 
                      next_file.erase( 0, path_to_dir.length( ) );
 
+                     string perms( file_perms( fs.get_full_name( ) ) );
+
+                     if( perms == c_perms_r_r )
+                        ignores.insert( next_file );
+
                      names.insert( next_file );
                   }
                }
@@ -243,36 +249,41 @@ void ciyam_notifier::on_start( )
 
             string path( *ci );
 
-            // NOTE: An alternative to "initial_selections".
-            extra_prefix = get_raw_system_variable( path );
-
-            if( has_existing && !path.empty( ) )
+            if( ignores.count( *ci ) )
+               value = string( 1, c_notifier_ignore_char );
+            else
             {
-               if( existing_files.count( path ) )
+               // NOTE: An alternative to "initial_selections".
+               extra_prefix = get_raw_system_variable( path );
+
+               if( has_existing && !path.empty( ) )
                {
-                  date_time dtm( existing_files[ path ] );
-
-                  int64_t tm_val = last_modification_time( path );
-                  int64_t tm_oval = unix_time( dtm );
-
-                  if( tm_val != tm_oval )
+                  if( existing_files.count( path ) )
                   {
-                     value = c_notifier_modified;
+                     date_time dtm( existing_files[ path ] );
+
+                     int64_t tm_val = last_modification_time( path );
+                     int64_t tm_oval = unix_time( dtm );
+
+                     if( tm_val != tm_oval )
+                     {
+                        value = c_notifier_modified;
+                        extra_prefix = c_notifier_selection;
+                     }
+
+                     existing_files.erase( path );
+                  }
+                  else if( path[ path.length( ) - 1 ] != '/' )
+                  {
+                     value = c_notifier_created;
                      extra_prefix = c_notifier_selection;
                   }
-
-                  existing_files.erase( path );
                }
-               else if( path[ path.length( ) - 1 ] != '/' )
-               {
-                  value = c_notifier_created;
+
+               if( path.length( ) > watch_root_name.length( )
+                && selections.count( path.substr( watch_root_name.length( ) ) ) )
                   extra_prefix = c_notifier_selection;
-               }
             }
-
-            if( path.length( ) > watch_root_name.length( )
-             && selections.count( path.substr( watch_root_name.length( ) ) ) )
-               extra_prefix = c_notifier_selection;
 
             set_system_variable( path, prefix + extra_prefix + value );
             set_system_variable( watch_variable_name + unique, path );
