@@ -1731,9 +1731,21 @@ string storage_channel_documents_prepare( const string& identity )
    return retval;
 }
 
-void storage_channel_documents_cancel_pending( const string& identity )
+void storage_channel_documents_cancel_pending( const char* p_identity )
 {
    guard g( g_mutex );
+
+   string identity;
+
+   if( p_identity && ( *p_identity != 0 ) )
+      identity = string( p_identity );
+   else
+   {
+      identity = get_session_variable( get_special_var_name( e_special_var_identity ) );
+
+      if( identity.empty( ) )
+         identity = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+   }
 
    if( identity.empty( ) )
       throw runtime_error( "unexpected null identity in storage_channel_documents_cancel_pending" );
