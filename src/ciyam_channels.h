@@ -54,7 +54,12 @@ bool CIYAM_BASE_DECL_SPEC storage_channel_documents_opened( const std::string& i
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_update( const std::string& identity, bool submitted = false );
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents_prepare( const std::string& identity );
 
-void CIYAM_BASE_DECL_SPEC storage_channel_documents_cancel_pending( const std::string& identity );
+void CIYAM_BASE_DECL_SPEC storage_channel_documents_cancel_pending( const char* p_identity = 0 );
+
+inline void storage_channel_documents_cancel_pending( const std::string& identity )
+{
+   storage_channel_documents_cancel_pending( identity.c_str( ) );
+}
 
 void CIYAM_BASE_DECL_SPEC storage_channel_documents_reject_waiting(
  const char* p_identity = 0, const char* p_file_list_for_rejection = 0 );

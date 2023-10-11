@@ -3044,11 +3044,11 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_create_only=$specification_\0_create_only arg_has_key_already= arg_func= arg_session_var=\
  arg_src_is_for_func= arg_sess_var_is_test= arg_pre_func=$specification_\0_pre_func`}\
 `,\
-`@eq`(`'\1`'`,`'trigger_function`'`)`&`@eq`(`$specification_\0_after_store`,`'`'`)
+`@eq`(`'\1`'`,`'trigger_function`'`)`&`@eq`(`$specification_\0_after_store`,`'`'`)`&`@eq`(`$specification_\0_for_destroy`,`'`'`)
 `{`#trigger_function.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_function=$specification_\0_function arg_arg1=$specification_\0_arg1\
- arg_arg2=$specification_\0_arg2 arg_tfield=$specification_\0_tfield arg_create_only=$specification_\0_create_only\
- arg_update_only=$specification_\0_update_only arg_skip_restore=$specification_\0_skip_restore`}\
+ arg_arg2=$specification_\0_arg2 arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
+ arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only arg_skip_restore=$specification_\0_skip_restore`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_parent_update_field`'`)`&`@eq`(`$specification_\0_for_destroy`,`'`'`)`&`@eq`(`$specification_\0_after_store`,`'`'`)
 `{`#trigger_parent_update_field.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
@@ -3226,8 +3226,8 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `@eq`(`'\1`'`,`'trigger_function`'`)`&`@eq`(`$specification_\0_after_store`,`'true`'`)
 `{`#trigger_function.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_function=$specification_\0_function arg_arg1=$specification_\0_arg1\
- arg_arg2=$specification_\0_arg2 arg_tfield=$specification_\0_tfield arg_create_only=$specification_\0_create_only\
- arg_update_only=$specification_\0_update_only arg_skip_restore=$specification_\0_skip_restore`}\
+ arg_arg2=$specification_\0_arg2 arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
+ arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only arg_skip_restore=$specification_\0_skip_restore`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_parent_update_field`'`)`&`@eq`(`$specification_\0_for_destroy`,`'`'`)`&`@eq`(`$specification_\0_after_store`,`'true`'`)
 `{`#trigger_parent_update_field.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
@@ -3329,6 +3329,12 @@ void `{`$full_class_name`}::impl::for_destroy( bool is_internal )
  arg_script_arg=$specification_\0_script_arg arg_async=$specification_\0_async\
  arg_pre_func=$specification_\0_pre_func arg_skip_restore=$specification_\0_skip_restore\
  arg_add_dead_key=$specification_\0_add_dead_key`}\
+`,\
+`@eq`(`'\1`'`,`'trigger_function`'`)`&`@eq`(`$specification_\0_for_destroy`,`'true`'`)
+`{`#trigger_function.spec.xrep section=for_destroy class_name=$class_name module_name=$module_name\
+ arg_id=$specification_\0_id arg_function=$specification_\0_function arg_arg1=$specification_\0_arg1\
+ arg_arg2=$specification_\0_arg2 arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
+ arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only arg_skip_restore=$specification_\0_skip_restore`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_parent_update_field`'`)`&`@eq`(`$specification_\0_for_destroy`,`'true`'`)
 `{`#trigger_parent_update_field.spec.xrep section=for_destroy class_name=$class_name module_name=$module_name\
