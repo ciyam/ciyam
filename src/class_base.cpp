@@ -2325,6 +2325,18 @@ void class_base::add_required_transients( set< string >& required_transients )
 
 void class_base::set_key( const string& new_key, bool skip_fk_handling )
 {
+   string new_key_value( new_key );
+
+   bool is_optional_fk = false;
+
+   if( !new_key_value.empty( ) && new_key_value[ 0 ] == '?' )
+   {
+      is_optional_fk = true;
+      new_key_value.erase( 0, 1 );
+   }
+
+   instance_check_rc rc = e_instance_check_rc_okay;
+
    // NOTE: Although potentially allowing the creation of an invalid record it is
    // being permitted for an object to bypass the normal FK locking and the check
    // for record existence especially for the situation where a child record that
@@ -2340,7 +2352,7 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
    // NOTE: Records being created for peers also will bypass FK existence checking
    // if the FK record was marked as a peer targeted record (as it will not exist).
    if( get_is_for_peer( )
-    && ( new_key == get_session_variable(
+    && ( new_key_value == get_session_variable(
     get_special_var_name( e_special_var_peer_clone_key ) ) ) )
    {
       skip_fk_handling = true;
@@ -2349,13 +2361,13 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
       {
          if( !p_graph_parent->in_op_begin
           && ( p_graph_parent->op == e_op_type_create || p_graph_parent->op == e_op_type_update ) )
-            p_graph_parent->set_foreign_key_value( graph_parent_fk_field, new_key );
+            p_graph_parent->set_foreign_key_value( graph_parent_fk_field, new_key_value );
       }
    }
 
    if( ( get_persistence_type( ) == 0 ) // i.e. SQL persistence
-    && ( new_key.size( ) > c_max_key_length ) )
-      throw runtime_error( new_key + " exceeds max key length of " + to_string( c_max_key_length ) );
+    && ( new_key_value.size( ) > c_max_key_length ) )
+      throw runtime_error( new_key_value + " exceeds max key length of " + to_string( c_max_key_length ) );
 
    if( p_graph_parent && is_singular && !is_fetching && !skip_fk_handling && !graph_parent_fk_field.empty( ) )
    {
@@ -2370,29 +2382,29 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
          // setting the key to an empty string will result in the foreign key's link lock (if held) being
          // released. Whether attempting to link to a new foreign key or unlinking from the current value
          // the derived class might throw an exception via the "set_foreign_key_value" function.
-         if( !new_key.empty( ) )
+         if( !new_key_value.empty( ) )
          {
             // NOTE: If a record that is being created by a session is used (prior to the actual DB store
             // operation) as a FK then rather than attempt to lock and read the record (which would fail)
             // just copy the values from the record being created.
-            if( is_create_locked_by_own_session( *this, new_key.c_str( ), true ) )
+            if( is_create_locked_by_own_session( *this, new_key_value.c_str( ), true ) )
             {
                lazy_fetch_key.erase( );
                found_locked_instance = true;
 
-               p_graph_parent->set_foreign_key_value( graph_parent_fk_field, new_key );
+               p_graph_parent->set_foreign_key_value( graph_parent_fk_field, new_key_value );
 
                if( p_impl->foreign_key_locks.find( graph_parent_fk_field ) != p_impl->foreign_key_locks.end( ) )
                   release_obtained_lock( p_impl->foreign_key_locks[ graph_parent_fk_field ] );
             }
             else
             {
-               fk_lock_handle = obtain_instance_fk_lock( get_lock_class_id( ), new_key, false );
+               fk_lock_handle = obtain_instance_fk_lock( get_lock_class_id( ), new_key_value, false );
 
                if( !fk_lock_handle )
-                  throw runtime_error( "unable to obtain lock for '" + new_key + "'" );
+                  throw runtime_error( "unable to obtain lock for '" + new_key_value + "'" );
 
-               lazy_fetch_key = new_key;
+               lazy_fetch_key = new_key_value;
             }
          }
          else
@@ -2408,9 +2420,15 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
                // NOTE: The foreign key's existence is now checked, however, as a performance optimsation
                // this can be omitted during a restore (as invalid foreign keys should not be in the log).
                if( !lazy_fetch_key.empty( ) && !session_skip_fk_fetches( ) )
-                  instance_check( *this );
+                  instance_check( *this, ( is_optional_fk ? &rc : 0 ) );
 
-               p_graph_parent->set_foreign_key_value( graph_parent_fk_field, lazy_fetch_key );
+               if( rc == e_instance_check_rc_okay )
+                  p_graph_parent->set_foreign_key_value( graph_parent_fk_field, lazy_fetch_key );
+               else
+               {
+                  if( fk_lock_handle )
+                     release_obtained_lock( fk_lock_handle );
+               }
             }
             catch( ... )
             {
@@ -2419,15 +2437,18 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
                throw;
             }
 
-            foreign_key_lock_container& foreign_key_locks( p_graph_parent->p_impl->foreign_key_locks );
+            if( rc == e_instance_check_rc_okay )
+            {
+               foreign_key_lock_container& foreign_key_locks( p_graph_parent->p_impl->foreign_key_locks );
 
-            if( foreign_key_locks.find( graph_parent_fk_field ) != foreign_key_locks.end( ) )
-               release_obtained_lock( foreign_key_locks[ graph_parent_fk_field ] );
+               if( foreign_key_locks.find( graph_parent_fk_field ) != foreign_key_locks.end( ) )
+                  release_obtained_lock( foreign_key_locks[ graph_parent_fk_field ] );
 
-            if( fk_lock_handle )
-               foreign_key_locks[ graph_parent_fk_field ] = fk_lock_handle;
-            else
-               foreign_key_locks.erase( graph_parent_fk_field );
+               if( fk_lock_handle )
+                  foreign_key_locks[ graph_parent_fk_field ] = fk_lock_handle;
+               else
+                  foreign_key_locks.erase( graph_parent_fk_field );
+            }
          }
       }
       else
@@ -2437,13 +2458,14 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
 
          // NOTE: If the key value of a foreign key is being set in this manner then the
          // instance (if present) will be fetched when any of its field values are read.
-         lazy_fetch_key = new_key;
+         lazy_fetch_key = new_key_value;
 
          p_graph_parent->set_foreign_key_value( graph_parent_fk_field, lazy_fetch_key );
       }
    }
 
-   key = new_key;
+   if( rc == e_instance_check_rc_okay )
+      key = new_key_value;
 }
 
 #ifdef __BORLANDC__
