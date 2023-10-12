@@ -1,5 +1,18 @@
 storage_init ciyam
 session_variable @attached_file_path .
+object_create 100 100100
+1
+object_op_update 1 guest
+object_execute 1 get Workgroup
+guests
+object_execute 1 set "Workgroup crap"
+Error: Workgroup record 'crap' was not found.
+object_execute 1 set "Workgroup ?crap"
+okay
+object_execute 1 get Workgroup
+guests
+object_op_cancel 1
+object_destroy 1
 pc guest 20120102 100 105100 guest_model "105101=Sample,300500=guests,105102=0.1,105103=2012,105104=M001,105112=0,105118=0"
 guest_model
 pf 100 105100 guest_model "105101,105102,105103,105104,105105,105106,105107,105108,105109,105110,105111,105112,105113,105114,105118"
