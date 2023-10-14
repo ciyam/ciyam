@@ -1,5 +1,5 @@
 ** File Info
-Version: 1.0
+Version: 1.1
 Num Logs = 1
 Num Trans = 0
 Num Writers = 0
@@ -54,7 +54,7 @@ txn: 0000000000000004          txo: 0000000000000000               flags: lk=0 t
 No freelist entries.
 
 ** Transaction Log Info
-version = 1.0
+version = 1.1
 sequence = 1
 entry_offs = 1092
 append_offs = 1903

@@ -1,5 +1,5 @@
 ** File Info
-Version: 1.0
+Version: 1.1
 Num Logs = 0
 Num Trans = 0
 Num Writers = 0
