@@ -185,15 +185,20 @@ void throw_ods_error( const string& s )
 // format would no longer be compatible, however, if a "minor" version change has occurred then it
 // should still be possible to operate on previous file formats (with the same "major" version).
 const int16_t c_major_ver = 1;
-const int16_t c_minor_ver = 0;
+const int16_t c_minor_ver = 1;
+
+const int64_t c_prior_minor_ver = 0;
 
 const int16_t c_version = ( c_major_ver << 8 ) | c_minor_ver;
+const int16_t c_prior_version = ( c_major_ver << 8 ) | c_prior_minor_ver;
 
 const int16_t c_version_mask = 0x7fff;
 const int16_t c_encrypted_flag = 0x8000;
 
 const int16_t c_version_major_mask = 0x7f00;
 const int16_t c_version_minor_mask = 0x00ff;
+
+const int16_t c_stream_cipher_mask = 0x0003; // i.e. lower two bits of the minor version
 
 const int64_t c_bit_1 = UINT64_C( 1 );
 const int64_t c_bit_2 = UINT64_C( 2 );
@@ -213,6 +218,41 @@ string format_version( int16_t version )
    osstr << ( ( version & c_version_major_mask ) >> 8 ) << '.' << ( version & c_version_minor_mask );
 
    return osstr.str( );
+}
+
+void check_version( int16_t version )
+{
+   bool valid = false;
+
+   if( ( version & c_version_mask ) == c_version )
+      valid = true;
+   else if( ( version & c_version_mask ) == c_prior_version )
+      valid = true;
+
+   if( !valid )
+      THROW_ODS_ERROR( "incompatible ODS version found" );
+}
+
+stream_cipher determine_stream_cipher( int16_t version )
+{
+   stream_cipher cipher = e_stream_cipher_bd_shift;
+
+   switch( version & c_stream_cipher_mask )
+   {
+      case 1:
+      cipher = e_stream_cipher_chacha20;
+      break;
+
+      case 2:
+      cipher = e_stream_cipher_dbl_hash;
+      break;
+
+      case 3:
+      // FUTURE: Available when necessary.
+      break;
+   }
+
+   return cipher;
 }
 
 class log_stream : public read_write_stream
@@ -362,8 +402,7 @@ struct log_info
    {
       is.read( ( char* )&version, sizeof( version ) );
 
-      if( ( version & c_version_mask ) != c_version )
-         THROW_ODS_ERROR( "incompatible log_info version found" );
+      check_version( version );
 
       is.read( ( char* )&sequence, sizeof( sequence ) );
       is.read( ( char* )&val_hash, sizeof( val_hash ) );
@@ -382,8 +421,7 @@ struct log_info
    {
       rs.read( ( unsigned char* )&version, sizeof( version ) );
 
-      if( ( version & c_version_mask ) != c_version )
-         THROW_ODS_ERROR( "incompatible log_info version found" );
+      check_version( version );
 
       rs.read( ( unsigned char* )&sequence, sizeof( sequence ) );
       rs.read( ( unsigned char* )&val_hash, sizeof( val_hash ) );
@@ -733,14 +771,15 @@ struct log_entry_item
    int64_t index_entry_id;
 };
 
-void init_key_buffer( char* p_key_buf, size_t buf_len, int64_t num, const string& pwd_hash )
+void init_key_buffer( char* p_key_buf, size_t buf_len,
+ int64_t num, const string& pwd_hash, stream_cipher cipher_type )
 {
    stringstream ss( string( buf_len, '\0' ) );
 
    // NOTE: Create a unique key pad for every buffer number.
    sha256 hash( pwd_hash + to_string( num ) );
 
-   crypt_stream( ss, hash.get_digest_as_string( ) );
+   crypt_stream( ss, hash.get_digest_as_string( ), cipher_type );
 
    string key_pad( ss.str( ) );
 
@@ -2232,6 +2271,7 @@ struct ods::impl
     is_restoring( false ),
     force_padding( false ),
     using_tranlog( false ),
+    cipher_type( e_stream_cipher_bd_shift ),
     trans_level( 0 ),
     tranlog_offset( 0 ),
     read_from_trans( false ),
@@ -2261,6 +2301,8 @@ struct ods::impl
 
    bool force_padding;
    bool using_tranlog;
+
+   stream_cipher cipher_type;
 
    thread_id dummy_thread_id;
 
@@ -2686,6 +2728,7 @@ ods::ods(
             THROW_ODS_ERROR( "incorrect password" );
 
          using_tranlog = true;
+
          p_impl->is_corrupt = true;
       }
       else if( using_tranlog )
@@ -2733,6 +2776,9 @@ ods::ods(
 
          tranlog_info.read( inpf );
 
+         if( tranlog_info.version != p_impl->rp_header_info->version )
+            THROW_ODS_ERROR( "database transaction log version mismatch" );
+
          if( tranlog_info.sequence != p_impl->rp_header_info->num_logs )
             THROW_ODS_ERROR( "database transaction log sequence mismatch" );
 
@@ -2754,10 +2800,9 @@ ods::ods(
    }
    else
    {
-      p_impl->rp_header_info->version = c_version;
-
-      if( p_impl->is_encrypted )
-         p_impl->rp_header_info->version |= c_encrypted_flag;
+      // NOTE: Use "tranlog_info.version" to ensure that if a tx log was found
+      // then a newly created header file is given its matching version number.
+      p_impl->rp_header_info->version = tranlog_info.version;
 
       if( using_tranlog )
       {
@@ -2781,6 +2826,8 @@ ods::ods(
       if( !file_exists( p_impl->data_file_name ) )
          THROW_ODS_ERROR( "could not find database data file" );
    }
+
+   p_impl->cipher_type = determine_stream_cipher( p_impl->rp_header_info->version );
 
    p_impl->rp_open_store_ref_count = new int( 0 );
 
@@ -2959,7 +3006,12 @@ void ods::reconstruct_database( progress* p_progress )
    if( !p_impl->using_tranlog )
       THROW_ODS_ERROR( "cannot reconstruct database unless using a transaction log" );
    else
+   {
       restore_from_transaction_log( true, p_progress );
+
+      p_impl->is_new = false;
+      p_impl->is_corrupt = false;
+   }
 }
 
 void ods::repair_corrupt_database( progress* p_progress )
@@ -2970,6 +3022,9 @@ void ods::repair_corrupt_database( progress* p_progress )
          rollback_dead_transactions( p_progress );
       else
          restore_from_transaction_log( false, p_progress );
+
+      p_impl->is_new = false;
+      p_impl->is_corrupt = false;
    }
 }
 
@@ -4888,7 +4943,8 @@ void ods::open_store( )
 #ifdef ODS_DEBUG
    ostringstream osstr;
    osstr << "(header info read from store)"
-    << "\nversion = " << p_impl->rp_header_info->version
+    << "\nversion = 0x0" << hex << ( p_impl->rp_header_info->version & c_version_mask ) << dec
+    << ( ( p_impl->rp_header_info->version & c_encrypted_flag ) ? " (encrypted)" : "" )
     << ", num_logs = " << p_impl->rp_header_info->num_logs
     << ", num_trans = " << p_impl->rp_header_info->num_trans
     << ", num_writers = " << p_impl->rp_header_info->num_writers
@@ -4903,8 +4959,7 @@ void ods::open_store( )
    DEBUG_LOG( osstr.str( ) );
 #endif
 
-   if( ( p_impl->rp_header_info->version & c_version_mask ) != c_version )
-      THROW_ODS_ERROR( "incompatible database header version found" );
+   check_version( p_impl->rp_header_info->version );
 
    if( p_impl->rp_header_info->data_transform_id != last_data_transformation )
       p_impl->rp_ods_data_cache_buffer->clear( );
@@ -5961,6 +6016,8 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
    if( force_reconstruct )
    {
+      DEBUG_LOG( "*** force_reconstruct ***" );
+
       p_impl->rp_header_info->total_entries = 0;
       p_impl->rp_header_info->tranlog_offset = 0;
       p_impl->rp_header_info->transaction_id = 0;
@@ -6292,20 +6349,20 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                               if( commit && is_encrypted && tranlog_item.has_old_pos( ) )
                               {
                                  init_key_buffer( key_buffer,
-                                  c_data_bytes_per_item, crypt_opos / c_data_bytes_per_item, p_impl->pwd_hash );
+                                  c_data_bytes_per_item, crypt_opos / c_data_bytes_per_item, p_impl->pwd_hash, p_impl->cipher_type );
 
                                  init_key_buffer( key_buffer + c_data_bytes_per_item,
-                                  c_data_bytes_per_item, ( crypt_opos / c_data_bytes_per_item ) + 1, p_impl->pwd_hash );
+                                  c_data_bytes_per_item, ( crypt_opos / c_data_bytes_per_item ) + 1, p_impl->pwd_hash, p_impl->cipher_type );
 
                                  offs = crypt_opos % c_data_bytes_per_item;
 
                                  crypt_data_buffer( buffer, key_buffer + offs, chunk );
 
                                  init_key_buffer( key_buffer,
-                                  c_data_bytes_per_item, crypt_dpos / c_data_bytes_per_item, p_impl->pwd_hash );
+                                  c_data_bytes_per_item, crypt_dpos / c_data_bytes_per_item, p_impl->pwd_hash, p_impl->cipher_type );
 
                                  init_key_buffer( key_buffer + c_data_bytes_per_item,
-                                  c_data_bytes_per_item, ( crypt_dpos / c_data_bytes_per_item ) + 1, p_impl->pwd_hash );
+                                  c_data_bytes_per_item, ( crypt_dpos / c_data_bytes_per_item ) + 1, p_impl->pwd_hash, p_impl->cipher_type );
 
                                  offs = crypt_dpos % c_data_bytes_per_item;
 
@@ -7133,7 +7190,7 @@ void ods::set_read_data_pos( int64_t pos, bool force_get, bool skip_decrypt )
          if( !skip_decrypt && p_impl->is_encrypted )
          {
             init_key_buffer( p_impl->data_read_key_buffer.data,
-             c_data_bytes_per_item, data_read_buffer_num, p_impl->pwd_hash );
+             c_data_bytes_per_item, data_read_buffer_num, p_impl->pwd_hash, p_impl->cipher_type );
 
             crypt_data_buffer( p_impl->data_read_buffer.data,
              p_impl->data_read_key_buffer.data, c_data_bytes_per_item );
@@ -7171,7 +7228,7 @@ void ods::set_write_data_pos( int64_t pos, bool skip_decrypt, bool skip_encrypt 
          if( !skip_encrypt && p_impl->is_encrypted )
          {
             init_key_buffer( p_impl->data_write_key_buffer.data,
-             c_data_bytes_per_item, current_data_buffer_num, p_impl->pwd_hash );
+             c_data_bytes_per_item, current_data_buffer_num, p_impl->pwd_hash, p_impl->cipher_type );
 
             crypt_data_buffer( p_impl->data_write_buffer.data,
              p_impl->data_write_key_buffer.data, c_data_bytes_per_item );
@@ -7204,7 +7261,7 @@ void ods::set_write_data_pos( int64_t pos, bool skip_decrypt, bool skip_encrypt 
          if( !skip_decrypt && p_impl->is_encrypted )
          {
             init_key_buffer( p_impl->data_write_key_buffer.data,
-             c_data_bytes_per_item, data_write_buffer_num, p_impl->pwd_hash );
+             c_data_bytes_per_item, data_write_buffer_num, p_impl->pwd_hash, p_impl->cipher_type );
 
             crypt_data_buffer( p_impl->data_write_buffer.data,
              p_impl->data_write_key_buffer.data, c_data_bytes_per_item );
@@ -7234,7 +7291,7 @@ void ods::adjust_read_data_pos( int64_t adjust, bool skip_decrypt )
       if( !skip_decrypt && p_impl->is_encrypted )
       {
          init_key_buffer( p_impl->data_read_key_buffer.data,
-          c_data_bytes_per_item, data_read_buffer_num, p_impl->pwd_hash );
+          c_data_bytes_per_item, data_read_buffer_num, p_impl->pwd_hash, p_impl->cipher_type );
 
          crypt_data_buffer( p_impl->data_read_buffer.data,
           p_impl->data_read_key_buffer.data, c_data_bytes_per_item );
@@ -7261,7 +7318,7 @@ void ods::read_data_bytes( char* p_dest, int64_t len, bool skip_decrypt )
          if( !skip_decrypt && p_impl->is_encrypted )
          {
             init_key_buffer( p_impl->data_read_key_buffer.data,
-             c_data_bytes_per_item, data_read_buffer_num, p_impl->pwd_hash );
+             c_data_bytes_per_item, data_read_buffer_num, p_impl->pwd_hash, p_impl->cipher_type );
 
             crypt_data_buffer( p_impl->data_read_buffer.data,
              p_impl->data_read_key_buffer.data, c_data_bytes_per_item );
@@ -7324,7 +7381,7 @@ void ods::write_data_bytes( const char* p_src, int64_t len, bool skip_decrypt, b
          if( !skip_decrypt && p_impl->is_encrypted )
          {
             init_key_buffer( p_impl->data_write_key_buffer.data,
-             c_data_bytes_per_item, data_write_buffer_num, p_impl->pwd_hash );
+             c_data_bytes_per_item, data_write_buffer_num, p_impl->pwd_hash, p_impl->cipher_type );
 
             crypt_data_buffer( p_impl->data_write_buffer.data,
              p_impl->data_write_key_buffer.data, c_data_bytes_per_item );
@@ -7531,7 +7588,7 @@ void ods::set_read_trans_data_pos( int64_t pos )
       if( p_impl->is_encrypted )
       {
          init_key_buffer( trans_read_key_buffer.data,
-          c_trans_bytes_per_item, trans_read_data_buffer_num, p_impl->pwd_hash );
+          c_trans_bytes_per_item, trans_read_data_buffer_num, p_impl->pwd_hash, p_impl->cipher_type );
 
          crypt_data_buffer( trans_read_buffer.data,
           trans_read_key_buffer.data, c_trans_bytes_per_item );
@@ -7567,7 +7624,7 @@ void ods::set_write_trans_data_pos( int64_t pos )
 
       if( p_impl->is_encrypted )
          init_key_buffer( trans_write_key_buffer.data,
-          c_trans_bytes_per_item, trans_write_data_buffer_num, p_impl->pwd_hash );
+          c_trans_bytes_per_item, trans_write_data_buffer_num, p_impl->pwd_hash, p_impl->cipher_type );
 
       if( pos % c_trans_bytes_per_item == 0 )
          memset( ( char* )&trans_write_buffer, '\0', sizeof( trans_data_buffer ) );
@@ -7609,7 +7666,7 @@ void ods::read_trans_data_bytes( char* p_dest, int64_t len )
          if( p_impl->is_encrypted )
          {
             init_key_buffer( trans_read_key_buffer.data,
-             c_trans_bytes_per_item, trans_read_data_buffer_num, p_impl->pwd_hash );
+             c_trans_bytes_per_item, trans_read_data_buffer_num, p_impl->pwd_hash, p_impl->cipher_type );
 
             crypt_data_buffer( trans_read_buffer.data,
              trans_read_key_buffer.data, c_trans_bytes_per_item );
@@ -7659,7 +7716,7 @@ void ods::write_trans_data_bytes( const char* p_src, int64_t len )
 
          if( p_impl->is_encrypted )
             init_key_buffer( trans_write_key_buffer.data,
-             c_trans_bytes_per_item, trans_write_data_buffer_num, p_impl->pwd_hash );
+             c_trans_bytes_per_item, trans_write_data_buffer_num, p_impl->pwd_hash, p_impl->cipher_type );
 
          if( p_src )
             p_src += chunk;
