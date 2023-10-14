@@ -51,9 +51,9 @@ validate       Create        Create       Prior to any attempt to store the reco
                                           called to perform all record validation and to provide feedback for
                                           end users of any validation issues.
 
-for_store      Create        Update       If the "validate" call found no issues then this function will next
-[starts a tx if not already in one]       be called prior to the record itself being stored. This function is
-                                          mostly intended for making necessary changes to other records (when
+for_store      Create        Update       If the "validate" call found no issues then this function is called
+[starts a tx if not already in one]       and then "validate" again prior to record storage. This function is
+[secondary *validate* before store]       mostly intended for making necessary changes to other records (when
                                           such other records do not require this record to have actually been
                                           created in the DB), and to provide calculated values that rely upon
                                           other DB records. Provided no exception occurs in this function the
@@ -114,13 +114,12 @@ validate       Update        Update       Prior to any attempt to store the reco
                                           called to perform all record validation and to provide feedback for
                                           end users of any validation issues.
 
-for_store      Update        Update       If the "validate" call found no issues then this function will next
-[starts a tx if not already in one]       be called prior to the record itself being stored. This function is
-                                          mostly intended for making necessary changes to other records (when
+for_store      Update        Update       If the "validate" call found no issues then this function is called
+[starts a tx if not already in one]       and then "validate" again prior to record storage. This function is
+[secondary *validate* before store]       mostly intended for making necessary changes to other records (when
                                           such other records do not require this record to have actually been
                                           created in the DB) and to provid calculated values that depend upon
                                           other DB records.
-
 
 after_store    Update        <none>       Assuming no error has occurred previously this function is the last
 [commits the tx if one was started]       step in the update process which allows further operations that are
@@ -241,4 +240,3 @@ It should be noted that when fetching multiple records via the protocol if the r
 if is generating PDF a default limit will be used otherwise the number of records returned is unlimited. When
 wanting to discontinue iteration in rules code by breaking out of an iteration loop the method "iterate_stop"
 needs to be called otherwise object state errors can occur.
-
