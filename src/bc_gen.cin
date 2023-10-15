@@ -118,9 +118,9 @@ ENTROPY_HASH_TERTIARY=$OUTPUT
 .file_put tertiary.key bc.$UUID.$SQUARED.key
 .file_put tertiary.pub bc.$UUID.$SQUARED.pub
 ;
-.file_crypt bc.$UUID.0.key @sid
-.file_crypt bc.$UUID.$MULTIPLE.key @sid
-.file_crypt bc.$UUID.$SQUARED.key @sid
+.file_crypt -encrypt -cipher=cc bc.$UUID.0.key @sid
+.file_crypt -encrypt -cipher=cc bc.$UUID.$MULTIPLE.key @sid
+.file_crypt -encrypt -cipher=cc bc.$UUID.$SQUARED.key @sid
 ;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"

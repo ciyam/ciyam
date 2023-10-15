@@ -302,6 +302,16 @@ file_crypt test abc
 file_crypt -recrypt test abc
 file_crypt test abc
 file_info -content test
+file_crypt -encrypt -cipher=cc test abc
+file_crypt -decrypt -cipher=bd test abc
+file_crypt -decrypt -cipher=dh test abc
+file_crypt -decrypt -cipher=cc test abc
+file_info -content test
+file_crypt -encrypt -cipher=dh test abc
+file_crypt -decrypt -cipher=bd test abc
+file_crypt -decrypt -cipher=cc test abc
+file_crypt -decrypt -cipher=dh test abc
+file_info -content test
 file_get test *test1/
 file_kill -recurse test
 file_put 1K*test1/~test.jpg test
