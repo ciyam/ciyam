@@ -2230,6 +2230,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool blobs_only = has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_blobs_only );
          bool blobs_only_repo = has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_blobs_only_repo );
          string repository( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_repository ) );
+         string cipher( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_cipher ) );
          string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_tag_or_hash ) );
          string password( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_password ) );
          string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_pubkey ) );
@@ -2263,8 +2264,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             else if( blobs_only_repo )
                target = e_crypt_target_blobs_only_repo;
 
+            crypt_stream_cipher stream_cipher = e_crypt_stream_cipher_bd;
+
+            if( !cipher.empty( ) )
+               stream_cipher = stream_cipher_value( cipher );
+
             crypt_file( repository, tag_or_hash, password,
-             recurse, target, &handler, &dtm, &total, operation );
+             recurse, target, &handler, &dtm, &total, operation, 0, stream_cipher );
          }
          catch( ... )
          {

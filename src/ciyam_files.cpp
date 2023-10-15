@@ -67,6 +67,10 @@ const char c_prefix_wildcard_separator = ':';
 
 const char* const c_time_stamp_tag_prefix = "ts.";
 
+const char* const c_stream_cipher_bd = "bd";
+const char* const c_stream_cipher_cc = "cc";
+const char* const c_stream_cipher_dh = "dh";
+
 const char* const c_file_archive_path = "path";
 const char* const c_file_archive_size_avail = "size_avail";
 const char* const c_file_archive_size_limit = "size_limit";
@@ -3218,9 +3222,27 @@ string hash_with_nonce( const string& hash, const string& nonce )
    return temp_hash.get_digest_as_string( );
 }
 
+crypt_stream_cipher stream_cipher_value( const string& str )
+{
+   crypt_stream_cipher stream_cipher = e_crypt_stream_cipher_bd;
+
+   if( !str.empty( ) && ( str != c_stream_cipher_bd ) )
+   {
+      if( str == c_stream_cipher_cc )
+         stream_cipher = e_crypt_stream_cipher_cc;
+      else if( str == c_stream_cipher_dh )
+         stream_cipher = e_crypt_stream_cipher_dh;
+      else
+         throw runtime_error( "unknown stream cipher '" + str + "'" );
+   }
+
+   return stream_cipher;
+}
+
 void crypt_file( const string& repository, const string& tag_or_hash,
  const string& password, bool recurse, crypt_target target, progress* p_progress,
- date_time* p_dtm, size_t* p_total, crypt_operation operation, set< string >* p_files_processed )
+ date_time* p_dtm, size_t* p_total, crypt_operation operation,
+ set< string >* p_files_processed, crypt_stream_cipher crypt_cipher )
 {
    string hash( tag_or_hash );
 
@@ -3254,6 +3276,19 @@ void crypt_file( const string& repository, const string& tag_or_hash,
    if( recurse && ( target == e_crypt_target_all ) && ( operation == e_crypt_operation_recrypt ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Attempt to recrypt recursively when not 'blobs only'." );
+
+   stream_cipher cipher = e_stream_cipher_bd_shift;
+
+   switch( crypt_cipher )
+   {
+      case e_crypt_stream_cipher_cc:
+      cipher = e_stream_cipher_chacha20;
+      break;
+
+      case e_crypt_stream_cipher_dh:
+      cipher = e_stream_cipher_dbl_hash;
+      break;
+   }
 
    auto_ptr< set< string > > ap_files_processed;
 
@@ -3321,7 +3356,7 @@ void crypt_file( const string& repository, const string& tag_or_hash,
          stringstream ss( file_data.substr( 1 ) );
 
          // NOTE: Use the file content hash as salt.
-         crypt_stream( ss, password + hash );
+         crypt_stream( ss, password + hash, cipher );
 
          string new_file_data( file_data.substr( 0, 1 ) );
 
@@ -3367,7 +3402,7 @@ void crypt_file( const string& repository, const string& tag_or_hash,
 
                if( !p_files_processed->count( next ) )
                   crypt_file( repository, next, password, recurse, target,
-                   p_progress, p_dtm, p_total, operation, p_files_processed );
+                   p_progress, p_dtm, p_total, operation, p_files_processed, crypt_cipher );
             }
          }
       }
@@ -3387,7 +3422,7 @@ void crypt_file( const string& repository, const string& tag_or_hash,
          stringstream ss( file_data.substr( 1 ) );
 
          // NOTE: Use the file content hash as salt.
-         crypt_stream( ss, password + hash );
+         crypt_stream( ss, password + hash, cipher );
 
          file_data.erase( 1 );
          file_data += ss.str( );
@@ -3397,7 +3432,7 @@ void crypt_file( const string& repository, const string& tag_or_hash,
          uncompressed_data = file_data;
 
          // FUTURE: This message should be handled as a server string message.
-         string bad_hash_error( "Invalid password to decrypt file '" + tag_or_hash + "'." );
+         string bad_hash_error( "Invalid cipher/password to decrypt file '" + tag_or_hash + "'." );
 
          bool recrypt = ( operation == e_crypt_operation_recrypt );
 
@@ -3467,7 +3502,7 @@ void crypt_file( const string& repository, const string& tag_or_hash,
 
                if( !p_files_processed->count( next ) )
                   crypt_file( repository, next, password, recurse, target,
-                   p_progress, p_dtm, p_total, operation, p_files_processed );
+                   p_progress, p_dtm, p_total, operation, p_files_processed, crypt_cipher );
             }
          }
       }

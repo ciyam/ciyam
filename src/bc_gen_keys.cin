@@ -97,7 +97,7 @@ ENTROPY_HASH=$OUTPUT
 ;
 .file_kill -q bc.$IDENT.$HEIGHT.key
 .file_put new_primary.key bc.$IDENT.$HEIGHT.key
-.file_crypt bc.$IDENT.$HEIGHT.key @sid
+.file_crypt -encrypt -cipher=cc bc.$IDENT.$HEIGHT.key @sid
 ;
 .file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
 ;
@@ -135,7 +135,7 @@ ENTROPY_HASH=$OUTPUT
 ;
 .file_kill -q bc.$IDENT.$HEIGHT.key
 .file_put new_primary.key bc.$IDENT.$HEIGHT.key
-.file_crypt bc.$IDENT.$HEIGHT.key @sid
+.file_crypt -encrypt -cipher=cc bc.$IDENT.$HEIGHT.key @sid
 ;
 .file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
 ;

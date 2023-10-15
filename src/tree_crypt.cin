@@ -51,6 +51,6 @@ ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
 @endif
 ;
 @ifdef $ARGS
- .file_crypt $PREFIX $OPTS $TAG_OR_HASH $~ARGS
+ .file_crypt $PREFIX $OPTS -cipher=cc $TAG_OR_HASH $~ARGS
 @endif
 @endif
