@@ -2264,13 +2264,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             else if( blobs_only_repo )
                target = e_crypt_target_blobs_only_repo;
 
-            crypt_stream_cipher stream_cipher = e_crypt_stream_cipher_bd;
+            stream_cipher cipher_value = e_stream_cipher_bd_shift;
 
             if( !cipher.empty( ) )
-               stream_cipher = stream_cipher_value( cipher );
+               cipher_value = stream_cipher_value( cipher );
 
             crypt_file( repository, tag_or_hash, password,
-             recurse, target, &handler, &dtm, &total, operation, 0, stream_cipher );
+             recurse, target, &handler, &dtm, &total, operation, 0, cipher_value );
          }
          catch( ... )
          {

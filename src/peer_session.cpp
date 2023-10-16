@@ -838,8 +838,12 @@ void process_repository_file( const string& blockchain,
             ap_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
          }
 
+         string stream_cipher( get_session_variable(
+          get_special_var_name( e_special_var_blockchain_stream_cipher ) ) );
+
          stringstream ss( file_content );
-         crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
+
+         crypt_stream( ss, ap_priv_key->construct_shared( pub_key ), stream_cipher_value( stream_cipher ) );
 
          file_data = ( char )type_and_extra + ss.str( );
 

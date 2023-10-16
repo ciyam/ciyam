@@ -156,6 +156,7 @@ const char* const c_special_variable_last_file_put = "@last_file_put";
 const char* const c_special_variable_num_put_files = "@num_put_files";
 const char* const c_special_variable_rewind_height = "@rewind_height";
 const char* const c_special_variable_shared_secret = "@shared_secret";
+const char* const c_special_variable_stream_cipher = "@stream_cipher";
 const char* const c_special_variable_sub_directory = "@sub_directory";
 const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_files_area_dir = "@files_area_dir";
@@ -211,6 +212,7 @@ const char* const c_special_variable_blockchain_op_list_hash = "@blockchain_op_l
 const char* const c_special_variable_blockchain_backup_height = "@blockchain_backup_height";
 const char* const c_special_variable_blockchain_put_list_hash = "@blockchain_put_list_hash";
 const char* const c_special_variable_blockchain_shared_height = "@blockchain_shared_height";
+const char* const c_special_variable_blockchain_stream_cipher = "@blockchain_stream_cipher";
 const char* const c_special_variable_blockchain_zenith_height = "@blockchain_zenith_height";
 const char* const c_special_variable_blockchain_checked_shared = "@blockchain_checked_shared";
 const char* const c_special_variable_blockchain_get_tree_files = "@blockchain_get_tree_files";
@@ -708,6 +710,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_shared_secret );
       break;
 
+      case e_special_var_stream_cipher:
+      s = string( c_special_variable_stream_cipher );
+      break;
+
       case e_special_var_sub_directory:
       s = string( c_special_variable_sub_directory );
       break;
@@ -922,6 +928,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_shared_height:
       s = string( c_special_variable_blockchain_shared_height );
+      break;
+
+      case e_special_var_blockchain_stream_cipher:
+      s = string( c_special_variable_blockchain_stream_cipher );
       break;
 
       case e_special_var_blockchain_zenith_height:

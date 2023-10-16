@@ -624,6 +624,8 @@ e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 ~test.jpg.00000
 file_crypt -encrypt -cipher=cc test abc
 file_crypt -decrypt -cipher=bd test abc
 Error: Invalid cipher/password to decrypt file 'test'.
+file_crypt -decrypt -cipher=xx test abc
+Error: unknown stream cipher 'xx'
 file_crypt -decrypt -cipher=dh test abc
 Error: Invalid cipher/password to decrypt file 'test'.
 file_crypt -decrypt -cipher=cc test abc

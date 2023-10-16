@@ -50,6 +50,13 @@ enum quote_style
    e_quote_style_windows_linux
 };
 
+enum stream_cipher
+{
+   e_stream_cipher_bd_shift,
+   e_stream_cipher_chacha20,
+   e_stream_cipher_dbl_hash,
+};
+
 enum special_var
 {
    e_special_var_bh,
@@ -164,6 +171,7 @@ enum special_var
    e_special_var_num_put_files,
    e_special_var_rewind_height,
    e_special_var_shared_secret,
+   e_special_var_stream_cipher,
    e_special_var_sub_directory,
    e_special_var_update_fields,
    e_special_var_files_area_dir,
@@ -218,6 +226,7 @@ enum special_var
    e_special_var_blockchain_backup_height,
    e_special_var_blockchain_put_list_hash,
    e_special_var_blockchain_shared_height,
+   e_special_var_blockchain_stream_cipher,
    e_special_var_blockchain_zenith_height,
    e_special_var_blockchain_checked_shared,
    e_special_var_blockchain_get_tree_files,

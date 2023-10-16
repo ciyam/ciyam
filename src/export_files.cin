@@ -7,6 +7,10 @@
 #NOTE: The script requires a list tag and a local directory to export the files below.
 @else
 ;
+@ifdef $CIYAM_STREAM_CIPHER
+.session_variable @stream_cipher $CIYAM_STREAM_CIPHER
+@endif
+;
 @ifdef $REPO_CRYPT_PASSWORD
 .session_variable @repo_crypt_password $REPO_CRYPT_PASSWORD
 @else
@@ -15,6 +19,9 @@
 .session_variable @encrypted_password "$OUTPUT"
 @endif
 @endif
+;
+.session_variable @blockchain_archive_path
+OLD_ARCHIVE_PATH=$OUTPUT
 ;
 @ifdef $CIYAM_ARCHIVE_PATH
 .session_variable @blockchain_archive_path "$CIYAM_ARCHIVE_PATH"
@@ -32,8 +39,18 @@
 ;
 .file_get $1 *$2/
 ;
+@ifdef $CIYAM_STREAM_CIPHER
+.session_variable @stream_cipher ""
+@endif
+;
+@ifdef $REPO_CRYPT_PASSWORD
+.session_variable @repo_crypt_password ""
+@else
 @ifdef $ENCRYPTED_PASSWORD
 .session_variable @encrypted_password ""
 @endif
+@endif
+;
+.session_variable @blockchain_archive_path "$OLD_ARCHIVE_PATH"
 ;
 @endif
