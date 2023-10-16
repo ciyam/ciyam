@@ -14,6 +14,9 @@
 
 #  include "config.h"
 #  include "ptypes.h"
+#  include "ciyam_common.h"
+
+stream_cipher stream_cipher_value( const std::string& str );
 
 void bd_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
 
@@ -35,13 +38,6 @@ inline void db_crypt_stream( std::iostream& io, const std::string& key )
 {
    db_crypt_stream( io, key.c_str( ), key.length( ) );
 }
-
-enum stream_cipher
-{
-   e_stream_cipher_bd_shift,
-   e_stream_cipher_chacha20,
-   e_stream_cipher_dbl_hash,
-};
 
 inline void crypt_stream( std::iostream& io, const char* p_key,
  size_t key_length, stream_cipher cipher = e_stream_cipher_bd_shift )

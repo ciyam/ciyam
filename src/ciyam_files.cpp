@@ -67,10 +67,6 @@ const char c_prefix_wildcard_separator = ':';
 
 const char* const c_time_stamp_tag_prefix = "ts.";
 
-const char* const c_stream_cipher_bd = "bd";
-const char* const c_stream_cipher_cc = "cc";
-const char* const c_stream_cipher_dh = "dh";
-
 const char* const c_file_archive_path = "path";
 const char* const c_file_archive_size_avail = "size_avail";
 const char* const c_file_archive_size_limit = "size_limit";
@@ -481,10 +477,13 @@ void encrypt_file_buffer( const string& hash, const string& repository,
    string file_data;
    file_buffer.copy_to_string( file_data, offset, length );
 
+   string stream_cipher( get_session_variable(
+    get_special_var_name( e_special_var_stream_cipher ) ) );
+
    stringstream ss( file_data.substr( 1 ) );
 
    // NOTE: Use the file content hash as salt.
-   crypt_stream( ss, crypt_password + hash );
+   crypt_stream( ss, crypt_password + hash, stream_cipher_value( stream_cipher ) );
 
    string new_file_data( file_data.substr( 0, 1 ) );
 
@@ -3222,27 +3221,10 @@ string hash_with_nonce( const string& hash, const string& nonce )
    return temp_hash.get_digest_as_string( );
 }
 
-crypt_stream_cipher stream_cipher_value( const string& str )
-{
-   crypt_stream_cipher stream_cipher = e_crypt_stream_cipher_bd;
-
-   if( !str.empty( ) && ( str != c_stream_cipher_bd ) )
-   {
-      if( str == c_stream_cipher_cc )
-         stream_cipher = e_crypt_stream_cipher_cc;
-      else if( str == c_stream_cipher_dh )
-         stream_cipher = e_crypt_stream_cipher_dh;
-      else
-         throw runtime_error( "unknown stream cipher '" + str + "'" );
-   }
-
-   return stream_cipher;
-}
-
-void crypt_file( const string& repository, const string& tag_or_hash,
- const string& password, bool recurse, crypt_target target, progress* p_progress,
- date_time* p_dtm, size_t* p_total, crypt_operation operation,
- set< string >* p_files_processed, crypt_stream_cipher crypt_cipher )
+void crypt_file( const string& repository,
+ const string& tag_or_hash, const string& password, bool recurse,
+ crypt_target target, progress* p_progress, date_time* p_dtm, size_t* p_total,
+ crypt_operation operation, set< string >* p_files_processed, stream_cipher cipher )
 {
    string hash( tag_or_hash );
 
@@ -3276,19 +3258,6 @@ void crypt_file( const string& repository, const string& tag_or_hash,
    if( recurse && ( target == e_crypt_target_all ) && ( operation == e_crypt_operation_recrypt ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Attempt to recrypt recursively when not 'blobs only'." );
-
-   stream_cipher cipher = e_stream_cipher_bd_shift;
-
-   switch( crypt_cipher )
-   {
-      case e_crypt_stream_cipher_cc:
-      cipher = e_stream_cipher_chacha20;
-      break;
-
-      case e_crypt_stream_cipher_dh:
-      cipher = e_stream_cipher_dbl_hash;
-      break;
-   }
 
    auto_ptr< set< string > > ap_files_processed;
 
@@ -3402,7 +3371,7 @@ void crypt_file( const string& repository, const string& tag_or_hash,
 
                if( !p_files_processed->count( next ) )
                   crypt_file( repository, next, password, recurse, target,
-                   p_progress, p_dtm, p_total, operation, p_files_processed, crypt_cipher );
+                   p_progress, p_dtm, p_total, operation, p_files_processed, cipher );
             }
          }
       }
@@ -3502,7 +3471,7 @@ void crypt_file( const string& repository, const string& tag_or_hash,
 
                if( !p_files_processed->count( next ) )
                   crypt_file( repository, next, password, recurse, target,
-                   p_progress, p_dtm, p_total, operation, p_files_processed, crypt_cipher );
+                   p_progress, p_dtm, p_total, operation, p_files_processed, cipher );
             }
          }
       }
@@ -3557,10 +3526,13 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
          else if( crypt_password == get_special_var_name( e_special_var_sid ) )
             get_identity( crypt_password, false, true );
 
+         string stream_cipher( get_session_variable(
+          get_special_var_name( e_special_var_stream_cipher ) ) );
+
          stringstream ss( content.substr( 1 ) );
 
          // NOTE: Use the file content hash as salt.
-         crypt_stream( ss, crypt_password + hash );
+         crypt_stream( ss, crypt_password + hash, stream_cipher_value( stream_cipher ) );
 
          string new_file_data( content.substr( 0, 1 ) );
 

@@ -11,6 +11,10 @@ SUB_DIRECTORY=$3
 FILES_EXPRESSION=@repstr:;/,:$4
 PATHS_EXPRESSION=@repstr:;/,:$5
 ;
+@ifdef $CIYAM_STREAM_CIPHER
+.session_variable @stream_cipher $CIYAM_STREAM_CIPHER
+@endif
+;
 HAS_REPO_LIST_INFO=
 .system_variable @blockchain_backup_identity
 @ifdef $OUTPUT
@@ -283,8 +287,16 @@ TAG_NAME=@repstr:\//.:$NEXT_PATH
 ;
 @:EXIT_PATH
 ;
+@ifdef $CIYAM_STREAM_CIPHER
+.session_variable @stream_cipher ""
+@endif
+;
+@ifdef $REPO_CRYPT_PASSWORD
+.session_variable @repo_crypt_password ""
+@else
 @ifdef $ENCRYPTED_PASSWORD
 .session_variable @encrypted_password ""
+@endif
 @endif
 ;
 @endif

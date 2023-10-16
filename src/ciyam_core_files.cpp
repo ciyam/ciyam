@@ -731,8 +731,12 @@ void decrypt_pulled_peer_file( const string& dest_hash,
          file_data = extract_file( src_hash, "", 0, 0, &type_and_extra, &is_encrypted, true );
    }
 
+   string stream_cipher( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_stream_cipher ) ) );
+
    stringstream ss( file_data );
-   crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
+
+   crypt_stream( ss, ap_priv_key->construct_shared( pub_key ), stream_cipher_value( stream_cipher ) );
 
    string raw_file_data( ( char )type_and_extra + ss.str( ) );
 

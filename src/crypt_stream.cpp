@@ -53,6 +53,27 @@ const size_t c_work_buffer_pos_mask = 0x7ffff00;
 
 const size_t c_password_rounds_multiplier = 3;
 
+const char* const c_stream_cipher_bd_shift = "bd";
+const char* const c_stream_cipher_chacha20 = "cc";
+const char* const c_stream_cipher_dbl_hash = "dh";
+
+}
+
+stream_cipher stream_cipher_value( const string& str )
+{
+   stream_cipher cipher = e_stream_cipher_bd_shift;
+
+   if( !str.empty( ) && ( str != c_stream_cipher_bd_shift ) )
+   {
+      if( str == c_stream_cipher_chacha20 )
+         cipher = e_stream_cipher_chacha20;
+      else if( str == c_stream_cipher_dbl_hash )
+         cipher = e_stream_cipher_dbl_hash;
+      else
+         throw runtime_error( "unknown stream cipher '" + str + "'" );
+   }
+
+   return cipher;
 }
 
 // NOTE: This algorithm is an XOR approach for encrypting a stream in place
