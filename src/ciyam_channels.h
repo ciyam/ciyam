@@ -20,6 +20,10 @@
 #     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
+class mutex;
+
+mutex& CIYAM_BASE_DECL_SPEC get_mutex_for_ciyam_channels( );
+
 class class_base;
 
 void CIYAM_BASE_DECL_SPEC lock_peer_channel( const class_base& cb, const std::string& identity );

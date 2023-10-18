@@ -34,11 +34,10 @@
 #include "utilities.h"
 #include "class_base.h"
 #include "ciyam_base.h"
+#include "ciyam_files.h"
 #ifdef SSL_SUPPORT
 #  include "crypto_keys.h"
 #endif
-#include "hash_chain.h"
-#include "ciyam_files.h"
 #include "crypt_stream.h"
 #include "ciyam_variables.h"
 
@@ -53,22 +52,7 @@ namespace
 
 const unsigned int c_max_core_line_size = 1000;
 
-struct block_info
-{
-   block_info( ) : version( 0 ), unix_time_value( 0 ) { }
-
-   size_t version;
-
-   string data_file_hash;
-
-   string public_key_hash;
-   string secondary_key_hash;
-   string tertiary_key_hash;
-
-   uint64_t unix_time_value;
-};
-
-void verify_block( const string& content, bool check_sigs, block_info* p_block_info = 0 )
+void verify_block( const string& content, bool check_dependents )
 {
    guard g( g_mutex, "verify_block" );
 
@@ -80,7 +64,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
    if( lines.empty( ) )
       throw runtime_error( "unexpected empty block content" );
 
-   string identity, targeted_identity;
+   string identity, stream_cipher, targeted_identity;
 
    size_t version = 0;
    size_t num_tree_items = 0;
@@ -105,6 +89,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
       bool has_height = false;
       bool has_identity = false;
+      bool has_stream_cipher = false;
       bool has_num_tree_items = false;
       bool has_targeted_identity = false;
 
@@ -114,20 +99,27 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
          if( next_attribute.empty( ) )
             throw runtime_error( "unexpected empty attribute in block header '" + header + "'" );
 
-         if( i > 1 && ( !has_num_tree_items || !has_targeted_identity ) )
+         if( i > 1 && ( !has_num_tree_items || !has_stream_cipher || !has_targeted_identity ) )
          {
-            if( next_attribute.find( c_file_type_core_block_header_num_tree_items_prefix ) == 0 )
+            if( next_attribute.find( c_file_type_core_block_header_num_items_prefix ) == 0 )
             {
                has_num_tree_items = true;
 
-               num_tree_items = from_string< size_t >( next_attribute.substr(
-                strlen( c_file_type_core_block_header_num_tree_items_prefix ) ) );
+               num_tree_items = from_string< size_t >(
+                next_attribute.substr( strlen( c_file_type_core_block_header_num_items_prefix ) ) );
 
-               if( !p_block_info )
-               {
-                  set_session_variable(
-                   get_special_var_name( e_special_var_blockchain_num_tree_items ), to_string( num_tree_items ) );
-               }
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_num_tree_items ), to_string( num_tree_items ) );
+
+               continue;
+            }
+            else if( next_attribute.find( c_file_type_core_block_header_stream_cipher_prefix ) == 0 )
+            {
+               has_stream_cipher = true;
+
+               stream_cipher = next_attribute.substr( strlen( c_file_type_core_block_header_stream_cipher_prefix ) );
+
+               set_session_variable( get_special_var_name( e_special_var_blockchain_stream_cipher ), stream_cipher );
 
                continue;
             }
@@ -137,8 +129,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
                targeted_identity = next_attribute.substr( strlen( c_file_type_core_block_header_targeted_ident_prefix ) );
 
-               if( !p_block_info )
-                  set_session_variable( get_special_var_name( e_special_var_blockchain_targeted_identity ), targeted_identity );
+               set_session_variable( get_special_var_name( e_special_var_blockchain_targeted_identity ), targeted_identity );
 
                continue;
             }
@@ -160,8 +151,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
             block_height = from_string< uint64_t >( value );
 
-            if( !p_block_info )
-               set_session_variable( get_special_var_name( e_special_var_blockchain_height ), value );
+            set_session_variable( get_special_var_name( e_special_var_blockchain_height ), value );
          }
          else if( !has_identity )
          {
@@ -180,9 +170,6 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
             string version_str( next_attribute.substr( strlen( c_file_type_core_block_header_version_number_prefix ) ) );
 
             version = from_string< size_t >( version_str );
-
-            if( p_block_info )
-               p_block_info->version = version;
          }
          else
             throw runtime_error( "unexpected extraneous attribute in block header '" + header + "'" );
@@ -191,8 +178,6 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
       if( identity.length( ) != c_bc_identity_length )
          throw runtime_error( "unexpected missing or incorrect identity attribute in block header '" + header + "'" );
    }
-
-   block_info info;
 
    string hind_hash, last_block_hash, op_list_hash, public_key_hash, tree_root_hash, signature_file_hash;
 
@@ -238,11 +223,8 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
             string primary_pubkey_hash( hex_encode( base64::decode( next_attribute.substr( 0, pos ) ) ) );
 
-            if( p_block_info )
-               p_block_info->public_key_hash = primary_pubkey_hash;
-            else
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), primary_pubkey_hash );
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), primary_pubkey_hash );
 
             if( pos != string::npos )
             {
@@ -254,11 +236,8 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
                string secondary_pubkey_hash( hex_encode( base64::decode( next_attribute.substr( 0, pos ) ) ) );
 
-               if( p_block_info )
-                  p_block_info->secondary_key_hash = secondary_pubkey_hash;
-               else
-                  set_session_variable(
-                   get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
 
                if( pos != string::npos )
                {
@@ -268,11 +247,8 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
                   string tertiary_pubkey_hash( hex_encode( base64::decode( next_attribute ) ) );
 
-                  if( p_block_info )
-                     p_block_info->tertiary_key_hash = tertiary_pubkey_hash;
-                  else
-                     set_session_variable(
-                      get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ), tertiary_pubkey_hash );
+                  set_session_variable(
+                   get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ), tertiary_pubkey_hash );
                }
             }
          }
@@ -314,7 +290,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
                op_list_hash = hex_encode( base64::decode( next_attribute ) );
 
-               if( check_sigs && !has_file( op_list_hash ) )
+               if( check_dependents && !has_file( op_list_hash ) )
                   throw runtime_error( "op list file '" + op_list_hash + "' not found" );
 
                set_session_variable(
@@ -337,7 +313,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
                tree_root_hash = hex_encode( base64::decode( next_attribute ) );
 
-               if( check_sigs && !has_file( tree_root_hash ) )
+               if( check_dependents && !has_file( tree_root_hash ) )
                   throw runtime_error( "tree root file '" + tree_root_hash + "' not found" );
 
                set_session_variable(
@@ -420,34 +396,25 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
             public_key_hash = hex_encode( base64::decode( public_key_hashes[ 0 ] ) );
 
-            if( check_sigs && !has_file( public_key_hash ) )
+            if( check_dependents && !has_file( public_key_hash ) )
                throw runtime_error( "public key file '" + public_key_hash + "' not found" );
 
-            if( p_block_info )
-               p_block_info->public_key_hash = public_key_hash;
-            else
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), public_key_hash );
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), public_key_hash );
 
             if( public_key_hashes.size( ) > 1 )
             {
                string secondary_pubkey_hash( hex_encode( base64::decode( public_key_hashes[ 1 ] ) ) );
 
-               if( p_block_info )
-                  p_block_info->secondary_key_hash = secondary_pubkey_hash;
-               else
-                  set_session_variable(
-                   get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
 
                if( public_key_hashes.size( ) > 2 )
                {
                   string tertiary_pubkey_hash( hex_encode( base64::decode( public_key_hashes[ 2 ] ) ) );
 
-                  if( p_block_info )
-                     p_block_info->tertiary_key_hash = tertiary_pubkey_hash;
-                  else
-                     set_session_variable(
-                      get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ), tertiary_pubkey_hash );
+                  set_session_variable(
+                   get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ), tertiary_pubkey_hash );
                }
             }
          }
@@ -461,18 +428,6 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
             next_attribute.erase( 0, len );
 
             unix_time_value = from_string< uint64_t >( next_attribute );
-
-            if( p_block_info )
-               p_block_info->unix_time_value = unix_time_value;
-
-            if( check_sigs && block_height > 1 )
-            {
-               if( version < info.version )
-                  throw runtime_error( "invalid block version value is less than last" );
-
-               if( unix_time_value <= info.unix_time_value )
-                  throw runtime_error( "invalid unix block time value not more recent than last" );
-            }
          }
          else
             throw runtime_error( "unexpected extraneous block attribute '" + next_attribute + "'" );
@@ -507,7 +462,7 @@ mutex& get_mutex_for_ciyam_core_files( )
    return g_mutex;
 }
 
-void verify_core_file( const string& content, bool check_sigs )
+void verify_core_file( const string& content, bool check_dependents )
 {
    if( content.empty( ) )
       throw runtime_error( "invalid empty core file content" );
@@ -527,7 +482,7 @@ void verify_core_file( const string& content, bool check_sigs )
          string type( content.substr( 1, pos - 1 ) );
 
          if( type == string( c_file_type_core_block_object ) )
-            verify_block( content.substr( pos + 1 ), check_sigs );
+            verify_block( content.substr( pos + 1 ), check_dependents );
          else
             throw runtime_error( "unknown type '" + type + "' for core file" );
       }

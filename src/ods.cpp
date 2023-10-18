@@ -774,10 +774,16 @@ struct log_entry_item
 void init_key_buffer( char* p_key_buf, size_t buf_len,
  int64_t num, const string& pwd_hash, stream_cipher cipher_type )
 {
-   stringstream ss( string( buf_len, '\0' ) );
+   string buf_str( buf_len, '\0' );
+   string num_str( to_string( num ) );
 
-   // NOTE: Create a unique key pad for every buffer number.
-   sha256 hash( pwd_hash + to_string( num ) );
+   stringstream ss;
+
+   // NOTE: Try using own buffer to avoid internal key pad copy.
+   ss.rdbuf( )->pubsetbuf( ( char* )buf_str.data( ), buf_len );
+
+   // NOTE: Creates a unique key pad for each buffer number.
+   sha256 hash( combined_clear_key( pwd_hash, num_str ) );
 
    crypt_stream( ss, hash.get_digest_as_string( ), cipher_type );
 
@@ -787,6 +793,7 @@ void init_key_buffer( char* p_key_buf, size_t buf_len,
       *( p_key_buf + i ) = key_pad[ i ];
 
    clear_key( key_pad );
+   clear_key( buf_str );
 }
 
 void crypt_data_buffer( char* p_buf, const char* p_key_buf, size_t buf_len )

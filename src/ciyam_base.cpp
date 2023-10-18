@@ -57,7 +57,8 @@
 #include "peer_session.h"
 #include "ciyam_strings.h"
 #include "ciyam_session.h"
-   #include "ciyam_variables.h"
+#include "ciyam_channels.h"
+#include "ciyam_variables.h"
 #include "command_handler.h"
 #include "dynamic_library.h"
 #include "ods_file_system.h"
@@ -4766,6 +4767,7 @@ void list_trace_mutex_lock_ids( ostream& os, mutex* p_mutex, const char* p_mutex
       os << '\n';
    }
 
+   dump_mutex_info( os, get_mutex_for_ciyam_channels( ), "ciyam_channels::g_mutex = " );
    dump_mutex_info( os, get_mutex_for_ciyam_variables( ), "ciyam_variables::g_mutex = " );
    dump_mutex_info( os, get_mutex_for_ciyam_core_files( ), "ciyam_core_files::g_mutex = " );
 

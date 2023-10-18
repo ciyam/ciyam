@@ -68,6 +68,11 @@ const char* const c_storable_folder_name_channels = "channels";
 
 }
 
+mutex& get_mutex_for_ciyam_channels( )
+{
+   return g_mutex;
+}
+
 void lock_peer_channel( const class_base& cb, const string& identity )
 {
    string class_display_name( cb.get_display_name( ) );
