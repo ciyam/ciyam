@@ -23,7 +23,7 @@ class mutex;
 
 mutex& CIYAM_BASE_DECL_SPEC get_mutex_for_ciyam_core_files( );
 
-void CIYAM_BASE_DECL_SPEC verify_core_file( const std::string& content, bool check_sigs = true );
+void CIYAM_BASE_DECL_SPEC verify_core_file( const std::string& content, bool check_dependents = true );
 
 std::string CIYAM_BASE_DECL_SPEC verified_hash_from_signature(
  const std::string& public_key_hash, const std::string& signature_hash );

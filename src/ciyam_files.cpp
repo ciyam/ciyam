@@ -483,7 +483,7 @@ void encrypt_file_buffer( const string& hash, const string& repository,
    stringstream ss( file_data.substr( 1 ) );
 
    // NOTE: Use the file content hash as salt.
-   crypt_stream( ss, crypt_password + hash, stream_cipher_value( stream_cipher ) );
+   crypt_stream( ss, combined_clear_key( crypt_password, hash ), stream_cipher_value( stream_cipher ) );
 
    string new_file_data( file_data.substr( 0, 1 ) );
 
@@ -3261,6 +3261,9 @@ void crypt_file( const string& repository,
 
    auto_ptr< set< string > > ap_files_processed;
 
+   // NOTE: Use the file content hash as salt.
+   combined_clear_key password_and_hash( password, hash );
+
    if( !p_files_processed )
    {
       ap_files_processed.reset( new set< string >( ) );
@@ -3324,8 +3327,7 @@ void crypt_file( const string& repository,
 
          stringstream ss( file_data.substr( 1 ) );
 
-         // NOTE: Use the file content hash as salt.
-         crypt_stream( ss, password + hash, cipher );
+         crypt_stream( ss, password_and_hash, cipher );
 
          string new_file_data( file_data.substr( 0, 1 ) );
 
@@ -3390,8 +3392,7 @@ void crypt_file( const string& repository,
 
          stringstream ss( file_data.substr( 1 ) );
 
-         // NOTE: Use the file content hash as salt.
-         crypt_stream( ss, password + hash, cipher );
+         crypt_stream( ss, password_and_hash, cipher );
 
          file_data.erase( 1 );
          file_data += ss.str( );
@@ -3532,7 +3533,7 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
          stringstream ss( content.substr( 1 ) );
 
          // NOTE: Use the file content hash as salt.
-         crypt_stream( ss, crypt_password + hash, stream_cipher_value( stream_cipher ) );
+         crypt_stream( ss, combined_clear_key( crypt_password, hash ), stream_cipher_value( stream_cipher ) );
 
          string new_file_data( content.substr( 0, 1 ) );
 

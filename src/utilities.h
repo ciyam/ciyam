@@ -122,8 +122,27 @@ struct scoped_clear_key
    inline scoped_clear_key( std::string& key, bool erase = false ) : key( key ), erase( erase ) { }
    inline ~scoped_clear_key( ) { clear_key( key, erase ); }
 
-   std::string& key;
    bool erase;
+   std::string& key;
+};
+
+struct combined_clear_key
+{
+   inline combined_clear_key( const std::string& lhs, const std::string& rhs, bool erase = false )
+    : erase( erase )
+   {
+      key.reserve( lhs.length( ) + rhs.length( ) + 1 );
+
+      key = lhs;
+      key += rhs;
+   }
+
+   inline ~combined_clear_key( ) { clear_key( key, erase ); }
+
+   operator const std::string& ( ) const { return key; }
+
+   bool erase;
+   std::string key;
 };
 
 inline double round( double x, int n )

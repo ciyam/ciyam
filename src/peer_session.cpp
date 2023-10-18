@@ -825,7 +825,7 @@ void process_repository_file( const string& blockchain,
             // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
             // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
             ap_priv_key.reset( new private_key( "0"
-             + sha256( src_hash + password ).get_digest_as_string( ).substr( 1 ) ) );
+             + sha256( combined_clear_key( src_hash, password ) ).get_digest_as_string( ).substr( 1 ) ) );
 
             clear_key( password );
          }

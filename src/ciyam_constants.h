@@ -212,7 +212,8 @@ const char* const c_file_type_core_block_object = "blk";
 
 const char* const c_file_type_core_block_header_height_prefix = "h=";
 const char* const c_file_type_core_block_header_identity_prefix = "i=";
-const char* const c_file_type_core_block_header_num_tree_items_prefix = "n=";
+const char* const c_file_type_core_block_header_num_items_prefix = "n=";
+const char* const c_file_type_core_block_header_stream_cipher_prefix = "s=";
 const char* const c_file_type_core_block_header_targeted_ident_prefix = "t=";
 const char* const c_file_type_core_block_header_version_number_prefix = "v=";
 
