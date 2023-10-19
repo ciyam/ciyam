@@ -31,6 +31,8 @@ IN_REVERSE=*!reverse?$BLOCKCHAIN
 ;
 .system_variable $$%IDENTITY%_error ""
 ;
+CIYAM_STREAM_CIPHER=cc
+;
 @ifndef $ENCRYPTED_PASSWORD
 ENCRYPTED_PASSWORD=@shared_secret_$IN_REVERSE
 @endif
