@@ -227,6 +227,10 @@ TREE_ROOT_HASH_ENC=$OUTPUT
 .file_info -total_items $TREE
 NUM_TREE_ITEMS=$OUTPUT
 ;
+CIPHER_EXTRA=
+@ifdef $CIYAM_STREAM_CIPHER
+CIPHER_EXTRA=,s=$CIYAM_STREAM_CIPHER
+@endif
 TARGET_EXTRA=
 @ifdef $ENCRYPTED_PASSWORD
 .system_variable $ENCRYPTED_PASSWORD
@@ -242,7 +246,7 @@ TARGET_EXTRA=,t=$TARGET
 .session_variable @encrypted_password ""
 @endif
 ;
-.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS$TARGET_EXTRA,v=1\n\
+.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS$CIPHER_EXTRA$TARGET_EXTRA,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_BLOCK_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
