@@ -34,6 +34,7 @@ MODULE=%LINES:2%
 .storage_channel_documents -prepare_for_submit $IDENTITY
 @ifdef $OUTPUT
 BLOCKCHAIN=$OUTPUT
+CIYAM_STREAM_CIPHER=cc
 ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 <import_files.cin . $BLOCKCHAIN.tree : $BLOCKCHAIN.bun.gz
 ~rm $BLOCKCHAIN.bun.gz
