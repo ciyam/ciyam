@@ -2308,6 +2308,15 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
    if( !targeted_identity.empty( ) && ( targeted_identity[ 0 ] != '@' ) )
       is_shared = true;
 
+   if( !is_user && !is_shared && is_fetching )
+   {
+      string stream_cipher_var_name( get_special_var_name( e_special_var_blockchain_stream_cipher ) );
+
+      set_session_variable_for_matching_blockchains(
+       stream_cipher_var_name, get_session_variable( stream_cipher_var_name ),
+       get_special_var_name( e_special_var_blockchain_peer_supporter ), c_true_value, true );
+   }
+
    if( !block_height.empty( ) && ( block_height != to_string( height ) ) )
       throw runtime_error( "specified height does not match that found in the block itself (blk)" );
    else

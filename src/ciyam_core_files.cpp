@@ -175,6 +175,9 @@ void verify_block( const string& content, bool check_dependents )
             throw runtime_error( "unexpected extraneous attribute in block header '" + header + "'" );
       }
 
+      if( !has_stream_cipher )
+         set_session_variable( get_special_var_name( e_special_var_blockchain_stream_cipher ), "" );
+
       if( identity.length( ) != c_bc_identity_length )
          throw runtime_error( "unexpected missing or incorrect identity attribute in block header '" + header + "'" );
    }
