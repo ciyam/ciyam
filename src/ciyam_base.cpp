@@ -8311,6 +8311,42 @@ bool set_session_variable( const string& name, const string& value, const string
    return retval;
 }
 
+void set_session_variable_for_matching_blockchains( const string& name,
+ const string& value, const string& check_name, const string& check_value, bool matching_own_ip_address )
+{
+   guard g( g_session_mutex );
+
+   if( !gtp_session )
+      throw runtime_error( "unexpected call to 'set_session_variable_for_matching_blockchains' from non-session" );
+
+   string own_ip_addr( gtp_session->ip_addr );
+   string own_blockchain( gtp_session->blockchain );
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ] && ( g_sessions[ i ] != gtp_session ) )
+      {
+         if( g_sessions[ i ]->blockchain != own_blockchain )
+            continue;
+
+         if( matching_own_ip_address && ( g_sessions[ i ]->ip_addr != own_ip_addr ) )
+            continue;
+
+         if( !check_name.empty( ) )
+         {
+            if( check_value.empty( )
+             && g_sessions[ i ]->variables.count( check_name ) )
+               continue;
+            else if( !g_sessions[ i ]->variables.count( check_name )
+             || ( g_sessions[ i ]->variables[ check_name ] != check_value ) )
+               continue;
+         }
+
+         g_sessions[ i ]->variables[ name ] = value;
+      }
+   }
+}
+
 bool has_session_variable( const string& name )
 {
    guard g( g_session_mutex );
