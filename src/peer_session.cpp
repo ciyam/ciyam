@@ -4802,12 +4802,14 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 peer_session* construct_session(
  const date_time& dtm, bool is_responder, auto_ptr< ssl_socket >& ap_socket,
  const string& addr_info, bool is_for_support = false, peer_extra extra = e_peer_extra_none,
- const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any, bool has_support_sessions = false )
+ const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any,
+ bool has_support_sessions = false, bool has_set_system_variable = false )
 #else
 peer_session* construct_session(
  const date_time& dtm, bool is_responder, auto_ptr< tcp_socket >& ap_socket,
  const string& addr_info, bool is_for_support = false, peer_extra extra = e_peer_extra_none,
- const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any, bool has_support_sessions = false )
+ const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any,
+ bool has_support_sessions = false, bool has_set_system_variable = false )
 #endif
 {
    peer_session* p_session = 0;
@@ -4843,12 +4845,14 @@ peer_session* construct_session(
 
 #ifdef SSL_SUPPORT
 peer_session::peer_session( int64_t time_val, bool is_responder,
- auto_ptr< ssl_socket >& ap_socket, const string& addr_info, bool is_for_support,
- peer_extra extra, const char* p_identity, peerchain_type chain_type, bool has_support_sessions )
+ auto_ptr< ssl_socket >& ap_socket, const string& addr_info,
+ bool is_for_support, peer_extra extra, const char* p_identity,
+ peerchain_type chain_type, bool has_support_sessions, bool has_set_system_variable )
 #else
 peer_session::peer_session( int64_t time_val, bool is_responder,
- auto_ptr< tcp_socket >& ap_socket, const string& addr_info, bool is_for_support,
- peer_extra extra, const char* p_identity, peerchain_type chain_type, bool has_support_sessions )
+ auto_ptr< tcp_socket >& ap_socket, const string& addr_info,
+ bool is_for_support, peer_extra extra, const char* p_identity,
+ peerchain_type chain_type, bool has_support_sessions, bool has_set_system_variable )
 #endif
  :
  is_hub( false ),
@@ -4863,7 +4867,8 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
  other_is_owner( false ),
  both_are_owners( false ),
  needs_key_exchange( false ),
- has_support_sessions( has_support_sessions )
+ has_support_sessions( has_support_sessions ),
+ has_set_system_variable( has_set_system_variable )
 {
    if( !( *this->ap_socket ) )
       throw runtime_error( "unexpected invalid socket in peer_session::peer_session" );
@@ -5403,6 +5408,9 @@ void peer_session::on_start( )
          identity = unprefixed_blockchain;
       }
 
+      if( has_set_system_variable )
+         set_system_variable( identity, "" );
+
       if( !is_responder )
       {
          string hash_or_tag;
@@ -5436,11 +5444,13 @@ void peer_session::on_start( )
             else if( !is_for_support && ( block_hash != string( c_response_not_found ) ) )
                add_peer_file_hash_for_get( block_hash );
 
-            if( !hub_identity.empty( ) && ( identity == paired_identity ) )
+            // NOTE: If a hub identity has been provided then connect to it (unless already connected).
+            if( okay && !hub_identity.empty( ) )
             {
                set_hub_system_variable_if_required( identity, hub_identity );
 
-               if( !any_session_has_blockchain( hub_identity ) )
+               if( !any_session_has_blockchain( hub_identity )
+                && set_system_variable( hub_identity, c_true_value, string( "" ) ) )
                {
                   string host_and_port( ip_addr );
 
@@ -5474,7 +5484,7 @@ void peer_session::on_start( )
                   }
 
                   create_peer_initiator( ( c_bc_prefix + hub_identity ),
-                   host_and_port, false, 0, false, false, 0, e_peerchain_type_hub );
+                   host_and_port, false, 0, false, false, 0, e_peerchain_type_hub, true );
                }
             }
          }
@@ -5871,8 +5881,9 @@ void create_peer_listener( int port, const string& blockchains )
 }
 
 peer_session* create_peer_initiator(
- const string& blockchain, const string& host_and_or_port, bool force, size_t num_for_support,
- bool is_interactive, bool is_secondary, peer_session* p_main_session, peerchain_type chain_type )
+ const string& blockchain, const string& host_and_or_port,
+ bool force, size_t num_for_support, bool is_interactive, bool is_secondary,
+ peer_session* p_main_session, peerchain_type chain_type, bool has_set_system_variable )
 {
    if( blockchain.empty( ) )
       throw runtime_error( "create_peer_initiator called with empty blockchain identity" );
@@ -5968,7 +5979,10 @@ peer_session* create_peer_initiator(
 
    date_time dtm( date_time::local( ) );
 
-   temporary_system_variable tmp_blockchain_connect( identity, c_true_value );
+   auto_ptr< temporary_system_variable > ap_blockchain_connect;
+
+   if( !has_set_system_variable )
+      ap_blockchain_connect.reset( new temporary_system_variable( identity, c_true_value ) );
 
    for( size_t i = 0; i < total_to_create; i++ )
    {
