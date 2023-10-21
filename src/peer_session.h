@@ -49,13 +49,15 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 #  ifdef SSL_SUPPORT
    peer_session( int64_t time_val, bool is_responder,
     std::auto_ptr< ssl_socket >& ap_socket, const std::string& addr_info,
-    bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0,
-    peerchain_type chain_type = e_peerchain_type_any, bool has_support_sessions = false );
+    bool is_for_support = false, peer_extra extra = e_peer_extra_none,
+    const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any,
+    bool has_support_sessions = false, bool has_set_system_variable = false );
 #  else
    peer_session( int64_t time_val, bool is_responder,
     std::auto_ptr< tcp_socket >& ap_socket, const std::string& addr_info,
-    bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0,
-    peerchain_type chain_type = e_peerchain_type_any, bool has_support_sessions = false );
+    bool is_for_support = false, peer_extra extra = e_peer_extra_none,
+    const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any,
+    bool has_support_sessions = false, bool has_set_system_variable = false );
 #  endif
 
    ~peer_session( );
@@ -81,6 +83,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    bool both_are_owners;
    bool needs_key_exchange;
    bool has_support_sessions;
+   bool has_set_system_variable;
 
    int64_t time_val;
 
@@ -139,7 +142,8 @@ void CIYAM_BASE_DECL_SPEC create_peer_listener( int port, const std::string& blo
 peer_session* CIYAM_BASE_DECL_SPEC create_peer_initiator(
  const std::string& blockchain, const std::string& host_and_or_port,
  bool force = false, size_t num_for_support = 0, bool is_interactive = true,
- bool is_secondary = false, peer_session* p_main_session = 0, peerchain_type chain_type = e_peerchain_type_any );
+ bool is_secondary = false, peer_session* p_main_session = 0,
+ peerchain_type chain_type = e_peerchain_type_any, bool has_set_system_variable = false );
 
 void CIYAM_BASE_DECL_SPEC create_initial_peer_sessions( );
 
