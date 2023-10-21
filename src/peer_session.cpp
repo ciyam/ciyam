@@ -2427,7 +2427,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 
                if( fetch_tree_root )
                {
-                  if( !is_shared && !hub_identity.empty( ) )
+                  if( !hub_identity.empty( ) )
                   {
                      fetch_tree_root = false;
 
@@ -2448,7 +2448,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
             if( !is_fetching && !has_all_tree_items )
                has_all_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, p_progress );
 
-            if( is_fetching && peer_has_tree_items && !has_all_tree_items && !is_shared && !hub_identity.empty( ) )
+            if( is_fetching && !has_all_tree_items && !hub_identity.empty( ) )
             {
                if( !add_put_list_if_available( hub_identity, blockchain, height ) )
                   set_waiting_for_hub_progress( identity, hub_identity );
@@ -4845,7 +4845,8 @@ peer_session* construct_session(
     || addr_info.substr( 0, pos ) == c_local_ip_addr
     || addr_info.substr( 0, pos ) == c_local_ip_addr_for_ipv6 )
       p_session = new peer_session( unix_time( dtm ),
-       is_responder, ap_socket, addr_info, is_for_support, extra, p_identity, chain_type, has_support_sessions );
+       is_responder, ap_socket, addr_info, is_for_support, extra,
+       p_identity, chain_type, has_support_sessions, has_set_system_variable );
 
    return p_session;
 }
