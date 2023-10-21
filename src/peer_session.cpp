@@ -222,6 +222,18 @@ void add_to_num_puts_value( size_t num_to_add )
       set_session_variable( num_puts_name, to_string( num_puts ) );
 }
 
+void set_waiting_for_hub_progress( const string& identity, const string& hub_identity )
+{
+   set_session_variable(
+    get_special_var_name( e_special_var_blockchain_waiting_for_hub ), c_true_value );
+
+   // FUTURE: This message should be handled as a server string message.
+   string progress_message( "Waiting for hub " + hub_identity + "..." );
+
+   set_session_progress_output( progress_message );
+   set_system_variable( c_progress_output_prefix + identity, progress_message );
+}
+
 void output_synchronised_progress_message(
  const string& identity, size_t blockchain_height, size_t blockchain_height_other = 0 )
 {
@@ -2420,16 +2432,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                      fetch_tree_root = false;
 
                      if( !add_put_list_if_available( hub_identity, blockchain, height ) )
-                     {
-                        set_session_variable(
-                         get_special_var_name( e_special_var_blockchain_waiting_for_hub ), c_true_value );
-
-                        // FUTURE: This message should be handled as a server string message.
-                        string progress_message( "Waiting for hub " + hub_identity + "..." );
-
-                        set_session_progress_output( progress_message );
-                        set_system_variable( c_progress_output_prefix + identity, progress_message );
-                     }
+                        set_waiting_for_hub_progress( identity, hub_identity );
                   }
                }
 
@@ -2444,6 +2447,12 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 
             if( !is_fetching && !has_all_tree_items )
                has_all_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, p_progress );
+
+            if( is_fetching && peer_has_tree_items && !has_all_tree_items && !is_shared && !hub_identity.empty( ) )
+            {
+               if( !add_put_list_if_available( hub_identity, blockchain, height ) )
+                  set_waiting_for_hub_progress( identity, hub_identity );
+            }
 
             if( is_fetching || has_all_tree_items )
             {
@@ -6033,8 +6042,8 @@ peer_session* create_peer_initiator(
                has_support_sessions = true;
 
             peer_session* p_session = construct_session( dtm, false, ap_socket,
-             ip_addr + "=" + session_blockchain + ":" + to_string( port ),
-             p_main_session, extra, p_identity, chain_type, has_support_sessions );
+             ip_addr + "=" + session_blockchain + ":" + to_string( port ), p_main_session,
+             extra, p_identity, chain_type, has_support_sessions, has_set_system_variable );
 
             if( !p_session )
                break;
