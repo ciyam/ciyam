@@ -349,7 +349,7 @@ void ciyam_notifier::on_start( )
 
       string events;
 
-      string ignore( c_notifier_ignore_char + string( c_notifier_none ) );
+      string ignore( string( 1, c_notifier_ignore_char ) );
 
       string mod_ignore_extra( string( 1, c_notifier_mod_ignore_char ) );
       string new_ignore_extra( string( 1, c_notifier_new_ignore_char ) );
@@ -408,9 +408,38 @@ void ciyam_notifier::on_start( )
                   TRACE_LOG( TRACE_NOTIFIER, "event: " + next_event );
 
                   if( next_event[ 0 ] == '-' )
+                  {
                      reportable_event = false;
 
-                  if( next_event[ 0 ] == '*' )
+                     string::size_type pos = next_event.find( "|close_nowrite|" );
+
+                     // NOTE: Supports the tracking of "viewed files" via "close_nowrite" events.
+                     if( pos != string::npos )
+                     {
+                        string file_name( next_event.substr( 1, pos - 1 ) );
+
+                        if( file_name.find( watch_root_name ) == 0 )
+                           file_name.erase( 0, watch_root_name.length( ) );
+
+                        if( !file_name.empty( ) && ( file_name[ file_name.length( ) - 1 ] != '/' ) )
+                        {
+                           string viewed_files( get_raw_system_variable(
+                            watch_variable_name + c_notifier_viewed_suffix ) );
+
+                           set< string > file_names;
+
+                           if( !viewed_files.empty( ) )
+                              split( viewed_files, file_names, '|' );
+
+                           file_names.insert( file_name );
+
+                           viewed_files = join( file_names, "|" );
+
+                           set_system_variable( watch_variable_name + c_notifier_viewed_suffix, viewed_files );
+                        }
+                     }
+                  }
+                  else if( next_event[ 0 ] == '*' )
                   {
                      string::size_type pos = next_event.find( '+' );
 
@@ -443,7 +472,6 @@ void ciyam_notifier::on_start( )
 
                   if( old_value == ignore )
                      is_ignoring = true;
-
 
                   // NOTE: The extra string is all characters before the first 'a-z' character.
                   if( !old_value.empty( ) && ( old_value[ 0 ] < 'a' || old_value[ 0 ] > 'z' ) )
