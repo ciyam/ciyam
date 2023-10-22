@@ -233,7 +233,7 @@ void storage_channel_document_restore( const string& identity_path )
 
          if( !notifier_value.empty( ) )
          {
-            if( !( notifier_value[ 0 ] >= 'a' ) && ( notifier_value[ 0 ] <= 'z' ) )
+            if( !( ( notifier_value[ 0 ] >= 'a' ) && ( notifier_value[ 0 ] <= 'z' ) ) )
                notifier_value.erase( 0, 1 );
 
             // NOTE: Set a special tag for the notifier to ignore either a create

@@ -2871,6 +2871,19 @@ int64_t get_unix_time( bool use_dtm )
    return unix_time( dt );
 }
 
+string get_notifier_files_viewed( const string& watch_root )
+{
+   string watch_path( get_raw_system_variable(
+    get_special_var_name( e_special_var_opened_files ) ) + '/' + watch_root + '/' );
+
+   string files_viewed( get_raw_system_variable(
+    c_notifier_prefix + watch_path + c_notifier_viewed_suffix ) );
+
+   replace( files_viewed, "|", "\n" );
+
+   return files_viewed;
+}
+
 string get_ext( const string& filename )
 {
    string str( filename );
