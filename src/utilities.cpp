@@ -514,23 +514,35 @@ int64_t file_size( const char* p_name, unsigned char* p_hdr, size_t hdr_size )
    retval = npos.QuadPart;
    ::CloseHandle( hFile );
 #else
-   int fd = _open( p_name, O_RDONLY );
-   if( fd <= 0 )
-      throw runtime_error( "unable to open file '" + string( p_name ) + "' for input in file_size" );
-
    if( p_hdr && hdr_size )
    {
+      int fd = _open( p_name, O_RDONLY );
+
+      if( fd <= 0 )
+         throw runtime_error( "unable to open file '" + string( p_name ) + "' for input in file_size" );
+
       if( read( fd, p_hdr, hdr_size ) != hdr_size )
          memset( p_hdr, '\0', hdr_size );
-   }
 
-   retval = lseek64( fd, INT64_C( 0 ), SEEK_END );
-   if( retval < 0 )
-   {
+      retval = lseek64( fd, INT64_C( 0 ), SEEK_END );
+
+      if( retval < 0 )
+      {
+         _close( fd );
+         throw runtime_error( "unexpected lseek64 error in file_size for file '" + string( p_name ) + "'" );
+      }
+
       _close( fd );
-      throw runtime_error( "unexpected lseek64 error in file_size for file '" + string( p_name ) + "'" );
    }
-   _close( fd );
+   else
+   {
+      struct stat statbuf;
+
+      if( stat( p_name, &statbuf ) < 0 )
+         throw runtime_error( "unable to stat '" + to_string( p_name ) + "'" );
+
+      retval = statbuf.st_size;
+   }
 #endif
 
    return retval;
@@ -539,7 +551,9 @@ int64_t file_size( const char* p_name, unsigned char* p_hdr, size_t hdr_size )
 string file_user( const char* p_name )
 {
    string str;
+
    struct stat statbuf;
+
    int rc = stat( p_name, &statbuf );
 
    if( rc != 0 )
