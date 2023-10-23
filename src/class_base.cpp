@@ -2884,6 +2884,40 @@ string get_notifier_files_viewed( const string& watch_root )
    return files_viewed;
 }
 
+string extract_unviewed_file_list( const string& file_list,
+ const string& viewed_list, bool file_list_includes_sizes )
+{
+   string retval;
+
+   set< string > viewed;
+
+   split( viewed_list, viewed, '\n' );
+
+   vector< string > all_files;
+
+   split( file_list, all_files, '\n' );
+
+   for( size_t i = 0; i < all_files.size( ); i++ )
+   {
+      string next_file( all_files[ i ] );
+
+      string::size_type pos = string::npos;
+
+      if( file_list_includes_sizes )
+         pos = next_file.rfind( " (" );
+
+      if( !viewed.count( next_file.substr( 0, pos ) ) )
+      {
+         if( !retval.empty( ) )
+            retval += '\n';
+
+         retval += next_file;
+      }
+   }
+
+   return retval;
+}
+
 string get_ext( const string& filename )
 {
    string str( filename );

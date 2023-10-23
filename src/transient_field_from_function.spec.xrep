@@ -1,0 +1,5 @@
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
+   // [(start transient_field_from_function)] `{`$arg_id`}
+   get_obj( ).`{`$arg_field`}( `{`$arg_func_name`}( `{`!`@eq`(`$arg_arg1`,`'`'`)get_obj( ).`{`$arg_arg1`}( )`{`!`@eq`(`$arg_arg2`,`'`'`), get_obj( ).`{`$arg_arg2`}( )`}`} ) );
+   // [(finish transient_field_from_function)] `{`$arg_id`}
+`}
