@@ -3,11 +3,17 @@
    // NOTE: Empty code block for scope purposes.
    {
 `{`@eq`(`$arg_system`,`'true`'`)\
-      string value( get_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`} ) );
+      string value( get_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
+ + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
+`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`} ) );
 `,`@eq`(`$arg_session`,`'true`'`)\
-      string value( get_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`} ) );
+      string value( get_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
+ + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
+`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`} ) );
 `,\
-      string value( get_obj( ).get_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`} ) );
+      string value( get_obj( ).get_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
+ + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
+`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`} ) );
 `}
       if( !value.empty( ) )
          get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( value ) );
