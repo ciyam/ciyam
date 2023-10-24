@@ -8,6 +8,8 @@
 @else
 STORAGE=$1
 ;
+SKIPPED=
+;
 .storage_init $STORAGE
 @ifndef $ERROR
 .module_list
@@ -54,8 +56,12 @@ APP_LOG_INFO_FILE=@files::$IDENTITY.log
 .peer_connect $SUBMIT_IDENTITY:$RECEIVE_IDENTITY $HOST_NAME-$HOST_PORT -user
 @endif
 ;
+@else
+SKIPPED=1
 @endif
 .system_variable @opening_$IDENTITY ""
+@else
+SKIPPED=1
 @endif
 ;
 .session_variable @deque pop_front
@@ -65,8 +71,11 @@ APP_LOG_INFO_FILE=@files::$IDENTITY.log
 @:DONE
 @endif
 ;
+; NOTE: Only remove 'needs_submit' if nothing was skipped.
+@ifndef $SKIPPED
 APP_DIR=@lower:$STORAGE
 ~rm -f $WEBDIR/$APP_DIR/needs_submit
+@endif
 ;
 @endif
 @endif
