@@ -1073,7 +1073,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `{`#for_set_variable.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
  arg_id=$specification_\\0_id arg_procedure=$specification_\\0_procedure\
  arg_field=$specification_\\0_field arg_fistexttype=$specification_\\0_fistexttype\
- arg_ofield=$specification_\\0_ofield arg_variable=$specification_\\0_variable\
+ arg_ofield=$specification_\\0_ofield arg_ofisfk=$specification_\\0_ofisfk arg_variable=$specification_\\0_variable\
  arg_system=$specification_\\0_system arg_suffix=$specification_\\0_suffix arg_check_null=$specification_\\0_check_null\
  arg_session=$specification_\\0_session`}\
 `,\

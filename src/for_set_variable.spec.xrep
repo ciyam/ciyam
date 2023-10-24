@@ -2,21 +2,25 @@
    // [(start for_set_variable)] `{`$arg_id`}
 `{`@eq`(`$arg_system`,`'true`'`)\
 `{`@eq`(`$arg_check_null`,`'`'`)\
-   set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
- + get_obj( ).`{`$arg_ofield`}( )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`},\
+   set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)
+    + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
+`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`},\
  `{`@eq`(`$arg_fistexttype`,`'0`'`)to_string( `}get_obj( ).`{`$arg_field`}( )`{`@eq`(`$arg_fistexttype`,`'0`'`) )`} );
 `,\
-   if( !set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
- + get_obj( ).`{`$arg_ofield`}( )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`},\
+   if( !set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)
+    + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
+`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`},\
  `{`@eq`(`$arg_fistexttype`,`'0`'`)to_string( `}get_obj( ).`{`$arg_field`}( )`{`@eq`(`$arg_fistexttype`,`'0`'`) )`}, string( "" ) ) )
       return;
 `}`,`@eq`(`$arg_session`,`'true`'`)\
-   set_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
- + get_obj( ).`{`$arg_ofield`}( )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`},\
+   set_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)
+    + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
+`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`},\
  `{`@eq`(`$arg_fistexttype`,`'0`'`)to_string( `}get_obj( ).`{`$arg_field`}( )`{`@eq`(`$arg_fistexttype`,`'0`'`) )`} );
 `,\
-   get_obj( ).set_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
- + get_obj( ).`{`$arg_ofield`}( )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`},\
+   get_obj( ).set_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)
+    + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
+`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`},\
  `{`@eq`(`$arg_fistexttype`,`'0`'`)to_string( `}get_obj( ).`{`$arg_field`}( )`{`@eq`(`$arg_fistexttype`,`'0`'`) )`} );
 `}\
    // [(finish for_set_variable)] `{`$arg_id`}
