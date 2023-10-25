@@ -51,7 +51,7 @@ OPENING_USER=$OUTPUT
 .storage_term
 @endif
 ;
-.system_variable @opened_user_$IDENTITY $OPENING_USER
+.system_variable @opened_user_$IDENTITY "$OPENING_USER"
 ;
 @endif
 ;

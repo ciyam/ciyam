@@ -1,0 +1,5 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_call_parent_proc)] `{`$arg_id`}
+   get_obj( ).`{`$arg_spfield`}( ).`{`$arg_fk_proc`}( );
+   // [(finish for_call_parent_proc)] `{`$arg_id`}
+`}

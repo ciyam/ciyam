@@ -52,6 +52,8 @@ OPENED_FILES=$OUTPUT
 .system_variable @opened_user_$IDENTITY ""
 .system_variable @opened_$IDENTITY ""
 ;
+.system_variable @reviewing_$IDENTITY ""
+;
 @endif
 ;
 .system_variable @closing_$IDENTITY ""

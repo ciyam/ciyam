@@ -122,6 +122,7 @@ create_blockchain_*_application.cin
 !for_move_children.spec.xrep
 !for_auto_code_user.spec.xrep
 !for_destroy_parent.spec.xrep
+!for_call_parent_proc.spec.xrep
 !for_call_proc_with_parent.spec.xrep
 !for_send_email_notification.spec.xrep
 
