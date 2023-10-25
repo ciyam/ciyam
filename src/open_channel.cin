@@ -51,11 +51,11 @@ OPENING_USER=$OUTPUT
 .storage_term
 @endif
 ;
-.system_variable @opening_user_$IDENTITY ""
 .system_variable @opened_user_$IDENTITY $OPENING_USER
 ;
 @endif
 ;
 .system_variable @opening_$IDENTITY ""
+.system_variable @opening_user_$IDENTITY ""
 ;
 @endif
