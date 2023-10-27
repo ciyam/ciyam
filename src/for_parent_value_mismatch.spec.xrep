@@ -1,0 +1,20 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_parent_value_mismatch)] `{`$arg_id`}
+   get_obj( ).`{`$arg_spfield`}( ).begin_review( );
+
+   string key( to_string( get_obj( ).`{`$arg_spfield`}( ) ) );
+
+   string value( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) );
+
+   get_obj( ).`{`$arg_spfield`}( ).finish_review( );
+
+   string field_display_name(
+    get_obj( ).`{`$arg_spfield`}( ).get_field_display_name(
+    `{`$module_name`}_`{`$arg_spclass`}::static_get_field_id( `{`$module_name`}_`{`$arg_spclass`}::e_field_id_`{`$arg_scfield`} ) ) );
+
+   if( value != get_obj( ).`{`$arg_field`}( ) )
+      throw runtime_error(
+       get_obj( ).`{`$arg_spfield`}( ).get_display_name( )
+       + " '" + key  + "' " + field_display_name + " is '" + value + "'." );
+   // [(finish for_parent_value_mismatch)] `{`$arg_id`}
+`}

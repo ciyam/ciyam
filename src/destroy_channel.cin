@@ -33,8 +33,9 @@ FILES_AREA_DIR=$OUTPUT
 .file_kill -q -p=bc.$CHANNEL.*
 .file_kill -q -p=bc.$REVERSE.*
 ;
-.system_variable >$IDENTITY_VAR ""
+.system_variable %%$IDENT ""
 .system_variable $$%IDENT%_error ""
+.system_variable >$IDENTITY_VAR ""
 ;
 #Removed archive and all blockchain files for '$IDENT' ($CHANNEL/$REVERSE).
 @endif
