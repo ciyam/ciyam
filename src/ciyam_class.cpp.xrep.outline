@@ -1059,6 +1059,11 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_id=$specification_\\0_id arg_children=$specification_\\0_children arg_cpfield=$specification_\\0_cpfield\
  arg_key_suffix=$specification_\\0_key_suffix arg_move_from=$specification_\\0_move_from`}\
 `,\
+`@eq`(`'\\1`'`,`'for_parent_value_mismatch`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
+`{`#for_parent_value_mismatch.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
+ arg_id=$specification_\\0_id arg_field=$specification_\\0_field arg_spclass=$specification_\\0_spclass\
+ arg_spfield=$specification_\\0_spfield arg_scfield=$specification_\\0_scfield`}\
+`,\
 `@eq`(`'\\1`'`,`'for_run_script`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_run_script.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
  arg_id=$specification_\\0_id arg_procedure=$specification_\\0_procedure arg_script=$specification_\\0_script\
