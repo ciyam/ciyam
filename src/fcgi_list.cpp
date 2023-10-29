@@ -3328,8 +3328,17 @@ void output_list_form( ostream& os,
                else if( source.mailto_fields.count( source_value_id ) )
                   type = "mailto:";
 
+               string::size_type pos = cell_data.rfind( '/' );
+
+               if( ( pos == string::npos ) || ( pos == cell_data.size( ) - 1 ) )
+                  pos = 0;
+               else
+                  ++pos;
+
                is_href = true;
-               os << "<a href=\"" << type << cell_data << "\"" << extra << ">";
+
+               os << "<a href=\"" << type << cell_data << "\"" << extra << ">"
+                << data_or_nbsp( escape_markup( unescaped( cell_data.substr( pos ) ) ) ) << "</a>";
             }
 
             if( !cell_data.empty( )
