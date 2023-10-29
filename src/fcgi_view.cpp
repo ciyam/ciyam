@@ -2149,8 +2149,15 @@ bool output_view_form( ostream& os, const string& act,
             else if( source.mailto_fields.count( source_value_id ) )
                type = "mailto:";
 
+            string::size_type pos = cell_data.rfind( '/' );
+
+            if( ( pos == string::npos ) || ( pos == cell_data.size( ) - 1 ) )
+               pos = 0;
+            else
+               ++pos;
+
             os << "<a href=\"" << type << cell_data << "\"" << extra << ">"
-             << data_or_nbsp( escape_markup( unescaped( cell_data ) ) ) << "</a>";
+             << data_or_nbsp( escape_markup( unescaped( cell_data.substr( pos ) ) ) ) << "</a>";
          }
          else if( source.text_fields.count( source_value_id ) )
          {

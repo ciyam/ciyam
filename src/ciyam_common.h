@@ -187,6 +187,7 @@ enum special_var
    e_special_var_row_cache_limit,
    e_special_var_check_if_changed,
    e_special_var_dummy_time_stamp,
+   e_special_var_protocol_handler,
    e_special_var_skip_after_fetch,
    e_special_var_skip_persistance,
    e_special_var_skip_submit_file,

@@ -173,6 +173,7 @@ const char* const c_special_variable_queue_hub_users = "@queue_hub_users";
 const char* const c_special_variable_row_cache_limit = "@row_cache_limit";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_dummy_time_stamp = "@dummy_time_stamp";
+const char* const c_special_variable_protocol_handler = "@protocol_handler";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_skip_persistance = "@skip_persistance";
 const char* const c_special_variable_skip_submit_file = "@skip_submit_file";
@@ -772,6 +773,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_dummy_time_stamp:
       s = string( c_special_variable_dummy_time_stamp );
+      break;
+
+      case e_special_var_protocol_handler:
+      s = string( c_special_variable_protocol_handler );
       break;
 
       case e_special_var_skip_after_fetch:

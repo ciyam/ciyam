@@ -24,6 +24,7 @@
 # <peer_ips_reject>
 # <script_reconfig>false
 # <session_timeout>0
+# <protocol_handler>file://
 # <ods_use_encrypted>true
 # <ods_use_sync_write>true
 # <max_storage_handlers>10

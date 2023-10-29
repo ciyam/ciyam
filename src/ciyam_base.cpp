@@ -170,6 +170,7 @@ const char* const c_attribute_peer_ips_permit = "peer_ips_permit";
 const char* const c_attribute_peer_ips_reject = "peer_ips_reject";
 const char* const c_attribute_script_reconfig = "script_reconfig";
 const char* const c_attribute_session_timeout = "session_timeout";
+const char* const c_attribute_protocol_handler = "protocol_handler";
 const char* const c_attribute_max_send_attempts = "max_send_attempts";
 const char* const c_attribute_max_attached_data = "max_attached_data";
 const char* const c_attribute_ods_use_encrypted = "ods_use_encrypted";
@@ -215,6 +216,8 @@ const char* const c_dead_keys_ext = ".dead_keys.lst";
 const char* const c_default_pem_password = "password";
 
 const char* const c_script_dummy_filename = "*script*";
+
+const char* const c_default_protocol_handler = "file://";
 
 const char* const c_storable_file_name_id = "id";
 const char* const c_storable_file_name_limit = "limit";
@@ -1380,6 +1383,8 @@ int g_test_peer_port = 0;
 string g_user_home_path;
 
 string g_default_storage;
+
+string g_protocol_handler;
 
 unsigned int g_session_timeout = 0;
 
@@ -4302,6 +4307,10 @@ void read_server_configuration( )
       g_script_reconfig = ( lower( reader.read_opt_attribute( c_attribute_script_reconfig, c_false ) ) == c_true );
 
       g_session_timeout = atoi( reader.read_opt_attribute( c_attribute_session_timeout, "0" ).c_str( ) );
+
+      g_protocol_handler = reader.read_opt_attribute( c_attribute_protocol_handler, c_default_protocol_handler );
+
+      set_system_variable( get_special_var_name( e_special_var_protocol_handler ), g_protocol_handler );
 
       g_ods_use_encrypted = ( lower( reader.read_opt_attribute( c_attribute_ods_use_encrypted, c_true ) ) == c_true );
 
