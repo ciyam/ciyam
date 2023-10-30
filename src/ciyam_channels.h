@@ -44,7 +44,7 @@ int64_t CIYAM_BASE_DECL_SPEC storage_channel_submitted_height( const std::string
 void CIYAM_BASE_DECL_SPEC storage_channel_create( const char* p_identity = 0, const char* p_channel_information = 0 );
 void CIYAM_BASE_DECL_SPEC storage_channel_destroy( const char* p_identity = 0 );
 
-void CIYAM_BASE_DECL_SPEC storage_channel_update( );
+void CIYAM_BASE_DECL_SPEC storage_channel_update( const char* p_identity = 0, const char* p_channel_information = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents(
  const std::string& identity, bool height = false, bool fetched = false );
