@@ -91,7 +91,7 @@ Active_And_Not_New,M001C102F106
 Backup_Identity,M001C102F107
 Channel_Information,M001C102F108
 Closed,M001C102F109
-Peer_Node_Files_Link,M001C102F110
+Peer_Node_Files_Area,M001C102F110
 Peer_Node_Items,M001C102F111
 Closing,M001C102F112
 Identity,M001C102F113
