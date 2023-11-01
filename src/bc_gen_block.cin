@@ -68,6 +68,8 @@ CHANNEL=1
 @endif
 @endif
 ;
+.session_variable @blockchain_identity $IDENT
+;
 @ifndef $IS_DEMO
 MULTIPLE=50
 UTIME=@unix:
@@ -95,6 +97,9 @@ UUID=$OUTPUT
 @label END
 @endif
 @skip
+;
+.crypto_hash $OUTPUT-$HEIGHT
+HEIGHT_IDENTITY=@substr:0,9:$OUTPUT
 ;
 @ifndef $TREE
 @ifndef $PEER_HUB
@@ -200,13 +205,13 @@ HIND_HASH_ENC=$OUTPUT
 @ifndef $TREE
 ;
 @ifndef $PEER_HUB
-.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=0,v=1\n\
+.file_raw -core blob blk:h=$HEIGHT,i=$HEIGHT_IDENTITY,n=0,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_BLOCK_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.blk
 @else
-.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=0,v=1\n\
+.file_raw -core blob blk:h=$HEIGHT,i=$HEIGHT_IDENTITY,n=0,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_BLOCK_HASH_ENC\n\
 o:$OPL_FILE_HASH_ENC\n\
@@ -246,7 +251,7 @@ TARGET_EXTRA=,t=$TARGET
 .session_variable @encrypted_password ""
 @endif
 ;
-.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS$CIPHER_EXTRA$TARGET_EXTRA,v=1\n\
+.file_raw -core blob blk:h=$HEIGHT,i=$HEIGHT_IDENTITY,n=$NUM_TREE_ITEMS$CIPHER_EXTRA$TARGET_EXTRA,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_BLOCK_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\

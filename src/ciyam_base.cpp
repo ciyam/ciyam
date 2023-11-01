@@ -1384,8 +1384,6 @@ string g_user_home_path;
 
 string g_default_storage;
 
-string g_protocol_handler;
-
 unsigned int g_session_timeout = 0;
 
 unsigned int g_max_peers = c_default_max_peers;
@@ -4308,9 +4306,9 @@ void read_server_configuration( )
 
       g_session_timeout = atoi( reader.read_opt_attribute( c_attribute_session_timeout, "0" ).c_str( ) );
 
-      g_protocol_handler = reader.read_opt_attribute( c_attribute_protocol_handler, c_default_protocol_handler );
+      string protocol_handler( reader.read_opt_attribute( c_attribute_protocol_handler, c_default_protocol_handler ) );
 
-      set_system_variable( get_special_var_name( e_special_var_protocol_handler ), g_protocol_handler );
+      set_system_variable( get_special_var_name( e_special_var_protocol_handler ), protocol_handler );
 
       g_ods_use_encrypted = ( lower( reader.read_opt_attribute( c_attribute_ods_use_encrypted, c_true ) ) == c_true );
 
@@ -7201,20 +7199,6 @@ string get_encrypted_smtp_password( )
    return g_smtp_password;
 }
 
-string get_default_storage( )
-{
-   guard g( g_mutex );
-
-   return g_default_storage;
-}
-
-void set_default_storage( const string& name )
-{
-   guard g( g_mutex );
-
-   g_default_storage = name;
-}
-
 unsigned int get_session_timeout( )
 {
    guard g( g_mutex );
@@ -7596,7 +7580,7 @@ void set_default_session_variables( int port )
    if( port )
       set_session_variable( get_special_var_name( e_special_var_port ), to_string( port ) );
 
-   set_session_variable( get_special_var_name( e_special_var_storage ), get_default_storage( ) );
+   set_session_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
 }
 
 string get_raw_session_variable( const string& name, size_t sess_id )
@@ -7756,8 +7740,6 @@ string get_raw_session_variable( const string& name, size_t sess_id )
          output_algos( osstr );
          retval = osstr.str( );
       }
-      else if( name == get_special_var_name( e_special_var_storage ) )
-         retval = get_default_storage( );
    }
 
    if( gtp_session && !name.empty( ) && name[ 0 ] == '@' )

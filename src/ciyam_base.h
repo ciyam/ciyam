@@ -415,9 +415,6 @@ std::string CIYAM_BASE_DECL_SPEC get_encrypted_rpc_password( );
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_pop3_password( );
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_smtp_password( );
 
-std::string CIYAM_BASE_DECL_SPEC get_default_storage( );
-void CIYAM_BASE_DECL_SPEC set_default_storage( const std::string& name );
-
 std::string CIYAM_BASE_DECL_SPEC get_session_blockchain( );
 
 unsigned int CIYAM_BASE_DECL_SPEC get_num_sessions_for_blockchain( const std::string& blockchain );

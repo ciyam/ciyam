@@ -190,11 +190,42 @@ void verify_block( const string& content, bool check_dependents )
 
    size_t scaling_value = c_bc_scaling_value;
 
-   if( ( identity == string( c_demo_backup_identity ) )
-    || ( identity == string( c_demo_shared_identity ) ) )
+   string blockchain_identity( get_session_blockchain( ) );
+
+   if( blockchain_identity.empty( ) )
+      blockchain_identity = get_raw_session_variable(
+       get_special_var_name( e_special_var_blockchain_identity ) );
+
+   if( blockchain_identity.empty( ) )
+      throw runtime_error( "unexpected empty 'blockchain_identity' in verify_block" );
+
+   if( ( blockchain_identity == string( c_demo_backup_identity ) )
+    || ( blockchain_identity == string( c_demo_shared_identity ) ) )
       scaling_value = c_bc_scaling_demo_value;
 
    size_t scaling_squared = ( scaling_value * scaling_value );
+
+   if( identity != blockchain_identity )
+   {
+      string genesis_tag( c_bc_prefix + blockchain_identity );
+
+      genesis_tag += ".0" + string( c_blk_suffix );
+
+      if( !has_tag( genesis_tag ) )
+         throw runtime_error( "unexpected genesis block for '" + blockchain_identity + "' not found" );
+
+      string hash_info( tag_file_hash( genesis_tag ) );
+
+      hash_info += '-' + to_string( block_height );
+
+      sha256 hash( hash_info );
+
+      hash_info = hash.get_digest_as_string( );
+
+      if( hash_info.find( identity ) != 0 )
+         throw runtime_error( "invalid identity '" + identity + "' in block at height "
+          + to_string( block_height ) + " for blockchain '" + blockchain_identity + "'" );
+   }
 
    for( size_t i = 1; i < lines.size( ); i++ )
    {
@@ -340,7 +371,7 @@ void verify_block( const string& content, bool check_dependents )
 
             last_block_hash = hex_encode( base64::decode( last_block_hashes[ 0 ] ) );
 
-            string last_block_tag( c_bc_prefix + identity + "." + to_string( block_height - 1 ) + c_blk_suffix );
+            string last_block_tag( c_bc_prefix + blockchain_identity + "." + to_string( block_height - 1 ) + c_blk_suffix );
 
             bool found_last = false;
 
@@ -356,7 +387,7 @@ void verify_block( const string& content, bool check_dependents )
             {
                last_block_hash = hex_encode( base64::decode( last_block_hashes[ 1 ] ) );
 
-               last_block_tag = c_bc_prefix + identity + "." + to_string( block_height - scaling_value ) + c_blk_suffix;
+               last_block_tag = c_bc_prefix + blockchain_identity + "." + to_string( block_height - scaling_value ) + c_blk_suffix;
 
                if( has_tag( last_block_tag ) )
                {
@@ -371,7 +402,7 @@ void verify_block( const string& content, bool check_dependents )
             {
                last_block_hash = hex_encode( base64::decode( last_block_hashes[ 2 ] ) );
 
-               last_block_tag = c_bc_prefix + identity + "." + to_string( block_height - scaling_squared ) + c_blk_suffix;
+               last_block_tag = c_bc_prefix + blockchain_identity + "." + to_string( block_height - scaling_squared ) + c_blk_suffix;
 
                if( has_tag( last_block_tag ) )
                {
