@@ -185,6 +185,8 @@ IDENT=*!reverse?$OUTPUT
 @endif
 @endif
 ;
+.session_variable @blockchain_identity $IDENT
+;
 @ifndef $ERROR
 .file_tag -remove bc.$UUID.0.pub
 .file_tag $PRIMARY_PUBKEY_HASH bc.$IDENT.0.pub

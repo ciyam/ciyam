@@ -2940,8 +2940,14 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
    socket.set_no_delay( );
 
    if( p_response )
+   {
+      string request( hash_or_tag );
+
+      replace( request, blockchain, get_special_var_name( e_special_var_blockchain ) );
+
       socket.write_line(
-       string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_sock_progress );
+       string( c_cmd_peer_session_chk ) + " " + request, c_request_timeout, p_sock_progress );
+   }
    else
    {
       string nonce( uuid( ).as_string( ) );
@@ -3935,6 +3941,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          // NOTE: Create the dummy "hello" blob as it will be required.
          if( !has_file( hello_hash ) )
             create_raw_file( hello_data, false );
+
+         replace( tag_or_hash, get_special_var_name( e_special_var_blockchain ), blockchain );
 
          string hash( tag_or_hash );
 
