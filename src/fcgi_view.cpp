@@ -2149,15 +2149,18 @@ bool output_view_form( ostream& os, const string& act,
             else if( source.mailto_fields.count( source_value_id ) )
                type = "mailto:";
 
-            string::size_type pos = cell_data.rfind( '/' );
+            string display( cell_data );
 
-            if( ( pos == string::npos ) || ( pos == cell_data.size( ) - 1 ) )
-               pos = 0;
-            else
-               ++pos;
+            if( !display.empty( ) && display[ display.length( ) - 1 ] == '/' )
+               display.erase( display.length( ) - 1 );
+
+            string::size_type pos = display.rfind( '/' );
+
+            if( pos != string::npos )
+               display.erase( 0, pos + 1 );
 
             os << "<a href=\"" << type << cell_data << "\"" << extra << ">"
-             << data_or_nbsp( escape_markup( unescaped( cell_data.substr( pos ) ) ) ) << "</a>";
+             << data_or_nbsp( escape_markup( unescaped( display ) ) ) << "</a>";
          }
          else if( source.text_fields.count( source_value_id ) )
          {
@@ -2279,6 +2282,7 @@ bool output_view_form( ostream& os, const string& act,
                if( cell_data.find( "</HTML>" ) == string::npos && cell_data.find( "</html>" ) == string::npos )
                {
                   bool output_hrefs = true;
+
                   if( is_in_edit || is_printable
                    || source.manual_link_ignores.count( source_value_id ) )
                      output_hrefs = false;
@@ -3096,6 +3100,7 @@ bool output_view_form( ostream& os, const string& act,
             if( source.manual_link_fields.count( source_value_id ) )
             {
                bool output_hrefs = true;
+
                if( is_in_edit || is_printable
                 || source.manual_link_ignores.count( source_value_id ) )
                   output_hrefs = false;
