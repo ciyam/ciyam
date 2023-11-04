@@ -182,7 +182,7 @@ void verify_block( const string& content, bool check_dependents )
          throw runtime_error( "unexpected missing or incorrect identity attribute in block header '" + header + "'" );
    }
 
-   string hind_hash, last_block_hash, op_list_hash, public_key_hash, tree_root_hash, signature_file_hash;
+   string gen_hash, hind_hash, last_block_hash, op_list_hash, public_key_hash, tree_root_hash, signature_file_hash;
 
    bool has_primary_pubkey = false;
    bool has_secondary_pubkey = false;
@@ -199,8 +199,8 @@ void verify_block( const string& content, bool check_dependents )
    if( blockchain_identity.empty( ) )
       throw runtime_error( "unexpected empty 'blockchain_identity' in verify_block" );
 
-   if( ( blockchain_identity == string( c_demo_backup_identity ) )
-    || ( blockchain_identity == string( c_demo_shared_identity ) ) )
+   if( ( blockchain_identity == string( c_test_backup_identity ) )
+    || ( blockchain_identity == string( c_test_shared_identity ) ) )
       scaling_value = c_bc_scaling_demo_value;
 
    size_t scaling_squared = ( scaling_value * scaling_value );
@@ -242,6 +242,26 @@ void verify_block( const string& content, bool check_dependents )
 
       if( !block_height )
       {
+         if( i == 1 && gen_hash.empty( ) )
+         {
+            string prefix( c_file_type_core_block_detail_gen_hash_prefix );
+
+            size_t len = prefix.length( );
+
+            if( ( next_attribute.length( ) > len )
+             && ( prefix == next_attribute.substr( 0, len ) ) )
+            {
+               next_attribute.erase( 0, len );
+
+               gen_hash = hex_encode( base64::decode( next_attribute ) );
+
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_gen_hash ), gen_hash );
+
+               continue;
+            }
+         }
+
          if( !has_primary_pubkey )
          {
             size_t len = strlen( c_file_type_core_block_detail_pubkey_hashes_prefix );

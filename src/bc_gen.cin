@@ -11,6 +11,7 @@ SEED=$2
 OTHER=
 SHARED=
 CHANNEL=
+TEST_CHAIN=
 ;
 @ifeq "$1" "-hub"
 HUB=1
@@ -38,8 +39,16 @@ DEMO=1
 ;
 @ifeq "$SEED" "de604cee0755a3d81944ea96aed12681"
 MULTIPLE=5
+TEST_CHAIN=1
 @else
 MULTIPLE=50
+.identity -raw
+@ifeq "$OUTPUT" "17b4687afd135573a47f1e64ff43de0b4a3c53be"
+DEMO=1
+@endif
+@ifeq "$OUTPUT" "c38bb12065f512ef119022f56c22dce665afe8a0"
+DEMO=1
+@endif
 @endif
 ;
 SQUARED=@$MULTIPLE*$MULTIPLE
@@ -65,6 +74,9 @@ IDENT=$COMBINED
 @skip
 @endif
 ;
+GEN_HASH=
+GEN_HASH_ENC=
+;
 @ifndef $HUB
 @ifndef $SHARED
 @ifndef $CHANNEL
@@ -76,6 +88,11 @@ ENTROPY_HASH_SECONDARY=$OUTPUT
 ;
 .crypto_hash $SEED -s=-$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
+;
+.crypto_hash $SEED -s=-genesis
+GEN_HASH=$OUTPUT
+.encode $GEN_HASH
+GEN_HASH_ENC=$OUTPUT
 @else
 .crypto_hash $SEED -s=%IDENT%0
 ENTROPY_HASH_PRIMARY=$OUTPUT
@@ -153,7 +170,7 @@ TERTIARY_PRIVKEY_HASH=$OUTPUT
 ;
 @ifndef $SHARED
 @ifndef $CHANNEL
-.crypto_hash $PRIMARY_PUBKEY_HASH$SECONDARY_PUBKEY_HASH$TERTIARY_PUBKEY_HASH
+.crypto_hash $PRIMARY_PUBKEY_HASH$SECONDARY_PUBKEY_HASH$TERTIARY_PUBKEY_HASH$GEN_HASH
 IDENTITY_HASH=$OUTPUT
 ;
 IDENT=@substr:0,9:$IDENTITY_HASH
@@ -217,8 +234,14 @@ TERTIARY_PUBKEY_HASH_ENC=$OUTPUT
 @ifndef $HUB
 @ifndef $SHARED
 @ifndef $CHANNEL
+@ifndef $GEN_HASH_ENC
 .file_raw -core blob blk:h=0,i=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@else
+.file_raw -core blob blk:h=0,i=$IDENT\n\
+g:$GEN_HASH_ENC\n\
+p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@endif
 @else
 .file_raw -core blob blk:h=0,i=$IDENT,t=@peer_user\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
@@ -255,22 +278,17 @@ BLOCK_HASH=$OUTPUT
 @endif
 @endif
 ;
-@ifndef $HUB
+HUB_OR_TEST_CHAIN=
+@ifdef $HUB
+HUB_OR_TEST_CHAIN=1
+@endif
+@ifdef $TEST_CHAIN
+HUB_OR_TEST_CHAIN=1
+@endif
+;
+@ifndef $HUB_OR_TEST_CHAIN
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
-;
-@ifeq "$IDENT" "6b24210e8"
-DEMO=1
-@endif
-@ifeq "$IDENT" "8e01242b6"
-DEMO=1
-@endif
-@ifeq "$IDENT" "6f2680b40"
-DEMO=1
-@endif
-@ifeq "$IDENT" "04b0862f6"
-DEMO=1
-@endif
 ;
 @ifdef $DEMO
 BACKUP_SIZE=10GB
