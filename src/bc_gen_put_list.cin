@@ -41,12 +41,12 @@ ALL_PUTS=
 ;
 @:NEXT
 NEXT_TAG=$OUTPUT
+.regex "bc\\\.(.*)\\\." $NEXT_TAG
+NEXT_IDENT=$OUTPUT
 .file_info -content $NEXT_TAG
 BLOCK_HDR=%OUTPUT:2%
 .regex "blk:h=(.*)\," "$BLOCK_HDR"
 NEXT_HEIGHT=$OUTPUT
-.regex "\,i=(.*)\," "$BLOCK_HDR"
-NEXT_IDENT=$OUTPUT
 .file_tags -i=bc.$NEXT_IDENT.$NEXT_HEIGHT.put
 ;
 @ifdef $OUTPUT

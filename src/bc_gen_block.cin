@@ -20,12 +20,12 @@ HEIGHT=$2
 ;
 TREE=$3
 ;
-IS_DEMO=
-@ifeq "$IDENT" "bc139fc15"
-IS_DEMO=1
+TEST_CHAIN=
+@ifeq "$IDENT" "eb1a95a3b"
+TEST_CHAIN=1
 @endif
-@ifeq "$IDENT" "e3733d121"
-IS_DEMO=1
+@ifeq "$IDENT" "b3a59a1be"
+TEST_CHAIN=1
 @endif
 ;
 SHARED=
@@ -70,7 +70,7 @@ CHANNEL=1
 ;
 .session_variable @blockchain_identity $IDENT
 ;
-@ifndef $IS_DEMO
+@ifndef $TEST_CHAIN
 MULTIPLE=50
 UTIME=@unix:
 @else
@@ -192,7 +192,7 @@ PUB_KEY_HASH_ENC=$PUB_KEY_HASH_ENC,$OUTPUT
 @endif
 @skip
 ;
-.crypto_hash @sid -s=#%HEIGHT%
+.crypto_hash @sid -s=$IDENT.$HEIGHT
 .crypto_chain 1440 -b64 -hind $OUTPUT
 HIND_HASH_ENC=$OUTPUT
 ;

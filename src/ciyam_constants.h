@@ -83,8 +83,8 @@ const char* const c_log_file_ext = ".log";
 const char* const c_ciyam_script = "ciyam_script";
 const char* const c_ciyam_server = "ciyam_server";
 
-const char* const c_demo_backup_identity = "e3733d121";
-const char* const c_demo_shared_identity = "121d3373e";
+const char* const c_test_backup_identity = "eb1a95a3b";
+const char* const c_test_shared_identity = "b3a59a1be";
 
 const char* const c_variables_branch = "Variables";
 const char* const c_web_files_branch = "Web_Files";
@@ -219,6 +219,7 @@ const char* const c_file_type_core_block_header_stream_cipher_prefix = "s=";
 const char* const c_file_type_core_block_header_targeted_ident_prefix = "t=";
 const char* const c_file_type_core_block_header_version_number_prefix = "v=";
 
+const char* const c_file_type_core_block_detail_gen_hash_prefix = "g:";
 const char* const c_file_type_core_block_detail_hind_hash_prefix = "h:";
 const char* const c_file_type_core_block_detail_last_hashes_prefix = "l:";
 const char* const c_file_type_core_block_detail_op_list_hash_prefix = "o:";
