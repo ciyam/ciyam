@@ -340,7 +340,18 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
    if( !str.empty( ) )
    {
-      console_command_handler::preprocess_command_and_args( str, cmd_and_args, true );
+      try
+      {
+         console_command_handler::preprocess_command_and_args( str, cmd_and_args, true );
+      }
+      catch( exception& x )
+      {
+         str.erase( );
+
+         string error_prefix( c_error_output_prefix );
+
+         handle_command_response( error_prefix + x.what( ), true );
+      }
 
       if( !str.empty( ) )
       {
