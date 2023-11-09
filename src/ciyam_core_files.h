@@ -9,6 +9,7 @@
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <iosfwd>
 #     include <string>
+#     include <vector>
 #  endif
 
 #  include "ptypes.h"
@@ -22,6 +23,21 @@
 class mutex;
 
 mutex& CIYAM_BASE_DECL_SPEC get_mutex_for_ciyam_core_files( );
+
+struct core_file_data
+{
+   core_file_data( const std::string& raw_data );
+   ~core_file_data( );
+
+   std::string get_type( ) const;
+
+   bool get_header( const std::string& header_key, std::string& value ) const;
+
+   void get_attribute( const std::string& attribute_key, std::vector< std::string >& values ) const;
+
+   struct impl;
+   impl* p_impl;
+};
 
 void CIYAM_BASE_DECL_SPEC verify_core_file( const std::string& content, bool check_dependents = true );
 

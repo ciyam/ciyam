@@ -14,7 +14,6 @@
 #  include <set>
 #  include <deque>
 #  include <limits>
-#  include <vector>
 #  include <fstream>
 #  include <stdexcept>
 #endif
@@ -514,6 +513,93 @@ void verify_block( const string& content, bool check_dependents )
 mutex& get_mutex_for_ciyam_core_files( )
 {
    return g_mutex;
+}
+
+struct core_file_data::impl
+{
+   string type;
+
+   map< string, string > headers;
+   multimap< string, string > attributes;
+};
+
+core_file_data::core_file_data( const string& raw_data )
+{
+   p_impl = new impl;
+
+   vector< string > lines;
+
+   split( raw_data, lines, '\n' );
+
+   for( size_t i = 0; i < lines.size( ); i++ )
+   {
+      string next_line( lines[ i ] );
+
+      string::size_type pos = next_line.find( ':' );
+
+      if( i == 0 )
+      {
+         if( pos == string::npos )
+            throw runtime_error( "unexpected core_file_data type missing in '" + next_line + "'" );
+
+         p_impl->type = next_line.substr( 0, pos );
+
+         next_line.erase( 0, pos + 1 );
+
+         vector< string > header_attributes;
+         split( next_line, header_attributes );
+
+         for( size_t j = 0; j < header_attributes.size( ); j++ )
+         {
+            string next_header( header_attributes[ j ] );
+
+            pos = next_header.find( '=' );
+
+            if( pos == string::npos )
+               throw runtime_error( "unexpected invalid core_file_data header attribute '" + next_header + "'" );
+
+            p_impl->headers.insert( make_pair( next_header.substr( 0, pos ), next_header.substr( pos + 1 ) ) );
+         }
+      }
+      else
+      {
+         if( pos == string::npos )
+            throw runtime_error( "unexpected core_file_data attribute type missing in '" + next_line + "'" );
+
+         p_impl->attributes.insert( make_pair( next_line.substr( 0, pos ), next_line.substr( pos + 1 ) ) );
+      }
+   }
+}
+
+core_file_data::~core_file_data( )
+{
+   delete p_impl;
+}
+
+string core_file_data::get_type( ) const
+{
+   return p_impl->type;
+}
+
+bool core_file_data::get_header( const string& header_key, string& value ) const
+{
+   if( p_impl->headers.count( header_key ) )
+      value = p_impl->headers[ header_key ];
+}
+
+void core_file_data::get_attribute( const string& attribute_key, vector< string >& values ) const
+{
+   multimap< string, string >::const_iterator ci = p_impl->attributes.lower_bound( attribute_key );
+
+   while( ci != p_impl->attributes.end( ) )
+   {
+      if( ci->first != attribute_key )
+         break;
+
+      values.push_back( ci->second );
+
+      ++ci;
+   }
 }
 
 void verify_core_file( const string& content, bool check_dependents )
