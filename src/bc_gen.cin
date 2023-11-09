@@ -91,8 +91,6 @@ ENTROPY_HASH_TERTIARY=$OUTPUT
 ;
 .crypto_hash $SEED -s=-genesis
 GEN_HASH=$OUTPUT
-.encode $GEN_HASH
-GEN_HASH_ENC=$OUTPUT
 @else
 .crypto_hash $SEED -s=%IDENT%0
 ENTROPY_HASH_PRIMARY=$OUTPUT
@@ -102,6 +100,9 @@ ENTROPY_HASH_SECONDARY=$OUTPUT
 ;
 .crypto_hash $SEED -s=$IDENT$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
+;
+.crypto_hash $SEED -s=%IDENT%genesis
+GEN_HASH=$OUTPUT
 @endif
 @else
 .crypto_hash $SEED -s=+0
@@ -112,6 +113,9 @@ ENTROPY_HASH_SECONDARY=$OUTPUT
 ;
 .crypto_hash $SEED -s=+$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
+;
+.crypto_hash $SEED -s=+genesis
+GEN_HASH=$OUTPUT
 @endif
 @else
 .crypto_hash $SEED -s=#0
@@ -122,6 +126,18 @@ ENTROPY_HASH_SECONDARY=$OUTPUT
 ;
 .crypto_hash $SEED -s=#$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
+;
+.crypto_hash $SEED -s=#genesis
+GEN_HASH=$OUTPUT
+@endif
+;
+@ifdef $DEMO
+GEN_HASH=
+@else
+@ifdef $GEN_HASH
+.encode $GEN_HASH
+GEN_HASH_ENC=$OUTPUT
+@endif
 @endif
 ;
 .crypto_lamport primary $ENTROPY_HASH_PRIMARY
@@ -243,16 +259,34 @@ g:$GEN_HASH_ENC\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @endif
 @else
+@ifndef $GEN_HASH_ENC
 .file_raw -core blob blk:h=0,i=$IDENT,t=@peer_user\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@else
+.file_raw -core blob blk:h=0,i=$IDENT,t=@peer_user\n\
+g:$GEN_HASH_ENC\n\
+p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@endif
 @endif
 @else
+@ifndef $GEN_HASH_ENC
 .file_raw -core blob blk:h=0,i=$IDENT,t=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@else
+.file_raw -core blob blk:h=0,i=$IDENT,t=$IDENT\n\
+g:$GEN_HASH_ENC\n\
+p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@endif
 @endif
 @else
+@ifndef $GEN_HASH_ENC
 .file_raw -core blob blk:h=0,i=$IDENT,t=@peer_hub\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@else
+.file_raw -core blob blk:h=0,i=$IDENT,t=@peer_hub\n\
+g:$GEN_HASH_ENC\n\
+p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@endif
 @endif
 ;
 BLOCK_HASH=$OUTPUT

@@ -20,6 +20,14 @@ HEIGHT=$2
 ;
 TREE=$3
 ;
+DEMO=
+@ifeq "$IDENT" "6b24210e8"
+DEMO=1
+@endif
+@ifeq "$IDENT" "6f2680b40"
+DEMO=1
+@endif
+;
 TEST_CHAIN=
 @ifeq "$IDENT" "eb1a95a3b"
 TEST_CHAIN=1
@@ -98,8 +106,12 @@ UUID=$OUTPUT
 @endif
 @skip
 ;
+@ifdef $DEMO
+HEIGHT_IDENTITY=$IDENT
+@else
 .crypto_hash $OUTPUT-$HEIGHT
 HEIGHT_IDENTITY=@substr:0,9:$OUTPUT
+@endif
 ;
 @ifndef $TREE
 @ifndef $PEER_HUB
