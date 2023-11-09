@@ -1596,6 +1596,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string mnenomics_or_hex_seed( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_mnemonics_or_hex_seed ) );
          string additional_entropy_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_additional_entropy_text ) );
 
+         string::size_type pos = filename.find( ':' );
+
+         if( pos != string::npos )
+         {
+            string pub_key( filename.substr( 0, pos ) );
+            string signature( filename.substr( pos + 1 ) );
+
+            if( has_tag( pub_key ) )
+               pub_key = tag_file_hash( pub_key );
+
+            if( has_tag( signature ) )
+               signature = tag_file_hash( signature );
+
+            filename = pub_key + ':' + signature;
+         }
+
          const char* p_extra = 0;
 
          if( !additional_entropy_text.empty( ) )
