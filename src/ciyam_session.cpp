@@ -1880,6 +1880,67 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !archive.empty( ) )
             create_raw_file_in_archive( archive, response, data );
       }
+      else if( command == c_cmd_ciyam_session_file_tag )
+      {
+         bool is_remove = has_parm_val( parameters, c_cmd_ciyam_session_file_tag_remove );
+         bool is_unlink = has_parm_val( parameters, c_cmd_ciyam_session_file_tag_unlink );
+         string hash( get_parm_val( parameters, c_cmd_ciyam_session_file_tag_hash ) );
+         string names( get_parm_val( parameters, c_cmd_ciyam_session_file_tag_names ) );
+
+         vector< string > tag_names;
+         split( names, tag_names );
+
+         for( size_t i = 0; i < tag_names.size( ); i++ )
+         {
+            string next( tag_names[ i ] );
+
+            check_not_possible_protocol_response( next );
+
+            if( is_remove || is_unlink )
+               tag_del( next, is_unlink );
+            else
+               tag_file( next, hash, false, true );
+         }
+      }
+      else if( command == c_cmd_ciyam_session_file_core )
+      {
+         bool is_type = has_parm_val( parameters, c_cmd_ciyam_session_file_core_type );
+         bool is_header = has_parm_val( parameters, c_cmd_ciyam_session_file_core_header );
+         bool is_attribute = has_parm_val( parameters, c_cmd_ciyam_session_file_core_attribute );
+         string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_core_tag_or_hash ) );
+         string key_value( get_parm_val( parameters, c_cmd_ciyam_session_file_core_key_value ) );
+
+         string hash( tag_or_hash );
+
+         if( !hash.empty( ) && has_tag( tag_or_hash ) )
+            hash = tag_file_hash( tag_or_hash );
+
+         unsigned char type_and_extra = '\0';
+
+         if( !is_core_file( hash ) )
+            throw runtime_error( "file '" + tag_or_hash + "' is not a core file" );
+
+         core_file_data core_data( extract_file( hash, "", 0, 0, &type_and_extra ) );
+
+         if( is_type )
+            response = core_data.get_type( );
+         else
+         {
+            if( key_value.empty( ) )
+               throw runtime_error( "missing required key value" );
+
+            if( is_header )
+               core_data.get_header( key_value, response );
+            else
+            {
+               vector< string > lines;
+
+               core_data.get_attribute( key_value, lines );
+
+               response = join( lines, '\n' );
+            }
+         }
+      }
       else if( command == c_cmd_ciyam_session_file_hash )
       {
          bool is_quiet = has_parm_val( parameters, c_cmd_ciyam_session_file_hash_quiet );
@@ -1911,28 +1972,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   response += '\n';
                response += tag_file_hash( tags[ i ], is_quiet ? &rc : 0 );
             }
-         }
-      }
-      else if( command == c_cmd_ciyam_session_file_tag )
-      {
-         bool is_remove = has_parm_val( parameters, c_cmd_ciyam_session_file_tag_remove );
-         bool is_unlink = has_parm_val( parameters, c_cmd_ciyam_session_file_tag_unlink );
-         string hash( get_parm_val( parameters, c_cmd_ciyam_session_file_tag_hash ) );
-         string names( get_parm_val( parameters, c_cmd_ciyam_session_file_tag_names ) );
-
-         vector< string > tag_names;
-         split( names, tag_names );
-
-         for( size_t i = 0; i < tag_names.size( ); i++ )
-         {
-            string next( tag_names[ i ] );
-
-            check_not_possible_protocol_response( next );
-
-            if( is_remove || is_unlink )
-               tag_del( next, is_unlink );
-            else
-               tag_file( next, hash, false, true );
          }
       }
       else if( command == c_cmd_ciyam_session_file_info )

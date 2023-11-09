@@ -52,6 +52,8 @@ bool CIYAM_BASE_DECL_SPEC has_tag( const std::string& name, file_type type = e_f
 
 bool CIYAM_BASE_DECL_SPEC has_file( const std::string& hash, bool check_is_hash = true, bool* p_is_in_archive = 0 );
 
+bool CIYAM_BASE_DECL_SPEC is_core_file( const std::string& hash );
+
 bool CIYAM_BASE_DECL_SPEC is_list_file( unsigned char ch );
 
 bool CIYAM_BASE_DECL_SPEC is_list_file( const std::string& hash, bool* p_is_encrypted = 0 );

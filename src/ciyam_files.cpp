@@ -1224,6 +1224,23 @@ bool has_file( const string& hash, bool check_is_hash, bool* p_is_in_archive )
    return retval;
 }
 
+bool is_core_file( const string& hash )
+{
+   guard g( g_mutex );
+
+   multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
+
+   string archive_path( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+
+   string file_name( construct_file_name_from_hash(
+    hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
+
+   unsigned char file_type_and_extra = get_file_type_and_extra( hash, file_name.c_str( ) );
+
+   return ( file_type_and_extra & c_file_type_val_extra_core );
+}
+
 bool is_list_file( unsigned char ch )
 {
    unsigned char file_type = ( ch & c_file_type_val_mask );
