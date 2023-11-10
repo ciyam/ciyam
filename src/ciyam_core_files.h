@@ -31,9 +31,9 @@ struct core_file_data
 
    std::string get_type( ) const;
 
-   bool get_header( const std::string& header_key, std::string& value ) const;
+   std::string get_header( const std::string& header_key ) const;
 
-   void get_attribute( const std::string& attribute_key, std::vector< std::string >& values ) const;
+   std::string get_attribute( const std::string& attribute_key ) const;
 
    struct impl;
    impl* p_impl;

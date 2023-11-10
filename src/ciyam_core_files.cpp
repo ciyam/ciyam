@@ -213,7 +213,17 @@ void verify_block( const string& content, bool check_dependents )
       if( !has_tag( genesis_tag ) )
          throw runtime_error( "unexpected genesis block for '" + blockchain_identity + "' not found" );
 
-      string hash_info( tag_file_hash( genesis_tag ) );
+      string genesis_hash( tag_file_hash( genesis_tag ) );
+
+      core_file_data core_data( extract_file( genesis_hash, "" ) );
+
+      string hash_info( core_data.get_attribute( c_file_type_core_block_detail_gen_hash_prefix ) );
+
+      // NOTE: If no genesis hash attribute exists will use the genesis block hash instead.
+      if( hash_info.empty( ) )
+         hash_info = genesis_hash;
+      else
+         hash_info = hex_encode( base64::decode( hash_info ) );
 
       hash_info += '-' + to_string( block_height );
 
@@ -581,25 +591,40 @@ string core_file_data::get_type( ) const
    return p_impl->type;
 }
 
-bool core_file_data::get_header( const string& header_key, string& value ) const
+string core_file_data::get_header( const string& header_key ) const
 {
+   string retval;
+
    if( p_impl->headers.count( header_key ) )
-      value = p_impl->headers[ header_key ];
+      retval = p_impl->headers[ header_key ];
+
+   return retval;
 }
 
-void core_file_data::get_attribute( const string& attribute_key, vector< string >& values ) const
+string core_file_data::get_attribute( const string& attribute_key ) const
 {
-   multimap< string, string >::const_iterator ci = p_impl->attributes.lower_bound( attribute_key );
+   string retval;
+
+   string::size_type pos = attribute_key.find( ':' );
+
+   multimap< string, string >::const_iterator ci =
+    p_impl->attributes.lower_bound( attribute_key.substr( 0, pos ) );
 
    while( ci != p_impl->attributes.end( ) )
    {
-      if( ci->first != attribute_key )
+      if( ci->first != attribute_key.substr( 0, pos ) )
          break;
 
-      values.push_back( ci->second );
+      // NOTE: If more than one matching attribute then separate with LFs.
+      if( !retval.empty( ) )
+         retval += '\n';
+
+      retval += ci->second;
 
       ++ci;
    }
+
+   return retval;
 }
 
 void verify_core_file( const string& content, bool check_dependents )
