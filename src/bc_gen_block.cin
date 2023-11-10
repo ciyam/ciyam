@@ -100,16 +100,25 @@ SQUARED=@$MULTIPLE*$MULTIPLE
 .session_variable @uuid
 UUID=$OUTPUT
 ;
-.file_hash bc.$IDENT.0.blk
+GENESIS_TAG=bc.$IDENT.0.blk
+.file_hash $GENESIS_TAG
 @ifdef $ERROR
 @label END
 @endif
 @skip
 ;
+GENESIS_HASH=$OUTPUT
+;
+.file_core -attribute $GENESIS_HASH g
+@ifdef $OUTPUT
+.decode $OUTPUT
+GENESIS_HASH=$OUTPUT
+@endif
+;
 @ifdef $DEMO
 HEIGHT_IDENTITY=$IDENT
 @else
-.crypto_hash $OUTPUT-$HEIGHT
+.crypto_hash $GENESIS_HASH-$HEIGHT
 HEIGHT_IDENTITY=@substr:0,9:$OUTPUT
 @endif
 ;

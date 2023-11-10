@@ -1930,15 +1930,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                throw runtime_error( "missing required key value" );
 
             if( is_header )
-               core_data.get_header( key_value, response );
+               response = core_data.get_header( key_value );
             else
-            {
-               vector< string > lines;
-
-               core_data.get_attribute( key_value, lines );
-
-               response = join( lines, '\n' );
-            }
+               response = core_data.get_attribute( key_value );
          }
       }
       else if( command == c_cmd_ciyam_session_file_hash )
