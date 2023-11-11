@@ -51,9 +51,8 @@ namespace
 {
 
 const int c_max_args = 10;
-const int c_max_usage_width = 84;
-
 const int c_max_history = 1000;
+const int c_max_usage_width = 84;
 
 const size_t c_max_pwd_size = 128;
 

@@ -7,35 +7,45 @@
 #NOTE: This script requires an application protocol command name.
 @else
 ;
-CMD=$1
-ARGS=$2
+CMD_AND_ARGS=$1
 ;
-SPACED=@repstr:,/ :$ARGS
+; NOTE: If need more than eight command arguments then use '-' as
+; the first command argument and then use comma separators so the
+; second command argument will becomes all the other args.
 ;
-APPEND_STAR=
+@ifdef "$2"
+@ifeq "$2" "-"
+SPACED=@repstr:,/ :$3
+CMD_AND_ARGS=$1 $SPACED
+@else
+CMD_AND_ARGS=$1 $2
+@ifdef "$3"
+CMD_AND_ARGS=$1 $2 $3
+@ifdef "$4"
+CMD_AND_ARGS=$1 $2 $3 $4
+@ifdef "$5"
+CMD_AND_ARGS=$1 $2 $3 $4 $5
+@ifdef "$6"
+CMD_AND_ARGS=$1 $2 $3 $4 $5 $6
+@ifdef "$7"
+CMD_AND_ARGS=$1 $2 $3 $4 $5 $6 $7
+@ifdef "$8"
+CMD_AND_ARGS=$1 $2 $3 $4 $5 $6 $7 $8
+@ifdef "$9"
+CMD_AND_ARGS=$1 $2 $3 $4 $5 $6 $7 $8 $9
+@endif
+@endif
+@endif
+@endif
+@endif
+@endif
+@endif
+@endif
+@endif
+;
 .session_variable @single_string_response 1
 ;
-@ifeq "$CMD" "session_variable"
-@ifndef $ARGS
-APPEND_STAR=1
-@endif
-@endif
-;
-@ifeq "$CMD" "system_variable"
-@ifndef $ARGS
-APPEND_STAR=1
-@endif
-@endif
-;
-@ifdef $APPEND_STAR
-CMD=$CMD *
-@endif
-;
-@ifndef $ARGS
-.$CMD
-@else
-.$CMD $SPACED
-@endif
+.$CMD_AND_ARGS
 ;
 @ifdef $OUTPUT
 #$OUTPUT
