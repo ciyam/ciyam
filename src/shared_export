@@ -72,14 +72,14 @@ if [ ! -f ~shared ]; then
  export CIYAM_STREAM_CIPHER=cc
  export ENCRYPTED_PASSWORD=@shared_secret
 
- export CIYAM_ARCHIVE_PATH=`./ciyam_command file_archives -path_only,$IDENTITY`
+ export CIYAM_ARCHIVE_PATH=`./ciyam_command file_archives -path_only $IDENTITY`
 
  BLOCK_TREE=`./block_tree_hash $IDENTITY`
  SHARED_LIST=`./tree_list $BLOCK_TREE 0 Shared | tail -n 1`
 
  ./export_files $SHARED_LIST $USER_PATH >>$SHARED_DETAILS
 
- ./ciyam_command file_tag -remove,bc.$IDENTITY.shared
+ ./ciyam_command file_tag -remove bc.$IDENTITY.shared
 
  sudo chown root:root $SHARED_IMAGE
  sudo mount $SHARED_IMAGE $SHARED_PATH
