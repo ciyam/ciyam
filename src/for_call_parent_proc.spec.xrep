@@ -1,5 +1,8 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_call_parent_proc)] `{`$arg_id`}
-   get_obj( ).`{`$arg_spfield`}( ).`{`$arg_fk_proc`}( );
+`{`!`@eq`(`$arg_sfield`,`'`'`)\
+   get_obj( ).`{`$arg_spfield`}( get_obj( ).`{`$arg_sfield`}( ) );
+`}\
+   get_obj( ).`{`$arg_spfield`}( ).`{`$arg_fk_proc`}( `{`!`@eq`(`$arg_procedure_arg`,`'`'`)`{`$arg_procedure_arg`} `});
    // [(finish for_call_parent_proc)] `{`$arg_id`}
 `}
