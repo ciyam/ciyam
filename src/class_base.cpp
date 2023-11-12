@@ -78,6 +78,7 @@ using namespace std;
 namespace
 {
 
+#include "ciyam_strings.h"
 #include "ciyam_constants.h"
 
 const string g_empty_fixed_key;
@@ -3262,7 +3263,7 @@ void add_user( const string* p_user_id )
 #endif
 }
 
-string generate_password( const string& user_id )
+string generate_password( const string& user_id, bool include_prefix )
 {
    string pwd( base64::encode( hex_decode( uuid( ).as_string( ) ), true ) );
 
@@ -3279,7 +3280,11 @@ string generate_password( const string& user_id )
       system( cmd.c_str( ) );
    }
 
-   return pwd;
+   if( !include_prefix )
+      return pwd;
+   
+   return get_string_message( GS( c_str_copy_password_to_clipboard ),
+    make_pair( c_str_parm_copy_password_to_clipboard_value, pwd ) );
 }
 
 void remove_gpg_key( const string& gpg_key_id, bool ignore_error )
