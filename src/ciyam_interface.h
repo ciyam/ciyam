@@ -40,6 +40,7 @@ const char* const c_default_numeric_mask = "-##############.#####";
 const char* const c_default_security_level = "XXXXXXXXXX";
 
 const char* const c_extkey = "@extkey";
+const char* const c_clipboard = "@clipboard";
 
 const char* const c_fcgi_sio = "fcgi.sio";
 const char* const c_fcgi_sio_ext = ".fcgi.sio";
@@ -607,6 +608,8 @@ const char* const c_display_confirm_identity = "Confirm Identity";
 const char* const c_display_identity_missing = "Identity Missing";
 const char* const c_display_record_not_found = "Record not found";
 const char* const c_display_switch_to_module = "Switch to module";
+const char* const c_display_copy_to_clipboard = "Copy{@extra} to Clipboard";
+const char* const c_display_copy_to_clipboard_parm_extra = "{@extra}";
 const char* const c_display_missing_mnemonics = "Eleven mnemonic words must be provided.";
 const char* const c_display_permission_denied = "Permission denied";
 const char* const c_display_maximum_characters = "Maximum characters";
