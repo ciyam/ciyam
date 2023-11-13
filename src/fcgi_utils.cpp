@@ -1276,6 +1276,7 @@ void replace_links_and_output( const string& s,
    string cell_data( s );
 
    string::size_type lpos;
+
    while( ( lpos = cell_data.find( '{' ) ) != string::npos )
    {
       if( lpos != 0 )
@@ -1303,6 +1304,7 @@ void replace_links_and_output( const string& s,
 
       string vid( id );
       string::size_type cpos = next_key.find( '$' );
+
       if( cpos != string::npos )
       {
          vid = next_key.substr( 0, cpos );
@@ -1317,6 +1319,7 @@ void replace_links_and_output( const string& s,
       string display( next.substr( npos ) );
 
       string::size_type dtpos = next_key.find( '@' );
+
       if( dtpos != string::npos )
       {
          string date_time_str( next_key.substr( dtpos + 1 ) );
@@ -1350,6 +1353,7 @@ void replace_links_and_output( const string& s,
          *p_last_key = next_key;
 
       bool is_href = false;
+
       if( output_hrefs && !next_key.empty( ) )
       {
          is_href = true;

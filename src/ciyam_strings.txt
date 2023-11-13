@@ -21,5 +21,5 @@ record_constrained "This record cannot be deleted as it is being used by one or 
 index_duplicate "This {@field} [val: {@value}] is already being used by another {@class} record."
 record_not_found "{@class} record '{@key}' was not found."
 field_is_incorrect "{@field} is incorrect."
-copy_password_to_clipboard "Copy password to clipboard: {@value}"
+copy_password_to_clipboard "@clipboard:Password;{@value}"
 external_service_unavailable "External service {@symbol} does not appear to be currently available."

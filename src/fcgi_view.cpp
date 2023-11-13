@@ -962,10 +962,38 @@ bool output_view_form( ostream& os, const string& act,
          // NOTE: Don't display as an error unless it was actually received that way from the server.
          if( error_message.find( GDS( c_display_error ) ) != 0 )
          {
+            string message( error_message );
+
+            string::size_type pos = message.find( c_clipboard );
+
+            if( pos == 0 )
+            {
+               pos = message.find( ':' );
+
+               if( pos != string::npos )
+                  message.erase( 0, pos + 1 );
+
+               pos = message.find( ';' );
+
+               string extra( " " );
+               if( pos != string::npos )
+               {
+                  extra += message.substr( 0, pos );
+                  message.erase( 0, pos + 1 );
+               }
+
+               string display( string_message(
+                GDS( c_display_copy_to_clipboard ),
+                make_pair( c_display_copy_to_clipboard_parm_extra, extra ) ) );
+
+               message = "<input id=\"clipboard\" name=\"clipboard\" type=\"button\" class=\"button\" value=\"" + display
+                + "\" onClick=\"this.style.display = 'none'; navigator.clipboard.writeText( '" + message + "' );\" style=\"cursor:pointer\">";
+            }
+
             if( !is_ui_prototype( ) )
-               os << "<td>" << replace_crlfs( error_message, "<br/>" ) << "</td>";
+               os << "<td>" << replace_crlfs( message, "<br/>" ) << "</td>";
             else
-               os << "<p class=\"table-cell center view-message\">" << replace_crlfs( error_message, "<br/>" ) << "</p>\n";
+               os << "<p class=\"table-cell center view-message\">" << replace_crlfs( message, "<br/>" ) << "</p>\n";
 
             extra_content_func += "had_act_error = false;\n";
          }
