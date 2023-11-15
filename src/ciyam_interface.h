@@ -473,6 +473,7 @@ const char* const c_view_field_extra_actions = "actions";
 const char* const c_view_field_extra_efinish = "efinish";
 const char* const c_view_field_extra_no_edit = "no_edit";
 const char* const c_view_field_extra_non_new = "non_new";
+const char* const c_view_field_extra_qr_scan = "qr_scan";
 const char* const c_view_field_extra_vextra1 = "vextra1";
 const char* const c_view_field_extra_vextra2 = "vextra2";
 const char* const c_view_field_extra_key_hide = "key_hide";

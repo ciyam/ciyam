@@ -420,6 +420,9 @@ void setup_view_fields( view_source& view,
          if( extra_data.count( c_view_field_extra_forced ) )
             view.server_forced_fields.push_back( field_id );
 
+         if( extra_data.count( c_view_field_extra_qr_scan ) )
+            view.qr_scan_field = field_id;
+
          if( fld.pclass.empty( ) )
          {
             if( extra_data.count( c_field_extra_enum ) )
@@ -1666,6 +1669,7 @@ bool output_view_form( ostream& os, const string& act,
             int max_length = 100;
 
             string extra, extra_keys, validate, use_time( "false" ), use_secs( "false" );
+
             bool is_password = false;
             bool is_datetime = false;
 
@@ -1996,6 +2000,22 @@ bool output_view_form( ostream& os, const string& act,
                    << "\" onkeypress=\"" << extra_keys << "return form_keys( event, " << enter_action
                    << ", " << cancel_action << " );\"></input>";
                }
+            }
+            else if( source.qr_scan_field == source_value_id )
+            {
+               extra_content_func += "const scanner = new Html5QrcodeScanner( 'qrcode_reader', { qrbox: { width: 250, height: 250, }, fps: 20, } );\n\n";
+
+               extra_content_func += "scanner.render( qrcode_reader_success, qrcode_reader_failure );\n\n";
+
+               extra_content_func += "function qrcode_reader_success( result )\n";
+               extra_content_func += "{\n";
+               extra_content_func += "   document.getElementById( '" + source_field_id + "' ).value = result;\n";
+
+               extra_content_func += "   scanner.clear( );\n";
+               extra_content_func += "   document.getElementById( 'qrcode_reader' ).remove( );\n";
+               extra_content_func += "}\n\n";
+
+               extra_content_func += "function qrcode_reader_failure( err ) { console.log( err ); }\n";
             }
          }
          else
