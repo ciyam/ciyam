@@ -49,6 +49,11 @@ else
    mkdir $WEBDIR/$2/scripts
    ./unbundle -qq scripts -d $WEBDIR/$2/scripts
   }
+  [ -d $WEBDIR/$2/html5-qrcode ] ||
+  {
+   mkdir $WEBDIR/$2/html5-qrcode
+   ./unbundle -qq html5-qrcode -d $WEBDIR/$2/html5-qrcode
+  }
   [ -f $WEBDIR/$2/ciyam_interface.js ] ||
   {
    ./xrep @ciyam_interface.js.xrep include=$1.app.vars.xrep > $WEBDIR/$2/ciyam_interface.js
