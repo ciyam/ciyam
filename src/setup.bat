@@ -51,6 +51,11 @@ mkdir "%install_path%\scripts"
 unbundle -qq scripts -d "%install_path%\scripts"
 
 :skip_scripts
+if exist "%install_path%\html5-qrcode" goto skip_html5_qrcode
+mkdir "%install_path%\html5-qrcode"
+unbundle -qq html5-qrcode -d "%install_path%\html5-qrcode"
+
+:skip_html5_qrcode
 if exist "%install_path%\ciyam_interface.js" goto skip_interface_javascript
 xrep @ciyam_interface.js.xrep include=%1.app.vars.xrep >"%install_path%\ciyam_interface.js"
 
