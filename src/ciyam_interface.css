@@ -152,6 +152,14 @@ body
    top: 40px;
 }
 
+#qrcode_reader
+{
+   float: centre;
+   text-align: center;
+   width: 600px;
+   top: 40px;
+}
+
 .visible
 {
    visibility: visible;

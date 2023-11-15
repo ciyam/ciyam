@@ -7843,6 +7843,10 @@ string meta_field_extras( int uom,
       all_extras.push_back( "key_name" );
       break;
 
+      case 35:
+      all_extras.push_back( "qr_scan" );
+      break;
+
       default:
       throw runtime_error( "unexpected field extra #" + to_string( extra ) + " in meta_field_extras" );
    }

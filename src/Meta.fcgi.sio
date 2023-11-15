@@ -610,6 +610,10 @@
      <filter>str
     </value>
     <value/>
+     <data>35
+     <name>enum_field_extra_qr_scan
+    </value>
+    <value/>
      <data>22
      <name>enum_field_extra_filename
      <filter>str

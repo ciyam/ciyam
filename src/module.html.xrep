@@ -13,26 +13,28 @@
 <meta http-equiv="Cache-Control" content="no-cache"/>
 <meta http-equiv="Cache-Control" content="no-store"/>
 
+<link rel="stylesheet" href="css/pikaday.css" type="text/css"/>
+<link rel="stylesheet" href="ciyam_interface.css" type="text/css"/>
+
 <script type="text/javascript" src="sha1.js"></script>
 <script type="text/javascript" src="sha2.js"></script>
 <script type="text/javascript" src="base64.js"></script>
 
 <script type="text/javascript">var module = 'module=`{`$model_name`}';</script>
 
-<link rel="stylesheet" href="ciyam_interface.css" type="text/css"/>
-<link rel="stylesheet" href="css/pikaday.css" type="text/css"/>
 <script type="text/javascript" src="ciyam_interface.js"></script>
-<script type="text/javascript" src="pikaday.js">
-</script>
+
+<script type="text/javascript" src="pikaday.js"></script>
 <script type="text/javascript" src="scripts/wysiwyg.js"></script>
 <script type="text/javascript" src="scripts/wysiwyg-settings.js"></script>
+<script type="text/javascript" src="html5-qrcode/html5-qrcode.min.js"></script>
 </head>
 
 <body onload="load( )">
 <noscript>
    <div class="noscript">
        <p><strong>JavaScript seem to be disabled in your browser.</strong></p>
-       <p>You must have JavaScript enabled in your browser in order to use this website.</p>
+       <p>You must have JavaScript enabled in your browser in order to use this application.</p>
    </div>
 </noscript>
 
@@ -41,6 +43,8 @@
 
 <div id="auto_progress" class="invisible"><img src="auto_progress.gif" alt="auto_progress"/></div>
 <div id="load_progress" class="invisible"><img src="load_progress.gif" alt="load_progress"/></div>
+
+<div id="qrcode_reader"></div>
 
 <iframe src="javascript:false;"
  name="hidden_frame" frameborder="0" width="1" height="1" marginheight="0" marginwidth="0">
