@@ -2006,6 +2006,8 @@ bool output_view_form( ostream& os, const string& act,
 #ifndef OMIT_QRCODE_SCANNER
             else if( source.qr_scan_field == source_value_id )
             {
+               os << "<br/><div id=\"qrcode_reader\"></div>";
+
                extra_content_func += "const scanner = new Html5QrcodeScanner( 'qrcode_reader', { qrbox: { width: 250, height: 250, }, fps: 20, } );\n\n";
 
                extra_content_func += "scanner.render( qrcode_reader_success, qrcode_reader_failure );\n\n";
