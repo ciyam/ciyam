@@ -28,6 +28,8 @@
 #include "crypt_stream.h"
 #include "ciyam_interface.h"
 
+//#define OMIT_QRCODE_SCANNER
+
 using namespace std;
 
 namespace
@@ -2001,6 +2003,7 @@ bool output_view_form( ostream& os, const string& act,
                    << ", " << cancel_action << " );\"></input>";
                }
             }
+#ifndef OMIT_QRCODE_SCANNER
             else if( source.qr_scan_field == source_value_id )
             {
                extra_content_func += "const scanner = new Html5QrcodeScanner( 'qrcode_reader', { qrbox: { width: 250, height: 250, }, fps: 20, } );\n\n";
@@ -2017,6 +2020,7 @@ bool output_view_form( ostream& os, const string& act,
 
                extra_content_func += "function qrcode_reader_failure( err ) { console.log( err ); }\n";
             }
+#endif
          }
          else
          {
