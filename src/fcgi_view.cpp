@@ -2009,7 +2009,7 @@ bool output_view_form( ostream& os, const string& act,
 
                extra_content_func += "function qrcode_reader_success( result )\n";
                extra_content_func += "{\n";
-               extra_content_func += "   document.getElementById( '" + source_field_id + "' ).value = result;\n";
+               extra_content_func += "   document.getElementById( 'field_" + source_field_id + "' ).value = result;\n";
 
                extra_content_func += "   scanner.clear( );\n";
                extra_content_func += "   document.getElementById( 'qrcode_reader' ).remove( );\n";

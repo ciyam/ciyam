@@ -145,7 +145,7 @@ body
 
 #load_progress
 {
-   float: centre;
+   float: center;
    position: absolute;
    text-align: center;
    width: 100%;
@@ -154,10 +154,12 @@ body
 
 #qrcode_reader
 {
-   float: centre;
+   float: center;
+   position: absolute;
    text-align: center;
-   width: 600px;
-   top: 40px;
+   top: -100px;
+   left: 24%;
+   width: 380px;
 }
 
 .visible

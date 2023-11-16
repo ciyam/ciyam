@@ -41,10 +41,10 @@
 <div id="content">
 </div>
 
+<div id="qrcode_reader"></div>
+
 <div id="auto_progress" class="invisible"><img src="auto_progress.gif" alt="auto_progress"/></div>
 <div id="load_progress" class="invisible"><img src="load_progress.gif" alt="load_progress"/></div>
-
-<div id="qrcode_reader"></div>
 
 <iframe src="javascript:false;"
  name="hidden_frame" frameborder="0" width="1" height="1" marginheight="0" marginwidth="0">
