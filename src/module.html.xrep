@@ -41,8 +41,6 @@
 <div id="content">
 </div>
 
-<div id="qrcode_reader"></div>
-
 <div id="auto_progress" class="invisible"><img src="auto_progress.gif" alt="auto_progress"/></div>
 <div id="load_progress" class="invisible"><img src="load_progress.gif" alt="load_progress"/></div>
 

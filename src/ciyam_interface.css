@@ -155,11 +155,10 @@ body
 #qrcode_reader
 {
    float: center;
-   position: absolute;
+   position: relative;
    text-align: center;
-   top: -100px;
-   left: 24%;
-   width: 380px;
+   left: 2px;
+   width: 100%;
 }
 
 .visible
