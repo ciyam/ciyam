@@ -11,9 +11,9 @@ else
 
  if sudo test -f "/home/$user_id/current_pid"; then
 
-  sudo rm "/home/$user_id/current_pid"
-
   pid=`sudo cat /home/$user_id/current_pid`
+
+  sudo rm "/home/$user_id/current_pid"
 
   CHECK=`sudo ps -A -o "pid user" | grep "$pid $user_id"`
 
