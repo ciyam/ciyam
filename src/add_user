@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: add_user [user_id] [[password]]
+ echo "Usage: add_user [user_id] [[password]]"
 else
  user_id=$1
  password=$2
@@ -18,6 +18,7 @@ else
  sudo useradd -g users -m $user_id
 
  echo "echo \$PID > /home/$user_id/current_pid" > ~add_user
+ echo "echo $user_id >> /home/admin/ciyam_logins" >> ~add_user
 
  sudo sh -c "cat add_user_pid >> /home/$user_id/.bashrc"
  sudo sh -c "cat ~add_user >> /home/$user_id/.bashrc"
