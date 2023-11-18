@@ -1,0 +1,23 @@
+#!/bin/sh
+# Copyright (c) 2023 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 1 ]; then
+ echo "Usage: kill_current_pid_for_user [user_id]"
+else
+ user_id=$1
+
+ if [ -f /home/$user_id/current_pid ]; then
+
+  pid=`cat /home/$user_id/current_pid`
+
+  CHECK=`ps -o "pid user" | grep "$pid $user_id"`
+
+  if [ ! "$CHECK" == "" ]; then
+   sudo kill -9 $pid
+   sudo rm "/home/$user_id/current_pid"
+  fi
+ fi
+fi

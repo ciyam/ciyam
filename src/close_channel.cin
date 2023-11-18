@@ -31,6 +31,10 @@ IDENTITY=$2
 OPENED_FILES=$OUTPUT
 .notifier -suspend $OPENED_FILES/$IDENTITY
 @ifdef $CIYAM_USER
+.system_variable @opened_user_$IDENTITY
+@ifdef $OUTPUT
+~./kill_current_pid_for_user $OUTPUT
+@endif
 ~sudo chown -R $CIYAM_USER:www $OPENED_FILES/$IDENTITY
 @endif
 .storage_channel_documents -close $IDENTITY
