@@ -1,0 +1,22 @@
+#!/bin/sh
+# Copyright (c) 2023 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ ! -f /home/admin/ciyam_logins ]; then
+ touch /home/admin/ciyam_logins
+ chmod a+w /home/admin/ciyam_logins
+elif [ -s /home/admin/ciyam_logins ]; then
+ mv /home/admin/ciyam_logins /home/admin/ciyam_logins.new
+
+ touch /home/admin/ciyam_logins
+ chmod a+w /home/admin/ciyam_logins
+
+ # NOTE: Wait just in case the file was still being appended to when it was moved.
+ sleep 0.5
+
+ cat /home/admin/ciyam_logins.new | uniq | while read next; do ./set_random_password "$next"; done
+ rm /home/admin/ciyam_logins.new
+fi
+

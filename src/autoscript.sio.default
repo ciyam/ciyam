@@ -24,6 +24,12 @@
 #  <cycle>5s
 #  <filename>shared_check:~shared
 # </script>
+# <script/>
+#  <name>process_ciyam_logins
+#  <time>00:00:01
+#  <cycle>5s
+#  <filename>process_ciyam_logins
+# </script>
 ### [<start generated>]
 ### [<finish generated>]
 </sio>
