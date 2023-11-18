@@ -9,15 +9,16 @@ if [ $# -lt 1 ]; then
 else
  user_id=$1
 
- if [ -f /home/$user_id/current_pid ]; then
+ if sudo test -f "/home/$user_id/current_pid"; then
 
-  pid=`cat /home/$user_id/current_pid`
+  sudo rm "/home/$user_id/current_pid"
 
-  CHECK=`ps -o "pid user" | grep "$pid $user_id"`
+  pid=`sudo cat /home/$user_id/current_pid`
+
+  CHECK=`sudo ps -A -o "pid user" | grep "$pid $user_id"`
 
   if [ ! "$CHECK" == "" ]; then
    sudo kill -9 $pid
-   sudo rm "/home/$user_id/current_pid"
   fi
  fi
 fi
