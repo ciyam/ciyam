@@ -16,6 +16,15 @@ else
 
  sudo useradd -g users -m $user_id
 
+ echo "echo \$PID > /home/$user_id/current_pid" > ~add_user
+
+ sudo sh -c "cat add_user_pid >> /home/$user_id/.bashrc"
+ sudo sh -c "cat ~add_user >> /home/$user_id/.bashrc"
+
+ rm ~add_user
+
+ echo $user_id >> /home/admin/ciyam_users
+
  if [ ! "$password" = "" ]; then
   sudo chpasswd <<< "$user_id:$password"
 # NOTE: Use this to limit password usage for 1 day.
