@@ -5297,10 +5297,6 @@
         <affect>relegate
        </modifier>
        <modifier/>
-        <id>145302
-        <affect>relegate
-       </modifier>
-       <modifier/>
         <id>145303
         <affect>relegate
        </modifier>
@@ -5327,6 +5323,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>145302
+        <affect>protect
+       </modifier>
        <modifier/>
         <id>145304
         <affect>extralight1;view
@@ -32318,7 +32318,7 @@
      <class_id>145100
      <modifier_id>145303
      <field_id>145103
-     <field_value>-1
+     <field_value>-2
     </data>
    </specification>
    <specification/>

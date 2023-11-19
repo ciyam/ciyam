@@ -922,7 +922,7 @@ field_add -id=145111 Global_Peerchain_Entry Port_Numbers string opt -transient
 field_add -id=145112 Global_Peerchain_Entry Shared_Secret str200 opt -x=encrypted
 modifier_add -id=145300 Global_Peerchain_Entry Is_Halted @class:lowlight
 modifier_add -id=145301 Global_Peerchain_Entry Is_Local_Only Host_Name:relegate;view,Host_Port:relegate,Num_Helpers:relegate,Shared_Secret:relegate
-modifier_add -id=145302 Global_Peerchain_Entry Is_Backup_Only Shared_Secret:relegate
+modifier_add -id=145302 Global_Peerchain_Entry Is_Backup_Only Status:protect
 modifier_add -id=145303 Global_Peerchain_Entry Is_Hub Local_Port:relegate,Num_Helpers:relegate,Shared_Secret:relegate
 modifier_add -id=145304 Global_Peerchain_Entry Is_Connected @class:extralight1;list,Status:extralight1;view
 modifier_add -id=145305 Global_Peerchain_Entry Is_Connecting @class:extralight;list,Status:extralight;view
@@ -2069,7 +2069,7 @@ specification_add -id=600897 {Package_Option}_Hide_Procedure modifier_field_valu
 specification_add -id=600098a {Global_Peerchain_Entry}_Is_Halted modifier_field_value "Global_Peerchain_Entry Is_Halted Status 0"
 specification_add -id=600898b {Global_Peerchain_Entry}_Is_Local_Only modifier_field_value "Global_Peerchain_Entry Is_Local_Only Peer_Type 1"
 specification_add -id=600898c {Global_Peerchain_Entry}_Is_Backup_Only modifier_field_value "Global_Peerchain_Entry Is_Backup_Only Peer_Type 2"
-specification_add -id=600898d {Global_Peerchain_Entry}_Is_Hub modifier_field_value "Global_Peerchain_Entry Is_Hub Peer_Type -1"
+specification_add -id=600898d {Global_Peerchain_Entry}_Is_Hub modifier_field_value "Global_Peerchain_Entry Is_Hub Peer_Type -2"
 specification_add -id=600098e {Global_Peerchain_Entry}_Is_Connected modifier_field_value "Global_Peerchain_Entry Is_Connected Status Connected -enum=peerchain_status"
 specification_add -id=600098f {Global_Peerchain_Entry}_Is_Connecting modifier_field_value "Global_Peerchain_Entry Is_Connecting Status Connecting -enum=peerchain_status"
 specification_add -id=600098g {Global_Peerchain_Entry}_Is_Disonnecting modifier_field_value "Global_Peerchain_Entry Is_Connecting Status Disconnecting -enum=peerchain_status"

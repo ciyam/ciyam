@@ -1200,7 +1200,7 @@
 `{`$specification_Global_Peerchain_Entry_list_clname02`=`'Global_Peerchain_Entry_Status`'`}
 `{`$specification_Global_Peerchain_Entry_list_cltype02`=`'int`'`}
 `{`$specification_Global_Peerchain_Entry_list_clxtra02`=`'enum=955`'`}
-`{`$specification_Global_Peerchain_Entry_list_clmods02`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_list_clmods02`=`'100:protect`'`}
 `{`$specification_Global_Peerchain_Entry_list_cluniq02`=`'false`'`}
 `{`$specification_Global_Peerchain_Entry_list_cindex02`=`'false`'`}
 `{`$specification_Global_Peerchain_Entry_list_column03`=`'145104`'`}
@@ -1283,13 +1283,13 @@
 `{`$specification_Global_Peerchain_Entry_view_field009`=`'145108`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype009`=`'int`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra009`=`'no_edit+enum=955`'`}
-`{`$specification_Global_Peerchain_Entry_view_fmods009`=`'200:extralight1,400:extralight,800:extralight`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods009`=`'100:protect,200:extralight1,400:extralight,800:extralight`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname009`=`'field_global_peerchain_entry_status`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand009`=`'true`'`}
 `{`$specification_Global_Peerchain_Entry_view_field010`=`'145112`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype010`=`'string`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra010`=`'show+encrypted+max_size=200`'`}
-`{`$specification_Global_Peerchain_Entry_view_fmods010`=`'4000:relegate,100:relegate,2000:relegate,8000:protect`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods010`=`'4000:relegate,2000:relegate,8000:protect`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname010`=`'field_global_peerchain_entry_shared_secret`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand010`=`'false`'`}
 `{`$specification_Global_Peerchain_Entry_view_field011`=`'145110`'`}
