@@ -3696,7 +3696,7 @@
      <ftype>int
      <extra>no_edit+enum=955
      <mandatory>true
-     <modifiers>200:extralight1,400:extralight,800:extralight
+     <modifiers>100:protect,200:extralight1,400:extralight,800:extralight
     </field>
     <field/>
      <name>field_global_peerchain_entry_shared_secret
@@ -3704,7 +3704,7 @@
      <ftype>string
      <extra>show+encrypted+max_size=200
      <mandatory>false
-     <modifiers>4000:relegate,100:relegate,2000:relegate,8000:protect
+     <modifiers>4000:relegate,2000:relegate,8000:protect
     </field>
     <field/>
      <name>field_global_peerchain_entry_actions
@@ -9049,7 +9049,7 @@
      <field>145108
      <ftype>int
      <extra>enum=955
-     <modifiers>
+     <modifiers>100:protect
      <unique>false
      <indexed>false
     </column>

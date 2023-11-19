@@ -1091,7 +1091,7 @@ uint64_t Meta_Global_Peerchain_Entry::impl::get_state( ) const
    // [(finish modifier_field_value)] 600898c
 
    // [(start modifier_field_value)] 600898d
-   if( get_obj( ).Peer_Type( ) == -1 )
+   if( get_obj( ).Peer_Type( ) == -2 )
       state |= c_modifier_Is_Hub;
    // [(finish modifier_field_value)] 600898d
 
