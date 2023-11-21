@@ -57,6 +57,26 @@ class base64
       return encode( ( const unsigned char* )input.c_str( ), input.length( ), url_encoding );
    }
 
+   inline static void encode( std::string& str, const std::string& input, bool url_encoding = false )
+   {
+      size_t enc_len = encode_size( input.length( ) );
+
+      if( str.length( ) < enc_len )
+         str.resize( enc_len );
+
+      encode( ( const unsigned char* )input.c_str( ), input.length( ), ( char* )str.data( ), &enc_len, url_encoding );
+   }
+
+   inline static void encode( std::string& str, const unsigned char* p_data, size_t length, bool url_encoding = false )
+   {
+      size_t enc_len = encode_size( length );
+
+      if( str.length( ) < enc_len )
+         str.resize( enc_len );
+
+      encode( p_data, length, ( char* )str.data( ), &enc_len, url_encoding );
+   }
+
    static bool valid_characters( const std::string& input, bool url_encoding = false );
 
    static void validate( const std::string& input, bool* p_rc = 0, bool url_encoding = false );
