@@ -2424,6 +2424,7 @@ void hex_decode( const string& data, unsigned char* p_data, size_t len )
    memset( p_data, len, 0 );
    
    size_t n = 0;
+
    for( size_t i = 0; i < data.size( ); i += 2 )
    {
       unsigned char val = hex_nibble( data[ i ] );
@@ -2435,42 +2436,52 @@ void hex_decode( const string& data, unsigned char* p_data, size_t len )
    }
 }
 
-string hex_encode( const unsigned char* p_data, size_t len, int max_chars_per_line )
+void hex_encode( string& data, const unsigned char* p_data, size_t len, int max_chars_per_line )
 {
-   string s;
-   int num_chars = 0;
+   size_t n = 0;
+   size_t line_chars = 0;
+
+   size_t required = ( len * 2 );
+
+   if( max_chars_per_line )
+      required += ( len / max_chars_per_line );
+
+   // NOTE: If had not been pre-allocated then must now be resized.
+   if( data.length( ) < required )
+      data.resize( required );
 
    for( size_t i = 0; i < len; i++ )
    {
-      s += ascii_digit( ( p_data[ i ] & 0xf0 ) >> 4 );
-      s += ascii_digit( p_data[ i ] & 0x0f );
+      data[ n++ ] = ascii_digit( ( p_data[ i ] & 0xf0 ) >> 4 );
+      data[ n++ ] = ascii_digit( p_data[ i ] & 0x0f );
 
-      num_chars += 2;
+      line_chars += 2;
 
-      if( max_chars_per_line && num_chars >= max_chars_per_line && i != len - 1 )
+      if( max_chars_per_line
+       && ( line_chars >= max_chars_per_line ) && ( i != len - 1 ) )
       {
-         s += '\n';
-         num_chars = 0;
+         line_chars = 0;
+         data[ n++ ] = '\n';
       }
    }
-
-   return s;
 }
 
-string hex_reverse( const string& hex_value )
+void hex_reverse( string& reversed, const string& hex_value )
 {
-   string reversed;
+   size_t n = 0;
+
+   // NOTE: If had not been pre-allocated then must now be resized.
+   if( reversed.length( ) < hex_value.length( ) )
+      reversed.resize( hex_value.length( ) );
 
    for( int i = hex_value.length( ) - 1; i >= 0; i -= 2 )
    {
       if( i - 1 >= 0 )
       {
-         reversed += hex_value[ i - 1 ];
-         reversed += hex_value[ i ];
+         reversed[ n++ ] = hex_value[ i - 1 ];
+         reversed[ n++ ] = hex_value[ i ];
       }
    }
-
-   return reversed;
 }
 
 string decode_quoted_printable( const string& data )

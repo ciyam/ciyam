@@ -1165,6 +1165,7 @@ void output_string_as_text_lines( const std::string& str, std::ostream& os,
  size_t max_length, const char* p_prefix = 0, const char* p_suffix = "\n" );
 
 typedef std::map< std::string, std::string > string_container;
+
 typedef string_container::iterator string_iterator;
 typedef string_container::const_iterator string_const_iterator;
 typedef string_container::value_type string_value_type;
@@ -1176,19 +1177,44 @@ void hex_decode( const std::string& data, unsigned char* p_data, size_t len );
 
 inline std::string hex_decode( const std::string& data )
 {
-   std::string str( data.length( ) / 2, '0' );
+   std::string str( data.length( ) / 2, '\0' );
+
    hex_decode( data, ( unsigned char* )str.c_str( ), str.length( ) );
+
    return str;
 }
 
-std::string hex_encode( const unsigned char* p_data, size_t len, int max_chars_per_line = 0 );
+void hex_encode( std::string& data, const unsigned char* p_data, size_t len, int max_chars_per_line = 0 );
+
+inline std::string hex_encode( const unsigned char* p_data, size_t len, int max_chars_per_line = 0 )
+{
+   size_t num_chars( len * 2 );
+
+   if( max_chars_per_line )
+      num_chars += ( len / max_chars_per_line );
+
+   std::string str( num_chars, '\0' );
+
+   hex_encode( str, p_data, len, max_chars_per_line );
+
+   return str;
+}
 
 inline std::string hex_encode( const std::string& data, int max_chars_per_line = 0 )
 {
    return hex_encode( ( const unsigned char* )data.c_str( ), data.length( ), max_chars_per_line );
 }
 
-std::string hex_reverse( const std::string& hex_value );
+void hex_reverse( std::string& reversed, const std::string& hex_value );
+
+inline std::string hex_reverse( const std::string& hex_value )
+{
+   std::string reversed( hex_value.size( ), '\0' );
+
+   hex_reverse( reversed, hex_value );
+
+   return reversed;
+}
 
 std::string decode_quoted_printable( const std::string& data );
 std::string encode_quoted_printable( const std::string& data, int max_chars_per_line );
