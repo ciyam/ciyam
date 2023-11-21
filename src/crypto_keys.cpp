@@ -709,12 +709,15 @@ private_key::~private_key( )
    delete p_impl;
 }
 
-string private_key::get_secret( bool use_base64 ) const
+void private_key::get_secret( string& s, bool use_base64 ) const
 {
    unsigned char buf[ c_num_secret_bytes ];
    p_impl->get_secret_bytes( buf );
 
-   return use_base64 ? base64::encode( buf, c_num_secret_bytes ) : hex_encode( buf, c_num_secret_bytes );
+   if( !use_base64 )
+      hex_encode( s, buf, c_num_secret_bytes );
+   else
+      base64::encode( s, buf, c_num_secret_bytes );
 }
 
 string private_key::get_wif_secret( bool compressed, bool use_override, address_prefix override ) const

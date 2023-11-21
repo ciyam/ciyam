@@ -69,7 +69,16 @@ class private_key : public public_key
 
    ~private_key( );
 
-   std::string get_secret( bool use_base64 = false ) const;
+   void get_secret( std::string& s, bool use_base64 = false ) const;
+
+   inline std::string get_secret( bool use_base64 = false ) const
+   {
+      std::string s;
+
+      get_secret( s, use_base64 );
+
+      return s;
+   }
 
    std::string get_wif_secret( bool compressed = true,
     bool use_override = false, address_prefix override = e_address_prefix_btc_wif_testnet ) const;
@@ -81,6 +90,7 @@ class private_key : public public_key
     const public_key& pub, const std::string& base64, const char* p_id = 0 ) const
    {
       std::string s;
+
       decrypt_message( s, pub, base64, p_id );
 
       return s;
@@ -93,6 +103,7 @@ class private_key : public public_key
     const std::string& message, const char* p_id = 0, bool add_salt = false ) const
    {
       std::string s;
+
       encrypt_message( s, pub, message, p_id, add_salt );
 
       return s;
