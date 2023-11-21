@@ -1533,24 +1533,39 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string extkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_extkey ) );
          bool decrypt = has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_decrypt );
+         bool encrypt = has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_encrypt );
          bool use_base64 = has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_base64 );
          bool uncompressed = has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_uncompressed );
          string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_secret ) );
+         string suffix_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_suffix_text ) );
 
          string pub_key, priv_key;
 
          if( secret.empty( ) )
+         {
+            if( !suffix_text.empty( ) )
+               throw runtime_error( "unexpected suffix text supplied for empty secret" );
+
             response = create_address_key_pair( extkey, pub_key, priv_key, use_base64, !uncompressed );
+         }
          else
          {
             if( decrypt )
                decrypt_data( secret, secret );
+            else if( secret == get_special_var_name( e_special_var_sid ) )
+               get_identity( secret, false, true );
+
+            secret += suffix_text;
 
             response = create_address_key_pair( extkey, pub_key, priv_key, secret, true, use_base64, !uncompressed );
          }
 
+         if( encrypt )
+            encrypt_data( priv_key, priv_key );
+
          response += '\n' + pub_key + '\n' + priv_key;
 
+         clear_key( secret );
          clear_key( pub_key );
          clear_key( priv_key );
       }
