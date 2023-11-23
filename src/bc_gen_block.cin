@@ -29,10 +29,10 @@ DEMO=1
 @endif
 ;
 TEST_CHAIN=
-@ifeq "$IDENT" "eb1a95a3b"
+@ifeq "$IDENT" "69465c719"
 TEST_CHAIN=1
 @endif
-@ifeq "$IDENT" "b3a59a1be"
+@ifeq "$IDENT" "917c56496"
 TEST_CHAIN=1
 @endif
 ;
@@ -109,7 +109,7 @@ GENESIS_TAG=bc.$IDENT.0.blk
 ;
 GENESIS_HASH=$OUTPUT
 ;
-.file_core -attribute $GENESIS_HASH g
+.file_core -attribute $GENESIS_HASH e
 @ifdef $OUTPUT
 .decode $OUTPUT
 GENESIS_HASH=$OUTPUT

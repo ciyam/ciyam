@@ -192,12 +192,12 @@ const char* const c_special_variable_file_info_buffered = "@file_info_buffered";
 const char* const c_special_variable_fixed_field_values = "@fixed_field_values";
 const char* const c_special_variable_generate_hub_block = "@generate_hub_block";
 const char* const c_special_variable_repo_entry_missing = "@repo_entry_missing";
-const char* const c_special_variable_blockchain_gen_hash = "@blockchain_gen_hash";
 const char* const c_special_variable_blockchain_identity = "@blockchain_identity";
 const char* const c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
 const char* const c_special_variable_blockchain_num_puts = "@blockchain_num_puts";
 const char* const c_special_variable_repo_crypt_password = "@repo_crypt_password";
 const char* const c_special_variable_skip_parent_updates = "@skip_parent_updates";
+const char* const c_special_variable_blockchain_ec_pubkey = "@blockchain_ec_pubkey";
 const char* const c_special_variable_blockchain_hind_hash = "@blockchain_hind_hash";
 const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_ratios";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
@@ -853,10 +853,6 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_repo_entry_missing );
       break;
 
-      case e_special_var_blockchain_gen_hash:
-      s = string( c_special_variable_blockchain_gen_hash );
-      break;
-
       case e_special_var_blockchain_identity:
       s = string( c_special_variable_blockchain_identity );
       break;
@@ -875,6 +871,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_skip_parent_updates:
       s = string( c_special_variable_skip_parent_updates );
+      break;
+
+      case e_special_var_blockchain_ec_pubkey:
+      s = string( c_special_variable_blockchain_ec_pubkey );
       break;
 
       case e_special_var_blockchain_hind_hash:

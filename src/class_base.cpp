@@ -5744,8 +5744,9 @@ string create_address_key_pair( const string& ext_key,
    crypto_info info;
    get_crypto_info( client_info.extra_info, info );
 
+   new_key.get_secret( priv_key, use_base64 );
+
    pub_key = new_key.get_public( compressed, use_base64 );
-   priv_key = new_key.get_secret( use_base64 );
 
    return new_key.get_address( compressed, info.override, info.addr_prefix );
 #else

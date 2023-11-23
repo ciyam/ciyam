@@ -718,6 +718,8 @@ void private_key::get_secret( string& s, bool use_base64 ) const
       hex_encode( s, buf, c_num_secret_bytes );
    else
       base64::encode( s, buf, c_num_secret_bytes );
+
+   memset( buf, 0, c_num_secret_bytes );
 }
 
 string private_key::get_wif_secret( bool compressed, bool use_override, address_prefix override ) const
