@@ -74,8 +74,8 @@ IDENT=$COMBINED
 @skip
 @endif
 ;
-GEN_HASH=
-GEN_HASH_ENC=
+EC_PUB=
+EC_PUB_ENC=
 ;
 @ifndef $HUB
 @ifndef $SHARED
@@ -89,8 +89,8 @@ ENTROPY_HASH_SECONDARY=$OUTPUT
 .crypto_hash $SEED -s=-$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
 ;
-.crypto_hash $SEED -s=-genesis
-GEN_HASH=$OUTPUT
+.crypto_keys -encrypt $SEED -s=-genesis
+EC_PUB=%OUTPUT:2%
 @else
 .crypto_hash $SEED -s=%IDENT%0
 ENTROPY_HASH_PRIMARY=$OUTPUT
@@ -101,8 +101,8 @@ ENTROPY_HASH_SECONDARY=$OUTPUT
 .crypto_hash $SEED -s=$IDENT$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
 ;
-.crypto_hash $SEED -s=%IDENT%genesis
-GEN_HASH=$OUTPUT
+.crypto_keys -encrypt $SEED -s=%IDENT%genesis
+EC_PUB=%OUTPUT:2%
 @endif
 @else
 .crypto_hash $SEED -s=+0
@@ -114,8 +114,8 @@ ENTROPY_HASH_SECONDARY=$OUTPUT
 .crypto_hash $SEED -s=+$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
 ;
-.crypto_hash $SEED -s=+genesis
-GEN_HASH=$OUTPUT
+.crypto_keys -encrypt $SEED -s=+genesis
+EC_PUB=%OUTPUT:2%
 @endif
 @else
 .crypto_hash $SEED -s=#0
@@ -127,16 +127,16 @@ ENTROPY_HASH_SECONDARY=$OUTPUT
 .crypto_hash $SEED -s=#$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
 ;
-.crypto_hash $SEED -s=#genesis
-GEN_HASH=$OUTPUT
+.crypto_keys -encrypt $SEED -s=#genesis
+EC_PUB=%OUTPUT:2%
 @endif
 ;
 @ifdef $DEMO
-GEN_HASH=
+EC_PUB=
 @else
-@ifdef $GEN_HASH
-.encode $GEN_HASH
-GEN_HASH_ENC=$OUTPUT
+@ifdef $EC_PUB
+.encode $EC_PUB
+EC_PUB_ENC=$OUTPUT
 @endif
 @endif
 ;
@@ -186,7 +186,7 @@ TERTIARY_PRIVKEY_HASH=$OUTPUT
 ;
 @ifndef $SHARED
 @ifndef $CHANNEL
-.crypto_hash $PRIMARY_PUBKEY_HASH$SECONDARY_PUBKEY_HASH$TERTIARY_PUBKEY_HASH$GEN_HASH
+.crypto_hash $PRIMARY_PUBKEY_HASH$SECONDARY_PUBKEY_HASH$TERTIARY_PUBKEY_HASH$EC_PUB
 IDENTITY_HASH=$OUTPUT
 ;
 IDENT=@substr:0,9:$IDENTITY_HASH
@@ -250,41 +250,41 @@ TERTIARY_PUBKEY_HASH_ENC=$OUTPUT
 @ifndef $HUB
 @ifndef $SHARED
 @ifndef $CHANNEL
-@ifndef $GEN_HASH_ENC
+@ifndef $EC_PUB_ENC
 .file_raw -core blob blk:h=0,i=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @else
 .file_raw -core blob blk:h=0,i=$IDENT\n\
-g:$GEN_HASH_ENC\n\
+e:$EC_PUB_ENC\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @endif
 @else
-@ifndef $GEN_HASH_ENC
+@ifndef $EC_PUB_ENC
 .file_raw -core blob blk:h=0,i=$IDENT,t=@peer_user\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @else
 .file_raw -core blob blk:h=0,i=$IDENT,t=@peer_user\n\
-g:$GEN_HASH_ENC\n\
+e:$EC_PUB_ENC\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @endif
 @endif
 @else
-@ifndef $GEN_HASH_ENC
+@ifndef $EC_PUB_ENC
 .file_raw -core blob blk:h=0,i=$IDENT,t=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @else
 .file_raw -core blob blk:h=0,i=$IDENT,t=$IDENT\n\
-g:$GEN_HASH_ENC\n\
+e:$EC_PUB_ENC\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @endif
 @endif
 @else
-@ifndef $GEN_HASH_ENC
+@ifndef $EC_PUB_ENC
 .file_raw -core blob blk:h=0,i=$IDENT,t=@peer_hub\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @else
 .file_raw -core blob blk:h=0,i=$IDENT,t=@peer_hub\n\
-g:$GEN_HASH_ENC\n\
+e:$EC_PUB_ENC\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @endif
 @endif

@@ -181,7 +181,7 @@ void verify_block( const string& content, bool check_dependents )
          throw runtime_error( "unexpected missing or incorrect identity attribute in block header '" + header + "'" );
    }
 
-   string gen_hash, hind_hash, last_block_hash, op_list_hash, public_key_hash, tree_root_hash, signature_file_hash;
+   string ec_pubkey, hind_hash, last_block_hash, op_list_hash, public_key_hash, tree_root_hash, signature_file_hash;
 
    bool has_primary_pubkey = false;
    bool has_secondary_pubkey = false;
@@ -217,7 +217,7 @@ void verify_block( const string& content, bool check_dependents )
 
       core_file_data core_data( extract_file( genesis_hash, "" ) );
 
-      string hash_info( core_data.get_attribute( c_file_type_core_block_detail_gen_hash_prefix ) );
+      string hash_info( core_data.get_attribute( c_file_type_core_block_detail_ec_pubkey_prefix ) );
 
       // NOTE: If no genesis hash attribute exists will use the genesis block hash instead.
       if( hash_info.empty( ) )
@@ -251,9 +251,9 @@ void verify_block( const string& content, bool check_dependents )
 
       if( !block_height )
       {
-         if( i == 1 && gen_hash.empty( ) )
+         if( i == 1 && ec_pubkey.empty( ) )
          {
-            string prefix( c_file_type_core_block_detail_gen_hash_prefix );
+            string prefix( c_file_type_core_block_detail_ec_pubkey_prefix );
 
             size_t len = prefix.length( );
 
@@ -262,10 +262,10 @@ void verify_block( const string& content, bool check_dependents )
             {
                next_attribute.erase( 0, len );
 
-               gen_hash = hex_encode( base64::decode( next_attribute ) );
+               ec_pubkey = hex_encode( base64::decode( next_attribute ) );
 
                set_session_variable(
-                get_special_var_name( e_special_var_blockchain_gen_hash ), gen_hash );
+                get_special_var_name( e_special_var_blockchain_ec_pubkey ), ec_pubkey );
 
                continue;
             }
