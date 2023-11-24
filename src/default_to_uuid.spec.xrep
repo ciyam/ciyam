@@ -3,7 +3,9 @@
    if( is_init_uid( ) || get_obj( ).get_key( ).empty( ) )
    {
       string value( is_init_uid( ) ? hash_sha1( get_obj( ).get_key( ) ).substr( 0, 32 ) : get_uuid( ) );
-
+`{`!`@eq`(`$arg_max_length`,`'`'`)
+      value = value.substr( 0, `{`$arg_max_length`} );
+`}
       if( is_encrypted_field( "`{`$arg_field`}" ) )
          value = encrypt( value );
 

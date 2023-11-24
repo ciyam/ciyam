@@ -4,12 +4,20 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 @ifeq "$1" ""
-#Usage: init_channel.cin <identity>
+#Usage: init_channel.cin <[alias:]other_ident>
 @else
-.system_variable $$$1
+;
+TARGET=$1
+SPLIT=@repstr:\:/\n:$TARGET
+;
+@ifdef %SPLIT:2%
+TARGET=%SPLIT:2%
+@endif
+;
+.system_variable $$%TARGET%_identity
 @ifndef $OUTPUT
-#Creating channel for identity '$1'.
+#Creating channel for identity '$TARGET'.
 <bc_gen.cin $1 @sid
-.system_variable >$$$1_identity $IDENT
+.system_variable >$$%TARGET%_identity $IDENT
 @endif
 @endif

@@ -2627,6 +2627,18 @@ void save_record( const string& module_id,
          continue;
       }
 
+      if( field_id == view.qr_scan_key_field )
+      {
+         string::size_type pos = next.find( ':' );
+
+         key_info = next.substr( 0, pos );
+
+         // NOTE: If the separator was found then it
+         // and the value before it are now removed.
+         if( pos != string::npos )
+            next.erase( 0, pos + 1 );
+      }
+
       // NOTE: If an "ignore_encrypted" field is editable then it will need to appear *before*
       // any actual fields that have the "encrypted" extra.
       if( field_id == view.ignore_encrypted_field )
@@ -2717,7 +2729,9 @@ void save_record( const string& module_id,
          // NOTE: A fetch is required for manually provided foreign keys (where an
          // alternate key has been provided rather than the actual foreign key itself).
          fld_info fld( ( vici->second )->fields[ j ] );
+
          string::size_type pos = fld.pfield.find( '+' );
+
          if( !next.empty( ) && pos != string::npos && fld.pfield.substr( pos + 1 ) != c_key_field )
          {
             pair< string, string > item_info;

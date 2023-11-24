@@ -493,6 +493,7 @@ const char* const c_view_field_extra_owner_only = "owner_only";
 const char* const c_view_field_extra_quick_link = "quick_link";
 const char* const c_view_field_extra_enum_filter = "enum_filter";
 const char* const c_view_field_extra_owning_user = "owning_user";
+const char* const c_view_field_extra_qr_scan_key = "qr_scan_key";
 const char* const c_view_field_extra_hpassword_salt = "hpassword_salt";
 const char* const c_view_field_extra_always_editable = "always_editable";
 const char* const c_view_field_extra_create_datetime = "create_datetime";

@@ -389,6 +389,12 @@ void storage_channel_create( const char* p_identity, const char* p_channel_infor
    if( identity.empty( ) )
       throw runtime_error( "identity not found for 'storage_channel_create'" );
 
+   // NOTE: If an alias prefix has been included then need to remove it.
+   string::size_type pos = identity.find( ':' );
+
+   if( pos != string::npos )
+      identity.erase( 0, pos + 1 );
+
    check_with_regex( c_special_regex_for_peerchain_identity, identity );
 
    ofs.add_folder( identity );

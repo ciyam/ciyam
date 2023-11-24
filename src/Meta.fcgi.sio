@@ -612,6 +612,7 @@
     <value/>
      <data>35
      <name>enum_field_extra_qr_scan
+     <filter>str
     </value>
     <value/>
      <data>22
@@ -660,6 +661,11 @@
     <value/>
      <data>12
      <name>enum_field_extra_user_perms
+     <filter>str
+    </value>
+    <value/>
+     <data>36
+     <name>enum_field_extra_qr_scan_key
      <filter>str
     </value>
     <value/>
