@@ -5466,6 +5466,29 @@ void crypto_verify( const string& pubkey,
 #endif
 }
 
+string crypto_pubkey_for_sid( const string& suffix, string* p_priv_key )
+{
+#ifdef SSL_SUPPORT
+   string secret, pub_key, priv_key;
+
+   get_identity( secret, false, true );
+
+   secret += suffix;
+
+   create_address_key_pair( "", pub_key, priv_key, secret );
+
+   if( p_priv_key )
+      *p_priv_key = priv_key;
+
+   clear_key( secret );
+   clear_key( priv_key );
+
+   return pub_key;
+#else
+   throw runtime_error( "SSL support is needed in order to use crypto_pubkey_for_sid" );
+#endif
+}
+
 string crypto_lamport( const string& filename,
  const string& mnenomics_or_hex_seed, bool is_sign, bool is_verify, const char* p_extra )
 {
@@ -7846,6 +7869,10 @@ string meta_field_extras( int uom,
 
       case 35:
       all_extras.push_back( "qr_scan" );
+      break;
+
+      case 36:
+      all_extras.push_back( "qr_scan_key" );
       break;
 
       default:

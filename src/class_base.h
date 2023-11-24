@@ -1583,6 +1583,8 @@ void CIYAM_BASE_DECL_SPEC crypto_verify(
 void CIYAM_BASE_DECL_SPEC crypto_verify( const std::string& pubkey,
  const std::string& message, const std::string& signature, bool decode_hex_message = false );
 
+std::string CIYAM_BASE_DECL_SPEC crypto_pubkey_for_sid( const std::string& suffix, std::string* p_priv_key = 0 );
+
 std::string CIYAM_BASE_DECL_SPEC crypto_lamport( const std::string& filename,
  const std::string& mnenomics_or_hex_seed, bool is_sign = false, bool is_verify = false, const char* p_extra = 0 );
 

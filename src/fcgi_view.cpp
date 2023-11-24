@@ -425,6 +425,9 @@ void setup_view_fields( view_source& view,
          if( extra_data.count( c_view_field_extra_qr_scan ) )
             view.qr_scan_field = field_id;
 
+         if( extra_data.count( c_view_field_extra_qr_scan_key ) )
+            view.qr_scan_key_field = field_id;
+
          if( fld.pclass.empty( ) )
          {
             if( extra_data.count( c_field_extra_enum ) )
@@ -2004,7 +2007,7 @@ bool output_view_form( ostream& os, const string& act,
                }
             }
 #ifndef OMIT_QRCODE_SCANNER
-            else if( source.qr_scan_field == source_value_id )
+            else if( ( source.qr_scan_field == source_value_id ) || ( source.qr_scan_key_field == source_value_id ) )
             {
                os << "<br/><div id=\"qrcode_reader\"></div>";
 

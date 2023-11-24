@@ -8,6 +8,7 @@
 HUB=
 DEMO=
 SEED=$2
+IDENT=
 OTHER=
 SHARED=
 CHANNEL=
@@ -27,8 +28,16 @@ CHANNEL=1
 @endif
 ;
 @ifeq "$SEED" ""
-#Usage: bc_gen.cin -hub|-backup|-shared|<other_ident> <seed>
+#Usage: bc_gen.cin -hub|-backup|-shared|<[alias:]other_ident> <seed>
 @else
+;
+@ifdef $OTHER
+SPLIT=@repstr:\:/\n:$OTHER
+@ifdef %SPLIT:2%
+IDENT=%SPLIT:1%
+OTHER=%SPLIT:2%
+@endif
+@endif
 ;
 @ifeq "$OTHER" "6b24210e8"
 DEMO=1
@@ -60,6 +69,7 @@ SQUARED=@$SQUARED-1
 UUID=$OUTPUT
 ;
 @ifdef $CHANNEL
+@ifndef $IDENT
 .system_variable @blockchain_backup_identity
 @ifndef $OUTPUT
 ERROR=No backup blockchain identity was found.
@@ -67,11 +77,14 @@ ERROR=No backup blockchain identity was found.
 @label END
 @else
 IDENT=$OUTPUT
-<channel_identity.cin $IDENT $OTHER
 @endif
-;
-IDENT=$COMBINED
+@endif
+@endif
 @skip
+;
+@ifdef $CHANNEL
+<channel_identity.cin $IDENT $OTHER
+IDENT=$COMBINED
 @endif
 ;
 EC_PUB=

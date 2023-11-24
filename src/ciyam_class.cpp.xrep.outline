@@ -2378,7 +2378,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'default_to_uuid`'`)
 `{`#default_to_uuid.spec.xrep section=to_store class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_max_length=$specification_\0_max_length`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_variable`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#default_to_variable.spec.xrep section=to_or_for_store class_name=$class_name arg_id=$specification_\0_id\
