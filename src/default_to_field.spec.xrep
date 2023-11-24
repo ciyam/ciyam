@@ -5,19 +5,25 @@
    // [(finish default_to_field)] `{`$arg_id`}
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
+`{`$test_field_is_text_type`=`'`'`}\
+`{`@eq`(`$arg_tfistexttype`,`'1`'`)`&`@eq`(`$arg_tpfield`,`'`'`)`$test_field_is_text_type`=`'true`'`}\
+`{`@eq`(`$arg_tcfistexttype`,`'1`'`)`&`!`@eq`(`$arg_tpfield`,`'`'`)`$test_field_is_text_type`=`'true`'`}\
    // [(start default_to_field)]`{`$tmp1`=`'`'`}`{`$tmp2`=`'`'`}`{`$tmp3`=`'`'`}\ `{`$arg_id`}
 `{`!`@eq`(`$arg_cvt_func`,`'`'`)`$tmp1`=`$arg_cvt_func`}\
 `{`!`@eq`(`$arg_cvt_func`,`'`'`)`$tmp1`^`'( `'`}`{`!`@eq`(`$arg_cvt_func`,`'`'`)`$tmp2`=`' )`'`}\
 `{`!`@eq`(`$arg_append`,`'`'`)`$tmp3`=`' + `{`@eq`(`$arg_fistexttype`,`'1`'`)"`{`$arg_append`}"`,`{`$arg_append`}`}`'`}\
-   if( is_create`{`!`@eq`(`$arg_not_dflt`,`'`'`)
-    && !get_obj( ).get_key( ).empty( )`}`{`@eq`(`$arg_inc_clones`,`'true`'`)
-    && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`}\
-`,
+   if( ( is_create`{`@eq`(`$arg_not_dflt`,`'`'`) || get_obj( ).get_key( ).empty( )`, && !get_obj( ).get_key( ).empty( )`} )
+`{`@eq`(`$arg_inc_clones`,`'true`'`)\
+    && ( get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )\
+`,\
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`}\
+    && ( get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )\
 `}`{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tvalue`,`'`'`)
-    && !to_string( get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) ).empty( )\
+`{`@eq`(`$test_field_is_text_type`,`'`'`)\
+    && get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( )\
+`,\
+    && !to_string( get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) ).empty( )`}\
 `,
     && get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) == `{`$arg_tvalue`}\
 `}`} )
