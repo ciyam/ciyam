@@ -1237,14 +1237,11 @@ string storage_channel_documents_update( const string& identity, bool submitted 
       if( !submitted && file_exists( user_info_name ) )
          file_rename( user_info_name, blockchain_identity + '.' + c_channel_user_info + string( c_csv_file_ext ) );
 
-      string backup_identity( get_system_variable(
-       get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
-
-      string app_log_file_name( blockchain_identity + '/' + backup_identity + c_log_file_ext );
+      string app_log_file_name( blockchain_identity + '/' + blockchain_identity + c_log_file_ext );
 
       if( !submitted && file_exists( app_log_file_name ) )
       {
-         file_rename( app_log_file_name, backup_identity + c_log_file_ext );
+         file_rename( app_log_file_name, blockchain_identity + c_log_file_ext );
 
          file_filter ff;
          fs_iterator fs( blockchain_identity, &ff );
