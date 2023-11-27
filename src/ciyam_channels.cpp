@@ -1439,8 +1439,7 @@ string storage_channel_documents_prepare( const string& identity )
    string name( storage_name( &is_standard ) );
 
    if( is_standard )
-      throw runtime_error( "invalid non-peerchain storage '"
-       + name + "' for storage_channel_documents_prepare" );
+      throw runtime_error( "invalid non-peerchain storage '" + name + "' for storage_channel_documents_prepare" );
 
    string retval;
 
@@ -1624,6 +1623,7 @@ string storage_channel_documents_prepare( const string& identity )
    string submitting;
 
    string identity_log_file_name( identity + c_log_file_ext );
+   string blockchain_log_file_name( blockchain_identity + c_log_file_ext );
 
    if( has_created_directory || ofs.has_file( c_channel_pending )
     || ofs.has_file( c_channel_submitting ) || file_exists( identity_log_file_name ) )
@@ -1632,7 +1632,7 @@ string storage_channel_documents_prepare( const string& identity )
          create_dir( blockchain_identity );
 
       if( file_exists( identity_log_file_name ) )
-         file_rename( identity_log_file_name, blockchain_identity + '/' + identity_log_file_name );
+         file_rename( identity_log_file_name, blockchain_identity + '/' + blockchain_log_file_name );
 
       string identity_files_dir( identity + c_files_ext );
 
