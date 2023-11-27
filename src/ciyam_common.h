@@ -209,6 +209,7 @@ enum special_var
    e_special_var_blockchain_identity,
    e_special_var_blockchain_is_owner,
    e_special_var_blockchain_num_puts,
+   e_special_var_peer_identity_alias,
    e_special_var_repo_crypt_password,
    e_special_var_skip_parent_updates,
    e_special_var_blockchain_ec_pubkey,

@@ -1,0 +1,14 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_set_variable)] `{`$arg_id`}
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`$i`=`'   `'`}\
+   if( get_obj( ).`{`$arg_tfield`}( ) )
+`}\
+`{`@eq`(`$arg_system`,`'true`'`)\
+`{`$i`}   set_system_variable( "`{`$arg_variable`}", to_string( get_obj( ).`{`$arg_field`}( ) ) );
+`,`@eq`(`$arg_session`,`'true`'`)\
+`{`$i`}   set_session_variable( "`{`$arg_variable`}", to_string( get_obj( ).`{`$arg_field`}( ) ) );
+`,\
+`{`$i`}   get_obj( ).set_variable( "`{`$arg_variable`}", to_string( get_obj( ).`{`$arg_field`}( ) ) );
+`}\
+   // [(finish transient_set_variable)] `{`$arg_id`}
+`}

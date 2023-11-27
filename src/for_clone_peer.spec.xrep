@@ -15,6 +15,9 @@
           get_special_var_name( e_special_var_skip_submit_file ), c_true_value ) );
       }
 `}
+      temporary_identity_suffix tmp_identity_suffix(
+       get_raw_session_variable( get_special_var_name( e_special_var_peer_identity_alias ) ) );
+
       string new_key( gen_key( ) );
       string key_info( new_key + string( " " ) + get_obj( ).get_key( ) );
 
