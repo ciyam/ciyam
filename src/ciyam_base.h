@@ -534,6 +534,14 @@ struct restorable_session_variables
    }
 };
 
+struct temporary_identity_suffix
+{
+   temporary_identity_suffix( const std::string& temporary_suffix );
+   ~temporary_identity_suffix( );
+
+   std::string original_suffix;
+};
+
 void CIYAM_BASE_DECL_SPEC add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const std::string& info_and_data );
 void CIYAM_BASE_DECL_SPEC add_udp_send_file_chunk_info( size_t slot, size_t chunk, const std::string& info_and_data );
 

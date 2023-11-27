@@ -365,7 +365,7 @@ struct session
       if( p_blockchain )
          blockchain = *p_blockchain;
 
-      backup_identity = get_raw_system_variable(
+      identity_suffix = get_raw_system_variable(
        get_special_var_name( e_special_var_blockchain_backup_identity ) );
 
       last_cmd = string( c_str_none );
@@ -407,7 +407,7 @@ struct session
 
    string key_date_time;
 
-   string backup_identity;
+   string identity_suffix;
 
    set< string > perms;
 
@@ -8481,6 +8481,22 @@ void restore_session_variables( const map< string, string >& variables )
       gtp_session->variables = variables;
 }
 
+temporary_identity_suffix::temporary_identity_suffix( const string& temporary_suffix )
+{
+   if( !gtp_session )
+      throw runtime_error( "unexpected 'temporary_identity_suffix' object in non-session" );
+
+   original_suffix = gtp_session->identity_suffix;
+
+   if( !temporary_suffix.empty( ) )
+      gtp_session->identity_suffix = temporary_suffix;
+}
+
+temporary_identity_suffix::~temporary_identity_suffix( )
+{
+   gtp_session->identity_suffix = original_suffix;
+}
+
 void add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const string& info_and_data )
 {
    guard g( g_session_mutex );
@@ -9817,7 +9833,6 @@ string gen_key( const char* p_suffix )
       }
       else
       {
-
          while( true )
          {
             int64_t now = unix_time( );
@@ -9846,7 +9861,7 @@ string gen_key( const char* p_suffix )
          ostringstream osstr;
          osstr << hex << g_key_tm_val << setw( 3 ) << setfill( '0' ) << g_key_count;
 
-         key = osstr.str( ) + gtp_session->backup_identity;
+         key = osstr.str( ) + gtp_session->identity_suffix;
       }
 
       if( p_suffix )

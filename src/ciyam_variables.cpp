@@ -195,6 +195,7 @@ const char* const c_special_variable_repo_entry_missing = "@repo_entry_missing";
 const char* const c_special_variable_blockchain_identity = "@blockchain_identity";
 const char* const c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
 const char* const c_special_variable_blockchain_num_puts = "@blockchain_num_puts";
+const char* const c_special_variable_peer_identity_alias = "@peer_identity_alias";
 const char* const c_special_variable_repo_crypt_password = "@repo_crypt_password";
 const char* const c_special_variable_skip_parent_updates = "@skip_parent_updates";
 const char* const c_special_variable_blockchain_ec_pubkey = "@blockchain_ec_pubkey";
@@ -863,6 +864,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_num_puts:
       s = string( c_special_variable_blockchain_num_puts );
+      break;
+
+      case e_special_var_peer_identity_alias:
+      s = string( c_special_variable_peer_identity_alias );
       break;
 
       case e_special_var_repo_crypt_password:
