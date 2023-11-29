@@ -756,6 +756,11 @@ inline std::string replaced( const std::string& src, const char* p_findstr, cons
    return replaced( src, p_findstr, replstr.c_str( ) );
 }
 
+inline std::string replaced( const std::string& src, const std::string& findstr, const char* p_replstr )
+{
+   return replaced( src, findstr.c_str( ), p_replstr );
+}
+
 inline std::string replaced( const std::string& src, const std::string& findstr, const std::string& replstr )
 {
    return replaced( src, findstr.c_str( ), replstr.c_str( ) );

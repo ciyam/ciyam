@@ -3910,24 +3910,16 @@ string shared_encrypt( const string& pk, const string& s )
 
 string masked_identity_key( const string& s )
 {
-   string retval( s );
-
-   string identity( get_raw_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
-
-   if( !identity.empty( ) )
-      replace( retval, identity, c_dummy_identity );
+   string retval( replaced( s, get_raw_system_variable(
+    get_special_var_name( e_special_var_blockchain_backup_identity ) ), c_dummy_identity ) );
 
    return retval;
 }
 
 string unmasked_identity_key( const string& s )
 {
-   string retval( s );
-
-   string identity( get_raw_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
-
-   if( !identity.empty( ) )
-      replace( retval, c_dummy_identity, identity.c_str( ) );
+   string retval( replaced( s, c_dummy_identity, get_raw_system_variable(
+    get_special_var_name( e_special_var_blockchain_backup_identity ) ) ) );
 
    return retval;
 }
