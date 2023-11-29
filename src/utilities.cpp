@@ -990,23 +990,29 @@ string& replace( string& s, const char* p_findstr, const char* p_replstr )
    string str;
    size_t from = 0;
 
-   while( true )
+   if( !p_findstr || !p_replstr )
+      throw runtime_error( "unexpected null string(s) in replace" );
+
+   if( *p_findstr )
    {
-      size_t pos = s.find( p_findstr, from );
+      while( true )
+      {
+         size_t pos = s.find( p_findstr, from );
 
-      if( pos == string::npos )
-         break;
+         if( pos == string::npos )
+            break;
 
-      str = s.substr( 0, pos );
+         str = s.substr( 0, pos );
 
-      str += string( p_replstr );
+         str += string( p_replstr );
 
-      from = pos + strlen( p_replstr );
+         from = pos + strlen( p_replstr );
 
-      pos += strlen( p_findstr );
-      str += s.substr( pos );
+         pos += strlen( p_findstr );
+         str += s.substr( pos );
 
-      s = str;
+         s = str;
+      }
    }
 
    return s;
