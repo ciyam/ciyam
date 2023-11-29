@@ -1356,6 +1356,9 @@ inline std::string hashed_decrypt( const std::string& s, bool use_sha256 = false
       return hash_sha256( decrypt( s ) );
 }
 
+std::string CIYAM_BASE_DECL_SPEC masked_identity_key( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC unmasked_identity_key( const std::string& s );
+
 std::string CIYAM_BASE_DECL_SPEC totp_pin( const std::string& secret );
 std::string CIYAM_BASE_DECL_SPEC totp_secret( const std::string& unique );
 

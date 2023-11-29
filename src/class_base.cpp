@@ -93,6 +93,8 @@ const char* const c_lamport_pub_ext = ".pub";
 const char* const c_lamport_sig_ext = ".sig";
 const char* const c_lamport_src_ext = ".src";
 
+const char* const c_dummy_identity = "123456789";
+
 const char* const c_protocol_bitcoin = "bitcoin";
 const char* const c_protocol_blockchain = "blockchain";
 
@@ -3904,6 +3906,30 @@ string shared_encrypt( const string& pk, const string& s )
 #else
    throw runtime_error( "SSL support is needed in order to use shared_encrypt" );
 #endif
+}
+
+string masked_identity_key( const string& s )
+{
+   string retval( s );
+
+   string identity( get_raw_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+
+   if( !identity.empty( ) )
+      replace( retval, identity, c_dummy_identity );
+
+   return retval;
+}
+
+string unmasked_identity_key( const string& s )
+{
+   string retval( s );
+
+   string identity( get_raw_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+
+   if( !identity.empty( ) )
+      replace( retval, c_dummy_identity, identity.c_str( ) );
+
+   return retval;
 }
 
 string totp_pin( const string& secret )
