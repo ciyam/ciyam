@@ -1323,8 +1323,21 @@ std::string CIYAM_BASE_DECL_SPEC encode_to_base64( const std::string& x );
 
 std::string CIYAM_BASE_DECL_SPEC check_with_regex( const std::string& r, const std::string& s, bool* p_rc = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC hash_sha1( const std::string& s );
-std::string CIYAM_BASE_DECL_SPEC hash_sha256( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC hash_sha1( const std::string& s, int num_chars = 0 );
+
+inline std::string CIYAM_BASE_DECL_SPEC hash_sha1(
+ const std::string& s1, const std::string& s2, int num_chars = 0 )
+{
+   return hash_sha1( s1 + s2, num_chars );
+}
+
+std::string CIYAM_BASE_DECL_SPEC hash_sha256( const std::string& s, int num_chars = 0 );
+
+inline std::string CIYAM_BASE_DECL_SPEC hash_sha256(
+ const std::string& s1, const std::string& s2, int num_chars = 0 )
+{
+   return hash_sha256( s1 + s2, num_chars );
+}
 
 std::string CIYAM_BASE_DECL_SPEC decrypt( const std::string& s );
 std::string CIYAM_BASE_DECL_SPEC encrypt( const std::string& s );

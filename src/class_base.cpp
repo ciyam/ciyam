@@ -158,6 +158,23 @@ trace_mutex g_mutex;
 
 map< string, pair< int, map< string, string > > > g_class_maps;
 
+void keep_first_or_final_num_chars( string& s, int num_chars )
+{
+   if( num_chars )
+   {
+      size_t length = s.length( );
+      size_t wanted = abs( num_chars );
+
+      if( wanted < length )
+      {
+         if( num_chars > 0 )
+            s.erase( wanted );
+         else
+            s.erase( 0, length - wanted );
+      }
+   }
+}
+
 const string& attached_file_path_var_name( )
 {
    static string s( get_special_var_name( e_special_var_attached_file_path ) );
@@ -3786,16 +3803,30 @@ string check_with_regex( const string& r, const string& s, bool* p_rc )
    return retval;
 }
 
-string hash_sha1( const string& s )
+string hash_sha1( const string& s, int num_chars )
 {
+   string retval;
+
    sha1 hash( s );
-   return hash.get_digest_as_string( );
+
+   retval = hash.get_digest_as_string( );
+
+   keep_first_or_final_num_chars( retval, num_chars );
+
+   return retval;
 }
 
-string hash_sha256( const string& s )
+string hash_sha256( const string& s, int num_chars )
 {
+   string retval;
+
    sha256 hash( s );
-   return hash.get_digest_as_string( );
+
+   retval = hash.get_digest_as_string( );
+
+   keep_first_or_final_num_chars( retval, num_chars );
+
+   return retval;
 }
 
 string decrypt( const string& s )
