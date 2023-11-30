@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023 CIYAM Developers
+// // Copyright (c) 2014-2023 CIYAM Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -109,7 +109,15 @@ class private_key : public public_key
       return s;
    }
 
-   std::string construct_shared( const public_key& pub ) const;
+   void construct_shared( std::string& s, const public_key& pub ) const;
+
+   inline std::string construct_shared( const public_key& pub ) const
+   {
+      std::string s;
+      construct_shared( s, pub );
+
+      return s;
+   }
 
    std::string construct_signature( const std::string& msg, bool use_base64 = false ) const;
    std::string construct_signature( const unsigned char* p_data, bool use_base64 = false ) const;

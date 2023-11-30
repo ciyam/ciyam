@@ -789,12 +789,12 @@ void private_key::encrypt_message( string& s,
    data_encrypt( s, message, hex_encode( buf, c_num_secret_bytes ), true, add_salt );
 }
 
-string private_key::construct_shared( const public_key& pub ) const
+void private_key::construct_shared( string& s, const public_key& pub ) const
 {
    unsigned char buf[ c_num_secret_bytes ];
    p_impl->get_shared_secret( buf, pub.p_impl->p_key );
 
-   return hex_encode( buf, sizeof( buf ) );
+   hex_encode( s, buf, sizeof( buf ) );
 }
 
 string private_key::construct_signature( const unsigned char* p_digest, bool use_base64 ) const
