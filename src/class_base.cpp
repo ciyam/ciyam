@@ -5538,6 +5538,34 @@ string crypto_pubkey_for_sid( const string& suffix, string* p_priv_key )
 #endif
 }
 
+string crypto_secret_for_sid( const string& suffix, const string& other_pubkey )
+{
+#ifdef SSL_SUPPORT
+   string secret, pub_key, priv_key;
+
+   get_identity( secret, false, true );
+
+   secret += suffix;
+
+   create_address_key_pair( "", pub_key, priv_key, secret );
+
+   private_key own_key( priv_key );
+   public_key other_key( decrypt_data( other_pubkey ) );
+
+   clear_key( secret );
+
+   own_key.construct_shared( secret, other_key );
+
+   encrypt_data( secret, secret );
+   
+   clear_key( priv_key );
+
+   return secret;
+#else
+   throw runtime_error( "SSL support is needed in order to use crypto_secret_for_sid" );
+#endif
+}
+
 string crypto_lamport( const string& filename,
  const string& mnenomics_or_hex_seed, bool is_sign, bool is_verify, const char* p_extra )
 {
