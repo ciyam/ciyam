@@ -16,6 +16,7 @@
 
 #include "fcgi_cmds.h"
 
+#include "regex.h"
 #include "format.h"
 #include "sha256.h"
 #include "sockets.h"
@@ -2637,6 +2638,20 @@ void save_record( const string& module_id,
          // and the value before it are now removed.
          if( pos != string::npos )
             next.erase( 0, pos + 1 );
+
+         regex expr( c_regex_label, true, true );
+
+         // NOTE: Perform an initial check (prior to issuing a command)
+         // that the key value only contains simple "label" characters.
+         if( expr.search( key_info ) != 0 )
+         {
+            act = c_act_edit;
+            was_invalid = true;
+
+            error_message = string( c_response_error_prefix ) + "Invalid key value '" + key_info + "'";
+
+            return;
+         }
       }
 
       // NOTE: If an "ignore_encrypted" field is editable then it will need to appear *before*
