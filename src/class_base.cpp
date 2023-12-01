@@ -5549,8 +5549,26 @@ string crypto_secret_for_sid( const string& suffix, const string& other_pubkey )
 
    create_address_key_pair( "", pub_key, priv_key, secret );
 
+   string other_hex_bytes;
+   decrypt_data( other_hex_bytes, other_pubkey );
+
+   bool valid = true;
+
+   if( other_hex_bytes.length( ) != 66 )
+      valid = false;
+   else if( other_hex_bytes[ 0 ] != '0' )
+      valid = false;
+   else if( ( other_hex_bytes[ 1 ] < '2' ) || ( other_hex_bytes[ 1 ] > '3' ) )
+      valid = false;
+   else if( !are_hex_nibbles( other_hex_bytes ) )
+      valid = false;
+
+   if( !valid )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Invalid hex encoded public key '" + other_hex_bytes + "'." );
+
    private_key own_key( priv_key );
-   public_key other_key( decrypt_data( other_pubkey ) );
+   public_key other_key( other_hex_bytes );
 
    clear_key( secret );
 
@@ -5559,6 +5577,7 @@ string crypto_secret_for_sid( const string& suffix, const string& other_pubkey )
    encrypt_data( secret, secret );
    
    clear_key( priv_key );
+   clear_key( other_hex_bytes );
 
    return secret;
 #else
