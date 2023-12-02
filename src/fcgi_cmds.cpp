@@ -2634,9 +2634,11 @@ void save_record( const string& module_id,
 
          key_info = next.substr( 0, pos );
 
-         // NOTE: If the separator was found then it
-         // and the value before it are now removed.
-         if( pos != string::npos )
+         // NOTE: If no separator simply erase the field
+         // otherwise erase it and everything before it.
+         if( pos == string::npos )
+            next.erase( );
+         else
             next.erase( 0, pos + 1 );
 
          regex expr( c_regex_label, true, true );
@@ -2648,7 +2650,9 @@ void save_record( const string& module_id,
             act = c_act_edit;
             was_invalid = true;
 
-            error_message = string( c_response_error_prefix ) + "Invalid key value '" + key_info + "'";
+            error_message = string( c_response_error_prefix )
+             + string_message( GDS( c_display_invalid_key_value ),
+             make_pair( c_display_invalid_key_value_parm_key, key_info ) );
 
             return;
          }
