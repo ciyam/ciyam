@@ -17,6 +17,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifneq "$NUM_ARGS" "3"
 #NOTE: This script requires a tree tag, branch expr and a variable name.
 @else
+ERROR=
 ;
 TREE=$1
 BRANCH=$2

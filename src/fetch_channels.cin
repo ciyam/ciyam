@@ -6,6 +6,8 @@
 @ifndef $1
 #Usage: fetch_channels.cin <storage>
 @else
+ERROR=
+;
 STORAGE=$1
 ;
 .system_variable @skip_fetch_connects

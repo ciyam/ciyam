@@ -11,6 +11,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifneq "$NUM_ARGS" "1"
 #NOTE: This script requires an identity.
 @else
+ERROR=
 ;
 IDENTITY=$1
 ;

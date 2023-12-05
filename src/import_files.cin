@@ -6,6 +6,8 @@
 @ifndef $1
 #NOTE: The script requires a starting directory point to import from the branch below.
 @else
+ERROR=
+;
 TAG_PREFIX=$2
 SUB_DIRECTORY=$3
 FILES_EXPRESSION=@repstr:;/,:$4

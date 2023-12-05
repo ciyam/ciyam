@@ -3885,7 +3885,7 @@ void console_command_handler::handle_special_command( const string& cmd_and_args
 
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
-      if( isatty( STDIN_FILENO ) )
+      if( !is_reading_input && isatty( STDIN_FILENO ) )
          add_history( cmd_and_args.c_str( ) );
 #  endif
 #endif

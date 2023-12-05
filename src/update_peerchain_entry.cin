@@ -26,6 +26,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifneq "$NUM_ARGS" "6"
 #NOTE: This script requires an identity, auto-start, description, host name, port number and number of helpers.
 @else
+ERROR=
 ;
 IDENTITY=$1
 AUTO_START=$2

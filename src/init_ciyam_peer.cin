@@ -9,6 +9,7 @@ PEER_PORT=$OUTPUT
 @ifeq "$PEER_PORT" ""
 #Error: Found empty '@peer_port' system variable value.
 @else
+ERROR=
 ;
 .system_variable @blockchain_backup_identity
 BACKUP=$OUTPUT

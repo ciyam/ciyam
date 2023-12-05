@@ -6,6 +6,7 @@
 @ifndef $1
 #NOTE: This script requires a blockchain identity (else "-hub", "-backup" or "-shared").
 @else
+ERROR=
 ;
 IDENT=$1
 SEED=$2

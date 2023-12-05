@@ -6,6 +6,8 @@
 @ifndef $1
 #Usage: bc_reset.cin <identity>
 @else
+ERROR=
+;
 IDENTITY=$1
 ;
 .file_hash bc.$IDENTITY.zenith

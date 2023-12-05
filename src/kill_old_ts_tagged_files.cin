@@ -3,6 +3,8 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+ERROR=
+;
 .utc_now
 @ifdef $1
 .utc_to_local $1 "$OUTPUT"
