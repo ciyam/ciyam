@@ -6,6 +6,7 @@
 @ifndef $1
 #NOTE: This script requires the tag or hash of the "tree list" that is to be recursed.
 @else
+ERROR=
 ;
 TREE=$1
 PREFIX=$2

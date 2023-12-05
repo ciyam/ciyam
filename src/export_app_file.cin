@@ -6,6 +6,7 @@
 @ifndef $2
 #NOTE: This script requires an application directory and a list file hash.
 @else
+ERROR=
 ;
 APPDIR=$1
 LIST_HASH=$2

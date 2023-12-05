@@ -6,6 +6,8 @@
 @ifndef $1
 #NOTE: This script needs a tree tag and optionally a trunk name and branch expression.
 @else
+ERROR=
+;
 TREE=$1
 TRUNK=$2
 BRANCH=$3

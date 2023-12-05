@@ -10,6 +10,7 @@ DEMO=
 SEED=$2
 IDENT=
 OTHER=
+BACKUP=
 SHARED=
 CHANNEL=
 TEST_CHAIN=
@@ -20,7 +21,9 @@ HUB=1
 @ifeq "$1" "-shared"
 SHARED=1
 @else
-@ifneq "$1" "-backup"
+@ifeq "$1" "-backup"
+BACKUP=1
+@else
 OTHER=$1
 CHANNEL=1
 @endif
@@ -30,6 +33,42 @@ CHANNEL=1
 @ifeq "$SEED" ""
 #Usage: bc_gen.cin -hub|-backup|-shared|<[alias:]other_ident> <seed>
 @else
+ERROR=
+;
+@label NEXT
+;
+@ifdef $HUB
+.system_variable @blockchain_peer_hub_identity
+@ifdef $OUTPUT
+ERROR=Hub identity already exists.
+#Error: $ERROR
+@label END
+@endif
+@endif
+@skip
+@:NEXT
+;
+@ifdef $BACKUP
+.system_variable @blockchain_backup_identity
+@ifdef $OUTPUT
+ERROR=Backup identity already exists.
+#Error: $ERROR
+@label END
+@endif
+@endif
+@skip
+@:NEXT
+;
+@ifdef $SHARED
+.system_variable @blockchain_shared_identity
+@ifdef $OUTPUT
+ERROR=Shared identity already exists.
+#Error: $ERROR
+@label END
+@endif
+@endif
+@skip
+@:NEXT
 ;
 @ifdef $OTHER
 SPLIT=@repstr:\:/\n:$OTHER
@@ -81,6 +120,7 @@ IDENT=$OUTPUT
 @endif
 @endif
 @skip
+@:NEXT
 ;
 @ifdef $CHANNEL
 <channel_identity.cin $IDENT $OTHER

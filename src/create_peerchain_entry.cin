@@ -31,6 +31,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifneq "$NUM_ARGS" "7"
 #NOTE: This script requires an identity, auto-start, peer type, description, host name, port number and number of helpers.
 @else
+ERROR=
 ;
 IDENTITY=$1
 AUTO_START=$2

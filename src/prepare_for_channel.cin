@@ -14,6 +14,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifneq "$NUM_ARGS" "2"
 #Usage: prepare_for_channel.cin <storage> <identity>
 @else
+ERROR=
 ;
 STORAGE=$1
 IDENTITY=$2

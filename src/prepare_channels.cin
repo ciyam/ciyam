@@ -6,6 +6,8 @@
 @ifndef $1
 #Usage: prepare_channels.cin <storage>
 @else
+ERROR=
+;
 STORAGE=$1
 ;
 SKIPPED=
