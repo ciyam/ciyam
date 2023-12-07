@@ -181,7 +181,7 @@ void verify_block( const string& content, bool check_dependents )
          throw runtime_error( "unexpected missing or incorrect identity attribute in block header '" + header + "'" );
    }
 
-   string ec_pubkey, hind_hash, last_block_hash, op_list_hash, public_key_hash, tree_root_hash, signature_file_hash;
+   string hind_hash, last_block_hash, op_list_hash, public_key_hash, tree_root_hash, signature_file_hash;
 
    bool has_primary_pubkey = false;
    bool has_secondary_pubkey = false;
@@ -213,17 +213,7 @@ void verify_block( const string& content, bool check_dependents )
       if( !has_tag( genesis_tag ) )
          throw runtime_error( "unexpected genesis block for '" + blockchain_identity + "' not found" );
 
-      string genesis_hash( tag_file_hash( genesis_tag ) );
-
-      core_file_data core_data( extract_file( genesis_hash, "" ) );
-
-      string hash_info( core_data.get_attribute( c_file_type_core_block_detail_ec_pubkey_prefix ) );
-
-      // NOTE: If no genesis hash attribute exists will use the genesis block hash instead.
-      if( hash_info.empty( ) )
-         hash_info = genesis_hash;
-      else
-         hash_info = hex_encode( base64::decode( hash_info ) );
+      string hash_info( tag_file_hash( genesis_tag ) );
 
       hash_info += '-' + to_string( block_height );
 
@@ -251,26 +241,6 @@ void verify_block( const string& content, bool check_dependents )
 
       if( !block_height )
       {
-         if( i == 1 && ec_pubkey.empty( ) )
-         {
-            string prefix( c_file_type_core_block_detail_ec_pubkey_prefix );
-
-            size_t len = prefix.length( );
-
-            if( ( next_attribute.length( ) > len )
-             && ( prefix == next_attribute.substr( 0, len ) ) )
-            {
-               next_attribute.erase( 0, len );
-
-               ec_pubkey = hex_encode( base64::decode( next_attribute ) );
-
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_ec_pubkey ), ec_pubkey );
-
-               continue;
-            }
-         }
-
          if( !has_primary_pubkey )
          {
             size_t len = strlen( c_file_type_core_block_detail_pubkey_hashes_prefix );
