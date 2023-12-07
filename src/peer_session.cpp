@@ -617,9 +617,6 @@ void process_core_file( const string& hash, const string& blockchain )
             string block_height( get_session_variable(
              get_special_var_name( e_special_var_blockchain_height ) ) );
 
-            string ec_pubkey( get_session_variable(
-             get_special_var_name( e_special_var_blockchain_ec_pubkey ) ) );
-
             string primary_pubkey_hash( get_session_variable(
              get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
 
@@ -645,7 +642,7 @@ void process_core_file( const string& hash, const string& blockchain )
                if( !is_user && !is_shared && ( block_height == "0" ) )
                {
                   string identity( determine_identity(
-                   primary_pubkey_hash + secondary_pubkey_hash + tertiary_pubkey_hash + ec_pubkey ) );
+                   primary_pubkey_hash + secondary_pubkey_hash + tertiary_pubkey_hash ) );
 
                   if( identity.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
                      throw runtime_error( "invalid identity value '" + identity + "' for blockchain '" + blockchain + "'" );
@@ -2336,9 +2333,6 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
       throw runtime_error( "specified height does not match that found in the block itself (blk)" );
    else
    {
-      string ec_pubkey( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_ec_pubkey ) ) );
-
       string primary_pubkey_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
 
@@ -2355,7 +2349,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
          if( !height && !is_shared )
          {
             string identity( determine_identity(
-             primary_pubkey_hash + secondary_pubkey_hash + tertiary_pubkey_hash + ec_pubkey ) );
+             primary_pubkey_hash + secondary_pubkey_hash + tertiary_pubkey_hash ) );
 
             if( targeted_identity != get_special_var_name( e_special_var_peer_user )
              && ( identity.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 ) )

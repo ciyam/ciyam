@@ -60,10 +60,10 @@ CHANNEL=1
 @endif
 @endif
 ;
-@ifeq "$IDENT" "69465c719"
+@ifeq "$IDENT" "e3733d121"
 TEST_CHAIN=1
 @endif
-@ifeq "$IDENT" "917c56496"
+@ifeq "$IDENT" "121d3373e"
 TEST_CHAIN=1
 @endif
 ;

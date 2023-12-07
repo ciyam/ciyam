@@ -198,7 +198,6 @@ const char* const c_special_variable_blockchain_num_puts = "@blockchain_num_puts
 const char* const c_special_variable_peer_identity_alias = "@peer_identity_alias";
 const char* const c_special_variable_repo_crypt_password = "@repo_crypt_password";
 const char* const c_special_variable_skip_parent_updates = "@skip_parent_updates";
-const char* const c_special_variable_blockchain_ec_pubkey = "@blockchain_ec_pubkey";
 const char* const c_special_variable_blockchain_hind_hash = "@blockchain_hind_hash";
 const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_ratios";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
@@ -876,10 +875,6 @@ string get_special_var_name( special_var var )
 
       case e_special_var_skip_parent_updates:
       s = string( c_special_variable_skip_parent_updates );
-      break;
-
-      case e_special_var_blockchain_ec_pubkey:
-      s = string( c_special_variable_blockchain_ec_pubkey );
       break;
 
       case e_special_var_blockchain_hind_hash:

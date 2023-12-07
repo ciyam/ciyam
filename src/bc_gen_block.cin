@@ -29,10 +29,10 @@ DEMO=1
 @endif
 ;
 TEST_CHAIN=
-@ifeq "$IDENT" "69465c719"
+@ifeq "$IDENT" "e3733d121"
 TEST_CHAIN=1
 @endif
-@ifeq "$IDENT" "917c56496"
+@ifeq "$IDENT" "121d3373e"
 TEST_CHAIN=1
 @endif
 ;
@@ -108,12 +108,6 @@ GENESIS_TAG=bc.$IDENT.0.blk
 @skip
 ;
 GENESIS_HASH=$OUTPUT
-;
-.file_core -attribute $GENESIS_HASH e
-@ifdef $OUTPUT
-.decode $OUTPUT
-GENESIS_HASH=$OUTPUT
-@endif
 ;
 @ifdef $DEMO
 HEIGHT_IDENTITY=$IDENT
