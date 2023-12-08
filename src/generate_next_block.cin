@@ -12,6 +12,7 @@ IDENT=$1
 SEED=$2
 TREE=$3
 ;
+FIRST=1
 BACKUP=
 SHARED=
 PEER_HUB=
@@ -26,15 +27,25 @@ SEED=@sid
 BACKUP=1
 @endif
 ;
+.session_variable @deque ""
+;
 @ifdef $BACKUP
 .system_variable @blockchain_backup_identity
 IDENT=$OUTPUT
+.system_variable @blockchain_backup_?_identity
+@ifdef $OUTPUT
+.session_variable @deque "~$OUTPUT"
+@endif
 @endif
 ;
 @ifeq "$1" "-shared"
 .system_variable @blockchain_shared_identity
 IDENT=$OUTPUT
 SHARED=1
+.system_variable @blockchain_shared_?_identity
+@ifdef $OUTPUT
+.session_variable @deque "~$OUTPUT"
+@endif
 @endif
 ;
 @ifeq "$1" "-hub"
@@ -42,6 +53,8 @@ SHARED=1
 IDENT=$OUTPUT
 PEER_HUB=1
 @endif
+;
+@:LOOP
 ;
 @ifneq "$IDENT" ""
 .file_info -content bc.$IDENT.zenith
@@ -75,12 +88,35 @@ HAS_NO_OPL=1
 ; FUTURE: This message should be handled as a server string.
 .system_variable %$IDENT "Currently at height $NEW_HEIGHT"
 @endif
+;
+@ifdef $FIRST
+FIRST=
 @ifndef $SHARED
 @ifndef $PEER_HUB
 .file_repo_entries -remove_obsolete $IDENT
 @endif
 @endif
 @endif
+;
 @endif
 @endif
+@endif
+;
+;
+@label NEXT
+.session_variable @deque front
+@ifdef $OUTPUT
+LINES=@repstr: /\n:$OUTPUT
+IDENT=%LINES:2%
+@else
+@label END_LOOP
+@endif
+@skip
+;
+@:NEXT
+.session_variable @deque pop_front
+!!@:LOOP
+;
+@:END_LOOP
+;
 @endif

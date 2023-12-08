@@ -102,6 +102,8 @@ PEER_PORT=0
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
+<bc_next_extra.cin
+;
 ~mkdir $FILES_AREA_DIR/$IDENTITY
 @ifdef $SHARED_ONLY
 .file_archive -add $FILES_AREA_DIR/$IDENTITY 10GB $IDENTITY

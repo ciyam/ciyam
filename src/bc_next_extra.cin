@@ -1,0 +1,23 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+.system_variable @blockchain_next_extra
+@ifdef $OUTPUT
+.session_variable @next_extra $OUTPUT
+.session_variable @next_extra @increment
+.session_variable @next_extra
+EXTRA=$OUTPUT
+.system_variable @blockchain_backup_%EXTRA%_identity
+@ifndef $OUTPUT
+EXTRA=0
+@endif
+.system_variable >@blockchain_next_extra $EXTRA
+;
+.system_variable @blockchain_backup_%EXTRA%_identity
+.system_variable >@blockchain_next_backup $OUTPUT
+;
+.system_variable @blockchain_shared_%EXTRA%_identity
+.system_variable >@blockchain_next_shared $OUTPUT
+@endif
