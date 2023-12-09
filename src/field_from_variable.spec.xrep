@@ -6,8 +6,8 @@
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start field_from_variable)] `{`$arg_id`}
-`{`$i`=`'`'`}`{`!`@eq`(`$arg_modifier`,`'`'`)`{`$i`=`'   `'`}\
-   if( state & c_modifier_`{`$arg_modifier`} )
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_modifier`,`'`'`)`|`!`@eq`(`$arg_new_only`,`'`'`)`{`$i`=`'   `'`}\
+   if( `{`@eq`(`$arg_new_only`,`'true`'`)get_obj( ).get_key( ).empty( )`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`}`,state & c_modifier_`{`$arg_modifier`}`} )
 `}\
 `{`@eq`(`$arg_system`,`'true`'`)\
 `{`$i`}   get_obj( ).`{`$arg_field`}( from_string< typeof(

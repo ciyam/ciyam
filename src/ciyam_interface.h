@@ -476,7 +476,6 @@ const char* const c_view_field_extra_non_new = "non_new";
 const char* const c_view_field_extra_qr_scan = "qr_scan";
 const char* const c_view_field_extra_vextra1 = "vextra1";
 const char* const c_view_field_extra_vextra2 = "vextra2";
-const char* const c_view_field_extra_key_hide = "key_hide";
 const char* const c_view_field_extra_key_name = "key_name";
 const char* const c_view_field_extra_new_edit = "new_edit";
 const char* const c_view_field_extra_new_only = "new_only";

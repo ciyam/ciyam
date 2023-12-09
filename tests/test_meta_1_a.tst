@@ -257,14 +257,16 @@ Initial_Shared_Hash,M001C106F118
 Host_Name,M001C106F119
 Hub_Checksum,M001C106F120
 Identity,M001C106F121
-Core_Peer_Type,M001C106F122
-Port_Number,M001C106F123
-Shared_Checksum,M001C106F124
-Shared_Secret,M001C106F125
-Connection_Type,M001C106F126
-Status,M001C106F127
-Synchronisation,M001C106F128
-System_Secret,M001C106F129
+Identity_For_Peer,M001C106F122
+Identity_From_Peer,M001C106F123
+Core_Peer_Type,M001C106F124
+Port_Number,M001C106F125
+Shared_Checksum,M001C106F126
+Shared_Secret,M001C106F127
+Connection_Type,M001C106F128
+Status,M001C106F129
+Synchronisation,M001C106F130
+System_Secret,M001C106F131
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000
