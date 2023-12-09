@@ -224,10 +224,12 @@ void setup_view_fields( view_source& view,
       string field_id( fld.field );
 
       string value_id( field_id );
+
       if( !fld.pfield.empty( ) )
          value_id += "." + fld.pfield;
 
       map< string, string > extra_data;
+
       if( !fld.extra.empty( ) )
          parse_field_extra( fld.extra, extra_data );
 
@@ -552,14 +554,17 @@ void setup_view_fields( view_source& view,
          view.value_ids.push_back( value_id );
 
       bool child_always = false;
+
       if( extra_data.count( c_field_extra_child_always ) )
          child_always = true;
 
       bool non_prefixed = false;
+
       if( extra_data.count( c_field_extra_non_prefixed ) )
          non_prefixed = true;
 
       string display_name( get_display_string( fld.name ) );
+
       if( child_always || field_id_counts[ field_id ] > 0 )
       {
          if( child_always || non_prefixed )
@@ -567,18 +572,23 @@ void setup_view_fields( view_source& view,
          else
             display_name += " " + get_display_string( fld.pfname );
       }
+
       view.display_names.push_back( display_name );
 
       if( field_id == c_key_field )
          key_field_index = view.display_names.size( ) - 1;
 
-      if( !is_new_record && extra_data.count( c_view_field_extra_key_hide ) )
-         view.hidden_fields.insert( c_key_field );
-
       if( extra_data.count( c_view_field_extra_key_name ) )
+      {
          key_field_display_name = display_name;
 
+         // NOTE: If is both "key name" and "new_only" then when is not new will hide the key field.
+         if( !is_new_record && has_perm_extra( c_view_field_extra_new_only, extra_data, sess_info ) )
+            view.hidden_fields.insert( c_key_field );
+      }
+
       string display_name_for_edit( display_name );
+
       if( !fld.pdname.empty( ) )
       {
          if( non_prefixed )
@@ -586,6 +596,7 @@ void setup_view_fields( view_source& view,
          else
             display_name_for_edit = get_display_string( fld.name ) + " " + get_display_string( fld.pdname );
       }
+
       view.edit_display_names.push_back( display_name_for_edit );
 
       if( fld.pclass == view.cid )
