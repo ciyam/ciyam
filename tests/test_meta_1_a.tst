@@ -261,12 +261,16 @@ Identity_For_Peer,M001C106F122
 Identity_From_Peer,M001C106F123
 Core_Peer_Type,M001C106F124
 Port_Number,M001C106F125
-Shared_Checksum,M001C106F126
-Shared_Secret,M001C106F127
-Connection_Type,M001C106F128
-Status,M001C106F129
-Synchronisation,M001C106F130
-System_Secret,M001C106F131
+Private_Identity,M001C106F126
+QR_Code,M001C106F127
+QR_Code_Scanned,M001C106F128
+QR_Code_Text,M001C106F129
+Shared_Checksum,M001C106F130
+Shared_Secret,M001C106F131
+Connection_Type,M001C106F132
+Status,M001C106F133
+Synchronisation,M001C106F134
+System_Secret,M001C106F135
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000
