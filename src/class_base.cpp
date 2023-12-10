@@ -86,6 +86,10 @@ const string g_empty_fixed_key;
 const int c_max_graph_depth = 50;
 const int c_max_email_text_line = 8192;
 
+const size_t c_reserve_for_secret = 200;
+
+const size_t c_num_hash_rounds = 1000000;
+
 const size_t c_cascade_progress_seconds = 10;
 
 const char* const c_lamport_key_ext = ".key";
@@ -3906,6 +3910,51 @@ string shared_encrypt( const string& pk, const string& s )
 #else
    throw runtime_error( "SSL support is needed in order to use shared_encrypt" );
 #endif
+}
+
+string shared_secret( const string& identity_for_peer, const string& encrypted_identity )
+{
+   string secret;
+
+   secret.reserve( c_reserve_for_secret );
+
+   decrypt_data( secret, encrypted_identity );
+
+   string other_secret( private_identity( identity_for_peer ) );
+
+   if( other_secret > secret )
+      secret += other_secret;
+   else
+      secret.insert( 0, other_secret );
+
+   sha256 hash( secret );
+   string digest( hash.get_digest_as_string( ) );
+
+   for( size_t i = 0; i < c_num_hash_rounds; i++ )
+   {
+      hash.update( digest + secret );
+      hash.get_digest_as_string( digest );
+   }
+
+   clear_key( secret );
+   clear_key( other_secret );
+
+   return encrypt( digest );
+}
+
+string private_identity( const string& s )
+{
+   string secret;
+
+   get_identity( secret, false, true );
+
+   secret += s;
+
+   sha256 hash( secret );
+
+   clear_key( secret );
+
+   return hash.get_digest_as_string( ).substr( 0, 9 );
 }
 
 string masked_identity_key( const string& s )
