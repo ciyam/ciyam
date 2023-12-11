@@ -8,22 +8,22 @@
 @ifeq "$OUTPUT" ""
 <bc_gen.cin -hub @sid
 ;
-.system_variable >@blockchain_next_extra 0
+.system_variable >@blockchain_next_extra 1
 ;
 <bc_gen.cin -backup @sid
-<bc_gen.cin -backup @sid 0
 <bc_gen.cin -backup @sid 1
 <bc_gen.cin -backup @sid 2
+<bc_gen.cin -backup @sid 3
 ;
-.system_variable @blockchain_backup_0_identity
+.system_variable @blockchain_backup_1_identity
 system_variable >@blockchain_next_backup $OUTPUT
 ;
 <bc_gen.cin -shared @sid
-<bc_gen.cin -shared @sid 0
 <bc_gen.cin -shared @sid 1
 <bc_gen.cin -shared @sid 2
+<bc_gen.cin -shared @sid 3
 ;
-.system_variable @blockchain_shared_0_identity
+.system_variable @blockchain_shared_1_identity
 .system_variable >@blockchain_next_shared $OUTPUT
 ;
 <init_ciyam_peer.cin

@@ -92,6 +92,8 @@ const unsigned int c_default_max_peers = 100;
 // client interfaces and is not the max # of concurrent server sessions.
 const unsigned int c_default_max_user_limit = 1000;
 
+const size_t c_max_extra = 9;
+
 const size_t c_key_reserve_size = 128;
 const size_t c_default_cache_limit = 1000;
 
@@ -123,6 +125,8 @@ const char* const c_server_log_file = "ciyam_server.log";
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
+
+const char* const c_identity_suffix = "identity";
 
 const char* const c_needs_submit_file = "needs_submit";
 
@@ -193,6 +197,7 @@ const char* const c_attribute_script_name = "script_name";
 
 const char* const c_peerchain_attribute_auto_start = "auto_start";
 const char* const c_peerchain_attribute_description = "description";
+const char* const c_peerchain_attribute_extra_value = "extra_value";
 const char* const c_peerchain_attribute_host_name = "host_name";
 const char* const c_peerchain_attribute_host_port = "host_port";
 const char* const c_peerchain_attribute_local_port = "local_port";
@@ -5567,6 +5572,7 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
 
          string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
          string description( ap_sio_reader->read_attribute( c_peerchain_attribute_description ) );
+         string extra_value( ap_sio_reader->read_opt_attribute( c_peerchain_attribute_extra_value ) );
          string host_name( ap_sio_reader->read_attribute( c_peerchain_attribute_host_name ) );
          string host_port( ap_sio_reader->read_attribute( c_peerchain_attribute_host_port ) );
          string local_port( ap_sio_reader->read_attribute( c_peerchain_attribute_local_port ) );
@@ -5589,7 +5595,12 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
             if( p_is_listener )
                *p_is_listener = false;
 
-            retval = identity + '+' + num_helpers + '=' + host_name + '-' + host_port + ':' + peer_type;
+            retval = identity;
+
+            if( !extra_value.empty( ) )
+               retval += '-' + extra_value;
+
+            retval += '+' + num_helpers + '=' + host_name + '-' + host_port + ':' + peer_type;
          }
 
          // NOTE: Only break if not reversed in case both "backup only" and "shared only" entries exist.
@@ -5626,6 +5637,7 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
 
       string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
       string description( ap_sio_reader->read_attribute( c_peerchain_attribute_description ) );
+      string extra_value( ap_sio_reader->read_opt_attribute( c_peerchain_attribute_extra_value ) );
       string host_name( ap_sio_reader->read_attribute( c_peerchain_attribute_host_name ) );
       string host_port( ap_sio_reader->read_attribute( c_peerchain_attribute_host_port ) );
       string local_port( ap_sio_reader->read_attribute( c_peerchain_attribute_local_port ) );
@@ -5635,7 +5647,16 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
 
       if( ( host_name != string( c_local_host ) )
        && ( !auto_start_only || ( auto_start == c_true_value ) ) )
-         peerchain_externals.push_back( identity + '+' + num_helpers + '=' + host_name + '-' + host_port + ':' + peer_type );
+      {
+         string peer_info( identity );
+
+         if( !extra_value.empty( ) )
+            peer_info += '-' + extra_value;
+
+         peer_info += '+' + num_helpers + '=' + host_name + '-' + host_port + ':' + peer_type;
+
+         peerchain_externals.push_back( peer_info );
+      }
    }
 }
 
@@ -5652,6 +5673,16 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
 
    gap_ofs->list_files( "", peerchains );
 
+   string blockchain_backup_identity_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
+
+   string::size_type pos = blockchain_backup_identity_name.rfind( c_identity_suffix );
+
+   if( ( pos == 0 ) || ( pos == string::npos ) )
+      throw runtime_error( "unexpected '" + blockchain_backup_identity_name + "' does not contain suffix '" + string( c_identity_suffix ) + "'" );
+
+   string blockchain_backup_prefix( blockchain_backup_identity_name.substr( 0, pos ) );
+   string blockchain_backup_suffix( blockchain_backup_identity_name.substr( pos - 1 ) );
+
    for( size_t i = 0; i < peerchains.size( ); i++ )
    {
       string identity( peerchains[ i ] );
@@ -5664,6 +5695,7 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
 
       string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
       string description( ap_sio_reader->read_attribute( c_peerchain_attribute_description ) );
+      string extra_value( ap_sio_reader->read_opt_attribute( c_peerchain_attribute_extra_value ) );
       string host_name( ap_sio_reader->read_attribute( c_peerchain_attribute_host_name ) );
       string host_port( ap_sio_reader->read_attribute( c_peerchain_attribute_host_port ) );
       string local_port( ap_sio_reader->read_attribute( c_peerchain_attribute_local_port ) );
@@ -5675,14 +5707,31 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
 
       int port = atoi( local_port.c_str( ) );
 
-      string extra;
-
-      if( type < 2 )
-         extra = '!';
-
       if( ( port > 0 )
        && ( !auto_start_only || ( auto_start == c_true_value ) ) )
-         peerchain_listeners.insert( make_pair( port, identity + extra ) );
+      {
+         string suffix;
+
+         if( ( type == 0 ) || ( type == 1 ) )
+            suffix = '!';
+
+         if( ( type == 1 ) && ( identity == get_system_variable( blockchain_backup_identity_name ) ) )
+         {
+            for( size_t i = 1; i <= c_max_extra; i++ )
+            {
+               string next_extra( get_system_variable( blockchain_backup_prefix + to_string( i ) + blockchain_backup_suffix ) );
+
+               if( next_extra.empty( ) )
+                  break;
+
+               peerchain_listeners.insert( make_pair( port, next_extra + suffix ) );
+            }
+         }
+         else
+         {
+            peerchain_listeners.insert( make_pair( port, identity + suffix ) );
+         }
+      }
    }
 }
 

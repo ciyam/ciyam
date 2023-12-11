@@ -11,7 +11,7 @@
 EXTRA=$OUTPUT
 .system_variable @blockchain_backup_%EXTRA%_identity
 @ifndef $OUTPUT
-EXTRA=0
+EXTRA=1
 @endif
 .system_variable >@blockchain_next_extra $EXTRA
 ;

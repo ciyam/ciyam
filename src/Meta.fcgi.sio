@@ -3689,6 +3689,14 @@
      <modifiers>4000:relegate,2000:relegate,8000:protect
     </field>
     <field/>
+     <name>field_global_peerchain_entry_extra_value
+     <field>145110
+     <ftype>string
+     <extra>max_size=10
+     <mandatory>false
+     <modifiers>4000:relegate,2000:relegate,8000:protect
+    </field>
+    <field/>
      <name>field_global_peerchain_entry_auto_start
      <field>145107
      <ftype>bool
@@ -3706,7 +3714,7 @@
     </field>
     <field/>
      <name>field_global_peerchain_entry_shared_secret
-     <field>145112
+     <field>145113
      <ftype>string
      <extra>show+encrypted+max_size=200
      <mandatory>false
@@ -3714,7 +3722,7 @@
     </field>
     <field/>
      <name>field_global_peerchain_entry_actions
-     <field>145110
+     <field>145111
      <ftype>string
      <extra>actions
      <mandatory>false
@@ -9070,7 +9078,7 @@
     </column>
     <column/>
      <name>field_global_peerchain_entry_port_numbers
-     <field>145111
+     <field>145112
      <ftype>string
      <extra>
      <modifiers>
