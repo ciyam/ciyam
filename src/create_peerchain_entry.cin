@@ -40,7 +40,8 @@ DESCRIPTION=$4
 HOST_NAME=$5
 HOST_PORT=$6
 NUM_HELPERS=$7
-SHARED_SECRET=$8
+EXTRA_VALUE=$8
+SHARED_SECRET=$9
 ;
 IS_ONLY=
 BACKUP_ONLY=
@@ -93,7 +94,7 @@ PEER_PORT=0
 .storage_init Meta
 ;
 .pc sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=$AUTO_START,Description=$DESCRIPTION,Peer_Type=$PEER_TYPE\
-,Host_Name=$HOST_NAME,Host_Port=$HOST_PORT,Local_Port=$PEER_PORT,Num_Helpers=$NUM_HELPERS,Shared_Secret=$SHARED_SECRET"
+,Host_Name=$HOST_NAME,Host_Port=$HOST_PORT,Local_Port=$PEER_PORT,Num_Helpers=$NUM_HELPERS,Extra_Value=$EXTRA_VALUE,Shared_Secret=$SHARED_SECRET"
 ;
 @ifndef $ERROR
 .storage_term

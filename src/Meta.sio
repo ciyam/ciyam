@@ -5054,7 +5054,7 @@
     </specifications>
     <fields/>
      <field/>
-      <id>145110
+      <id>145111
       <name>Actions
       <type>string
       <mandatory>false
@@ -5123,6 +5123,34 @@
         <id>603960
         <item>field
        </specification>
+       <specification/>
+        <id>603970
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>145110
+      <name>Extra_Value
+      <type>1005
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>145301
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>145303
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>145307
+        <affect>protect
+       </modifier>
+      </modifiers>
+      <specifications/>
        <specification/>
         <id>603970
         <item>field
@@ -5267,7 +5295,7 @@
       </specifications>
      </field>
      <field/>
-      <id>145111
+      <id>145112
       <name>Port_Numbers
       <type>string
       <mandatory>false
@@ -5284,7 +5312,7 @@
       </specifications>
      </field>
      <field/>
-      <id>145112
+      <id>145113
       <name>Shared_Secret
       <type>1025
       <mandatory>false
@@ -32367,7 +32395,7 @@
      <field_info>145102
      <field_info>145108;enum=955
      <field_info>145104
-     <field_info>145111
+     <field_info>145112
     </data>
    </specification>
    <specification/>
@@ -32386,10 +32414,11 @@
      <field_info>145104
      <field_info>145105
      <field_info>145109
+     <field_info>145110
      <field_info>145107
      <field_info>145108;no_edit+enum=955
-     <field_info>145112;show
-     <field_info>145110
+     <field_info>145113;show
+     <field_info>145111
     </data>
    </specification>
    <specification/>

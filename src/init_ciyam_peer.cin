@@ -23,7 +23,13 @@ SHARED=$OUTPUT
 .system_variable @blockchain_peer_hub_identity
 PEER_HUB=$OUTPUT
 ;
+<bc_all_extras.cin
+;
+@ifndef $BACKUP_EXTRAS
 .peer_listen $PEER_PORT $BACKUP,$SHARED,$PEER_HUB
+@else
+.peer_listen $PEER_PORT $BACKUP_EXTRAS,$SHARED_EXTRAS,$PEER_HUB
+@endif
 ;
 @ifndef $ERROR
 .storage_init Meta

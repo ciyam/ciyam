@@ -917,17 +917,18 @@ field_add -id=145106 Global_Peerchain_Entry Local_Port port mand -def=0
 field_add -id=145107 Global_Peerchain_Entry Auto_Start bool mand -def=0
 field_add -id=145108 Global_Peerchain_Entry Status int mand -def=0 -e=peerchain_status -transient
 field_add -id=145109 Global_Peerchain_Entry Num_Helpers 0..99 mand -def=3
-field_add -id=145110 Global_Peerchain_Entry Actions string opt -transient -x=actions
-field_add -id=145111 Global_Peerchain_Entry Port_Numbers string opt -transient
-field_add -id=145112 Global_Peerchain_Entry Shared_Secret str200 opt -x=encrypted
+field_add -id=145110 Global_Peerchain_Entry Extra_Value str10 opt
+field_add -id=145111 Global_Peerchain_Entry Actions string opt -transient -x=actions
+field_add -id=145112 Global_Peerchain_Entry Port_Numbers string opt -transient
+field_add -id=145113 Global_Peerchain_Entry Shared_Secret str200 opt -x=encrypted
 modifier_add -id=145300 Global_Peerchain_Entry Is_Halted @class:lowlight
-modifier_add -id=145301 Global_Peerchain_Entry Is_Local_Only Host_Name:relegate;view,Host_Port:relegate,Num_Helpers:relegate,Shared_Secret:relegate
+modifier_add -id=145301 Global_Peerchain_Entry Is_Local_Only Host_Name:relegate;view,Host_Port:relegate,Num_Helpers:relegate,Extra_Value:relegate,Shared_Secret:relegate
 modifier_add -id=145302 Global_Peerchain_Entry Is_Backup_Only Status:protect
-modifier_add -id=145303 Global_Peerchain_Entry Is_Hub Local_Port:relegate,Num_Helpers:relegate,Shared_Secret:relegate
+modifier_add -id=145303 Global_Peerchain_Entry Is_Hub Local_Port:relegate,Num_Helpers:relegate,Extra_Value:relegate,Shared_Secret:relegate
 modifier_add -id=145304 Global_Peerchain_Entry Is_Connected @class:extralight1;list,Status:extralight1;view
 modifier_add -id=145305 Global_Peerchain_Entry Is_Connecting @class:extralight;list,Status:extralight;view
 modifier_add -id=145306 Global_Peerchain_Entry Is_Disconnecting @class:extralight;list,Status:extralight;view
-modifier_add -id=145307 Global_Peerchain_Entry Not_Is_Halted Host_Name:protect,Host_Port:protect,Local_Port:protect,Num_Helpers:protect,Shared_Secret:protect
+modifier_add -id=145307 Global_Peerchain_Entry Not_Is_Halted Host_Name:protect,Host_Port:protect,Local_Port:protect,Num_Helpers:protect,Extra_Value:protect,Shared_Secret:protect
 procedure_add -id=145410 Global_Peerchain_Entry Connect
 procedure_add -id=145420 Global_Peerchain_Entry Disconnect
 procedure_add -id=145430 Global_Peerchain_Entry Start
@@ -2319,7 +2320,7 @@ specification_add -id=603900 {Global_Blacklist_Entry}_list list "* admin Global_
 specification_add -id=603950 {Global_Blacklist_Entry}_view view "? admin:no_edit,auto_back Global_Blacklist_Entry @key,Content_Hash;key_name"
 specification_add -id=603960 {Global_Peerchain_Entry}_list list "* admin Global_Peerchain_Entry Chain_Id,Description,Status,Host_Name,Port_Numbers"
 specification_add -id=603970 {Global_Peerchain_Entry}_view view "? admin Global_Peerchain_Entry @key,Chain_Id;key_name,Description\
-,Peer_Type;new_edit+force,Local_Port,Host_Name,Host_Port,Num_Helpers,Auto_Start,Status;no_edit,Shared_Secret;show,Actions"
+,Peer_Type;new_edit+force,Local_Port,Host_Name,Host_Port,Num_Helpers,Extra_Value,Auto_Start,Status;no_edit,Shared_Secret;show,Actions"
 specification_add -id=603980 {Global_Repository_Entry}_list list "* admin:no_new Global_Repository_Entry File_Hash"
 specification_add -id=603990 {Global_Repository_Entry}_view view "? admin:no_edit Global_Repository_Entry @key,File_Hash;key_name,Local_Hash,Local_Public_Key,Master_Public_Key"
 model_save

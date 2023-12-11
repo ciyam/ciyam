@@ -201,6 +201,7 @@ const char* const c_special_variable_skip_parent_updates = "@skip_parent_updates
 const char* const c_special_variable_blockchain_hind_hash = "@blockchain_hind_hash";
 const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_ratios";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
+const char* const c_special_variable_blockchain_next_extra = "@blockchain_next_extra";
 const char* const c_special_variable_blockchain_time_value = "@blockchain_time_value";
 const char* const c_special_variable_keep_user_peers_alive = "@keep_user_peers_alive";
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
@@ -887,6 +888,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_secondary_validation:
       s = string( c_special_variable_secondary_validation );
+      break;
+
+      case e_special_var_blockchain_next_extra:
+      s = string( c_special_variable_blockchain_next_extra );
       break;
 
       case e_special_var_blockchain_time_value:

@@ -60,23 +60,25 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-const char* const c_field_id_Actions = "145110";
+const char* const c_field_id_Actions = "145111";
 const char* const c_field_id_Auto_Start = "145107";
 const char* const c_field_id_Chain_Id = "145101";
 const char* const c_field_id_Description = "145102";
+const char* const c_field_id_Extra_Value = "145110";
 const char* const c_field_id_Host_Name = "145104";
 const char* const c_field_id_Host_Port = "145105";
 const char* const c_field_id_Local_Port = "145106";
 const char* const c_field_id_Num_Helpers = "145109";
 const char* const c_field_id_Peer_Type = "145103";
-const char* const c_field_id_Port_Numbers = "145111";
-const char* const c_field_id_Shared_Secret = "145112";
+const char* const c_field_id_Port_Numbers = "145112";
+const char* const c_field_id_Shared_Secret = "145113";
 const char* const c_field_id_Status = "145108";
 
 const char* const c_field_name_Actions = "Actions";
 const char* const c_field_name_Auto_Start = "Auto_Start";
 const char* const c_field_name_Chain_Id = "Chain_Id";
 const char* const c_field_name_Description = "Description";
+const char* const c_field_name_Extra_Value = "Extra_Value";
 const char* const c_field_name_Host_Name = "Host_Name";
 const char* const c_field_name_Host_Port = "Host_Port";
 const char* const c_field_name_Local_Port = "Local_Port";
@@ -90,6 +92,7 @@ const char* const c_field_display_name_Actions = "field_global_peerchain_entry_a
 const char* const c_field_display_name_Auto_Start = "field_global_peerchain_entry_auto_start";
 const char* const c_field_display_name_Chain_Id = "field_global_peerchain_entry_chain_id";
 const char* const c_field_display_name_Description = "field_global_peerchain_entry_description";
+const char* const c_field_display_name_Extra_Value = "field_global_peerchain_entry_extra_value";
 const char* const c_field_display_name_Host_Name = "field_global_peerchain_entry_host_name";
 const char* const c_field_display_name_Host_Port = "field_global_peerchain_entry_host_port";
 const char* const c_field_display_name_Local_Port = "field_global_peerchain_entry_local_port";
@@ -99,7 +102,7 @@ const char* const c_field_display_name_Port_Numbers = "field_global_peerchain_en
 const char* const c_field_display_name_Shared_Secret = "field_global_peerchain_entry_shared_secret";
 const char* const c_field_display_name_Status = "field_global_peerchain_entry_status";
 
-const int c_num_fields = 12;
+const int c_num_fields = 13;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -114,7 +117,8 @@ const char* const c_all_sorted_field_ids[ ] =
    "145109",
    "145110",
    "145111",
-   "145112"
+   "145112",
+   "145113"
 };
 
 const char* const c_all_sorted_field_names[ ] =
@@ -123,6 +127,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Auto_Start",
    "Chain_Id",
    "Description",
+   "Extra_Value",
    "Host_Name",
    "Host_Port",
    "Local_Port",
@@ -145,7 +150,7 @@ const int c_num_encrypted_fields = 1;
 
 const char* const c_encrypted_sorted_field_ids[ ] =
 {
-   "145112"
+   "145113"
 };
 
 const char* const c_encrypted_sorted_field_names[ ] =
@@ -167,8 +172,8 @@ const char* const c_transient_sorted_field_ids[ ] =
 {
    "145101",
    "145108",
-   "145110",
-   "145111"
+   "145111",
+   "145112"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
@@ -203,6 +208,7 @@ const uint64_t c_modifier_Not_Is_Halted = UINT64_C( 0x8000 );
 
 domain_string_max_size< 50 > g_Chain_Id_domain;
 domain_string_max_size< 100 > g_Description_domain;
+domain_string_max_size< 10 > g_Extra_Value_domain;
 domain_string_max_size< 100 > g_Host_Name_domain;
 domain_int_range< 0, 65535 > g_Host_Port_domain;
 domain_int_range< 0, 65535 > g_Local_Port_domain;
@@ -256,6 +262,7 @@ string g_default_Actions = string( );
 bool g_default_Auto_Start = bool( 0 );
 string g_default_Chain_Id = string( );
 string g_default_Description = string( );
+string g_default_Extra_Value = string( );
 string g_default_Host_Name = string( );
 int g_default_Host_Port = int( 0 );
 int g_default_Local_Port = int( 0 );
@@ -432,6 +439,12 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
          string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Description( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Extra_Value || field_name == c_field_name_Extra_Value )
+      {
+         handled = true;
+         string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Extra_Value( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Host_Name || field_name == c_field_name_Host_Name )
       {
          handled = true;
@@ -518,6 +531,13 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
          handled = true;
          func_string_setter< Meta_Global_Peerchain_Entry, string >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Description, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Extra_Value || field_name == c_field_name_Extra_Value )
+      {
+         handled = true;
+         func_string_setter< Meta_Global_Peerchain_Entry, string >(
+          *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Extra_Value, field_value );
       }
 
       if( !handled && field_name == c_field_id_Host_Name || field_name == c_field_name_Host_Name )
@@ -650,6 +670,9 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
    const string& impl_Description( ) const { return lazy_fetch( p_obj ), v_Description; }
    void impl_Description( const string& Description ) { sanity_check( Description ); v_Description = Description; }
 
+   const string& impl_Extra_Value( ) const { return lazy_fetch( p_obj ), v_Extra_Value; }
+   void impl_Extra_Value( const string& Extra_Value ) { sanity_check( Extra_Value ); v_Extra_Value = Extra_Value; }
+
    const string& impl_Host_Name( ) const { return lazy_fetch( p_obj ), v_Host_Name; }
    void impl_Host_Name( const string& Host_Name ) { sanity_check( Host_Name ); v_Host_Name = Host_Name; }
 
@@ -746,6 +769,7 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
    bool v_Auto_Start;
    string v_Chain_Id;
    string v_Description;
+   string v_Extra_Value;
    string v_Host_Name;
    int v_Host_Port;
    int v_Local_Port;
@@ -823,34 +847,38 @@ string Meta_Global_Peerchain_Entry::impl::get_field_value( int field ) const
       break;
 
       case 4:
-      retval = to_string( impl_Host_Name( ) );
+      retval = to_string( impl_Extra_Value( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Host_Port( ) );
+      retval = to_string( impl_Host_Name( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Local_Port( ) );
+      retval = to_string( impl_Host_Port( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Num_Helpers( ) );
+      retval = to_string( impl_Local_Port( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Peer_Type( ) );
+      retval = to_string( impl_Num_Helpers( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Port_Numbers( ) );
+      retval = to_string( impl_Peer_Type( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Shared_Secret( ) );
+      retval = to_string( impl_Port_Numbers( ) );
       break;
 
       case 11:
+      retval = to_string( impl_Shared_Secret( ) );
+      break;
+
+      case 12:
       retval = to_string( impl_Status( ) );
       break;
 
@@ -882,34 +910,38 @@ void Meta_Global_Peerchain_Entry::impl::set_field_value( int field, const string
       break;
 
       case 4:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Host_Name, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Extra_Value, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Host_Port, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Host_Name, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Local_Port, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Host_Port, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Num_Helpers, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Local_Port, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Peer_Type, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Num_Helpers, value );
       break;
 
       case 9:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Port_Numbers, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Peer_Type, value );
       break;
 
       case 10:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Shared_Secret, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Port_Numbers, value );
       break;
 
       case 11:
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Shared_Secret, value );
+      break;
+
+      case 12:
       func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Status, value );
       break;
 
@@ -939,34 +971,38 @@ void Meta_Global_Peerchain_Entry::impl::set_field_default( int field )
       break;
 
       case 4:
-      impl_Host_Name( g_default_Host_Name );
+      impl_Extra_Value( g_default_Extra_Value );
       break;
 
       case 5:
-      impl_Host_Port( g_default_Host_Port );
+      impl_Host_Name( g_default_Host_Name );
       break;
 
       case 6:
-      impl_Local_Port( g_default_Local_Port );
+      impl_Host_Port( g_default_Host_Port );
       break;
 
       case 7:
-      impl_Num_Helpers( g_default_Num_Helpers );
+      impl_Local_Port( g_default_Local_Port );
       break;
 
       case 8:
-      impl_Peer_Type( g_default_Peer_Type );
+      impl_Num_Helpers( g_default_Num_Helpers );
       break;
 
       case 9:
-      impl_Port_Numbers( g_default_Port_Numbers );
+      impl_Peer_Type( g_default_Peer_Type );
       break;
 
       case 10:
-      impl_Shared_Secret( g_default_Shared_Secret );
+      impl_Port_Numbers( g_default_Port_Numbers );
       break;
 
       case 11:
+      impl_Shared_Secret( g_default_Shared_Secret );
+      break;
+
+      case 12:
       impl_Status( g_default_Status );
       break;
 
@@ -998,34 +1034,38 @@ bool Meta_Global_Peerchain_Entry::impl::is_field_default( int field ) const
       break;
 
       case 4:
-      retval = ( v_Host_Name == g_default_Host_Name );
+      retval = ( v_Extra_Value == g_default_Extra_Value );
       break;
 
       case 5:
-      retval = ( v_Host_Port == g_default_Host_Port );
+      retval = ( v_Host_Name == g_default_Host_Name );
       break;
 
       case 6:
-      retval = ( v_Local_Port == g_default_Local_Port );
+      retval = ( v_Host_Port == g_default_Host_Port );
       break;
 
       case 7:
-      retval = ( v_Num_Helpers == g_default_Num_Helpers );
+      retval = ( v_Local_Port == g_default_Local_Port );
       break;
 
       case 8:
-      retval = ( v_Peer_Type == g_default_Peer_Type );
+      retval = ( v_Num_Helpers == g_default_Num_Helpers );
       break;
 
       case 9:
-      retval = ( v_Port_Numbers == g_default_Port_Numbers );
+      retval = ( v_Peer_Type == g_default_Peer_Type );
       break;
 
       case 10:
-      retval = ( v_Shared_Secret == g_default_Shared_Secret );
+      retval = ( v_Port_Numbers == g_default_Port_Numbers );
       break;
 
       case 11:
+      retval = ( v_Shared_Secret == g_default_Shared_Secret );
+      break;
+
+      case 12:
       retval = ( v_Status == g_default_Status );
       break;
 
@@ -1183,6 +1223,7 @@ void Meta_Global_Peerchain_Entry::impl::clear( )
    v_Auto_Start = g_default_Auto_Start;
    v_Chain_Id = g_default_Chain_Id;
    v_Description = g_default_Description;
+   v_Extra_Value = g_default_Extra_Value;
    v_Host_Name = g_default_Host_Name;
    v_Host_Port = g_default_Host_Port;
    v_Local_Port = g_default_Local_Port;
@@ -1238,6 +1279,13 @@ void Meta_Global_Peerchain_Entry::impl::validate(
     && !g_Description_domain.is_valid( v_Description, error_message = "" ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Description,
        get_module_string( c_field_display_name_Description ) + " " + error_message ) );
+
+   if( !is_null( v_Extra_Value )
+    && ( v_Extra_Value != g_default_Extra_Value
+    || !value_will_be_provided( c_field_name_Extra_Value ) )
+    && !g_Extra_Value_domain.is_valid( v_Extra_Value, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Extra_Value,
+       get_module_string( c_field_display_name_Extra_Value ) + " " + error_message ) );
 
    if( !is_null( v_Host_Name )
     && ( v_Host_Name != g_default_Host_Name
@@ -1310,6 +1358,12 @@ void Meta_Global_Peerchain_Entry::impl::validate_set_fields(
     && !g_Description_domain.is_valid( v_Description, error_message = "" ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Description,
        get_module_string( c_field_display_name_Description ) + " " + error_message ) );
+
+   if( !is_null( v_Extra_Value )
+    && ( fields_set.count( c_field_id_Extra_Value ) || fields_set.count( c_field_name_Extra_Value ) )
+    && !g_Extra_Value_domain.is_valid( v_Extra_Value, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Extra_Value,
+       get_module_string( c_field_display_name_Extra_Value ) + " " + error_message ) );
 
    if( !is_null( v_Host_Name )
     && ( fields_set.count( c_field_id_Host_Name ) || fields_set.count( c_field_name_Host_Name ) )
@@ -1654,6 +1708,16 @@ void Meta_Global_Peerchain_Entry::Description( const string& Description )
    p_impl->impl_Description( Description );
 }
 
+const string& Meta_Global_Peerchain_Entry::Extra_Value( ) const
+{
+   return p_impl->impl_Extra_Value( );
+}
+
+void Meta_Global_Peerchain_Entry::Extra_Value( const string& Extra_Value )
+{
+   p_impl->impl_Extra_Value( Extra_Value );
+}
+
 const string& Meta_Global_Peerchain_Entry::Host_Name( ) const
 {
    return p_impl->impl_Host_Name( );
@@ -1965,6 +2029,16 @@ const char* Meta_Global_Peerchain_Entry::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Extra_Value )
+   {
+      p_id = c_field_id_Extra_Value;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Host_Name )
    {
       p_id = c_field_id_Host_Name;
@@ -2089,6 +2163,16 @@ const char* Meta_Global_Peerchain_Entry::get_field_name(
    else if( id == c_field_id_Description )
    {
       p_name = c_field_name_Description;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Extra_Value )
+   {
+      p_name = c_field_name_Extra_Value;
 
       if( p_type_name )
          *p_type_name = "string";
@@ -2230,6 +2314,11 @@ string Meta_Global_Peerchain_Entry::get_field_uom_symbol( const string& id_or_na
       name = string( c_field_display_name_Description );
       get_module_string( c_field_display_name_Description, &next );
    }
+   else if( id_or_name == c_field_id_Extra_Value || id_or_name == c_field_name_Extra_Value )
+   {
+      name = string( c_field_display_name_Extra_Value );
+      get_module_string( c_field_display_name_Extra_Value, &next );
+   }
    else if( id_or_name == c_field_id_Host_Name || id_or_name == c_field_name_Host_Name )
    {
       name = string( c_field_display_name_Host_Name );
@@ -2293,6 +2382,8 @@ string Meta_Global_Peerchain_Entry::get_field_display_name( const string& id_or_
       display_name = get_module_string( c_field_display_name_Chain_Id );
    else if( id_or_name == c_field_id_Description || id_or_name == c_field_name_Description )
       display_name = get_module_string( c_field_display_name_Description );
+   else if( id_or_name == c_field_id_Extra_Value || id_or_name == c_field_name_Extra_Value )
+      display_name = get_module_string( c_field_display_name_Extra_Value );
    else if( id_or_name == c_field_id_Host_Name || id_or_name == c_field_name_Host_Name )
       display_name = get_module_string( c_field_display_name_Host_Name );
    else if( id_or_name == c_field_id_Host_Port || id_or_name == c_field_name_Host_Port )
@@ -2678,17 +2769,18 @@ void Meta_Global_Peerchain_Entry::static_get_class_info( class_info_container& c
 
 void Meta_Global_Peerchain_Entry::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "145110", "Actions", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "145111", "Actions", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145107", "Auto_Start", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "145101", "Chain_Id", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145102", "Description", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "145110", "Extra_Value", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145104", "Host_Name", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145105", "Host_Port", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "145106", "Local_Port", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "145109", "Num_Helpers", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "145103", "Peer_Type", "int", false, "", "" ) );
-   all_field_info.push_back( field_info( "145111", "Port_Numbers", "string", false, "", "" ) );
-   all_field_info.push_back( field_info( "145112", "Shared_Secret", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "145112", "Port_Numbers", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "145113", "Shared_Secret", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145108", "Status", "int", false, "", "" ) );
 }
 
@@ -2722,7 +2814,7 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_id( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "145110";
+      p_id = "145111";
       break;
 
       case 2:
@@ -2738,27 +2830,27 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_id( field_id id )
       break;
 
       case 5:
-      p_id = "145104";
+      p_id = "145110";
       break;
 
       case 6:
-      p_id = "145105";
+      p_id = "145104";
       break;
 
       case 7:
-      p_id = "145106";
+      p_id = "145105";
       break;
 
       case 8:
-      p_id = "145109";
+      p_id = "145106";
       break;
 
       case 9:
-      p_id = "145103";
+      p_id = "145109";
       break;
 
       case 10:
-      p_id = "145111";
+      p_id = "145103";
       break;
 
       case 11:
@@ -2766,6 +2858,10 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_id( field_id id )
       break;
 
       case 12:
+      p_id = "145113";
+      break;
+
+      case 13:
       p_id = "145108";
       break;
    }
@@ -2799,34 +2895,38 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_name( field_id id )
       break;
 
       case 5:
-      p_id = "Host_Name";
+      p_id = "Extra_Value";
       break;
 
       case 6:
-      p_id = "Host_Port";
+      p_id = "Host_Name";
       break;
 
       case 7:
-      p_id = "Local_Port";
+      p_id = "Host_Port";
       break;
 
       case 8:
-      p_id = "Num_Helpers";
+      p_id = "Local_Port";
       break;
 
       case 9:
-      p_id = "Peer_Type";
+      p_id = "Num_Helpers";
       break;
 
       case 10:
-      p_id = "Port_Numbers";
+      p_id = "Peer_Type";
       break;
 
       case 11:
-      p_id = "Shared_Secret";
+      p_id = "Port_Numbers";
       break;
 
       case 12:
+      p_id = "Shared_Secret";
+      break;
+
+      case 13:
       p_id = "Status";
       break;
    }
@@ -2851,22 +2951,24 @@ int Meta_Global_Peerchain_Entry::static_get_field_num( const string& field )
       rc += 3;
    else if( field == c_field_id_Description || field == c_field_name_Description )
       rc += 4;
-   else if( field == c_field_id_Host_Name || field == c_field_name_Host_Name )
+   else if( field == c_field_id_Extra_Value || field == c_field_name_Extra_Value )
       rc += 5;
-   else if( field == c_field_id_Host_Port || field == c_field_name_Host_Port )
+   else if( field == c_field_id_Host_Name || field == c_field_name_Host_Name )
       rc += 6;
-   else if( field == c_field_id_Local_Port || field == c_field_name_Local_Port )
+   else if( field == c_field_id_Host_Port || field == c_field_name_Host_Port )
       rc += 7;
-   else if( field == c_field_id_Num_Helpers || field == c_field_name_Num_Helpers )
+   else if( field == c_field_id_Local_Port || field == c_field_name_Local_Port )
       rc += 8;
-   else if( field == c_field_id_Peer_Type || field == c_field_name_Peer_Type )
+   else if( field == c_field_id_Num_Helpers || field == c_field_name_Num_Helpers )
       rc += 9;
-   else if( field == c_field_id_Port_Numbers || field == c_field_name_Port_Numbers )
+   else if( field == c_field_id_Peer_Type || field == c_field_name_Peer_Type )
       rc += 10;
-   else if( field == c_field_id_Shared_Secret || field == c_field_name_Shared_Secret )
+   else if( field == c_field_id_Port_Numbers || field == c_field_name_Port_Numbers )
       rc += 11;
-   else if( field == c_field_id_Status || field == c_field_name_Status )
+   else if( field == c_field_id_Shared_Secret || field == c_field_name_Shared_Secret )
       rc += 12;
+   else if( field == c_field_id_Status || field == c_field_name_Status )
+      rc += 13;
 
    return rc - 1;
 }
