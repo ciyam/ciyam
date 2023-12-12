@@ -82,8 +82,6 @@ const char* const c_hello = "hello";
 
 const char* const c_dummy_suffix = ".dummy";
 
-const char* const c_identity_suffix = "_identity";
-
 const char* const c_dummy_peer_tag = "peer";
 const char* const c_dummy_support_tag = "support";
 
@@ -196,6 +194,7 @@ string get_hub_identity( const string& own_identity )
       string blockchain_backup_suffix( blockchain_backup_identity_name.substr( pos - 1 ) );
 
       string extra;
+
       for( size_t i = 1; i <= c_max_extras; i++ )
       {
          string next_extra( get_system_variable( blockchain_backup_prefix + to_string( i ) + blockchain_backup_suffix ) );
@@ -207,18 +206,20 @@ string get_hub_identity( const string& own_identity )
          }
       }
 
-      if( !extra.empty( ) )
+      if( extra.empty( ) )
+         identity_var_name.erase( );
+      else
       {
          string::size_type pos = identity_var_name.rfind( c_identity_suffix );
 
          if( pos == string::npos )
             throw runtime_error( "unexpected '" + identity_var_name + "' missing '" + string( c_identity_suffix ) + "'" );
 
-         identity_var_name.insert( pos + 1, extra + '_' );
+         identity_var_name.insert( pos, extra + '_' );
       }
    }
 
-   return get_system_variable( identity_var_name );
+   return identity_var_name.empty( ) ? identity_var_name : get_system_variable( identity_var_name );
 }
 
 string get_own_identity( bool is_shared, const string* p_extra )

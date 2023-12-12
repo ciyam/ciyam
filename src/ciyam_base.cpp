@@ -124,8 +124,6 @@ const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
-const char* const c_identity_suffix = "identity";
-
 const char* const c_needs_submit_file = "needs_submit";
 
 const char* const c_server_folder_backup = "backup";
