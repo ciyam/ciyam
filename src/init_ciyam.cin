@@ -7,8 +7,14 @@
 ;
 @ifeq "$OUTPUT" ""
 <bc_gen.cin -hub @sid
+<bc_gen.cin -hub @sid 1
+<bc_gen.cin -hub @sid 2
+<bc_gen.cin -hub @sid 3
 ;
 .system_variable >@blockchain_next_extra 1
+;
+.system_variable @blockchain_peer_hub_1_identity
+.system_variable >@blockchain_next_peer_hub $OUTPUT
 ;
 <bc_gen.cin -backup @sid
 <bc_gen.cin -backup @sid 1
@@ -16,7 +22,7 @@
 <bc_gen.cin -backup @sid 3
 ;
 .system_variable @blockchain_backup_1_identity
-system_variable >@blockchain_next_backup $OUTPUT
+.system_variable >@blockchain_next_backup $OUTPUT
 ;
 <bc_gen.cin -shared @sid
 <bc_gen.cin -shared @sid 1

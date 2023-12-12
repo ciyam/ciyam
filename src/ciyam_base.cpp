@@ -92,8 +92,6 @@ const unsigned int c_default_max_peers = 100;
 // client interfaces and is not the max # of concurrent server sessions.
 const unsigned int c_default_max_user_limit = 1000;
 
-const size_t c_max_extra = 9;
-
 const size_t c_key_reserve_size = 128;
 const size_t c_default_cache_limit = 1000;
 
@@ -5717,7 +5715,7 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
 
          if( ( type == 1 ) && ( identity == get_system_variable( blockchain_backup_identity_name ) ) )
          {
-            for( size_t i = 1; i <= c_max_extra; i++ )
+            for( size_t i = 1; i <= c_max_extras; i++ )
             {
                string next_extra( get_system_variable( blockchain_backup_prefix + to_string( i ) + blockchain_backup_suffix ) );
 
