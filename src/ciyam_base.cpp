@@ -5679,6 +5679,16 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
    string blockchain_backup_prefix( blockchain_backup_identity_name.substr( 0, pos ) );
    string blockchain_backup_suffix( blockchain_backup_identity_name.substr( pos - 1 ) );
 
+   string blockchain_peer_hub_identity_name( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) );
+
+   pos = blockchain_peer_hub_identity_name.rfind( c_identity_suffix );
+
+   if( ( pos == 0 ) || ( pos == string::npos ) )
+      throw runtime_error( "unexpected '" + blockchain_peer_hub_identity_name + "' does not contain suffix '" + string( c_identity_suffix ) + "'" );
+
+   string blockchain_peer_hub_prefix( blockchain_peer_hub_identity_name.substr( 0, pos ) );
+   string blockchain_peer_hub_suffix( blockchain_peer_hub_identity_name.substr( pos - 1 ) );
+
    for( size_t i = 0; i < peerchains.size( ); i++ )
    {
       string identity( peerchains[ i ] );
@@ -5716,6 +5726,18 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
             for( size_t i = 1; i <= c_max_extras; i++ )
             {
                string next_extra( get_system_variable( blockchain_backup_prefix + to_string( i ) + blockchain_backup_suffix ) );
+
+               if( next_extra.empty( ) )
+                  break;
+
+               peerchain_listeners.insert( make_pair( port, next_extra + suffix ) );
+            }
+         }
+         else if( ( type == -2 ) && ( identity == get_system_variable( blockchain_peer_hub_identity_name ) ) )
+         {
+            for( size_t i = 1; i <= c_max_extras; i++ )
+            {
+               string next_extra( get_system_variable( blockchain_peer_hub_prefix + to_string( i ) + blockchain_peer_hub_suffix ) );
 
                if( next_extra.empty( ) )
                   break;
