@@ -10,6 +10,8 @@ const int c_tx_id_module = 1;
 const int c_tx_id_initial = 2;
 const int c_tx_id_standard = 5;
 
+const size_t c_max_extras = 9;
+
 const size_t c_bc_identity_length = 9;
 
 const size_t c_bc_scaling_value = 50;

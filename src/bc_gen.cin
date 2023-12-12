@@ -40,14 +40,11 @@ ERROR=
 @label NEXT
 ;
 @ifdef $EXTRA
-@ifdef $HUB
-ERROR=1
-@endif
 @ifdef $CHANNEL
 ERROR=1
 @endif
 @ifdef $ERROR
-ERROR=Can only use '<extra>' with either '-backup' or '-shared'.
+ERROR=Can only use '<extra>' with '-hub', '-backup' or '-shared'.
 #Error: $ERROR
 @label END
 @else
@@ -57,12 +54,14 @@ EXTRA_SUFFIX=_$EXTRA
 @skip
 @:NEXT
 ;
+@ifndef $EXTRA
 @ifdef $HUB
 .system_variable @blockchain_peer_hub_identity
 @ifdef $OUTPUT
 ERROR=Hub identity already exists.
 #Error: $ERROR
 @label END
+@endif
 @endif
 @endif
 @skip
@@ -339,9 +338,11 @@ BLOCK_HASH=$OUTPUT
 .system_variable >@blockchain_shared%EXTRA_SUFFIX%_identity $IDENT
 @endif
 @else
+@ifndef $EXTRA_SUFFIX
 .system_variable >@blockchain_peer_hub_height 0
 .system_variable >@blockchain_peer_hub_initial $BLOCK_HASH
-.system_variable >@blockchain_peer_hub_identity $IDENT
+@endif
+.system_variable >@blockchain_peer_hub%EXTRA_SUFFIX%_identity $IDENT
 @endif
 @endif
 ;
@@ -391,7 +392,11 @@ CHANNEL_SIZE=1GB
 ;
 @ifndef $ERROR
 @ifdef $HUB
-#Created keys and genesis block for identity '$IDENT'.
+@ifdef $EXTRA
+#Created keys and genesis block for hub identity '$IDENT'.
+@else
+#Created keys and genesis block for extra (hub) identity '$IDENT'.
+@endif
 @else
 @ifdef $EXTRA
 @ifndef $SHARED
@@ -401,7 +406,11 @@ CHANNEL_SIZE=1GB
 @endif
 @else
 @ifndef $CHANNEL
-#Created keys, genesis block and file archive for identity '$IDENT'.
+@ifndef $SHARED
+#Created keys, genesis block and file archive for backup identity '$IDENT'.
+@else
+#Created keys, genesis block and file archive for shared identity '$IDENT'.
+@endif
 @else
 #Created keys, genesis block and file archives for identity '$IDENT' (and '$REVERSED').
 @endif

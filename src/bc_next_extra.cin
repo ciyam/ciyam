@@ -20,4 +20,7 @@ EXTRA=1
 ;
 .system_variable @blockchain_shared_%EXTRA%_identity
 .system_variable >@blockchain_next_shared $OUTPUT
+;
+.system_variable @blockchain_peer_hub_%EXTRA%_identity
+.system_variable >@blockchain_next_peer_hub $OUTPUT
 @endif
