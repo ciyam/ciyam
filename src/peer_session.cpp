@@ -243,7 +243,7 @@ string get_own_identity( bool is_shared, const string* p_extra )
       if( pos == string::npos )
          throw runtime_error( "unexpected '" + identity_var_name + "' missing '" + string( c_identity_suffix ) + "'" );
 
-      identity_var_name.insert( pos + 1, extra + '_' );
+      identity_var_name.insert( pos, extra + '_' );
 
       own_identity = get_system_variable( identity_var_name );
    }
