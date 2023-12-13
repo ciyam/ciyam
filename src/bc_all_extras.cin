@@ -5,6 +5,7 @@
 ;
 BACKUP_EXTRAS=
 SHARED_EXTRAS=
+PEER_HUB_EXTRAS=
 ;
 EXTRA=1
 SEPARATOR=
@@ -20,6 +21,10 @@ BACKUP_EXTRAS=$BACKUP_EXTRAS$SEPARATOR$OUTPUT
 .system_variable @blockchain_shared_%EXTRA%_identity
 @ifdef $OUTPUT
 SHARED_EXTRAS=$SHARED_EXTRAS$SEPARATOR$OUTPUT
+@endif
+.system_variable @blockchain_peer_hub_%EXTRA%_identity
+@ifdef $OUTPUT
+PEER_HUB_EXTRAS=$PEER_HUB_EXTRAS$SEPARATOR$OUTPUT
 @endif
 @endif
 ;
