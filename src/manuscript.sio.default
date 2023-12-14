@@ -62,6 +62,11 @@
   <filename>backup_import
  </script>
  <script/>
+  <name>bc_next_extra
+  <filename>*script*
+  <arguments>bc_next_extra.cin
+ </script>
+ <script/>
   <name>close_channel
   <filename>*script*
   <arguments>close_channel.cin @storage @identity

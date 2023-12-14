@@ -3079,7 +3079,10 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
                   is_missing_backup = true;
             }
 
-            bool is_disconnecting = !get_system_variable( '~' + paired_identity ).empty( );
+            bool is_disconnecting = !get_system_variable( '~' + identity ).empty( );
+
+            if( !is_disconnecting )
+               is_disconnecting = !get_system_variable( '~' + paired_identity ).empty( );
 
             if( is_only_session || is_missing_backup || is_disconnecting )
             {
@@ -4601,7 +4604,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                is_missing_backup = true;
          }
 
-         bool is_disconnecting = !get_system_variable( '~' + paired_identity ).empty( );
+         bool is_disconnecting = !get_system_variable( '~' + identity ).empty( );
+
+         if( !is_disconnecting )
+            is_disconnecting = !get_system_variable( '~' + paired_identity ).empty( );
+
          bool had_connect_error = !get_system_variable( c_error_message_prefix + paired_identity ).empty( );
 
          if( is_only_session || is_missing_backup || is_disconnecting || had_connect_error )
@@ -5490,13 +5497,14 @@ void peer_session::on_start( )
                }
             }
          }
-         else if( !is_for_support )
-            set_session_variable( unprefixed_blockchain, c_true_value );
 
          // NOTE: Initially the identity value is that of the paired initiating session which
          // will not be the blockchain identity (for the paired session). In order to prevent
          // mistaken usage set it to be the actual blockchain identity value now.
          identity = unprefixed_blockchain;
+
+         if( !is_for_support )
+            set_session_variable( identity, c_true_value );
       }
 
       if( has_set_system_variable )

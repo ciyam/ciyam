@@ -1,0 +1,11 @@
+`{`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'to_store`'`,`$section`)\
+   // [(start transient_default_trigger_script)] `{`$arg_id`}
+   if( get_obj( ).get_key( ).empty( )
+    && ( get_obj( ).`{`$arg_field`}( ) != g_default_`{`$arg_field`} ) )
+   {
+      run_script( "`{`$arg_script`}", false );
+
+      get_obj( ).`{`$arg_field`}( g_default_`{`$arg_field`} );
+   }
+   // [(finish transient_default_trigger_script)] `{`$arg_id`}
+`}
