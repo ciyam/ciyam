@@ -5446,6 +5446,81 @@ string crypto_checksum( const string& hashes )
    return retval;
 }
 
+string local_backup_checksum( const string& extra )
+{
+   string identity( get_extra_identity_variable(
+    get_special_var_name( e_special_var_blockchain_backup_identity ), extra ) );
+
+   string tag( c_bc_prefix + identity + ".0" + string( c_blk_suffix ) );
+
+   string hash;
+
+   if( has_tag( tag ) )
+      hash = tag_file_hash( tag );
+
+   return crypto_checksum( hash );
+}
+
+string local_shared_checksum( const string& extra )
+{
+   string identity( get_extra_identity_variable(
+    get_special_var_name( e_special_var_blockchain_shared_identity ), extra ) );
+
+   string tag( c_bc_prefix + identity + ".0" + string( c_blk_suffix ) );
+
+   string hash;
+
+   if( has_tag( tag ) )
+      hash = tag_file_hash( tag );
+
+   return crypto_checksum( hash );
+}
+
+string local_combined_checksum( const string& extra )
+{
+   string backup_identity( get_extra_identity_variable(
+    get_special_var_name( e_special_var_blockchain_backup_identity ), extra ) );
+
+   string backup_tag( c_bc_prefix + backup_identity + ".0" + string( c_blk_suffix ) );
+
+   string backup_hash;
+
+   if( has_tag( backup_tag ) )
+      backup_hash = tag_file_hash( backup_tag );
+
+   string shared_identity( get_extra_identity_variable(
+    get_special_var_name( e_special_var_blockchain_shared_identity ), extra ) );
+
+   string shared_tag( c_bc_prefix + shared_identity + ".0" + string( c_blk_suffix ) );
+
+   string shared_hash;
+
+   if( has_tag( shared_tag ) )
+      shared_hash = tag_file_hash( shared_tag );
+
+   string separator;
+
+   if( !backup_hash.empty( ) && !shared_hash.empty( ) )
+      separator = ",";
+
+   return crypto_checksum( backup_hash + separator + shared_hash );
+}
+
+string local_peer_hub_checksum( const string& extra )
+{
+   string identity( get_extra_identity_variable(
+    get_special_var_name( e_special_var_blockchain_peer_hub_identity ), extra ) );
+
+   string tag( c_bc_prefix + identity + ".0" + string( c_blk_suffix ) );
+
+   string hash;
+
+   if( has_tag( tag ) )
+      hash = tag_file_hash( tag );
+
+   return crypto_checksum( hash );
+}
+
 uint64_t crypto_amount( const string& amount )
 {
    uint64_t amt = 0;

@@ -1588,6 +1588,11 @@ std::string CIYAM_BASE_DECL_SPEC crypto_digest( const std::string& data,
 
 std::string CIYAM_BASE_DECL_SPEC crypto_checksum( const std::string& hashes );
 
+std::string CIYAM_BASE_DECL_SPEC local_backup_checksum( const std::string& extra );
+std::string CIYAM_BASE_DECL_SPEC local_shared_checksum( const std::string& extra );
+std::string CIYAM_BASE_DECL_SPEC local_combined_checksum( const std::string& extra );
+std::string CIYAM_BASE_DECL_SPEC local_peer_hub_checksum( const std::string& extra );
+
 uint64_t CIYAM_BASE_DECL_SPEC crypto_amount( const std::string& amount );
 
 std::string CIYAM_BASE_DECL_SPEC crypto_sign(
