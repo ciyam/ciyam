@@ -4967,6 +4967,9 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
    if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) )
       throw runtime_error( "invalid blockchain tag prefix '" + blockchain + "'" );
 
+   string unprefixed_blockchain( blockchain );
+   replace( unprefixed_blockchain, c_bc_prefix, "" );
+
    if( port.empty( ) && blockchain.empty( ) )
       port = get_test_peer_port( );
 
@@ -5010,7 +5013,17 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          pid += '#' + to_string( ( size_t )chain_type );
 
          if( !identity.empty( ) && ( extra != e_peer_extra_none ) )
+         {
             pid += '@' + identity;
+
+            if( chain_type == e_peerchain_type_backup )
+            {
+               string hub_identity( get_hub_identity( unprefixed_blockchain ) );
+
+               if( !hub_identity.empty( ) )
+                  pid += '&' + hub_identity;
+            }
+         }
       }
 
       if( has_support_sessions )
@@ -5060,7 +5073,16 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
          blockchain = pid.substr( pos + 1 );
 
-         string::size_type spos = blockchain.find( '@' );
+         string::size_type spos = blockchain.find( '&' );
+
+         if( spos != string::npos )
+         {
+            hub_identity = blockchain.substr( spos + 1 );
+
+            blockchain.erase( spos );
+         }
+
+         spos = blockchain.find( '@' );
 
          if( spos != string::npos )
          {
@@ -5519,50 +5541,50 @@ void peer_session::on_start( )
                okay = false;
             else if( !is_for_support && ( block_hash != string( c_response_not_found ) ) )
                add_peer_file_hash_for_get( block_hash );
+         }
+      }
 
-            // NOTE: If a hub identity has been provided then connect to it (unless already connected).
-            if( okay && !is_for_support && !hub_identity.empty( ) )
+      // NOTE: If a hub identity has been provided then connect to it (unless already connected).
+      if( okay && !is_for_support && !hub_identity.empty( ) )
+      {
+         set_hub_system_variable_if_required( identity, hub_identity );
+
+         if( !any_session_has_blockchain( hub_identity )
+          && set_system_variable( hub_identity, c_true_value, string( "" ) ) )
+         {
+            string host_and_port( ip_addr );
+
+            string::size_type pos = ip_addr.find( ':' );
+
+            if( pos == string::npos )
+               host_and_port += ':';
+            else
+               host_and_port += '-';
+
+            host_and_port += port;
+
+            string hub_blockchain( c_bc_prefix + hub_identity );
+            string hub_zenith_tag( hub_blockchain + c_zenith_suffix );
+
+            if( has_tag( hub_zenith_tag ) )
             {
-               set_hub_system_variable_if_required( identity, hub_identity );
+               string hub_zenith_hash( tag_file_hash( hub_zenith_tag ) );
 
-               if( !any_session_has_blockchain( hub_identity )
-                && set_system_variable( hub_identity, c_true_value, string( "" ) ) )
+               size_t hub_height = 0;
+
+               if( get_block_height_from_tags( hub_blockchain, hub_zenith_hash, hub_height ) )
                {
-                  string host_and_port( ip_addr );
+                  // FUTURE: This message should be handled as a server string message.
+                  string progress_message( "Currently at height " );
 
-                  string::size_type pos = ip_addr.find( ':' );
+                  progress_message += to_string( hub_height );
 
-                  if( pos == string::npos )
-                     host_and_port += ':';
-                  else
-                     host_and_port += '-';
-
-                  host_and_port += port;
-
-                  string hub_blockchain( c_bc_prefix + hub_identity );
-                  string hub_zenith_tag( hub_blockchain + c_zenith_suffix );
-
-                  if( has_tag( hub_zenith_tag ) )
-                  {
-                     string hub_zenith_hash( tag_file_hash( hub_zenith_tag ) );
-
-                     size_t hub_height = 0;
-
-                     if( get_block_height_from_tags( hub_blockchain, hub_zenith_hash, hub_height ) )
-                     {
-                        // FUTURE: This message should be handled as a server string message.
-                        string progress_message( "Currently at height " );
-
-                        progress_message += to_string( hub_height );
-
-                        set_system_variable( c_progress_output_prefix + hub_identity, progress_message );
-                     }
-                  }
-
-                  create_peer_initiator( ( c_bc_prefix + hub_identity ),
-                   host_and_port, false, 0, false, false, 0, e_peerchain_type_hub, true );
+                  set_system_variable( c_progress_output_prefix + hub_identity, progress_message );
                }
             }
+
+            create_peer_initiator( ( c_bc_prefix + hub_identity ),
+             host_and_port, false, 0, false, false, 0, e_peerchain_type_hub, true );
          }
       }
 
