@@ -74,7 +74,42 @@ MULTIPLE=50
 @endif
 ;
 MODULUS=@$NEXT_HEIGHT#$MULTIPLE
+;
 @ifeq "$MODULUS" "0"
+.file_tags bc.$IDENT.$HEIGHT.key
+@ifndef $OUTPUT
+; NOTE: If the next height is equal to the modulus then it is expected
+; that the keys for the current height should exist (because they were
+; generated previously) but if not found will regenerate them now.
+@ifdef $CHANNEL
+.crypto_hash $SEED -s=$IDENT$HEIGHT
+@else
+@ifndef $PEER_HUB
+@ifndef $SHARED
+.crypto_hash $SEED -s=-$HEIGHT
+@else
+.crypto_hash $SEED -s=+$HEIGHT
+@endif
+@else
+.crypto_hash $SEED -s=#$HEIGHT
+@endif
+@endif
+ENTROPY_HASH=$OUTPUT
+;
+.crypto_lamport new_primary $ENTROPY_HASH
+;
+.file_kill -q bc.$IDENT.$HEIGHT.key
+.file_put new_primary.key bc.$IDENT.$HEIGHT.key
+.file_crypt -encrypt -cipher=cc bc.$IDENT.$HEIGHT.key @sid
+;
+.file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
+;
+.system_variable @os
+@ifeq "$OUTPUT" "Linux"
+~shred new_primary.key
+@endif
+~rm new_primary.key new_primary.pub
+@endif
 HEIGHT=@$HEIGHT+$MULTIPLE
 @endif
 ;
