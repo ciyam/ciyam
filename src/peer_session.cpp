@@ -179,47 +179,27 @@ void decrement_active_listeners( )
 
 string get_hub_identity( const string& own_identity )
 {
-   string identity_var_name( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) );
+   string hub_identity_var_name( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) );
+   string backup_identity_var_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
 
-   if( own_identity != get_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ) )
+   if( own_identity != get_system_variable( backup_identity_var_name ) )
    {
-      string blockchain_backup_identity_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
-
-      string::size_type pos = blockchain_backup_identity_name.rfind( c_identity_suffix );
-
-      if( ( pos == 0 ) || ( pos == string::npos ) )
-         throw runtime_error( "unexpected '" + blockchain_backup_identity_name + "' does not contain suffix '" + string( c_identity_suffix ) + "'" );
-
-      string blockchain_backup_prefix( blockchain_backup_identity_name.substr( 0, pos ) );
-      string blockchain_backup_suffix( blockchain_backup_identity_name.substr( pos - 1 ) );
-
-      string extra;
-
-      for( size_t i = 1; i <= c_max_extras; i++ )
-      {
-         string next_extra( get_system_variable( blockchain_backup_prefix + to_string( i ) + blockchain_backup_suffix ) );
-
-         if( next_extra == own_identity )
-         {
-            extra = to_string( i );
-            break;
-         }
-      }
+      string extra( get_identity_variable_extra( backup_identity_var_name, own_identity ) );
 
       if( extra.empty( ) )
-         identity_var_name.erase( );
+         hub_identity_var_name.erase( );
       else
       {
-         string::size_type pos = identity_var_name.rfind( c_identity_suffix );
+         string hub_identity_name_prefix, hub_identity_name_suffix;
 
-         if( pos == string::npos )
-            throw runtime_error( "unexpected '" + identity_var_name + "' missing '" + string( c_identity_suffix ) + "'" );
+         identity_variable_name_prefix_and_suffix(
+          hub_identity_var_name, hub_identity_name_prefix, hub_identity_name_suffix );
 
-         identity_var_name.insert( pos, extra + '_' );
+         hub_identity_var_name = hub_identity_name_prefix + extra + hub_identity_name_suffix;
       }
    }
 
-   return identity_var_name.empty( ) ? identity_var_name : get_system_variable( identity_var_name );
+   return hub_identity_var_name.empty( ) ? hub_identity_var_name : get_system_variable( hub_identity_var_name );
 }
 
 string get_own_identity( bool is_shared, const string* p_extra )
@@ -227,26 +207,11 @@ string get_own_identity( bool is_shared, const string* p_extra )
    string own_identity;
 
    if( !p_extra )
-   {
       own_identity = get_system_variable( get_special_var_name(
        ( !is_shared ) ? e_special_var_blockchain_backup_identity : e_special_var_blockchain_shared_identity ) );
-   }
    else
-   {
-      string extra( *p_extra );
-
-      string identity_var_name( get_special_var_name(
-       ( !is_shared ) ? e_special_var_blockchain_backup_identity : e_special_var_blockchain_shared_identity ) );
-
-      string::size_type pos = identity_var_name.rfind( c_identity_suffix );
-
-      if( pos == string::npos )
-         throw runtime_error( "unexpected '" + identity_var_name + "' missing '" + string( c_identity_suffix ) + "'" );
-
-      identity_var_name.insert( pos, extra + '_' );
-
-      own_identity = get_system_variable( identity_var_name );
-   }
+      own_identity = get_extra_identity_variable( get_special_var_name(
+       ( !is_shared ) ? e_special_var_blockchain_backup_identity : e_special_var_blockchain_shared_identity ), *p_extra );
 
    return own_identity;
 }
@@ -620,8 +585,7 @@ void check_shared_for_support_session( const string& blockchain )
    }
 }
 
-void set_hub_system_variable_if_required(
- const string& identity, const string& hub_identity, bool skip_queue = false )
+void set_hub_system_variable_if_required( const string& identity, const string& hub_identity )
 {
    if( get_system_variable( "@" + identity ).empty( ) )
    {
@@ -633,14 +597,27 @@ void set_hub_system_variable_if_required(
 
       if( !hub_genesis_hash.empty( ) )
          set_system_variable( ">@" + identity, hub_genesis_hash );
-      else if( !skip_queue )
+      else
          set_system_variable( get_special_var_name( e_special_var_queue_hub_users ), identity );
    }
 }
 
 void process_queued_hub_using_peerchains( const string& hub_identity )
 {
-   string identities( get_system_variable( get_special_var_name( e_special_var_queue_hub_users ) ) );
+   string identities;
+
+   while( true )
+   {
+      string next_identity( get_system_variable( get_special_var_name( e_special_var_queue_hub_users ) ) );
+
+      if( next_identity.empty( ) )
+         break;
+
+      if( !identities.empty( ) )
+         identities += ',';
+
+      identities += next_identity;
+   }
 
    if( !identities.empty( ) )
    {
@@ -652,7 +629,7 @@ void process_queued_hub_using_peerchains( const string& hub_identity )
       {
          string next_identity( all_identities[ i ] );
 
-         set_hub_system_variable_if_required( next_identity, hub_identity, true );
+         set_hub_system_variable_if_required( next_identity, hub_identity );
       }
    }
 }
@@ -5544,7 +5521,7 @@ void peer_session::on_start( )
                add_peer_file_hash_for_get( block_hash );
 
             // NOTE: If a hub identity has been provided then connect to it (unless already connected).
-            if( okay && !hub_identity.empty( ) )
+            if( okay && !is_for_support && !hub_identity.empty( ) )
             {
                set_hub_system_variable_if_required( identity, hub_identity );
 

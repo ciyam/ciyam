@@ -193,10 +193,14 @@ void CIYAM_BASE_DECL_SPEC remove_peer_ip_addr_from_rejection( const std::string&
 
 std::string CIYAM_BASE_DECL_SPEC list_peer_ip_addrs_for_rejection( );
 
-int CIYAM_BASE_DECL_SPEC get_blockchain_port( const std::string& blockchain );
-bool CIYAM_BASE_DECL_SPEC get_is_known_blockchain( const std::string& blockchain );
+std::string CIYAM_BASE_DECL_SPEC get_extra_identity_variable(
+ const std::string& identity_variable_name, const std::string& extra );
 
-void CIYAM_BASE_DECL_SPEC register_blockchains( int port, const std::string& blockchains );
+std::string get_identity_variable_extra(
+ const std::string& identity_variable_name, const std::string& identity_value );
+
+void CIYAM_BASE_DECL_SPEC identity_variable_name_prefix_and_suffix(
+ const std::string& identity_variable_name, std::string& prefix, std::string& suffix );
 
 std::string CIYAM_BASE_DECL_SPEC get_peerchain_info(
  const std::string& identity, bool* p_is_listener = 0, std::string* p_shared_secret = 0 );

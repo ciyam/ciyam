@@ -5532,6 +5532,47 @@ string list_peer_ip_addrs_for_rejection( )
    return retval;
 }
 
+string get_extra_identity_variable( const string& identity_variable_name, const string& extra )
+{
+   string variable_name_prefix, variable_name_suffix;
+
+   identity_variable_name_prefix_and_suffix( identity_variable_name, variable_name_prefix, variable_name_suffix );
+
+   return get_system_variable( variable_name_prefix + extra + variable_name_suffix );
+}
+
+string get_identity_variable_extra( const string& identity_variable_name, const string& identity_value )
+{
+   string extra, variable_name_prefix, variable_name_suffix;
+
+   identity_variable_name_prefix_and_suffix( identity_variable_name, variable_name_prefix, variable_name_suffix );
+
+   for( size_t i = 1; i <= c_max_extras; i++ )
+   {
+      string next_extra( get_system_variable( variable_name_prefix + to_string( i ) + variable_name_suffix ) );
+
+      if( next_extra == identity_value )
+      {
+         extra = to_string( i );
+         break;
+      }
+   }
+
+   return extra;
+}
+
+void identity_variable_name_prefix_and_suffix(
+ const string& identity_variable_name, string& prefix, string& suffix )
+{
+   string::size_type pos = identity_variable_name.rfind( c_identity_suffix );
+
+   if( ( pos == 0 ) || ( pos == string::npos ) )
+      throw runtime_error( "unexpected '" + identity_variable_name + "' does not contain suffix '" + string( c_identity_suffix ) + "'" );
+
+   prefix = identity_variable_name.substr( 0, pos );
+   suffix = identity_variable_name.substr( pos - 1 );
+}
+
 string get_peerchain_info( const string& identity, bool* p_is_listener, string* p_shared_secret )
 {
    system_ods_fs_guard ods_fs_guard;
@@ -5669,25 +5710,19 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
 
    gap_ofs->list_files( "", peerchains );
 
+   string blockchain_backup_prefix, blockchain_backup_suffix;
+
    string blockchain_backup_identity_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
 
-   string::size_type pos = blockchain_backup_identity_name.rfind( c_identity_suffix );
+   identity_variable_name_prefix_and_suffix(
+    blockchain_backup_identity_name, blockchain_backup_prefix, blockchain_backup_suffix );
 
-   if( ( pos == 0 ) || ( pos == string::npos ) )
-      throw runtime_error( "unexpected '" + blockchain_backup_identity_name + "' does not contain suffix '" + string( c_identity_suffix ) + "'" );
-
-   string blockchain_backup_prefix( blockchain_backup_identity_name.substr( 0, pos ) );
-   string blockchain_backup_suffix( blockchain_backup_identity_name.substr( pos - 1 ) );
+   string blockchain_peer_hub_prefix, blockchain_peer_hub_suffix;
 
    string blockchain_peer_hub_identity_name( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) );
 
-   pos = blockchain_peer_hub_identity_name.rfind( c_identity_suffix );
-
-   if( ( pos == 0 ) || ( pos == string::npos ) )
-      throw runtime_error( "unexpected '" + blockchain_peer_hub_identity_name + "' does not contain suffix '" + string( c_identity_suffix ) + "'" );
-
-   string blockchain_peer_hub_prefix( blockchain_peer_hub_identity_name.substr( 0, pos ) );
-   string blockchain_peer_hub_suffix( blockchain_peer_hub_identity_name.substr( pos - 1 ) );
+   identity_variable_name_prefix_and_suffix(
+    blockchain_peer_hub_identity_name, blockchain_peer_hub_prefix, blockchain_peer_hub_suffix );
 
    for( size_t i = 0; i < peerchains.size( ); i++ )
    {
