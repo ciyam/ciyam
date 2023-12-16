@@ -5552,39 +5552,51 @@ void peer_session::on_start( )
          if( !any_session_has_blockchain( hub_identity )
           && set_system_variable( hub_identity, c_true_value, string( "" ) ) )
          {
-            string host_and_port( ip_addr );
+            bool dummy_is_listener = false;
 
-            string::size_type pos = ip_addr.find( ':' );
+            // NOTE: Read the "peerchain info" in order to determine which port
+            // should be used to initiate a connection (the "dummy_is_listener"
+            // is required to read host information).
+            string peer_info( get_peerchain_info( identity, &dummy_is_listener ) );
 
-            if( pos == string::npos )
-               host_and_port += ':';
-            else
-               host_and_port += '-';
+            string::size_type pos = peer_info.rfind( ':' );
 
-            host_and_port += port;
-
-            string hub_blockchain( c_bc_prefix + hub_identity );
-            string hub_zenith_tag( hub_blockchain + c_zenith_suffix );
-
-            if( has_tag( hub_zenith_tag ) )
+            if( pos != string::npos )
             {
-               string hub_zenith_hash( tag_file_hash( hub_zenith_tag ) );
+               peer_info.erase( pos );
 
-               size_t hub_height = 0;
+               pos = peer_info.rfind( '-' );
 
-               if( get_block_height_from_tags( hub_blockchain, hub_zenith_hash, hub_height ) )
+               if( pos != string::npos )
                {
-                  // FUTURE: This message should be handled as a server string message.
-                  string progress_message( "Currently at height " );
+                  string host_and_port( ip_addr );
 
-                  progress_message += to_string( hub_height );
+                  host_and_port += peer_info.substr( pos );
 
-                  set_system_variable( c_progress_output_prefix + hub_identity, progress_message );
+                  string hub_blockchain( c_bc_prefix + hub_identity );
+                  string hub_zenith_tag( hub_blockchain + c_zenith_suffix );
+
+                  if( has_tag( hub_zenith_tag ) )
+                  {
+                     string hub_zenith_hash( tag_file_hash( hub_zenith_tag ) );
+
+                     size_t hub_height = 0;
+
+                     if( get_block_height_from_tags( hub_blockchain, hub_zenith_hash, hub_height ) )
+                     {
+                        // FUTURE: This message should be handled as a server string message.
+                        string progress_message( "Currently at height " );
+
+                        progress_message += to_string( hub_height );
+
+                        set_system_variable( c_progress_output_prefix + hub_identity, progress_message );
+                     }
+                  }
+
+                  create_peer_initiator( ( c_bc_prefix + hub_identity ),
+                   host_and_port, false, 0, false, false, 0, e_peerchain_type_hub, true );
                }
             }
-
-            create_peer_initiator( ( c_bc_prefix + hub_identity ),
-             host_and_port, false, 0, false, false, 0, e_peerchain_type_hub, true );
          }
       }
 
@@ -5831,19 +5843,8 @@ void peer_listener::on_start( )
                   // determine if it actually is or not).
                   try
                   {
-                     string host_and_port( address.get_addr_string( ) );
-
-                     string::size_type pos = host_and_port.find( ':' );
-
-                     if( pos == string::npos )
-                        host_and_port += ':';
-                     else
-                        host_and_port += '-';
-
-                     host_and_port += to_string( port );
-
                      p_session = construct_session( dtm,
-                      true, ap_socket, host_and_port + '=' + blockchains, true );
+                      true, ap_socket, address.get_addr_string( ) + '=' + blockchains, true );
                   }
                   catch( exception& x )
                   {
@@ -6282,7 +6283,7 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 {
    string info( peer_info );
 
-   string::size_type pos = info.find( ':' );
+   string::size_type pos = info.rfind( ':' );
    if( pos == string::npos )
       throw runtime_error( "unexpected peer_info '" + peer_info + "'" );
 
