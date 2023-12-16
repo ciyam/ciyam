@@ -5831,8 +5831,19 @@ void peer_listener::on_start( )
                   // determine if it actually is or not).
                   try
                   {
+                     string host_and_port( address.get_addr_string( ) );
+
+                     string::size_type pos = host_and_port.find( ':' );
+
+                     if( pos == string::npos )
+                        host_and_port += ':';
+                     else
+                        host_and_port += '-';
+
+                     host_and_port += to_string( port );
+
                      p_session = construct_session( dtm,
-                      true, ap_socket, address.get_addr_string( ) + '=' + blockchains, true );
+                      true, ap_socket, host_and_port + '=' + blockchains, true );
                   }
                   catch( exception& x )
                   {
