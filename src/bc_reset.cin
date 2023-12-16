@@ -53,6 +53,22 @@ PUB2499_HASH=$OUTPUT
 ;
 .system_variable "#$IDENTITY" ""
 .system_variable "%%$IDENTITY" "Currently at height 0"
+;
+.system_variable @blockchain_backup_identity
+@ifeq "$OUTPUT" "$IDENTITY"
+.system_variable >@blockchain_backup_height 0
+@endif
+;
+.system_variable @blockchain_shared_identity
+@ifeq "$OUTPUT" "$IDENTITY"
+.system_variable >@blockchain_shared_height 0
+@endif
+;
+.system_variable @blockchain_peer_hub_identity
+@ifeq "$OUTPUT" "$IDENTITY"
+.system_variable >@blockchain_peer_hub_height 0
+@endif
+;
 @endif
 @endif
 @endif
