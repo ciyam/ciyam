@@ -20,14 +20,16 @@ OTHER=$2
 ;
 <channel_identity.cin $IDENT $OTHER
 ;
+CHANNEL_SIZE=100MB
+;
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
 ~mkdir $FILES_AREA_DIR/$COMBINED
 ~mkdir $FILES_AREA_DIR/$REVERSED
 ;
-.file_archive -add $FILES_AREA_DIR/$COMBINED 100MB $COMBINED
-.file_archive -add $FILES_AREA_DIR/$REVERSED 100MB $REVERSED
+.file_archive -add $FILES_AREA_DIR/$COMBINED $CHANNEL_SIZE $COMBINED
+.file_archive -add $FILES_AREA_DIR/$REVERSED $CHANNEL_SIZE $REVERSED
 ;
 #Created file archives for channel identities '$COMBINED' and '$REVERSED'.
 ;

@@ -32,6 +32,14 @@ PEER_HUB=1
 PEER_TYPE=-2
 @endif
 ;
+DEMO=
+@ifeq "$IDENTITY" "735d12ca9"
+DEMO=1
+@endif
+@ifeq "$IDENTITY" "27a7bd560"
+DEMO=1
+@endif
+;
 .system_variable @peer_port
 PEER_PORT=$OUTPUT
 @ifeq "$PEER_PORT" ""
@@ -47,9 +55,28 @@ PEER_PORT=$OUTPUT
 .pc sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=1,Description=$DESCRIPTION,Peer_Type=$PEER_TYPE,Local_Port=$PEER_PORT"
 ;
 @ifndef $ERROR
+;
 @ifdef $PEER_HUB
 #Created listener and global peerchain entry for identity '$IDENTITY'.
 @else
+;
+@ifdef $DEMO
+BACKUP_SIZE=10GB
+SHARED_SIZE=1GB
+@else
+BACKUP_SIZE=100GB
+SHARED_SIZE=10GB
+@endif
+;
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+;
+~mkdir $FILES_AREA_DIR/$IDENTITY
+~mkdir $FILES_AREA_DIR/$REVERSED
+;
+.file_archive -add $FILES_AREA_DIR/$IDENTITY $BACKUP_SIZE $IDENTITY
+.file_archive -add $FILES_AREA_DIR/$REVERSED $SHARED_SIZE $REVERSED
+;
 #Created listeners and global peerchain entry for identity '$IDENTITY' (and '$REVERSED').
 @endif
 @endif
