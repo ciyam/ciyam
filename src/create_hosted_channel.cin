@@ -20,7 +20,19 @@ OTHER=$2
 ;
 <channel_identity.cin $IDENT $OTHER
 ;
+DEMO=
+@ifeq "$IDENT" "7eaff0316"
+DEMO=1
+@endif
+@ifeq "$IDENT" "cce8dd5bd"
+DEMO=1
+@endif
+;
+@ifdef $DEMO
 CHANNEL_SIZE=100MB
+@else
+CHANNEL_SIZE=1GB
+@endif
 ;
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
