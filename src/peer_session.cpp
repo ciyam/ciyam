@@ -5384,15 +5384,17 @@ void peer_session::on_start( )
           get_special_var_name( e_special_var_pubkeyx ), pubkeyx );
       }
 
-      string archive_path;
-
-      if( has_file_archive( unprefixed_blockchain, &archive_path ) )
+      if( !is_hub )
       {
-         set_session_variable( get_special_var_name(
-          e_special_var_blockchain_archive_path ), archive_path );
-      }
+         string archive_path, non_extra_identity( get_non_extra_identity( unprefixed_blockchain ) );
 
-      if( is_hub )
+         if( !non_extra_identity.empty( ) && has_file_archive( non_extra_identity, &archive_path ) )
+         {
+            set_session_variable( get_special_var_name(
+             e_special_var_blockchain_archive_path ), archive_path );
+         }
+      }
+      else
       {
          set_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ), c_true_value );
 

@@ -5532,6 +5532,40 @@ string list_peer_ip_addrs_for_rejection( )
    return retval;
 }
 
+string get_non_extra_identity( const string& extra_identity )
+{
+   string extra, retval( extra_identity );
+
+   string blockchain_backup_prefix, blockchain_backup_suffix;
+   string blockchain_shared_prefix, blockchain_shared_suffix;
+
+   string blockchain_backup_identity_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
+   string blockchain_shared_identity_name( get_special_var_name( e_special_var_blockchain_shared_identity ) );
+
+   string backup_identity( get_system_variable( blockchain_backup_identity_name ) );
+   string shared_identity( get_system_variable( blockchain_shared_identity_name ) );
+
+   identity_variable_name_prefix_and_suffix(
+    blockchain_backup_identity_name, blockchain_backup_prefix, blockchain_backup_suffix );
+
+   identity_variable_name_prefix_and_suffix(
+    blockchain_shared_identity_name, blockchain_shared_prefix, blockchain_shared_suffix );
+
+   extra = get_identity_variable_extra( blockchain_backup_identity_name, extra_identity );
+
+   if( !extra.empty( ) )
+      retval = backup_identity;
+   else
+   {
+      extra = get_identity_variable_extra( blockchain_shared_identity_name, extra_identity );
+
+      if( !extra.empty( ) )
+         retval = shared_identity;
+   }
+
+   return retval;
+}
+
 string get_extra_identity_variable( const string& identity_variable_name, const string& extra )
 {
    string variable_name_prefix, variable_name_suffix;

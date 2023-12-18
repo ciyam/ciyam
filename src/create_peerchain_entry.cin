@@ -105,6 +105,28 @@ FILES_AREA_DIR=$OUTPUT
 ;
 <bc_next_extra.cin
 ;
+DEMO=
+@ifeq "$IDENTITY" "735d12ca9"
+DEMO=1
+@endif
+@ifeq "$IDENTITY" "9ac21d537"
+DEMO=1
+@endif
+@ifeq "$IDENTITY" "27a7bd560"
+DEMO=1
+@endif
+@ifeq "$IDENTITY" "065db7a72"
+DEMO=1
+@endif
+;
+@ifdef $DEMO
+BACKUP_SIZE=10GB
+SHARED_SIZE=1GB
+@else
+BACKUP_SIZE=100GB
+SHARED_SIZE=10GB
+@endif
+;
 ~mkdir $FILES_AREA_DIR/$IDENTITY
 @ifdef $SHARED_ONLY
 .file_archive -add $FILES_AREA_DIR/$IDENTITY 10GB $IDENTITY

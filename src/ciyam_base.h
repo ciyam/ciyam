@@ -193,6 +193,8 @@ void CIYAM_BASE_DECL_SPEC remove_peer_ip_addr_from_rejection( const std::string&
 
 std::string CIYAM_BASE_DECL_SPEC list_peer_ip_addrs_for_rejection( );
 
+std::string CIYAM_BASE_DECL_SPEC get_non_extra_identity( const std::string& extra_identity );
+
 std::string CIYAM_BASE_DECL_SPEC get_extra_identity_variable(
  const std::string& identity_variable_name, const std::string& extra );
 
