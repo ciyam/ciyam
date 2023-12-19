@@ -392,7 +392,7 @@ CHANNEL_SIZE=1GB
 ;
 @ifndef $ERROR
 @ifdef $HUB
-@ifdef $EXTRA
+@ifndef $EXTRA
 #Created keys and genesis block for hub identity '$IDENT'.
 @else
 #Created keys and genesis block for extra (hub) identity '$IDENT'.
