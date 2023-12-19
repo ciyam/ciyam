@@ -748,6 +748,12 @@ void process_repository_file( const string& blockchain,
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
+   string non_extra_identity( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
+
+   if( !non_extra_identity.empty( ) )
+      identity = non_extra_identity;
+
    bool is_blockchain_owner = !get_session_variable(
     get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
 
@@ -1134,6 +1140,12 @@ void process_put_file( const string& blockchain,
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
+   string non_extra_identity( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
+
+   if( !non_extra_identity.empty( ) )
+      identity = non_extra_identity;
+
    size_t num_skipped = 0;
 
    deque< string > repo_files_to_get;
@@ -1365,6 +1377,12 @@ bool has_all_list_items( const string& blockchain,
       throw runtime_error( "unexpected list_items.size( ) != secondary_values.size( )" );
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
+
+   string non_extra_identity( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
+
+   if( !non_extra_identity.empty( ) )
+      identity = non_extra_identity;
 
    bool has_archive = false;
 
@@ -2340,6 +2358,12 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
+   string non_extra_identity( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
+
+   if( non_extra_identity.empty( ) )
+      non_extra_identity = identity;
+
    string hub_identity( get_session_variable(
     get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
 
@@ -2516,7 +2540,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                else
                {
                   if( !last_data_tree_is_identical( blockchain, height - 1 ) )
-                     process_list_items( identity,
+                     process_list_items( non_extra_identity,
                       tree_root_hash, true, p_num_items_found, &list_items_to_ignore, &dtm, p_progress );
                }
             }
@@ -2594,7 +2618,13 @@ class socket_command_handler : public command_handler
             set_blockchain_tree_item( blockchain, 0 );
 
          identity = replaced( blockchain, c_bc_prefix, "" );
-         has_identity_archive = has_file_archive( identity );
+
+         archive_identity = get_session_variable( get_special_var_name( e_special_var_blockchain_non_extra_identity ) );
+
+         if( archive_identity.empty( ) )
+            archive_identity = identity;
+
+         has_identity_archive = has_file_archive( archive_identity );
       }
 
       last_issued_was_put = !is_responder;
@@ -2677,6 +2707,7 @@ class socket_command_handler : public command_handler
 
    const string& get_identity( ) const { return identity; }
    const string& get_blockchain( ) const { return blockchain; }
+   const string& get_archive_identity( ) const { return archive_identity; }
 
    size_t get_blockchain_height( ) const { return blockchain_height; }
    size_t get_blockchain_height_other( ) const { return blockchain_height_other; }
@@ -2776,6 +2807,8 @@ class socket_command_handler : public command_handler
 
    string identity;
    string blockchain;
+
+   string archive_identity;
 
    size_t blockchain_height;
    size_t blockchain_height_other;
@@ -2903,7 +2936,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
          {
             guard g( g_mutex, "get_file" );
 
-            create_raw_file_in_archive( identity, hash, raw_file_data );
+            create_raw_file_in_archive( archive_identity, hash, raw_file_data );
          }
       }
    }
@@ -3534,7 +3567,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             if( !has_archive )
                create_raw_file( file_data );
             else
-               create_raw_file_in_archive( identity, "", file_data );
+               create_raw_file_in_archive( archive_identity, "", file_data );
 
             if( !target_hashes.empty( ) )
                add_to_num_puts_value( target_hashes.size( ) );
@@ -3625,7 +3658,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                {
                   string file_data_hash( sha256( file_data ).get_digest_as_string( ) );
 
-                  string peer_mapped_hash( get_peer_mapped_hash_info( identity, next_hash ) );
+                  string peer_mapped_hash( get_peer_mapped_hash_info( archive_identity, next_hash ) );
 
                   if( peer_mapped_hash.empty( ) )
                      throw runtime_error( "unexpected unmapped file hash '" + next_hash + "'" );
@@ -3633,7 +3666,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      throw runtime_error( "found invalid encrypted file content for hash '" + next_hash + "'" );
 
                   if( has_archive )
-                     create_raw_file_in_archive( identity, next_hash, file_data );
+                     create_raw_file_in_archive( archive_identity, next_hash, file_data );
                   else
                      create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
                }
@@ -3954,6 +3987,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    string identity( socket_handler.get_identity( ) );
    string blockchain( socket_handler.get_blockchain( ) );
+   string archive_identity( socket_handler.get_archive_identity( ) );
 
    size_t blockchain_height = socket_handler.get_blockchain_height( );
    size_t blockchain_height_other = socket_handler.get_blockchain_height_other( );
@@ -4424,7 +4458,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                if( !has_archive )
                   create_raw_file( file_data );
                else
-                  create_raw_file_in_archive( identity, "", file_data );
+                  create_raw_file_in_archive( archive_identity, "", file_data );
 
                set_session_variable( queue_puts_name, hash );
             }
@@ -5390,8 +5424,10 @@ void peer_session::on_start( )
 
          if( !non_extra_identity.empty( ) && has_file_archive( non_extra_identity, &archive_path ) )
          {
-            set_session_variable( get_special_var_name(
-             e_special_var_blockchain_archive_path ), archive_path );
+            set_session_variable( get_special_var_name( e_special_var_blockchain_archive_path ), archive_path );
+
+            if( non_extra_identity != unprefixed_blockchain )
+               set_session_variable( get_special_var_name( e_special_var_blockchain_non_extra_identity ), non_extra_identity );
          }
       }
       else

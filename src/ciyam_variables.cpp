@@ -235,6 +235,7 @@ const char* const c_special_variable_totals_exclude_hidden_blobs = "@totals_excl
 const char* const c_special_variable_blockchain_height_processing = "@blockchain_height_processing";
 const char* const c_special_variable_blockchain_peer_hub_identity = "@blockchain_peer_hub_identity";
 const char* const c_special_variable_blockchain_targeted_identity = "@blockchain_targeted_identity";
+const char* const c_special_variable_blockchain_non_extra_identity = "@blockchain_non_extra_identity";
 const char* const c_special_variable_blockchain_peer_has_supporters = "@blockchain_peer_has_supporters";
 const char* const c_special_variable_blockchain_primary_pubkey_hash = "@blockchain_primary_pubkey_hash";
 const char* const c_special_variable_blockchain_signature_file_hash = "@blockchain_signature_file_hash";
@@ -1024,6 +1025,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_targeted_identity:
       s = string( c_special_variable_blockchain_targeted_identity );
+      break;
+
+      case e_special_var_blockchain_non_extra_identity:
+      s = string( c_special_variable_blockchain_non_extra_identity );
       break;
 
       case e_special_var_blockchain_peer_has_supporters:

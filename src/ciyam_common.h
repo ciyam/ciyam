@@ -249,6 +249,7 @@ enum special_var
    e_special_var_blockchain_height_processing,
    e_special_var_blockchain_peer_hub_identity,
    e_special_var_blockchain_targeted_identity,
+   e_special_var_blockchain_non_extra_identity,
    e_special_var_blockchain_peer_has_supporters,
    e_special_var_blockchain_primary_pubkey_hash,
    e_special_var_blockchain_signature_file_hash,
