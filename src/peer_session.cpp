@@ -1606,7 +1606,7 @@ bool last_data_tree_is_identical( const string& blockchain,
    return retval;
 }
 
-void process_list_items( const string& identity,
+void process_list_items( const string& blockchain,
  const string& hash, bool recurse, size_t* p_num_items_found = 0,
  set< string >* p_list_items_to_ignore = 0, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
@@ -1614,7 +1614,13 @@ void process_list_items( const string& identity,
 
    string all_list_items( extract_file( hash, "" ) );
 
-   string blockchain( c_bc_prefix + identity );
+   string identity( replaced( blockchain, c_bc_prefix, "" ) );
+
+   string non_extra_identity( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
+
+   if( !non_extra_identity.empty( ) )
+      identity = non_extra_identity;
 
    vector< string > list_items;
    vector< string > secondary_values;
@@ -1918,7 +1924,7 @@ void process_list_items( const string& identity,
             if( is_fetching )
                add_to_blockchain_tree_item( blockchain, 1, upper_limit );
 
-            process_list_items( identity, next_hash, recurse,
+            process_list_items( blockchain, next_hash, recurse,
              p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress );
 
             // NOTE: Recursive processing may have already located this.
@@ -1942,7 +1948,7 @@ void process_list_items( const string& identity,
             if( !is_list_file( next_hash ) )
                touch_file( next_hash, identity, false );
             else
-               process_list_items( identity, next_hash, false,
+               process_list_items( blockchain, next_hash, false,
                 p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress );
          }
       }
@@ -2540,7 +2546,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                else
                {
                   if( !last_data_tree_is_identical( blockchain, height - 1 ) )
-                     process_list_items( non_extra_identity,
+                     process_list_items( blockchain,
                       tree_root_hash, true, p_num_items_found, &list_items_to_ignore, &dtm, p_progress );
                }
             }
@@ -2957,7 +2963,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
 
       size_t num_items_found = get_blockchain_tree_item( blockchain );
 
-      process_list_items( identity, hash, false, &num_items_found, &list_items_to_ignore, &dtm, this );
+      process_list_items( blockchain, hash, false, &num_items_found, &list_items_to_ignore, &dtm, this );
    }
 
    increment_peer_files_downloaded( num_bytes );
