@@ -2624,13 +2624,6 @@ class socket_command_handler : public command_handler
             set_blockchain_tree_item( blockchain, 0 );
 
          identity = replaced( blockchain, c_bc_prefix, "" );
-
-         archive_identity = get_session_variable( get_special_var_name( e_special_var_blockchain_non_extra_identity ) );
-
-         if( archive_identity.empty( ) )
-            archive_identity = identity;
-
-         has_identity_archive = has_file_archive( archive_identity );
       }
 
       last_issued_was_put = !is_responder;
@@ -2662,6 +2655,13 @@ class socket_command_handler : public command_handler
 #else
    tcp_socket& get_socket( ) { return socket; }
 #endif
+
+   void init_for_archive( const string& new_archive_identity )
+   {
+      archive_identity = new_archive_identity;
+
+      has_identity_archive = has_file_archive( archive_identity );
+   }
 
    bool get_is_time_for_check( )
    {
@@ -5430,6 +5430,8 @@ void peer_session::on_start( )
 
          if( !non_extra_identity.empty( ) && has_file_archive( non_extra_identity, &archive_path ) )
          {
+            cmd_handler.init_for_archive( non_extra_identity );
+
             set_session_variable( get_special_var_name( e_special_var_blockchain_archive_path ), archive_path );
 
             if( non_extra_identity != unprefixed_blockchain )
