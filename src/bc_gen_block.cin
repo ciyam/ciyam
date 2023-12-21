@@ -37,18 +37,15 @@ TEST_CHAIN=1
 @endif
 ;
 SHARED=
-.system_variable @blockchain_shared_identity
+<bc_checked_identity.cin -shared $IDENT
 @ifdef $OUTPUT
-@ifeq "$IDENT" "$OUTPUT"
 SHARED=1
-@endif
 @endif
 ;
 PEER_HUB=
 OPL_FILE_HASH_ENC=
-.system_variable @blockchain_peer_hub_identity
+<bc_checked_identity.cin -hub $IDENT
 @ifdef $OUTPUT
-@ifeq "$IDENT" "$OUTPUT"
 PEER_HUB=1
 .file_hash bc.$IDENT.$HEIGHT.opl
 @ifdef $ERROR
@@ -57,7 +54,6 @@ PEER_HUB=1
 @skip
 .encode $OUTPUT
 OPL_FILE_HASH_ENC=$OUTPUT
-@endif
 @endif
 ;
 CHANNEL=
@@ -70,7 +66,8 @@ ERROR=No backup blockchain identity was found.
 @label END
 @endif
 @skip
-@ifneq "$IDENT" "$OUTPUT"
+<bc_checked_identity.cin -backup $IDENT
+@ifndef "$OUTPUT"
 CHANNEL=1
 @endif
 @endif

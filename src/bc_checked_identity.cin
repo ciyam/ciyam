@@ -1,0 +1,87 @@
+; Copyright (c) 2021-2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+ERROR=
+@ifeq "$1" ""
+ERROR=1
+@endif
+@ifeq "$2" ""
+ERROR=1
+@endif
+;
+OKAY=
+TYPE=
+;
+OUTPUT=
+;
+@ifeq "$1" "-hub"
+OKAY=1
+TYPE=peer_hub
+@endif
+@ifeq "$1" "-backup"
+OKAY=1
+TYPE=backup
+@endif
+@ifeq "$1" "-shared"
+OKAY=1
+TYPE=shared
+@endif
+;
+@ifndef $OKAY
+ERROR=1
+@endif
+;
+@ifdef $ERROR
+#NOTE: This script requires "-hub", "-backup" or "-shared" and an identity.
+@else
+;
+IDENT=$2
+;
+OKAY=
+NEXT_IDENT=
+;
+.system_variable @blockchain_%TYPE%_identity
+NEXT_IDENT=$OUTPUT
+;
+.session_variable @deque
+DEQUE=$OUTPUT
+.session_variable @deque ""
+;
+.system_variable @blockchain_%TYPE%_?_identity
+@ifdef $OUTPUT
+.session_variable @deque "~$OUTPUT"
+@endif
+;
+@:LOOP
+;
+@ifeq "$IDENT" "$NEXT_IDENT"
+OKAY=1
+@endif
+;
+@label NEXT
+.session_variable @deque front
+@ifdef $OUTPUT
+LINES=@repstr: /\n:$OUTPUT
+NEXT_IDENT=%LINES:2%
+@else
+@label END_LOOP
+@endif
+@skip
+;
+@:NEXT
+.session_variable @deque pop_front
+!!@:LOOP
+;
+@:END_LOOP
+;
+.session_variable @deque "~$DEQUE"
+;
+@ifndef $OKAY
+OUTPUT=
+@else
+OUTPUT=$IDENT
+@endif
+;
+@endif
