@@ -2513,22 +2513,28 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
       if( !is_executing_commands )
          ++line_number;
 
-      if( !str.empty( ) && str[ 0 ] == c_prompted_input_prefix )
+      if( !is_skipping_to_label
+       && dummy_conditions.empty( )
+       && ( conditions.empty( ) || conditions.back( ) ) )
       {
-         string msg( c_default_value_prompt );
+         if( !str.empty( ) && str[ 0 ] == c_prompted_input_prefix )
+         {
+            string msg( c_default_value_prompt );
 
-         if( str.length( ) > 1 )
-            msg = str.substr( 1 );
+            if( str.length( ) > 1 )
+               msg = str.substr( 1 );
 
-         if( !is_choice_input( msg ) )
-            str = msg + get_line( msg.c_str( ), false );
-         else
-            str = get_input_from_choices( msg );
+            if( !is_choice_input( msg ) )
+               str = msg + get_line( msg.c_str( ), false );
+            else
+               str = get_input_from_choices( msg );
+         }
       }
 
       string str_for_history( str );
 
       string error_context;
+
       if( !script_file.empty( ) )
          error_context = " processing script '" + script_file + "' at line #" + to_string( line_number );
 

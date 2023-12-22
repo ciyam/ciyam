@@ -1,0 +1,113 @@
+; Copyright (c) 2023 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+ERROR=
+@ifeq "$1" ""
+ERROR=1
+@endif
+@ifeq "$2" ""
+ERROR=1
+@endif
+;
+OKAY=
+TYPE=
+;
+@ifeq "$1" "-hub"
+OKAY=1
+TYPE=peer_hub
+@endif
+@ifeq "$1" "-backup"
+OKAY=1
+TYPE=backup
+@endif
+@ifeq "$1" "-shared"
+OKAY=1
+TYPE=shared
+@endif
+;
+@ifndef $OKAY
+ERROR=1
+@endif
+;
+@ifdef $ERROR
+#NOTE: This script requires "-hub", "-backup" or "-shared" and an identity.
+@else
+;
+IDENTITY=$2
+;
+<bc_checked_identity.cin $1 $IDENTITY
+;
+@ifndef $OUTPUT
+ERROR=Identity '$IDENTITY' is not a '$TYPE' identity.
+#Error: $ERROR
+@else
+;
+.file_core -header bc.$IDENTITY.zenith h
+@ifndef $ERROR
+ZENITH_HEIGHT=$OUTPUT
+;
+@ifneq "$ZENITH_HEIGHT" "0"
+;
+.system_variable @blockchain_%TYPE%_identity
+NEXT_IDENTITY=$OUTPUT
+;
+.session_variable @deque ""
+.system_variable @blockchain_%TYPE%_?_identity
+.session_variable @deque "~$OUTPUT"
+;
+@:OUTER
+;
+@ifneq "$IDENTITY" "$NEXT_IDENTITY"
+.file_core -header bc.$NEXT_IDENTITY.zenith h
+@ifndef $ERROR
+OTHER_HEIGHT=$OUTPUT
+;
+@:INNER
+;
+@label NEXT_INNER
+IS_LT=@$OTHER_HEIGHT<$ZENITH_HEIGHT
+@ifeq "$IS_LT" "0"
+@label END_INNER
+@endif
+@ifdef $ERROR
+@label END_INNER
+@endif
+@skip
+;
+@:NEXT_INNER
+OTHER_HEIGHT=@$OTHER_HEIGHT+1
+.session_variable @deque
+OTHER_DEQUE=$OUTPUT
+<generate_next_block.cin $NEXT_IDENTITY @sid !bc.$IDENTITY.$OTHER_HEIGHT.blk
+.session_variable @deque "~$OTHER_DEQUE"
+;
+!!@:INNER
+@:END_INNER
+;
+@endif
+@endif
+;
+@label NEXT_OUTER
+.session_variable @deque
+@ifndef $OUTPUT
+@label END_OUTER
+@endif
+@skip
+;
+@:NEXT_OUTER
+NEXT_LINES=@repstr: /\n:$OUTPUT
+NEXT_IDENTITY=%NEXT_LINES:2%
+.session_variable @deque pop_front
+!!@:OUTER
+;
+@:END_OUTER
+;
+@endif
+;
+@endif
+;
+@endif
+;
+@endif
