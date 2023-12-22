@@ -58,16 +58,14 @@ PEER_HUB=1
 @endif
 @endif
 ;
+UTIME=@unix:
+;
 @:LOOP
 ;
 @ifneq "$IDENT" ""
-.file_info -content bc.$IDENT.zenith
+.file_core -header bc.$IDENT.zenith h
 @ifndef $ERROR
-BLK_HDR=%OUTPUT:2%
-BLK_INFO=@repstr:,i=$IDENT/:$BLK_HDR
-INFO_LINES=@repstr:,/\n:$BLK_INFO
-HEIGHT_INFO=%INFO_LINES:1%
-BLK_HEIGHT=@repstr:blk\:h=/:$HEIGHT_INFO
+BLK_HEIGHT=$OUTPUT
 NEW_HEIGHT=@$BLK_HEIGHT+1
 ;
 @ifdef $PEER_HUB

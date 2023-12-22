@@ -18,19 +18,17 @@ IDENT=$1
 HEIGHT=$2
 SEED=$3
 ;
+@ifndef $CONT
 #NOTE: This script does not take secondary (or tertiary) public keys into account
 #(which could cause blockchain operations to later fail when they are not found).
 ##
 &Continue anyway? [CONT:yes=1!Yes|no=!No] (choose one)
+@endif
 @ifdef $CONT
 ;
-.file_info -content bc.$IDENT.zenith
+.file_core -header bc.$IDENT.zenith h
 @ifndef $ERROR
-BLK_HDR=%OUTPUT:2%
-BLK_INFO=@repstr:,i=$IDENT/:$BLK_HDR
-INFO_LINES=@repstr:,/\n:$BLK_INFO
-HEIGHT_INFO=%INFO_LINES:1%
-BLK_HEIGHT=@repstr:blk\:h=/:$HEIGHT_INFO
+BLK_HEIGHT=$OUTPUT
 ;
 .file_info -content bc.$IDENT.$HEIGHT.blk
 @ifndef $ERROR

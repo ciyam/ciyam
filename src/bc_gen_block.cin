@@ -42,6 +42,8 @@ SHARED=
 SHARED=1
 @endif
 ;
+@label NEXT
+;
 PEER_HUB=
 OPL_FILE_HASH_ENC=
 <bc_checked_identity.cin -hub $IDENT
@@ -49,13 +51,15 @@ OPL_FILE_HASH_ENC=
 PEER_HUB=1
 .file_hash bc.$IDENT.$HEIGHT.opl
 @ifdef $ERROR
-@label END
-@endif
-@skip
+@label END_OUTER
+@else
 .encode $OUTPUT
 OPL_FILE_HASH_ENC=$OUTPUT
 @endif
+@endif
+@skip
 ;
+@:NEXT
 CHANNEL=
 @ifndef $SHARED
 @ifndef $PEER_HUB
@@ -63,21 +67,25 @@ CHANNEL=
 @ifndef $OUTPUT
 ERROR=No backup blockchain identity was found.
 #Error: $ERROR
-@label END
-@endif
-@skip
+@label END_OUTER
+@else
 <bc_checked_identity.cin -backup $IDENT
 @ifndef "$OUTPUT"
 CHANNEL=1
 @endif
 @endif
 @endif
+@endif
+@skip
 ;
+@:NEXT
 .session_variable @blockchain_identity $IDENT
 ;
 @ifndef $TEST_CHAIN
 MULTIPLE=50
+@ifndef $UTIME
 UTIME=@unix:
+@endif
 @else
 HRS_01=3600
 HRS_24=@$HRS_01*24
@@ -100,10 +108,11 @@ UUID=$OUTPUT
 GENESIS_TAG=bc.$IDENT.0.blk
 .file_hash $GENESIS_TAG
 @ifdef $ERROR
-@label END
+@label END_INNER
 @endif
 @skip
 ;
+@:NEXT
 GENESIS_HASH=$OUTPUT
 ;
 @ifdef $DEMO
@@ -127,10 +136,11 @@ LAST_BLOCK_HEIGHT=$LAST
 ;
 .file_hash bc.$IDENT.$LAST_BLOCK_HEIGHT.blk
 @ifdef $ERROR
-@label END
+@label END_INNER
 @endif
 @skip
 ;
+@:NEXT
 LAST_BLOCK_HASH=$OUTPUT
 .encode $LAST_BLOCK_HASH
 LAST_BLOCK_HASH_ENC=$OUTPUT
@@ -141,32 +151,37 @@ MODULUS=@$HEIGHT#$MULTIPLE
 LAST_BLOCK_HEIGHT=@$HEIGHT-$MULTIPLE
 .file_hash bc.$IDENT.$LAST_BLOCK_HEIGHT.blk
 @ifdef $ERROR
-@label END
-@endif
-@skip
+@label END_INNER
+@else
 .encode $OUTPUT
 LAST_BLOCK_HASH_ENC=$LAST_BLOCK_HASH_ENC,$OUTPUT
 @endif
+@endif
+@skip
 ;
+@:NEXT
 MODULUS=@$HEIGHT#$SQUARED
 ;
 @ifeq "$MODULUS" "0"
 LAST_BLOCK_HEIGHT=@$HEIGHT-$SQUARED
 .file_hash bc.$IDENT.$LAST_BLOCK_HEIGHT.blk
 @ifdef $ERROR
-@label END
-@endif
-@skip
+@label END_INNER
+@else
 .encode $OUTPUT
 LAST_BLOCK_HASH_ENC=$LAST_BLOCK_HASH_ENC,$OUTPUT
 @endif
-;
-.file_hash bc.$IDENT.$HEIGHT.pub
-@ifdef $ERROR
-@label END
 @endif
 @skip
 ;
+@:NEXT
+.file_hash bc.$IDENT.$HEIGHT.pub
+@ifdef $ERROR
+@label END_INNER
+@endif
+@skip
+;
+@:NEXT
 .encode $OUTPUT
 PUB_KEY_HASH_ENC=$OUTPUT
 ;
@@ -177,13 +192,15 @@ NEXT_HEIGHT=@$HEIGHT+$MULTIPLE
 NEXT_HEIGHT=@$NEXT_HEIGHT-1
 .file_hash bc.$IDENT.$NEXT_HEIGHT.pub
 @ifdef $ERROR
-@label END
-@endif
-@skip
+@label END_INNER
+@else
 .encode $OUTPUT
 PUB_KEY_HASH_ENC=$PUB_KEY_HASH_ENC,$OUTPUT
 @endif
+@endif
+@skip
 ;
+@:NEXT
 MODULUS=@$HEIGHT#$SQUARED
 ;
 @ifeq "$MODULUS" "0"
@@ -191,24 +208,33 @@ NEXT_HEIGHT=@$HEIGHT+$SQUARED
 NEXT_HEIGHT=@$NEXT_HEIGHT-1
 .file_hash bc.$IDENT.$NEXT_HEIGHT.pub
 @ifdef $ERROR
-@label END
-@endif
-@skip
+@label END_INNER
+@else
 .encode $OUTPUT
 PUB_KEY_HASH_ENC=$PUB_KEY_HASH_ENC,$OUTPUT
 @endif
-;
-.file_hash bc.$IDENT.$LAST.key
-@ifdef $ERROR
-@label END
 @endif
 @skip
 ;
+@:NEXT
+.file_hash bc.$IDENT.$LAST.key
+@ifdef $ERROR
+@label END_INNER
+@endif
+@skip
+;
+@:NEXT
 .crypto_hash @sid -s=$IDENT.$HEIGHT
 .crypto_chain 1440 -b64 -hind $OUTPUT
 HIND_HASH_ENC=$OUTPUT
 ;
 .file_crypt -decrypt -cipher=cc bc.$IDENT.$LAST.key @sid
+@ifdef $ERROR
+@label END_INNER
+@endif
+@skip
+;
+@:NEXT
 .file_get bc.$IDENT.$LAST.key $UUID.key
 .file_crypt -encrypt -cipher=cc bc.$IDENT.$LAST.key @sid
 ;
@@ -233,12 +259,54 @@ u:$UTIME bc.$IDENT.$HEIGHT.blk
 ;
 @else
 ;
+FIRST=@substr:0,1:$TREE
+;
+HAS_SOURCE=
+@ifeq "$FIRST" "!"
+HAS_SOURCE=1
+TREE=@substr:1:$TREE
+.file_core -header $TREE h
+@else
 .file_hash $TREE
+TREE_HASH=$OUTPUT
+@endif
+;
 @ifdef $ERROR
-@label END
+@label TREE_ERROR
 @endif
 @skip
-.encode $OUTPUT
+;
+@:NEXT
+;
+@ifdef $HAS_SOURCE
+;
+CIPHER_EXTRA=
+.file_core -header $TREE s
+@ifdef $OUTPUT
+CIPHER_EXTRA=,s=$OUTPUT
+@endif
+;
+NUM_TREE_ITEMS=0
+.file_core -header $TREE n
+@ifdef $OUTPUT
+NUM_TREE_ITEMS=$OUTPUT
+@endif
+;
+TARGET_EXTRA=
+.file_core -header $TREE t
+@ifdef $OUTPUT
+TARGET_EXTRA=,t=$OUTPUT
+@endif
+;
+.file_core -attribute $TREE t
+TREE_ROOT_HASH_ENC=$OUTPUT
+;
+.file_core -attribute $TREE u
+UTIME=$OUTPUT
+;
+@else
+;
+.encode $TREE_HASH
 TREE_ROOT_HASH_ENC=$OUTPUT
 .session_variable @totals_exclude_hidden_blobs 1
 .file_info -total_items $TREE
@@ -248,6 +316,7 @@ CIPHER_EXTRA=
 @ifdef $CIYAM_STREAM_CIPHER
 CIPHER_EXTRA=,s=$CIYAM_STREAM_CIPHER
 @endif
+;
 TARGET_EXTRA=
 @ifdef $ENCRYPTED_PASSWORD
 .system_variable $ENCRYPTED_PASSWORD
@@ -263,6 +332,8 @@ TARGET_EXTRA=,t=$TARGET
 .session_variable @encrypted_password ""
 @endif
 ;
+@endif
+;
 .file_raw -core blob blk:h=$HEIGHT,i=$HEIGHT_IDENTITY,n=$NUM_TREE_ITEMS$CIPHER_EXTRA$TARGET_EXTRA,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_BLOCK_HASH_ENC\n\
@@ -271,7 +342,13 @@ t:$TREE_ROOT_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.blk
 ;
 @endif
+@:TREE_ERROR
+@ifdef $ERROR
+@label END_INNER
+@endif
+@skip
 ;
+@:NEXT
 BLOCK_HASH=$OUTPUT
 ;
 .crypto_lamport -sign $UUID:$BLOCK_HASH
@@ -304,7 +381,10 @@ BLOCK_HASH=$OUTPUT
 @endif
 @endif
 ;
-@:END
+@:END_INNER
 ;
 @endif
+;
+@:END_OUTER
+;
 @endif
