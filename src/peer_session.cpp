@@ -3838,6 +3838,19 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       if( !get_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ).empty( ) )
          process_queued_hub_using_peerchains( identity );
+      else if( is_extra_non_hub_identity( identity ) )
+      {
+         temporary_session_variable tmp_identity(
+          get_special_var_name( e_special_var_identity ), identity );
+
+         bool is_shared = !get_session_variable(
+          get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
+
+         temporary_session_variable tmp_chain_type(
+          get_special_var_name( e_special_var_chain_type ), !is_shared ? "-backup" : "-shared" );
+
+         run_script( "generate_parallel_chains", false, false, true );
+      }
 
       if( !zenith_tree_hash.empty( )
        && get_session_variable( get_special_var_name( e_special_var_blockchain_user ) ).empty( ) )
