@@ -180,6 +180,11 @@
   <arguments>remove_all_repo_entries.cin @identity
  </script>
  <script/>
+  <name>generate_parallel_chains
+  <filename>*script*
+  <arguments>generate_parallel_chains.cin @chain_type @identity
+ </script>
+ <script/>
   <name>create_peerchain_listener
   <filename>*script*
   <arguments>create_peerchain_listener.cin @identity @description
