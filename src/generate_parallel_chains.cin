@@ -53,6 +53,11 @@ ZENITH_HEIGHT=$OUTPUT
 .system_variable @blockchain_%TYPE%_identity
 NEXT_IDENTITY=$OUTPUT
 ;
+@ifneq "$TYPE" "peer_hub"
+.file_archives -path_only $NEXT_IDENTITY
+.session_variable @blockchain_archive_path $OUTPUT
+@endif
+;
 .session_variable @deque ""
 .system_variable @blockchain_%TYPE%_?_identity
 .session_variable @deque "~$OUTPUT"
