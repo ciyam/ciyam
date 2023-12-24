@@ -5069,7 +5069,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          {
             pid += '@' + identity;
 
-            if( chain_type == e_peerchain_type_backup )
+            if( !is_owner && ( chain_type == e_peerchain_type_backup ) )
             {
                string hub_identity( get_hub_identity( unprefixed_blockchain ) );
 
