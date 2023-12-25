@@ -186,9 +186,7 @@ string get_hub_identity( const string& own_identity )
    {
       string extra( get_identity_variable_extra( backup_identity_var_name, own_identity ) );
 
-      if( extra.empty( ) )
-         hub_identity_var_name.erase( );
-      else
+      if( !extra.empty( ) )
       {
          string hub_identity_name_prefix, hub_identity_name_suffix;
 
@@ -199,7 +197,7 @@ string get_hub_identity( const string& own_identity )
       }
    }
 
-   return hub_identity_var_name.empty( ) ? hub_identity_var_name : get_system_variable( hub_identity_var_name );
+   return get_system_variable( hub_identity_var_name );
 }
 
 string get_own_identity( bool is_shared, const string* p_extra )
@@ -5273,7 +5271,7 @@ void peer_session::on_start( )
 
          peerchain_type chain_type = get_blockchain_type( blockchain );
 
-         if( chain_type == e_peerchain_type_backup )
+         if( !is_owner && ( chain_type == e_peerchain_type_backup ) )
          {
             string hub_identity( get_hub_identity( unprefixed_blockchain ) );
 
