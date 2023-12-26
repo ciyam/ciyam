@@ -5804,6 +5804,8 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
          }
          else if( ( type == -2 ) && ( identity == get_system_variable( blockchain_peer_hub_identity_name ) ) )
          {
+            size_t num_listeners = peerchain_listeners.size( );
+
             for( size_t i = 1; i <= c_max_extras; i++ )
             {
                string next_extra( get_system_variable( blockchain_peer_hub_prefix + to_string( i ) + blockchain_peer_hub_suffix ) );
@@ -5813,11 +5815,14 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
 
                peerchain_listeners.insert( make_pair( port, next_extra + suffix ) );
             }
+
+            // NOTE: If no extra peer hub chains are found then will instead listen
+            // for the hub identity itself (i.e. assume this must be a "hub node").
+            if( num_listeners == peerchain_listeners.size( ) )
+               peerchain_listeners.insert( make_pair( port, identity + suffix ) );
          }
          else
-         {
             peerchain_listeners.insert( make_pair( port, identity + suffix ) );
-         }
       }
    }
 }
