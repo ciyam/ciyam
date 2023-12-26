@@ -5618,6 +5618,8 @@ void peer_session::on_start( )
 
             string::size_type pos = peer_info.rfind( ':' );
 
+            bool created_initiator_for_hub = false;
+
             if( pos != string::npos )
             {
                peer_info.erase( pos );
@@ -5652,8 +5654,13 @@ void peer_session::on_start( )
 
                   create_peer_initiator( ( c_bc_prefix + hub_identity ),
                    host_and_port, false, 0, false, false, 0, e_peerchain_type_hub, true );
+
+                  created_initiator_for_hub = true;
                }
             }
+
+            if( !created_initiator_for_hub )
+               set_system_variable( hub_identity, "" );
          }
       }
 
