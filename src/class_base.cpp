@@ -5521,6 +5521,73 @@ string local_peer_hub_checksum( const string& extra )
    return crypto_checksum( hash );
 }
 
+bool any_session_backup_blockchains( )
+{
+   bool retval = false;
+
+   string blockchain_backup_identity_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
+
+   string backup_identity( get_system_variable( blockchain_backup_identity_name ) );
+
+   if( any_session_has_blockchain( backup_identity ) )
+      retval = true;
+   else
+   {
+      string blockchain_backup_prefix, blockchain_backup_suffix;
+
+      identity_variable_name_prefix_and_suffix(
+       blockchain_backup_identity_name, blockchain_backup_prefix, blockchain_backup_suffix );
+
+      for( size_t i = 1; i <= c_max_extras; i++ )
+      {
+         string extra_identity( get_system_variable( blockchain_backup_prefix + to_string( i ) + blockchain_backup_suffix ) );
+
+         if( extra_identity.empty( ) )
+            break;
+
+         if( any_session_has_blockchain( extra_identity ) )
+         {
+            retval = true;
+            break;
+         }
+      }
+   }
+
+   return retval;
+}
+
+string local_backup_blockchain_status( )
+{
+   string blockchain_backup_identity_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
+
+   string backup_identity( get_system_variable( blockchain_backup_identity_name ) );
+
+   string sync_status( get_system_variable( "%" + backup_identity ) );
+
+   if( sync_status.find( c_ellipsis ) == string::npos )
+   {
+      string blockchain_backup_prefix, blockchain_backup_suffix;
+
+      identity_variable_name_prefix_and_suffix(
+       blockchain_backup_identity_name, blockchain_backup_prefix, blockchain_backup_suffix );
+
+      for( size_t i = 1; i <= c_max_extras; i++ )
+      {
+         string extra_identity( get_system_variable( blockchain_backup_prefix + to_string( i ) + blockchain_backup_suffix ) );
+
+         if( extra_identity.empty( ) )
+            break;
+
+         string extra_status( get_system_variable( "%" + extra_identity ) );
+
+         if( extra_status.find( c_ellipsis ) != string::npos )
+            sync_status = extra_status;
+      }
+   }
+
+   return sync_status;
+}
+
 uint64_t crypto_amount( const string& amount )
 {
    uint64_t amt = 0;
