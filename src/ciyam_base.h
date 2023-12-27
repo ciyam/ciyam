@@ -200,6 +200,9 @@ inline bool CIYAM_BASE_DECL_SPEC is_extra_non_hub_identity( const std::string& i
    return ( get_non_extra_identity( identity ) != identity );
 }
 
+void CIYAM_BASE_DECL_SPEC get_extra_identities(
+ const std::string& identity, std::vector< std::string >& extras );
+
 std::string CIYAM_BASE_DECL_SPEC get_extra_identity_variable(
  const std::string& identity_variable_name, const std::string& extra );
 

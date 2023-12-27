@@ -4942,12 +4942,25 @@ bool has_registered_listener_id( const string& id, int* p_port )
 
    bool retval = false;
 
-   if( g_listener_ids.count( id ) )
-   {
-      retval = true;
+   vector< string > ids;
 
-      if( p_port )
-         *p_port = g_listener_ids[ id ];
+   ids.push_back( id );
+
+   get_extra_identities( id, ids );
+
+   for( size_t i = 0; i < ids.size( ); i++ )
+   {
+      string next_id( ids[ i ] );
+
+      if( g_listener_ids.count( next_id ) )
+      {
+         retval = true;
+
+         if( p_port )
+            *p_port = g_listener_ids[ next_id ];
+
+         break;
+      }
    }
 
    return retval;
@@ -5564,6 +5577,35 @@ string get_non_extra_identity( const string& extra_identity )
    }
 
    return retval;
+}
+
+void get_extra_identities( const string& identity, vector< string >& extras )
+{
+   string blockchain_backup_identity_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
+   string blockchain_shared_identity_name( get_special_var_name( e_special_var_blockchain_shared_identity ) );
+   string blockchain_peer_hub_identity_name( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) );
+
+   string variable_name_prefix, variable_name_suffix;
+
+   if( identity == get_system_variable( blockchain_backup_identity_name ) )
+      identity_variable_name_prefix_and_suffix( blockchain_backup_identity_name, variable_name_prefix, variable_name_suffix );
+   else if( identity == get_system_variable( blockchain_shared_identity_name ) )
+      identity_variable_name_prefix_and_suffix( blockchain_shared_identity_name, variable_name_prefix, variable_name_suffix );
+   else if( identity == get_system_variable( blockchain_peer_hub_identity_name ) )
+      identity_variable_name_prefix_and_suffix( blockchain_peer_hub_identity_name, variable_name_prefix, variable_name_suffix );
+
+   if( !variable_name_prefix.empty( ) )
+   {
+      for( size_t i = 1; i <= c_max_extras; i++ )
+      {
+         string next_extra( get_system_variable( variable_name_prefix + to_string( i ) + variable_name_suffix ) );
+
+         if( next_extra.empty( ) )
+            break;
+
+         extras.push_back( next_extra );
+      }
+   }
 }
 
 string get_extra_identity_variable( const string& identity_variable_name, const string& extra )
