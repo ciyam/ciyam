@@ -6007,7 +6007,7 @@ string peer_channel_height( const string& identity, bool minimal, bool reversed,
 {
    string extra, retval;
 
-   string channel_identity( get_system_variable( "$" + identity + c_identity_suffix ) );
+   string channel_identity( get_system_variable( "$" + identity + "_" + c_identity_suffix ) );
 
    if( !channel_identity.empty( ) )
    {

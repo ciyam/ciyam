@@ -29,6 +29,10 @@ TREE_TAG=ciyam
 @ifndef $ERROR
 TREE_HASH=$OUTPUT
 ;
+.session_variable @deque
+DEQUE=$OUTPUT
+.session_variable @deque ""
+;
 .file_info -recurse -d=-2 $TREE_HASH
 .session_variable @deque "~$OUTPUT"
 @:LOOP
@@ -51,6 +55,8 @@ NEXT=$OUTPUT
 !!@:LOOP
 ;
 @:END_LOOP
+;
+.session_variable @deque "~$DEQUE"
 ;
 .file_tag -remove $TREE_TAG
 .file_relegate $TREE_HASH $IDENT
