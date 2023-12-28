@@ -3942,6 +3942,66 @@ string shared_secret( const string& identity_for_peer, const string& encrypted_i
    return encrypt( digest );
 }
 
+bool is_own_identity( const string& identity )
+{
+   bool retval = false;
+
+   string blockchain_backup_identity_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
+
+   string backup_identity( get_system_variable( blockchain_backup_identity_name ) );
+
+   if( identity == backup_identity )
+      retval = true;
+   else
+   {
+      string blockchain_backup_prefix, blockchain_backup_suffix;
+
+      identity_variable_name_prefix_and_suffix(
+       blockchain_backup_identity_name, blockchain_backup_prefix, blockchain_backup_suffix );
+
+      for( size_t i = 1; i <= c_max_extras; i++ )
+      {
+         string extra_identity( get_system_variable( blockchain_backup_prefix + to_string( i ) + blockchain_backup_suffix ) );
+
+         if( identity == extra_identity )
+            retval = true;
+
+         if( extra_identity.empty( ) )
+            break;
+      }
+
+      if( !retval )
+      {
+         string blockchain_shared_identity_name( get_special_var_name( e_special_var_blockchain_shared_identity ) );
+
+         string shared_identity( get_system_variable( blockchain_shared_identity_name ) );
+
+         if( identity == shared_identity )
+            retval = true;
+         else
+         {
+            string blockchain_shared_prefix, blockchain_shared_suffix;
+
+            identity_variable_name_prefix_and_suffix(
+             blockchain_shared_identity_name, blockchain_shared_prefix, blockchain_shared_suffix );
+
+            for( size_t i = 1; i <= c_max_extras; i++ )
+            {
+               string extra_identity( get_system_variable( blockchain_shared_prefix + to_string( i ) + blockchain_shared_suffix ) );
+
+               if( identity == extra_identity )
+                  retval = true;
+
+               if( extra_identity.empty( ) )
+                  break;
+            }
+         }
+      }
+   }
+
+   return retval;
+}
+
 string private_identity( const string& s )
 {
    string secret;

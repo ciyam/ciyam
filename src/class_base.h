@@ -1359,6 +1359,8 @@ inline std::string hashed_decrypt( const std::string& s, bool use_sha256 = false
 std::string CIYAM_BASE_DECL_SPEC shared_secret(
  const std::string& identity_for_peer, const std::string& encrypted_identity );
 
+bool CIYAM_BASE_DECL_SPEC is_own_identity( const std::string& identity );
+
 std::string CIYAM_BASE_DECL_SPEC private_identity( const std::string& s );
 
 std::string CIYAM_BASE_DECL_SPEC masked_identity_key( const std::string& s );
