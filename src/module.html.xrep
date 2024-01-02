@@ -33,7 +33,7 @@
 <body onload="load( )">
 <noscript>
    <div class="noscript">
-       <p><strong>JavaScript seem to be disabled in your browser.</strong></p>
+       <p><strong>JavaScript seems to be disabled in your browser.</strong></p>
        <p>You must have JavaScript enabled in your browser in order to use this application.</p>
    </div>
 </noscript>
