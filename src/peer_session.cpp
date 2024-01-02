@@ -5605,6 +5605,12 @@ void peer_session::on_start( )
       // NOTE: If a hub identity has been provided then connect to it (unless already connected).
       if( okay && !is_for_support && !hub_identity.empty( ) )
       {
+         string prior_hub_identity( get_system_variable( "@" + identity ) );
+
+         // NOTE: If a hub identity had previously been provided then it must match.
+         if( !prior_hub_identity.empty( ) && ( hub_identity != prior_hub_identity ) )
+            throw runtime_error( "incorrect hub identity '" + hub_identity + "' was provided" );
+
          set_hub_system_variable_if_required( identity, hub_identity );
 
          if( !any_session_has_blockchain( hub_identity )
