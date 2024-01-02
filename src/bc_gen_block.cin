@@ -265,11 +265,10 @@ HAS_SOURCE=
 @ifeq "$FIRST" "!"
 HAS_SOURCE=1
 TREE=@substr:1:$TREE
-.file_core -header $TREE h
-@else
+@endif
+;
 .file_hash $TREE
 TREE_HASH=$OUTPUT
-@endif
 ;
 @ifdef $ERROR
 @label TREE_ERROR
@@ -326,7 +325,7 @@ NUM_ROUNDS=1
 @else
 NUM_ROUNDS=1000000
 @endif
-.crypto_hash -x=$NUM_ROUNDS @encrypted_password -s=$HEIGHT
+.crypto_hash -x=$NUM_ROUNDS @encrypted_password -s=$TREE_HASH$HEIGHT
 TARGET=@substr:0,9:$OUTPUT
 TARGET_EXTRA=,t=$TARGET
 .session_variable @encrypted_password ""

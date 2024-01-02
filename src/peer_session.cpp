@@ -364,7 +364,8 @@ string determine_identity( const string& concatenated_pubkey_hashes )
    return identity;
 }
 
-bool is_targeted_identity( const string& identity, const string& targeted_identity, size_t blockchain_height )
+bool is_targeted_identity( const string& identity,
+ const string& targeted_identity, const string& tree_root_hash, size_t blockchain_height )
 {
    string password;
    password.reserve( 256 );
@@ -372,11 +373,11 @@ bool is_targeted_identity( const string& identity, const string& targeted_identi
    get_peerchain_info( identity, 0, &password );
 
    // NOTE: The following needs to be equivalent to the application protocol command:
-   // .crypto_hash -x=$NUM_ROUNDS @encrypted_password -s=<height>
+   // .crypto_hash -x=$NUM_ROUNDS @encrypted_password -s=<tree_root_hash><height>
    // as is currently executed in the application protocol script "bc_gen_block.cin".
    decrypt_data( password, password );
 
-   password += to_string( blockchain_height );
+   password += tree_root_hash + to_string( blockchain_height );
 
    sha256 hash( password );
    string digest( hash.get_digest_as_string( ) );
@@ -3859,7 +3860,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          if( !targeted_identity.empty( )
           && ( targeted_identity[ 0 ] != '@' ) && ( blockchain_height == blockchain_height_other ) )
          {
-            if( is_targeted_identity( identity, targeted_identity, blockchain_height ) )
+            if( is_targeted_identity( identity, targeted_identity, zenith_tree_hash, blockchain_height ) )
             {
                tag_file( blockchain + c_shared_suffix, block_processing );
 
