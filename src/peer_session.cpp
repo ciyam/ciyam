@@ -4589,6 +4589,17 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       }
    }
 
+   // NOTE: It is possible that a support session had been started for
+   // a main session which had finished before the support session had
+   // been initialised (thus was not condemned by the main session) so
+   // condemn own session if is support with no matching main session.
+   if( send_okay_response && socket_handler.get_is_for_support( ) )
+   {
+      if( socket_handler.get_is_time_for_check( )
+       && !num_have_session_variable( identity, true ) )
+         condemn_this_session( );
+   }
+
    // NOTE: If a disconnect has been actioned for the paired identity then issue
    // a "bye" after condemning this session and (unless still connecting) do the
    // same if the matching identity session is not found.
@@ -5605,11 +5616,23 @@ void peer_session::on_start( )
       // NOTE: If a hub identity has been provided then connect to it (unless already connected).
       if( okay && !is_for_support && !hub_identity.empty( ) )
       {
-         string prior_hub_identity( get_system_variable( "@" + identity ) );
+         string hub_genesis_hash( get_system_variable( "@" + identity ) );
 
-         // NOTE: If a hub identity had previously been provided then it must match.
-         if( !prior_hub_identity.empty( ) && ( hub_identity != prior_hub_identity ) )
-            throw runtime_error( "incorrect hub identity '" + hub_identity + "' was provided" );
+         // NOTE: If a hub identity genesis block is already known then verify the identity.
+         if( !hub_genesis_hash.empty( ) )
+         {
+            core_file_data core_data( extract_file( hub_genesis_hash, "" ) );
+
+            if( hub_identity != core_data.get_header( c_file_type_core_block_header_identity ) )
+            {
+               // FUTURE: This message should be handled as a server string message.
+               string error( "Incorrect hub identity '" + hub_identity + "' was provided." );
+
+               set_system_variable( c_error_message_prefix + identity, error );
+
+               throw runtime_error( error );
+            }
+         }
 
          set_hub_system_variable_if_required( identity, hub_identity );
 

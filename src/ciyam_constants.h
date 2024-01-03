@@ -216,6 +216,13 @@ const char* const c_file_type_str_blob_no_compress = "\x81";
 
 const char* const c_file_type_core_block_object = "blk";
 
+const char* const c_file_type_core_block_header_height = "h";
+const char* const c_file_type_core_block_header_identity = "i";
+const char* const c_file_type_core_block_header_num_items = "n";
+const char* const c_file_type_core_block_header_stream_cipher = "s";
+const char* const c_file_type_core_block_header_targeted_ident = "t";
+const char* const c_file_type_core_block_header_version_number = "v";
+
 const char* const c_file_type_core_block_header_height_prefix = "h=";
 const char* const c_file_type_core_block_header_identity_prefix = "i=";
 const char* const c_file_type_core_block_header_num_items_prefix = "n=";
