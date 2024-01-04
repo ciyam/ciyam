@@ -2015,19 +2015,23 @@ void process_op_list_file( const string& blockchain, const string& hash, size_t 
    tag_file( op_list_tag, hash );
 }
 
-void process_put_list_file( const string& blockchain, const string& hash, size_t height, const string& file_data )
+void process_put_list_file( const string& blockchain,
+ const string& hash, size_t height, const string& file_data, bool is_new_file = true )
 {
    guard g( g_mutex, "process_put_list_file" );
 
-   string put_list_tag( blockchain );
+   if( is_new_file )
+   {
+      string put_list_tag( blockchain );
 
-   put_list_tag += ".";
+      put_list_tag += ".";
 
-   put_list_tag += to_string( height );
+      put_list_tag += to_string( height );
 
-   put_list_tag += c_put_suffix;
+      put_list_tag += c_put_suffix;
 
-   tag_file( put_list_tag, hash );
+      tag_file( put_list_tag, hash );
+   }
 
    vector< string > lines;
    split( file_data, lines, '\n' );
@@ -2526,10 +2530,29 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
             if( !is_fetching && !has_all_tree_items )
                has_all_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, p_progress );
 
+            bool processed_put_list = false;
+
             if( is_fetching && !has_all_tree_items && !hub_identity.empty( ) )
             {
                if( !add_put_list_if_available( hub_identity, blockchain, height ) )
                   set_waiting_for_hub_progress( identity, hub_identity );
+               else
+               {
+                  string put_list_hash( top_next_peer_file_hash_to_get( ) );
+
+                  // NOTE: If the top file is a previously fetched "put list" then process it now.
+                  if( has_file( put_list_hash ) )
+                  {
+                     pop_next_peer_file_hash_to_get( );
+
+                     process_put_list_file( blockchain,
+                      put_list_hash, height, extract_file( put_list_hash, "" ), false );
+
+                     processed_put_list = true;
+
+                     set_session_variable( get_special_var_name( e_special_var_blockchain_put_list_hash ), "" );
+                  }
+               }
             }
 
             if( is_fetching || has_all_tree_items )
@@ -2542,7 +2565,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                   if( p_num_items_found )
                      *p_num_items_found = 1;
                }
-               else
+               else if( !processed_put_list )
                {
                   if( !last_data_tree_is_identical( blockchain, height - 1 ) )
                      process_list_items( blockchain,
@@ -3489,6 +3512,26 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       while( !next_hash.empty( ) && has_file( next_hash.substr( 0, next_hash.find( ':' ) ) ) )
       {
          pop_next_peer_file_hash_to_get( );
+
+         string num_put_files( get_session_variable(
+          get_special_var_name( e_special_var_num_put_files ) ) );
+
+         if( !num_put_files.empty( ) )
+         {
+            date_time dtm( date_time::local( ) );
+
+            set< string > target_hashes;
+
+            process_put_file( blockchain, extract_file( next_hash, "" ),
+             check_for_supporters, get_is_test_session( ), target_hashes, &dtm, this );
+
+            if( !target_hashes.empty( ) )
+               add_to_num_puts_value( target_hashes.size( ) );
+
+            set_session_variable(
+             get_special_var_name( e_special_var_num_put_files ), get_special_var_name( e_special_var_decrement ) );
+         }
+
          next_hash = top_next_peer_file_hash_to_get( );
       }
 
