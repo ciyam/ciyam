@@ -1377,6 +1377,8 @@ bool has_all_list_items( const string& blockchain,
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
+   string extra_identity( identity );
+
    string non_extra_identity( get_session_variable(
     get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
 
@@ -1437,7 +1439,7 @@ bool has_all_list_items( const string& blockchain,
                   progress += c_ellipsis;
 
                   set_session_progress_output( progress );
-                  set_system_variable( c_progress_output_prefix + identity, progress );
+                  set_system_variable( c_progress_output_prefix + extra_identity, progress );
 
                   progress = ".";
                }
@@ -1614,6 +1616,8 @@ void process_list_items( const string& blockchain,
    string all_list_items( extract_file( hash, "" ) );
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
+
+   string extra_identity( identity );
 
    string non_extra_identity( get_session_variable(
     get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
@@ -1796,7 +1800,7 @@ void process_list_items( const string& blockchain,
                   progress_message += ")" + to_string( c_ellipsis );
 
                   set_session_progress_output( progress_message );
-                  set_system_variable( c_progress_output_prefix + identity, progress_message );
+                  set_system_variable( c_progress_output_prefix + extra_identity, progress_message );
                }
 
                progress = ".";
@@ -2046,8 +2050,11 @@ void process_put_list_file( const string& blockchain,
        e_special_var_num_put_files ), get_special_var_name( e_special_var_increment ) );
    }
 
-   add_peer_file_hash_for_get(
-    get_session_variable( get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
+   string tree_root_hash( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
+
+   if( !tree_root_hash.empty( ) && !has_file( tree_root_hash ) )
+      add_peer_file_hash_for_get( tree_root_hash );
 }
 
 void process_public_key_file( const string& blockchain,
@@ -2530,8 +2537,6 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
             if( !is_fetching && !has_all_tree_items )
                has_all_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, p_progress );
 
-            bool processed_put_list = false;
-
             if( is_fetching && !has_all_tree_items && !hub_identity.empty( ) )
             {
                if( !add_put_list_if_available( hub_identity, blockchain, height ) )
@@ -2548,8 +2553,6 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                      process_put_list_file( blockchain,
                       put_list_hash, height, extract_file( put_list_hash, "" ), false );
 
-                     processed_put_list = true;
-
                      set_session_variable( get_special_var_name( e_special_var_blockchain_put_list_hash ), "" );
                   }
                }
@@ -2565,7 +2568,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                   if( p_num_items_found )
                      *p_num_items_found = 1;
                }
-               else if( !processed_put_list )
+               else
                {
                   if( !last_data_tree_is_identical( blockchain, height - 1 ) )
                      process_list_items( blockchain,
