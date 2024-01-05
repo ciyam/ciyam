@@ -8005,9 +8005,11 @@ string get_session_variable_from_matching_blockchain( const string& name,
 
          if( !check_name.empty( ) )
          {
-            if( check_value.empty( )
-             && g_sessions[ i ]->variables.count( check_name ) )
-               continue;
+            if( check_value.empty( ) )
+            {
+               if( g_sessions[ i ]->variables.count( check_name ) )
+                  continue;
+            }
             else if( !g_sessions[ i ]->variables.count( check_name )
              || ( g_sessions[ i ]->variables[ check_name ] != check_value ) )
                continue;
@@ -8549,9 +8551,11 @@ void set_session_variable_for_matching_blockchains( const string& name,
 
          if( !check_name.empty( ) )
          {
-            if( check_value.empty( )
-             && g_sessions[ i ]->variables.count( check_name ) )
-               continue;
+            if( check_value.empty( ) )
+            {
+               if( g_sessions[ i ]->variables.count( check_name ) )
+                  continue;
+            }
             else if( !g_sessions[ i ]->variables.count( check_name )
              || ( g_sessions[ i ]->variables[ check_name ] != check_value ) )
                continue;
