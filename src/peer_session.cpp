@@ -2630,6 +2630,7 @@ class socket_command_handler : public command_handler
     is_for_support( is_for_support ),
     is_time_for_check( false ),
     has_identity_archive( false ),
+    has_checked_stream_cipher( false ),
     session_state( session_state ),
     session_op_state( session_state ),
     session_trust_level( e_peer_trust_level_none )
@@ -2829,6 +2830,7 @@ class socket_command_handler : public command_handler
    bool is_time_for_check;
    bool last_issued_was_put;
    bool has_identity_archive;
+   bool has_checked_stream_cipher;
 
    set< string > list_items_to_ignore;
 
@@ -3739,8 +3741,28 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          {
             if( get_session_variable( 
              get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
+            {
+               // NOTE: The first call to "set_session_variable_for_matching_blockchains" (made
+               // by a main session to set "@blockchain_stream_cipher" for its matching support
+               // sessions) could occur prior to the "init_session" call in the support session
+               // (in which case that support session would be skipped) so if this is the first
+               // time that "process_repository_file" is being called by a support session then
+               // will try to get this session variable from the main session.
+               if( is_for_support && !has_checked_stream_cipher )
+               {
+                  has_checked_stream_cipher = true;
+
+                  string stream_cipher_var_name(
+                   get_special_var_name( e_special_var_blockchain_stream_cipher ) );
+
+                  set_session_variable( stream_cipher_var_name,
+                   get_session_variable_from_matching_blockchain( stream_cipher_var_name,
+                   get_special_var_name( e_special_var_blockchain_peer_supporter ), "", true ) );
+               }
+
                process_repository_file( blockchain,
                 next_hash.substr( 0, next_hash.length( ) - 1 ), get_is_test_session( ), &file_data );
+            }
             else if( !is_list )
             {
                if( !blockchain.empty( ) )
