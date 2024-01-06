@@ -234,10 +234,10 @@ void add_to_blockchain_tree_item( const string& blockchain, size_t num_to_add, s
 {
    guard g( g_mutex );
 
-   if( upper_limit && g_blockchain_tree_item[ blockchain ] >= upper_limit )
-      return;
-
    g_blockchain_tree_item[ blockchain ] += num_to_add;
+
+   if( upper_limit && g_blockchain_tree_item[ blockchain ] > upper_limit )
+      g_blockchain_tree_item[ blockchain ] = upper_limit;
 }
 
 void add_to_num_puts_value( size_t num_to_add )
