@@ -1215,6 +1215,18 @@ void process_put_file( const string& blockchain,
             {
                size_t next_height = from_string< size_t >( blockchain_height_processing );
 
+               if( !num_tree_items.empty( ) )
+               {
+                  size_t upper_limit = from_string< size_t >( num_tree_items );
+
+                  // NOTE: Ensure that the upper limit is not exceeded.
+                  if( next_height > upper_limit )
+                  {
+                     next_height = upper_limit;
+                     add_to_blockchain_tree_item( blockchain, 0, upper_limit );
+                  }
+               }
+
                // FUTURE: This message should be handled as a server string message.
                string progress_message( "Synchronising at height " + to_string( next_height ) );
 
@@ -1786,6 +1798,18 @@ void process_list_items( const string& blockchain,
                else
                {
                   size_t next_height = from_string< size_t >( blockchain_height_processing );
+
+                  if( !num_tree_items.empty( ) )
+                  {
+                     size_t upper_limit = from_string< size_t >( num_tree_items );
+
+                     // NOTE: Ensure that the upper limit is not exceeded.
+                     if( next_height > upper_limit )
+                     {
+                        next_height = upper_limit;
+                        add_to_blockchain_tree_item( blockchain, 0, upper_limit );
+                     }
+                  }
 
                   string progress_message;
 
@@ -3242,6 +3266,18 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          string num_tree_items( get_session_variable(
           get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
+
+         if( !num_tree_items.empty( ) )
+         {
+            size_t upper_limit = from_string< size_t >( num_tree_items );
+
+            // NOTE: Ensure that the upper limit is not exceeded.
+            if( num_tree_item > upper_limit )
+            {
+               last_num_tree_item = num_tree_item = upper_limit;
+               add_to_blockchain_tree_item( blockchain, 0, upper_limit );
+            }
+         }
 
          // FUTURE: This message should be handled as a server string message.
          string progress_message( "Synchronising at height " + to_string( blockchain_height + 1 ) );
