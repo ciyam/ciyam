@@ -175,7 +175,12 @@ void verify_block( const string& content, bool check_dependents )
       }
 
       if( !has_stream_cipher )
-         set_session_variable( get_special_var_name( e_special_var_blockchain_stream_cipher ), "" );
+      {
+         if( !block_height )
+            set_session_variable( get_special_var_name( e_special_var_blockchain_stream_cipher ), "" );
+         else
+            set_session_variable( get_special_var_name( e_special_var_blockchain_stream_cipher ), stream_cipher_string( ) );
+      }
 
       if( identity.length( ) != c_bc_identity_length )
          throw runtime_error( "unexpected missing or incorrect identity attribute in block header '" + header + "'" );
@@ -823,6 +828,9 @@ void decrypt_pulled_peer_file( const string& dest_hash,
 
    string stream_cipher( get_session_variable(
     get_special_var_name( e_special_var_blockchain_stream_cipher ) ) );
+
+   if( stream_cipher.empty( ) )
+      throw runtime_error( "unexpected missing @stream_cipher in decrypt_pulled_peer_file" );
 
    stringstream ss( file_data );
 

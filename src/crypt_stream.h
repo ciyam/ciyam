@@ -18,6 +18,8 @@
 
 stream_cipher stream_cipher_value( const std::string& str );
 
+std::string stream_cipher_string( stream_cipher cipher = e_stream_cipher_bd_shift );
+
 void bd_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
 
 inline void bd_crypt_stream( std::iostream& io, const std::string& key )

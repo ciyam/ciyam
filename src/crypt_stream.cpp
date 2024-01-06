@@ -76,6 +76,31 @@ stream_cipher stream_cipher_value( const string& str )
    return cipher;
 }
 
+string stream_cipher_string( stream_cipher cipher )
+{
+   string retval;
+
+   switch( cipher )
+   {
+      case e_stream_cipher_bd_shift:
+      retval = c_stream_cipher_bd_shift;
+      break;
+
+      case e_stream_cipher_chacha20:
+      retval = c_stream_cipher_chacha20;
+      break;
+
+      case e_stream_cipher_dbl_hash:
+      retval = c_stream_cipher_dbl_hash;
+      break;
+
+      default:
+      throw runtime_error( "unknown stream cipher #" + to_string( cipher ) );
+   }
+
+   return retval;
+}
+
 // NOTE: This algorithm is an XOR approach for encrypting a stream in place
 // and is very quick. It prevents the key used from being easily discovered
 // by constantly modifying a copy of it and by doing this in a manner which
