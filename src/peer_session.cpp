@@ -907,6 +907,9 @@ void process_repository_file( const string& blockchain,
          string stream_cipher( get_session_variable(
           get_special_var_name( e_special_var_blockchain_stream_cipher ) ) );
 
+         if( stream_cipher.empty( ) )
+            throw runtime_error( "unexpected missing @stream_cipher in process_repository_file" );
+
          stringstream ss( file_content );
 
          crypt_stream( ss, ap_priv_key->construct_shared( pub_key ), stream_cipher_value( stream_cipher ) );
