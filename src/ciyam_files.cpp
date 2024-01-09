@@ -67,6 +67,8 @@ const char c_prefix_wildcard_separator = ':';
 
 const char* const c_time_stamp_tag_prefix = "ts.";
 
+const char* const c_time_stamp_unix_epoch = "19700101";
+
 const char* const c_file_archive_path = "path";
 const char* const c_file_archive_size_avail = "size_avail";
 const char* const c_file_archive_size_limit = "size_limit";
@@ -886,6 +888,7 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
    else
    {
       date_time dtm( date_time::local( ) );
+      date_time dt_epoch( c_time_stamp_unix_epoch );
 
       directory_filter df;
       fs_iterator dfsi( files_area_dir, &df );
@@ -970,6 +973,11 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
                      if( !g_hash_tags.count( hash ) )
                      {
                         date_time dt( last_modification_time( file_path ) );
+
+                        // NOTE: If the "unix epoch" was returned then
+                        // will use the current date and time instead.
+                        if( dt == dt_epoch )
+                           dt = date_time::standard( );
 
                         dt += ( seconds )secs_diff;
 
