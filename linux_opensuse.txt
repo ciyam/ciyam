@@ -118,9 +118,9 @@ export WEBDIR=/srv/www/htdocs
 echo 'export WEBDIR=/srv/www/htdocs' >> .bashrc
 echo 'export WEBDIR=/srv/www/htdocs' >> .profile
 
-export MYSQL_EXEC="sudo mysql"
-echo 'export MYSQL_EXEC="sudo mysql"' >> .bashrc
-echo 'export MYSQL_EXEC="sudo mysql"' >> .profile
+export MYSQL_EXEC="sudo mariadb"
+echo 'export MYSQL_EXEC="sudo mariadb"' >> .bashrc
+echo 'export MYSQL_EXEC="sudo mariadb"' >> .profile
 
 export CIYAM_USER=admin
 echo 'export CIYAM_USER=admin' >> .bashrc
