@@ -2322,14 +2322,28 @@ string file_name_without_path( const string& path, bool remove_extension )
    return file_name;
 }
 
-time_t last_modification_time( const string& file_name )
+time_t last_modification_time( const string& file_name, bool try_avoiding_epoch_time )
 {
    struct stat statbuf;
 
    if( stat( file_name.c_str( ), &statbuf ) != 0 )
       throw runtime_error( "cannot stat '" + file_name + "' (errno = " + to_string( errno ) + ")" );
 
-   return statbuf.st_mtime;
+   time_t retval = statbuf.st_mtime;
+
+   // KLUDGE: It has been found in certain VM situations that mtime is zero
+   // (i.e.the unix epoch) so assuming that the caller would prefer to have
+   // a non-zero value (if available) will instead use "ctime" and if still
+   // going to return zero will finally try using "atime".
+   if( !retval && try_avoiding_epoch_time )
+   {
+      retval = statbuf.st_ctime;
+
+      if( !retval && try_avoiding_epoch_time )
+         retval = statbuf.st_atime;
+   }
+
+   return retval;
 }
 
 void output_string_as_text_lines( const string& str, ostream& os, size_t max_length, const char* p_prefix, const char* p_suffix )
