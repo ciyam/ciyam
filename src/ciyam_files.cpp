@@ -301,7 +301,7 @@ string unique_time_stamp_tag( const string& prefix, const date_time& dt )
    string formatted_time( dt.as_string( e_time_format_hhmmss, false ) );
 
    // NOTE: To ensure that the tag is unique try multiple variations (changing the final digits).
-   for( int i = 0; i < 10000; i++ )
+   for( int i = 0; i < 100000; i++ )
    {
       string next( formatted_time + to_comparable_string( i, false, 5 ) );
 

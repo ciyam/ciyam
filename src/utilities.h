@@ -1164,7 +1164,7 @@ inline std::string absolute_path( const std::string& relative_path )
 
 std::string file_name_without_path( const std::string& path, bool remove_extension = false );
 
-time_t last_modification_time( const std::string& file_name );
+time_t last_modification_time( const std::string& file_name, bool try_avoiding_epoch_time = true );
 
 void output_string_as_text_lines( const std::string& str, std::ostream& os,
  size_t max_length, const char* p_prefix = 0, const char* p_suffix = "\n" );
