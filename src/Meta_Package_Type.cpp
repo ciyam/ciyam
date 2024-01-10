@@ -633,6 +633,12 @@ void Meta_Package_Type::impl::impl_Install( )
 #endif
       cmd += package_file;
 
+#ifdef _WIN32
+      cmd += " >nul";
+#else
+      cmd += " >/dev/null";
+#endif
+
       exec_system( cmd, false );
 
       if( !exists_file( info_filename ) )
@@ -780,10 +786,10 @@ void Meta_Package_Type::impl::impl_Install( )
       if( !extra.empty( ) )
          extra = " " + extra;
 
-#ifndef _WIN32
-      exec_system( "./install_package " + name + extra, false );
+#ifdef _WIN32
+      exec_system( "install_package.bat " + name + extra + " >nul", false );
 #else
-      exec_system( "install_package.bat " + name + extra, false );
+      exec_system( "./install_package " + name + extra + " >/dev/null", false );
 #endif
 
       if( exists_file( name + ".specs.sio" ) )
