@@ -47,7 +47,7 @@ if [ ! -f ~backup ]; then
      for (( i = 1; i <= $num_chunks; i++ ))
      do
       head -c 1000000 /dev/urandom >$USER_PATH/~prepare_$i.tmp
-      n=$[ i % 100 ]
+      n=$[ i % 1000 ]
       if [ $n -eq 0 ]; then
        echo -n "." >>Backup.txt
       fi
@@ -72,7 +72,7 @@ if [ ! -f ~backup ]; then
  echo "Starting backup..." >>Backup.txt
 
  if [ -f $BACKUP_IMAGE ]; then
-  export SECONDS=2
+  export SECONDS=4
   export USE_BACKUP_ARCHIVE=1
 
   export CIYAM_STREAM_CIPHER=cc
