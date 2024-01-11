@@ -44,7 +44,7 @@ if [ ! -f ~backup ]; then
     if [ $num_chunks -gt 1000 ]; then
      date >Backup.txt
      echo -n "Preparing..." >>Backup.txt
-     for i in {1..$num_chunks}
+     for (( i = 1; i <= $num_chunks; i++ ))
      do
       head -c 1000000 /dev/urandom >$USER_PATH/~prepare_$i.tmp
       n=$[ i % 10 ]
@@ -54,7 +54,7 @@ if [ ! -f ~backup ]; then
      done
      echo "." >>Backup.txt
      prepared=1
-     for i in {1..$num_chunks}
+     for (( i = 1; i <= $num_chunks; i++ ))
      do
       rm $USER_PATH/~prepare_$i.tmp
      done
