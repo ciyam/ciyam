@@ -24,19 +24,23 @@ IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
 if [ ! -f ~backup ]; then
  touch ~backup
 
- date >Backup.txt
- echo "Preparing for restore..." >>Backup.txt
+ TARGET_FILE=`./system_variable get @backup_target_file`
 
  # NOTE: If unable to umount will exit (so can call repeatedly until okay).
- if [ -d $BACKUP_PATH ]; then
-  if mountpoint -q $BACKUP_PATH; then
-   sudo umount $BACKUP_PATH
-   if [ $? -ne 0 ]; then
-    date >Backup.txt
-    echo "NOTE: Backup files area is not currently available (please try again later)." >>Backup.txt
-    date >>Backup.txt
-    rm ~backup
-    exit
+ if [ "$TARGET_FILE" = "" ]; then
+  date >Backup.txt
+  echo "Preparing for restore..." >>Backup.txt
+
+  if [ -d $BACKUP_PATH ]; then
+   if mountpoint -q $BACKUP_PATH; then
+    sudo umount $BACKUP_PATH
+    if [ $? -ne 0 ]; then
+     date >Backup.txt
+     echo "NOTE: Backup files area is not currently available (please try again later)." >>Backup.txt
+     date >>Backup.txt
+     rm ~backup
+     exit
+    fi
    fi
   fi
  fi
@@ -47,7 +51,9 @@ if [ ! -f ~backup ]; then
  date >Backup.txt
  echo "Starting restore..." >>Backup.txt
 
- sudo chown $USER:www $BACKUP_IMAGE
+ if [ "$TARGET_FILE" = "" ]; then
+  sudo chown $USER:www $BACKUP_IMAGE
+ fi
 
  export SECONDS=2
  export USE_BACKUP_ARCHIVE=1
@@ -58,12 +64,18 @@ if [ ! -f ~backup ]; then
  BLOCK_TREE=`./block_tree_hash @blockchain_backup_identity`
  BACKUP_LIST=`./tree_list $BLOCK_TREE 0 Backup | tail -n 1`
 
- ./export_files $BACKUP_LIST $USER_PATH >>Backup.txt
+ if [ "$TARGET_FILE" = "" ]; then
+  ./export_files $BACKUP_LIST $USER_PATH >>Backup.txt
+ else
+  ./export_files $BACKUP_LIST $BACKUP_PATH >>Backup.txt
+ fi
 
- sudo chown root:root $BACKUP_IMAGE
- sudo mount $BACKUP_IMAGE $BACKUP_PATH
- sudo chown -R $USER:www $BACKUP_PATH
- sudo chmod -R o-rx $BACKUP_PATH
+ if [ "$TARGET_FILE" = "" ]; then
+  sudo chown root:root $BACKUP_IMAGE
+  sudo mount $BACKUP_IMAGE $BACKUP_PATH
+  sudo chown -R $USER:www $BACKUP_PATH
+  sudo chmod -R o-rx $BACKUP_PATH
+ fi
 
  BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_backup_height`
 

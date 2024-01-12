@@ -26,6 +26,8 @@ if [ ! -f ~backup ]; then
 
  prepared=0
 
+ TARGET_FILE=`./system_variable get @backup_target_file`
+
  # NOTE: If unable to umount will exit (so can call repeatedly until okay).
  if [ -d $BACKUP_PATH ]; then
   if mountpoint -q $BACKUP_PATH; then
@@ -34,8 +36,14 @@ if [ ! -f ~backup ]; then
     num_bytes=`du -b -c -s $BACKUP_PATH | head -n 1 | cut -d $'\t' -f 1`
     num_chunks=$[num_bytes / 1000000]
    fi
-   sudo umount $BACKUP_PATH
-   if [ $? -ne 0 ]; then
+
+   retval=0
+   if [ "$TARGET_FILE" = "" ]; then
+    sudo umount $BACKUP_PATH
+    retval=$?
+   fi
+
+   if [ $retval -ne 0 ]; then
     date >Backup.txt
     echo "NOTE: Backup files area is not currently available (please try again later)." >>Backup.txt
     date >>Backup.txt
@@ -78,7 +86,12 @@ if [ ! -f ~backup ]; then
   export CIYAM_STREAM_CIPHER=cc
   export REPO_CRYPT_PASSWORD=@sid
 
-  ./import_files $USER_PATH Backup : $IMAGE_NAME >>Backup.txt
+  if [ "$TARGET_FILE" = "" ]; then
+   ./import_files $USER_PATH Backup : $IMAGE_NAME >>Backup.txt
+  else
+   ./import_files $BACKUP_PATH Backup : $TARGET_FILE >>Backup.txt
+  fi
+
   ./tree_insert_trunks backup Backup,.Backup >>Backup.txt 2>&1
   ./generate_next_block -backup @sid backup >>Backup.txt 2>&1
   ./block_tree_relegate -backup backup >>Backup.txt 2>&1
@@ -90,7 +103,9 @@ if [ ! -f ~backup ]; then
  BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_backup_height`
 
  if [ -f $BACKUP_IMAGE ]; then
-  sudo mount $BACKUP_IMAGE $BACKUP_PATH
+  if [ "$TARGET_FILE" = "" ]; then
+   sudo mount $BACKUP_IMAGE $BACKUP_PATH
+  fi
   echo `date +%s` > $IMPORTED_TIME_FILE
   echo $BLOCKCHAIN_HEIGHT > $BACKUP_HEIGHT_FILE
  fi
