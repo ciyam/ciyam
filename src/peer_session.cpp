@@ -5741,7 +5741,8 @@ void peer_session::on_start( )
             }
          }
 
-         set_hub_system_variable_if_required( identity, hub_identity );
+         if( !is_owner )
+            set_hub_system_variable_if_required( identity, hub_identity );
 
          if( !any_session_has_blockchain( hub_identity )
           && set_system_variable( hub_identity, c_true_value, string( "" ) ) )
