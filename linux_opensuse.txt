@@ -8,6 +8,9 @@ Create a New machine in VirtualBox with 4096 MB of memory and create a virtual d
 that is at least 528 GB in size. After create from General set the Shared Clipboard
 to bidirectional and in System remove Floppy from the Boot Order.
 
+NOTE: Select Settings -> Storage -> SATA Controller to set "Use Host I/O Cache" on.
+(is off by default and will make an enormous difference to DB File I/O performance)
+
 The Xfce GUI is recommended (due to being smaller but having decent functionality).
 
 Create the user "admin" when installing and in order to use sudo without a password:
@@ -209,13 +212,14 @@ Next follow these instructions:
 
 ***** https://github.com/ciyam/ciyam/blob/master/getting_started.txt  *****
 
-NOTE: If having issues with 'ciyam_server' tests then try the following:
+NOTE: If having issues with 'ciyam_server' tests then can try the following:
+(if using VirtualBox first check SATA Controller "Use Host I/O Cache" is on)
 [ciyam_server.sio]
 ...
  <ods_use_sync_write>false
 ...
-
 [ciyam_server.sio]
+NOTE: The above setting means that crashes can result in corrupted ODS DB files.
 
 rm ciyam.dat ciyam.hdr ciyam.idx ciyam.log ciyam.sql ciyam.tlg ciyam.modules.lst
 
@@ -242,12 +246,14 @@ sudo vi /etc/systemd/system/ciyamd.service
 (ensure that the "Environment" value matches the WEBDIR export value above)
 
 Make necessary changes (for VMs) to the "ciyam_server.sio" configuration file:
+[ciyam_server.sio]
 ...
  <protocol_handler>sftp://@user@localhost:2222
  <ods_use_sync_write>false
 ...
  <default_storage>Home
 ...
+[ciyam_server.sio]
 
 sudo systemctl daemon-reload
 sudo systemctl enable ciyamd
