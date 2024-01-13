@@ -6204,7 +6204,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                tranlog_offset = entry_offset;
 
                if( !next_offs || ( next_offs == last_offs ) )
-                  next_offs = tranlog_info.append_offs;
+                  next_offs = last_append_offs = tranlog_info.append_offs;
 
                bool had_any_data = false;
 
@@ -6498,6 +6498,8 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                      index_entry.data.tran_op = 0;
 
                      write_index_entry( index_entry, tranlog_item.index_entry_id );
+
+                     ++last_index_transform_id;
                   }
                }
 
@@ -6520,6 +6522,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                      rollback_freelist_entries[ commit_offs ].pop_back( );
                   }
 
+                  ++last_index_transform_id;
                   ++p_impl->rp_header_info->index_transform_id;
                }
 
@@ -6527,7 +6530,9 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
                if( had_any_data )
                {
+                  ++last_data_transform_id;
                   ++p_impl->rp_header_info->data_transform_id;
+
                   ++p_impl->rp_header_info->index_transform_id;
                }
             }
