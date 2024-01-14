@@ -55,7 +55,7 @@ if [ ! -f ~backup ]; then
   sudo chown $USER:www $BACKUP_IMAGE
  fi
 
- export SECONDS=2
+ export CIYAM_SECONDS=2
  export USE_BACKUP_ARCHIVE=1
 
  export CIYAM_STREAM_CIPHER=cc

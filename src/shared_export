@@ -67,7 +67,7 @@ if [ ! -f ~shared ]; then
 
  sudo chown $USER:www $SHARED_IMAGE
 
- export SECONDS=2
+ export CIYAM_SECONDS=2
 
  export CIYAM_STREAM_CIPHER=cc
  export ENCRYPTED_PASSWORD=@shared_secret

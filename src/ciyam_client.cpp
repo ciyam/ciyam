@@ -86,11 +86,12 @@ const char* const c_env_var_slotx = "SLOTX";
 const char* const c_env_var_no_udp = "NO_UDP";
 const char* const c_env_var_output = "OUTPUT";
 const char* const c_env_var_pub_key = "PUB_KEY";
-const char* const c_env_var_seconds = "SECONDS";
 const char* const c_env_var_pub_keyx = "PUB_KEYX";
 const char* const c_env_var_file_name = "FILE_NAME";
 const char* const c_env_var_local_udp = "LOCAL_UDP";
 const char* const c_env_var_rpc_password = "RPC_PASSWORD";
+const char* const c_env_var_ciyam_msleep = "CIYAM_MSLEEP";
+const char* const c_env_var_ciyam_seconds = "CIYAM_SECONDS";
 const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
 const char* const c_env_var_progress_prefix = "PROGRESS_PREFIX";
 
@@ -146,6 +147,7 @@ int g_pid = get_pid( );
 bool g_use_tls = false;
 bool g_had_error = false;
 
+size_t g_msleep = 0;
 size_t g_seconds = 1;
 
 size_t g_max_file_size = c_files_area_item_max_size_default;
@@ -633,6 +635,9 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                            cout.flush( );
                         }
 
+                        if( g_msleep )
+                           msleep( g_msleep );
+
                         dtm = now;
                         had_chunk_progress = true;
                      }
@@ -1059,6 +1064,9 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                               cout << '.';
                               cout.flush( );
                            }
+
+                           if( g_msleep )
+                              msleep( g_msleep );
 
                            dtm = now;
                            had_chunk_progress = true;
@@ -1677,7 +1685,12 @@ int main( int argc, char* argv[ ] )
       if( p_pid )
          g_pid = atoi( p_pid );
 
-      const char* p_seconds = getenv( c_env_var_seconds );
+      const char* p_msleep = getenv( c_env_var_ciyam_msleep );
+
+      if( p_msleep )
+         g_msleep = atoi( p_msleep );
+
+      const char* p_seconds = getenv( c_env_var_ciyam_seconds );
 
       if( p_seconds )
          g_seconds = atoi( p_seconds );
