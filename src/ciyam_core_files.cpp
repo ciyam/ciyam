@@ -830,7 +830,12 @@ void decrypt_pulled_peer_file( const string& dest_hash,
     get_special_var_name( e_special_var_blockchain_stream_cipher ) ) );
 
    if( stream_cipher.empty( ) )
-      throw runtime_error( "unexpected missing @stream_cipher in decrypt_pulled_peer_file" );
+   {
+      if( is_for_testing )
+         stream_cipher = stream_cipher_string( );
+      else
+         throw runtime_error( "unexpected missing @stream_cipher in decrypt_pulled_peer_file" );
+   }
 
    stringstream ss( file_data );
 
