@@ -4970,9 +4970,6 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          if( !is_captured_session( )
           && ( is_condemned_session( ) || g_server_shutdown || !socket.had_timeout( ) ) )
          {
-            if( is_condemned_session( ) && !socket_handler.get_is_for_support( ) )
-               condemn_matching_sessions( );
-
             // NOTE: If the session is not captured and it has either been condemned or
             // the server is shutting down, or its socket has died then force a "bye".
             cmd_and_args = "bye";
@@ -4998,9 +4995,6 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
       {
          if( g_server_shutdown )
             condemn_this_session( );
-
-         if( is_condemned_session( ) && !socket_handler.get_is_for_support( ) )
-            condemn_matching_sessions( );
 
          if( cmd_and_args == c_response_okay || cmd_and_args == c_response_okay_more )
             cmd_and_args = "bye";
@@ -5888,6 +5882,9 @@ void peer_session::on_start( )
 
    if( has_terminated && !is_for_support )
    {
+      // NOTE: Wait before clearing the system variable (for the FCGI UI).
+      msleep( c_start_sleep_time );
+
       if( paired_identity.empty( ) )
          set_system_variable( '~' + identity, "" );
       else
