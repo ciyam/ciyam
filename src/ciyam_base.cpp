@@ -7218,6 +7218,33 @@ bool is_captured_session( )
    return gtp_session && gtp_session->is_captured;
 }
 
+bool has_any_matching_session( )
+{
+   guard g( g_session_mutex );
+
+   bool retval = false;
+
+   if( gtp_session )
+   {
+      size_t sess_id = gtp_session->id;
+
+      string ip_addr( gtp_session->ip_addr );
+      string blockchain( gtp_session->blockchain );
+
+      for( size_t i = 0; i < g_max_sessions; i++ )
+      {
+         if( g_sessions[ i ] && ( g_sessions[ i ]->id != sess_id )
+          && ( g_sessions[ i ]->ip_addr == ip_addr ) && ( g_sessions[ i ]->blockchain == blockchain ) )
+         {
+            retval = true;
+            break;
+         }
+      }
+   }
+
+   return retval;
+}
+
 void release_session( size_t sess_id, bool wait_until_term )
 {
    guard g( g_session_mutex );

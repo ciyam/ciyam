@@ -5826,7 +5826,12 @@ void peer_session::on_start( )
       if( was_initialised )
       {
          if( !is_for_support && !blockchain.empty( ) )
+         {
             condemn_matching_sessions( );
+
+            while( has_any_matching_session( ) )
+               msleep( c_wait_sleep_time );
+         }
 
          term_session( );
          has_terminated = true;
@@ -5845,7 +5850,12 @@ void peer_session::on_start( )
       if( was_initialised )
       {
          if( !is_for_support && !blockchain.empty( ) )
+         {
             condemn_matching_sessions( );
+
+            while( has_any_matching_session( ) )
+               msleep( c_wait_sleep_time );
+         }
 
          term_session( );
          has_terminated = true;
@@ -5864,7 +5874,12 @@ void peer_session::on_start( )
       if( was_initialised )
       {
          if( !is_for_support && !blockchain.empty( ) )
+         {
             condemn_matching_sessions( );
+
+            while( has_any_matching_session( ) )
+               msleep( c_wait_sleep_time );
+         }
 
          term_session( );
          has_terminated = true;
