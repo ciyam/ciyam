@@ -396,6 +396,8 @@ void CIYAM_BASE_DECL_SPEC capture_all_other_sessions( );
 
 bool CIYAM_BASE_DECL_SPEC is_captured_session( );
 
+bool CIYAM_BASE_DECL_SPEC has_any_matching_session( );
+
 void CIYAM_BASE_DECL_SPEC release_session( size_t sess_id, bool wait_until_term );
 void CIYAM_BASE_DECL_SPEC release_all_other_sessions( bool wait_until_term );
 
