@@ -92,6 +92,8 @@ const unsigned int c_default_max_peers = 100;
 // client interfaces and is not the max # of concurrent server sessions.
 const unsigned int c_default_max_user_limit = 1000;
 
+const size_t c_default_delay = 100; // i.e. 0.1s
+
 const size_t c_key_reserve_size = 128;
 const size_t c_default_cache_limit = 1000;
 
@@ -371,8 +373,7 @@ struct session
 
       last_cmd = string( c_str_none );
 
-      dtm_created = date_time::local( );
-      dtm_last_cmd = date_time::local( );
+      dtm_created = dtm_last_cmd = dtm_msleep_after = date_time::local( );
 
       variables.insert( make_pair(
        get_special_var_name( e_special_var_session_id ), to_string( id ) ) );
@@ -436,6 +437,7 @@ struct session
    date_time dtm_created;
    date_time dtm_last_cmd;
    date_time dtm_last_recv;
+   date_time dtm_msleep_after;
 
    size_t peer_files_uploaded;
    int64_t peer_bytes_uploaded;
@@ -7029,8 +7031,48 @@ void set_last_session_cmd( const string& cmd )
 
    if( gtp_session )
    {
+      date_time now( date_time::local( ) );
+      date_time dtm_msleep_after( gtp_session->dtm_msleep_after );
+
       gtp_session->last_cmd = cmd;
-      gtp_session->dtm_last_cmd = date_time::local( );
+      gtp_session->dtm_last_cmd = now;
+
+      if( gtp_session->variables.count( get_special_var_name( e_special_var_cmd_delay ) ) )
+      {
+         size_t delay_wait_msecs = c_default_delay;
+
+         string cmd_delay_wait_name( get_special_var_name( e_special_var_cmd_delay_wait ) );
+
+         if( gtp_session->variables.count( cmd_delay_wait_name ) )
+            delay_wait_msecs = from_string< seconds >( gtp_session->variables[ cmd_delay_wait_name ] );
+
+         bool skip_msleep = false;
+         bool set_msleep_after = false;
+
+         if( ( cmd.find( "variable" ) != string::npos )
+          || ( cmd.find( "terminate" ) != string::npos ) )
+            skip_msleep = true;
+
+         if( now >= dtm_msleep_after )
+         {
+            set_msleep_after = true;
+
+            if( !skip_msleep && ( dtm_msleep_after != gtp_session->dtm_created ) )
+               msleep( delay_wait_msecs );
+         }
+
+         if( set_msleep_after )
+         {
+            seconds delay_after_seconds = 0;
+
+            string cmd_delay_after_name( get_special_var_name( e_special_var_cmd_delay_after ) );
+
+            if( gtp_session->variables.count( cmd_delay_after_name ) )
+               delay_after_seconds = from_string< seconds >( gtp_session->variables[ cmd_delay_after_name ] );
+
+            gtp_session->dtm_msleep_after = ( date_time::local( ) + ( seconds )delay_after_seconds );
+         }
+      }
    }
 }
 

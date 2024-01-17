@@ -114,6 +114,7 @@ const char* const c_special_variable_peer_hub = "@peer_hub";
 const char* const c_special_variable_progress = "@progress";
 const char* const c_special_variable_updating = "@updating";
 const char* const c_special_variable_args_file = "@args_file";
+const char* const c_special_variable_cmd_delay = "@cmd_delay";
 const char* const c_special_variable_crypt_key = "@crypt_key";
 const char* const c_special_variable_decrement = "@decrement";
 const char* const c_special_variable_file_list = "@file_list";
@@ -160,6 +161,7 @@ const char* const c_special_variable_shared_secret = "@shared_secret";
 const char* const c_special_variable_stream_cipher = "@stream_cipher";
 const char* const c_special_variable_sub_directory = "@sub_directory";
 const char* const c_special_variable_update_fields = "@update_fields";
+const char* const c_special_variable_cmd_delay_wait = "@cmd_delay_wait";
 const char* const c_special_variable_files_area_dir = "@files_area_dir";
 const char* const c_special_variable_peer_clone_key = "@peer_clone_key";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
@@ -168,6 +170,7 @@ const char* const c_special_variable_style_extended = "@style_extended";
 const char* const c_special_variable_sys_var_prefix = "@sys_var_prefix";
 const char* const c_special_variable_blockchain_user = "@blockchain_user";
 const char* const c_special_variable_ciyam_list_hash = "@ciyam_list_hash";
+const char* const c_special_variable_cmd_delay_after = "@cmd_delay_after";
 const char* const c_special_variable_notifier_events = "@notifier_events";
 const char* const c_special_variable_paired_identity = "@paired_identity";
 const char* const c_special_variable_queue_hub_users = "@queue_hub_users";
@@ -548,6 +551,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_args_file );
       break;
 
+      case e_special_var_cmd_delay:
+      s = string( c_special_variable_cmd_delay );
+      break;
+
       case e_special_var_crypt_key:
       s = string( c_special_variable_crypt_key );
       break;
@@ -732,6 +739,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_update_fields );
       break;
 
+      case e_special_var_cmd_delay_wait:
+      s = string( c_special_variable_cmd_delay_wait );
+      break;
+
       case e_special_var_files_area_dir:
       s = string( c_special_variable_files_area_dir );
       break;
@@ -758,6 +769,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_ciyam_list_hash:
       s = string( c_special_variable_ciyam_list_hash );
+      break;
+
+      case e_special_var_cmd_delay_after:
+      s = string( c_special_variable_cmd_delay_after );
       break;
 
       case e_special_var_notifier_events:
