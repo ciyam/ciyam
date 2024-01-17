@@ -121,6 +121,14 @@ SUB_DIRECTORY=
 .session_variable @set ""
 .session_variable @set "~$PATHS"
 ;
+@ifdef $CIYAM_MSLEEP
+.session_variable @cmd_delay_wait $CIYAM_MSLEEP
+@endif
+@ifdef $CIYAM_SECONDS
+.session_variable @cmd_delay_after $CIYAM_SECONDS
+.session_variable @cmd_delay 1
+@endif
+;
 @:PATH_LOOP
 @label NEXT_PATH
 .session_variable @deque ""
