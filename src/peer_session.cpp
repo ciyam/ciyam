@@ -88,6 +88,7 @@ const char* const c_dummy_support_tag = "support";
 const char* const c_dummy_message_data = "utf8:test";
 
 const size_t c_dummy_num_for_support = 999;
+const size_t c_default_progress_seconds = 2;
 
 const int c_accept_timeout = 250;
 const int c_max_line_length = 500;
@@ -3907,7 +3908,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             throw runtime_error( "unexpected missing tree root" );
       }
 
-      remove_obsolete_repository_entries( identity, &dtm, this, 2, true );
+      remove_obsolete_repository_entries( identity, &dtm, this, true );
 
       last_num_tree_item = 0;
       set_blockchain_tree_item( blockchain, 0 );
@@ -5606,7 +5607,10 @@ void peer_session::on_start( )
          set_session_variable( get_special_var_name( e_special_var_blockchain_backup_identity ), backup_identity );
 
       if( !is_for_support )
+      {
          set_session_variable( get_special_var_name( e_special_var_blockchain_time_value ), to_string( time_value ) );
+         set_session_variable( get_special_var_name( e_special_var_progress_seconds ), to_string( c_default_progress_seconds ) );
+      }
 
       okay = true;
       was_initialised = true;

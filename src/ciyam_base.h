@@ -374,6 +374,8 @@ void CIYAM_BASE_DECL_SPEC increment_session_commands_executed( );
 
 void CIYAM_BASE_DECL_SPEC set_slowest_if_applicable( );
 
+void CIYAM_BASE_DECL_SPEC session_progress_settings( size_t& seconds, size_t& milliseconds );
+
 void CIYAM_BASE_DECL_SPEC set_session_progress_output( const std::string& progress_output );
 
 void CIYAM_BASE_DECL_SPEC set_last_session_cmd( const std::string& cmd );
