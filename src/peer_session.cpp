@@ -108,8 +108,8 @@ const size_t c_wait_sleep_time = 250;
 const size_t c_start_sleep_time = 2500;
 
 const size_t c_initial_timeout = 25000;
-const size_t c_request_timeout = 30000;
-const size_t c_support_timeout = 10000;
+const size_t c_request_timeout = 60000;
+const size_t c_support_timeout = 15000;
 
 const size_t c_num_hash_rounds = 1000000;
 
