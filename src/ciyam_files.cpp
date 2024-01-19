@@ -277,6 +277,35 @@ void set_file_type_and_extra( const string& hash, unsigned char file_type_and_ex
 size_t g_total_files = 0;
 int64_t g_total_bytes = 0;
 
+set< string > g_files_constructing;
+
+struct file_constructor
+{
+   file_constructor( const string& file_name );
+   ~file_constructor( );
+
+   string file_name;
+};
+
+file_constructor::file_constructor( const string& file_name )
+ :
+ file_name( file_name )
+{
+   guard g( g_mutex );
+
+   if( g_files_constructing.count( file_name ) )
+      throw runtime_error( "file '" + file_name + "' is already being constructed" );
+
+   g_files_constructing.insert( file_name );
+}
+
+file_constructor::~file_constructor( )
+{
+   guard g( g_mutex );
+
+   g_files_constructing.erase( file_name );
+}
+
 int64_t local_secs_diff( )
 {
    date_time local( date_time::local( ) );
@@ -2125,11 +2154,14 @@ string create_raw_file( const string& data, bool compress,
       if( p_is_existing )
          *p_is_existing = false;
 
-      if( g_total_files >= get_files_area_item_max_num( ) )
+      if( g_files_constructing.count( file_name ) )
+         throw runtime_error( "unexpected file name '" + file_name + "' is currently under construction" );
+
+      if( g_total_files + g_files_constructing.size( ) >= get_files_area_item_max_num( ) )
          // NOTE: First attempt to relegate an existing file in order to make room.
          relegate_one_or_num_oldest_files( "", "", 1, 0, true );
 
-      if( g_total_files >= get_files_area_item_max_num( ) )
+      if( g_total_files + g_files_constructing.size( ) >= get_files_area_item_max_num( ) )
          throw runtime_error( "maximum file area item limit has been reached" );
 
       size_t max_num = get_files_area_item_max_num( );
@@ -3310,6 +3342,8 @@ void crypt_file( const string& repository,
  crypt_target target, progress* p_progress, date_time* p_dtm, size_t* p_total,
  crypt_operation operation, set< string >* p_files_processed, stream_cipher cipher )
 {
+   guard g( g_mutex, "crypt_file" );
+
    string hash( tag_or_hash );
 
    if( has_tag( tag_or_hash ) )
@@ -3730,7 +3764,7 @@ bool store_file( const string& hash,
 
       if( !is_existing )
       {
-         guard g( g_mutex, "store_file" );
+         file_constructor new_file( file_name );
 
          unsigned char file_type = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_mask );
          unsigned char file_extra = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_extra_mask );
@@ -3815,14 +3849,19 @@ bool store_file( const string& hash,
             if( !is_existing )
                is_in_blacklist = file_has_been_blacklisted( hash );
 
-            if( !is_existing && !is_in_blacklist && g_total_files >= get_files_area_item_max_num( ) )
+            if( !is_existing && !is_in_blacklist )
             {
-               // NOTE: First attempt to relegate an existing file in order to make room.
-               relegate_one_or_num_oldest_files( "", "", 1, 0, true );
+               guard g( g_mutex, "store_file" );
 
-               if( g_total_files >= get_files_area_item_max_num( ) )
-                  // FUTURE: This message should be handled as a server string message.
-                  throw runtime_error( "Maximum files area item limit has been reached." );
+               if( g_total_files + g_files_constructing.size( ) > get_files_area_item_max_num( ) )
+               {
+                  // NOTE: First attempt to relegate an existing file in order to make room.
+                  relegate_one_or_num_oldest_files( "", "", 1, 0, true );
+
+                  if( g_total_files + g_files_constructing.size( ) > get_files_area_item_max_num( ) )
+                     // FUTURE: This message should be handled as a server string message.
+                     throw runtime_error( "Maximum files area item limit has been reached." );
+               }
             }
 
             if( !is_existing && !is_in_blacklist )
@@ -3881,6 +3920,8 @@ bool store_file( const string& hash,
                            existing_bytes = file_size( file_name );
                      }
                   }
+
+                  guard g( g_mutex, "store_file" );
 
                   if( archive.empty( ) )
                      write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
@@ -3941,6 +3982,8 @@ bool store_file( const string& hash,
 
                         file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ] | c_file_type_val_compressed;
 
+                        guard g( g_mutex, "store_file" );
+
                         if( !p_file_data )
                         {
                            if( archive.empty( ) )
@@ -3968,6 +4011,8 @@ bool store_file( const string& hash,
                {
                   if( !p_file_data )
                   {
+                     guard g( g_mutex, "store_file" );
+
                      if( archive.empty( ) )
                         write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
                      else
@@ -3990,6 +4035,8 @@ bool store_file( const string& hash,
 
          if( !p_file_data && !is_in_blacklist && archive_path.empty( ) )
          {
+            guard g( g_mutex, "store_file" );
+
             if( !is_existing )
                ++g_total_files;
 
