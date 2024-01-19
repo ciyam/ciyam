@@ -80,8 +80,7 @@ if [ ! -f ~backup ]; then
  echo "Starting backup..." >>Backup.txt
 
  if [ -f $BACKUP_IMAGE ]; then
-  export CIYAM_MSLEEP=100
-  export CIYAM_SECONDS=4
+  export CIYAM_SECONDS=3
   export USE_BACKUP_ARCHIVE=1
 
   export CIYAM_STREAM_CIPHER=cc
