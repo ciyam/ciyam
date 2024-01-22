@@ -132,6 +132,7 @@ enum special_var
    e_special_var_cmd_delay,
    e_special_var_crypt_key,
    e_special_var_decrement,
+   e_special_var_executing,
    e_special_var_file_list,
    e_special_var_image_dir,
    e_special_var_increment,

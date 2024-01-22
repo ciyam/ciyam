@@ -44,6 +44,8 @@ const char c_restore_variable_prefix = '<';
 
 const char* const c_invalid_name_chars = "<>\"|&\\";
 
+const char* const c_variable_expression = "variable_expression";
+
 const char* const c_special_variable_bh = "@bh";
 const char* const c_special_variable_id = "@id";
 const char* const c_special_variable_os = "@os";
@@ -116,6 +118,7 @@ const char* const c_special_variable_updating = "@updating";
 const char* const c_special_variable_args_file = "@args_file";
 const char* const c_special_variable_crypt_key = "@crypt_key";
 const char* const c_special_variable_decrement = "@decrement";
+const char* const c_special_variable_executing = "@executing";
 const char* const c_special_variable_file_list = "@file_list";
 const char* const c_special_variable_image_dir = "@image_dir";
 const char* const c_special_variable_increment = "@increment";
@@ -556,6 +559,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_decrement:
       s = string( c_special_variable_decrement );
+      break;
+
+      case e_special_var_executing:
+      s = string( c_special_variable_executing );
       break;
 
       case e_special_var_file_list:
@@ -1576,6 +1583,28 @@ bool set_system_variable( const string& name,
    set_system_variable( name, value, is_init, p_progress );
 
    return true;
+}
+
+void system_variable_expression( const string& expr )
+{
+   string expression( expr );
+
+   string::size_type pos = expression.find( ' ' );
+
+   if( pos != string::npos )
+   {
+      string name( expression.substr( 0, pos ) );
+      string value( expression.substr( pos + 1 ) );
+
+      if( value == get_special_var_name( e_special_var_none ) )
+         value.erase( );
+
+      expression.erase( pos );
+
+      set_system_variable( name, value );
+   }
+
+   set_session_variable( c_variable_expression, expression );
 }
 
 string variable_name_from_name_and_value( const string& name_and_value, string* p_value )

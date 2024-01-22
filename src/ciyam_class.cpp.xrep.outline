@@ -2039,7 +2039,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#transient_field_from_variable.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
  arg_ofisfk=$specification_\0_ofisfk arg_variable=$specification_\0_variable\
- arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
+ arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield arg_tfield=$specification_\0_tfield\
  arg_session=$specification_\0_session arg_system=$specification_\0_system arg_suffix=$specification_\0_suffix`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_unary_op`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
@@ -2300,7 +2300,7 @@ void `{`$full_class_name`}::impl::post_init( )
 `{`#transient_field_from_variable.spec.xrep section=post_init class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
  arg_ofisfk=$specification_\0_ofisfk arg_variable=$specification_\0_variable\
- arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
+ arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield arg_tfield=$specification_\0_tfield\
  arg_session=$specification_\0_session arg_system=$specification_\0_system arg_suffix=$specification_\0_suffix`}
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_uid`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
@@ -4581,10 +4581,11 @@ void `{`$full_class_name`}::get_required_field_names(
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
  arg_o2field=$specification_\0_o2field arg_sfield=$specification_\0_sfield`}\
 `,\
-`@eq`(`'\1`'`,`'transient_field_from_variable`'`)`&`(`!`@eq`(`'`'`,`$specification_\0_sfield`)`|`!`@eq`(`'`'`,`$specification_\0_ofield`)`)
+`@eq`(`'\1`'`,`'transient_field_from_variable`'`)`&`(`!`@eq`(`'`'`,`$specification_\0_sfield`)\
+`|`!`@eq`(`'`'`,`$specification_\0_ofield`)`|`!`@eq`(`'`'`,`$specification_\0_tfield`)`)
 `{`#transient_field_from_variable.spec.xrep section=get_required_field_names\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
- arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield`}\
+ arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_to_value`'`)`&`!`@eq`(`'`'`,`$specification_\0_tfield`)
 `{`#transient_field_to_value.spec.xrep section=get_required_field_names\

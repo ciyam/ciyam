@@ -1940,6 +1940,21 @@ void class_base::set_op( op_type new_op, bool is_new_key )
    op = new_op;
 }
 
+void class_base::set_is_executing( bool executing )
+{
+   string value;
+
+   if( executing )
+   {
+      is_executing = true;
+      value = c_true_value;
+   }
+   else
+      is_executing = false;
+
+   set_variable( get_special_var_name( e_special_var_executing ), value );
+}
+
 void class_base::set_is_in_iteration( bool is_in_iter, bool is_forwards )
 {
    iteration_starting = is_in_iter;
