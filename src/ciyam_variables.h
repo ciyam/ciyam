@@ -75,6 +75,8 @@ bool CIYAM_BASE_DECL_SPEC set_system_variable(
  const std::string& name, const std::string& value,
  set_variable_checker& checker, bool is_init = false, progress* p_progress = 0 );
 
+void CIYAM_BASE_DECL_SPEC system_variable_expression( const std::string& expr );
+
 struct temporary_system_variable
 {
    temporary_system_variable( const std::string& name, const std::string& value )

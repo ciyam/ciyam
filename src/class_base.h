@@ -649,6 +649,8 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    void set_op( op_type new_op, bool is_new_key );
 
+   void set_is_executing( bool executing );
+
    inline void set_iteration_starting( bool starting ) { iteration_starting = starting; }
    void set_is_in_iteration( bool is_in_iter, bool is_forwards = true );
 
@@ -936,9 +938,9 @@ struct class_base_accessor
 
    void set_op( class_base::op_type new_op, bool is_new_key ) { cb.set_op( new_op, is_new_key ); }
 
-   void set_is_dynamic_enabled( bool enabled ) { cb.set_is_dynamic_enabled( enabled ); }
+   void set_is_executing( bool is_executing ) { cb.set_is_executing( is_executing ); }
 
-   void set_is_executing( bool is_executing ) { cb.is_executing = is_executing; }
+   void set_is_dynamic_enabled( bool enabled ) { cb.set_is_dynamic_enabled( enabled ); }
 
    void set_iteration_starting( bool starting ) { cb.set_iteration_starting( starting ); }
    void set_is_in_iteration( bool is_in_iter, bool is_forwards = true ) { cb.set_is_in_iteration( is_in_iter, is_forwards ); }

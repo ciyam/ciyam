@@ -1,9 +1,14 @@
 `{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_from_variable)] `{`$arg_id`}
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+   if( get_obj( ).`{`$arg_tfield`}( ) )
+`,\
    // NOTE: Empty code block for scope purposes.
+`}\
    {
 `{`@eq`(`$arg_system`,`'true`'`)\
-      string value( get_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
+      string value( get_system_variable( `{`@eq`(`$arg_session`,`'true`'`)get_session_variable( `}\
+"`{`$arg_variable`}"`{`@eq`(`$arg_session`,`'true`'`) )`}`{`!`@eq`(`$arg_ofield`,`'`'`)\
  + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
 `{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`} ) );
 `,`@eq`(`$arg_session`,`'true`'`)\
@@ -47,6 +52,13 @@
       if( ( use_transients && is_field_transient( e_field_id_`{`$arg_spfield`} ) )
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_spfield`} ) ) )
          names.insert( "`{`$arg_spfield`}" );
+`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+      dependents.insert( "`{`$arg_tfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+         names.insert( "`{`$arg_tfield`}" );
 `}\
    }
    // [(finish transient_field_from_variable)] `{`$arg_id`}
