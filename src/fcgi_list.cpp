@@ -3339,6 +3339,7 @@ void output_list_form( ostream& os,
                   display.erase( 0, pos + 1 );
 
                is_href = true;
+               was_output = true;
 
                os << "<a href=\"" << type << cell_data << "\"" << extra << ">"
                 << data_or_nbsp( escape_markup( unescaped( display ) ) ) << "</a>";
@@ -3384,6 +3385,7 @@ void output_list_form( ostream& os,
 
                   bool has_utf8_chars;
                   string link_file_name( display_names[ source_field_id ] );
+
                   if( filename_col >= 0 )
                   {
                      // NOTE: If an empty filename is found then "file_ext" will end up becoming the name.
@@ -3512,6 +3514,7 @@ void output_list_form( ostream& os,
                   os << "</a>";
 
                is_image = true;
+               was_output = true;
             }
 
             if( source.enum_fields.count( source_value_id ) )
