@@ -317,9 +317,9 @@ inline void create_dir( const std::string& path,
    create_dir( path.c_str( ), p_rc, perms, um );
 }
 
-bool dir_exists( const char* p_name, bool check_link_target = true );
+bool dir_exists( const char* p_name, bool check_link_target = false );
 
-inline bool dir_exists( const std::string& name, bool check_link_target = true )
+inline bool dir_exists( const std::string& name, bool check_link_target = false )
 {
    return dir_exists( name.c_str( ), check_link_target );
 }
@@ -340,9 +340,9 @@ inline bool file_touch( const std::string& name,
    return file_touch( name.c_str( ), p_tm, create_if_not_exists );
 }
 
-bool file_exists( const char* p_name, bool check_link_target = true );
+bool file_exists( const char* p_name, bool check_link_target = false );
 
-inline bool file_exists( const std::string& name, bool check_link_target = true )
+inline bool file_exists( const std::string& name, bool check_link_target = false )
 {
    return file_exists( name.c_str( ), check_link_target );
 }
