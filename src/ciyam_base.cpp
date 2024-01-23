@@ -122,6 +122,8 @@ const int c_max_file_buffer_expansion = 2;
 const char* const c_str_none = "(none)";
 const char* const c_str_peer = "(peer)";
 
+const char* const c_str_unknown = "unknown";
+
 const char* const c_server_log_file = "ciyam_server.log";
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
@@ -5025,7 +5027,6 @@ void init_globals( const char* p_sid, int* p_use_udp )
       }
 
       set_sid( sid );
-
       clear_key( sid );
 
       has_identity( &g_encrypted_identity );
@@ -5050,6 +5051,18 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       set_system_variable(
        get_special_var_name( e_special_var_peer_port ), to_string( c_default_ciyam_peer_port ) );
+
+      string identity( c_str_unknown );
+
+      string blockchain_backup_identity( get_raw_system_variable(
+       get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+
+      if( !blockchain_backup_identity.empty( ) )
+         identity = blockchain_backup_identity;
+      else if( !g_sid.empty( ) && !g_encrypted_identity )
+         identity = get_identity( ).substr( 0, c_identity_length );
+
+      set_system_variable( get_special_var_name( e_special_var_system_identity ), identity );
 
       // NOTE: The manuscript info doesn't actually need to be read until a script is attempted
       // to be run, however, it is been read at startup just to ensure that the .sio file isn't
@@ -5429,6 +5442,14 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             }
 
             set_sid( sid );
+
+            if( get_raw_system_variable(
+             get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
+            {
+               string identity( get_identity( ) );
+
+               set_system_variable( get_special_var_name( e_special_var_system_identity ), identity.substr( 0, 9 ) );
+            }
          }
       }
 
