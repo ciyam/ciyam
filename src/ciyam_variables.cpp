@@ -176,6 +176,7 @@ const char* const c_special_variable_paired_identity = "@paired_identity";
 const char* const c_special_variable_progress_msleep = "@progress_msleep";
 const char* const c_special_variable_queue_hub_users = "@queue_hub_users";
 const char* const c_special_variable_row_cache_limit = "@row_cache_limit";
+const char* const c_special_variable_system_identity = "@system_identity";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_dummy_time_stamp = "@dummy_time_stamp";
 const char* const c_special_variable_progress_seconds = "@progress_seconds";
@@ -787,6 +788,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_row_cache_limit:
       s = string( c_special_variable_row_cache_limit );
+      break;
+
+      case e_special_var_system_identity:
+      s = string( c_special_variable_system_identity );
       break;
 
       case e_special_var_check_if_changed:

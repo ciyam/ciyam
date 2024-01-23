@@ -12,6 +12,8 @@ const int c_tx_id_standard = 5;
 
 const size_t c_max_extras = 9;
 
+const size_t c_identity_length = 7;
+
 const size_t c_bc_identity_length = 9;
 
 const size_t c_bc_scaling_value = 50;

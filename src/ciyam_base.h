@@ -172,6 +172,16 @@ void CIYAM_BASE_DECL_SPEC get_identity(
  std::string& s, bool append_max_user_limit = false,
  bool use_raw_value = false, bool md5_version = false, const char* p_pubkey = 0 );
 
+inline std::string get_identity( bool append_max_user_limit = false,
+ bool use_raw_value = false, bool md5_version = false, const char* p_pubkey = 0 )
+{
+   std::string s;
+   get_identity( s, append_max_user_limit, use_raw_value, md5_version, p_pubkey );
+
+   return s;
+}
+
+
 bool CIYAM_BASE_DECL_SPEC has_identity( bool* p_is_encrypted = 0 );
 
 void CIYAM_BASE_DECL_SPEC set_identity( const std::string& info, const char* p_encrypted_sid = 0 );
@@ -195,7 +205,7 @@ std::string CIYAM_BASE_DECL_SPEC list_peer_ip_addrs_for_rejection( );
 
 std::string CIYAM_BASE_DECL_SPEC get_non_extra_identity( const std::string& extra_identity );
 
-inline bool CIYAM_BASE_DECL_SPEC is_extra_non_hub_identity( const std::string& identity )
+inline bool is_extra_non_hub_identity( const std::string& identity )
 {
    return ( get_non_extra_identity( identity ) != identity );
 }
