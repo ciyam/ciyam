@@ -325,7 +325,7 @@ bool perform_action( const string& module_name,
 
          fields_and_values += field_ids[ i ];
          fields_and_values += "=";
-         fields_and_values += escaped( escaped( field_values[ i ], ",\"" ), "," );
+         fields_and_values += escaped( escaped( field_values[ i ], "," ), ",\"" );
       }
    }
 
