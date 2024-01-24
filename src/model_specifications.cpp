@@ -3168,11 +3168,14 @@ void default_to_field_specification::add_specification_data( model& m, specifica
    if( !tclass_id.empty( ) )
       tclass_name = get_class_name_for_id( m, tclass_id );
 
-   string tfield_name;
+   string tfield_name, tfield_type;
    if( !tfield_id.empty( ) )
-      tfield_name = get_field_name_for_id( m, tclass_name, tfield_id );
+      tfield_name = get_field_name_for_id( m, tclass_name, tfield_id, &tfield_type );
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, tfield_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tvalue, test_value ) );
+
+   bool is_ttext_type( !is_non_string_type( tfield_type ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_tfistexttype, is_ttext_type ? "1" : "0" ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_append, append_value ) );
 
@@ -3182,6 +3185,7 @@ void default_to_field_specification::add_specification_data( model& m, specifica
    spec_data.data_pairs.push_back( make_pair( c_data_cvt_func, convertor ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_inc_clones, "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_tcfistexttype, "0" ) );
 }
 
 string default_to_field_specification::static_class_name( ) { return "default_to_field"; }

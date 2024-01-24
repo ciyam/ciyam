@@ -4185,9 +4185,9 @@ void Meta_Field::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)] 600053
 
    // [(start default_to_field)] 600053a
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).UOM( ) == g_default_UOM )
+    && ( get_obj( ).UOM( ) == g_default_UOM ) )
       get_obj( ).UOM( get_obj( ).Type( ).Default_UOM( ) );
    // [(finish default_to_field)] 600053a
 

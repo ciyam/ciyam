@@ -977,6 +977,11 @@ void Meta_Package::impl::impl_Install( )
       vector< string > dependencies;
       map< string, string > installed_types;
 
+      // KLUDGE: Because "Remove_All_Packages" relies upon the last modification time for
+      // determining the package order a delay of one second is required in order to make
+      // sure automated installation scripts have different times for each package "map".
+      msleep( 1000 );
+
       if( get_obj( ).Model( ).child_Package( ).iterate_forwards( ) )
       {
          do
