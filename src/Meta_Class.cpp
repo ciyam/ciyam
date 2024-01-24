@@ -4951,16 +4951,16 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    // [(finish parent_auto_int_inc)] 600037
 
    // [(start default_to_field)] 600038
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Next_Field_Id( ) == g_default_Next_Field_Id )
+    && ( get_obj( ).Next_Field_Id( ) == g_default_Next_Field_Id ) )
       get_obj( ).Next_Field_Id( get_obj( ).Id( ) + "F100" );
    // [(finish default_to_field)] 600038
 
    // [(start default_to_field)] 610038
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Next_Procedure_Id( ) == g_default_Next_Procedure_Id )
+    && ( get_obj( ).Next_Procedure_Id( ) == g_default_Next_Procedure_Id ) )
       get_obj( ).Next_Procedure_Id( get_obj( ).Id( ) + "P100" );
    // [(finish default_to_field)] 610038
 

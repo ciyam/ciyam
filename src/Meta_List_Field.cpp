@@ -5042,9 +5042,9 @@ void Meta_List_Field::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_to_field)] 600446
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == g_default_Class )
+    && ( get_obj( ).Class( ) == g_default_Class ) )
       get_obj( ).Class( get_obj( ).List( ).Class( ) );
    // [(finish default_to_field)] 600446
 

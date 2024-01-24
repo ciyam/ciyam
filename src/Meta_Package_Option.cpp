@@ -3592,9 +3592,9 @@ void Meta_Package_Option::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_to_field)] 600881
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Model( ) == g_default_Model )
+    && ( get_obj( ).Model( ) == g_default_Model ) )
       get_obj( ).Model( get_obj( ).Package( ).Model( ) );
    // [(finish default_to_field)] 600881
 

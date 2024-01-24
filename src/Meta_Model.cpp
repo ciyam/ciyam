@@ -7399,30 +7399,30 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
    // [(finish file_link)] 600012
 
    // [(start default_to_field)] 610010
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Next_Class_Id( ) == g_default_Next_Class_Id )
+    && ( get_obj( ).Next_Class_Id( ) == g_default_Next_Class_Id ) )
       get_obj( ).Next_Class_Id( get_obj( ).Id( ) + "C100" );
    // [(finish default_to_field)] 610010
 
    // [(start default_to_field)] 620010
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Next_Specification_Id( ) == g_default_Next_Specification_Id )
+    && ( get_obj( ).Next_Specification_Id( ) == g_default_Next_Specification_Id ) )
       get_obj( ).Next_Specification_Id( get_obj( ).Id( ) + "S1000" );
    // [(finish default_to_field)] 620010
 
    // [(start default_to_field)] 630010
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Next_List_Id( ) == g_default_Next_List_Id )
+    && ( get_obj( ).Next_List_Id( ) == g_default_Next_List_Id ) )
       get_obj( ).Next_List_Id( get_obj( ).Id( ) + "L100" );
    // [(finish default_to_field)] 630010
 
    // [(start default_to_field)] 640010
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Next_View_Id( ) == g_default_Next_View_Id )
+    && ( get_obj( ).Next_View_Id( ) == g_default_Next_View_Id ) )
       get_obj( ).Next_View_Id( get_obj( ).Id( ) + "V100" );
    // [(finish default_to_field)] 640010
 

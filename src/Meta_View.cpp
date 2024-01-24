@@ -2572,9 +2572,9 @@ void Meta_View::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_to_field)] 600310
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Name( ) == g_default_Name )
+    && ( get_obj( ).Name( ) == g_default_Name ) )
       get_obj( ).Name( get_obj( ).Type( ).View_Name( ) );
    // [(finish default_to_field)] 600310
 

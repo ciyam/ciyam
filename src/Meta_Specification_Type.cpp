@@ -6252,25 +6252,25 @@ void Meta_Specification_Type::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_to_field)] 600251
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Allow_Procedure_Arg( ) == g_default_Allow_Procedure_Arg
+    && ( get_obj( ).Allow_Procedure_Arg( ) == g_default_Allow_Procedure_Arg )
     && get_obj( ).Needs_Procedure_Arg( ) == true )
       get_obj( ).Allow_Procedure_Arg( get_obj( ).Needs_Procedure_Arg( ) );
    // [(finish default_to_field)] 600251
 
    // [(start default_to_field)] 600252
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Allow_Other_Procedure( ) == g_default_Allow_Other_Procedure
+    && ( get_obj( ).Allow_Other_Procedure( ) == g_default_Allow_Other_Procedure )
     && get_obj( ).Needs_Other_Procedure( ) == true )
       get_obj( ).Allow_Other_Procedure( get_obj( ).Needs_Other_Procedure( ) );
    // [(finish default_to_field)] 600252
 
    // [(start default_to_field)] 600253
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Allow_Other_Procedure_2( ) == g_default_Allow_Other_Procedure_2
+    && ( get_obj( ).Allow_Other_Procedure_2( ) == g_default_Allow_Other_Procedure_2 )
     && get_obj( ).Needs_Other_Procedure_2( ) == true )
       get_obj( ).Allow_Other_Procedure_2( get_obj( ).Needs_Other_Procedure_2( ) );
    // [(finish default_to_field)] 600253

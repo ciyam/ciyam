@@ -3952,9 +3952,9 @@ void Meta_View_Field::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_to_field)] 600355
-   if( is_create
+   if( ( is_create || get_obj( ).get_key( ).empty( ) )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == g_default_Class )
+    && ( get_obj( ).Class( ) == g_default_Class ) )
       get_obj( ).Class( get_obj( ).View( ).Class( ) );
    // [(finish default_to_field)] 600355
 
