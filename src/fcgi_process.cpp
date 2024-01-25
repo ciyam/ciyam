@@ -235,7 +235,12 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
          ostringstream osstr;
 
-         replace_links_and_output( p_session_info->sys_message, "",
+         string sys_message;
+
+         if( !using_anonymous )
+            sys_message = p_session_info->sys_message;
+
+         replace_links_and_output( sys_message, "",
           mod_info.name, module_ref, osstr, true, true, session_id, *p_session_info,
           uselect, cookies_permitted, use_url_checksum );
 
