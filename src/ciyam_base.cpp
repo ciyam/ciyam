@@ -41,6 +41,7 @@
 #include "sha256.h"
 #include "sql_db.h"
 #include "pointers.h"
+#include "progress.h"
 #include "date_time.h"
 #include "utilities.h"
 #include "char_array.h"
@@ -1537,8 +1538,8 @@ struct reconstruct_trace_progress : progress
     also_to_cout( also_to_cout ),
     num_chars_to_cout( 0 )
    {
-      if( !g_web_root.empty( ) && !g_default_storage.empty( ) )
-         stop_file = g_web_root + '/' + lower( g_default_storage ) + "/ciyam_interface.stop";
+      if( !g_web_root.empty( ) )
+         stop_file = g_web_root + '/' + lower( c_meta_storage_name ) + "/ciyam_interface.stop";
 
       if( !stop_file.empty( ) )
          file_touch( stop_file, 0, true );
@@ -1573,7 +1574,7 @@ struct reconstruct_trace_progress : progress
          file_remove( stop_file );
    }
 
-   void output_message( const string& message, unsigned long num, unsigned long total )
+   void output_progress( const string& message, unsigned long num, unsigned long total )
    {
       date_time now( date_time::local( ) );
       uint64_t elapsed = seconds_between( dtm, now );
@@ -1609,7 +1610,7 @@ struct reconstruct_trace_progress : progress
       }
 
       // NOTE: Avoid filling the log with a large number of progress messages.
-      if( elapsed >= 10 )
+      if( elapsed >= 60 )
       {
          dtm = now;
 
@@ -1619,7 +1620,7 @@ struct reconstruct_trace_progress : progress
             final_message += extra;
          else
             // FUTURE: This message should be handled as a server string message.
-            final_message = "(restore for ODS DB '" + name + "' in progress)";
+            final_message = "...restore for '" + name + "' is continuing...";
 
          TRACE_LOG( TRACE_ANYTHING, final_message );
       }
