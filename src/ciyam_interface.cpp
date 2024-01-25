@@ -110,7 +110,7 @@ const char* const c_unlock = "unlock";
 const char* const c_id_file = "../meta/identity.txt";
 const char* const c_eid_file = "../meta/encrypted.txt";
 
-const char* const c_stop_file = "ciyam_interface.stop";
+const char* const c_stop_file = "../meta/ciyam_interface.stop";
 
 #ifdef _WIN32
 const char* const c_kill_script = "ciyam_interface.kill.bat";
@@ -169,8 +169,8 @@ const char* const c_ssl_sign_up_extra_details = "@@ssl_sign_up_extra_details";
 
 const char* const c_user_other_none = "~";
 
-// NOTE: When not using multiple request handlers a global socket is being used to access the
-// application server in order to permit testing without any possible concurrency issues arising.
+// NOTE: When not using multiple request handlers a single socket is being used to access
+// the application server (in order to allow testing without possible concurrency issues).
 #ifndef USE_MULTIPLE_REQUEST_HANDLERS
 #  ifdef SSL_SUPPORT
 ssl_socket g_socket;
@@ -929,8 +929,12 @@ void request_handler::process_request( )
       if( file_exists( c_stop_file ) )
       {
          msleep( 2500 );
+
          if( file_exists( c_stop_file ) )
+         {
+            using_anonymous = true;
             throw runtime_error( GDS( c_display_under_maintenance_try_again_later ) );
+         }
       }
 
       if( !get_storage_info( ).modules_index.count( module_name ) )
@@ -3309,4 +3313,3 @@ int main( int argc, char* argv[ ] )
 #endif
    return rc;
 }
-

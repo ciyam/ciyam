@@ -3712,7 +3712,7 @@ void ods::move_free_data_to_end( progress* p_progress )
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
    if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this ) );
+      ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
    ods_index_entry_pos entry;
    set< ods_index_entry_pos > entries;
@@ -3739,9 +3739,7 @@ void ods::move_free_data_to_end( progress* p_progress )
          if( elapsed >= 1 )
          {
             dtm = now;
-
-            // FUTURE: This message should be handled in an external strings file.
-            p_progress->output_progress( "Scanning index items...", i, total_entries );
+            p_progress->output_progress( "." );
          }
       }
 
@@ -3835,9 +3833,7 @@ void ods::move_free_data_to_end( progress* p_progress )
                   if( elapsed >= 1 )
                   {
                      dtm = now;
-
-                     // FUTURE: This message should be handled in an external strings file.
-                     p_progress->output_progress( "Appending to tx log...", next_pos, total_size_of_data );
+                     p_progress->output_progress( "." );
                   }
                }
             }
@@ -3903,9 +3899,7 @@ void ods::move_free_data_to_end( progress* p_progress )
                if( elapsed >= 1 )
                {
                   dtm = now;
-
-                  // FUTURE: This message should be handled in an external strings file.
-                  p_progress->output_progress( "Moving free data to end...", new_pos, total_size_of_data );
+                  p_progress->output_progress( "." );
                }
             }
          }
@@ -3979,7 +3973,7 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
    if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this ) );
+      ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
    log_info tranlog_info;
 
@@ -4103,9 +4097,7 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
             if( elapsed >= 1 )
             {
                dtm = now;
-
-               // FUTURE: This message should be handled in an external strings file.
-               p_progress->output_progress( "Appending log items...", i, total_entries );
+               p_progress->output_progress( "." );
             }
          }
 
@@ -4245,7 +4237,7 @@ void ods::compress_and_reset_tx_log( progress* p_progress )
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
    if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this ) );
+      ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
    move_free_data_to_end( p_progress );
 
