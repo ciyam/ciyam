@@ -659,7 +659,7 @@ class CIYAM_BASE_DECL_SPEC system_ods_bulk_read
 class CIYAM_BASE_DECL_SPEC system_ods_bulk_write
 {
    public:
-   system_ods_bulk_write( );
+   system_ods_bulk_write( progress* p_progress = 0 );
    ~system_ods_bulk_write( );
 
    private:

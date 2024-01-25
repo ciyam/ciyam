@@ -4425,7 +4425,7 @@ void remove_file_archive( const string& name, bool destroy_files, bool remove_di
 
    date_time dtm( date_time::local( ) );
 
-   system_ods_bulk_write ods_bulk_write;
+   system_ods_bulk_write ods_bulk_write( p_progress );
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -4611,7 +4611,7 @@ void resize_file_archive( const string& name, int64_t new_size_limit, progress* 
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Archive minimum size must be at least " + format_bytes( min_limit ) + " bytes." );
 
-   system_ods_bulk_write ods_bulk_write;
+   system_ods_bulk_write ods_bulk_write( p_progress );
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -5611,7 +5611,7 @@ size_t count_total_repository_entries(
 size_t remove_all_repository_entries( const string& repository,
  date_time* p_dtm, progress* p_progress, bool set_session_progress )
 {
-   system_ods_bulk_write ods_bulk_write;
+   system_ods_bulk_write ods_bulk_write( p_progress );
 
    string archive_path;
    vector< string > paths;
@@ -5756,7 +5756,7 @@ size_t remove_all_repository_entries( const string& repository,
 size_t remove_obsolete_repository_entries( const string& repository,
  date_time* p_dtm, progress* p_progress, bool set_session_progress )
 {
-   system_ods_bulk_write ods_bulk_write;
+   system_ods_bulk_write ods_bulk_write( p_progress );
 
    string archive_path;
    vector< string > paths;
