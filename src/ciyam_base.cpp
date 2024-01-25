@@ -10053,18 +10053,18 @@ system_ods_bulk_read::~system_ods_bulk_read( )
 
 struct system_ods_bulk_write::impl
 {
-   impl( )
+   impl( progress* p_progress )
    {
       if( !gap_ods->is_bulk_write_locked( ) )
-         ap_ods_bulk_write.reset( new ods::bulk_write( *gap_ods ) );
+         ap_ods_bulk_write.reset( new ods::bulk_write( *gap_ods, p_progress ) );
    }
 
    auto_ptr< ods::bulk_write > ap_ods_bulk_write;
 };
 
-system_ods_bulk_write::system_ods_bulk_write( )
+system_ods_bulk_write::system_ods_bulk_write( progress* p_progress )
 {
-   p_impl = new impl;
+   p_impl = new impl( p_progress );
 }
 
 system_ods_bulk_write::~system_ods_bulk_write( )
