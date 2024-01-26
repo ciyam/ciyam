@@ -26,59 +26,138 @@ SEED=$3
 @endif
 @ifdef $CONT
 ;
-.file_core -header bc.$IDENT.zenith h
-@ifndef $ERROR
-BLK_HEIGHT=$OUTPUT
+<bc_all_extras.cin
+ERROR=
+BACKUP=
+SHARED=
+PEER_HUB=
 ;
-.file_info -content bc.$IDENT.$HEIGHT.blk
-@ifndef $ERROR
+.session_variable @deque
+DEQUE=$OUTPUT
+.session_variable @deque ""
+.session_variable @deque "push_back $IDENT"
+;
+.system_variable @blockchain_backup_identity
+@ifeq "$OUTPUT" "$IDENT"
+BACKUP=1
+@ifdef $BACKUP_EXTRAS
+EXTRAS=@repstr:,/\n:$BACKUP_EXTRAS
+.session_variable @deque "~$EXTRAS"
+@endif
+@endif
+;
+.system_variable @blockchain_shared_identity
+@ifeq "$OUTPUT" "$IDENT"
+SHARED=1
+@ifdef $SHARED_EXTRAS
+EXTRAS=@repstr:,/\n:$SHARED_EXTRAS
+.session_variable @deque "~$EXTRAS"
+@endif
+@endif
+;
+.system_variable @blockchain_peer_hub_identity
+@ifeq "$OUTPUT" "$IDENT"
+PEER_HUB=1
+@ifdef $PEER_HUB_EXTRAS
+EXTRAS=@repstr:,/\n:$PEER_HUB_EXTRAS
+.session_variable @deque "~$EXTRAS"
+@endif
+@endif
 ;
 @:LOOP
 ;
 @label NEXT
-@ifeq $BLK_HEIGHT $HEIGHT
+.session_variable @deque front
+@ifndef $OUTPUT
 @label DONE
 @endif
+NEXT_IDENT=$OUTPUT
 ;
 @skip
 ;
 @:NEXT
-@label NEXT2
-LAST_HEIGHT=$BLK_HEIGHT
-BLK_HEIGHT=@$BLK_HEIGHT-1
-.file_hash bc.$IDENT.$BLK_HEIGHT.blk 
-@ifdef $ERROR
-@label DONE
+.session_variable @deque pop_front
+;
+.file_core -header bc.$NEXT_IDENT.zenith h
+@ifndef $ERROR
+BLK_HEIGHT=$OUTPUT
+;
+.file_info -content bc.$NEXT_IDENT.$HEIGHT.blk
+@ifndef $ERROR
+;
+@:BLK_LOOP
+;
+@label BLK_NEXT
+@ifeq $BLK_HEIGHT $HEIGHT
+@label BLK_DONE
 @endif
 ;
 @skip
 ;
-@:NEXT2
-.file_tag $OUTPUT bc.$IDENT.zenith
+@:BLK_NEXT
+@label BLK_NEXT2
+LAST_HEIGHT=$BLK_HEIGHT
+BLK_HEIGHT=@$BLK_HEIGHT-1
+.file_hash bc.$NEXT_IDENT.$BLK_HEIGHT.blk
+@ifdef $ERROR
+@label BLK_DONE
+@endif
 ;
-.file_kill -q bc.$IDENT.$LAST_HEIGHT.blk
-.file_kill -q bc.$IDENT.$LAST_HEIGHT.opl
-.file_kill -q bc.$IDENT.$LAST_HEIGHT.pub
+@skip
 ;
-.file_kill -q bc.$IDENT.$BLK_HEIGHT.sig
-.file_kill -q bc.$IDENT.$LAST_HEIGHT.key
+@:BLK_NEXT2
+.file_tag $OUTPUT bc.$NEXT_IDENT.zenith
+;
+.file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.blk
+.file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.opl
+.file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.pub
+;
+.file_kill -q bc.$NEXT_IDENT.$BLK_HEIGHT.sig
+.file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.key
+;
+!!@:BLK_LOOP
+;
+@:BLK_DONE
+;
+@ifndef $ERROR
+.file_hash bc.$NEXT_IDENT.$HEIGHT.blk
+.file_tag $OUTPUT bc.$NEXT_IDENT.zenith
+;
+@ifdef $BACKUP
+.system_variable @blockchain_backup_height $HEIGHT
+.system_variable @backup_files
+BACKUP_PATH=$OUTPUT
+@ifdef $BACKUP_PATH
+BACKUP_HEIGHT_FILE=@files:$BACKUP_PATH:.backup.height
+@ifdef $BACKUP_HEIGHT_FILE
+~echo $HEIGHT >$BACKUP_PATH/$BACKUP_HEIGHT_FILE
+@endif
+@endif
+@endif
+;
+@ifdef $SHARED
+.system_variable @blockchain_shared_height $HEIGHT
+@endif
+;
+@ifdef $PEER_HUB
+.system_variable @blockchain_peer_hub_height $HEIGHT
+@endif
+;
+; FUTURE: This message should be handled as a server string.
+.system_variable %$NEXT_IDENT "Currently at height $HEIGHT"
+@ifneq "$SEED" ""
+<bc_gen_keys.cin $SEED $NEXT_IDENT $HEIGHT
+@endif
+@endif
+;
+@endif
+@endif
 ;
 !!@:LOOP
 ;
 @:DONE
 ;
-@ifndef $ERROR
-.file_hash bc.$IDENT.$HEIGHT.blk
-.file_tag $OUTPUT bc.$IDENT.zenith
-.system_variable @blockchain_height $HEIGHT
-; FUTURE: This message should be handled as a server string.
-.system_variable %$IDENT "Currently at height $HEIGHT"
-@ifneq "$SEED" ""
-<bc_gen_keys.cin $SEED $IDENT $HEIGHT
-@endif
-@endif
+.session_variable @deque "~$DEQUE"
 ;
-@endif
-@endif
 @endif
 @endif
