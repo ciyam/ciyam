@@ -15,9 +15,11 @@ if [ ! -f ~hub ]; then
 
   NEW_PEER_HUB_HEIGHT=`./system_variable get @blockchain_peer_hub_height`
 
-  # NOTE: Assume generate failed if the height is unchanged.
-  if [ ! "$PEER_HUB_HEIGHT" = "$NEW_PEER_HUB_HEIGHT" ]; then
-   ./system_variable set @generate_hub_block ""
+  if [ ! "" = "$NEW_PEER_HUB_HEIGHT" ]; then
+   # NOTE: Assume generate failed if the height is unchanged.
+   if [ ! "$PEER_HUB_HEIGHT" = "$NEW_PEER_HUB_HEIGHT" ]; then
+    ./system_variable set @generate_hub_block ""
+   fi
   fi
  fi
 
