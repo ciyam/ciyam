@@ -1930,6 +1930,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !hash.empty( ) && has_tag( tag_or_hash ) )
             hash = tag_file_hash( tag_or_hash );
 
+         if( !has_file( hash, false ) )
+            throw runtime_error( "file '" + tag_or_hash + "' not found" );
+
          unsigned char type_and_extra = '\0';
 
          if( !is_core_file( hash ) )

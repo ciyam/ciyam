@@ -5554,8 +5554,6 @@ bool destroy_repository_entry_record( const string& repository, const string& ha
 size_t count_total_repository_entries(
  const string& repository, date_time* p_dtm, progress* p_progress )
 {
-   guard g( g_mutex, "count_total_repository_entries" );
-
    system_ods_bulk_read ods_bulk_read;
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
@@ -5692,8 +5690,6 @@ size_t remove_all_repository_entries( const string& repository,
 
       for( size_t i = 0; i < repo_entries.size( ); i++ )
       {
-         guard g( g_mutex, "remove_all_repository_entries" );
-
          ++total_entries;
 
          last_key = repo_entries[ i ];
@@ -5709,8 +5705,6 @@ size_t remove_all_repository_entries( const string& repository,
 
    if( total_entries )
    {
-      guard g( g_mutex, "remove_all_repository_entries" );
-
       ods::transaction ods_tx( system_ods_instance( ) );
 
       for( size_t i = 0; i < files_to_remove.size( ); i++ )
@@ -5837,8 +5831,6 @@ size_t remove_obsolete_repository_entries( const string& repository,
 
       for( size_t i = 0; i < repo_entries.size( ); i++ )
       {
-         guard g( g_mutex, "remove_obsolete_repository_entries" );
-
          ++total_entries;
 
          last_key = repo_entries[ i ];
@@ -5891,8 +5883,6 @@ size_t remove_obsolete_repository_entries( const string& repository,
 
    if( total_entries )
    {
-      guard g( g_mutex, "remove_obsolete_repository_entries" );
-
       ods::transaction ods_tx( system_ods_instance( ) );
 
       for( size_t i = 0; i < files_to_remove.size( ); i++ )
