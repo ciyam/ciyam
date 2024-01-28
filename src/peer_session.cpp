@@ -270,8 +270,8 @@ void set_waiting_for_hub_progress( const string& identity, const string& hub_ide
    set_system_variable( c_progress_output_prefix + identity, progress_message );
 }
 
-void output_synchronised_progress_message(
- const string& identity, size_t blockchain_height, size_t blockchain_height_other = 0 )
+void output_synchronised_progress_message( const string& identity,
+ size_t blockchain_height, size_t blockchain_height_other = 0, bool setting_new_zenith = false )
 {
    string backup_identity( get_system_variable(
     get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
@@ -279,20 +279,32 @@ void output_synchronised_progress_message(
    string shared_identity( get_system_variable(
     get_special_var_name( e_special_var_blockchain_shared_identity ) ) );
 
+   string peer_hub_identity( get_system_variable(
+    get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
+
    string progress_message;
 
    bool is_backup = ( identity == backup_identity );
    bool is_shared = ( identity == shared_identity );
+   bool is_peer_hub = ( identity == peer_hub_identity );
 
    // FUTURE: This message should be handled as a server string message.
    progress_message = "Currently at height ";
 
-   if( is_backup || is_shared )
+   // NOTE: In general it would not be expected for this to occur as the
+   // only blockchains that should be exposed publicly are "extra" ones.
+   if( setting_new_zenith && ( is_backup || is_shared || is_peer_hub ) )
    {
       string current_height( to_string( blockchain_height ) );
 
-      string blockchain_height_name( get_special_var_name(
-       is_backup ? e_special_var_blockchain_backup_height : e_special_var_blockchain_shared_height ) );
+      string blockchain_height_name;
+
+      if( is_backup )
+         blockchain_height_name = get_special_var_name( e_special_var_blockchain_backup_height );
+      else if( is_shared )
+         blockchain_height_name = get_special_var_name( e_special_var_blockchain_shared_height );
+      else
+         blockchain_height_name = get_special_var_name( e_special_var_blockchain_peer_hub_height );
 
       if( get_system_variable( blockchain_height_name ) != current_height )
          set_system_variable( ">" + blockchain_height_name, current_height );
@@ -2143,7 +2155,7 @@ void process_public_key_file( const string& blockchain,
 
       string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
-      output_synchronised_progress_message( identity, height, height_other );
+      output_synchronised_progress_message( identity, height, height_other, true );
 
       TRACE_LOG( TRACE_PEER_OPS, "::: new zenith hash: " + block_hash + " height: " + to_string( height ) );
 
@@ -3383,6 +3395,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      set_session_variable( blockchain_block_processing_name, "" );
                      set_session_variable( blockchain_height_processing_name, "" );
 
+                     output_synchronised_progress_message( identity, blockchain_height );
+
                      set_session_variable( blockchain_zenith_height_name, to_string( current_zenith_height ) );
                   }
                   else
@@ -3922,7 +3936,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       set_session_variable( get_special_var_name(
        e_special_var_blockchain_num_tree_items ), "" );
 
-      output_synchronised_progress_message( identity, blockchain_height, blockchain_height_other );
+      output_synchronised_progress_message( identity, blockchain_height, blockchain_height_other, true );
 
       TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
        + block_processing + " height: " + to_string( blockchain_height ) );
