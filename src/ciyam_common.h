@@ -249,6 +249,7 @@ enum special_var
    e_special_var_blockchain_backup_identity,
    e_special_var_blockchain_block_file_hash,
    e_special_var_blockchain_both_are_owners,
+   e_special_var_blockchain_peer_hub_height,
    e_special_var_blockchain_shared_identity,
    e_special_var_blockchain_waiting_for_hub,
    e_special_var_blockchain_block_processing,

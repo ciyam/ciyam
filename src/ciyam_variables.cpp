@@ -234,6 +234,7 @@ const char* const c_special_variable_blockchain_tree_root_hash = "@blockchain_tr
 const char* const c_special_variable_blockchain_backup_identity = "@blockchain_backup_identity";
 const char* const c_special_variable_blockchain_block_file_hash = "@blockchain_block_file_hash";
 const char* const c_special_variable_blockchain_both_are_owners = "@blockchain_both_are_owners";
+const char* const c_special_variable_blockchain_peer_hub_height = "@blockchain_peer_hub_height";
 const char* const c_special_variable_blockchain_shared_identity = "@blockchain_shared_identity";
 const char* const c_special_variable_blockchain_waiting_for_hub = "@blockchain_waiting_for_hub";
 const char* const c_special_variable_blockchain_block_processing = "@blockchain_block_processing";
@@ -1020,6 +1021,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_both_are_owners:
       s = string( c_special_variable_blockchain_both_are_owners );
+      break;
+
+      case e_special_var_blockchain_peer_hub_height:
+      s = string( c_special_variable_blockchain_peer_hub_height );
       break;
 
       case e_special_var_blockchain_shared_identity:
