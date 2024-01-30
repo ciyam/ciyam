@@ -4053,8 +4053,13 @@ bool store_file( const string& hash,
 
       if( !tag_name.empty( ) )
          tag_file( tag_name, file_hash );
-      else if( archive_path.empty( ) && !file_extra_is_core )
-         tag_file( current_time_stamp_tag( ), file_hash, true );
+      else if( !file_extra_is_core )
+      {
+         if( !archive_path.empty( ) )
+            touch_file_in_archive( file_hash, archive );
+         else
+            tag_file( current_time_stamp_tag( ), file_hash, true );
+      }
 
       if( !tag_name.empty( ) && !encrypted_list_data.empty( ) )
       {
