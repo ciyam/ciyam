@@ -94,6 +94,7 @@ const char* const c_special_variable_opened = "@opened";
 const char* const c_special_variable_pubkey = "@pubkey";
 const char* const c_special_variable_return = "@return";
 const char* const c_special_variable_script = "@script";
+const char* const c_special_variable_command = "@command";
 const char* const c_special_variable_do_exec = "@do_exec";
 const char* const c_special_variable_ip_addr = "@ip_addr";
 const char* const c_special_variable_is_last = "@is_last";
@@ -1361,155 +1362,186 @@ bool has_system_variable( const string& name_or_expr )
 
 void set_system_variable( const string& name, const string& value, bool is_init, progress* p_progress )
 {
-   guard g( g_mutex );
-
-   string val( value );
-
-   bool persist = false;
-
-   if( !name.empty( ) && name[ 0 ] == c_persist_variable_prefix )
-      persist = true;
-
-   if( !name.empty( ) )
+   // NOTE: The special variable "@command" is used to run and hold the results of a "ciyam_command".
+   if( name == c_special_variable_command )
    {
-      string::size_type from = 0;
+      string val( value );
+      string tmp_file_name( "~" + uuid( ).as_string( ) );
 
-      if( persist )
-         ++from;
+      if( !val.empty( ) )
+      {
+         string cmd( "./ciyam_command " + val + " >" + tmp_file_name );
 
-      if( name.find_first_of( c_invalid_name_chars, from ) != string::npos )
-         throw runtime_error( "invalid system variable name '" + name.substr( from ) + "'" );
-   }
+         system( cmd.c_str( ) );
 
-   string var_name( !persist ? name : name.substr( 1 ) );
+         val = buffer_file( tmp_file_name );
 
-   if( val == string( c_special_variable_increment )
-    || val == string( c_special_variable_decrement ) )
-   {
-      int num_value = !g_variables.count( var_name )
-       ? 0 : from_string< int >( g_variables[ var_name ] );
-
-      if( val == string( c_special_variable_increment ) )
-         ++num_value;
-      else if( num_value > 0 )
-         --num_value;
-
-      if( num_value == 0 )
-         val.clear( );
-      else
-         val = to_string( num_value );
-   }
-
-   string::size_type pos = var_name.find_first_of( "?*" );
-
-   // NOTE: All "@queue_" prefixed variables are handled with
-   // deques and their values cannot currently be persisted.
-   if( var_name.find( c_special_variable_queue_prefix ) == 0 )
-   {
-      if( persist )
-         throw runtime_error( "cannot persist '" + string( c_special_variable_queue_prefix ) + "' prefixed variables" );
+         if( val.length( ) && val[ val.length( ) - 1 ] == '\n' )
+            val.erase( val.length( ) - 1 );
+      }
 
       if( val.empty( ) )
-         g_deque_variables.erase( var_name );
+      {
+         if( g_variables.count( name ) )
+            g_variables.erase( name );
+      }
       else
-         g_deque_variables[ var_name ].push_back( val );
-   }
-   else if( pos != string::npos )
-   {
-      if( persist )
-         throw runtime_error( "cannot persist wildcard variables for '" + var_name + "'" );
+         g_variables[ name ] = val;
 
-      vector< string > vars_to_change;
-
-      string prefix( var_name.substr( 0, pos ) );
-
-      map< string, string >::iterator vi = g_variables.begin( );
-
-      if( !prefix.empty( ) )
-         vi = g_variables.lower_bound( prefix );
-
-      for( ; vi != g_variables.end( ); ++vi )
-      {
-         if( wildcard_match( var_name, vi->first ) )
-            vars_to_change.push_back( vi->first );
-
-         if( !prefix.empty( ) && ( vi->first.find( prefix ) != 0 ) )
-            break;
-      }
-
-      for( size_t i = 0; i < vars_to_change.size( ); i++ )
-      {
-         if( !val.empty( ) )
-            g_variables[ vars_to_change[ i ] ] = val;
-         else
-            g_variables.erase( vars_to_change[ i ] );
-      }
+      file_remove( tmp_file_name );
    }
    else
    {
-      if( val.empty( ) && var_name == string( c_special_variable_files_area_dir ) )
-         val = string( c_files_directory );
+      guard g( g_mutex );
 
-      if( !val.empty( ) )
-         g_variables[ var_name ] = val;
+      string val( value );
+
+      bool persist = false;
+
+      if( !name.empty( ) && name[ 0 ] == c_persist_variable_prefix )
+         persist = true;
+
+      if( !name.empty( ) )
+      {
+         string::size_type from = 0;
+
+         if( persist )
+            ++from;
+
+         if( name.find_first_of( c_invalid_name_chars, from ) != string::npos )
+            throw runtime_error( "invalid system variable name '" + name.substr( from ) + "'" );
+      }
+
+      string var_name( !persist ? name : name.substr( 1 ) );
+
+      if( val == string( c_special_variable_increment )
+       || val == string( c_special_variable_decrement ) )
+      {
+         int num_value = !g_variables.count( var_name )
+          ? 0 : from_string< int >( g_variables[ var_name ] );
+
+         if( val == string( c_special_variable_increment ) )
+            ++num_value;
+         else if( num_value > 0 )
+            --num_value;
+
+         if( num_value == 0 )
+            val.clear( );
+         else
+            val = to_string( num_value );
+      }
+
+      string::size_type pos = var_name.find_first_of( "?*" );
+
+      // NOTE: All "@queue_" prefixed variables are handled with
+      // deques and their values cannot currently be persisted.
+      if( var_name.find( c_special_variable_queue_prefix ) == 0 )
+      {
+         if( persist )
+            throw runtime_error( "cannot persist '" + string( c_special_variable_queue_prefix ) + "' prefixed variables" );
+
+         if( val.empty( ) )
+            g_deque_variables.erase( var_name );
+         else
+            g_deque_variables[ var_name ].push_back( val );
+      }
+      else if( pos != string::npos )
+      {
+         if( persist )
+            throw runtime_error( "cannot persist wildcard variables for '" + var_name + "'" );
+
+         vector< string > vars_to_change;
+
+         string prefix( var_name.substr( 0, pos ) );
+
+         map< string, string >::iterator vi = g_variables.begin( );
+
+         if( !prefix.empty( ) )
+            vi = g_variables.lower_bound( prefix );
+
+         for( ; vi != g_variables.end( ); ++vi )
+         {
+            if( wildcard_match( var_name, vi->first ) )
+               vars_to_change.push_back( vi->first );
+
+            if( !prefix.empty( ) && ( vi->first.find( prefix ) != 0 ) )
+               break;
+         }
+
+         for( size_t i = 0; i < vars_to_change.size( ); i++ )
+         {
+            if( !val.empty( ) )
+               g_variables[ vars_to_change[ i ] ] = val;
+            else
+               g_variables.erase( vars_to_change[ i ] );
+         }
+      }
       else
       {
-         if( g_variables.count( var_name ) )
-            g_variables.erase( var_name );
+         if( val.empty( ) && var_name == string( c_special_variable_files_area_dir ) )
+            val = string( c_files_directory );
+
+         if( !val.empty( ) )
+            g_variables[ var_name ] = val;
+         else
+         {
+            if( g_variables.count( var_name ) )
+               g_variables.erase( var_name );
+         }
       }
-   }
 
-   // NOTE: Do not allow "@os" or "@peer_port" to be persisted.
-   if( ( var_name == string( c_special_variable_os ) )
-    || ( var_name == string( c_special_variable_peer_port ) ) )
-      persist = false;
+      // NOTE: Do not allow "@os" or "@peer_port" to be persisted.
+      if( ( var_name == string( c_special_variable_os ) )
+       || ( var_name == string( c_special_variable_peer_port ) ) )
+         persist = false;
 
-   if( var_name == string( c_special_variable_files_area_dir ) )
-   {
-      // NOTE: It makes no sense to persist "@files_area_dir"
-      // as application server files are being stored there.
-      persist = false;
-
-      if( !is_init )
+      if( var_name == string( c_special_variable_files_area_dir ) )
       {
-         if( g_active_sessions > 1 )
-            throw runtime_error( "invalid switch files area whilst has other active sessions (including autostarted)" );
+         // NOTE: It makes no sense to persist "@files_area_dir"
+         // as application server files are being stored there.
+         persist = false;
 
-         // NOTE: Although already thread locked adds a mutex name here
-         // just in case a deadlock could arise during the resync calls.
-         guard g( g_mutex, "set_system_variable" );
+         if( !is_init )
+         {
+            if( g_active_sessions > 1 )
+               throw runtime_error( "invalid switch files area whilst has other active sessions (including autostarted)" );
 
-         TRACE_LOG( TRACE_ANYTHING, "*** switched files area across to: " + val + " ***" );
+            // NOTE: Although already thread locked adds a mutex name here
+            // just in case a deadlock could arise during the resync calls.
+            guard g( g_mutex, "set_system_variable" );
 
-         string from( get_files_area_dir( ) );
-         set_files_area_dir( val );
+            TRACE_LOG( TRACE_ANYTHING, "*** switched files area across to: " + val + " ***" );
 
-         resync_files_area( p_progress );
-         resync_system_ods( p_progress );
+            string from( get_files_area_dir( ) );
+            set_files_area_dir( val );
 
-         resync_archive_info( p_progress );
- 
-         TRACE_LOG( TRACE_ANYTHING, "*** switched files area over from: " + from + " ***" );
+            resync_files_area( p_progress );
+            resync_system_ods( p_progress );
+
+            resync_archive_info( p_progress );
+
+            TRACE_LOG( TRACE_ANYTHING, "*** switched files area over from: " + from + " ***" );
+         }
       }
-   }
-   else if( var_name == string( c_special_variable_ods_cache_hit_ratios ) )
-   {
-      persist = false;
+      else if( var_name == string( c_special_variable_ods_cache_hit_ratios ) )
+      {
+         persist = false;
 
-      system_ods_instance( ).clear_cache_statistics( );
-   }
+         system_ods_instance( ).clear_cache_statistics( );
+      }
 
-   if( persist )
-   {
-      ods::bulk_write bulk_write( system_ods_instance( ) );
-      scoped_ods_instance ods_instance( system_ods_instance( ) );
+      if( persist )
+      {
+         ods::bulk_write bulk_write( system_ods_instance( ) );
+         scoped_ods_instance ods_instance( system_ods_instance( ) );
 
-      system_ods_file_system( ).set_root_folder( c_system_variables_folder );
+         system_ods_file_system( ).set_root_folder( c_system_variables_folder );
 
-      if( !val.empty( ) )
-         system_ods_file_system( ).store_as_text_file( var_name, val );
-      else if( system_ods_file_system( ).has_file( var_name ) )
-         system_ods_file_system( ).remove_file( var_name );
+         if( !val.empty( ) )
+            system_ods_file_system( ).store_as_text_file( var_name, val );
+         else if( system_ods_file_system( ).has_file( var_name ) )
+            system_ods_file_system( ).remove_file( var_name );
+      }
    }
 }
 
