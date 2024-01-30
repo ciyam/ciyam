@@ -131,6 +131,7 @@ BACKUP_PATH=$OUTPUT
 BACKUP_HEIGHT_FILE=@files:$BACKUP_PATH:.backup.height
 @ifdef $BACKUP_HEIGHT_FILE
 ~echo $HEIGHT >$BACKUP_PATH/$BACKUP_HEIGHT_FILE
+~rm -f $BACKUP_PATH/.imported.time
 @endif
 @endif
 @endif
