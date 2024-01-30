@@ -901,6 +901,19 @@ test1 [okay      ] (1.5 MB/2.0 MB) test1
 file_archive -resize 3MB test1
 file_archives
 test1 [okay      ] (1.5 MB/3.0 MB) test1
+file_raw -text blob 999994 test1:xyz
+c9f6698797b2bff76c2f74ea38ef63151f759ceddb4be56591c7bea3820f6ae0
+file_kill xyz
+~ls -tr1 test1/c*
+test1/ce1c6591009b0d60009de10e9b0da944897ea5dd1bc6edb1a930aa0065631c30
+test1/c9f6698797b2bff76c2f74ea38ef63151f759ceddb4be56591c7bea3820f6ae0
+wait 100
+file_raw -text blob 999999 test1:xyz
+ce1c6591009b0d60009de10e9b0da944897ea5dd1bc6edb1a930aa0065631c30
+file_kill xyz
+~ls -tr1 test1/c*
+test1/c9f6698797b2bff76c2f74ea38ef63151f759ceddb4be56591c7bea3820f6ae0
+test1/ce1c6591009b0d60009de10e9b0da944897ea5dd1bc6edb1a930aa0065631c30
 file_archive -resize 1MB test1
 file_archives
 test1 [okay      ] (1.0 MB/1.0 MB) test1

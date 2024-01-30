@@ -432,6 +432,15 @@ file_kill xyz
 file_archives
 file_archive -resize 3MB test1
 file_archives
+file_raw -text blob 999994 test1:xyz
+file_kill xyz
+#~ls -tr1 test1/c*
+~ls -tr1 test1/c*
+wait 100
+file_raw -text blob 999999 test1:xyz
+file_kill xyz
+#~ls -tr1 test1/c*
+~ls -tr1 test1/c*
 file_archive -resize 1MB test1
 file_archives
 file_archive -destroy test1
