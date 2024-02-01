@@ -1888,10 +1888,14 @@ void process_list_items( const string& blockchain,
             continue;
          }
 
+         bool add_to_tree_items = false;
+
          string local_hash, local_public_key, master_public_key;
 
          if( !has_file( next_hash ) )
          {
+            bool check_blob_increment = false;
+
             if( !has_repository_entry_record( identity, next_hash ) )
             {
                if( is_fetching )
@@ -1950,27 +1954,32 @@ void process_list_items( const string& blockchain,
             }
             else if( !recurse && is_fetching )
             {
+               check_blob_increment = true;
+
                // NOTE: For repository entries need to touch the local file.
                fetch_repository_entry_record( identity, next_hash, local_hash );
 
                touch_file( local_hash, identity, false );
             }
             else
+               check_blob_increment = true;
+
+            if( check_blob_increment )
             {
+               if( is_fetching && blob_increment )
+                  add_to_tree_items = true;
+
                if( blob_increment && p_num_items_found )
                   ++( *p_num_items_found );
-
-               if( is_fetching && blob_increment )
-                  add_to_blockchain_tree_item( blockchain, 1, upper_limit );
             }
          }
          else if( recurse && is_list_file( next_hash ) )
          {
+            if( is_fetching )
+               add_to_tree_items = true;
+
             if( p_num_items_found )
                ++( *p_num_items_found );
-
-            if( is_fetching )
-               add_to_blockchain_tree_item( blockchain, 1, upper_limit );
 
             process_list_items( blockchain, next_hash, recurse,
              p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress );
@@ -1980,25 +1989,33 @@ void process_list_items( const string& blockchain,
          }
          else if( recurse )
          {
-            bool has_repository_entry = false;
-            bool put_info_and_store_repository_entry = false;
+            if( is_fetching && blob_increment )
+               add_to_tree_items = true;
 
             if( blob_increment && p_num_items_found )
                ++( *p_num_items_found );
-
-            if( is_fetching && blob_increment )
-               add_to_blockchain_tree_item( blockchain, 1, upper_limit );
          }
          else
          {
             // NOTE: Although recursion was not requested in order to ensure
             // that all blob items will be "touched" need to do this anyway.
             if( !is_list_file( next_hash ) )
+            {
+               if( is_fetching && blob_increment )
+                  add_to_tree_items = true;
+
+               if( blob_increment && p_num_items_found )
+                  ++( *p_num_items_found );
+
                touch_file( next_hash, identity, false );
+            }
             else
                process_list_items( blockchain, next_hash, false,
                 p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress );
          }
+
+         if( add_to_tree_items )
+            add_to_blockchain_tree_item( blockchain, 1, upper_limit );
       }
    }
 }
