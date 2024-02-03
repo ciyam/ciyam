@@ -220,6 +220,7 @@ const char* const c_special_variable_single_string_response = "@single_string_re
 const char* const c_special_variable_skip_tagging_if_exists = "@skip_tagging_if_exists";
 const char* const c_special_variable_blockchain_archive_path = "@blockchain_archive_path";
 const char* const c_special_variable_blockchain_first_mapped = "@blockchain_first_mapped";
+const char* const c_special_variable_blockchain_height_other = "@blockchain_height_other";
 const char* const c_special_variable_blockchain_op_list_hash = "@blockchain_op_list_hash";
 const char* const c_special_variable_blockchain_backup_height = "@blockchain_backup_height";
 const char* const c_special_variable_blockchain_put_list_hash = "@blockchain_put_list_hash";
@@ -962,6 +963,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_first_mapped:
       s = string( c_special_variable_blockchain_first_mapped );
+      break;
+
+      case e_special_var_blockchain_height_other:
+      s = string( c_special_variable_blockchain_height_other );
       break;
 
       case e_special_var_blockchain_op_list_hash:
