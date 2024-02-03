@@ -2814,6 +2814,9 @@ class socket_command_handler : public command_handler
    void set_blockchain_height_other( size_t new_height )
    {
       blockchain_height_other = new_height;
+
+      set_session_variable( get_special_var_name(
+       e_special_var_blockchain_height_other ), to_string( new_height ) );
    }
 
    set< string >& get_list_items_to_ignore( ) { return list_items_to_ignore; }
@@ -4228,56 +4231,71 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          bool has = ( is_dummy || is_new_sig ) ? false : has_file( hash, false );
          bool was_initial_state = ( socket_handler.state( ) == e_peer_state_responder );
 
+         size_t blk_offset = 0;
+         size_t height_from_tag = 0;
+
+         if( !is_dummy && !blockchain.empty( ) && ( tag_or_hash.find( blockchain ) == 0 ) )
+         {
+            string height( tag_or_hash.substr( blockchain.length( ) + 1 ) );
+
+            string::size_type pos = height.find( c_blk_suffix );
+
+            if( pos != string::npos )
+               blk_offset = 1;
+            else
+               pos = height.find( c_sig_suffix );
+
+            if( pos != string::npos )
+            {
+               height.erase( pos );
+               height_from_tag = from_string< size_t >( height );
+
+               if( has || was_initial_state )
+               {
+                  size_t old_blockchain_height_other = blockchain_height_other;
+
+                  blockchain_height_other = height_from_tag - blk_offset;
+
+                  if( was_initial_state
+                   || ( blockchain_height_other != old_blockchain_height_other ) )
+                     socket_handler.set_blockchain_height_other( blockchain_height_other );
+               }
+            }
+         }
+
          if( !has )
          {
             response = c_response_not_found;
 
-            if( !is_dummy && ( tag_or_hash.find( blockchain ) == 0 ) )
+            if( height_from_tag )
             {
-               string height( tag_or_hash.substr( blockchain.length( ) + 1 ) );
+               size_t old_blockchain_height_other = blockchain_height_other;
 
-               size_t blk_off = 0;
+               blockchain_height_other = height_from_tag - blk_offset;
 
-               string::size_type pos = height.find( c_blk_suffix );
-
-               if( pos != string::npos )
-                  blk_off = 1;
-               else
-                  pos = height.find( c_sig_suffix );
-
-               if( pos != string::npos )
-                  height.erase( pos );
-
-               if( height != string( "0" ) )
+               if( blockchain_height_other != old_blockchain_height_other )
                {
-                  size_t old_blockchain_height_other = blockchain_height_other;
+                  socket_handler.set_blockchain_height_other( blockchain_height_other );
 
-                  blockchain_height_other = from_string< size_t >( height ) - blk_off;
-
-                  if( blockchain_height_other != old_blockchain_height_other )
+                  if( blockchain_height < blockchain_height_other )
                   {
-                     socket_handler.set_blockchain_height_other( blockchain_height_other );
+                     string progress_message( get_system_variable( c_progress_output_prefix + identity ) );
 
-                     if( blockchain_height < blockchain_height_other )
-                     {
-                        string progress_message( get_system_variable( c_progress_output_prefix + identity ) );
+                     // NOTE: To assist with UI behaviour progress message will be updated if is missing an ellipsis.
+                     if( progress_message.find( c_ellipsis ) == string::npos )
+                        output_synchronised_progress_message( identity, blockchain_height, blockchain_height_other );
+                  }
+                  else if( has_tag( blockchain + c_shared_suffix, e_file_type_blob ) )
+                  {
+                     string backup_identity( get_session_variable(
+                      get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
-                        // NOTE: To assist with UI behaviour progress message will be updated if is missing an ellipsis.
-                        if( progress_message.find( c_ellipsis ) == string::npos )
-                           output_synchronised_progress_message( identity, blockchain_height, blockchain_height_other );
-                     }
-                     else if( has_tag( blockchain + c_shared_suffix, e_file_type_blob ) )
-                     {
-                        string backup_identity( get_session_variable(
-                         get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
-
-                        if( backup_identity.empty( ) )
-                           set_system_variable( get_special_var_name(
-                            e_special_var_export_needed ) + '_' + identity, identity );
-                        else
-                           set_system_variable( get_special_var_name(
-                            e_special_var_export_needed ) + '_' + backup_identity, identity );
-                     }
+                     if( backup_identity.empty( ) )
+                        set_system_variable( get_special_var_name(
+                         e_special_var_export_needed ) + '_' + identity, identity );
+                     else
+                        set_system_variable( get_special_var_name(
+                         e_special_var_export_needed ) + '_' + backup_identity, identity );
                   }
                }
             }
