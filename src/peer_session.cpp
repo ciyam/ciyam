@@ -4434,9 +4434,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      first_item_hash = nonce.substr( 1 );
                   }
 
-                  temporary_session_variable temp_hash( get_special_var_name( e_special_var_hash ), first_item_hash );
+                  temporary_session_variable temp_hash(
+                   get_special_var_name( e_special_var_hash ), first_item_hash );
 
-                  set_session_variable( blockchain_height_processing_name, to_string( blockchain_height ) );
+                  temporary_session_variable temp_height(
+                   blockchain_height_processing_name, to_string( blockchain_height ) );
 
                   // NOTE: Set "num_items_found" to a non-zero value
                   // so that the tree files suffix will be appended.
@@ -4502,9 +4504,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         bool is_user = !get_session_variable(
                          get_special_var_name( e_special_var_blockchain_user ) ).empty( );
 
-                        bool is_fetching = !get_session_variable(
-                         get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
-
                         bool is_peerchain_hub = !get_system_variable(
                          get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ).empty( );
 
@@ -4512,7 +4511,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         bool has_all_tree_items = ( socket_handler.get_blockchain_height( ) == blockchain_height );
 
                         // NOTE: Unless is user type or incomplete skip checking for all tree items (to minimise file transfers).
-                        if( !is_fetching && ( is_user || was_incomplete ) && !has_all_tree_items )
+                        if( ( is_user || was_incomplete ) && !has_all_tree_items )
                            has_all_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, &socket_handler );
 
                         if( !has_all_tree_items )
