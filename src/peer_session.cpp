@@ -270,7 +270,7 @@ void set_waiting_for_hub_progress( const string& identity, const string& hub_ide
    set_system_variable( c_progress_output_prefix + identity, progress_message );
 }
 
-void output_synchronised_progress_message( const string& identity,
+void output_sync_progress_message( const string& identity,
  size_t blockchain_height, size_t blockchain_height_other = 0, bool setting_new_zenith = false )
 {
    string backup_identity( get_system_variable(
@@ -312,8 +312,14 @@ void output_synchronised_progress_message( const string& identity,
 
    progress_message += to_string( blockchain_height );
 
-   if( blockchain_height_other > blockchain_height )
-      progress_message += c_ellipsis;
+   if( blockchain_height_other )
+   {
+      if( blockchain_height_other != blockchain_height )
+      {
+         progress_message += " (" + to_string( blockchain_height_other ) + ")";
+         progress_message += c_ellipsis;
+      }
+   }
 
    set_session_progress_output( progress_message );
    set_system_variable( c_progress_output_prefix + identity, progress_message );
@@ -2172,7 +2178,7 @@ void process_public_key_file( const string& blockchain,
 
       string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
-      output_synchronised_progress_message( identity, height, height_other, true );
+      output_sync_progress_message( identity, height, height_other, true );
 
       TRACE_LOG( TRACE_PEER_OPS, "::: new zenith hash: " + block_hash + " height: " + to_string( height ) );
 
@@ -3415,7 +3421,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      set_session_variable( blockchain_block_processing_name, "" );
                      set_session_variable( blockchain_height_processing_name, "" );
 
-                     output_synchronised_progress_message( identity, blockchain_height );
+                     output_sync_progress_message( identity, blockchain_height, blockchain_height_other );
 
                      set_session_variable( blockchain_zenith_height_name, to_string( current_zenith_height ) );
                   }
@@ -3956,7 +3962,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       set_session_variable( get_special_var_name(
        e_special_var_blockchain_num_tree_items ), "" );
 
-      output_synchronised_progress_message( identity, blockchain_height, blockchain_height_other, true );
+      output_sync_progress_message( identity, blockchain_height, blockchain_height_other, true );
 
       TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
        + block_processing + " height: " + to_string( blockchain_height ) );
@@ -4283,7 +4289,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                      // NOTE: To assist with UI behaviour progress message will be updated if is missing an ellipsis.
                      if( progress_message.find( c_ellipsis ) == string::npos )
-                        output_synchronised_progress_message( identity, blockchain_height, blockchain_height_other );
+                        output_sync_progress_message( identity, blockchain_height, blockchain_height_other );
                   }
                   else if( has_tag( blockchain + c_shared_suffix, e_file_type_blob ) )
                   {
@@ -5720,7 +5726,7 @@ void peer_session::on_start( )
             if( !is_for_support )
             {
                if( has_zenith )
-                  output_synchronised_progress_message( unprefixed_blockchain, blockchain_height );
+                  output_sync_progress_message( unprefixed_blockchain, blockchain_height );
                else
                {
                   // FUTURE: This message should be handled as a server string message.
@@ -6706,7 +6712,7 @@ void init_peer_sessions( int start_listeners )
             string zenith_hash( tag_file_hash( next_tag ) );
 
             if( get_block_height_from_tags( next_blockchain, zenith_hash, blockchain_height ) )
-               output_synchronised_progress_message( next_identity, blockchain_height );
+               output_sync_progress_message( next_identity, blockchain_height );
          }
       }
    }
