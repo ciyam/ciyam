@@ -316,7 +316,7 @@ void output_sync_progress_message( const string& identity,
    {
       if( blockchain_height_other != blockchain_height )
       {
-         progress_message += " (" + to_string( blockchain_height_other ) + ")";
+         progress_message += '/' + to_string( blockchain_height_other );
          progress_message += c_ellipsis;
       }
    }
