@@ -79,6 +79,20 @@ To use the Meta application you will need to make sure that the application serv
 From a console/terminal you can enter "./ciyam_server &" in order to start it and once the application server
 is "listening" you are now nearly ready to create your first web application.
 
+If all went well the you should now be able to access the IDE: http://localhost/meta
+
+***************************** Extra step when "ciyam_server.sid" is not present *****************************
+
+The first time you access the IDE you will be presented with a dialog for recording (or restoring) the system
+identity as well as providing a master password (used to unlock the system whenever the application server is
+restarted). Note that IT IS CRITICAL TO RECORD THE SYSTEM IDENTITY (and safer if done using pen and paper) as
+this is used to encrypt/decrypt sensitive information such as system passwords. Also note that this encrypted
+identity information is not stored until you login to Meta (the login dialog will appear after completing the
+identity dialog). The encrypted system identity is stored in "ciyam_server.sid" and although it includes salt
+and underwent numerous rounds of SHA256 "hardening" using a very simple password would not be recommended.
+
+*************************************************************************************************************
+
 ***************************** Extra steps if MySQL 'root' password is not blank *****************************
 
 If you have a non-blank 'root' password for your MySQL server then this password will need to be known by the
@@ -107,20 +121,6 @@ Password:
 Once you have modified the <sql_password> value in "ciyam_server.sio" (and removed the # comment marker) then
 you will need to stop and restart the application server (if was started with "./ciyam_server &" can use "fg"
 followed by Ctrl-c in order to stop it).
-
-*************************************************************************************************************
-
-If all went well the you should now be able to access the IDE: http://localhost/meta
-
-***************************** Extra step when "ciyam_server.sid" is not present *****************************
-
-The first time you access the IDE you will be presented with a dialog for recording (or restoring) the system
-identity as well as providing a master password (used to unlock the system whenever the application server is
-restarted). Note that IT IS CRITICAL TO RECORD THE SYSTEM IDENTITY (and safer if done using pen and paper) as
-this is used to encrypt/decrypt sensitive information such as system passwords. Also note that this encrypted
-identity information is not stored until you login to Meta (the login dialog will appear after completing the
-identity dialog). The encrypted master password is stored in "ciyam_server.sid" and although it includes salt
-and underwent numerous rounds of SHA256 "hardening" using a very simple password would not be recommended.
 
 *************************************************************************************************************
 
