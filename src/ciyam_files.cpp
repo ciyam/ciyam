@@ -5807,6 +5807,9 @@ size_t remove_obsolete_repository_entries( const string& repository,
       vector< string > repo_entries;
       ods_fs.list_files( repository + '*', repo_entries, false, last_key, last_key.empty( ), 100 );
 
+      if( repo_entries.empty( ) )
+         break;
+
       if( p_progress )
       {
          uint64_t elapsed = seconds_between( *p_dtm, now );
@@ -5890,11 +5893,16 @@ size_t remove_obsolete_repository_entries( const string& repository,
    {
       ods::transaction ods_tx( system_ods_instance( ) );
 
-      for( size_t i = 0; i < files_to_remove.size( ); i++ )
+      for( size_t i = 0; i < total_entries; i++ )
       {
          date_time now( date_time::local( ) );
 
          ods_fs.remove_file( files_to_remove[ i ] );
+
+         // NOTE: Assuming the commit will take as long will
+         // halve the number of seconds for the final entry.
+         if( i == total_entries - 1 )
+            num_seconds /= 2;
 
          if( p_progress )
          {
@@ -5905,7 +5913,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
                string progress;
 
                // FUTURE: This message should be handled as a server string message.
-               progress = "Removed " + to_string( i ) + " obsolete repository entries...";
+               progress = "Removed " + to_string( i + 1 ) + " obsolete repository entries...";
 
                if( set_session_progress )
                {
