@@ -7,14 +7,12 @@ user's ".profile" or equivalent if that has not been done already).
 export WEBDIR=/srv/www/htdocs
 
 After cloning the repository run "config" in order to configure the system for 3rd party dependencies (and to
-set the default server port) then "make all" to build all of the targets and then run "do_tests" batch/script
+set the default server port) then issue a "make all" to build all of project targets then next run "do_tests"
 to test that all core functionality is working:
 
 ./config
 make all
 ./dotests
-
-(if using Windows need to omit the ./ prefixes so just "config" and "dotests" and "set" rather than "export")
 
 The next step is to make sure that MySQL is installed and operating. The following steps will create a DB for
 testing the system, populate this DB with tables and data and verify that all is functioning as expected (and
@@ -44,8 +42,8 @@ export WEBDIR=
 
 *************************************************************************************************************
 
-The next step is to make sure that the web server's FCGI is installed and operating. Run the following batch/
-script to install the FCGI testbed:
+The next step is to make sure that the web server's FCGI is installed and operating. Run the following script
+to install the FCGI testbed:
 
 ./install_test_fcgi
 
@@ -70,16 +68,16 @@ If all has gone well then it is time to install the IDE application which is don
 ./install_fcgi upload meta
 ./install Meta meta index
 
-For a production environment the initial "ciyam_server.sid" file (created by the "config" batch/script) needs
-to be removed prior to starting the application server (leave this file if is a development environment or an
-application server that is intended just to act as a storage hub).
+For production environments the initial "ciyam_server.sid" file (created by running the "config" script) will
+need to be removed prior to starting the application server (skip the scripts if is a development environment
+or an application server that is intended to act as a storage hub).
 
 ./save_identity
 ./erase_identity
 
-To use the application you'll need to make sure that the application server (ciyam_server) is running. To run
-it with Windows use "start /min ciyam_server" and under Linux "./ciyam_server &". Once the application server
-has started and is "listening" you are now nearly ready to create your first web application.
+To use the Meta application you will need to make sure that the application server (ciyam_server) is running.
+From a console/terminal you can enter "./ciyam_server &" in order to start it and once the application server
+is "listening" you are now nearly ready to create your first web application.
 
 ***************************** Extra steps if MySQL 'root' password is not blank *****************************
 
@@ -88,12 +86,12 @@ application server in order for the 'Meta' application to be able to create (and
 stored in the application server's main configuration file (ciyam_server.sio) in an encrypted base64 format.
 
 Looking at the default ciyam_server.sio file you'll notice the following line:
-# <sql_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
+# <sql_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 
 The comment character ('#') will need to be removed and then the base64 changed to the encrypted form of your
 MySQL root password. To determine the encrypted base64 password a protocol command "encrypt" exists. For ease
-of use a batch/script called ./password can be used to determine the correctly encrypted password value. This
-script can be used in one of two ways. The first is as follows:
+of use a script called ./password can be used to determine the correctly encrypted password value. The script
+can be used in one of two ways. The first is as follows:
 
 ./password my_password
 #84d63bc99961b749e52cd4a81f219f0c:Q1MTn/kwcSl4VjGlmv0dgw==
@@ -107,9 +105,8 @@ Password:
 #c67d4b5a8d9c48a193cfd37423c9c288:YqNAPnlu7jz6eyY7YexRuA==
 
 Once you have modified the <sql_password> value in "ciyam_server.sio" (and removed the # comment marker) then
-you will need to stop and restart the application server (if using Windows then focus on the "cmd" window for
-"ciyam_server" and type "Ctrl-c" to shut it down and if using Linux type "fg" to bring the "ciyam_server" job
-to the foreground and type "Ctrl-c" to shut it down).
+you will need to stop and restart the application server (if was started with "./ciyam_server &" can use "fg"
+followed by Ctrl-c in order to stop it).
 
 *************************************************************************************************************
 
@@ -143,8 +140,7 @@ the name "Sample" should be used).
 
 The "Add Packages" drop list will default to the value "Standard User" which is fine (along with the defaults
 for the other fields) so now simply click "Save Details" to create the new Model. After saving the "Standard"
-package will automatically be installed while the "User" package will just appear greyed out (for those using
-Windows an extra "cmd" window will temporarily appear while the "Standard" package is being installed).
+package will automatically be installed while the "User" package will just appear greyed out.
 
 To install the "User" package click on the greyed out "User" list item then from the "Package" view form next
 click on the "Install" button. You might notice from the "Package" view form that there are a number of child
@@ -162,9 +158,8 @@ for you (if not then most likely the Name was not an exact match or "Add Modules
 
 Assuming the Application has successfully been created (if not then it is possible the MySQL root password is
 not correct or present in the server configuration file), then all that remains to be done now is to click on
-the "Generate" button (leaving the Generate Type as "Full Generate"). After clicking the button Windows users
-(once again) will see a new "cmd" window appear. To see the application generation details click on the arrow
-icon that appears below the Version field.
+the "Generate" button (leaving the Generate Type as "Full Generate"). To view application generation progress
+click on the arrow icon that appears below the Version field.
 
 Assuming no problems have occurred then you should see lines of text that describe each of the artifacts that
 have been created (such as the "sample" web directory, all of the source files and the "make" output which is
@@ -200,9 +195,9 @@ click "Save Details" to continue.
 
 The next step is to locate a "package bundle" which is a file ending with the extension "*.package.bun.gz" in
 the project's source directory. After you "Attach" this file (which will "upload" it) you should see that the
-"gz" file has been attached. Now all that needs to be done is click on "Install" (again under Windows a "cmd"
-window will appear during the installation). If no error has occurred then the Type Name will have changed to
-the name of the package type automatically and the various other fields will have been set.
+"gz" file has been attached. Now all that needs to be done is click on "Install" and if no error has occurred
+then the Type Name will have been changed to the name of the package type automatically and other fields will
+also have been automatically set.
 
 It should be noted that some package types will have one or more dependencies upon other package types so the
 order that new package types are installed is important.
