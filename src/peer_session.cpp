@@ -312,13 +312,10 @@ void output_sync_progress_message( const string& identity,
 
    progress_message += to_string( blockchain_height );
 
-   if( blockchain_height_other )
+   if( blockchain_height_other > blockchain_height )
    {
-      if( blockchain_height_other != blockchain_height )
-      {
-         progress_message += '/' + to_string( blockchain_height_other );
-         progress_message += c_ellipsis;
-      }
+      progress_message += '/' + to_string( blockchain_height_other );
+      progress_message += c_ellipsis;
    }
 
    set_session_progress_output( progress_message );
@@ -1180,6 +1177,9 @@ void process_put_file( const string& blockchain,
    string num_tree_items( get_session_variable(
     get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
+   string blockchain_height_other( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_height_other ) ) );
+
    string blockchain_height_processing( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processing ) ) );
 
@@ -1252,7 +1252,15 @@ void process_put_file( const string& blockchain,
                }
 
                // FUTURE: This message should be handled as a server string message.
-               string progress_message( "Synchronising at height " + to_string( next_height ) );
+               string progress_message( "Syncing at height " + to_string( next_height ) );
+
+               if( !blockchain_height_other.empty( ) )
+               {
+                  size_t other_height = from_string< size_t >( blockchain_height_other );
+
+                  if( next_height < other_height )
+                     progress_message += '/' + blockchain_height_other;
+               }
 
                progress_message += " (" + to_string( get_blockchain_tree_item( blockchain ) );
 
@@ -1443,6 +1451,9 @@ bool has_all_list_items( const string& blockchain,
    string num_tree_items( get_session_variable(
     get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
+   string blockchain_height_other( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_height_other ) ) );
+
    string blockchain_height_processing( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processing ) ) );
 
@@ -1472,8 +1483,17 @@ bool has_all_list_items( const string& blockchain,
                   size_t next_height = from_string< size_t >( blockchain_height_processing );
 
                   // FUTURE: This message should be handled as a server string message.
-                  progress = "Verifying at height " + to_string( next_height )
-                   + " (" + to_string( *p_total_processed ) + "/" + num_tree_items + ")";
+                  progress = "Checking at height " + to_string( next_height );
+
+                  if( !blockchain_height_other.empty( ) )
+                  {
+                     size_t other_height = from_string< size_t >( blockchain_height_other );
+
+                     if( next_height < other_height )
+                        progress += '/' + blockchain_height_other;
+                  }
+
+                  progress += " (" + to_string( *p_total_processed ) + "/" + num_tree_items + ")";
 
                   progress += c_ellipsis;
 
@@ -1732,6 +1752,9 @@ void process_list_items( const string& blockchain,
       upper_limit = ( num_items - from_string< size_t >( blockchain_num_puts ) );
    }
 
+   string blockchain_height_other( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_height_other ) ) );
+
    string blockchain_height_processing( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processing ) ) );
 
@@ -1777,12 +1800,23 @@ void process_list_items( const string& blockchain,
                if( is_fetching )
                {
                   if( !is_checking )
-                     progress = "Synchronising";
+                     progress = "Syncing";
                   else
-                     progress = "Checking items";
+                     progress = "Checking";
 
                   if( !blockchain_height_processing.empty( ) )
+                  {
                      progress += " at height " + blockchain_height_processing;
+
+                     if( !blockchain_height_other.empty( ) )
+                     {
+                        size_t next_height = from_string< size_t >( blockchain_height_processing );
+                        size_t other_height = from_string< size_t >( blockchain_height_other );
+
+                        if( next_height < other_height )
+                           progress += '/' + blockchain_height_other;
+                     }
+                  }
 
                   progress += " (" + to_string( *p_num_items_found );
 
@@ -1793,7 +1827,7 @@ void process_list_items( const string& blockchain,
                }
                else
                {
-                  progress = "Preparing items";
+                  progress = "Preparing";
 
                   if( !blockchain_height_processing.empty( ) )
                      progress += " at height " + blockchain_height_processing;
@@ -1821,29 +1855,34 @@ void process_list_items( const string& blockchain,
                   set_session_progress_output( progress );
                else
                {
-                  size_t next_height = from_string< size_t >( blockchain_height_processing );
-
                   if( !num_tree_items.empty( ) )
                   {
                      size_t upper_limit = from_string< size_t >( num_tree_items );
 
                      // NOTE: Ensure that the upper limit is not exceeded.
-                     if( next_height > upper_limit )
-                     {
-                        next_height = upper_limit;
-                        add_to_blockchain_tree_item( blockchain, 0, upper_limit );
-                     }
+                     add_to_blockchain_tree_item( blockchain, 0, upper_limit );
                   }
 
                   string progress_message;
 
                   // FUTURE: These messages should be handled as server string messages.
                   if( !is_checking )
-                     progress_message = "Synchronising at height ";
+                     progress_message = "Syncing at height ";
                   else
-                     progress_message = "Checking items at height ";
+                     progress_message = "Checking at height ";
 
-                  progress_message += to_string( next_height ) + " (" + to_string( get_blockchain_tree_item( blockchain ) );
+                  progress_message += blockchain_height_processing;
+
+                  if( !blockchain_height_other.empty( ) )
+                  {
+                     size_t next_height = from_string< size_t >( blockchain_height_processing );
+                     size_t other_height = from_string< size_t >( blockchain_height_other );
+
+                     if( next_height < other_height )
+                        progress_message += '/' + blockchain_height_other;
+                  }
+
+                  progress_message += " (" + to_string( get_blockchain_tree_item( blockchain ) );
 
                   if( !num_tree_items.empty( ) )
                      progress_message += '/' + num_tree_items;
@@ -4277,21 +4316,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                size_t old_blockchain_height_other = blockchain_height_other;
 
-               blockchain_height_other = height_from_tag - blk_offset;
+               blockchain_height_other = ( height_from_tag - blk_offset );
 
                if( blockchain_height_other != old_blockchain_height_other )
                {
                   socket_handler.set_blockchain_height_other( blockchain_height_other );
 
-                  if( blockchain_height < blockchain_height_other )
-                  {
-                     string progress_message( get_system_variable( c_progress_output_prefix + identity ) );
-
-                     // NOTE: To assist with UI behaviour progress message will be updated if is missing an ellipsis.
-                     if( progress_message.find( c_ellipsis ) == string::npos )
-                        output_sync_progress_message( identity, blockchain_height, blockchain_height_other );
-                  }
-                  else if( has_tag( blockchain + c_shared_suffix, e_file_type_blob ) )
+                  if( has_tag( blockchain + c_shared_suffix, e_file_type_blob ) )
                   {
                      string backup_identity( get_session_variable(
                       get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
@@ -4303,6 +4334,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         set_system_variable( get_special_var_name(
                          e_special_var_export_needed ) + '_' + backup_identity, identity );
                   }
+
+                  output_sync_progress_message( identity, blockchain_height, blockchain_height_other );
                }
             }
 
