@@ -31,6 +31,7 @@
 #include "ciyam_base.h"
 #include "class_base.h"
 #include "ciyam_session.h"
+#include "ciyam_variables.h"
 
 //#define DEBUG
 
@@ -383,6 +384,8 @@ void autoscript_session::on_start( )
       TRACE_LOG( TRACE_SESSIONS,
        "started autoscript session (tid = " + to_string( current_thread_id( ) ) + ")" );
 
+      string autoscript_reload_name( get_special_var_name( e_special_var_autoscript_reload ) );
+
       while( true )
       {
          msleep( c_sleep_time );
@@ -390,18 +393,24 @@ void autoscript_session::on_start( )
          if( g_server_shutdown )
             break;
 
-         // NOTE: The reading of the autoscript file is delayed by one
-         // pass to try and make sure it is not being attempted during
-         // an update.
          if( changed )
          {
             changed = false;
             read_script_info( );
          }
+         // NOTE: The reading of the autoscript file is delayed by one
+         // pass to try and make sure it is not being attempted during
+         // an update.
          else if( script_reconfig && scripts_file_has_changed( ) )
             changed = true;
 
          guard g( g_mutex );
+
+         if( !get_raw_system_variable( autoscript_reload_name ).empty( ) )
+         {
+            changed = true;
+            set_system_variable( autoscript_reload_name, "" );
+         }
 
          date_time now = date_time::local( );
          script_schedule_const_iterator i, j;
@@ -530,7 +539,8 @@ void autoscript_session::on_start( )
                }
 
                size_t count = 0;
-               while( next <= now || is_excluded( g_scripts[ j->second ], next ) )
+
+               while( ( next <= now ) || is_excluded( g_scripts[ j->second ], next ) )
                {
                   if( ++count >= c_max_reschedule_attempts )
                   {

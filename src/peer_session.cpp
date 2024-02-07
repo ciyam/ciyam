@@ -3363,12 +3363,17 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          }
 
          // FUTURE: This message should be handled as a server string message.
-         string progress_message( "Synchronising at height " + to_string( blockchain_height + 1 ) );
+         string progress_message( "Syncing at height " + to_string( blockchain_height + 1 ) );
+
+         if( blockchain_height_other > ( blockchain_height + 1 ) )
+            progress_message += '/' + to_string( blockchain_height_other );
+
+         progress_message += " (" + to_string( num_tree_item );
 
          if( !num_tree_items.empty( ) )
-            progress_message += " (" + to_string( num_tree_item ) + '/' + num_tree_items + ")";
+            progress_message += '/' + num_tree_items;
 
-         progress_message += c_ellipsis;
+         progress_message += ")" + to_string( c_ellipsis );
 
          set_session_progress_output( progress_message );
          set_system_variable( c_progress_output_prefix + identity, progress_message );
@@ -3624,9 +3629,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                   string paired_identity( get_session_variable(
                    get_special_var_name( e_special_var_paired_identity ) ) );
 
-                  string synchronised( get_special_var_name( e_special_var_synchronised ) );
+                  string paired_sync( get_special_var_name( e_special_var_paired_sync ) );
 
-                  set_session_sync_time( ( identity != paired_identity ? &paired_identity : 0 ), true, 1, &synchronised );
+                  set_session_sync_time( ( identity != paired_identity ? &paired_identity : 0 ), true, 1, &paired_sync );
                }
             }
          }
@@ -4782,9 +4787,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    bool has_issued_bye = false;
 
-   if( !get_raw_session_variable( get_special_var_name( e_special_var_synchronised ) ).empty( ) )
+   if( !get_raw_session_variable( get_special_var_name( e_special_var_paired_sync ) ).empty( ) )
    {
-      // NOTE: For testing purposes this system variable can be set to keep the sessions alive.
+      // NOTE: For testing purposes setting this system variable will keep these sessions alive.
       if( get_raw_system_variable(
        get_special_var_name( e_special_var_keep_user_peers_alive ) ).empty( ) )
       {
@@ -5763,7 +5768,7 @@ void peer_session::on_start( )
                else
                {
                   // FUTURE: This message should be handled as a server string message.
-                  string progress_message( "Synchronising" );
+                  string progress_message( "Syncing" );
 
                   progress_message += c_ellipsis;
 

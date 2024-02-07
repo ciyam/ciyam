@@ -40,6 +40,7 @@
 #include "format.h"
 #include "sha256.h"
 #include "sql_db.h"
+#include "numeric.h"
 #include "pointers.h"
 #include "progress.h"
 #include "date_time.h"
@@ -7855,6 +7856,44 @@ string get_raw_session_variable( const string& name, size_t sess_id )
 
    if( gtp_session )
    {
+      string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
+
+      if( name == progress_value_name )
+      {
+         string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
+         string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
+
+         if( gtp_session->variables.count( progress_count_name ) && gtp_session->variables.count( progress_total_name ) )
+         {
+            size_t fracs = 0;
+            size_t prior = 0;
+
+            unsigned long count = 0;
+            unsigned long total = 0;
+
+            string progress_fracs_name( get_special_var_name( e_special_var_progress_fracs ) );
+
+            if( gtp_session->variables.count( progress_fracs_name ) )
+               fracs = from_string< size_t >( gtp_session->variables[ progress_fracs_name ] );
+
+            string progress_prior_name( get_special_var_name( e_special_var_progress_prior ) );
+
+            if( gtp_session->variables.count( progress_prior_name ) )
+               prior = from_string< size_t >( gtp_session->variables[ progress_prior_name ] );
+
+            if( gtp_session->variables.count( progress_count_name ) )
+               count = from_string< unsigned long >( gtp_session->variables[ progress_count_name ] );
+
+            if( gtp_session->variables.count( progress_total_name ) )
+               total = from_string< unsigned long >( gtp_session->variables[ progress_total_name ] );
+
+            gtp_session->variables[ progress_value_name ] = format_percentage( fracs, prior, count, total );
+
+            gtp_session->variables[ progress_fracs_name ] = to_string( fracs );
+            gtp_session->variables[ progress_prior_name ] = to_string( prior );
+         }
+      }
+
       if( name.find( c_special_variable_queue_prefix ) == 0 )
       {
          if( gtp_session->deque_variables.count( name ) )

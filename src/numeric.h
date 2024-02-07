@@ -242,5 +242,7 @@ std::string NUMERIC_DECL_SPEC format_numeric( const numeric& n, const std::strin
  const char* p_group_separator = 0, const char* p_plus_left = 0, const char* p_plus_right = 0,
  const char* p_minus_left = 0, const char* p_minus_right = 0, const char* p_currency_symbol = 0 );
 
-#endif
+std::string NUMERIC_DECL_SPEC format_percentage(
+ size_t& fracs, unsigned long& prior, unsigned long count, unsigned long total, const char suffix = '%' );
 
+#endif

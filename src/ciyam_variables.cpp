@@ -142,6 +142,7 @@ const char* const c_special_variable_errors_only = "@errors_only";
 const char* const c_special_variable_init_log_id = "@init_log_id";
 const char* const c_special_variable_opened_user = "@opened_user";
 const char* const c_special_variable_output_file = "@output_file";
+const char* const c_special_variable_paired_sync = "@paired_sync";
 const char* const c_special_variable_path_prefix = "@path_prefix";
 const char* const c_special_variable_permissions = "@permissions";
 const char* const c_special_variable_queue_peers = "@queue_peers";
@@ -153,7 +154,6 @@ const char* const c_special_variable_backup_files = "@backup_files";
 const char* const c_special_variable_block_height = "@block_height";
 const char* const c_special_variable_opened_files = "@opened_files";
 const char* const c_special_variable_shared_files = "@shared_files";
-const char* const c_special_variable_synchronised = "@synchronised";
 const char* const c_special_variable_app_directory = "@app_directory";
 const char* const c_special_variable_export_needed = "@export_needed";
 const char* const c_special_variable_import_needed = "@import_needed";
@@ -168,6 +168,11 @@ const char* const c_special_variable_files_area_dir = "@files_area_dir";
 const char* const c_special_variable_peer_clone_key = "@peer_clone_key";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
+const char* const c_special_variable_progress_count = "@progress_count";
+const char* const c_special_variable_progress_fracs = "@progress_fracs";
+const char* const c_special_variable_progress_prior = "@progress_prior";
+const char* const c_special_variable_progress_total = "@progress_total";
+const char* const c_special_variable_progress_value = "@progress_value";
 const char* const c_special_variable_style_extended = "@style_extended";
 const char* const c_special_variable_sys_var_prefix = "@sys_var_prefix";
 const char* const c_special_variable_blockchain_user = "@blockchain_user";
@@ -186,6 +191,7 @@ const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_skip_persistance = "@skip_persistance";
 const char* const c_special_variable_skip_submit_file = "@skip_submit_file";
 const char* const c_special_variable_trace_session_id = "@trace_session_id";
+const char* const c_special_variable_autoscript_reload = "@autoscript_reload";
 const char* const c_special_variable_blockchain_height = "@blockchain_height";
 const char* const c_special_variable_blockchain_is_hub = "@blockchain_is_hub";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
@@ -657,6 +663,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_output_file );
       break;
 
+      case e_special_var_paired_sync:
+      s = string( c_special_variable_paired_sync );
+      break;
+
       case e_special_var_path_prefix:
       s = string( c_special_variable_path_prefix );
       break;
@@ -699,10 +709,6 @@ string get_special_var_name( special_var var )
 
       case e_special_var_shared_files:
       s = string( c_special_variable_shared_files );
-      break;
-
-      case e_special_var_synchronised:
-      s = string( c_special_variable_synchronised );
       break;
 
       case e_special_var_app_directory:
@@ -759,6 +765,26 @@ string get_special_var_name( special_var var )
 
       case e_special_var_peer_responder:
       s = string( c_special_variable_peer_responder );
+      break;
+
+      case e_special_var_progress_count:
+      s = string( c_special_variable_progress_count );
+      break;
+
+      case e_special_var_progress_fracs:
+      s = string( c_special_variable_progress_fracs );
+      break;
+
+      case e_special_var_progress_prior:
+      s = string( c_special_variable_progress_prior );
+      break;
+
+      case e_special_var_progress_total:
+      s = string( c_special_variable_progress_total );
+      break;
+
+      case e_special_var_progress_value:
+      s = string( c_special_variable_progress_value );
       break;
 
       case e_special_var_style_extended:
@@ -827,6 +853,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_trace_session_id:
       s = string( c_special_variable_trace_session_id );
+      break;
+
+      case e_special_var_autoscript_reload:
+      s = string( c_special_variable_autoscript_reload );
       break;
 
       case e_special_var_blockchain_height:

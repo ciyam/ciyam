@@ -1,3 +1,72 @@
+session_variable @progress_total 100000
+session_variable @progress_count 0
+session_variable @progress_value
+session_variable @progress_count 1
+session_variable @progress_value
+session_variable @progress_count 5
+session_variable @progress_value
+session_variable @progress_count 10
+session_variable @progress_value
+session_variable @progress_count 15
+session_variable @progress_value
+session_variable @progress_count 50
+session_variable @progress_value
+session_variable @progress_count 100
+session_variable @progress_value
+session_variable @progress_count 200
+session_variable @progress_value
+session_variable @progress_count 250
+session_variable @progress_value
+session_variable @progress_count 275
+session_variable @progress_value
+session_variable @progress_count 276
+session_variable @progress_value
+session_variable @progress_count 277
+session_variable @progress_value
+session_variable @progress_count 280
+session_variable @progress_value
+session_variable @progress_count 290
+session_variable @progress_value
+session_variable @progress_count 300
+session_variable @progress_value
+session_variable @progress_count 350
+session_variable @progress_value
+session_variable @progress_count 400
+session_variable @progress_value
+session_variable @progress_count 500
+session_variable @progress_value
+session_variable @progress_count 1000
+session_variable @progress_value
+session_variable @progress_count 2000
+session_variable @progress_value
+session_variable @progress_count 3000
+session_variable @progress_value
+session_variable @progress_count 5000
+session_variable @progress_value
+session_variable @progress_count 99000
+session_variable @progress_value
+session_variable @progress_count 99010
+session_variable @progress_value
+session_variable @progress_count 99020
+session_variable @progress_value
+session_variable @progress_count 99025
+session_variable @progress_value
+session_variable @progress_count 99050
+session_variable @progress_value
+session_variable @progress_count 99100
+session_variable @progress_value
+session_variable @progress_count 99200
+session_variable @progress_value
+session_variable @progress_count 99500
+session_variable @progress_value
+session_variable @progress_count 99900
+session_variable @progress_value
+session_variable @progress_count 99990
+session_variable @progress_value
+session_variable @progress_count 99999
+session_variable @progress_value
+session_variable @progress_count 100000
+session_variable @progress_value
 system_variable @queue_test abc
 system_variable @queue_test def
 system_variable @queue_test ghi
