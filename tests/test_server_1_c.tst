@@ -1,3 +1,106 @@
+session_variable @progress_total 100000
+session_variable @progress_count 0
+session_variable @progress_value
+0%
+session_variable @progress_count 1
+session_variable @progress_value
+0.001%
+session_variable @progress_count 5
+session_variable @progress_value
+0.005%
+session_variable @progress_count 10
+session_variable @progress_value
+0.010%
+session_variable @progress_count 15
+session_variable @progress_value
+0.015%
+session_variable @progress_count 50
+session_variable @progress_value
+0.05%
+session_variable @progress_count 100
+session_variable @progress_value
+0.10%
+session_variable @progress_count 200
+session_variable @progress_value
+0.2%
+session_variable @progress_count 250
+session_variable @progress_value
+0.25%
+session_variable @progress_count 275
+session_variable @progress_value
+0.27%
+session_variable @progress_count 276
+session_variable @progress_value
+0.276%
+session_variable @progress_count 277
+session_variable @progress_value
+0.277%
+session_variable @progress_count 280
+session_variable @progress_value
+0.280%
+session_variable @progress_count 290
+session_variable @progress_value
+0.29%
+session_variable @progress_count 300
+session_variable @progress_value
+0.30%
+session_variable @progress_count 350
+session_variable @progress_value
+0.35%
+session_variable @progress_count 400
+session_variable @progress_value
+0.40%
+session_variable @progress_count 500
+session_variable @progress_value
+0.5%
+session_variable @progress_count 1000
+session_variable @progress_value
+1.0%
+session_variable @progress_count 2000
+session_variable @progress_value
+2%
+session_variable @progress_count 3000
+session_variable @progress_value
+3%
+session_variable @progress_count 5000
+session_variable @progress_value
+5%
+session_variable @progress_count 99000
+session_variable @progress_value
+99%
+session_variable @progress_count 99010
+session_variable @progress_value
+99.0%
+session_variable @progress_count 99020
+session_variable @progress_value
+99.02%
+session_variable @progress_count 99025
+session_variable @progress_value
+99.025%
+session_variable @progress_count 99050
+session_variable @progress_value
+99.05%
+session_variable @progress_count 99100
+session_variable @progress_value
+99.10%
+session_variable @progress_count 99200
+session_variable @progress_value
+99.2%
+session_variable @progress_count 99500
+session_variable @progress_value
+99.5%
+session_variable @progress_count 99900
+session_variable @progress_value
+99.9%
+session_variable @progress_count 99990
+session_variable @progress_value
+99.99%
+session_variable @progress_count 99999
+session_variable @progress_value
+99.999%
+session_variable @progress_count 100000
+session_variable @progress_value
+100%
 system_variable @queue_test abc
 system_variable @queue_test def
 system_variable @queue_test ghi

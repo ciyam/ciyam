@@ -6068,6 +6068,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_system_schedule )
       {
+         bool reload = has_parm_val( parameters, c_cmd_ciyam_session_system_schedule_reload );
+
+         if( reload )
+         {
+            set_system_variable( get_special_var_name( e_special_var_autoscript_reload ), c_true_value );
+            msleep( 2000 );
+         }
+
          output_schedule( osstr );
 
          if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )

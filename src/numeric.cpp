@@ -1202,3 +1202,80 @@ string format_numeric( const numeric& n, const string& mask,
    return retval;
 }
 
+string format_percentage( size_t& fracs, unsigned long& prior,
+ unsigned long count, unsigned long total, const char suffix )
+{
+   unsigned long val( count );
+
+   if( val > total )
+      val = total;
+
+   numeric cval( val );
+   numeric pval( prior );
+
+   string mask( "###" );
+
+   if( !total )
+      cval = pval = fracs = 0;
+   else
+   {
+      cval /= total;
+      pval /= total;
+   }
+
+   cval *= 100;
+   pval *= 100;
+
+   if( val && ( val != total ) )
+   {
+      if( !fracs )
+      {
+         if( cval > 0 && cval < 0.01 )
+            fracs = 3;
+         else if( cval > 0 && cval < 0.1 )
+            fracs = 2;
+         else if( cval > 0 && cval < 1 )
+            fracs = 1;
+      }
+
+      float adjust_add = 1.0;
+      float adjust_sub = 10.0;
+
+      for( int i = 0; i < fracs; i++ )
+      {
+         adjust_add /= 10.0;
+         adjust_sub /= 10.0;
+      }
+
+      numeric cval_orig( cval );
+
+      cval.round( fracs, numeric::e_round_method_down );
+      pval.round( fracs, numeric::e_round_method_down );
+
+      size_t use_fracs( fracs );
+
+      // NOTE: Adjust the number of decimals according to the progress rate.
+      if( cval )
+      {
+         if( fracs < 3 && ( cval < ( pval + adjust_add ) ) )
+         {
+            ++fracs;
+
+            cval = cval_orig;
+            cval.round( fracs );
+         }
+         else if( fracs > 0 && ( cval >= ( pval + adjust_sub ) ) )
+            --fracs;
+      }
+
+      if( fracs )
+         mask += '.' + string( fracs, '0' );
+   }
+
+   if( suffix )
+      mask += suffix;
+
+   prior = val;
+
+   return format_numeric( cval, mask );
+}

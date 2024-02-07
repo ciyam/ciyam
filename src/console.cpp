@@ -349,62 +349,15 @@ void console_progress::output_progress( const string& message, unsigned long num
 
    cout << output_prefix << message;
 
-   string mask;
-
-   numeric val( num );
-   numeric pval( previous_num );
+   string formatted;
 
    if( !total )
-      mask = "############";
+      formatted = format_numeric( num, "############" );
    else
+      formatted = format_percentage( decimals, previous_num, num, total );
+
+   if( num || total )
    {
-      val /= total;
-      pval /= total;
-
-      val *= 100;
-      pval *= 100;
-
-      mask = "###";
-
-      if( !decimals )
-      {
-         if( val > 0 && val < 0.01 )
-            decimals = 3;
-         else if( val > 0 && val < 0.1 )
-            decimals = 2;
-         else if( val > 0 && val < 1 )
-            decimals = 1;
-      }
-
-      float adjust_add = 1.0;
-      float adjust_sub = 10.0;
-
-      for( int i = 0; i < decimals; i++ )
-      {
-         adjust_add /= 10.0;
-         adjust_sub /= 10.0;
-      }
-
-      if( decimals )
-         mask += '.' + string( decimals, '0' );
-
-      val.round( decimals );
-      pval.round( decimals );
-
-      // NOTE: Adjust the number of decimals according to the progress rate.
-      if( num )
-      {
-         if( decimals < 3 && ( val < ( pval + adjust_add ) ) )
-            ++decimals;
-         else if( decimals > 0 && ( val > ( pval + adjust_sub ) ) )
-            --decimals;
-      }
-   }
-
-   if( val || total )
-   {
-      string formatted( format_numeric( val, mask ) );
-
       new_length += formatted.length( );
 
       if( is_space )
@@ -414,12 +367,6 @@ void console_progress::output_progress( const string& message, unsigned long num
       }
 
       cout << formatted;
-
-      if( total )
-      {
-         cout << '%';
-         ++new_length;
-      }
 
       if( is_space )
       {
@@ -446,6 +393,5 @@ void console_progress::output_progress( const string& message, unsigned long num
 
    cout.flush( );
 
-   previous_num = num;
    output_length = new_length;
 }

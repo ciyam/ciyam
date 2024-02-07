@@ -35,8 +35,8 @@ struct console_progress : progress
    void output_progress(
     const std::string& message, unsigned long num = 0, unsigned long total = 0 );
 
-   int decimals;
-   int output_length;
+   size_t decimals;
+   size_t output_length;
 
    std::string output_prefix;
 
