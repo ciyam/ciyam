@@ -1265,7 +1265,10 @@ string format_percentage( size_t& fracs, unsigned long& prior,
             cval.round( fracs );
          }
          else if( fracs > 0 && ( cval >= ( pval + adjust_sub ) ) )
+         {
             --fracs;
+            cval.round( fracs, numeric::e_round_method_down );
+         }
       }
 
       if( fracs )

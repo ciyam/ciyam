@@ -421,7 +421,7 @@ void autoscript_session::on_start( )
          script_schedule_const_iterator i, j;
 
          // NOTE: If too many seconds have elapsed between passes then it is being assumed that
-         // the system time clock has been altered (requiring the schedule to be reconstructed).
+         // the system time/zone has been altered (requiring the schedule to be reconstructed).
          if( seconds_between( dtm, now ) > ( ( c_auto_script_msleep / 1000 ) * c_max_tolerance ) )
          {
             dtm = now;

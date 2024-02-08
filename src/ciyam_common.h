@@ -193,7 +193,6 @@ enum special_var
    e_special_var_cmd_delay_after,
    e_special_var_notifier_events,
    e_special_var_paired_identity,
-   e_special_var_progress_msleep,
    e_special_var_queue_hub_users,
    e_special_var_row_cache_limit,
    e_special_var_system_identity,

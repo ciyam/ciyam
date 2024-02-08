@@ -9,7 +9,7 @@ session_variable @progress_count 10
 session_variable @progress_value
 session_variable @progress_count 15
 session_variable @progress_value
-session_variable @progress_count 50
+session_variable @progress_count 55
 session_variable @progress_value
 session_variable @progress_count 100
 session_variable @progress_value

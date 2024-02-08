@@ -89,7 +89,6 @@ const int c_min_needed_for_support = 3;
 const int c_min_smtp_max_send_attempts = 1;
 
 const size_t c_default_seconds = 1;
-const size_t c_default_milliseconds = 100;
 
 const unsigned int c_default_max_peers = 100;
 
@@ -7040,12 +7039,11 @@ void set_slowest_if_applicable( )
    }
 }
 
-void session_progress_settings( size_t& seconds, size_t& milliseconds )
+void session_progress_settings( size_t& seconds, progress* p_progress )
 {
    guard g( g_session_mutex );
 
    seconds = c_default_seconds;
-   milliseconds = c_default_milliseconds;
 
    if( gtp_session )
    {
@@ -7053,12 +7051,10 @@ void session_progress_settings( size_t& seconds, size_t& milliseconds )
 
       if( gtp_session->variables.count( progress_secs_name ) )
          seconds = from_string< size_t >( gtp_session->variables[ progress_secs_name ] );
-
-      string progress_msecs_name( get_special_var_name( e_special_var_progress_msleep ) );
-
-      if( gtp_session->variables.count( progress_msecs_name ) )
-         milliseconds = from_string< size_t >( gtp_session->variables[ progress_msecs_name ] );
    }
+
+   if( p_progress )
+      p_progress->num_seconds = seconds;
 }
 
 void set_session_progress_output( const string& progress_output )

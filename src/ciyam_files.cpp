@@ -564,9 +564,9 @@ string transform_shared_list_info( const string& repository,
 
    map< string, string > mapped_hashes;
 
-   size_t num_seconds, milliseconds;
+   size_t num_seconds;
 
-   session_progress_settings( num_seconds, milliseconds );
+   session_progress_settings( num_seconds, p_progress );
 
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
@@ -640,12 +640,8 @@ string transform_shared_list_info( const string& repository,
 
          if( elapsed >= num_seconds )
          {
-            p_progress->output_progress( "." );
-
-            if( milliseconds )
-               msleep( milliseconds );
-
             dtm = now;
+            p_progress->output_progress( "." );
          }
       }
    }
@@ -676,9 +672,9 @@ string create_repository_lists(
 
    map< string, string > mapped_hashes;
 
-   size_t num_seconds, milliseconds;
+   size_t num_seconds;
 
-   session_progress_settings( num_seconds, milliseconds );
+   session_progress_settings( num_seconds, p_progress );
 
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
@@ -791,12 +787,8 @@ string create_repository_lists(
 
          if( elapsed >= num_seconds )
          {
-            p_progress->output_progress( "." );
-
-            if( milliseconds )
-               msleep( milliseconds );
-
             dtm = now;
+            p_progress->output_progress( "." );
          }
       }
    }
@@ -865,6 +857,38 @@ bool path_already_used_in_archive( const string& path )
    }
 
    return retval;
+}
+
+void output_repository_progress( progress* p_progress,
+ size_t num, date_time& dtm, const date_time& now, bool set_session_progress = false,
+ bool* p_has_output_progress = 0, bool is_remove = false, bool is_obsolete = false )
+{
+   string progress;
+
+   // FUTURE: These messages should be handled as a server string message.
+   if( !is_remove )
+      progress = "Processed " + to_string( num ) + " repository entries...";
+   else
+   {
+      if( !is_obsolete )
+         progress = "Removed " + to_string( num ) + " repository entries...";
+      else
+         progress = "Removed " + to_string( num ) + " obsolete repository entries...";
+   }
+
+   if( set_session_progress )
+   {
+      set_session_progress_output( progress );
+
+      progress = ".";
+   }
+
+   p_progress->output_progress( progress );
+
+   dtm = now;
+
+   if( p_has_output_progress )
+      *p_has_output_progress = true;
 }
 
 }
@@ -946,9 +970,9 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
       string ciyam_prefix( c_ciyam_tag );
       ciyam_prefix += '_';
 
-      size_t num_seconds, milliseconds;
+      size_t num_seconds;
 
-      session_progress_settings( num_seconds, milliseconds );
+      session_progress_settings( num_seconds, p_progress );
 
       do
       {
@@ -1049,13 +1073,10 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
 
                if( elapsed >= num_seconds )
                {
+                  dtm = now;
+
                   // FUTURE: This message should be handled as a server string message.
                   p_progress->output_progress( "Processed " + to_string( g_total_files ) + " files..." );
-
-                  if( milliseconds )
-                     msleep( milliseconds );
-
-                  dtm = now;
                }
             }
          }
@@ -1111,9 +1132,9 @@ void init_archive_info( progress* p_progress )
 
       date_time dtm( date_time::local( ) );
 
-      size_t num_seconds, milliseconds;
+      size_t num_seconds;
 
-      session_progress_settings( num_seconds, milliseconds );
+      session_progress_settings( num_seconds, p_progress );
 
       for( size_t i = 0; i < archives.size( ); i++ )
       {
@@ -1168,13 +1189,10 @@ void init_archive_info( progress* p_progress )
 
                if( elapsed >= num_seconds )
                {
+                  dtm = now;
+
                   // FUTURE: This message should be handled as a server string message.
                   p_progress->output_progress( "Processed " + to_string( total_files ) + " archive files..." );
-
-                  if( milliseconds )
-                     msleep( milliseconds );
-
-                  dtm = now;
                }
             }
          }
@@ -1450,9 +1468,9 @@ string file_type_info( const string& tag_or_hash,
    string use_tag_or_hash( tag_or_hash );
    string files_area_dir( get_files_area_dir( ) );
 
-   size_t num_seconds, milliseconds;
+   size_t num_seconds;
 
-   session_progress_settings( num_seconds, milliseconds );
+   session_progress_settings( num_seconds, p_progress );
 
    if( p_dtm )
    {
@@ -1468,16 +1486,13 @@ string file_type_info( const string& tag_or_hash,
       }
       else if( elapsed >= num_seconds )
       {
+         *p_dtm = now;
+
          if( !p_total )
             p_progress->output_progress( "." );
          else
             // FUTURE: This message should be handled as a server string message.
             p_progress->output_progress( "Processed " + to_string( *p_total ) + " items..." );
-
-         if( milliseconds )
-            msleep( milliseconds );
-
-         *p_dtm = now;
       }
    }
 
@@ -1935,9 +1950,9 @@ void file_list_item_pos(
 
       split_list_items( all_list_items, list_items );
 
-      size_t num_seconds, milliseconds;
+      size_t num_seconds;
 
-      session_progress_settings( num_seconds, milliseconds );
+      session_progress_settings( num_seconds, p_progress );
 
       for( size_t i = 0; i < list_items.size( ); i++ )
       {
@@ -1948,13 +1963,10 @@ void file_list_item_pos(
 
             if( elapsed >= num_seconds )
             {
+               *p_dtm = now;
+
                // FUTURE: This message should be handled as a server string message.
                p_progress->output_progress( "Processed " + to_string( total ) + " items..." );
-
-               if( milliseconds )
-                  msleep( milliseconds );
-
-               *p_dtm = now;
             }
          }
 
@@ -3038,9 +3050,9 @@ string extract_tags_from_lists( const string& tag_or_hash,
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "File '" + tag_or_hash + "' is not a list." );
 
-   size_t num_seconds, milliseconds;
+   size_t num_seconds;
 
-   session_progress_settings( num_seconds, milliseconds );
+   session_progress_settings( num_seconds, p_progress );
 
    if( is_list && !data.empty( ) )
    {
@@ -3060,16 +3072,13 @@ string extract_tags_from_lists( const string& tag_or_hash,
 
             if( elapsed >= num_seconds )
             {
+               *p_dtm = now;
+
                if( !p_total )
                   p_progress->output_progress( "." );
                else
                   // FUTURE: This message should be handled as a server string message.
                   p_progress->output_progress( "Processed " + to_string( *p_total ) + " items..." );
-
-               if( milliseconds )
-                  msleep( milliseconds );
-
-               *p_dtm = now;
             }
          }
 
@@ -3142,9 +3151,9 @@ string list_file_tags(
    if( !all_excludes.empty( ) )
       split( all_excludes, excludes );
 
-   size_t num_seconds, milliseconds;
+   size_t num_seconds;
 
-   session_progress_settings( num_seconds, milliseconds );
+   session_progress_settings( num_seconds, p_progress );
 
    if( !pat.empty( ) )
    {
@@ -3165,16 +3174,13 @@ string list_file_tags(
 
             if( elapsed >= num_seconds )
             {
-               // FUTURE: This message should be handled as a server string message.
-               p_progress->output_progress( "Processed " + to_string( pcount ) + " tags..." );
-
-               if( milliseconds )
-                  msleep( milliseconds );
-
                if( !p_dtm )
                   dtm = now;
                else
                   *p_dtm = now;
+
+               // FUTURE: This message should be handled as a server string message.
+               p_progress->output_progress( "Processed " + to_string( pcount ) + " tags..." );
             }
          }
 
@@ -3245,13 +3251,10 @@ string list_file_tags(
 
          if( elapsed >= num_seconds )
          {
+            dtm = now;
+
             // FUTURE: This message should be handled as a server string message.
             p_progress->output_progress( "Processed " + to_string( pcount ) + " tags..." );
-
-            if( milliseconds )
-               msleep( milliseconds );
-
-            dtm = now;
          }
 
          bool is_excluded = false;
@@ -3377,9 +3380,9 @@ void crypt_file( const string& repository,
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Attempt to recrypt recursively when not 'blobs only'." );
 
-   size_t num_seconds, milliseconds;
+   size_t num_seconds;
 
-   session_progress_settings( num_seconds, milliseconds );
+   session_progress_settings( num_seconds, p_progress );
 
    auto_ptr< set< string > > ap_files_processed;
 
@@ -3404,6 +3407,8 @@ void crypt_file( const string& repository,
 
       if( elapsed >= num_seconds )
       {
+         *p_dtm = now;
+
          if( !p_total
           || ( operation == e_crypt_operation_decrypt )
           || ( operation == e_crypt_operation_encrypt ) )
@@ -3411,11 +3416,6 @@ void crypt_file( const string& repository,
          else
             // FUTURE: This message should be handled as a server string message.
             p_progress->output_progress( "Processed " + to_string( *p_total ) + " files..." );
-
-         if( milliseconds )
-            msleep( milliseconds );
-
-         *p_dtm = now;
       }
    }
 
@@ -4145,9 +4145,9 @@ void delete_files_for_tags( const string& pat, progress* p_progress )
       for( size_t i = 0; i < all_tags.size( ); i++ )
          hashes.insert( tag_file_hash( all_tags[ i ] ) );
 
-      size_t num_seconds, milliseconds;
+      size_t num_seconds;
 
-      session_progress_settings( num_seconds, milliseconds );
+      session_progress_settings( num_seconds, p_progress );
 
       size_t num = 0;
 
@@ -4163,13 +4163,10 @@ void delete_files_for_tags( const string& pat, progress* p_progress )
 
             if( elapsed >= num_seconds )
             {
+               dtm = now;
+
                // FUTURE: This message should be handled as a server string message.
                p_progress->output_progress( "Processed " + to_string( num ) + " files..." );
-
-               if( milliseconds )
-                  msleep( milliseconds );
-
-               dtm = now;
             }
          }
 
@@ -4460,9 +4457,9 @@ void remove_file_archive( const string& name, bool destroy_files, bool remove_di
 
          if( new_status_info == string( c_okay ) )
          {
-            size_t num_seconds, milliseconds;
+            size_t num_seconds;
 
-            session_progress_settings( num_seconds, milliseconds );
+            session_progress_settings( num_seconds, p_progress );
 
             while( true )
             {
@@ -4483,12 +4480,8 @@ void remove_file_archive( const string& name, bool destroy_files, bool remove_di
 
                   if( elapsed >= num_seconds )
                   {
-                     p_progress->output_progress( "." );
-
-                     if( milliseconds )
-                        msleep( milliseconds );
-
                      dtm = now;
+                     p_progress->output_progress( "." );
                   }
                }
             }
@@ -4558,9 +4551,9 @@ void repair_file_archive( const string& name, progress* p_progress )
 
          regex expr( c_regex_hash_256, true, true );
 
-         size_t num_seconds, milliseconds;
+         size_t num_seconds;
 
-         session_progress_settings( num_seconds, milliseconds );
+         session_progress_settings( num_seconds, p_progress );
 
          while( fs.has_next( ) )
          {
@@ -4583,12 +4576,8 @@ void repair_file_archive( const string& name, progress* p_progress )
 
                if( elapsed >= num_seconds )
                {
-                  p_progress->output_progress( "." );
-
-                  if( milliseconds )
-                     msleep( milliseconds );
-
                   dtm = now;
+                  p_progress->output_progress( "." );
                }
             }
          }
@@ -5569,9 +5558,9 @@ size_t count_total_repository_entries(
 
    size_t total_entries = 0;
 
-   size_t num_seconds, milliseconds;
+   size_t num_seconds;
 
-   session_progress_settings( num_seconds, milliseconds );
+   session_progress_settings( num_seconds, p_progress );
 
    while( true )
    {
@@ -5580,24 +5569,15 @@ size_t count_total_repository_entries(
       vector< string > repo_entries;
       ods_fs.list_files( repository + '*', repo_entries, false, last_key, last_key.empty( ), 1000 );
 
+      if( repo_entries.empty( ) )
+         break;
+
       if( p_progress )
       {
          uint64_t elapsed = seconds_between( *p_dtm, now );
 
          if( elapsed >= num_seconds )
-         {
-            string progress;
-
-            // FUTURE: This message should be handled as a server string message.
-            progress = "Processed " + to_string( total_entries ) + " repository entries...";
-
-            p_progress->output_progress( progress );
-
-            if( milliseconds )
-               msleep( milliseconds );
-
-            *p_dtm = now;
-         }
+            output_repository_progress( p_progress, total_entries, *p_dtm, now );
       }
 
       total_entries += repo_entries.size( );
@@ -5614,6 +5594,8 @@ size_t count_total_repository_entries(
 size_t remove_all_repository_entries( const string& repository,
  date_time* p_dtm, progress* p_progress, bool set_session_progress )
 {
+   bool has_output_progress = false;
+
    system_ods_bulk_write ods_bulk_write( p_progress );
 
    string archive_path;
@@ -5655,9 +5637,9 @@ size_t remove_all_repository_entries( const string& repository,
    string last_key;
    vector< string > files_to_remove;
 
-   size_t num_seconds, milliseconds;
+   size_t num_seconds;
 
-   session_progress_settings( num_seconds, milliseconds );
+   session_progress_settings( num_seconds, p_progress );
 
    while( true )
    {
@@ -5666,31 +5648,16 @@ size_t remove_all_repository_entries( const string& repository,
       vector< string > repo_entries;
       ods_fs.list_files( repository + '*', repo_entries, false, last_key, last_key.empty( ), 100 );
 
+      if( repo_entries.empty( ) )
+         break;
+
       if( p_progress )
       {
          uint64_t elapsed = seconds_between( *p_dtm, now );
 
          if( elapsed >= num_seconds )
-         {
-            string progress;
-
-            // FUTURE: This message should be handled as a server string message.
-            progress = "Processed " + to_string( total_entries ) + " repository entries...";
-
-            if( set_session_progress )
-            {
-               set_session_progress_output( progress );
-
-               progress = ".";
-            }
-
-            p_progress->output_progress( progress );
-
-            if( milliseconds )
-               msleep( milliseconds );
-
-            *p_dtm = now;
-         }
+            output_repository_progress( p_progress, total_entries,
+             *p_dtm, now, set_session_progress, &has_output_progress );
       }
 
       for( size_t i = 0; i < repo_entries.size( ); i++ )
@@ -5705,6 +5672,8 @@ size_t remove_all_repository_entries( const string& repository,
       if( repo_entries.size( ) < 100 )
          break;
    }
+
+   size_t last_removed = 0;
 
    total_entries = files_to_remove.size( );
 
@@ -5724,27 +5693,17 @@ size_t remove_all_repository_entries( const string& repository,
 
             if( elapsed >= num_seconds )
             {
-               string progress;
+               last_removed = i + 1;
 
-               // FUTURE: This message should be handled as a server string message.
-               progress = "Removed " + to_string( i ) + " repository entries...";
-
-               if( set_session_progress )
-               {
-                  set_session_progress_output( progress );
-
-                  progress = ".";
-               }
-
-               p_progress->output_progress( progress );
-
-               if( milliseconds )
-                  msleep( milliseconds );
-
-               *p_dtm = now;
+               output_repository_progress( p_progress, last_removed,
+                *p_dtm, now, set_session_progress, &has_output_progress, true );
             }
          }
       }
+
+      if( has_output_progress && ( last_removed != total_entries ) )
+         output_repository_progress( p_progress,
+          total_entries, *p_dtm, *p_dtm, set_session_progress, 0, 0, true );
 
       ods_tx.commit( );
    }
@@ -5755,6 +5714,8 @@ size_t remove_all_repository_entries( const string& repository,
 size_t remove_obsolete_repository_entries( const string& repository,
  date_time* p_dtm, progress* p_progress, bool set_session_progress )
 {
+   bool has_output_progress = false;
+
    system_ods_bulk_write ods_bulk_write( p_progress );
 
    string archive_path;
@@ -5796,9 +5757,9 @@ size_t remove_obsolete_repository_entries( const string& repository,
    string last_key;
    vector< string > files_to_remove;
 
-   size_t num_seconds, milliseconds;
+   size_t num_seconds;
 
-   session_progress_settings( num_seconds, milliseconds );
+   session_progress_settings( num_seconds, p_progress );
 
    while( true )
    {
@@ -5815,26 +5776,8 @@ size_t remove_obsolete_repository_entries( const string& repository,
          uint64_t elapsed = seconds_between( *p_dtm, now );
 
          if( elapsed >= num_seconds )
-         {
-            string progress;
-
-            // FUTURE: This message should be handled as a server string message.
-            progress = "Processed " + to_string( total_entries ) + " repository entries...";
-
-            if( set_session_progress )
-            {
-               set_session_progress_output( progress );
-
-               progress = ".";
-            }
-
-            p_progress->output_progress( progress );
-
-            if( milliseconds )
-               msleep( milliseconds );
-
-            *p_dtm = now;
-         }
+            output_repository_progress( p_progress, total_entries,
+             *p_dtm, now, set_session_progress, &has_output_progress );
       }
 
       for( size_t i = 0; i < repo_entries.size( ); i++ )
@@ -5887,6 +5830,8 @@ size_t remove_obsolete_repository_entries( const string& repository,
          break;
    }
 
+   size_t last_removed = 0;
+
    total_entries = files_to_remove.size( );
 
    if( total_entries )
@@ -5899,38 +5844,23 @@ size_t remove_obsolete_repository_entries( const string& repository,
 
          ods_fs.remove_file( files_to_remove[ i ] );
 
-         // NOTE: Assuming the commit will take as long will
-         // halve the number of seconds for the final entry.
-         if( i == total_entries - 1 )
-            num_seconds /= 2;
-
          if( p_progress )
          {
             uint64_t elapsed = seconds_between( *p_dtm, now );
 
             if( elapsed >= num_seconds )
             {
-               string progress;
+               last_removed = i + 1;
 
-               // FUTURE: This message should be handled as a server string message.
-               progress = "Removed " + to_string( i + 1 ) + " obsolete repository entries...";
-
-               if( set_session_progress )
-               {
-                  set_session_progress_output( progress );
-
-                  progress = ".";
-               }
-
-               p_progress->output_progress( progress );
-
-               if( milliseconds )
-                  msleep( milliseconds );
-
-               *p_dtm = now;
+               output_repository_progress( p_progress, last_removed, *p_dtm,
+                now, set_session_progress, &has_output_progress, true, true );
             }
          }
       }
+
+      if( has_output_progress && ( last_removed != total_entries ) )
+         output_repository_progress( p_progress,
+          total_entries, *p_dtm, *p_dtm, set_session_progress, 0, true, true );
 
       ods_tx.commit( );
    }
