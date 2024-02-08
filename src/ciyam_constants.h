@@ -21,6 +21,8 @@ const size_t c_bc_scaling_demo_value = 5;
 
 const size_t c_key_rounds_multiplier = 30;
 
+const size_t c_auto_script_msleep = 1000; // i.e. 1 sec
+
 const char* const c_none = "none";
 const char* const c_okay = "okay";
 

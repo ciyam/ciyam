@@ -44,7 +44,7 @@ namespace
 
 #include "ciyam_constants.h"
 
-const size_t c_sleep_time = 1000; // i.e. 1 sec
+const size_t c_max_tolerance = 10;
 
 const char* const c_script_dummy_filename = "*script*";
 
@@ -130,8 +130,8 @@ void read_script_info( )
          g_has_read = true;
       else
       {
-         // NOTE: If is not the first read then log the re-read.
-         TRACE_LOG( TRACE_ANYTHING, "[autoscript.sio] updated" );
+         // NOTE: If is not the first read then log the reload.
+         TRACE_LOG( TRACE_ANYTHING, "[autoscript.sio] reloaded" );
       }
 
       g_scripts.clear( );
@@ -386,9 +386,11 @@ void autoscript_session::on_start( )
 
       string autoscript_reload_name( get_special_var_name( e_special_var_autoscript_reload ) );
 
+      date_time dtm( date_time::local( ) );
+
       while( true )
       {
-         msleep( c_sleep_time );
+         msleep( c_auto_script_msleep );
 
          if( g_server_shutdown )
             break;
@@ -404,16 +406,29 @@ void autoscript_session::on_start( )
          else if( script_reconfig && scripts_file_has_changed( ) )
             changed = true;
 
-         guard g( g_mutex );
-
          if( !get_raw_system_variable( autoscript_reload_name ).empty( ) )
          {
             changed = true;
             set_system_variable( autoscript_reload_name, "" );
+
+            continue;
          }
 
-         date_time now = date_time::local( );
+         guard g( g_mutex );
+
+         date_time now( date_time::local( ) );
+
          script_schedule_const_iterator i, j;
+
+         // NOTE: If too many seconds have elapsed between passes then it is being assumed that
+         // the system time clock has been altered (requiring the schedule to be reconstructed).
+         if( seconds_between( dtm, now ) > ( ( c_auto_script_msleep / 1000 ) * c_max_tolerance ) )
+         {
+            dtm = now;
+            changed = true;
+
+            continue;
+         }
 
          vector< date_time > erase_items;
          script_schedule_container new_schedule_items;
@@ -566,6 +581,8 @@ void autoscript_session::on_start( )
             g_script_schedule.erase( erase_items[ x ] );
 
          g_script_schedule.insert( new_schedule_items.begin( ), new_schedule_items.end( ) );
+
+         dtm = date_time::local( );
       }
 
       TRACE_LOG( TRACE_SESSIONS, "finished autoscript session" );
