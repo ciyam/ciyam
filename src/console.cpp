@@ -354,7 +354,7 @@ void console_progress::output_progress( const string& message, unsigned long num
    if( !total )
       formatted = format_numeric( num, "############" );
    else
-      formatted = format_percentage( decimals, previous_num, num, total );
+      formatted = format_percentage( num_decimals, previous_num, num, total );
 
    if( num || total )
    {

@@ -1396,16 +1396,18 @@ string& utf8_truncate( string& utf8, int trunc_limit, const char* p_overflow_suf
 
 bool has_environment_variable( const char* p_env_var_name )
 {
-   return getenv( p_env_var_name ) != 0;
+   const char* p_env_var = getenv( p_env_var_name );
+
+   return ( p_env_var && *p_env_var );
 }
 
 string get_environment_variable( const char* p_env_var_name )
 {
    string value;
 
-   const char* p_value( getenv( p_env_var_name ) );
+   const char* p_value = getenv( p_env_var_name );
 
-   if( p_value )
+   if( p_value && *p_value )
       value = string( p_value );
 
    return value;

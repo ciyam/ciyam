@@ -1099,7 +1099,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                   auto_ptr< udp_helper > ap_udp_helper;
 
-                  bool no_udp = ( getenv( c_env_var_no_udp ) != 0 );
+                  bool no_udp = has_environment_variable( c_env_var_no_udp );
 
                   // NOTE: If using UDP then try and send the file/chunk content via UDP first
                   // with the TCP file transfer still starting (but could finish straight away
@@ -1674,19 +1674,19 @@ int main( int argc, char* argv[ ] )
 
       const char* p_pid = getenv( c_env_var_pid );
 
-      if( p_pid )
+      if( p_pid && *p_pid )
          g_pid = atoi( p_pid );
 
       const char* p_seconds = getenv( c_env_var_ciyam_seconds );
 
-      if( p_seconds )
+      if( p_seconds && *p_seconds )
          g_seconds = atoi( p_seconds );
 
       if( !cmd_handler.has_option_quiet( ) )
          cout << application_title( e_app_info_request_title_and_version ) << endl;
 
-      bool no_udp = ( getenv( c_env_var_no_udp ) != 0 );
-      bool local_udp = ( getenv( c_env_var_local_udp ) != 0 );
+      bool no_udp = has_environment_variable( c_env_var_no_udp );
+      bool local_udp = has_environment_variable( c_env_var_local_udp );
 
       if( socket.open( ) )
       {

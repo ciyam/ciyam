@@ -14,7 +14,7 @@ session_variable @progress_value
 session_variable @progress_count 15
 session_variable @progress_value
 0.015%
-session_variable @progress_count 50
+session_variable @progress_count 55
 session_variable @progress_value
 0.05%
 session_variable @progress_count 100

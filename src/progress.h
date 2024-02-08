@@ -13,6 +13,8 @@
 
 struct progress
 {
+   progress( ) : num_seconds( 1 ) { }
+
    virtual void output_progress(
     const std::string& message, unsigned long num = 0, unsigned long total = 0 )
    {
@@ -20,11 +22,13 @@ struct progress
       ( void )total;
       ( void )message;
    }
+
+   size_t num_seconds;
 };
 
 struct console_progress : progress
 {
-   console_progress( ) : decimals( 0 ), output_length( 0 ), previous_num( 0 ) { }
+   console_progress( ) : num_decimals( 0 ), output_length( 0 ), previous_num( 0 ) { }
 
    ~console_progress( )
    {
@@ -35,7 +39,7 @@ struct console_progress : progress
    void output_progress(
     const std::string& message, unsigned long num = 0, unsigned long total = 0 );
 
-   size_t decimals;
+   size_t num_decimals;
    size_t output_length;
 
    std::string output_prefix;

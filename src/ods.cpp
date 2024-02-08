@@ -3269,7 +3269,7 @@ void ods::rewind_transactions(
                               date_time now( date_time::local( ) );
                               uint64_t elapsed = seconds_between( dtm, now );
 
-                              if( elapsed >= 1 )
+                              if( elapsed >= p_progress->num_seconds )
                               {
                                  dtm = now;
                                  p_progress->output_progress( "." );
@@ -3353,7 +3353,7 @@ void ods::rewind_transactions(
                   date_time now( date_time::local( ) );
                   uint64_t elapsed = seconds_between( dtm, now );
 
-                  if( elapsed >= 1 )
+                  if( elapsed >= p_progress->num_seconds )
                   {
                      dtm = now;
                      p_progress->output_progress( "." );
@@ -3736,7 +3736,7 @@ void ods::move_free_data_to_end( progress* p_progress )
          date_time now( date_time::local( ) );
          uint64_t elapsed = seconds_between( dtm, now );
 
-         if( elapsed >= 1 )
+         if( elapsed >= p_progress->num_seconds )
          {
             dtm = now;
             p_progress->output_progress( "." );
@@ -3830,7 +3830,7 @@ void ods::move_free_data_to_end( progress* p_progress )
                   date_time now( date_time::local( ) );
                   uint64_t elapsed = seconds_between( dtm, now );
 
-                  if( elapsed >= 1 )
+                  if( elapsed >= p_progress->num_seconds )
                   {
                      dtm = now;
                      p_progress->output_progress( "." );
@@ -3896,7 +3896,7 @@ void ods::move_free_data_to_end( progress* p_progress )
                date_time now( date_time::local( ) );
                uint64_t elapsed = seconds_between( dtm, now );
 
-               if( elapsed >= 1 )
+               if( elapsed >= p_progress->num_seconds )
                {
                   dtm = now;
                   p_progress->output_progress( "." );
@@ -5349,7 +5349,7 @@ void ods::transaction_commit( )
                            date_time now( date_time::local( ) );
                            uint64_t elapsed = seconds_between( dtm, now );
 
-                           if( elapsed >= 1 )
+                           if( elapsed >= p_progress->num_seconds )
                            {
                               dtm = now;
                               p_progress->output_progress( "." );
@@ -5850,7 +5850,7 @@ int64_t ods::append_log_entry_item( int64_t num,
             date_time now( date_time::local( ) );
             uint64_t elapsed = seconds_between( dtm, now );
 
-            if( elapsed >= 1 )
+            if( elapsed >= p_progress->num_seconds )
             {
                dtm = now;
                p_progress->output_progress( "." );
@@ -5932,7 +5932,7 @@ void ods::rollback_dead_transactions( progress* p_progress )
          date_time now( date_time::local( ) );
          uint64_t elapsed = seconds_between( dtm, now );
 
-         if( elapsed >= 1 )
+         if( elapsed >= p_progress->num_seconds )
          {
             dtm = now;
             p_progress->output_progress( "." );
@@ -6146,7 +6146,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                date_time now( date_time::local( ) );
                uint64_t elapsed = seconds_between( dtm, now );
 
-               if( elapsed >= 1 )
+               if( elapsed >= p_progress->num_seconds )
                {
                   dtm = now;
                   p_progress->output_progress( "." );
@@ -6378,7 +6378,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                                  date_time now( date_time::local( ) );
                                  uint64_t elapsed = seconds_between( dtm, now );
 
-                                 if( elapsed >= 1 )
+                                 if( elapsed >= p_progress->num_seconds )
                                  {
                                     dtm = now;
                                     p_progress->output_progress( "." );
