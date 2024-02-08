@@ -6073,7 +6073,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( reload )
          {
             set_system_variable( get_special_var_name( e_special_var_autoscript_reload ), c_true_value );
-            msleep( 2000 );
+
+            // NOTE: Wait here long enough for the schedule to have been reconstructed before it is output.
+            msleep( c_auto_script_msleep * 2 );
          }
 
          output_schedule( osstr );
