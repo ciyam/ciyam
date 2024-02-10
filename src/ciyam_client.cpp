@@ -1486,6 +1486,8 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         progress.output_progress( "" );
                      else if( had_single_char_message )
                         handle_progress_message( "" );
+
+                     had_single_char_message = false;
                   }
 
                   if( is_message )
