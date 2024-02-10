@@ -80,8 +80,9 @@ if [ ! -f ~backup ]; then
  echo "Starting backup..." >>Backup.txt
 
  if [ -f $BACKUP_IMAGE ]; then
-  export CIYAM_SECONDS=9
+  export CIYAM_SECONDS=8
   export USE_BACKUP_ARCHIVE=1
+  export CIYAM_FILE_NAME_ONLY=1
 
   export CIYAM_STREAM_CIPHER=cc
   export REPO_CRYPT_PASSWORD=@sid
