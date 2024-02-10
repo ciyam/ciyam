@@ -44,7 +44,7 @@ namespace
 
 #include "ciyam_constants.h"
 
-const size_t c_max_tolerance = 10;
+const size_t c_max_tolerance = 50;
 
 const char* const c_script_dummy_filename = "*script*";
 
