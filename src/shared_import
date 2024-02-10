@@ -47,6 +47,7 @@ if [ ! -f ~shared ]; then
  if [ -f $SHARED_IMAGE ]; then
   export CIYAM_SECONDS=4
   export USE_SHARED_ARCHIVE=1
+  export CIYAM_FILE_NAME_ONLY=1
 
   export CIYAM_STREAM_CIPHER=cc
   export ENCRYPTED_PASSWORD=@shared_secret
