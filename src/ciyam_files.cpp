@@ -5673,8 +5673,6 @@ size_t remove_all_repository_entries( const string& repository,
          break;
    }
 
-   size_t last_removed = 0;
-
    total_entries = files_to_remove.size( );
 
    if( total_entries )
@@ -5692,18 +5690,10 @@ size_t remove_all_repository_entries( const string& repository,
             uint64_t elapsed = seconds_between( *p_dtm, now );
 
             if( elapsed >= num_seconds )
-            {
-               last_removed = i + 1;
-
-               output_repository_progress( p_progress, last_removed,
+               output_repository_progress( p_progress, ( i + 1 ),
                 *p_dtm, now, set_session_progress, &has_output_progress, true );
-            }
          }
       }
-
-      if( has_output_progress && ( last_removed != total_entries ) )
-         output_repository_progress( p_progress,
-          total_entries, *p_dtm, *p_dtm, set_session_progress, 0, 0, true );
 
       ods_tx.commit( );
    }
@@ -5830,8 +5820,6 @@ size_t remove_obsolete_repository_entries( const string& repository,
          break;
    }
 
-   size_t last_removed = 0;
-
    total_entries = files_to_remove.size( );
 
    if( total_entries )
@@ -5849,18 +5837,10 @@ size_t remove_obsolete_repository_entries( const string& repository,
             uint64_t elapsed = seconds_between( *p_dtm, now );
 
             if( elapsed >= num_seconds )
-            {
-               last_removed = i + 1;
-
-               output_repository_progress( p_progress, last_removed, *p_dtm,
+               output_repository_progress( p_progress, ( i + 1 ), *p_dtm,
                 now, set_session_progress, &has_output_progress, true, true );
-            }
          }
       }
-
-      if( has_output_progress && ( last_removed != total_entries ) )
-         output_repository_progress( p_progress,
-          total_entries, *p_dtm, *p_dtm, set_session_progress, 0, true, true );
 
       ods_tx.commit( );
    }

@@ -2515,9 +2515,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( total )
             response = to_string( count_total_repository_entries( repository, &dtm, &handler ) );
          else if( remove_all )
-            response = "Removed " + to_string( remove_all_repository_entries( repository, &dtm, &handler ) ) + " entries.";
+            response = to_string( remove_all_repository_entries( repository, &dtm, &handler ) );
          else
-            response = "Removed " + to_string( remove_obsolete_repository_entries( repository, &dtm, &handler ) ) + " entries.";
+            response = to_string( remove_obsolete_repository_entries( repository, &dtm, &handler ) );
       }
       else if( command == c_cmd_ciyam_session_module_list )
       {
