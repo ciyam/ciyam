@@ -24,7 +24,7 @@ IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
 if [ ! -f ~backup ]; then
  touch ~backup
 
- secs=8
+ secs=4
  prepared=0
 
  TARGET_FILE=`./system_variable get @backup_target_file`
@@ -34,7 +34,7 @@ if [ ! -f ~backup ]; then
   if mountpoint -q $BACKUP_PATH; then
    num_chunks=0
    if [ ! -f $BACKUP_HEIGHT_FILE ]; then
-    secs=10
+    secs=12
     num_bytes=`du -b -c -s $BACKUP_PATH | head -n 1 | cut -d $'\t' -f 1`
     num_chunks=$[num_bytes / 1000000]
    fi
@@ -53,21 +53,8 @@ if [ ! -f ~backup ]; then
    else
     if [ $num_chunks -gt 1000 ]; then
      date >Backup.txt
-     echo -n "Preparing..." >>Backup.txt
-     for (( i = 1; i <= $num_chunks; i++ ))
-     do
-      head -c 1000000 /dev/urandom >$USER_PATH/~prepare_$i.tmp
-      n=$[ i % 1000 ]
-      if [ $n -eq 0 ]; then
-       echo -n "." >>Backup.txt
-      fi
-     done
-     echo "." >>Backup.txt
      prepared=1
-     for (( i = 1; i <= $num_chunks; i++ ))
-     do
-      rm $USER_PATH/~prepare_$i.tmp
-     done
+     ./prepare_for_import $num_chunks Backup.txt
     fi
    fi
   fi
