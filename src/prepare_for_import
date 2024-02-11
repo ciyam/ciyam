@@ -27,6 +27,8 @@ else
   fi
  done
 
+ echo "." >>$OUTPUT_FILE
+
  for (( i = 1; i <= $NUM_FILES; i++ ))
  do
   rm $USER_PATH/~prepare_$i.tmp
