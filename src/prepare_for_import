@@ -1,0 +1,34 @@
+#!/bin/sh
+# Copyright (c) 2024 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+if [ $# -lt 2 ]; then
+ echo "Usage: prepare_for_import [num_files] [output_file]"
+else
+
+ NUM_FILES=$1
+ OUTPUT_FILE=$2
+
+ if [ "$USER" = "" ]; then
+  USER=$CIYAM_USER
+ fi
+
+ USER_PATH=/home/$USER
+
+ echo -n "Preparing..." >>$OUTPUT_FILE
+
+ for (( i = 1; i <= $NUM_FILES; i++ ))
+ do
+  head -c 1000000 /dev/urandom >$USER_PATH/~prepare_$i.tmp
+  n=$[ i % 1000 ]
+  if [ $n -eq 0 ]; then
+   echo -n "." >>$OUTPUT_FILE
+  fi
+ done
+
+ for (( i = 1; i <= $NUM_FILES; i++ ))
+ do
+  rm $USER_PATH/~prepare_$i.tmp
+ done
+fi

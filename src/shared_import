@@ -45,7 +45,7 @@ if [ ! -f ~shared ]; then
  echo "Starting import..." >>$SHARED_DETAILS
 
  if [ -f $SHARED_IMAGE ]; then
-  export CIYAM_SECONDS=8
+  export CIYAM_SECONDS=12
   export USE_SHARED_ARCHIVE=1
   export CIYAM_FILE_NAME_ONLY=1
 
