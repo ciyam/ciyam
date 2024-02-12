@@ -1706,6 +1706,9 @@ void process_list_items( const string& blockchain,
    if( !get_session_variable( get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
       has_archive = true;
 
+   string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
+   string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
+   string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
    string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
    string blockchain_is_checking_name( get_special_var_name( e_special_var_blockchain_is_checking ) );
    string blockchain_is_fetching_name( get_special_var_name( e_special_var_blockchain_is_fetching ) );
@@ -1792,17 +1795,16 @@ void process_list_items( const string& blockchain,
          {
             string progress;
 
-            // FUTURE: These messages should be handled as a server string message.
+            // FUTURE: These messages should be handled as server string messages.
             if( !p_num_items_found )
                progress = "Processing: " + hash;
             else
             {
+               string count( to_string( *p_num_items_found ) );
+
                if( is_fetching )
                {
-                  if( !is_checking )
-                     progress = "Syncing";
-                  else
-                     progress = "Checking";
+                  progress = "Syncing";
 
                   if( !blockchain_height_processing.empty( ) )
                   {
@@ -1818,12 +1820,17 @@ void process_list_items( const string& blockchain,
                      }
                   }
 
-                  progress += " (" + to_string( *p_num_items_found );
+                  progress += " - ";
 
-                  if( !num_tree_items.empty( ) )
-                     progress += "/" + num_tree_items;
+                  if( num_tree_items.empty( ) )
+                     progress += count;
+                  else
+                  {
+                     set_session_variable( progress_count_name, count );
+                     set_session_variable( progress_total_name, num_tree_items );
 
-                  progress += ")";
+                     progress += get_session_variable( progress_value_name );
+                  }
                }
                else
                {
@@ -1832,12 +1839,17 @@ void process_list_items( const string& blockchain,
                   if( !blockchain_height_processing.empty( ) )
                      progress += " at height " + blockchain_height_processing;
 
-                  progress += " (" + to_string( *p_num_items_found );
+                  progress += " - ";
 
-                  if( !num_tree_items.empty( ) )
-                     progress += "/" + num_tree_items;
+                  if( num_tree_items.empty( ) )
+                     progress += count;
+                  else
+                  {
+                     set_session_variable( progress_count_name, count );
+                     set_session_variable( progress_total_name, num_tree_items );
 
-                  progress += ")";
+                     progress += get_session_variable( progress_value_name );
+                  }
                }
             }
 
@@ -1865,11 +1877,8 @@ void process_list_items( const string& blockchain,
 
                   string progress_message;
 
-                  // FUTURE: These messages should be handled as server string messages.
-                  if( !is_checking )
-                     progress_message = "Syncing at height ";
-                  else
-                     progress_message = "Checking at height ";
+                  // FUTURE: This message should be handled as a server string message.
+                  progress_message = "Syncing at height ";
 
                   progress_message += blockchain_height_processing;
 
@@ -1882,12 +1891,21 @@ void process_list_items( const string& blockchain,
                         progress_message += '/' + blockchain_height_other;
                   }
 
-                  progress_message += " (" + to_string( get_blockchain_tree_item( blockchain ) );
+                  progress += " - ";
 
-                  if( !num_tree_items.empty( ) )
-                     progress_message += '/' + num_tree_items;
+                  string count( to_string( get_blockchain_tree_item( blockchain ) ) );
 
-                  progress_message += ")" + to_string( c_ellipsis );
+                  if( num_tree_items.empty( ) )
+                     progress_message += count;
+                  else
+                  {
+                     set_session_variable( progress_count_name, count );
+                     set_session_variable( progress_total_name, num_tree_items );
+
+                     progress += get_session_variable( progress_value_name );
+                  }
+
+                  progress_message += to_string( c_ellipsis );
 
                   set_session_progress_output( progress_message );
                   set_system_variable( c_progress_output_prefix + extra_identity, progress_message );
