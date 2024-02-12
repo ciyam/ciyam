@@ -1183,6 +1183,10 @@ void process_put_file( const string& blockchain,
    string blockchain_height_processing( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processing ) ) );
 
+   string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
+   string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
+   string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
+
    // NOTE: Extract non-repo files from the session to ensure
    // that none of them will be attempted to be fetched prior
    // to a later put.
@@ -1237,6 +1241,8 @@ void process_put_file( const string& blockchain,
                progress = "Processed " + to_string( i ) + " items" + to_string( c_ellipsis );
             else
             {
+               string count( to_string( get_blockchain_tree_item( blockchain ) ) );
+
                size_t next_height = from_string< size_t >( blockchain_height_processing );
 
                if( !num_tree_items.empty( ) )
@@ -1262,12 +1268,19 @@ void process_put_file( const string& blockchain,
                      progress_message += '/' + blockchain_height_other;
                }
 
-               progress_message += " (" + to_string( get_blockchain_tree_item( blockchain ) );
+               progress_message += " - ";
 
-               if( !num_tree_items.empty( ) )
-                  progress_message += '/' + num_tree_items;
+               if( num_tree_items.empty( ) )
+                  progress_message += count;
+               else
+               {
+                  set_session_variable( progress_count_name, count );
+                  set_session_variable( progress_total_name, num_tree_items );
 
-               progress_message += ")" + to_string( c_ellipsis );
+                  progress_message += get_raw_session_variable( progress_value_name );
+               }
+
+               progress_message += to_string( c_ellipsis );
 
                set_session_progress_output( progress_message );
             }
@@ -1829,7 +1842,7 @@ void process_list_items( const string& blockchain,
                      set_session_variable( progress_count_name, count );
                      set_session_variable( progress_total_name, num_tree_items );
 
-                     progress += get_session_variable( progress_value_name );
+                     progress += get_raw_session_variable( progress_value_name );
                   }
                }
                else
@@ -1848,7 +1861,7 @@ void process_list_items( const string& blockchain,
                      set_session_variable( progress_count_name, count );
                      set_session_variable( progress_total_name, num_tree_items );
 
-                     progress += get_session_variable( progress_value_name );
+                     progress += get_raw_session_variable( progress_value_name );
                   }
                }
             }
@@ -1891,7 +1904,7 @@ void process_list_items( const string& blockchain,
                         progress_message += '/' + blockchain_height_other;
                   }
 
-                  progress += " - ";
+                  progress_message += " - ";
 
                   string count( to_string( get_blockchain_tree_item( blockchain ) ) );
 
@@ -1902,10 +1915,10 @@ void process_list_items( const string& blockchain,
                      set_session_variable( progress_count_name, count );
                      set_session_variable( progress_total_name, num_tree_items );
 
-                     progress += get_session_variable( progress_value_name );
+                     progress_message += get_raw_session_variable( progress_value_name );
                   }
 
-                  progress_message += to_string( c_ellipsis );
+                  progress_message += c_ellipsis;
 
                   set_session_progress_output( progress_message );
                   set_system_variable( c_progress_output_prefix + extra_identity, progress_message );
@@ -3350,6 +3363,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    string next_hash_to_get, next_hash_to_put;
 
+   string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
+   string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
+   string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
+
    string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
    string blockchain_is_fetching_name( get_special_var_name( e_special_var_blockchain_is_fetching ) );
    string blockchain_first_mapped_name( get_special_var_name( e_special_var_blockchain_first_mapped ) );
@@ -3386,12 +3403,21 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          if( blockchain_height_other > ( blockchain_height + 1 ) )
             progress_message += '/' + to_string( blockchain_height_other );
 
-         progress_message += " (" + to_string( num_tree_item );
+         progress_message += " - ";
 
-         if( !num_tree_items.empty( ) )
-            progress_message += '/' + num_tree_items;
+         string count( to_string( num_tree_item ) );
 
-         progress_message += ")" + to_string( c_ellipsis );
+         if( num_tree_items.empty( ) )
+            progress_message += count;
+         else
+         {
+            set_session_variable( progress_count_name, count );
+            set_session_variable( progress_total_name, num_tree_items );
+
+            progress_message += get_raw_session_variable( progress_value_name );
+         }
+
+         progress_message += to_string( c_ellipsis );
 
          set_session_progress_output( progress_message );
          set_system_variable( c_progress_output_prefix + identity, progress_message );
@@ -4044,6 +4070,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          set_session_variable( blockchain_is_fetching_name, "" );
          set_session_variable( blockchain_height_processing_name, "" );
       }
+
+      set_session_variable( get_special_var_name( e_special_var_progress_count ), "0" );
+      set_session_variable( get_special_var_name( e_special_var_progress_fracs ), "0" );
+      set_session_variable( get_special_var_name( e_special_var_progress_total ), "0" );
 
       set_session_variable( get_special_var_name( e_special_var_blockchain_num_puts ), "" );
 
