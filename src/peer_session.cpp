@@ -1470,6 +1470,10 @@ bool has_all_list_items( const string& blockchain,
    string blockchain_height_processing( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processing ) ) );
 
+   string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
+   string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
+   string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
+
    bool is_fetching = !get_session_variable(
     get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
 
@@ -1506,7 +1510,14 @@ bool has_all_list_items( const string& blockchain,
                         progress += '/' + blockchain_height_other;
                   }
 
-                  progress += " (" + to_string( *p_total_processed ) + "/" + num_tree_items + ")";
+                  progress += " - ";
+
+                  string count( to_string( *p_total_processed ) );
+
+                  set_session_variable( progress_count_name, count );
+                  set_session_variable( progress_total_name, num_tree_items );
+
+                  progress += get_raw_session_variable( progress_value_name );
 
                   progress += c_ellipsis;
 
