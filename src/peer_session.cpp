@@ -4082,9 +4082,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          set_session_variable( blockchain_height_processing_name, "" );
       }
 
-      set_session_variable( get_special_var_name( e_special_var_progress_count ), "0" );
-      set_session_variable( get_special_var_name( e_special_var_progress_fracs ), "0" );
-      set_session_variable( get_special_var_name( e_special_var_progress_total ), "0" );
+      get_raw_session_variable( get_special_var_name( e_special_var_progress_clear ) );
 
       set_session_variable( get_special_var_name( e_special_var_blockchain_num_puts ), "" );
 

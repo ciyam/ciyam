@@ -7852,9 +7852,22 @@ string get_raw_session_variable( const string& name, size_t sess_id )
 
    if( gtp_session )
    {
+      string progress_clear_name( get_special_var_name( e_special_var_progress_clear ) );
       string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
 
-      if( name == progress_value_name )
+      if( name == progress_clear_name )
+      {
+         string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
+         string progress_fracs_name( get_special_var_name( e_special_var_progress_fracs ) );
+         string progress_prior_name( get_special_var_name( e_special_var_progress_prior ) );
+         string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
+
+         gtp_session->variables[ progress_count_name ] = "0";
+         gtp_session->variables[ progress_fracs_name ] = "0";
+         gtp_session->variables[ progress_prior_name ] = "0";
+         gtp_session->variables[ progress_total_name ] = "0";
+      }
+      else if( name == progress_value_name )
       {
          string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
          string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
@@ -8584,6 +8597,12 @@ void set_session_variable( const string& name, const string& value,
             else
                gtp_session->mapped_variables[ name.substr( 0, pos ) ][ name.substr( pos + 1 ) ] = val;
          }
+      }
+      else if( name == get_special_var_name( e_special_var_progress_clear ) )
+      {
+         skip_standard_variable = true;
+
+         get_raw_session_variable( get_special_var_name( e_special_var_progress_clear ) );
       }
 
       if( !skip_standard_variable )
