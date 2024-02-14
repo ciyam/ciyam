@@ -159,6 +159,8 @@ struct archive_file_info
 
    string get_oldest_file( );
 
+   size_t total_files( ) const { return hash_times.size( ); }
+
    map< file_hash_info, int64_t > hash_times;
    multimap< int64_t, file_hash_info > time_hashes;
 };
@@ -860,21 +862,42 @@ bool path_already_used_in_archive( const string& path )
 }
 
 void output_repository_progress( progress* p_progress,
- size_t num, date_time& dtm, const date_time& now, bool set_session_progress = false,
- bool* p_has_output_progress = 0, bool is_remove = false, bool is_obsolete = false )
+ size_t num, size_t total, date_time& dtm, const date_time& now,
+ bool set_session_progress = false, bool* p_has_output_progress = 0, bool is_remove = false )
 {
    string progress;
 
+   string extra, value( to_string( num ) );
+
+   if( total )
+   {
+      if( num > total )
+         total = num;
+
+      set_session_variable( get_special_var_name( e_special_var_progress_count ), to_string( num ) );
+      set_session_variable( get_special_var_name( e_special_var_progress_total ), to_string( total ) );
+
+      value = get_raw_session_variable( get_special_var_name( e_special_var_progress_value ) );
+   }
+
+   extra = get_raw_session_variable( get_special_var_name( e_special_var_blockchain_height ) );
+
+   if( !extra.empty( ) )
+   {
+      string other( get_raw_session_variable(
+       get_special_var_name( e_special_var_blockchain_height_other ) ) );
+
+      if( !other.empty( ) && ( other != extra ) )
+         extra += '/' + other;
+
+      extra = " at height " + extra;
+   }
+
    // FUTURE: These messages should be handled as a server string message.
    if( !is_remove )
-      progress = "Processed " + to_string( num ) + " repository entries...";
+      progress = "Perusing" + extra + " - " + value + "...";
    else
-   {
-      if( !is_obsolete )
-         progress = "Removed " + to_string( num ) + " repository entries...";
-      else
-         progress = "Removed " + to_string( num ) + " obsolete repository entries...";
-   }
+      progress = "Trimming" + extra + " - " + value + "...";
 
    if( set_session_progress )
    {
@@ -5118,6 +5141,18 @@ string relegate_one_or_num_oldest_files( const string& hash,
    return retval;
 }
 
+size_t files_in_archive( const string& archive )
+{
+   guard g( g_mutex );
+
+   size_t total_files = 0;
+
+   if( g_archive_file_info.find( archive ) != g_archive_file_info.end( ) )
+      total_files = g_archive_file_info[ archive ].total_files( );
+
+   return total_files;
+}
+
 bool has_file_been_archived( const string& hash, string* p_archive_name, bool in_specific_archive_only )
 {
    guard g( g_mutex );
@@ -5557,10 +5592,14 @@ size_t count_total_repository_entries(
    string last_key;
 
    size_t total_entries = 0;
+   size_t total_archive_files = files_in_archive( repository );
 
    size_t num_seconds;
 
    session_progress_settings( num_seconds, p_progress );
+
+   if( p_progress )
+      get_raw_session_variable( get_special_var_name( e_special_var_progress_clear ) );
 
    while( true )
    {
@@ -5577,7 +5616,7 @@ size_t count_total_repository_entries(
          uint64_t elapsed = seconds_between( *p_dtm, now );
 
          if( elapsed >= num_seconds )
-            output_repository_progress( p_progress, total_entries, *p_dtm, now );
+            output_repository_progress( p_progress, total_entries, total_archive_files, *p_dtm, now );
       }
 
       total_entries += repo_entries.size( );
@@ -5633,6 +5672,7 @@ size_t remove_all_repository_entries( const string& repository,
    ods_fs.set_root_folder( c_file_repository_folder );
 
    size_t total_entries = 0;
+   size_t total_archive_files = files_in_archive( repository );
 
    string last_key;
    vector< string > files_to_remove;
@@ -5640,6 +5680,9 @@ size_t remove_all_repository_entries( const string& repository,
    size_t num_seconds;
 
    session_progress_settings( num_seconds, p_progress );
+
+   if( p_progress )
+      get_raw_session_variable( get_special_var_name( e_special_var_progress_clear ) );
 
    while( true )
    {
@@ -5657,7 +5700,7 @@ size_t remove_all_repository_entries( const string& repository,
 
          if( elapsed >= num_seconds )
             output_repository_progress( p_progress, total_entries,
-             *p_dtm, now, set_session_progress, &has_output_progress );
+             total_archive_files, *p_dtm, now, set_session_progress, &has_output_progress );
       }
 
       for( size_t i = 0; i < repo_entries.size( ); i++ )
@@ -5690,7 +5733,7 @@ size_t remove_all_repository_entries( const string& repository,
             uint64_t elapsed = seconds_between( *p_dtm, now );
 
             if( elapsed >= num_seconds )
-               output_repository_progress( p_progress, ( i + 1 ),
+               output_repository_progress( p_progress, ( i + 1 ), total_entries,
                 *p_dtm, now, set_session_progress, &has_output_progress, true );
          }
       }
@@ -5743,6 +5786,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
    ods_fs.set_root_folder( c_file_repository_folder );
 
    size_t total_entries = 0;
+   size_t total_archive_files = files_in_archive( repository );
 
    string last_key;
    vector< string > files_to_remove;
@@ -5750,6 +5794,9 @@ size_t remove_obsolete_repository_entries( const string& repository,
    size_t num_seconds;
 
    session_progress_settings( num_seconds, p_progress );
+
+   if( p_progress )
+      get_raw_session_variable( get_special_var_name( e_special_var_progress_clear ) );
 
    while( true )
    {
@@ -5767,7 +5814,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
 
          if( elapsed >= num_seconds )
             output_repository_progress( p_progress, total_entries,
-             *p_dtm, now, set_session_progress, &has_output_progress );
+             total_archive_files, *p_dtm, now, set_session_progress, &has_output_progress );
       }
 
       for( size_t i = 0; i < repo_entries.size( ); i++ )
@@ -5837,8 +5884,8 @@ size_t remove_obsolete_repository_entries( const string& repository,
             uint64_t elapsed = seconds_between( *p_dtm, now );
 
             if( elapsed >= num_seconds )
-               output_repository_progress( p_progress, ( i + 1 ), *p_dtm,
-                now, set_session_progress, &has_output_progress, true, true );
+               output_repository_progress( p_progress, ( i + 1 ), total_entries,
+                *p_dtm, now, set_session_progress, &has_output_progress, true );
          }
       }
 

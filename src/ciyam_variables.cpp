@@ -168,6 +168,7 @@ const char* const c_special_variable_files_area_dir = "@files_area_dir";
 const char* const c_special_variable_peer_clone_key = "@peer_clone_key";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
+const char* const c_special_variable_progress_clear = "@progress_clear";
 const char* const c_special_variable_progress_count = "@progress_count";
 const char* const c_special_variable_progress_fracs = "@progress_fracs";
 const char* const c_special_variable_progress_prior = "@progress_prior";
@@ -764,6 +765,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_peer_responder:
       s = string( c_special_variable_peer_responder );
+      break;
+
+      case e_special_var_progress_clear:
+      s = string( c_special_variable_progress_clear );
       break;
 
       case e_special_var_progress_count:

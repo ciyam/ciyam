@@ -67,6 +67,9 @@ session_variable @progress_count 99999
 session_variable @progress_value
 session_variable @progress_count 100000
 session_variable @progress_value
+session_variable @progress_*
+session_variable @progress_clear
+session_variable @progress_*
 system_variable @queue_test abc
 system_variable @queue_test def
 system_variable @queue_test ghi

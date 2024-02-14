@@ -221,6 +221,8 @@ void CIYAM_BASE_DECL_SPEC create_raw_file_in_archive(
 std::string CIYAM_BASE_DECL_SPEC relegate_one_or_num_oldest_files( const std::string& hash,
  const std::string& archive, uint32_t max_files, int64_t max_bytes, bool delete_files_always = false );
 
+size_t CIYAM_BASE_DECL_SPEC files_in_archive( const std::string& archive );
+
 bool CIYAM_BASE_DECL_SPEC has_file_been_archived( const std::string& hash,
  std::string* p_archive_name = 0, bool in_specific_archive_only = false );
 

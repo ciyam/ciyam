@@ -101,6 +101,19 @@ session_variable @progress_value
 session_variable @progress_count 100000
 session_variable @progress_value
 100%
+session_variable @progress_*
+@progress_count 100000
+@progress_fracs 3
+@progress_prior 100000
+@progress_total 100000
+@progress_value 100%
+session_variable @progress_clear
+session_variable @progress_*
+@progress_count 0
+@progress_fracs 0
+@progress_prior 0
+@progress_total 0
+@progress_value 100%
 system_variable @queue_test abc
 system_variable @queue_test def
 system_variable @queue_test ghi
