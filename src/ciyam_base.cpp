@@ -293,6 +293,7 @@ typedef module_commands_registry_container::value_type module_commands_registry_
 class storage_handler;
 
 trace_mutex g_mutex;
+trace_mutex g_cloning_mutex;
 
 mutex g_trace_mutex;
 mutex g_mapping_mutex;
@@ -4784,8 +4785,9 @@ void list_trace_mutex_lock_ids( ostream& os, mutex* p_mutex, const char* p_mutex
    dump_mutex_info( os, get_mutex_for_ciyam_variables( ), "ciyam_variables::g_mutex = " );
    dump_mutex_info( os, get_mutex_for_ciyam_core_files( ), "ciyam_core_files::g_mutex = " );
 
-   dump_mutex_info( os, g_mutex, "ciyam_base::g_mapping_mutex = " );
-   dump_mutex_info( os, g_mutex, "ciyam_base::g_session_mutex = " );
+   dump_mutex_info( os, g_cloning_mutex, "ciyam_base::g_cloning_mutex = " );
+   dump_mutex_info( os, g_mapping_mutex, "ciyam_base::g_mapping_mutex = " );
+   dump_mutex_info( os, g_session_mutex, "ciyam_base::g_session_mutex = " );
 
    if( !p_mutex )
       os.flush( );
@@ -13312,7 +13314,7 @@ void begin_instance_op( instance_op op, class_base& instance,
          if( ( lock_info.handle && lock_info.type >= op_lock::e_lock_type_review && lock_info.p_session == gtp_session )
           || handler.obtain_lock( xlock_handle, lock_class_id, clone_key, op_lock::e_lock_type_review, gtp_session, &instance ) )
          {
-            guard g( g_mutex, "begin_instance_op" );
+            guard g( g_cloning_mutex, "begin_instance_op" );
 
             scoped_lock_holder xlock_holder( handler, xlock_handle );
 
