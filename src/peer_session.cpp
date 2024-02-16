@@ -75,6 +75,9 @@ const char c_blob_separator = '&';
 const char c_repository_suffix = '!';
 const char c_tree_files_suffix = '+';
 
+const char c_local_prefix = '@';
+const char c_external_prefix = c_repository_suffix;
+
 const char c_error_message_prefix = '#';
 const char c_progress_output_prefix = '%';
 
@@ -215,6 +218,64 @@ string get_own_identity( bool is_shared, const string* p_extra )
    return own_identity;
 }
 
+const size_t c_max_map_keys = 1000;
+
+bool g_keys_populated = false;
+
+deque< string > g_peer_map_keys;
+
+string obtain_peer_map_key( )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   if( !g_keys_populated )
+   {
+      g_keys_populated = true;
+
+      size_t key_len = log10( c_max_map_keys );
+
+      for( size_t i = 0; i < c_max_map_keys; i++ )
+         g_peer_map_keys.push_back( to_comparable_string( i, false, key_len ) );
+   }
+
+   if( g_peer_map_keys.empty( ) )
+      throw runtime_error( "unable to locate an unused peer map key" );
+
+   retval = g_peer_map_keys.front( );
+   g_peer_map_keys.pop_front( );
+
+   return retval;
+}
+
+void restore_peer_map_key( const string& key )
+{
+   guard g( g_mutex );
+
+   g_peer_map_keys.push_back( key );
+}
+
+string get_peer_map_key( )
+{
+   string peer_map_key_var_name(
+    get_special_var_name( e_special_var_peer_map_key ) );
+
+   string retval( get_raw_session_variable( peer_map_key_var_name ) );
+
+   if( retval.empty( ) )
+      set_session_variable( peer_map_key_var_name,
+       get_session_variable_from_matching_blockchain( peer_map_key_var_name,
+       get_special_var_name( e_special_var_blockchain_peer_supporter ), "", true ) );
+
+   retval = get_raw_session_variable( peer_map_key_var_name );
+
+   if( retval.empty( ) )
+      throw runtime_error( "unexpected empty peer map key value" );
+
+   return retval;
+}
+
 map< string, size_t > g_blockchain_tree_item;
 
 size_t get_blockchain_tree_item( const string& blockchain )
@@ -332,8 +393,8 @@ string get_hello_data( string& hello_hash )
    return data;
 }
 
-void parse_peer_mapped_info( const string& peer_mapped_info,
- string& local_hash, string& local_public_key, string& master_public_key, bool base64_encode_pubkeys, bool is_test_session = false )
+void parse_peer_mapped_info( const string& peer_mapped_info, string& local_hash,
+ string& local_public_key, string& master_public_key, bool base64_encode_pubkeys, bool is_test_session = false )
 {
    if( !is_test_session && peer_mapped_info.length( ) != 197 )
       throw runtime_error( "unexpected peer_mapped_info length != 197" );
@@ -352,6 +413,31 @@ void parse_peer_mapped_info( const string& peer_mapped_info,
       if( !is_test_session )
          master_public_key = base64::encode( hex_decode( master_public_key ) );
    }
+}
+
+bool terminate_peer_session( bool is_for_support, const string& identity )
+{
+   if( !is_for_support && !identity.empty( ) )
+   {
+      condemn_matching_sessions( );
+
+      while( has_any_matching_session( ) )
+         msleep( c_wait_sleep_time );
+
+      string peer_map_key( get_raw_session_variable(
+       get_special_var_name( e_special_var_peer_map_key ) ) );
+
+      if( !peer_map_key.empty( ) )
+         restore_peer_map_key( peer_map_key );
+
+      clear_all_peer_mapped_hashes( peer_map_key );
+      clear_all_peer_mapped_hashes( c_local_prefix + peer_map_key );
+      clear_all_peer_mapped_hashes( c_external_prefix + peer_map_key );
+   }
+
+   term_session( );
+
+   return true;
 }
 
 string determine_identity( const string& concatenated_pubkey_hashes )
@@ -779,6 +865,8 @@ void process_repository_file( const string& blockchain,
     get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
       has_archive = true;
 
+   string peer_map_key( get_peer_map_key( ) );
+
    string file_data, file_content, file_data_hash, peer_mapped_hash;
 
    if( p_file_data && !p_file_data->empty( ) )
@@ -786,7 +874,7 @@ void process_repository_file( const string& blockchain,
       file_data = *p_file_data;
       type_and_extra = file_data[ 0 ];
 
-      peer_mapped_hash = get_peer_mapped_hash_info( identity, src_hash );
+      peer_mapped_hash = get_peer_mapped_hash_info( peer_map_key, src_hash );
 
       if( !peer_mapped_hash.empty( ) )
       {
@@ -795,7 +883,7 @@ void process_repository_file( const string& blockchain,
          if( is_blockchain_owner && ( peer_mapped_hash != file_data_hash ) )
             throw runtime_error( "found invalid encrypted file content" );
 
-         clear_peer_mapped_hash( identity, src_hash );
+         clear_peer_mapped_hash( peer_map_key, src_hash );
       }
 
       file_content = file_data.substr( 1 );
@@ -863,7 +951,7 @@ void process_repository_file( const string& blockchain,
             string password;
             get_identity( password, false, true );
 
-            peer_mapped_hash = get_peer_mapped_hash_info( identity, target_hash );
+            peer_mapped_hash = get_peer_mapped_hash_info( peer_map_key, target_hash );
 
             decrypt_pulled_peer_file( target_hash, src_hash, password, hex_pub_key,
              false, p_file_data, &peer_mapped_hash, ( has_archive ? &identity : 0 ) );
@@ -948,7 +1036,7 @@ void process_repository_file( const string& blockchain,
          store_repository_entry_record( identity, src_hash,
           local_hash, ap_priv_key->get_public( ), pub_key.get_public( ) );
 
-         add_peer_mapped_hash_info( '@' + identity, src_hash,
+         add_peer_mapped_hash_info( c_local_prefix + peer_map_key, src_hash,
           local_hash + ':' + ap_priv_key->get_public( ) + pub_key.get_public( ) );
       }
    }
@@ -1174,6 +1262,8 @@ void process_put_file( const string& blockchain,
    deque< string > repo_files_to_get;
    deque< string > non_repo_files_to_get;
 
+   string peer_map_key( get_peer_map_key( ) );
+
    string num_tree_items( get_session_variable(
     get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
@@ -1370,7 +1460,7 @@ void process_put_file( const string& blockchain,
                                  {
                                     target_hashes.insert( hex_target_hash );
 
-                                    string mapped_hash( get_peer_mapped_hash_info( identity, hex_target_hash ) );
+                                    string mapped_hash( get_peer_mapped_hash_info( peer_map_key, hex_target_hash ) );
 
                                     // NOTE: Either now adds the file to be fetched or maps information
                                     // depending on whether or not "process_list_items" had been called
@@ -1382,7 +1472,7 @@ void process_put_file( const string& blockchain,
                                        add_peer_file_hash_for_get( local_hash + ':' + local_public_key + '-'
                                         + master_public_key + ';' + target_hash + c_repository_suffix, check_for_supporters );
                                     else
-                                       add_peer_mapped_hash_info( c_repository_suffix + identity, hex_target_hash, peer_mapped_info );
+                                       add_peer_mapped_hash_info( c_external_prefix + peer_map_key, hex_target_hash, peer_mapped_info );
                                  }
                               }
                            }
@@ -1439,6 +1529,8 @@ bool has_all_list_items( const string& blockchain,
 
    string extra_identity( identity );
 
+   string peer_map_key( get_peer_map_key( ) );
+
    string non_extra_identity( get_session_variable(
     get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
 
@@ -1457,7 +1549,7 @@ bool has_all_list_items( const string& blockchain,
 
    string last_repo_entry_hash;
 
-   string mapped_info_identity( '@' + identity );
+   string mapped_info_identity( c_local_prefix + peer_map_key );
 
    string queue_puts_name( get_special_var_name( e_special_var_queue_puts ) );
 
@@ -1701,6 +1793,8 @@ void process_list_items( const string& blockchain,
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
    string extra_identity( identity );
+
+   string peer_map_key( get_peer_map_key( ) );
 
    string non_extra_identity( get_session_variable(
     get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
@@ -1998,10 +2092,10 @@ void process_list_items( const string& blockchain,
                   {
                      if( !prefixed_secondary_values )
                      {
-                        string peer_mapped_info( get_peer_mapped_hash_info( c_repository_suffix + identity, next_hash ) );
+                        string peer_mapped_info( get_peer_mapped_hash_info( c_external_prefix + peer_map_key, next_hash ) );
 
                         if( peer_mapped_info.empty( ) )
-                           add_peer_mapped_hash_info( identity, next_hash, next_secondary );
+                           add_peer_mapped_hash_info( peer_map_key, next_hash, next_secondary );
                         else
                         {
                            added = true;
@@ -2011,7 +2105,7 @@ void process_list_items( const string& blockchain,
                            parse_peer_mapped_info( peer_mapped_info,
                             local_hash, local_public_key, master_public_key, true );
 
-                           clear_peer_mapped_hash( c_repository_suffix + identity, next_hash );
+                           clear_peer_mapped_hash( c_external_prefix + peer_map_key, next_hash );
 
                            add_peer_file_hash_for_get( local_hash + ':'
                             + local_public_key + '-' + master_public_key + ';'
@@ -3374,6 +3468,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    string next_hash_to_get, next_hash_to_put;
 
+   string peer_map_key( get_peer_map_key( ) );
+
    string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
    string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
    string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
@@ -3895,7 +3991,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                {
                   string file_data_hash( sha256( file_data ).get_digest_as_string( ) );
 
-                  string peer_mapped_hash( get_peer_mapped_hash_info( archive_identity, next_hash ) );
+                  string peer_mapped_hash( get_peer_mapped_hash_info( peer_map_key, next_hash ) );
 
                   if( peer_mapped_hash.empty( ) )
                      throw runtime_error( "unexpected unmapped file hash '" + next_hash + "'" );
@@ -4066,7 +4162,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
        + block_processing + " height: " + to_string( blockchain_height ) );
 
-      clear_all_peer_mapped_hashes( identity );
+      clear_all_peer_mapped_hashes( peer_map_key );
 
       string genesis_key_tag( blockchain + ".0" + string( c_key_suffix ) );
 
@@ -5766,6 +5862,9 @@ void peer_session::on_start( )
 
       if( !is_for_support )
       {
+         if( !blockchain.empty( ) )
+            set_session_variable( get_special_var_name( e_special_var_peer_map_key ), obtain_peer_map_key( ) );
+
          set_session_variable( get_special_var_name( e_special_var_blockchain_time_value ), to_string( time_value ) );
          set_session_variable( get_special_var_name( e_special_var_progress_seconds ), to_string( c_default_progress_seconds ) );
       }
@@ -5980,18 +6079,7 @@ void peer_session::on_start( )
       ap_socket->close( );
 
       if( was_initialised )
-      {
-         if( !is_for_support && !blockchain.empty( ) )
-         {
-            condemn_matching_sessions( );
-
-            while( has_any_matching_session( ) )
-               msleep( c_wait_sleep_time );
-         }
-
-         term_session( );
-         has_terminated = true;
-      }
+         has_terminated = terminate_peer_session( is_for_support, identity );
    }
    catch( exception& x )
    {
@@ -6004,18 +6092,7 @@ void peer_session::on_start( )
       }
 
       if( was_initialised )
-      {
-         if( !is_for_support && !blockchain.empty( ) )
-         {
-            condemn_matching_sessions( );
-
-            while( has_any_matching_session( ) )
-               msleep( c_wait_sleep_time );
-         }
-
-         term_session( );
-         has_terminated = true;
-      }
+         has_terminated = terminate_peer_session( is_for_support, identity );
    }
    catch( ... )
    {
@@ -6028,18 +6105,7 @@ void peer_session::on_start( )
       }
 
       if( was_initialised )
-      {
-         if( !is_for_support && !blockchain.empty( ) )
-         {
-            condemn_matching_sessions( );
-
-            while( has_any_matching_session( ) )
-               msleep( c_wait_sleep_time );
-         }
-
-         term_session( );
-         has_terminated = true;
-      }
+         has_terminated = terminate_peer_session( is_for_support, identity );
    }
 
    if( has_terminated && !is_for_support )
