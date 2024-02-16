@@ -480,13 +480,13 @@ bool CIYAM_BASE_DECL_SPEC any_peer_still_has_file_hash_to_put(
  const std::string& hash, const std::string* p_blockchain = 0 );
 
 void CIYAM_BASE_DECL_SPEC add_peer_mapped_hash_info(
- const std::string& identity, const std::string& hash, const std::string& info );
+ const std::string& key, const std::string& hash, const std::string& info );
 
-std::string CIYAM_BASE_DECL_SPEC get_peer_mapped_hash_info( const std::string& identity, const std::string& hash );
+std::string CIYAM_BASE_DECL_SPEC get_peer_mapped_hash_info( const std::string& key, const std::string& hash );
 
-void CIYAM_BASE_DECL_SPEC clear_peer_mapped_hash( const std::string& identity, const std::string& hash );
+void CIYAM_BASE_DECL_SPEC clear_peer_mapped_hash( const std::string& key, const std::string& hash );
 
-void CIYAM_BASE_DECL_SPEC clear_all_peer_mapped_hashes( const std::string& identity );
+void CIYAM_BASE_DECL_SPEC clear_all_peer_mapped_hashes( const std::string& key );
 
 void CIYAM_BASE_DECL_SPEC set_default_session_variables( int port = 0 );
 
