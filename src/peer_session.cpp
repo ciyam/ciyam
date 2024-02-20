@@ -2783,7 +2783,9 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                has_all_tree_items = has_all_list_items( blockchain,
                 tree_root_hash, true, false, &dtm, p_progress, &total_items );
 
-               if( !is_user && has_all_tree_items )
+               if( !has_all_tree_items )
+                  set_session_variable( get_special_var_name( e_special_var_tree_items ), "" );
+               else
                   set_session_variable( get_special_var_name( e_special_var_tree_items ), to_string( total_items ) );
             }
 
@@ -4713,17 +4715,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                         bool has_all_tree_items = false;
 
-                        // NOTE: Unless is user type or incomplete skip checking for all tree items (to minimise file transfers).
-                        if( ( is_user || was_incomplete ) && !has_all_tree_items )
-                        {
-                           size_t total_items = 0;
+                        size_t total_items = 0;
 
-                           has_all_tree_items = has_all_list_items( blockchain,
-                            tree_root_hash, true, false, &dtm, &socket_handler, &total_items );
+                        has_all_tree_items = has_all_list_items( blockchain,
+                         tree_root_hash, true, false, &dtm, &socket_handler, &total_items );
 
-                           if( !is_user && has_all_tree_items )
-                              set_session_variable( get_special_var_name( e_special_var_tree_items ), to_string( total_items ) );
-                        }
+                        if( !has_all_tree_items )
+                           set_session_variable( get_special_var_name( e_special_var_tree_items ), "" );
+                        else
+                           set_session_variable( get_special_var_name( e_special_var_tree_items ), to_string( total_items ) );
 
                         if( !has_all_tree_items )
                            num_items_found = 0;
