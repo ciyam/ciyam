@@ -149,6 +149,7 @@ enum special_var
    e_special_var_queue_puts,
    e_special_var_session_id,
    e_special_var_tag_prefix,
+   e_special_var_tree_items,
    e_special_var_allow_async,
    e_special_var_application,
    e_special_var_errors_only,

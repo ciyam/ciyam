@@ -395,10 +395,16 @@ void autoscript_session::on_start( )
          if( g_server_shutdown )
             break;
 
+         guard g( g_mutex );
+
+         date_time now( date_time::local( ) );
+
          if( changed )
          {
-            changed = false;
             read_script_info( );
+
+            dtm = now;
+            changed = false;
          }
          // NOTE: The reading of the autoscript file is delayed by one
          // pass to try and make sure it is not being attempted during
@@ -413,10 +419,6 @@ void autoscript_session::on_start( )
 
             continue;
          }
-
-         guard g( g_mutex );
-
-         date_time now( date_time::local( ) );
 
          script_schedule_const_iterator i, j;
 

@@ -136,6 +136,7 @@ const char* const c_special_variable_permission = "@permission";
 const char* const c_special_variable_queue_puts = "@queue_puts";
 const char* const c_special_variable_session_id = "@session_id";
 const char* const c_special_variable_tag_prefix = "@tag_prefix";
+const char* const c_special_variable_tree_items = "@tree_items";
 const char* const c_special_variable_allow_async = "@allow_async";
 const char* const c_special_variable_application = "@application";
 const char* const c_special_variable_errors_only = "@errors_only";
@@ -638,6 +639,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_tag_prefix:
       s = string( c_special_variable_tag_prefix );
+      break;
+
+      case e_special_var_tree_items:
+      s = string( c_special_variable_tree_items );
       break;
 
       case e_special_var_allow_async:
