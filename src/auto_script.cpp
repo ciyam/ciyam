@@ -112,6 +112,8 @@ bool g_has_read = false;
 
 time_t g_scripts_mod = 0;
 
+string g_read_script_extra;
+
 vector< script_info > g_scripts;
 
 typedef multimap< date_time, int > script_schedule_container;
@@ -130,8 +132,16 @@ void read_script_info( )
          g_has_read = true;
       else
       {
+         string output( "[autoscript.sio] reloaded" );
+
+         if( !g_read_script_extra.empty( ) )
+         {
+            output += ' ' + g_read_script_extra;
+            g_read_script_extra.erase( );
+         }
+
          // NOTE: If is not the first read then log the reload.
-         TRACE_LOG( TRACE_ANYTHING, "[autoscript.sio] reloaded" );
+         TRACE_LOG( TRACE_ANYTHING, output );
       }
 
       g_scripts.clear( );
@@ -422,12 +432,16 @@ void autoscript_session::on_start( )
 
          script_schedule_const_iterator i, j;
 
+         int64_t secs_diff = seconds_between( dtm, now );
+
          // NOTE: If too many seconds have elapsed between passes then it is being assumed that
          // the system time/zone has been altered (requiring the schedule to be reconstructed).
-         if( seconds_between( dtm, now ) > ( ( c_auto_script_msleep / 1000 ) * c_max_tolerance ) )
+         if( secs_diff > ( ( c_auto_script_msleep / 1000 ) * c_max_tolerance ) )
          {
             dtm = now;
             changed = true;
+
+            g_read_script_extra = '(' + to_string( abs( secs_diff ) / 60 ) + " minutes)";
 
             continue;
          }
