@@ -1537,6 +1537,9 @@ bool has_all_list_items( const string& blockchain,
    if( !non_extra_identity.empty( ) )
       identity = non_extra_identity;
 
+   bool has_targeted_identity = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
+
    bool has_archive = false;
 
    if( !get_session_variable( get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
@@ -1571,7 +1574,7 @@ bool has_all_list_items( const string& blockchain,
 
    size_t max_blob_file_data = get_files_area_item_max_size( ) - c_max_put_blob_size;
 
-   if( secondary_values.empty( ) || prefixed_secondary_values )
+   if( has_targeted_identity || secondary_values.empty( ) || prefixed_secondary_values )
    {
       for( size_t i = 0; i < list_items.size( ); i++ )
       {
