@@ -72,11 +72,11 @@ trace_mutex g_mutex;
 
 const char c_blob_separator = '&';
 
+const char c_local_prefix = '!';
+const char c_external_prefix = '@';
+
 const char c_repository_suffix = '!';
 const char c_tree_files_suffix = '+';
-
-const char c_local_prefix = '@';
-const char c_external_prefix = c_repository_suffix;
 
 const char c_error_message_prefix = '#';
 const char c_progress_output_prefix = '%';
@@ -1549,7 +1549,7 @@ bool has_all_list_items( const string& blockchain,
 
    string last_repo_entry_hash;
 
-   string mapped_info_identity( c_local_prefix + peer_map_key );
+   string mapped_info_key( c_local_prefix + peer_map_key );
 
    string queue_puts_name( get_special_var_name( e_special_var_queue_puts ) );
 
@@ -1655,7 +1655,7 @@ bool has_all_list_items( const string& blockchain,
             // NOTE: Can assume the repository entry exists if the mapped information exists.
             if( !has_next_repo_entry )
             {
-               peer_mapped_info = get_peer_mapped_hash_info( mapped_info_identity, next_hash );
+               peer_mapped_info = get_peer_mapped_hash_info( mapped_info_key, next_hash );
 
                if( !peer_mapped_info.empty( ) )
                   has_next_repo_entry = true;
@@ -1685,7 +1685,7 @@ bool has_all_list_items( const string& blockchain,
                *p_blob_data += create_peer_repository_entry_pull_info( identity,
                 next_hash, local_hash, local_public_key, master_public_key, false );
 
-               clear_peer_mapped_hash( mapped_info_identity, next_hash );
+               clear_peer_mapped_hash( mapped_info_key, next_hash );
 
                if( p_blob_data->size( ) >= max_blob_file_data )
                {
@@ -2774,11 +2774,18 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
          }
          else
          {
-            // NOTE: If height matches the current zenith then skip checking for all items.
-            bool has_all_tree_items = ( blockchain_zenith_height == to_string( height ) );
+            bool has_all_tree_items = false;
 
-            if( !is_fetching && !has_all_tree_items )
-               has_all_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, p_progress );
+            if( !is_fetching )
+            {
+               size_t total_items = 0;
+
+               has_all_tree_items = has_all_list_items( blockchain,
+                tree_root_hash, true, false, &dtm, p_progress, &total_items );
+
+               if( !is_user && has_all_tree_items )
+                  set_session_variable( get_special_var_name( e_special_var_tree_items ), to_string( total_items ) );
+            }
 
             if( is_fetching && !has_all_tree_items && !hub_identity.empty( ) )
             {
@@ -4704,12 +4711,19 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         bool is_peerchain_hub = !get_system_variable(
                          get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ).empty( );
 
-                        // NOTE: If height matches the current zenith then skip checking for all items.
-                        bool has_all_tree_items = ( socket_handler.get_blockchain_height( ) == blockchain_height );
+                        bool has_all_tree_items = false;
 
                         // NOTE: Unless is user type or incomplete skip checking for all tree items (to minimise file transfers).
                         if( ( is_user || was_incomplete ) && !has_all_tree_items )
-                           has_all_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, &socket_handler );
+                        {
+                           size_t total_items = 0;
+
+                           has_all_tree_items = has_all_list_items( blockchain,
+                            tree_root_hash, true, false, &dtm, &socket_handler, &total_items );
+
+                           if( !is_user && has_all_tree_items )
+                              set_session_variable( get_special_var_name( e_special_var_tree_items ), to_string( total_items ) );
+                        }
 
                         if( !has_all_tree_items )
                            num_items_found = 0;
