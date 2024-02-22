@@ -44,7 +44,7 @@ namespace
 
 #include "ciyam_constants.h"
 
-const size_t c_max_tolerance = 120;
+const size_t c_max_tolerance = 60;
 
 const char* const c_script_dummy_filename = "*script*";
 
@@ -386,6 +386,8 @@ void autoscript_session::on_start( )
    try
    {
       bool changed = false;
+      bool repeated = false;
+
       bool script_reconfig( get_script_reconfig( ) );
 
       if( !script_reconfig )
@@ -415,6 +417,7 @@ void autoscript_session::on_start( )
 
             dtm = now;
             changed = false;
+            repeated = false;
          }
          // NOTE: The reading of the autoscript file is delayed by one
          // pass to try and make sure it is not being attempted during
@@ -438,10 +441,29 @@ void autoscript_session::on_start( )
          // the system time/zone has been altered (requiring the schedule to be reconstructed).
          if( secs_diff > ( ( c_auto_script_msleep / 1000 ) * c_max_tolerance ) )
          {
+            // NOTE: In case there was a temporary glitch will repeat this test.
+            if( !repeated )
+            {
+               repeated = true;
+               continue;
+            }
+
             dtm = now;
             changed = true;
 
-            g_read_script_extra = '(' + to_string( abs( secs_diff ) / 60 ) + " minutes)";
+            size_t mins = abs( secs_diff ) / 60;
+
+            size_t modulus = mins % 60;
+
+            // NOTE: Adjust up or down for most likely time zone changes.
+            if( modulus == 1 )
+               --mins;
+            else if( modulus == 29 )
+               ++mins;
+            else if( modulus == 59 )
+               ++mins;
+
+            g_read_script_extra = '(' + to_string( mins ) + " minutes)";
 
             continue;
          }
