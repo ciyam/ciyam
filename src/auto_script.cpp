@@ -423,7 +423,11 @@ void autoscript_session::on_start( )
          // pass to try and make sure it is not being attempted during
          // an update.
          else if( script_reconfig && scripts_file_has_changed( ) )
+         {
             changed = true;
+
+            continue;
+         }
 
          if( !get_raw_system_variable( autoscript_reload_name ).empty( ) )
          {
@@ -451,6 +455,11 @@ void autoscript_session::on_start( )
             dtm = now;
             changed = true;
 
+            char sign = '+';
+
+            if( secs_diff < 0 )
+               sign = '-';
+
             size_t mins = abs( secs_diff ) / 60;
 
             size_t modulus = mins % 60;
@@ -463,7 +472,7 @@ void autoscript_session::on_start( )
             else if( modulus == 59 )
                ++mins;
 
-            g_read_script_extra = '(' + to_string( mins ) + " minutes)";
+            g_read_script_extra = "(" + string( 1, sign ) + to_string( mins ) + " minutes)";
 
             continue;
          }
