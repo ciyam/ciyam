@@ -90,6 +90,8 @@ const char* const c_dummy_support_tag = "support";
 
 const char* const c_dummy_message_data = "utf8:test";
 
+const size_t c_prefix_length = 4;
+
 const size_t c_dummy_num_for_support = 999;
 const size_t c_default_progress_seconds = 2;
 
@@ -264,11 +266,13 @@ string get_peer_map_key( )
    string retval( get_raw_session_variable( peer_map_key_var_name ) );
 
    if( retval.empty( ) )
+   {
       set_session_variable( peer_map_key_var_name,
        get_session_variable_from_matching_blockchain( peer_map_key_var_name,
        get_special_var_name( e_special_var_blockchain_peer_supporter ), "", true ) );
 
-   retval = get_raw_session_variable( peer_map_key_var_name );
+      retval = get_raw_session_variable( peer_map_key_var_name );
+   }
 
    if( retval.empty( ) )
       throw runtime_error( "unexpected empty peer map key value" );
@@ -300,6 +304,29 @@ void add_to_blockchain_tree_item( const string& blockchain, size_t num_to_add, s
 
    if( upper_limit && g_blockchain_tree_item[ blockchain ] > upper_limit )
       g_blockchain_tree_item[ blockchain ] = upper_limit;
+}
+
+map< string, map< string, size_t > > g_peer_first_prefixed;
+
+void save_first_prefixed( map< string, size_t >& first_prefixed )
+{
+   guard g( g_mutex );
+
+   g_peer_first_prefixed[ get_peer_map_key( ) ].swap( first_prefixed );
+}
+
+void clear_first_prefixed( )
+{
+   guard g( g_mutex );
+
+   g_peer_first_prefixed[ get_peer_map_key( ) ].clear( );
+}
+
+void clear_first_prefixed( const string& peer_map_key )
+{
+   guard g( g_mutex );
+
+   g_peer_first_prefixed[ peer_map_key ].clear( );
 }
 
 void add_to_num_puts_value( size_t num_to_add )
@@ -428,11 +455,15 @@ bool terminate_peer_session( bool is_for_support, const string& identity )
        get_special_var_name( e_special_var_peer_map_key ) ) );
 
       if( !peer_map_key.empty( ) )
+      {
          restore_peer_map_key( peer_map_key );
 
-      clear_all_peer_mapped_hashes( peer_map_key );
-      clear_all_peer_mapped_hashes( c_local_prefix + peer_map_key );
-      clear_all_peer_mapped_hashes( c_external_prefix + peer_map_key );
+         clear_first_prefixed( peer_map_key );
+
+         clear_all_peer_mapped_hashes( peer_map_key );
+         clear_all_peer_mapped_hashes( c_local_prefix + peer_map_key );
+         clear_all_peer_mapped_hashes( c_external_prefix + peer_map_key );
+      }
    }
 
    term_session( );
@@ -1505,9 +1536,10 @@ void process_put_file( const string& blockchain,
    }
 }
 
-bool has_all_list_items( const string& blockchain,
- const string& hash, bool recurse, bool touch_all_lists = false,
- date_time* p_dtm = 0, progress* p_progress = 0, size_t* p_total_processed = 0, string* p_blob_data = 0 )
+bool has_all_list_items(
+ const string& blockchain, const string& hash, bool recurse,
+ bool touch_all_lists = false, date_time* p_dtm = 0, progress* p_progress = 0,
+ size_t* p_total_processed = 0, string* p_blob_data = 0, map< string, size_t >* p_first_prefixed = 0 )
 {
    TRACE_LOG( TRACE_PEER_OPS, "(has_all_list_items) hash: " + hash );
 
@@ -1623,8 +1655,27 @@ bool has_all_list_items( const string& blockchain,
                }
                else
                {
+                  size_t next_height = from_string< size_t >( blockchain_height_processing );
+
                   // FUTURE: This message should be handled as a server string message.
-                  progress = "Processed " + to_string( *p_total_processed ) + " items";
+                  progress = "Probing at height " + to_string( next_height );
+
+                  if( !blockchain_height_other.empty( ) )
+                  {
+                     size_t other_height = from_string< size_t >( blockchain_height_other );
+
+                     if( next_height < other_height )
+                        progress += '/' + blockchain_height_other;
+                  }
+
+                  progress += " - ";
+
+                  string count( to_string( *p_total_processed ) );
+
+                  set_session_variable( progress_count_name, count );
+                  set_session_variable( progress_total_name, num_tree_items );
+
+                  progress += get_raw_session_variable( progress_value_name );
 
                   progress += c_ellipsis;
 
@@ -1666,6 +1717,23 @@ bool has_all_list_items( const string& blockchain,
 
             if( !has_next_repo_entry )
                has_next_file = has_file( next_hash );
+
+            if( p_first_prefixed && ( next_hash != last_repo_entry_hash ) )
+            {
+               string local_hash( next_hash );
+
+               if( !has_next_file && fetch_repository_entry_record( identity, next_hash, local_hash, false ) )
+               {
+                  has_next_repo_entry = true;
+                  last_repo_entry_hash = next_hash;
+               }
+
+               string prefix( c_prefix_length, '\0' );
+               hex_decode( local_hash.substr( 0, c_prefix_length * 2 ), ( unsigned char* )prefix.data( ), c_prefix_length );
+
+               if( !p_first_prefixed->count( prefix ) )
+                  p_first_prefixed->insert( make_pair( prefix, *p_total_processed ) );
+            }
 
             if( !has_next_file && !has_next_repo_entry )
             {
@@ -1712,8 +1780,8 @@ bool has_all_list_items( const string& blockchain,
             }
             else if( recurse && !has_next_repo_entry && is_list_file( next_hash ) )
             {
-               retval = has_all_list_items( blockchain, next_hash,
-                recurse, touch_all_lists, p_dtm, p_progress, p_total_processed, p_blob_data );
+               retval = has_all_list_items( blockchain, next_hash, recurse,
+                touch_all_lists, p_dtm, p_progress, p_total_processed, p_blob_data, p_first_prefixed );
 
                if( !retval )
                   break;
@@ -2782,14 +2850,23 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
             if( !is_fetching )
             {
                size_t total_items = 0;
+               map< string, size_t > first_prefixed;
+
+               temporary_session_variable temp_height( get_special_var_name(
+                e_special_var_blockchain_height_processing ), to_string( height ) );
 
                has_all_tree_items = has_all_list_items( blockchain,
-                tree_root_hash, true, false, &dtm, p_progress, &total_items );
+                tree_root_hash, true, false, &dtm, p_progress, &total_items, 0, &first_prefixed );
 
                if( !has_all_tree_items )
+               {
+                  first_prefixed.clear( );
                   set_session_variable( get_special_var_name( e_special_var_tree_items ), "" );
+               }
                else
                   set_session_variable( get_special_var_name( e_special_var_tree_items ), to_string( total_items ) );
+
+               save_first_prefixed( first_prefixed );
             }
 
             if( is_fetching && !has_all_tree_items && !hub_identity.empty( ) )
@@ -4465,6 +4542,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                height.erase( pos );
                height_from_tag = from_string< size_t >( height );
 
+               clear_first_prefixed( );
+
                if( has || was_initial_state )
                {
                   size_t old_blockchain_height_other = blockchain_height_other;
@@ -4719,14 +4798,20 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         bool has_all_tree_items = false;
 
                         size_t total_items = 0;
+                        map< string, size_t > first_prefixed;
 
                         has_all_tree_items = has_all_list_items( blockchain,
-                         tree_root_hash, true, false, &dtm, &socket_handler, &total_items );
+                         tree_root_hash, true, false, &dtm, &socket_handler, &total_items, 0, &first_prefixed );
 
                         if( !has_all_tree_items )
+                        {
+                           first_prefixed.clear( );
                            set_session_variable( get_special_var_name( e_special_var_tree_items ), "" );
+                        }
                         else
                            set_session_variable( get_special_var_name( e_special_var_tree_items ), to_string( total_items ) );
+
+                        save_first_prefixed( first_prefixed );
 
                         if( !has_all_tree_items )
                            num_items_found = 0;
