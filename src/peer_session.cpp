@@ -306,26 +306,64 @@ void add_to_blockchain_tree_item( const string& blockchain, size_t num_to_add, s
       g_blockchain_tree_item[ blockchain ] = upper_limit;
 }
 
+map< string, size_t > g_peer_found_prefixed;
+
 map< string, map< string, size_t > > g_peer_first_prefixed;
 
 void save_first_prefixed( map< string, size_t >& first_prefixed )
 {
    guard g( g_mutex );
 
-   g_peer_first_prefixed[ get_peer_map_key( ) ].swap( first_prefixed );
+   string peer_map_key( get_peer_map_key( ) );
+
+   g_peer_found_prefixed[ peer_map_key ] = 0;
+   g_peer_first_prefixed[ peer_map_key ].swap( first_prefixed );
+}
+
+void check_found_prefixed( const string& hash )
+{
+   guard g( g_mutex );
+
+   string peer_map_key( get_peer_map_key( ) );
+
+   if( g_peer_first_prefixed.count( peer_map_key ) )
+   {
+      string prefix( c_prefix_length, '\0' );
+      hex_decode( hash.substr( 0, c_prefix_length * 2 ), ( unsigned char* )prefix.data( ), c_prefix_length );
+
+      if( g_peer_first_prefixed[ peer_map_key ].count( prefix ) )
+      {
+         size_t last_found = g_peer_found_prefixed[ peer_map_key ];
+
+         size_t next_found = g_peer_first_prefixed[ peer_map_key ][ prefix ];
+
+         if( next_found > last_found )
+         {
+            g_peer_found_prefixed[ peer_map_key ] = next_found;
+
+            if( get_raw_session_variable(
+             get_special_var_name( e_special_var_blockchain_peer_supporter ) ).empty( ) )
+               set_session_variable( get_special_var_name( e_special_var_tree_count ), to_string( next_found ) );
+         }
+      }
+   }
 }
 
 void clear_first_prefixed( )
 {
    guard g( g_mutex );
 
-   g_peer_first_prefixed[ get_peer_map_key( ) ].clear( );
+   string peer_map_key( get_peer_map_key( ) );
+
+   g_peer_found_prefixed[ peer_map_key ] = 0;
+   g_peer_first_prefixed[ peer_map_key ].clear( );
 }
 
 void clear_first_prefixed( const string& peer_map_key )
 {
    guard g( g_mutex );
 
+   g_peer_found_prefixed[ peer_map_key ] = 0;
    g_peer_first_prefixed[ peer_map_key ].clear( );
 }
 
@@ -2861,10 +2899,15 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                if( !has_all_tree_items )
                {
                   first_prefixed.clear( );
-                  set_session_variable( get_special_var_name( e_special_var_tree_items ), "" );
+
+                  set_session_variable( get_special_var_name( e_special_var_tree_count ), "" );
+                  set_session_variable( get_special_var_name( e_special_var_tree_total ), "" );
                }
                else
-                  set_session_variable( get_special_var_name( e_special_var_tree_items ), to_string( total_items ) );
+               {
+                  set_session_variable( get_special_var_name( e_special_var_tree_count ), "0" );
+                  set_session_variable( get_special_var_name( e_special_var_tree_total ), to_string( total_items ) );
+               }
 
                save_first_prefixed( first_prefixed );
             }
@@ -4806,10 +4849,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         if( !has_all_tree_items )
                         {
                            first_prefixed.clear( );
-                           set_session_variable( get_special_var_name( e_special_var_tree_items ), "" );
+
+                           set_session_variable( get_special_var_name( e_special_var_tree_count ), "" );
+                           set_session_variable( get_special_var_name( e_special_var_tree_total ), "" );
                         }
                         else
-                           set_session_variable( get_special_var_name( e_special_var_tree_items ), to_string( total_items ) );
+                        {
+                           set_session_variable( get_special_var_name( e_special_var_tree_count ), "0" );
+                           set_session_variable( get_special_var_name( e_special_var_tree_total ), to_string( total_items ) );
+                        }
 
                         save_first_prefixed( first_prefixed );
 
@@ -4860,7 +4908,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          fetch_file( hash, socket, p_sock_progress );
 
          if( hash != hello_hash )
+         {
+            if( !blockchain.empty( ) )
+               check_found_prefixed( hash );
+
             increment_peer_files_uploaded( file_bytes( hash ) );
+         }
 
          socket_handler.op_state( ) = e_peer_state_waiting_for_put;
 
