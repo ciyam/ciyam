@@ -4587,6 +4587,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                clear_first_prefixed( );
 
+               set_session_variable( get_special_var_name( e_special_var_tree_count ), "" );
+               set_session_variable( get_special_var_name( e_special_var_tree_total ), "" );
+
                if( has || was_initial_state )
                {
                   size_t old_blockchain_height_other = blockchain_height_other;
