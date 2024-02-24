@@ -15,10 +15,10 @@ Expression_Results,M001C100F103
 Restore_In_Progress,M001C100F104
 Restore_Needed,M001C100F105
 Status,M001C100F106
-Synchronisation_Status,M001C100F107
+Raw_Sync_Status,M001C100F107
 System_Checksum,M001C100F108
-Sync_Status_Has_Ellipsis,M001C100F109
-Synchronisation,M001C100F110
+Raw_Sync_Status_Has_Ellipsis,M001C100F109
+Sync_Status,M001C100F110
 Vendor,M001C100F111
 Identity,M001C100F112
 Message,M001C100F113
@@ -256,7 +256,7 @@ Shared_Checksum,M001C106F137
 Shared_Secret,M001C106F138
 Connection_Type,M001C106F139
 Status,M001C106F140
-Synchronisation,M001C106F141
+Sync_Status,M001C106F141
 System_Secret,M001C106F142
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
