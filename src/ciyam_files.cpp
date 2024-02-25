@@ -895,7 +895,7 @@ void output_repository_progress( progress* p_progress,
 
    // FUTURE: These messages should be handled as a server string message.
    if( !is_remove )
-      progress = "Perusing" + extra + " - " + value + "...";
+      progress = "Tallying" + extra + " - " + value + "...";
    else
       progress = "Trimming" + extra + " - " + value + "...";
 
