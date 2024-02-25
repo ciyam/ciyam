@@ -325,6 +325,22 @@ void save_first_prefixed( map< string, size_t >& first_prefixed, size_t total_it
    g_peer_found_prefixed[ peer_map_key ] = 0;
 
    g_peer_first_prefixed[ peer_map_key ].swap( first_prefixed );
+
+   map< string, size_t >::const_iterator ci = g_peer_first_prefixed[ peer_map_key ].begin( );
+   map< string, size_t >::const_iterator cend = g_peer_first_prefixed[ peer_map_key ].end( );
+
+   size_t first = ( total_items + 1 );
+
+   while( ci != cend )
+   {
+      if( ci->second < first )
+         first = ci->second;
+
+      ++ci;
+   }
+
+   if( first > 1 )
+      g_peer_found_bounding[ peer_map_key ] = ( first - 1 );
 }
 
 void check_found_prefixed( const string& hash )
@@ -338,10 +354,13 @@ void check_found_prefixed( const string& hash )
       string prefix( c_prefix_length, '\0' );
       hex_decode( hash.substr( 0, c_prefix_length * 2 ), ( unsigned char* )prefix.data( ), c_prefix_length );
 
-      if( g_peer_first_prefixed[ peer_map_key ].count( prefix ) )
-      {
-         size_t last_found = g_peer_found_prefixed[ peer_map_key ];
+      bool increment = false;
+      size_t last_found = g_peer_found_prefixed[ peer_map_key ];
 
+      if( !g_peer_first_prefixed[ peer_map_key ].count( prefix ) )
+         increment = true;
+      else
+      {
          size_t next_found = g_peer_first_prefixed[ peer_map_key ][ prefix ];
 
          if( next_found > last_found )
@@ -350,11 +369,11 @@ void check_found_prefixed( const string& hash )
 
             // NOTE: As there can be large gaps between unique prefixes when jumping to the next item
             // number will also find the item number that follows in order to permit incrementing the
-            // count by one until one before the following item number (or total number of items).
+            // count by one whilst less than the next mapped item (or to the total number of items).
             map< string, size_t >::const_iterator ci = g_peer_first_prefixed[ peer_map_key ].begin( );
             map< string, size_t >::const_iterator cend = g_peer_first_prefixed[ peer_map_key ].end( );
 
-            size_t following = g_peer_total_items[ peer_map_key ] + 1;
+            size_t following = ( g_peer_total_items[ peer_map_key ] + 1 );
 
             while( ci != cend )
             {
@@ -374,14 +393,17 @@ void check_found_prefixed( const string& hash )
                set_session_variable( get_special_var_name( e_special_var_tree_count ), to_string( next_found ) );
          }
          else
-         {
-            if( last_found < g_peer_found_bounding[ peer_map_key ] )
-               g_peer_found_prefixed[ peer_map_key ] = ++last_found;
+            increment = true;
+      }
 
-            if( get_raw_session_variable(
-             get_special_var_name( e_special_var_blockchain_peer_supporter ) ).empty( ) )
-               set_session_variable( get_special_var_name( e_special_var_tree_count ), to_string( last_found ) );
-         }
+      if( increment )
+      {
+         if( last_found < g_peer_found_bounding[ peer_map_key ] )
+            g_peer_found_prefixed[ peer_map_key ] = ++last_found;
+
+         if( get_raw_session_variable(
+          get_special_var_name( e_special_var_blockchain_peer_supporter ) ).empty( ) )
+            set_session_variable( get_special_var_name( e_special_var_tree_count ), to_string( last_found ) );
       }
    }
 }
@@ -1810,17 +1832,21 @@ bool has_all_list_items(
             {
                string local_hash( next_hash );
 
-               if( !has_next_file && fetch_repository_entry_record( identity, next_hash, local_hash, false ) )
+               // NOTE: Omit list files from prefix mapping.
+               if( !has_next_file || !is_list_file( next_hash ) )
                {
-                  has_next_repo_entry = true;
-                  last_repo_entry_hash = next_hash;
+                  if( !has_next_file && fetch_repository_entry_record( identity, next_hash, local_hash, false ) )
+                  {
+                     has_next_repo_entry = true;
+                     last_repo_entry_hash = next_hash;
+                  }
+
+                  string prefix( c_prefix_length, '\0' );
+                  hex_decode( local_hash.substr( 0, c_prefix_length * 2 ), ( unsigned char* )prefix.data( ), c_prefix_length );
+
+                  if( !p_first_prefixed->count( prefix ) )
+                     p_first_prefixed->insert( make_pair( prefix, *p_total_processed ) );
                }
-
-               string prefix( c_prefix_length, '\0' );
-               hex_decode( local_hash.substr( 0, c_prefix_length * 2 ), ( unsigned char* )prefix.data( ), c_prefix_length );
-
-               if( !p_first_prefixed->count( prefix ) )
-                  p_first_prefixed->insert( make_pair( prefix, *p_total_processed ) );
             }
 
             if( !has_next_file && !has_next_repo_entry )
