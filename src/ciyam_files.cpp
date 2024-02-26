@@ -880,7 +880,7 @@ void output_repository_progress( progress* p_progress,
       value = get_raw_session_variable( get_special_var_name( e_special_var_progress_value ) );
    }
 
-   extra = get_raw_session_variable( get_special_var_name( e_special_var_blockchain_height ) );
+   extra = get_raw_session_variable( get_special_var_name( e_special_var_blockchain_zenith_height ) );
 
    if( !extra.empty( ) )
    {
