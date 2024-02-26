@@ -1762,13 +1762,13 @@ bool has_all_list_items(
                {
                   size_t next_height = from_string< size_t >( blockchain_height_processing );
 
+                  // FUTURE: These messages should be handled as a server string messages.
                   if( !is_fetching )
                      progress = "Mapping";
                   else
-                     progress = "Viewing";
+                     progress = "Polling";
 
-                  // FUTURE: This message should be handled as a server string message.
-                  progress += " at height " + to_string( next_height );
+                  progress = " at height " + to_string( next_height );
 
                   if( !blockchain_height_other.empty( ) )
                   {
@@ -1789,12 +1789,10 @@ bool has_all_list_items(
 
                   progress += c_ellipsis;
 
-                  if( is_fetching )
-                  {
-                     set_session_progress_output( progress );
+                  set_session_progress_output( progress );
 
+                  if( is_fetching )
                      progress = ".";
-                  }
 
                   check_for_missing_other_sessions( now );
                }
