@@ -202,6 +202,7 @@ enum special_var
    e_special_var_system_identity,
    e_special_var_check_if_changed,
    e_special_var_dummy_time_stamp,
+   e_special_var_progress_message,
    e_special_var_progress_seconds,
    e_special_var_protocol_handler,
    e_special_var_skip_after_fetch,

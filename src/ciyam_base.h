@@ -386,7 +386,7 @@ void CIYAM_BASE_DECL_SPEC set_slowest_if_applicable( );
 
 void CIYAM_BASE_DECL_SPEC session_progress_settings( size_t& seconds, progress* p_progress = 0 );
 
-void CIYAM_BASE_DECL_SPEC set_session_progress_output( const std::string& progress_output );
+void CIYAM_BASE_DECL_SPEC set_session_progress_message( const std::string& progress_message );
 
 void CIYAM_BASE_DECL_SPEC set_last_session_cmd( const std::string& cmd );
 
@@ -529,6 +529,13 @@ bool CIYAM_BASE_DECL_SPEC is_first_using_session_variable( const std::string& na
 
 struct temporary_session_variable
 {
+   temporary_session_variable( const std::string& name )
+    :
+    name( name )
+   {
+      original_value = get_raw_session_variable( name );
+   }
+
    temporary_session_variable( const std::string& name, const std::string& value )
     :
     name( name )

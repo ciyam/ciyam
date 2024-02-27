@@ -1244,7 +1244,7 @@ class socket_command_handler : public command_handler
             extra += '/' + to_string( total );
       }
 
-      set_session_progress_output( message + extra );
+      set_session_progress_message( message + extra );
 
       socket.write_line( string( c_response_message_prefix ) + message + extra, c_request_timeout, p_progress );
    }
@@ -1416,7 +1416,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
    clear_perms( );
 
-   set_session_progress_output( "" );
+   set_session_progress_message( "" );
    increment_session_commands_executed( );
 
    set_last_session_cmd( command );

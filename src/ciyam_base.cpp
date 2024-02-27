@@ -419,7 +419,6 @@ struct session
    set< string > perms;
 
    string tmp_directory;
-   string progress_output;
 
    size_t sql_count;
    size_t cache_count;
@@ -6886,7 +6885,16 @@ void list_all_sessions( ostream& os, bool inc_dtms, bool include_progress )
             ss << '*';
 
          if( include_progress )
-            ss << ' ' << g_sessions[ i ]->progress_output;
+         {
+            string progress_message;
+            string progress_message_name( get_special_var_name( e_special_var_progress_message ) );
+
+            if( g_sessions[ i ]->variables.count( progress_message_name ) )
+               progress_message = g_sessions[ i ]->variables[ progress_message_name ];
+
+            if( !progress_message.empty( ) )
+               ss << ' ' << progress_message;
+         }
 
          sessions.insert( make_pair( g_sessions[ i ]->id, ss.str( ) ) );
       }
@@ -7059,12 +7067,19 @@ void session_progress_settings( size_t& seconds, progress* p_progress )
       p_progress->num_seconds = seconds;
 }
 
-void set_session_progress_output( const string& progress_output )
+void set_session_progress_message( const string& progress_message )
 {
    guard g( g_session_mutex );
 
    if( gtp_session )
-      gtp_session->progress_output = progress_output;
+   {
+      string progress_message_name( get_special_var_name( e_special_var_progress_message ) );
+
+      if( progress_message.empty( ) )
+         gtp_session->variables.erase( progress_message_name );
+      else
+         gtp_session->variables[ progress_message_name ] = progress_message;
+   }
 }
 
 void set_last_session_cmd( const string& cmd )

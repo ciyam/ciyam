@@ -880,7 +880,10 @@ void output_repository_progress( progress* p_progress,
       value = get_raw_session_variable( get_special_var_name( e_special_var_progress_value ) );
    }
 
-   extra = get_raw_session_variable( get_special_var_name( e_special_var_blockchain_zenith_height ) );
+   extra = get_raw_session_variable( get_special_var_name( e_special_var_blockchain_block_processing ) );
+
+   if( extra.empty( ) )
+      extra = get_raw_session_variable( get_special_var_name( e_special_var_blockchain_zenith_height ) );
 
    if( !extra.empty( ) )
    {
@@ -901,7 +904,7 @@ void output_repository_progress( progress* p_progress,
 
    if( set_session_progress )
    {
-      set_session_progress_output( progress );
+      set_session_progress_message( progress );
 
       progress = ".";
    }
