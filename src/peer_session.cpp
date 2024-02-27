@@ -459,7 +459,7 @@ void set_waiting_for_hub_progress( const string& identity, const string& hub_ide
    // FUTURE: This message should be handled as a server string message.
    string progress_message( "Waiting for hub " + hub_identity + "..." );
 
-   set_session_progress_output( progress_message );
+   set_session_progress_message( progress_message );
    set_system_variable( c_progress_output_prefix + identity, progress_message );
 }
 
@@ -511,7 +511,7 @@ void output_sync_progress_message( const string& identity,
       progress_message += c_ellipsis;
    }
 
-   set_session_progress_output( progress_message );
+   set_session_progress_message( progress_message );
    set_system_variable( c_progress_output_prefix + identity, progress_message );
 }
 
@@ -1508,7 +1508,7 @@ void process_put_file( const string& blockchain,
 
                progress_message += to_string( c_ellipsis );
 
-               set_session_progress_output( progress_message );
+               set_session_progress_message( progress_message );
             }
 
             *p_dtm = now;
@@ -1753,7 +1753,7 @@ bool has_all_list_items(
 
                   progress += c_ellipsis;
 
-                  set_session_progress_output( progress );
+                  set_session_progress_message( progress );
                   set_system_variable( c_progress_output_prefix + extra_identity, progress );
 
                   progress = ".";
@@ -1768,7 +1768,7 @@ bool has_all_list_items(
                   else
                      progress = "Polling";
 
-                  progress = " at height " + to_string( next_height );
+                  progress += " at height " + to_string( next_height );
 
                   if( !blockchain_height_other.empty( ) )
                   {
@@ -1789,7 +1789,7 @@ bool has_all_list_items(
 
                   progress += c_ellipsis;
 
-                  set_session_progress_output( progress );
+                  set_session_progress_message( progress );
 
                   if( is_fetching )
                      progress = ".";
@@ -2165,7 +2165,7 @@ void process_list_items( const string& blockchain,
                // NOTE: If "blockchain_height_processing" is empty then will output the
                // message created above so at least a progress message has been issued.
                if( blockchain_height_processing.empty( ) )
-                  set_session_progress_output( progress );
+                  set_session_progress_message( progress );
                else
                {
                   if( !num_tree_items.empty( ) )
@@ -2208,7 +2208,7 @@ void process_list_items( const string& blockchain,
 
                   progress_message += c_ellipsis;
 
-                  set_session_progress_output( progress_message );
+                  set_session_progress_message( progress_message );
                   set_system_variable( c_progress_output_prefix + extra_identity, progress_message );
                }
 
@@ -2964,6 +2964,9 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                size_t total_items = 0;
                map< string, size_t > first_prefixed;
 
+               temporary_session_variable temp_progress(
+                get_special_var_name( e_special_var_progress_message ) );
+
                temporary_session_variable temp_height( get_special_var_name(
                 e_special_var_blockchain_height_processing ), to_string( height ) );
 
@@ -3591,7 +3594,7 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
          if( response != "." )
          {
-            set_session_progress_output( response );
+            set_session_progress_message( response );
             set_system_variable( c_progress_output_prefix + identity, response );
          }
 
@@ -3732,7 +3735,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          progress_message += to_string( c_ellipsis );
 
-         set_session_progress_output( progress_message );
+         set_session_progress_message( progress_message );
          set_system_variable( c_progress_output_prefix + identity, progress_message );
       }
    }
@@ -4668,7 +4671,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                {
                   size_t old_blockchain_height_other = blockchain_height_other;
 
-                  blockchain_height_other = height_from_tag - blk_offset;
+                  blockchain_height_other = ( height_from_tag - blk_offset );
 
                   if( was_initial_state
                    || ( blockchain_height_other != old_blockchain_height_other ) )
@@ -4920,6 +4923,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         size_t total_items = 0;
                         map< string, size_t > first_prefixed;
 
+                        temporary_session_variable temp_progress(
+                         get_special_var_name( e_special_var_progress_message ) );
+
                         has_all_tree_items = has_all_list_items( blockchain,
                          tree_root_hash, true, false, &dtm, &socket_handler, &total_items, 0, &first_prefixed );
 
@@ -4987,7 +4993,36 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( hash != hello_hash )
          {
             if( !blockchain.empty( ) )
+            {
                check_found_prefixed( hash );
+
+               string tree_count( get_raw_session_variable(
+                get_special_var_name( e_special_var_tree_count ) ) );
+
+               if( !tree_count.empty( ) )
+               {
+                  string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
+                  string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
+                  string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
+
+                  // FUTURE: This message should be handled as a server string message.
+                  string progress_message( "Syncing for height " + to_string( blockchain_height_other + 1 ) );
+
+                  if( blockchain_height != ( blockchain_height_other + 1 ) )
+                     progress_message += '/' + to_string( blockchain_height );
+
+                  set_session_variable( progress_count_name, tree_count );
+
+                  set_session_variable( progress_total_name,
+                   get_raw_session_variable( get_special_var_name( e_special_var_tree_total ) ) );
+
+                  progress_message += " - " + get_raw_session_variable( progress_value_name );
+
+                  progress_message += to_string( c_ellipsis );
+
+                  set_session_progress_message( progress_message );
+               }
+            }
 
             increment_peer_files_uploaded( file_bytes( hash ) );
          }
@@ -5428,7 +5463,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
                response.erase( 0, strlen( c_response_message_prefix ) );
 
                if( response != "." )
-                  set_session_progress_output( response );
+                  set_session_progress_message( response );
 
                continue;
             }
@@ -5498,7 +5533,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
                cmd_and_args.erase( 0, strlen( c_response_message_prefix ) );
 
                if( cmd_and_args != "." )
-                  set_session_progress_output( cmd_and_args );
+                  set_session_progress_message( cmd_and_args );
 
                cmd_and_args.erase( );
                continue;
@@ -6065,7 +6100,7 @@ void peer_session::on_start( )
          string progress_message(
           get_system_variable( c_progress_output_prefix + unprefixed_blockchain ) );
 
-         set_session_progress_output( progress_message );
+         set_session_progress_message( progress_message );
       }
 
       if( is_user )

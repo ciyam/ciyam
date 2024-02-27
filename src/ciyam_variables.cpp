@@ -188,6 +188,7 @@ const char* const c_special_variable_row_cache_limit = "@row_cache_limit";
 const char* const c_special_variable_system_identity = "@system_identity";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_dummy_time_stamp = "@dummy_time_stamp";
+const char* const c_special_variable_progress_message = "@progress_message";
 const char* const c_special_variable_progress_seconds = "@progress_seconds";
 const char* const c_special_variable_protocol_handler = "@protocol_handler";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
@@ -844,6 +845,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_dummy_time_stamp:
       s = string( c_special_variable_dummy_time_stamp );
+      break;
+
+      case e_special_var_progress_message:
+      s = string( c_special_variable_progress_message );
       break;
 
       case e_special_var_progress_seconds:
