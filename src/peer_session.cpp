@@ -4662,6 +4662,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                height.erase( pos );
                height_from_tag = from_string< size_t >( height );
 
+               if( !height_from_tag )
+                  blk_offset = 0;
+
                clear_first_prefixed( );
 
                set_session_variable( get_special_var_name( e_special_var_tree_count ), "" );
@@ -4999,7 +5002,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                string tree_count( get_raw_session_variable(
                 get_special_var_name( e_special_var_tree_count ) ) );
 
-               if( !tree_count.empty( ) )
+               string tree_total( get_raw_session_variable(
+                get_special_var_name( e_special_var_tree_total ) ) );
+
+               if( !tree_count.empty( ) && !tree_total.empty( ) )
                {
                   string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
                   string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
@@ -5012,9 +5018,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      progress_message += '/' + to_string( blockchain_height );
 
                   set_session_variable( progress_count_name, tree_count );
-
-                  set_session_variable( progress_total_name,
-                   get_raw_session_variable( get_special_var_name( e_special_var_tree_total ) ) );
+                  set_session_variable( progress_total_name, tree_total );
 
                   progress_message += " - " + get_raw_session_variable( progress_value_name );
 
