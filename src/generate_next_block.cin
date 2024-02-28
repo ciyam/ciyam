@@ -27,6 +27,10 @@ SEED=@sid
 BACKUP=1
 @endif
 ;
+@ifdef $CIYAM_SECONDS
+.session_variable @progress_seconds $CIYAM_SECONDS
+@endif
+;
 .session_variable @deque ""
 ;
 @ifdef $BACKUP
@@ -95,9 +99,6 @@ HAS_NO_OPL=1
 FIRST=
 @ifndef $SHARED
 @ifndef $PEER_HUB
-@ifdef $CIYAM_SECONDS
-.session_variable @progress_seconds $CIYAM_SECONDS
-@endif
 .file_repo_entries -remove_obsolete $IDENT
 @endif
 @endif
