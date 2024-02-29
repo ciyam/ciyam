@@ -258,7 +258,7 @@ void restore_peer_map_key( const string& key )
    g_peer_map_keys.push_back( key );
 }
 
-string get_peer_map_key( )
+string get_peer_map_key( bool mandatory = true )
 {
    string peer_map_key_var_name(
     get_special_var_name( e_special_var_peer_map_key ) );
@@ -274,7 +274,7 @@ string get_peer_map_key( )
       retval = get_raw_session_variable( peer_map_key_var_name );
    }
 
-   if( retval.empty( ) )
+   if( mandatory && retval.empty( ) )
       throw runtime_error( "unexpected empty peer map key value" );
 
    return retval;
@@ -528,7 +528,7 @@ void system_identity_progress_message( const string& identity )
          {
             has_paired_session = true;
 
-            string paired_progress_message( get_raw_session_variable( progress_name ), paired_session_id );
+            string paired_progress_message( get_raw_session_variable( progress_name, paired_session_id ) );
 
             paired_is_changing = ( paired_progress_message.find( c_ellipsis ) != string::npos );
 
@@ -3811,7 +3811,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    string next_hash_to_get, next_hash_to_put;
 
-   string peer_map_key( get_peer_map_key( ) );
+   string peer_map_key( get_peer_map_key( false ) );
 
    string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
    string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
@@ -4507,7 +4507,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
        + block_processing + " height: " + to_string( blockchain_height ) );
 
-      clear_all_peer_mapped_hashes( peer_map_key );
+      if( !peer_map_key.empty( ) )
+         clear_all_peer_mapped_hashes( peer_map_key );
 
       string genesis_key_tag( blockchain + ".0" + string( c_key_suffix ) );
 

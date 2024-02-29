@@ -628,11 +628,14 @@ template< typename T > inline std::string to_comparable_string( const T& val )
 #  ifndef USE_FROM_STRING_IMPL
 template< typename T > inline T from_string( const std::string& s )
 {
-   std::istringstream iss( s );
-
    T t = T( );
 
-   iss >> t;
+   if( !s.empty( ) )
+   {
+      std::istringstream iss( s );
+
+      iss >> t;
+   }
 
    return t;
 }
@@ -649,9 +652,12 @@ inline void from_string_impl( std::string& t, const std::string& s )
 
 template< typename T > inline void from_string_impl( T& t, const std::string& s )
 {
-   std::istringstream iss( s );
+   if( !s.empty( ) )
+   {
+      std::istringstream iss( s );
 
-   iss >> t;
+      iss >> t;
+   }
 }
 
 #     ifdef NEW_BORLAND_VERSION
