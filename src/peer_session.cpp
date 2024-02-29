@@ -440,7 +440,7 @@ void add_to_num_puts_value( size_t num_to_add )
 
    string num_puts_name( get_special_var_name( e_special_var_blockchain_num_puts ) );
 
-   string num_puts_value( get_session_variable( num_puts_name ) );
+   string num_puts_value( get_raw_session_variable( num_puts_name ) );
 
    if( !num_puts_value.empty( ) )
       num_puts = from_string< size_t >( num_puts_value );
@@ -461,6 +461,132 @@ void set_waiting_for_hub_progress( const string& identity, const string& hub_ide
 
    set_session_progress_message( progress_message );
    set_system_variable( c_progress_output_prefix + identity, progress_message );
+}
+
+void system_identity_progress_message( const string& identity )
+{
+   string own_paired_identity( get_raw_session_variable(
+    get_special_var_name( e_special_var_paired_identity ) ) );
+
+   bool is_blockchain_owner = !get_raw_session_variable(
+    get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
+
+   string blockchain_height_other_name(
+    get_special_var_name( e_special_var_blockchain_height_other ) );
+
+   string blockchain_zenith_height_name(
+    get_special_var_name( e_special_var_blockchain_zenith_height ) );
+
+   string progress_name( get_special_var_name( e_special_var_progress ) );
+   string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
+
+   // FUTURE: This message should be handled as a server string message.
+   string prefix( "Currently at" );
+
+   string progress_message( get_raw_session_variable( progress_name ) );
+
+   size_t base_height = from_string< size_t >(
+    get_raw_session_variable( blockchain_zenith_height_name ) );
+
+   size_t other_height = from_string< size_t >(
+    get_raw_session_variable( blockchain_height_other_name ) );
+
+   string percentage( get_raw_session_variable( progress_value_name ) );
+
+   size_t paired_base_height = 0;
+   size_t paired_other_height = 0;
+
+   bool is_changing = ( progress_message.find( c_ellipsis ) != string::npos );
+
+   if( is_changing )
+   {
+      ++base_height;
+
+      // FUTURE: This message should be handled as a server string message.
+      string::size_type pos = progress_message.find( " height " );
+
+      if( pos != string::npos )
+         prefix = progress_message.substr( 0, pos );
+   }
+
+   bool has_paired_session = false;
+   bool paired_is_changing = false;
+
+   if( !is_blockchain_owner && !own_paired_identity.empty( ) )
+   {
+      size_t session_id = from_string< size_t >(
+       get_raw_session_variable( get_special_var_name( e_special_var_session_id ) ) );
+
+      if( session_id > 1 )
+      {
+         size_t paired_session_id = ( session_id - 1 );
+
+         string other_paired_identity( get_raw_session_variable(
+          get_special_var_name( e_special_var_paired_identity ), paired_session_id ) );
+
+         if( own_paired_identity == other_paired_identity )
+         {
+            has_paired_session = true;
+
+            string paired_progress_message( get_raw_session_variable( progress_name ), paired_session_id );
+
+            paired_is_changing = ( paired_progress_message.find( c_ellipsis ) != string::npos );
+
+            paired_base_height = from_string< size_t >(
+             get_raw_session_variable( blockchain_zenith_height_name, paired_session_id ) );
+
+            paired_other_height = from_string< size_t >(
+             get_raw_session_variable( blockchain_height_other_name, paired_session_id ) );
+
+            if( paired_is_changing )
+               ++paired_base_height;
+
+            if( !is_changing && paired_is_changing )
+            {
+               // FUTURE: This message should be handled as a server string message.
+               string::size_type pos = paired_progress_message.find( " height " );
+
+               if( pos != string::npos )
+                  prefix = paired_progress_message.substr( 0, pos );
+
+               percentage = get_raw_session_variable( progress_value_name, paired_session_id );
+            }
+         }
+      }
+   }
+
+   string identity_progress_message( prefix );
+
+   // FUTURE: This message should be handled as a server string message.
+   identity_progress_message += " height " + to_string( base_height );
+
+   if( other_height > base_height )
+   {
+      is_changing = true;
+      identity_progress_message += '/' + to_string( other_height );
+   }
+
+   if( has_paired_session )
+   {
+      identity_progress_message += '(' + to_string( paired_base_height );
+
+      if( paired_other_height > paired_base_height )
+      {
+         paired_is_changing = true;
+         identity_progress_message += '/' + to_string( paired_other_height );
+      }
+
+      identity_progress_message += ')';
+   }
+
+   if( is_changing || paired_is_changing )
+   {
+      identity_progress_message += " - ";
+      identity_progress_message += percentage;
+      identity_progress_message += c_ellipsis;
+   }
+
+   set_system_variable( c_progress_output_prefix + identity, identity_progress_message );
 }
 
 void output_sync_progress_message( const string& identity,
@@ -512,7 +638,8 @@ void output_sync_progress_message( const string& identity,
    }
 
    set_session_progress_message( progress_message );
-   set_system_variable( c_progress_output_prefix + identity, progress_message );
+
+   system_identity_progress_message( identity );
 }
 
 string get_hello_data( string& hello_hash )
@@ -900,19 +1027,19 @@ void process_core_file( const string& hash, const string& blockchain )
 
             verify_core_file( block_content, false );
 
-            string block_height( get_session_variable(
+            string block_height( get_raw_session_variable(
              get_special_var_name( e_special_var_blockchain_height ) ) );
 
-            string primary_pubkey_hash( get_session_variable(
+            string primary_pubkey_hash( get_raw_session_variable(
              get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
 
-            string secondary_pubkey_hash( get_session_variable(
+            string secondary_pubkey_hash( get_raw_session_variable(
              get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
 
-            string tertiary_pubkey_hash( get_session_variable(
+            string tertiary_pubkey_hash( get_raw_session_variable(
              get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ) ) );
 
-            string targeted_identity( get_session_variable(
+            string targeted_identity( get_raw_session_variable(
              get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
 
             if( !primary_pubkey_hash.empty( ) )
@@ -985,19 +1112,19 @@ void process_repository_file( const string& blockchain,
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
-   string non_extra_identity( get_session_variable(
+   string non_extra_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
 
    if( !non_extra_identity.empty( ) )
       identity = non_extra_identity;
 
-   bool is_blockchain_owner = !get_session_variable(
+   bool is_blockchain_owner = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
 
    bool has_archive = false;
    bool was_extracted = false;
 
-   if( !get_session_variable(
+   if( !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
       has_archive = true;
 
@@ -1144,7 +1271,7 @@ void process_repository_file( const string& blockchain,
             ap_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
          }
 
-         string stream_cipher( get_session_variable(
+         string stream_cipher( get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_stream_cipher ) ) );
 
          if( stream_cipher.empty( ) )
@@ -1216,12 +1343,13 @@ string get_peer_mapped_info_from_put_data(
 
 void check_for_missing_other_sessions( const date_time& now )
 {
-   string paired_identity( get_session_variable(
+   string paired_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_paired_identity ) ) );
 
    if( !paired_identity.empty( ) && get_system_variable( paired_identity ).empty( ) )
    {
-      string time_value( get_session_variable( get_special_var_name( e_special_var_blockchain_time_value ) ) );
+      string time_value( get_raw_session_variable(
+       get_special_var_name( e_special_var_blockchain_time_value ) ) );
 
       if( !time_value.empty( ) )
       {
@@ -1236,7 +1364,7 @@ void check_for_missing_other_sessions( const date_time& now )
                throw runtime_error( "peer session has been condemned due to missing paired session" );
             }
 
-            string backup_identity( get_session_variable(
+            string backup_identity( get_raw_session_variable(
              get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
             if( !backup_identity.empty( ) && num_have_session_variable( backup_identity, true ) < 2 )
@@ -1249,10 +1377,10 @@ void check_for_missing_other_sessions( const date_time& now )
       }
    }
 
-   if( !get_session_variable( get_special_var_name( e_special_var_peer_is_dependent ) ).empty( )
-    && !get_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ).empty( ) )
+   if( !get_raw_session_variable( get_special_var_name( e_special_var_peer_is_dependent ) ).empty( )
+    && !get_raw_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ).empty( ) )
    {
-      string blockchain( get_session_variable( get_special_var_name( e_special_var_peer ) ) );
+      string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_peer ) ) );
 
       string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
@@ -1387,7 +1515,7 @@ void process_put_file( const string& blockchain,
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
-   string non_extra_identity( get_session_variable(
+   string non_extra_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
 
    if( !non_extra_identity.empty( ) )
@@ -1400,13 +1528,13 @@ void process_put_file( const string& blockchain,
 
    string peer_map_key( get_peer_map_key( ) );
 
-   string num_tree_items( get_session_variable(
+   string num_tree_items( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
-   string blockchain_height_other( get_session_variable(
+   string blockchain_height_other( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_height_other ) ) );
 
-   string blockchain_height_processing( get_session_variable(
+   string blockchain_height_processing( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processing ) ) );
 
    string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
@@ -1668,18 +1796,19 @@ bool has_all_list_items(
 
    string peer_map_key( get_peer_map_key( ) );
 
-   string non_extra_identity( get_session_variable(
+   string non_extra_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
 
    if( !non_extra_identity.empty( ) )
       identity = non_extra_identity;
 
-   bool has_targeted_identity = !get_session_variable(
+   bool has_targeted_identity = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
 
    bool has_archive = false;
 
-   if( !get_session_variable( get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
+   if( !get_raw_session_variable( get_special_var_name(
+    e_special_var_blockchain_archive_path ) ).empty( ) )
       has_archive = true;
 
    size_t total_processed = 0;
@@ -1693,20 +1822,20 @@ bool has_all_list_items(
 
    string queue_puts_name( get_special_var_name( e_special_var_queue_puts ) );
 
-   string num_tree_items( get_session_variable(
+   string num_tree_items( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
-   string blockchain_height_other( get_session_variable(
+   string blockchain_height_other( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_height_other ) ) );
 
-   string blockchain_height_processing( get_session_variable(
+   string blockchain_height_processing( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processing ) ) );
 
    string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
    string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
    string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
 
-   bool is_fetching = !get_session_variable(
+   bool is_fetching = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
 
    size_t max_blob_file_data = get_files_area_item_max_size( ) - c_max_put_blob_size;
@@ -1754,7 +1883,8 @@ bool has_all_list_items(
                   progress += c_ellipsis;
 
                   set_session_progress_message( progress );
-                  set_system_variable( c_progress_output_prefix + extra_identity, progress );
+
+                  system_identity_progress_message( extra_identity );
 
                   progress = ".";
                }
@@ -1790,6 +1920,8 @@ bool has_all_list_items(
                   progress += c_ellipsis;
 
                   set_session_progress_message( progress );
+
+                  system_identity_progress_message( extra_identity );
 
                   if( is_fetching )
                      progress = ".";
@@ -1931,7 +2063,7 @@ bool last_data_tree_is_identical( const string& blockchain,
    {
       restorable_session_variables all_session_variables;
 
-      string tree_root_hash( get_session_variable(
+      string tree_root_hash( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
       set_session_variable(
@@ -1950,7 +2082,7 @@ bool last_data_tree_is_identical( const string& blockchain,
 
       verify_core_file( prior_block_content, false );
 
-      string prior_data_tree_hash( get_session_variable(
+      string prior_data_tree_hash( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
       if( tree_root_hash == prior_data_tree_hash )
@@ -1979,7 +2111,7 @@ void process_list_items( const string& blockchain,
 
    string peer_map_key( get_peer_map_key( ) );
 
-   string non_extra_identity( get_session_variable(
+   string non_extra_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
 
    if( !non_extra_identity.empty( ) )
@@ -1988,7 +2120,7 @@ void process_list_items( const string& blockchain,
    vector< string > list_items;
    vector< string > secondary_values;
 
-   bool has_targeted_identity = !get_session_variable(
+   bool has_targeted_identity = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
 
    bool skip_secondary_blobs = false;
@@ -2004,7 +2136,8 @@ void process_list_items( const string& blockchain,
 
    bool has_archive = false;
 
-   if( !get_session_variable( get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
+   if( !get_raw_session_variable( get_special_var_name(
+    e_special_var_blockchain_archive_path ) ).empty( ) )
       has_archive = true;
 
    string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
@@ -2018,7 +2151,7 @@ void process_list_items( const string& blockchain,
    string blockchain_both_are_owners_name( get_special_var_name( e_special_var_blockchain_both_are_owners ) );
 
    string first_hash_name( get_special_var_name( e_special_var_hash ) );
-   string first_hash_to_get( get_session_variable( first_hash_name ) );
+   string first_hash_to_get( get_raw_session_variable( first_hash_name ) );
 
    if( !skip_secondary_blobs && ( hash == first_hash_to_get ) )
    {
@@ -2026,22 +2159,22 @@ void process_list_items( const string& blockchain,
       set_session_variable( first_hash_name, "" );
    }
 
-   bool is_owner = !get_session_variable( blockchain_is_owner_name ).empty( );
-   bool is_checking = !get_session_variable( blockchain_is_checking_name ).empty( );
-   bool is_fetching = !get_session_variable( blockchain_is_fetching_name ).empty( );
-   bool is_other_owner = !get_session_variable( blockchain_other_is_owner_name ).empty( );
+   bool is_owner = !get_raw_session_variable( blockchain_is_owner_name ).empty( );
+   bool is_checking = !get_raw_session_variable( blockchain_is_checking_name ).empty( );
+   bool is_fetching = !get_raw_session_variable( blockchain_is_fetching_name ).empty( );
+   bool is_other_owner = !get_raw_session_variable( blockchain_other_is_owner_name ).empty( );
 
-   bool is_peer_responder = !get_session_variable( get_special_var_name( e_special_var_peer_responder ) ).empty( );
+   bool is_peer_responder = !get_raw_session_variable( get_special_var_name( e_special_var_peer_responder ) ).empty( );
 
    bool check_for_supporters = false;
 
-   if( !get_session_variable(
+   if( !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
       check_for_supporters = true;
 
    bool has_set_first_mapped = false;
 
-   string num_tree_items( get_session_variable(
+   string num_tree_items( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
    size_t upper_limit = 0;
@@ -2050,22 +2183,22 @@ void process_list_items( const string& blockchain,
    {
       size_t num_items = from_string< size_t >( num_tree_items );
 
-      string blockchain_num_puts( get_session_variable(
+      string blockchain_num_puts( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_num_puts ) ) );
 
       upper_limit = ( num_items - from_string< size_t >( blockchain_num_puts ) );
    }
 
-   string blockchain_height_other( get_session_variable(
+   string blockchain_height_other( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_height_other ) ) );
 
-   string blockchain_height_processing( get_session_variable(
+   string blockchain_height_processing( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processing ) ) );
 
    // NOTE: If not found then if zenith height exists will add one to that.
    if( blockchain_height_processing.empty( ) )
    {
-      blockchain_height_processing = get_session_variable(
+      blockchain_height_processing = get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_height ) );
 
       if( !blockchain_height_processing.empty( ) )
@@ -2349,7 +2482,7 @@ void process_list_items( const string& blockchain,
              p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress );
 
             // NOTE: Recursive processing may have already located this.
-            first_hash_to_get = get_session_variable( first_hash_name );
+            first_hash_to_get = get_raw_session_variable( first_hash_name );
          }
          else if( recurse )
          {
@@ -2393,7 +2526,7 @@ void process_signature_file( const string& blockchain, const string& hash, size_
    if( !height )
       throw runtime_error( "invalid zero height for process_signature_file" );
 
-   bool is_fetching = !get_session_variable(
+   bool is_fetching = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
 
    try
@@ -2476,7 +2609,7 @@ void process_put_list_file( const string& blockchain,
        e_special_var_num_put_files ), get_special_var_name( e_special_var_increment ) );
    }
 
-   string tree_root_hash( get_session_variable(
+   string tree_root_hash( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
    if( !tree_root_hash.empty( ) && !has_file( tree_root_hash ) )
@@ -2520,7 +2653,7 @@ void process_public_key_file( const string& blockchain,
    string zenith_height_name(
     get_special_var_name( e_special_var_blockchain_zenith_height ) );
 
-   string zenith_height( get_session_variable( zenith_height_name ) );
+   string zenith_height( get_raw_session_variable( zenith_height_name ) );
 
    bool has_all_pub_keys = false;
 
@@ -2542,7 +2675,7 @@ void process_public_key_file( const string& blockchain,
 
       set_session_variable( zenith_height_name, to_string( height ) );
 
-      if( !get_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ).empty( ) )
+      if( !get_raw_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ).empty( ) )
          process_queued_hub_using_peerchains( identity );
    }
 
@@ -2784,29 +2917,29 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 {
    bool has_hind_hash = false;
 
-   bool is_user = !get_session_variable(
+   bool is_user = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_user ) ).empty( );
 
-   bool is_owner = !get_session_variable(
+   bool is_owner = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
 
-   bool is_fetching = !get_session_variable(
+   bool is_fetching = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
 
-   bool peer_has_tree_items = !get_session_variable(
+   bool peer_has_tree_items = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( );
 
    TRACE_LOG( TRACE_PEER_OPS, "(process_block_for_height) hash: " + hash + " height: " + to_string( height ) );
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
-   string non_extra_identity( get_session_variable(
+   string non_extra_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_non_extra_identity ) ) );
 
    if( non_extra_identity.empty( ) )
       non_extra_identity = identity;
 
-   string hub_identity( get_session_variable(
+   string hub_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
 
    string block_content(
@@ -2817,17 +2950,17 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 
    verify_core_file( block_content, false );
 
-   string block_height( get_session_variable(
+   string block_height( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_height ) ) );
 
    set_session_variable(
     get_special_var_name( e_special_var_blockchain_height ), "" );
 
-   if( !get_session_variable(
+   if( !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_hind_hash ) ).empty( ) )
       has_hind_hash = true;
 
-   string targeted_identity( get_session_variable(
+   string targeted_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
 
    bool is_shared = false;
@@ -2840,7 +2973,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
       string stream_cipher_var_name( get_special_var_name( e_special_var_blockchain_stream_cipher ) );
 
       set_session_variable_for_matching_blockchains(
-       stream_cipher_var_name, get_session_variable( stream_cipher_var_name ),
+       stream_cipher_var_name, get_raw_session_variable( stream_cipher_var_name ),
        get_special_var_name( e_special_var_blockchain_peer_supporter ), c_true_value, true );
    }
 
@@ -2848,13 +2981,13 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
       throw runtime_error( "specified height does not match that found in the block itself (blk)" );
    else
    {
-      string primary_pubkey_hash( get_session_variable(
+      string primary_pubkey_hash( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
 
-      string secondary_pubkey_hash( get_session_variable(
+      string secondary_pubkey_hash( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
 
-      string tertiary_pubkey_hash( get_session_variable(
+      string tertiary_pubkey_hash( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ) ) );
 
       bool has_tertiary = !tertiary_pubkey_hash.empty( );
@@ -2900,20 +3033,20 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
       }
 
       string first_hash_to_get(
-       get_session_variable( get_special_var_name( e_special_var_hash ) ) );
+       get_raw_session_variable( get_special_var_name( e_special_var_hash ) ) );
 
       if( ( first_hash_to_get == primary_pubkey_hash )
        || ( first_hash_to_get == secondary_pubkey_hash )
        || ( first_hash_to_get == tertiary_pubkey_hash ) )
          set_session_variable( get_special_var_name( e_special_var_hash ), "" );
 
-      string op_list_hash( get_session_variable(
+      string op_list_hash( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_op_list_hash ) ) );
 
-      string tree_root_hash( get_session_variable(
+      string tree_root_hash( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
-      string blockchain_zenith_height( get_session_variable(
+      string blockchain_zenith_height( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_height ) ) );
 
       if( is_fetching )
@@ -3432,7 +3565,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
    // NOTE: If the file is a list then also need to get all of its items.
    if( is_list )
    {
-      string tree_root_hash( get_session_variable(
+      string tree_root_hash( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
       if( is_owner && !has_identity_archive && !tree_root_hash.empty( ) )
@@ -3530,10 +3663,10 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
    string response;
 
-   string paired_identity( get_session_variable(
+   string paired_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_paired_identity ) ) );
 
-   string backup_identity( get_session_variable(
+   string backup_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
    while( true )
@@ -3595,7 +3728,8 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
          if( response != "." )
          {
             set_session_progress_message( response );
-            set_system_variable( c_progress_output_prefix + identity, response );
+
+            system_identity_progress_message( identity );
          }
 
          continue;
@@ -3698,7 +3832,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       {
          last_num_tree_item = num_tree_item;
 
-         string num_tree_items( get_session_variable(
+         string num_tree_items( get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
          if( !num_tree_items.empty( ) )
@@ -3736,16 +3870,17 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          progress_message += to_string( c_ellipsis );
 
          set_session_progress_message( progress_message );
-         set_system_variable( c_progress_output_prefix + identity, progress_message );
+
+         system_identity_progress_message( identity );
       }
    }
 
-   string block_processing( get_session_variable( blockchain_block_processing_name ) );
+   string block_processing( get_raw_session_variable( blockchain_block_processing_name ) );
 
-   string hub_identity( get_session_variable(
+   string hub_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
 
-   bool is_waiting_for_hub = !get_session_variable(
+   bool is_waiting_for_hub = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_waiting_for_hub ) ).empty( );
 
    if( is_waiting_for_hub
@@ -3852,13 +3987,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                       next_block_hash, blockchain_height_pending, list_items_to_ignore, &num_items_found, this );
 
                      // NOTE: This session variable may have been set via the call above so recheck it now.
-                     is_waiting_for_hub = !get_session_variable(
+                     is_waiting_for_hub = !get_raw_session_variable(
                       get_special_var_name( e_special_var_blockchain_waiting_for_hub ) ).empty( );
 
-                     string first_mapped( get_session_variable( blockchain_first_mapped_name ) );
+                     string first_mapped( get_raw_session_variable( blockchain_first_mapped_name ) );
                      set_session_variable( blockchain_first_mapped_name, "" );
 
-                     string tree_root_hash( get_session_variable(
+                     string tree_root_hash( get_raw_session_variable(
                       get_special_var_name( e_special_var_blockchain_zenith_tree_hash ) ) );
 
                      bool wants_tree_root = false;
@@ -3936,7 +4071,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                {
                   if( top_next_peer_file_hash_to_get( ).empty( ) )
                   {
-                     string tree_root_hash( get_session_variable(
+                     string tree_root_hash( get_raw_session_variable(
                       get_special_var_name( e_special_var_blockchain_zenith_tree_hash ) ) );
 
                      if( !is_waiting_for_hub && !tree_root_hash.empty( ) )
@@ -3983,10 +4118,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                // NOTE: When blockchain type is "user" then both this and the paired session can
                // automatically be terminated if both were found sleeping here (within a second).
-               if( !get_session_variable(
+               if( !get_raw_session_variable(
                 get_special_var_name( e_special_var_blockchain_user ) ).empty( ) )
                {
-                  string paired_identity( get_session_variable(
+                  string paired_identity( get_raw_session_variable(
                    get_special_var_name( e_special_var_paired_identity ) ) );
 
                   string paired_sync( get_special_var_name( e_special_var_paired_sync ) );
@@ -4007,7 +4142,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       {
          pop_next_peer_file_hash_to_get( );
 
-         string num_put_files( get_session_variable(
+         string num_put_files( get_raw_session_variable(
           get_special_var_name( e_special_var_num_put_files ) ) );
 
          if( !num_put_files.empty( ) )
@@ -4049,32 +4184,33 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          bool has_archive = false;
 
-         if( !get_session_variable( get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
+         if( !get_raw_session_variable( get_special_var_name(
+          e_special_var_blockchain_archive_path ) ).empty( ) )
             has_archive = true;
 
-         if( is_for_support && get_session_variable(
+         if( is_for_support && get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_checked_shared ) ).empty( ) )
             check_shared_for_support_session( blockchain );
 
-         string op_list_hash( get_session_variable(
+         string op_list_hash( get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_op_list_hash ) ) );
 
-         string put_list_hash( get_session_variable(
+         string put_list_hash( get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_put_list_hash ) ) );
 
-         string block_file_hash( get_session_variable(
+         string block_file_hash( get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_block_file_hash ) ) );
 
-         string primary_pubkey_hash( get_session_variable(
+         string primary_pubkey_hash( get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
 
-         string signature_file_hash( get_session_variable(
+         string signature_file_hash( get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_signature_file_hash ) ) );
 
-         string secondary_pubkey_hash( get_session_variable(
+         string secondary_pubkey_hash( get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
 
-         string tertiary_pubkey_hash( get_session_variable(
+         string tertiary_pubkey_hash( get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ) ) );
 
          if( ( is_list || is_for_support ) || ( last_num_tree_item
@@ -4086,7 +4222,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          bool has_tertiary = !tertiary_pubkey_hash.empty( );
 
-         string targeted_identity( get_session_variable(
+         string targeted_identity( get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
 
          bool has_targeted_identity = false;
@@ -4094,7 +4230,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          if( !targeted_identity.empty( ) && ( targeted_identity[ 0 ] != '@' ) )
             has_targeted_identity = true;
 
-         string num_put_files( get_session_variable(
+         string num_put_files( get_raw_session_variable(
           get_special_var_name( e_special_var_num_put_files ) ) );
 
          if( !num_put_files.empty( ) )
@@ -4215,7 +4351,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                else
                {
                   // NOTE: Unless both are owners only core block files should be found here.
-                  if( get_session_variable( 
+                  if( get_raw_session_variable(
                    get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
                      verify_core_file( file_data, false );
 
@@ -4228,7 +4364,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 #ifdef SSL_SUPPORT
          else
          {
-            if( get_session_variable( 
+            if( get_raw_session_variable(
              get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
             {
                // NOTE: The first call to "set_session_variable_for_matching_blockchains" (made
@@ -4280,7 +4416,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       {
          pop_next_peer_file_hash_to_put( );
 
-         if( !get_session_variable( next_hash ).empty( ) )
+         if( !get_raw_session_variable( next_hash ).empty( ) )
          {
             delete_file( next_hash );
             set_session_variable( next_hash, "" );
@@ -4292,13 +4428,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    {
       date_time dtm( date_time::local( ) );
 
-      string zenith_tree_hash( get_session_variable(
+      string zenith_tree_hash( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_tree_hash ) ) );
 
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_tree_hash ), "" );
 
-      bool peer_has_tree_items = !get_session_variable(
+      bool peer_has_tree_items = !get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( );
 
       if( peer_has_tree_items && !zenith_tree_hash.empty( ) )
@@ -4318,7 +4454,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
             string queue_puts_name( get_special_var_name( e_special_var_queue_puts ) );
 
-            string next_put( get_session_variable( queue_puts_name ) );
+            string next_put( get_raw_session_variable( queue_puts_name ) );
 
             string put_hashes;
 
@@ -4331,7 +4467,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                put_hashes += base64::encode( hex_decode( next_put ) );
 
-               next_put = get_session_variable( queue_puts_name );
+               next_put = get_raw_session_variable( queue_puts_name );
             }
 
             if( !put_hashes.empty( ) )
@@ -4344,8 +4480,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                set_system_variable( get_special_var_name( e_special_var_generate_hub_block ), c_true_value );
 
             if( !is_in_archive
-             && !get_session_variable( blockchain_is_owner_name ).empty( )
-             && !get_session_variable( blockchain_is_fetching_name ).empty( ) )
+             && !get_raw_session_variable( blockchain_is_owner_name ).empty( )
+             && !get_raw_session_variable( blockchain_is_fetching_name ).empty( ) )
                tag_file( c_ciyam_tag, zenith_tree_hash );
          }
          else
@@ -4394,14 +4530,14 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_height ), to_string( blockchain_height ) );
 
-      if( !get_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ).empty( ) )
+      if( !get_raw_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ).empty( ) )
          process_queued_hub_using_peerchains( identity );
       else if( is_extra_non_hub_identity( identity ) )
       {
          temporary_session_variable tmp_identity(
           get_special_var_name( e_special_var_identity ), identity );
 
-         bool is_shared = !get_session_variable(
+         bool is_shared = !get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_targeted_identity ) ).empty( );
 
          temporary_session_variable tmp_chain_type(
@@ -4411,9 +4547,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       }
 
       if( !zenith_tree_hash.empty( )
-       && get_session_variable( get_special_var_name( e_special_var_blockchain_user ) ).empty( ) )
+       && get_raw_session_variable( get_special_var_name( e_special_var_blockchain_user ) ).empty( ) )
       {
-         string targeted_identity( get_session_variable(
+         string targeted_identity( get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
 
          if( !targeted_identity.empty( )
@@ -4423,7 +4559,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             {
                tag_file( blockchain + c_shared_suffix, block_processing );
 
-               string backup_identity( get_session_variable(
+               string backup_identity( get_raw_session_variable(
                 get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
                if( backup_identity.empty( ) )
@@ -4574,16 +4710,16 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    bool had_zenith_hash = false;
    bool check_for_supporters = false;
 
-   bool is_owner = !get_session_variable(
+   bool is_owner = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
 
-   bool other_is_owner = !get_session_variable(
+   bool other_is_owner = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_other_is_owner ) ).empty( );
 
-   if( !get_session_variable( blockchain_zenith_height_name ).empty( ) )
+   if( !get_raw_session_variable( blockchain_zenith_height_name ).empty( ) )
       had_zenith_hash = true;
 
-   if( !get_session_variable( blockchain_peer_has_supporters_name ).empty( ) )
+   if( !get_raw_session_variable( blockchain_peer_has_supporters_name ).empty( ) )
       check_for_supporters = true;
 
    try
@@ -4699,7 +4835,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   if( has_tag( blockchain + c_shared_suffix, e_file_type_blob ) )
                   {
-                     string backup_identity( get_session_variable(
+                     string backup_identity( get_raw_session_variable(
                       get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
                      if( backup_identity.empty( ) )
@@ -4806,7 +4942,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                {
                   socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
-                  string zenith_height( get_session_variable(
+                  string zenith_height( get_raw_session_variable(
                    get_special_var_name( e_special_var_blockchain_zenith_height ) ) );
 
                   if( zenith_height.empty( )
@@ -4908,14 +5044,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                      verify_core_file( block_content, false );
 
-                     string tree_root_hash( get_session_variable(
+                     string tree_root_hash( get_raw_session_variable(
                       get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
                      if( tree_root_hash.empty( ) )
                         num_items_found = 0;
                      else
                      {
-                        bool is_user = !get_session_variable(
+                        bool is_user = !get_raw_session_variable(
                          get_special_var_name( e_special_var_blockchain_user ) ).empty( );
 
                         bool is_peerchain_hub = !get_system_variable(
@@ -5061,7 +5197,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                throw runtime_error( "invalid state for put (responder)" );
          }
 
-         bool put_allowed = blockchain.empty( ) || !get_session_variable(
+         bool put_allowed = blockchain.empty( ) || !get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
 
          if( !put_allowed )
@@ -5090,7 +5226,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          else
             store_file( hash, socket, 0, p_sock_progress, false, 0, false, &file_data, &num_bytes );
 
-         if( hash != hello_hash && ( blockchain.empty( ) || !get_session_variable(
+         if( hash != hello_hash && ( blockchain.empty( ) || !get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( ) ) )
          {
             date_time dtm( date_time::local( ) );
@@ -5107,7 +5243,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                bool has_archive = false;
 
-               if( !get_session_variable(
+               if( !get_raw_session_variable(
                 get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
                   has_archive = true;
 
@@ -5243,10 +5379,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    // same if the matching identity session is not found.
    if( send_okay_response && !socket_handler.get_is_for_support( ) )
    {
-      string paired_identity( get_session_variable(
+      string paired_identity( get_raw_session_variable(
        get_special_var_name( e_special_var_paired_identity ) ) );
 
-      string backup_identity( get_session_variable(
+      string backup_identity( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
       if( paired_identity.empty( ) )
@@ -5434,7 +5570,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
    string blockchain_peer_has_supporters_name(
     get_special_var_name( e_special_var_blockchain_peer_has_supporters ) );
 
-   string ip_addr( get_session_variable( get_special_var_name( e_special_var_ip_addr ) ) );
+   string ip_addr( get_raw_session_variable( get_special_var_name( e_special_var_ip_addr ) ) );
 
    while( true )
    {
@@ -5445,7 +5581,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          p_sock_progress = &sock_progress;
 
       if( !check_for_supporters
-       && !get_session_variable( blockchain_peer_has_supporters_name ).empty( ) )
+       && !get_raw_session_variable( blockchain_peer_has_supporters_name ).empty( ) )
          check_for_supporters = true;
 
       if( !is_responder && !has_issued_command && !g_server_shutdown && !is_condemned_session( ) )
@@ -6042,8 +6178,8 @@ void peer_session::on_start( )
 
       if( needs_key_exchange )
       {
-         string slot_and_pubkey( get_session_variable( get_special_var_name( e_special_var_slot ) ) );
-         slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
+         string slot_and_pubkey( get_raw_session_variable( get_special_var_name( e_special_var_slot ) ) );
+         slot_and_pubkey += '-' + get_raw_session_variable( get_special_var_name( e_special_var_pubkey ) );
 
          string slotx, pubkeyx, slotx_and_pubkeyx;
 
@@ -6195,11 +6331,13 @@ void peer_session::on_start( )
                else
                {
                   // FUTURE: This message should be handled as a server string message.
-                  string progress_message( "Syncing" );
+                  string progress_message( "Syncing at height 0" );
 
                   progress_message += c_ellipsis;
 
-                  set_system_variable( c_progress_output_prefix + unprefixed_blockchain, progress_message );
+                  set_session_progress_message( progress_message );
+
+                  system_identity_progress_message( unprefixed_blockchain );
                }
             }
          }
