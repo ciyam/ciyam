@@ -465,7 +465,7 @@ void set_waiting_for_hub_progress( const string& identity, const string& hub_ide
    set_system_variable( c_progress_output_prefix + identity, progress_message );
 }
 
-void system_identity_progress_message( const string& identity, const string& progress_message )
+void system_identity_progress_message( const string& identity )
 {
    string own_paired_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_paired_identity ) ) );
@@ -479,8 +479,8 @@ void system_identity_progress_message( const string& identity, const string& pro
    string blockchain_zenith_height_name(
     get_special_var_name( e_special_var_blockchain_zenith_height ) );
 
-   string progress_name( get_special_var_name( e_special_var_progress ) );
    string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
+   string progress_message_name( get_special_var_name( e_special_var_progress_message ) );
 
    size_t base_height = from_string< size_t >(
     get_raw_session_variable( blockchain_zenith_height_name ) );
@@ -489,6 +489,7 @@ void system_identity_progress_message( const string& identity, const string& pro
     get_raw_session_variable( blockchain_height_other_name ) );
 
    string percentage_value( get_raw_session_variable( progress_value_name ) );
+   string progress_message( get_raw_session_variable( progress_message_name ) );
 
    size_t paired_base_height = 0;
    size_t paired_other_height = 0;
@@ -531,7 +532,7 @@ void system_identity_progress_message( const string& identity, const string& pro
          {
             has_paired_session = true;
 
-            string paired_progress_message( get_raw_session_variable( progress_name, paired_session_id ) );
+            string paired_progress_message( get_raw_session_variable( progress_message_name, paired_session_id ) );
 
             paired_is_changing = ( paired_progress_message.find( c_ellipsis ) != string::npos );
 
@@ -562,12 +563,6 @@ void system_identity_progress_message( const string& identity, const string& pro
 
    string identity_progress_message( prefix );
 
-   if( other_height > base_height )
-   {
-      is_changing = true;
-      identity_progress_message += '/' + to_string( other_height );
-   }
-
    if( has_paired_session )
    {
       identity_progress_message += " (" + to_string( paired_base_height );
@@ -583,8 +578,12 @@ void system_identity_progress_message( const string& identity, const string& pro
 
    if( is_changing || paired_is_changing )
    {
-      identity_progress_message += c_percentage_separator;
-      identity_progress_message += percentage_value;
+      if( !percentage_value.empty( ) )
+      {
+         identity_progress_message += c_percentage_separator;
+         identity_progress_message += percentage_value;
+      }
+
       identity_progress_message += c_ellipsis;
    }
 
@@ -641,7 +640,7 @@ void output_sync_progress_message( const string& identity,
 
    set_session_progress_message( progress_message );
 
-   system_identity_progress_message( identity, progress_message );
+   system_identity_progress_message( identity );
 }
 
 string get_hello_data( string& hello_hash )
@@ -1886,7 +1885,7 @@ bool has_all_list_items(
 
                   set_session_progress_message( progress );
 
-                  system_identity_progress_message( extra_identity, progress );
+                  system_identity_progress_message( extra_identity );
 
                   progress = ".";
                }
@@ -1923,7 +1922,7 @@ bool has_all_list_items(
 
                   set_session_progress_message( progress );
 
-                  system_identity_progress_message( extra_identity, progress );
+                  system_identity_progress_message( extra_identity );
 
                   if( is_fetching )
                      progress = ".";
@@ -2671,11 +2670,11 @@ void process_public_key_file( const string& blockchain,
 
       string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
+      set_session_variable( zenith_height_name, to_string( height ) );
+
       output_sync_progress_message( identity, height, height_other, true );
 
       TRACE_LOG( TRACE_PEER_OPS, "::: new zenith hash: " + block_hash + " height: " + to_string( height ) );
-
-      set_session_variable( zenith_height_name, to_string( height ) );
 
       if( !get_raw_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ).empty( ) )
          process_queued_hub_using_peerchains( identity );
@@ -3869,7 +3868,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          set_session_progress_message( progress_message );
 
-         system_identity_progress_message( identity, progress_message );
+         system_identity_progress_message( identity );
       }
    }
 
@@ -4499,6 +4498,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       set_session_variable( get_special_var_name(
        e_special_var_blockchain_num_tree_items ), "" );
+
+      set_session_variable( get_special_var_name(
+       e_special_var_blockchain_zenith_height ), to_string( blockchain_height ) );
 
       output_sync_progress_message( identity, blockchain_height, blockchain_height_other, true );
 
@@ -6336,7 +6338,7 @@ void peer_session::on_start( )
 
                   set_session_progress_message( progress_message );
 
-                  system_identity_progress_message( unprefixed_blockchain, progress_message );
+                  system_identity_progress_message( unprefixed_blockchain );
                }
             }
          }
