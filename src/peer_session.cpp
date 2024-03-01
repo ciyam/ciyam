@@ -3243,16 +3243,12 @@ class socket_command_handler : public command_handler
       // NOTE: Replace the current progress message with the last zenith height.
       if( !is_for_support && !get_identity( ).empty( ) )
       {
-         if( get_system_variable( c_progress_output_prefix
-          + get_identity( ) ).find( c_ellipsis ) != string::npos )
-         {
-            // FUTURE: This message should be handled as server string messages.
-            string progress_message( "Currently at height " );
+         // FUTURE: This message should be handled as server string messages.
+         string progress_message( "Currently at height " );
 
-            progress_message += to_string( blockchain_height );
+         progress_message += to_string( blockchain_height );
 
-            set_system_variable( c_progress_output_prefix + get_identity( ), progress_message );
-         }
+         set_system_variable( c_progress_output_prefix + get_identity( ), progress_message );
       }
 
       TRACE_LOG( TRACE_SESSIONS, get_blockchain( ).empty( )
