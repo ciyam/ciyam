@@ -459,7 +459,7 @@ void set_waiting_for_hub_progress( const string& identity, const string& hub_ide
     get_special_var_name( e_special_var_blockchain_waiting_for_hub ), c_true_value );
 
    // FUTURE: This message should be handled as a server string message.
-   string progress_message( "Waiting for hub " + hub_identity + "..." );
+   string progress_message( "Waiting for hub peer sync..." );
 
    set_session_progress_message( progress_message );
    set_system_variable( c_progress_output_prefix + identity, progress_message );
@@ -3866,6 +3866,14 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          set_session_progress_message( progress_message );
 
          system_identity_progress_message( identity );
+      }
+      else
+      {
+         string identity_system_message(
+          get_system_variable( c_progress_output_prefix + identity ) );
+
+         if( identity_system_message.find( c_ellipsis ) != string::npos )
+            system_identity_progress_message( identity );
       }
    }
 
