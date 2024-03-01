@@ -496,9 +496,6 @@ void system_identity_progress_message( const string& identity )
 
    bool is_changing = ( progress_message.find( c_ellipsis ) != string::npos );
 
-   if( is_changing )
-      ++base_height;
-
    // FUTURE: This message should be handled as a server string message.
    string prefix( "Currently at height " + to_string( base_height ) );
 
