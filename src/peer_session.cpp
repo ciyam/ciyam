@@ -635,9 +635,19 @@ void output_sync_progress_message( const string& identity,
       progress_message += c_ellipsis;
    }
 
-   set_session_progress_message( progress_message );
+   bool has_zenith_height = !get_raw_session_variable(
+    get_special_var_name( e_special_var_blockchain_zenith_height ) ).empty( );
 
-   system_identity_progress_message( identity );
+   if( has_zenith_height )
+   {
+      set_session_progress_message( progress_message );
+
+      system_identity_progress_message( identity );
+   }
+   else
+      // NOTE: If no '@blockchain_zenith_height' session variable exists then
+      // assume that the call was from a listener rather than a peer session.
+      set_system_variable( c_progress_output_prefix + identity, progress_message );
 }
 
 string get_hello_data( string& hello_hash )
@@ -3814,7 +3824,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    string blockchain_block_processing_name( get_special_var_name( e_special_var_blockchain_block_processing ) );
    string blockchain_height_processing_name( get_special_var_name( e_special_var_blockchain_height_processing ) );
 
-   if( !is_for_support )
+   string block_processing( get_raw_session_variable( blockchain_block_processing_name ) );
+
+   bool is_waiting_for_hub = !get_raw_session_variable(
+    get_special_var_name( e_special_var_blockchain_waiting_for_hub ) ).empty( );
+
+   // FUTURE: Should use the hub session's X/Y height for identity progress.
+   if( !is_for_support && !is_waiting_for_hub )
    {
       size_t num_tree_item = get_blockchain_tree_item( blockchain );
 
@@ -3860,26 +3876,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          progress_message += to_string( c_ellipsis );
 
          set_session_progress_message( progress_message );
-
-         system_identity_progress_message( identity );
       }
-      else
-      {
-         string identity_system_message(
-          get_system_variable( c_progress_output_prefix + identity ) );
 
-         if( identity_system_message.find( c_ellipsis ) != string::npos )
-            system_identity_progress_message( identity );
-      }
+      system_identity_progress_message( identity );
    }
-
-   string block_processing( get_raw_session_variable( blockchain_block_processing_name ) );
 
    string hub_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
-
-   bool is_waiting_for_hub = !get_raw_session_variable(
-    get_special_var_name( e_special_var_blockchain_waiting_for_hub ) ).empty( );
 
    if( is_waiting_for_hub
     && add_put_list_if_available( hub_identity, blockchain, blockchain_height_pending ) )
