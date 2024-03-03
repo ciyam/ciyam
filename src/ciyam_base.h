@@ -346,6 +346,8 @@ std::string CIYAM_BASE_DECL_SPEC session_ip_addr( );
 
 std::string CIYAM_BASE_DECL_SPEC session_ip_addr( size_t slot );
 
+size_t CIYAM_BASE_DECL_SPEC first_other_session_id( const std::string& var_name, const std::string& value );
+
 bool CIYAM_BASE_DECL_SPEC has_session_with_ip_addr( const std::string& ip_addr, const std::string& blockchain );
 
 std::string CIYAM_BASE_DECL_SPEC get_random_same_port_peer_ip_addr( const std::string& empty_value );

@@ -6745,6 +6745,41 @@ string session_ip_addr( size_t slot )
    return retval;
 }
 
+size_t first_other_session_id( const string& var_name, const string& value )
+{
+   guard g( g_session_mutex );
+
+   size_t id = 0;
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      session* p_session = g_sessions[ i ];
+
+      if( p_session && ( p_session != gtp_session ) )
+      {
+         if( value.empty( ) )
+         {
+            if( !p_session->variables.count( var_name ) )
+            {
+               id = p_session->id;
+               break;
+            }
+         }
+         else
+         {
+            if( p_session->variables.count( var_name )
+             && p_session->variables[ var_name ] == value )
+            {
+               id = p_session->id;
+               break;
+            }
+         }
+      }
+   }
+
+   return id;
+}
+
 bool has_session_with_ip_addr( const string& ip_addr, const string& blockchain )
 {
    guard g( g_session_mutex );
