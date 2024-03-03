@@ -467,9 +467,6 @@ void set_waiting_for_hub_progress( const string& identity, const string& hub_ide
 
 void system_identity_progress_message( const string& identity )
 {
-   string own_paired_identity( get_raw_session_variable(
-    get_special_var_name( e_special_var_paired_identity ) ) );
-
    bool is_blockchain_owner = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
 
@@ -513,46 +510,39 @@ void system_identity_progress_message( const string& identity )
    bool has_paired_session = false;
    bool paired_is_changing = false;
 
+   string paired_identity_name(
+    get_special_var_name( e_special_var_paired_identity ) );
+
+   string own_paired_identity( get_raw_session_variable( paired_identity_name ) );
+
    if( !is_blockchain_owner && !own_paired_identity.empty( ) )
    {
-      size_t session_id = from_string< size_t >(
-       get_raw_session_variable( get_special_var_name( e_special_var_session_id ) ) );
+      size_t paired_session_id = first_other_session_id( paired_identity_name, own_paired_identity );
 
-      if( session_id > 1 )
+      if( paired_session_id )
       {
-         size_t paired_session_id = ( session_id - 1 );
+         has_paired_session = true;
 
-         string other_paired_identity( get_raw_session_variable(
-          get_special_var_name( e_special_var_paired_identity ), paired_session_id ) );
+         string paired_progress_message( get_raw_session_variable( progress_message_name, paired_session_id ) );
 
-         if( own_paired_identity == other_paired_identity )
+         paired_is_changing = ( paired_progress_message.find( c_ellipsis ) != string::npos );
+
+         paired_base_height = from_string< size_t >(
+          get_raw_session_variable( blockchain_zenith_height_name, paired_session_id ) );
+
+         paired_other_height = from_string< size_t >(
+          get_raw_session_variable( blockchain_height_other_name, paired_session_id ) );
+
+         if( !is_changing && paired_is_changing )
          {
-            has_paired_session = true;
+            string::size_type pos = paired_progress_message.find( c_percentage_separator );
 
-            string paired_progress_message( get_raw_session_variable( progress_message_name, paired_session_id ) );
-
-            paired_is_changing = ( paired_progress_message.find( c_ellipsis ) != string::npos );
-
-            paired_base_height = from_string< size_t >(
-             get_raw_session_variable( blockchain_zenith_height_name, paired_session_id ) );
-
-            paired_other_height = from_string< size_t >(
-             get_raw_session_variable( blockchain_height_other_name, paired_session_id ) );
-
-            if( paired_is_changing )
-               ++paired_base_height;
-
-            if( !is_changing && paired_is_changing )
+            if( pos == string::npos )
+               percentage_value = get_raw_session_variable( progress_value_name, paired_session_id );
+            else
             {
-               string::size_type pos = paired_progress_message.find( c_percentage_separator );
-
-               if( pos == string::npos )
-                  percentage_value = get_raw_session_variable( progress_value_name, paired_session_id );
-               else
-               {
-                  prefix = paired_progress_message.substr( 0, pos );
-                  percentage_value = paired_progress_message.substr( pos + strlen( c_percentage_separator ) );
-               }
+               prefix = paired_progress_message.substr( 0, pos );
+               percentage_value = paired_progress_message.substr( pos + strlen( c_percentage_separator ) );
             }
          }
       }

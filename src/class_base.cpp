@@ -5648,7 +5648,8 @@ string local_backup_blockchain_status( )
 
       for( size_t i = 1; i <= c_max_extras; i++ )
       {
-         string extra_identity( get_system_variable( blockchain_backup_prefix + to_string( i ) + blockchain_backup_suffix ) );
+         string extra_identity( get_system_variable(
+          blockchain_backup_prefix + to_string( i ) + blockchain_backup_suffix ) );
 
          if( extra_identity.empty( ) )
             break;
@@ -5656,7 +5657,14 @@ string local_backup_blockchain_status( )
          string extra_status( get_system_variable( "%" + extra_identity ) );
 
          if( extra_status.find( c_ellipsis ) != string::npos )
-            sync_status = extra_status;
+         {
+            size_t next_backup_height = from_string< size_t >( get_system_variable(
+             get_special_var_name( e_special_var_blockchain_backup_height ) ) ) + 1;
+
+            // NOTE: Only set the backup sync status if an extra block exists (otherwise is just peer syncing).
+            if( has_tag( c_bc_prefix + extra_identity + '.' + to_string( next_backup_height ) + c_blk_suffix ) )
+               sync_status = extra_status;
+         }
       }
    }
 
