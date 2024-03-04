@@ -485,9 +485,11 @@ void system_identity_progress_message( const string& identity )
    size_t base_height = from_string< size_t >(
     get_raw_session_variable( blockchain_height_procesing_name ) );
 
+   size_t zenith_height = from_string< size_t >(
+    get_raw_session_variable( blockchain_zenith_height_name ) );
+
    if( !base_height )
-      base_height = from_string< size_t >(
-       get_raw_session_variable( blockchain_zenith_height_name ) );
+      base_height = zenith_height;
 
    size_t other_height = from_string< size_t >(
     get_raw_session_variable( blockchain_height_other_name ) );
@@ -501,7 +503,7 @@ void system_identity_progress_message( const string& identity )
    bool is_changing = ( progress_message.find( c_ellipsis ) != string::npos );
 
    // FUTURE: This message should be handled as a server string message.
-   string prefix( "Currently at height " + to_string( base_height ) );
+   string prefix( "Currently at height " + to_string( zenith_height ) );
 
    if( is_changing )
    {
@@ -543,6 +545,9 @@ void system_identity_progress_message( const string& identity )
 
          paired_other_height = from_string< size_t >(
           get_raw_session_variable( blockchain_height_other_name, paired_session_id ) );
+
+         if( paired_is_changing )
+            ++paired_other_height;
 
          if( !is_changing && paired_is_changing )
          {
