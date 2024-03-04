@@ -476,11 +476,18 @@ void system_identity_progress_message( const string& identity )
    string blockchain_zenith_height_name(
     get_special_var_name( e_special_var_blockchain_zenith_height ) );
 
+   string blockchain_height_procesing_name(
+    get_special_var_name( e_special_var_blockchain_height_processing ) );
+
    string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
    string progress_message_name( get_special_var_name( e_special_var_progress_message ) );
 
    size_t base_height = from_string< size_t >(
-    get_raw_session_variable( blockchain_zenith_height_name ) );
+    get_raw_session_variable( blockchain_height_procesing_name ) );
+
+   if( !base_height )
+      base_height = from_string< size_t >(
+       get_raw_session_variable( blockchain_zenith_height_name ) );
 
    size_t other_height = from_string< size_t >(
     get_raw_session_variable( blockchain_height_other_name ) );
@@ -528,7 +535,11 @@ void system_identity_progress_message( const string& identity )
          paired_is_changing = ( paired_progress_message.find( c_ellipsis ) != string::npos );
 
          paired_base_height = from_string< size_t >(
-          get_raw_session_variable( blockchain_zenith_height_name, paired_session_id ) );
+          get_raw_session_variable( blockchain_height_procesing_name, paired_session_id ) );
+
+         if( !paired_base_height )
+            paired_base_height = from_string< size_t >(
+             get_raw_session_variable( blockchain_zenith_height_name, paired_session_id ) );
 
          paired_other_height = from_string< size_t >(
           get_raw_session_variable( blockchain_height_other_name, paired_session_id ) );
@@ -543,6 +554,18 @@ void system_identity_progress_message( const string& identity )
             {
                prefix = paired_progress_message.substr( 0, pos );
                percentage_value = paired_progress_message.substr( pos + strlen( c_percentage_separator ) );
+
+               pos = prefix.rfind( ' ' );
+
+               if( pos != string::npos )
+               {
+                  prefix.erase( pos + 1 );
+
+                  prefix += to_string( base_height );
+
+                  if( other_height > base_height )
+                     prefix += '/' + to_string( other_height );
+               }
             }
          }
       }
@@ -552,12 +575,12 @@ void system_identity_progress_message( const string& identity )
 
    if( has_paired_session )
    {
-      identity_progress_message += " (" + to_string( paired_base_height );
+      identity_progress_message += " (" + to_string( paired_other_height );
 
-      if( paired_other_height > paired_base_height )
+      if( paired_base_height > paired_other_height )
       {
          paired_is_changing = true;
-         identity_progress_message += '/' + to_string( paired_other_height );
+         identity_progress_message += '/' + to_string( paired_base_height );
       }
 
       identity_progress_message += ')';
