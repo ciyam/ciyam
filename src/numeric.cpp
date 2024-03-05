@@ -994,6 +994,7 @@ string format_numeric( const numeric& n, const string& mask,
    string currency_symbol( p_currency_symbol ? p_currency_symbol : c_currency_symbol );
 
    string basic_output( n.as_string( ) );
+
    if( basic_output.empty( ) )
       throw runtime_error( "unexpected empty output from numeric::as_string( )" );
 
@@ -1072,9 +1073,11 @@ string format_numeric( const numeric& n, const string& mask,
       throw runtime_error( "numeric value '" + n.as_string( ) + "' cannot be formatted with '" + mask + "'" );
 
    is_escape = false;
+
    bool in_decimals = false;
    bool has_output_whole = false;
    bool has_output_decimal = false;
+
    for( size_t i = 0; i < mask.size( ); i++ )
    {
       if( mask [ i ] == '\\' )
@@ -1112,10 +1115,11 @@ string format_numeric( const numeric& n, const string& mask,
             case c_mand:
             if( !in_decimals )
             {
-               if( !whole_digits.empty( ) && total_wholes_required <= whole_digits.size( ) )
+               if( !whole_digits.empty( ) && ( total_wholes_required <= whole_digits.size( ) ) )
                {
                   retval += whole_digits[ 0 ];
                   whole_digits.erase( 0, 1 );
+
                   --total_wholes_required;
                }
                else
@@ -1126,10 +1130,11 @@ string format_numeric( const numeric& n, const string& mask,
             }
             else
             {
-               if( !decimal_digits.empty( ) && total_decimals_required <= decimal_digits.size( ) )
+               if( !decimal_digits.empty( ) && ( total_decimals_required <= decimal_digits.size( ) ) )
                {
                   retval += decimal_digits[ 0 ];
                   decimal_digits.erase( 0, 1 );
+
                   --total_decimals_required;
                }
                else
@@ -1272,7 +1277,7 @@ string format_percentage( size_t& fracs, unsigned long& prior,
       }
 
       if( fracs )
-         mask += '.' + string( fracs, '0' );
+         mask += '.' + string( fracs, '#' );
    }
 
    if( suffix )
