@@ -10,7 +10,7 @@ session_variable @progress_value
 0.005%
 session_variable @progress_count 10
 session_variable @progress_value
-0.010%
+0.01%
 session_variable @progress_count 15
 session_variable @progress_value
 0.015%
@@ -19,7 +19,7 @@ session_variable @progress_value
 0.05%
 session_variable @progress_count 100
 session_variable @progress_value
-0.10%
+0.1%
 session_variable @progress_count 200
 session_variable @progress_value
 0.2%
@@ -37,25 +37,25 @@ session_variable @progress_value
 0.277%
 session_variable @progress_count 280
 session_variable @progress_value
-0.280%
+0.28%
 session_variable @progress_count 290
 session_variable @progress_value
 0.29%
 session_variable @progress_count 300
 session_variable @progress_value
-0.30%
+0.3%
 session_variable @progress_count 350
 session_variable @progress_value
 0.35%
 session_variable @progress_count 400
 session_variable @progress_value
-0.40%
+0.4%
 session_variable @progress_count 500
 session_variable @progress_value
 0.5%
 session_variable @progress_count 1000
 session_variable @progress_value
-1.0%
+1%
 session_variable @progress_count 2000
 session_variable @progress_value
 2%
@@ -70,7 +70,7 @@ session_variable @progress_value
 99%
 session_variable @progress_count 99010
 session_variable @progress_value
-99.0%
+99%
 session_variable @progress_count 99020
 session_variable @progress_value
 99.02%
@@ -82,7 +82,7 @@ session_variable @progress_value
 99.05%
 session_variable @progress_count 99100
 session_variable @progress_value
-99.10%
+99.1%
 session_variable @progress_count 99200
 session_variable @progress_value
 99.2%
