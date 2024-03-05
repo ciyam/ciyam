@@ -547,7 +547,11 @@ void system_identity_progress_message( const string& identity )
           get_raw_session_variable( blockchain_height_other_name, paired_session_id ) );
 
          if( paired_is_changing )
-            ++paired_other_height;
+         {
+            if( get_raw_session_variable( get_special_var_name(
+             e_special_var_blockchain_is_fetching ), paired_session_id ).empty( ) )
+               ++paired_other_height;
+         }
 
          if( !is_changing && paired_is_changing )
          {
