@@ -1616,7 +1616,7 @@ void process_put_file( const string& blockchain,
 
          uint64_t elapsed = seconds_between( *p_dtm, now );
 
-         if( elapsed >= 2 )
+         if( elapsed >= c_default_progress_seconds )
          {
             string progress( "." );
 
@@ -1882,7 +1882,7 @@ bool has_all_list_items(
 
             uint64_t elapsed = seconds_between( *p_dtm, now );
 
-            if( elapsed >= 2 )
+            if( elapsed >= c_default_progress_seconds )
             {
                string progress;
 
@@ -2255,7 +2255,7 @@ void process_list_items( const string& blockchain,
 
          uint64_t elapsed = seconds_between( *p_dtm, now );
 
-         if( elapsed >= 2 )
+         if( elapsed >= c_default_progress_seconds )
          {
             string progress;
 
@@ -3252,7 +3252,8 @@ class socket_command_handler : public command_handler
    {
       had_usage = false;
 
-      dtm_rcvd_not_found = dtm_sent_not_found = ( date_time::standard( ) - ( seconds )1.0 );
+      dtm_last_get = dtm_last_issued = dtm_rcvd_not_found
+       = dtm_sent_not_found = ( date_time::standard( ) - ( seconds )1.0 );
 
       is_responder = ( session_state == e_peer_state_responder );
 
@@ -3335,6 +3336,12 @@ class socket_command_handler : public command_handler
        + message + extra, c_request_timeout, p_progress ) <= 0 )
          throw runtime_error( "unexpected peer socket write failure" );
    }
+
+   const date_time& get_dtm_last_get( ) { return dtm_last_get; }
+   void set_dtm_last_get( const date_time& dtm ) { dtm_last_get = dtm; }
+
+   const date_time& get_dtm_last_issued( ) { return dtm_last_issued; }
+   void set_dtm_last_issued( const date_time& dtm ) { dtm_last_issued = dtm; }
 
    const string& get_last_command( ) { return last_command; }
    const string& get_next_command( ) { return next_command; }
@@ -3465,6 +3472,9 @@ class socket_command_handler : public command_handler
    string next_command;
 
    string prior_file_hash;
+
+   date_time dtm_last_get;
+   date_time dtm_last_issued;
 
    date_time dtm_rcvd_not_found;
    date_time dtm_sent_not_found;
@@ -3854,53 +3864,63 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    // FUTURE: Should use the hub session's X/Y height for identity progress.
    if( !is_for_support && !is_waiting_for_hub )
    {
-      size_t num_tree_item = get_blockchain_tree_item( blockchain );
+      date_time now( date_time::local( ) );
+      date_time dtm( get_dtm_last_issued( ) );
 
-      if( num_tree_item != last_num_tree_item )
+      uint64_t elapsed = seconds_between( dtm, now );
+
+      if( elapsed >= c_default_progress_seconds )
       {
-         last_num_tree_item = num_tree_item;
+         set_dtm_last_issued( now );
 
-         string num_tree_items( get_raw_session_variable(
-          get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
+         size_t num_tree_item = get_blockchain_tree_item( blockchain );
 
-         if( !num_tree_items.empty( ) )
+         if( num_tree_item != last_num_tree_item )
          {
-            size_t upper_limit = from_string< size_t >( num_tree_items );
+            last_num_tree_item = num_tree_item;
 
-            // NOTE: Ensure that the upper limit is not exceeded.
-            if( num_tree_item > upper_limit )
+            string num_tree_items( get_raw_session_variable(
+             get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
+
+            if( !num_tree_items.empty( ) )
             {
-               last_num_tree_item = num_tree_item = upper_limit;
-               add_to_blockchain_tree_item( blockchain, 0, upper_limit );
+               size_t upper_limit = from_string< size_t >( num_tree_items );
+
+               // NOTE: Ensure that the upper limit is not exceeded.
+               if( num_tree_item > upper_limit )
+               {
+                  last_num_tree_item = num_tree_item = upper_limit;
+                  add_to_blockchain_tree_item( blockchain, 0, upper_limit );
+               }
             }
+
+            // FUTURE: This message should be handled as a server string message.
+            string progress_message( "Syncing at height " + to_string( blockchain_height + 1 ) );
+
+            if( blockchain_height_other > ( blockchain_height + 1 ) )
+               progress_message += '/' + to_string( blockchain_height_other );
+
+            progress_message += c_percentage_separator;
+
+            string count( to_string( num_tree_item ) );
+
+            if( num_tree_items.empty( ) )
+               progress_message += count;
+            else
+            {
+               set_session_variable( progress_count_name, count );
+               set_session_variable( progress_total_name, num_tree_items );
+
+               progress_message += get_raw_session_variable( progress_value_name );
+            }
+
+            progress_message += to_string( c_ellipsis );
+
+            set_session_progress_message( progress_message );
          }
 
-         // FUTURE: This message should be handled as a server string message.
-         string progress_message( "Syncing at height " + to_string( blockchain_height + 1 ) );
-
-         if( blockchain_height_other > ( blockchain_height + 1 ) )
-            progress_message += '/' + to_string( blockchain_height_other );
-
-         progress_message += c_percentage_separator;
-
-         string count( to_string( num_tree_item ) );
-
-         if( num_tree_items.empty( ) )
-            progress_message += count;
-         else
-         {
-            set_session_variable( progress_count_name, count );
-            set_session_variable( progress_total_name, num_tree_items );
-
-            progress_message += get_raw_session_variable( progress_value_name );
-         }
-
-         progress_message += to_string( c_ellipsis );
-
-         set_session_progress_message( progress_message );
+         system_identity_progress_message( identity );
       }
-
-      system_identity_progress_message( identity );
    }
 
    string hub_identity( get_raw_session_variable(
@@ -5170,24 +5190,34 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                if( !tree_count.empty( ) && !tree_total.empty( ) )
                {
-                  string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
-                  string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
-                  string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
+                  date_time now( date_time::local( ) );
+                  date_time dtm( socket_handler.get_dtm_last_get( ) );
 
-                  // FUTURE: This message should be handled as a server string message.
-                  string progress_message( "Syncing for height " + to_string( blockchain_height_other + 1 ) );
+                  uint64_t elapsed = seconds_between( dtm, now );
 
-                  if( blockchain_height != ( blockchain_height_other + 1 ) )
-                     progress_message += '/' + to_string( blockchain_height );
+                  if( elapsed >= c_default_progress_seconds )
+                  {
+                     socket_handler.set_dtm_last_get( now );
 
-                  set_session_variable( progress_count_name, tree_count );
-                  set_session_variable( progress_total_name, tree_total );
+                     string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
+                     string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
+                     string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
 
-                  progress_message += c_percentage_separator + get_raw_session_variable( progress_value_name );
+                     // FUTURE: This message should be handled as a server string message.
+                     string progress_message( "Syncing for height " + to_string( blockchain_height_other + 1 ) );
 
-                  progress_message += to_string( c_ellipsis );
+                     if( blockchain_height != ( blockchain_height_other + 1 ) )
+                        progress_message += '/' + to_string( blockchain_height );
 
-                  set_session_progress_message( progress_message );
+                     set_session_variable( progress_count_name, tree_count );
+                     set_session_variable( progress_total_name, tree_total );
+
+                     progress_message += c_percentage_separator + get_raw_session_variable( progress_value_name );
+
+                     progress_message += to_string( c_ellipsis );
+
+                     set_session_progress_message( progress_message );
+                  }
                }
             }
 
