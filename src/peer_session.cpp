@@ -1158,7 +1158,7 @@ void process_repository_file( const string& blockchain,
     get_special_var_name( e_special_var_blockchain_archive_path ) ).empty( ) )
       has_archive = true;
 
-   string peer_map_key( get_peer_map_key( ) );
+   string peer_map_key( get_peer_map_key( !is_test_session ) );
 
    string file_data, file_content, file_data_hash, peer_mapped_hash;
 
@@ -1556,7 +1556,7 @@ void process_put_file( const string& blockchain,
    deque< string > repo_files_to_get;
    deque< string > non_repo_files_to_get;
 
-   string peer_map_key( get_peer_map_key( ) );
+   string peer_map_key( get_peer_map_key( !is_test_session ) );
 
    string num_tree_items( get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
