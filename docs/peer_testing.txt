@@ -1,0 +1,856 @@
+Peer Protocol Test Blockchain
+-----------------------------
+
+The following commands can be used to test a demonstration blockchain which uses modulus 5 for secondary keys
+and modulus 25 for tertiary keys (a standard blockchain instead uses 50 and 2500 for these). Other than using
+the different modulus values these commands test actual blockchain syncing with the peer protocol (unlike the
+interactive 'ciyam_client' testing with the "test peer port").
+
+Firstly make sure you are in the ciyam/src directory (in your development environment):
+
+cd ~/ciyam/src
+
+#-----------------------------------------------------------------------------------------------------------#
+# WARNING: DO NOT EXECUTE THE FOLLOWING IN A LIVE ENVIRONMENT OR YOU WILL LOSE ALL FILE DATA !!!            #
+#                                                                                                           #
+# Hex value "de604cee0755a3d81944ea96aed12681" is entropy for these mnmonics:                               #
+#                                                                                                           #
+# taxi act describe attitude focus ugly govern outer note isolate endless act                               #
+#                                                                                                           #
+# (which if entered via the UI would reesult in the identity value 6b24210e8)                               #
+#                                                                                                           #
+# NOTE: Copy and paste the following into your terminal session:                                            #
+#-----------------------------------------------------------------------------------------------------------#
+ rm -rf files/*
+
+ mkdir -p bc.e3733d121
+ rm -rf bc.e3733d121/*
+ mkdir -p bc.e3733d121/e3733d121
+
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
+ ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
+
+ sleep 2
+
+ ./ciyam_client -quiet 13031
+file_archive -add bc.e3733d121/e3733d121 10MB e3733d121
+peer_listen 12021 e3733d121
+;trace 14900
+quit
+
+#-----------------------------------------------------------------------------------------------------------#
+# NOTE: Copy and paste the following into your terminal session:                                            #
+#-----------------------------------------------------------------------------------------------------------#
+./ciyam_client
+<bc_gen.cin -backup de604cee0755a3d81944ea96aed12681
+USE_BACKUP_ARCHIVE=1
+CIYAM_STREAM_CIPHER=cc
+REPO_CRYPT_PASSWORD=@sid
+<<import_files.cin . Backup : test.jpg
+.session_variable @repo_crypt_password ""
+<tree_insert_trunks.cin ciyam Backup,.Backup
+<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 1
+<bc_gen_block.cin e3733d121 1
+<<import_files.cin . Backup : test?.jpg
+.session_variable @repo_crypt_password ""
+<tree_insert_trunks.cin ciyam Backup,.Backup
+<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 2
+<bc_gen_block.cin e3733d121 2
+<<import_files.cin . Backup : test*.jpg
+.session_variable @repo_crypt_password ""
+<tree_insert_trunks.cin ciyam Backup,.Backup
+<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 3
+<bc_gen_block.cin e3733d121 3
+.session_variable @repo_crypt_password ""
+<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 4
+<bc_gen_block.cin e3733d121 4
+<<import_files.cin . Backup : photo_?.jpg
+.session_variable @repo_crypt_password ""
+<tree_insert_trunks.cin ciyam Backup,.Backup
+<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 5
+<bc_gen_block.cin e3733d121 5
+peer_connect e3733d121 12021
+;trace 14900
+wait 150
+session_list
+wait 2000
+session_list
+;trace 10000
+session_kill 2
+quit
+
+#-----------------------------------------------------------------------------------------------------------#
+# NOTE: Copy and paste the following into your terminal session:                                            #
+#-----------------------------------------------------------------------------------------------------------#
+ ./ciyam_client -quiet
+file_tags
+file_stats
+file_info bc.e3733d121.zenith
+quit
+
+#-----------------------------------------------------------------------------------------------------------#
+# Output from the above should be as follows:                                                               #
+#-----------------------------------------------------------------------------------------------------------#
+
+> file_tags
+bc.e3733d121.0.blk
+bc.e3733d121.0.pub
+bc.e3733d121.0.sig
+bc.e3733d121.1.blk
+bc.e3733d121.1.pub
+bc.e3733d121.1.sig
+bc.e3733d121.2.blk
+bc.e3733d121.2.pub
+bc.e3733d121.2.sig
+bc.e3733d121.24.key
+bc.e3733d121.24.pub
+bc.e3733d121.3.blk
+bc.e3733d121.3.pub
+bc.e3733d121.3.sig
+bc.e3733d121.4.blk
+bc.e3733d121.4.pub
+bc.e3733d121.4.sig
+bc.e3733d121.5.blk
+bc.e3733d121.5.key
+bc.e3733d121.5.pub
+bc.e3733d121.9.key
+bc.e3733d121.9.pub
+bc.e3733d121.zenith
+ciyam
+
+> file_stats
+[59/100000]431.7 kB/100.0 GB:60 tag(s)
+
+> file_info bc.e3733d121.zenith
+[core-blob] 2f81b61b72185ec053c8f5bfaa65c78ba2ac49f3cf28583701ab25c3f5870c7c (285 B) blk
+
+> quit
+
+#-----------------------------------------------------------------------------------------------------------#
+# NOTE: Copy and paste the following into your terminal session:                                            #
+#-----------------------------------------------------------------------------------------------------------#
+ ./ciyam_client -quiet 13031
+file_tags
+file_stats
+file_archives
+file_info bc.e3733d121.zenith
+quit
+
+#-----------------------------------------------------------------------------------------------------------#
+# Output from the above should be as follows:                                                               #
+#-----------------------------------------------------------------------------------------------------------#
+
+> file_tags
+bc.e3733d121.0.blk
+bc.e3733d121.0.pub
+bc.e3733d121.0.sig
+bc.e3733d121.1.blk
+bc.e3733d121.1.pub
+bc.e3733d121.1.sig
+bc.e3733d121.2.blk
+bc.e3733d121.2.pub
+bc.e3733d121.2.sig
+bc.e3733d121.24.pub
+bc.e3733d121.3.blk
+bc.e3733d121.3.pub
+bc.e3733d121.3.sig
+bc.e3733d121.4.blk
+bc.e3733d121.4.pub
+bc.e3733d121.4.sig
+bc.e3733d121.5.blk
+bc.e3733d121.5.pub
+bc.e3733d121.5.put
+bc.e3733d121.9.pub
+bc.e3733d121.zenith
+
+> file_stats
+[23/100000]185.2 kB/100.0 GB:24 tag(s)
+
+> file_archives
+e3733d121 [okay      ] (196.0 kB/10.0 MB) bc.e3733d121/e3733d121
+
+> file_info bc.e3733d121.zenith
+[core-blob] 2f81b61b72185ec053c8f5bfaa65c78ba2ac49f3cf28583701ab25c3f5870c7c (285 B) blk
+
+#-----------------------------------------------------------------------------------------------------------#
+# Now shut down both server instances using 'fg' and 'ctrl-c'                                               #
+#-----------------------------------------------------------------------------------------------------------#
+
+> fg
+./ciyam_server -quiet -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers
+^C
+
+> fg
+./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031
+^C
+
+#-----------------------------------------------------------------------------------------------------------#
+# NOTE: Copy and paste the following into your terminal session:                                            #
+#-----------------------------------------------------------------------------------------------------------#
+ ./ods_fsed -quiet bc.e3733d121/ciyam_server
+cd repo
+PREFIX=e3733d121
+MASTER=10pMiK2PP8MpXaiWf_pFKsJmnTy_be5zj62xgN39N1E
+SUFFIX=HDuQ5NqwLlT7OHI8KS-iR-H5PnAtj07YONpLMxFhEsI
+file_get $PREFIX.$MASTER.$SUFFIX -c
+exit
+
+#-----------------------------------------------------------------------------------------------------------#
+# Output from the above should be as follows:                                                               #
+#-----------------------------------------------------------------------------------------------------------#
+
+/> cd repo
+
+/repo> PREFIX=e3733d121
+
+/repo> MASTER=10pMiK2PP8MpXaiWf_pFKsJmnTy_be5zj62xgN39N1E
+
+/repo> SUFFIX=HDuQ5NqwLlT7OHI8KS-iR-H5PnAtj07YONpLMxFhEsI
+
+/repo> file_get $PREFIX.$MASTER.$SUFFIX -c
+<sio/>
+ <local_hash>1c3b90e4dab02e54fb38723c292fa247e1f93e702d8f4ed838da4b33116112c2
+ <local_public_key>02feb2ff866c973e514e1f14a774009efb75131391e11469f0fe66748d5160e6c9
+ <master_public_key>0299d1960823c605f7c41193d9194b7095ae9055d1a2d07376466a1c35edd0f81f
+</sio>
+/repo> exit
+
+#-----------------------------------------------------------------------------------------------------------#
+# NOTE: Copy and paste the following into your terminal session:                                            #
+#-----------------------------------------------------------------------------------------------------------#
+ rm -r files/*
+
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
+ ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
+
+ sleep 2
+
+ ./ciyam_client -quiet 13031
+peer_listen 12021 e3733d121
+;trace 14900
+quit
+
+./ciyam_client
+~mkdir files/e3733d121
+file_archive -add files/e3733d121 10MB e3733d121
+;trace 14900
+peer_connect e3733d121 12021
+wait 150
+session_list
+wait 2000
+;trace 10000
+session_list
+session_kill 2
+quit
+
+#-----------------------------------------------------------------------------------------------------------#
+# The above will have cloned the blockchain and repository entries.                                         #
+# NOTE: Copy and paste the following into your terminal session:                                            #
+#-----------------------------------------------------------------------------------------------------------#
+ ./ciyam_client -quiet
+file_tags
+file_stats
+file_archives
+file_info bc.e3733d121.zenith
+quit
+
+#-----------------------------------------------------------------------------------------------------------#
+# Output from the above should be as follows:                                                               #
+#-----------------------------------------------------------------------------------------------------------#
+
+> file_tags
+bc.e3733d121.0.blk
+bc.e3733d121.0.pub
+bc.e3733d121.0.sig
+bc.e3733d121.1.blk
+bc.e3733d121.1.pub
+bc.e3733d121.1.sig
+bc.e3733d121.2.blk
+bc.e3733d121.2.pub
+bc.e3733d121.2.sig
+bc.e3733d121.24.pub
+bc.e3733d121.3.blk
+bc.e3733d121.3.pub
+bc.e3733d121.3.sig
+bc.e3733d121.4.blk
+bc.e3733d121.4.pub
+bc.e3733d121.4.sig
+bc.e3733d121.5.blk
+bc.e3733d121.5.pub
+bc.e3733d121.5.put
+bc.e3733d121.9.pub
+bc.e3733d121.zenith
+
+> file_stats
+[23/100000]185.2 kB/100.0 GB:24 tag(s)
+
+> file_archives
+e3733d121 [okay      ] (196.0 kB/10.0 MB) files/e3733d121
+
+> file_info bc.e3733d121.zenith
+[core-blob] 2f81b61b72185ec053c8f5bfaa65c78ba2ac49f3cf28583701ab25c3f5870c7c (285 B) blk
+
+#-----------------------------------------------------------------------------------------------------------#
+# Now shut down the '-files=bc.e3733d121' server instance using 'fg' and 'ctrl-c'                           #
+#-----------------------------------------------------------------------------------------------------------#
+
+> fg 1
+./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031
+^C
+
+#-----------------------------------------------------------------------------------------------------------#
+# NOTE: Copy and paste the following into your terminal session:                                            #
+#-----------------------------------------------------------------------------------------------------------#
+ rm -rf bc.e3733d121/*
+ mkdir -p bc.e3733d121/e3733d121
+
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
+
+sleep 2
+
+ ./ciyam_client -quiet 13031
+file_archive -add bc.e3733d121/e3733d121 10MB e3733d121
+peer_listen 12021 e3733d121
+;trace 14900
+quit
+
+./ciyam_client
+;trace 14900
+peer_connect e3733d121 12021
+wait 150
+session_list
+wait 2000
+;trace 10000
+session_list
+session_kill 5
+quit
+
+#-----------------------------------------------------------------------------------------------------------#
+# The above will have cloned the blockchain and repository entries.                                         #
+# NOTE: Copy and paste the following into your terminal session:                                            #
+#-----------------------------------------------------------------------------------------------------------#
+ ./ciyam_client -quiet 13031
+file_tags
+file_stats
+file_archives
+file_info bc.e3733d121.zenith
+quit
+
+#-----------------------------------------------------------------------------------------------------------#
+# Output from the above should be as follows:                                                               #
+#-----------------------------------------------------------------------------------------------------------#
+
+> file_tags
+bc.e3733d121.0.blk
+bc.e3733d121.0.pub
+bc.e3733d121.0.sig
+bc.e3733d121.1.blk
+bc.e3733d121.1.pub
+bc.e3733d121.1.sig
+bc.e3733d121.2.blk
+bc.e3733d121.2.pub
+bc.e3733d121.2.sig
+bc.e3733d121.24.pub
+bc.e3733d121.3.blk
+bc.e3733d121.3.pub
+bc.e3733d121.3.sig
+bc.e3733d121.4.blk
+bc.e3733d121.4.pub
+bc.e3733d121.4.sig
+bc.e3733d121.5.blk
+bc.e3733d121.5.pub
+bc.e3733d121.5.put
+bc.e3733d121.9.pub
+bc.e3733d121.zenith
+
+> file_stats
+[23/100000]185.2 kB/100.0 GB:24 tag(s)
+
+> file_archives
+e3733d121 [okay      ] (196.0 kB/10.0 MB) bc.e3733d121/e3733d121
+
+> file_info bc.e3733d121.zenith
+[core-blob] 2f81b61b72185ec053c8f5bfaa65c78ba2ac49f3cf28583701ab25c3f5870c7c (285 B) blk
+
+> quit
+
+#-----------------------------------------------------------------------------------------------------------#
+# Now shut down the '-no_peers' server instance using 'fg' and 'ctrl-c'                                     #
+#-----------------------------------------------------------------------------------------------------------#
+
+> fg 2
+./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers
+^C
+
+#-----------------------------------------------------------------------------------------------------------#
+# NOTE: Copy and paste the following into your terminal session:                                            #
+#-----------------------------------------------------------------------------------------------------------#
+rm -r files/*
+
+ ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
+
+sleep 2
+
+./ciyam_client
+<bc_gen.cin -backup de604cee0755a3d81944ea96aed12681
+;trace 14900
+peer_connect e3733d121 12021
+wait 150
+session_list
+wait 2000
+;trace 10000
+session_list
+session_kill 2
+file_tags
+file_stats
+file_archives
+quit
+
+#-----------------------------------------------------------------------------------------------------------#
+# Output from the above should be as follows:                                                               #
+#-----------------------------------------------------------------------------------------------------------#
+
+> file_tags
+bc.e3733d121.0.blk
+bc.e3733d121.0.pub
+bc.e3733d121.0.sig
+bc.e3733d121.1.blk
+bc.e3733d121.1.pub
+bc.e3733d121.1.sig
+bc.e3733d121.2.blk
+bc.e3733d121.2.pub
+bc.e3733d121.2.sig
+bc.e3733d121.24.key
+bc.e3733d121.24.pub
+bc.e3733d121.3.blk
+bc.e3733d121.3.pub
+bc.e3733d121.3.sig
+bc.e3733d121.4.blk
+bc.e3733d121.4.key
+bc.e3733d121.4.pub
+bc.e3733d121.4.sig
+bc.e3733d121.5.blk
+bc.e3733d121.5.pub
+bc.e3733d121.9.pub
+bc.e3733d121.zenith
+
+> file_stats
+[58/100000]414.2 kB/100.0 GB:59 tag(s)
+
+> quit
+
+#-----------------------------------------------------------------------------------------------------------#
+# The above will have restored the blockchain and repository entries.                                       #
+# NOTE: Copy and paste the following into your terminal session:                                            #
+#-----------------------------------------------------------------------------------------------------------#
+ mkdir -p tmp
+ BLOCK_TREE_HASH=`./block_tree_hash @blockchain_backup_identity`
+ export USE_BACKUP_ARCHIVE=1
+ BACKUP_LIST_HASH=`./tree_list $BLOCK_TREE_HASH 0 Backup | tail -n 1`
+ export CIYAM_STREAM_CIPHER=cc
+ export REPO_CRYPT_PASSWORD=@sid
+ ./export_files $BACKUP_LIST_HASH tmp
+ export REPO_CRYPT_PASSWORD=
+ export CIYAM_STREAM_CIPHER=
+ export USE_BACKUP_ARCHIVE=
+
+# Check files match the originals:
+ diff photo_1.jpg tmp
+ diff photo_2.jpg tmp
+ diff photo_3.jpg tmp
+ diff photo_4.jpg tmp
+ diff photo_5.jpg tmp
+
+# Assuming there are no differences then:
+ rm tmp/photo_1.jpg
+ rm tmp/photo_2.jpg
+ rm tmp/photo_3.jpg
+ rm tmp/photo_4.jpg
+ rm tmp/photo_5.jpg
+
+#-----------------------------------------------------------------------------------------------------------#
+# Now shut down both server instances using 'fg' and 'ctrl-c'                                               #
+#-----------------------------------------------------------------------------------------------------------#
+
+> fg
+./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers
+^C
+
+> fg
+./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031
+^C
+
+#-----------------------------------------------------------------------------------------------------------#
+# NOTE: Copy and paste the following into your terminal session:                                            #
+#-----------------------------------------------------------------------------------------------------------#
+ rm -r files/*
+ rm -rf bc.e3733d121/*
+ rmdir bc.e3733d121
+
+#-----------------------------------------------------------------------------------------------------------#
+# Structure of files at block height 0                                                                      #
+#-----------------------------------------------------------------------------------------------------------#
+
+d2badbf38ed24905554b5472c25dbbdc9934ad50a710cf4aa87c4bd931ed920a (bc.e3733d121.0.blk core)
+bc139fc153633fce90d137a25e37ed6dff91d7c3acb75191658ea7a82039369a (bc.e3733d121.0.pub blob)
+77a765a4ea2e6d5dbd387cd79d93d5b252e5976a3ab470b8db615522d7c92cc1 (bc.e3733d121.4.pub blob)
+3b74abb125c5f4c98519c7094d9db1be3d34654c27e760ece2b4166535a3c671 (bc.e3733d121.24.pub blob)
+
+#-----------------------------------------------------------------------------------------------------------#
+# Structure of files at block height 1                                                                      #
+#-----------------------------------------------------------------------------------------------------------#
+
+a107a7a62761c7f57fb998effaaa3a2e1b55e5fcfd18c648bdc7f3b7df32ff82 (bc.e3733d121.0.sig blob)
+acdebc6ac1c98725c7dcf14507b0d160259053882a4d6b1fc846ab5f8f7b8f9f (bc.e3733d121.1.blk core)
+f577c6d0c78e38fcc68617e818f04568bfb3a2f5f67da11efc65bd23720778bf (bc.e3733d121.1.pub blob)
+70d152b28f76a00a16ffafe0f2e41f86c4084ac85fa4eb726327516774d0d996 (ciyam tree list)
+ d4fac6bf2b1e54dfe01212b709689644322fd34ab4ec743ce9e0b4cfa06df7bd (.Backup child list)
+  76e50733e886c3e47e30ec186928b12eaa92d5a65bf81f7eb8987f02967a5816 (test.jpg child list)
+   461dfaf06633937761a59f89070cf168c674d569307208376e82b039dcf56c26 (test.jpg.000000 blob)
+ 6cb0ac099d81233065c3a2db8a54b163b400f75ff7f25f1df333aa712fe0189b (Backup child list)
+  4b120ec33c696866210f0b23d0910e616ddb60166903e67ff2223a4433faedbb (test.jpg child list)
+   461dfaf06633937761a59f89070cf168c674d569307208376e82b039dcf56c26 (test.jpg.000000 blob)
+
+[Repository Entries]
+461dfaf06633937761a59f89070cf168c674d569307208376e82b039dcf56c26 (test.jpg.000000 blob)
+
+#-----------------------------------------------------------------------------------------------------------#
+# Structure of files at block height 2                                                                      #
+#-----------------------------------------------------------------------------------------------------------#
+
+71c46106078bf0637957835ff2c3299f29e508ef43d87239c03eee60f24c3e5a (bc.e3733d121.1.sig blob)
+7b4fcadc15ab4db06d845fddada342ab334859e0e29cd1a1f43fa55304b09805 (bc.e3733d121.2.blk core)
+86197bc0b4a3459f3827552895cc032a0c98be93a5f57cf0cd4cf72c3420a4d6 (bc.e3733d121.2.pub blob)
+05706af94bff17b9647c1f8fb5b8f90f53191e23b735559cffe30722f3fb028a (ciyam tree list)
+ 3d407ad47050f117f30cc3ef97c94c62c5ab9dc32d7e065c78c956419e2efcae (.Backup child list)
+  f13335f9100b800572b2bdb44b8d4a002d0d3c34c815542a4c4d598b67b286d8 (test1.jpg child list)
+   c49ae21026bd2f0252e86eafdc99b680a7ec41165759bacfce678f1de09aa29b (test1.jpg.000000 blob)
+  059da11616903c336129b056209cdcee2b714f28f51d27057c2fc6e6f8704fa6 (test2.jpg child list)
+   b8c1e3681db5efe3bf14f085301842622fa49c32a9195d93e22d747d8a28fa4d (test2.jpg.000000 blob)
+ 48c7c9138bdb61ec54e33ec629ef3886636cfa99ba5cf23a39fb43fe95bd2e9e (Backup child list)
+  2b844e79a1e957872f62e50a7a8c7bb239ecd943cc4465918693c1a2aea9a719 (test1.jpg child list)
+   c49ae21026bd2f0252e86eafdc99b680a7ec41165759bacfce678f1de09aa29b (test2.jpg.000000 blob)
+  a17d3f1ec2c54ce84d243211d0d0e8de72136c2cf7c662cf4341d7ac06c48525 (test2.jpg child list)
+   b8c1e3681db5efe3bf14f085301842622fa49c32a9195d93e22d747d8a28fa4d (test2.jpg.000000 blob)
+
+[Repository Entries]
+b8c1e3681db5efe3bf14f085301842622fa49c32a9195d93e22d747d8a28fa4d (test2.jpg.000000 blob)
+c49ae21026bd2f0252e86eafdc99b680a7ec41165759bacfce678f1de09aa29b (test1.jpg.000000 blob)
+
+#-----------------------------------------------------------------------------------------------------------#
+# Structure of files at block height 3                                                                      #
+#-----------------------------------------------------------------------------------------------------------#
+
+e261ea4fc10002368e9f5f8e5ec634128fb019b5418178f970824c426ba72cf7 (bc.e3733d121.2.sig blob)
+21625705107d1efbaaf54523307b6eb9ca1630a872b4fc539f024ade1d417cf0 (bc.e3733d121.3.blk core)
+54152cb3f309ae149569516ca47fc415e80dbae869df1c3c2e1db5c986f3c5f0 (bc.e3733d121.3.pub blob)
+9ecaf8f3589f0627bbdf8bfe6ec4c194412f78a374c02945d90efba813b25f9b (ciyam tree list)
+ 56fc76254c1bdb9c671e7586a0f3c666edb2cbe83eb313bc722dd80337a28b04 (.Backup child list)
+  76e50733e886c3e47e30ec186928b12eaa92d5a65bf81f7eb8987f02967a5816 (test.jpg child list)
+   461dfaf06633937761a59f89070cf168c674d569307208376e82b039dcf56c26 (test.jpg.000000 blob)
+  f13335f9100b800572b2bdb44b8d4a002d0d3c34c815542a4c4d598b67b286d8 (test1.jpg child list)
+   c49ae21026bd2f0252e86eafdc99b680a7ec41165759bacfce678f1de09aa29b (test1.jpg.000000 blob)
+  059da11616903c336129b056209cdcee2b714f28f51d27057c2fc6e6f8704fa6 (test2.jpg child list)
+   b8c1e3681db5efe3bf14f085301842622fa49c32a9195d93e22d747d8a28fa4d (test2.jpg.000000 blob)
+ f3bf7dd03641361a924f39644ccc7dbfa9624a75660044699ef8d35d1dc1692b (Backup child list)
+  4b120ec33c696866210f0b23d0910e616ddb60166903e67ff2223a4433faedbb (test.jpg child list)
+   461dfaf06633937761a59f89070cf168c674d569307208376e82b039dcf56c26 (test.jpg.000000 blob)
+  2b844e79a1e957872f62e50a7a8c7bb239ecd943cc4465918693c1a2aea9a719 (test1.jpg child list)
+   c49ae21026bd2f0252e86eafdc99b680a7ec41165759bacfce678f1de09aa29b (test1.jpg.000000 blob)
+  a17d3f1ec2c54ce84d243211d0d0e8de72136c2cf7c662cf4341d7ac06c48525 (test2.jpg child list)
+   b8c1e3681db5efe3bf14f085301842622fa49c32a9195d93e22d747d8a28fa4d (test2.jpg.000000 blob)
+
+[Repository Entries]
+461dfaf06633937761a59f89070cf168c674d569307208376e82b039dcf56c26 (test.jpg.000000 blob)
+b8c1e3681db5efe3bf14f085301842622fa49c32a9195d93e22d747d8a28fa4d (test2.jpg.000000 blob)
+c49ae21026bd2f0252e86eafdc99b680a7ec41165759bacfce678f1de09aa29b (test1.jpg.000000 blob)
+
+#-----------------------------------------------------------------------------------------------------------#
+# Structure of files at block height 4                                                                      #
+#-----------------------------------------------------------------------------------------------------------#
+
+22f56d274333e5fdfbfdb21b0349584ffc7e377faccef2cf65fa993f70e64e77 (bc.e3733d121.3.sig blob)
+35c52e2e7e0efe52fee85e9aad367f453684ef939677c9d8d9cf4821aeabb23d (bc.e3733d121.4.blk core)
+77a765a4ea2e6d5dbd387cd79d93d5b252e5976a3ab470b8db615522d7c92cc1 (bc.e3733d121.4.pub blob)
+9ecaf8f3589f0627bbdf8bfe6ec4c194412f78a374c02945d90efba813b25f9b (ciyam tree list)
+ 56fc76254c1bdb9c671e7586a0f3c666edb2cbe83eb313bc722dd80337a28b04 (.Backup child list)
+  76e50733e886c3e47e30ec186928b12eaa92d5a65bf81f7eb8987f02967a5816 (test.jpg child list)
+   461dfaf06633937761a59f89070cf168c674d569307208376e82b039dcf56c26 (test.jpg.000000 blob)
+  f13335f9100b800572b2bdb44b8d4a002d0d3c34c815542a4c4d598b67b286d8 (test1.jpg child list)
+   c49ae21026bd2f0252e86eafdc99b680a7ec41165759bacfce678f1de09aa29b (test1.jpg.000000 blob)
+  059da11616903c336129b056209cdcee2b714f28f51d27057c2fc6e6f8704fa6 (test2.jpg child list)
+   b8c1e3681db5efe3bf14f085301842622fa49c32a9195d93e22d747d8a28fa4d (test2.jpg.000000 blob)
+ f3bf7dd03641361a924f39644ccc7dbfa9624a75660044699ef8d35d1dc1692b (Backup child list)
+  4b120ec33c696866210f0b23d0910e616ddb60166903e67ff2223a4433faedbb (test.jpg child list)
+   461dfaf06633937761a59f89070cf168c674d569307208376e82b039dcf56c26 (test.jpg.000000 blob)
+  2b844e79a1e957872f62e50a7a8c7bb239ecd943cc4465918693c1a2aea9a719 (test1.jpg child list)
+   c49ae21026bd2f0252e86eafdc99b680a7ec41165759bacfce678f1de09aa29b (test1.jpg.000000 blob)
+  a17d3f1ec2c54ce84d243211d0d0e8de72136c2cf7c662cf4341d7ac06c48525 (test2.jpg child list)
+   b8c1e3681db5efe3bf14f085301842622fa49c32a9195d93e22d747d8a28fa4d (test2.jpg.000000 blob)
+
+[Repository Entries]
+461dfaf06633937761a59f89070cf168c674d569307208376e82b039dcf56c26 (test.jpg.000000 blob)
+b8c1e3681db5efe3bf14f085301842622fa49c32a9195d93e22d747d8a28fa4d (test2.jpg.000000 blob)
+c49ae21026bd2f0252e86eafdc99b680a7ec41165759bacfce678f1de09aa29b (test1.jpg.000000 blob)
+
+#-----------------------------------------------------------------------------------------------------------#
+# Structure of files at block height 5                                                                      #
+#-----------------------------------------------------------------------------------------------------------#
+
+7df627b724e1c0b8d266bd05076af0449a89d810cb7864fe87c78f2b760bb209 (bc.e3733d121.4.sig blob)
+2f81b61b72185ec053c8f5bfaa65c78ba2ac49f3cf28583701ab25c3f5870c7c (bc.e3733d121.5.blk core)
+f5026d2d08e8a69dd0a5cf4ba2e7b94563662828e6f3693efea1d6021fb3f4fb (bc.e3733d121.5.pub blob)
+140e31dfbda0051964cdfed4ca6afadf31b2cffbec28f6a8a081744a1783f9ed (bc.e3733d121.9.pub blob)
+4bdb8127843f821bacbba8eeaaa5308614d325d1eeddce2c1821b73d00eb62b7 (ciyam tree list)
+ cc4751a8a6108822e92112f3d1f46a6633cff2154d80f7b3daa80f567b1516fc (.Backup child list)
+  9f5d5606873a20f848d68dcf3bbea8f4080c4f4191734af8533f076de6dfa8ef (photo_1.jpg child list)
+   4eff9c3beb14094b169dd3bfc4ae87628e848fdc7b4a5adbdaba8910262367c8 (photo_1.jpg.000000 blob)
+  ae45c3490491b730437fb06ae5b5e869b19d91a3c9c440eec937bf1ab63cdb62 (photo_2.jpg child list)
+   0046c3f2143182e7291d5acd158c2f515da693f36e4c5dac770ec20c29d3449d (photo_2.jpg.000000 blob)
+  a82f2d79f267681b688f4b9eacb4a1f7e3f7d97a1884e4c9947711a348d10076 (photo_3.jpg child list)
+   7d80eb5befbf84605297599fd2ac9e437c9d1b1b611d10c2a85e88d3d9b22f34 (photo_3.jgp.000000 blob)
+  23cd5075c2099de3504ad0d930d5c876cf25a01d788bd4aadc117055f874874c (photo_4.jpg child list)
+   581d7056638b67e8feb7d4e3aa57085d85cb39e8f5792c58f2b768bfcb24e442 (photo_4.jpg.000000 blob)
+  70d8a2e27b457e661bead0a0a9e148c22791fb699dab0820d5c01a23c56ccb16 (photo_5.jpg child list)
+   d74a4c88ad8f3fc3295da8967ffa452ac2669d3cbf6dee738fadb180ddfd3751 (photo_5.jpg.000000 blob)
+ d31a625c823f0e5310b0d63db10a091cb34c9b0ba5dfa91d398d21330063abb8 (Backup child list)
+  8c3b495f809d0020062e06c6c6bf0b08054b60f1afadf8f39e678625637e6116 (photo_1.jpg child list)
+   4eff9c3beb14094b169dd3bfc4ae87628e848fdc7b4a5adbdaba8910262367c8 (photo_1.jpg.000000 blob)
+  fae7b4a6f5f3f175f2da7197d54e211133ebd8366b86610df6e6cb4fac3eab0c (photo_2.jpg child list)
+   0046c3f2143182e7291d5acd158c2f515da693f36e4c5dac770ec20c29d3449d (photo_2.jpg.000000 blob)
+  0936d25548cc147fa3e0be451b73788b1f350c9518f137e2cecacca99c7a126d (photo_3.jpg child list)
+   7d80eb5befbf84605297599fd2ac9e437c9d1b1b611d10c2a85e88d3d9b22f34 (photo_3.jgp.000000 blob)
+  cd9065eac1e2ca5ab2b4044cc18e774095a4582363893817c10b0f1976544ac5 (photo_4.jpg child list)
+   581d7056638b67e8feb7d4e3aa57085d85cb39e8f5792c58f2b768bfcb24e442 (photo_4.jpg.000000 blob)
+  8d1f44f2728ed62df05b1a9c1b68b5d20fb978180ac5623f91755b83247c795a (photo_5.jpg child list)
+   d74a4c88ad8f3fc3295da8967ffa452ac2669d3cbf6dee738fadb180ddfd3751 (photo_5.jpg.000000 blob)
+
+[Repository Entries]
+0046c3f2143182e7291d5acd158c2f515da693f36e4c5dac770ec20c29d3449d (photo_2.jpg.000000 blob)
+4eff9c3beb14094b169dd3bfc4ae87628e848fdc7b4a5adbdaba8910262367c8 (photo_1.jpg.000000 blob)
+581d7056638b67e8feb7d4e3aa57085d85cb39e8f5792c58f2b768bfcb24e442 (photo_4.jpg.000000 blob)
+7d80eb5befbf84605297599fd2ac9e437c9d1b1b611d10c2a85e88d3d9b22f34 (photo_3.jgp.000000 blob)
+d74a4c88ad8f3fc3295da8967ffa452ac2669d3cbf6dee738fadb180ddfd3751 (photo_5.jpg.000000 blob)
+
+#-----------------------------------------------------------------------------------------------------------#
+# Assuming normal files area is owner and at height 5 use this to test incomplete backup recovery           #
+#-----------------------------------------------------------------------------------------------------------#
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
+ sleep 1
+
+ ./ciyam_client -quiet 13031
+file_info -content bc.e3733d121.zenith
+;
+;file_kill bc.e3733d121.4.sig
+;
+file_kill bc.e3733d121.5.blk
+;
+file_kill bc.e3733d121.5.pub
+;
+file_kill bc.e3733d121.9.pub
+;
+; ciyam tree hash
+~rm bc.e3733d121/e3733d121/4bdb8127843f821bacbba8eeaaa5308614d325d1eeddce2c1821b73d00eb62b7
+file_archive -repair e3733d121
+;
+storage_init Meta
+pf Meta Global_Repository_Entry "" Local_Hash
+;
+@ifdef $OUTPUT
+; photo_1.jpg.000000 blob
+file_repo_entry -remove e3733d121 4eff9c3beb14094b169dd3bfc4ae87628e848fdc7b4a5adbdaba8910262367c8
+;
+; photo_2.jpg.000000 blob
+file_repo_entry -remove e3733d121 0046c3f2143182e7291d5acd158c2f515da693f36e4c5dac770ec20c29d3449d
+;
+; photo_3.jpg.000000 blob
+file_repo_entry -remove e3733d121 7d80eb5befbf84605297599fd2ac9e437c9d1b1b611d10c2a85e88d3d9b22f34
+;
+; photo_4.jpg.000000 blob
+file_repo_entry -remove e3733d121 581d7056638b67e8feb7d4e3aa57085d85cb39e8f5792c58f2b768bfcb24e442
+;
+; photo_5.jpg.000000 blob
+file_repo_entry -remove e3733d121 d74a4c88ad8f3fc3295da8967ffa452ac2669d3cbf6dee738fadb180ddfd3751
+@endif
+;
+pf Meta Global_Repository_Entry "" Local_Hash
+storage_term
+;
+; Reset zenith to height 4 (to simulate losing connection before height 5 was completed).
+.file_hash bc.e3733d121.4.blk
+file_tag $OUTPUT bc.e3733d121.zenith
+;
+peer_listen 12021 e3733d121
+;trace 14900
+quit
+
+ ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
+ sleep 1
+
+./ciyam_client
+;trace 14900
+peer_connect e3733d121 12021
+wait 150
+session_list
+wait 1500
+;trace 10000
+session_list
+session_kill 2
+quit
+
+vi files/ciyam_server.log
+
+vi bc.e3733d121/ciyam_server.log
+
+#-----------------------------------------------------------------------------------------------------------#
+# Assuming special files area is backup and at height 5 use this to test incomplete clone recovery          #
+#-----------------------------------------------------------------------------------------------------------#
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
+ sleep 1
+
+ ./ciyam_client 13031
+peer_listen 12021 e3733d121
+;trace 14900
+quit
+
+ ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
+ sleep 1
+
+./ciyam_client
+file_info -content bc.e3733d121.zenith
+;
+;file_kill bc.e3733d121.4.sig
+;
+file_kill bc.e3733d121.5.blk
+;
+file_kill bc.e3733d121.5.pub
+;
+file_kill bc.e3733d121.9.pub
+;
+; ciyam tree hash
+file_kill 4bdb8127843f821bacbba8eeaaa5308614d325d1eeddce2c1821b73d00eb62b7
+;
+storage_init Meta
+pf Meta Global_Repository_Entry "" Local_Hash
+;
+@ifdef $OUTPUT
+; photo_1.jpg.000000 blob
+file_repo_entry -remove e3733d121 4eff9c3beb14094b169dd3bfc4ae87628e848fdc7b4a5adbdaba8910262367c8
+;
+; photo_2.jpg.000000 blob
+file_repo_entry -remove e3733d121 0046c3f2143182e7291d5acd158c2f515da693f36e4c5dac770ec20c29d3449d
+;
+; photo_3.jpg.000000 blob
+file_repo_entry -remove e3733d121 7d80eb5befbf84605297599fd2ac9e437c9d1b1b611d10c2a85e88d3d9b22f34
+;
+; photo_4.jpg.000000 blob
+file_repo_entry -remove e3733d121 581d7056638b67e8feb7d4e3aa57085d85cb39e8f5792c58f2b768bfcb24e442
+;
+; photo_5.jpg.000000 blob
+file_repo_entry -remove e3733d121 d74a4c88ad8f3fc3295da8967ffa452ac2669d3cbf6dee738fadb180ddfd3751
+@endif
+;
+pf Meta Global_Repository_Entry "" Local_Hash
+storage_term
+;
+; Reset zenith to height 4 (to simulate losing connection before height 5 was completed).
+.file_hash bc.e3733d121.4.blk
+file_tag $OUTPUT bc.e3733d121.zenith
+;
+;trace 14900
+peer_connect e3733d121 12021
+wait 150
+session_list
+wait 1500
+;trace 10000
+session_list
+session_kill 2
+quit
+
+vi files/ciyam_server.log
+
+vi bc.e3733d121/ciyam_server.log
+
+#-----------------------------------------------------------------------------------------------------------#
+# Assuming special files area is backup and at height 5 use this to test incomplete restore recovery        #
+#-----------------------------------------------------------------------------------------------------------#
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
+ sleep 1
+
+ ./ciyam_client 13031
+peer_listen 12021 e3733d121
+;trace 14900
+quit
+
+ ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
+ sleep 1
+
+./ciyam_client
+file_info -content bc.e3733d121.zenith
+;
+;file_kill bc.e3733d121.4.sig
+;
+file_kill bc.e3733d121.5.blk
+;
+file_kill bc.e3733d121.5.pub
+;
+file_kill bc.e3733d121.9.pub
+;
+; ciyam tree hash
+file_kill 4bdb8127843f821bacbba8eeaaa5308614d325d1eeddce2c1821b73d00eb62b7
+;
+; photo_1.jpg.000000 blob
+file_kill 4eff9c3beb14094b169dd3bfc4ae87628e848fdc7b4a5adbdaba8910262367c8
+;
+; photo_2.jpg.000000 blob
+file_kill 0046c3f2143182e7291d5acd158c2f515da693f36e4c5dac770ec20c29d3449d
+;
+; photo_3.jpg.000000 blob
+file_kill 7d80eb5befbf84605297599fd2ac9e437c9d1b1b611d10c2a85e88d3d9b22f34
+;
+; photo_4.jpg.000000 blob
+file_kill 581d7056638b67e8feb7d4e3aa57085d85cb39e8f5792c58f2b768bfcb24e442
+;
+; photo_5.jpg.000000 blob
+file_kill d74a4c88ad8f3fc3295da8967ffa452ac2669d3cbf6dee738fadb180ddfd3751
+;
+storage_init Meta
+pf Meta Global_Repository_Entry "" Local_Hash
+;
+@ifdef $OUTPUT
+; photo_1.jpg.000000 blob
+pd admin @now Meta Global_Repository_Entry e3733d121.Tv-cO-sUCUsWndO_xK6HYo6Ej9x7Slrb2rqJECYjZ8g
+;
+; photo_2.jpg.000000 blob
+pd admin @now Meta Global_Repository_Entry e3733d121.AEbD8hQxgucpHVrNFYwvUV2mk_NuTF2sdw7CDCnTRJ0
+;
+; photo_3.jpg.000000 blob
+pd admin @now Meta Global_Repository_Entry e3733d121.fYDrW--_hGBSl1mf0qyeQ3ydGxthHRDCqF6I09myLzQ
+;
+; photo_4.jpg.000000 blob
+pd admin @now Meta Global_Repository_Entry e3733d121.WB1wVmOLZ-j-t9TjqlcIXYXLOej1eSxY8rdov8sk5EI
+;
+; photo_5.jpg.000000 blob
+pd admin @now Meta Global_Repository_Entry e3733d121.10pMiK2PP8MpXaiWf_pFKsJmnTy_be5zj62xgN39N1E
+@endif
+;
+pf Meta Global_Repository_Entry "" Local_Hash
+storage_term
+;
+; Reset zenith to height 4 (to simulate losing connection before height 5 was completed).
+.file_hash bc.e3733d121.4.blk
+file_tag $OUTPUT bc.e3733d121.zenith
+;
+;trace 14900
+peer_connect e3733d121 12021
+wait 150
+session_list
+wait 1500
+;trace 10000
+session_list
+session_kill 2
+quit
+
+vi files/ciyam_server.log
+
+vi bc.e3733d121/ciyam_server.log
