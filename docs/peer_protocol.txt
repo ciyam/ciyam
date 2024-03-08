@@ -22,7 +22,7 @@ The "chk" command allows a peer to inquire as to whether another peer has a part
 a file (the latter being via an optional "nonce" argument). After commencing a session the "chk" command must
 be the first command to be issued. It should be noted that unless doing interactive testing any "chk" command
 that has provided a "tag" rather than a file "hash" in its request must provide a tag value which is prefixed
-with the common blockchain prefix (e.g. "bc.da667b8c4"). This command can be issued at any time by peers.
+with the blockchain prefix literal (i.e. "@blockchain"). This command can be issued at any time by peers.
 
 One could imagine a peer accepting files from other peers but then not keeping them stored for any reasonable
 amount of time so normally a peer will check that another peer has retained the content of a previously "put"
