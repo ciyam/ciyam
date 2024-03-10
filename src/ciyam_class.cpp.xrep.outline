@@ -1146,6 +1146,16 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_session_var=$specification_\\0_session_var arg_arg1= arg_arg2= arg_create_only=\
  arg_src_is_for_func=$specification_\\0_src_is_for_func arg_sess_var_is_test=$specification_\\0_sess_var_is_test\
  arg_pre_func=$specification_\\0_pre_func`}\
+`,\
+`@eq`(`'\\1`'`,`'trigger_execute_script`'`)`&`@eq`(`'\$`'`,`$specification_\\0_oprocedure`)
+`{`#trigger_execute.spec.xrep section=procedure class_name=$class_name module_name=$module_name\
+ arg_id=$specification_\\0_id arg_field= arg_fname= arg_fvalue= arg_sfield=\
+ arg_arg1=$specification_\\0_arg1 arg_arg2=$specification_\\0_arg2 arg_modifier=$specification_\\0_modifier\
+ arg_tfield=$specification_\\0_tfield arg_script=$specification_\\0_script arg_async=$specification_\\0_async\
+ arg_delay=$specification_\\0_delay arg_logging_none=$specification_\\0_logging_none arg_logging_errors=$specification_\\0_logging_errors\
+ arg_skip_restore=$specification_\\0_skip_restore arg_restore_script=$specification_\\0_restore_script\
+ arg_create_only=$specification_\\0_create_only arg_has_key_already= arg_func= arg_session_var=\
+ arg_src_is_for_func= arg_sess_var_is_test= arg_pre_func=$specification_\\0_pre_func`}\
 ### procedure
 `}`]`}
    // [<start \$_impl>]
@@ -3076,7 +3086,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_src_is_for_func=$specification_\0_src_is_for_func arg_sess_var_is_test=$specification_\0_sess_var_is_test\
  arg_pre_func=$specification_\0_pre_func`}\
 `,\
-`@eq`(`'\1`'`,`'trigger_execute_script`'`)`&`@eq`(`$specification_\0_after_store`,`'`'`)
+`@eq`(`'\1`'`,`'trigger_execute_script`'`)`&`@eq`(`$specification_\0_after_store`,`'`'`)`&`@eq`(`'`'`,`$specification_\0_oprocedure`)
 `{`#trigger_execute.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field= arg_fname= arg_fvalue= arg_sfield=\
  arg_arg1=$specification_\0_arg1 arg_arg2=$specification_\0_arg2 arg_modifier=$specification_\0_modifier\
@@ -3255,7 +3265,7 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_src_is_for_func=$specification_\0_src_is_for_func arg_sess_var_is_test=$specification_\0_sess_var_is_test\
  arg_pre_func=$specification_\0_pre_func`}\
 `,\
-`@eq`(`'\1`'`,`'trigger_execute_script`'`)`&`@eq`(`$specification_\0_after_store`,`'true`'`)
+`@eq`(`'\1`'`,`'trigger_execute_script`'`)`&`@eq`(`$specification_\0_after_store`,`'true`'`)`&`@eq`(`'`'`,`$specification_\0_oprocedure`)
 `{`#trigger_execute.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field= arg_fname= arg_fvalue= arg_sfield=\
  arg_arg1=$specification_\0_arg1 arg_arg2=$specification_\0_arg2 arg_modifier=$specification_\0_modifier\
