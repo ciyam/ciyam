@@ -26,11 +26,13 @@
 #include <openssl/opensslv.h>
 
 // KLUDGE: Work-around for OpenSSL 1.1 changes.
-#if LIBRESSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+void BN_Init( BIGNUM* ) { }
+
 typedef struct ECDSA_SIG_st
 {
-   BIGNUM *r;
-   BIGNUM *s;
+   BIGNUM* r;
+   BIGNUM* s;
 } ECDSA_SIG;
 #endif
 
