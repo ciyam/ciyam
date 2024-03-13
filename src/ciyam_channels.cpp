@@ -1198,7 +1198,8 @@ string storage_channel_documents_update( const string& identity, bool submitted 
 
       cmd += " -qq " + bundle_file_name + " -d " + blockchain_identity + " 2>" + temp_file;
 
-      system( cmd.c_str( ) );
+      int rc = system( cmd.c_str( ) );
+      ( void )rc;
 
       if( exists_file( temp_file ) )
       {
@@ -1699,7 +1700,8 @@ string storage_channel_documents_prepare( const string& identity )
 
       cmd += " -qq " + blockchain_identity + " \"" + blockchain_identity + "/*\"";
 
-      system( cmd.c_str( ) );
+      int rc = system( cmd.c_str( ) );
+      ( void )rc;
 
       if( file_exists( blockchain_identity + ".bun.gz" ) )
          retval = blockchain_identity;
