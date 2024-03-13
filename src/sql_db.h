@@ -23,18 +23,6 @@
 #     define RDBMS_SQLITE
 #  endif
 
-#  ifdef RDBMS_SQLITE
-struct sqlite3;
-struct sqlite3_stmt;
-#  else
-typedef char** MYSQL_ROW;
-
-struct st_mysql;
-struct st_mysql_res;
-typedef struct st_mysql MYSQL;
-typedef struct st_mysql_res MYSQL_RES;
-#  endif
-
 class sql_dataset;
 
 class sql_db
@@ -45,18 +33,17 @@ class sql_db
    sql_db( const std::string& name );
    sql_db( const std::string& name, const std::string& uid );
    sql_db( const std::string& name, const std::string& uid, const std::string& pwd );
-   ~sql_db( );
+
+   virtual ~sql_db( );
+
+   void* get_db_ptr( ) const;
 
    private:
    void init_database_connection( const std::string& name, const std::string& uid, const std::string& pwd );
 
-#  ifdef RDBMS_SQLITE
-   sqlite3* p_db;
-   sqlite3* get_db_ptr( ) { return p_db; }
-#  else
-   MYSQL* p_db;
-   MYSQL* get_db_ptr( ) { return p_db; }
-#  endif
+   private:
+   struct impl;
+   impl* p_impl;
 };
 
 void exec_sql( sql_db& db, const std::string& sql );
@@ -78,14 +65,6 @@ struct sql_data
 class sql_dataset : public sql_data
 {
    private:
-#  ifdef RDBMS_SQLITE
-   sqlite3* p_db;
-   sqlite3_stmt* p_stmt;
-#  else
-   MYSQL* p_db;
-   MYSQL_RES* p_stmt;
-   MYSQL_ROW* p_rowset;
-#  endif
 
    protected:
    std::map< std::string, int > params;
@@ -97,13 +76,7 @@ class sql_dataset : public sql_data
    int fieldcount;
     
    public:
-   sql_dataset( ) : p_db( 0 ), p_stmt( 0 ), fieldcount( 0 ) { }
-
-#  ifdef RDBMS_SQLITE
-   sql_dataset( sql_db& db ) : p_db( db.get_db_ptr( ) ), p_stmt( 0 ), fieldcount( 0 ) { }
-#  else
-   sql_dataset( sql_db& db ) : p_db( db.get_db_ptr( ) ), p_stmt( 0 ), p_rowset( 0 ), fieldcount( 0 ) { }
-#  endif
+   sql_dataset( sql_db& db );
    sql_dataset( sql_db& db, const std::string& sql );
 
    virtual ~sql_dataset( );
@@ -122,8 +95,13 @@ class sql_dataset : public sql_data
 
    int as_int( const std::string& ) const;
    int as_int( int ) const;
+
    std::string as_string( const std::string& ) const;
    std::string as_string( int ) const;
+
+   private:
+   struct impl;
+   impl* p_impl;
 };
 
 class sql_dataset_group : public sql_data
@@ -149,13 +127,9 @@ class sql_dataset_group : public sql_data
 class sql_exception : public std::runtime_error
 {
    public:
-   sql_exception( const std::string& m ) : runtime_error( m.c_str( ) ) { }
+   sql_exception( void* p_db );
 
-#  ifdef RDBMS_SQLITE
-   sql_exception( sqlite3* );
-#  else
-   sql_exception( MYSQL* );
-#  endif
+   sql_exception( const std::string& m ) : runtime_error( m.c_str( ) ) { }
 };
 
 #endif
