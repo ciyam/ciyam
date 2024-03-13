@@ -29,7 +29,6 @@
 #ifdef OPENSSL_VERSION_MAJOR
 #  if OPENSSL_VERSION_MAJOR >= 3
 void BN_init( void* ) { }
-#     define OPENSSL_VERSION_NUMBER 0x30000000L
 #  endif
 #endif
 
