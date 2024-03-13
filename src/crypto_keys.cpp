@@ -25,15 +25,23 @@
 #include <openssl/obj_mac.h>
 #include <openssl/opensslv.h>
 
-// KLUDGE: Work-around for OpenSSL 1.1 changes.
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-void BN_Init( BIGNUM* ) { }
+// KLUDGE: Work-around for OpenSSL 3.0 changes.
+#ifdef OPENSSL_VERSION_MAJOR
+#  if OPENSSL_VERSION_MAJOR >= 3
+void BN_init( void* ) { }
+#     define OPENSSL_VERSION_NUMBER 0x30000000L
+#  endif
+#endif
 
+// KLUDGE: Work-around for OpenSSL 1.1 changes.
+#ifdef OPENSSL_VERSION_NUMBER
+#  if OPENSSL_VERSION_NUMBER >= 0x10100000L
 typedef struct ECDSA_SIG_st
 {
    BIGNUM* r;
    BIGNUM* s;
 } ECDSA_SIG;
+#  endif
 #endif
 
 #include "crypto_keys.h"
