@@ -5472,7 +5472,9 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             write_file( c_password_info_file, info );
 
             string cmd( "./set_password " + extra + "\"" + user + "\" " + string( c_password_info_file ) );
-            system( cmd.c_str( ) );
+
+            int rc = system( cmd.c_str( ) );
+            ( void )rc;
          }
 #endif
          write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
