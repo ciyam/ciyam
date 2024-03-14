@@ -29,6 +29,8 @@
 #ifdef OPENSSL_VERSION_MAJOR
 #  if OPENSSL_VERSION_MAJOR >= 3
 void BN_init( void* ) { }
+#     define BN_free BN_free_dummy
+void BN_free_dummy( void* ) { }
 #  endif
 #endif
 
