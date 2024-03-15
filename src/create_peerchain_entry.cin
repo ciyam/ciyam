@@ -99,6 +99,12 @@ PEER_PORT=0
 @ifndef $ERROR
 .storage_term
 ;
+@ifdef $SHARED_SECRET
+.decrypt $SHARED_SECRET
+.crypto_hash -hex $OUTPUT
+.system_variable >@unique.$IDENTITY $OUTPUT
+@endif
+;
 @ifndef $PEERCHAIN_HUB
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT

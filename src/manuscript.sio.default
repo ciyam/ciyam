@@ -187,7 +187,7 @@
  <script/>
   <name>create_peerchain_listener
   <filename>*script*
-  <arguments>create_peerchain_listener.cin @identity @description
+  <arguments>create_peerchain_listener.cin @identity @description @shared_secret_hash
  </script>
  <script/>
   <name>install_application_script
