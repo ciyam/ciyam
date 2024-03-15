@@ -5,6 +5,7 @@ The WEBDIR environment variable must be set prior to running the regression test
 user's ".profile" or equivalent if that has not been done already).
 
 export WEBDIR=/srv/www/htdocs
+(or another path such as /var/www/html depending upon which Linux distro is being used)
 
 After cloning the repository run "config" in order to configure the system for 3rd party dependencies (and to
 set the default server port) then issue a "make all" to build all of project targets then next run "do_tests"
