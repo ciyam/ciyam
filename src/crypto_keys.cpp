@@ -29,8 +29,6 @@
 #ifdef OPENSSL_VERSION_MAJOR
 #  if OPENSSL_VERSION_MAJOR >= 3
 void BN_init( void* ) { }
-#     define BN_free BN_free_dummy
-void BN_free_dummy( void* ) { }
 #  endif
 #endif
 
@@ -208,9 +206,6 @@ string base58_encode( const unsigned char* p_buf, size_t len )
    BN_clear_free( p_rem );
    BN_clear_free( p_dv );
 
-   BN_free( p_rem );
-   BN_free( p_dv );
-
    for( const unsigned char* p = p_buf; p < p_buf + len && *p == 0; p++ )
       str += gp_base58[ 0 ];
 
@@ -220,11 +215,6 @@ string base58_encode( const unsigned char* p_buf, size_t len )
 
    BN_clear_free( p_bn58 );
    BN_clear_free( p_bn0 );
-
-   BN_free( p_bn );
-
-   BN_free( p_bn0 );
-   BN_free( p_bn58 );
 
    BN_CTX_free( p_ctx );
 
@@ -309,10 +299,6 @@ void base58_decode( const string& encoded, vector< unsigned char >& buf )
    BN_clear_free( p_bnchar );
    BN_clear_free( p_bn58 );
    BN_clear_free( p_bn );
-
-   BN_free( p_bnchar );
-   BN_free( p_bn58 );
-   BN_free( p_bn );
 
    BN_CTX_free( p_ctx );
 
@@ -584,8 +570,6 @@ struct private_key::impl
          throw runtime_error( "unexpected failure for EC_KEY_regenerate_key in set_secret_byts" );
 
       BN_clear_free( p_bn );
-
-      BN_free( p_bn );
    }
 
    // NOTE: This function was sourced from the Bitcoin project.
