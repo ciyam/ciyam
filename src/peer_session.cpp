@@ -6417,7 +6417,8 @@ void peer_session::on_start( )
 
          if( !is_for_support && !blockchain.empty( ) )
          {
-            hash_or_tag = blockchain + '.' + to_string( blockchain_height ) + string( c_blk_suffix );
+            hash_or_tag = get_special_var_name( e_special_var_blockchain )
+             + '.' + to_string( blockchain_height ) + string( c_blk_suffix );
 
             // NOTE: In case the responder does not have the genesis block include
             // its hash as a dummy "nonce" (to be used by the responder for "get").
