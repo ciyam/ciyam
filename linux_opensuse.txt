@@ -104,6 +104,11 @@ PasswordAuthentication yes
 sudo service sshd restart
 sudo service firewalld restart
 
+If concerned about the "geoclue" service:
+
+sudo systemctl mask geoclue.service
+sudo systemctl status geoclue.service
+
 git clone https://github.com/ciyam/fcgi.git
 
 cd fcgi
