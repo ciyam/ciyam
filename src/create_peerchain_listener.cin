@@ -57,7 +57,8 @@ PEER_PORT=$OUTPUT
 ;
 @ifndef $ERROR
 @ifdef $SHARED_SECRET_HASH
-.system_variable >@unique.$IDENTITY $SHARED_SECRET_HASH
+.encrypt $SHARED_SECRET_HASH
+.system_variable >@secret.$IDENTITY $OUTPUT
 @endif
 ;
 @ifdef $PEER_HUB
