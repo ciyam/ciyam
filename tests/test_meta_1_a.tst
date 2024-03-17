@@ -248,7 +248,7 @@ Chain_Id,M001C106F105
 Combined_Checksum,M001C106F106
 Import_Needed,M001C106F107
 Shared_Details,M001C106F108
-Shared_Identity,M001C106F109
+Remote_Identity,M001C106F109
 Importing_For_Chain_Id,M001C106F110
 Description,M001C106F111
 Dummy_1,M001C106F112
