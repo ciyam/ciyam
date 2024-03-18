@@ -5896,7 +5896,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
       if( !blockchain.empty( ) )
       {
-         pid += ':' + blockchain;
+         pid += ':' + unprefixed_blockchain;
 
          pid += '#' + to_string( ( size_t )chain_type );
 
@@ -5959,7 +5959,12 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          set< string > blockchains;
          split( blockchain, blockchains );
 
-         blockchain = pid.substr( pos + 1 );
+         string peer_info( pid.substr( pos + 1 ) );
+
+         if( peer_info.find( c_bc_prefix ) == 0 )
+            blockchain = peer_info;
+         else
+            blockchain = string( c_bc_prefix ) + peer_info;
 
          string::size_type spos = blockchain.find( '&' );
 
@@ -6514,8 +6519,8 @@ void peer_session::on_start( )
                      }
                   }
 
-                  create_peer_initiator( ( c_bc_prefix + hub_identity ),
-                   host_and_port, false, 0, false, false, 0, e_peerchain_type_hub, true );
+                  create_peer_initiator( hub_blockchain, host_and_port,
+                   false, 0, false, false, 0, e_peerchain_type_hub, true );
 
                   created_initiator_for_hub = true;
                }
