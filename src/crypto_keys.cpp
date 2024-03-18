@@ -25,11 +25,21 @@
 #include <openssl/obj_mac.h>
 #include <openssl/opensslv.h>
 
-// KLUDGE: Work-around for OpenSSL 3.0 changes.
 #ifdef OPENSSL_VERSION_MAJOR
 #  if OPENSSL_VERSION_MAJOR >= 3
-void BN_init( void* ) { }
+#     define CRYPTO_NO_BIGNUM_INIT
 #  endif
+#endif
+
+#ifdef LIBRESSL_VERSION_NUMBER
+#  if LIBRESSL_VERSION_NUMBER >= 0x30000000L
+#     define CRYPTO_NO_BIGNUM_INIT
+#  endif
+#endif
+
+// KLUDGE: Work-around for OpenSSL 3.0 changes.
+#ifdef CRYPTO_NO_BIGNUM_INIT
+void BN_init( void* ) { }
 #endif
 
 // KLUDGE: Work-around for OpenSSL 1.1 changes.
