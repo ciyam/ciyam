@@ -1695,15 +1695,43 @@ int main( int argc, char* argv[ ] )
          ip_address address( cmd_handler.get_host( ), cmd_handler.get_port( ) );
 
          bool is_default = false;
+
          if( string( cmd_handler.get_host( ) ) == c_default_ciyam_host )
             is_default = true;
 
 #ifdef _WIN32
-         if( socket.connect( address, is_default ? 1000 : c_connect_timeout ) )
+         if( socket.connect( address, is_default ? 2000 : c_connect_timeout ) )
 #else
-         // NOTE: If the server was started asynchronously in a script immediately prior
-         // to the client then wait for half a second and then try again just to be sure.
-         if( socket.connect( address ) || ( is_default && ( msleep( 500 ), socket.connect( address ) ) ) )
+         // NOTE: If the server was started asynchronously in a script
+         // immediately prior to the client then sleep for one half of
+         // a second and retry (and again after another one and a half
+         // seconds). After each connection failure a new socket needs
+         // to be used (hence the repeated "close" and "open" calls).
+         bool okay = socket.connect( address );
+
+         if( !okay && is_default )
+         {
+            socket.close( );
+
+            msleep( 500 );
+
+            if( socket.open( ) )
+            {
+               okay = socket.connect( address );
+
+               if( !okay )
+               {
+                  socket.close( );
+
+                  msleep( 1500 );
+
+                  if( socket.open( ) )
+                     okay = socket.connect( address );
+               }
+            }
+         }
+
+         if( okay )
 #endif
          {
 #ifdef USE_NO_DELAY
@@ -1722,6 +1750,8 @@ int main( int argc, char* argv[ ] )
                   error = "unable to connect to the application server (not active?)";
 
                socket.close( );
+               usocket.close( );
+
                throw runtime_error( error );
             }
 
@@ -1735,6 +1765,8 @@ int main( int argc, char* argv[ ] )
                   error = "application server has terminated this connection";
 
                socket.close( );
+               usocket.close( );
+
                throw runtime_error( error );
             }
 
@@ -1742,12 +1774,16 @@ int main( int argc, char* argv[ ] )
             if( get_version_info( greeting, ver_info ) != string( c_response_okay ) )
             {
                socket.close( );
+               usocket.close( );
+
                throw runtime_error( greeting );
             }
 
             if( !check_version_info( ver_info, c_protocol_major_version, c_protocol_minor_version ) )
             {
                socket.close( );
+               usocket.close( );
+
                throw runtime_error( "incompatible protocol version "
                 + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
             }
@@ -1828,8 +1864,12 @@ int main( int argc, char* argv[ ] )
                processor.execute_command( g_exec_cmd );
          }
          else
+         {
+            socket.close( );
+
             throw runtime_error( "unable to connect to host '"
              + string( cmd_handler.get_host( ) ) + "' on port " + to_string( cmd_handler.get_port( ) ) );
+         }
 
          socket.close( );
          usocket.close( );
