@@ -30,8 +30,6 @@ cd ~/ciyam/src
  ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
 
- sleep 2
-
  ./ciyam_client -quiet 13031
 file_archive -add bc.e3733d121/e3733d121 10MB e3733d121
 peer_listen 12021 e3733d121
@@ -223,8 +221,6 @@ exit
  ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
 
- sleep 2
-
  ./ciyam_client -quiet 13031
 peer_listen 12021 e3733d121
 ;trace 14900
@@ -306,8 +302,6 @@ e3733d121 [okay      ] (196.0 kB/10.0 MB) files/e3733d121
 
  ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
 
-sleep 2
-
  ./ciyam_client -quiet 13031
 file_archive -add bc.e3733d121/e3733d121 10MB e3733d121
 peer_listen 12021 e3733d121
@@ -388,8 +382,6 @@ e3733d121 [okay      ] (196.0 kB/10.0 MB) bc.e3733d121/e3733d121
 rm -r files/*
 
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
-
-sleep 2
 
 ./ciyam_client
 <bc_gen.cin -backup de604cee0755a3d81944ea96aed12681
@@ -636,7 +628,6 @@ d74a4c88ad8f3fc3295da8967ffa452ac2669d3cbf6dee738fadb180ddfd3751 (photo_5.jpg.00
 # Assuming normal files area is owner and at height 5 use this to test incomplete backup recovery           #
 #-----------------------------------------------------------------------------------------------------------#
  ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
- sleep 1
 
  ./ciyam_client -quiet 13031
 file_info -content bc.e3733d121.zenith
@@ -685,7 +676,6 @@ peer_listen 12021 e3733d121
 quit
 
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
- sleep 1
 
 ./ciyam_client
 ;trace 14900
@@ -706,7 +696,6 @@ vi bc.e3733d121/ciyam_server.log
 # Assuming special files area is backup and at height 5 use this to test incomplete clone recovery          #
 #-----------------------------------------------------------------------------------------------------------#
  ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
- sleep 1
 
  ./ciyam_client 13031
 peer_listen 12021 e3733d121
@@ -714,7 +703,6 @@ peer_listen 12021 e3733d121
 quit
 
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
- sleep 1
 
 ./ciyam_client
 file_info -content bc.e3733d121.zenith
@@ -775,7 +763,6 @@ vi bc.e3733d121/ciyam_server.log
 # Assuming special files area is backup and at height 5 use this to test incomplete restore recovery        #
 #-----------------------------------------------------------------------------------------------------------#
  ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
- sleep 1
 
  ./ciyam_client 13031
 peer_listen 12021 e3733d121
@@ -783,7 +770,6 @@ peer_listen 12021 e3733d121
 quit
 
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
- sleep 1
 
 ./ciyam_client
 file_info -content bc.e3733d121.zenith
