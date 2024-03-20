@@ -5872,8 +5872,15 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
    if( !is_responder )
    {
+      // NOTE: If a session "@secret_hash" variable exists then it will be
+      // used (for "hub" connections) otherwise will use a system variable
+      // (which is set by the "peer_session_starter").
       secret_hash = get_raw_session_variable(
        get_special_var_name( e_special_var_secret_hash ) );
+
+      if( secret_hash.empty( ) )
+         secret_hash = get_raw_system_variable(
+          get_special_var_name( e_special_var_secret_hash ) );
 
       if( !blockchain.empty( )
        && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
@@ -6405,6 +6412,9 @@ void peer_session::on_start( )
          set_session_progress_message( progress_message );
       }
 
+      if( !secret_hash.empty( ) )
+         set_session_variable( get_special_var_name( e_special_var_peer_secured ), c_true_value );
+
       if( is_user )
          set_session_variable( get_special_var_name( e_special_var_blockchain_user ), c_true_value );
 
@@ -6618,6 +6628,9 @@ void peer_session::on_start( )
                         set_system_variable( c_progress_output_prefix + hub_identity, progress_message );
                      }
                   }
+
+                  temporary_session_variable tmp_secret_hash(
+                   get_special_var_name( e_special_var_secret_hash ), secret_hash );
 
                   create_peer_initiator( hub_blockchain, host_and_port,
                    false, 0, false, false, 0, e_peerchain_type_hub, true );
@@ -7352,12 +7365,12 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
 
-   auto_ptr< temporary_session_variable > ap_temp_secret_hash;
+   auto_ptr< temporary_system_variable > ap_temp_secret_hash;
 
    string secret_hash( get_raw_system_variable( secret_hash_name + '_' + identity ) );
 
    if( !secret_hash.empty( ) )
-      ap_temp_secret_hash.reset( new temporary_session_variable( secret_hash_name, secret_hash ) );
+      ap_temp_secret_hash.reset( new temporary_system_variable( secret_hash_name, secret_hash ) );
 
    string paired_suffix;
 

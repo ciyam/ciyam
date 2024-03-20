@@ -157,6 +157,7 @@ const char* const c_special_variable_backup_files = "@backup_files";
 const char* const c_special_variable_block_height = "@block_height";
 const char* const c_special_variable_opened_files = "@opened_files";
 const char* const c_special_variable_peer_map_key = "@peer_map_key";
+const char* const c_special_variable_peer_secured = "@peer_secured";
 const char* const c_special_variable_shared_files = "@shared_files";
 const char* const c_special_variable_app_directory = "@app_directory";
 const char* const c_special_variable_export_needed = "@export_needed";
@@ -726,6 +727,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_peer_map_key:
       s = string( c_special_variable_peer_map_key );
+      break;
+
+      case e_special_var_peer_secured:
+      s = string( c_special_variable_peer_secured );
       break;
 
       case e_special_var_shared_files:
