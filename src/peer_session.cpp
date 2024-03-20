@@ -15,6 +15,7 @@
 #  include <set>
 #  include <deque>
 #  include <memory>
+#  include <iomanip>
 #  include <sstream>
 #  include <iostream>
 #  include <algorithm>
@@ -5869,9 +5870,15 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
    if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
 
-   if( !is_responder && !blockchain.empty( )
-    && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
-      is_owner = true;
+   if( !is_responder )
+   {
+      secret_hash = get_raw_session_variable(
+       get_special_var_name( e_special_var_secret_hash ) );
+
+      if( !blockchain.empty( )
+       && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
+         is_owner = true;
+   }
 
    progress* p_sock_progress = 0;
    trace_progress sock_progress( TRACE_SOCK_OPS );
@@ -5912,13 +5919,34 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
                   pid += '&' + hub_identity;
             }
          }
+
+         if( has_support_sessions )
+            pid += '+';
+
+         if( is_owner && !is_for_support )
+            pid += '!';
+
+         if( !secret_hash.empty( ) )
+         {
+            ostringstream osstr;
+            osstr << hex << setw( 9 ) << setfill( '0' ) << unix_time( );
+
+            string unix_in_hex( osstr.str( ) );
+
+            sha256 hash( unix_in_hex + secret_hash );
+
+            string::size_type pos = pid.find( ':' );
+
+            string prefix( pid.substr( 0, pos ) );
+
+            stringstream ss( pid.substr( pos + 1 ) );
+
+            crypt_stream( ss, secret_hash, e_stream_cipher_chacha20 );
+
+            pid = prefix + ':' + unix_in_hex + '-'
+             + hash.get_digest_as_string( ).substr( 0, 9 ) + '=' + base64::encode( ss.str( ) );
+         }
       }
-
-      if( has_support_sessions )
-         pid += '+';
-
-      if( is_owner && !is_for_support )
-         pid += '!';
 
       this->ap_socket->write_line( pid, c_request_timeout, p_sock_progress );
    }
@@ -5928,7 +5956,79 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
       this->ap_socket->read_line( pid, c_request_timeout, c_max_greeting_size, p_sock_progress );
 
-      string::size_type pos = pid.find( c_key_exchange_suffix );
+      string::size_type pos = pid.find( '=' );
+
+      if( pos != string::npos )
+      {
+         string encrypted_data( pid.substr( pos + 1 ) );
+
+         pid.erase( pos );
+
+         pos = pid.find( ':' );
+
+         if( pos == string::npos )
+            throw runtime_error( "invalid peer handshake" );
+         else
+         {
+            string prefix( pid.substr( 0, pos + 1 ) );
+
+            pid.erase( 0, pos + 1 );
+
+            pos = pid.find( '-' );
+
+            if( pos == string::npos )
+               throw runtime_error( "invalid peer handshake" );
+            else
+            {
+               string unix_in_hex( pid.substr( 0, pos ) );
+               string hash_prefix( pid.substr( pos + 1 ) );
+
+               string hash_secret_lines( get_raw_system_variable(
+                get_special_var_name( e_special_var_secret_hash ) + "_*" ) );
+
+               if( !hash_secret_lines.empty( ) )
+               {
+                  vector< string > all_lines;
+
+                  split( hash_secret_lines, all_lines, '\n' );
+
+                  for( size_t i = 0; i < all_lines.size( ); i++ )
+                  {
+                     string next_line( all_lines[ i ] );
+
+                     pos = next_line.find( ' ' );
+
+                     if( pos != string::npos )
+                     {
+                        string next_hash( next_line.substr( pos + 1 ) );
+
+                        sha256 hash( unix_in_hex + next_hash );
+
+                        if( hash_prefix == hash.get_digest_as_string( ).substr( 0, 9 ) )
+                        {
+                           secret_hash = next_hash;
+                           break;
+                        }
+                     }
+                  }
+
+                  if( !secret_hash.empty( ) )
+                  {
+                     stringstream ss( base64::decode( encrypted_data ) );
+
+                     crypt_stream( ss, secret_hash, e_stream_cipher_chacha20 );
+
+                     pid = prefix + ss.str( );
+                  }
+               }
+            }
+         }
+
+         if( secret_hash.empty( ) )
+            throw runtime_error( "invalid peer handshake" );
+      }
+
+      pos = pid.find( c_key_exchange_suffix );
 
       if( pos != string::npos )
       {
@@ -7249,6 +7349,15 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    }
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
+
+   string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
+
+   auto_ptr< temporary_session_variable > ap_temp_secret_hash;
+
+   string secret_hash( get_raw_system_variable( secret_hash_name + '_' + identity ) );
+
+   if( !secret_hash.empty( ) )
+      ap_temp_secret_hash.reset( new temporary_session_variable( secret_hash_name, secret_hash ) );
 
    string paired_suffix;
 

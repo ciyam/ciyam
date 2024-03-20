@@ -148,6 +148,7 @@ const char* const c_special_variable_paired_sync = "@paired_sync";
 const char* const c_special_variable_path_prefix = "@path_prefix";
 const char* const c_special_variable_permissions = "@permissions";
 const char* const c_special_variable_queue_peers = "@queue_peers";
+const char* const c_special_variable_secret_hash = "@secret_hash";
 const char* const c_special_variable_skip_update = "@skip_update";
 const char* const c_special_variable_state_names = "@state_names";
 const char* const c_special_variable_style_brief = "@style_brief";
@@ -689,6 +690,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_queue_peers:
       s = string( c_special_variable_queue_peers );
+      break;
+
+      case e_special_var_secret_hash:
+      s = string( c_special_variable_secret_hash );
       break;
 
       case e_special_var_skip_update:
