@@ -525,6 +525,7 @@ void validate_addresses( const string& addresses )
 
 #include "trace_progress.cpp"
 
+#ifdef SSL_SUPPORT
 struct crypto_info
 {
    crypto_info( )
@@ -604,6 +605,7 @@ void get_crypto_info( const string& extra_info, crypto_info& info )
    if( !acct_p2sh_fee.empty( ) )
       info.acct_p2sh_fee = atof( acct_p2sh_fee.c_str( ) );
 }
+#endif
 
 }
 
@@ -2876,10 +2878,11 @@ string get_uuid( )
 uint32_t get_random( )
 {
    uint32_t val;
-#ifdef SSL_SUPPORT
-   RAND_bytes( ( unsigned char* )&val, sizeof( val ) );
-#else
+
+#ifndef SSL_SUPPORT
    val = uuid( ).as_uint32_t( );
+#else
+   RAND_bytes( ( unsigned char* )&val, sizeof( val ) );
 #endif
 
    return val;
@@ -6532,6 +6535,7 @@ string get_external_extra( const string& ext_key, const string& extra )
       external_client client_info;
       get_external_client_info( ext_key, client_info );
 
+#ifdef SSL_SUPPORT
       crypto_info info;
       get_crypto_info( client_info.extra_info, info );
 
@@ -6545,6 +6549,7 @@ string get_external_extra( const string& ext_key, const string& extra )
          retval = to_string( info.acct_min_fee );
       else if( extra == string( c_crypto_info_acct_p2sh_fee ) )
          retval = to_string( info.acct_p2sh_fee );
+#endif
    }
 
    return retval;
@@ -7085,6 +7090,7 @@ string construct_p2sh_redeem_transaction(
  const string& txid, unsigned int index, const string& redeem_script, const string& extras,
  const string& to_address, uint64_t amount, const string& key, bool is_wif_format, uint32_t lock_time )
 {
+#ifdef SSL_SUPPORT
    vector< utxo_information > inputs;
    vector< output_information > outputs;
 
@@ -7107,6 +7113,9 @@ string construct_p2sh_redeem_transaction(
       split( extras, extra_items );
 
    return construct_raw_transaction( inputs, outputs, 0, false, 0, lock_time, &extra_items );
+#else
+   throw runtime_error( "SSL support is needed in order to use construct_p2sh_redeem_transaction" );
+#endif
 }
 
 string retreive_p2sh_redeem_extra_info(

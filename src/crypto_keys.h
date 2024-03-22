@@ -185,4 +185,3 @@ std::string construct_raw_transaction(
  uint32_t lock_time = 0, std::vector< std::string >* p_extra_sig_script_items = 0 );
 
 #endif
-

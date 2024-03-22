@@ -10,6 +10,7 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <csignal>
+#  include <cstring>
 #  include <memory>
 #  include <string>
 #  include <iostream>

@@ -33,7 +33,9 @@
 #include "pointers.h"
 #include "date_time.h"
 #include "utilities.h"
-#include "crypto_keys.h"
+#ifdef SSL_SUPPORT
+#  include "crypto_keys.h"
+#endif
 #include "fs_iterator.h"
 
 #ifdef __GNUG__
@@ -3107,6 +3109,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                               if( !pubkey.empty( ) )
                               {
+#ifdef SSL_SUPPORT
                                  public_key pub_key( pubkey );
                                  private_key priv_key;
 
@@ -3116,6 +3119,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                                  clear_key( str );
                                  str = data;
+#else
+                                 throw runtime_error( "@password with public key crypto requires SSL support" );
+#endif
                               }
                            }
                         }
