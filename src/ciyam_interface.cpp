@@ -3059,9 +3059,8 @@ void request_handler::process_request( )
          // idea of the expected plain text output could lead to revealing
          // the initial hash of the key).
          string str( "<!-- " );
-         int num = 25 + rand( ) % 75;
-         for( int i = 0; i < num; i++ )
-            str += 'a' + rand( ) % 26;
+
+         str += random_characters( 25, 75, e_printable_type_alpha_lower );
 
          str += " -->\n";
 

@@ -334,9 +334,9 @@ std::string CIYAM_BASE_DECL_SPEC process_script_args(
 void CIYAM_BASE_DECL_SPEC generate_new_script_sio_files( );
 
 void CIYAM_BASE_DECL_SPEC init_session(
- command_handler& cmd_handler,
- bool is_peer_session = false, const std::string* p_ip_addr = 0,
- const std::string* p_blockchain = 0, int port = 0, bool is_support_session = false );
+ command_handler& cmd_handler, bool is_peer_session = false,
+ const std::string* p_ip_addr = 0, const std::string* p_blockchain = 0,
+ int port = 0, bool is_support_session = false, bool add_pubkey_variable = true );
 
 void CIYAM_BASE_DECL_SPEC term_session( );
 

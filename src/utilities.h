@@ -280,9 +280,21 @@ class uuid
 
    std::string as_string( ) const;
 
+   void copy_bytes( unsigned char* p_buf, size_t num = c_uuid_size );
+
    private:
    unsigned char buf[ c_uuid_size ];
 };
+
+enum printable_type
+{
+   e_printable_type_numeric,
+   e_printable_type_alpha_lower,
+   e_printable_type_alpha_mixed,
+   e_printable_type_alpha_numeric
+};
+
+std::string random_characters( size_t minimum, size_t max_extra = 0, printable_type type = e_printable_type_alpha_numeric );
 
 void msleep( unsigned long amt );
 

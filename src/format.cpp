@@ -69,6 +69,7 @@ const double c_terabytes = c_gigabytes * c_kilobytes;
 iec_byte_scale convert_bytes_to_iec_scaled_size( int64_t num_bytes, double& scaled_size, int round_to_decimals = -1 )
 {
    iec_byte_scale bs = e_iec_byte_scale_none;
+
    double divisor = 1.0, unscaled_size( num_bytes );
 
    if( num_bytes >= c_tebibytes )
@@ -98,7 +99,7 @@ iec_byte_scale convert_bytes_to_iec_scaled_size( int64_t num_bytes, double& scal
       scaled_size = round( scaled_size, round_to_decimals );
 
    // NOTE: Due to rounding a second call might be necessary (to reduce 1000.0 to 1.0).
-   if( round_to_decimals < 0 || bs == e_iec_byte_scale_tebi || scaled_size < c_kibibytes )
+   if( ( round_to_decimals < 0 ) || ( bs == e_iec_byte_scale_tebi ) || ( scaled_size < c_kibibytes ) )
       return bs;
    else
       return convert_bytes_to_iec_scaled_size( scaled_size * divisor, scaled_size, round_to_decimals );
@@ -219,7 +220,7 @@ string format_bytes( int64_t size, bool use_iec, int decimal_precision, char sep
 
    string suffix( use_iec ? c_iec_byte_suffix : c_metric_byte_suffix );
 
-   if( ibs > e_iec_byte_scale_none || mbs > e_metric_byte_scale_none )
+   if( ( ibs > e_iec_byte_scale_none ) || ( mbs > e_metric_byte_scale_none ) )
    {
       char sp = use_iec ? iec_scale_prefix[ ibs - 1 ] : metric_scale_prefix[ mbs - 1 ];
 

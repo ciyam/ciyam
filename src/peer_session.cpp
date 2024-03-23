@@ -5927,6 +5927,15 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
             }
          }
 
+#ifdef SSL_SUPPORT
+         private_key priv_key;
+
+         priv_key.get_secret( secret_key );
+         public_key = priv_key.get_public( );
+
+         pid += '%' + public_key;
+#endif
+
          if( has_support_sessions )
             pid += '+';
 
@@ -6073,7 +6082,22 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          else
             blockchain = string( c_bc_prefix ) + peer_info;
 
-         string::size_type spos = blockchain.find( '&' );
+         string::size_type spos = blockchain.find( '%' );
+
+         if( spos != string::npos )
+         {
+#ifdef SSL_SUPPORT
+            private_key priv_key;
+
+            priv_key.get_secret( secret_key );
+            public_key = priv_key.get_public( );
+
+            public_ext = blockchain.substr( spos + 1 );
+#endif
+            blockchain.erase( spos );
+         }
+
+         spos = blockchain.find( '&' );
 
          if( spos != string::npos )
          {
@@ -6216,7 +6240,9 @@ void peer_session::on_start( )
 
       if( is_responder )
       {
-         string extra( to_string( get_files_area_item_max_size( ) ) );
+         string extra( random_characters( 10, 5 ) );
+
+         extra += '[' + format_bytes( get_files_area_item_max_size( ), false, 0, '\0' );
 
          peerchain_type chain_type = get_blockchain_type( blockchain );
 
@@ -6228,8 +6254,24 @@ void peer_session::on_start( )
                extra += '&' + hub_identity;
          }
 
+#ifdef SSL_SUPPORT
+         if( !public_key.empty( ) )
+            extra += '%' + public_key;
+#endif
+
          if( is_owner )
             extra += '!';
+
+         extra += ']' + random_characters( 100 - extra.size( ) );
+
+         if( !secret_hash.empty( ) )
+         {
+            stringstream ss( extra );
+
+            crypt_stream( ss, secret_hash, e_stream_cipher_chacha20 );
+
+            extra = base64::encode( ss.str( ) );
+         }
 
          ap_socket->write_line( string( c_protocol_version )
           + ':' + extra + '\n' + string( c_response_okay ), c_request_timeout, p_sock_progress );
@@ -6305,7 +6347,21 @@ void peer_session::on_start( )
 
          if( !ver_info.extra.empty( ) )
          {
-            string::size_type pos = ver_info.extra.find( '!' );
+            if( !secret_hash.empty( ) )
+            {
+               stringstream ss( base64::decode( ver_info.extra ) );
+
+               crypt_stream( ss, secret_hash, e_stream_cipher_chacha20 );
+
+               ver_info.extra = ss.str( );
+            }
+
+            string::size_type pos = ver_info.extra.rfind( ']' );
+
+            if( pos != string::npos )
+               ver_info.extra.erase( pos );
+
+            pos = ver_info.extra.find( '!' );
 
             if( pos != string::npos )
             {
@@ -6317,6 +6373,16 @@ void peer_session::on_start( )
                   both_are_owners = true;
             }
 
+            pos = ver_info.extra.find( '%' );
+
+            if( pos != string::npos )
+            {
+#ifdef SSL_SUPPORT
+               public_ext = ver_info.extra.substr( pos + 1 );
+#endif
+               ver_info.extra.erase( pos );
+            }
+
             pos = ver_info.extra.find( '&' );
 
             if( pos != string::npos )
@@ -6325,7 +6391,12 @@ void peer_session::on_start( )
                ver_info.extra.erase( pos );
             }
 
-            if( from_string< size_t >( ver_info.extra ) != get_files_area_item_max_size( ) )
+            pos = ver_info.extra.find( '[' );
+
+            if( pos != string::npos )
+               ver_info.extra.erase( 0, pos + 1 );
+
+            if( unformat_bytes( ver_info.extra ) != get_files_area_item_max_size( ) )
             {
                ap_socket->close( );
 
@@ -6343,7 +6414,8 @@ void peer_session::on_start( )
          }
       }
 
-      init_session( cmd_handler, true, &ip_addr, &unprefixed_blockchain, from_string< int >( port ), is_for_support );
+      init_session( cmd_handler, true, &ip_addr,
+       &unprefixed_blockchain, from_string< int >( port ), is_for_support, false );
 
       if( needs_key_exchange )
       {

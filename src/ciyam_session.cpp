@@ -6394,6 +6394,25 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          encrypt_data( response, data, no_ssl, no_salt, false, harden_key, pwd_and_data );
       }
+      else if( command == c_cmd_ciyam_session_utils_entropy )
+      {
+         string max_extra( get_parm_val( parameters, c_cmd_ciyam_session_utils_entropy_max_extra ) );
+         string minimum_chars( get_parm_val( parameters, c_cmd_ciyam_session_utils_entropy_minimum_chars ) );
+         bool numeric = has_parm_val( parameters, c_cmd_ciyam_session_utils_entropy_numeric );
+         bool alpha_lower = has_parm_val( parameters, c_cmd_ciyam_session_utils_entropy_alpha_lower );
+
+         size_t max_extra_val = from_string< size_t >( max_extra );
+         size_t minimum_chars_val = from_string< size_t >( minimum_chars );
+
+         printable_type type = e_printable_type_alpha_numeric;
+
+         if( numeric )
+            type = e_printable_type_numeric;
+         else if( alpha_lower )
+            type = e_printable_type_alpha_lower;
+
+         response = random_characters( minimum_chars_val, max_extra_val, type );
+      }
    }
    catch( exception& x )
    {
