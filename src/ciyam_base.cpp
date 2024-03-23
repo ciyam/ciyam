@@ -329,9 +329,9 @@ struct global_storage_name_lock
 
 struct session
 {
-   session( size_t id, size_t slot,
-    command_handler& cmd_handler, storage_handler* p_storage_handler,
-    bool is_peer_session, const string* p_ip_addr, const string* p_blockchain, bool is_support_session )
+   session( size_t id, size_t slot, command_handler& cmd_handler,
+    storage_handler* p_storage_handler, bool is_peer_session, const string* p_ip_addr,
+    const string* p_blockchain, bool is_support_session, bool add_pubkey_variable )
     :
     id( id ),
     slot( slot ),
@@ -388,11 +388,14 @@ struct session
 
       variables.insert( make_pair( get_special_var_name( e_special_var_uuid ), uuid( ).as_string( ) ) );
 
+      if( add_pubkey_variable )
+      {
 #ifndef SSL_SUPPORT
-      variables.insert( make_pair( get_special_var_name( e_special_var_pubkey ), c_none ) );
+         variables.insert( make_pair( get_special_var_name( e_special_var_pubkey ), c_none ) );
 #else
-      variables.insert( make_pair( get_special_var_name( e_special_var_pubkey ), priv_key.get_public( ) ) );
+         variables.insert( make_pair( get_special_var_name( e_special_var_pubkey ), priv_key.get_public( ) ) );
 #endif
+      }
    }
 
    size_t id;
@@ -6602,8 +6605,10 @@ void generate_new_script_sio_files( )
    generate_new_script_sio( false );
 }
 
-void init_session( command_handler& cmd_handler, bool is_peer_session,
- const string* p_ip_addr, const string* p_blockchain, int port, bool is_support_session )
+void init_session(
+ command_handler& cmd_handler, bool is_peer_session,
+ const string* p_ip_addr, const string* p_blockchain,
+ int port, bool is_support_session, bool add_pubkey_variable )
 {
    // NOTE: Scope for guard object.
    {
@@ -6615,8 +6620,9 @@ void init_session( command_handler& cmd_handler, bool is_peer_session,
       {
          if( !g_sessions[ i ] )
          {
-            g_sessions[ i ] = new session( ++g_next_session_id, i, cmd_handler,
-             g_storage_handlers[ 0 ], is_peer_session, p_ip_addr, p_blockchain, is_support_session );
+            g_sessions[ i ] = new session( ++g_next_session_id,
+             i, cmd_handler, g_storage_handlers[ 0 ], is_peer_session,
+             p_ip_addr, p_blockchain, is_support_session, add_pubkey_variable );
 
             gtp_session = g_sessions[ i ];
             ods::instance( 0, true );

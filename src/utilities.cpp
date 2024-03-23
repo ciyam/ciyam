@@ -205,6 +205,14 @@ uint64_t uuid::as_uint64_t( ) const
    return *( uint64_t* )( &buf[ c_uuid_size - sizeof( uint64_t ) ] );
 }
 
+void uuid::copy_bytes( unsigned char* p_buf, size_t num )
+{
+   if( ( num == 0 ) || ( num > c_uuid_size ) )
+      throw runtime_error( "invalid num value " + to_string( num ) + " in uuid::copy_bytes" );
+
+   memcpy( p_buf, buf, num );
+}
+
 string uuid::as_string( ) const
 {
    string str( c_uuid_size * 2, '\0' );
@@ -216,6 +224,63 @@ string uuid::as_string( ) const
    }
 
    return str;
+}
+
+string random_characters( size_t minimum, size_t max_extra, printable_type type )
+{
+   uuid entropy;
+
+   string retval;
+
+   size_t extra = 0;
+   size_t offset = 0;
+
+   unsigned char buf[ c_uuid_size ];
+
+   if( max_extra )
+      extra = ( entropy.as_uint64_t( ) % ( max_extra + 1 ) );
+
+   size_t total_chars = ( minimum + extra );
+
+   for( size_t i = 0; i < total_chars; i++ )
+   {
+      if( ( i % 8 ) == 0 )
+      {
+         offset = 0;
+
+         entropy = uuid( );
+         entropy.copy_bytes( buf );
+      }
+
+      unsigned char next = buf[ offset++ ];
+
+      if( type == e_printable_type_numeric )
+         retval += '0' + ( next % 10 );
+      else if( type == e_printable_type_alpha_lower )
+         retval += 'a' + ( next % 26 );
+      else if( type == e_printable_type_alpha_mixed )
+      {
+         next = ( next % 52 );
+
+         if( next < 26 )
+            retval += 'A' + next;
+         else
+            retval += 'a' + ( next - 26 );
+      }
+      else if( type == e_printable_type_alpha_numeric )
+      {
+         next = ( next % 62 );
+
+         if( next < 10 )
+            retval += '0' + next;
+         else if( next < 36 )
+            retval += 'A' + ( next - 10 );
+         else
+            retval += 'a' + ( next - 36 );
+      }
+   }
+
+   return retval;
 }
 
 #ifdef __GNUG__
