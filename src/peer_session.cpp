@@ -3385,7 +3385,7 @@ class socket_command_handler : public command_handler
    void get_hello( );
    void put_hello( );
 
-   void get_file( const string& hash, string* p_file_data = 0 );
+   void get_file( const string& hash, string* p_file_data );
    void put_file( const string& hash );
 
    void msg_peer( const string& data );
@@ -3569,12 +3569,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
    size_t num_bytes = 0;
 
    if( !p_file_data )
-   {
-      store_file( hash, socket, 0, p_sock_progress, true, 0, true );
-
-      is_list = is_list_file( hash );
-      num_bytes = file_bytes( hash );
-   }
+      throw runtime_error( "unexpected null p_file_data in socket_command_handler::get_file" );
    else
    {
       string file_data, raw_file_data;
