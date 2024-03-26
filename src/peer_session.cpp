@@ -5926,9 +5926,9 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          private_key priv_key;
 
          priv_key.get_secret( secret_key );
-         public_key = priv_key.get_public( );
+         public_loc = priv_key.get_public( );
 
-         pid += '%' + public_key;
+         pid += '%' + public_loc;
 #endif
 
          if( has_support_sessions )
@@ -6085,9 +6085,20 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
             private_key priv_key;
 
             priv_key.get_secret( secret_key );
-            public_key = priv_key.get_public( );
+            public_loc = priv_key.get_public( );
 
             public_ext = blockchain.substr( spos + 1 );
+
+            if( !secret_hash.empty( ) )
+            {
+               public_key pub_key( public_ext );
+
+               priv_key.construct_shared( session_secret, pub_key );
+
+               sha256 hash( secret_hash + session_secret );
+
+               session_secret = hash.get_digest_as_string( );
+            }
 #endif
             blockchain.erase( spos );
          }
@@ -6250,8 +6261,8 @@ void peer_session::on_start( )
          }
 
 #ifdef SSL_SUPPORT
-         if( !public_key.empty( ) )
-            extra += '%' + public_key;
+         if( !public_loc.empty( ) )
+            extra += '%' + public_loc;
 #endif
 
          if( is_owner )
@@ -6374,6 +6385,18 @@ void peer_session::on_start( )
             {
 #ifdef SSL_SUPPORT
                public_ext = ver_info.extra.substr( pos + 1 );
+
+               if( !secret_hash.empty( ) )
+               {
+                  public_key pub_key( public_ext );
+                  private_key priv_key( secret_key );
+
+                  priv_key.construct_shared( session_secret, pub_key );
+
+                  sha256 hash( secret_hash + session_secret );
+
+                  session_secret = hash.get_digest_as_string( );
+               }
 #endif
                ver_info.extra.erase( pos );
             }
@@ -6505,6 +6528,10 @@ void peer_session::on_start( )
 
       if( !backup_identity.empty( ) )
          set_session_variable( get_special_var_name( e_special_var_blockchain_backup_identity ), backup_identity );
+
+      if( !session_secret.empty( ) )
+         set_session_variable( get_special_var_name(
+          e_special_var_session_unique ), sha256( session_secret ).get_digest_as_string( ).substr( 0, 12 ) );
 
       if( !is_for_support )
       {

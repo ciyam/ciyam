@@ -96,10 +96,12 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    std::string backup_identity;
 
    std::string public_ext;
-   std::string public_key;
-   std::string secret_key;
+   std::string public_loc;
 
+   std::string secret_key;
    std::string secret_hash;
+
+   std::string session_secret;
 
 #  ifdef SSL_SUPPORT
    std::auto_ptr< ssl_socket > ap_socket;
