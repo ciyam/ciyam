@@ -4248,30 +4248,39 @@ void copy_raw_file( const string& hash, const string& dest_file_name )
    file_copy( file_name, dest_file_name );
 }
 
-void fetch_temp_file( const string& name, tcp_socket& socket, progress* p_progress )
+void store_temp_file( const string& hash, const string& name, tcp_socket& socket, progress* p_progress, bool is_existing )
 {
-   file_transfer( name, socket,
-    e_ft_direction_send, get_files_area_item_max_size( ),
-    c_response_okay_more, c_file_transfer_initial_timeout,
-    c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0, 0, 0, p_progress );
-}
+   session_file_buffer_access file_buffer;
 
-void store_temp_file( const string& name, tcp_socket& socket, progress* p_progress, bool is_existing )
-{
+   size_t total_bytes = file_transfer( name,
+    socket, e_ft_direction_recv, get_files_area_item_max_size( ),
+    ( is_existing ? c_response_okay_skip : c_response_okay_more ),
+    c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size,
+    0, file_buffer.get_buffer( ), file_buffer.get_size( ), p_progress, ( !is_existing ? 0 : c_response_okay_skip ) );
+
    if( !name.empty( ) )
-      file_transfer( name, socket,
-       e_ft_direction_recv, get_files_area_item_max_size( ),
-       c_response_okay_more, c_file_transfer_initial_timeout,
-       c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0, 0, 0, p_progress );
-   else
    {
-      session_file_buffer_access file_buffer;
+      string session_secret( get_session_secret( ) );
 
-      file_transfer( name,
-       socket, e_ft_direction_recv, get_files_area_item_max_size( ),
-       ( is_existing ? c_response_okay_skip : c_response_okay_more ),
-       c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size,
-       0, file_buffer.get_buffer( ), file_buffer.get_size( ), p_progress, ( !is_existing ? 0 : c_response_okay_skip ) );
+      // NOTE: Supports the decryption of file data immediately after receiving.
+      if( !session_secret.empty( ) )
+      {
+         string temporary( total_bytes, '\0' );
+
+         file_buffer.copy_to_string( temporary, 0, total_bytes );
+
+         stringstream ss( temporary );
+
+         crypt_stream( ss, combined_clear_key( session_secret, hash ), e_stream_cipher_chacha20 );
+
+         temporary = ss.str( );
+
+         file_buffer.copy_from_string( temporary, 0, false );
+
+         clear_key( session_secret );
+      }
+
+      write_file( name, ( unsigned char* )&file_buffer.get_buffer( )[ 0 ], total_bytes );
    }
 }
 
