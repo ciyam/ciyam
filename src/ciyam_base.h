@@ -369,7 +369,7 @@ class CIYAM_BASE_DECL_SPEC session_file_buffer_access
    void copy_to_string(
     std::string& str, size_t offset = 0, size_t length = 0 ) const;
 
-   void copy_from_string( const std::string& str, size_t offset = 0 );
+   void copy_from_string( const std::string& str, size_t offset = 0, bool allow_shrink = true );
 
    unsigned int get_size( ) { return size; }
    unsigned char* get_buffer( ) { return p_buffer; }

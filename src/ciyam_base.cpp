@@ -398,6 +398,11 @@ struct session
       }
    }
 
+   ~session( )
+   {
+      clear_key( secret );
+   }
+
    size_t id;
    size_t slot;
 
@@ -6994,7 +6999,7 @@ session_file_buffer_access::session_file_buffer_access( )
    if( gtp_session && gtp_session->buffer_is_locked )
       throw runtime_error( "unable to access session buffer" );
 
-   unsigned int bufsize = get_files_area_item_max_size( ) * c_max_file_buffer_expansion;
+   unsigned int bufsize = ( get_files_area_item_max_size( ) * c_max_file_buffer_expansion );
 
    // NOTE: If is not a session then will simply allocate a buffer
    // (which might be necessary when constructing session objects).
@@ -7037,15 +7042,19 @@ void session_file_buffer_access::copy_to_string( string& str, size_t offset, siz
    }
 }
 
-void session_file_buffer_access::copy_from_string( const string& str, size_t offset )
+void session_file_buffer_access::copy_from_string( const string& str, size_t offset, bool allow_shrink )
 {
-   unsigned int bufsize = get_files_area_item_max_size( ) * c_max_file_buffer_expansion;
+   unsigned int bufsize = ( get_files_area_item_max_size( ) * c_max_file_buffer_expansion );
 
-   if( str.size( ) + offset > bufsize )
+   size_t str_size = str.size( );
+
+   if( str_size + offset > bufsize )
       throw runtime_error( "copy_from_string too large for session_file_buffer_access" );
 
-   size = str.size( );
-   memcpy( p_buffer + offset, str.data( ), size );
+   if( allow_shrink || ( str_size > size ) )
+      size = str_size;
+
+   memcpy( p_buffer + offset, str.data( ), str_size );
 }
 
 void increment_peer_files_uploaded( int64_t bytes )
