@@ -93,6 +93,7 @@ const char* const c_env_var_rpc_password = "RPC_PASSWORD";
 const char* const c_env_var_ciyam_seconds = "CIYAM_SECONDS";
 const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
 const char* const c_env_var_progress_prefix = "PROGRESS_PREFIX";
+const char* const c_env_var_ciyam_file_name_only = "CIYAM_FILE_NAME_ONLY";
 
 const char* const c_udp_msg_cancel = "XXX";
 
@@ -975,6 +976,9 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         string prefixed_append_name( append_prefix + '/' + name_without_chunk_ext );
 
                         string prefix_append_name_for_display( prefixed_append_name );
+
+                        if( has_environment_variable( c_env_var_ciyam_file_name_only ) )
+                           prefix_append_name_for_display = name_without_chunk_ext;
 
                         if( append_last_name != name_without_chunk_ext )
                         {
