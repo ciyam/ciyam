@@ -164,10 +164,7 @@ void CIYAM_BASE_DECL_SPEC delete_files_for_tags( const std::string& pat, progres
 
 void CIYAM_BASE_DECL_SPEC copy_raw_file( const std::string& hash, const std::string& dest_file_name );
 
-void CIYAM_BASE_DECL_SPEC fetch_temp_file(
- const std::string& name, tcp_socket& socket, progress* p_progress = 0 );
-
-void CIYAM_BASE_DECL_SPEC store_temp_file(
+void CIYAM_BASE_DECL_SPEC store_temp_file( const std::string& hash,
  const std::string& name, tcp_socket& socket, progress* p_progress = 0, bool is_existing = false );
 
 bool CIYAM_BASE_DECL_SPEC temp_file_is_identical( const std::string& temp_name, const std::string& hash );

@@ -3509,7 +3509,7 @@ void socket_command_handler::get_hello( )
 
    try
    {
-      store_temp_file( temp_file_name, socket, p_progress );
+      store_temp_file( hello_hash, temp_file_name, socket, p_progress );
 
       if( !temp_file_is_identical( temp_file_name, hello_hash ) )
       {
@@ -4925,7 +4925,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   try
                   {
-                     store_temp_file( temp_file_name, socket, p_sock_progress );
+                     store_temp_file( hello_hash, temp_file_name, socket, p_sock_progress );
 
                      response.erase( );
 
@@ -5274,7 +5274,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
             num_bytes = file_data.size( );
 
-            store_temp_file( "", socket, p_sock_progress, true );
+            store_temp_file( hash, "", socket, p_sock_progress, true );
          }
          else
             store_file( hash, socket, 0, p_sock_progress, false, 0, false, &file_data, &num_bytes );
