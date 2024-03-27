@@ -157,13 +157,13 @@ const char* const c_special_variable_backup_files = "@backup_files";
 const char* const c_special_variable_block_height = "@block_height";
 const char* const c_special_variable_opened_files = "@opened_files";
 const char* const c_special_variable_peer_map_key = "@peer_map_key";
-const char* const c_special_variable_peer_secured = "@peer_secured";
 const char* const c_special_variable_shared_files = "@shared_files";
 const char* const c_special_variable_app_directory = "@app_directory";
 const char* const c_special_variable_export_needed = "@export_needed";
 const char* const c_special_variable_import_needed = "@import_needed";
 const char* const c_special_variable_last_file_put = "@last_file_put";
 const char* const c_special_variable_num_put_files = "@num_put_files";
+const char* const c_special_variable_peer_sec_hash = "@peer_sec_hash";
 const char* const c_special_variable_rewind_height = "@rewind_height";
 const char* const c_special_variable_shared_secret = "@shared_secret";
 const char* const c_special_variable_stream_cipher = "@stream_cipher";
@@ -179,7 +179,6 @@ const char* const c_special_variable_progress_fracs = "@progress_fracs";
 const char* const c_special_variable_progress_prior = "@progress_prior";
 const char* const c_special_variable_progress_total = "@progress_total";
 const char* const c_special_variable_progress_value = "@progress_value";
-const char* const c_special_variable_session_unique = "@session_unique";
 const char* const c_special_variable_style_extended = "@style_extended";
 const char* const c_special_variable_sys_var_prefix = "@sys_var_prefix";
 const char* const c_special_variable_blockchain_user = "@blockchain_user";
@@ -730,10 +729,6 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_peer_map_key );
       break;
 
-      case e_special_var_peer_secured:
-      s = string( c_special_variable_peer_secured );
-      break;
-
       case e_special_var_shared_files:
       s = string( c_special_variable_shared_files );
       break;
@@ -756,6 +751,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_num_put_files:
       s = string( c_special_variable_num_put_files );
+      break;
+
+      case e_special_var_peer_sec_hash:
+      s = string( c_special_variable_peer_sec_hash );
       break;
 
       case e_special_var_rewind_height:
@@ -816,10 +815,6 @@ string get_special_var_name( special_var var )
 
       case e_special_var_progress_value:
       s = string( c_special_variable_progress_value );
-      break;
-
-      case e_special_var_session_unique:
-      s = string( c_special_variable_session_unique );
       break;
 
       case e_special_var_style_extended:

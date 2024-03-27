@@ -3697,6 +3697,20 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
          clear_key( crypt_password );
       }
 
+      string session_secret( get_session_secret( ) );
+
+      // NOTE: Supports the encryption of file data immediately prior to transmitting.
+      if( !session_secret.empty( ) )
+      {
+         stringstream ss( content );
+
+         crypt_stream( ss, combined_clear_key( session_secret, hash ), e_stream_cipher_chacha20 );
+
+         content = ss.str( );
+
+         clear_key( session_secret );
+      }
+
       file_buffer.copy_from_string( content );
    }
 
@@ -3782,9 +3796,29 @@ bool store_file( const string& hash,
       if( p_total_bytes )
          *p_total_bytes = total_bytes;
 
+      string session_secret( get_session_secret( ) );
+
+      // NOTE: Supports the decryption of file data immediately after receiving.
+      if( !session_secret.empty( ) )
+      {
+         string temporary( total_bytes, '\0' );
+
+         file_buffer.copy_to_string( temporary, 0, total_bytes );
+
+         stringstream ss( temporary );
+
+         crypt_stream( ss, combined_clear_key( session_secret, hash ), e_stream_cipher_chacha20 );
+
+         temporary = ss.str( );
+
+         file_buffer.copy_from_string( temporary, 0, false );
+
+         clear_key( session_secret );
+      }
+
       if( p_raw_file_data )
       {
-         p_raw_file_data->reserve( file_buffer.get_size( ) );
+         p_raw_file_data->reserve( total_bytes );
          file_buffer.copy_to_string( *p_raw_file_data, 0, total_bytes );
       }
 

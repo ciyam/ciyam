@@ -6435,6 +6435,17 @@ void peer_session::on_start( )
       init_session( cmd_handler, true, &ip_addr,
        &unprefixed_blockchain, from_string< int >( port ), is_for_support, false );
 
+      if( !session_secret.empty( ) )
+      {
+         set_session_secret( session_secret );
+
+         set_session_variable( get_special_var_name(
+          e_special_var_peer_sec_hash ), sha256( session_secret ).get_digest_as_string( ).substr( 0, 12 ) );
+
+         clear_key( session_secret );
+      }
+
+      // NOTE: This key exchange is the application protocol method (only supported for interactive testing).
       if( needs_key_exchange )
       {
          string slot_and_pubkey( get_raw_session_variable( get_special_var_name( e_special_var_slot ) ) );
@@ -6502,9 +6513,6 @@ void peer_session::on_start( )
          set_session_progress_message( progress_message );
       }
 
-      if( !secret_hash.empty( ) )
-         set_session_variable( get_special_var_name( e_special_var_peer_secured ), c_true_value );
-
       if( is_user )
          set_session_variable( get_special_var_name( e_special_var_blockchain_user ), c_true_value );
 
@@ -6528,10 +6536,6 @@ void peer_session::on_start( )
 
       if( !backup_identity.empty( ) )
          set_session_variable( get_special_var_name( e_special_var_blockchain_backup_identity ), backup_identity );
-
-      if( !session_secret.empty( ) )
-         set_session_variable( get_special_var_name(
-          e_special_var_session_unique ), sha256( session_secret ).get_digest_as_string( ).substr( 0, 12 ) );
 
       if( !is_for_support )
       {
