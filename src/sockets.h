@@ -160,8 +160,14 @@ class tcp_socket : public socket_base
 
    bool had_blank_line( ) const { return blank_line; }
 
+   size_t get_num_read_lines( ) const { return num_read_lines; }
+   size_t get_num_write_lines( ) const { return num_write_lines; }
+
    private:
    bool blank_line;
+
+   size_t num_read_lines;
+   size_t num_write_lines;
 };
 
 class udp_socket : public socket_base

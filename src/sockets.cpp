@@ -461,13 +461,17 @@ bool socket_base::set_option( int type, int opt, const char* p_buffer, socklen_t
 
 tcp_socket::tcp_socket( )
  : socket_base( ),
- blank_line( false )
+ blank_line( false ),
+ num_read_lines( 0 ),
+ num_write_lines( 0 )
 {
 }
 
 tcp_socket::tcp_socket( SOCKET socket )
  : socket_base( socket ),
- blank_line( false )
+ blank_line( false ),
+ num_read_lines( 0 ),
+ num_write_lines( 0 )
 {
 }
 
@@ -542,8 +546,11 @@ int tcp_socket::read_line( char* p_data, size_t timeout, int max_chars, progress
       if( b == '\n' && lb == '\r' )
       {
          n -= 2;
+
          if( n == 0 )
             blank_line = true;
+
+         ++num_read_lines;
          break;
       }
 
@@ -569,9 +576,9 @@ int tcp_socket::read_line( char* p_data, size_t timeout, int max_chars, progress
    if( p_progress && o )
    {
       if( p_str )
-         p_progress->output_progress( ">R> " + *p_str );
+         p_progress->output_progress( ">R> " + to_comparable_string( num_read_lines, false, 9 ) + ' ' + *p_str );
       else
-         p_progress->output_progress( ">R> " + string( p_data, o ) );
+         p_progress->output_progress( ">R> " + to_comparable_string( num_read_lines, false, 9 ) + ' ' + string( p_data, o ) );
    }
 
    return n;
@@ -639,10 +646,15 @@ int tcp_socket::write_line( int len, const char* p_data, size_t timeout, progres
          if( !get_delay( ) )
             write_string = string( "<W<!" );
 
+         write_string += to_comparable_string( num_write_lines + 1, false, 9 ) + ' ';
+
          p_progress->output_progress( write_string + string( p_data, len - 2 ) );
       }
 
       n = send_n( ( const unsigned char* )p_data, len, timeout );
+
+      if( n == len )
+         ++num_write_lines;
    }
 
    return n;
