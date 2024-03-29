@@ -683,6 +683,65 @@ string get_hello_data( string& hello_hash )
    return data;
 }
 
+string xor_hashes( const string& hash1, const string& hash2 )
+{
+   string hash;
+
+   unsigned char buf1[ c_sha256_digest_size ];
+   unsigned char buf2[ c_sha256_digest_size ];
+
+   hex_decode( hash1, buf1, sizeof( buf1 ) );
+   hex_decode( hash2, buf2, sizeof( buf2 ) );
+
+   for( size_t i = 0; i < c_sha256_digest_size; i++ )
+      buf1[ i ] ^= buf2[ i ];
+
+   hex_encode( hash, buf1, sizeof( buf1 ) );
+
+   return hash;
+}
+
+string file_hash_for_read( const tcp_socket& socket, const string& hash_input )
+{
+   string hash( hash_input );
+
+   string secret( get_session_secret( ) );
+
+   if( !secret.empty( ) && are_hex_nibbles( hash ) )
+   {
+      string dummy( sha256( to_string(
+       socket.get_num_read_lines( ) ) + secret ).get_digest_as_string( ) );
+
+      hash = xor_hashes( hash, dummy );
+
+      clear_key( secret );
+   }
+
+   return hash;
+}
+
+string file_hash_for_write( const tcp_socket& socket, const string& hash_or_tag )
+{
+   string hash( hash_or_tag );
+
+   if( has_tag( hash_or_tag ) )
+      hash = tag_file_hash( hash_or_tag );
+
+   string secret( get_session_secret( ) );
+
+   if( !secret.empty( ) && !hash.empty( ) && are_hex_nibbles( hash ) )
+   {
+      string dummy( sha256( to_string(
+       socket.get_num_write_lines( ) + 1 ) + secret ).get_digest_as_string( ) );
+
+      hash = xor_hashes( hash, dummy );
+
+      clear_key( secret );
+   }
+
+   return hash;
+}
+
 void parse_peer_mapped_info( const string& peer_mapped_info, string& local_hash,
  string& local_public_key, string& master_public_key, bool base64_encode_pubkeys, bool is_test_session = false )
 {
@@ -711,7 +770,7 @@ bool terminate_peer_session( bool is_for_support, const string& identity )
    {
       condemn_matching_sessions( );
 
-      while( has_any_matching_session( ) )
+      while( has_any_matching_session( true ) )
          msleep( c_wait_sleep_time );
 
       string peer_map_key( get_raw_session_variable(
@@ -3505,7 +3564,9 @@ void socket_command_handler::get_hello( )
    string temp_file_name( "~" + uuid( ).as_string( ) );
 
    socket.set_no_delay( );
-   socket.write_line( string( c_cmd_peer_session_get ) + " " + hello_hash, c_request_timeout, p_progress );
+
+   socket.write_line( string( c_cmd_peer_session_get ) + " "
+    + file_hash_for_write( socket, hello_hash ), c_request_timeout, p_progress );
 
    try
    {
@@ -3563,7 +3624,9 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
    string hash( hash_info.substr( 0, pos ) );
 
    socket.set_no_delay( );
-   socket.write_line( string( c_cmd_peer_session_get ) + " " + hash, c_request_timeout, p_sock_progress );
+
+   socket.write_line( string( c_cmd_peer_session_get ) + " "
+    + file_hash_for_write( socket, hash ), c_request_timeout, p_sock_progress );
 
    bool is_list = false;
    size_t num_bytes = 0;
@@ -3674,6 +3737,8 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
    socket.set_no_delay( );
 
+   bool added_nonce = false;
+
    if( p_response )
    {
       string request( hash_or_tag );
@@ -3685,6 +3750,8 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
    }
    else
    {
+      added_nonce = true;
+
       string nonce( uuid( ).as_string( ) );
 
       expected = hash_with_nonce( hash_or_tag, nonce );
@@ -3771,6 +3838,8 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
       if( response == string( c_response_not_found ) )
          response.erase( );
+      else if( !added_nonce )
+         response = file_hash_for_read( socket, response );
 
       break;
    }
@@ -4125,7 +4194,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       if( !has_issued_chk )
       {
-         string tag_or_hash( prior_file( ) );
+         string tag_or_hash( file_hash_for_write( socket, prior_file( ) ) );
 
          if( tag_or_hash.empty( ) || is_waiting_for_hub )
             tag_or_hash = blockchain + c_dummy_suffix;
@@ -4786,10 +4855,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          replace( tag_or_hash, get_special_var_name( e_special_var_blockchain ), blockchain );
 
-         string hash( tag_or_hash );
+         string hash( file_hash_for_read( socket, tag_or_hash ) );
 
          if( hash == hello_hash )
-            response = hello_hash;
+            response = file_hash_for_write( socket, hello_hash );
 
          bool is_new_sig = false;
 
@@ -4801,7 +4870,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( tag_or_hash == new_sig_tag )
             is_new_sig = true;
          else if( has_tag( tag_or_hash ) )
-            response = hash = tag_file_hash( tag_or_hash );
+         {
+            hash = tag_file_hash( tag_or_hash );
+            response = file_hash_for_write( socket, hash );
+         }
 
          bool is_dummy = false;
 
@@ -4909,14 +4981,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      socket_handler.trust_level( ) = e_peer_trust_level_normal;
 
                      if( !nonce.empty( ) )
-                        add_peer_file_hash_for_get( nonce );
+                        add_peer_file_hash_for_get( file_hash_for_read( socket, nonce ) );
                   }
                }
                else
                {
                   handler.issue_command_response( response, true );
 
-                  handler.issue_command_response( "put " + hello_hash, true );
+                  handler.issue_command_response( "put " + file_hash_for_write( socket, hello_hash ), true );
 
                   socket.set_delay( );
                   fetch_file( hello_hash, socket, p_sock_progress );
@@ -5167,6 +5239,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( has_tag( tag_or_hash ) )
             hash = tag_file_hash( tag_or_hash );
+         else
+            hash = file_hash_for_read( socket, hash );
 
          socket.set_delay( );
 
@@ -6638,11 +6712,11 @@ void peer_session::on_start( )
             string genesis_block_tag( blockchain + ".0" + string( c_blk_suffix ) );
 
             if( has_tag( genesis_block_tag ) )
-               hash_or_tag += ' ' + tag_file_hash( genesis_block_tag );
+               hash_or_tag += ' ' + file_hash_for_write( *ap_socket, genesis_block_tag );
          }
 
          if( hash_or_tag.empty( ) )
-            hash_or_tag = hello_hash;
+            hash_or_tag = file_hash_for_write( *ap_socket, hello_hash );
 
          ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_sock_progress );
 
@@ -6656,7 +6730,7 @@ void peer_session::on_start( )
             if( ap_socket->read_line( block_hash, c_request_timeout, c_max_line_length, p_sock_progress ) <= 0 )
                okay = false;
             else if( !is_for_support && ( block_hash != string( c_response_not_found ) ) )
-               add_peer_file_hash_for_get( block_hash );
+               add_peer_file_hash_for_get( file_hash_for_read( *ap_socket, block_hash ) );
          }
       }
 

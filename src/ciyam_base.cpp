@@ -7329,7 +7329,7 @@ bool is_captured_session( )
    return gtp_session && gtp_session->is_captured;
 }
 
-bool has_any_matching_session( )
+bool has_any_matching_session( bool support_only )
 {
    guard g( g_session_mutex );
 
@@ -7347,8 +7347,11 @@ bool has_any_matching_session( )
          if( g_sessions[ i ] && ( g_sessions[ i ]->id != sess_id )
           && ( g_sessions[ i ]->ip_addr == ip_addr ) && ( g_sessions[ i ]->blockchain == blockchain ) )
          {
-            retval = true;
-            break;
+            if( !support_only || g_sessions[ i ]->is_support_session )
+            {
+               retval = true;
+               break;
+            }
          }
       }
    }
