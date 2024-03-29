@@ -4040,6 +4040,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
              + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
 
             bool has_tree_files = false;
+            bool force_tree_root_add = false;
 
             if( has_tag( next_block_tag ) )
             {
@@ -4124,9 +4125,16 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         // NOTE: Use the "nonce" argument to identify the first file needing to
                         // be fetched (so that pull requests are commenced at the right point).
                         if( !file_hash.empty( ) && ( file_hash.find( ':' ) == string::npos ) )
-                           next_block_tag += string( " " ) + '@' + file_hash;
+                           next_block_tag += string( " " ) + '@' + file_hash_for_write( socket, file_hash );
 
                         has_tree_files = chk_file( next_block_tag, &next_block_hash );
+
+                        // NOTE: If fetching was incomplete "@blockchain_get_tree_files" will not have
+                        // been set (and the tree root file will not have been added) so if tree files
+                        // exist then will force the tree root to be added below.
+                        if( has_tree_files && get_raw_session_variable(
+                         get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( ) )
+                           force_tree_root_add = true;
 
                         has_issued_chk = true;
                      }
@@ -4177,7 +4185,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                }
                else
                {
-                  if( top_next_peer_file_hash_to_get( ).empty( ) )
+                  if( force_tree_root_add || top_next_peer_file_hash_to_get( ).empty( ) )
                   {
                      string tree_root_hash( get_raw_session_variable(
                       get_special_var_name( e_special_var_blockchain_zenith_tree_hash ) ) );
@@ -5096,7 +5104,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   if( !nonce.empty( ) && nonce[ 0 ] == '@' )
                   {
                      was_incomplete = true;
-                     first_item_hash = nonce.substr( 1 );
+                     first_item_hash = file_hash_for_read( socket, nonce.substr( 1 ) );
                   }
 
                   temporary_session_variable temp_hash(
