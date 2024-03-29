@@ -1798,7 +1798,17 @@ int main( int argc, char* argv[ ] )
                g_max_file_size = unformat_bytes( max_file_size );
             else if( !ver_info.extra.empty( ) )
             {
-               g_max_file_size = from_string< size_t >( ver_info.extra );
+               string::size_type pos = ver_info.extra.rfind( ']' );
+
+               if( pos != string::npos )
+                  ver_info.extra.erase( pos );
+
+               pos = ver_info.extra.find( '[' );
+
+               if( pos != string::npos )
+                  ver_info.extra.erase( 0, pos + 1 );
+
+               g_max_file_size = unformat_bytes( ver_info.extra );
                set_environment_variable( c_env_var_max_file_size, format_bytes( g_max_file_size, false, 0, '\0' ) );
             }
 

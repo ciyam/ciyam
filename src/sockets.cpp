@@ -786,6 +786,9 @@ size_t file_transfer(
    bool has_file_name = !name.empty( );
    bool max_size_exceeded = false;
 
+   if( !max_size )
+      throw runtime_error( "invalid zero max_size in file_transfer" );
+
    if( !max_line_size )
       max_line_size = c_default_line_size;
 
@@ -1007,7 +1010,7 @@ size_t file_transfer(
    {
       bool use_recv_buffer = ( p_buffer && buffer_size );
 
-      if( use_recv_buffer && buffer_size < max_size )
+      if( use_recv_buffer && ( buffer_size < max_size ) )
          throw runtime_error( "buffer_size < max_size for file_transfer" );
    
       ios::openmode oflags = ios::binary;
@@ -1209,7 +1212,7 @@ size_t file_transfer(
 
          size_t decoded_size = decoded.length( ) - offset;
 
-         if( written + decoded_size > max_size )
+         if( ( written + decoded_size ) > max_size )
          {
             max_size_exceeded = true;
             break;
