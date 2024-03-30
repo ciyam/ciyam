@@ -5952,8 +5952,8 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
    if( !is_responder )
    {
       // NOTE: If a session "@secret_hash" variable exists then it will be
-      // used (for "hub" connections) otherwise will use a system variable
-      // (which is set by the "peer_session_starter").
+      // used (for "hub" and "user" connections) else a system variable is
+      // used (which is set by the "peer_session_starter").
       secret_hash = get_raw_session_variable(
        get_special_var_name( e_special_var_secret_hash ) );
 

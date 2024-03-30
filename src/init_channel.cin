@@ -4,10 +4,12 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 @ifeq "$1" ""
-#Usage: init_channel.cin <[alias:]other_ident>
+#Usage: init_channel.cin <[alias:]other_ident> [<shared_secret>]
 @else
 ;
 TARGET=$1
+SHARED_SECRET=$2
+;
 SPLIT=@repstr:\:/\n:$TARGET
 ;
 @ifdef %SPLIT:2%
@@ -19,5 +21,13 @@ TARGET=%SPLIT:2%
 #Creating channel for identity '$TARGET'.
 <bc_gen.cin $1 @sid
 .system_variable >$$%TARGET%_identity $IDENT
+;
+@ifdef $SHARED_SECRET
+.decrypt $SHARED_SECRET
+.crypto_hash -hex -x=100000 $OUTPUT
+SHARED_SECRET_HASH=$OUTPUT
+.system_variable >@secret_hash_$IDENT $SHARED_SECRET_HASH
+@endif
+;
 @endif
 @endif
