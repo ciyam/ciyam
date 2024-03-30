@@ -41,7 +41,7 @@
  <script/>
   <name>init_channel
   <filename>*script*
-  <arguments>init_channel.cin @identity
+  <arguments>init_channel.cin @identity @shared_secret
  </script>
  <script/>
   <name>open_channel

@@ -12,11 +12,17 @@ ERROR=1
 @endif
 ;
 @ifeq "$ERROR" "1"
-#Usage: create_hosted_channel.cin <ident> <other>
+#Usage: create_hosted_channel.cin <ident> <other> [<secret_hash>]
 @else
 ;
 IDENT=$1
 OTHER=$2
+;
+SHARED_SECRET_HASH=$3
+;
+.session_variable @uuid
+UUID=$OUTPUT
+DUMMY_IDENTITY=@substr:0,9:$UUID
 ;
 <channel_identity.cin $IDENT $OTHER
 ;
@@ -42,6 +48,10 @@ FILES_AREA_DIR=$OUTPUT
 ;
 .file_archive -add $FILES_AREA_DIR/$COMBINED $CHANNEL_SIZE $COMBINED
 .file_archive -add $FILES_AREA_DIR/$REVERSED $CHANNEL_SIZE $REVERSED
+;
+@ifdef $SHARED_SECRET_HASH
+.system_variable >@secret_hash_$DUMMY_IDENTITY $SHARED_SECRET_HASH
+@endif
 ;
 #Created file archives for channel identities '$COMBINED' and '$REVERSED'.
 ;
