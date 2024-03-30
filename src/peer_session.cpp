@@ -4878,10 +4878,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( tag_or_hash == new_sig_tag )
             is_new_sig = true;
          else if( has_tag( tag_or_hash ) )
-         {
             hash = tag_file_hash( tag_or_hash );
-            response = file_hash_for_write( socket, hash );
-         }
 
          bool is_dummy = false;
 
@@ -5051,7 +5048,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                nonce.erase( );
 
             if( !nonce.empty( ) && nonce[ 0 ] != '@' )
-               response = hash_with_nonce( hash, nonce );
+               hash = hash_with_nonce( hash, nonce );
 
             size_t num_items_found = 0;
 
@@ -5082,16 +5079,19 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                string::size_type pos = tag_or_hash.find( c_sig_suffix );
 
+               string block_hash( hash );
+
                if( pos != string::npos )
                {
                   string prefix( c_bc_prefix + identity + '.' );
                   size_t height = from_string< size_t >( tag_or_hash.substr( prefix.length( ), pos - prefix.length( ) ) );
 
                   string block_tag( c_bc_prefix + identity + '.' + to_string( height + 1 ) + c_blk_suffix );
-                  hash = tag_file_hash( block_tag );
+
+                  block_hash = tag_file_hash( block_tag );
                }
 
-               if( get_block_height_from_tags( blockchain, hash, blockchain_height ) )
+               if( get_block_height_from_tags( blockchain, block_hash, blockchain_height ) )
                {
                   string first_item_hash;
 
@@ -5217,6 +5217,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   }
                }
             }
+
+            response = file_hash_for_write( socket, hash );
 
             if( num_items_found )
                response += c_tree_files_suffix;
