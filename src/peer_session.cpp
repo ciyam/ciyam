@@ -1983,12 +1983,12 @@ bool has_all_list_items(
                   size_t next_height = from_string< size_t >( blockchain_height_processing );
 
                   // FUTURE: These messages should be handled as a server string messages.
-                  if( !is_fetching )
-                     progress = "Mapping";
+                  if( is_fetching )
+                     progress = "Polling at";
                   else
-                     progress = "Polling";
+                     progress = "Mapping for";
 
-                  progress += " at height " + to_string( next_height );
+                  progress += " height " + to_string( next_height );
 
                   if( !blockchain_height_other.empty( ) )
                   {
@@ -6519,8 +6519,12 @@ void peer_session::on_start( )
       init_session( cmd_handler, true, &ip_addr,
        &unprefixed_blockchain, from_string< int >( port ), is_for_support, false );
 
+      bool has_session_secret = false;
+
       if( !session_secret.empty( ) )
       {
+         has_session_secret = true;
+
          set_session_secret( session_secret );
 
          set_session_variable( get_special_var_name(
@@ -6832,7 +6836,7 @@ void peer_session::on_start( )
       if( okay )
       {
          TRACE_LOG( TRACE_SESSIONS,
-          string( "started peer session " )
+          string( has_session_secret ? "started secure peer session " : "started *insecure* peer session " )
           + ( !is_responder ? "(as initiator)" : "(as responder)" )
           + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain )
           + ( !is_owner ? "" : " owner" )
