@@ -73,7 +73,9 @@ mutex& get_mutex_for_ciyam_channels( )
    return g_mutex;
 }
 
-void lock_peer_channel( const class_base& cb, const string& identity )
+channel_lock::channel_lock( const class_base& cb, const string& identity )
+ :
+ identity( identity )
 {
    string class_display_name( cb.get_display_name( ) );
 
@@ -93,6 +95,12 @@ void lock_peer_channel( const class_base& cb, const string& identity )
    else
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( class_display_name + " '" + identity + "' is not currently available." );
+}
+
+channel_lock::~channel_lock( )
+{
+   set_system_variable( get_special_var_name(
+    e_special_var_opening ) + '_' + identity, "" );
 }
 
 int64_t channel_height_fetched( const string& identity )

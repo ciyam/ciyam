@@ -26,7 +26,13 @@ mutex& CIYAM_BASE_DECL_SPEC get_mutex_for_ciyam_channels( );
 
 class class_base;
 
-void CIYAM_BASE_DECL_SPEC lock_peer_channel( const class_base& cb, const std::string& identity );
+struct channel_lock
+{
+   channel_lock( const class_base& cb, const std::string& identity );
+   ~channel_lock( );
+
+   std::string identity;
+};
 
 int64_t CIYAM_BASE_DECL_SPEC channel_height_fetched( const std::string& identity );
 

@@ -983,7 +983,9 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `{`#for_call_parent_proc.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
  arg_id=$specification_\\0_id arg_procedure_arg=$specification_\\0_procedure_arg\
  arg_sfield=$specification_\\0_sfield arg_spclass=$specification_\\0_spclass\
- arg_spfield=$specification_\\0_spfield arg_fk_proc=$specification_\\0_fk_proc`}\
+ arg_spfield=$specification_\\0_spfield arg_fk_proc=$specification_\\0_fk_proc\
+ arg_not_null=$specification_\\0_not_null arg_skip_restore=$specification_\\0_skip_restore\
+ arg_peer_data_created=$specification_\\0_peer_data_created`}\
 `,\
 `@eq`(`'\\1`'`,`'for_call_proc_with_parent`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_call_proc_with_parent.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
@@ -997,8 +999,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_id=$specification_\\0_id arg_output_arg=$specification_\\0_output_arg arg_procedure=$specification_\\0_procedure\
  arg_fname=$specification_\\0_fname arg_fvalue=$specification_\\0_fvalue arg_tfield=$specification_\\0_tfield\
  arg_procedure1=$specification_\\0_procedure1 arg_procedure2=$specification_\\0_procedure2\
- arg_use_trans=$specification_\\0_use_trans arg_skip_restore=$specification_\\0_skip_restore\
- arg_update=$specification_\\0_update arg_message=$specification_\\0_message\
+ arg_use_trans=$specification_\\0_use_trans arg_skip_submit_file=$specification_\\0_skip_submit_file\
+ arg_skip_restore=$specification_\\0_skip_restore arg_update=$specification_\\0_update arg_message=$specification_\\0_message\
  arg_modifier=$specification_\\0_modifier arg_session_var=$specification_\\0_session_var`}\
 `,\
 `@eq`(`'\\1`'`,`'for_clone`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)

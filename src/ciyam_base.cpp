@@ -13828,6 +13828,8 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
             append_peerchain_log_command( identity, log_command );
 
+            set_session_variable( get_special_var_name( e_special_var_peer_data_created ), c_true_value );
+
             if( get_session_variable( get_special_var_name( e_special_var_skip_submit_file ) ).empty( ) )
                file_touch( get_web_root( ) + '/'
                 + lower( gtp_session->p_storage_handler->get_name( ) ) + '/' + string( c_needs_submit_file ), 0, true );

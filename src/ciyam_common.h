@@ -217,6 +217,7 @@ enum special_var
    e_special_var_fields_and_values,
    e_special_var_last_suffixed_key,
    e_special_var_package_type_path,
+   e_special_var_peer_data_created,
    e_special_var_peer_is_dependent,
    e_special_var_attached_file_path,
    e_special_var_check_script_error,

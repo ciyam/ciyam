@@ -204,6 +204,7 @@ const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_last_suffixed_key = "@last_suffixed_key";
 const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_peer_is_dependent = "@peer_is_dependent";
+const char* const c_special_variable_peer_data_created = "@peer_data_created";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
 const char* const c_special_variable_check_script_error = "@check_script_error";
 const char* const c_special_variable_encrypted_password = "@encrypted_password";
@@ -907,6 +908,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_package_type_path:
       s = string( c_special_variable_package_type_path );
+      break;
+
+      case e_special_var_peer_data_created:
+      s = string( c_special_variable_peer_data_created );
       break;
 
       case e_special_var_peer_is_dependent:
