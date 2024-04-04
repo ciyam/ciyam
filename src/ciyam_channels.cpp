@@ -924,8 +924,7 @@ void storage_channel_documents_close( const char* p_identity )
 
    delete_directory_files( path, true );
 
-   set_system_variable( get_special_var_name(
-    e_special_var_pending ) + '_' + identity, "" );
+   set_system_variable( get_special_var_name( e_special_var_pending ) + '_' + identity, "" );
 }
 
 bool storage_channel_documents_marked( const string& identity )
