@@ -673,7 +673,7 @@ string ods_file_system::determine_folder(
       {
          auto_ptr< ods::bulk_read > ap_bulk;
 
-         if( !o.is_thread_bulk_read_or_write_locked( ) )
+         if( !o.is_thread_bulk_locked( ) )
             ap_bulk.reset( new ods::bulk_read( o ) );
 
          if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
@@ -764,7 +764,7 @@ void ods_file_system::list_links( const string& name, ostream& os )
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
-   if( !o.is_thread_bulk_read_or_write_locked( ) )
+   if( !o.is_thread_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
    btree_type::iterator tmp_iter;
@@ -1085,7 +1085,7 @@ void ods_file_system::get_file( const string& name,
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
-   if( !o.is_thread_bulk_read_or_write_locked( ) )
+   if( !o.is_thread_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
@@ -1142,7 +1142,7 @@ bool ods_file_system::is_link( const string& name )
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
-   if( !o.is_thread_bulk_read_or_write_locked( ) )
+   if( !o.is_thread_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
@@ -1173,7 +1173,7 @@ bool ods_file_system::has_file( const string& name, bool is_prefix,
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
-   if( !o.is_thread_bulk_read_or_write_locked( ) )
+   if( !o.is_thread_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
@@ -1251,7 +1251,7 @@ string ods_file_system::last_file_name_with_prefix( const string& prefix )
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
-   if( !o.is_thread_bulk_read_or_write_locked( ) )
+   if( !o.is_thread_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
@@ -1295,7 +1295,7 @@ string ods_file_system::link_target( const string& name )
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
-   if( !o.is_thread_bulk_read_or_write_locked( ) )
+   if( !o.is_thread_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
@@ -1840,7 +1840,7 @@ void ods_file_system::permissions_file( const string& name, ostream* p_os )
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
-   if( !o.is_thread_bulk_read_or_write_locked( ) )
+   if( !o.is_thread_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
@@ -2196,7 +2196,7 @@ bool ods_file_system::has_folder( const string& name, string* p_perms, int64_t* 
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
-   if( !o.is_thread_bulk_read_or_write_locked( ) )
+   if( !o.is_thread_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
@@ -2574,7 +2574,7 @@ void ods_file_system::dump_node_data( const string& file_name, ostream* p_os )
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
-   if( !o.is_thread_bulk_read_or_write_locked( ) )
+   if( !o.is_thread_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
@@ -2653,7 +2653,7 @@ void ods_file_system::perform_match(
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
-   if( !o.is_thread_bulk_read_or_write_locked( ) )
+   if( !o.is_thread_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
    if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )

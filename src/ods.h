@@ -609,16 +609,12 @@ class ODS_DECL_SPEC ods
    bool is_encrypted( ) const;
 
    bool is_bulk_locked( ) const;
-
-   bool is_bulk_dump_locked( ) const;
-
    bool is_bulk_read_locked( ) const;
    bool is_bulk_write_locked( ) const;
 
+   bool is_thread_bulk_locked( ) const;
    bool is_thread_bulk_read_locked( ) const;
    bool is_thread_bulk_write_locked( ) const;
-
-   bool is_thread_bulk_read_or_write_locked( ) const;
 
    bool is_in_transaction( ) const { return get_transaction_level( ) > 0; }
 
@@ -688,17 +684,23 @@ class ODS_DECL_SPEC ods
       void pause( );
 
       private:
-      bulk_base( ods& o ) : o( o ) { }
+      bulk_base( ods& o, progress* p_progress );
+
+      ~bulk_base( );
 
       protected:
       ods& o;
+
+      progress* p_old_progress;
+      bool was_preventing_lazy_write;
    };
 
    friend struct bulk_base;
 
    struct bulk_dump : bulk_base
    {
-      bulk_dump( ods& o );
+      bulk_dump( ods& o, progress* p_progress = 0 );
+
       ~bulk_dump( );
    };
 
@@ -706,7 +708,8 @@ class ODS_DECL_SPEC ods
 
    struct bulk_read : bulk_base
    {
-      bulk_read( ods& o );
+      bulk_read( ods& o, progress* p_progress = 0, bool allow_thread_demotion = false );
+
       ~bulk_read( );
    };
 
@@ -714,11 +717,9 @@ class ODS_DECL_SPEC ods
 
    struct bulk_write : bulk_base
    {
-      bulk_write( ods& o, progress* p_progress = 0 );
-      ~bulk_write( );
+      bulk_write( ods& o, progress* p_progress = 0, bool allow_thread_promotion = false );
 
-      progress* p_old_progress;
-      bool was_preventing_lazy_write;
+      ~bulk_write( );
    };
 
    friend struct bulk_write;

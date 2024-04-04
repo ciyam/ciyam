@@ -10164,7 +10164,7 @@ struct system_ods_bulk_read::impl
 {
    impl( )
    {
-      if( !gap_ods->is_thread_bulk_read_or_write_locked( ) )
+      if( !gap_ods->is_thread_bulk_locked( ) )
          ap_ods_bulk_read.reset( new ods::bulk_read( *gap_ods ) );
    }
 
