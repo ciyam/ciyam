@@ -9299,11 +9299,14 @@ void term_storage( command_handler& cmd_handler )
       while( !gtp_session->transactions.empty( ) )
          transaction_rollback( );
 
-      // NOTE: Now store the "next_id" (rather than the "ceiling" value).
-      ods_file_system ofs( *ods::instance( ) );
+      if( gtp_session->p_storage_handler->get_ref_count( ) == 1 )
+      {
+         // NOTE: Now store the "next_id" (rather than the "ceiling" value).
+         ods_file_system ofs( *ods::instance( ) );
 
-      ofs.store_as_text_file( c_storable_file_name_log_id,
-       gtp_session->p_storage_handler->get_root( ).log_id.next_id );
+         ofs.store_as_text_file( c_storable_file_name_log_id,
+          gtp_session->p_storage_handler->get_root( ).log_id.next_id );
+      }
 
       delete ods::instance( );
       ods::instance( 0, true );
@@ -10161,7 +10164,7 @@ struct system_ods_bulk_read::impl
 {
    impl( )
    {
-      if( !gap_ods->is_bulk_read_locked( ) && !gap_ods->is_bulk_write_locked( ) )
+      if( !gap_ods->is_thread_bulk_read_or_write_locked( ) )
          ap_ods_bulk_read.reset( new ods::bulk_read( *gap_ods ) );
    }
 
@@ -10182,7 +10185,7 @@ struct system_ods_bulk_write::impl
 {
    impl( progress* p_progress )
    {
-      if( !gap_ods->is_bulk_write_locked( ) )
+      if( !gap_ods->is_thread_bulk_write_locked( ) )
          ap_ods_bulk_write.reset( new ods::bulk_write( *gap_ods, p_progress ) );
    }
 

@@ -611,8 +611,14 @@ class ODS_DECL_SPEC ods
    bool is_bulk_locked( ) const;
 
    bool is_bulk_dump_locked( ) const;
+
    bool is_bulk_read_locked( ) const;
    bool is_bulk_write_locked( ) const;
+
+   bool is_thread_bulk_read_locked( ) const;
+   bool is_thread_bulk_write_locked( ) const;
+
+   bool is_thread_bulk_read_or_write_locked( ) const;
 
    bool is_in_transaction( ) const { return get_transaction_level( ) > 0; }
 

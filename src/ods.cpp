@@ -2935,22 +2935,71 @@ bool ods::is_encrypted( ) const
 
 bool ods::is_bulk_locked( ) const
 {
+   guard lock_impl( *p_impl->rp_impl_lock );
+
    return ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_none );
 }
 
 bool ods::is_bulk_dump_locked( ) const
 {
+   guard lock_impl( *p_impl->rp_impl_lock );
+
    return ( *p_impl->rp_bulk_mode == impl::e_bulk_mode_dump );
 }
 
 bool ods::is_bulk_read_locked( ) const
 {
+   guard lock_impl( *p_impl->rp_impl_lock );
+
    return ( *p_impl->rp_bulk_mode == impl::e_bulk_mode_read );
 }
 
 bool ods::is_bulk_write_locked( ) const
 {
+   guard lock_impl( *p_impl->rp_impl_lock );
+
    return ( *p_impl->rp_bulk_mode == impl::e_bulk_mode_write );
+}
+
+bool ods::is_thread_bulk_read_locked( ) const
+{
+   bool retval = false;
+
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( *p_impl->rp_bulk_mode == impl::e_bulk_mode_read )
+      retval = ( *p_impl->rp_bulk_read_thread_id == current_thread_id( ) );
+
+   return retval;
+}
+
+bool ods::is_thread_bulk_write_locked( ) const
+{
+   bool retval = false;
+
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( *p_impl->rp_bulk_mode == impl::e_bulk_mode_write )
+      retval = ( *p_impl->rp_bulk_write_thread_id == current_thread_id( ) );
+
+   return retval;
+}
+
+bool ods::is_thread_bulk_read_or_write_locked( ) const
+{
+   bool retval = false;
+
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( *p_impl->rp_bulk_mode != impl::e_bulk_mode_none )
+   {
+      if( *p_impl->rp_bulk_mode == impl::e_bulk_mode_read )
+         retval = ( *p_impl->rp_bulk_read_thread_id == current_thread_id( ) );
+      else if( *p_impl->rp_bulk_mode == impl::e_bulk_mode_write )
+         retval = ( *p_impl->rp_bulk_write_thread_id == current_thread_id( ) );
+   }
+
+   return retval;
 }
 
 bool ods::is_using_transaction_log( ) const
@@ -2960,31 +3009,43 @@ bool ods::is_using_transaction_log( ) const
 
 int64_t ods::get_total_entries( ) const
 {
+   guard lock_impl( *p_impl->rp_impl_lock );
+
    return p_impl->rp_header_info->total_entries;
 }
 
 int64_t ods::get_session_review_total( ) const
 {
+   guard lock_impl( *p_impl->rp_impl_lock );
+
    return *p_impl->rp_session_review_total;
 }
 
 int64_t ods::get_session_create_total( ) const
 {
+   guard lock_impl( *p_impl->rp_impl_lock );
+
    return *p_impl->rp_session_create_total;
 }
 
 int64_t ods::get_session_revive_total( ) const
 {
+   guard lock_impl( *p_impl->rp_impl_lock );
+
    return *p_impl->rp_session_revive_total;
 }
 
 int64_t ods::get_session_update_total( ) const
 {
+   guard lock_impl( *p_impl->rp_impl_lock );
+
    return *p_impl->rp_session_update_total;
 }
 
 int64_t ods::get_session_delete_total( ) const
 {
+   guard lock_impl( *p_impl->rp_impl_lock );
+
    return *p_impl->rp_session_delete_total;
 }
 
@@ -3000,6 +3061,8 @@ int64_t ods::get_transaction_level( ) const
 
 int64_t ods::get_next_transaction_id( ) const
 {
+   guard lock_impl( *p_impl->rp_impl_lock );
+
    return p_impl->rp_header_info->transaction_id;
 }
 
@@ -4691,6 +4754,7 @@ ods::bulk_dump::bulk_dump( ods& o )
       impl::bulk_mode old_bulk_mode( ( impl::bulk_mode )*o.p_impl->rp_bulk_mode );
 
       *o.p_impl->rp_bulk_mode = impl::e_bulk_mode_dump;
+
       try
       {
          o.bulk_operation_start( );
@@ -4751,6 +4815,7 @@ ods::bulk_read::bulk_read( ods& o )
       impl::bulk_mode old_bulk_mode( ( impl::bulk_mode )*o.p_impl->rp_bulk_mode );
 
       *o.p_impl->rp_bulk_mode = impl::e_bulk_mode_read;
+
       try
       {
          o.bulk_operation_start( );
@@ -4827,6 +4892,7 @@ ods::bulk_write::bulk_write( ods& o, progress* p_progress )
       impl::bulk_mode old_bulk_mode( ( impl::bulk_mode )*o.p_impl->rp_bulk_mode );
 
       *o.p_impl->rp_bulk_mode = impl::e_bulk_mode_write;
+
       try
       {
          o.bulk_operation_start( );

@@ -2489,9 +2489,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
          else
          {
-            auto_ptr< ods::bulk_write > ap_bulk_write;
-            if( !system_ods_instance( ).is_bulk_locked( ) )
-               ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+            ods::bulk_write bulk_write( system_ods_instance( ) );
 
             if( fetch_repository_entry_record( repository, entry_hash,
              local_hash, local_public_key, master_public_key, false ) )
