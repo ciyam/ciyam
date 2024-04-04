@@ -2937,14 +2937,7 @@ bool ods::is_bulk_locked( ) const
 {
    guard lock_impl( *p_impl->rp_impl_lock );
 
-   return ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_none );
-}
-
-bool ods::is_bulk_dump_locked( ) const
-{
-   guard lock_impl( *p_impl->rp_impl_lock );
-
-   return ( *p_impl->rp_bulk_mode == impl::e_bulk_mode_dump );
+   return ( *p_impl->rp_bulk_mode >= impl::e_bulk_mode_read );
 }
 
 bool ods::is_bulk_read_locked( ) const
@@ -2959,6 +2952,23 @@ bool ods::is_bulk_write_locked( ) const
    guard lock_impl( *p_impl->rp_impl_lock );
 
    return ( *p_impl->rp_bulk_mode == impl::e_bulk_mode_write );
+}
+
+bool ods::is_thread_bulk_locked( ) const
+{
+   bool retval = false;
+
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( *p_impl->rp_bulk_mode >= impl::e_bulk_mode_read )
+   {
+      if( *p_impl->rp_bulk_mode == impl::e_bulk_mode_read )
+         retval = ( *p_impl->rp_bulk_read_thread_id == current_thread_id( ) );
+      else if( *p_impl->rp_bulk_mode == impl::e_bulk_mode_write )
+         retval = ( *p_impl->rp_bulk_write_thread_id == current_thread_id( ) );
+   }
+
+   return retval;
 }
 
 bool ods::is_thread_bulk_read_locked( ) const
@@ -2981,23 +2991,6 @@ bool ods::is_thread_bulk_write_locked( ) const
 
    if( *p_impl->rp_bulk_mode == impl::e_bulk_mode_write )
       retval = ( *p_impl->rp_bulk_write_thread_id == current_thread_id( ) );
-
-   return retval;
-}
-
-bool ods::is_thread_bulk_read_or_write_locked( ) const
-{
-   bool retval = false;
-
-   guard lock_impl( *p_impl->rp_impl_lock );
-
-   if( *p_impl->rp_bulk_mode != impl::e_bulk_mode_none )
-   {
-      if( *p_impl->rp_bulk_mode == impl::e_bulk_mode_read )
-         retval = ( *p_impl->rp_bulk_read_thread_id == current_thread_id( ) );
-      else if( *p_impl->rp_bulk_mode == impl::e_bulk_mode_write )
-         retval = ( *p_impl->rp_bulk_write_thread_id == current_thread_id( ) );
-   }
 
    return retval;
 }
@@ -4735,8 +4728,28 @@ void ods::bulk_base::pause( )
    o.bulk_operation_pause( );
 }
 
-ods::bulk_dump::bulk_dump( ods& o )
- : bulk_base( o )
+ods::bulk_base::bulk_base( ods& o, progress* p_progress )
+ :
+ o( o )
+{
+   p_old_progress = o.p_progress;
+   was_preventing_lazy_write = o.prevent_lazy_write;
+
+   if( p_progress )
+   {
+      o.p_progress = p_progress;
+      o.prevent_lazy_write = true;
+   }
+}
+
+ods::bulk_base::~bulk_base( )
+{
+   o.p_progress = p_old_progress;
+   o.prevent_lazy_write = was_preventing_lazy_write;
+}
+
+ods::bulk_dump::bulk_dump( ods& o, progress* p_progress )
+ : bulk_base( o, p_progress )
 {
    int i;
    for( i = 0; i < c_bulk_dump_max_attempts; i++ )
@@ -4786,8 +4799,8 @@ ods::bulk_dump::~bulk_dump( )
    }
 }
 
-ods::bulk_read::bulk_read( ods& o )
- : bulk_base( o )
+ods::bulk_read::bulk_read( ods& o, progress* p_progress, bool allow_thread_demotion )
+ : bulk_base( o, p_progress )
 {
    int i;
    for( i = 0; i < c_bulk_read_max_attempts; i++ )
@@ -4799,13 +4812,16 @@ ods::bulk_read::bulk_read( ods& o )
       guard lock_read( o.read_lock );
       guard lock_impl( *o.p_impl->rp_impl_lock );
 
-      if( *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_none
-       && *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_read )
+      if( *o.p_impl->rp_bulk_mode == impl::e_bulk_mode_dump )
+         continue;
+
+      if( *o.p_impl->rp_bulk_mode >= impl::e_bulk_mode_read )
       {
-         if( *o.p_impl->rp_bulk_write_thread_id != current_thread_id( ) )
+         if( ( *o.p_impl->rp_bulk_mode == impl::e_bulk_mode_write )
+          && ( *o.p_impl->rp_bulk_write_thread_id != current_thread_id( ) ) )
             continue;
-         else
-            THROW_ODS_ERROR( "invalid attempt to obtain bulk read lock whilst already bulk write locked" );
+         else if( !allow_thread_demotion && ( *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_read ) )
+            THROW_ODS_ERROR( "invalid attempt to obtain bulk read lock (needs allow_thread_demotion)" );
       }
 
       if( *o.p_impl->rp_bulk_mode == impl::e_bulk_mode_read
@@ -4851,20 +4867,11 @@ ods::bulk_read::~bulk_read( )
    }
 }
 
-ods::bulk_write::bulk_write( ods& o, progress* p_progress )
- : bulk_base( o )
+ods::bulk_write::bulk_write( ods& o, progress* p_progress, bool allow_thread_promotion )
+ : bulk_base( o, p_progress )
 {
    if( o.p_impl->is_read_only )
       THROW_ODS_ERROR( "attempt to obtain bulk write lock when database was opened for read only access" );
-
-   p_old_progress = o.p_progress;
-   was_preventing_lazy_write = o.prevent_lazy_write;
-
-   if( p_progress )
-   {
-      o.p_progress = p_progress;
-      o.prevent_lazy_write = true;
-   }
 
    int i;
    for( i = 0; i < c_bulk_write_max_attempts; i++ )
@@ -4881,8 +4888,8 @@ ods::bulk_write::bulk_write( ods& o, progress* p_progress )
       {
          if( *o.p_impl->rp_bulk_read_thread_id != current_thread_id( ) )
             continue;
-         else
-            THROW_ODS_ERROR( "invalid attempt to obtain bulk write lock whilst already bulk read locked" );
+         else if( !allow_thread_promotion )
+            THROW_ODS_ERROR( "invalid attempt to obtain bulk write lock (needs allow_thread_promotion)" );
       }
 
       if( *o.p_impl->rp_bulk_mode == impl::e_bulk_mode_write
@@ -4919,9 +4926,6 @@ ods::bulk_write::~bulk_write( )
    if( o.is_okay( ) )
    {
       o.bulk_operation_finish( );
-
-      o.p_progress = p_old_progress;
-      o.prevent_lazy_write = was_preventing_lazy_write;
 
       if( !*o.p_impl->rp_bulk_level )
       {
