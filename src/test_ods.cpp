@@ -56,6 +56,7 @@ const char* const c_app_title = "test_ods";
 const char* const c_app_version = "0.1";
 
 const char* const c_cmd_password = "p";
+const char* const c_cmd_read_only_mode = "ro";
 const char* const c_cmd_shared_write_mode = "sw";
 const char* const c_cmd_use_transaction_log = "tlg";
 const char* const c_cmd_use_for_regression_tests = "test";
@@ -63,6 +64,7 @@ const char* const c_cmd_use_unsynchronised_write = "no_sync";
 const char* const c_cmd_reconstruct_from_transaction_log = "reconstruct";
 
 bool g_encrypted = false;
+bool g_read_only = false;
 bool g_needs_magic = false;
 bool g_shared_write = false;
 bool g_use_transaction_log = false;
@@ -355,6 +357,8 @@ class test_ods_startup_functor : public command_functor
    {
       if( command == c_cmd_password )
          g_encrypted = true;
+      else if( command == c_cmd_read_only_mode )
+         g_read_only = true;
       else if( command == c_cmd_shared_write_mode )
          g_shared_write = true;
       else if( command == c_cmd_use_transaction_log )
@@ -365,6 +369,9 @@ class test_ods_startup_functor : public command_functor
          g_use_synchronised_write = false;
       else if( command == c_cmd_reconstruct_from_transaction_log )
          g_reconstruct_from_transaction_log = true;
+
+      if( g_read_only && g_shared_write )
+         throw runtime_error( "invalid option combination ('read only' and 'shared write')" );
    }
 };
 
@@ -437,9 +444,13 @@ void test_ods_command_handler::init_ods( const char* p_file_name )
    if( !password.empty( ) )
       p_password = password.c_str( );
 
-   ap_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
-    ( g_shared_write ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ),
-    g_use_transaction_log, &not_found, p_password, g_use_synchronised_write ) );
+   if( g_read_only )
+      ap_ods.reset( new ods( p_file_name, ods::e_open_mode_exist,
+       ods::e_write_mode_none, g_use_transaction_log, &not_found, p_password ) );
+   else
+      ap_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
+       ( g_shared_write ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ),
+       g_use_transaction_log, &not_found, p_password, g_use_synchronised_write ) );
 
    clear_key( password );
 
@@ -1057,6 +1068,9 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_password, 1,
           "", "use crypt password", new test_ods_startup_functor( cmd_handler ) );
 
+         cmd_handler.add_command( c_cmd_read_only_mode, 1,
+          "", "use read only mode", new test_ods_startup_functor( cmd_handler ) );
+
          cmd_handler.add_command( c_cmd_shared_write_mode, 1,
           "", "use shared write mode", new test_ods_startup_functor( cmd_handler ) );
 
@@ -1075,6 +1089,7 @@ int main( int argc, char* argv[ ] )
          processor.process_commands( );
 
          cmd_handler.remove_command( c_cmd_password );
+         cmd_handler.remove_command( c_cmd_read_only_mode );
          cmd_handler.remove_command( c_cmd_shared_write_mode );
          cmd_handler.remove_command( c_cmd_use_transaction_log );
          cmd_handler.remove_command( c_cmd_use_for_regression_tests );
