@@ -165,7 +165,7 @@ Receive_Chain_Id,M001C102F152
 Receive_Error,M001C102F153
 Receive_Checksum,M001C102F154
 Receive_Initial_Block_Hash,M001C102F155
-Receive_Synchronising,M001C102F156
+Receive_Syncing,M001C102F156
 Shared_Identity,M001C102F157
 Shared_Secret,M001C102F158
 Status,M001C102F159
@@ -180,8 +180,8 @@ Connecting,M001C102F167
 Connection_Busy,M001C102F168
 Connected_Or_Busy,M001C102F169
 Submit_Initial_Block_Hash,M001C102F170
-Submit_Synchronising,M001C102F171
-Synchronising,M001C102F172
+Submit_Syncing,M001C102F171
+Syncing,M001C102F172
 Unlock_Files_Pending,M001C102F173
 Current_User,M001C102F174
 Demo_Blockchain,M001C102F175
