@@ -10,10 +10,10 @@ File System Overview
 --------------------
 
 A familiar file and folder approach is used and folders can be nested in a directed acyclic graph in the same
-way as a typical OS file system works. A forward slash character is the folder separator (with both Linux and
-Windows using this same separator) and the "root" folder is "/". It should be noted that "ods_file_system" is
-not thread-safe so instances should not be shared between threads, however as locking is used around each and
-every ODS DB operation it is no problem for different threads to be using the same underlying DB.
+manner as typical OS file systems do. A forward slash character is the folder separator and the "root" folder
+is "/". It should be noted that "ods_file_system" is not thread-safe and instances must not be shared between
+threads, however as locking occurs around each and every ODS DB operation it is no problem for many different
+threads to be using the same underlying ODS DB (just ensure that each has its own "ods_file_system" object).
 
 Although using "ods_fsed" you can add, move or remove both files and folders it is not recommended to perform
 changes to a DB unless you really understand how it is being used by its owning application (assuming that it
@@ -48,7 +48,7 @@ folder use the "branch" command as per the following three examples:
 /> branch objects
 
 For all of these commands an optional wildcard expression can be provided in a manner similar to the way such
-wildcard expressions are used by "ls" (or "dir" in Windows). Such expressions can use "?" to match any single
+wildcard expressions are handled for shell commands like "ls". Such expressions can use "?" to match a single
 character or "*" to match zero or more characters. The following would display all files in the entire folder
 structure that contain the string "test":
 

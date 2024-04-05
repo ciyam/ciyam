@@ -322,7 +322,7 @@ Archive Maintenance
 
 The "file_archive" command is used to add/remove/repair or even destroy an archive. The path that you wish to
 use for an archive is expected to already exist (i.e. it will not be created) as most often the path would be
-a "mount point" or a "drive" (depending upon whether using Linux or Windows).
+a "mount point".
 
 Assuming the path for the archive is "/mnt/a001", the name chosen for the archive is "001" and it is intended
 to hold up to 100GB of data the create command would be as follows:

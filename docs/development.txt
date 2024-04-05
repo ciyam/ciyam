@@ -2,7 +2,7 @@ Development Cycle Steps
 -----------------------
 
 1. Sign up for a free GitHub account (https://github.com/signup/free) then install "git" and SSH to work with
-GitHub (for Windows users refer to http://help.github.com/win-set-up-git/).
+GitHub.
  
 2. You'll need a fork of the main source tree. Login to your GitHub account and then browse over to the ciyam
 project (https://github.com/ciyam/ciyam) and click the small 'Fork' button near the top of the screen.
