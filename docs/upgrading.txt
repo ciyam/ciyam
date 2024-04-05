@@ -33,7 +33,7 @@ Assuming "ciyam_server" was re-linked then the application server is going to ne
 
 If either the "upload" or "ciyam_interface" applications were re-linked by the "make" then the web server will
 need to be restarted and then depending upon which of them was rebuilt one of the following batch/script files
-will need to be executed (once for each application with Windows users omitting the "./"):
+will need to be executed:
 
 ./install_fcgi upload <app dir>
 ./install_fcgi ciyam_interface <app dir>
