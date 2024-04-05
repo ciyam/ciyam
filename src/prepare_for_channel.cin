@@ -43,7 +43,6 @@ ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 ~rm $BLOCKCHAIN.bun.gz
 <generate_next_block.cin $BLOCKCHAIN @sid $BLOCKCHAIN.tree
 <block_tree_relegate.cin $BLOCKCHAIN $BLOCKCHAIN.tree
-.system_variable @shared_secret_$IDENTITY ""
 @endif
 .storage_term
 @endif
