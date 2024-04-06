@@ -962,7 +962,9 @@ void ods_file_system::add_file( const string& name,
 
    btree_type& bt( p_impl->bt );
 
-   if( valid_file_name( name ) != name )
+   bool has_utf8 = false;
+
+   if( valid_file_name( name, &has_utf8 ) != name )
       throw runtime_error( "invalid file name '" + name + "'" );
    else
    {
@@ -1367,7 +1369,9 @@ void ods_file_system::link_file( const string& name, const string& source )
 
    string value( value_folder_and_file_name( name, &dest_folder, &dest_name ) );
 
-   if( valid_file_name( dest_name ) != dest_name )
+   bool has_utf8 = false;
+
+   if( valid_file_name( dest_name, &has_utf8 ) != dest_name )
       throw runtime_error( "invalid file name '" + name + "'" );
    else
    {
@@ -1494,7 +1498,9 @@ void ods_file_system::move_file( const string& source, const string& destination
 
    string dest_value( value_folder_and_file_name( dest_path, &dest_folder, &dest_name ) );
 
-   if( valid_file_name( dest_name ) != dest_name )
+   bool has_utf8 = false;
+
+   if( valid_file_name( dest_name, &has_utf8 ) != dest_name )
       throw runtime_error( "invalid destination file name '" + dest_name + "'" );
    else
    {
@@ -2034,7 +2040,9 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
       folder_name.erase( 0, pos + 1 );
    }
 
-   if( valid_file_name( folder_name ) != folder_name )
+   bool has_utf8 = false;
+
+   if( valid_file_name( folder_name, &has_utf8 ) != folder_name )
    {
       if( !p_os )
          throw runtime_error( "invalid folder name '" + folder_name + "'" );
@@ -2304,6 +2312,8 @@ void ods_file_system::move_folder( const string& name, const string& destination
    }
    else
    {
+      bool has_utf8 = false;
+
       string dest_folder = determine_folder( destination, false, true );
 
       if( dest_folder.empty( ) )
@@ -2318,7 +2328,7 @@ void ods_file_system::move_folder( const string& name, const string& destination
                return;
             }
          }
-         else if( valid_file_name( destination ) != destination )
+         else if( valid_file_name( destination, &has_utf8 ) != destination )
          {
             if( !p_os )
                throw runtime_error( "invalid folder name '" + destination + "'" );

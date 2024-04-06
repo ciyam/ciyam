@@ -917,10 +917,20 @@ string valid_file_name( const string& str, bool* p_has_utf8_chars, bool allow_pa
    if( p_has_utf8_chars )
       *p_has_utf8_chars = false;
 
+   size_t num_extra = 0;
+
    for( size_t i = 0; i < str.length( ); i++ )
    {
       char c = str[ i ];
       int ic = ( int )c;
+
+      if( num_extra )
+      {
+         s += c;
+         --num_extra;
+
+         continue;
+      }
 
       if( ic < 0 )
       {
@@ -928,23 +938,35 @@ string valid_file_name( const string& str, bool* p_has_utf8_chars, bool allow_pa
 
          if( p_has_utf8_chars )
             *p_has_utf8_chars = true;
+
+         size_t extra = 0;
+
+         if( ic >= 192 && ic <= 223 )
+            extra = 1;
+         else if( ic >= 224 && ic <= 239 )
+            extra = 2;
+         else if( ic >= 240 && ic <= 247 )
+            extra = 3;
+         else if( ic >= 248 && ic <= 251 )
+            extra = 4;
+         else if( ic >= 252 && ic <= 253 )
+            extra = 5;
+
+         if( !extra )
+            throw runtime_error( "unexpected UTF-8 encoding found in: " + str );
+
+         // NOTE: If the argument was not provided then will omit UTF-8 characters.
+         if( !p_has_utf8_chars )
+            i += extra;
          else
          {
-            if( ic >= 192 && ic <= 223 )
-               ++i;
-            else if( ic >= 224 && ic <= 239 )
-               i += 2;
-            else if( ic >= 240 && ic <= 247 )
-               i += 3;
-            else if( ic >= 248 && ic <= 251 )
-               i += 4;
-            else if( ic >= 252 && ic <= 253 )
-               i += 5;
-            else
-               throw runtime_error( "unexpected UTF-8 encoding found in: " + str );
+            s += c;
 
-            continue;
+            num_extra = extra;
+            *p_has_utf8_chars = true;
          }
+
+         continue;
       }
 
       if( c == '"' )
@@ -985,6 +1007,7 @@ boyer_moore::boyer_moore( const string& pattern )
 
    int curr = psize - 1;
    int match = curr + 1;
+
    while( curr >= 0 )
    {
       while( match < psize && pattern[ curr ] != pattern[ match ] )
@@ -999,6 +1022,7 @@ boyer_moore::boyer_moore( const string& pattern )
    }
 
    int curr_match = matches[ 0 ];
+
    for( int i = 0; i < psize; ++i )
    {
       jump[ i ] = min( jump[ i ], psize + curr_match - i - 1 );
@@ -1014,9 +1038,11 @@ string::size_type boyer_moore::find( const string& text )
       return string::npos;
  
    int text_i = pattern.size( ) - 1;
+
    while( text_i < ( int )( text.size( ) ) )
    {
       int pattern_i = ( int )( pattern.size( ) - 1 );
+
       while( pattern_i >= 0 && text[ text_i ] == pattern[ pattern_i ] )
       {
          --text_i;
