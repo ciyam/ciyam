@@ -4396,7 +4396,7 @@ void generate_timezones_sio( const vector< timezone_info >& timezones )
    writer.finish_sections( );
 }
 
-void setup_timezones( )
+void setup_time_zones( )
 {
    ifstream inpf( "timezones.sio" );
    if( !inpf )
@@ -4534,7 +4534,7 @@ void setup_timezones( )
    reader.verify_finished_sections( );
 }
 
-string list_timezones( )
+string list_time_zones( )
 {
    string retval;
 
@@ -5049,7 +5049,7 @@ string check_email_headers( const vector< string >& headers, bool create_script_
       if( !script_from.empty( ) && !script_name.empty( ) )
       {
          osstr << ".session_variable @from \"" << escaped( script_from, "\"" ) << "\"\n";
-         osstr << ".runscript " << script_name << "\n";
+         osstr << ".run_script " << script_name << "\n";
 
          has_any_scripts = true;
          ap_mail_source->delete_message( i + 1 );

@@ -1505,9 +1505,9 @@ typedef timezone_container::iterator timezone_iterator;
 typedef timezone_container::const_iterator timezone_const_iterator;
 typedef timezone_container::value_type timezone_value_type;
 
-void CIYAM_BASE_DECL_SPEC setup_timezones( );
+void CIYAM_BASE_DECL_SPEC setup_time_zones( );
 
-std::string CIYAM_BASE_DECL_SPEC list_timezones( );
+std::string CIYAM_BASE_DECL_SPEC list_time_zones( );
 
 std::string CIYAM_BASE_DECL_SPEC get_tz_desc( const std::string& tz_name );
 void CIYAM_BASE_DECL_SPEC get_tz_info( const date_time& dt, std::string& tz_name, float& offset );

@@ -10,6 +10,7 @@ echo "<sio/>" >timezone.data.package.sio
 ./timezone ART America/Argentina/Buenos_Aires "(UTC-03:00) Argentina Time" package >>timezone.data.package.sio
 ./timezone FNT America/Noronha "(UTC-02:00) Fernando de Noronha Time" package >>timezone.data.package.sio
 ./timezone CVT Atlantic/Cape_Verde "(UTC-01:00) Cape Verde Time" package >>timezone.data.package.sio
+./timezone UTC Universal "(UTC+00:00) Coordinated Universal Time" package >>timezone.data.package.sio
 ./timezone GMT Europe/London "(UTC+00:00) Grenwich Mean Time" package >>timezone.data.package.sio
 ./timezone WET Europe/London "(UTC+00:00) Western European Time" package >>timezone.data.package.sio
 ./timezone CET Europe/Amsterdam "(UTC+01:00) Central European Time" package >>timezone.data.package.sio
@@ -26,4 +27,5 @@ echo "<sio/>" >timezone.data.package.sio
 ./timezone ACST Australia/Adelaide "(UTC+09:30) Australian Central Standard Time" package >>timezone.data.package.sio
 ./timezone AEST Australia/Canberra "(UTC+10:00) Australian Eastern Standard Time" package >>timezone.data.package.sio
 ./timezone NCT Pacific/Noumea "(UTC+11:00) New Caledonia Time" package >>timezone.data.package.sio
+./timezone NZST Pacific/Auckland "(UTC+12:00) New Zealand Standard Time" package >>timezone.data.package.sio
 echo "</sio>" >>timezone.data.package.sio

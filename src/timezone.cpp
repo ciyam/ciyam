@@ -23,11 +23,13 @@ struct daylight_info
    int start_month;
    int start_occurrence;
    int start_day_of_week;
+
    string start_time;
 
    int finish_month;
    int finish_occurrence;
    int finish_day_of_week;
+
    string finish_time;
 
    double utc_offset;
@@ -45,6 +47,7 @@ struct daylight_info
 void set_occurrence( int mday, int& occurrence )
 {
    occurrence = 1;
+
    while( true )
    {
       mday -= 7;
@@ -70,6 +73,7 @@ bool get_daylight_info( tm& t, daylight_info& daylight, double& utc_offset )
    p_tm = localtime( &tt );
 
    int adjust = ( year < p_tm->tm_year ) ? c_step_seconds : c_step_seconds * -1;
+
    while( true )
    {
       p_tm = localtime( &tt );
