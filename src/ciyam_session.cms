@@ -124,7 +124,7 @@ system_externals|externals "display a list of system external services"
 system_listeners|listeners "display a list of all current system listeners"
 system_run_script|run_script "run an external script or program" <val//script_name>[<list//arg_val_pairs>]
 system_smtp_owner|smtp_owner "retrieves the system SMTP sender name or address"
-system_time_zones|time_zones "display a list of known timezones"
+system_time_zones|time_zones "display a list of known time zones"
 system_trace_flags|trace_flags "view available system trace flags"
 system_trace_message|trace_message "output a message to the server trace log" [<val/-f=/flag>]<val//text>
 test "test command for prototyping" [<oval//arg_1>][<oval//arg_2>][<oval//arg_3>]

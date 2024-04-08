@@ -6249,7 +6249,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string own_tz( get_timezone( ) );
 
-         response = list_timezones( );
+         response = list_time_zones( );
 
          if( response.find( own_tz + ' ' ) != string::npos )
             replace( response, own_tz + ' ', "*" + own_tz + ' ' );

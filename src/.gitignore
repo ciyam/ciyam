@@ -50,6 +50,7 @@ test_ods
 test_parser
 test_pdf_gen
 test_sql
+timezone
 unbundle
 upload
 xrep

@@ -22,7 +22,7 @@
    <abbr>UTC
    <tz_info>Universal
    <utc_offset>0
-   <description>(UTC+00:00) Universal Time
+   <description>(UTC+00:00) Coordinated Universal Time
    <daylight_abbr>UTC
   </timezone>
   <timezone/>
@@ -124,11 +124,11 @@
      <start_month>4
      <start_occurrence>1
      <start_day_of_week>7
-     <start_time>00:15
+     <start_time>00:00
      <finish_month>10
      <finish_occurrence>1
      <finish_day_of_week>6
-     <finish_time>23:15
+     <finish_time>23:00
      <utc_offset>6
     </daylight_saving_change>
     <daylight_saving_change/>
@@ -681,6 +681,54 @@
    <utc_offset>-11
    <description>(UTC-11:00) Niue Time
    <daylight_abbr>NUST
+  </timezone>
+  <timezone/>
+   <abbr>NZST
+   <tz_info>Pacific/Auckland
+   <utc_offset>12
+   <description>(UTC+12:00) New Zealand Standard Time
+   <daylight_abbr>NZDT
+   <daylight_year_start>2008
+   <daylight_year_finish>2026
+   <daylight_start_month>9
+   <daylight_start_occurrence>5
+   <daylight_start_day_of_week>7
+   <daylight_start_time>02:00
+   <daylight_finish_month>4
+   <daylight_finish_occurrence>1
+   <daylight_finish_day_of_week>7
+   <daylight_finish_time>02:00
+   <daylight_utc_offset>13
+   <daylight_saving_changes/>
+    <daylight_saving_change/>
+     <year_start>2000
+     <year_finish>2006
+     <description>2000-2006
+     <start_month>10
+     <start_occurrence>1
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>3
+     <finish_occurrence>3
+     <finish_day_of_week>7
+     <finish_time>02:00
+     <utc_offset>13
+    </daylight_saving_change>
+    <daylight_saving_change/>
+     <year_start>2007
+     <year_finish>2007
+     <description>2007-2007
+     <start_month>9
+     <start_occurrence>5
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>3
+     <finish_occurrence>3
+     <finish_day_of_week>7
+     <finish_time>02:00
+     <utc_offset>13
+    </daylight_saving_change>
+   </daylight_saving_changes>
   </timezone>
  </timezones>
 </sio>

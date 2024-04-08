@@ -5171,7 +5171,7 @@ void resync_system_ods( progress* p_progress )
 void check_timezone_info( )
 {
    if( timezones_file_has_changed( ) )
-      setup_timezones( );
+      setup_time_zones( );
 }
 
 string get_string( const string& key )
