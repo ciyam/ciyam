@@ -6184,10 +6184,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = osstr.str( );
       }
-      else if( command == c_cmd_ciyam_session_system_runscript )
+      else if( command == c_cmd_ciyam_session_system_run_script )
       {
-         string script_name( get_parm_val( parameters, c_cmd_ciyam_session_system_runscript_script_name ) );
-         string arg_val_pairs( get_parm_val( parameters, c_cmd_ciyam_session_system_runscript_arg_val_pairs ) );
+         string script_name( get_parm_val( parameters, c_cmd_ciyam_session_system_run_script_script_name ) );
+         string arg_val_pairs( get_parm_val( parameters, c_cmd_ciyam_session_system_run_script_arg_val_pairs ) );
 
          bool async = true;
 
@@ -6221,6 +6221,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
             }
 
+            check_script_args( script_name );
+
             run_script( script_name, async );
          }
          else
@@ -6231,7 +6233,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             response = osstr.str( );
          }
       }
-      else if( command == c_cmd_ciyam_session_system_smtp_info )
+      else if( command == c_cmd_ciyam_session_system_smtp_owner )
       {
          response = get_smtp_username( );
 
@@ -6243,7 +6245,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                response += "@" + suffix_or_domain;
          }
       }
-      else if( command == c_cmd_ciyam_session_system_timezones )
+      else if( command == c_cmd_ciyam_session_system_time_zones )
       {
          string own_tz( get_timezone( ) );
 

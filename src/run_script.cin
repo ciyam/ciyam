@@ -7,9 +7,9 @@
 #NOTE: This script requires the name of a currently available 'manuscript.sio' entry.
 @else
 @ifndef $2
-.runscript $1
+.run_script $1
 @else
-.runscript $1 $2
+.run_script $1 $2
 @endif
 @ifdef $OUTPUT
 #$OUTPUT

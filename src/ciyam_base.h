@@ -328,6 +328,8 @@ int CIYAM_BASE_DECL_SPEC run_script( const std::string& script_name,
 
 void CIYAM_BASE_DECL_SPEC list_scripts( const std::string& pattern, std::ostream& os );
 
+void CIYAM_BASE_DECL_SPEC check_script_args( const std::string& script_name, bool* p_rc = 0 );
+
 std::string CIYAM_BASE_DECL_SPEC process_script_args(
  const std::string& raw_args, bool use_system_variables = false );
 
