@@ -23,12 +23,41 @@ OTHER=$2
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
+.file_tags bc.$COMBINED.zenith*
+@ifdef $OUTPUT
+<bc_reset.cin $COMBINED
+@endif
+;
+.file_kill -p=bc.$COMBINED.*
+;
+.file_archives -path_only $COMBINED
+@ifdef $OUTPUT
 .file_archive -destroy $COMBINED
-.file_archive -destroy $REVERSED
-;
 ~rmdir $FILES_AREA_DIR/$COMBINED
-~rmdir $FILES_AREA_DIR/$REVERSED
+@endif
 ;
-#Removed file archives for channel identities '$COMBINED' and '$REVERSED'.
+.file_tags bc.$REVERSED.zenith*
+@ifdef $OUTPUT
+<bc_reset.cin $REVERSED
+@endif
+;
+.file_kill -p=bc.$REVERSED.*
+;
+.file_archives -path_only $REVERSED
+@ifdef $OUTPUT
+.file_archive -destroy $REVERSED
+~rmdir $FILES_AREA_DIR/$REVERSED
+@endif
+;
+.identity -raw
+.crypto_hash $COMBINED$REVERSED$OUTPUT
+OBFUSCATED_IDENTITY=@substr:0,9:$OUTPUT
+;
+.system_variable @secret_hash_$OBFUSCATED_IDENTITY
+@ifdef $OUTPUT
+.system_variable >@secret_hash_$OBFUSCATED_IDENTITY ""
+@endif
+;
+#Removed files and file archives for channel identities '$COMBINED' and '$REVERSED'.
 ;
 @endif

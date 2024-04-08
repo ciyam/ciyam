@@ -27,10 +27,6 @@ REVERSED=*!reverse?$IDENTITY
 PEER_HUB=
 PEER_TYPE=1
 ;
-.session_variable @uuid
-UUID=$OUTPUT
-DUMMY_IDENTITY=@substr:0,9:$UUID
-;
 .system_variable @blockchain_peer_hub_identity
 @ifeq "$IDENTITY" "$OUTPUT"
 PEER_HUB=1
@@ -61,7 +57,11 @@ PEER_PORT=$OUTPUT
 ;
 @ifndef $ERROR
 @ifdef $SHARED_SECRET_HASH
-.system_variable >@secret_hash_$DUMMY_IDENTITY $SHARED_SECRET_HASH
+.identity -raw
+.crypto_hash $IDENTITY$REVERSED$OUTPUT
+OBFUSCATED_IDENTITY=@substr:0,9:$OUTPUT
+;
+.system_variable >@secret_hash_$OBFUSCATED_IDENTITY $SHARED_SECRET_HASH
 @endif
 ;
 @ifdef $PEER_HUB

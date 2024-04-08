@@ -7194,6 +7194,9 @@ string peer_channel_height( const string& identity, bool minimal, bool reversed,
 
 void create_peer_listener( int port, const string& blockchains )
 {
+   // FUTURE: This function should probably not return until all blockchains
+   // have be registered (which would require a waiting loop and detection).
+
    if( has_registered_listener( port ) )
       set_system_variable( '@' + to_string( port ), blockchains, "", 0, ',' );
    else

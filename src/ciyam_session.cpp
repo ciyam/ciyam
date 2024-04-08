@@ -85,8 +85,10 @@ mutex g_mutex;
 
 const size_t c_request_timeout = 500; // i.e. 1/2 sec
 const size_t c_udp_wait_timeout = 50; // i.e. 1/20 sec
+const size_t c_listen_wait_timeout = 50; // i.e. 1/20 sec
 
 const size_t c_udp_wait_repeats = 10;
+const size_t c_listen_wait_repeats = 20;
 
 const int c_pdf_default_limit = 10000;
 
@@ -2779,10 +2781,31 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string port( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_port ) );
          string blockchains( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_blockchains ) );
 
+         string var_name( '@' + port );
+
          if( remove )
-            set_system_variable( '@' + port, '~' + unprefixed_blockchains( blockchains ) );
+            set_system_variable( var_name, '~' + unprefixed_blockchains( blockchains ) );
          else
             create_peer_listener( atoi( port.c_str( ) ), unprefixed_blockchains( blockchains ) );
+
+         if( remove )
+         {
+            bool okay = false;
+
+            for( size_t i = 0; i < c_listen_wait_repeats; i++ )
+            {
+               msleep( c_listen_wait_timeout );
+
+               if( !has_system_variable( var_name ) )
+               {
+                  okay = true;
+                  break;
+               }
+            }
+
+            if( !okay )
+               throw runtime_error( "listener request not processed in time (peer starter session inactive?)" );
+         }
       }
       else if( command == c_cmd_ciyam_session_peer_reject )
       {
