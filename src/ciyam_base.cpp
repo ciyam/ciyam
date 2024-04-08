@@ -6473,6 +6473,42 @@ void list_scripts( const string& pattern, ostream& os )
    output_script_info( pattern, os );
 }
 
+void check_script_args( const string& script_name, bool* p_rc )
+{
+   if( !g_scripts.count( script_name ) )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Unknown script name '" + script_name + "'." );
+
+   if( p_rc )
+      *p_rc = true;
+
+   string arguments( g_scripts[ script_name ].arguments );
+
+   vector< string > all_args;
+
+   if( !arguments.empty( ) )
+   {
+      split( arguments, all_args, ' ' );
+
+      for( size_t i = 0; i < all_args.size( ); i++ )
+      {
+         string next_arg( all_args[ i ] );
+
+         if( !next_arg.empty( ) && next_arg[ 0 ] == '@' && !has_session_variable( next_arg ) )
+         {
+            if( !p_rc )
+               // FUTURE: This message should be handled as a server string message.
+               throw runtime_error( "Script '" + script_name + "' missing argument '" + next_arg + "'." );
+            else
+            {
+               *p_rc = false;
+               break;
+            }
+         }
+      }
+   }
+}
+
 string process_script_args( const string& raw_args, bool use_system_variables )
 {
    string retval;
