@@ -247,14 +247,14 @@ HIND_HASH_ENC=$OUTPUT
 h:$HIND_HASH_ENC\n\
 l:$LAST_BLOCK_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
-u:$UTIME bc.$IDENT.$HEIGHT.blk
+u:$UTIME
 @else
 .file_raw -core blob blk:h=$HEIGHT,i=$HEIGHT_IDENTITY,n=0,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_BLOCK_HASH_ENC\n\
 o:$OPL_FILE_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
-u:$UTIME bc.$IDENT.$HEIGHT.blk
+u:$UTIME
 @endif
 ;
 @else
@@ -338,7 +338,7 @@ h:$HIND_HASH_ENC\n\
 l:$LAST_BLOCK_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 t:$TREE_ROOT_HASH_ENC\n\
-u:$UTIME bc.$IDENT.$HEIGHT.blk
+u:$UTIME
 ;
 @endif
 @:TREE_ERROR
@@ -361,8 +361,11 @@ BLOCK_HASH=$OUTPUT
 ~rm $UUID.key $UUID.pub $UUID.sig
 ;
 @ifndef $ERROR
-.file_tag $BLOCK_HASH bc.$IDENT.zenith
 .file_tag -unlink bc.$IDENT.$LAST.key
+.file_tag $BLOCK_HASH bc.$IDENT.zenith
+;
+;NOTE: Create the block tag last to ensure that local peer sessions correctly identify a new block.
+.file_tag $BLOCK_HASH bc.$IDENT.$HEIGHT.blk
 ;
 .system_variable @blockchain_backup_identity
 @ifeq "$OUTPUT" "$IDENT"
