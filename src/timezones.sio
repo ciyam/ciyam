@@ -7,7 +7,7 @@
    <description>(UTC+00:00) Grenwich Mean Time
    <daylight_abbr>BSST
    <daylight_year_start>2000
-   <daylight_year_finish>2015
+   <daylight_year_finish>2026
    <daylight_start_month>3
    <daylight_start_occurrence>5
    <daylight_start_day_of_week>7
@@ -32,7 +32,7 @@
    <description>(UTC+00:00) Western European Time
    <daylight_abbr>WEST
    <daylight_year_start>2000
-   <daylight_year_finish>2015
+   <daylight_year_finish>2026
    <daylight_start_month>3
    <daylight_start_occurrence>5
    <daylight_start_day_of_week>7
@@ -50,7 +50,7 @@
    <description>(UTC+01:00) Central European Time
    <daylight_abbr>CEST
    <daylight_year_start>2000
-   <daylight_year_finish>2015
+   <daylight_year_finish>2026
    <daylight_start_month>3
    <daylight_start_occurrence>5
    <daylight_start_day_of_week>7
@@ -68,7 +68,7 @@
    <description>(UTC+02:00) Eastern European Time
    <daylight_abbr>EEST
    <daylight_year_start>2000
-   <daylight_year_finish>2015
+   <daylight_year_finish>2026
    <daylight_start_month>3
    <daylight_start_occurrence>5
    <daylight_start_day_of_week>7
@@ -271,7 +271,7 @@
    <description>(UTC+09:30) Australian Central Standard Time
    <daylight_abbr>ACDT
    <daylight_year_start>2008
-   <daylight_year_finish>2015
+   <daylight_year_finish>2026
    <daylight_start_month>10
    <daylight_start_occurrence>1
    <daylight_start_day_of_week>7
@@ -333,7 +333,7 @@
    <description>(UTC+10:00) Australian Eastern Standard Time
    <daylight_abbr>AEDT
    <daylight_year_start>2008
-   <daylight_year_finish>2015
+   <daylight_year_finish>2026
    <daylight_start_month>10
    <daylight_start_occurrence>1
    <daylight_start_day_of_week>7
@@ -532,7 +532,7 @@
    <description>(UTC-05:00) Eastern Time
    <daylight_abbr>EDT
    <daylight_year_start>2007
-   <daylight_year_finish>2015
+   <daylight_year_finish>2026
    <daylight_start_month>3
    <daylight_start_occurrence>2
    <daylight_start_day_of_week>7
@@ -566,7 +566,7 @@
    <description>(UTC-06:00) Central Time
    <daylight_abbr>CDT
    <daylight_year_start>2007
-   <daylight_year_finish>2015
+   <daylight_year_finish>2026
    <daylight_start_month>3
    <daylight_start_occurrence>2
    <daylight_start_day_of_week>7
@@ -600,7 +600,7 @@
    <description>(UTC-07:00) Mountain Time
    <daylight_abbr>MSD
    <daylight_year_start>2007
-   <daylight_year_finish>2015
+   <daylight_year_finish>2026
    <daylight_start_month>3
    <daylight_start_occurrence>2
    <daylight_start_day_of_week>7
@@ -634,7 +634,7 @@
    <description>(UTC-08:00) Pacific Time
    <daylight_abbr>PDT
    <daylight_year_start>2007
-   <daylight_year_finish>2015
+   <daylight_year_finish>2026
    <daylight_start_month>3
    <daylight_start_occurrence>2
    <daylight_start_day_of_week>7
