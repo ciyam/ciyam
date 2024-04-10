@@ -4033,17 +4033,25 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       if( !is_for_support && !blockchain.empty( ) )
       {
+         size_t peer_offset_ext = from_string< size_t >(
+          get_session_variable( get_special_var_name( e_special_var_peer_offset_ext ) ) );
+
          string genesis_block_tag( blockchain + ".0" + string( c_blk_suffix ) );
 
          // NOTE: If the genesis block is not present then check if it now exists.
          if( !has_tag( genesis_block_tag ) )
          {
+            if( peer_offset_ext )
+               genesis_block_tag = blockchain + '.' + to_string( peer_offset_ext ) + c_blk_suffix;
+
             string genesis_block_hash;
             chk_file( genesis_block_tag, &genesis_block_hash );
 
             has_issued_chk = true;
 
-            if( !genesis_block_hash.empty( ) )
+            if( genesis_block_hash.empty( ) )
+               msleep( c_peer_sleep_time );
+            else
                add_peer_file_hash_for_get( genesis_block_hash );
          }
          else if( !is_waiting_for_hub )
@@ -4135,6 +4143,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         if( file_hash.empty( ) )
                            file_hash = first_mapped;
 
+                        if( peer_offset_ext )
+                           next_block_tag = blockchain + to_string( peer_offset_ext + blockchain_height + 1 ) + c_blk_suffix;
+
                         // NOTE: Use the "nonce" argument to identify the first file needing to
                         // be fetched (so that pull requests are commenced at the right point).
                         if( !file_hash.empty( ) && ( file_hash.find( ':' ) == string::npos ) )
@@ -4159,7 +4170,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                if( !set_new_zenith )
                {
                   string next_sig_tag( blockchain
-                   + '.' + to_string( blockchain_height ) + c_sig_suffix );
+                   + '.' + to_string( peer_offset_ext + blockchain_height ) + c_sig_suffix );
 
                   temporary_session_variable temp_is_checking(
                    get_special_var_name( e_special_var_blockchain_is_checking ), c_true_value );
@@ -4864,6 +4875,43 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          string tag_or_hash( get_parm_val( parameters, c_cmd_peer_session_chk_tag_or_hash ) );
          string nonce( get_parm_val( parameters, c_cmd_peer_session_chk_nonce ) );
 
+         size_t peer_offset_loc = from_string< size_t >(
+          get_session_variable( get_special_var_name( e_special_var_peer_offset_loc ) ) );
+
+         if( peer_offset_loc )
+         {
+            string::size_type spos = tag_or_hash.rfind( '.' );
+
+            if( spos != string::npos )
+            {
+               string suffix( tag_or_hash.substr( spos ) );
+
+               if( ( suffix == c_blk_suffix ) || ( suffix == c_sig_suffix ) )
+               {
+                  string original( tag_or_hash );
+
+                  tag_or_hash.erase( spos );
+
+                  spos = tag_or_hash.rfind( '.' );
+
+                  if( spos == string::npos )
+                     throw runtime_error( "unexpected tag '" + original + "'" );
+                  else
+                  {
+                     size_t height_value = from_string< size_t >( tag_or_hash.substr( spos + 1 ) );
+
+                     if( height_value < peer_offset_loc )
+                        tag_or_hash = blockchain + c_dummy_suffix;
+                     else
+                     {
+                        tag_or_hash.erase( spos + 1 );
+                        tag_or_hash += to_string( height_value - peer_offset_loc ) + suffix;
+                     }
+                  }
+               }
+            }
+         }
+
          if( socket_handler.state( ) != e_peer_state_responder
           && socket_handler.state( ) != e_peer_state_waiting_for_get
           && socket_handler.state( ) != e_peer_state_waiting_for_put
@@ -4883,7 +4931,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          bool is_new_sig = false;
 
-         string new_sig_tag( blockchain + '.' + to_string( blockchain_height ) + c_sig_suffix );
+         string new_sig_tag( blockchain + '.'
+          + to_string( blockchain_height + peer_offset_loc ) + c_sig_suffix );
 
          // NOTE: If a new block was just created the signature can appear before the new block
          // height has been discovered so will simply report as "not found" in order to provide
@@ -6614,13 +6663,15 @@ void peer_session::on_start( )
          set_session_progress_message( progress_message );
       }
 
+      size_t local_offset = 0;
+
       if( !public_ext.empty( ) && !public_loc.empty( ) )
       {
          set_session_variable( get_special_var_name(
           e_special_var_peer_offset_ext ), to_string( get_height_offset( public_ext.data( ) + 2 ) ) );
 
          set_session_variable( get_special_var_name(
-          e_special_var_peer_offset_loc ), to_string( get_height_offset( public_loc.data( ) + 2 ) ) );
+          e_special_var_peer_offset_loc ), to_string( local_offset = get_height_offset( public_loc.data( ) + 2 ) ) );
       }
 
       if( is_user )
@@ -6660,6 +6711,7 @@ void peer_session::on_start( )
       was_initialised = true;
 
       bool has_zenith = false;
+
       size_t blockchain_height = 0;
 
       string hello_data, hello_hash;
@@ -6741,13 +6793,15 @@ void peer_session::on_start( )
          if( !is_for_support && !blockchain.empty( ) )
          {
             hash_or_tag = get_special_var_name( e_special_var_blockchain )
-             + '.' + to_string( blockchain_height ) + string( c_blk_suffix );
+             + '.' + to_string( blockchain_height + local_offset ) + string( c_blk_suffix );
 
             // NOTE: In case the responder does not have the genesis block include
             // its hash as a dummy "nonce" (to be used by the responder for "get").
             string genesis_block_tag( blockchain + ".0" + string( c_blk_suffix ) );
 
-            if( has_tag( genesis_block_tag ) )
+            if( !has_tag( genesis_block_tag ) )
+               hash_or_tag += ' ' + file_hash_for_write( *ap_socket, hello_hash );
+            else
                hash_or_tag += ' ' + file_hash_for_write( *ap_socket, genesis_block_tag );
          }
 
