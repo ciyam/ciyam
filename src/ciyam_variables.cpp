@@ -185,6 +185,8 @@ const char* const c_special_variable_blockchain_user = "@blockchain_user";
 const char* const c_special_variable_ciyam_list_hash = "@ciyam_list_hash";
 const char* const c_special_variable_notifier_events = "@notifier_events";
 const char* const c_special_variable_paired_identity = "@paired_identity";
+const char* const c_special_variable_peer_offset_ext = "@peer_offset_ext";
+const char* const c_special_variable_peer_offset_loc = "@peer_offset_loc";
 const char* const c_special_variable_queue_hub_users = "@queue_hub_users";
 const char* const c_special_variable_row_cache_limit = "@row_cache_limit";
 const char* const c_special_variable_system_identity = "@system_identity";
@@ -836,6 +838,14 @@ string get_special_var_name( special_var var )
 
       case e_special_var_paired_identity:
       s = string( c_special_variable_paired_identity );
+      break;
+
+      case e_special_var_peer_offset_ext:
+      s = string( c_special_variable_peer_offset_ext );
+      break;
+
+      case e_special_var_peer_offset_loc:
+      s = string( c_special_variable_peer_offset_loc );
       break;
 
       case e_special_var_queue_hub_users:
