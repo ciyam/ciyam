@@ -186,6 +186,19 @@ void decrement_active_listeners( )
    --g_active_listeners;
 }
 
+size_t get_height_offset( const char* p_data )
+{
+   size_t offset = 1;
+
+   for( size_t i = 0; i < 6; i++ )
+   {
+      offset *= 10;
+      offset += *( p_data + i ) % 10;
+   }
+
+   return offset;
+}
+
 string get_hub_identity( const string& own_identity )
 {
    string hub_identity_var_name( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) );
@@ -6599,6 +6612,15 @@ void peer_session::on_start( )
           get_system_variable( c_progress_output_prefix + unprefixed_blockchain ) );
 
          set_session_progress_message( progress_message );
+      }
+
+      if( !public_ext.empty( ) && !public_loc.empty( ) )
+      {
+         set_session_variable( get_special_var_name(
+          e_special_var_peer_offset_ext ), to_string( get_height_offset( public_ext.data( ) + 2 ) ) );
+
+         set_session_variable( get_special_var_name(
+          e_special_var_peer_offset_loc ), to_string( get_height_offset( public_loc.data( ) + 2 ) ) );
       }
 
       if( is_user )
