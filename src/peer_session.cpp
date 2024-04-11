@@ -103,6 +103,7 @@ const int c_max_line_length = 500;
 
 const int c_max_num_for_support = 11;
 
+const size_t c_min_msg_length = 85;
 const size_t c_max_pubkey_size = 256;
 const size_t c_max_greeting_size = 256;
 const size_t c_max_put_blob_size = 256;
@@ -712,6 +713,27 @@ string xor_hashes( const string& hash1, const string& hash2 )
    hex_encode( hash, buf1, sizeof( buf1 ) );
 
    return hash;
+}
+
+string process_message_response( const tcp_socket& socket, const string& message )
+{
+   string progress_message( message );
+
+   string secret( get_session_secret( ) );
+
+   if( !secret.empty( ) )
+   {
+      stringstream ss( base64::decode( progress_message ) );
+
+      crypt_stream( ss, combined_clear_key( secret,
+       to_string( socket.get_num_read_lines( ) ) ), e_stream_cipher_chacha20 );
+
+      progress_message = trim( ss.str( ), false, true );
+
+      clear_key( secret );
+   }
+
+   return progress_message;
 }
 
 string file_hash_for_read( const tcp_socket& socket, const string& hash_input )
@@ -3405,8 +3427,27 @@ class socket_command_handler : public command_handler
             extra += '/' + to_string( total );
       }
 
+      string progress_message( message + extra );
+
+      string secret( get_session_secret( ) );
+
+      if( !secret.empty( ) )
+      {
+         if( progress_message.length( ) < c_min_msg_length )
+            progress_message += string( c_min_msg_length - progress_message.length( ), ' ' );
+
+         stringstream ss( progress_message );
+
+         crypt_stream( ss, combined_clear_key( secret,
+          to_string( socket.get_num_write_lines( ) + 1 ) ), e_stream_cipher_chacha20 );
+
+         progress_message = base64::encode( ss.str( ) );
+
+         clear_key( secret );
+      }
+
       if( socket.write_line( string( c_response_message_prefix )
-       + message + extra, c_request_timeout, p_progress ) <= 0 )
+       + progress_message, c_request_timeout, p_progress ) <= 0 )
          throw runtime_error( "unexpected peer socket write failure" );
    }
 
@@ -3836,6 +3877,8 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
          }
 
          response.erase( 0, strlen( c_response_message_prefix ) );
+
+         response = process_message_response( socket, response );
 
          if( response != "." )
             set_session_progress_message( response );
@@ -5801,6 +5844,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
             {
                response.erase( 0, strlen( c_response_message_prefix ) );
 
+               response = process_message_response( socket, response );
+
                if( response != "." )
                   set_session_progress_message( response );
 
@@ -5870,6 +5915,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
                   throw runtime_error( "peer session has been condemned" );
 
                cmd_and_args.erase( 0, strlen( c_response_message_prefix ) );
+
+               cmd_and_args = process_message_response( socket, cmd_and_args );
 
                if( cmd_and_args != "." )
                   set_session_progress_message( cmd_and_args );
