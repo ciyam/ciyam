@@ -773,12 +773,9 @@ int udp_socket::send_to( const unsigned char* p_buffer, size_t buflen, const ip_
    return n;
 }
 
-size_t file_transfer(
- const string& name, tcp_socket& s,
+size_t file_transfer( const string& name, tcp_socket& s,
  ft_direction d, size_t max_size, const char* p_ack_message,
- size_t initial_timeout, size_t line_timeout, size_t max_line_size,
- unsigned char* p_prefix_char, unsigned char* p_buffer, unsigned int buffer_size,
- progress* p_progress, const char* p_ack_skip_message, udp_helper* p_udp_helper )
+ ft_extra_info* p_ft_extra, progress* p_progress, udp_helper* p_udp_helper )
 {
    size_t total_size = 0;
 
@@ -789,8 +786,13 @@ size_t file_transfer(
    if( !max_size )
       throw runtime_error( "invalid zero max_size in file_transfer" );
 
-   if( !max_line_size )
-      max_line_size = c_default_line_size;
+   size_t line_timeout = 0;
+   size_t initial_timeout = 0;
+
+   size_t max_line_size = c_default_line_size;
+
+   unsigned char* p_buffer = 0;
+   unsigned int buffer_size = 0;
 
    string unexpected_data;
 
@@ -802,8 +804,23 @@ size_t file_transfer(
 
    string ack_message_skip;
 
-   if( p_ack_skip_message )
-      ack_message_skip = string( p_ack_skip_message );
+   if( p_ft_extra )
+   {
+      line_timeout = p_ft_extra->line_timeout;
+      initial_timeout = p_ft_extra->initial_timeout;
+
+      if( p_ft_extra->max_line_size )
+         max_line_size = p_ft_extra->max_line_size;
+
+      if( p_ft_extra->p_buffer )
+      {
+         p_buffer = p_ft_extra->p_buffer;
+         buffer_size = p_ft_extra->buffer_size;
+      }
+
+      if( p_ft_extra->p_ack_skip_message )
+         ack_message_skip = string( p_ft_extra->p_ack_skip_message );
+   }
 
    int ack_msg_line_len = ( int )ack_message_line.length( );
 
@@ -816,7 +833,7 @@ size_t file_transfer(
 
       istream* p_istream = 0;
 
-      if( p_buffer && buffer_size )
+      if( buffer_size )
          total_size = buffer_size;
       else
       {
@@ -832,7 +849,7 @@ size_t file_transfer(
          p_istream = &inpf;
       }
 
-      bool has_prefix_char = ( p_prefix_char && *p_prefix_char );
+      bool has_prefix_char = ( p_ft_extra && p_ft_extra->p_prefix_char && *p_ft_extra->p_prefix_char );
 
       size_t max_unencoded = base64::decode_size( max_line_size, true );
 
@@ -881,7 +898,7 @@ size_t file_transfer(
 
          // NOTE: Prefix the base64 encoded content with the file type and extra in hex.
          if( has_prefix_char )
-            size_info += hex_encode( p_prefix_char, 1 );
+            size_info += hex_encode( p_ft_extra->p_prefix_char, 1 );
          else
             size_info += hex_encode( ( unsigned char* )&data[ 0 ], 1 );
 
@@ -965,7 +982,7 @@ size_t file_transfer(
          if( is_first && has_prefix_char )
          {
             ++offset;
-            *( ap_buf1.get( ) ) = *p_prefix_char;
+            *( ap_buf1.get( ) ) = *p_ft_extra->p_prefix_char;
          }
 
          is_first = false;
@@ -1008,7 +1025,7 @@ size_t file_transfer(
    }
    else
    {
-      bool use_recv_buffer = ( p_buffer && buffer_size );
+      bool use_recv_buffer = ( buffer_size != 0 );
 
       if( use_recv_buffer && ( buffer_size < max_size ) )
          throw runtime_error( "buffer_size < max_size for file_transfer" );
@@ -1092,15 +1109,15 @@ size_t file_transfer(
                {
                   string data;
 
-                  if( !p_prefix_char )
+                  if( !p_ft_extra || !p_ft_extra->p_prefix_char )
                      data += type_and_extra;
                   else
-                     *p_prefix_char = type_and_extra[ 0 ];
+                     *p_ft_extra->p_prefix_char = type_and_extra[ 0 ];
 
                   data += base64::decode( content );
 
-                  if( p_buffer )
-                     memcpy( p_buffer, &data[ 0 ], data.length( ) );
+                  if( p_buf )
+                     memcpy( p_buf, &data[ 0 ], data.length( ) );
 
                   if( has_file_name && !outf.write( &data[ 0 ], data.length( ) ) )
                      throw runtime_error( "unexpected error writing to file '" + name + "'" );
@@ -1140,11 +1157,11 @@ size_t file_transfer(
 
             size_t start_offset = 0;
 
-            if( had_sent_udp && p_udp_helper && ( ack_message_str != ack_message_skip ) )
+            if( had_sent_udp && p_udp_helper && use_recv_buffer && ( ack_message_str != ack_message_skip ) )
             {
-               p_udp_helper->recv_data( p_buffer, buffer_size, start_offset );
+               p_udp_helper->recv_data( p_buf, buffer_size, start_offset );
 
-               if( start_offset && has_file_name && !outf.write( ( const char* )p_buffer, start_offset ) )
+               if( start_offset && has_file_name && !outf.write( ( const char* )p_buf, start_offset ) )
                   throw runtime_error( "unexpected error writing to file '" + name + "'" );
 
                string ack_with_start_offset( ack_message_str + ':' + to_string( start_offset ) );
@@ -1155,8 +1172,8 @@ size_t file_transfer(
                {
                   is_first = false;
 
-                  if( p_prefix_char )
-                     *p_prefix_char = *p_buf;
+                  if( p_ft_extra && p_ft_extra->p_prefix_char )
+                     *p_ft_extra->p_prefix_char = *p_buf;
 
                   if( start_offset == total_size )
                      break;
@@ -1201,11 +1218,12 @@ size_t file_transfer(
 
          size_t offset = 0;
 
-         if( is_first && p_prefix_char )
+         if( is_first && p_ft_extra && p_ft_extra->p_prefix_char )
          {
             offset = 1;
             --total_size;
-            *p_prefix_char = decoded[ 0 ];
+
+            *p_ft_extra->p_prefix_char = decoded[ 0 ];
          }
 
          is_first = false;

@@ -190,13 +190,6 @@ class udp_socket : public socket_base
     const ip_address& addr, size_t timeout = 0, progress* p_progress = 0 );
 };
 
-enum ft_direction
-{
-   e_ft_direction_send,
-   e_ft_direction_recv,
-   e_ft_direction_recv_app
-};
-
 struct udp_helper
 {
    udp_helper( const std::string& hash ) : hash( hash ), had_recv_help( false ), recv_percent( 0 ) { }
@@ -209,11 +202,46 @@ struct udp_helper
    float recv_percent;
 };
 
+enum ft_direction
+{
+   e_ft_direction_send,
+   e_ft_direction_recv,
+   e_ft_direction_recv_app
+};
+
+struct ft_extra_info
+{
+   ft_extra_info( size_t initial_timeout = 0,
+    size_t line_timeout = 0, size_t max_line_size = 0, unsigned char* p_prefix_char = 0,
+    unsigned char* p_buffer = 0, unsigned int buffer_size = 0, const char* p_ack_skip_message = 0 )
+    :
+    p_ack_message( p_ack_message ),
+    initial_timeout( initial_timeout ),
+    line_timeout( line_timeout ),
+    max_line_size( max_line_size ),
+    p_prefix_char( p_prefix_char ),
+    p_buffer( p_buffer ),
+    buffer_size( buffer_size ),
+    p_ack_skip_message( p_ack_skip_message )
+   {
+   }
+
+   const char* p_ack_message;
+   const char* p_ack_skip_message;
+
+   unsigned char* p_buffer;
+   unsigned char* p_prefix_char;
+
+   size_t line_timeout;
+   size_t max_line_size;
+   size_t initial_timeout;
+
+   unsigned int buffer_size;
+};
+
 size_t file_transfer( const std::string& name,
  tcp_socket& s, ft_direction d, size_t max_size, const char* p_ack_message,
- size_t initial_timeout = 0, size_t line_timeout = 0, size_t max_line_size = 0,
- unsigned char* p_prefix_char = 0, unsigned char* p_buffer = 0, unsigned int buffer_size = 0,
- progress* p_progress = 0, const char* p_ack_skip_message = 0, udp_helper* p_udp_helper = 0 );
+ ft_extra_info* p_ft_extra = 0, progress* p_progress = 0, udp_helper* p_udp_helper = 0 );
 
 void recv_test_datagrams( size_t num, int port, int sock, std::string& str, size_t timeout );
 
