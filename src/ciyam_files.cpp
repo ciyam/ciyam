@@ -3714,11 +3714,12 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
       file_buffer.copy_from_string( content );
    }
 
-   file_transfer( "", socket,
-    e_ft_direction_send, get_files_area_item_max_size( ),
-    c_response_okay_more, c_file_transfer_initial_timeout,
-    c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0,
-    file_buffer.get_buffer( ), file_buffer.get_size( ), p_sock_progress, c_response_okay_skip );
+   ft_extra_info ft_extra( c_file_transfer_initial_timeout,
+    c_file_transfer_line_timeout, c_file_transfer_max_line_size,
+    0, file_buffer.get_buffer( ), file_buffer.get_size( ), c_response_okay_skip );
+
+   file_transfer( "", socket, e_ft_direction_send,
+    get_files_area_item_max_size( ), c_response_okay_more, &ft_extra, p_sock_progress );
 }
 
 bool store_file( const string& hash,
@@ -3786,12 +3787,12 @@ bool store_file( const string& hash,
       if( get_stream_sock( ) )
          ap_udp_stream_helper.reset( new udp_stream_helper( hash ) );
 
-      total_bytes = file_transfer( "",
-       socket, e_ft_direction_recv, max_bytes,
-       ( is_existing ? c_response_okay_skip : c_response_okay_more ),
-       c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
-       c_file_transfer_max_line_size, 0, file_buffer.get_buffer( ), file_buffer.get_size( ),
-       p_sock_progress, ( !is_existing ? 0 : c_response_okay_skip ), ap_udp_stream_helper.get( ) );
+      ft_extra_info ft_extra( c_file_transfer_initial_timeout,
+       c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0,
+       file_buffer.get_buffer( ), file_buffer.get_size( ), ( !is_existing ? 0 : c_response_okay_skip ) );
+
+      total_bytes = file_transfer( "", socket, e_ft_direction_recv, max_bytes,
+       ( is_existing ? c_response_okay_skip : c_response_okay_more ), &ft_extra, p_sock_progress, ap_udp_stream_helper.get( ) );
 
       if( p_total_bytes )
          *p_total_bytes = total_bytes;
@@ -4252,11 +4253,13 @@ void store_temp_file( const string& hash, const string& name, tcp_socket& socket
 {
    session_file_buffer_access file_buffer;
 
-   size_t total_bytes = file_transfer( name,
-    socket, e_ft_direction_recv, get_files_area_item_max_size( ),
-    ( is_existing ? c_response_okay_skip : c_response_okay_more ),
-    c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size,
-    0, file_buffer.get_buffer( ), file_buffer.get_size( ), p_progress, ( !is_existing ? 0 : c_response_okay_skip ) );
+   ft_extra_info ft_extra( c_file_transfer_initial_timeout,
+    c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0,
+    file_buffer.get_buffer( ), file_buffer.get_size( ), ( !is_existing ? 0 : c_response_okay_skip ) );
+
+   size_t total_bytes = file_transfer(
+    name, socket, e_ft_direction_recv, get_files_area_item_max_size( ),
+    ( is_existing ? c_response_okay_skip : c_response_okay_more ), &ft_extra, p_progress );
 
    if( !name.empty( ) )
    {

@@ -893,10 +893,12 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      handle_command_response( str );
 #endif
 
+                  ft_extra_info ft_extra( c_file_transfer_initial_timeout,
+                   c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
+
                   file_transfer( filename, socket,
                    ( !appending ? e_ft_direction_recv : e_ft_direction_recv_app ),
-                   g_max_file_size, c_response_okay_more, c_file_transfer_initial_timeout,
-                   c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
+                   g_max_file_size, c_response_okay_more, &ft_extra );
 
 #ifdef ZLIB_SUPPORT
                   if( ( prefix & c_file_type_char_compressed ) && !( prefix & c_file_type_char_encrypted ) )
@@ -1243,11 +1245,12 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      }
                   }
 
-                  file_transfer(
-                   filename, socket, e_ft_direction_send, g_max_file_size,
-                   c_response_okay_more, c_file_transfer_initial_timeout,
-                   c_file_transfer_line_timeout, c_file_transfer_max_line_size,
-                   &prefix, p_chunk, chunk_size, 0, c_response_okay_skip, ap_udp_helper.get( ) );
+                  ft_extra_info ft_extra(
+                   c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
+                   c_file_transfer_max_line_size, &prefix, p_chunk, chunk_size, c_response_okay_skip );
+
+                  file_transfer( filename, socket, e_ft_direction_send,
+                   g_max_file_size, c_response_okay_more, &ft_extra, 0, ap_udp_helper.get( ) );
 
                   if( ap_udp_helper.get( ) )
                   {
@@ -1356,21 +1359,20 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      if( pos == string::npos )
                         throw runtime_error( "unexpected response: " + response );
 
+                     unsigned char prefix( c_file_type_char_blob );
+
+                     ft_extra_info ft_extra( c_file_transfer_initial_timeout,
+                      c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
+
                      if( response.substr( 0, pos ) == "get" )
                      {
-                        unsigned char prefix( c_file_type_char_blob );
-
                         file_transfer( response.substr( pos + 1 ),
-                         socket, e_ft_direction_send, g_max_file_size, c_response_okay_more,
-                         c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
+                         socket, e_ft_direction_send, g_max_file_size, c_response_okay_more, &ft_extra );
                      }
                      else if( response.substr( 0, pos ) == "put" )
                      {
-                        unsigned char prefix( c_file_type_char_blob );
-
                         file_transfer( response.substr( pos + 1 ),
-                         socket, e_ft_direction_recv, g_max_file_size, c_response_okay_more,
-                         c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
+                         socket, e_ft_direction_recv, g_max_file_size, c_response_okay_more, &ft_extra );
 
                         // NOTE: If is first "chk" and *not found* is returned then it is next expected
                         // that a file will be be sent and then fetched to ensure that the peer is able
@@ -1378,8 +1380,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         if( was_chk_tag && !had_chk_command )
                         {
                            file_transfer( response.substr( pos + 1 ), socket,
-                            e_ft_direction_send, g_max_file_size, c_response_okay_more,
-                            c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
+                            e_ft_direction_send, g_max_file_size, c_response_okay_more, &ft_extra );
                         }
                      }
                      else if( response.substr( 0, pos ) == "chk" )
