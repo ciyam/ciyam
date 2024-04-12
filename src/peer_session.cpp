@@ -4187,7 +4187,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                            file_hash = first_mapped;
 
                         if( peer_offset_ext )
-                           next_block_tag = blockchain + to_string( peer_offset_ext + blockchain_height + 1 ) + c_blk_suffix;
+                           next_block_tag = blockchain + '.' + to_string( peer_offset_ext + blockchain_height + 1 ) + c_blk_suffix;
 
                         // NOTE: Use the "nonce" argument to identify the first file needing to
                         // be fetched (so that pull requests are commenced at the right point).
