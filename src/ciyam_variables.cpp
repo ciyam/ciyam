@@ -1452,7 +1452,8 @@ void set_system_variable( const string& name, const string& value, bool is_init,
       {
          string cmd( "./ciyam_command " + val + " >" + tmp_file_name );
 
-         system( cmd.c_str( ) );
+         int rc = system( cmd.c_str( ) );
+         ( void )rc;
 
          val = buffer_file( tmp_file_name );
 
