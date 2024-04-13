@@ -50,6 +50,8 @@ const int c_max_progress_output_bytes = 132;
 const char c_app_suffix = '!';
 const char c_udp_suffix = '~';
 
+const char c_extra_separator = '#';
+
 const char* const c_bye = "bye";
 const char* const c_base64_format = ".b64";
 
@@ -794,7 +796,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
    unsigned char* p_buffer = 0;
    unsigned int buffer_size = 0;
 
-   string unexpected_data;
+   string extra_header, unexpected_data;
 
    if( !p_ack_message )
       throw runtime_error( "invalid null ack message in file_transfer" );
@@ -809,8 +811,15 @@ size_t file_transfer( const string& name, tcp_socket& s,
       line_timeout = p_ft_extra->line_timeout;
       initial_timeout = p_ft_extra->initial_timeout;
 
+      extra_header = p_ft_extra->extra_header;
+
       if( p_ft_extra->max_line_size )
+      {
          max_line_size = p_ft_extra->max_line_size;
+
+         if( max_line_size < c_default_line_size )
+            throw runtime_error( "unexpected p_ft_extra->max_line_size < c_default_line_size" );
+      }
 
       if( p_ft_extra->p_buffer )
       {
@@ -871,9 +880,12 @@ size_t file_transfer( const string& name, tcp_socket& s,
 
       size_info += to_string( max_line_size ) + string( c_base64_format );
 
+      if( !extra_header.empty( ) )
+         size_info += c_extra_separator + extra_header;
+
       bool append_content_to_size_info = false;
 
-      if( total_size <= c_append_to_size_info )
+      if( ( total_size + size_info.size( ) ) <= c_append_to_size_info )
       {
          size_info += c_app_suffix;
          append_content_to_size_info = true;
@@ -1050,8 +1062,6 @@ size_t file_transfer( const string& name, tcp_socket& s,
 
       string next, decoded;
 
-      unsigned char* p_buf = p_buffer;
-
       while( true )
       {
          if( is_first )
@@ -1091,6 +1101,18 @@ size_t file_transfer( const string& name, tcp_socket& s,
                if( content.size( ) < 6 )
                   throw runtime_error( "unexpected invalid content in file transfer" );
 
+               next.erase( apos );
+
+               string::size_type xpos = next.find( c_extra_separator );
+
+               if( xpos != string::npos )
+               {
+                  if( p_ft_extra )
+                     p_ft_extra->extra_header = next.substr( xpos + 1 );
+
+                  next.erase( xpos );
+               }
+
                // NOTE: Encoded content is expected to be prefixed by the file type and extra in hex.
                string type_and_extra( hex_decode( content.substr( 0, 2 ) ) );
 
@@ -1116,8 +1138,8 @@ size_t file_transfer( const string& name, tcp_socket& s,
 
                   data += base64::decode( content );
 
-                  if( p_buf )
-                     memcpy( p_buf, &data[ 0 ], data.length( ) );
+                  if( p_buffer )
+                     memcpy( p_buffer, &data[ 0 ], data.length( ) );
 
                   if( has_file_name && !outf.write( &data[ 0 ], data.length( ) ) )
                      throw runtime_error( "unexpected error writing to file '" + name + "'" );
@@ -1134,7 +1156,20 @@ size_t file_transfer( const string& name, tcp_socket& s,
             bool had_sent_udp = false;
 
             if( next[ next.length( ) - 1 ] == c_udp_suffix )
+            {
                had_sent_udp = true;
+               next.erase( next.length( ) - 1 );
+            }
+
+            string::size_type xpos = next.find( c_extra_separator );
+
+            if( xpos != string::npos )
+            {
+               if( p_ft_extra )
+                  p_ft_extra->extra_header = next.substr( xpos + 1 );
+
+               next.erase( xpos );
+            }
 
             next.erase( fpos );
 
@@ -1159,9 +1194,9 @@ size_t file_transfer( const string& name, tcp_socket& s,
 
             if( had_sent_udp && p_udp_helper && use_recv_buffer && ( ack_message_str != ack_message_skip ) )
             {
-               p_udp_helper->recv_data( p_buf, buffer_size, start_offset );
+               p_udp_helper->recv_data( p_buffer, buffer_size, start_offset );
 
-               if( start_offset && has_file_name && !outf.write( ( const char* )p_buf, start_offset ) )
+               if( start_offset && has_file_name && !outf.write( ( const char* )p_buffer, start_offset ) )
                   throw runtime_error( "unexpected error writing to file '" + name + "'" );
 
                string ack_with_start_offset( ack_message_str + ':' + to_string( start_offset ) );
@@ -1173,13 +1208,13 @@ size_t file_transfer( const string& name, tcp_socket& s,
                   is_first = false;
 
                   if( p_ft_extra && p_ft_extra->p_prefix_char )
-                     *p_ft_extra->p_prefix_char = *p_buf;
+                     *p_ft_extra->p_prefix_char = *p_buffer;
 
                   if( start_offset == total_size )
                      break;
 
-                  p_buf += start_offset;
                   written += start_offset;
+                  p_buffer += start_offset;
                }
             }
             else
@@ -1243,8 +1278,8 @@ size_t file_transfer( const string& name, tcp_socket& s,
 
          if( use_recv_buffer )
          {
-            memcpy( p_buf, &decoded[ offset ], decoded_size );
-            p_buf += decoded_size;
+            memcpy( p_buffer, &decoded[ offset ], decoded_size );
+            p_buffer += decoded_size;
          }
 
          if( written >= total_size )

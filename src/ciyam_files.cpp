@@ -3638,6 +3638,8 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
    string file_name( construct_file_name_from_hash(
     hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
 
+   string extra_header;
+
    session_file_buffer_access file_buffer;
 
    // NOTE: As the file could end up being deleted whilst it is
@@ -3699,9 +3701,29 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
 
       string session_secret( get_session_secret( ) );
 
-      // NOTE: Supports the encryption of file data immediately prior to transmitting.
+      // NOTE: Supports the encryption of file content immediately prior to transmission after padding this
+      // content (to a maximum line length multiple) with random characters along with including the actual
+      // size and number of padding characters in an encrtyped file transfer extra header.
       if( !session_secret.empty( ) )
       {
+         size_t total_size = content.length( );
+
+         if( total_size )
+         {
+            size_t padding = c_file_transfer_max_line_size - ( total_size % c_file_transfer_max_line_size );
+
+            extra_header = to_comparable_string( total_size, false, 8 ) + '-' + to_comparable_string( padding, false, 8 );
+
+            stringstream ss( extra_header );
+
+            crypt_stream( ss, hash, e_stream_cipher_chacha20 );
+
+            extra_header = base64::encode( ss.str( ) );
+
+            if( padding )
+               content += random_characters( padding );
+         }
+
          stringstream ss( content );
 
          crypt_stream( ss, combined_clear_key( session_secret, hash ), e_stream_cipher_chacha20 );
@@ -3717,6 +3739,8 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
    ft_extra_info ft_extra( c_file_transfer_initial_timeout,
     c_file_transfer_line_timeout, c_file_transfer_max_line_size,
     0, file_buffer.get_buffer( ), file_buffer.get_size( ), c_response_okay_skip );
+
+   ft_extra.extra_header = extra_header;
 
    file_transfer( "", socket, e_ft_direction_send,
     get_files_area_item_max_size( ), c_response_okay_more, &ft_extra, p_sock_progress );
@@ -3794,12 +3818,11 @@ bool store_file( const string& hash,
       total_bytes = file_transfer( "", socket, e_ft_direction_recv, max_bytes,
        ( is_existing ? c_response_okay_skip : c_response_okay_more ), &ft_extra, p_sock_progress, ap_udp_stream_helper.get( ) );
 
-      if( p_total_bytes )
-         *p_total_bytes = total_bytes;
-
       string session_secret( get_session_secret( ) );
 
-      // NOTE: Supports the decryption of file data immediately after receiving.
+      // NOTE: Supports the decryption of file data immediately after receiving. Also if found
+      // will decrypt the extra file transfer header which should contain the actual size with
+      // the number of padding bytes that were added (which are then removed).
       if( !session_secret.empty( ) )
       {
          string temporary( total_bytes, '\0' );
@@ -3812,10 +3835,47 @@ bool store_file( const string& hash,
 
          temporary = ss.str( );
 
+         string extra_header( ft_extra.extra_header );
+
+         if( !extra_header.empty( ) )
+         {
+            extra_header = base64::decode( extra_header );
+
+            stringstream ss( extra_header );
+
+            crypt_stream( ss, hash, e_stream_cipher_chacha20 );
+
+            extra_header = ss.str( );
+
+            size_t padding = 0;
+
+            string::size_type pos = extra_header.find( '-' );
+
+            if( pos == string::npos )
+               throw runtime_error( "invalid extra file transfer header" );
+
+            size_t total = from_string< size_t >( extra_header.substr( 0, pos ) );
+
+            padding = from_string< size_t >( extra_header.substr( pos + 1 ) );
+
+            if( padding )
+            {
+               total_bytes -= padding;
+               temporary.erase( temporary.length( ) - padding );
+            }
+
+            if( total != total_bytes )
+               throw runtime_error( "extra header total: " + to_string( total )
+                + " does not equal total_bytes value: " + to_string( total_bytes ) );
+         }
+
          file_buffer.copy_from_string( temporary, 0, false );
 
          clear_key( session_secret );
       }
+
+      if( p_total_bytes )
+         *p_total_bytes = total_bytes;
 
       if( p_raw_file_data )
       {

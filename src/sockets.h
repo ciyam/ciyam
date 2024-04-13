@@ -226,6 +226,8 @@ struct ft_extra_info
    {
    }
 
+   std::string extra_header;
+
    const char* p_ack_message;
    const char* p_ack_skip_message;
 
