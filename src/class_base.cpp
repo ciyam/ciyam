@@ -3248,6 +3248,7 @@ string get_attached_file_path( const string& module_id, const string& class_id, 
 string expand_lf_to_cr_lf( const string& input )
 {
    string output;
+
    for( size_t i = 0; i < input.size( ); i++ )
    {
       if( input[ i ] == '\n' )
@@ -3296,10 +3297,12 @@ void add_user( const string* p_user_id )
    if( !user.empty( ) )
    {
       if( user_id.empty( ) )
-         throw runtime_error( "unexpected missing user_id in 'add_user'" );
+         throw runtime_error( "unexpected missing user_id in add_user" );
 
       string cmd( "./add_user \"" + user_id + "\"" );
-      system( cmd.c_str( ) );
+
+      if( system( cmd.c_str( ) ) != 0 )
+         throw runtime_error( "unexpected system failure for add_user" );
    }
 #endif
 }
@@ -3318,7 +3321,9 @@ string generate_password( const string& user_id, bool include_prefix )
       write_file( c_password_info_file, pwd );
 
       string cmd( "./set_password \"" + user_id + "\" password.info" );
-      system( cmd.c_str( ) );
+
+      if( system( cmd.c_str( ) ) != 0 )
+         throw runtime_error( "unexpected system failure for generate_password" );
    }
 
    if( !include_prefix )
@@ -3379,6 +3384,7 @@ void locate_gpg_key( const string& email, string& gpg_key_id, string& gpg_finger
             string key = lines[ 0 ].substr( pos + 1, epos - pos );
 
             pos = lines[ 1 ].find( c_gpg_key_fingerprint_prefix );
+
             if( pos != string::npos )
             {
                gpg_key_id = key;
