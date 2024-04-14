@@ -4338,6 +4338,40 @@ void store_temp_file( const string& hash, const string& name, tcp_socket& socket
 
          temporary = ss.str( );
 
+         string extra_header( ft_extra.extra_header );
+
+         if( !extra_header.empty( ) )
+         {
+            extra_header = base64::decode( extra_header );
+
+            stringstream ss( extra_header );
+
+            crypt_stream( ss, hash, e_stream_cipher_chacha20 );
+
+            extra_header = ss.str( );
+
+            size_t padding = 0;
+
+            string::size_type pos = extra_header.find( '-' );
+
+            if( pos == string::npos )
+               throw runtime_error( "invalid extra file transfer header" );
+
+            size_t total = from_string< size_t >( extra_header.substr( 0, pos ) );
+
+            padding = from_string< size_t >( extra_header.substr( pos + 1 ) );
+
+            if( padding )
+            {
+               total_bytes -= padding;
+               temporary.erase( temporary.length( ) - padding );
+            }
+
+            if( total != total_bytes )
+               throw runtime_error( "extra header total: " + to_string( total )
+                + " does not equal total_bytes value: " + to_string( total_bytes ) );
+         }
+
          file_buffer.copy_from_string( temporary, 0, false );
 
          clear_key( session_secret );
