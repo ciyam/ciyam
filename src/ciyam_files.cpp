@@ -504,6 +504,38 @@ void validate_hash_with_uncompressed_content( const string& hash,
    }
 }
 
+void remove_file_padding( const string& hash, const string& extra_header, string& file_data, size_t& total_bytes )
+{
+   string extra_header_info( base64::decode( extra_header ) );
+
+   stringstream ss( extra_header_info );
+
+   crypt_stream( ss, hash, e_stream_cipher_chacha20 );
+
+   extra_header_info = ss.str( );
+
+   size_t padding = 0;
+
+   string::size_type pos = extra_header_info.find( '-' );
+
+   if( pos == string::npos )
+      throw runtime_error( "invalid extra file transfer header" );
+
+   size_t total = from_string< size_t >( extra_header_info.substr( 0, pos ) );
+
+   padding = from_string< size_t >( extra_header_info.substr( pos + 1 ) );
+
+   if( padding )
+   {
+      total_bytes -= padding;
+      file_data.erase( file_data.length( ) - padding );
+   }
+
+   if( total != total_bytes )
+      throw runtime_error( "extra header total: " + to_string( total )
+       + " does not equal total_bytes value: " + to_string( total_bytes ) );
+}
+
 void encrypt_file_buffer( const string& hash, const string& repository,
  session_file_buffer_access& file_buffer, string& crypt_password, size_t offset, size_t length, bool is_shared )
 {
@@ -3712,6 +3744,9 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
          {
             size_t padding = c_file_transfer_max_line_size - ( total_size % c_file_transfer_max_line_size );
 
+            if( padding == c_file_transfer_max_line_size )
+               padding = 0;
+
             extra_header = to_comparable_string( total_size, false, 8 ) + '-' + to_comparable_string( padding, false, 8 );
 
             stringstream ss( extra_header );
@@ -3838,36 +3873,7 @@ bool store_file( const string& hash,
          string extra_header( ft_extra.extra_header );
 
          if( !extra_header.empty( ) )
-         {
-            extra_header = base64::decode( extra_header );
-
-            stringstream ss( extra_header );
-
-            crypt_stream( ss, hash, e_stream_cipher_chacha20 );
-
-            extra_header = ss.str( );
-
-            size_t padding = 0;
-
-            string::size_type pos = extra_header.find( '-' );
-
-            if( pos == string::npos )
-               throw runtime_error( "invalid extra file transfer header" );
-
-            size_t total = from_string< size_t >( extra_header.substr( 0, pos ) );
-
-            padding = from_string< size_t >( extra_header.substr( pos + 1 ) );
-
-            if( padding )
-            {
-               total_bytes -= padding;
-               temporary.erase( temporary.length( ) - padding );
-            }
-
-            if( total != total_bytes )
-               throw runtime_error( "extra header total: " + to_string( total )
-                + " does not equal total_bytes value: " + to_string( total_bytes ) );
-         }
+            remove_file_padding( hash, extra_header, temporary, total_bytes );
 
          file_buffer.copy_from_string( temporary, 0, false );
 
@@ -4341,36 +4347,7 @@ void store_temp_file( const string& hash, const string& name, tcp_socket& socket
          string extra_header( ft_extra.extra_header );
 
          if( !extra_header.empty( ) )
-         {
-            extra_header = base64::decode( extra_header );
-
-            stringstream ss( extra_header );
-
-            crypt_stream( ss, hash, e_stream_cipher_chacha20 );
-
-            extra_header = ss.str( );
-
-            size_t padding = 0;
-
-            string::size_type pos = extra_header.find( '-' );
-
-            if( pos == string::npos )
-               throw runtime_error( "invalid extra file transfer header" );
-
-            size_t total = from_string< size_t >( extra_header.substr( 0, pos ) );
-
-            padding = from_string< size_t >( extra_header.substr( pos + 1 ) );
-
-            if( padding )
-            {
-               total_bytes -= padding;
-               temporary.erase( temporary.length( ) - padding );
-            }
-
-            if( total != total_bytes )
-               throw runtime_error( "extra header total: " + to_string( total )
-                + " does not equal total_bytes value: " + to_string( total_bytes ) );
-         }
+            remove_file_padding( hash, extra_header, temporary, total_bytes );
 
          file_buffer.copy_from_string( temporary, 0, false );
 
