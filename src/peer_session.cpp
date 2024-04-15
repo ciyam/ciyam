@@ -94,6 +94,7 @@ const char* const c_dummy_message_data = "utf8:test";
 const char* const c_percentage_separator = " - ";
 
 const size_t c_prefix_length = 4;
+const size_t c_checksum_length = 8;
 
 const size_t c_dummy_num_for_support = 999;
 const size_t c_default_progress_seconds = 2;
@@ -104,11 +105,15 @@ const int c_max_line_length = 500;
 const int c_max_num_for_support = 11;
 
 const size_t c_min_msg_length = 85;
+
 const size_t c_max_pubkey_size = 256;
 const size_t c_max_greeting_size = 256;
 const size_t c_max_put_blob_size = 256;
 
 const size_t c_num_lamport_lines = 256;
+
+const size_t c_min_chk_req_length = 90;
+const size_t c_min_chk_rsp_length = 72;
 
 const size_t c_num_base64_key_chars = 44;
 const size_t c_key_pair_separator_pos = 44;
@@ -185,19 +190,6 @@ void decrement_active_listeners( )
    guard g( g_mutex );
 
    --g_active_listeners;
-}
-
-size_t get_height_offset( const char* p_data )
-{
-   size_t offset = 1;
-
-   for( size_t i = 0; i < 6; i++ )
-   {
-      offset *= 10;
-      offset += *( p_data + i ) % 10;
-   }
-
-   return offset;
 }
 
 string get_hub_identity( const string& own_identity )
@@ -713,6 +705,63 @@ string xor_hashes( const string& hash1, const string& hash2 )
    hex_encode( hash, buf1, sizeof( buf1 ) );
 
    return hash;
+}
+
+string decrypt_chk_data( const tcp_socket& socket,
+ const string& session_secret, const string& secret_data )
+{
+   stringstream ss( base64::decode( secret_data ) );
+
+   crypt_stream( ss, combined_clear_key( session_secret,
+    to_string( socket.get_num_read_lines( ) ) ), e_stream_cipher_chacha20 );
+
+   string data( ss.str( ) );
+
+   string::size_type pos = data.rfind( '?' );
+
+   if( pos == string::npos )
+      throw runtime_error( "unexpected invalid secret data '" + secret_data + "'" );
+
+   string checksum( data.substr( pos + 1 ) );
+
+   data.erase( pos );
+
+   if( sha256( data ).get_digest_as_string( ).substr( 0, c_checksum_length ) != checksum )
+      throw runtime_error( "invalid secret checksum '" + checksum + "'" );
+
+   pos = data.rfind( '$' );
+
+   if( pos != string::npos )
+      data.erase( pos );
+
+   return data;
+}
+
+string encrypt_chk_data( const tcp_socket& socket,
+ const string& session_secret, const string& data, size_t pad_to_length )
+{
+   string secret_data( data );
+
+   size_t len = secret_data.length( );
+
+   if( len < pad_to_length )
+   {
+      secret_data += '$';
+
+      if( ++len < pad_to_length )
+         secret_data += random_characters( pad_to_length - len );
+   }
+
+   secret_data += '?' + sha256( secret_data ).get_digest_as_string( ).substr( 0, c_checksum_length );
+
+   stringstream ss( secret_data );
+
+   crypt_stream( ss, combined_clear_key( session_secret,
+    to_string( socket.get_num_write_lines( ) + 1 ) ), e_stream_cipher_chacha20 );
+
+   secret_data = base64::encode( ss.str( ) );
+
+   return secret_data;
 }
 
 string process_message_response( const tcp_socket& socket, const string& message )
@@ -3793,15 +3842,10 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
    bool added_nonce = false;
 
+   string request( hash_or_tag );
+
    if( p_response )
-   {
-      string request( hash_or_tag );
-
       replace( request, blockchain, get_special_var_name( e_special_var_blockchain ) );
-
-      socket.write_line(
-       string( c_cmd_peer_session_chk ) + " " + request, c_request_timeout, p_sock_progress );
-   }
    else
    {
       added_nonce = true;
@@ -3810,9 +3854,20 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
       expected = hash_with_nonce( hash_or_tag, nonce );
 
-      socket.write_line( string( c_cmd_peer_session_chk )
-       + " " + hash_or_tag + " " + nonce, c_request_timeout, p_sock_progress );
+      request += ' ' + nonce;
    }
+
+   string session_secret( get_session_secret( ) );
+
+   if( !session_secret.empty( ) )
+   {
+      request = encrypt_chk_data( socket, session_secret, request, c_min_chk_req_length );
+
+      clear_key( session_secret );
+   }
+
+   socket.write_line(
+    string( c_cmd_peer_session_chk ) + " " + request, c_request_timeout, p_sock_progress );
 
    string response;
 
@@ -3886,16 +3941,25 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
          continue;
       }
 
-      if( !response.empty( ) && response[ response.length( ) - 1 ] == c_tree_files_suffix )
-      {
-         has_extra = true;
-         response.erase( response.length( ) - 1 );
-      }
-
       if( response == string( c_response_not_found ) )
          response.erase( );
-      else if( !added_nonce )
-         response = file_hash_for_read( socket, response );
+      else
+      {
+         string session_secret( get_session_secret( ) );
+
+         if( !session_secret.empty( ) )
+         {
+            response = decrypt_chk_data( socket, session_secret, response );
+
+            clear_key( session_secret );
+         }
+
+         if( !response.empty( ) && response[ response.length( ) - 1 ] == c_tree_files_suffix )
+         {
+            has_extra = true;
+            response.erase( response.length( ) - 1 );
+         }
+      }
 
       break;
    }
@@ -4076,18 +4140,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       if( !is_for_support && !blockchain.empty( ) )
       {
-         size_t peer_offset_ext = from_string< size_t >(
-          get_session_variable( get_special_var_name( e_special_var_peer_offset_ext ) ) );
-
          string genesis_block_tag( blockchain + ".0" + string( c_blk_suffix ) );
 
          // NOTE: If the genesis block is not present then check if it now exists.
          if( !has_tag( genesis_block_tag ) )
          {
-            if( peer_offset_ext )
-               genesis_block_tag = blockchain + '.' + to_string( peer_offset_ext ) + c_blk_suffix;
-
             string genesis_block_hash;
+
             chk_file( genesis_block_tag, &genesis_block_hash );
 
             has_issued_chk = true;
@@ -4186,9 +4245,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         if( file_hash.empty( ) )
                            file_hash = first_mapped;
 
-                        if( peer_offset_ext )
-                           next_block_tag = blockchain + '.' + to_string( peer_offset_ext + blockchain_height + 1 ) + c_blk_suffix;
-
                         // NOTE: Use the "nonce" argument to identify the first file needing to
                         // be fetched (so that pull requests are commenced at the right point).
                         if( !file_hash.empty( ) && ( file_hash.find( ':' ) == string::npos ) )
@@ -4213,7 +4269,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                if( !set_new_zenith )
                {
                   string next_sig_tag( blockchain
-                   + '.' + to_string( peer_offset_ext + blockchain_height ) + c_sig_suffix );
+                   + '.' + to_string( blockchain_height ) + c_sig_suffix );
 
                   temporary_session_variable temp_is_checking(
                    get_special_var_name( e_special_var_blockchain_is_checking ), c_true_value );
@@ -4918,40 +4974,20 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          string tag_or_hash( get_parm_val( parameters, c_cmd_peer_session_chk_tag_or_hash ) );
          string nonce( get_parm_val( parameters, c_cmd_peer_session_chk_nonce ) );
 
-         size_t peer_offset_loc = from_string< size_t >(
-          get_session_variable( get_special_var_name( e_special_var_peer_offset_loc ) ) );
+         string session_secret( get_session_secret( ) );
 
-         if( peer_offset_loc )
+         if( !session_secret.empty( ) )
          {
-            string::size_type spos = tag_or_hash.rfind( '.' );
+            tag_or_hash = decrypt_chk_data( socket, session_secret, tag_or_hash );
 
-            if( spos != string::npos )
+            clear_key( session_secret );
+
+            string::size_type pos = tag_or_hash.find( ' ' );
+
+            if( pos != string::npos )
             {
-               string suffix( tag_or_hash.substr( spos ) );
-
-               if( ( suffix == c_blk_suffix ) || ( suffix == c_sig_suffix ) )
-               {
-                  string original( tag_or_hash );
-
-                  tag_or_hash.erase( spos );
-
-                  spos = tag_or_hash.rfind( '.' );
-
-                  if( spos == string::npos )
-                     throw runtime_error( "unexpected tag '" + original + "'" );
-                  else
-                  {
-                     size_t height_value = from_string< size_t >( tag_or_hash.substr( spos + 1 ) );
-
-                     if( height_value < peer_offset_loc )
-                        tag_or_hash = blockchain + c_dummy_suffix;
-                     else
-                     {
-                        tag_or_hash.erase( spos + 1 );
-                        tag_or_hash += to_string( height_value - peer_offset_loc ) + suffix;
-                     }
-                  }
-               }
+               nonce = tag_or_hash.substr( pos + 1 );
+               tag_or_hash.erase( pos );
             }
          }
 
@@ -4974,8 +5010,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          bool is_new_sig = false;
 
-         string new_sig_tag( blockchain + '.'
-          + to_string( blockchain_height + peer_offset_loc ) + c_sig_suffix );
+         string new_sig_tag( blockchain + '.' + to_string( blockchain_height ) + c_sig_suffix );
 
          // NOTE: If a new block was just created the signature can appear before the new block
          // height has been discovered so will simply report as "not found" in order to provide
@@ -5323,10 +5358,19 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                }
             }
 
-            response = file_hash_for_write( socket, hash );
+            response = hash;
 
             if( num_items_found )
                response += c_tree_files_suffix;
+
+            string session_secret( get_session_secret( ) );
+
+            if( !session_secret.empty( ) )
+            {
+               response = encrypt_chk_data( socket, session_secret, response, c_min_chk_rsp_length );
+
+               clear_key( session_secret );
+            }
          }
 
          if( !was_initial_state && socket_handler.get_is_responder( ) )
@@ -6710,17 +6754,6 @@ void peer_session::on_start( )
          set_session_progress_message( progress_message );
       }
 
-      size_t local_offset = 0;
-
-      if( !public_ext.empty( ) && !public_loc.empty( ) )
-      {
-         set_session_variable( get_special_var_name(
-          e_special_var_peer_offset_ext ), to_string( get_height_offset( public_ext.data( ) + 2 ) ) );
-
-         set_session_variable( get_special_var_name(
-          e_special_var_peer_offset_loc ), to_string( local_offset = get_height_offset( public_loc.data( ) + 2 ) ) );
-      }
-
       if( is_user )
          set_session_variable( get_special_var_name( e_special_var_blockchain_user ), c_true_value );
 
@@ -6840,7 +6873,7 @@ void peer_session::on_start( )
          if( !is_for_support && !blockchain.empty( ) )
          {
             hash_or_tag = get_special_var_name( e_special_var_blockchain )
-             + '.' + to_string( blockchain_height + local_offset ) + string( c_blk_suffix );
+             + '.' + to_string( blockchain_height ) + string( c_blk_suffix );
 
             // NOTE: In case the responder does not have the genesis block include
             // its hash as a dummy "nonce" (to be used by the responder for "get").
@@ -6854,6 +6887,14 @@ void peer_session::on_start( )
 
          if( hash_or_tag.empty( ) )
             hash_or_tag = file_hash_for_write( *ap_socket, hello_hash );
+
+         string session_secret( get_session_secret( ) );
+
+         if( !session_secret.empty( ) )
+         {
+            hash_or_tag = encrypt_chk_data( *ap_socket, session_secret, hash_or_tag, c_min_chk_req_length );
+            clear_key( session_secret );
+         }
 
          ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_sock_progress );
 
