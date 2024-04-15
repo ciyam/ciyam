@@ -69,7 +69,7 @@ REPO_CRYPT_PASSWORD=@sid
 <bc_gen_block.cin e3733d121 5
 peer_connect e3733d121 12021
 ;trace 14900
-wait 150
+wait 500
 session_list
 wait 2000
 session_list
@@ -231,7 +231,7 @@ quit
 file_archive -add files/e3733d121 10MB e3733d121
 ;trace 14900
 peer_connect e3733d121 12021
-wait 150
+wait 500
 session_list
 wait 2000
 ;trace 10000
@@ -311,7 +311,7 @@ quit
 ./ciyam_client
 ;trace 14900
 peer_connect e3733d121 12021
-wait 150
+wait 500
 session_list
 wait 2000
 ;trace 10000
@@ -387,7 +387,7 @@ rm -r files/*
 <bc_gen.cin -backup de604cee0755a3d81944ea96aed12681
 ;trace 14900
 peer_connect e3733d121 12021
-wait 150
+wait 500
 session_list
 wait 2000
 ;trace 10000
@@ -680,9 +680,9 @@ quit
 ./ciyam_client
 ;trace 14900
 peer_connect e3733d121 12021
-wait 150
+wait 500
 session_list
-wait 1500
+wait 2000
 ;trace 10000
 session_list
 session_kill 2
@@ -747,9 +747,9 @@ file_tag $OUTPUT bc.e3733d121.zenith
 ;
 ;trace 14900
 peer_connect e3733d121 12021
-wait 150
+wait 500
 session_list
-wait 1500
+wait 2000
 ;trace 10000
 session_list
 session_kill 2
@@ -829,9 +829,9 @@ file_tag $OUTPUT bc.e3733d121.zenith
 ;
 ;trace 14900
 peer_connect e3733d121 12021
-wait 150
+wait 500
 session_list
-wait 1500
+wait 2000
 ;trace 10000
 session_list
 session_kill 2
