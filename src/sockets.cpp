@@ -1148,6 +1148,9 @@ size_t file_transfer( const string& name, tcp_socket& s,
                      outf.close( );
 
                   total_size = from_string< int64_t >( next.substr( 0, pos ) );
+
+                  if( total_size > max_size )
+                     throw runtime_error( "total_size " + to_string( total_size ) + " exceeds max_size " + to_string( max_size ) );
                }
 
                break;
