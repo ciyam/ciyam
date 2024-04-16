@@ -114,6 +114,7 @@ const size_t c_num_lamport_lines = 256;
 
 const size_t c_min_chk_req_length = 90;
 const size_t c_min_chk_rsp_length = 72;
+const size_t c_min_get_put_length = 72;
 
 const size_t c_num_base64_key_chars = 44;
 const size_t c_key_pair_separator_pos = 44;
@@ -689,25 +690,7 @@ string get_hello_data( string& hello_hash )
    return data;
 }
 
-string xor_hashes( const string& hash1, const string& hash2 )
-{
-   string hash;
-
-   unsigned char buf1[ c_sha256_digest_size ];
-   unsigned char buf2[ c_sha256_digest_size ];
-
-   hex_decode( hash1, buf1, sizeof( buf1 ) );
-   hex_decode( hash2, buf2, sizeof( buf2 ) );
-
-   for( size_t i = 0; i < c_sha256_digest_size; i++ )
-      buf1[ i ] ^= buf2[ i ];
-
-   hex_encode( hash, buf1, sizeof( buf1 ) );
-
-   return hash;
-}
-
-string decrypt_chk_data( const tcp_socket& socket,
+string decrypt_cmd_data( const tcp_socket& socket,
  const string& session_secret, const string& secret_data )
 {
    stringstream ss( base64::decode( secret_data ) );
@@ -737,7 +720,7 @@ string decrypt_chk_data( const tcp_socket& socket,
    return data;
 }
 
-string encrypt_chk_data( const tcp_socket& socket,
+string encrypt_cmd_data( const tcp_socket& socket,
  const string& session_secret, const string& data, size_t pad_to_length )
 {
    string secret_data( data );
@@ -783,47 +766,6 @@ string process_message_response( const tcp_socket& socket, const string& message
    }
 
    return progress_message;
-}
-
-string file_hash_for_read( const tcp_socket& socket, const string& hash_input )
-{
-   string hash( hash_input );
-
-   string secret( get_session_secret( ) );
-
-   if( !secret.empty( ) && are_hex_nibbles( hash ) )
-   {
-      string dummy( sha256( to_string(
-       socket.get_num_read_lines( ) ) + secret ).get_digest_as_string( ) );
-
-      hash = xor_hashes( hash, dummy );
-
-      clear_key( secret );
-   }
-
-   return hash;
-}
-
-string file_hash_for_write( const tcp_socket& socket, const string& hash_or_tag )
-{
-   string hash( hash_or_tag );
-
-   if( has_tag( hash_or_tag ) )
-      hash = tag_file_hash( hash_or_tag );
-
-   string secret( get_session_secret( ) );
-
-   if( !secret.empty( ) && !hash.empty( ) && are_hex_nibbles( hash ) )
-   {
-      string dummy( sha256( to_string(
-       socket.get_num_write_lines( ) + 1 ) + secret ).get_digest_as_string( ) );
-
-      hash = xor_hashes( hash, dummy );
-
-      clear_key( secret );
-   }
-
-   return hash;
 }
 
 void parse_peer_mapped_info( const string& peer_mapped_info, string& local_hash,
@@ -3666,10 +3608,22 @@ void socket_command_handler::get_hello( )
 
    string temp_file_name( "~" + uuid( ).as_string( ) );
 
+   string hash_info_for_get( hello_hash );
+
+   string session_secret( get_session_secret( ) );
+
+   if( !session_secret.empty( ) )
+   {
+      hash_info_for_get = encrypt_cmd_data( socket,
+       session_secret, hash_info_for_get, c_min_get_put_length );
+
+      clear_key( session_secret );
+   }
+
    socket.set_no_delay( );
 
-   socket.write_line( string( c_cmd_peer_session_get ) + " "
-    + file_hash_for_write( socket, hello_hash ), c_request_timeout, p_progress );
+   socket.write_line( string( c_cmd_peer_session_get )
+    + ' ' + hash_info_for_get, c_request_timeout, p_progress );
 
    try
    {
@@ -3706,8 +3660,22 @@ void socket_command_handler::put_hello( )
    if( !has_file( hello_hash ) )
       create_raw_file( data, false );
 
+   string hash_info_for_put( hello_hash );
+
+   string session_secret( get_session_secret( ) );
+
+   if( !session_secret.empty( ) )
+   {
+      hash_info_for_put = encrypt_cmd_data( socket,
+       session_secret, hash_info_for_put, c_min_get_put_length );
+
+      clear_key( session_secret );
+   }
+
    socket.set_delay( );
-   socket.write_line( string( c_cmd_peer_session_put ) + " " + hello_hash, c_request_timeout, p_sock_progress );
+
+   socket.write_line( string( c_cmd_peer_session_put )
+    + ' ' + hash_info_for_put, c_request_timeout, p_sock_progress );
 
    fetch_file( hello_hash, socket, p_sock_progress );
 }
@@ -3726,10 +3694,22 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
 
    string hash( hash_info.substr( 0, pos ) );
 
+   string hash_info_for_get( hash );
+
+   string session_secret( get_session_secret( ) );
+
+   if( !session_secret.empty( ) )
+   {
+      hash_info_for_get = encrypt_cmd_data( socket,
+       session_secret, hash_info_for_get, c_min_get_put_length );
+
+      clear_key( session_secret );
+   }
+
    socket.set_no_delay( );
 
-   socket.write_line( string( c_cmd_peer_session_get ) + " "
-    + file_hash_for_write( socket, hash ), c_request_timeout, p_sock_progress );
+   socket.write_line( string( c_cmd_peer_session_get )
+    + ' ' + hash_info_for_get, c_request_timeout, p_sock_progress );
 
    bool is_list = false;
    size_t num_bytes = 0;
@@ -3792,8 +3772,22 @@ void socket_command_handler::put_file( const string& hash )
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
       p_sock_progress = &sock_progress;
 
+   string hash_info_for_put( hash );
+
+   string session_secret( get_session_secret( ) );
+
+   if( !session_secret.empty( ) )
+   {
+      hash_info_for_put = encrypt_cmd_data( socket,
+       session_secret, hash_info_for_put, c_min_get_put_length );
+
+      clear_key( session_secret );
+   }
+
    socket.set_delay( );
-   socket.write_line( string( c_cmd_peer_session_put ) + " " + hash, c_request_timeout, p_sock_progress );
+
+   socket.write_line( string( c_cmd_peer_session_put )
+    + ' ' + hash_info_for_put, c_request_timeout, p_sock_progress );
 
    fetch_file( hash, socket, p_sock_progress );
 
@@ -3808,8 +3802,14 @@ void socket_command_handler::msg_peer( const string& data )
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
       p_sock_progress = &sock_progress;
 
+   string msg_info( data );
+
+   // FUTURE: This content should be encrypted for secure peer sessions.
+
    socket.set_no_delay( );
-   socket.write_line( string( c_cmd_peer_session_msg ) + " " + data, c_request_timeout, p_sock_progress );
+
+   socket.write_line( string( c_cmd_peer_session_msg )
+    + ' ' + msg_info, c_request_timeout, p_sock_progress );
 
    string response;
    if( socket.read_line( response, c_request_timeout, 0, p_sock_progress ) <= 0 )
@@ -3861,7 +3861,8 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
    if( !session_secret.empty( ) )
    {
-      request = encrypt_chk_data( socket, session_secret, request, c_min_chk_req_length );
+      request = encrypt_cmd_data( socket,
+       session_secret, request, c_min_chk_req_length );
 
       clear_key( session_secret );
    }
@@ -3949,7 +3950,7 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
          if( !session_secret.empty( ) )
          {
-            response = decrypt_chk_data( socket, session_secret, response );
+            response = decrypt_cmd_data( socket, session_secret, response );
 
             clear_key( session_secret );
          }
@@ -4248,7 +4249,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         // NOTE: Use the "nonce" argument to identify the first file needing to
                         // be fetched (so that pull requests are commenced at the right point).
                         if( !file_hash.empty( ) && ( file_hash.find( ':' ) == string::npos ) )
-                           next_block_tag += string( " " ) + '@' + file_hash_for_write( socket, file_hash );
+                           next_block_tag += string( " " ) + '@' + file_hash;
 
                         has_tree_files = chk_file( next_block_tag, &next_block_hash );
 
@@ -4325,7 +4326,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       if( !has_issued_chk )
       {
-         string tag_or_hash( file_hash_for_write( socket, prior_file( ) ) );
+         string tag_or_hash( prior_file( ) );
 
          if( tag_or_hash.empty( ) || is_waiting_for_hub )
             tag_or_hash = blockchain + c_dummy_suffix;
@@ -4978,7 +4979,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( !session_secret.empty( ) )
          {
-            tag_or_hash = decrypt_chk_data( socket, session_secret, tag_or_hash );
+            tag_or_hash = decrypt_cmd_data( socket, session_secret, tag_or_hash );
 
             clear_key( session_secret );
 
@@ -5132,8 +5133,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                else
                {
                   handler.issue_command_response( response, true );
-
-                  handler.issue_command_response( "put " + file_hash_for_write( socket, hello_hash ), true );
+                  handler.issue_command_response( string( c_cmd_peer_session_put ) + ' ' + hello_hash, true );
 
                   socket.set_delay( );
                   fetch_file( hello_hash, socket, p_sock_progress );
@@ -5367,7 +5367,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
             if( !session_secret.empty( ) )
             {
-               response = encrypt_chk_data( socket, session_secret, response, c_min_chk_rsp_length );
+               response = encrypt_cmd_data( socket,
+                session_secret, response, c_min_chk_rsp_length );
 
                clear_key( session_secret );
             }
@@ -5394,12 +5395,19 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                throw runtime_error( "invalid state for get (responder)" );
          }
 
+         string session_secret( get_session_secret( ) );
+
+         if( !session_secret.empty( ) )
+         {
+            tag_or_hash = decrypt_cmd_data( socket, session_secret, tag_or_hash );
+
+            clear_key( session_secret );
+         }
+
          string hash( tag_or_hash );
 
          if( has_tag( tag_or_hash ) )
             hash = tag_file_hash( tag_or_hash );
-         else
-            hash = file_hash_for_read( socket, hash );
 
          socket.set_delay( );
 
@@ -5492,6 +5500,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                throw runtime_error( "invalid put when not allowed (initiator)" );
             else
                throw runtime_error( "invalid put when not allowed (responder)" );
+         }
+
+         string session_secret( get_session_secret( ) );
+
+         if( !session_secret.empty( ) )
+         {
+            hash = decrypt_cmd_data( socket, session_secret, hash );
+
+            clear_key( session_secret );
          }
 
          socket.set_delay( );
@@ -6892,7 +6909,9 @@ void peer_session::on_start( )
 
          if( !session_secret.empty( ) )
          {
-            hash_or_tag = encrypt_chk_data( *ap_socket, session_secret, hash_or_tag, c_min_chk_req_length );
+            hash_or_tag = encrypt_cmd_data( *ap_socket,
+             session_secret, hash_or_tag, c_min_chk_req_length );
+
             clear_key( session_secret );
          }
 
@@ -6913,7 +6932,7 @@ void peer_session::on_start( )
 
                if( !session_secret.empty( ) )
                {
-                  block_hash = decrypt_chk_data( *ap_socket, session_secret, block_hash );
+                  block_hash = decrypt_cmd_data( *ap_socket, session_secret, block_hash );
 
                   clear_key( session_secret );
                }
