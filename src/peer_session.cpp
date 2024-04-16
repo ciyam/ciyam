@@ -5003,10 +5003,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          replace( tag_or_hash, get_special_var_name( e_special_var_blockchain ), blockchain );
 
-         string hash( file_hash_for_read( socket, tag_or_hash ) );
+         string hash( tag_or_hash );
 
          if( hash == hello_hash )
-            response = file_hash_for_write( socket, hello_hash );
+            response = hello_hash;
 
          bool is_new_sig = false;
 
@@ -5126,7 +5126,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      socket_handler.trust_level( ) = e_peer_trust_level_normal;
 
                      if( !nonce.empty( ) )
-                        add_peer_file_hash_for_get( file_hash_for_read( socket, nonce ) );
+                        add_peer_file_hash_for_get( nonce );
                   }
                }
                else
@@ -5244,7 +5244,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   if( !nonce.empty( ) && nonce[ 0 ] == '@' )
                   {
                      was_incomplete = true;
-                     first_item_hash = file_hash_for_read( socket, nonce.substr( 1 ) );
+                     first_item_hash = nonce.substr( 1 );
                   }
 
                   temporary_session_variable temp_hash(
@@ -6880,13 +6880,13 @@ void peer_session::on_start( )
             string genesis_block_tag( blockchain + ".0" + string( c_blk_suffix ) );
 
             if( !has_tag( genesis_block_tag ) )
-               hash_or_tag += ' ' + file_hash_for_write( *ap_socket, hello_hash );
+               hash_or_tag += ' ' + hello_hash;
             else
-               hash_or_tag += ' ' + file_hash_for_write( *ap_socket, genesis_block_tag );
+               hash_or_tag += ' ' + tag_file_hash( genesis_block_tag );
          }
 
          if( hash_or_tag.empty( ) )
-            hash_or_tag = file_hash_for_write( *ap_socket, hello_hash );
+            hash_or_tag = hello_hash;
 
          string session_secret( get_session_secret( ) );
 
@@ -6908,7 +6908,18 @@ void peer_session::on_start( )
             if( ap_socket->read_line( block_hash, c_request_timeout, c_max_line_length, p_sock_progress ) <= 0 )
                okay = false;
             else if( !is_for_support && ( block_hash != string( c_response_not_found ) ) )
-               add_peer_file_hash_for_get( file_hash_for_read( *ap_socket, block_hash ) );
+            {
+               string session_secret( get_session_secret( ) );
+
+               if( !session_secret.empty( ) )
+               {
+                  block_hash = decrypt_chk_data( *ap_socket, session_secret, block_hash );
+
+                  clear_key( session_secret );
+               }
+
+               add_peer_file_hash_for_get( block_hash );
+            }
          }
       }
 
