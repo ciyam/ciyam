@@ -37,7 +37,9 @@ using namespace std;
 
 const int c_buffer_size = 1024;
 
-const char* const c_title = "crypt v0.1k";
+const size_t c_num_hrounds = 1000000;
+
+const char* const c_title = "crypt v0.1l";
 
 void create_checksum_test_file( fstream& fs, const string& test_file_name )
 {
@@ -49,6 +51,7 @@ void create_checksum_test_file( fstream& fs, const string& test_file_name )
    unsigned char buffer[ c_buffer_size ];
 
    int size_left = ( int )size;
+
    while( size_left )
    {
       int next_len( min( size_left, c_buffer_size ) );
@@ -60,7 +63,9 @@ void create_checksum_test_file( fstream& fs, const string& test_file_name )
 
       size_left -= next_len;
    }
+
    md5.finalize( );
+
    fs.seekg( 0, ios::beg );
 
    stringstream ss;
@@ -81,14 +86,16 @@ int main( int argc, char* argv[ ] )
    if( argc < 2
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "-?" || string( argv[ 1 ] ) == "/?" )
    {
-      cout << c_title << "\nUsage: crypt [-q] [-c] [-cc|-dh] [-p[s]] [-t] <file> [<program>]" << endl;
+      cout << c_title << "\nUsage: crypt [-q] [-c] [-h] [-cc|-dh] [-p[s]] [-t] <file> [<program>]" << endl;
       return 0;
    }
 
    int first_arg = 1;
    int hash_count = 0;
+
    bool is_quiet = false;
    bool use_confirm = false;
+   bool use_hrounds = false;
    bool use_chacha20 = false;
    bool use_dbl_hash = false;
    bool use_pin_hash = false;
@@ -110,6 +117,11 @@ int main( int argc, char* argv[ ] )
       {
          ++first_arg;
          use_confirm = true;
+      }
+      else if( string( argv[ first_arg ] ) == string( "-h" ) )
+      {
+         ++first_arg;
+         use_hrounds = true;
       }
       else if( string( argv[ first_arg ] ) == string( "-cc" ) )
       {
@@ -217,6 +229,15 @@ int main( int argc, char* argv[ ] )
             {
                cerr << "Error: Password confirmation failed." << endl;
                return 1;
+            }
+         }
+
+         if( use_hrounds )
+         {
+            for( size_t i = 0; i < c_num_hrounds; i++ )
+            {
+               MD5 md5( ( unsigned char* )password.c_str( ) );
+               password = string( md5.hex_digest( ) );
             }
          }
 
