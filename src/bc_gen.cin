@@ -6,6 +6,7 @@
 <std.fissile
 ;
 HUB=
+DATA=
 DEMO=
 SEED=$2
 EXTRA=$3
@@ -14,11 +15,15 @@ OTHER=
 BACKUP=
 SHARED=
 CHANNEL=
+DATA_SEED=
 TEST_CHAIN=
 EXTRA_SUFFIX=
 ;
 @ifeq "$1" "-hub"
 HUB=1
+@else
+@ifeq "$1" "-data"
+DATA=1
 @else
 @ifeq "$1" "-shared"
 SHARED=1
@@ -31,15 +36,19 @@ CHANNEL=1
 @endif
 @endif
 @endif
+@endif
 ;
 @ifeq "$SEED" ""
-#Usage: bc_gen.cin -hub|-backup|-shared|<[alias:]other_ident> <seed> [<extra>]
+#Usage: bc_gen.cin -hub|-data|-backup|-shared|<[alias:]other_ident> <seed> [<extra>]
 @else
 ERROR=
 ;
 @label NEXT
 ;
 @ifdef $EXTRA
+@ifdef $DATA
+ERROR=1
+@endif
 @ifdef $CHANNEL
 ERROR=1
 @endif
@@ -53,6 +62,12 @@ EXTRA_SUFFIX=_$EXTRA
 @endif
 @skip
 @:NEXT
+;
+@ifdef $DATA
+DATA_SEED=$SEED
+.system_variable @system_identity
+SEED=$SEED.$OUTPUT
+@endif
 ;
 @ifndef $EXTRA
 @ifdef $HUB
@@ -299,6 +314,10 @@ SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
 .encode $OUTPUT
 TERTIARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
+@ifdef $DATA
+.file_raw -core blob blk:h=0,i=$IDENT,t=@peer_data\n\
+p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+@else
 @ifndef $HUB
 @ifndef $SHARED
 @ifndef $CHANNEL
@@ -316,12 +335,16 @@ p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC 
 .file_raw -core blob blk:h=0,i=$IDENT,t=@peer_hub\n\
 p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 @endif
+@endif
 ;
 BLOCK_HASH=$OUTPUT
 ;
 .file_hash -q bc.$IDENT.zenith
 @ifndef "$OUTPUT"
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
+@ifdef $DATA
+.system_variable >@blockchain_$DATA_SEED $IDENT
+@else
 @ifndef $CHANNEL
 @ifndef $HUB
 @ifndef $SHARED
@@ -345,6 +368,8 @@ BLOCK_HASH=$OUTPUT
 .system_variable >@blockchain_peer_hub%EXTRA_SUFFIX%_identity $IDENT
 @endif
 @endif
+@endif
+@endif
 ;
 HUB_EXTRA_OR_TEST_CHAIN=
 @ifdef $HUB
@@ -361,6 +386,9 @@ HUB_EXTRA_OR_TEST_CHAIN=1
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
+@ifdef $DATA
+BACKUP_SIZE=1GB
+@else
 @ifdef $DEMO
 BACKUP_SIZE=10GB
 SHARED_SIZE=1GB
@@ -369,6 +397,7 @@ CHANNEL_SIZE=100MB
 BACKUP_SIZE=100GB
 SHARED_SIZE=10GB
 CHANNEL_SIZE=1GB
+@endif
 @endif
 ;
 ~mkdir $FILES_AREA_DIR/$IDENT
@@ -383,7 +412,9 @@ CHANNEL_SIZE=1GB
 @else
 .file_archive -add $FILES_AREA_DIR/$IDENT $BACKUP_SIZE $IDENT
 @ifndef $ERROR
+@ifndef $DATA
 .system_variable >@blockchain_backup_archive $FILES_AREA_DIR/$IDENT
+@endif
 @endif
 @endif
 @endif
@@ -407,13 +438,16 @@ CHANNEL_SIZE=1GB
 @else
 @ifndef $CHANNEL
 @ifndef $SHARED
+@ifdef $DATA
+#Created keys, genesis block and file archive for data identity '$IDENT'.
+@else
 #Created keys, genesis block and file archive for backup identity '$IDENT'.
+@endif
 @else
 #Created keys, genesis block and file archive for shared identity '$IDENT'.
 @endif
 @else
 #Created keys, genesis block and file archives for identity '$IDENT' (and '$REVERSED').
-@endif
 @endif
 @endif
 @endif
