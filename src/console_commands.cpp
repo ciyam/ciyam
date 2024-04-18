@@ -3210,115 +3210,130 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             }
             else if( str[ 0 ] == c_read_input_prefix )
             {
-               size_t file_name_offset = 1;
-               bool keep_added_history = false;
-
-               size_t virtual_history_size = command_history.size( ) + history_offset;
-
-               // NOTE: If the read input prefix is repeated then each command read from the input file will
-               // be added to the history rather than adding the read input line itself as the history item.
-               if( str.size( ) > 1 && str[ 1 ] == c_read_input_prefix )
+               try
                {
-                  ++file_name_offset;
+                  size_t file_name_offset = 1;
+                  bool keep_added_history = false;
 
-                  add_to_history = false;
-                  keep_added_history = true;
+                  size_t virtual_history_size = command_history.size( ) + history_offset;
+
+                  // NOTE: If the read input prefix is repeated then each command read from the input file will
+                  // be added to the history rather than adding the read input line itself as the history item.
+                  if( str.size( ) > 1 && str[ 1 ] == c_read_input_prefix )
+                  {
+                     ++file_name_offset;
+
+                     add_to_history = false;
+                     keep_added_history = true;
 
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
-                  if( isatty( STDIN_FILENO ) )
-                     add_history( str.c_str( ) );
+                     if( isatty( STDIN_FILENO ) )
+                        add_history( str.c_str( ) );
 #  endif
 #endif
-               }
-
-               vector< string > new_args;
-               size_t num_new_args = setup_arguments( str.c_str( ) + file_name_offset, new_args );
-
-               if( num_new_args == 0 )
-                  throw runtime_error( "unexpected missing file name for input" );
-
-               if( num_new_args > c_max_args )
-                  throw runtime_error( "unexpected max. number of input args exceeded" );
-
-               for( vector< string >::size_type i = new_args.size( ); i < args.size( ); i++ )
-                  new_args.push_back( string( ) );
-
-               ifstream inpf( new_args[ 0 ].c_str( ) );
-               if( !inpf )
-                  throw runtime_error( "unable to open file '" + new_args[ 0 ] + "' for input" );
-
-               vector< bool > dummy_vector;
-               vector< size_t > dummy_lines_vector;
-
-               // NOTE: As one script may call another all relevant state information must be
-               // captured before and then restored after processing each script.
-               restorable< size_t > tmp_line_number( line_number, 0 );
-               restorable< vector< string > > tmp_args( args, new_args );
-               restorable< string > tmp_script_file( script_file, new_args[ 0 ] );
-               restorable< vector< bool > > tmp_completed( completed, dummy_vector );
-               restorable< vector< bool > > tmp_conditions( conditions, dummy_vector );
-               restorable< bool > tmp_is_reading_input( is_reading_input, true );
-               restorable< bool > tmp_executing_commands( is_executing_commands, false );
-               restorable< bool > tmp_allow_history_addition( allow_history_addition, true );
-               restorable< size_t > tmp_max_history_lines( max_history_lines, c_max_history );
-               restorable< vector< bool > > tmp_dummy_conditions( dummy_conditions, dummy_vector );
-               restorable< vector< size_t > > tmp_lines_for_conditions( lines_for_conditions, dummy_lines_vector );
-
-               string next;
-               string next_command;
-
-               bool is_first = true;
-
-               while( getline( inpf, next ) )
-               {
-                  bool is_continuation = false;
-
-                  if( next.empty( ) )
-                     continue;
-
-                  remove_trailing_cr_from_text_file_line( next, is_first );
-
-                  if( is_first )
-                     is_first = false;
-
-                  // NOTE: A trailing backslash (that is not escaped) is interpreted as a line continuation.
-                  string::size_type pos = next.find_last_not_of( '\\' );
-                  if( pos != next.size( ) - 1 && ( next.size( ) - pos - 1 ) % 2 )
-                  {
-                     next.erase( next.size( ) - 1 );
-                     is_continuation = true;
                   }
 
-                  next_command += next;
+                  vector< string > new_args;
+                  size_t num_new_args = setup_arguments( str.c_str( ) + file_name_offset, new_args );
 
-                  if( !is_continuation )
+                  if( num_new_args == 0 )
+                     throw runtime_error( "unexpected missing file name for input" );
+
+                  if( num_new_args > c_max_args )
+                     throw runtime_error( "unexpected max. number of input args exceeded" );
+
+                  for( vector< string >::size_type i = new_args.size( ); i < args.size( ); i++ )
+                     new_args.push_back( string( ) );
+
+                  ifstream inpf( new_args[ 0 ].c_str( ) );
+                  if( !inpf )
+                     throw runtime_error( "unable to open file '" + new_args[ 0 ] + "' for input" );
+
+                  vector< bool > dummy_vector;
+                  vector< size_t > dummy_lines_vector;
+
+                  // NOTE: As one script may call another all relevant state information must be
+                  // captured before and then restored after processing each script.
+                  restorable< size_t > tmp_line_number( line_number, 0 );
+                  restorable< vector< string > > tmp_args( args, new_args );
+                  restorable< string > tmp_script_file( script_file, new_args[ 0 ] );
+                  restorable< vector< bool > > tmp_completed( completed, dummy_vector );
+                  restorable< vector< bool > > tmp_conditions( conditions, dummy_vector );
+                  restorable< bool > tmp_is_reading_input( is_reading_input, true );
+                  restorable< bool > tmp_executing_commands( is_executing_commands, false );
+                  restorable< bool > tmp_allow_history_addition( allow_history_addition, true );
+                  restorable< size_t > tmp_max_history_lines( max_history_lines, c_max_history );
+                  restorable< vector< bool > > tmp_dummy_conditions( dummy_conditions, dummy_vector );
+                  restorable< vector< size_t > > tmp_lines_for_conditions( lines_for_conditions, dummy_lines_vector );
+
+                  string next;
+                  string next_command;
+
+                  bool is_first = true;
+
+                  while( getline( inpf, next ) )
                   {
-                     execute_command( next_command );
-                     next_command.erase( );
+                     bool is_continuation = false;
+
+                     if( next.empty( ) )
+                        continue;
+
+                     remove_trailing_cr_from_text_file_line( next, is_first );
+
+                     if( is_first )
+                        is_first = false;
+
+                     // NOTE: A trailing backslash (that is not escaped) is interpreted as a line continuation.
+                     string::size_type pos = next.find_last_not_of( '\\' );
+                     if( pos != next.size( ) - 1 && ( next.size( ) - pos - 1 ) % 2 )
+                     {
+                        next.erase( next.size( ) - 1 );
+                        is_continuation = true;
+                     }
+
+                     next_command += next;
+
+                     if( !is_continuation )
+                     {
+                        execute_command( next_command );
+                        next_command.erase( );
+                     }
                   }
+
+                  str.erase( );
+
+                  if( !keep_added_history )
+                  {
+                     size_t offset = virtual_history_size;
+
+                     if( virtual_history_size <= history_offset )
+                        offset = 0;
+                     else
+                        offset -= history_offset;
+
+                     command_history.erase( command_history.begin( ) + offset, command_history.end( ) );
+                     history_line_number.erase( history_line_number.begin( ) + offset, history_line_number.end( ) );
+                  }
+
+                  if( !conditions.empty( ) )
+                     throw runtime_error( "missing 'endif' for conditional started at line #"
+                      + to_string( lines_for_conditions.back( ) ) + " in '" + new_args[ 0 ] + "'" + error_context );
+
+                  if( !inpf.eof( ) )
+                     throw runtime_error( "unexpected error occurred whilst reading '" + new_args[ 0 ] + "'" + error_context );
                }
-
-               if( !conditions.empty( ) )
-                  throw runtime_error( "missing 'endif' for conditional started at line #"
-                   + to_string( lines_for_conditions.back( ) ) + " in '" + new_args[ 0 ] + "'" + error_context );
-
-               if( !inpf.eof( ) )
-                  throw runtime_error( "unexpected error occurred whilst reading '" + new_args[ 0 ] + "'" + error_context );
-
-               str.erase( );
-
-               if( !keep_added_history )
+               catch( exception& x )
                {
-                  size_t offset = virtual_history_size;
+                  str.erase( );
 
-                  if( virtual_history_size <= history_offset )
-                     offset = 0;
-                  else
-                     offset -= history_offset;
+                  cout << "Error: " << x.what( ) << endl;
+               }
+               catch( ... )
+               {
+                  str.erase( );
 
-                  command_history.erase( command_history.begin( ) + offset, command_history.end( ) );
-                  history_line_number.erase( history_line_number.begin( ) + offset, history_line_number.end( ) );
+                  cerr << "error: unexpected exception caught" << endl;
                }
             }
             else if( str[ 0 ] == c_write_output_prefix )
