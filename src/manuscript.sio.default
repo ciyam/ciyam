@@ -165,6 +165,11 @@
   <arguments>create_hosted_channel.cin @identity @other_identity @shared_secret_hash
  </script>
  <script/>
+  <name>create_peerchain_data
+  <filename>*script*
+  <arguments>create_peerchain_data.cin @key
+ </script>
+ <script/>
   <name>create_peerchain_entry
   <filename>*script*
   <arguments>create_peerchain_entry.cin @identity @auto_start @peer_type @description @host_name @host_port @num_helpers @extra_value @shared_secret
@@ -173,6 +178,11 @@
   <name>destroy_hosted_channel
   <filename>*script*
   <arguments>destroy_hosted_channel.cin @identity @other_identity
+ </script>
+ <script/>
+  <name>destroy_peerchain_data
+  <filename>*script*
+  <arguments>destroy_peerchain_data.cin @key
  </script>
  <script/>
   <name>update_peerchain_entry
