@@ -15,7 +15,7 @@ OTHER=
 BACKUP=
 SHARED=
 CHANNEL=
-DATA_SEED=
+DATA_KEY=
 TEST_CHAIN=
 EXTRA_SUFFIX=
 ;
@@ -64,7 +64,7 @@ EXTRA_SUFFIX=_$EXTRA
 @:NEXT
 ;
 @ifdef $DATA
-DATA_SEED=$SEED
+DATA_KEY=$SEED
 .system_variable @system_identity
 SEED=$SEED.$OUTPUT
 @endif
@@ -343,7 +343,8 @@ BLOCK_HASH=$OUTPUT
 @ifndef "$OUTPUT"
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
 @ifdef $DATA
-.system_variable >@blockchain_$DATA_SEED $IDENT
+.system_variable >@blockchain_data_key_$IDENT $DATA_KEY
+.system_variable >@blockchain_identity_$DATA_KEY $IDENT
 @else
 @ifndef $CHANNEL
 @ifndef $HUB

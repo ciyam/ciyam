@@ -28,6 +28,12 @@ TEST_CHAIN=
 ;
 NEXT_HEIGHT=@$HEIGHT+1
 ;
+DATA=
+.system_variable @blockchain_data_key_$IDENT
+@ifdef $OUTPUT
+DATA=1
+@endif
+;
 SHARED=
 .system_variable @blockchain_shared_identity
 @ifdef $OUTPUT
@@ -44,7 +50,10 @@ PEER_HUB=1
 @endif
 @endif
 ;
+@label NEXT
+;
 CHANNEL=
+@ifndef $DATA
 @ifndef $SHARED
 @ifndef $PEER_HUB
 .system_variable @blockchain_backup_identity
@@ -53,13 +62,16 @@ ERROR=No backup blockchain identity was found.
 #Error: $ERROR
 @label END
 @endif
-@skip
 @ifneq "$IDENT" "$OUTPUT"
 CHANNEL=1
 @endif
 @endif
 @endif
+@endif
 ;
+@skip
+;
+@:NEXT
 @ifeq "$IDENT" "e3733d121"
 TEST_CHAIN=1
 @endif

@@ -7,7 +7,7 @@
 #Usage: destroy_peerchain_data.cin <key>
 @else
 ;
-.system_variable @blockchain_$1
+.system_variable @blockchain_identity_$1
 @ifdef $OUTPUT
 IDENTITY=$OUTPUT
 ;
@@ -22,7 +22,9 @@ FILES_AREA_DIR=$OUTPUT
 ~rmdir $FILES_AREA_DIR/$IDENTITY
 @endif
 ;
-.system_variable >@blockchain_$1 ""
+.system_variable >@blockchain_data_key_$IDENTITY ""
+.system_variable >@blockchain_identity_$1 ""
+#Removed file archive and all blockchain files for data identity '$IDENTITY'.
 @endif
 ;
 @endif

@@ -20,6 +20,12 @@ HEIGHT=$2
 ;
 TREE=$3
 ;
+DATA=
+.system_variable @blockchain_data_key_$IDENT
+@ifdef $OUTPUT
+DATA=1
+@endif
+;
 DEMO=
 @ifeq "$IDENT" "6b24210e8"
 DEMO=1
@@ -57,10 +63,12 @@ PEER_HUB=1
 OPL_FILE_HASH_ENC=$OUTPUT
 @endif
 @endif
+;
 @skip
 ;
 @:NEXT
 CHANNEL=
+@ifndef $DATA
 @ifndef $SHARED
 @ifndef $PEER_HUB
 .system_variable @blockchain_backup_identity
@@ -76,6 +84,8 @@ CHANNEL=1
 @endif
 @endif
 @endif
+@endif
+;
 @skip
 ;
 @:NEXT
