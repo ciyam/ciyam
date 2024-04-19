@@ -1073,22 +1073,29 @@ size_t file_transfer( const string& name, tcp_socket& s,
             if( !received || s.had_timeout( ) )
                throw runtime_error( "timeout occurred reading header line for file transfer" );
 
-            // NOTE: If "Error/error" is found in the message then just throw it as is.
-            if( lower( next ).find( "error" ) != string::npos )
-               throw runtime_error( next );
-
             // NOTE: This can occur in the case where a peer session has been stopped.
             if( next == c_bye )
                break;
 
-            // FUTURE: A ".raw" format should be added to support binary file transfers.
             string::size_type pos = next.find( ':' );
-            string::size_type fpos = next.find( c_base64_format );
 
-            if( pos == string::npos || fpos == string::npos || fpos < pos )
+            if( pos == string::npos )
             {
+               // NOTE: If "Error/error" is found in the message then just throw it as is.
+               if( lower( next ).find( "error" ) != string::npos )
+                  throw runtime_error( next );
+
                s.write_line( "error: invalid file transfer header line", line_timeout, p_progress );
                throw runtime_error( "invalid file transfer header line for recv" );
+            }
+
+            // FUTURE: A ".raw" format should be added to support binary file transfers.
+            string::size_type fpos = next.find( c_base64_format );
+
+            if( ( fpos == string::npos ) || ( fpos < pos ) )
+            {
+               s.write_line( "error: invalid file transfer header (unknown format)", line_timeout, p_progress );
+               throw runtime_error( "invalid file transfer header (unknown format) for recv" );
             }
 
             string::size_type apos = next.find( c_app_suffix );
