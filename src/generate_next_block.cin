@@ -12,6 +12,7 @@ IDENT=$1
 SEED=$2
 TREE=$3
 ;
+DATA=
 FIRST=1
 BACKUP=
 SHARED=
@@ -20,7 +21,15 @@ PEER_HUB=
 HAS_NO_OPL=
 ;
 @ifeq "$2" ""
+.system_variable @blockchain_data_key_$IDENT
+@ifdef $OUTPUT
+DATA_KEY=$OUTPUT
+.system_variable @system_identity
+SEED=$DATA_KEY.$OUTPUT
+DATA=1
+@else
 SEED=@sid
+@endif
 @endif
 ;
 @ifeq "$1" "-backup"
