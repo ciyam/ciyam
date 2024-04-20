@@ -1,7 +1,9 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_clone_peer)] `{`$arg_id`}
+`{`!`@eq`(`$arg_ofield`,`'`'`)\
    get_obj( ).op_update( );
 
+`}\
    if( !storage_locked_for_admin( ) )
    {
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
@@ -16,7 +18,8 @@
          ap_temp_skip_submit_file.reset( new temporary_session_variable(
           get_special_var_name( e_special_var_skip_submit_file ), c_true_value ) );
       }
-`}
+
+`}\
       temporary_identity_suffix tmp_identity_suffix(
        get_raw_session_variable( get_special_var_name( e_special_var_peer_identity_alias ) ) );
 
@@ -32,7 +35,9 @@
 
       cp_source->`{`$arg_field`}( `{`$arg_value`} );
 
+`{`!`@eq`(`$arg_procedure_arg`,`'`'`)\
       cp_source->`{`$arg_spfield`}( `{`$arg_procedure_arg`} );
+`}\
       cp_source->set_is_for_peer( cp_source->`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) );
 
       cp_source->set_variable( get_special_var_name(
@@ -43,9 +48,11 @@
 
       cp_source->op_apply( );
    }
+`{`!`@eq`(`$arg_ofield`,`'`'`)\
 
    get_obj( ).`{`$arg_ofield`}( get_obj( ).`{`$arg_o2field`}( ) );
 
    get_obj( ).op_apply( );
+`}\
    // [(finish for_peer_clone)] `{`$arg_id`}
 `}
