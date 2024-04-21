@@ -581,6 +581,7 @@ struct temporary_identity_suffix
    temporary_identity_suffix( const std::string& temporary_suffix );
    ~temporary_identity_suffix( );
 
+   std::string current_suffix;
    std::string original_suffix;
 };
 

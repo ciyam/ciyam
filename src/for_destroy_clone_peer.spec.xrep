@@ -1,0 +1,20 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_destroy_clone_peer)] `{`$arg_id`}
+   if( !storage_locked_for_admin( ) )
+   {
+      temporary_identity_suffix tmp_identity_suffix(
+       get_raw_session_variable( get_special_var_name( e_special_var_peer_identity_alias ) ) );
+
+      string key( replaced( get_obj( ).get_key( ),
+       tmp_identity_suffix.original_suffix, tmp_identity_suffix.current_suffix ) );
+
+      class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
+
+      cp_source->set_is_for_peer( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) );
+
+      cp_source->op_destroy( key );
+
+      cp_source->op_apply( );
+   }
+   // [(finish for_destroy_clone_peer)] `{`$arg_id`}
+`}

@@ -239,6 +239,8 @@ const char* const c_storable_folder_name_channels = "channels";
 
 const char* const c_temporary_special_variable_suffix = "_temporary";
 
+const char* const c_invalid_key_characters = "`~!@#$%^&*<>()[]{}/\\?|-+=.,;:'\"";
+
 const char* const c_demo_sid_1 = "729c82d85a1da11074ea60a42ded01ece34928592aa8620a67c364d7fc70a3fb";
 const char* const c_demo_sid_2 = "b7560eb88fdbc58bd76a6b1a33e07dc39f22e1b834cf470398a0ecf0fc16ca78";
 
@@ -8948,10 +8950,10 @@ temporary_identity_suffix::temporary_identity_suffix( const string& temporary_su
    if( !gtp_session )
       throw runtime_error( "unexpected 'temporary_identity_suffix' object in non-session" );
 
-   original_suffix = gtp_session->identity_suffix;
+   current_suffix = original_suffix = gtp_session->identity_suffix;
 
    if( !temporary_suffix.empty( ) )
-      gtp_session->identity_suffix = temporary_suffix;
+      current_suffix = gtp_session->identity_suffix = temporary_suffix;
 }
 
 temporary_identity_suffix::~temporary_identity_suffix( )
@@ -13341,9 +13343,9 @@ void begin_instance_op( instance_op op, class_base& instance,
          key_for_op = key.substr( 0, pos );
       }
 
-      if( key_for_op.find_first_of( "`~!@#$%^&*<>()[]{}/\\?|-+=.,;:'\"" ) != string::npos )
-         throw runtime_error( get_string_message( GS( c_str_key_invalid ),
-          make_pair( c_str_parm_key_invalid_key, key_for_op ) ) );
+      if( key_for_op.find_first_of( c_invalid_key_characters ) != string::npos )
+         throw runtime_error( get_string_message(
+          GS( c_str_key_invalid ), make_pair( c_str_parm_key_invalid_key, key_for_op ) ) );
    }
 
    size_t lock_handle( 0 );
@@ -13590,7 +13592,7 @@ void begin_instance_op( instance_op op, class_base& instance,
             throw runtime_error( "cannot update '" + instance.get_original_identity( )
              + "' stored instance using '" + instance.get_current_identity( ) + "' object instance" );
       }
-      else if( op == e_instance_op_destroy )
+      else if( ( op == e_instance_op_destroy ) && !instance.get_is_for_peer( ) )
       {
          // NOTE: In order to correctly determine whether an instance is constrained it must be first fetched.
          bool found = false;
@@ -13863,7 +13865,8 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
             log_command += ' ' + module_id + ' ' + class_id + ' ' + instance.get_key( );
 
-            log_command += " \"" + instance.get_fields_and_values( class_base::e_field_label_type_short_id ) + "\"";
+            if( op != class_base::e_op_type_destroy )
+               log_command += " \"" + instance.get_fields_and_values( class_base::e_field_label_type_short_id ) + "\"";
 
             append_peerchain_log_command( identity, log_command );
 
