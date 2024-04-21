@@ -834,7 +834,8 @@ void class_base::op_destroy( const string& key, op_destroy_rc* p_rc, bool is_int
    last_lazy_fetch_key.erase( );
 
    bool could_be_dynamic = false;
-   if( is_dynamic_enabled )
+
+   if( is_dynamic_enabled && !get_is_for_peer( ) )
    {
       instance_fetch_rc rc;
       perform_instance_fetch( *this, key, p_rc ? &rc : 0, true );

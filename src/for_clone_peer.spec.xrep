@@ -23,7 +23,12 @@
       temporary_identity_suffix tmp_identity_suffix(
        get_raw_session_variable( get_special_var_name( e_special_var_peer_identity_alias ) ) );
 
+`{`@eq`(`$arg_key_transform`,`'`'`)\
       string new_key( gen_key( ) );
+`,\
+      string new_key( replaced( get_obj( ).get_key( ),
+       tmp_identity_suffix.original_suffix, tmp_identity_suffix.current_suffix ) );
+`}
       string key_info( new_key + string( " " ) + get_obj( ).get_key( ) );
 
       temporary_session_variable tmp_peer_clone_key(
