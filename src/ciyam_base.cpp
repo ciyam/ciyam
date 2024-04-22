@@ -3956,6 +3956,31 @@ void append_undo_sql_statements( storage_handler& handler )
    }
 }
 
+string extract_mod_cls_and_key_from_command( const string& command )
+{
+   string retval;
+
+   // NOTE: Expected format is "<cmd> <uid> <dtm> <mod> <cls> <key>[ ...]"
+   // so will initially set the pos to just before the key: " <key>[ ...]"
+   string::size_type pos = find_nth_occurrence( command, ' ', 5 );
+
+   if( pos == string::npos )
+      throw runtime_error( "unexpected command format '" + command + "' in extract_key_from_command" );
+
+   string::size_type npos = command.find( ' ', pos + 1 );
+
+   // NOTE: Now set pos back to before the mod: " <mod> <cls> <key >[ ...]"
+   pos = find_nth_occurrence( command, ' ', 3 );
+
+   if( npos != string::npos )
+      npos -= ( pos + 1 );
+
+   // NOTE: Finally reduce to: "<mod> <cls> <key>"
+   retval = command.substr( pos + 1, npos );
+
+   return retval;
+}
+
 void append_peerchain_log_commands( )
 {
    size_t num_commands = gtp_session->peerchain_log_commands.size( );
@@ -3977,15 +4002,78 @@ void append_peerchain_log_commands( )
 
          next_command.erase( 0, pos + 1 );
 
-         ofstream outf( identity_log.c_str( ), ios::out | ios::app );
+         bool append_command = true;
 
-         outf << next_command << '\n';
+         pos = next_command.find( ' ' );
 
-         outf.flush( );
-         if( !outf.good( ) )
-            throw runtime_error( "*** unexpected error occurred writing to peerchain tx log for '" + identity_log + "' ***" );
+         if( pos == string::npos )
+            throw runtime_error( "unexpected missing command in peerchain tx log command '" + next_command + "'" );
 
-         outf.close( );
+         string command( next_command.substr( 0, pos ) );
+
+         // NOTE: If a record is being destroy that had previously been created in the identity log
+         // file will remove that line from that file (or remove the identity log file itself if it
+         // was the only line found).
+         if( command == c_cmd_destroy )
+         {
+            string destroy_info( extract_mod_cls_and_key_from_command( next_command ) );
+
+            if( file_exists( identity_log ) )
+            {
+               vector< string > lines;
+               buffer_file_lines( identity_log, lines );
+
+               bool removed_create = false;
+
+               for( size_t i = 0; i < lines.size( ); i++ )
+               {
+                  string next_line( lines[ i ] );
+
+                  pos = next_line.find( ' ' );
+
+                  if( pos != string::npos )
+                  {
+                     command = next_line.substr( 0, pos );
+
+                     if( command == c_cmd_create )
+                     {
+                        string create_info( extract_mod_cls_and_key_from_command( next_line ) );
+
+                        if( create_info == destroy_info )
+                        {
+                           removed_create = true;
+                           lines.erase( lines.begin( ) + i );
+
+                           break;
+                        }
+                     }
+                  }
+               }
+
+               if( removed_create )
+               {
+                  append_command = false;
+
+                  if( lines.empty( ) )
+                     remove_file( identity_log );
+                  else
+                     write_file_lines( identity_log, lines );
+               }
+            }
+         }
+
+         if( append_command )
+         {
+            ofstream outf( identity_log.c_str( ), ios::out | ios::app );
+
+            outf << next_command << '\n';
+
+            outf.flush( );
+            if( !outf.good( ) )
+               throw runtime_error( "*** unexpected error occurred writing to peerchain tx log for '" + identity_log + "' ***" );
+
+            outf.close( );
+         }
       }
 
       gtp_session->peerchain_log_commands.clear( );
@@ -12132,7 +12220,7 @@ string exec_bulk_ops( const string& module,
                      op_instance_update( handle, "", key, "", false, &rc );
 
                      if( rc == e_op_update_rc_okay )
-                        next_log_line = "pu";
+                        next_log_line = c_cmd_update;
                      else
                      {
                         // FUTURE: These need to be implemented as string messages.
@@ -12153,7 +12241,7 @@ string exec_bulk_ops( const string& module,
                      op_instance_destroy( handle, "", key, "", false, &rc );
 
                      if( rc == e_op_destroy_rc_okay )
-                        next_log_line = "pd";
+                        next_log_line = c_cmd_destroy;
                      else
                      {
                         // FUTURE: These need to be implemented as string messages.
@@ -12184,7 +12272,7 @@ string exec_bulk_ops( const string& module,
                op_instance_create( handle, "", key, false, &rc );
 
                if( rc == e_op_create_rc_okay )
-                  next_log_line = "pc";
+                  next_log_line = c_cmd_create;
                else
                {
                   // FUTURE: These need to be implemented as string messages.
@@ -13628,6 +13716,7 @@ void begin_instance_op( instance_op op, class_base& instance,
          }
 
          string ver_expected( instance_accessor.get_ver_exp( ) );
+
          if( !ver_expected.empty( ) && ver_expected != instance.get_version_info( ) )
             throw runtime_error( get_string_message( GS( c_str_version_mismatch ),
              make_pair( c_str_parm_version_mismatch_found, instance.get_version_info( ) ),
@@ -13851,11 +13940,11 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             string log_command;
 
             if( op == class_base::e_op_type_create )
-               log_command += "pc";
+               log_command += c_cmd_create;
             else if( op == class_base::e_op_type_update )
-               log_command += "pu";
+               log_command += c_cmd_update;
             else if( op == class_base::e_op_type_destroy )
-               log_command += "pd";
+               log_command += c_cmd_destroy;
 
             log_command += ' ';
             log_command += c_peer;

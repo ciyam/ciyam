@@ -102,6 +102,24 @@ const char* const c_env_var_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL
 
 }
 
+string::size_type find_nth_occurrence( const string& s, char ch, size_t n )
+{
+   string::size_type pos = string::npos;
+
+   for( size_t i = 0; i < n; i++ )
+   {
+      if( pos == string::npos )
+         pos = s.find( ch );
+      else
+         pos = s.find( ch, pos + 1 );
+
+      if( pos == string::npos )
+         break;
+   }
+
+   return pos;
+}
+
 string quote( const string& s, char quote_char, char escape_char )
 {
    string qs;
@@ -1063,16 +1081,16 @@ bool wildcard_match( const char* p_expr, const char* p_data )
    switch( p_expr[ 0 ] )
    {
       case '\0':
-         return !p_data[ 0 ];
+      return !p_data[ 0 ];
 
       case '*':
-         return wildcard_match( p_expr + 1, p_data ) || p_data[ 0 ] && wildcard_match( p_expr, p_data + 1 );
+      return wildcard_match( p_expr + 1, p_data ) || p_data[ 0 ] && wildcard_match( p_expr, p_data + 1 );
 
       case '?':
-         return p_data[ 0 ] && wildcard_match( p_expr + 1, p_data + 1 );
+      return p_data[ 0 ] && wildcard_match( p_expr + 1, p_data + 1 );
 
       default:
-         return p_expr[ 0 ] == p_data[ 0 ] && wildcard_match( p_expr + 1, p_data + 1 );
+      return p_expr[ 0 ] == p_data[ 0 ] && wildcard_match( p_expr + 1, p_data + 1 );
    }
 }
 
@@ -1192,6 +1210,7 @@ string unescaped( const char* p_start, size_t len, const char* p_specials, char 
 
    size_t n = 0;
    bool was_escape = false;
+
    for( size_t i = 0; i < len; i++ )
    {
       if( was_escape )
@@ -1383,6 +1402,7 @@ string& utf8_replace( string& utf8, const char* p_findstr, const char* p_replstr
       }
 
       string::size_type lpos = 0;
+
       while( true )
       {
          string::size_type pos = utf8.find( p_findstr, lpos );
@@ -2778,6 +2798,7 @@ string extract_text_from_html( const string& html )
    size_t tok_pos = 0;
    bool in_token = false;
    bool had_first_non_white = false;
+
    for( size_t i = 0; i < html.size( ); i++ )
    {
       if( html[ i ] == '<' )
@@ -2798,6 +2819,8 @@ string extract_text_from_html( const string& html )
             text += '\n';
          else if( token == "</p>" || token == "</title>" )
             text += "\n\n";
+         else if( token == "</h1>" || token == "</h2>" || token == "</h3>" )
+            text += '\n';
       }
       else if( !in_token )
       {
@@ -2860,5 +2883,5 @@ string extract_text_from_html( const string& html )
       }
    }
 
-   return text;
+   return trim( text );
 }
