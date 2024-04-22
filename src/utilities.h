@@ -79,6 +79,8 @@ REGISTER_TYPEOF( 15, wchar_t )
 REGISTER_TYPEOF( 16, int ( * )( ) )
 REGISTER_TYPEOF( 17, std::string )
 
+std::string::size_type find_nth_occurrence( const std::string& s, char ch, size_t n );
+
 std::string quote( const std::string& s, char quote_char = '"', char escape_char = '\\' );
 
 inline void to_upper( std::string& s )

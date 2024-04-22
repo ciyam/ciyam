@@ -5,3 +5,20 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( 
       retval = false;
    // [(finish destroy_restrict)] `{`$arg_id`}
 `}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start destroy_restrict)] `{`$arg_id`}
+`{`@eq`(`$arg_pfield`,`'`'`)\
+   dependents.insert( "`{`$arg_field`}" );
+
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
+      names.insert( "`{`$arg_field`}" );\
+`,\
+   dependents.insert( "`{`$arg_pfield`}" );
+
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
+      names.insert( "`{`$arg_pfield`}" );\
+`}
+   // [(finish destroy_restrict)] `{`$arg_id`}
+`}

@@ -1231,7 +1231,7 @@ void import_package( const string& module,
                      bool is_update = false;
                      if( rc != e_instance_fetch_rc_okay )
                      {
-                        next_log_line = "pc";
+                        next_log_line = c_cmd_create;
                         op_instance_create( handle, "", key_value, false );
                      }
                      else if( new_only && !keys_created.count( key_value ) && !keys_updating.count( key_value ) )
@@ -1240,7 +1240,7 @@ void import_package( const string& module,
                      else
                      {
                         is_update = true;
-                        next_log_line = "pu";
+                        next_log_line = c_cmd_update;
                         op_instance_update( handle, "", key_value, "", false );
                      }
 

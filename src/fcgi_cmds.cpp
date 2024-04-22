@@ -223,7 +223,7 @@ bool perform_update( const string& module, const string& class_id,
       fields_and_values += escaped( field_value_pairs[ i ].second, ",\"" );
    }
 
-   string cmd( "pu " + get_uid_info( sess_info ) + " "
+   string cmd( string( c_cmd_update ) + " " + get_uid_info( sess_info ) + " "
     + date_time::standard( ).as_string( ) + " " + module + " " + class_id );
 
    if( !sess_info.user_group.empty( ) )
@@ -258,7 +258,7 @@ bool perform_update( const string& module,
 {
    bool okay = true;
 
-   string cmd( "pu " + get_uid_info( sess_info ) + " "
+   string cmd( string( c_cmd_update ) + " " + get_uid_info( sess_info ) + " "
     + date_time::standard( ).as_string( ) + " " + module + " " + class_id + " " + key + " \"" + field
     + "=" + escaped( new_value, ",\"" ) + "\" \"" + field + "=" + escaped( old_value, ",\"" ) + "\"" );
 
@@ -424,11 +424,11 @@ bool perform_action( const string& module_name,
       string act_cmd;
 
       if( act == c_act_link )
-         act_cmd = "pu";
+         act_cmd = c_cmd_update;
       else if( act == c_act_del || act == c_act_rdel )
-         act_cmd = "pd";
+         act_cmd = c_cmd_destroy;
       else if( act == c_act_exec )
-         act_cmd = "pe";
+         act_cmd = c_cmd_execute;
       else
          throw runtime_error( "Unknown list action '" + act + "'." );
 
@@ -546,7 +546,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
 {
    bool okay = true;
 
-   string fetch_cmd( "perform_fetch " + module + " " + class_id );
+   string fetch_cmd( string( c_cmd_fetch ) + " " + module + " " + class_id );
 
    string user_info( get_uid_info( sess_info, false ) );
 
@@ -707,7 +707,7 @@ bool fetch_list_info( const string& module,
    if( !exclude_key_info.empty( ) )
       split( exclude_key_info, exclude_keys );
 
-   string fetch_cmd( "perform_fetch " + module + " " + class_id );
+   string fetch_cmd( string( c_cmd_fetch ) + " " + module + " " + class_id );
 
    string extra_debug;
    if( p_extra_debug )
@@ -2374,7 +2374,7 @@ void add_user( const string& user_id, const string& user_name,
  string* p_new_key, bool active, const string* p_gpg_key_file )
 {
    bool okay = true;
-   string new_user_cmd( "pc" );
+   string new_user_cmd( c_cmd_create );
 
    new_user_cmd += " sys " + date_time::standard( ).as_string( )
     + " " + mod_info.id + " " + mod_info.user_class_id + " \" " + clone_key + "\"";
@@ -2495,7 +2495,7 @@ void add_quick_link( const string& module_ref,
    if( !uselect.empty( ) )
       URL += "&uselect=" + uselect;
 
-   string qlink_cmd( "pc" );
+   string qlink_cmd( c_cmd_create );
 
    qlink_cmd += " " + get_uid_info( sess_info )
     + " " + date_time::standard( ).as_string( )
@@ -2561,9 +2561,9 @@ void save_record( const string& module_id,
 
    string act_cmd;
    if( is_new_record )
-      act_cmd = "pc";
+      act_cmd = c_cmd_create;
    else
-      act_cmd = "pu";
+      act_cmd = c_cmd_update;
 
    act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + view.module_id + " " + view.cid;
 
