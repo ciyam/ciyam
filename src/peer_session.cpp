@@ -901,6 +901,7 @@ peerchain_type get_blockchain_type( const string& blockchain )
 
       bool has_target = false;
       bool has_hub_target = false;
+      bool has_data_target = false;
       bool has_user_target = false;
 
       if( genesis_info.find( prefix ) != string::npos )
@@ -908,22 +909,33 @@ peerchain_type get_blockchain_type( const string& blockchain )
 
       string hub_prefix( prefix );
 
-      hub_prefix += string( get_special_var_name( e_special_var_peer_hub ) );
+      hub_prefix += get_special_var_name( e_special_var_peer_hub );
 
       if( genesis_info.find( hub_prefix ) != string::npos )
          has_hub_target = true;
       else
       {
-         string user_prefix( prefix );
+         string data_prefix( prefix );
 
-         user_prefix += string( get_special_var_name( e_special_var_peer_user ) );
+         data_prefix += get_special_var_name( e_special_var_peer_data );
 
-         if( genesis_info.find( user_prefix ) != string::npos )
-            has_user_target = true;
+         if( genesis_info.find( data_prefix ) != string::npos )
+            has_data_target = true;
+         else
+         {
+            string user_prefix( prefix );
+
+            user_prefix += get_special_var_name( e_special_var_peer_user );
+
+            if( genesis_info.find( user_prefix ) != string::npos )
+               has_user_target = true;
+         }
       }
 
       if( has_hub_target )
          chain_type = e_peerchain_type_hub;
+      else if( has_data_target )
+         chain_type = e_peerchain_type_data;
       else if( has_user_target )
          chain_type = e_peerchain_type_user;
       else if( !has_target )
@@ -960,6 +972,7 @@ void check_blockchain_type( const string& blockchain, peerchain_type chain_type,
 
       bool has_target = false;
       bool has_hub_target = false;
+      bool has_data_target = false;
       bool has_user_target = false;
 
       if( genesis_info.find( prefix ) != string::npos )
@@ -967,18 +980,27 @@ void check_blockchain_type( const string& blockchain, peerchain_type chain_type,
 
       string hub_prefix( prefix );
 
-      hub_prefix += string( get_special_var_name( e_special_var_peer_hub ) );
+      hub_prefix += get_special_var_name( e_special_var_peer_hub );
 
       if( genesis_info.find( hub_prefix ) != string::npos )
          has_hub_target = true;
       else
       {
-         string user_prefix( prefix );
+         string data_prefix( prefix );
 
-         user_prefix += string( get_special_var_name( e_special_var_peer_user ) );
+         data_prefix += get_special_var_name( e_special_var_peer_data );
 
-         if( genesis_info.find( user_prefix ) != string::npos )
-            has_user_target = true;
+         if( genesis_info.find( data_prefix ) != string::npos )
+            has_data_target = true;
+         else
+         {
+            string user_prefix( prefix );
+
+            user_prefix += get_special_var_name( e_special_var_peer_user );
+
+            if( genesis_info.find( user_prefix ) != string::npos )
+               has_user_target = true;
+         }
       }
 
       bool okay = true;
@@ -989,6 +1011,11 @@ void check_blockchain_type( const string& blockchain, peerchain_type chain_type,
       {
          if( !has_hub_target )
             okay = false;
+      }
+      else if( chain_type == e_peerchain_type_data )
+      {
+         if( !has_data_target )
+            okay = true;
       }
       else if( chain_type == e_peerchain_type_user )
       {

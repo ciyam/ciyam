@@ -2830,6 +2830,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string blockchain( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_blockchain ) );
          string host_and_or_port( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_host_and_or_port ) );
          bool type_hub = has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_hub );
+         bool type_data = has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_data );
          bool type_user = has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_user );
          bool type_backup = has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_backup );
          bool type_shared = has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_shared );
@@ -2838,6 +2839,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( type_hub )
             chain_type = e_peerchain_type_hub;
+         else if( type_data )
+            chain_type = e_peerchain_type_data;
          else if( type_user )
             chain_type = e_peerchain_type_user;
          else if( type_backup )

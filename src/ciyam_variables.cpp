@@ -117,6 +117,7 @@ const char* const c_special_variable_peer_hub = "@peer_hub";
 const char* const c_special_variable_progress = "@progress";
 const char* const c_special_variable_updating = "@updating";
 const char* const c_special_variable_args_file = "@args_file";
+const char* const c_special_variable_cmd_delay = "@cmd_delay";
 const char* const c_special_variable_crypt_key = "@crypt_key";
 const char* const c_special_variable_decrement = "@decrement";
 const char* const c_special_variable_executing = "@executing";
@@ -124,6 +125,7 @@ const char* const c_special_variable_file_list = "@file_list";
 const char* const c_special_variable_image_dir = "@image_dir";
 const char* const c_special_variable_increment = "@increment";
 const char* const c_special_variable_list_hash = "@list_hash";
+const char* const c_special_variable_peer_data = "@peer_data";
 const char* const c_special_variable_peer_port = "@peer_port";
 const char* const c_special_variable_peer_user = "@peer_user";
 const char* const c_special_variable_preparing = "@preparing";
@@ -169,6 +171,7 @@ const char* const c_special_variable_shared_secret = "@shared_secret";
 const char* const c_special_variable_stream_cipher = "@stream_cipher";
 const char* const c_special_variable_sub_directory = "@sub_directory";
 const char* const c_special_variable_update_fields = "@update_fields";
+const char* const c_special_variable_cmd_delay_wait = "@cmd_delay_wait";
 const char* const c_special_variable_files_area_dir = "@files_area_dir";
 const char* const c_special_variable_peer_clone_key = "@peer_clone_key";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
@@ -282,889 +285,259 @@ inline string quote_if_contains_white_space( const string& name )
    return retval;
 }
 
+vector< string > g_special_variable_names;
+
+void init_special_variable_names( )
+{
+   guard g( g_mutex );
+
+   // NOTE: These must be aligned with the enum in "ciyam_common.h".
+   if( g_special_variable_names.empty( ) )
+   {
+      g_special_variable_names.push_back( c_special_variable_bh );
+      g_special_variable_names.push_back( c_special_variable_id );
+      g_special_variable_names.push_back( c_special_variable_os );
+      g_special_variable_names.push_back( c_special_variable_dtm );
+      g_special_variable_names.push_back( c_special_variable_grp );
+      g_special_variable_names.push_back( c_special_variable_key );
+      g_special_variable_names.push_back( c_special_variable_sec );
+      g_special_variable_names.push_back( c_special_variable_set );
+      g_special_variable_names.push_back( c_special_variable_tag );
+      g_special_variable_names.push_back( c_special_variable_uid );
+      g_special_variable_names.push_back( c_special_variable_sid );
+      g_special_variable_names.push_back( c_special_variable_arg1 );
+      g_special_variable_names.push_back( c_special_variable_arg2 );
+      g_special_variable_names.push_back( c_special_variable_cube );
+      g_special_variable_names.push_back( c_special_variable_hash );
+      g_special_variable_names.push_back( c_special_variable_val1 );
+      g_special_variable_names.push_back( c_special_variable_val2 );
+      g_special_variable_names.push_back( c_special_variable_file );
+      g_special_variable_names.push_back( c_special_variable_loop );
+      g_special_variable_names.push_back( c_special_variable_name );
+      g_special_variable_names.push_back( c_special_variable_none );
+      g_special_variable_names.push_back( c_special_variable_path );
+      g_special_variable_names.push_back( c_special_variable_peer );
+      g_special_variable_names.push_back( c_special_variable_port );
+      g_special_variable_names.push_back( c_special_variable_size );
+      g_special_variable_names.push_back( c_special_variable_slot );
+      g_special_variable_names.push_back( c_special_variable_type );
+      g_special_variable_names.push_back( c_special_variable_user );
+      g_special_variable_names.push_back( c_special_variable_uuid );
+      g_special_variable_names.push_back( c_special_variable_algos );
+      g_special_variable_names.push_back( c_special_variable_array );
+      g_special_variable_names.push_back( c_special_variable_async );
+      g_special_variable_names.push_back( c_special_variable_bytes );
+      g_special_variable_names.push_back( c_special_variable_class );
+      g_special_variable_names.push_back( c_special_variable_deque );
+      g_special_variable_names.push_back( c_special_variable_embed );
+      g_special_variable_names.push_back( c_special_variable_print );
+      g_special_variable_names.push_back( c_special_variable_quiet );
+      g_special_variable_names.push_back( c_special_variable_slotx );
+      g_special_variable_names.push_back( c_special_variable_title );
+      g_special_variable_names.push_back( c_special_variable_branch );
+      g_special_variable_names.push_back( c_special_variable_cloned );
+      g_special_variable_names.push_back( c_special_variable_images );
+      g_special_variable_names.push_back( c_special_variable_module );
+      g_special_variable_names.push_back( c_special_variable_opened );
+      g_special_variable_names.push_back( c_special_variable_pubkey );
+      g_special_variable_names.push_back( c_special_variable_return );
+      g_special_variable_names.push_back( c_special_variable_script );
+      g_special_variable_names.push_back( c_special_variable_command );
+      g_special_variable_names.push_back( c_special_variable_do_exec );
+      g_special_variable_names.push_back( c_special_variable_ip_addr );
+      g_special_variable_names.push_back( c_special_variable_is_last );
+      g_special_variable_names.push_back( c_special_variable_message );
+      g_special_variable_names.push_back( c_special_variable_opening );
+      g_special_variable_names.push_back( c_special_variable_package );
+      g_special_variable_names.push_back( c_special_variable_pending );
+      g_special_variable_names.push_back( c_special_variable_pubkeyx );
+      g_special_variable_names.push_back( c_special_variable_restore );
+      g_special_variable_names.push_back( c_special_variable_slowest );
+      g_special_variable_names.push_back( c_special_variable_storage );
+      g_special_variable_names.push_back( c_special_variable_tz_name );
+      g_special_variable_names.push_back( c_special_variable_trigger );
+      g_special_variable_names.push_back( c_special_variable_waiting );
+      g_special_variable_names.push_back( c_special_variable_executed );
+      g_special_variable_names.push_back( c_special_variable_identity );
+      g_special_variable_names.push_back( c_special_variable_key_info );
+      g_special_variable_names.push_back( c_special_variable_notifier );
+      g_special_variable_names.push_back( c_special_variable_peer_hub );
+      g_special_variable_names.push_back( c_special_variable_progress );
+      g_special_variable_names.push_back( c_special_variable_updating );
+      g_special_variable_names.push_back( c_special_variable_args_file );
+      g_special_variable_names.push_back( c_special_variable_cmd_delay );
+      g_special_variable_names.push_back( c_special_variable_crypt_key );
+      g_special_variable_names.push_back( c_special_variable_decrement );
+      g_special_variable_names.push_back( c_special_variable_executing );
+      g_special_variable_names.push_back( c_special_variable_file_list );
+      g_special_variable_names.push_back( c_special_variable_image_dir );
+      g_special_variable_names.push_back( c_special_variable_increment );
+      g_special_variable_names.push_back( c_special_variable_list_hash );
+      g_special_variable_names.push_back( c_special_variable_peer_data );
+      g_special_variable_names.push_back( c_special_variable_peer_port );
+      g_special_variable_names.push_back( c_special_variable_peer_user );
+      g_special_variable_names.push_back( c_special_variable_preparing );
+      g_special_variable_names.push_back( c_special_variable_val_error );
+      g_special_variable_names.push_back( c_special_variable_blockchain );
+      g_special_variable_names.push_back( c_special_variable_chain_type );
+      g_special_variable_names.push_back( c_special_variable_extra_info );
+      g_special_variable_names.push_back( c_special_variable_key_suffix );
+      g_special_variable_names.push_back( c_special_variable_permission );
+      g_special_variable_names.push_back( c_special_variable_queue_puts );
+      g_special_variable_names.push_back( c_special_variable_session_id );
+      g_special_variable_names.push_back( c_special_variable_tag_prefix );
+      g_special_variable_names.push_back( c_special_variable_tree_count );
+      g_special_variable_names.push_back( c_special_variable_tree_total );
+      g_special_variable_names.push_back( c_special_variable_allow_async );
+      g_special_variable_names.push_back( c_special_variable_application );
+      g_special_variable_names.push_back( c_special_variable_errors_only );
+      g_special_variable_names.push_back( c_special_variable_init_log_id );
+      g_special_variable_names.push_back( c_special_variable_opened_user );
+      g_special_variable_names.push_back( c_special_variable_output_file );
+      g_special_variable_names.push_back( c_special_variable_paired_sync );
+      g_special_variable_names.push_back( c_special_variable_path_prefix );
+      g_special_variable_names.push_back( c_special_variable_permissions );
+      g_special_variable_names.push_back( c_special_variable_queue_peers );
+      g_special_variable_names.push_back( c_special_variable_secret_hash );
+      g_special_variable_names.push_back( c_special_variable_skip_update );
+      g_special_variable_names.push_back( c_special_variable_state_names );
+      g_special_variable_names.push_back( c_special_variable_style_brief );
+      g_special_variable_names.push_back( c_special_variable_transaction );
+      g_special_variable_names.push_back( c_special_variable_backup_files );
+      g_special_variable_names.push_back( c_special_variable_block_height );
+      g_special_variable_names.push_back( c_special_variable_opened_files );
+      g_special_variable_names.push_back( c_special_variable_peer_map_key );
+      g_special_variable_names.push_back( c_special_variable_shared_files );
+      g_special_variable_names.push_back( c_special_variable_app_directory );
+      g_special_variable_names.push_back( c_special_variable_export_needed );
+      g_special_variable_names.push_back( c_special_variable_import_needed );
+      g_special_variable_names.push_back( c_special_variable_last_file_put );
+      g_special_variable_names.push_back( c_special_variable_num_put_files );
+      g_special_variable_names.push_back( c_special_variable_peer_sec_hash );
+      g_special_variable_names.push_back( c_special_variable_rewind_height );
+      g_special_variable_names.push_back( c_special_variable_shared_secret );
+      g_special_variable_names.push_back( c_special_variable_stream_cipher );
+      g_special_variable_names.push_back( c_special_variable_sub_directory );
+      g_special_variable_names.push_back( c_special_variable_update_fields );
+      g_special_variable_names.push_back( c_special_variable_cmd_delay_wait );
+      g_special_variable_names.push_back( c_special_variable_files_area_dir );
+      g_special_variable_names.push_back( c_special_variable_peer_clone_key );
+      g_special_variable_names.push_back( c_special_variable_peer_initiator );
+      g_special_variable_names.push_back( c_special_variable_peer_responder );
+      g_special_variable_names.push_back( c_special_variable_progress_clear );
+      g_special_variable_names.push_back( c_special_variable_progress_count );
+      g_special_variable_names.push_back( c_special_variable_progress_fracs );
+      g_special_variable_names.push_back( c_special_variable_progress_prior );
+      g_special_variable_names.push_back( c_special_variable_progress_total );
+      g_special_variable_names.push_back( c_special_variable_progress_value );
+      g_special_variable_names.push_back( c_special_variable_style_extended );
+      g_special_variable_names.push_back( c_special_variable_sys_var_prefix );
+      g_special_variable_names.push_back( c_special_variable_blockchain_user );
+      g_special_variable_names.push_back( c_special_variable_ciyam_list_hash );
+      g_special_variable_names.push_back( c_special_variable_notifier_events );
+      g_special_variable_names.push_back( c_special_variable_paired_identity );
+      g_special_variable_names.push_back( c_special_variable_queue_hub_users );
+      g_special_variable_names.push_back( c_special_variable_row_cache_limit );
+      g_special_variable_names.push_back( c_special_variable_system_identity );
+      g_special_variable_names.push_back( c_special_variable_check_if_changed );
+      g_special_variable_names.push_back( c_special_variable_dummy_time_stamp );
+      g_special_variable_names.push_back( c_special_variable_progress_message );
+      g_special_variable_names.push_back( c_special_variable_progress_seconds );
+      g_special_variable_names.push_back( c_special_variable_protocol_handler );
+      g_special_variable_names.push_back( c_special_variable_skip_after_fetch );
+      g_special_variable_names.push_back( c_special_variable_skip_persistance );
+      g_special_variable_names.push_back( c_special_variable_skip_submit_file );
+      g_special_variable_names.push_back( c_special_variable_trace_session_id );
+      g_special_variable_names.push_back( c_special_variable_autoscript_reload );
+      g_special_variable_names.push_back( c_special_variable_blockchain_height );
+      g_special_variable_names.push_back( c_special_variable_blockchain_is_hub );
+      g_special_variable_names.push_back( c_special_variable_fields_and_values );
+      g_special_variable_names.push_back( c_special_variable_last_suffixed_key );
+      g_special_variable_names.push_back( c_special_variable_package_type_path );
+      g_special_variable_names.push_back( c_special_variable_peer_is_dependent );
+      g_special_variable_names.push_back( c_special_variable_peer_data_created );
+      g_special_variable_names.push_back( c_special_variable_attached_file_path );
+      g_special_variable_names.push_back( c_special_variable_check_script_error );
+      g_special_variable_names.push_back( c_special_variable_encrypted_password );
+      g_special_variable_names.push_back( c_special_variable_extra_field_values );
+      g_special_variable_names.push_back( c_special_variable_file_info_buffered );
+      g_special_variable_names.push_back( c_special_variable_fixed_field_values );
+      g_special_variable_names.push_back( c_special_variable_generate_hub_block );
+      g_special_variable_names.push_back( c_special_variable_repo_entry_missing );
+      g_special_variable_names.push_back( c_special_variable_blockchain_identity );
+      g_special_variable_names.push_back( c_special_variable_blockchain_is_owner );
+      g_special_variable_names.push_back( c_special_variable_blockchain_num_puts );
+      g_special_variable_names.push_back( c_special_variable_peer_identity_alias );
+      g_special_variable_names.push_back( c_special_variable_repo_crypt_password );
+      g_special_variable_names.push_back( c_special_variable_skip_parent_updates );
+      g_special_variable_names.push_back( c_special_variable_blockchain_hind_hash );
+      g_special_variable_names.push_back( c_special_variable_ods_cache_hit_ratios );
+      g_special_variable_names.push_back( c_special_variable_secondary_validation );
+      g_special_variable_names.push_back( c_special_variable_blockchain_next_extra );
+      g_special_variable_names.push_back( c_special_variable_blockchain_time_value );
+      g_special_variable_names.push_back( c_special_variable_keep_user_peers_alive );
+      g_special_variable_names.push_back( c_special_variable_package_install_extra );
+      g_special_variable_names.push_back( c_special_variable_peer_is_synchronising );
+      g_special_variable_names.push_back( c_special_variable_blockchain_is_checking );
+      g_special_variable_names.push_back( c_special_variable_blockchain_is_fetching );
+      g_special_variable_names.push_back( c_special_variable_single_string_response );
+      g_special_variable_names.push_back( c_special_variable_skip_tagging_if_exists );
+      g_special_variable_names.push_back( c_special_variable_blockchain_archive_path );
+      g_special_variable_names.push_back( c_special_variable_blockchain_first_mapped );
+      g_special_variable_names.push_back( c_special_variable_blockchain_height_other );
+      g_special_variable_names.push_back( c_special_variable_blockchain_op_list_hash );
+      g_special_variable_names.push_back( c_special_variable_blockchain_backup_height );
+      g_special_variable_names.push_back( c_special_variable_blockchain_put_list_hash );
+      g_special_variable_names.push_back( c_special_variable_blockchain_shared_height );
+      g_special_variable_names.push_back( c_special_variable_blockchain_stream_cipher );
+      g_special_variable_names.push_back( c_special_variable_blockchain_zenith_height );
+      g_special_variable_names.push_back( c_special_variable_blockchain_checked_shared );
+      g_special_variable_names.push_back( c_special_variable_blockchain_get_tree_files );
+      g_special_variable_names.push_back( c_special_variable_blockchain_num_tree_items );
+      g_special_variable_names.push_back( c_special_variable_blockchain_other_is_owner );
+      g_special_variable_names.push_back( c_special_variable_blockchain_peer_supporter );
+      g_special_variable_names.push_back( c_special_variable_blockchain_tree_root_hash );
+      g_special_variable_names.push_back( c_special_variable_blockchain_backup_identity );
+      g_special_variable_names.push_back( c_special_variable_blockchain_block_file_hash );
+      g_special_variable_names.push_back( c_special_variable_blockchain_both_are_owners );
+      g_special_variable_names.push_back( c_special_variable_blockchain_peer_hub_height );
+      g_special_variable_names.push_back( c_special_variable_blockchain_shared_identity );
+      g_special_variable_names.push_back( c_special_variable_blockchain_waiting_for_hub );
+      g_special_variable_names.push_back( c_special_variable_blockchain_block_processing );
+      g_special_variable_names.push_back( c_special_variable_blockchain_zenith_tree_hash );
+      g_special_variable_names.push_back( c_special_variable_totals_exclude_hidden_blobs );
+      g_special_variable_names.push_back( c_special_variable_blockchain_height_processing );
+      g_special_variable_names.push_back( c_special_variable_blockchain_peer_hub_identity );
+      g_special_variable_names.push_back( c_special_variable_blockchain_targeted_identity );
+      g_special_variable_names.push_back( c_special_variable_blockchain_non_extra_identity );
+      g_special_variable_names.push_back( c_special_variable_blockchain_peer_has_supporters );
+      g_special_variable_names.push_back( c_special_variable_blockchain_primary_pubkey_hash );
+      g_special_variable_names.push_back( c_special_variable_blockchain_signature_file_hash );
+      g_special_variable_names.push_back( c_special_variable_display_last_two_for_duplicate );
+      g_special_variable_names.push_back( c_special_variable_blockchain_tertiary_pubkey_hash );
+      g_special_variable_names.push_back( c_special_variable_blockchain_secondary_pubkey_hash );
+      g_special_variable_names.push_back( c_special_variable_skip_total_child_field_in_parent );
+
+      // NOTE: This must always be pushed last.
+      g_special_variable_names.push_back( c_dummy );
+   }
+}
+
 }
 
 string get_special_var_name( special_var var )
 {
    string s;
 
-   switch( var )
-   {
-      case e_special_var_bh:
-      s = string( c_special_variable_bh );
-      break;
+   if( g_special_variable_names.empty( ) )
+      init_special_variable_names( );
 
-      case e_special_var_id:
-      s = string( c_special_variable_id );
-      break;
+   size_t offset = ( size_t )var;
 
-      case  e_special_var_os:
-      s = string( c_special_variable_os );
-      break;
+   if( offset >= g_special_variable_names.size( ) )
+      throw runtime_error( "unexpected special var offset " + to_string( offset ) );
 
-      case e_special_var_dtm:
-      s = string( c_special_variable_dtm );
-      break;
-
-      case e_special_var_grp:
-      s = string( c_special_variable_grp );
-      break;
-
-      case e_special_var_key:
-      s = string( c_special_variable_key );
-      break;
-
-      case e_special_var_sec:
-      s = string( c_special_variable_sec );
-      break;
-
-      case e_special_var_set:
-      s = string( c_special_variable_set );
-      break;
-
-      case e_special_var_tag:
-      s = string( c_special_variable_tag );
-      break;
-
-      case e_special_var_uid:
-      s = string( c_special_variable_uid );
-      break;
-
-      case e_special_var_sid:
-      s = string( c_special_variable_sid );
-      break;
-
-      case e_special_var_arg1:
-      s = string( c_special_variable_arg1 );
-      break;
-
-      case e_special_var_arg2:
-      s = string( c_special_variable_arg2 );
-      break;
-
-      case e_special_var_cube:
-      s = string( c_special_variable_cube );
-      break;
-
-      case e_special_var_hash:
-      s = string( c_special_variable_hash );
-      break;
-
-      case e_special_var_val1:
-      s = string( c_special_variable_val1 );
-      break;
-
-      case e_special_var_val2:
-      s = string( c_special_variable_val2 );
-      break;
-
-      case e_special_var_file:
-      s = string( c_special_variable_file );
-      break;
-
-      case e_special_var_loop:
-      s = string( c_special_variable_loop );
-      break;
-
-      case e_special_var_name:
-      s = string( c_special_variable_name );
-      break;
-
-      case e_special_var_none:
-      s = string( c_special_variable_none );
-      break;
-
-      case e_special_var_path:
-      s = string( c_special_variable_path );
-      break;
-
-      case e_special_var_peer:
-      s = string( c_special_variable_peer );
-      break;
-
-      case e_special_var_port:
-      s = string( c_special_variable_port );
-      break;
-
-      case e_special_var_size:
-      s = string( c_special_variable_size );
-      break;
-
-      case e_special_var_slot:
-      s = string( c_special_variable_slot );
-      break;
-
-      case e_special_var_type:
-      s = string( c_special_variable_type );
-      break;
-
-      case e_special_var_user:
-      s = string( c_special_variable_user );
-      break;
-
-      case e_special_var_uuid:
-      s = string( c_special_variable_uuid );
-      break;
-
-      case e_special_var_algos:
-      s = string( c_special_variable_algos );
-      break;
-
-      case e_special_var_array:
-      s = string( c_special_variable_array );
-      break;
-
-      case e_special_var_async:
-      s = string( c_special_variable_async );
-      break;
-
-      case e_special_var_bytes:
-      s = string( c_special_variable_bytes );
-      break;
-
-      case e_special_var_class:
-      s = string( c_special_variable_class );
-      break;
-
-      case e_special_var_deque:
-      s = string( c_special_variable_deque );
-      break;
-
-      case e_special_var_embed:
-      s = string( c_special_variable_embed );
-      break;
-
-      case e_special_var_print:
-      s = string( c_special_variable_print );
-      break;
-
-      case e_special_var_quiet:
-      s = string( c_special_variable_quiet );
-      break;
-
-      case e_special_var_slotx:
-      s = string( c_special_variable_slotx );
-      break;
-
-      case e_special_var_title:
-      s = string( c_special_variable_title );
-      break;
-
-      case e_special_var_branch:
-      s = string( c_special_variable_branch );
-      break;
-
-      case e_special_var_cloned:
-      s = string( c_special_variable_cloned );
-      break;
-
-      case e_special_var_images:
-      s = string( c_special_variable_images );
-      break;
-
-      case e_special_var_module:
-      s = string( c_special_variable_module );
-      break;
-
-      case e_special_var_opened:
-      s = string( c_special_variable_opened );
-      break;
-
-      case e_special_var_pubkey:
-      s = string( c_special_variable_pubkey );
-      break;
-
-      case e_special_var_return:
-      s = string( c_special_variable_return );
-      break;
-
-      case e_special_var_script:
-      s = string( c_special_variable_script );
-      break;
-
-      case e_special_var_do_exec:
-      s = string( c_special_variable_do_exec );
-      break;
-
-      case e_special_var_ip_addr:
-      s = string( c_special_variable_ip_addr );
-      break;
-
-      case e_special_var_is_last:
-      s = string( c_special_variable_is_last );
-      break;
-
-      case e_special_var_message:
-      s = string( c_special_variable_message );
-      break;
-
-      case e_special_var_opening:
-      s = string( c_special_variable_opening );
-      break;
-
-      case e_special_var_package:
-      s = string( c_special_variable_package );
-      break;
-
-      case e_special_var_pending:
-      s = string( c_special_variable_pending );
-      break;
-
-      case e_special_var_pubkeyx:
-      s = string( c_special_variable_pubkeyx );
-      break;
-
-      case e_special_var_restore:
-      s = string( c_special_variable_restore );
-      break;
-
-      case e_special_var_slowest:
-      s = string( c_special_variable_slowest );
-      break;
-
-      case e_special_var_storage:
-      s = string( c_special_variable_storage );
-      break;
-
-      case e_special_var_tz_name:
-      s = string( c_special_variable_tz_name );
-      break;
-
-      case e_special_var_trigger:
-      s = string( c_special_variable_trigger );
-      break;
-
-      case e_special_var_waiting:
-      s = string( c_special_variable_waiting );
-      break;
-
-      case e_special_var_executed:
-      s = string( c_special_variable_executed );
-      break;
-
-      case e_special_var_identity:
-      s = string( c_special_variable_identity );
-      break;
-
-      case e_special_var_key_info:
-      s = string( c_special_variable_key_info );
-      break;
-
-      case e_special_var_notifier:
-      s = string( c_special_variable_notifier );
-      break;
-
-      case e_special_var_peer_hub:
-      s = string( c_special_variable_peer_hub );
-      break;
-
-      case e_special_var_progress:
-      s = string( c_special_variable_progress );
-      break;
-
-      case e_special_var_updating:
-      s = string( c_special_variable_updating );
-      break;
-
-      case e_special_var_args_file:
-      s = string( c_special_variable_args_file );
-      break;
-
-      case e_special_var_crypt_key:
-      s = string( c_special_variable_crypt_key );
-      break;
-
-      case e_special_var_decrement:
-      s = string( c_special_variable_decrement );
-      break;
-
-      case e_special_var_executing:
-      s = string( c_special_variable_executing );
-      break;
-
-      case e_special_var_file_list:
-      s = string( c_special_variable_file_list );
-      break;
-
-      case e_special_var_image_dir:
-      s = string( c_special_variable_image_dir );
-      break;
-
-      case e_special_var_increment:
-      s = string( c_special_variable_increment );
-      break;
-
-      case e_special_var_list_hash:
-      s = string( c_special_variable_list_hash );
-      break;
-
-      case e_special_var_peer_port:
-      s = string( c_special_variable_peer_port );
-      break;
-
-      case e_special_var_peer_user:
-      s = string( c_special_variable_peer_user );
-      break;
-
-      case e_special_var_preparing:
-      s = string( c_special_variable_preparing );
-      break;
-
-      case e_special_var_val_error:
-      s = string( c_special_variable_val_error );
-      break;
-
-      case e_special_var_blockchain:
-      s = string( c_special_variable_blockchain );
-      break;
-
-      case e_special_var_chain_type:
-      s = string( c_special_variable_chain_type );
-      break;
-
-      case e_special_var_extra_info:
-      s = string( c_special_variable_extra_info );
-      break;
-
-      case e_special_var_key_suffix:
-      s = string( c_special_variable_key_suffix );
-      break;
-
-      case e_special_var_permission:
-      s = string( c_special_variable_permission );
-      break;
-
-      case e_special_var_queue_puts:
-      s = string( c_special_variable_queue_puts );
-      break;
-
-      case e_special_var_session_id:
-      s = string( c_special_variable_session_id );
-      break;
-
-      case e_special_var_tag_prefix:
-      s = string( c_special_variable_tag_prefix );
-      break;
-
-      case e_special_var_tree_count:
-      s = string( c_special_variable_tree_count );
-      break;
-
-      case e_special_var_tree_total:
-      s = string( c_special_variable_tree_total );
-      break;
-
-      case e_special_var_allow_async:
-      s = string( c_special_variable_allow_async );
-      break;
-
-      case e_special_var_application:
-      s = string( c_special_variable_application );
-      break;
-
-      case e_special_var_errors_only:
-      s = string( c_special_variable_errors_only );
-      break;
-
-      case e_special_var_init_log_id:
-      s = string( c_special_variable_init_log_id );
-      break;
-
-      case e_special_var_opened_user:
-      s = string( c_special_variable_opened_user );
-      break;
-
-      case e_special_var_output_file:
-      s = string( c_special_variable_output_file );
-      break;
-
-      case e_special_var_paired_sync:
-      s = string( c_special_variable_paired_sync );
-      break;
-
-      case e_special_var_path_prefix:
-      s = string( c_special_variable_path_prefix );
-      break;
-
-      case e_special_var_permissions:
-      s = string( c_special_variable_permissions );
-      break;
-
-      case e_special_var_queue_peers:
-      s = string( c_special_variable_queue_peers );
-      break;
-
-      case e_special_var_secret_hash:
-      s = string( c_special_variable_secret_hash );
-      break;
-
-      case e_special_var_skip_update:
-      s = string( c_special_variable_skip_update );
-      break;
-
-      case e_special_var_state_names:
-      s = string( c_special_variable_state_names );
-      break;
-
-      case e_special_var_style_brief:
-      s = string( c_special_variable_style_brief );
-      break;
-
-      case e_special_var_transaction:
-      s = string( c_special_variable_transaction );
-      break;
-
-      case e_special_var_backup_files:
-      s = string( c_special_variable_backup_files );
-      break;
-
-      case e_special_var_block_height:
-      s = string( c_special_variable_block_height );
-      break;
-
-      case e_special_var_opened_files:
-      s = string( c_special_variable_opened_files );
-      break;
-
-      case e_special_var_peer_map_key:
-      s = string( c_special_variable_peer_map_key );
-      break;
-
-      case e_special_var_shared_files:
-      s = string( c_special_variable_shared_files );
-      break;
-
-      case e_special_var_app_directory:
-      s = string( c_special_variable_app_directory );
-      break;
-
-      case e_special_var_export_needed:
-      s = string( c_special_variable_export_needed );
-      break;
-
-      case e_special_var_import_needed:
-      s = string( c_special_variable_import_needed );
-      break;
-
-      case e_special_var_last_file_put:
-      s = string( c_special_variable_last_file_put );
-      break;
-
-      case e_special_var_num_put_files:
-      s = string( c_special_variable_num_put_files );
-      break;
-
-      case e_special_var_peer_sec_hash:
-      s = string( c_special_variable_peer_sec_hash );
-      break;
-
-      case e_special_var_rewind_height:
-      s = string( c_special_variable_rewind_height );
-      break;
-
-      case e_special_var_shared_secret:
-      s = string( c_special_variable_shared_secret );
-      break;
-
-      case e_special_var_stream_cipher:
-      s = string( c_special_variable_stream_cipher );
-      break;
-
-      case e_special_var_sub_directory:
-      s = string( c_special_variable_sub_directory );
-      break;
-
-      case e_special_var_update_fields:
-      s = string( c_special_variable_update_fields );
-      break;
-
-      case e_special_var_files_area_dir:
-      s = string( c_special_variable_files_area_dir );
-      break;
-
-      case e_special_var_peer_clone_key:
-      s = string( c_special_variable_peer_clone_key );
-      break;
-
-      case e_special_var_peer_initiator:
-      s = string( c_special_variable_peer_initiator );
-      break;
-
-      case e_special_var_peer_responder:
-      s = string( c_special_variable_peer_responder );
-      break;
-
-      case e_special_var_progress_clear:
-      s = string( c_special_variable_progress_clear );
-      break;
-
-      case e_special_var_progress_count:
-      s = string( c_special_variable_progress_count );
-      break;
-
-      case e_special_var_progress_fracs:
-      s = string( c_special_variable_progress_fracs );
-      break;
-
-      case e_special_var_progress_prior:
-      s = string( c_special_variable_progress_prior );
-      break;
-
-      case e_special_var_progress_total:
-      s = string( c_special_variable_progress_total );
-      break;
-
-      case e_special_var_progress_value:
-      s = string( c_special_variable_progress_value );
-      break;
-
-      case e_special_var_style_extended:
-      s = string( c_special_variable_style_extended );
-      break;
-
-      case e_special_var_blockchain_user:
-      s = string( c_special_variable_blockchain_user );
-      break;
-
-      case e_special_var_ciyam_list_hash:
-      s = string( c_special_variable_ciyam_list_hash );
-      break;
-
-      case e_special_var_notifier_events:
-      s = string( c_special_variable_notifier_events );
-      break;
-
-      case e_special_var_paired_identity:
-      s = string( c_special_variable_paired_identity );
-      break;
-
-      case e_special_var_queue_hub_users:
-      s = string( c_special_variable_queue_hub_users );
-      break;
-
-      case e_special_var_row_cache_limit:
-      s = string( c_special_variable_row_cache_limit );
-      break;
-
-      case e_special_var_system_identity:
-      s = string( c_special_variable_system_identity );
-      break;
-
-      case e_special_var_check_if_changed:
-      s = string( c_special_variable_check_if_changed );
-      break;
-
-      case e_special_var_dummy_time_stamp:
-      s = string( c_special_variable_dummy_time_stamp );
-      break;
-
-      case e_special_var_progress_message:
-      s = string( c_special_variable_progress_message );
-      break;
-
-      case e_special_var_progress_seconds:
-      s = string( c_special_variable_progress_seconds );
-      break;
-
-      case e_special_var_protocol_handler:
-      s = string( c_special_variable_protocol_handler );
-      break;
-
-      case e_special_var_skip_after_fetch:
-      s = string( c_special_variable_skip_after_fetch );
-      break;
-
-      case e_special_var_skip_persistance:
-      s = string( c_special_variable_skip_persistance );
-      break;
-
-      case e_special_var_skip_submit_file:
-      s = string( c_special_variable_skip_submit_file );
-      break;
-
-      case e_special_var_trace_session_id:
-      s = string( c_special_variable_trace_session_id );
-      break;
-
-      case e_special_var_autoscript_reload:
-      s = string( c_special_variable_autoscript_reload );
-      break;
-
-      case e_special_var_blockchain_height:
-      s = string( c_special_variable_blockchain_height );
-      break;
-
-      case e_special_var_blockchain_is_hub:
-      s = string( c_special_variable_blockchain_is_hub );
-      break;
-
-      case e_special_var_fields_and_values:
-      s = string( c_special_variable_fields_and_values );
-      break;
-
-      case e_special_var_last_suffixed_key:
-      s = string( c_special_variable_last_suffixed_key );
-      break;
-
-      case e_special_var_package_type_path:
-      s = string( c_special_variable_package_type_path );
-      break;
-
-      case e_special_var_peer_data_created:
-      s = string( c_special_variable_peer_data_created );
-      break;
-
-      case e_special_var_peer_is_dependent:
-      s = string( c_special_variable_peer_is_dependent );
-      break;
-
-      case e_special_var_attached_file_path:
-      s = string( c_special_variable_attached_file_path );
-      break;
-
-      case e_special_var_check_script_error:
-      s = string( c_special_variable_check_script_error );
-      break;
-
-      case e_special_var_encrypted_password:
-      s = string( c_special_variable_encrypted_password );
-      break;
-
-      case e_special_var_extra_field_values:
-      s = string( c_special_variable_extra_field_values );
-      break;
-
-      case e_special_var_file_info_buffered:
-      s = string( c_special_variable_file_info_buffered );
-      break;
-
-      case e_special_var_fixed_field_values:
-      s = string( c_special_variable_fixed_field_values );
-      break;
-
-      case e_special_var_generate_hub_block:
-      s = string( c_special_variable_generate_hub_block );
-      break;
-
-      case e_special_var_repo_entry_missing:
-      s = string( c_special_variable_repo_entry_missing );
-      break;
-
-      case e_special_var_blockchain_identity:
-      s = string( c_special_variable_blockchain_identity );
-      break;
-
-      case e_special_var_blockchain_is_owner:
-      s = string( c_special_variable_blockchain_is_owner );
-      break;
-
-      case e_special_var_blockchain_num_puts:
-      s = string( c_special_variable_blockchain_num_puts );
-      break;
-
-      case e_special_var_peer_identity_alias:
-      s = string( c_special_variable_peer_identity_alias );
-      break;
-
-      case e_special_var_repo_crypt_password:
-      s = string( c_special_variable_repo_crypt_password );
-      break;
-
-      case e_special_var_skip_parent_updates:
-      s = string( c_special_variable_skip_parent_updates );
-      break;
-
-      case e_special_var_blockchain_hind_hash:
-      s = string( c_special_variable_blockchain_hind_hash );
-      break;
-
-      case e_special_var_ods_cache_hit_ratios:
-      s = string( c_special_variable_ods_cache_hit_ratios );
-      break;
-
-      case e_special_var_secondary_validation:
-      s = string( c_special_variable_secondary_validation );
-      break;
-
-      case e_special_var_blockchain_next_extra:
-      s = string( c_special_variable_blockchain_next_extra );
-      break;
-
-      case e_special_var_blockchain_time_value:
-      s = string( c_special_variable_blockchain_time_value );
-      break;
-
-      case e_special_var_keep_user_peers_alive:
-      s = string( c_special_variable_keep_user_peers_alive );
-      break;
-
-      case e_special_var_package_install_extra:
-      s = string( c_special_variable_package_install_extra );
-      break;
-
-      case e_special_var_peer_is_synchronising:
-      s = string( c_special_variable_peer_is_synchronising );
-      break;
-
-      case e_special_var_blockchain_is_checking:
-      s = string( c_special_variable_blockchain_is_checking );
-      break;
-
-      case e_special_var_blockchain_is_fetching:
-      s = string( c_special_variable_blockchain_is_fetching );
-      break;
-
-      case e_special_var_single_string_response:
-      s = string( c_special_variable_single_string_response );
-      break;
-
-      case e_special_var_skip_tagging_if_exists:
-      s = string( c_special_variable_skip_tagging_if_exists );
-      break;
-
-      case e_special_var_blockchain_archive_path:
-      s = string( c_special_variable_blockchain_archive_path );
-      break;
-
-      case e_special_var_blockchain_first_mapped:
-      s = string( c_special_variable_blockchain_first_mapped );
-      break;
-
-      case e_special_var_blockchain_height_other:
-      s = string( c_special_variable_blockchain_height_other );
-      break;
-
-      case e_special_var_blockchain_op_list_hash:
-      s = string( c_special_variable_blockchain_op_list_hash );
-      break;
-
-      case e_special_var_blockchain_backup_height:
-      s = string( c_special_variable_blockchain_backup_height );
-      break;
-
-      case e_special_var_blockchain_put_list_hash:
-      s = string( c_special_variable_blockchain_put_list_hash );
-      break;
-
-      case e_special_var_blockchain_shared_height:
-      s = string( c_special_variable_blockchain_shared_height );
-      break;
-
-      case e_special_var_blockchain_stream_cipher:
-      s = string( c_special_variable_blockchain_stream_cipher );
-      break;
-
-      case e_special_var_blockchain_zenith_height:
-      s = string( c_special_variable_blockchain_zenith_height );
-      break;
-
-      case e_special_var_blockchain_checked_shared:
-      s = string( c_special_variable_blockchain_checked_shared );
-      break;
-
-      case e_special_var_blockchain_get_tree_files:
-      s = string( c_special_variable_blockchain_get_tree_files );
-      break;
-
-      case e_special_var_blockchain_num_tree_items:
-      s = string( c_special_variable_blockchain_num_tree_items );
-      break;
-
-      case e_special_var_blockchain_other_is_owner:
-      s = string( c_special_variable_blockchain_other_is_owner );
-      break;
-
-      case e_special_var_blockchain_peer_supporter:
-      s = string( c_special_variable_blockchain_peer_supporter );
-      break;
-
-      case e_special_var_blockchain_tree_root_hash:
-      s = string( c_special_variable_blockchain_tree_root_hash );
-      break;
-
-      case e_special_var_blockchain_backup_identity:
-      s = string( c_special_variable_blockchain_backup_identity );
-      break;
-
-      case e_special_var_blockchain_block_file_hash:
-      s = string( c_special_variable_blockchain_block_file_hash );
-      break;
-
-      case e_special_var_blockchain_both_are_owners:
-      s = string( c_special_variable_blockchain_both_are_owners );
-      break;
-
-      case e_special_var_blockchain_peer_hub_height:
-      s = string( c_special_variable_blockchain_peer_hub_height );
-      break;
-
-      case e_special_var_blockchain_shared_identity:
-      s = string( c_special_variable_blockchain_shared_identity );
-      break;
-
-      case e_special_var_blockchain_waiting_for_hub:
-      s = string( c_special_variable_blockchain_waiting_for_hub );
-      break;
-
-      case e_special_var_blockchain_block_processing:
-      s = string( c_special_variable_blockchain_block_processing );
-      break;
-
-      case e_special_var_blockchain_zenith_tree_hash:
-      s = string( c_special_variable_blockchain_zenith_tree_hash );
-      break;
-
-      case e_special_var_totals_exclude_hidden_blobs:
-      s = string( c_special_variable_totals_exclude_hidden_blobs );
-      break;
-
-      case e_special_var_blockchain_height_processing:
-      s = string( c_special_variable_blockchain_height_processing );
-      break;
-
-      case e_special_var_blockchain_peer_hub_identity:
-      s = string( c_special_variable_blockchain_peer_hub_identity );
-      break;
-
-      case e_special_var_blockchain_targeted_identity:
-      s = string( c_special_variable_blockchain_targeted_identity );
-      break;
-
-      case e_special_var_blockchain_non_extra_identity:
-      s = string( c_special_variable_blockchain_non_extra_identity );
-      break;
-
-      case e_special_var_blockchain_peer_has_supporters:
-      s = string( c_special_variable_blockchain_peer_has_supporters );
-      break;
-
-      case e_special_var_blockchain_primary_pubkey_hash:
-      s = string( c_special_variable_blockchain_primary_pubkey_hash );
-      break;
-
-      case e_special_var_blockchain_signature_file_hash:
-      s = string( c_special_variable_blockchain_signature_file_hash );
-      break;
-
-      case e_special_var_display_last_two_for_duplicate:
-      s = string( c_special_variable_display_last_two_for_duplicate );
-      break;
-
-      case e_special_var_blockchain_tertiary_pubkey_hash:
-      s = string( c_special_variable_blockchain_tertiary_pubkey_hash );
-      break;
-
-      case e_special_var_blockchain_secondary_pubkey_hash:
-      s = string( c_special_variable_blockchain_secondary_pubkey_hash );
-      break;
-
-      case e_special_var_skip_total_child_field_in_parent:
-      s = string( c_special_variable_skip_total_child_field_in_parent );
-      break;
-
-      default:
-      throw runtime_error( "unexpected special var value #" + to_string( var ) );
-   }
+   s = g_special_variable_names[ offset ];
 
    return s;
 }

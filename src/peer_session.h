@@ -38,6 +38,7 @@ enum peerchain_type
 {
    e_peerchain_type_any,
    e_peerchain_type_hub,
+   e_peerchain_type_data,
    e_peerchain_type_user,
    e_peerchain_type_backup,
    e_peerchain_type_shared
