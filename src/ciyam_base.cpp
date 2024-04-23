@@ -5102,6 +5102,10 @@ void init_globals( const char* p_sid, int* p_use_udp )
 {
    guard g( g_mutex );
 
+   // NOTE: Forces special variables to be populated then verify that final name is "dummy" as would be expected.
+   if( get_special_var_name( e_special_var_NOTE_THIS_MUST_ALWAYS_BE_THE_LAST_ENUM_FOR_VERIFICATION ) != c_dummy )
+      throw runtime_error( "unexpected special variables have not been correctly populated" );
+
    try
    {
       string sid;

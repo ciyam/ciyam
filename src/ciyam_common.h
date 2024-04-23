@@ -107,6 +107,7 @@ enum special_var
    e_special_var_pubkey,
    e_special_var_return,
    e_special_var_script,
+   e_special_var_command,
    e_special_var_do_exec,
    e_special_var_ip_addr,
    e_special_var_is_last,
@@ -137,6 +138,7 @@ enum special_var
    e_special_var_image_dir,
    e_special_var_increment,
    e_special_var_list_hash,
+   e_special_var_peer_data,
    e_special_var_peer_port,
    e_special_var_peer_user,
    e_special_var_preparing,
@@ -279,7 +281,8 @@ enum special_var
    e_special_var_display_last_two_for_duplicate,
    e_special_var_blockchain_tertiary_pubkey_hash,
    e_special_var_blockchain_secondary_pubkey_hash,
-   e_special_var_skip_total_child_field_in_parent
+   e_special_var_skip_total_child_field_in_parent,
+   e_special_var_NOTE_THIS_MUST_ALWAYS_BE_THE_LAST_ENUM_FOR_VERIFICATION
 };
 
 enum compare_op

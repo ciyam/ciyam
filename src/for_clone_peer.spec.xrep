@@ -31,9 +31,11 @@
 `}
       string key_info( new_key + string( " " ) + get_obj( ).get_key( ) );
 
+`{`@eq`(`$arg_key_transform`,`'`'`)\
       temporary_session_variable tmp_peer_clone_key(
        get_special_var_name( e_special_var_peer_clone_key ), new_key );
 
+`}\
       class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
 
       cp_source->op_create( key_info );
@@ -45,6 +47,11 @@
 `}\
       cp_source->set_is_for_peer( cp_source->`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) );
 
+`{`!`@eq`(`$arg_key_transform`,`'`'`)\
+      temporary_session_variable tmp_peer_clone_key(
+       get_special_var_name( e_special_var_peer_clone_key ), cp_source->get_peer_identity( ) );
+
+`}\
       cp_source->set_variable( get_special_var_name(
        e_special_var_skip_parent_updates ), c_true_value );
 
