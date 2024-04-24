@@ -18,7 +18,11 @@ RESTORE_NOW=.restore.now
 BACKUP_HEIGHT=.backup.height
 IMPORTED_TIME=.imported.time
 
-BACKUP_PATH=$USER_PATH/backup
+if [ "$CIYAM_USER_PATH" = "" ]; then
+ CIYAM_USER_PATH=$USER_PATH
+fi
+
+BACKUP_PATH=$CIYAM_USER_PATH/backup
 
 BACKUP_TIME_FILE=$BACKUP_PATH/$BACKUP_TIME
 RESTORE_NOW_FILE=$BACKUP_PATH/$RESTORE_NOW
@@ -37,21 +41,6 @@ if [ ! -f ~backup ]; then
   if [ ! "$NEW_CHANGE" = "" ]; then
    ./system_variable set @backup_needed "1"
    ./system_variable set @restore_needed ""
-  fi
- fi
-
- if [ ! "$BLOCKCHAIN_HEIGHT" = "" ]; then
-  if [ ! -f $IMPORTED_TIME_FILE ]; then
-   if [ ! -f $BACKUP_HEIGHT_FILE ]; then
-    CURRENT_HEIGHT=0
-   else
-    CURRENT_HEIGHT=`cat $BACKUP_HEIGHT_FILE`
-   fi
-
-   if [ $CURRENT_HEIGHT -lt $BLOCKCHAIN_HEIGHT ]; then
-    ./system_variable set @backup_needed ""
-    ./system_variable set @restore_needed "1"
-   fi
   fi
  fi
 

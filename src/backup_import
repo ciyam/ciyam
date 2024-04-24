@@ -14,8 +14,12 @@ IMAGE_NAME=backup.img
 BACKUP_HEIGHT=.backup.height
 IMPORTED_TIME=.imported.time
 
-BACKUP_PATH=$USER_PATH/backup
-BACKUP_IMAGE=$USER_PATH/$IMAGE_NAME
+if [ "$CIYAM_USER_PATH" = "" ]; then
+ CIYAM_USER_PATH=$USER_PATH
+fi
+
+BACKUP_PATH=$CIYAM_USER_PATH/backup
+BACKUP_IMAGE=$CIYAM_USER_PATH/$IMAGE_NAME
 
 BACKUP_HEIGHT_FILE=$BACKUP_PATH/$BACKUP_HEIGHT
 IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
@@ -77,7 +81,7 @@ if [ ! -f ~backup ]; then
   export REPO_CRYPT_PASSWORD=@sid
 
   if [ "$TARGET_FILE" = "" ]; then
-   ./import_files $USER_PATH Backup : $IMAGE_NAME >>Backup.txt
+   ./import_files $CIYAM_USER_PATH Backup : $IMAGE_NAME >>Backup.txt
   else
    ./import_files $BACKUP_PATH Backup : $TARGET_FILE >>Backup.txt
   fi

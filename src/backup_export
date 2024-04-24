@@ -14,8 +14,12 @@ IMAGE_NAME=backup.img
 BACKUP_HEIGHT=.backup.height
 IMPORTED_TIME=.imported.time
 
-BACKUP_PATH=$USER_PATH/backup
-BACKUP_IMAGE=$USER_PATH/$IMAGE_NAME
+if [ "$CIYAM_USER_PATH" = "" ]; then
+ CIYAM_USER_PATH=$USER_PATH
+fi
+
+BACKUP_PATH=$CIYAM_USER_PATH/backup
+BACKUP_IMAGE=$CIYAM_USER_PATH/$IMAGE_NAME
 
 BACKUP_HEIGHT_FILE=$BACKUP_PATH/$BACKUP_HEIGHT
 IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
@@ -53,12 +57,6 @@ if [ ! -f ~backup ]; then
 
  if [ "$TARGET_FILE" = "" ]; then
   sudo chown $USER:www $BACKUP_IMAGE
- else
-  BACKUP_FILES=`./system_variable get @backup_files`
-
-  if [ "$BACKUP_FILES" = "" ]; then
-   BACKUP_FILES=$BACKUP_PATH
-  fi
  fi
 
  export CIYAM_SECONDS=2
@@ -71,11 +69,7 @@ if [ ! -f ~backup ]; then
  BLOCK_TREE=`./block_tree_hash @blockchain_backup_identity`
  BACKUP_LIST=`./tree_list $BLOCK_TREE 0 Backup | tail -n 1`
 
- if [ "$TARGET_FILE" = "" ]; then
-  ./export_files $BACKUP_LIST $USER_PATH >>Backup.txt
- else
-  ./export_files $BACKUP_LIST $BACKUP_FILES >>Backup.txt
- fi
+ ./export_files $BACKUP_LIST $CIYAM_USER_PATH >>Backup.txt
 
  if [ "$TARGET_FILE" = "" ]; then
   sudo chown root:root $BACKUP_IMAGE

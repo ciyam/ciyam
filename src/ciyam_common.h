@@ -195,6 +195,7 @@ enum special_var
    e_special_var_progress_prior,
    e_special_var_progress_total,
    e_special_var_progress_value,
+   e_special_var_restore_needed,
    e_special_var_style_extended,
    e_special_var_blockchain_user,
    e_special_var_ciyam_list_hash,

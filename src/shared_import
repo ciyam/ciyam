@@ -13,8 +13,12 @@ IMAGE_NAME=shared.img
 
 IMPORTED_TIME=.imported.time
 
-SHARED_PATH=$USER_PATH/shared
-SHARED_IMAGE=$USER_PATH/$IMAGE_NAME
+if [ "$CIYAM_USER_PATH" = "" ]; then
+ CIYAM_USER_PATH=$USER_PATH
+fi
+
+SHARED_PATH=$CIYAM_USER_PATH/shared
+SHARED_IMAGE=$CIYAM_USER_PATH/$IMAGE_NAME
 
 IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 
@@ -52,7 +56,7 @@ if [ ! -f ~shared ]; then
   export CIYAM_STREAM_CIPHER=cc
   export ENCRYPTED_PASSWORD=@shared_secret
 
-  ./import_files $USER_PATH Shared : $IMAGE_NAME >>$SHARED_DETAILS
+  ./import_files $CIYAM_USER_PATH Shared : $IMAGE_NAME >>$SHARED_DETAILS
   ./tree_insert_trunks shared Shared >>$SHARED_DETAILS 2>&1
   ./generate_next_block -shared @sid shared >>$SHARED_DETAILS 2>&1
   ./block_tree_relegate -shared shared >>$SHARED_DETAILS 2>&1
