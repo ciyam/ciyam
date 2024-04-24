@@ -182,6 +182,7 @@ const char* const c_special_variable_progress_fracs = "@progress_fracs";
 const char* const c_special_variable_progress_prior = "@progress_prior";
 const char* const c_special_variable_progress_total = "@progress_total";
 const char* const c_special_variable_progress_value = "@progress_value";
+const char* const c_special_variable_restore_needed = "@restore_needed";
 const char* const c_special_variable_style_extended = "@style_extended";
 const char* const c_special_variable_sys_var_prefix = "@sys_var_prefix";
 const char* const c_special_variable_blockchain_user = "@blockchain_user";
@@ -430,6 +431,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_progress_prior );
       g_special_variable_names.push_back( c_special_variable_progress_total );
       g_special_variable_names.push_back( c_special_variable_progress_value );
+      g_special_variable_names.push_back( c_special_variable_restore_needed );
       g_special_variable_names.push_back( c_special_variable_style_extended );
       g_special_variable_names.push_back( c_special_variable_sys_var_prefix );
       g_special_variable_names.push_back( c_special_variable_blockchain_user );

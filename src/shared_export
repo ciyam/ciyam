@@ -13,8 +13,12 @@ IMAGE_NAME=shared.img
 
 IMPORTED_TIME=.imported.time
 
-SHARED_PATH=$USER_PATH/shared
-SHARED_IMAGE=$USER_PATH/$IMAGE_NAME
+if [ "$CIYAM_USER_PATH" = "" ]; then
+ CIYAM_USER_PATH=$USER_PATH
+fi
+
+SHARED_PATH=$CIYAM_USER_PATH/shared
+SHARED_IMAGE=$CIYAM_USER_PATH/$IMAGE_NAME
 
 IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 
@@ -78,7 +82,7 @@ if [ ! -f ~shared ]; then
  BLOCK_TREE=`./block_tree_hash $IDENTITY`
  SHARED_LIST=`./tree_list $BLOCK_TREE 0 Shared | tail -n 1`
 
- ./export_files $SHARED_LIST $USER_PATH >>$SHARED_DETAILS
+ ./export_files $SHARED_LIST $CIYAM_USER_PATH >>$SHARED_DETAILS
 
  ./ciyam_command file_tag -remove bc.$IDENTITY.shared
 

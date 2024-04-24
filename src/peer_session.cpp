@@ -4818,13 +4818,15 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       }
 
       if( !zenith_tree_hash.empty( )
+       && ( blockchain_height == blockchain_height_other )
        && get_raw_session_variable( get_special_var_name( e_special_var_blockchain_user ) ).empty( ) )
       {
          string targeted_identity( get_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
 
-         if( !targeted_identity.empty( )
-          && ( targeted_identity[ 0 ] != '@' ) && ( blockchain_height == blockchain_height_other ) )
+         if( targeted_identity.empty( ) )
+            set_system_variable( get_special_var_name( e_special_var_restore_needed ), c_true_value );
+         else if( targeted_identity[ 0 ] != '@' )
          {
             if( is_targeted_identity( identity, targeted_identity, zenith_tree_hash, blockchain_height ) )
             {
