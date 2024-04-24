@@ -53,6 +53,12 @@ if [ ! -f ~backup ]; then
 
  if [ "$TARGET_FILE" = "" ]; then
   sudo chown $USER:www $BACKUP_IMAGE
+ else
+  BACKUP_FILES=`./system_variable get @backup_files`
+
+  if [ "$BACKUP_FILES" = "" ]; then
+   BACKUP_FILES=$BACKUP_PATH
+  fi
  fi
 
  export CIYAM_SECONDS=2
@@ -68,7 +74,7 @@ if [ ! -f ~backup ]; then
  if [ "$TARGET_FILE" = "" ]; then
   ./export_files $BACKUP_LIST $USER_PATH >>Backup.txt
  else
-  ./export_files $BACKUP_LIST $BACKUP_PATH >>Backup.txt
+  ./export_files $BACKUP_LIST $BACKUP_FILES >>Backup.txt
  fi
 
  if [ "$TARGET_FILE" = "" ]; then
