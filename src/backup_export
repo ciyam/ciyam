@@ -69,7 +69,11 @@ if [ ! -f ~backup ]; then
  BLOCK_TREE=`./block_tree_hash @blockchain_backup_identity`
  BACKUP_LIST=`./tree_list $BLOCK_TREE 0 Backup | tail -n 1`
 
- ./export_files $BACKUP_LIST $CIYAM_USER_PATH >>Backup.txt
+ if [ ! "$TARGET_FILE" = "" ]; then
+  ./export_files $BACKUP_LIST $BACKUP_PATH >>Backup.txt
+ else
+  ./export_files $BACKUP_LIST $CIYAM_USER_PATH >>Backup.txt
+ fi
 
  if [ "$TARGET_FILE" = "" ]; then
   sudo chown root:root $BACKUP_IMAGE
