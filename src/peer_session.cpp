@@ -4825,7 +4825,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
           get_special_var_name( e_special_var_blockchain_targeted_identity ) ) );
 
          if( targeted_identity.empty( ) )
-            set_system_variable( get_special_var_name( e_special_var_restore_needed ), c_true_value );
+         {
+            if( is_owner )
+               set_system_variable( get_special_var_name( e_special_var_restore_needed ), c_true_value );
+         }
          else if( targeted_identity[ 0 ] != '@' )
          {
             if( is_targeted_identity( identity, targeted_identity, zenith_tree_hash, blockchain_height ) )
