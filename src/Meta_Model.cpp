@@ -3938,7 +3938,7 @@ void Meta_Model::impl::impl_Generate( )
                else
                {
                   list_type = "nonuser";
-                  specification_name += "list";
+                  specification_name += "nonuser_list";
                }
 
                // NOTE: Special allows a list to be generated but inaccessible if is "user" and "admin_only".

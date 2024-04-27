@@ -714,6 +714,148 @@ _`{`@lower`(`$specification_\$_print_prfnm\\$`)`}`}`{`(`?`$specification_\$_prin
     </restrict>
 `]`}`]`}\
    </restricts>
+  </list>`}`]`}`{`(`?`$specification_\$_nonuser_list_name`)
+  <list/>
+   <id>`{`$specification_\$_nonuser_list_id`}
+   <cid>`{`$specification_\$_nonuser_list_cid`}
+   <name>`{`$specification_\$_nonuser_list_id`}_name
+   <type>`{`$specification_\$_nonuser_list_type`}
+   <extra>`{`$specification_\$_nonuser_list_extra`}
+   <actions>`{`$specification_\$_nonuser_list_acts`}`{`(`?`$specification_\$_nonuser_list_pdf_spec`)
+   <pdf_spec>`{`$specification_\$_nonuser_list_pdf_spec`}`}
+   <modifiers>`{`$specification_\$_nonuser_list_mods`}`{`(`?`$specification_\$_view_id`)
+   <view>`{`$specification_\$_view_id`}`}
+   <class>\$
+   <bclass>`{`$specification_\$_nonuser_list_binfo`}
+   <order>`{`$specification_\$_nonuser_list_order`}
+   <pclass>`{`$specification_\$_nonuser_list_pclass`}
+   <pfield>`{`$specification_\$_nonuser_list_pfield`}`{`(`?`$specification_\$_nonuser_list_nclass`)
+   <nclass>`{`$specification_\$_nonuser_list_nclass`}`}`{`(`?`$specification_\$_nonuser_list_nfield`)
+   <nfield>`{`$specification_\$_nonuser_list_nfield`}`}`{`(`?`$specification_\$_nonuser_list_nextra`)
+   <nextra>`{`$specification_\$_nonuser_list_nextra`}`}`{`(`?`$specification_\$_nonuser_list_dfenum`)
+   <dfenum>`{`$specification_\$_nonuser_list_dfenum`}`}`{`(`?`$specification_\$_nonuser_list_dfield`)
+   <dfield>`{`$specification_\$_nonuser_list_dfield`}`}`{`(`?`$specification_\$_nonuser_list_dvalue`)
+   <dvalue>`{`$specification_\$_nonuser_list_dvalue`}`}
+   <module>`{`$model_name`}`{`(`?`$specification_\$_nonuser_list_filters`)
+   <filters>`{`$specification_\$_nonuser_list_filters`}`}
+   <columns/>
+`{`[`$cnums`,`{`?`$specification_\$_nonuser_list_column\=3$`[`$specification_\$_nonuser_list_column\=3$`,\
+    <column/>
+     <name>field_`{`@lower`(`$specification_\$_nonuser_list_clname\=3$`)`}
+     <field>\=4$
+     <ftype>`{`$specification_\$_nonuser_list_cltype\=3$`}
+     <extra>`{`$specification_\$_nonuser_list_clxtra\=3$`}
+     <modifiers>`{`$specification_\$_nonuser_list_clmods\=3$`}`{`(`?`$specification_\$_nonuser_list_pclass\=3$`)
+     <pclass>`{`$specification_\$_nonuser_list_pclass\=3$`}`}`{`(`?`$specification_\$_nonuser_list_pfield\=3$`)
+     <pfield>`{`$specification_\$_nonuser_list_pfield\=3$`}
+     <pfname>field_`{`@lower`(`$specification_\$_nonuser_list_pclsnm\=3$`)`}_`{`@lower`(`$specification_\$_nonuser_list_pfldnm\=3$`)`}`}
+     <unique>`{`$specification_\$_nonuser_list_cluniq\=3$`}
+     <indexed>`{`$specification_\$_nonuser_list_cindex\=3$`}
+    </column>
+`]`}`]`}\
+   </columns>
+   <parents/>
+`{`[`$pnums`,`{`?`$specification_\$_nonuser_list_parent\=3$`[`$specification_\$_nonuser_list_parent\=3$`,\
+    <parent/>
+`{`(`?`$specification_\$_nonuser_list_prntnm\=3$`)\
+     <name>`{`$specification_\$_nonuser_list_prntnm\=3$`}\
+`,\
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_nonuser_list_parent\=3$`)`}\
+`}
+     <field>`{`$specification_\$_nonuser_list_jfield\=3$`}
+     <extra>`{`$specification_\$_nonuser_list_dextra\=3$`}
+     <pclass>`{`$specification_\$_nonuser_list_pclass\=3$`}
+     <pfield>`{`$specification_\$_nonuser_list_pfield\=3$`}
+     <pextra>`{`$specification_\$_nonuser_list_pextra\=3$`}
+     <mandatory>`{`$specification_\$_nonuser_list_mandatory\=3$`}
+     <operations>`{`$specification_\$_nonuser_list_operations\=3$`}
+    </parent>
+`]`}`]`}\
+   </parents>
+   <restricts/>
+`{`[`$rnums`,`{`?`$specification_\$_nonuser_list_rfield\=3$`[`$specification_\$_nonuser_list_rfield\=3$`,\
+    <restrict/>
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_nonuser_list_rfldnm\=3$`)`}
+     <field>`{`$specification_\$_nonuser_list_rfield\=3$`}
+     <ftype>`{`$specification_\$_nonuser_list_rftype\=3$`}
+     <extra>`{`$specification_\$_nonuser_list_rfxtra\=3$`}
+     <mandatory>`{`$specification_\$_nonuser_list_rfmand\=3$`}
+     <operations>`{`$specification_\$_nonuser_list_rfldops\=3$`}
+    </restrict>
+`]`}`]`}\
+   </restricts>
+  </list>`}\
+`{`[`$vnums`,`{`(`?`$specification_\$_nonuser_list_var\\$_name`)
+  <list/>
+   <id>`{`$specification_\$_nonuser_list_var\\$_id`}
+   <cid>`{`$specification_\$_nonuser_list_var\\$_cid`}
+   <pid>`{`$specification_\$_nonuser_list_id`}
+   <name>`{`$specification_\$_nonuser_list_var\\$_id`}_name
+   <type>`{`$specification_\$_nonuser_list_var\\$_type`}
+   <extra>`{`$specification_\$_nonuser_list_var\\$_extra`}
+   <actions>`{`$specification_\$_nonuser_list_var\\$_acts`}`{`(`?`$specification_\$_nonuser_list_var\\$_pdf_spec`)
+   <pdf_spec>`{`$specification_\$_nonuser_list_var\\$_pdf_spec`}`}
+   <modifiers>`{`$specification_\$_nonuser_list_var\\$_mods`}`{`(`?`$specification_\$_view_id`)
+   <view>`{`$specification_\$_view_id`}`}
+   <class>\$
+   <bclass>`{`$specification_\$_nonuser_list_var\\$_binfo`}
+   <order>`{`$specification_\$_nonuser_list_var\\$_order`}
+   <pclass>`{`$specification_\$_nonuser_list_var\\$_pclass`}
+   <pfield>`{`$specification_\$_nonuser_list_var\\$_pfield`}`{`(`?`$specification_\$_nonuser_list_var\\$_nclass`)
+   <nclass>`{`$specification_\$_nonuser_list_var\\$_nclass`}`}`{`(`?`$specification_\$_nonuser_list_var\\$_nfield`)
+   <nfield>`{`$specification_\$_nonuser_list_var\\$_nfield`}`}`{`(`?`$specification_\$_nonuser_list_var\\$_nextra`)
+   <nextra>`{`$specification_\$_nonuser_list_var\\$_nextra`}`}`{`(`?`$specification_\$_nonuser_list_var\\$_dfenum`)
+   <dfenum>`{`$specification_\$_nonuser_list_var\\$_dfenum`}`}`{`(`?`$specification_\$_nonuser_list_var\\$_dfield`)
+   <dfield>`{`$specification_\$_nonuser_list_var\\$_dfield`}`}`{`(`?`$specification_\$_nonuser_list_var\\$_dvalue`)
+   <dvalue>`{`$specification_\$_nonuser_list_var\\$_dvalue`}`}
+   <module>`{`$model_name`}`{`(`?`$specification_\$_nonuser_list_var\\$_filters`)
+   <filters>`{`$specification_\$_nonuser_list_var\\$_filters`}`}
+   <columns/>
+`{`[`$cnums`,`{`?`$specification_\$_nonuser_list_var\\$_column\=4$`[`$specification_\$_nonuser_list_var\\$_column\=4$`,\
+    <column/>
+     <name>field_`{`@lower`(`$specification_\$_nonuser_list_var\\$_clname\=4$`)`}
+     <field>\=5$
+     <ftype>`{`$specification_\$_nonuser_list_var\\$_cltype\=4$`}
+     <extra>`{`$specification_\$_nonuser_list_var\\$_clxtra\=4$`}
+     <modifiers>`{`$specification_\$_nonuser_list_var\\$_clmods\=4$`}`{`(`?`$specification_\$_nonuser_list_var\\$_pclass\=4$`)
+     <pclass>`{`$specification_\$_nonuser_list_var\\$_pclass\=4$`}`}`{`(`?`$specification_\$_nonuser_list_var\\$_pfield\=4$`)
+     <pfield>`{`$specification_\$_nonuser_list_var\\$_pfield\=4$`}
+     <pfname>field_`{`@lower`(`$specification_\$_nonuser_list_var\\$_pclsnm\=4$`)`}_`{`@lower`(`$specification_\$_nonuser_list_var\\$_pfldnm\=4$`)`}`}
+     <unique>`{`$specification_\$_nonuser_list_var\\$_cluniq\=4$`}
+     <indexed>`{`$specification_\$_nonuser_list_var\\$_cindex\=4$`}
+    </column>
+`]`}`]`}\
+   </columns>
+   <parents/>
+`{`[`$pnums`,`{`?`$specification_\$_nonuser_list_var\\$_parent\=4$`[`$specification_\$_nonuser_list_var\\$_parent\=4$`,\
+    <parent/>
+`{`(`?`$specification_\$_nonuser_list_var\\$_prntnm\=4$`)\
+     <name>`{`$specification_\$_nonuser_list_var\\$_prntnm\=4$`}\
+`,\
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_nonuser_list_var\\$_parent\=4$`)`}\
+`}
+     <field>`{`$specification_\$_nonuser_list_var\\$_jfield\=4$`}
+     <extra>`{`$specification_\$_nonuser_list_var\\$_dextra\=4$`}
+     <pclass>`{`$specification_\$_nonuser_list_var\\$_pclass\=4$`}
+     <pfield>`{`$specification_\$_nonuser_list_var\\$_pfield\=4$`}
+     <pextra>`{`$specification_\$_nonuser_list_var\\$_pextra\=4$`}
+     <mandatory>`{`$specification_\$_nonuser_list_var\\$_mandatory\=4$`}
+     <operations>`{`$specification_\$_nonuser_list_var\\$_operations\=4$`}
+    </parent>
+`]`}`]`}\
+   </parents>
+   <restricts/>
+`{`[`$rnums`,`{`?`$specification_\$_nonuser_list_var\\$_rfield\=4$`[`$specification_\$_nonuser_list_var\\$_rfield\=4$`,\
+    <restrict/>
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_nonuser_list_var\\$_rfldnm\=4$`)`}
+     <field>`{`$specification_\$_nonuser_list_var\\$_rfield\=4$`}
+     <ftype>`{`$specification_\$_nonuser_list_var\\$_rftype\=4$`}
+     <extra>`{`$specification_\$_nonuser_list_var\\$_rfxtra\=4$`}
+     <mandatory>`{`$specification_\$_nonuser_list_var\\$_rfmand\=4$`}
+     <operations>`{`$specification_\$_nonuser_list_var\\$_rfldops\=4$`}
+    </restrict>
+`]`}`]`}\
+   </restricts>
   </list>`}`]`}\
 `{`(`?`$specification_\$_group_list_name`)
   <list/>
