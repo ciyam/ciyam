@@ -6,19 +6,19 @@ threaded interface but is more suited to development because it only starts an F
 request is issued.
 
 The other mod_fastcgi is more suited to a production environment as it is a multi-threaded interface and all
-FCGI servers are started when Apache itself starts and a re-started automatically if they exit (or crash).
+FCGI servers are started when Apache itself starts and are restarted automatically if they exit (or crash).
 
 Notes for using mod_fcgid with Apache 2.2
 -----------------------------------------
 
 1) Install the FCGI Apache module and enable it (using "a2enmod fcgid").
 
-2) Make the following changes to "default-server.conf" (or if no such file then change "httpd.conf" instead):
+2) Make the following changes to "/etc/apache2/default-server.conf" (or "/etc/apache2/apache2.conf"):
 
 sudo vi /etc/apache2/default-server.conf
 
 ...
-<Directory "/srv/www/htdocs">
+<Directory "/srv/www/htdocs"> (or "/var/www")
 ...
     Options ExecCGI FollowSymLinks
     AddHandler fcgid-script .fcgi
@@ -26,6 +26,8 @@ sudo vi /etc/apache2/default-server.conf
     AllowOverride All
 ...
 </Directory>
+...
+(need to add the following IfModule tags and settings after the above lines)
 ...
 <IfModule fcgid_module>
    MaxProcessCount               10
@@ -40,4 +42,4 @@ sudo vi /etc/apache2/default-server.conf
 
 Once the changes have been made restart the apache2 web service:
 
-sudo service apache2 restart
+sudo systemctl restart apache2
