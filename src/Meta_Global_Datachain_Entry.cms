@@ -1,0 +1,5 @@
+key "get key value" [<opt/fixed>]
+ver "get version info"
+get "get field value" <val//field_name>
+set "set field value" <val//field_name>[<oval//field_value>]
+cmd "call field command" <val//field_name><val//cmd_and_args>

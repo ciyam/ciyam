@@ -1,0 +1,35 @@
+; Copyright (c) 2024 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "3"
+#Usage: create_datachain_entry.cin <identity> <data_type> <description>
+@else
+ERROR=
+;
+IDENTITY=$1
+DATA_TYPE=$2
+DESCRIPTION=$3
+;
+.storage_init Meta
+;
+.pc sys @now Meta Global_Datachain_Entry $IDENTITY "Data_Type=$DATA_TYPE,Description=$DESCRIPTION"
+.storage_term
+;
+@ifndef $ERROR
+#Created global datachain entry for identity '$IDENTITY' ($DESCRIPTION).
+@endif
+;
+@endif

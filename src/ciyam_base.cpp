@@ -1685,6 +1685,7 @@ void init_system_ods( )
    if( was_just_created
     || !gap_ofs->has_folder( c_file_archives_folder )
     || !gap_ofs->has_folder( c_file_blacklist_folder )
+    || !gap_ofs->has_folder( c_file_datachain_folder )
     || !gap_ofs->has_folder( c_file_peerchain_folder )
     || !gap_ofs->has_folder( c_file_repository_folder )
     || !gap_ofs->has_folder( c_system_variables_folder ) )
@@ -1695,6 +1696,9 @@ void init_system_ods( )
 
    if( !gap_ofs->has_folder( c_file_blacklist_folder ) )
       gap_ofs->add_folder( c_file_blacklist_folder );
+
+   if( !gap_ofs->has_folder( c_file_datachain_folder ) )
+      gap_ofs->add_folder( c_file_datachain_folder );
 
    if( !gap_ofs->has_folder( c_file_peerchain_folder ) )
       gap_ofs->add_folder( c_file_peerchain_folder );
