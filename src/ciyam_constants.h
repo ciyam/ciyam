@@ -139,6 +139,7 @@ const char* const c_file_zero_length = "*";
 
 const char* const c_file_archives_folder = "arch";
 const char* const c_file_blacklist_folder = "blst";
+const char* const c_file_datachain_folder = "data";
 const char* const c_file_peerchain_folder = "peer";
 const char* const c_file_repository_folder = "repo";
 const char* const c_system_variables_folder = "vars";

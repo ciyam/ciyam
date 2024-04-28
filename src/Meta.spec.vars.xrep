@@ -5,7 +5,7 @@
 `{`$model_version`=`'0.1`'`}
 `{`$year_created`=`'2012`'`}
 `{`}
-`{`$all_enums`=`'575,add_packages 906,app_auto_days 905,app_generate_type 900,app_list_row_limit 903,app_print_row_limit 902,app_text_limit 901,app_text_rows 904,app_text_trunc_limit 907,app_type 950,archive_standard_size 570,arg_type 580,cascade_op 520,class_extra 515,class_type 511,date_precision 801,field_action_create_access_restriction 800,field_action_create_type 802,field_action_type 522,field_alignment 530,field_extra 600,field_type 635,font_size 514,fraction_limit 505,int_type 639,label_source_child 688,list_direction 687,list_display_row_limit 698,list_field_label_class 692,list_field_label_source 691,list_field_link_restrict 697,list_field_link_type 696,list_field_notes_truncation 695,list_field_print_type 690,list_field_restrict 694,list_field_switch_type 693,list_field_trigger_option 699,list_field_view_parent_extra 682,list_pdf_list_type 681,list_print_restrict 680,list_restrict 686,list_search_opt_limit 685,list_style 689,list_text_match_highlight 850,model_type 560,modifier_affect_extra 540,modifier_affect_scope 550,modifier_affect_type 506,numeric_type 638,orientation 654,pdf_font_type 960,peerchain_peer_type 955,peerchain_status 970,persistence_type 500,primitive 650,procedure_arg_primitive 640,procedure_arg_type 585,relationship_extra 507,round_type 610,source_parent_type 620,source_type 510,string_domain 630,test_field_type 512,time_precision 535,uom 655,view_access_restrict 657,view_change_restrict 661,view_field_access_scope 662,view_field_change_scope 664,view_field_child_list_extra_option 678,view_field_date_precision_option 674,view_field_enum_at 679,view_field_enum_option 676,view_field_fk_trigger_behaviour 675,view_field_fk_trigger_option 663,view_field_link_restrict 677,view_field_mandatory_option 670,view_field_new_source 660,view_field_restrict 672,view_field_trigger_behaviour 673,view_field_trigger_for_state 671,view_field_trigger_option 658,view_pdf_view_type 513,zero_padding`'`}
+`{`$all_enums`=`'575,add_packages 906,app_auto_days 905,app_generate_type 900,app_list_row_limit 903,app_print_row_limit 902,app_text_limit 901,app_text_rows 904,app_text_trunc_limit 907,app_type 950,archive_standard_size 570,arg_type 580,cascade_op 520,class_extra 515,class_type 952,datachain_type 511,date_precision 801,field_action_create_access_restriction 800,field_action_create_type 802,field_action_type 522,field_alignment 530,field_extra 600,field_type 635,font_size 514,fraction_limit 505,int_type 639,label_source_child 688,list_direction 687,list_display_row_limit 698,list_field_label_class 692,list_field_label_source 691,list_field_link_restrict 697,list_field_link_type 696,list_field_notes_truncation 695,list_field_print_type 690,list_field_restrict 694,list_field_switch_type 693,list_field_trigger_option 699,list_field_view_parent_extra 682,list_pdf_list_type 681,list_print_restrict 680,list_restrict 686,list_search_opt_limit 685,list_style 689,list_text_match_highlight 850,model_type 560,modifier_affect_extra 540,modifier_affect_scope 550,modifier_affect_type 506,numeric_type 638,orientation 654,pdf_font_type 960,peerchain_peer_type 955,peerchain_status 970,persistence_type 500,primitive 650,procedure_arg_primitive 640,procedure_arg_type 585,relationship_extra 507,round_type 610,source_parent_type 620,source_type 510,string_domain 630,test_field_type 512,time_precision 535,uom 655,view_access_restrict 657,view_change_restrict 661,view_field_access_scope 662,view_field_change_scope 664,view_field_child_list_extra_option 678,view_field_date_precision_option 674,view_field_enum_at 679,view_field_enum_option 676,view_field_fk_trigger_behaviour 675,view_field_fk_trigger_option 663,view_field_link_restrict 677,view_field_mandatory_option 670,view_field_new_source 660,view_field_restrict 672,view_field_trigger_behaviour 673,view_field_trigger_for_state 671,view_field_trigger_option 658,view_pdf_view_type 513,zero_padding`'`}
 `{`}
 `{`$enum_add_packages`=`'0=none 1=Standard 2=Standard_User 3=Standard_User_Group`'`}
 `{`$enum_app_auto_days`=`'0=0 1=1 2=2 3=3 7=7 10=10 20=20 30=30 60=60 90=90 180=180 365=365`'`}
@@ -21,6 +21,7 @@
 `{`$enum_cascade_op`=`'0=restrict 1=unlink 2=destroy -1=not_applicable`'`}
 `{`$enum_class_extra`=`'0=none 1=ordered`'`}
 `{`$enum_class_type`=`'0=normal 1=user 4=system 2=user_group 3=user_other`'`}
+`{`$enum_datachain_type`=`'0=Blog`'`}
 `{`$enum_date_precision`=`'0=default 1=months 2=decades`'`}
 `{`$enum_field_action_create_access_restriction`=`'0=none 1=owner 2=admin 3=non_admin`'`}
 `{`$enum_field_action_create_type`=`'0=standard 1=confirmation 2=edit_and_save`'`}
@@ -91,7 +92,7 @@
 `{`$enum_view_pdf_view_type`=`'0=none 2=Standard_2_Column 99=Customised`'`}
 `{`$enum_zero_padding`=`'0=none 1=decimals 2=all_digits 3=one_decimal`'`}
 `{`}
-`{`$all_classes`=`'Application Application_Script Auto_Code Class Enum Enum_Item Field Global_Archive Global_Blacklist_Entry Global_Peerchain_Entry Global_Repository_Entry Index Initial_Record Initial_Record_Value List List_Field List_Field_Type List_Type Model Modifier Modifier_Affect Module Package Package_Option Package_Type Permission Procedure Procedure_Arg Relationship Specification Specification_Field_Action Specification_Type Type User View View_Field View_Field_Type View_Type Workgroup`'`}
+`{`$all_classes`=`'Application Application_Script Auto_Code Class Enum Enum_Item Field Global_Archive Global_Blacklist_Entry Global_Datachain_Entry Global_Peerchain_Entry Global_Repository_Entry Index Initial_Record Initial_Record_Value List List_Field List_Field_Type List_Type Model Modifier Modifier_Affect Module Package Package_Option Package_Type Permission Procedure Procedure_Arg Relationship Specification Specification_Field_Action Specification_Type Type User View View_Field View_Field_Type View_Type Workgroup`'`}
 `{`}
 `{`$specification_Application_group_list_id`=`'602900`'`}
 `{`$specification_Application_group_list_cid`=`'127100`'`}
@@ -1172,6 +1173,70 @@
 `{`$specification_Global_Blacklist_Entry_view_fmods001`=`'`'`}
 `{`$specification_Global_Blacklist_Entry_view_fname001`=`'field_global_blacklist_entry_content_hash`'`}
 `{`$specification_Global_Blacklist_Entry_view_fmand001`=`'false`'`}
+`{`}
+`{`$specification_Global_Datachain_Entry_list_id`=`'603955`'`}
+`{`$specification_Global_Datachain_Entry_list_cid`=`'142100`'`}
+`{`$specification_Global_Datachain_Entry_list_name`=`'Global_Datachain_Entries`'`}
+`{`$specification_Global_Datachain_Entry_list_type`=`'admin`'`}
+`{`$specification_Global_Datachain_Entry_list_acts`=`'`'`}
+`{`$specification_Global_Datachain_Entry_list_mods`=`'`'`}
+`{`$specification_Global_Datachain_Entry_list_extra`=`'no_new,no_erase`'`}
+`{`$specification_Global_Datachain_Entry_list_order`=`'forward`'`}
+`{`$specification_Global_Datachain_Entry_list_binfo`=`'`'`}
+`{`$specification_Global_Datachain_Entry_list_column00`=`'142101`'`}
+`{`$specification_Global_Datachain_Entry_list_clname00`=`'Global_Datachain_Entry_Chain_Id`'`}
+`{`$specification_Global_Datachain_Entry_list_cltype00`=`'string`'`}
+`{`$specification_Global_Datachain_Entry_list_clxtra00`=`'max_size=50`'`}
+`{`$specification_Global_Datachain_Entry_list_clmods00`=`'`'`}
+`{`$specification_Global_Datachain_Entry_list_cluniq00`=`'false`'`}
+`{`$specification_Global_Datachain_Entry_list_cindex00`=`'false`'`}
+`{`$specification_Global_Datachain_Entry_list_column01`=`'142102`'`}
+`{`$specification_Global_Datachain_Entry_list_clname01`=`'Global_Datachain_Entry_Data_Type`'`}
+`{`$specification_Global_Datachain_Entry_list_cltype01`=`'int`'`}
+`{`$specification_Global_Datachain_Entry_list_clxtra01`=`'enum=952`'`}
+`{`$specification_Global_Datachain_Entry_list_clmods01`=`'`'`}
+`{`$specification_Global_Datachain_Entry_list_cluniq01`=`'false`'`}
+`{`$specification_Global_Datachain_Entry_list_cindex01`=`'false`'`}
+`{`$specification_Global_Datachain_Entry_list_column02`=`'142103`'`}
+`{`$specification_Global_Datachain_Entry_list_clname02`=`'Global_Datachain_Entry_Description`'`}
+`{`$specification_Global_Datachain_Entry_list_cltype02`=`'string`'`}
+`{`$specification_Global_Datachain_Entry_list_clxtra02`=`'max_size=100`'`}
+`{`$specification_Global_Datachain_Entry_list_clmods02`=`'`'`}
+`{`$specification_Global_Datachain_Entry_list_cluniq02`=`'false`'`}
+`{`$specification_Global_Datachain_Entry_list_cindex02`=`'false`'`}
+`{`}
+`{`$specification_Global_Datachain_Entry_view_id`=`'603956`'`}
+`{`$specification_Global_Datachain_Entry_view_cid`=`'142100`'`}
+`{`$specification_Global_Datachain_Entry_view_name`=`'Global_Datachain_Entry`'`}
+`{`$specification_Global_Datachain_Entry_view_type`=`'admin`'`}
+`{`$specification_Global_Datachain_Entry_view_extra`=`'no_edit`'`}
+`{`$specification_Global_Datachain_Entry_view_mods`=`'`'`}
+`{`$specification_Global_Datachain_Entry_view_binfo`=`'`'`}
+`{`$specification_Global_Datachain_Entry_view_fnums`=`'000 001 002 003`'`}
+`{`$specification_Global_Datachain_Entry_view_field000`=`'@key`'`}
+`{`$specification_Global_Datachain_Entry_view_ftype000`=`'`'`}
+`{`$specification_Global_Datachain_Entry_view_extra000`=`'`'`}
+`{`$specification_Global_Datachain_Entry_view_fmods000`=`'`'`}
+`{`$specification_Global_Datachain_Entry_view_fname000`=`'field_key`'`}
+`{`$specification_Global_Datachain_Entry_view_fmand000`=`'true`'`}
+`{`$specification_Global_Datachain_Entry_view_field001`=`'142101`'`}
+`{`$specification_Global_Datachain_Entry_view_ftype001`=`'string`'`}
+`{`$specification_Global_Datachain_Entry_view_extra001`=`'key_name+max_size=50`'`}
+`{`$specification_Global_Datachain_Entry_view_fmods001`=`'`'`}
+`{`$specification_Global_Datachain_Entry_view_fname001`=`'field_global_datachain_entry_chain_id`'`}
+`{`$specification_Global_Datachain_Entry_view_fmand001`=`'false`'`}
+`{`$specification_Global_Datachain_Entry_view_field002`=`'142102`'`}
+`{`$specification_Global_Datachain_Entry_view_ftype002`=`'int`'`}
+`{`$specification_Global_Datachain_Entry_view_extra002`=`'no_edit+enum=952`'`}
+`{`$specification_Global_Datachain_Entry_view_fmods002`=`'`'`}
+`{`$specification_Global_Datachain_Entry_view_fname002`=`'field_global_datachain_entry_data_type`'`}
+`{`$specification_Global_Datachain_Entry_view_fmand002`=`'true`'`}
+`{`$specification_Global_Datachain_Entry_view_field003`=`'142103`'`}
+`{`$specification_Global_Datachain_Entry_view_ftype003`=`'string`'`}
+`{`$specification_Global_Datachain_Entry_view_extra003`=`'max_size=100`'`}
+`{`$specification_Global_Datachain_Entry_view_fmods003`=`'`'`}
+`{`$specification_Global_Datachain_Entry_view_fname003`=`'field_global_datachain_entry_description`'`}
+`{`$specification_Global_Datachain_Entry_view_fmand003`=`'true`'`}
 `{`}
 `{`$specification_Global_Peerchain_Entry_list_id`=`'603960`'`}
 `{`$specification_Global_Peerchain_Entry_list_cid`=`'145100`'`}

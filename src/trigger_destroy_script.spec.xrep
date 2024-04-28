@@ -1,5 +1,6 @@
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
    // [(start trigger_destroy_script)] `{`$arg_id`}
+`{`$script_arg_name`=`'@arg1`'`}`{`!`@eq`(`$arg_script_arg`,`'`'`)`$script_arg_name`=`$arg_script_arg`}\
 `{`!`@eq`(`$arg_skip_restore`,`'`'`)\
    if( !storage_locked_for_admin( ) )
 `,\
@@ -10,7 +11,7 @@
        get_special_var_name( e_special_var_key ), get_obj( ).get_key( ) );
 `{`!`@eq`(`$arg_field`,`'`'`)\
 
-      temporary_session_variable tmp_session_var( "`{`$arg_script_arg`}", get_obj( ).`{`$arg_field`}( ) );
+      temporary_session_variable tmp_session_var( "`{`$script_arg_name`}", get_obj( ).`{`$arg_field`}( ) );
 `}
       `{`!`@eq`(`$arg_pre_func`,`'`'`)`{`$arg_pre_func`}( ), `}run_script( "`{`$arg_script_name`}", `{`@eq`(`$arg_async`,`'`'`)false`,true`} );
 `{`!`@eq`(`$arg_add_dead_key`,`'`'`)
