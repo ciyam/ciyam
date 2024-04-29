@@ -1279,6 +1279,8 @@ void CIYAM_BASE_DECL_SPEC locate_gpg_key( const std::string& email, std::string&
 void CIYAM_BASE_DECL_SPEC install_gpg_key( const std::string& key_file,
  const std::string& email, std::string& gpg_key_id, std::string& gpg_fingerprint, std::string* p_new_email = 0 );
 
+std::string CIYAM_BASE_DECL_SPEC after_string( const std::string& s, const std::string& after );
+
 std::string CIYAM_BASE_DECL_SPEC reversed_string( const std::string& s );
 
 std::string CIYAM_BASE_DECL_SPEC trim_whitespace( const std::string& s );
