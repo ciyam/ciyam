@@ -3535,6 +3535,18 @@ void install_gpg_key( const string& key_file,
    }
 }
 
+string after_string( const string& s, const string& after )
+{
+   string retval;
+
+   string::size_type pos = s.find( after );
+
+   if( pos != string::npos )
+      retval = s.substr( pos + after.length( ) );
+
+   return retval;
+}
+
 string reversed_string( const string& s )
 {
    string reversed( s );

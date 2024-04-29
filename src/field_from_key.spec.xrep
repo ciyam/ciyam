@@ -15,7 +15,8 @@
    {
 `}`}`{`@eq`(`$arg_skip_fk_handling`,`'true`'`)\
 `{`$i`}   get_obj( ).`{`$arg_field`}( ).set_variable( c_object_variable_skip_fk_handling, "1" );
-`}`{`$i`}   get_obj( ).`{`$arg_field`}( get_obj( ).get_key( )`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`} );
+`}`{`$i`}   get_obj( ).`{`$arg_field`}( `{`!`@eq`(`$arg_chars_after`,`'`'`)after_string( `}\
+get_obj( ).get_key( )`{`!`@eq`(`$arg_chars_after`,`'`'`), "`{`$arg_chars_after`}" )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`} );
 `{`!`@eq`(`$check`,`'`'`)`&`@eq`(`$arg_skip_fk_handling`,`'true`'`)\
    }
 `}\
