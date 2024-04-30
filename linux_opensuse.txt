@@ -72,8 +72,8 @@ sudo systemctl enable sshd
 sudo systemctl enable mysql
 sudo systemctl enable apache2
 
-sudo service mysql restart
-sudo service apache2 restart
+sudo systemctl restart mysql
+sudo systemctl restart apache2
 
 To add CIYAM as a known firewall service:
 sudo vi /usr/lib/firewalld/services/ciyam.xml
@@ -101,8 +101,8 @@ sudo vi /usr/etc/ssh/sshd_config
 [uncomment out the following line]
 PasswordAuthentication yes
 
-sudo service sshd restart
-sudo service firewalld restart
+sudo systemctl restart sshd
+sudo systemctl restart firewalld
 
 If concerned about the "geoclue" service:
 
@@ -233,7 +233,7 @@ NOTE: If having permission issues with 'root'@'localhost' for MySQL try the foll
 sudo mysql -u root
 SET PASSWORD FOR 'root'@'localhost' = '';
 exit
-sudo service mysql restart
+sudo systemctl restart mysql
 
 Installing the CIYAM "systemd" Service
 --------------------------------------
@@ -263,8 +263,8 @@ Make necessary changes (for VMs) to the "ciyam_server.sio" configuration file:
 sudo systemctl daemon-reload
 sudo systemctl enable ciyamd
 
-sudo service ciyamd start
-sudo service ciyamd status
+sudo systemctl start ciyamd
+sudo systemctl status ciyamd
 
 Adding extra package types to Meta
 ----------------------------------
@@ -333,5 +333,5 @@ tcp://:13031
 systemctl --user restart syncthing.service
 systemctl --user status syncthing.service
 
-sudo service firewalld restart
-sudo service firewalld status
+sudo systemctl restart firewalld
+sudo systemctl status firewalld

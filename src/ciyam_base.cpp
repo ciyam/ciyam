@@ -10703,6 +10703,7 @@ size_t module_count( )
 void module_class_list( const string& module, ostream& os )
 {
    module_const_iterator mci = gtp_session->modules_by_id.find( module );
+
    if( mci == gtp_session->modules_by_id.end( ) )
    {
       mci = gtp_session->modules_by_name.find( module );
@@ -10713,6 +10714,7 @@ void module_class_list( const string& module, ostream& os )
    }
 
    module_class_list_error rc = list_module_classes( module, os );
+
    if( rc != e_module_class_list_error_none )
       throw runtime_error( "unexpected module class list error #" + to_string( rc ) );
 }
@@ -10720,6 +10722,7 @@ void module_class_list( const string& module, ostream& os )
 void module_strings_list( const string& module, ostream& os )
 {
    module_const_iterator mci = gtp_session->modules_by_id.find( module );
+
    if( mci == gtp_session->modules_by_id.end( ) )
    {
       mci = gtp_session->modules_by_name.find( module );
@@ -10730,6 +10733,7 @@ void module_strings_list( const string& module, ostream& os )
    }
 
    module_string_list_error rc = list_module_strings( module, os );
+
    if( rc != e_module_string_list_error_none )
       throw runtime_error( "unexpected module string list error #" + to_string( rc ) );
 }
@@ -10737,6 +10741,7 @@ void module_strings_list( const string& module, ostream& os )
 void module_class_fields_list( const string& module, const string& class_id_or_name, ostream& os )
 {
    module_const_iterator mci = gtp_session->modules_by_id.find( module );
+
    if( mci == gtp_session->modules_by_id.end( ) )
    {
       mci = gtp_session->modules_by_name.find( module );
@@ -10747,6 +10752,7 @@ void module_class_fields_list( const string& module, const string& class_id_or_n
    }
 
    module_class_field_list_error rc = list_module_class_fields( module, class_id_or_name, os );
+
    if( rc != e_module_class_field_list_error_none )
       throw runtime_error( "unexpected module class field list error #" + to_string( rc ) );
 }
@@ -10754,6 +10760,7 @@ void module_class_fields_list( const string& module, const string& class_id_or_n
 void module_class_procedures_list( const string& module, const string& class_id_or_name, ostream& os )
 {
    module_const_iterator mci = gtp_session->modules_by_id.find( module );
+
    if( mci == gtp_session->modules_by_id.end( ) )
    {
       mci = gtp_session->modules_by_name.find( module );
@@ -10764,6 +10771,7 @@ void module_class_procedures_list( const string& module, const string& class_id_
    }
 
    module_class_procedure_list_error rc = list_module_class_procedures( module, class_id_or_name, os );
+
    if( rc != e_module_class_procedure_list_error_none )
       throw runtime_error( "unexpected module class procedure list error #" + to_string( rc ) );
 }

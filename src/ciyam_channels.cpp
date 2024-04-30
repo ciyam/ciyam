@@ -52,6 +52,7 @@ const char* const c_channel_fetched = "fetched";
 const char* const c_channel_pending = "pending";
 const char* const c_channel_updated = "updated";
 const char* const c_channel_waiting = "waiting";
+const char* const c_channel_blog_info = "blog_info";
 const char* const c_channel_peer_info = "peer_info";
 const char* const c_channel_user_info = "user_info";
 const char* const c_channel_submitted = "submitted";
@@ -1240,10 +1241,15 @@ string storage_channel_documents_update( const string& identity, bool submitted 
       string updated;
       string files_name( blockchain_identity + '/' + c_channel_files );
 
+      string blog_info_name( blockchain_identity + "/." + string( c_channel_blog_info ) + c_csv_file_ext );
+
+      if( !submitted && file_exists( blog_info_name ) )
+         file_rename( blog_info_name, blockchain_identity + '.' + string( c_channel_blog_info ) + c_csv_file_ext );
+
       string user_info_name( blockchain_identity + "/." + string( c_channel_user_info ) + c_csv_file_ext );
 
       if( !submitted && file_exists( user_info_name ) )
-         file_rename( user_info_name, blockchain_identity + '.' + c_channel_user_info + string( c_csv_file_ext ) );
+         file_rename( user_info_name, blockchain_identity + '.' + string( c_channel_user_info ) + c_csv_file_ext );
 
       string app_log_file_name( blockchain_identity + '/' + blockchain_identity + c_log_file_ext );
 
