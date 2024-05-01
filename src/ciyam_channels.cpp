@@ -1499,6 +1499,18 @@ string storage_channel_documents_prepare( const string& identity )
 
    ofs.set_folder( c_channel_folder_ciyam );
 
+   string blog_info_name( identity + '.' + string( c_channel_blog_info ) + c_csv_file_ext );
+
+   if( file_exists( blog_info_name ) )
+   {
+      // FUTURE: This could be handled in the same manner as "user_info" to avoid
+      // performing skip operations (for Blog records that have not been changed).
+      create_dir( blockchain_identity );
+      has_created_directory = true;
+
+      file_rename( blog_info_name, blockchain_identity + string( "/." ) + string( c_channel_blog_info ) + c_csv_file_ext );
+   }
+
    string user_info_name( identity + '.' + string( c_channel_user_info ) + c_csv_file_ext );
 
    if( file_exists( user_info_name ) )
@@ -1624,8 +1636,11 @@ string storage_channel_documents_prepare( const string& identity )
       {
          ofs.store_as_text_file( c_channel_user_info, all_user_info );
 
-         create_dir( blockchain_identity );
-         has_created_directory = true;
+         if( !has_created_directory )
+         {
+            create_dir( blockchain_identity );
+            has_created_directory = true;
+         }
 
          write_file( blockchain_identity + string( "/." ) + c_channel_user_info + string( c_csv_file_ext ), user_changes );
       }
