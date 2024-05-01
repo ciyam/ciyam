@@ -47,7 +47,7 @@ ERROR=
 @endif
 ;
 @ifdef $HAS_BLOG_CLASS
-.perform_bulk_ops admin @now $MODULE Blog $IDENTITY.blog_info.csv -export=Identity,Name
+.perform_bulk_ops admin @now $MODULE Blog $IDENTITY.blog_info.csv -export=Identity,Description
 @endif
 ;
 .storage_channel_documents -prepare_for_submit $IDENTITY

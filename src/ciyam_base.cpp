@@ -12009,8 +12009,10 @@ string exec_bulk_ops( const string& module,
          bool is_first = true;
          bool can_fetch = false;
          bool has_key_field = false;
+         bool key_prefix_is_first = false;
 
          size_t num_created = 0;
+         size_t num_skipped = 0;
          size_t num_updated = 0;
          size_t num_destroyed = 0;
          size_t key_field_num = 0;
@@ -12020,6 +12022,10 @@ string exec_bulk_ops( const string& module,
 
          string key_suffix( get_raw_session_variable(
           get_special_var_name( e_special_var_key_suffix ) ) );
+
+         if( !get_raw_session_variable(
+          get_special_var_name( e_special_var_key_prefix_is_first ) ).empty( ) )
+            key_prefix_is_first = true;
 
          while( getline( inpf, next ) )
          {
@@ -12071,11 +12077,12 @@ string exec_bulk_ops( const string& module,
                       + fixed_fields[ i ] + "' for " + instance_class( handle, "" ) + " records." );
                }
 
-               if( has_key_field )
+               if( has_key_field || key_prefix_is_first )
                   can_fetch = true;
                else if( determine_alternative_key_fields( handle, "", fields, key_fields ) )
                {
                   can_fetch = true;
+
                   for( size_t i = 0; i < key_fields.size( ); i++ )
                      sorted_key_fields.insert( key_fields[ i ] );
                }
@@ -12155,6 +12162,7 @@ string exec_bulk_ops( const string& module,
             string next_log_line;
 
             bool found_instance = false;
+            bool skipped_instance = false;
             bool skipping_fk_checks = false;
 
             if( !key_suffix.empty( ) )
@@ -12184,7 +12192,7 @@ string exec_bulk_ops( const string& module,
                   }
                }
 
-               if( !has_key_suffix )
+               if( !has_key_suffix && !key_prefix_is_first )
                   throw runtime_error( "key suffix '" + key_suffix + "' not found in key value '" + key_value + "'" );
             }
 
@@ -12194,6 +12202,8 @@ string exec_bulk_ops( const string& module,
 
                if( has_key_field )
                   key_info = values[ key_field_num ];
+               else if( key_prefix_is_first )
+                  key_info = values[ 0 ] + key_suffix;
                else
                {
                   size_t num_fixed = 0;
@@ -12280,7 +12290,15 @@ string exec_bulk_ops( const string& module,
             if( !destroy_record && !found_instance )
             {
                if( !has_key_field )
-                  key = gen_key( );
+               {
+                  if( !key_prefix_is_first )
+                     key = gen_key( );
+                  else
+                  {
+                     key = values[ 0 ];
+                     key += key_suffix;
+                  }
+               }
                else
                   key = values[ key_field_num ];
 
@@ -12415,58 +12433,76 @@ string exec_bulk_ops( const string& module,
                next_log_line += "\"" + log_field_value_pairs + "\"";
             }
 
-            op_apply_rc rc;
-            op_instance_apply( handle, "", false, &rc );
-
-            if( rc != e_op_apply_rc_okay )
+            if( found_instance && !destroy_record && !instance_has_changed( handle, "" ) )
             {
-               class_base& instance( get_class_base_from_handle( handle, "" ) );
-               string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
-
+               skipped_instance = true;
                op_instance_cancel( handle, "", false );
+            }
+            else
+            {
+               op_apply_rc rc;
+               op_instance_apply( handle, "", false, &rc );
 
-               // FUTURE: These need to be implemented as string messages.
-               if( rc == e_op_apply_rc_locked )
-                  outf << "Error: Processing line #" << line << " - record was locked." << endl;
-               else if( rc == e_op_apply_rc_invalid )
+               if( rc != e_op_apply_rc_okay )
                {
-                  outf << "Error: Processing line #" << line << " - record was invalid.";
-                  if( !validation_error.empty( ) )
-                     outf << ' ' << validation_error;
+                  class_base& instance( get_class_base_from_handle( handle, "" ) );
+                  string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
 
-                  outf << endl;
+                  op_instance_cancel( handle, "", false );
+
+                  // FUTURE: These need to be implemented as string messages.
+                  if( rc == e_op_apply_rc_locked )
+                     outf << "Error: Processing line #" << line << " - record was locked." << endl;
+                  else if( rc == e_op_apply_rc_invalid )
+                  {
+                     outf << "Error: Processing line #" << line << " - record was invalid.";
+                     if( !validation_error.empty( ) )
+                        outf << ' ' << validation_error;
+
+                     outf << endl;
+                  }
+                  else
+                     throw runtime_error( "unexpected op_apply rc #" + to_string( rc ) );
+
+                  ++errors;
+                  continue;
                }
-               else
-                  throw runtime_error( "unexpected op_apply rc #" + to_string( rc ) );
 
-               ++errors;
-               continue;
+               if( !log_lines.empty( ) )
+                  log_lines += "\n";
+               log_lines += next_log_line;
             }
 
-            if( !log_lines.empty( ) )
-               log_lines += "\n";
-            log_lines += next_log_line;
-
-            if( time( 0 ) - ts >= 10 )
+            if( log_lines.empty( ) )
             {
-               ts = time( 0 );
-
-               transaction_log_command( log_lines );
-               transaction_commit( );
-
-               in_trans = false;
-               log_lines.clear( );
-
-               // FUTURE: This message should be handled as a server string message.
-               handler.output_progress( "Processed " + to_string( line ) + " lines..." );
-
                if( is_condemned_session( ) )
                   break;
+            }
+            else
+            {
+               if( time( 0 ) - ts >= 10 )
+               {
+                  ts = time( 0 );
+
+                  transaction_log_command( log_lines );
+                  transaction_commit( );
+
+                  in_trans = false;
+                  log_lines.clear( );
+
+                  // FUTURE: This message should be handled as a server string message.
+                  handler.output_progress( "Processed " + to_string( line ) + " lines..." );
+
+                  if( is_condemned_session( ) )
+                     break;
+               }
             }
 
             if( found_instance )
             {
-               if( !destroy_record )
+               if( skipped_instance )
+                  ++num_skipped;
+               else if( !destroy_record )
                   ++num_updated;
                else
                   ++num_destroyed;
@@ -12484,6 +12520,8 @@ string exec_bulk_ops( const string& module,
          // FUTURE: These should be handled as string messages.
          if( num_created )
             outf << "Created " << num_created << " new record(s)." << endl;
+         if( num_skipped )
+            outf << "Skipped " << num_skipped << " existing record(s)." << endl;
          if( num_updated )
             outf << "Updated " << num_updated << " existing record(s)." << endl;
          if( num_destroyed )
@@ -12873,6 +12911,13 @@ string instance_get_fields_and_values( size_t handle, const string& context, con
 
    return instance.get_fields_and_values(
     using_verbose_logging ? class_base::e_field_label_type_full_id : class_base::e_field_label_type_short_id );
+}
+
+bool instance_has_changed( size_t handle, const string& context )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   return instance.has_changed( );
 }
 
 bool instance_persistence_type_is_sql( size_t handle )
