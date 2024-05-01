@@ -166,6 +166,10 @@ BUNDLE_HASH=%OUTPUT:2%
 ;
 HAS_BLOG_CLASS=
 ;
+.module_list
+LINES=@repstr: /\n:$OUTPUT
+MODULE=%LINES:2%
+;
 .module_class_field_list $MODULE Blog
 @ifdef $OUTPUT
 HAS_BLOG_CLASS=1
@@ -184,9 +188,6 @@ BLOG_INFO_FILE=@files::$IN_REVERSE.blog_info.csv
 ;
 USER_INFO_FILE=@files::$IN_REVERSE.user_info.csv
 @ifdef $USER_INFO_FILE
-.module_list
-LINES=@repstr: /\n:$OUTPUT
-MODULE=%LINES:2%
 .session_variable @key_suffix $IDENTITY
 .session_variable @key_prefix_is_first ""
 .perform_bulk_ops peer @now $MODULE Peer_Node_User $IN_REVERSE.user_info.csv -f=Peer_Node=$IDENTITY,Local=0,User=admin
