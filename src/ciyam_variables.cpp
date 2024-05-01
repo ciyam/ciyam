@@ -220,6 +220,7 @@ const char* const c_special_variable_repo_entry_missing = "@repo_entry_missing";
 const char* const c_special_variable_blockchain_identity = "@blockchain_identity";
 const char* const c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
 const char* const c_special_variable_blockchain_num_puts = "@blockchain_num_puts";
+const char* const c_special_variable_key_prefix_is_first = "@key_prefix_is_first";
 const char* const c_special_variable_peer_identity_alias = "@peer_identity_alias";
 const char* const c_special_variable_repo_crypt_password = "@repo_crypt_password";
 const char* const c_special_variable_skip_parent_updates = "@skip_parent_updates";
@@ -469,6 +470,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_identity );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_owner );
       g_special_variable_names.push_back( c_special_variable_blockchain_num_puts );
+      g_special_variable_names.push_back( c_special_variable_key_prefix_is_first );
       g_special_variable_names.push_back( c_special_variable_peer_identity_alias );
       g_special_variable_names.push_back( c_special_variable_repo_crypt_password );
       g_special_variable_names.push_back( c_special_variable_skip_parent_updates );

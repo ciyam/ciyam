@@ -164,12 +164,31 @@ BUNDLE_HASH=%OUTPUT:2%
 .session_variable @updating_$IDENTITY $FETCH_HEIGHT
 .storage_channel_documents -update_retrieved $IDENTITY
 ;
+HAS_BLOG_CLASS=
+;
+.module_class_field_list $MODULE Blog
+@ifdef $OUTPUT
+HAS_BLOG_CLASS=1
+@else
+ERROR=
+@endif
+;
+@ifdef $HAS_BLOG_CLASS
+BLOG_INFO_FILE=@files::$IN_REVERSE.blog_info.csv
+@ifdef $BLOG_INFO_FILE
+.session_variable @key_suffix $IDENTITY
+.session_variable @key_prefix_is_first 1
+.perform_bulk_ops admin @now $MODULE Peer_Node_Watch $IN_REVERSE.blog_info.csv -f=Peer_Node=$IDENTITY,Data_Type=0
+@endif
+@endif
+;
 USER_INFO_FILE=@files::$IN_REVERSE.user_info.csv
 @ifdef $USER_INFO_FILE
 .module_list
 LINES=@repstr: /\n:$OUTPUT
 MODULE=%LINES:2%
 .session_variable @key_suffix $IDENTITY
+.session_variable @key_prefix_is_first ""
 .perform_bulk_ops peer @now $MODULE Peer_Node_User $IN_REVERSE.user_info.csv -f=Peer_Node=$IDENTITY,Local=0,User=admin
 ~rm $IN_REVERSE.user_info.csv
 ~rm $IN_REVERSE.user_info.log
@@ -178,6 +197,7 @@ MODULE=%LINES:2%
 APP_LOG_INFO_FILE=@files::$IN_REVERSE.log
 @ifdef $APP_LOG_INFO_FILE
 .session_variable @key_suffix $IDENTITY
+.session_variable @key_prefix_is_first ""
  session_restrict $UUID perform_create
 <$IN_REVERSE.log
  session_restrict $UUID ""
