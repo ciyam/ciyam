@@ -2823,8 +2823,11 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     split_all_extras( all_extras, includes, excludes );
                               }
 
+                              // NOTE: Ensure the path ends with a '/'.
                               if( rhs.empty( ) )
                                  rhs = "./";
+                              else if( rhs[ rhs.length( ) - 1 ] != '/' )
+                                 rhs += '/';
 
                               bool is_single_file_name = false;
 

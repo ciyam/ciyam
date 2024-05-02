@@ -25,18 +25,7 @@ sudo mv /usr/share/vim/current/indent.vim /usr/share/vim/current/indent.vim.sav
 (and to ensure that auto-commenting doesn't occur in vim either)
 echo "set fo-=ro" >>.vimrc
 
-(to create "clip" for copying text to the clipboard when not using Xfce)
-vi bin/clip
-[clip]
-if [ $# -lt 1 ]; then
- echo "Usage: clip [\"text\""
-else
- echo -n "$1" | xclip -selection clipboard -display "$DISPLAY"
-fi
-[clip]
-chmod a+x bin/clip
-
-Updgrade to latest version (will have to reboot after):
+Updgrade to latest version (should reboot immediately after this):
 
 sudo zypper dup
 
@@ -84,7 +73,6 @@ sudo vi /usr/lib/firewalld/services/ciyam.xml
   <short>CIYAM</short>
   <description>CIYAM Application Server</description>
   <port protocol="tcp" port="12021"/>
-  <port protocol="udp" port="12021"/>
 </service>
 [ciyam.xml]
 
@@ -271,9 +259,14 @@ Adding extra package types to Meta
 
 [packages.lst]
 ...
+Blog
+...
 Message
 ...
 [packages.lst]
+
+./unbundle Blog.package
+cp package.info Blog.package.info
 
 ./unbundle Message.package
 cp package.info Message.package.info
