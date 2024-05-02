@@ -20,6 +20,18 @@ PEER_HUB=
 ;
 HAS_NO_OPL=
 ;
+@label NEXT
+;
+@ifdef $TREE
+.file_hash $TREE
+@ifdef $ERROR
+@label END_LOOP
+@endif
+@endif
+;
+@skip
+;
+@:NEXT
 @ifeq "$2" ""
 .system_variable @blockchain_data_key_$IDENT
 @ifdef $OUTPUT
