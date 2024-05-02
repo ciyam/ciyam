@@ -2832,47 +2832,67 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               if( rhs.empty( ) )
                                  rhs = "./";
 
-                              file_filter ff;
-                              fs_iterator ffsi( rhs, &ff );
+                              bool is_single_file_name = false;
+
+                              if( excludes.empty( ) && ( includes.size( ) == 1 ) )
+                              {
+                                 string::size_type pos = includes[ 0 ].find_first_of( "?*" );
+
+                                 if( pos == string::npos )
+                                    is_single_file_name = true;
+                              }
 
                               str.erase( );
 
                               set< string > results;
 
-                              while( ffsi.has_next( ) )
+                              if( is_single_file_name )
                               {
-                                 string next( ffsi.get_name( ) );
+                                 string single_file_name( includes[ 0 ] );
 
-                                 if( !should_be_included( next, includes, excludes ) )
-                                    continue;
+                                 if( file_exists( rhs + single_file_name ) )
+                                    results.insert( single_file_name );
+                              }
+                              else
+                              {
+                                 file_filter ff;
+                                 fs_iterator ffsi( rhs, &ff );
 
-                                 if( chunk_size )
+                                 while( ffsi.has_next( ) )
                                  {
-                                    size_t offset = 0;
-                                    size_t total_bytes = file_size( ffsi.get_full_name( ) );
+                                    string next( ffsi.get_name( ) );
 
-                                    if( total_bytes <= chunk_size )
-                                       results.insert( next );
-                                    else
+                                    if( !should_be_included( next, includes, excludes ) )
+                                       continue;
+
+                                    if( chunk_size )
                                     {
-                                       while( total_bytes )
+                                       size_t offset = 0;
+                                       size_t total_bytes = file_size( ffsi.get_full_name( ) );
+
+                                       if( total_bytes <= chunk_size )
+                                          results.insert( next );
+                                       else
                                        {
-                                          string next_name( next );
+                                          while( total_bytes )
+                                          {
+                                             string next_name( next );
 
-                                          next_name += ':' + to_string( offset );
-                                          size_t next_chunk = min( chunk_size, total_bytes );
+                                             next_name += ':' + to_string( offset );
+                                             size_t next_chunk = min( chunk_size, total_bytes );
 
-                                          next_name += '+' + to_string( next_chunk );
+                                             next_name += '+' + to_string( next_chunk );
 
-                                          results.insert( next_name );
+                                             results.insert( next_name );
 
-                                          offset += chunk_size;
-                                          total_bytes -= next_chunk;
+                                             offset += chunk_size;
+                                             total_bytes -= next_chunk;
+                                          }
                                        }
                                     }
+                                    else
+                                       results.insert( next );
                                  }
-                                 else
-                                    results.insert( next );
                               }
 
                               str = join( results, "\n" );
