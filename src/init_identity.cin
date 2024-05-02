@@ -5,7 +5,7 @@
 ;
 ERROR=
 ;
-SID_FILE=@files::ciyam_server.sid,^.sav,^.xrep
+SID_FILE=@files::ciyam_server.sid
 ;
 @ifdef $SID_FILE
 .identity
