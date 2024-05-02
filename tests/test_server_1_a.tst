@@ -360,9 +360,21 @@ docs
 src
 src/haru
 tests
+[test*.jpg]
 test.jpg
 test1.jpg
 test2.jpg
+[test?.jpg]
+test1.jpg
+test2.jpg
+[test*.jpg,^test.jpg]
+test1.jpg
+test2.jpg
+[test1.jpg,test2.jpg]
+test1.jpg
+test2.jpg
+[test.jpg]
+test.jpg
 encode -text a
 YQ==
 decode -text $OUTPUT

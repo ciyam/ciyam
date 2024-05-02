@@ -175,15 +175,12 @@ bool should_be_included( const string& name, const vector< string >& includes, c
       {
          string next( excludes[ i ] );
 
-         if( next.find_first_of( "?*" ) != string::npos )
+         if( next == name )
          {
-            if( wildcard_match( next, name ) )
-            {
-               found = true;
-               break;
-            }
+            found = true;
+            break;
          }
-         else if( name.find( next ) != string::npos )
+         else if( wildcard_match( next, name ) )
          {
             found = true;
             break;
@@ -202,15 +199,12 @@ bool should_be_included( const string& name, const vector< string >& includes, c
       {
          string next( includes[ i ] );
 
-         if( next.find_first_of( "?*" ) != string::npos )
+         if( next == name )
          {
-            if( wildcard_match( next, name ) )
-            {
-               found = true;
-               break;
-            }
+            found = true;
+            break;
          }
-         else if( name.find( next ) != string::npos )
+         else if( wildcard_match( next, name ) )
          {
             found = true;
             break;
@@ -2940,7 +2934,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  if( next_path.length( ) <= len )
                                     continue;
 
-                                 if( !should_be_included( next_path, includes, excludes ) )
+                                 if( !should_be_included( next_path.substr( len ), includes, excludes ) )
                                     continue;
 
                                  results.insert( next_path.substr( len ) );
