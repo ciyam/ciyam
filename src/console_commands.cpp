@@ -215,6 +215,38 @@ bool should_be_included( const string& name, const vector< string >& includes, c
    return found;
 }
 
+void insert_name_or_chunks( const string& name, const string& full_name, size_t chunk_size, set< string >& results )
+{
+   if( chunk_size )
+   {
+      size_t offset = 0;
+      size_t total_bytes = file_size( full_name );
+
+      if( total_bytes <= chunk_size )
+         results.insert( name );
+      else
+      {
+         while( total_bytes )
+         {
+            string next_name( name );
+
+            next_name += ':' + to_string( offset );
+
+            size_t next_chunk = min( chunk_size, total_bytes );
+
+            next_name += '+' + to_string( next_chunk );
+
+            results.insert( next_name );
+
+            offset += chunk_size;
+            total_bytes -= next_chunk;
+         }
+      }
+   }
+   else
+      results.insert( name );
+}
+
 string::size_type find_non_escaped_char( const string& s, char ch, string::size_type from = 0, char esc = '\\' )
 {
    string::size_type pos = string::npos;
@@ -2848,7 +2880,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  string single_file_name( includes[ 0 ] );
 
                                  if( file_exists( rhs + single_file_name ) )
-                                    results.insert( single_file_name );
+                                    insert_name_or_chunks( single_file_name, rhs + single_file_name, chunk_size, results );
                               }
                               else
                               {
@@ -2862,33 +2894,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                     if( !should_be_included( next, includes, excludes ) )
                                        continue;
 
-                                    if( chunk_size )
-                                    {
-                                       size_t offset = 0;
-                                       size_t total_bytes = file_size( ffsi.get_full_name( ) );
-
-                                       if( total_bytes <= chunk_size )
-                                          results.insert( next );
-                                       else
-                                       {
-                                          while( total_bytes )
-                                          {
-                                             string next_name( next );
-
-                                             next_name += ':' + to_string( offset );
-                                             size_t next_chunk = min( chunk_size, total_bytes );
-
-                                             next_name += '+' + to_string( next_chunk );
-
-                                             results.insert( next_name );
-
-                                             offset += chunk_size;
-                                             total_bytes -= next_chunk;
-                                          }
-                                       }
-                                    }
-                                    else
-                                       results.insert( next );
+                                    insert_name_or_chunks( next, ffsi.get_full_name( ), chunk_size, results );
                                  }
                               }
 
