@@ -6592,7 +6592,7 @@ void check_script_args( const string& script_name, bool* p_rc )
       {
          string next_arg( all_args[ i ] );
 
-         if( !next_arg.empty( ) && next_arg[ 0 ] == '@' && !has_session_variable( next_arg ) )
+         if( !next_arg.empty( ) && ( next_arg[ 0 ] == '@' ) && !has_session_variable( next_arg ) )
          {
             if( !p_rc )
                // FUTURE: This message should be handled as a server string message.
