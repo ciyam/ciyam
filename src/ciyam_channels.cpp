@@ -427,6 +427,8 @@ void storage_channel_create( const char* p_identity, const char* p_channel_infor
       throw runtime_error( "channel information not found for 'storage_channel_create'" );
 
    ofs.store_as_text_file( c_channel_peer_info, channel_information );
+
+   file_remove( identity + '.' + string( c_channel_blog_info ) + c_csv_file_ext + string( c_sav_file_ext ) );
 }
 
 void storage_channel_destroy( const char* p_identity )
@@ -464,6 +466,8 @@ void storage_channel_destroy( const char* p_identity )
    check_with_regex( c_special_regex_for_peerchain_identity, identity );
 
    ofs.remove_folder( identity, 0, true );
+
+   file_remove( identity + '.' + string( c_channel_blog_info ) + c_csv_file_ext + string( c_sav_file_ext ) );
 }
 
 void storage_channel_update( const char* p_identity, const char* p_channel_information )
@@ -1503,8 +1507,6 @@ string storage_channel_documents_prepare( const string& identity )
 
    if( file_exists( blog_info_name ) )
    {
-      // FUTURE: This could be handled in the same manner as "user_info" to avoid
-      // performing skip operations (for Blog records that have not been changed).
       create_dir( blockchain_identity );
       has_created_directory = true;
 
