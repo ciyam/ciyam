@@ -52,12 +52,6 @@
        get_special_var_name( e_special_var_peer_clone_key ), cp_source->get_peer_identity( ) );
 
 `}\
-      cp_source->set_variable( get_special_var_name(
-       e_special_var_skip_parent_updates ), c_true_value );
-
-      cp_source->set_variable( get_special_var_name(
-       e_special_var_skip_total_child_field_in_parent ), c_true_value );
-
       cp_source->op_apply( );
    }
 `{`!`@eq`(`$arg_ofield`,`'`'`)\

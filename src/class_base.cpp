@@ -1214,6 +1214,10 @@ string class_base::get_peer_identity( ) const
 void class_base::set_is_for_peer( const string& identity )
 {
    get_graph_root( )->set_variable( get_special_var_name( e_special_var_identity ), identity );
+
+   // NOTE: Set object variables to prevent operations that would require reading other peer records.
+   set_variable( get_special_var_name( e_special_var_skip_parent_updates ), c_true_value );
+   set_variable( get_special_var_name( e_special_var_skip_total_child_field_in_parent ), c_true_value );
 }
 
 void class_base::copy_all_field_values( const class_base& src )

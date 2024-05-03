@@ -684,6 +684,22 @@ std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0 );
 std::string CIYAM_BASE_DECL_SPEC get_uid( bool remove_display_name = true );
 void CIYAM_BASE_DECL_SPEC set_uid( const std::string& uid );
 
+struct temporary_user_id
+{
+   temporary_user_id( const std::string& new_uid )
+   {
+      old_uid = get_uid( false );
+      set_uid( new_uid );
+   }
+
+   ~temporary_user_id( )
+   {
+      set_uid( old_uid );
+   }
+
+   std::string old_uid;
+};
+
 bool CIYAM_BASE_DECL_SPEC is_sys_uid( );
 bool CIYAM_BASE_DECL_SPEC is_anon_uid( );
 bool CIYAM_BASE_DECL_SPEC is_auto_uid( );

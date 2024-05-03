@@ -9,24 +9,26 @@
 `{`$create_or_update`=`'`'`}`{`@eq`(`$arg_create_only`,`'true`'`)`$create_or_update`=`'true`'`}`{`@eq`(`$arg_update_only`,`'true`'`)`$create_or_update`=`'true`'`}\
 `{`$new_create_or_update`=`'`'`}`{`@eq`(`$arg_new_only`,`'true`'`)`$new_create_or_update`=`'true`'`}\
 `{`@eq`(`$arg_create_only`,`'true`'`)`$new_create_or_update`=`'true`'`}`{`@eq`(`$arg_update_only`,`'true`'`)`$new_create_or_update`=`'true`'`}\
-`{`$i`=`'`'`}`{`!`@eq`(`$arg_modifier`,`'`'`)`|`!`@eq`(`$new_create_or_update`,`'`'`)`{`$i`=`'   `'`}\
-   if( `{`@eq`(`$new_create_or_update`,`'true`'`)`{`!`@eq`(`$create_or_update`,`'`'`)`{`@eq`(`$arg_update_only`,`'true`'`)!`}is_create && `}\
-`{`@eq`(`$arg_new_only`,`'`'`)!`}get_obj( ).get_key( ).empty( )\
-`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`}`,state & c_modifier_`{`$arg_modifier`}`} )
-`}\
+   if( !get_obj( ).get_is_for_peer( )`{`@eq`(`$new_create_or_update`,`'true`'`)
+    && `{`!`@eq`(`$create_or_update`,`'`'`)`{`@eq`(`$arg_update_only`,`'true`'`)!`}is_create\
+ && `}`{`@eq`(`$arg_new_only`,`'`'`)!`}get_obj( ).get_key( ).empty( )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && ( state & c_modifier_`{`$arg_modifier`} )`} )
 `{`@eq`(`$arg_system`,`'true`'`)\
-`{`$i`}   get_obj( ).`{`$arg_field`}( from_string< typeof(
-`{`$i`}    get_obj( ).`{`$arg_field`}( ) ) >( get_system_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
+      get_obj( ).`{`$arg_field`}( from_string<
+       typeof( get_obj( ).`{`$arg_field`}( ) ) >(
+       get_system_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
  + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}\
  ) ) );
 `,`@eq`(`$arg_session`,`'true`'`)\
-`{`$i`}   get_obj( ).`{`$arg_field`}( from_string< typeof(
-`{`$i`}    get_obj( ).`{`$arg_field`}( ) ) >( get_session_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
+      get_obj( ).`{`$arg_field`}( from_string<
+       typeof( get_obj( ).`{`$arg_field`}( ) ) >(
+       get_session_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
  + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}\
  ) ) );
 `,\
-`{`$i`}   get_obj( ).`{`$arg_field`}( from_string<
-`{`$i`}    typeof( get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
+      get_obj( ).`{`$arg_field`}( from_string<
+       typeof( get_obj( ).`{`$arg_field`}( ) ) >(
+       get_obj( ).get_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
  + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}\
  ) ) );
 `}\
