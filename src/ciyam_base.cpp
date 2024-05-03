@@ -13685,63 +13685,66 @@ void begin_instance_op( instance_op op, class_base& instance,
 
          instance_accessor.at_create( );
       }
-      else if( op == e_instance_op_review || op == e_instance_op_update )
+      else if( ( op == e_instance_op_review ) || ( op == e_instance_op_update ) )
       {
-         string sql;
-
-         bool found = false;
-
-         if( persistence_type == 0 ) // i.e. SQL persistence
+         if( !instance.get_is_for_peer( ) || ( op == e_instance_op_review ) )
          {
-            instance_accessor.fetch( sql, false, false );
+            bool found = false;
 
-            found = fetch_instance_from_db( instance, sql,
-             false, is_minimal_update && op == e_instance_op_update );
-         }
-         else if( persistence_type == 1 ) // i.e. ODS global persistence
-         {
-            found = fetch_instance_from_global_storage( instance, key_for_op );
-            instance_accessor.set_original_identity( instance.get_current_identity( ) );
-         }
-         else
-            throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in begin_instance_op" );
-
-         if( !found )
-         {
-            if( p_rc )
+            if( persistence_type == 0 ) // i.e. SQL persistence
             {
-               *p_rc = e_instance_op_rc_not_found;
+               string sql;
 
-               instance_accessor.set_op( old_op, false );
-               instance_accessor.set_in_op_begin( false );
+               instance_accessor.fetch( sql, false, false );
 
-               return;
+               found = fetch_instance_from_db( instance, sql,
+                false, is_minimal_update && op == e_instance_op_update );
+            }
+            else if( persistence_type == 1 ) // i.e. ODS global persistence
+            {
+               found = fetch_instance_from_global_storage( instance, key_for_op );
+               instance_accessor.set_original_identity( instance.get_current_identity( ) );
             }
             else
-               throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-                make_pair( c_str_parm_record_not_found_class, instance.get_display_name( ) ),
-                make_pair( c_str_parm_record_not_found_key, instance.get_key( ) ) ) );
+               throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in begin_instance_op" );
+
+            if( !found )
+            {
+               if( p_rc )
+               {
+                  *p_rc = e_instance_op_rc_not_found;
+
+                  instance_accessor.set_op( old_op, false );
+                  instance_accessor.set_in_op_begin( false );
+
+                  return;
+               }
+               else
+                  throw runtime_error( get_string_message( GS( c_str_record_not_found ),
+                   make_pair( c_str_parm_record_not_found_class, instance.get_display_name( ) ),
+                   make_pair( c_str_parm_record_not_found_key, instance.get_key( ) ) ) );
+            }
+
+            string ver_expected( instance_accessor.get_ver_exp( ) );
+            if( !ver_expected.empty( ) && ver_expected != instance.get_version_info( ) )
+               throw runtime_error( get_string_message( GS( c_str_version_mismatch ),
+                make_pair( c_str_parm_version_mismatch_found, instance.get_version_info( ) ),
+                make_pair( c_str_parm_version_mismatch_expected, ver_expected ) ) );
+
+            if( op == e_instance_op_update && !storage_locked_for_admin( )
+             && ( !internal_modification
+             && ( instance.get_state( ) & c_state_uneditable )
+             && !( instance.get_state( ) & c_state_ignore_uneditable ) ) )
+               throw runtime_error( get_string_message( GS( c_str_cannot_update ),
+                make_pair( c_str_parm_cannot_update_class, instance.get_display_name( ) ) ) );
+
+            if( op == e_instance_op_update
+             && instance.get_current_identity( ) != instance.get_original_identity( ) )
+               throw runtime_error( "cannot update '" + instance.get_original_identity( )
+                + "' stored instance using '" + instance.get_current_identity( ) + "' object instance" );
          }
-
-         string ver_expected( instance_accessor.get_ver_exp( ) );
-         if( !ver_expected.empty( ) && ver_expected != instance.get_version_info( ) )
-            throw runtime_error( get_string_message( GS( c_str_version_mismatch ),
-             make_pair( c_str_parm_version_mismatch_found, instance.get_version_info( ) ),
-             make_pair( c_str_parm_version_mismatch_expected, ver_expected ) ) );
-
-         if( op == e_instance_op_update && !storage_locked_for_admin( )
-          && ( !internal_modification
-          && ( instance.get_state( ) & c_state_uneditable )
-          && !( instance.get_state( ) & c_state_ignore_uneditable ) ) )
-            throw runtime_error( get_string_message( GS( c_str_cannot_update ),
-             make_pair( c_str_parm_cannot_update_class, instance.get_display_name( ) ) ) );
-
-         if( op == e_instance_op_update
-          && instance.get_current_identity( ) != instance.get_original_identity( ) )
-            throw runtime_error( "cannot update '" + instance.get_original_identity( )
-             + "' stored instance using '" + instance.get_current_identity( ) + "' object instance" );
       }
-      else if( ( op == e_instance_op_destroy ) && !instance.get_is_for_peer( ) )
+      else if( !instance.get_is_for_peer( ) && ( op == e_instance_op_destroy ) )
       {
          // NOTE: In order to correctly determine whether an instance is constrained it must be first fetched.
          bool found = false;

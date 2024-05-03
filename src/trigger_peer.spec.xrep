@@ -1,0 +1,27 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start trigger_peer)] `{`$arg_id`}
+   if( !storage_locked_for_admin( ) && `{`@eq`(`$arg_update`,`'true`'`)!`}is_create && !get_obj( ).get_is_for_peer( ) )
+   {
+      string key_info( get_obj( ).`{`$arg_sfield`}( ) );
+
+      class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
+
+`{`@eq`(`$arg_update`,`'`'`)\
+      cp_source->op_create( key_info );
+      cp_source->set_is_for_peer( get_obj( ).`{`$arg_sfield`}( ) );
+`,\
+      cp_source->set_is_for_peer( get_obj( ).`{`$arg_sfield`}( ) );
+      cp_source->op_update( key_info );
+`}\
+
+      temporary_user_id tmp_uid( c_admin );
+
+      cp_source->`{`$arg_field`}( get_obj( ).`{`$arg_field`}( ) );
+`{`!`@eq`(`$arg_ofield`,`'`'`)\
+      cp_source->`{`$arg_ofield`}( get_obj( ).`{`$arg_ofield`}( ) );
+`}\
+
+      cp_source->op_apply( );
+   }
+   // [(finish trigger_peer)] `{`$arg_id`}
+`}

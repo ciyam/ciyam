@@ -16,6 +16,7 @@ IDENTITY=$1
 .storage_term
 ;
 @ifndef $ERROR
+~rm -f $IDENTITY.log
 #Destroyed global datachain entry for identity '$IDENTITY'.
 @endif
 ;
