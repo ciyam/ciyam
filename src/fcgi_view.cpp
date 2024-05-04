@@ -2163,6 +2163,7 @@ bool output_view_form( ostream& os, const string& act,
                   continue;
 
                string original_display( display );
+
                if( source.manual_link_fields.count( source_value_id ) )
                {
                   stringstream ss;

@@ -943,6 +943,7 @@ void output_list_form( ostream& os,
                os << "<td class=\"list\">" << GDS( c_display_is_equal_to ) << "</td>";
 
             os << "<td class=\"list\">";
+
             for( size_t j = 0; j < next_search_opt_limit; j++ )
             {
                if( j > 0 )
@@ -1033,6 +1034,7 @@ void output_list_form( ostream& os,
                   split( ( source.lici->second )->parents[ i ].pextra, parent_extras, '+' );
 
                const data_container& parent_row_data = source.parent_lists[ i ];
+
                for( size_t k = 0; k < parent_row_data.size( ); k++ )
                {
                   ++opt_count;
@@ -2090,6 +2092,7 @@ void output_list_form( ostream& os,
                }
 
                const data_container& parent_row_data = source.parent_lists[ i ];
+
                for( size_t j = 0; j < parent_row_data.size( ); j++ )
                {
                   string key( parent_row_data[ j ].first );
@@ -3662,7 +3665,7 @@ void output_list_form( ostream& os,
 
                replace_links_and_output( cell_data, source.view,
                 source.module, source.module_ref, os, true, !is_printable,
-                session_id, sess_info, user_select_key, using_session_cookie, use_url_checksum );
+                session_id, sess_info, user_select_key, using_session_cookie, use_url_checksum, &key );
             }
             else if( source.manual_link_fields.count( source_value_id ) )
             {
@@ -3670,11 +3673,12 @@ void output_list_form( ostream& os,
 
                replace_links_and_output( cell_data, source.view,
                 source.module, source.module_ref, os, false, !is_printable,
-                session_id, sess_info, user_select_key, using_session_cookie, use_url_checksum );
+                session_id, sess_info, user_select_key, using_session_cookie, use_url_checksum, &key );
             }
             else if( source.text_fields.count( source_value_id ) || source.notes_fields.count( source_value_id ) )
             {
                int character_trunc_limit = sess_info.notes_trunc;
+
                if( source.notes_character_trunc.count( source_value_id ) )
                   character_trunc_limit = source.notes_character_trunc.find( source_value_id )->second;
 
