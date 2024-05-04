@@ -1269,7 +1269,7 @@ void replace_links_and_output( const string& s,
  const string& id, const string& module, const string& module_ref,
  ostream& os, bool is_content, bool output_hrefs, const string& session_id,
  const session_info& sess_info, const string& user_select_key, bool using_session_cookie,
- bool use_url_checksum, string* p_last_key )
+ bool use_url_checksum, const string* p_key )
 {
    const module_info& mod_info( *get_storage_info( ).modules_index.find( module )->second );
 
@@ -1301,6 +1301,16 @@ void replace_links_and_output( const string& s,
       cell_data.erase( 0, rpos + 1 );
 
       string next_key( next.substr( 0, npos - 1 ) );
+
+      // NOTE: A generic "@key" can optionally be replaced by the record key (is
+      // otherwise change to a "dummy" value so that it can be noticed in a URL).
+      if( next_key == c_key_field )
+      {
+         if( p_key )
+            next_key = *p_key;
+         else
+            next_key = string( c_dummy );
+      }
 
       string vid( id );
       string::size_type cpos = next_key.find( '$' );
@@ -1348,9 +1358,6 @@ void replace_links_and_output( const string& s,
             }
          }
       }
-
-      if( p_last_key )
-         *p_last_key = next_key;
 
       bool is_href = false;
 
