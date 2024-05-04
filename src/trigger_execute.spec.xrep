@@ -3,12 +3,12 @@
 `{`$create_or_update_only`=`'`'`}\
 `{`!`@eq`(`$arg_create_only`,`'`'`)`$create_or_update_only`=`'true`'`}\
 `{`!`@eq`(`$arg_update_only`,`'`'`)`$create_or_update_only`=`'true`'`}\
-   if( !get_obj( ).get_is_for_peer( )`{`!`@eq`(`$create_or_update_only`,`'`'`) && `{`!`@eq`(`$arg_update_only`,`'`'`)!`}is_create`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_modifier`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`) && `}`}\
-`{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )`{`!`@eq`(`$arg_modifier`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`) && `}`}\
-`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`}\
-`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$arg_sess_var_is_test`,`'`'`)\
-`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)
-    && `}!get_session_variable( "`{`$arg_session_var`}" ).empty( )`} )
+   if( `{`!`@eq`(`$create_or_update_only`,`'`'`)`{`!`@eq`(`$arg_update_only`,`'`'`)!`}is_create
+    && `}!get_obj( ).get_is_for_peer( )`{`!`@eq`(`$arg_skip_restore`,`'`'`)
+    && !storage_locked_for_admin( )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && ( state & c_modifier_`{`$arg_modifier`} )`}`{`!`@eq`(`$arg_tfield`,`'`'`)
+    && get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$arg_sess_var_is_test`,`'`'`)\
+    && !get_session_variable( "`{`$arg_session_var`}" ).empty( )`} )
    {
 `{`!`@eq`(`$arg_field`,`'`'`)`&`!`@eq`(`$arg_fname`,`'`'`)`&`!`@eq`(`$arg_fvalue`,`'`'`)\
       string field_and_values( get_obj( ).`{`$arg_field`}( ) );
