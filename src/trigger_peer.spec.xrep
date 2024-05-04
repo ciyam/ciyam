@@ -1,6 +1,12 @@
 `{`@eq`(`'after_store`'`,`$section`)\
    // [(start trigger_peer)] `{`$arg_id`}
-   if( !storage_locked_for_admin( ) && `{`@eq`(`$arg_update`,`'true`'`)!`}is_create && !get_obj( ).get_is_for_peer( ) )
+   if( !storage_locked_for_admin( )
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && get_obj( ).`{`$arg_tfield`}( )
+`}`{`!`@eq`(`$arg_modifier`,`'`'`)\
+    && ( state & c_modifier_`{`$arg_modifier`} )
+`}\
+    && `{`@eq`(`$arg_update`,`'true`'`)!`}is_create && !get_obj( ).get_is_for_peer( ) )
    {
       string key_info( get_obj( ).`{`$arg_sfield`}( ) );
 

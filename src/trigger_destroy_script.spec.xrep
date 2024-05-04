@@ -1,8 +1,14 @@
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
    // [(start trigger_destroy_script)] `{`$arg_id`}
 `{`$script_arg_name`=`'@arg1`'`}`{`!`@eq`(`$arg_script_arg`,`'`'`)`$script_arg_name`=`$arg_script_arg`}\
-`{`!`@eq`(`$arg_skip_restore`,`'`'`)\
-   if( !storage_locked_for_admin( ) )
+`{`$test_or_modifier`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`$test_or_modifier`=`'true`'`}`{`!`@eq`(`$arg_modifier`,`'`'`)`$test_or_modifier`=`'true`'`}\
+`{`$skip_or_test`=`'`'`}`{`@eq`(`$arg_skip_restore`,`'true`'`)`$skip_or_test`=`'true`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`$skip_or_test`=`'true`'`}\
+`{`$skip_test_or_modifier`=`'`'`}`{`@eq`(`$arg_skip_restore`,`'true`'`)`$skip_test_or_modifier`=`'true`'`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`$skip_test_or_modifier`=`'true`'`}`{`!`@eq`(`$arg_modifier`,`'`'`)`$skip_test_or_modifier`=`'true`'`}\
+`{`!`@eq`(`$skip_test_or_modifier`,`'`'`)\
+   if( `{`@eq`(`$arg_skip_restore`,`'true`'`)!storage_locked_for_admin( )`{`!`@eq`(`$test_or_modifier`,`'`'`)
+    && `}`}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && `}`}`{`!`@eq`(`$arg_modifier`,`'`'`)`{`@eq`(`$skip_or_test`,`'true`'`)( `}state & c_modifier_`{`$arg_modifier`}`{`@eq`(`$skip_or_test`,`'true`'`) )`}`} )
 `,\
    // NOTE: Empty code block for scope purposes.
 `}\
