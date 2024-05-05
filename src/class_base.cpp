@@ -7993,14 +7993,16 @@ string meta_field_domain_type( const string& enum_id, int primitive, int max_siz
                min_decimal = from_string< int64_t >( min_value.substr( pos + 1 ) );
 
             pos = max_value.find( '.' );
+
             int64_t max_whole = from_string< int64_t >( max_value.substr( 0, pos ) );
             int64_t max_decimal = 0;
+
             if( pos != string::npos )
                max_decimal = from_string< int64_t >( max_value.substr( pos + 1 ) );
 
-            new_domain_type = "domain_numeric_range< numeric, UINT64_C( "
-             + to_string( min_whole ) + " ), UINT64_C( " + to_string( min_decimal )
-             + " ), UINT64_C( " + to_string( max_whole ) + " ), UINT64_C( " + to_string( max_decimal ) + " ) >";
+            new_domain_type = "domain_numeric_range< numeric, INT64_C( "
+             + to_string( min_whole ) + " ), INT64_C( " + to_string( min_decimal )
+             + " ), INT64_C( " + to_string( max_whole ) + " ), INT64_C( " + to_string( max_decimal ) + " ) >";
          }
          else if( primitive == 5 )
          {
