@@ -1,25 +1,26 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_call_parent_proc)] `{`$arg_id`}
 `{`$both`=`'`'`}`{`$either`=`'`'`}\
+`{`!`@eq`(`$arg_skip_restore`,`'`'`)`&`!`@eq`(`$arg_sfield`,`'`'`)`$both`=`'true`'`}\
 `{`!`@eq`(`$arg_skip_restore`,`'`'`)`&`!`@eq`(`$arg_peer_data_created`,`'`'`)`$both`=`'true`'`}\
 `{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_peer_data_created`,`'`'`)`$either`=`'true`'`}\
 `{`$i`=`'`'`}`{`$j`=`'`'`}`{`!`@eq`(`$either`,`'`'`)`{`$i`=`'   `'`}\
-   if( `{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )`}`{`!`@eq`(`$both`,`'`'`)
-    && `}`{`!`@eq`(`$arg_peer_data_created`,`'`'`)!get_raw_session_variable(
+   if( `{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )`{`!`@eq`(`$arg_peer_data_created`,`'`'`)
+    && `}`}`{`!`@eq`(`$arg_peer_data_created`,`'`'`)!get_raw_session_variable(
     get_special_var_name( e_special_var_peer_data_created ) ).empty( )`} )
-`{`@eq`(`$either`,`'true`'`)`|`@eq`(`$arg_not_null`,`'true`'`)\
+`}`{`@eq`(`$arg_peer_data_created`,`'true`'`)`|`@eq`(`$arg_not_null`,`'true`'`)`|`@eq`(`$both`,`'true`'`)\
    {
-`{`@eq`(`$arg_peer_data_created`,`'true`'`)\
+`}`{`@eq`(`$arg_peer_data_created`,`'true`'`)\
 `{`$i`}   set_session_variable( get_special_var_name( e_special_var_peer_data_created ), "" );
 
-`}`}`}`{`!`@eq`(`$arg_sfield`,`'`'`)\
+`}`{`!`@eq`(`$arg_sfield`,`'`'`)\
 `{`$i`}   get_obj( ).`{`$arg_spfield`}( get_obj( ).`{`$arg_sfield`}( ) );
 
 `}`{`@eq`(`$arg_not_null`,`'true`'`)`{`$j`=`'   `'`}\
 `{`$i`}   if( !is_null( get_obj( ).`{`$arg_spfield`}( ) ) )
 `}\
 `{`$i`}`{`$j`}   get_obj( ).`{`$arg_spfield`}( ).`{`$arg_fk_proc`}( `{`!`@eq`(`$arg_procedure_arg`,`'`'`)`{`$arg_procedure_arg`} `});
-`{`!`@eq`(`$either`,`'`'`)`|`@eq`(`$arg_not_null`,`'true`'`)\
+`{`@eq`(`$arg_peer_data_created`,`'true`'`)`|`@eq`(`$arg_not_null`,`'true`'`)`|`@eq`(`$both`,`'true`'`)\
    }
 `}\
    // [(finish for_call_parent_proc)] `{`$arg_id`}

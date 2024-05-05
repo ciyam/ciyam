@@ -12,7 +12,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "2"
-#Usage: extract_channel_bundle.cin <storage> <identityl> [<height>]
+#Usage: extract_channel_bundle.cin <storage> <identity> [<height>]
 @else
 ERROR=
 ;
