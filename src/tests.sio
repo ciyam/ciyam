@@ -420,39 +420,6 @@
    </tests>
   </group>
   <group/>
-   <name>test_xrep
-   <tests/>
-    <test/>
-     <name>1
-     <description>Perform basic xrep functionality tests.
-     <test_step/>
-      <name>a
-      <exec>xrep @$TESTS_DIR/xrep_1_a.xrep
-      <input>false
-      <output>generate
-     </test_step>
-     <test_step/>
-      <name>b
-      <exec>xrep @$TESTS_DIR/xrep_1_a.xrep include=$TESTS_DIR/xrep_1_b.xrep
-      <input>false
-      <output>generate
-     </test_step>
-     <test_step/>
-      <name>c
-      <exec>xrep @$TESTS_DIR/xrep_1_c.xrep field=Field field_list=Source separator=, section=for_test
-      <input>false
-      <output>generate
-     </test_step>
-     <test_step/>
-      <name>d
-      <exec>xrep @$TESTS_DIR/xrep_1_c.xrep field=Field field_list=@$TESTS_DIR/xrep_1_d.lst separator=, section=for_test
-      <input>false
-      <output>generate
-     </test_step>
-    </test>
-   </tests>
-  </group>
-  <group/>
    <name>test_cache
    <tests/>
     <test/>
@@ -1828,6 +1795,108 @@
       <exec>$touch ciyam_server.stop
       <input>false
       <output>none
+     </test_step>
+    </test>
+   </tests>
+  </group>
+  <group/>
+   <name>test_xrep
+   <tests/>
+    <test/>
+     <name>1
+     <description>Perform basic xrep functionality tests.
+     <test_step/>
+      <name>a
+      <exec>xrep @$TESTS_DIR/test_xrep_1_a.xrep
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>xrep @$TESTS_DIR/test_xrep_1_a.xrep include=$TESTS_DIR/test_xrep_1_b.xrep
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>xrep @$TESTS_DIR/test_xrep_1_c.xrep field=Field field_list=Source separator=, section=for_test
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>xrep @$TESTS_DIR/test_xrep_1_c.xrep field=Field field_list=@$TESTS_DIR/test_xrep_1_d.lst separator=, section=for_test
+      <input>false
+      <output>generate
+     </test_step>
+    </test>
+   </tests>
+  </group>
+  <group/>
+   <name>test_xrep_spec
+   <tests/>
+    <test/>
+     <name>1
+     <description>Perform various test_xrep_spec tests for the "field_from_variable" specification.
+     <test_step/>
+      <name>a
+      <exec>!test_xrep_spec field_from_variable to_or_for_store -f $TESTS_DIR/test_xrep_spec_1_a.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>!test_xrep_spec field_from_variable to_or_for_store -f $TESTS_DIR/test_xrep_spec_1_b.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>!test_xrep_spec field_from_variable to_or_for_store -f $TESTS_DIR/test_xrep_spec_1_c.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>!test_xrep_spec field_from_variable to_or_for_store -f $TESTS_DIR/test_xrep_spec_1_d.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>!test_xrep_spec field_from_variable to_or_for_store -f $TESTS_DIR/test_xrep_spec_1_e.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>f
+      <exec>!test_xrep_spec field_from_variable to_or_for_store -f $TESTS_DIR/test_xrep_spec_1_f.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>g
+      <exec>!test_xrep_spec field_from_variable to_or_for_store -f $TESTS_DIR/test_xrep_spec_1_g.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>h
+      <exec>!test_xrep_spec field_from_variable to_or_for_store -f $TESTS_DIR/test_xrep_spec_1_h.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>i
+      <exec>!test_xrep_spec field_from_variable to_or_for_store -f $TESTS_DIR/test_xrep_spec_1_i.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>j
+      <exec>!test_xrep_spec field_from_variable to_or_for_store -f $TESTS_DIR/test_xrep_spec_1_j.txt
+      <input>false
+      <output>generate
      </test_step>
     </test>
 #comment test 16...

@@ -1,0 +1,13 @@
+arg_new_only=true
+arg_not_peer=
+arg_peer_only=
+arg_create_only=
+arg_update_only=
+arg_field=Field_Name
+arg_tfield=
+arg_modifier=
+arg_value=variable_name
+arg_ofield=Other_Field
+arg_ofisfk=
+arg_system=
+arg_session=true
