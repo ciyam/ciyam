@@ -167,6 +167,7 @@ enum special_var
    e_special_var_skip_update,
    e_special_var_state_names,
    e_special_var_style_brief,
+   e_special_var_submit_type,
    e_special_var_transaction,
    e_special_var_backup_files,
    e_special_var_block_height,

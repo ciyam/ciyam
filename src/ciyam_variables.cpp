@@ -154,6 +154,7 @@ const char* const c_special_variable_secret_hash = "@secret_hash";
 const char* const c_special_variable_skip_update = "@skip_update";
 const char* const c_special_variable_state_names = "@state_names";
 const char* const c_special_variable_style_brief = "@style_brief";
+const char* const c_special_variable_submit_type = "@submit_type";
 const char* const c_special_variable_transaction = "@transaction";
 const char* const c_special_variable_backup_files = "@backup_files";
 const char* const c_special_variable_block_height = "@block_height";
@@ -404,6 +405,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_skip_update );
       g_special_variable_names.push_back( c_special_variable_state_names );
       g_special_variable_names.push_back( c_special_variable_style_brief );
+      g_special_variable_names.push_back( c_special_variable_submit_type );
       g_special_variable_names.push_back( c_special_variable_transaction );
       g_special_variable_names.push_back( c_special_variable_backup_files );
       g_special_variable_names.push_back( c_special_variable_block_height );

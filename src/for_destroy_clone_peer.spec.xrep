@@ -10,6 +10,11 @@
 
       class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
 
+`{`!`@eq`(`$arg_submit_type`,`'`'`)\
+      temporary_session_variable tmp_session_submit_type(
+       get_special_var_name( e_special_var_submit_type ), "`{`$arg_submit_type`}" );
+
+`}\
       cp_source->set_is_for_peer( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) );
 
       cp_source->op_destroy( key );

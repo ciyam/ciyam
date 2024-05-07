@@ -38,6 +38,11 @@
 `}\
       class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
 
+`{`!`@eq`(`$arg_submit_type`,`'`'`)\
+      temporary_session_variable tmp_session_submit_type(
+       get_special_var_name( e_special_var_submit_type ), "`{`$arg_submit_type`}" );
+
+`}\
       cp_source->op_create( key_info );
 
       cp_source->`{`$arg_field`}( `{`$arg_value`} );
