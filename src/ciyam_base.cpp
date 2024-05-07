@@ -130,7 +130,12 @@ const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
-const char* const c_needs_submit_file = "needs_submit";
+const char* const c_ui_type_repl_name = "TYPE";
+
+const char* const c_ui_submit_type_blog = "blog";
+const char* const c_ui_submit_type_peer = "peer";
+
+const char* const c_ui_type_submit_file = "ui_TYPE_submit";
 
 const char* const c_server_folder_backup = "backup";
 const char* const c_server_folder_opened = "opened";
@@ -14026,8 +14031,17 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             set_session_variable( get_special_var_name( e_special_var_peer_data_created ), c_true_value );
 
             if( get_session_variable( get_special_var_name( e_special_var_skip_submit_file ) ).empty( ) )
+            {
+               string submit_type( get_session_variable( get_special_var_name( e_special_var_submit_type ) ) );
+
+               if( submit_type.empty( ) )
+                  submit_type = c_ui_submit_type_peer;
+
+               string submit_file( replaced( c_ui_type_submit_file, c_ui_type_repl_name, submit_type.c_str( ) ) );
+
                file_touch( get_web_root( ) + '/'
-                + lower( gtp_session->p_storage_handler->get_name( ) ) + '/' + string( c_needs_submit_file ), 0, true );
+                + lower( gtp_session->p_storage_handler->get_name( ) ) + '/' + submit_file, 0, true );
+            }
          }
          else
          {
