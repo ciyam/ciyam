@@ -3,6 +3,8 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+<std.fissile
+;
 NUM_ARGS=0
 @ifdef $1
 NUM_ARGS=@$NUM_ARGS+1
@@ -12,7 +14,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "2"
-#Usage: extract_channel_bundle.cin <storage> <identity> [<height>]
+#Usage: extract_channel_bundle.cin <storage> <identity> [-received] [<height>]
 @else
 ERROR=
 ;
@@ -20,10 +22,20 @@ STORAGE=$1
 IDENTITY=$2
 BLOCK_HEIGHT=$3
 ;
+REVERSED=
+@ifeq "$BLOCK_HEIGHT" "-received"
+REVERSED=1
+BLOCK_HEIGHT=$4
+@endif
+;
 CIYAM_STREAM_CIPHER=cc
 ;
 .system_variable $$%IDENTITY%_identity
-BLOCKHAIN=$OUTPUT
+BLOCKCHAIN=$OUTPUT
+;
+@ifdef $REVERSED
+BLOCKCHAIN=*!reverse?$BLOCKCHAIN
+@endif
 ;
 .storage_init $STORAGE
 @ifndef $ERROR
@@ -33,18 +45,18 @@ BLOCKHAIN=$OUTPUT
 ;
 @ifndef $ERROR
 @ifndef $BLOCK_HEIGHT
-.file_core -header bc.$BLOCKHAIN.zenith h
+.file_core -header bc.$BLOCKCHAIN.zenith h
 BLOCK_HEIGHT=$OUTPUT
 @endif
 ;
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
-.session_variable @blockchain_archive_path $FILES_AREA_DIR/$BLOCKHAIN
+.session_variable @blockchain_archive_path $FILES_AREA_DIR/$BLOCKCHAIN
 ;
-<block_tree_hash.cin $BLOCKHAIN $BLOCK_HEIGHT
+<block_tree_hash.cin $BLOCKCHAIN $BLOCK_HEIGHT
 ;
-<tree_list.cin $OUTPUT 0 $BLOCKHAIN.bun.gz
+<tree_list.cin $OUTPUT 0 $BLOCKCHAIN.bun.gz
 BUNDLE_HASH=%OUTPUT:2%
 ;
 <export_files.cin $BUNDLE_HASH .
