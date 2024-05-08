@@ -258,7 +258,7 @@ IDENTITY_HASH=$OUTPUT
 ;
 IDENT=@substr:0,9:$IDENTITY_HASH
 ;
-;NOTE: If identity is palindromic then increment (or zero) the last character.
+; NOTE: If identity is palindromic then increment (or zero) the last character.
 ;
 REVERSE=*!reverse?$IDENT
 ;

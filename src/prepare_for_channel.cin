@@ -54,6 +54,8 @@ BLOG_INFO_SAV_FILE=@files::$IDENTITY.blog_info.csv.sav
 @ifndef $BLOG_INFO_SAV_FILE
 ~cp $IDENTITY.blog_info.csv $IDENTITY.blog_info.csv.sav
 @else
+; FUTURE: Rather than this "all or nothing" approach it would be better
+; to only export any new records or prior ones that have been modified.
 ~./remove_identical $IDENTITY.blog_info.csv.sav $IDENTITY.blog_info.csv
 @endif
 ;
