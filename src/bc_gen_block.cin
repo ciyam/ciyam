@@ -374,7 +374,7 @@ BLOCK_HASH=$OUTPUT
 .file_tag -unlink bc.$IDENT.$LAST.key
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
 ;
-;NOTE: Create the block tag last to ensure that local peer sessions correctly identify a new block.
+; NOTE: Create the block tag last to ensure that local peer sessions correctly identify a new block.
 .file_tag $BLOCK_HASH bc.$IDENT.$HEIGHT.blk
 ;
 .system_variable @blockchain_backup_identity
