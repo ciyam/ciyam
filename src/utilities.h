@@ -943,9 +943,17 @@ std::string join( const std::vector< std::string >& c, char sep = c_sep, char es
 
 inline std::string raw_join( const std::vector< std::string >& c ) { return join( c, '\0', '\0', false ); }
 
-std::string join( const std::set< std::string >& c, const std::string& sep );
-std::string join( const std::deque< std::string >& c, const std::string& sep );
-std::string join( const std::vector< std::string >& c, const std::string& sep );
+inline std::string join( const std::set< std::string >& c, char sep = c_sep, char esc = c_esc, bool escape = true )
+{
+   std::vector< std::string > v( c.begin( ), c.end( ) );
+   return join( v, sep, esc, escape );
+}
+
+inline std::string join( const std::deque< std::string >& c, char sep = c_sep, char esc = c_esc, bool escape = true )
+{
+   std::vector< std::string > v( c.begin( ), c.end( ) );
+   return join( v, sep, esc, escape );
+}
 
 inline void remove_utf8_bom_impl( std::string& s )
 {

@@ -1770,8 +1770,10 @@ size_t split( const string& s, vector< string >& c, char sep, char esc, bool une
    string::size_type len = s.length( );
 
    string next;
+
    bool had_sep = false;
    bool had_escape = false;
+
    for( size_t i = 0; i < len; i++ )
    {
       had_sep = false;
@@ -1817,6 +1819,7 @@ size_t split( const string& s, set< string >& c, const string& sep )
 {
    string::size_type spos = 0;
    string::size_type slen( sep.length( ) );
+
    while( true )
    {
       string::size_type pos = s.find( sep, spos );
@@ -1838,6 +1841,7 @@ size_t split( const string& s, deque< string >& c, const string& sep )
 {
    string::size_type spos = 0;
    string::size_type slen( sep.length( ) );
+
    while( true )
    {
       string::size_type pos = s.find( sep, spos );
@@ -1859,6 +1863,7 @@ size_t split( const string& s, vector< string >& c, const string& sep )
 {
    string::size_type spos = 0;
    string::size_type slen( sep.length( ) );
+
    while( true )
    {
       string::size_type pos = s.find( sep, spos );
@@ -1904,49 +1909,6 @@ string join( const vector< string >& c, char sep, char esc, bool escape )
          else
             s += escaped( c[ i ], specials, esc );
       }
-   }
-
-   return s;
-}
-
-string join( const set< string >& c, const string& sep )
-{
-   string s;
-   set< string >::const_iterator ci;
-
-   for( ci = c.begin( ); ci != c.end( ); ++ci )
-   {
-      if( !s.empty( ) )
-         s += sep;
-      s += *ci;
-   }
-
-   return s;
-}
-
-string join( const deque< string >& c, const string& sep )
-{
-   string s;
-
-   for( size_t i = 0; i < c.size( ); i++ )
-   {
-      if( i > 0 )
-         s += sep;
-      s += c[ i ];
-   }
-
-   return s;
-}
-
-string join( const vector< string >& c, const string& sep )
-{
-   string s;
-
-   for( size_t i = 0; i < c.size( ); i++ )
-   {
-      if( i > 0 )
-         s += sep;
-      s += c[ i ];
    }
 
    return s;

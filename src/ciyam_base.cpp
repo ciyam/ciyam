@@ -239,9 +239,6 @@ const char* const c_storable_file_name_trunc_n = "trunc_n";
 const char* const c_storable_file_name_version = "version";
 const char* const c_storable_file_name_web_root = "web_root";
 
-const char* const c_storable_folder_name_modules = "modules";
-const char* const c_storable_folder_name_channels = "channels";
-
 const char* const c_temporary_special_variable_suffix = "_temporary";
 
 const char* const c_invalid_key_characters = "`~!@#$%^&*<>()[]{}/\\?|-+=.,;:'\"";
@@ -1688,31 +1685,31 @@ void init_system_ods( )
    auto_ptr< ods::transaction > ap_tx;
 
    if( was_just_created
-    || !gap_ofs->has_folder( c_file_archives_folder )
-    || !gap_ofs->has_folder( c_file_blacklist_folder )
-    || !gap_ofs->has_folder( c_file_datachain_folder )
-    || !gap_ofs->has_folder( c_file_peerchain_folder )
-    || !gap_ofs->has_folder( c_file_repository_folder )
-    || !gap_ofs->has_folder( c_system_variables_folder ) )
+    || !gap_ofs->has_folder( c_system_archives_folder )
+    || !gap_ofs->has_folder( c_system_blacklist_folder )
+    || !gap_ofs->has_folder( c_system_datachain_folder )
+    || !gap_ofs->has_folder( c_system_peerchain_folder )
+    || !gap_ofs->has_folder( c_system_variables_folder )
+    || !gap_ofs->has_folder( c_system_repository_folder ) )
       ap_tx.reset( new ods::transaction( *gap_ods ) );
 
-   if( !gap_ofs->has_folder( c_file_archives_folder ) )
-      gap_ofs->add_folder( c_file_archives_folder );
+   if( !gap_ofs->has_folder( c_system_archives_folder ) )
+      gap_ofs->add_folder( c_system_archives_folder );
 
-   if( !gap_ofs->has_folder( c_file_blacklist_folder ) )
-      gap_ofs->add_folder( c_file_blacklist_folder );
+   if( !gap_ofs->has_folder( c_system_blacklist_folder ) )
+      gap_ofs->add_folder( c_system_blacklist_folder );
 
-   if( !gap_ofs->has_folder( c_file_datachain_folder ) )
-      gap_ofs->add_folder( c_file_datachain_folder );
+   if( !gap_ofs->has_folder( c_system_datachain_folder ) )
+      gap_ofs->add_folder( c_system_datachain_folder );
 
-   if( !gap_ofs->has_folder( c_file_peerchain_folder ) )
-      gap_ofs->add_folder( c_file_peerchain_folder );
-
-   if( !gap_ofs->has_folder( c_file_repository_folder ) )
-      gap_ofs->add_folder( c_file_repository_folder );
+   if( !gap_ofs->has_folder( c_system_peerchain_folder ) )
+      gap_ofs->add_folder( c_system_peerchain_folder );
 
    if( !gap_ofs->has_folder( c_system_variables_folder ) )
       gap_ofs->add_folder( c_system_variables_folder );
+
+   if( !gap_ofs->has_folder( c_system_repository_folder ) )
+      gap_ofs->add_folder( c_system_repository_folder );
 
    if( ap_tx.get( ) )
       ap_tx->commit( );
@@ -1938,7 +1935,10 @@ void perform_storage_op( storage_op op,
             ofs.add_folder( c_storable_folder_name_modules );
 
             if( is_peerchain_application )
+            {
                ofs.add_folder( c_storable_folder_name_channels );
+               ofs.add_folder( c_storable_folder_name_peer_data );
+            }
 
             ap_handler->get_root( ).store_as_text_files( ofs );
 
@@ -5796,7 +5796,7 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
 
    string retval;
 
-   gap_ofs->set_root_folder( c_file_peerchain_folder );
+   gap_ofs->set_root_folder( c_system_peerchain_folder );
 
    vector< string > peerchains;
 
@@ -5870,7 +5870,7 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
    ods::bulk_read bulk_read( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
 
-   gap_ofs->set_root_folder( c_file_peerchain_folder );
+   gap_ofs->set_root_folder( c_system_peerchain_folder );
 
    vector< string > peerchains;
 
@@ -5918,7 +5918,7 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
    ods::bulk_read bulk_read( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
 
-   gap_ofs->set_root_folder( c_file_peerchain_folder );
+   gap_ofs->set_root_folder( c_system_peerchain_folder );
 
    vector< string > peerchains;
 

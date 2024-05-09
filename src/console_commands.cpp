@@ -2898,7 +2898,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  }
                               }
 
-                              str = join( results, "\n" );
+                              str = join( results, '\n' );
                            }
                            else if( lhs == c_function_lower )
                               str = lower( str.substr( pos + 1 ) );
@@ -2949,7 +2949,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  results.insert( next_path.substr( len ) );
                               }
 
-                              str = join( results, "\n" );
+                              str = join( results, '\n' );
                            }
                            else if( lhs == c_function_upper )
                               str = upper( str.substr( pos + 1 ) );

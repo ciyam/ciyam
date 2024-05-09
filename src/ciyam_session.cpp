@@ -5773,6 +5773,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = create_raw_file( data, true, tag.empty( ) ? 0 : tag.c_str( ) );
       }
+      else if( command == c_cmd_ciyam_session_storage_channel_list )
+      {
+         ostringstream osstr;
+
+         storage_channel_list( osstr );
+
+         response = osstr.str( );
+      }
       else if( command == c_cmd_ciyam_session_storage_channel_create )
       {
          string identity( get_parm_val( parameters, c_cmd_ciyam_session_storage_channel_create_identity ) );
@@ -5829,6 +5837,71 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             response = storage_channel_documents_prepare( identity );
          else
             response = storage_channel_documents_specific( identity, specific_type );
+      }
+      else if( command == c_cmd_ciyam_session_storage_peer_data_details )
+      {
+         bool list = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_list );
+         string identity( get_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_identity ) );
+         bool height = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_height );
+         string new_height( get_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_new_height ) );
+         string data_type( get_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_data_type ) );
+         bool is_link = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_link );
+         bool is_unlink = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_unlink );
+         string channel( get_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_channel ) );
+
+         if( list )
+         {
+            if( data_type.empty( ) )
+            {
+               ostringstream osstr;
+
+               list_datachains( osstr );
+
+               response = osstr.str( );
+            }
+            else
+            {
+               size_t type_value = from_string< size_t >( data_type );
+
+               vector< string > datachains;
+
+               list_datachains( datachains );
+
+               for( size_t i = 0; i < datachains.size( ); i++ )
+               {
+                  string next( datachains[ i ] );
+
+                  size_t next_type;
+
+                  get_datachain_info( next, &next_type );
+
+                  if( next_type == type_value )
+                  {
+                     if( !response.empty( ) )
+                        response += '\n';
+                     response += next;
+                  }
+               }
+            }
+         }
+         else
+         {
+            if( is_link )
+               link_channel_to_datachain( channel, identity );
+            else if( is_unlink )
+               unlink_channel_from_datachain( channel, identity );
+            else if( !data_type.empty( ) )
+               create_datachain_info( identity, from_string< size_t >( data_type ) );
+            else
+            {
+               size_t current_height;
+
+               response = get_datachain_info( identity, 0, &current_height );
+
+               if( height )
+                  response = to_string( current_height );
+            }
+         }
       }
       else if( command == c_cmd_ciyam_session_storage_transaction_start )
          transaction_start( );

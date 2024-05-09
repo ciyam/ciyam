@@ -7,6 +7,7 @@
 #  define CIYAM_CHANNELS_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <iosfwd>
 #     include <string>
 #  endif
 
@@ -46,6 +47,8 @@ bool CIYAM_BASE_DECL_SPEC storage_channel_document_submitting( const std::string
 
 int64_t CIYAM_BASE_DECL_SPEC storage_channel_received_height( const std::string& identity );
 int64_t CIYAM_BASE_DECL_SPEC storage_channel_submitted_height( const std::string& identity );
+
+void CIYAM_BASE_DECL_SPEC storage_channel_list( std::ostream& os );
 
 void CIYAM_BASE_DECL_SPEC storage_channel_create( const char* p_identity = 0, const char* p_channel_information = 0 );
 void CIYAM_BASE_DECL_SPEC storage_channel_destroy( const char* p_identity = 0 );
@@ -129,5 +132,15 @@ inline std::string storage_channel_documents_submitting( const std::string& iden
 {
    return storage_channel_documents_specific( identity, e_channel_documents_type_submitting );
 }
+
+void CIYAM_BASE_DECL_SPEC list_datachains( std::ostream& os );
+void CIYAM_BASE_DECL_SPEC list_datachains( std::vector< std::string >& datachains );
+
+std::string CIYAM_BASE_DECL_SPEC get_datachain_info( const std::string& identity, size_t* p_data_type = 0, size_t* p_height = 0 );
+
+void CIYAM_BASE_DECL_SPEC create_datachain_info( const std::string& identity, size_t data_type );
+
+void CIYAM_BASE_DECL_SPEC link_channel_to_datachain( const std::string& channel, const std::string& identity );
+void CIYAM_BASE_DECL_SPEC unlink_channel_from_datachain( const std::string& channel, const std::string& identity );
 
 #endif
