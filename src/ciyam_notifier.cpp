@@ -433,7 +433,7 @@ void ciyam_notifier::on_start( )
 
                            file_names.insert( file_name );
 
-                           viewed_files = join( file_names, "|" );
+                           viewed_files = join( file_names, '|' );
 
                            set_system_variable( watch_variable_name + c_notifier_viewed_suffix, viewed_files );
                         }

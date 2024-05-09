@@ -138,12 +138,16 @@ const char* const c_notifier_modified_from = "modified_from";
 
 const char* const c_file_zero_length = "*";
 
-const char* const c_file_archives_folder = "arch";
-const char* const c_file_blacklist_folder = "blst";
-const char* const c_file_datachain_folder = "data";
-const char* const c_file_peerchain_folder = "peer";
-const char* const c_file_repository_folder = "repo";
+const char* const c_system_archives_folder = "arch";
+const char* const c_system_blacklist_folder = "blst";
+const char* const c_system_datachain_folder = "data";
+const char* const c_system_peerchain_folder = "peer";
 const char* const c_system_variables_folder = "vars";
+const char* const c_system_repository_folder = "repo";
+
+const char* const c_storable_folder_name_modules = "modules";
+const char* const c_storable_folder_name_channels = "channels";
+const char* const c_storable_folder_name_peer_data = "peer_data";
 
 const char* const c_special_regex_for_domain_name = "@domain_name";
 const char* const c_special_regex_for_email_address = "@email_address";

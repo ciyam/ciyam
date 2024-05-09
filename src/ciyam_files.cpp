@@ -1199,7 +1199,7 @@ void init_archive_info( progress* p_progress )
          string path( paths[ i ] );
          string archive( archives[ i ] );
 
-         ods_fs.set_root_folder( c_file_archives_folder );
+         ods_fs.set_root_folder( c_system_archives_folder );
 
          ods_fs.set_folder( archive );
 
@@ -4489,7 +4489,7 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
 
    ods::transaction ods_tx( system_ods_instance( ) );
 
-   ods_fs.set_root_folder( c_file_archives_folder );
+   ods_fs.set_root_folder( c_system_archives_folder );
 
    if( ods_fs.has_folder( name ) )
       // FUTURE: This message should be handled as a server string message.
@@ -4517,7 +4517,7 @@ void clear_file_archive( const string& name )
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_archives_folder );
+   ods_fs.set_root_folder( c_system_archives_folder );
 
    if( !ods_fs.has_folder( name ) )
       // FUTURE: This message should be handled as a server string message.
@@ -4574,7 +4574,7 @@ void remove_file_archive( const string& name, bool destroy_files, bool remove_di
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_archives_folder );
+   ods_fs.set_root_folder( c_system_archives_folder );
 
    if( !ods_fs.has_folder( name ) )
       // FUTURE: This message should be handled as a server string message.
@@ -4632,7 +4632,7 @@ void remove_file_archive( const string& name, bool destroy_files, bool remove_di
             if( remove_directory )
                file_remove( path );
 
-            ods_fs.set_root_folder( c_file_archives_folder );
+            ods_fs.set_root_folder( c_system_archives_folder );
          }
       }
 
@@ -4657,7 +4657,7 @@ void repair_file_archive( const string& name, progress* p_progress )
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_archives_folder );
+   ods_fs.set_root_folder( c_system_archives_folder );
 
    if( !ods_fs.has_folder( name ) )
       // FUTURE: This message should be handled as a server string message.
@@ -4752,7 +4752,7 @@ void resize_file_archive( const string& name, int64_t new_size_limit, progress* 
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_archives_folder );
+   ods_fs.set_root_folder( c_system_archives_folder );
 
    if( !ods_fs.has_folder( name ) )
       // FUTURE: This message should be handled as a server string message.
@@ -4822,7 +4822,7 @@ void archives_status_update( const string& name )
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_archives_folder );
+   ods_fs.set_root_folder( c_system_archives_folder );
 
    vector< string > names;
    ods_fs.list_folders( names );
@@ -4873,7 +4873,7 @@ bool file_has_been_blacklisted( const string& hash )
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_blacklist_folder );
+   ods_fs.set_root_folder( c_system_blacklist_folder );
 
    if( ods_fs.has_file( hash ) )
       retval = true;
@@ -4930,7 +4930,7 @@ string list_file_archives( archive_list_type list_type,
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_archives_folder );
+   ods_fs.set_root_folder( c_system_archives_folder );
 
    ods_fs.list_folders( names );
 
@@ -5066,7 +5066,7 @@ void create_raw_file_in_archive( const string& archive,
 
             found = true;
 
-            ods_fs.set_root_folder( c_file_archives_folder );
+            ods_fs.set_root_folder( c_system_archives_folder );
 
             ods_fs.set_folder( next_archive );
 
@@ -5184,7 +5184,7 @@ string relegate_one_or_num_oldest_files( const string& hash,
 
          string next_archive( archives[ i ] );
 
-         ods_fs.set_root_folder( c_file_archives_folder );
+         ods_fs.set_root_folder( c_system_archives_folder );
 
          ods_fs.set_folder( next_archive );
 
@@ -5468,7 +5468,7 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
          if( !archive.empty( ) && archive != next_archive )
             continue;
 
-         ods_fs.set_root_folder( c_file_archives_folder );
+         ods_fs.set_root_folder( c_system_archives_folder );
 
          ods_fs.set_folder( next_archive );
 
@@ -5505,13 +5505,13 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
 
    if( add_to_blacklist )
    {
-      ods_fs.set_root_folder( c_file_blacklist_folder );
+      ods_fs.set_root_folder( c_system_blacklist_folder );
       ods_fs.add_file( hash, c_file_zero_length );
 
       // NOTE: If a matching repository entry is found then will
       // delete it along with removing the equivalent local file
       // from all archives and the files area.
-      ods_fs.set_root_folder( c_file_repository_folder );
+      ods_fs.set_root_folder( c_system_repository_folder );
 
       if( ods_fs.has_file( hash ) )
       {
@@ -5541,7 +5541,7 @@ bool has_repository_entry_record( const string& repository, const string& hash )
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_repository_folder );
+   ods_fs.set_root_folder( c_system_repository_folder );
 
    string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
 
@@ -5557,7 +5557,7 @@ bool fetch_repository_entry_record(
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_repository_folder );
+   ods_fs.set_root_folder( c_system_repository_folder );
 
    string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
 
@@ -5605,7 +5605,7 @@ bool fetch_repository_entry_record( const string& repository, const string& hash
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_repository_folder );
+   ods_fs.set_root_folder( c_system_repository_folder );
 
    string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
 
@@ -5647,7 +5647,7 @@ void store_repository_entry_record( const string& repository, const string& hash
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_repository_folder );
+   ods_fs.set_root_folder( c_system_repository_folder );
 
    string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
 
@@ -5685,7 +5685,7 @@ bool destroy_repository_entry_record( const string& repository, const string& ha
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_repository_folder );
+   ods_fs.set_root_folder( c_system_repository_folder );
 
    string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
 
@@ -5707,7 +5707,7 @@ size_t count_total_repository_entries(
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_repository_folder );
+   ods_fs.set_root_folder( c_system_repository_folder );
 
    string last_key;
 
@@ -5789,7 +5789,7 @@ size_t remove_all_repository_entries( const string& repository,
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_repository_folder );
+   ods_fs.set_root_folder( c_system_repository_folder );
 
    size_t total_entries = 0;
    size_t total_archive_files = files_in_archive( repository );
@@ -5903,7 +5903,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods_fs.set_root_folder( c_file_repository_folder );
+   ods_fs.set_root_folder( c_system_repository_folder );
 
    size_t total_entries = 0;
    size_t total_archive_files = files_in_archive( repository );
