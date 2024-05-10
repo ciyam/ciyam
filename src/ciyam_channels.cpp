@@ -2550,6 +2550,60 @@ void create_datachain_info( const string& identity, size_t data_type )
    }
 }
 
+void remove_datachain_info( const string& identity )
+{
+   guard g( g_mutex );
+
+   ods_file_system ofs( storage_ods_instance( ) );
+
+   ods::bulk_write bulk_write( storage_ods_instance( ) );
+
+   ofs.set_root_folder( c_storable_folder_name_peer_data );
+
+   if( !ofs.has_folder( identity ) )
+      throw runtime_error( "datachain '" + identity + "' not found" );
+   else
+   {
+      ods::transaction ods_tx( storage_ods_instance( ) );
+
+      ofs.remove_folder( identity, 0, true );
+
+      ods_tx.commit( );
+   }
+}
+
+void set_datachain_height( const string& identity, size_t new_height )
+{
+   guard g( g_mutex );
+
+   ods_file_system ofs( storage_ods_instance( ) );
+
+   ods::bulk_write bulk_write( storage_ods_instance( ) );
+
+   ofs.set_root_folder( c_storable_folder_name_peer_data );
+
+   if( !ofs.has_folder( identity ) )
+      throw runtime_error( "datachain '" + identity + "' not found" );
+   else
+   {
+      ofs.set_folder( identity );
+
+      ods::transaction ods_tx( storage_ods_instance( ) );
+
+      int32_t height;
+      ofs.fetch_from_text_file( c_peer_data_height, height );
+
+      if( height == new_height )
+         ods_tx.rollback( );
+      else
+      {
+         ofs.store_as_text_file( c_peer_data_height, ( int32_t )new_height );
+
+         ods_tx.commit( );
+      }
+   }
+}
+
 void link_channel_to_datachain( const string& channel, const string& identity )
 {
    guard g( g_mutex );

@@ -5842,9 +5842,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool list = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_list );
          string identity( get_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_identity ) );
+         string data_type( get_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_data_type ) );
          bool height = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_height );
          string new_height( get_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_new_height ) );
-         string data_type( get_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_data_type ) );
+         bool remove = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_remove );
          bool is_link = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_link );
          bool is_unlink = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_unlink );
          string channel( get_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_channel ) );
@@ -5890,8 +5891,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                link_channel_to_datachain( channel, identity );
             else if( is_unlink )
                unlink_channel_from_datachain( channel, identity );
+            else if( remove )
+               remove_datachain_info( identity );
             else if( !data_type.empty( ) )
                create_datachain_info( identity, from_string< size_t >( data_type ) );
+            else if( !new_height.empty( ) )
+               set_datachain_height( identity, from_string< size_t >( new_height ) );
             else
             {
                size_t current_height;

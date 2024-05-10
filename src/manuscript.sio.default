@@ -197,7 +197,7 @@
  <script/>
   <name>destroy_datachain_entry
   <filename>*script*
-  <arguments>destroy_datachain_entry.cin @identity
+  <arguments>destroy_datachain_entry.cin @storage @identity
  </script>
  <script/>
   <name>destroy_peerchain_entry
@@ -232,7 +232,7 @@
  <script/>
   <name>create_blog_datachain_entry
   <filename>*script*
-  <arguments>create_blog_datachain_entry.cin @identity @description
+  <arguments>create_blog_datachain_entry.cin @storage @identity @description
  </script>
 ### [<start generated>]
 ### [<finish generated>]

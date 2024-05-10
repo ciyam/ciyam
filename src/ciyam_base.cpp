@@ -2067,6 +2067,9 @@ void perform_storage_op( storage_op op,
             exec_algos_action( "load", algos_file, "" );
          }
 
+         set_session_variable( get_special_var_name( e_special_var_prior_storage ),
+          get_raw_session_variable( get_special_var_name( e_special_var_storage ) ) );
+
          set_session_variable( get_special_var_name( e_special_var_storage ), gtp_session->p_storage_handler->get_name( ) );
       }
       catch( ... )
@@ -9476,7 +9479,9 @@ void term_storage( command_handler& cmd_handler )
          delete gtp_session->p_storage_handler;
       }
 
-      set_session_variable( get_special_var_name( e_special_var_storage ), "" );
+      set_session_variable( get_special_var_name( e_special_var_storage ),
+       get_raw_session_variable( get_special_var_name( e_special_var_prior_storage ) ) );
+
       gtp_session->p_storage_handler = g_storage_handlers[ 0 ];
    }
 }

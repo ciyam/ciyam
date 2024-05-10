@@ -1,6 +1,7 @@
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
    // [(start trigger_destroy_script)] `{`$arg_id`}
-`{`$script_arg_name`=`'@arg1`'`}`{`!`@eq`(`$arg_script_arg`,`'`'`)`$script_arg_name`=`$arg_script_arg`}\
+`{`$script_arg1`=`'@arg1`'`}`{`$script_arg2`=`'@arg2`'`}`{`$script_arg3`=`'@arg3`'`}\
+`{`!`@eq`(`$arg_script_args`,`'`'`)`{`[`$arg_script_args`%,`,`{`$script_arg\\\\#`=`'\\\\?`'`}`]`}`}\
 `{`$test_or_modifier`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`$test_or_modifier`=`'true`'`}`{`!`@eq`(`$arg_modifier`,`'`'`)`$test_or_modifier`=`'true`'`}\
 `{`$skip_or_test`=`'`'`}`{`@eq`(`$arg_skip_restore`,`'true`'`)`$skip_or_test`=`'true`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`$skip_or_test`=`'true`'`}\
 `{`$skip_test_or_modifier`=`'`'`}`{`@eq`(`$arg_skip_restore`,`'true`'`)`$skip_test_or_modifier`=`'true`'`}\
@@ -17,7 +18,11 @@
        get_special_var_name( e_special_var_key ), get_obj( ).get_key( ) );
 `{`!`@eq`(`$arg_field`,`'`'`)\
 
-      temporary_session_variable tmp_session_var( "`{`$script_arg_name`}", get_obj( ).`{`$arg_field`}( ) );
+      temporary_session_variable tmp_session_arg1_var( "`{`$script_arg1`}", get_obj( ).`{`$arg_field`}( ) );
+`}`{`!`@eq`(`$arg_ofield`,`'`'`)\
+      temporary_session_variable tmp_session_arg2_var( "`{`$script_arg2`}", get_obj( ).`{`$arg_ofield`}( ) );
+`}`{`!`@eq`(`$arg_o2field`,`'`'`)\
+      temporary_session_variable tmp_session_arg3_var( "`{`$script_arg3`}", get_obj( ).`{`$arg_o2field`}( ) );
 `}
       `{`!`@eq`(`$arg_pre_func`,`'`'`)`{`$arg_pre_func`}( ), `}run_script( "`{`$arg_script_name`}", `{`@eq`(`$arg_async`,`'`'`)false`,true`} );
 `{`!`@eq`(`$arg_add_dead_key`,`'`'`)
