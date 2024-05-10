@@ -105,7 +105,7 @@ storage_channel_list "list all existing channels"
 storage_channel_create "create a new identity channel" <val//identity><val//channel_information>
 storage_channel_destroy "destroy an existing identity channel" <val//identity>
 storage_channel_documents "list all/opened/flagged items or get height retrieved/submitted or open/close/update/prepare a channel documents area" [<opt/-open/open>|<opt/-close/close>|<opt/-opened/opened>|{<opt/-flagged/flagged>{<opt/pending/pending>|<opt/waiting/waiting>|<opt/retrieved/retrieved>|<opt/reviewing/reviewing>|<opt/submitting/submitting>}}|<opt/-height_retrieved/height_retrieved>|<opt/-height_submitted/height_submitted>|<opt/-update_retrieved/update_retrieved>|<opt/-update_submitted/update_submitted>|<opt/-prepare_for_submit/prepare_for_submit>]<val//identity>
-storage_peer_data_details "list or get/set current height else create a new or link/unlink a channel to/from a datachain" <opt/-list/list>|<val//identity>[{<opt/-height/height>|<val/-height=/new_height>|<val/-type=/data_type>}|{{<opt/-link/link>|<opt/-unlink/unlink>}<val//channel>}]
+storage_peer_data_details "list or get/set current height else create a new or link/unlink a channel to/from a datachain" <opt/-list/list>|<val//identity>[<val/-type=/data_type>|{<opt/-height/height>|<val/-height=/new_height>|<opt/-remove/remove>}|{{<opt/-link/link>|<opt/-unlink/unlink>}<val//channel>}]
 storage_transaction_start "start a transaction in the current storage"
 storage_transaction_commit "commit a transaction in the current storage"
 storage_transaction_rollback "rollback a transaction in the current storage"

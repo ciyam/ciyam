@@ -4,11 +4,12 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 @ifeq "$1" ""
-#Usage: destroy_datachain_entry.cin <identity>
+#Usage: destroy_datachain_entry.cin <storage> <identity>
 @else
 ERROR=
 ;
-IDENTITY=$1
+STORAGE=$1
+IDENTITY=$2
 ;
 .storage_init Meta
 ;
@@ -16,6 +17,10 @@ IDENTITY=$1
 .storage_term
 ;
 @ifndef $ERROR
+.storage_init $STORAGE
+.storage_peer_data_details $IDENTITY -remove
+.storage_term
+;
 ~rm -f $IDENTITY.log
 #Destroyed global datachain entry for identity '$IDENTITY'.
 @endif

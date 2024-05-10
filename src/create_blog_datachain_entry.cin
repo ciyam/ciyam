@@ -10,15 +10,26 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $2
 NUM_ARGS=@$NUM_ARGS+1
 @endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
 ;
-@ifneq "$NUM_ARGS" "2"
-#Usage: create_blog_datachain_entry.cin <identity> <description>
+@ifneq "$NUM_ARGS" "3"
+#Usage: create_blog_datachain_entry.cin <storage> <identity> <description>
 @else
+ERROR=
 ;
-IDENTITY=$1
+STORAGE=$1
+IDENTITY=$2
 DATA_TYPE=0
-DESCRIPTION=$2
+DESCRIPTION=$3
 ;
 <create_datachain_entry.cin $IDENTITY $DATA_TYPE "$DESCRIPTION"
+;
+@ifndef $ERROR
+.storage_init $STORAGE
+.storage_peer_data_details $IDENTITY -type=0
+.storage_term
+@endif
 ;
 @endif
