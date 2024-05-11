@@ -1,7 +1,7 @@
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
    // [(start trigger_destroy_script)] `{`$arg_id`}
 `{`$script_arg1`=`'@arg1`'`}`{`$script_arg2`=`'@arg2`'`}`{`$script_arg3`=`'@arg3`'`}\
-`{`!`@eq`(`$arg_script_args`,`'`'`)`{`[`$arg_script_args`%,`,`{`$script_arg\\\\#`=`'\\\\?`'`}`]`}`}\
+`{`!`@eq`(`$arg_script_args`,`'`'`)`{`[`$arg_script_args`,`{`$script_arg\\\\#`=`'\\\\?`'`}`]`}`}\
 `{`$test_or_modifier`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`$test_or_modifier`=`'true`'`}`{`!`@eq`(`$arg_modifier`,`'`'`)`$test_or_modifier`=`'true`'`}\
 `{`$skip_or_test`=`'`'`}`{`@eq`(`$arg_skip_restore`,`'true`'`)`$skip_or_test`=`'true`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`$skip_or_test`=`'true`'`}\
 `{`$skip_test_or_modifier`=`'`'`}`{`@eq`(`$arg_skip_restore`,`'true`'`)`$skip_test_or_modifier`=`'true`'`}\

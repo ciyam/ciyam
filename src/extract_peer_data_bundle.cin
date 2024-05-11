@@ -1,0 +1,35 @@
+; Copyright (c) 2024 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "1"
+#Usage: extract_peer_data_bundle.cin <identity> [<height>]
+@else
+ERROR=
+;
+IDENTITY=$1
+BLOCK_HEIGHT=$2
+;
+@ifndef $BLOCK_HEIGHT
+.file_core -header bc.$IDENTITY.zenith h
+BLOCK_HEIGHT=$OUTPUT
+@endif
+;
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+;
+.session_variable @blockchain_archive_path $FILES_AREA_DIR/$IDENTITY
+;
+<block_tree_hash.cin $IDENTITY $BLOCK_HEIGHT
+<tree_list.cin $OUTPUT 0 $IDENTITY.bun.gz
+BUNDLE_HASH=%OUTPUT:2%
+;
+<export_files.cin $BUNDLE_HASH .
+;
+@endif

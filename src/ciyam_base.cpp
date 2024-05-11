@@ -132,7 +132,7 @@ const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
 const char* const c_ui_type_repl_name = "TYPE";
 
-const char* const c_ui_submit_type_blog = "blog";
+const char* const c_ui_submit_type_none = "none";
 const char* const c_ui_submit_type_peer = "peer";
 
 const char* const c_ui_type_submit_file = "ui_TYPE_submit";
@@ -14041,11 +14041,13 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                if( submit_type.empty( ) )
                   submit_type = c_ui_submit_type_peer;
+               else if( submit_type != c_ui_submit_type_none )
+               {
+                  string submit_file( replaced( c_ui_type_submit_file, c_ui_type_repl_name, submit_type.c_str( ) ) );
 
-               string submit_file( replaced( c_ui_type_submit_file, c_ui_type_repl_name, submit_type.c_str( ) ) );
-
-               file_touch( get_web_root( ) + '/'
-                + lower( gtp_session->p_storage_handler->get_name( ) ) + '/' + submit_file, 0, true );
+                  file_touch( get_web_root( ) + '/'
+                   + lower( gtp_session->p_storage_handler->get_name( ) ) + '/' + submit_file, 0, true );
+               }
             }
          }
          else
