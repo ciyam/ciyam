@@ -1,4 +1,4 @@
-; Copyright (c) 2023-2024 CIYAM Developers
+; Copyright (c) 2024 CIYAM Developers
 ;
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -33,6 +33,7 @@ BLOG_LOG_FILE=@files::$IDENTITY.log
 ~rm $IDENTITY.log
 @endif
 ~rm $IDENTITY.bun.gz
+WEB_SUBMIT_FILE=@files:$WEBDIR:$IDENTITY.log
 @endif
 @endif
 ;

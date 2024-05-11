@@ -132,7 +132,6 @@ const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
 const char* const c_ui_type_repl_name = "TYPE";
 
-const char* const c_ui_submit_type_none = "none";
 const char* const c_ui_submit_type_peer = "peer";
 
 const char* const c_ui_type_submit_file = "ui_TYPE_submit";
@@ -14041,7 +14040,10 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                if( submit_type.empty( ) )
                   submit_type = c_ui_submit_type_peer;
-               else if( submit_type != c_ui_submit_type_none )
+               else if( submit_type == get_special_var_name( e_special_var_identity ) )
+                  submit_type = instance.get_peer_identity( );
+
+               if( submit_type != get_special_var_name( e_special_var_none ) )
                {
                   string submit_file( replaced( c_ui_type_submit_file, c_ui_type_repl_name, submit_type.c_str( ) ) );
 
