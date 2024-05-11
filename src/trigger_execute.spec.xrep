@@ -64,6 +64,11 @@ get_session_variable( "`{`$arg_session_var`}" ), `}`}get_obj( ).`{`$arg_fvalue`}
 
       `{`!`@eq`(`$arg_pre_func`,`'`'`)`{`$arg_pre_func`}( ), `}run_script( script_name,\
  `{`@eq`(`$arg_async`,`'`'`)false`,true`}, `{`@eq`(`$arg_delay`,`'`'`)false`,true`}, `{`@eq`(`$arg_logging_none`,`'`'`)false`,true`} );
+`{`!`@eq`(`$arg_oproc_arg`,`'`'`)
+      // FUTURE: The return message itself should be a module string.
+      `{`$arg_oproc_arg`} = get_obj( ).get_display_name( ) + " "
+       + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_oprocedure`} ) ) + " completed.";
+`}\
    }
    // [(finish trigger_execute)] `{`$arg_id`}
 `}

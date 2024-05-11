@@ -205,6 +205,11 @@
   <arguments>destroy_peerchain_entry.cin @identity
  </script>
  <script/>
+  <name>prepare_blog_for_submit
+  <filename>*script*
+  <arguments>prepare_blog_for_submit.cin @storage @identity
+ </script>
+ <script/>
   <name>remove_all_repo_entries
   <filename>*script*
   <arguments>remove_all_repo_entries.cin @identity
