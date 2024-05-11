@@ -6,27 +6,32 @@
 
 if [ $# -lt 3 ]; then
  echo "Usage: test_xrep_spec <spec> <section> -f <spec_arguments_file>"
- echo "   or: test_xrep_spec <spec> <section> <arg1=value1> <arg2=value2> ..."
+ echo "   or: test_xrep_spec <spec> <section> <arg1=value1> [<arg2=value2> ...]"
 else
  spec=$1
  section=$2
 
  spec_args=
 
+ # NOTE: The 'spec_args' variable needs to be assigned as an array whose
+ # elements need to be able to can contain spaces (hence setting IFS for
+ # reading a specification arguments file to only use LFs as separators).
+
  if [ "$3" == "-f" ]; then
   shift 1
   if [ ! "$3" == "" ]; then
-   spec_args=`< $3 paste -sd' '`
+   IFS=$'\n'
+   spec_args=(`< $3`)
   fi
  else
   shift 2
-  spec_args=$*
+  spec_args=("$@")
  fi
 
  if [ "$spec_args" == "" ]; then
    echo "Error: Missing spec arguments for 'test_xrep_spec'."
  else
-  ./xrep @test_spec.xrep object=$spec section=$section $spec_args
+  ./xrep @test_spec.xrep object=$spec section=$section "${spec_args[@]}"
  fi
 
 fi

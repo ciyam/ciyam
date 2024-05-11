@@ -21,16 +21,19 @@ IDENTITY=$2
 ;
 BLOG_LOG_FILE=@files::$IDENTITY.log
 @ifdef $BLOG_LOG_FILE
-./bundle $IDENTITY $IDENTITY.log
+~./bundle $IDENTITY $IDENTITY.log
 <import_files.cin . $IDENTITY.tree : $IDENTITY.bun.gz
 .storage_init $STORAGE
 @ifndef $ERROR
 <generate_next_block.cin $IDENTITY dummy $IDENTITY.tree
 @ifndef $ERROR
-.file_core -header $IDENTITY.zenith h
+<block_tree_relegate.cin $IDENTITY $IDENTITY.tree
+.file_core -header bc.$IDENTITY.zenith h
 .storage_peer_data_details $IDENTITY -height=$OUTPUT
 ~rm $IDENTITY.log
 @endif
 ~rm $IDENTITY.bun.gz
 @endif
+@endif
+;
 @endif
