@@ -188,6 +188,7 @@ const char* const c_special_variable_progress_value = "@progress_value";
 const char* const c_special_variable_restore_needed = "@restore_needed";
 const char* const c_special_variable_style_extended = "@style_extended";
 const char* const c_special_variable_sys_var_prefix = "@sys_var_prefix";
+const char* const c_special_variable_blockchain_data = "@blockchain_data";
 const char* const c_special_variable_blockchain_user = "@blockchain_user";
 const char* const c_special_variable_ciyam_list_hash = "@ciyam_list_hash";
 const char* const c_special_variable_notifier_events = "@notifier_events";
@@ -441,6 +442,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_restore_needed );
       g_special_variable_names.push_back( c_special_variable_style_extended );
       g_special_variable_names.push_back( c_special_variable_sys_var_prefix );
+      g_special_variable_names.push_back( c_special_variable_blockchain_data );
       g_special_variable_names.push_back( c_special_variable_blockchain_user );
       g_special_variable_names.push_back( c_special_variable_ciyam_list_hash );
       g_special_variable_names.push_back( c_special_variable_notifier_events );
