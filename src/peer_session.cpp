@@ -4618,6 +4618,14 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                   else
                      create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
                }
+               else if( !get_raw_session_variable(
+                get_special_var_name( e_special_var_blockchain_data ) ).empty( ) )
+               {
+                  if( has_archive )
+                     create_raw_file_in_archive( archive_identity, next_hash, file_data );
+                  else
+                     create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+               }
                else
                {
                   // NOTE: Unless both are owners only core block files should be found here.
