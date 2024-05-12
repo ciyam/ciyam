@@ -1,0 +1,94 @@
+; Copyright (c) 2024 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+<std.fissile
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "2"
+#Usage: fetch_from_datachain.cin <storage> <identity>
+@else
+ERROR=
+;
+STORAGE=$1
+IDENTITY=$2
+;
+.system_variable $$%IDENTITY%_error ""
+;
+.session_variable $IDENTITY 1
+;
+; NOTE: Wait for peers to finish syncing.
+@:WAIT_LOOP
+;
+@label WAIT_NEXT
+.session_variable -num_found $IDENTITY
+@ifeq "$OUTPUT" "1"
+@label WAIT_DONE
+@endif
+;
+@skip
+;
+@:WAIT_NEXT
+.wait 250
+!!@:WAIT_LOOP
+;
+@:WAIT_DONE
+;
+.file_core -header bc.$IDENTITY.zenith h
+@ifndef $ERROR
+ZENITH_HEIGHT=$OUTPUT
+;
+.storage_init $STORAGE
+@ifndef $ERROR
+.storage_peer_data_details $IDENTITY -height
+@ifndef $ERROR
+CURRENT_HEIGHT=$OUTPUT
+@endif
+;
+@:FETCH_LOOP
+;
+@label FETCH_NEXT
+IS_LESS=@$CURRENT_HEIGHT<$ZENITH_HEIGHT
+@ifneq "$IS_LESS" "1"
+@label FETCH_DONE
+@endif
+;
+@skip
+;
+@:FETCH_NEXT
+;
+CURRENT_HEIGHT=@$CURRENT_HEIGHT+1
+;
+<extract_peer_data_bundle.cin $IDENTITY $CURRENT_HEIGHT
+;
+BUNDLE_FILE=@files::$IDENTITY.bun.gz
+;
+@ifdef $BUNDLE_FILE
+~./unbundle $BUNDLE_FILE $IDENTITY.log
+DATA_LOG_FILE=@files::$IDENTITY.log
+@ifdef $DATA_LOG_FILE
+<$DATA_LOG_FILE
+~rm $DATA_LOG_FILE
+@endif
+~rm $BUNDLE_FILE
+@endif
+;
+.storage_peer_data_details $IDENTITY -height=$CURRENT_HEIGHT
+;
+!!@:FETCH_LOOP
+;
+@:FETCH_DONE
+;
+.storage_term
+@endif
+@endif
+;
+@endif
