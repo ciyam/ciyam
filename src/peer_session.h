@@ -72,6 +72,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 
    private:
    bool is_hub;
+   bool is_data;
    bool is_user;
 
    bool is_local;

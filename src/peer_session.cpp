@@ -3060,6 +3060,9 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 {
    bool has_hind_hash = false;
 
+   bool is_data = !get_raw_session_variable(
+    get_special_var_name( e_special_var_blockchain_data ) ).empty( );
+
    bool is_user = !get_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_user ) ).empty( );
 
@@ -3111,7 +3114,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
    if( !targeted_identity.empty( ) && ( targeted_identity[ 0 ] != '@' ) )
       is_shared = true;
 
-   if( !is_user && !is_shared && is_fetching )
+   if( !is_data && !is_user && !is_shared && is_fetching )
    {
       string stream_cipher_var_name( get_special_var_name( e_special_var_blockchain_stream_cipher ) );
 
@@ -4819,6 +4822,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       if( !zenith_tree_hash.empty( )
        && ( blockchain_height == blockchain_height_other )
+       && get_raw_session_variable( get_special_var_name( e_special_var_blockchain_data ) ).empty( )
        && get_raw_session_variable( get_special_var_name( e_special_var_blockchain_user ) ).empty( ) )
       {
          string targeted_identity( get_raw_session_variable(
@@ -5346,9 +5350,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         num_items_found = 0;
                      else
                      {
-                        bool is_user = !get_raw_session_variable(
-                         get_special_var_name( e_special_var_blockchain_user ) ).empty( );
-
                         bool is_peerchain_hub = !get_system_variable(
                          get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ).empty( );
 
@@ -6100,6 +6101,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 #endif
  :
  is_hub( false ),
+ is_data( false ),
  is_user( false ),
  is_local( false ),
  is_owner( false ),
@@ -6145,6 +6147,8 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
    if( chain_type == e_peerchain_type_hub )
       is_hub = true;
+   else if( chain_type == e_peerchain_type_data )
+      is_data = true;
    else if( chain_type == e_peerchain_type_user )
       is_user = true;
 
@@ -6429,16 +6433,26 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
                if( chain_type == e_peerchain_type_hub )
                   is_hub = true;
+               else if( chain_type == e_peerchain_type_data )
+                  is_data = true;
                else if( chain_type == e_peerchain_type_user )
                   is_user = true;
             }
          }
 
-         bool has_user = false;
-
          string unprefixed_blockchain( replaced( blockchain, c_bc_prefix, "" ) );
 
-         if( is_user )
+         bool has_data = false;
+         bool has_user = false;
+
+         if( is_data )
+         {
+            string data_zenith_tag( blockchain + c_zenith_suffix );
+
+            if( has_tag( data_zenith_tag ) )
+               has_data = true;
+         }
+         else if( is_user )
          {
             string forwards_tag( blockchain + c_zenith_suffix );
 
@@ -6452,7 +6466,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
                has_user = true;
          }
 
-         if( !has_user && !blockchains.count( blockchain ) )
+         if( !has_data && !has_user && !blockchains.count( blockchain ) )
          {
             // FUTURE: This message should be handled as a server string message.
             string error( "Unsupported peerchain identity '" + unprefixed_blockchain + "'." );
@@ -6802,6 +6816,9 @@ void peer_session::on_start( )
 
          set_session_progress_message( progress_message );
       }
+
+      if( is_data )
+         set_session_variable( get_special_var_name( e_special_var_blockchain_data ), c_true_value );
 
       if( is_user )
          set_session_variable( get_special_var_name( e_special_var_blockchain_user ), c_true_value );
