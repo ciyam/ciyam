@@ -1187,15 +1187,18 @@ void process_core_file( const string& hash, const string& blockchain )
 
             if( !primary_pubkey_hash.empty( ) )
             {
+               bool is_data = false;
                bool is_user = false;
                bool is_shared = false;
 
-               if( targeted_identity == get_special_var_name( e_special_var_peer_user ) )
+               if( targeted_identity == get_special_var_name( e_special_var_peer_data ) )
+                  is_data = true;
+               else if( targeted_identity == get_special_var_name( e_special_var_peer_user ) )
                   is_user = true;
                else if( !targeted_identity.empty( ) && targeted_identity[ 0 ] != '@' )
                   is_shared = true;
 
-               if( !is_user && !is_shared && ( block_height == "0" ) )
+               if( !is_data && !is_user && !is_shared && ( block_height == "0" ) )
                {
                   string identity( determine_identity(
                    primary_pubkey_hash + secondary_pubkey_hash + tertiary_pubkey_hash ) );
@@ -3145,7 +3148,8 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
             string identity( determine_identity(
              primary_pubkey_hash + secondary_pubkey_hash + tertiary_pubkey_hash ) );
 
-            if( targeted_identity != get_special_var_name( e_special_var_peer_user )
+            if( ( targeted_identity != get_special_var_name( e_special_var_peer_data ) )
+             && ( targeted_identity != get_special_var_name( e_special_var_peer_user ) )
              && ( identity.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 ) )
                throw runtime_error( "invalid identity value '" + identity + "' for blockchain '" + blockchain + "'" );
          }
@@ -5171,7 +5175,18 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      socket_handler.trust_level( ) = e_peer_trust_level_normal;
 
                      if( !nonce.empty( ) )
+                     {
                         add_peer_file_hash_for_get( nonce );
+
+                        if( !has_file( nonce ) )
+                        {
+                           set_session_variable( get_special_var_name(
+                            e_special_var_blockchain_is_fetching ), c_true_value );
+
+                           set_session_variable( get_special_var_name(
+                            e_special_var_blockchain_block_file_hash ), nonce );
+                        }
+                     }
                   }
                }
                else
@@ -6995,6 +7010,15 @@ void peer_session::on_start( )
                }
 
                add_peer_file_hash_for_get( block_hash );
+
+               if( !has_file( block_hash ) )
+               {
+                  set_session_variable( get_special_var_name(
+                   e_special_var_blockchain_is_fetching ), c_true_value );
+
+                  set_session_variable( get_special_var_name(
+                   e_special_var_blockchain_block_file_hash ), block_hash );
+               }
             }
          }
       }
