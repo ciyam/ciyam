@@ -31,8 +31,8 @@
 `{`$i`}    && `}state & c_modifier_`{`$arg_modifier`}`} )
 `{`$i`}   {
 `}`{`!`@eq`(`$arg_skip_submit_file`,`'`'`)\
-`{`$j`}   set_session_variable( get_special_var_name(
-`{`$j`}    e_special_var_skip_submit_file ), c_true_value );
+`{`$j`}   temporary_session_variable tmp_session_skip_submit_file(
+`{`$j`}    get_special_var_name( e_special_var_skip_submit_file ), c_true_value );
 
 `}`{`$j`}   get_obj( ).`{`$arg_procedure1`}( `{`!`@eq`(`$proc_arg`,`'`'`)`{`$proc_arg`} `});
 `{`$j`}   get_obj( ).`{`$arg_procedure2`}( `{`!`@eq`(`$proc_arg`,`'`'`)`{`$proc_arg`} `});
