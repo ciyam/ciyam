@@ -29,6 +29,41 @@ DESCRIPTION=$3
 @ifndef $ERROR
 .storage_init $STORAGE
 .storage_peer_data_details $IDENTITY -type=0
+;
+; NOTE: Touch the <identity>.log file for every active Peer Node.
+.module_list
+MODULES=$OUTPUT
+MODULES=@repstr: /\n:$MODULES
+MODULE=%MODULES:2%
+;
+.session_variable @deque
+DEQUE=$OUTPUT
+.session_variable @deque ""
+.pf $MODULE Peer_Node "Active,Identity#1 1" Identity -min
+;
+@ifndef $ERROR
+.session_variable @deque "~$OUTPUT"
+;
+@:LOOP
+;
+@label NEXT
+.session_variable @deque front
+@ifdef $OUTPUT
+~touch $OUTPUT.log
+@else
+@label END_LOOP
+@endif
+;
+@skip
+@:NEXT
+.session_variable @deque pop_front
+!!@:LOOP
+;
+@:END_LOOP
+;
+.session_variable @deque "~$DEQUE"
+;
+@endif
 .storage_term
 @endif
 ;

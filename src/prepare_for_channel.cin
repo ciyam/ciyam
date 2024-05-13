@@ -30,7 +30,6 @@ HEIGHT=@$OUTPUT+1
 @ifdef $ERROR
 .system_variable @error_$IDENTITY "$ERROR"
 @else
-;
 .module_list
 LINES=@repstr: /\n:$OUTPUT
 MODULE=%LINES:2%
@@ -59,6 +58,8 @@ BLOG_INFO_SAV_FILE=@files::$IDENTITY.blog_info.csv.sav
 ~./remove_identical $IDENTITY.blog_info.csv.sav $IDENTITY.blog_info.csv
 @endif
 ;
+@endif
+;
 .storage_channel_documents -prepare_for_submit $IDENTITY
 @ifdef $OUTPUT
 BLOCKCHAIN=$OUTPUT
@@ -71,6 +72,7 @@ ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 @endif
 .storage_term
 @endif
+;
 .system_variable @preparing_$IDENTITY ""
 @endif
 ;
