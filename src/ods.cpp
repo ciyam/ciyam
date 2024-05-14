@@ -5863,7 +5863,8 @@ int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset, const ch
 
 void ods::log_entry_commit( int64_t entry_offset, int64_t commit_offs, int64_t commit_items )
 {
-   log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
+   // NOTE: Even if "use_sync_write" is false force a sync now.
+   log_stream logf( p_impl->tranlog_file_name.c_str( ), true );
 
    log_entry tranlog_entry;
 
