@@ -5332,6 +5332,18 @@ void ods::transaction_commit( )
 #endif
          read_transaction_op( op, i );
 
+         if( p_progress )
+         {
+            date_time now( date_time::local( ) );
+            uint64_t elapsed = seconds_between( dtm, now );
+
+            if( elapsed >= p_progress->num_seconds )
+            {
+               dtm = now;
+               p_progress->output_progress( "." );
+            }
+         }
+
          if( op.data.id.get_num( ) < p_impl->rp_header_info->total_entries )
          {
             unsigned char flags = c_log_entry_item_flag_is_post_op;
@@ -5414,6 +5426,8 @@ void ods::transaction_commit( )
 
                         read_trans_data_bytes( buffer, chunk );
 
+                        // NOTE: Progress output may need to be performed
+                        // whilst writing data for objects that are large.
                         if( p_progress )
                         {
                            date_time now( date_time::local( ) );

@@ -950,7 +950,14 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       if( trans_level )
       {
          handler.issue_command_response( "commit transaction (level = " + to_string( trans_level ) + ")" );
+
+         console_progress progress;
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+         ods::bulk_write bulk( o, p_progress );
+
          trans_buffer[ trans_level - 1 ]->commit( );
+
          delete trans_buffer[ --trans_level ];
       }
       else
@@ -961,11 +968,13 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       if( trans_level )
       {
          handler.issue_command_response( "rollback transaction (level = " + to_string( trans_level ) + ")" );
+
          while( oid_stack.size( ) > trans_stack_levels[ trans_level - 1 ] )
          {
             oid_stack.pop( );
             path_strings.pop_back( );
          }
+
          delete trans_buffer[ --trans_level ];
       }
       else
