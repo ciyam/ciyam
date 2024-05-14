@@ -76,10 +76,10 @@ SKIPPED=1
 @:DONE
 @endif
 ;
-; NOTE: Only remove 'peer_needs_submit' if nothing was skipped.
+; NOTE: Only remove 'ui_peer_submit' if nothing was skipped.
 @ifndef $SKIPPED
 APP_DIR=@lower:$STORAGE
-~rm -f $WEBDIR/$APP_DIR/peer_needs_submit
+~rm -f $WEBDIR/$APP_DIR/ui_peer_submit
 @endif
 ;
 @endif
