@@ -28,7 +28,15 @@ DESCRIPTION=$3
 ;
 @ifndef $ERROR
 .storage_init $STORAGE
+;
+; NOTE: Only create peer data details if was not already created.
+.storage_peer_data_details -list
+ALL_DATA_CHAINS=$OUTPUT
+IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
+UNCHANGED=@$ALL_DATA_CHAINS=$IDENTITY_REMOVED
+@ifeq "$UNCHANGED" "1"
 .storage_peer_data_details $IDENTITY -type=0
+@endif
 ;
 ; NOTE: Touch the <identity>.log file for every active Peer Node.
 .module_list

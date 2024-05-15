@@ -4940,6 +4940,7 @@ class peer_session_command_functor : public command_functor
       clear_ignore_count = 0;
 
       blockchain_is_fetching_name = get_special_var_name( e_special_var_blockchain_is_fetching );
+      blockchain_height_other_name = get_special_var_name( e_special_var_blockchain_height_other );
       blockchain_zenith_height_name = get_special_var_name( e_special_var_blockchain_zenith_height );
       blockchain_peer_has_supporters_name = get_special_var_name( e_special_var_blockchain_peer_has_supporters );
    }
@@ -4951,6 +4952,7 @@ class peer_session_command_functor : public command_functor
    socket_command_handler& socket_handler;
 
    string blockchain_is_fetching_name;
+   string blockchain_height_other_name;
    string blockchain_zenith_height_name;
    string blockchain_peer_has_supporters_name;
 };
@@ -5705,6 +5707,30 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    bool has_issued_bye = false;
 
+   bool is_data = !get_raw_session_variable(
+    get_special_var_name( e_special_var_blockchain_data ) ).empty( );
+
+   if( is_data && had_zenith_hash )
+   {
+      if( blockchain_height == blockchain_height_other )
+      {
+         string height_to_match( to_string( blockchain_height ) );
+
+         // NOTE: End data sessions after they are all in sync.
+         if( !has_mismatched_variables_for_matching_blockchains(
+          blockchain_height_other_name, height_to_match,
+          &blockchain_zenith_height_name, &height_to_match ) )
+         {
+            has_issued_bye = true;
+            send_okay_response = false;
+
+            socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_sock_progress );
+
+            TRACE_LOG( TRACE_SESSIONS, "*** condemning session due to data session sync ***" );
+         }
+      }
+   }
+
    if( !get_raw_session_variable( get_special_var_name( e_special_var_paired_sync ) ).empty( ) )
    {
       // NOTE: For testing purposes setting this system variable will keep these sessions alive.
@@ -5712,7 +5738,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
        get_special_var_name( e_special_var_keep_user_peers_alive ) ).empty( ) )
       {
          has_issued_bye = true;
-
          send_okay_response = false;
 
          socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_sock_progress );
