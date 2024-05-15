@@ -502,6 +502,9 @@ std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name, 
 std::string get_session_variable_from_matching_blockchain( const std::string& name,
  const std::string& check_name, const std::string& check_value, bool matching_own_ip_address = false );
 
+bool has_mismatched_variables_for_matching_blockchains( const std::string& name,
+ const std::string& value, const std::string* p_name = 0, const std::string* p_value = 0 );
+
 void CIYAM_BASE_DECL_SPEC set_session_variable(
  const std::string& name, const std::string& value,
  bool* p_set_special_temporary = 0, command_handler* p_command_handler = 0, const std::string* p_sess_id = 0 );

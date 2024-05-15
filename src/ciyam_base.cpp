@@ -8358,6 +8358,64 @@ string get_session_variable_from_matching_blockchain( const string& name,
    return retval;
 }
 
+bool has_mismatched_variables_for_matching_blockchains(
+ const string& name, const string& value, const string* p_name, const string* p_value )
+{
+   guard g( g_session_mutex );
+
+   if( !gtp_session )
+      throw runtime_error( "unexpected call to 'has_mismatched_variables_for_matching_blockchains' from non-session" );
+
+   bool retval = false;
+
+   string own_blockchain( gtp_session->blockchain );
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ] && ( g_sessions[ i ] != gtp_session ) )
+      {
+         if( g_sessions[ i ]->blockchain != own_blockchain )
+            continue;
+
+         bool has_name = g_sessions[ i ]->variables.count( name );
+
+         if( has_name && value.empty( ) )
+         {
+            retval = true;
+            break;
+         }
+
+         if( has_name && ( g_sessions[ i ]->variables[ name ] != value ) )
+         {
+            retval = true;
+            break;
+         }
+
+         if( p_name )
+         {
+            has_name = g_sessions[ i ]->variables.count( *p_name );
+
+            if( !has_name && ( !p_value || p_value->empty( ) ) )
+               continue;
+
+            if( has_name && ( !p_value || p_value->empty( ) ) )
+            {
+               retval = true;
+               break;
+            }
+
+            if( g_sessions[ i ]->variables[ *p_name ] != *p_value )
+            {
+               retval = true;
+               break;
+            }
+         }
+      }
+   }
+
+   return retval;
+}
+
 void set_session_variable( const string& name, const string& value,
  bool* p_set_special_temporary, command_handler* p_command_handler, const string* p_sess_id )
 {
