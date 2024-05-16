@@ -160,6 +160,11 @@
   <arguments>prepare_for_channel.cin @storage @identity
  </script>
  <script/>
+  <name>link_datachain_entry
+  <filename>*script*
+  <arguments>link_datachain_entry.cin @storage @channel @identity_and_type
+ </script>
+ <script/>
   <name>create_hosted_channel
   <filename>*script*
   <arguments>create_hosted_channel.cin @identity @other_identity @shared_secret_hash

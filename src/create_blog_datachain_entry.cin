@@ -33,8 +33,7 @@ DESCRIPTION=$3
 .storage_peer_data_details -list
 ALL_DATA_CHAINS=$OUTPUT
 IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
-UNCHANGED=@$ALL_DATA_CHAINS=$IDENTITY_REMOVED
-@ifeq "$UNCHANGED" "1"
+@ifeq "$ALL_DATA_CHAINS" "$IDENTITY_REMOVED"
 .storage_peer_data_details $IDENTITY -type=0
 @endif
 ;

@@ -2468,6 +2468,22 @@ void list_datachains( vector< string >& datachains )
    ofs.list_folders( datachains );
 }
 
+bool has_datachain( const string& identity )
+{
+   guard g( g_mutex );
+
+   ods_file_system ofs( storage_ods_instance( ) );
+
+   ods::bulk_read bulk_read( storage_ods_instance( ) );
+
+   ofs.set_root_folder( c_storable_folder_name_peer_data );
+
+   if( !ofs.has_folder( identity ) )
+      throw runtime_error( "datachain '" + identity + "' not found" );
+
+   return ofs.has_folder( identity );
+}
+
 string get_datachain_info( const string& identity, size_t* p_data_type, size_t* p_height )
 {
    guard g( g_mutex );
@@ -2603,6 +2619,40 @@ void set_datachain_height( const string& identity, size_t new_height )
       }
    }
 }
+
+bool is_linked_to_datachain( const string& channel, const string& identity )
+{
+   guard g( g_mutex );
+
+   ods_file_system ofs( storage_ods_instance( ) );
+
+   ods::bulk_read bulk_read( storage_ods_instance( ) );
+
+   vector< string > folders;
+
+   ofs.set_root_folder( c_storable_folder_name_peer_data );
+
+   bool retval = false;
+
+   if( ofs.has_folder( identity ) )
+   {
+      ofs.set_folder( identity );
+
+      string channels;
+
+      ofs.fetch_from_text_file( c_peer_data_channels, channels );
+
+      set< string > all_channels;
+
+      if( !channels.empty( ) )
+         split( channels, all_channels );
+
+      retval = all_channels.count( channel );
+   }
+
+   return retval;
+}
+
 
 void link_channel_to_datachain( const string& channel, const string& identity )
 {

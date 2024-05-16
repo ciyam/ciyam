@@ -136,12 +136,16 @@ inline std::string storage_channel_documents_submitting( const std::string& iden
 void CIYAM_BASE_DECL_SPEC list_datachains( std::ostream& os );
 void CIYAM_BASE_DECL_SPEC list_datachains( std::vector< std::string >& datachains );
 
+bool CIYAM_BASE_DECL_SPEC has_datachain( const std::string& identity );
+
 std::string CIYAM_BASE_DECL_SPEC get_datachain_info( const std::string& identity, size_t* p_data_type = 0, size_t* p_height = 0 );
 
 void CIYAM_BASE_DECL_SPEC create_datachain_info( const std::string& identity, size_t data_type );
 void CIYAM_BASE_DECL_SPEC remove_datachain_info( const std::string& identity );
 
 void CIYAM_BASE_DECL_SPEC set_datachain_height( const std::string& identity, size_t new_height );
+
+bool CIYAM_BASE_DECL_SPEC is_linked_to_datachain( const std::string& channel, const std::string& identity );
 
 void CIYAM_BASE_DECL_SPEC link_channel_to_datachain( const std::string& channel, const std::string& identity );
 void CIYAM_BASE_DECL_SPEC unlink_channel_from_datachain( const std::string& channel, const std::string& identity );
