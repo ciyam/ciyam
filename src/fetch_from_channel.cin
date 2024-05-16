@@ -182,7 +182,7 @@ BLOG_INFO_FILE=@files::$IN_REVERSE.blog_info.csv
 @ifdef $BLOG_INFO_FILE
 .session_variable @key_suffix $IDENTITY
 .session_variable @key_prefix_is_first 1
-.perform_bulk_ops admin @now $MODULE Peer_Node_Watch $IN_REVERSE.blog_info.csv -f=Peer_Node=$IDENTITY,Data_Type=0
+.perform_bulk_ops admin @now $MODULE Peer_Node_Vessel $IN_REVERSE.blog_info.csv -f=Peer_Node=$IDENTITY,Data_Type=0
 ~rm $IN_REVERSE.blog_info.csv
 ~rm $IN_REVERSE.blog_info.log
 @endif

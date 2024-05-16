@@ -1,0 +1,64 @@
+; Copyright (c) 2024 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "3"
+#Usage: link_datachain_entry.cin <storage> <channel> <identity:type>
+@else
+ERROR=
+;
+STORAGE=$1
+CHANNEL=$2
+IDENTITY_AND_TYPE=$3
+;
+IDENTITY=
+DATA_TYPE=
+;
+IDENTITY_AND_TYPE=@repstr:\:/\n:$IDENTITY_AND_TYPE
+;
+IDENTITY=%IDENTITY_AND_TYPE:1%
+DATA_TYPE=%IDENTITY_AND_TYPE:2%
+;
+@ifndef $DATA_TYPE
+ERROR=Unexpected datachain type missing for '$IDENTITY'.
+#Error: $ERROR
+@else
+;
+.storage_init $STORAGE
+@ifndef $ERROR
+.storage_channel_list
+ALL_CHANNELS=$OUTPUT
+IDENTITY_REMOVED=@repstr:$CHANNEL/:$ALL_CHANNELS
+@ifeq "$ALL_CHANNELS" "$IDENTITY_REMOVED"
+ERROR=Unexpected unknown channel '$CHANNEL'.
+#Error: $ERROR
+@else
+;
+.storage_peer_data_details -list
+ALL_DATA_CHAINS=$OUTPUT
+IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
+@ifeq "$ALL_DATA_CHAINS" "$IDENTITY_REMOVED"
+.storage_peer_data_details $IDENTITY -type=$DATA_TYPE
+~mkdir files/$IDENTITY
+.file_archive -add files/$IDENTITY 1GB $IDENTITY
+@endif
+.storage_peer_data_details $IDENTITY -link $CHANNEL
+;
+@endif
+.storage_term
+@endif
+@endif
+;
+@endif
