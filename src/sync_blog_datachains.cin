@@ -1,0 +1,113 @@
+; Copyright (c) 2024 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "1"
+#Usage: sync_blog_datachains.cin <storage>
+@else
+ERROR=
+;
+STORAGE=$1
+;
+.storage_init $STORAGE
+;
+@ifndef $ERROR
+.module_list
+MODULES=$OUTPUT
+MODULES=@repstr: /\n:$MODULES
+MODULE=%MODULES:2%
+;
+.storage_peer_data_details -list -type=0
+DATA_CHAINS=$OUTPUT
+.storage_term
+;
+@ifdef $DATA_CHAINS
+.session_variable @deque "~$DATA_CHAINS"
+;
+@:LOOP
+;
+@label NEXT
+.session_variable @deque front
+NEXT_CHAIN=$OUTPUT
+;
+@ifndef $NEXT_CHAIN
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+.storage_init $STORAGE
+.storage_peer_data_details $NEXT_CHAIN
+PEER_DATA_INFO=@repstr: /\n:$OUTPUT
+.storage_term
+;
+CHANNELS=%PEER_DATA_INFO:3%
+@ifdef $CHANNELS
+ANY_PEER_CONNECTS=
+;
+@:CHANNEL_LOOP
+;
+@label NEXT_CHANNEL
+;
+LINES=@repstr:,/\n:$CHANNELS
+NEXT_IDENTITY=%LINES:1%
+;
+REMAINING=@repstr:$NEXT_IDENTITY/:$CHANNELS
+@ifeq "$REMAINING" ""
+@label END_CHANNEL_LOOP
+@endif
+;
+.storage_init $STORAGE
+.pf $MODULE Peer_Node "Active,Identity#2 1,$NEXT_IDENTITY" Submit_Chain_Id,Host_Name,Port_Number -min
+LINES=@repstr:,/\n:$OUTPUT
+.storage_term
+;
+@ifdef $LINES
+HASH_ID=%LINES:1%
+HOST_NAME=%LINES:2%
+HOST_PORT=%LINES:3%
+;
+; NOTE: Use the channel's secret hash for a secure peer connection.
+.system_variable @secret_hash_$HASH_ID
+SECRET_HASH=$OUTPUT
+@ifdef $SECRET_HASH
+.session_variable @secret_hash $SECRET_HASH
+@endif
+;
+ANY_PEER_CONNECTS=1
+.peer_connect $NEXT_CHAIN $HOST_NAME-$HOST_PORT -data
+;
+@endif
+;
+@skip
+;
+@:NEXT_CHANNEL
+;
+CHANNELS=@repstr:$NEXT_IDENTITY,/:$CHANNELS
+;
+!!@:CHANNEL_LOOP
+@:END_CHANNEL_LOOP
+;
+@ifdef ANY_PEER_CONNECTS
+.wait 250
+.session_variable @errors_only 1
+.run_script !fetch_from_datachain "@storage=$STORAGE,@identity=$NEXT_CHAIN"
+@endif
+;
+@endif
+;
+.session_variable @deque pop_front
+!!@:LOOP
+@:END_LOOP
+;
+@endif
+@endif
+;
+@endif
