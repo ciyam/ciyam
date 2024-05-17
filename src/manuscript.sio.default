@@ -160,9 +160,19 @@
   <arguments>prepare_for_channel.cin @storage @identity
  </script>
  <script/>
+  <name>fetch_from_datachain
+  <filename>*script*
+  <arguments>fetch_from_datachain.cin @storage @identity
+ </script>
+ <script/>
   <name>link_datachain_entry
   <filename>*script*
   <arguments>link_datachain_entry.cin @storage @channel @identity_and_type
+ </script>
+ <script/>
+  <name>sync_blog_datachains
+  <filename>*script*
+  <arguments>sync_blog_datachains.cin @storage
  </script>
  <script/>
   <name>create_hosted_channel
