@@ -6623,19 +6623,28 @@ string process_script_args( const string& raw_args, bool use_system_variables )
       vector< string > all_args;
       split( raw_args, all_args, ' ' );
 
+      size_t adjust = 0;
+
       for( size_t i = 0; i < all_args.size( ); i++ )
       {
          string next_arg( all_args[ i ] );
 
          if( !next_arg.empty( ) && next_arg[ 0 ] == '@' )
          {
+            // NOTE: For application protocol scripts the first argument is expected
+            // to be the script name (and thus not start with a '@' character) so if
+            // the first argument does begin with an '@' then adjust the numbering.
+            if( i == 0 )
+               ++adjust;
+
             if( use_system_variables )
                next_arg = get_raw_system_variable( next_arg );
             else
             {
                // NOTE: Always use "@argX" value if found otherwise will use the value
                // of the session variable that matches the name of the script argument.
-               string arg_value( get_raw_session_variable( "@arg" + to_string( i ) ) );
+               string arg_value(
+                get_raw_session_variable( "@arg" + to_string( i + adjust ) ) );
 
                if( !arg_value.empty( ) )
                   next_arg = arg_value;
