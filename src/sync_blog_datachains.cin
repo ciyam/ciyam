@@ -136,6 +136,8 @@ BLOG_ENTRY_CHANGING_FILE=@files:$STORAGE_WEB_DIR:$UI_BLOG_ENTRY_CHANGING
 ~rm $STORAGE_WEB_DIR/$UI_BLOG_ENTRY_CHANGING
 @endif
 ;
+.system_variable @blog_sync_datachains ""
+;
 @endif
 ;
 @endif
