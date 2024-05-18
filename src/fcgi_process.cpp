@@ -3020,6 +3020,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       else if( cmd == c_cmd_list || cmd == c_cmd_plist )
       {
          string list_perm( list.perm );
+
          if( !list_perm.empty( ) && list_perm[ 0 ] == '!' )
             list_perm.erase( 0, 1 );
 
@@ -3108,6 +3109,13 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   extra_content << "</td></tr></table>\n";
                }
             }
+
+            string ui_class_changing( c_ui_class_changing );
+
+            replace( ui_class_changing, c_ui_class_marker, lower( list.mclass ) );
+
+            if( file_exists( ui_class_changing ) )
+               has_any_changing_records = true;
 
             output_list_form( extra_content, list, session_id, uselect, error_message,
              ( cmd == c_cmd_plist ), cookies_permitted, true, false, list_selections,

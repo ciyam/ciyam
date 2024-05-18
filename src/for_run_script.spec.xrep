@@ -15,6 +15,10 @@
       temporary_session_variable tmp_session_errors_only(
        get_special_var_name( e_special_var_errors_only ), c_true_value );
 `}
+`{`@eq`(`$arg_ui_class_changing`,`'true`'`)\
+      touch_web_file( "ui_" + lower( get_obj( ).get_class_name( ) ) + "_changing" );
+
+`}\
       run_script( "`{`$arg_script`}",\
  `{`@eq`(`$arg_async`,`'`'`)false`,true`}, false, `{`@eq`(`$arg_logging_none`,`'`'`)false`,true`}, `{`@eq`(`$arg_sleep_after`,`'`'`)false`,true`} );
    }

@@ -1455,7 +1455,7 @@ void output_actions( ostream& os,
  const string& class_id, const string& class_name, const string& actions_value,
  const string& owner, const string& session_id, const string& user_select_key,
  const string& listarg, bool using_session_cookie, bool use_url_checksum, bool has_hashval,
- string* p_default, const string* p_pfield )
+ string* p_default, const string* p_pfield, bool is_changing )
 {
    const module_info& mod_info( *get_storage_info( ).modules_index.find( src.module )->second );
 
@@ -1466,16 +1466,18 @@ void output_actions( ostream& os,
 
    string key( key_and_version );
    string::size_type pos = key.find( ' ' );
+
    if( pos != string::npos )
       key.erase( pos );
 
    // NOTE: Full action syntax is as follows (spaces are just here for clarity):
    //
-   // [*?][@~#%] [<][>] [!][^][-][_][/] Id[+arg1+arg2...] [$class[.field[=@user|value]]] [[%|*]@id|value]] [&[!]perm]
+   // [*?][@~#%] [<][>] [:] [+][-][!][^][_][/] Id[+arg1+arg2...] [$class[.field[=@user|value]]] [[%|*]@id|value]] [&[!]perm]
    //
    // where args can be: @rfields|@rvalues|value
 
    size_t num_actions_output = 0;
+
    for( size_t i = 0; i < actions.size( ); i++ )
    {
       if( i > 0 )
@@ -1493,6 +1495,7 @@ void output_actions( ostream& os,
       string child_class, child_field;
 
       pos = next_action.find( '&' );
+
       if( pos != string::npos )
       {
          if( !has_permission( next_action.substr( pos + 1 ), sess_info ) )
@@ -1502,6 +1505,7 @@ void output_actions( ostream& os,
       }
 
       pos = next_action.find( '$' );
+
       if( pos != string::npos )
       {
          child_class = next_action.substr( pos + 1 );
@@ -1550,6 +1554,7 @@ void output_actions( ostream& os,
       }
 
       string action( c_act_exec );
+
       bool needs_editing = false;
       bool needs_confirmation = false;
 
@@ -1601,6 +1606,7 @@ void output_actions( ostream& os,
       }
 
       bool go_back = false;
+
       if( next_action[ 0 ] == '<' )
       {
          go_back = true;
@@ -1608,9 +1614,18 @@ void output_actions( ostream& os,
       }
 
       bool is_default = false;
+
       if( next_action[ 0 ] == '>' )
       {
          is_default = true;
+         next_action.erase( 0, 1 );
+      }
+
+      if( next_action[ 0 ] == ':' )
+      {
+         if( is_changing )
+            continue;
+
          next_action.erase( 0, 1 );
       }
 

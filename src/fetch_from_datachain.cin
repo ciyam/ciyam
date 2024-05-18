@@ -86,6 +86,12 @@ DATA_LOG_FILE=@files::$IDENTITY.log
 @:FETCH_DONE
 ;
 .storage_term
+;
+.system_variable @datachain_fetching
+@ifdef $OUTPUT
+.system_variable @datachain_fetching @decrement
+@endif
+;
 @endif
 @endif
 ;

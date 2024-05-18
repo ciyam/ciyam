@@ -1079,7 +1079,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_id=$specification_\\0_id arg_procedure=$specification_\\0_procedure arg_script=$specification_\\0_script\
  arg_skip_restore=$specification_\\0_skip_restore arg_async=$specification_\\0_async\
  arg_sleep_after=$specification_\\0_sleep_after arg_logging_none=$specification_\\0_logging_none\
- arg_logging_errors=$specification_\\0_logging_errors`}\
+ arg_logging_errors=$specification_\\0_logging_errors arg_ui_class_changing=$specification_\\0_ui_class_changing`}\
 `,\
 `@eq`(`'\\1`'`,`'for_send_email_notification`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_send_email_notification.spec.xrep section=procedure module_name=$module_name class_name=$class_name\

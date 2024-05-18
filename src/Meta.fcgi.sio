@@ -4824,6 +4824,14 @@
      <modifiers>800000:relegate,2000:relegate,200000000:relegate
     </field>
     <field/>
+     <name>field_list_field_hide_if_is_changing
+     <field>124137
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>800000:relegate,2000:relegate
+    </field>
+    <field/>
      <name>field_list_field_non_instance_procedure
      <field>124127
      <ftype>bool

@@ -1606,6 +1606,7 @@ void output_list_form( ostream& os,
                string new_checksum_value;
 
                string act( c_act_del );
+
                if( extras.count( c_list_type_extra_reverse_del ) )
                   act = c_act_rdel;
 
@@ -1708,6 +1709,15 @@ void output_list_form( ostream& os,
                         continue;
                      else
                         next_action.erase( 0, 1 );
+                  }
+
+                  // NOTE: Actions starting with ':' are not output if "has_any_changing".
+                  if( next_action[ 0 ] == ':' )
+                  {
+                     if( has_any_changing )
+                        continue;
+
+                     next_action.erase( 0, 1 );
                   }
 
                   // NOTE: Actions starting with '+' will retain the list row "checks".
@@ -3076,8 +3086,8 @@ void output_list_form( ostream& os,
             if( !is_printable && allow_list_actions
              && !cell_data.empty( ) && !sess_info.is_read_only && !sess_info.user_id.empty( ) )
                output_actions( os, source, cmd, parent_key, sess_info, ident,
-                key_and_version, source.lici->second->cid, source.lici->second->mclass, cell_data, "",
-                session_id, user_select_key, listarg, using_session_cookie, use_url_checksum, has_hashval, 0, &source.pfield );
+                key_and_version, source.lici->second->cid, source.lici->second->mclass, cell_data, "", session_id,
+                user_select_key, listarg, using_session_cookie, use_url_checksum, has_hashval, 0, &source.pfield, has_any_changing );
             else
                os << c_nbsp;
 

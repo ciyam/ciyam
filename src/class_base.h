@@ -1237,6 +1237,8 @@ std::string CIYAM_BASE_DECL_SPEC get_app_file( const std::string& module_name );
 
 bool CIYAM_BASE_DECL_SPEC has_web_file( const std::string& file_name );
 
+void CIYAM_BASE_DECL_SPEC touch_web_file( const std::string& file_name, bool only_if_exists = false );
+
 std::string CIYAM_BASE_DECL_SPEC get_attached_file_dir( );
 
 std::string CIYAM_BASE_DECL_SPEC get_attached_file_path(

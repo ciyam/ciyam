@@ -23,6 +23,9 @@ MODULES=$OUTPUT
 MODULES=@repstr: /\n:$MODULES
 MODULE=%MODULES:2%
 ;
+.storage_web_root -expand
+STORAGE_WEB_DIR=$OUTPUT
+;
 .storage_peer_data_details -list -type=0
 DATA_CHAINS=$OUTPUT
 .storage_term
@@ -96,8 +99,8 @@ CHANNELS=@repstr:$NEXT_IDENTITY,/:$CHANNELS
 @:END_CHANNEL_LOOP
 ;
 @ifdef ANY_PEER_CONNECTS
-.wait 250
 .session_variable @errors_only 1
+.system_variable @datachain_fetching @increment
 .run_script !fetch_from_datachain "@storage=$STORAGE,@identity=$NEXT_CHAIN"
 @endif
 ;
@@ -108,6 +111,31 @@ CHANNELS=@repstr:$NEXT_IDENTITY,/:$CHANNELS
 @:END_LOOP
 ;
 @endif
+;
+@:WAIT_LOOP
+;
+.wait 250
+;
+@label NEXT_WAIT
+.system_variable @datachain_fetching
+@ifndef $OUTPUT
+@label END_WAIT_LOOP
+@endif
+;
+@skip
+:
+@:NEXT_WAIT
+;
+!!@:WAIT_LOOP
+@:END_WAIT_LOOP
+;
+UI_BLOG_ENTRY_CHANGING=ui_blog_entry_changing
+BLOG_ENTRY_CHANGING_FILE=@files:$STORAGE_WEB_DIR:$UI_BLOG_ENTRY_CHANGING
+;
+@ifdef $BLOG_ENTRY_CHANGING_FILE
+~rm $STORAGE_WEB_DIR/$UI_BLOG_ENTRY_CHANGING
+@endif
+;
 @endif
 ;
 @endif

@@ -175,6 +175,7 @@ const char* const c_field_id_Class = "302110";
 const char* const c_field_id_Exact_Match_Only = "124128";
 const char* const c_field_id_Exclude_In_Use_FK = "124107";
 const char* const c_field_id_Font_Size = "124130";
+const char* const c_field_id_Hide_If_Is_Changing = "124137";
 const char* const c_field_id_Include_Key_Additions = "124122";
 const char* const c_field_id_Label_Class = "124131";
 const char* const c_field_id_Label_Source = "124120";
@@ -232,6 +233,7 @@ const char* const c_field_name_Class = "Class";
 const char* const c_field_name_Exact_Match_Only = "Exact_Match_Only";
 const char* const c_field_name_Exclude_In_Use_FK = "Exclude_In_Use_FK";
 const char* const c_field_name_Font_Size = "Font_Size";
+const char* const c_field_name_Hide_If_Is_Changing = "Hide_If_Is_Changing";
 const char* const c_field_name_Include_Key_Additions = "Include_Key_Additions";
 const char* const c_field_name_Label_Class = "Label_Class";
 const char* const c_field_name_Label_Source = "Label_Source";
@@ -289,6 +291,7 @@ const char* const c_field_display_name_Class = "field_list_field_class";
 const char* const c_field_display_name_Exact_Match_Only = "field_list_field_exact_match_only";
 const char* const c_field_display_name_Exclude_In_Use_FK = "field_list_field_exclude_in_use_fk";
 const char* const c_field_display_name_Font_Size = "field_list_field_font_size";
+const char* const c_field_display_name_Hide_If_Is_Changing = "field_list_field_hide_if_is_changing";
 const char* const c_field_display_name_Include_Key_Additions = "field_list_field_include_key_additions";
 const char* const c_field_display_name_Label_Class = "field_list_field_label_class";
 const char* const c_field_display_name_Label_Source = "field_list_field_label_source";
@@ -331,7 +334,7 @@ const char* const c_field_display_name_Use_Source_Parent = "field_list_field_use
 const char* const c_field_display_name_Use_Type_Field = "field_list_field_use_type_field";
 const char* const c_field_display_name_View_Parent_Extra = "field_list_field_view_parent_extra";
 
-const int c_num_fields = 56;
+const int c_num_fields = 57;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -368,6 +371,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "124134",
    "124135",
    "124136",
+   "124137",
    "302100",
    "302110",
    "302115",
@@ -410,6 +414,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Exact_Match_Only",
    "Exclude_In_Use_FK",
    "Font_Size",
+   "Hide_If_Is_Changing",
    "Include_Key_Additions",
    "Label_Class",
    "Label_Source",
@@ -584,6 +589,7 @@ string g_default_Class = string( );
 bool g_default_Exact_Match_Only = bool( 0 );
 bool g_default_Exclude_In_Use_FK = bool( 0 );
 int g_default_Font_Size = int( 0 );
+bool g_default_Hide_If_Is_Changing = bool( 0 );
 string g_default_Include_Key_Additions = string( );
 int g_default_Label_Class = int( 0 );
 int g_default_Label_Source = int( 0 );
@@ -1251,6 +1257,12 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
          string_getter< int >( cmd_handler.p_Meta_List_Field->Font_Size( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Hide_If_Is_Changing || field_name == c_field_name_Hide_If_Is_Changing )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_List_Field->Hide_If_Is_Changing( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Include_Key_Additions || field_name == c_field_name_Include_Key_Additions )
       {
          handled = true;
@@ -1612,6 +1624,13 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
          handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Font_Size, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Hide_If_Is_Changing || field_name == c_field_name_Hide_If_Is_Changing )
+      {
+         handled = true;
+         func_string_setter< Meta_List_Field, bool >(
+          *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Hide_If_Is_Changing, field_value );
       }
 
       if( !handled && field_name == c_field_id_Include_Key_Additions || field_name == c_field_name_Include_Key_Additions )
@@ -2018,6 +2037,9 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
 
    int impl_Font_Size( ) const { return lazy_fetch( p_obj ), v_Font_Size; }
    void impl_Font_Size( int Font_Size ) { v_Font_Size = Font_Size; }
+
+   bool impl_Hide_If_Is_Changing( ) const { return lazy_fetch( p_obj ), v_Hide_If_Is_Changing; }
+   void impl_Hide_If_Is_Changing( bool Hide_If_Is_Changing ) { v_Hide_If_Is_Changing = Hide_If_Is_Changing; }
 
    const string& impl_Include_Key_Additions( ) const { return lazy_fetch( p_obj ), v_Include_Key_Additions; }
    void impl_Include_Key_Additions( const string& Include_Key_Additions ) { sanity_check( Include_Key_Additions ); v_Include_Key_Additions = Include_Key_Additions; }
@@ -2860,6 +2882,7 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
    bool v_Exact_Match_Only;
    bool v_Exclude_In_Use_FK;
    int v_Font_Size;
+   bool v_Hide_If_Is_Changing;
    string v_Include_Key_Additions;
    int v_Label_Class;
    int v_Label_Source;
@@ -3163,166 +3186,170 @@ string Meta_List_Field::impl::get_field_value( int field ) const
       break;
 
       case 15:
-      retval = to_string( impl_Include_Key_Additions( ) );
+      retval = to_string( impl_Hide_If_Is_Changing( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Label_Class( ) );
+      retval = to_string( impl_Include_Key_Additions( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Label_Source( ) );
+      retval = to_string( impl_Label_Class( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Label_Source_Child( ) );
+      retval = to_string( impl_Label_Source( ) );
       break;
 
       case 19:
-      retval = to_string( impl_Link_Empty_Restriction( ) );
+      retval = to_string( impl_Label_Source_Child( ) );
       break;
 
       case 20:
-      retval = to_string( impl_Link_Permission( ) );
+      retval = to_string( impl_Link_Empty_Restriction( ) );
       break;
 
       case 21:
-      retval = to_string( impl_Link_Restriction( ) );
+      retval = to_string( impl_Link_Permission( ) );
       break;
 
       case 22:
-      retval = to_string( impl_Link_Type( ) );
+      retval = to_string( impl_Link_Restriction( ) );
       break;
 
       case 23:
-      retval = to_string( impl_List( ) );
+      retval = to_string( impl_Link_Type( ) );
       break;
 
       case 24:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_List( ) );
       break;
 
       case 25:
-      retval = to_string( impl_Non_Instance_Procedure( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 26:
-      retval = to_string( impl_Notes_Truncation( ) );
+      retval = to_string( impl_Non_Instance_Procedure( ) );
       break;
 
       case 27:
-      retval = to_string( impl_Omit_Versions( ) );
+      retval = to_string( impl_Notes_Truncation( ) );
       break;
 
       case 28:
-      retval = to_string( impl_Order( ) );
+      retval = to_string( impl_Omit_Versions( ) );
       break;
 
       case 29:
-      retval = to_string( impl_Orientation( ) );
+      retval = to_string( impl_Order( ) );
       break;
 
       case 30:
-      retval = to_string( impl_Parent_Class( ) );
+      retval = to_string( impl_Orientation( ) );
       break;
 
       case 31:
-      retval = to_string( impl_Print_Type( ) );
+      retval = to_string( impl_Parent_Class( ) );
       break;
 
       case 32:
-      retval = to_string( impl_Procedure( ) );
+      retval = to_string( impl_Print_Type( ) );
       break;
 
       case 33:
-      retval = to_string( impl_Procedure_Args( ) );
+      retval = to_string( impl_Procedure( ) );
       break;
 
       case 34:
-      retval = to_string( impl_Restriction_Field( ) );
+      retval = to_string( impl_Procedure_Args( ) );
       break;
 
       case 35:
-      retval = to_string( impl_Restriction_Spec( ) );
+      retval = to_string( impl_Restriction_Field( ) );
       break;
 
       case 36:
-      retval = to_string( impl_Restriction_Value( ) );
+      retval = to_string( impl_Restriction_Spec( ) );
       break;
 
       case 37:
-      retval = to_string( impl_Retain_Selected_Rows( ) );
+      retval = to_string( impl_Restriction_Value( ) );
       break;
 
       case 38:
-      retval = to_string( impl_Reverse_Order( ) );
+      retval = to_string( impl_Retain_Selected_Rows( ) );
       break;
 
       case 39:
-      retval = to_string( impl_Search_Option_Limit( ) );
+      retval = to_string( impl_Reverse_Order( ) );
       break;
 
       case 40:
-      retval = to_string( impl_Select_Key_Exclusions( ) );
+      retval = to_string( impl_Search_Option_Limit( ) );
       break;
 
       case 41:
-      retval = to_string( impl_Sort_Manually( ) );
+      retval = to_string( impl_Select_Key_Exclusions( ) );
       break;
 
       case 42:
-      retval = to_string( impl_Source_Child( ) );
+      retval = to_string( impl_Sort_Manually( ) );
       break;
 
       case 43:
-      retval = to_string( impl_Source_Child_Class( ) );
+      retval = to_string( impl_Source_Child( ) );
       break;
 
       case 44:
-      retval = to_string( impl_Source_Field( ) );
+      retval = to_string( impl_Source_Child_Class( ) );
       break;
 
       case 45:
-      retval = to_string( impl_Source_Grandchild( ) );
+      retval = to_string( impl_Source_Field( ) );
       break;
 
       case 46:
-      retval = to_string( impl_Source_Parent( ) );
+      retval = to_string( impl_Source_Grandchild( ) );
       break;
 
       case 47:
-      retval = to_string( impl_Source_Parent_Class( ) );
+      retval = to_string( impl_Source_Parent( ) );
       break;
 
       case 48:
-      retval = to_string( impl_Switch_Type( ) );
+      retval = to_string( impl_Source_Parent_Class( ) );
       break;
 
       case 49:
-      retval = to_string( impl_Trigger_Option( ) );
+      retval = to_string( impl_Switch_Type( ) );
       break;
 
       case 50:
-      retval = to_string( impl_Type( ) );
+      retval = to_string( impl_Trigger_Option( ) );
       break;
 
       case 51:
-      retval = to_string( impl_Use_Child_Rel_Source_Parent( ) );
+      retval = to_string( impl_Type( ) );
       break;
 
       case 52:
-      retval = to_string( impl_Use_In_Text_Search_Title( ) );
+      retval = to_string( impl_Use_Child_Rel_Source_Parent( ) );
       break;
 
       case 53:
-      retval = to_string( impl_Use_Source_Parent( ) );
+      retval = to_string( impl_Use_In_Text_Search_Title( ) );
       break;
 
       case 54:
-      retval = to_string( impl_Use_Type_Field( ) );
+      retval = to_string( impl_Use_Source_Parent( ) );
       break;
 
       case 55:
+      retval = to_string( impl_Use_Type_Field( ) );
+      break;
+
+      case 56:
       retval = to_string( impl_View_Parent_Extra( ) );
       break;
 
@@ -3398,166 +3425,170 @@ void Meta_List_Field::impl::set_field_value( int field, const string& value )
       break;
 
       case 15:
-      func_string_setter< Meta_List_Field::impl, string >( *this, &Meta_List_Field::impl::impl_Include_Key_Additions, value );
+      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Hide_If_Is_Changing, value );
       break;
 
       case 16:
-      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Label_Class, value );
+      func_string_setter< Meta_List_Field::impl, string >( *this, &Meta_List_Field::impl::impl_Include_Key_Additions, value );
       break;
 
       case 17:
-      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Label_Source, value );
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Label_Class, value );
       break;
 
       case 18:
-      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Label_Source_Child, value );
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Label_Source, value );
       break;
 
       case 19:
-      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Link_Empty_Restriction, value );
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Label_Source_Child, value );
       break;
 
       case 20:
-      func_string_setter< Meta_List_Field::impl, Meta_Permission >( *this, &Meta_List_Field::impl::impl_Link_Permission, value );
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Link_Empty_Restriction, value );
       break;
 
       case 21:
-      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Link_Restriction, value );
+      func_string_setter< Meta_List_Field::impl, Meta_Permission >( *this, &Meta_List_Field::impl::impl_Link_Permission, value );
       break;
 
       case 22:
-      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Link_Type, value );
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Link_Restriction, value );
       break;
 
       case 23:
-      func_string_setter< Meta_List_Field::impl, Meta_List >( *this, &Meta_List_Field::impl::impl_List, value );
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Link_Type, value );
       break;
 
       case 24:
-      func_string_setter< Meta_List_Field::impl, string >( *this, &Meta_List_Field::impl::impl_Name, value );
+      func_string_setter< Meta_List_Field::impl, Meta_List >( *this, &Meta_List_Field::impl::impl_List, value );
       break;
 
       case 25:
-      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Non_Instance_Procedure, value );
+      func_string_setter< Meta_List_Field::impl, string >( *this, &Meta_List_Field::impl::impl_Name, value );
       break;
 
       case 26:
-      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Notes_Truncation, value );
+      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Non_Instance_Procedure, value );
       break;
 
       case 27:
-      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Omit_Versions, value );
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Notes_Truncation, value );
       break;
 
       case 28:
-      func_string_setter< Meta_List_Field::impl, string >( *this, &Meta_List_Field::impl::impl_Order, value );
+      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Omit_Versions, value );
       break;
 
       case 29:
-      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Orientation, value );
+      func_string_setter< Meta_List_Field::impl, string >( *this, &Meta_List_Field::impl::impl_Order, value );
       break;
 
       case 30:
-      func_string_setter< Meta_List_Field::impl, Meta_Class >( *this, &Meta_List_Field::impl::impl_Parent_Class, value );
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Orientation, value );
       break;
 
       case 31:
-      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Print_Type, value );
+      func_string_setter< Meta_List_Field::impl, Meta_Class >( *this, &Meta_List_Field::impl::impl_Parent_Class, value );
       break;
 
       case 32:
-      func_string_setter< Meta_List_Field::impl, Meta_Procedure >( *this, &Meta_List_Field::impl::impl_Procedure, value );
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Print_Type, value );
       break;
 
       case 33:
-      func_string_setter< Meta_List_Field::impl, string >( *this, &Meta_List_Field::impl::impl_Procedure_Args, value );
+      func_string_setter< Meta_List_Field::impl, Meta_Procedure >( *this, &Meta_List_Field::impl::impl_Procedure, value );
       break;
 
       case 34:
-      func_string_setter< Meta_List_Field::impl, Meta_Field >( *this, &Meta_List_Field::impl::impl_Restriction_Field, value );
+      func_string_setter< Meta_List_Field::impl, string >( *this, &Meta_List_Field::impl::impl_Procedure_Args, value );
       break;
 
       case 35:
-      func_string_setter< Meta_List_Field::impl, Meta_Specification >( *this, &Meta_List_Field::impl::impl_Restriction_Spec, value );
+      func_string_setter< Meta_List_Field::impl, Meta_Field >( *this, &Meta_List_Field::impl::impl_Restriction_Field, value );
       break;
 
       case 36:
-      func_string_setter< Meta_List_Field::impl, string >( *this, &Meta_List_Field::impl::impl_Restriction_Value, value );
+      func_string_setter< Meta_List_Field::impl, Meta_Specification >( *this, &Meta_List_Field::impl::impl_Restriction_Spec, value );
       break;
 
       case 37:
-      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Retain_Selected_Rows, value );
+      func_string_setter< Meta_List_Field::impl, string >( *this, &Meta_List_Field::impl::impl_Restriction_Value, value );
       break;
 
       case 38:
-      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Reverse_Order, value );
+      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Retain_Selected_Rows, value );
       break;
 
       case 39:
-      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Search_Option_Limit, value );
+      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Reverse_Order, value );
       break;
 
       case 40:
-      func_string_setter< Meta_List_Field::impl, string >( *this, &Meta_List_Field::impl::impl_Select_Key_Exclusions, value );
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Search_Option_Limit, value );
       break;
 
       case 41:
-      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Sort_Manually, value );
+      func_string_setter< Meta_List_Field::impl, string >( *this, &Meta_List_Field::impl::impl_Select_Key_Exclusions, value );
       break;
 
       case 42:
-      func_string_setter< Meta_List_Field::impl, Meta_Field >( *this, &Meta_List_Field::impl::impl_Source_Child, value );
+      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Sort_Manually, value );
       break;
 
       case 43:
-      func_string_setter< Meta_List_Field::impl, Meta_Class >( *this, &Meta_List_Field::impl::impl_Source_Child_Class, value );
+      func_string_setter< Meta_List_Field::impl, Meta_Field >( *this, &Meta_List_Field::impl::impl_Source_Child, value );
       break;
 
       case 44:
-      func_string_setter< Meta_List_Field::impl, Meta_Field >( *this, &Meta_List_Field::impl::impl_Source_Field, value );
+      func_string_setter< Meta_List_Field::impl, Meta_Class >( *this, &Meta_List_Field::impl::impl_Source_Child_Class, value );
       break;
 
       case 45:
-      func_string_setter< Meta_List_Field::impl, Meta_Field >( *this, &Meta_List_Field::impl::impl_Source_Grandchild, value );
+      func_string_setter< Meta_List_Field::impl, Meta_Field >( *this, &Meta_List_Field::impl::impl_Source_Field, value );
       break;
 
       case 46:
-      func_string_setter< Meta_List_Field::impl, Meta_Field >( *this, &Meta_List_Field::impl::impl_Source_Parent, value );
+      func_string_setter< Meta_List_Field::impl, Meta_Field >( *this, &Meta_List_Field::impl::impl_Source_Grandchild, value );
       break;
 
       case 47:
-      func_string_setter< Meta_List_Field::impl, Meta_Class >( *this, &Meta_List_Field::impl::impl_Source_Parent_Class, value );
+      func_string_setter< Meta_List_Field::impl, Meta_Field >( *this, &Meta_List_Field::impl::impl_Source_Parent, value );
       break;
 
       case 48:
-      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Switch_Type, value );
+      func_string_setter< Meta_List_Field::impl, Meta_Class >( *this, &Meta_List_Field::impl::impl_Source_Parent_Class, value );
       break;
 
       case 49:
-      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Trigger_Option, value );
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Switch_Type, value );
       break;
 
       case 50:
-      func_string_setter< Meta_List_Field::impl, Meta_List_Field_Type >( *this, &Meta_List_Field::impl::impl_Type, value );
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Trigger_Option, value );
       break;
 
       case 51:
-      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Use_Child_Rel_Source_Parent, value );
+      func_string_setter< Meta_List_Field::impl, Meta_List_Field_Type >( *this, &Meta_List_Field::impl::impl_Type, value );
       break;
 
       case 52:
-      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Use_In_Text_Search_Title, value );
+      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Use_Child_Rel_Source_Parent, value );
       break;
 
       case 53:
-      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Use_Source_Parent, value );
+      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Use_In_Text_Search_Title, value );
       break;
 
       case 54:
-      func_string_setter< Meta_List_Field::impl, Meta_Field >( *this, &Meta_List_Field::impl::impl_Use_Type_Field, value );
+      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Use_Source_Parent, value );
       break;
 
       case 55:
+      func_string_setter< Meta_List_Field::impl, Meta_Field >( *this, &Meta_List_Field::impl::impl_Use_Type_Field, value );
+      break;
+
+      case 56:
       func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_View_Parent_Extra, value );
       break;
 
@@ -3631,166 +3662,170 @@ void Meta_List_Field::impl::set_field_default( int field )
       break;
 
       case 15:
-      impl_Include_Key_Additions( g_default_Include_Key_Additions );
+      impl_Hide_If_Is_Changing( g_default_Hide_If_Is_Changing );
       break;
 
       case 16:
-      impl_Label_Class( g_default_Label_Class );
+      impl_Include_Key_Additions( g_default_Include_Key_Additions );
       break;
 
       case 17:
-      impl_Label_Source( g_default_Label_Source );
+      impl_Label_Class( g_default_Label_Class );
       break;
 
       case 18:
-      impl_Label_Source_Child( g_default_Label_Source_Child );
+      impl_Label_Source( g_default_Label_Source );
       break;
 
       case 19:
-      impl_Link_Empty_Restriction( g_default_Link_Empty_Restriction );
+      impl_Label_Source_Child( g_default_Label_Source_Child );
       break;
 
       case 20:
-      impl_Link_Permission( g_default_Link_Permission );
+      impl_Link_Empty_Restriction( g_default_Link_Empty_Restriction );
       break;
 
       case 21:
-      impl_Link_Restriction( g_default_Link_Restriction );
+      impl_Link_Permission( g_default_Link_Permission );
       break;
 
       case 22:
-      impl_Link_Type( g_default_Link_Type );
+      impl_Link_Restriction( g_default_Link_Restriction );
       break;
 
       case 23:
-      impl_List( g_default_List );
+      impl_Link_Type( g_default_Link_Type );
       break;
 
       case 24:
-      impl_Name( g_default_Name );
+      impl_List( g_default_List );
       break;
 
       case 25:
-      impl_Non_Instance_Procedure( g_default_Non_Instance_Procedure );
+      impl_Name( g_default_Name );
       break;
 
       case 26:
-      impl_Notes_Truncation( g_default_Notes_Truncation );
+      impl_Non_Instance_Procedure( g_default_Non_Instance_Procedure );
       break;
 
       case 27:
-      impl_Omit_Versions( g_default_Omit_Versions );
+      impl_Notes_Truncation( g_default_Notes_Truncation );
       break;
 
       case 28:
-      impl_Order( g_default_Order );
+      impl_Omit_Versions( g_default_Omit_Versions );
       break;
 
       case 29:
-      impl_Orientation( g_default_Orientation );
+      impl_Order( g_default_Order );
       break;
 
       case 30:
-      impl_Parent_Class( g_default_Parent_Class );
+      impl_Orientation( g_default_Orientation );
       break;
 
       case 31:
-      impl_Print_Type( g_default_Print_Type );
+      impl_Parent_Class( g_default_Parent_Class );
       break;
 
       case 32:
-      impl_Procedure( g_default_Procedure );
+      impl_Print_Type( g_default_Print_Type );
       break;
 
       case 33:
-      impl_Procedure_Args( g_default_Procedure_Args );
+      impl_Procedure( g_default_Procedure );
       break;
 
       case 34:
-      impl_Restriction_Field( g_default_Restriction_Field );
+      impl_Procedure_Args( g_default_Procedure_Args );
       break;
 
       case 35:
-      impl_Restriction_Spec( g_default_Restriction_Spec );
+      impl_Restriction_Field( g_default_Restriction_Field );
       break;
 
       case 36:
-      impl_Restriction_Value( g_default_Restriction_Value );
+      impl_Restriction_Spec( g_default_Restriction_Spec );
       break;
 
       case 37:
-      impl_Retain_Selected_Rows( g_default_Retain_Selected_Rows );
+      impl_Restriction_Value( g_default_Restriction_Value );
       break;
 
       case 38:
-      impl_Reverse_Order( g_default_Reverse_Order );
+      impl_Retain_Selected_Rows( g_default_Retain_Selected_Rows );
       break;
 
       case 39:
-      impl_Search_Option_Limit( g_default_Search_Option_Limit );
+      impl_Reverse_Order( g_default_Reverse_Order );
       break;
 
       case 40:
-      impl_Select_Key_Exclusions( g_default_Select_Key_Exclusions );
+      impl_Search_Option_Limit( g_default_Search_Option_Limit );
       break;
 
       case 41:
-      impl_Sort_Manually( g_default_Sort_Manually );
+      impl_Select_Key_Exclusions( g_default_Select_Key_Exclusions );
       break;
 
       case 42:
-      impl_Source_Child( g_default_Source_Child );
+      impl_Sort_Manually( g_default_Sort_Manually );
       break;
 
       case 43:
-      impl_Source_Child_Class( g_default_Source_Child_Class );
+      impl_Source_Child( g_default_Source_Child );
       break;
 
       case 44:
-      impl_Source_Field( g_default_Source_Field );
+      impl_Source_Child_Class( g_default_Source_Child_Class );
       break;
 
       case 45:
-      impl_Source_Grandchild( g_default_Source_Grandchild );
+      impl_Source_Field( g_default_Source_Field );
       break;
 
       case 46:
-      impl_Source_Parent( g_default_Source_Parent );
+      impl_Source_Grandchild( g_default_Source_Grandchild );
       break;
 
       case 47:
-      impl_Source_Parent_Class( g_default_Source_Parent_Class );
+      impl_Source_Parent( g_default_Source_Parent );
       break;
 
       case 48:
-      impl_Switch_Type( g_default_Switch_Type );
+      impl_Source_Parent_Class( g_default_Source_Parent_Class );
       break;
 
       case 49:
-      impl_Trigger_Option( g_default_Trigger_Option );
+      impl_Switch_Type( g_default_Switch_Type );
       break;
 
       case 50:
-      impl_Type( g_default_Type );
+      impl_Trigger_Option( g_default_Trigger_Option );
       break;
 
       case 51:
-      impl_Use_Child_Rel_Source_Parent( g_default_Use_Child_Rel_Source_Parent );
+      impl_Type( g_default_Type );
       break;
 
       case 52:
-      impl_Use_In_Text_Search_Title( g_default_Use_In_Text_Search_Title );
+      impl_Use_Child_Rel_Source_Parent( g_default_Use_Child_Rel_Source_Parent );
       break;
 
       case 53:
-      impl_Use_Source_Parent( g_default_Use_Source_Parent );
+      impl_Use_In_Text_Search_Title( g_default_Use_In_Text_Search_Title );
       break;
 
       case 54:
-      impl_Use_Type_Field( g_default_Use_Type_Field );
+      impl_Use_Source_Parent( g_default_Use_Source_Parent );
       break;
 
       case 55:
+      impl_Use_Type_Field( g_default_Use_Type_Field );
+      break;
+
+      case 56:
       impl_View_Parent_Extra( g_default_View_Parent_Extra );
       break;
 
@@ -3866,166 +3901,170 @@ bool Meta_List_Field::impl::is_field_default( int field ) const
       break;
 
       case 15:
-      retval = ( v_Include_Key_Additions == g_default_Include_Key_Additions );
+      retval = ( v_Hide_If_Is_Changing == g_default_Hide_If_Is_Changing );
       break;
 
       case 16:
-      retval = ( v_Label_Class == g_default_Label_Class );
+      retval = ( v_Include_Key_Additions == g_default_Include_Key_Additions );
       break;
 
       case 17:
-      retval = ( v_Label_Source == g_default_Label_Source );
+      retval = ( v_Label_Class == g_default_Label_Class );
       break;
 
       case 18:
-      retval = ( v_Label_Source_Child == g_default_Label_Source_Child );
+      retval = ( v_Label_Source == g_default_Label_Source );
       break;
 
       case 19:
-      retval = ( v_Link_Empty_Restriction == g_default_Link_Empty_Restriction );
+      retval = ( v_Label_Source_Child == g_default_Label_Source_Child );
       break;
 
       case 20:
-      retval = ( v_Link_Permission == g_default_Link_Permission );
+      retval = ( v_Link_Empty_Restriction == g_default_Link_Empty_Restriction );
       break;
 
       case 21:
-      retval = ( v_Link_Restriction == g_default_Link_Restriction );
+      retval = ( v_Link_Permission == g_default_Link_Permission );
       break;
 
       case 22:
-      retval = ( v_Link_Type == g_default_Link_Type );
+      retval = ( v_Link_Restriction == g_default_Link_Restriction );
       break;
 
       case 23:
-      retval = ( v_List == g_default_List );
+      retval = ( v_Link_Type == g_default_Link_Type );
       break;
 
       case 24:
-      retval = ( v_Name == g_default_Name );
+      retval = ( v_List == g_default_List );
       break;
 
       case 25:
-      retval = ( v_Non_Instance_Procedure == g_default_Non_Instance_Procedure );
+      retval = ( v_Name == g_default_Name );
       break;
 
       case 26:
-      retval = ( v_Notes_Truncation == g_default_Notes_Truncation );
+      retval = ( v_Non_Instance_Procedure == g_default_Non_Instance_Procedure );
       break;
 
       case 27:
-      retval = ( v_Omit_Versions == g_default_Omit_Versions );
+      retval = ( v_Notes_Truncation == g_default_Notes_Truncation );
       break;
 
       case 28:
-      retval = ( v_Order == g_default_Order );
+      retval = ( v_Omit_Versions == g_default_Omit_Versions );
       break;
 
       case 29:
-      retval = ( v_Orientation == g_default_Orientation );
+      retval = ( v_Order == g_default_Order );
       break;
 
       case 30:
-      retval = ( v_Parent_Class == g_default_Parent_Class );
+      retval = ( v_Orientation == g_default_Orientation );
       break;
 
       case 31:
-      retval = ( v_Print_Type == g_default_Print_Type );
+      retval = ( v_Parent_Class == g_default_Parent_Class );
       break;
 
       case 32:
-      retval = ( v_Procedure == g_default_Procedure );
+      retval = ( v_Print_Type == g_default_Print_Type );
       break;
 
       case 33:
-      retval = ( v_Procedure_Args == g_default_Procedure_Args );
+      retval = ( v_Procedure == g_default_Procedure );
       break;
 
       case 34:
-      retval = ( v_Restriction_Field == g_default_Restriction_Field );
+      retval = ( v_Procedure_Args == g_default_Procedure_Args );
       break;
 
       case 35:
-      retval = ( v_Restriction_Spec == g_default_Restriction_Spec );
+      retval = ( v_Restriction_Field == g_default_Restriction_Field );
       break;
 
       case 36:
-      retval = ( v_Restriction_Value == g_default_Restriction_Value );
+      retval = ( v_Restriction_Spec == g_default_Restriction_Spec );
       break;
 
       case 37:
-      retval = ( v_Retain_Selected_Rows == g_default_Retain_Selected_Rows );
+      retval = ( v_Restriction_Value == g_default_Restriction_Value );
       break;
 
       case 38:
-      retval = ( v_Reverse_Order == g_default_Reverse_Order );
+      retval = ( v_Retain_Selected_Rows == g_default_Retain_Selected_Rows );
       break;
 
       case 39:
-      retval = ( v_Search_Option_Limit == g_default_Search_Option_Limit );
+      retval = ( v_Reverse_Order == g_default_Reverse_Order );
       break;
 
       case 40:
-      retval = ( v_Select_Key_Exclusions == g_default_Select_Key_Exclusions );
+      retval = ( v_Search_Option_Limit == g_default_Search_Option_Limit );
       break;
 
       case 41:
-      retval = ( v_Sort_Manually == g_default_Sort_Manually );
+      retval = ( v_Select_Key_Exclusions == g_default_Select_Key_Exclusions );
       break;
 
       case 42:
-      retval = ( v_Source_Child == g_default_Source_Child );
+      retval = ( v_Sort_Manually == g_default_Sort_Manually );
       break;
 
       case 43:
-      retval = ( v_Source_Child_Class == g_default_Source_Child_Class );
+      retval = ( v_Source_Child == g_default_Source_Child );
       break;
 
       case 44:
-      retval = ( v_Source_Field == g_default_Source_Field );
+      retval = ( v_Source_Child_Class == g_default_Source_Child_Class );
       break;
 
       case 45:
-      retval = ( v_Source_Grandchild == g_default_Source_Grandchild );
+      retval = ( v_Source_Field == g_default_Source_Field );
       break;
 
       case 46:
-      retval = ( v_Source_Parent == g_default_Source_Parent );
+      retval = ( v_Source_Grandchild == g_default_Source_Grandchild );
       break;
 
       case 47:
-      retval = ( v_Source_Parent_Class == g_default_Source_Parent_Class );
+      retval = ( v_Source_Parent == g_default_Source_Parent );
       break;
 
       case 48:
-      retval = ( v_Switch_Type == g_default_Switch_Type );
+      retval = ( v_Source_Parent_Class == g_default_Source_Parent_Class );
       break;
 
       case 49:
-      retval = ( v_Trigger_Option == g_default_Trigger_Option );
+      retval = ( v_Switch_Type == g_default_Switch_Type );
       break;
 
       case 50:
-      retval = ( v_Type == g_default_Type );
+      retval = ( v_Trigger_Option == g_default_Trigger_Option );
       break;
 
       case 51:
-      retval = ( v_Use_Child_Rel_Source_Parent == g_default_Use_Child_Rel_Source_Parent );
+      retval = ( v_Type == g_default_Type );
       break;
 
       case 52:
-      retval = ( v_Use_In_Text_Search_Title == g_default_Use_In_Text_Search_Title );
+      retval = ( v_Use_Child_Rel_Source_Parent == g_default_Use_Child_Rel_Source_Parent );
       break;
 
       case 53:
-      retval = ( v_Use_Source_Parent == g_default_Use_Source_Parent );
+      retval = ( v_Use_In_Text_Search_Title == g_default_Use_In_Text_Search_Title );
       break;
 
       case 54:
-      retval = ( v_Use_Type_Field == g_default_Use_Type_Field );
+      retval = ( v_Use_Source_Parent == g_default_Use_Source_Parent );
       break;
 
       case 55:
+      retval = ( v_Use_Type_Field == g_default_Use_Type_Field );
+      break;
+
+      case 56:
       retval = ( v_View_Parent_Extra == g_default_View_Parent_Extra );
       break;
 
@@ -4491,6 +4530,7 @@ void Meta_List_Field::impl::clear( )
    v_Exact_Match_Only = g_default_Exact_Match_Only;
    v_Exclude_In_Use_FK = g_default_Exclude_In_Use_FK;
    v_Font_Size = g_default_Font_Size;
+   v_Hide_If_Is_Changing = g_default_Hide_If_Is_Changing;
    v_Include_Key_Additions = g_default_Include_Key_Additions;
    v_Label_Class = g_default_Label_Class;
    v_Label_Source = g_default_Label_Source;
@@ -5321,6 +5361,16 @@ int Meta_List_Field::Font_Size( ) const
 void Meta_List_Field::Font_Size( int Font_Size )
 {
    p_impl->impl_Font_Size( Font_Size );
+}
+
+bool Meta_List_Field::Hide_If_Is_Changing( ) const
+{
+   return p_impl->impl_Hide_If_Is_Changing( );
+}
+
+void Meta_List_Field::Hide_If_Is_Changing( bool Hide_If_Is_Changing )
+{
+   p_impl->impl_Hide_If_Is_Changing( Hide_If_Is_Changing );
 }
 
 const string& Meta_List_Field::Include_Key_Additions( ) const
@@ -6269,6 +6319,16 @@ const char* Meta_List_Field::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Hide_If_Is_Changing )
+   {
+      p_id = c_field_id_Hide_If_Is_Changing;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Include_Key_Additions )
    {
       p_id = c_field_id_Include_Key_Additions;
@@ -6840,6 +6900,16 @@ const char* Meta_List_Field::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Hide_If_Is_Changing )
+   {
+      p_name = c_field_name_Hide_If_Is_Changing;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Include_Key_Additions )
    {
       p_name = c_field_name_Include_Key_Additions;
@@ -7359,6 +7429,11 @@ string Meta_List_Field::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Font_Size );
       get_module_string( c_field_display_name_Font_Size, &next );
    }
+   else if( id_or_name == c_field_id_Hide_If_Is_Changing || id_or_name == c_field_name_Hide_If_Is_Changing )
+   {
+      name = string( c_field_display_name_Hide_If_Is_Changing );
+      get_module_string( c_field_display_name_Hide_If_Is_Changing, &next );
+   }
    else if( id_or_name == c_field_id_Include_Key_Additions || id_or_name == c_field_name_Include_Key_Additions )
    {
       name = string( c_field_display_name_Include_Key_Additions );
@@ -7609,6 +7684,8 @@ string Meta_List_Field::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Exclude_In_Use_FK );
    else if( id_or_name == c_field_id_Font_Size || id_or_name == c_field_name_Font_Size )
       display_name = get_module_string( c_field_display_name_Font_Size );
+   else if( id_or_name == c_field_id_Hide_If_Is_Changing || id_or_name == c_field_name_Hide_If_Is_Changing )
+      display_name = get_module_string( c_field_display_name_Hide_If_Is_Changing );
    else if( id_or_name == c_field_id_Include_Key_Additions || id_or_name == c_field_name_Include_Key_Additions )
       display_name = get_module_string( c_field_display_name_Include_Key_Additions );
    else if( id_or_name == c_field_id_Label_Class || id_or_name == c_field_name_Label_Class )
@@ -8056,6 +8133,7 @@ void Meta_List_Field::get_sql_column_names(
    names.push_back( "C_Exact_Match_Only" );
    names.push_back( "C_Exclude_In_Use_FK" );
    names.push_back( "C_Font_Size" );
+   names.push_back( "C_Hide_If_Is_Changing" );
    names.push_back( "C_Include_Key_Additions" );
    names.push_back( "C_Label_Class" );
    names.push_back( "C_Label_Source" );
@@ -8122,6 +8200,7 @@ void Meta_List_Field::get_sql_column_values(
    values.push_back( to_string( Exact_Match_Only( ) ) );
    values.push_back( to_string( Exclude_In_Use_FK( ) ) );
    values.push_back( to_string( Font_Size( ) ) );
+   values.push_back( to_string( Hide_If_Is_Changing( ) ) );
    values.push_back( sql_quote( to_string( Include_Key_Additions( ) ) ) );
    values.push_back( to_string( Label_Class( ) ) );
    values.push_back( to_string( Label_Source( ) ) );
@@ -8612,6 +8691,7 @@ void Meta_List_Field::static_get_field_info( field_info_container& all_field_inf
    all_field_info.push_back( field_info( "124128", "Exact_Match_Only", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "124107", "Exclude_In_Use_FK", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "124130", "Font_Size", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "124137", "Hide_If_Is_Changing", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "124122", "Include_Key_Additions", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "124131", "Label_Class", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "124120", "Label_Source", "int", false, "", "" ) );
@@ -8769,166 +8849,170 @@ const char* Meta_List_Field::static_get_field_id( field_id id )
       break;
 
       case 16:
-      p_id = "124122";
+      p_id = "124137";
       break;
 
       case 17:
-      p_id = "124131";
+      p_id = "124122";
       break;
 
       case 18:
-      p_id = "124120";
+      p_id = "124131";
       break;
 
       case 19:
-      p_id = "124129";
+      p_id = "124120";
       break;
 
       case 20:
-      p_id = "124134";
+      p_id = "124129";
       break;
 
       case 21:
-      p_id = "302135";
+      p_id = "124134";
       break;
 
       case 22:
-      p_id = "124108";
+      p_id = "302135";
       break;
 
       case 23:
-      p_id = "124118";
+      p_id = "124108";
       break;
 
       case 24:
-      p_id = "302100";
+      p_id = "124118";
       break;
 
       case 25:
-      p_id = "124102";
+      p_id = "302100";
       break;
 
       case 26:
-      p_id = "124127";
+      p_id = "124102";
       break;
 
       case 27:
-      p_id = "124125";
+      p_id = "124127";
       break;
 
       case 28:
-      p_id = "124110";
+      p_id = "124125";
       break;
 
       case 29:
-      p_id = "124101";
+      p_id = "124110";
       break;
 
       case 30:
-      p_id = "124136";
+      p_id = "124101";
       break;
 
       case 31:
-      p_id = "302115";
+      p_id = "124136";
       break;
 
       case 32:
-      p_id = "124115";
+      p_id = "302115";
       break;
 
       case 33:
-      p_id = "302190";
+      p_id = "124115";
       break;
 
       case 34:
-      p_id = "124109";
+      p_id = "302190";
       break;
 
       case 35:
-      p_id = "302185";
+      p_id = "124109";
       break;
 
       case 36:
-      p_id = "302180";
+      p_id = "302185";
       break;
 
       case 37:
-      p_id = "124106";
+      p_id = "302180";
       break;
 
       case 38:
-      p_id = "124126";
+      p_id = "124106";
       break;
 
       case 39:
-      p_id = "124111";
+      p_id = "124126";
       break;
 
       case 40:
-      p_id = "124124";
+      p_id = "124111";
       break;
 
       case 41:
-      p_id = "124117";
+      p_id = "124124";
       break;
 
       case 42:
-      p_id = "124135";
+      p_id = "124117";
       break;
 
       case 43:
-      p_id = "302160";
+      p_id = "124135";
       break;
 
       case 44:
-      p_id = "302175";
+      p_id = "302160";
       break;
 
       case 45:
-      p_id = "302140";
+      p_id = "302175";
       break;
 
       case 46:
-      p_id = "302165";
+      p_id = "302140";
       break;
 
       case 47:
-      p_id = "302150";
+      p_id = "302165";
       break;
 
       case 48:
-      p_id = "302170";
+      p_id = "302150";
       break;
 
       case 49:
-      p_id = "124105";
+      p_id = "302170";
       break;
 
       case 50:
-      p_id = "124121";
+      p_id = "124105";
       break;
 
       case 51:
-      p_id = "302120";
+      p_id = "124121";
       break;
 
       case 52:
-      p_id = "124123";
+      p_id = "302120";
       break;
 
       case 53:
-      p_id = "124116";
+      p_id = "124123";
       break;
 
       case 54:
-      p_id = "124104";
+      p_id = "124116";
       break;
 
       case 55:
-      p_id = "302176";
+      p_id = "124104";
       break;
 
       case 56:
+      p_id = "302176";
+      break;
+
+      case 57:
       p_id = "124132";
       break;
    }
@@ -9006,166 +9090,170 @@ const char* Meta_List_Field::static_get_field_name( field_id id )
       break;
 
       case 16:
-      p_id = "Include_Key_Additions";
+      p_id = "Hide_If_Is_Changing";
       break;
 
       case 17:
-      p_id = "Label_Class";
+      p_id = "Include_Key_Additions";
       break;
 
       case 18:
-      p_id = "Label_Source";
+      p_id = "Label_Class";
       break;
 
       case 19:
-      p_id = "Label_Source_Child";
+      p_id = "Label_Source";
       break;
 
       case 20:
-      p_id = "Link_Empty_Restriction";
+      p_id = "Label_Source_Child";
       break;
 
       case 21:
-      p_id = "Link_Permission";
+      p_id = "Link_Empty_Restriction";
       break;
 
       case 22:
-      p_id = "Link_Restriction";
+      p_id = "Link_Permission";
       break;
 
       case 23:
-      p_id = "Link_Type";
+      p_id = "Link_Restriction";
       break;
 
       case 24:
-      p_id = "List";
+      p_id = "Link_Type";
       break;
 
       case 25:
-      p_id = "Name";
+      p_id = "List";
       break;
 
       case 26:
-      p_id = "Non_Instance_Procedure";
+      p_id = "Name";
       break;
 
       case 27:
-      p_id = "Notes_Truncation";
+      p_id = "Non_Instance_Procedure";
       break;
 
       case 28:
-      p_id = "Omit_Versions";
+      p_id = "Notes_Truncation";
       break;
 
       case 29:
-      p_id = "Order";
+      p_id = "Omit_Versions";
       break;
 
       case 30:
-      p_id = "Orientation";
+      p_id = "Order";
       break;
 
       case 31:
-      p_id = "Parent_Class";
+      p_id = "Orientation";
       break;
 
       case 32:
-      p_id = "Print_Type";
+      p_id = "Parent_Class";
       break;
 
       case 33:
-      p_id = "Procedure";
+      p_id = "Print_Type";
       break;
 
       case 34:
-      p_id = "Procedure_Args";
+      p_id = "Procedure";
       break;
 
       case 35:
-      p_id = "Restriction_Field";
+      p_id = "Procedure_Args";
       break;
 
       case 36:
-      p_id = "Restriction_Spec";
+      p_id = "Restriction_Field";
       break;
 
       case 37:
-      p_id = "Restriction_Value";
+      p_id = "Restriction_Spec";
       break;
 
       case 38:
-      p_id = "Retain_Selected_Rows";
+      p_id = "Restriction_Value";
       break;
 
       case 39:
-      p_id = "Reverse_Order";
+      p_id = "Retain_Selected_Rows";
       break;
 
       case 40:
-      p_id = "Search_Option_Limit";
+      p_id = "Reverse_Order";
       break;
 
       case 41:
-      p_id = "Select_Key_Exclusions";
+      p_id = "Search_Option_Limit";
       break;
 
       case 42:
-      p_id = "Sort_Manually";
+      p_id = "Select_Key_Exclusions";
       break;
 
       case 43:
-      p_id = "Source_Child";
+      p_id = "Sort_Manually";
       break;
 
       case 44:
-      p_id = "Source_Child_Class";
+      p_id = "Source_Child";
       break;
 
       case 45:
-      p_id = "Source_Field";
+      p_id = "Source_Child_Class";
       break;
 
       case 46:
-      p_id = "Source_Grandchild";
+      p_id = "Source_Field";
       break;
 
       case 47:
-      p_id = "Source_Parent";
+      p_id = "Source_Grandchild";
       break;
 
       case 48:
-      p_id = "Source_Parent_Class";
+      p_id = "Source_Parent";
       break;
 
       case 49:
-      p_id = "Switch_Type";
+      p_id = "Source_Parent_Class";
       break;
 
       case 50:
-      p_id = "Trigger_Option";
+      p_id = "Switch_Type";
       break;
 
       case 51:
-      p_id = "Type";
+      p_id = "Trigger_Option";
       break;
 
       case 52:
-      p_id = "Use_Child_Rel_Source_Parent";
+      p_id = "Type";
       break;
 
       case 53:
-      p_id = "Use_In_Text_Search_Title";
+      p_id = "Use_Child_Rel_Source_Parent";
       break;
 
       case 54:
-      p_id = "Use_Source_Parent";
+      p_id = "Use_In_Text_Search_Title";
       break;
 
       case 55:
-      p_id = "Use_Type_Field";
+      p_id = "Use_Source_Parent";
       break;
 
       case 56:
+      p_id = "Use_Type_Field";
+      break;
+
+      case 57:
       p_id = "View_Parent_Extra";
       break;
    }
@@ -9212,88 +9300,90 @@ int Meta_List_Field::static_get_field_num( const string& field )
       rc += 14;
    else if( field == c_field_id_Font_Size || field == c_field_name_Font_Size )
       rc += 15;
-   else if( field == c_field_id_Include_Key_Additions || field == c_field_name_Include_Key_Additions )
+   else if( field == c_field_id_Hide_If_Is_Changing || field == c_field_name_Hide_If_Is_Changing )
       rc += 16;
-   else if( field == c_field_id_Label_Class || field == c_field_name_Label_Class )
+   else if( field == c_field_id_Include_Key_Additions || field == c_field_name_Include_Key_Additions )
       rc += 17;
-   else if( field == c_field_id_Label_Source || field == c_field_name_Label_Source )
+   else if( field == c_field_id_Label_Class || field == c_field_name_Label_Class )
       rc += 18;
-   else if( field == c_field_id_Label_Source_Child || field == c_field_name_Label_Source_Child )
+   else if( field == c_field_id_Label_Source || field == c_field_name_Label_Source )
       rc += 19;
-   else if( field == c_field_id_Link_Empty_Restriction || field == c_field_name_Link_Empty_Restriction )
+   else if( field == c_field_id_Label_Source_Child || field == c_field_name_Label_Source_Child )
       rc += 20;
-   else if( field == c_field_id_Link_Permission || field == c_field_name_Link_Permission )
+   else if( field == c_field_id_Link_Empty_Restriction || field == c_field_name_Link_Empty_Restriction )
       rc += 21;
-   else if( field == c_field_id_Link_Restriction || field == c_field_name_Link_Restriction )
+   else if( field == c_field_id_Link_Permission || field == c_field_name_Link_Permission )
       rc += 22;
-   else if( field == c_field_id_Link_Type || field == c_field_name_Link_Type )
+   else if( field == c_field_id_Link_Restriction || field == c_field_name_Link_Restriction )
       rc += 23;
-   else if( field == c_field_id_List || field == c_field_name_List )
+   else if( field == c_field_id_Link_Type || field == c_field_name_Link_Type )
       rc += 24;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_List || field == c_field_name_List )
       rc += 25;
-   else if( field == c_field_id_Non_Instance_Procedure || field == c_field_name_Non_Instance_Procedure )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 26;
-   else if( field == c_field_id_Notes_Truncation || field == c_field_name_Notes_Truncation )
+   else if( field == c_field_id_Non_Instance_Procedure || field == c_field_name_Non_Instance_Procedure )
       rc += 27;
-   else if( field == c_field_id_Omit_Versions || field == c_field_name_Omit_Versions )
+   else if( field == c_field_id_Notes_Truncation || field == c_field_name_Notes_Truncation )
       rc += 28;
-   else if( field == c_field_id_Order || field == c_field_name_Order )
+   else if( field == c_field_id_Omit_Versions || field == c_field_name_Omit_Versions )
       rc += 29;
-   else if( field == c_field_id_Orientation || field == c_field_name_Orientation )
+   else if( field == c_field_id_Order || field == c_field_name_Order )
       rc += 30;
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( field == c_field_id_Orientation || field == c_field_name_Orientation )
       rc += 31;
-   else if( field == c_field_id_Print_Type || field == c_field_name_Print_Type )
+   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       rc += 32;
-   else if( field == c_field_id_Procedure || field == c_field_name_Procedure )
+   else if( field == c_field_id_Print_Type || field == c_field_name_Print_Type )
       rc += 33;
-   else if( field == c_field_id_Procedure_Args || field == c_field_name_Procedure_Args )
+   else if( field == c_field_id_Procedure || field == c_field_name_Procedure )
       rc += 34;
-   else if( field == c_field_id_Restriction_Field || field == c_field_name_Restriction_Field )
+   else if( field == c_field_id_Procedure_Args || field == c_field_name_Procedure_Args )
       rc += 35;
-   else if( field == c_field_id_Restriction_Spec || field == c_field_name_Restriction_Spec )
+   else if( field == c_field_id_Restriction_Field || field == c_field_name_Restriction_Field )
       rc += 36;
-   else if( field == c_field_id_Restriction_Value || field == c_field_name_Restriction_Value )
+   else if( field == c_field_id_Restriction_Spec || field == c_field_name_Restriction_Spec )
       rc += 37;
-   else if( field == c_field_id_Retain_Selected_Rows || field == c_field_name_Retain_Selected_Rows )
+   else if( field == c_field_id_Restriction_Value || field == c_field_name_Restriction_Value )
       rc += 38;
-   else if( field == c_field_id_Reverse_Order || field == c_field_name_Reverse_Order )
+   else if( field == c_field_id_Retain_Selected_Rows || field == c_field_name_Retain_Selected_Rows )
       rc += 39;
-   else if( field == c_field_id_Search_Option_Limit || field == c_field_name_Search_Option_Limit )
+   else if( field == c_field_id_Reverse_Order || field == c_field_name_Reverse_Order )
       rc += 40;
-   else if( field == c_field_id_Select_Key_Exclusions || field == c_field_name_Select_Key_Exclusions )
+   else if( field == c_field_id_Search_Option_Limit || field == c_field_name_Search_Option_Limit )
       rc += 41;
-   else if( field == c_field_id_Sort_Manually || field == c_field_name_Sort_Manually )
+   else if( field == c_field_id_Select_Key_Exclusions || field == c_field_name_Select_Key_Exclusions )
       rc += 42;
-   else if( field == c_field_id_Source_Child || field == c_field_name_Source_Child )
+   else if( field == c_field_id_Sort_Manually || field == c_field_name_Sort_Manually )
       rc += 43;
-   else if( field == c_field_id_Source_Child_Class || field == c_field_name_Source_Child_Class )
+   else if( field == c_field_id_Source_Child || field == c_field_name_Source_Child )
       rc += 44;
-   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
+   else if( field == c_field_id_Source_Child_Class || field == c_field_name_Source_Child_Class )
       rc += 45;
-   else if( field == c_field_id_Source_Grandchild || field == c_field_name_Source_Grandchild )
+   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
       rc += 46;
-   else if( field == c_field_id_Source_Parent || field == c_field_name_Source_Parent )
+   else if( field == c_field_id_Source_Grandchild || field == c_field_name_Source_Grandchild )
       rc += 47;
-   else if( field == c_field_id_Source_Parent_Class || field == c_field_name_Source_Parent_Class )
+   else if( field == c_field_id_Source_Parent || field == c_field_name_Source_Parent )
       rc += 48;
-   else if( field == c_field_id_Switch_Type || field == c_field_name_Switch_Type )
+   else if( field == c_field_id_Source_Parent_Class || field == c_field_name_Source_Parent_Class )
       rc += 49;
-   else if( field == c_field_id_Trigger_Option || field == c_field_name_Trigger_Option )
+   else if( field == c_field_id_Switch_Type || field == c_field_name_Switch_Type )
       rc += 50;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Trigger_Option || field == c_field_name_Trigger_Option )
       rc += 51;
-   else if( field == c_field_id_Use_Child_Rel_Source_Parent || field == c_field_name_Use_Child_Rel_Source_Parent )
+   else if( field == c_field_id_Type || field == c_field_name_Type )
       rc += 52;
-   else if( field == c_field_id_Use_In_Text_Search_Title || field == c_field_name_Use_In_Text_Search_Title )
+   else if( field == c_field_id_Use_Child_Rel_Source_Parent || field == c_field_name_Use_Child_Rel_Source_Parent )
       rc += 53;
-   else if( field == c_field_id_Use_Source_Parent || field == c_field_name_Use_Source_Parent )
+   else if( field == c_field_id_Use_In_Text_Search_Title || field == c_field_name_Use_In_Text_Search_Title )
       rc += 54;
-   else if( field == c_field_id_Use_Type_Field || field == c_field_name_Use_Type_Field )
+   else if( field == c_field_id_Use_Source_Parent || field == c_field_name_Use_Source_Parent )
       rc += 55;
-   else if( field == c_field_id_View_Parent_Extra || field == c_field_name_View_Parent_Extra )
+   else if( field == c_field_id_Use_Type_Field || field == c_field_name_Use_Type_Field )
       rc += 56;
+   else if( field == c_field_id_View_Parent_Extra || field == c_field_name_View_Parent_Extra )
+      rc += 57;
 
    return rc - 1;
 }
@@ -9337,6 +9427,7 @@ string Meta_List_Field::static_get_sql_columns( )
     "C_Exact_Match_Only INTEGER NOT NULL,"
     "C_Exclude_In_Use_FK INTEGER NOT NULL,"
     "C_Font_Size INTEGER NOT NULL,"
+    "C_Hide_If_Is_Changing INTEGER NOT NULL,"
     "C_Include_Key_Additions VARCHAR(200) NOT NULL,"
     "C_Label_Class INTEGER NOT NULL,"
     "C_Label_Source INTEGER NOT NULL,"
