@@ -3226,6 +3226,15 @@ bool has_web_file( const string& file_name )
    return file_exists( file_path );
 }
 
+void touch_web_file( const string& file_name, bool only_if_exists )
+{
+   string file_path( storage_web_root( true ) );
+
+   file_path += '/' + file_name;
+
+   file_touch( file_path, 0, !only_if_exists );
+}
+
 string get_attached_file_dir( )
 {
    return storage_web_root( true );

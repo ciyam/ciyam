@@ -98,6 +98,9 @@ const char* const c_sav_file_ext = ".sav";
 const char* const c_ciyam_script = "ciyam_script";
 const char* const c_ciyam_server = "ciyam_server";
 
+const char* const c_ui_class_marker = "CLASS";
+const char* const c_ui_class_changing = "ui_CLASS_changing";
+
 const char* const c_test_backup_identity = "e3733d121";
 const char* const c_test_shared_identity = "121d3373e";
 

@@ -8568,6 +8568,31 @@
       </specifications>
      </field>
      <field/>
+      <id>124137
+      <name>Hide_If_Is_Changing
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500875
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500878
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602850
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>124122
       <name>Include_Key_Additions
       <type>1020
@@ -33563,6 +33588,7 @@
      <field_info>124110
      <field_info>124111
      <field_info>124126
+     <field_info>124137
      <field_info>124127;force
      <field_info>124130;enum=635
      <field_info>124119;enum=522

@@ -5538,6 +5538,9 @@ void Meta_Model::impl::impl_Generate( )
                          + to_string( get_obj( ).child_List( ).child_List_Field( ).Access_Restriction( ) ) + " in Model::Generate" );
                      }
 
+                     if( get_obj( ).child_List( ).child_List_Field( ).Hide_If_Is_Changing( ) )
+                        actions += ':';
+
                      if( get_obj( ).child_List( ).child_List_Field( ).Retain_Selected_Rows( ) )
                         actions += '+';
 

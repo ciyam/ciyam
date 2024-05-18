@@ -726,6 +726,7 @@ field_add -id=124133 List_Field Allow_Anonymous_Access bool mand -def=1
 field_add -id=124134 List_Field Link_Empty_Restriction int mand -def=0 -e=list_field_link_restrict
 field_add -id=124135 List_Field Sort_Manually bool mand -def=0
 field_add -id=124136 List_Field Orientation int mand -def=0 -e=orientation
+field_add -id=124137 List_Field Hide_If_Is_Changing bool mand -def=0
 procedure_add -id=124410 List_Field Move_Up
 procedure_arg_add -id=124411 List_Field Move_Up Restrict_Fields string in
 procedure_arg_add -id=124412 List_Field Move_Up Restrict_Values string in
@@ -1325,7 +1326,7 @@ modifier_add -id=500872 List_Field Hide_Switch_Type Switch_Type:relegate
 modifier_add -id=500873 List_Field Hide_Exclude_In_Use_FK Exclude_In_Use_FK:relegate
 modifier_add -id=500874 List_Field Hide_Link_Type Link_Type:relegate
 modifier_add -id=500875 List_Field Hide_Procedure_Fields {Procedure}:relegate\
-,Procedure_Args:relegate,Omit_Versions:relegate,Reverse_Order:relegate,Retain_Selected_Rows:relegate,Non_Instance_Procedure:relegate
+,Procedure_Args:relegate,Omit_Versions:relegate,Reverse_Order:relegate,Retain_Selected_Rows:relegate,Hide_If_Is_Changing:relegate,Non_Instance_Procedure:relegate
 modifier_add -id=500876 List_Field Hide_Non_Procedure_Fields Source_Field:relegate\
 ,Use_Source_Parent:relegate,Source_Parent:relegate,Source_Child:relegate\
 ,Child_Relationship:relegate,Use_Child_Rel_Source_Parent:relegate\
@@ -1343,7 +1344,7 @@ modifier_add -id=500878 List_Field Hide_Fields_For_Trivial_Field Use_Source_Pare
 ,Label_Source:relegate,Label_Source_Child:relegate,Use_In_Text_Search_Title:relegate\
 ,Link_Type:relegate,Exclude_In_Use_FK:relegate,Restriction_Value:relegate,{Procedure}:relegate\
 ,Procedure_Args:relegate,Omit_Versions:relegate,Reverse_Order:relegate,Retain_Selected_Rows:relegate\
-,Non_Instance_Procedure:relegate,Source_Field:relegate,Trigger_Option:relegate,Search_Option_Limit:relegate
+,Hide_If_Is_Changing:relegate,Non_Instance_Procedure:relegate,Source_Field:relegate,Trigger_Option:relegate,Search_Option_Limit:relegate
 modifier_add -id=500880 List_Field Hide_Select_Specifics Trigger_Option:relegate\
 ,Select_Key_Exclusions:relegate,Include_Key_Additions:relegate
 modifier_add -id=500881 List_Field Hide_Link_Specifics Link_Restriction:relegate,Link_{Permission}:relegate
@@ -2278,7 +2279,7 @@ specification_add -id=602850 {List_Field}_view view "? standard List_Field {List
 ,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction;link,Sort_Manually,Switch_Type\
 ,Restriction_Field:Name!@fkey1:{Class}+Name;link,Restriction_Value,Trigger_Option,View_Parent_Extra,Search_Option_Limit\
 ,Select_Key_Exclusions,Include_Key_Additions,Exclude_In_Use_FK,{Procedure}:Name!@fkey1:{Class}+Name;link\
-,Procedure_Args,Omit_Versions,Reverse_Order,Retain_Selected_Rows,Non_Instance_Procedure;force\
+,Procedure_Args,Omit_Versions,Reverse_Order,Retain_Selected_Rows,Hide_If_Is_Changing,Non_Instance_Procedure;force\
 ,Font_Size,Alignment,Orientation,Notes_Truncation,Print_Type,Use_Type_Field:Name!@fkey1:{Class}+Is_Foreign_Key=0+Name;link\
 ,Label_Class,Label_Source,Label_Source_Child,Use_In_Text_Search_Title,Exact_Match_Only,Link_Type\
 ,Link_Restriction;force+forced,Link_{Permission}:Name!@group:{Workgroup}+Name,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
