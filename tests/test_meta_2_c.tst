@@ -5,7 +5,7 @@ User,User,M001C101
 Peer_Node,Peer_Nodes,M001C102
 Peer_Node_Item,Peer_Node_Items,M001C103
 Peer_Node_User,Peer_Node_User,M001C104
-Peer_Node_Vessel,Peer_Node_Vessels,M001C105
+Peer_Node_Work,Peer_Node_Works,M001C105
 Contact,Contacts,M001C106
 Core_Peer,Core_Peers,M001C107
 pf 100 107100 "107110 " 107101,107110 -min
@@ -88,7 +88,7 @@ No_Email,M001C101F132
 Read_Access_Only,M001C101F133
 Primary_External_Contact,M001C102F100
 Primary_External_User,M001C102F101
-Current_Opened_User,M001C102F102
+Current_User,M001C102F102
 Owner,M001C102F103
 Actions,M001C102F104
 Active,M001C102F105
@@ -107,7 +107,7 @@ Identity,M001C102F117
 Marked,M001C102F118
 Opened,M001C102F119
 Opened_Files,M001C102F120
-Opened_User,M001C102F121
+Opened_User_Name,M001C102F121
 Opening,M001C102F122
 Description,M001C102F123
 Disconnecting,M001C102F124
@@ -162,11 +162,12 @@ Submit_Initial_Block_Hash,M001C102F172
 Submit_Syncing,M001C102F173
 Syncing,M001C102F174
 Unlock_Files_Pending,M001C102F175
-Current_User,M001C102F176
-Demo_Blockchain,M001C102F177
-Demo_Blockchain_0,M001C102F178
-Demo_Blockchain_1,M001C102F179
-Current_Uid,M001C102F180
+Current_User_Name,M001C102F176
+Current_User_Id,M001C102F177
+Demo_Blockchain,M001C102F178
+Demo_Blockchain_0,M001C102F179
+Demo_Blockchain_1,M001C102F180
+Current_Uid,M001C102F181
 Peer_Node,M001C103F100
 Original_Name,M001C103F101
 Submitting,M001C103F102
