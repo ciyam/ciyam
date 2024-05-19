@@ -40,6 +40,10 @@ IDENTITY=$2
 ;
 @:WAIT_DONE
 ;
+.file_hash bc.$IDENTITY.zenith
+@ifdef $ERROR
+ERROR=
+@else
 .file_core -header bc.$IDENTITY.zenith h
 @ifndef $ERROR
 ZENITH_HEIGHT=$OUTPUT
@@ -87,12 +91,13 @@ DATA_LOG_FILE=@files::$IDENTITY.log
 ;
 .storage_term
 ;
+@endif
+@endif
+@endif
+;
 .system_variable @datachain_fetching
 @ifdef $OUTPUT
 .system_variable @datachain_fetching @decrement
-@endif
-;
-@endif
 @endif
 ;
 @endif
