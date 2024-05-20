@@ -3389,10 +3389,70 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !key_suffix.empty( ) )
             check_key_has_suffix( key, key_suffix );
 
-         // NOTE: If no key was provided then automatically generate a key.
+         // NOTE: If no key was provided then will automatically generate a key.
          if( key.empty( ) || key[ 0 ] == ' ' )
          {
             string new_key( gen_key( ) );
+
+            // NOTE: If the system identity had been recognised as a "demo" one then (if located) will
+            // replace the generated key with the first matching entry found in a module specific file.
+            if( has_raw_system_variable( get_special_var_name( e_special_var_system_is_for_demo ) ) )
+            {
+               string identity( get_raw_system_variable(
+                get_special_var_name( e_special_var_system_identity ) ) );
+
+               string module_name( get_module_name_for_id_or_name( module ) );
+               string demo_keys_file_name( module_name + c_demo_keys_suffix );
+
+               // NOTE: Expected format for "demo keys" is: <identity>:<class_name>=<key_value>
+               if( file_exists( demo_keys_file_name ) )
+               {
+                  vector< string > lines;
+                  vector< string > new_lines;
+
+                  string class_name( get_class_name_for_id_or_name( module, mclass ) );
+
+                  buffer_file_lines( demo_keys_file_name, lines );
+
+                  bool used_demo_key = false;
+
+                  for( size_t i = 0; i < lines.size( ); i++ )
+                  {
+                     string next_line( lines[ i ] );
+
+                     if( used_demo_key )
+                        new_lines.push_back( next_line );
+                     else
+                     {
+                        string::size_type pos = next_line.find( identity + ':' );
+
+                        if( pos == 0 )
+                        {
+                           next_line.erase( 0, identity.size( ) + 1 );
+
+                           pos = next_line.find( '=' );
+
+                           if( class_name == next_line.substr( 0, pos ) )
+                           {
+                              used_demo_key = true;
+                              new_key = next_line.substr( pos + 1 );
+                           }
+                        }
+
+                        if( !used_demo_key )
+                           new_lines.push_back( next_line );
+                     }
+                  }
+
+                  if( used_demo_key )
+                  {
+                     if( new_lines.empty( ) )
+                        file_remove( demo_keys_file_name );
+                     else
+                        write_file_lines( demo_keys_file_name, new_lines );
+                  }
+               }
+            }
 
             size_t remove_length = 2; // i.e. To remove "" if that is how the key was provided.
             string::size_type spos = next_command.find( uid ) + uid.length( ) + 1;

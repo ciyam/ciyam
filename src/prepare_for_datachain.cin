@@ -33,7 +33,6 @@ BLOG_LOG_FILE=@files::$IDENTITY.log
 ~rm $IDENTITY.log
 @endif
 ~rm $IDENTITY.bun.gz
-WEB_SUBMIT_FILE=@files:$WEBDIR:$IDENTITY.log
 @endif
 @endif
 ;

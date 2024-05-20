@@ -130,6 +130,8 @@ const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
+const char* const c_server_demo_identities_list = "ciyam_demo_identities.lst";
+
 const char* const c_ui_type_repl_name = "TYPE";
 
 const char* const c_ui_submit_type_peer = "peer";
@@ -4533,6 +4535,18 @@ void read_server_configuration( )
    }
 }
 
+set< string > g_demo_identities;
+
+void check_if_is_known_demo_identity( )
+{
+   if( g_demo_identities.empty( ) )
+      buffer_file_lines( c_server_demo_identities_list, g_demo_identities );
+
+   if( g_demo_identities.count( get_raw_system_variable(
+    get_special_var_name( e_special_var_system_identity ) ) ) )
+      set_system_variable( get_special_var_name( e_special_var_system_is_for_demo ), c_true_value );
+}
+
 void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch )
 {
    class_base_accessor instance_accessor( instance );
@@ -5179,6 +5193,8 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       set_system_variable( get_special_var_name( e_special_var_system_identity ), identity );
 
+      check_if_is_known_demo_identity( );
+
       // NOTE: The manuscript info doesn't actually need to be read until a script is attempted
       // to be run, however, it is been read at startup just to ensure that the .sio file isn't
       // initially malformed.
@@ -5598,7 +5614,11 @@ void set_identity( const string& info, const char* p_encrypted_sid )
    }
 
    if( run_init_script )
+   {
       run_script( "init_ciyam", false );
+
+      check_if_is_known_demo_identity( );
+   }
 }
 
 string get_checksum( const string& data )

@@ -234,6 +234,7 @@ enum special_var
    e_special_var_fixed_field_values,
    e_special_var_generate_hub_block,
    e_special_var_repo_entry_missing,
+   e_special_var_system_is_for_demo,
    e_special_var_blockchain_identity,
    e_special_var_blockchain_is_owner,
    e_special_var_blockchain_num_puts,

@@ -1197,6 +1197,8 @@ int64_t CIYAM_BASE_DECL_SPEC last_mod_time( const std::string& filename );
 
 void CIYAM_BASE_DECL_SPEC copy_file( const std::string& source, const std::string& destination );
 
+void CIYAM_BASE_DECL_SPEC append_file( const std::string& source, const std::string& destination );
+
 void CIYAM_BASE_DECL_SPEC copy_files(
  const std::string& source_files, const std::string& destination_files, char sep = ',' );
 

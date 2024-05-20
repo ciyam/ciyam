@@ -837,6 +837,7 @@ void Meta_Package::impl::impl_Check_Install( )
    string new_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".new" ) );
 
    bool was_okay = false;
+
    get_obj( ).op_update( );
 
    if( storage_locked_for_admin( ) )
@@ -860,6 +861,14 @@ void Meta_Package::impl::impl_Check_Install( )
 
             if( exists_file( temp_new_filename ) )
                copy_file( temp_new_filename, new_filename );
+
+            string demo_keys_ext( c_demo_keys_suffix );
+
+            string demo_keys_src( get_obj( ).Package_Type( ).Single( ) + demo_keys_ext );
+            string demo_keys_dest( get_obj( ).Model( ).Name( ) + demo_keys_ext );
+
+            if( exists_file( demo_keys_src ) )
+               append_file( demo_keys_src, demo_keys_dest );
          }
          else
             was_okay = false;
