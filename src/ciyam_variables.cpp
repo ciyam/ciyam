@@ -221,6 +221,7 @@ const char* const c_special_variable_file_info_buffered = "@file_info_buffered";
 const char* const c_special_variable_fixed_field_values = "@fixed_field_values";
 const char* const c_special_variable_generate_hub_block = "@generate_hub_block";
 const char* const c_special_variable_repo_entry_missing = "@repo_entry_missing";
+const char* const c_special_variable_system_is_for_demo = "@system_is_for_demo";
 const char* const c_special_variable_blockchain_identity = "@blockchain_identity";
 const char* const c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
 const char* const c_special_variable_blockchain_num_puts = "@blockchain_num_puts";
@@ -475,6 +476,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_fixed_field_values );
       g_special_variable_names.push_back( c_special_variable_generate_hub_block );
       g_special_variable_names.push_back( c_special_variable_repo_entry_missing );
+      g_special_variable_names.push_back( c_special_variable_system_is_for_demo );
       g_special_variable_names.push_back( c_special_variable_blockchain_identity );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_owner );
       g_special_variable_names.push_back( c_special_variable_blockchain_num_puts );
@@ -808,6 +810,11 @@ string get_system_variable( const string& name_or_expr )
    variable_expression expr( name_or_expr, raw_getter );
 
    return expr.get_value( );
+}
+
+bool has_raw_system_variable( const string& name )
+{
+   return g_variables.count( name );
 }
 
 bool has_system_variable( const string& name_or_expr )

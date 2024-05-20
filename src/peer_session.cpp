@@ -6496,7 +6496,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          {
             string data_zenith_tag( blockchain + c_zenith_suffix );
 
-            if( has_tag( data_zenith_tag ) )
+            if( has_tag( data_zenith_tag ) || has_file_archive( unprefixed_blockchain ) )
                has_data = true;
          }
          else if( is_user )

@@ -116,10 +116,10 @@ OTHER=%SPLIT:2%
 @endif
 @endif
 ;
-@ifeq "$OTHER" "6b24210e8"
-DEMO=1
-@endif
-@ifeq "$OTHER" "6f2680b40"
+DEMO_IDENTITIES=@file:ciyam_demo_identities.lst
+;
+DEMO_WITHOUT_OTHER=@repstr:$OTHER/:$DEMO_IDENTITIES
+@ifneq "$DEMO_IDENTITIES" "$DEMO_WITHOUT_OTHER"
 DEMO=1
 @endif
 ;

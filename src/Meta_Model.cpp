@@ -7442,7 +7442,14 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
 
    if( !is_create && !storage_locked_for_admin( )
     && get_obj( ).Created( ) && get_obj( ).has_field_changed( c_field_id_Name ) )
+   {
+      string original_name( get_obj( ).get_original_field_value( c_field_id_Name ) );
+
+      if( file_exists( original_name + c_demo_keys_suffix ) )
+         copy_file( original_name + c_demo_keys_suffix, get_obj( ).Name( ) + c_demo_keys_suffix );
+
       get_obj( ).Remove_Module( );
+   }
    // [<finish for_store>]
 }
 

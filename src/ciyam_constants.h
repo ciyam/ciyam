@@ -85,6 +85,8 @@ const char* const c_zenith_suffix = ".zenith";
 
 const char* const c_identity_suffix = "identity";
 
+const char* const c_demo_keys_suffix = ".demo_keys.txt";
+
 const char* const c_repository_info_suffix = ".info";
 
 const char* const c_two_spaces = "  ";

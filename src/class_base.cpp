@@ -3080,6 +3080,19 @@ void copy_file( const string& source, const string& destination )
    copy_stream( inpf, outf );
 }
 
+void append_file( const string& source, const string& destination )
+{
+   ifstream inpf( source.c_str( ), ios::in | ios::binary );
+   if( !inpf )
+      throw runtime_error( "unable to open file '" + source + "' for input" );
+
+   ofstream outf( destination.c_str( ), ios::out | ios::app | ios::binary );
+   if( !outf )
+      throw runtime_error( "unable to open file '" + destination + "' for append" );
+
+   copy_stream( inpf, outf );
+}
+
 void copy_files( const string& source_files, const string& destination_files, char sep )
 {
    vector< string > src_files;

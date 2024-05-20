@@ -99,6 +99,7 @@ makefile.vars.xrep
 3x3x3.*.txt
 *_extkeys.txt
 *.package.sio
+*.demo_keys.txt
 for_*.spec.xrep
 *_enum_icons.lst
 train_*_algos.cin
