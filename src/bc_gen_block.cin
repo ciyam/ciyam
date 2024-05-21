@@ -27,10 +27,8 @@ DATA=1
 @endif
 ;
 DEMO=
-DEMO_IDENTITIES=@file:ciyam_demo_identities.lst
-;
-DEMO_WITHOUT_IDENT=@repstr:$IDENT/:$DEMO_IDENTITIES
-@ifneq "$DEMO_IDENTITIES" "$DEMO_WITHOUT_IDENT"
+.system_variable @system_is_for_demo
+@ifdef $OUTPUT
 DEMO=1
 @endif
 ;

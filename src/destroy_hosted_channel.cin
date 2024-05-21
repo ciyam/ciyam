@@ -23,22 +23,12 @@ OTHER=$2
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
-.file_tags bc.$COMBINED.zenith*
-@ifdef $OUTPUT
-<bc_reset.cin $COMBINED
-@endif
-;
 .file_kill -p=bc.$COMBINED.*
 ;
 .file_archives -path_only $COMBINED
 @ifdef $OUTPUT
 .file_archive -destroy $COMBINED
 ~rmdir $FILES_AREA_DIR/$COMBINED
-@endif
-;
-.file_tags bc.$REVERSED.zenith*
-@ifdef $OUTPUT
-<bc_reset.cin $REVERSED
 @endif
 ;
 .file_kill -p=bc.$REVERSED.*

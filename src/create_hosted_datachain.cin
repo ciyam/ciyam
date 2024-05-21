@@ -1,0 +1,40 @@
+; Copyright (c) 2024 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+ERROR=
+@ifeq "$1" ""
+ERROR=1
+@endif
+;
+@ifeq "$ERROR" "1"
+#Usage: create_hosted_datachain.cin <identity>
+@else
+;
+IDENTITY=$1
+;
+DEMO=
+DEMO_IDENTITIES=@file:ciyam_demo_identities.lst
+;
+DEMO_WITHOUT_IDENTITY=@repstr:$IDENTITY/:$DEMO_IDENTITIES
+@ifneq "$DEMO_IDENTITIES" "$DEMO_WITHOUT_IDENTITY"
+DEMO=1
+@endif
+;
+@ifndef $DEMO
+PEER_DATA_SIZE=1GB
+@else
+PEER_DATA_SIZE=100MB
+@endif
+;
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+;
+~mkdir $FILES_AREA_DIR/$IDENTITY
+;
+.file_archive -add $FILES_AREA_DIR/$IDENTITY $PEER_DATA_SIZE $IDENTITY
+;
+#Created file archive for datachain identity '$IDENTITY'.
+;
+@endif
