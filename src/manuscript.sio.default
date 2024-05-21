@@ -210,6 +210,11 @@
   <arguments>update_peerchain_entry.cin @identity @auto_start @description @host_name @host_port @num_helpers @shared_secret
  </script>
  <script/>
+  <name>create_hosted_peerchain
+  <filename>*script*
+  <arguments>create_hosted_peerchain.cin @identity @description @shared_secret_hash
+ </script>
+ <script/>
   <name>destroy_datachain_entry
   <filename>*script*
   <arguments>destroy_datachain_entry.cin @storage @identity
@@ -230,19 +235,14 @@
   <arguments>remove_all_repo_entries.cin @identity
  </script>
  <script/>
+  <name>destroy_hosted_peerchain
+  <filename>*script*
+  <arguments>destroy_hosted_peerchain.cin @identity
+ </script>
+ <script/>
   <name>generate_parallel_chains
   <filename>*script*
   <arguments>generate_parallel_chains.cin @chain_type @identity
- </script>
- <script/>
-  <name>create_peerchain_listener
-  <filename>*script*
-  <arguments>create_peerchain_listener.cin @identity @description @shared_secret_hash
- </script>
- <script/>
-  <name>destroy_peerchain_listener
-  <filename>*script*
-  <arguments>destroy_peerchain_listener.cin @identity
  </script>
  <script/>
   <name>install_application_script

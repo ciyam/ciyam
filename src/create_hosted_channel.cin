@@ -23,10 +23,10 @@ SHARED_SECRET_HASH=$3
 <channel_identity.cin $IDENT $OTHER
 ;
 DEMO=
-@ifeq "$IDENT" "7eaff0316"
-DEMO=1
-@endif
-@ifeq "$IDENT" "cce8dd5bd"
+DEMO_IDENTITIES=@file:ciyam_demo_identities.lst
+;
+DEMO_WITHOUT_IDENT=@repstr:$IDENT/:$DEMO_IDENTITIES
+@ifneq "$DEMO_IDENTITIES" "$DEMO_WITHOUT_IDENT"
 DEMO=1
 @endif
 ;

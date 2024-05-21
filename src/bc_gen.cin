@@ -116,10 +116,8 @@ OTHER=%SPLIT:2%
 @endif
 @endif
 ;
-DEMO_IDENTITIES=@file:ciyam_demo_identities.lst
-;
-DEMO_WITHOUT_OTHER=@repstr:$OTHER/:$DEMO_IDENTITIES
-@ifneq "$DEMO_IDENTITIES" "$DEMO_WITHOUT_OTHER"
+.system_variable @system_is_for_demo
+@ifdef $OUTPUT
 DEMO=1
 @endif
 ;
@@ -388,7 +386,11 @@ HUB_EXTRA_OR_TEST_CHAIN=1
 FILES_AREA_DIR=$OUTPUT
 ;
 @ifdef $DATA
-BACKUP_SIZE=1GB
+@ifndef $DEMO
+DATA_SIZE=1GB
+@else
+DATA_SIZE=100MB
+@endif
 @else
 @ifdef $DEMO
 BACKUP_SIZE=10GB
@@ -402,6 +404,9 @@ CHANNEL_SIZE=1GB
 @endif
 ;
 ~mkdir $FILES_AREA_DIR/$IDENT
+@ifdef $DATA
+.file_archive -add $FILES_AREA_DIR/$IDENT $DATA_SIZE $IDENT
+@else
 @ifdef $CHANNEL
 ~mkdir $FILES_AREA_DIR/$REVERSED
 .file_archive -add $FILES_AREA_DIR/$IDENT $CHANNEL_SIZE $IDENT
@@ -413,7 +418,6 @@ CHANNEL_SIZE=1GB
 @else
 .file_archive -add $FILES_AREA_DIR/$IDENT $BACKUP_SIZE $IDENT
 @ifndef $ERROR
-@ifndef $DATA
 .system_variable >@blockchain_backup_archive $FILES_AREA_DIR/$IDENT
 @endif
 @endif

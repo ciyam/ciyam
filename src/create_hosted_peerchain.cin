@@ -34,10 +34,10 @@ PEER_TYPE=-2
 @endif
 ;
 DEMO=
-@ifeq "$IDENTITY" "735d12ca9"
-DEMO=1
-@endif
-@ifeq "$IDENTITY" "27a7bd560"
+DEMO_IDENTITIES=@file:ciyam_demo_identities.lst
+;
+DEMO_WITHOUT_IDENT=@repstr:$IDENT/:$DEMO_IDENTITIES
+@ifneq "$DEMO_IDENTITIES" "$DEMO_WITHOUT_IDENT"
 DEMO=1
 @endif
 ;
