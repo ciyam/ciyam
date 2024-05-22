@@ -5089,7 +5089,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          bool has = ( is_dummy || is_new_sig ) ? false : has_file( hash, false );
          bool was_initial_state = ( socket_handler.state( ) == e_peer_state_responder );
 
-         size_t blk_offset = 0;
+         size_t blk_offset = 1;
          size_t height_from_tag = 0;
 
          if( !is_dummy && !blockchain.empty( ) && ( tag_or_hash.find( blockchain ) == 0 ) )
@@ -5099,7 +5099,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             string::size_type pos = height.find( c_blk_suffix );
 
             if( pos != string::npos )
-               blk_offset = 1;
+               blk_offset = 0;
             else
                pos = height.find( c_sig_suffix );
 
