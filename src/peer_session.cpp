@@ -5089,7 +5089,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          bool has = ( is_dummy || is_new_sig ) ? false : has_file( hash, false );
          bool was_initial_state = ( socket_handler.state( ) == e_peer_state_responder );
 
-         size_t blk_offset = 1;
          size_t height_from_tag = 0;
 
          if( !is_dummy && !blockchain.empty( ) && ( tag_or_hash.find( blockchain ) == 0 ) )
@@ -5098,18 +5097,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
             string::size_type pos = height.find( c_blk_suffix );
 
-            if( pos != string::npos )
-               blk_offset = 0;
-            else
+            if( pos == string::npos )
                pos = height.find( c_sig_suffix );
 
             if( pos != string::npos )
             {
                height.erase( pos );
                height_from_tag = from_string< size_t >( height );
-
-               if( !height_from_tag )
-                  blk_offset = 0;
 
                clear_first_prefixed( );
 
@@ -5120,7 +5114,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                {
                   size_t old_blockchain_height_other = blockchain_height_other;
 
-                  blockchain_height_other = ( height_from_tag - blk_offset );
+                  blockchain_height_other = height_from_tag;
 
                   if( was_initial_state
                    || ( blockchain_height_other != old_blockchain_height_other ) )
@@ -5137,7 +5131,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                size_t old_blockchain_height_other = blockchain_height_other;
 
-               blockchain_height_other = ( height_from_tag - blk_offset );
+               blockchain_height_other = height_from_tag;
 
                if( blockchain_height_other != old_blockchain_height_other )
                {
