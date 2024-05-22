@@ -86,6 +86,7 @@ SECRET_HASH=$OUTPUT
 ;
 ANY_PEER_CONNECTS=1
 .peer_connect $NEXT_CHAIN $HOST_NAME-$HOST_PORT -data
+.wait 250
 ;
 @endif
 ;
