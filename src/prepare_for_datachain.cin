@@ -21,19 +21,70 @@ IDENTITY=$2
 ;
 BLOG_LOG_FILE=@files::$IDENTITY.log
 @ifdef $BLOG_LOG_FILE
+;
 ~./bundle $IDENTITY $IDENTITY.log
 <import_files.cin . $IDENTITY.tree : $IDENTITY.bun.gz
+;
 .storage_init $STORAGE
 @ifndef $ERROR
+;
 <generate_next_block.cin $IDENTITY dummy $IDENTITY.tree
+;
 @ifndef $ERROR
 <block_tree_relegate.cin $IDENTITY $IDENTITY.tree
 .file_core -header bc.$IDENTITY.zenith h
 .storage_peer_data_details $IDENTITY -height=$OUTPUT
 ~rm $IDENTITY.log
+;
+.pf $STORAGE Peer_Node "Active#1 1" Identity,Host_Name,Port_Number -min
+@ifndef $ERROR
+;
+ROWS=$OUTPUT
+;
+@:LOOP
+;
+@label NEXT
+@ifndef $ROWS
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+NEXT_ROW=%ROWS:1%
+COLS=@repstr:,/\n:$NEXT_ROW
+;
+PEER_ID=%COLS:1%
+HOST_NAME=%COLS:2%
+HOST_PORT=%COLS:3%
+;
+.regex "^hub\\\.(.*)" $HOST_NAME
+@ifdef $OUTPUT
+.system_variable $$%PEER_ID%_identity
+HASH_ID=$OUTPUT
+;
+; NOTE: Use the channel's secret hash for a secure peer connection.
+.system_variable @secret_hash_$HASH_ID
+SECRET_HASH=$OUTPUT
+@ifdef $SECRET_HASH
+.session_variable @secret_hash $SECRET_HASH
+@endif
+.peer_connect $IDENTITY $HOST_NAME-$HOST_PORT -data
+@endif
+;
+ROWS=%ROWS:-1%
+;
+!!@:LOOP
+;
+@:END_LOOP
+;
+@endif
+;
 @endif
 ~rm $IDENTITY.bun.gz
 @endif
+.storage_term
+;
 @endif
 ;
 @endif
