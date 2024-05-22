@@ -40,10 +40,8 @@ IDENTITY=$2
 ;
 @:WAIT_DONE
 ;
-.file_hash bc.$IDENTITY.zenith
-@ifdef $ERROR
-ERROR=
-@else
+.file_hash -q bc.$IDENTITY.zenith
+@ifdef $OUTPUT
 .file_core -header bc.$IDENTITY.zenith h
 @ifndef $ERROR
 ZENITH_HEIGHT=$OUTPUT
