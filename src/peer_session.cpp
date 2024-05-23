@@ -3979,6 +3979,14 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
          response.erase( );
       else
       {
+         if( response.find( c_response_error_prefix ) == 0 )
+         {
+            socket.close( );
+            response.erase( 0, strlen( c_response_error_prefix ) );
+
+            throw runtime_error( response );
+         }
+
          string session_secret( get_session_secret( ) );
 
          if( !session_secret.empty( ) )
