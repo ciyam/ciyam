@@ -38,23 +38,23 @@ NEXT_LINE=$OUTPUT
 ;
 @:NEXT
 NEXT_LINE=@repstr:,/\n:$NEXT_LINE
-IDENTITY=%NEXT_LINE:1%
+NEXT_IDENT=%NEXT_LINE:1%
 SHARED_SECRET=%NEXT_LINE:2%
 SUBMIT_IDENTITY=%NEXT_LINE:3%
 RECEIVE_IDENTITY=%NEXT_LINE:4%
 HOST_NAME=%NEXT_LINE:5%
 HOST_PORT=%NEXT_LINE:6%
 ;
-.system_variable @opening_$IDENTITY 1 ""
+.system_variable @opening_$NEXT_IDENT 1 ""
 @ifeq $OUTPUT 1
-.system_variable @opened_$IDENTITY
+.system_variable @opened_$NEXT_IDENT
 @ifndef $OUTPUT
 ;
-APP_LOG_INFO_FILE=@files::$IDENTITY.log
+APP_LOG_INFO_FILE=@files::$NEXT_IDENT.log
 ;
 @ifdef $APP_LOG_INFO_FILE
-.system_variable @shared_secret_$IDENTITY $SHARED_SECRET
-<prepare_for_channel.cin $STORAGE $IDENTITY
+.system_variable @shared_secret_$NEXT_IDENT $SHARED_SECRET
+<prepare_for_channel.cin $STORAGE $NEXT_IDENT
 ;
 .system_variable @secret_hash_$SUBMIT_IDENTITY
 .session_variable @secret_hash $OUTPUT
@@ -64,7 +64,7 @@ APP_LOG_INFO_FILE=@files::$IDENTITY.log
 @else
 SKIPPED=1
 @endif
-.system_variable @opening_$IDENTITY ""
+.system_variable @opening_$NEXT_IDENT ""
 @else
 SKIPPED=1
 @endif

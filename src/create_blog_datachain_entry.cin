@@ -35,7 +35,6 @@ ALL_DATA_CHAINS=$OUTPUT
 IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
 @ifeq "$ALL_DATA_CHAINS" "$IDENTITY_REMOVED"
 .storage_peer_data_details $IDENTITY -type=0
-@endif
 ;
 ; NOTE: Touch the <identity>.log file for every active Peer Node.
 .module_list
@@ -71,6 +70,9 @@ DEQUE=$OUTPUT
 .session_variable @deque "~$DEQUE"
 ;
 @endif
+;
+@endif
+;
 .storage_term
 @endif
 ;
