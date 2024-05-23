@@ -32,7 +32,7 @@ HAS_NO_OPL=
 @skip
 ;
 @:NEXT
-@ifeq "$2" ""
+@ifeq "$2" "dummy"
 .system_variable @blockchain_data_key_$IDENT
 @ifdef $OUTPUT
 DATA_KEY=$OUTPUT
