@@ -1,4 +1,4 @@
-`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_bool_contains_other)] `{`$arg_id`}
    // NOTE: Empty code block for scope purposes.
    {

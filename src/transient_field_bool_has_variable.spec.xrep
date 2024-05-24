@@ -1,0 +1,23 @@
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
+   // [(start transient_field_bool_has_variable)] `{`$arg_id`}
+`{`@eq`(`$arg_system`,`'true`'`)\
+   get_obj( ).`{`$arg_field`}( has_system_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}`}( ) ) );
+`,`@eq`(`$arg_session`,`'true`'`)\
+   get_obj( ).`{`$arg_field`}( has_session_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}`}( ) ) );
+`,\
+   get_obj( ).`{`$arg_field`}( get_obj( ).has_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}`}( ) ) );
+`}\
+   // [(finish transient_field_bool_has_variable)] `{`$arg_id`}
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_field_bool_has_variable)] `{`$arg_id`}
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_ofield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_ofield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_ofield`} ) ) )
+         names.insert( "`{`$arg_ofield`}" );
+   }
+   // [(finish transient_field_bool_has_variable)] `{`$arg_id`}
+`}
