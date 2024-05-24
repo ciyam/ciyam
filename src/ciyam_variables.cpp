@@ -261,6 +261,7 @@ const char* const c_special_variable_blockchain_block_file_hash = "@blockchain_b
 const char* const c_special_variable_blockchain_both_are_owners = "@blockchain_both_are_owners";
 const char* const c_special_variable_blockchain_peer_hub_height = "@blockchain_peer_hub_height";
 const char* const c_special_variable_blockchain_shared_identity = "@blockchain_shared_identity";
+const char* const c_special_variable_use_insecure_peer_protocol = "@use_insecure_peer_protocol";
 const char* const c_special_variable_blockchain_waiting_for_hub = "@blockchain_waiting_for_hub";
 const char* const c_special_variable_blockchain_block_processing = "@blockchain_block_processing";
 const char* const c_special_variable_blockchain_zenith_tree_hash = "@blockchain_zenith_tree_hash";
@@ -516,6 +517,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_both_are_owners );
       g_special_variable_names.push_back( c_special_variable_blockchain_peer_hub_height );
       g_special_variable_names.push_back( c_special_variable_blockchain_shared_identity );
+      g_special_variable_names.push_back( c_special_variable_use_insecure_peer_protocol );
       g_special_variable_names.push_back( c_special_variable_blockchain_waiting_for_hub );
       g_special_variable_names.push_back( c_special_variable_blockchain_block_processing );
       g_special_variable_names.push_back( c_special_variable_blockchain_zenith_tree_hash );

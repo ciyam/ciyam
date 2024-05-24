@@ -32,7 +32,11 @@ HAS_NO_OPL=
 @skip
 ;
 @:NEXT
-@ifeq "$2" "dummy"
+@ifeq "$SEED" "dummy"
+SEED=
+@endif
+;
+@ifeq "$SEED" ""
 .system_variable @blockchain_data_key_$IDENT
 @ifdef $OUTPUT
 DATA_KEY=$OUTPUT
@@ -44,7 +48,7 @@ SEED=@sid
 @endif
 @endif
 ;
-@ifeq "$1" "-backup"
+@ifeq "$IDENT" "-backup"
 BACKUP=1
 @endif
 ;
