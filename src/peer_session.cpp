@@ -2815,6 +2815,12 @@ void process_public_key_file( const string& blockchain,
 
       string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
+      set_session_variable( get_special_var_name(
+       e_special_var_blockchain_block_processing ), "" );
+
+      set_session_variable( get_special_var_name(
+       e_special_var_blockchain_height_processing ), "" );
+
       set_session_variable( zenith_height_name, to_string( height ) );
 
       output_sync_progress_message( identity, height, height_other, true );
@@ -4343,7 +4349,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             {
                if( !has_tree_files )
                {
-                  check_for_missing_other_sessions( date_time::local( ) );
+                  if( !has_session_variable( get_special_var_name( e_special_var_paired_sync ) ) )
+                     check_for_missing_other_sessions( date_time::local( ) );
 
                   set_session_variable( get_special_var_name( e_special_var_blockchain_get_tree_files ), "" );
                   set_session_variable( get_special_var_name( e_special_var_blockchain_waiting_for_hub ), "" );
