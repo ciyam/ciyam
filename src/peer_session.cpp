@@ -7046,6 +7046,23 @@ void peer_session::on_start( )
                   clear_key( session_secret );
                }
 
+               string block_tag( blockchain + '.' + to_string( blockchain_height ) + string( c_blk_suffix ) );
+
+               if( has_tag( block_tag ) )
+               {
+                  string expected_hash( tag_file_hash( block_tag ) );
+
+                  if( block_hash != expected_hash )
+                  {
+                     // FUTURE: This message should be handled as a server string message.
+                     string error( "Unexpected blockchain fork detected." );
+
+                     set_system_variable( c_error_message_prefix + identity, error );
+
+                     throw runtime_error( error );
+                  }
+               }
+
                add_peer_file_hash_for_get( block_hash );
 
                if( !has_file( block_hash ) )
