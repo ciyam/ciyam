@@ -58,7 +58,7 @@ ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 @skip
 ;
 @:WAIT_NEXT
-.wait 250
+.wait 1000
 !!@:WAIT_LOOP
 ;
 @:WAIT_DONE
