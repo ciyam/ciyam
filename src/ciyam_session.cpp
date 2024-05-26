@@ -2543,8 +2543,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_module_class_list )
       {
          string module( get_parm_val( parameters, c_cmd_ciyam_session_module_class_list_module ) );
+         string pattern( get_parm_val( parameters, c_cmd_ciyam_session_module_class_list_pattern ) );
 
-         module_class_list( module, osstr );
+         module_class_list( module, osstr, ( pattern.empty( ) ? 0 : pattern.c_str( ) ) );
 
          if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
             response = osstr.str( );
