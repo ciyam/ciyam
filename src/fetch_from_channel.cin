@@ -170,11 +170,9 @@ HAS_BLOG_CLASS=
 LINES=@repstr: /\n:$OUTPUT
 MODULE=%LINES:2%
 ;
-.module_class_field_list $MODULE Blog
+.module_class_list $MODULE -p=Blog
 @ifdef $OUTPUT
 HAS_BLOG_CLASS=1
-@else
-ERROR=
 @endif
 ;
 @ifdef $HAS_BLOG_CLASS

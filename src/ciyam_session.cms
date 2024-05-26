@@ -38,7 +38,7 @@ file_repo_entries "count/remove repository entries" <opt/-total/total>|<opt/-rem
 module_list "list loaded modules"
 module_load "load an existing module" <val//module>
 module_unload "unload a loaded module" <val//module>
-module_class_list "list available classes for a loaded module" <val//module>
+module_class_list "list available classes for a loaded module" <val//module>[<val/-p=/pattern>]
 module_strings_list "list all module strings" <val//module>
 module_class_field_list "list available fields for a loaded module's class" <val//module><val//class>
 module_class_procedure_list "list available procedures for a loaded module's class" <val//module><val//class>

@@ -113,16 +113,19 @@ inline string module_name_from_id_or_name( const string& module_id_or_name )
    return module_name;
 }
 
-module_class_list_error list_module_classes_impl( const string& module_id_or_name,
- ostream* p_os, vector< string >* p_lst, map< string, string >* p_map, bool key_by_id, int type = -1 )
+module_class_list_error list_module_classes_impl(
+ const string& module_id_or_name, ostream* p_os, vector< string >* p_lst,
+ map< string, string >* p_map, bool key_by_id, int type = -1, const char* p_pat = 0 )
 {
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       return e_module_class_list_error_name_unknown;
 
@@ -135,6 +138,7 @@ module_class_list_error list_module_classes_impl( const string& module_id_or_nam
    ( *obtain_class_registry_func )( p_class_registry );
 
    class_registry_const_iterator crci, end;
+
    for( crci = p_class_registry->begin( ), end = p_class_registry->end( ); crci != end; ++crci )
    {
       class_info_container class_info;
@@ -143,7 +147,11 @@ module_class_list_error list_module_classes_impl( const string& module_id_or_nam
       if( type >= 0 && ( crci->second )->class_type( ) != type )
          continue;
 
+      if( p_pat && !wildcard_match( p_pat, ( crci->second )->class_name( ) ) )
+         continue;
+
       string restrictions;
+
       if( !class_info.empty( ) )
       {
          string::size_type pos = class_info[ 0 ].find( ',' );
@@ -193,6 +201,7 @@ module_load_error load_module( const string& module_name )
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
@@ -351,21 +360,21 @@ void list_modules( ostream& os )
       os << mci->first << " (" << ( mci->second ).ref_count << ")\n";
 }
 
-module_class_list_error list_module_classes( const string& module_id_or_name, ostream& os, int type )
+module_class_list_error list_module_classes( const string& module_id_or_name, ostream& os, int type, const char* p_pat )
 {
-   return list_module_classes_impl( module_id_or_name, &os, 0, 0, false, type );
+   return list_module_classes_impl( module_id_or_name, &os, 0, 0, false, type, p_pat );
 }
 
 module_class_list_error list_module_classes(
- const string& module_id_or_name, vector< string >& class_list, int type )
+ const string& module_id_or_name, vector< string >& class_list, int type, const char* p_pat )
 {
-   return list_module_classes_impl( module_id_or_name, 0, &class_list, 0, false, type );
+   return list_module_classes_impl( module_id_or_name, 0, &class_list, 0, false, type, p_pat );
 }
 
 module_class_list_error list_module_classes(
- const string& module_id_or_name, map< string, string >& class_map, bool key_by_id, int type )
+ const string& module_id_or_name, map< string, string >& class_map, bool key_by_id, int type, const char* p_pat )
 {
-   return list_module_classes_impl( module_id_or_name, 0, 0, &class_map, key_by_id, type );
+   return list_module_classes_impl( module_id_or_name, 0, 0, &class_map, key_by_id, type, p_pat );
 }
 
 void init_module_class_info( const string& module_id_or_name, module_library_info& module_info )

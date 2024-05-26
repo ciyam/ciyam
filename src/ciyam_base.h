@@ -751,7 +751,7 @@ size_t CIYAM_BASE_DECL_SPEC get_next_handle( );
 void CIYAM_BASE_DECL_SPEC module_list( std::ostream& os );
 size_t CIYAM_BASE_DECL_SPEC module_count( );
 
-void CIYAM_BASE_DECL_SPEC module_class_list( const std::string& module, std::ostream& os );
+void CIYAM_BASE_DECL_SPEC module_class_list( const std::string& module, std::ostream& os, const char* p_pat = 0 );
 void CIYAM_BASE_DECL_SPEC module_strings_list( const std::string& module, std::ostream& os );
 
 void CIYAM_BASE_DECL_SPEC module_class_fields_list(

@@ -10798,7 +10798,7 @@ size_t module_count( )
    return gtp_session->modules_by_name.size( );
 }
 
-void module_class_list( const string& module, ostream& os )
+void module_class_list( const string& module, ostream& os, const char* p_pat )
 {
    module_const_iterator mci = gtp_session->modules_by_id.find( module );
 
@@ -10811,7 +10811,7 @@ void module_class_list( const string& module, ostream& os )
           make_pair( c_str_parm_module_not_loaded_module, module ) ) );
    }
 
-   module_class_list_error rc = list_module_classes( module, os );
+   module_class_list_error rc = list_module_classes( module, os, -1, p_pat );
 
    if( rc != e_module_class_list_error_none )
       throw runtime_error( "unexpected module class list error #" + to_string( rc ) );
