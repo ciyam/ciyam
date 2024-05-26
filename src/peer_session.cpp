@@ -130,6 +130,9 @@ const size_t c_num_hash_rounds = 1000000;
 
 const size_t c_num_check_disconnected = 8;
 
+const size_t c_peer_protocol_not_found_rcvd_gap = 3;
+const size_t c_peer_protocol_not_found_sent_gap = 2;
+
 enum op
 {
    e_op_chk,
@@ -3364,11 +3367,16 @@ class socket_command_handler : public command_handler
     is_owner( is_owner ),
     time_val( time_val ),
     last_num_tree_item( 0 ),
+    num_rcvd_not_found( 0 ),
+    num_sent_not_found( 0 ),
+    old_rcvd_not_found( 0 ),
+    old_sent_not_found( 0 ),
     blockchain( blockchain ),
     blockchain_height( 0 ),
     blockchain_height_other( 0 ),
     blockchain_height_pending( 0 ),
     is_for_support( is_for_support ),
+    is_test_identity( false ),
     is_time_for_check( false ),
     has_identity_archive( false ),
     has_checked_stream_cipher( false ),
@@ -3392,6 +3400,10 @@ class socket_command_handler : public command_handler
             set_blockchain_tree_item( blockchain, 0 );
 
          identity = replaced( blockchain, c_bc_prefix, "" );
+
+         if( ( identity == c_test_backup_identity )
+          || ( identity == c_test_shared_identity ) )
+            is_test_identity = true;
       }
 
       last_issued_was_put = !is_responder;
@@ -3542,6 +3554,9 @@ class socket_command_handler : public command_handler
    void set_dtm_sent_not_found( const date_time& dtm )
    {
       dtm_sent_not_found = dtm;
+
+      old_sent_not_found = num_sent_not_found;
+      num_sent_not_found = socket.get_num_write_lines( );
    }
 
    peer_state& state( ) { return session_state; }
@@ -3591,6 +3606,7 @@ class socket_command_handler : public command_handler
 
    bool is_responder;
    bool is_for_support;
+   bool is_test_identity;
 
    bool is_time_for_check;
    bool last_issued_was_put;
@@ -3619,6 +3635,12 @@ class socket_command_handler : public command_handler
 
    date_time dtm_last_get;
    date_time dtm_last_issued;
+
+   size_t num_rcvd_not_found;
+   size_t num_sent_not_found;
+
+   size_t old_rcvd_not_found;
+   size_t old_sent_not_found;
 
    date_time dtm_rcvd_not_found;
    date_time dtm_sent_not_found;
@@ -4386,11 +4408,40 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             was_not_found = true;
       }
 
-      if( !is_local && was_not_found )
+      if( was_not_found && !is_test_identity )
       {
          date_time now( date_time::standard( ) );
 
          seconds elapsed = ( seconds )( now - dtm_rcvd_not_found );
+
+         // NOTE: For "user" blockchains will detect if the protocol is in a "not found" loop
+         // (by checking how many reads/writes between "not found" being read/written) and if
+         // found then sets the session sync time which will flag to both sessions (if paired
+         // session has also set it within the elapsed time or one second).
+         if( has_session_variable( get_special_var_name( e_special_var_blockchain_user ) ) )
+         {
+            old_rcvd_not_found = num_rcvd_not_found;
+            num_rcvd_not_found = socket.get_num_read_lines( );
+
+            if( old_rcvd_not_found && old_sent_not_found )
+            {
+               if( ( num_sent_not_found == ( old_sent_not_found + c_peer_protocol_not_found_sent_gap ) )
+                && ( num_rcvd_not_found == ( old_rcvd_not_found + c_peer_protocol_not_found_rcvd_gap ) ) )
+               {
+                  string paired_identity( get_raw_session_variable(
+                   get_special_var_name( e_special_var_paired_identity ) ) );
+
+                  string paired_sync( get_special_var_name( e_special_var_paired_sync ) );
+
+                  int num_seconds = elapsed;
+
+                  if( !num_seconds )
+                     ++num_seconds;
+
+                  set_session_sync_time( ( identity != paired_identity ? &paired_identity : 0 ), true, num_seconds, &paired_sync );
+               }
+            }
+         }
 
          dtm_rcvd_not_found = now;
 
@@ -4401,22 +4452,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             elapsed = ( seconds )( now - dtm_sent_not_found );
 
             if( elapsed < 1.0 )
-            {
                msleep( c_peer_sleep_time );
-
-               // NOTE: When blockchain type is "user" then both this and the paired session can
-               // automatically be terminated if both were found sleeping here (within a second).
-               if( !get_raw_session_variable(
-                get_special_var_name( e_special_var_blockchain_user ) ).empty( ) )
-               {
-                  string paired_identity( get_raw_session_variable(
-                   get_special_var_name( e_special_var_paired_identity ) ) );
-
-                  string paired_sync( get_special_var_name( e_special_var_paired_sync ) );
-
-                  set_session_sync_time( ( identity != paired_identity ? &paired_identity : 0 ), true, 1, &paired_sync );
-               }
-            }
          }
       }
    }
