@@ -42,6 +42,19 @@ module_class_list Meta
 142100 Global_Datachain_Entry 0
 145100 Global_Peerchain_Entry 0
 150100 Global_Repository_Entry 0
+module_class_list Meta -p=Field
+107100 Field 0
+module_class_list Meta -p=*Field
+107100 Field 0
+120100 View_Field 0
+124100 List_Field 0
+module_class_list Meta -p=*Field*
+107100 Field 0
+119100 View_Field_Type 0
+120100 View_Field 0
+123100 List_Field_Type 0
+124100 List_Field 0
+128100 Specification_Field_Action 0
 module_class_field_list Meta User
 100102 Active bool normal
 100104 Description string normal
