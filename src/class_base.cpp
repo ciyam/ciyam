@@ -1644,7 +1644,7 @@ bool class_base::has_skipped_empty_update( )
 {
    if( p_impl->has_changed_user_fields )
       return false;
-   else if( !get_raw_session_variable( get_special_var_name( e_special_var_bh ) ).empty( ) )
+   else if( has_raw_session_variable( get_special_var_name( e_special_var_bh ) ) )
       return false;
    else
    {
@@ -2181,7 +2181,7 @@ string class_base::generate_sql_insert( const string& class_name, string* p_undo
    get_sql_column_names( sql_column_names, &done, &class_name );
 
    if( sql_column_names.empty( )
-    && get_raw_session_variable( get_special_var_name( e_special_var_bh ) ).empty( ) )
+    && !has_raw_session_variable( get_special_var_name( e_special_var_bh ) ) )
       sql_stmt.erase( );
    else
    {
@@ -2239,7 +2239,7 @@ string class_base::generate_sql_update( const string& class_name, string* p_undo
    get_sql_column_names( sql_column_names, &done, &class_name );
 
    if( sql_column_names.empty( )
-    && get_raw_session_variable( get_special_var_name( e_special_var_bh ) ).empty( ) )
+    && !has_raw_session_variable( get_special_var_name( e_special_var_bh ) ) )
    {
       sql_stmt.erase( );
 

@@ -318,7 +318,7 @@ void ciyam_notifier::on_start( )
 
                         directory_path += next_directory + '/';
 
-                        if( get_raw_system_variable( directory_path ).empty( ) )
+                        if( !has_raw_system_variable( directory_path ) )
                         {
                            string unique( get_next_unique( ) );
 

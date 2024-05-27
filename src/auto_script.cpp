@@ -429,7 +429,7 @@ void autoscript_session::on_start( )
             continue;
          }
 
-         if( !get_raw_system_variable( autoscript_reload_name ).empty( ) )
+         if( has_raw_system_variable( autoscript_reload_name ) )
          {
             changed = true;
             set_system_variable( autoscript_reload_name, "" );

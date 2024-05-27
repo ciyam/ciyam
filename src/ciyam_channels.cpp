@@ -85,8 +85,8 @@ channel_lock::channel_lock( const class_base& cb, const string& identity )
    if( set_system_variable( get_special_var_name(
     e_special_var_opening ) + '_' + identity, c_true_value, string( "" ) ) )
    {
-      if( !get_raw_system_variable( get_special_var_name(
-       e_special_var_opened ) + '_' + identity ).empty( ) )
+      if( has_raw_system_variable(
+       get_special_var_name( e_special_var_opened ) + '_' + identity ) )
       {
          set_system_variable(
           get_special_var_name( e_special_var_opening ) + '_' + identity, "" );
@@ -964,7 +964,7 @@ bool storage_channel_documents_marked( const string& identity )
 
       string opened_variable_name( get_special_var_name( e_special_var_opened ) + '_' + identity );
 
-      if( !get_raw_system_variable( opened_variable_name ).empty( ) )
+      if( has_raw_system_variable( opened_variable_name ) )
       {
          string prefix( get_raw_system_variable(
           get_special_var_name( e_special_var_opened_files ) ) + '/' + identity + '/' );
@@ -1033,9 +1033,9 @@ bool storage_channel_documents_opened( const string& identity )
       string opened_variable_name( get_special_var_name( e_special_var_opened ) + '_' + identity );
       string opening_variable_name( get_special_var_name( e_special_var_opening ) + '_' + identity );
 
-      if( !get_raw_system_variable( opened_variable_name ).empty( ) )
+      if( has_raw_system_variable( opened_variable_name ) )
          retval = true;
-      else if( get_raw_system_variable( opening_variable_name ).empty( ) )
+      else if( !has_raw_system_variable( opening_variable_name ) )
       {
          string opened_files_directory( get_raw_system_variable(
           get_special_var_name( e_special_var_opened_files ) ) );
@@ -1131,7 +1131,7 @@ bool storage_channel_documents_opened( const string& identity )
                {
                   msleep( c_notifer_check_wait );
 
-                  if( !get_raw_system_variable( c_notifier_prefix + identity_directory + '/' ).empty( ) )
+                  if( has_raw_system_variable( c_notifier_prefix + identity_directory + '/' ) )
                   {
                      has_notifier_variables = true;
                      break;

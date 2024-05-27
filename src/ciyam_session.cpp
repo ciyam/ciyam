@@ -6119,12 +6119,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             string var_name( c_notifier_prefix + file_or_directory );
 
-            if( get_raw_system_variable( var_name ).empty( ) )
+            if( !has_raw_system_variable( var_name ) )
                var_name += '/';
 
             // NOTE: As a notifier can delete itself will just
             // do nothing if no system variable is found.
-            if( !get_raw_system_variable( var_name ).empty( ) )
+            if( has_raw_system_variable( var_name ) )
             {
                set_system_variable( var_name, c_finishing, c_watching );
                set_system_variable( var_name, c_finishing, c_suspended );
@@ -6135,7 +6135,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   msleep( c_notifer_check_wait );
 
-                  if( get_raw_system_variable( var_name ).empty( ) )
+                  if( !has_raw_system_variable( var_name ) )
                   {
                      okay = true;
                      break;
@@ -6150,7 +6150,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             string var_name( c_notifier_prefix + file_or_directory );
 
-            if( get_raw_system_variable( var_name ).empty( ) )
+            if( !has_raw_system_variable( var_name ) )
                var_name += '/';
 
             if( get_raw_system_variable( var_name ) == c_watching )
@@ -6160,7 +6160,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             string var_name( c_notifier_prefix + file_or_directory );
 
-            if( get_raw_system_variable( var_name ).empty( ) )
+            if( !has_raw_system_variable( var_name ) )
                var_name += '/';
 
             if( get_raw_system_variable( var_name ) == c_suspended )
@@ -6171,8 +6171,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             string file( file_or_directory );
             string directory( file_or_directory + '/' );
 
-            if( !get_raw_system_variable( file ).empty( )
-             || !get_raw_system_variable( directory ).empty( ) )
+            if( has_raw_system_variable( file )
+             || has_raw_system_variable( directory ) )
                throw runtime_error( "detected conflicting system variable for '" + file_or_directory + "'" );
 
             ciyam_notifier* p_notifier = new ciyam_notifier( file_or_directory );
@@ -6185,8 +6185,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             {
                msleep( c_notifer_check_wait );
 
-               if( !get_raw_system_variable( c_notifier_prefix + file ).empty( )
-                || !get_raw_system_variable( c_notifier_prefix + directory ).empty( ) )
+               if( has_raw_system_variable( c_notifier_prefix + file )
+                || has_raw_system_variable( c_notifier_prefix + directory ) )
                {
                   okay = true;
                   break;
