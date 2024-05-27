@@ -6663,8 +6663,7 @@ string process_script_args( const string& raw_args, bool use_system_variables )
             {
                // NOTE: Always use "@argX" value if found otherwise will use the value
                // of the session variable that matches the name of the script argument.
-               string arg_value(
-                get_raw_session_variable( "@arg" + to_string( i + adjust ) ) );
+               string arg_value( get_raw_session_variable( "@arg" + to_string( i + adjust ) ) );
 
                if( !arg_value.empty( ) )
                   next_arg = arg_value;
@@ -8077,6 +8076,25 @@ void set_default_session_variables( int port )
       set_session_variable( get_special_var_name( e_special_var_port ), to_string( port ) );
 
    set_session_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
+}
+
+bool has_raw_session_variable( const string& name, size_t sess_id )
+{
+   bool retval = false;
+
+   auto_ptr< guard > ap_guard;
+   auto_ptr< restorable< session* > > ap_temp_session;
+
+   if( sess_id )
+   {
+      ap_guard.reset( new guard( g_session_mutex, "has_raw_session_variable" ) );
+      ap_temp_session.reset( new restorable< session* >( gtp_session, get_session_pointer( sess_id ) ) );
+   }
+
+   if( gtp_session )
+      retval = gtp_session->variables.count( name );
+
+   return retval;
 }
 
 string get_raw_session_variable( const string& name, size_t sess_id )

@@ -1069,9 +1069,9 @@ bool set_variable_checker::can_set( ) const
    else if( check_type == e_variable_check_type_any_session_has )
       retval = has_any_session_variable( variable_name );
    else if( check_type == e_variable_check_type_has_other_system )
-      retval = !get_raw_system_variable( variable_name ).empty( );
+      retval = has_raw_system_variable( variable_name );
    else if( check_type == e_variable_check_type_not_has_other_system )
-      retval = get_raw_system_variable( variable_name ).empty( );
+      retval = !has_raw_system_variable( variable_name );
 
    if( retval && p_additional_check )
       retval = p_additional_check->can_set( );
