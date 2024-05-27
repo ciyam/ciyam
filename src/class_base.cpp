@@ -5507,7 +5507,8 @@ string crypto_checksum( const string& hashes )
 
    if( !hashes.empty( ) )
    {
-      regex expr( c_regex_hash_256, true, true );
+      regex hash_expr( c_regex_hash_256, true, true );
+      regex identity_expr( c_regex_peerchain_identity, true, true );
 
       vector< string > all_hashes;
 
@@ -5527,7 +5528,11 @@ string crypto_checksum( const string& hashes )
             break;
          }
 
-         if( expr.search( next_hash ) == string::npos )
+         // NOTE: If an identity is instead provided then get the hash from the genesis block.
+         if( identity_expr.search( next_hash ) == 0 )
+            next_hash = tag_file_hash( c_bc_prefix + next_hash + ".0" + string( c_blk_suffix ) );
+
+         if( hash_expr.search( next_hash ) == string::npos )
             throw runtime_error( "unexpected hash value '" + next_hash + "'" );
 
          unsigned char next_buffer[ c_sha256_digest_size ];
