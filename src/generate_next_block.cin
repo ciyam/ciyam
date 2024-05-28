@@ -40,8 +40,7 @@ SEED=
 .system_variable @blockchain_data_key_$IDENT
 @ifdef $OUTPUT
 DATA_KEY=$OUTPUT
-.system_variable @system_identity
-SEED=$DATA_KEY.$OUTPUT
+SEED=@@sid:$DATA_KEY
 DATA=1
 @else
 SEED=@sid
