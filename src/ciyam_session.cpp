@@ -1504,7 +1504,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string data;
          data.reserve( c_secret_reserve_size );
 
-         data = data_or_filename;
+         // NOTE: Supports "<special>:<extra>" where <extra> will be appended before the optional suffix text.
+         string::size_type pos = data_or_filename.find( ':' );
+
+         data = data_or_filename.substr( 0, pos );
 
          if( data_from_file )
             data = load_file( data, true );
@@ -1518,6 +1521,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             response = "(file not found)";
          else
          {
+            if( pos != string::npos )
+               data += data_or_filename.substr( pos + 1 );
+
             data += data_suffix_text;
 
             string* p_update = 0;

@@ -2,3 +2,11 @@
 #arg $$1 is "$1"
 #arg $$2 is "$2"
 #arg $$3 is "$3"
+ARG0=$0
+ARG1=$1
+ARG2=$2
+ARG3=$3
+#ARG0 is: "$ARG0"
+#ARG1 is: "$ARG1"
+#ARG2 is: "$ARG2"
+#ARG3 is: "$ARG3"

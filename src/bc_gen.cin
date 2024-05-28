@@ -65,8 +65,7 @@ EXTRA_SUFFIX=_$EXTRA
 ;
 @ifdef $DATA
 DATA_KEY=$SEED
-.system_variable @system_identity
-SEED=$SEED.$OUTPUT
+SEED=@@sid:$DATA_KEY
 @endif
 ;
 @ifndef $EXTRA
