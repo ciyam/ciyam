@@ -76,7 +76,7 @@ const char c_type_directory = 'D';
 const int c_buffer_size = 65536;
 
 const char* const c_app_title = "unbundle";
-const char* const c_app_version = "0.1h";
+const char* const c_app_version = "0.1i";
 
 const char* const c_zlib_extension = ".gz";
 const char* const c_default_extension = ".bun";
@@ -89,6 +89,7 @@ string unescaped_line( const string& line )
    str.reserve( line.size( ) );
 
    bool is_escape = false;
+
    for( size_t i = 0; i < line.size( ); i++ )
    {
       char c = line[ i ];
@@ -242,6 +243,7 @@ int main( int argc, char* argv[ ] )
    bool list_only = false;
    bool overwrite = false;
    bool is_quieter = false;
+   bool skip_warns = false;
    bool no_zlib_opt = false;
 
    if( argc > first_arg + 1 )
@@ -296,6 +298,16 @@ int main( int argc, char* argv[ ] )
 
    if( argc > first_arg + 1 )
    {
+      if( string( argv[ first_arg + 1 ] ) == "-qw" )
+      {
+         ++first_arg;
+         is_quiet = true;
+         skip_warns = true;
+      }
+   }
+
+   if( argc > first_arg + 1 )
+   {
       if( string( argv[ first_arg + 1 ] ) == "-qq" )
       {
          ++first_arg;
@@ -322,20 +334,20 @@ int main( int argc, char* argv[ ] )
          cout << c_app_title << " v" << c_app_version << "\n";
 
 #ifndef ZLIB_SUPPORT
-      cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q[q]] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]] [-d <directory>]" << endl;
+      cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q[w|q]] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]] [-d <directory>]" << endl;
 #else
-      cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q[q]] [-ngz] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]] [-d <directory>]" << endl;
+      cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q[w|q]] [-ngz] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]] [-d <directory>]" << endl;
 #endif
 
       cout << "\nwhere: -i to include top level directory and -j to junk all directories" << endl;
       cout << "  and: -l to list rather than create all matching files and directories" << endl;
       cout << "  and: -o to overwrite existing files and -p to prune empty directories" << endl;
-      cout << "  and: -q for quiet mode (-qq to suppress all output apart from errors)" << endl;
-      cout << "  and: -x identifies one or more filespecs that are to be excluded" << endl;
+      cout << "  and: -q for quiet mode (-qw omit warnings and -qq only output errors)" << endl;
+      cout << "  and: -x identifies one or multiple filespecs which are to be excluded" << endl;
 #ifdef ZLIB_SUPPORT
-      cout << "  and: -ngz in order to not perform zlib expansion (for use with '-')" << endl;
+      cout << "  and: -ngz in order to not perform zlib expansion (for usage with '-')" << endl;
 #endif
-      cout << " also: -d <directory> to set a directory origin for output" << endl;
+      cout << " also: -d <directory> in order to set a directory origin for outputting" << endl;
       return 0;
    }
 
@@ -1062,7 +1074,7 @@ int main( int argc, char* argv[ ] )
             throw runtime_error( "unexpected entry type '" + to_string( type ) + "' found in line #" + to_string( line ) );
       }
 
-      if( !is_quieter )
+      if( !skip_warns && !is_quieter )
       {
          for( size_t i = 0; i < filename_filters.size( ); i++ )
          {

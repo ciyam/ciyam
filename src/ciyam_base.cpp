@@ -1654,6 +1654,73 @@ void init_system_ods( )
    string ods_db_name( get_files_area_dir( ) );
    ods_db_name += '/' + string( c_ciyam_server );
 
+   string system_db_files = ods_file_names( ods_db_name );
+
+   vector< string > all_system_db_files;
+
+   if( !system_db_files.empty( ) )
+      split( system_db_files, all_system_db_files );
+
+   size_t num_system_db_files = 0;
+
+   for( size_t i = 0; i < all_system_db_files.size( ); i++ )
+   {
+      if( file_exists( all_system_db_files[ i ] ) )
+         ++num_system_db_files;
+   }
+
+   string system_backup_files = ods_backup_file_names( c_ciyam_server, ".sav" );
+
+   vector< string > all_system_backup_files;
+
+   if( !system_backup_files.empty( ) )
+      split( system_backup_files, all_system_backup_files );
+
+   size_t num_system_backup_files = 0;
+
+   for( size_t i = 0; i < all_system_backup_files.size( ); i++ )
+   {
+      if( file_exists( all_system_backup_files[ i ] ) )
+         ++num_system_backup_files;
+   }
+
+   // NOTE: If system ODS DB is being restored from backup then first check that either the
+   // number of system ODS DB files that currently exists is either zero or exactly matches
+   // the number of backup files that have been found (logging if the number is mismatched).
+   if( num_system_backup_files )
+   {
+      bool restore_system_db = true;
+
+      if( num_system_db_files )
+      {
+         if( num_system_db_files != num_system_backup_files )
+         {
+            restore_system_db = false;
+
+            TRACE_LOG( TRACE_ANYTHING, "*** mismatched number of system/backup ODS DB files ("
+             + to_string( num_system_db_files ) + '/' + to_string( num_system_backup_files ) + ") ***" );
+         }
+      }
+
+      if( restore_system_db )
+      {
+         for( size_t i = 0; i < all_system_backup_files.size( ); i++ )
+         {
+            string backup_file_name( all_system_backup_files[ i ] );
+
+            string system_file_name( get_files_area_dir( ) + '/' + replaced( backup_file_name, ".sav", "" ) );
+
+            if( file_exists( backup_file_name ) )
+            {
+               if( num_system_backup_files )
+                  file_remove( system_file_name );
+
+               file_rename( backup_file_name, system_file_name );
+            }
+         }
+      }
+   }
+
    gap_ods.reset(
     new ods( ods_db_name.c_str( ),
     ods::e_open_mode_create_if_not_exist,
@@ -9299,6 +9366,8 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
       if( ods::instance( )->get_transaction_level( ) )
          throw runtime_error( "cannot perform a backup whilst a transaction is active" );
 
+      date_time dtm( date_time::local( ) );
+
       ods* p_ods( ods::instance( ) );
       storage_handler& handler( *gtp_session->p_storage_handler );
 
@@ -9337,9 +9406,15 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
 
                string table_name( "T_" + *mci + "_" + class_ids_and_names[ class_list[ i ] ] );
 
-               // FUTURE: These messages should be handled as a server string messages.
-               cmd_handler.output_progress(
-                "Processing DDL and row data for " + table_name + "..." );
+               date_time now( date_time::local( ) );
+
+               uint64_t elapsed = seconds_between( dtm, now );
+
+               if( elapsed >= 1 )
+               {
+                  dtm = now;
+                  cmd_handler.output_progress( "." );
+               }
 
                outf << "\n#Creating table " << table_name << "...\n";
 
@@ -9356,6 +9431,7 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
                outf << "\n);\n\n";
 
                size_t num_rows = 0;
+
                if( gtp_session->ap_db.get( ) )
                {
                   string select_sql( "SELECT * FROM " + table_name );
@@ -9364,13 +9440,16 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
                   class_base& instance( get_class_base_from_handle( handle, "" ) );
 
                   vector< string > sql_column_names;
+
                   sql_column_names.push_back( "C_Key_" );
                   sql_column_names.push_back( "C_Ver_" );
                   sql_column_names.push_back( "C_Rev_" );
                   sql_column_names.push_back( "C_Typ_" );
+
                   instance.get_sql_column_names( sql_column_names );
 
                   sql_dataset ds( *gtp_session->ap_db.get( ), select_sql );
+
                   while( ds.next( ) )
                   {
                      if( ds.get_fieldcount( ) != sql_column_names.size( ) )

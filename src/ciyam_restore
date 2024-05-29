@@ -12,30 +12,39 @@ elif [ "$WEBDIR" = "" ]; then
  echo Error: Missing environment variable 'WEBDIR'.
 else
  opt=
- export CIYAM_STORAGE=$1
- web_path=$WEBDIR/$2
- backup_path=$PWD
+ work_path=$PWD
 
  if [ "$1" = "-rebuild" ]; then
   opt=$1
-  export CIYAM_STORAGE=$2
-  web_path=$WEBDIR/$3
+  shift
  fi
 
- if [ -f "$backup_path/$CIYAM_STORAGE.backup.bun.gz" ]; then
-  echo Starting restore...
+ app_name=$1
+ web_path=$WEBDIR/$2
+
+ export CIYAM_STORAGE=$app_name
+
+ if [ -f "$work_path/$CIYAM_STORAGE.backup.bun.gz" ]; then
+  echo "Starting restore..."
+
+  echo "[app data]"
   echo \<ciyam_restore.cin $opt >~ciyam_restore.cin
   ./ciyam_client -quiet -no_prompt <~ciyam_restore.cin
   rm ~ciyam_restore.cin
 
-  pushd $web_path
-  ./unbundle -o "$backup_path/$CIYAM_STORAGE.bun.gz" files/*
-  popd
-  echo
-  echo NOTE: Change permissions to "$web_path/files/*" if required.
+  if [ "$app_name" = "Meta" ]; then
+   touch ciyam_base.update
+  fi
 
-  echo Finished restore...
+  if [ -f "$work_path/$CIYAM_STORAGE.backup_files.bun.gz" ]; then
+   echo "[web files data]"
+   pushd $web_path >/dev/null
+   $work_path/unbundle -o -q "$work_path/$CIYAM_STORAGE.backup_files.bun.gz" "files/*"
+   popd >/dev/null
+  fi
+
+  echo "Finished restore..."
  else
-  echo Error: Backup file \'$CIYAM_STORAGE.backup.bun.gz\' not found.
+  echo "Error: Backup file '$CIYAM_STORAGE.backup.bun.gz' not found."
  fi
 fi
