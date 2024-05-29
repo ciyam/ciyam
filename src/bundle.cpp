@@ -71,7 +71,7 @@ const int c_buffer_size = 65536;
 const int c_max_bytes_per_line = 96; // (for 128 characters)
 
 const char* const c_app_title = "bundle";
-const char* const c_app_version = "0.1h";
+const char* const c_app_version = "0.1i";
 
 const char* const c_zlib_extension = ".gz";
 const char* const c_default_extension = ".bun";
@@ -275,6 +275,23 @@ void process_directory( const string& directory, const string& filespec_path,
 
    string path_prefix;
 
+   bool all_filters_have_dirs = !filename_filters.empty( );
+
+   for( int i = 0; i < filename_filters.size( ); i++ )
+   {
+      string next_filter( filename_filters[ i ] );
+
+      string::size_type dpos = next_filter.find( '/' );
+      string::size_type wpos = next_filter.find_first_of( "?*" );
+
+      if( ( dpos == string::npos )
+       || ( ( wpos != string::npos ) && ( wpos < dpos ) ) )
+      {
+         all_filters_have_dirs = false;
+         break;
+      }
+   }
+
    if( pos != string::npos )
       path_prefix = filespec_path.substr( 0, pos );
 
@@ -300,7 +317,9 @@ void process_directory( const string& directory, const string& filespec_path,
 
       bool has_output_directory = false;
 
-      if( !prune || dfsi.get_level( ) == 0 )
+      // NOTE: If every filter has a directory prefix (with no wildcards) then
+      // will treat processing as though the "prune" option had been provided.
+      if( ( !prune && !all_filters_have_dirs ) || ( dfsi.get_level( ) == 0 ) )
       {
          has_output_directory = true;
 #ifndef ZLIB_SUPPORT
@@ -663,13 +682,6 @@ int main( int argc, char* argv[ ] )
 
    if( argc > first_arg + 1 )
    {
-      // NOTE: Ignore '-y' for compatibility with zip.
-      if( string( argv[ first_arg + 1 ] ) == "-y" )
-         ++first_arg;
-   }
-
-   if( argc > first_arg + 1 )
-   {
       if( string( argv[ first_arg + 1 ] ) == "-b64" )
       {
          ++first_arg;
@@ -710,9 +722,9 @@ int main( int argc, char* argv[ ] )
       cout << "  and: -q for quiet mode (-qq to suppress all output apart from errors)" << endl;
       cout << "  and: -b64/-esc stores file data using b64/esc encoding for text lines" << endl;
 #ifdef ZLIB_SUPPORT
-      cout << "  and: -ngz in order to not perform zlib compression" << endl;
+      cout << "  and: -ngz in order to not perform zlib compression (similar to 'tar')" << endl;
 #endif
-      cout << " also: -x identifies one or more filespecs that are to be excluded" << endl;
+      cout << " also: -x identifies one or multiple filespecs which are to be excluded" << endl;
       return 0;
    }
 

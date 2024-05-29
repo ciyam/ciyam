@@ -14,7 +14,8 @@ else
  opt=
  export CIYAM_STORAGE=$1
  web_path=$WEBDIR/$2
- backup_path=$PWD
+
+ work_path=$PWD
 
  if [ "$1" = "-trunc" ]; then
   opt=$1
@@ -22,21 +23,27 @@ else
   web_path=$WEBDIR/$3
  fi
 
- echo Starting backup...
+ echo "Starting backup..."
+
  touch $web_path/ciyam_interface.stop
+
+ echo "[app data]"
  echo \<ciyam_backup.cin $opt>~ciyam_backup.cin
  ./ciyam_client -quiet -no_prompt <~ciyam_backup.cin
  rm ~ciyam_backup.cin
  rm $web_path/ciyam_interface.stop
 
- pushd $web_path
- echo Adding application files to backup...
- if [ ! "$CIYAM_STORAGE" = "Meta" ]; then
-  "$backup_path/bundle" -r -q -y "$backup_path/$CIYAM_STORAGE.backup" "files/*" -x "files/tmp/*"
- else
-  "$backup_path/bundle" -r -q -y "$backup_path/$CIYAM_STORAGE.backup" "files/*" -x "files/tmp/*" "files/100/105100/*" "files/100/106100/*"
+ echo "[web files data]"
+ pushd $web_path >/dev/null
+ if [ -f "$work_path/$CIYAM_STORAGE.backup_files.bun.gz" ]; then
+  rm "$work_path/$CIYAM_STORAGE.backup_files.bun.gz"
  fi
- popd
+ if [ ! "$CIYAM_STORAGE" = "Meta" ]; then
+  $work_path/bundle -r -q "$work_path/$CIYAM_STORAGE.backup_files" "files/*" -x "files/*_note_.txt" "files/*.htaccess" "files/tmp/*"
+ else
+  $work_path/bundle -r -q "$work_path/$CIYAM_STORAGE.backup_files" "files/*" -x "files/*_note_.txt" "files/*.htaccess" "files/tmp/*" "files/100/105100/*" "files/100/106100/*"
+ fi
+ popd >/dev/null
 
- echo Finished backup...
+ echo "Finished backup..."
 fi

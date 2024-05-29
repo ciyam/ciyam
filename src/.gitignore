@@ -168,6 +168,7 @@ Meta.modules.lst
 
 # Ignore storage backups.
 *.backup.bun.gz
+*.backup_files.bun.gz
 
 # Ignore service and customised environment init file.
 ciyamd.service

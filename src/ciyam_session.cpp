@@ -4923,11 +4923,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          term_storage( handler );
 
          bool has_ltf = false;
-         bool has_txs_log = false;
-         bool has_undo_sql = false;
          bool has_dead_keys = false;
-         bool has_autoscript = false;
-         bool has_manuscript = false;
 
          string log_name( name + ".log" );
          string sql_name( name + ".sql" );
@@ -4938,13 +4934,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string sav_sql_name( sql_name + ".sav" );
 
          string ltf_name( name + ".ltf" );
-         string txs_name( name + ".txs.log" );
-         string undo_name( name + ".undo.sql" );
          string keys_name( name + ".dead_keys.lst" );
 
          string sav_ltf_name( ltf_name + ".sav" );
-         string sav_txs_name( txs_name + ".sav" );
-         string sav_undo_name( undo_name + ".sav" );
          string sav_keys_name( keys_name + ".sav" );
 
          string autoscript_name( "autoscript.sio" );
@@ -4975,23 +4967,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             copy_stream( logf, sav_logf );
             copy_stream( sqlf, sav_sqlf );
 
-            if( is_meta )
-            {
-               ifstream siof( server_sio_name.c_str( ), ios::in | ios::binary );
-
-               if( !siof )
-                  throw runtime_error( "unable to open server backup input files for '" + name + "'" );
-
-               ofstream sav_siof( sav_server_sio_name.c_str( ), ios::out | ios::binary );
-
-               if( !sav_siof )
-                  throw runtime_error( "unable to open server backup output files for '" + name + "'" );
-
-               copy_stream( siof, sav_siof );
-
-               sav_server_db_file_names = system_ods_instance( ).backup_database( ".sav", ' ' );
-            }
-
             if( exists_file( ltf_name ) )
             {
                ifstream ltff( ltf_name.c_str( ), ios::in | ios::binary );
@@ -5004,34 +4979,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                copy_stream( ltff, sav_ltff );
                has_ltf = true;
-            }
-
-            if( exists_file( txs_name ) )
-            {
-               ifstream txsf( txs_name.c_str( ), ios::in | ios::binary );
-               if( !txsf )
-                  throw runtime_error( "unable to open '" + txs_name + "' for input" );
-
-               ofstream sav_txsf( sav_txs_name.c_str( ), ios::out | ios::binary );
-               if( !sav_txsf )
-                  throw runtime_error( "unable to open '" + sav_txs_name + "' for output" );
-
-               copy_stream( txsf, sav_txsf );
-               has_txs_log = true;
-            }
-
-            if( exists_file( undo_name ) )
-            {
-               ifstream undof( undo_name.c_str( ), ios::in | ios::binary );
-               if( !undof )
-                  throw runtime_error( "unable to open '" + undo_name + "' for input" );
-
-               ofstream sav_undof( sav_undo_name.c_str( ), ios::out | ios::binary );
-               if( !sav_undof )
-                  throw runtime_error( "unable to open '" + sav_undo_name + "' for output" );
-
-               copy_stream( undof, sav_undof );
-               has_undo_sql = true;
             }
 
             if( exists_file( keys_name ) )
@@ -5048,7 +4995,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                has_dead_keys = true;
             }
 
-            if( is_meta && exists_file( autoscript_name ) )
+            if( is_meta )
             {
                ifstream ascf( autoscript_name.c_str( ), ios::in | ios::binary );
                if( !ascf )
@@ -5060,11 +5007,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                copy_stream( ascf, sav_ascf );
 
-               has_autoscript = true;
-            }
-
-            if( is_meta && exists_file( manuscript_name ) )
-            {
                ifstream mscf( manuscript_name.c_str( ), ios::in | ios::binary );
                if( !mscf )
                   throw runtime_error( "unable to open '" + manuscript_name + "' for input" );
@@ -5075,7 +5017,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                copy_stream( mscf, sav_mscf );
 
-               has_manuscript = true;
+               ifstream siof( server_sio_name.c_str( ), ios::in | ios::binary );
+
+               if( !siof )
+                  throw runtime_error( "unable to open server backup input files for '" + name + "'" );
+
+               ofstream sav_siof( sav_server_sio_name.c_str( ), ios::out | ios::binary );
+
+               if( !sav_siof )
+                  throw runtime_error( "unable to open server backup output files for '" + name + "'" );
+
+               copy_stream( siof, sav_siof );
+
+               sav_server_db_file_names = system_ods_instance( ).backup_database( ".sav", ' ' );
             }
          }
 
@@ -5087,12 +5041,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( has_ltf )
             file_names += " " + sav_ltf_name;
-
-         if( has_txs_log )
-            file_names += " " + sav_txs_name;
-
-         if( has_undo_sql )
-            file_names += " " + sav_undo_name;
 
          if( has_dead_keys )
             file_names += " " + sav_keys_name;
@@ -5109,6 +5057,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          for( size_t i = 0; i < modules.size( ); i++ )
          {
             string module_init_list( modules[ i ] + ".init.lst" );
+
             if( exists_file( module_init_list ) )
             {
                file_names += " " + module_init_list;
@@ -5123,15 +5072,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( is_meta )
          {
+            file_names += " " + sav_autoscript_name;
+            file_names += " " + sav_manuscript_name;
             file_names += " " + sav_server_sio_name;
+
             file_names += " " + sav_server_db_file_names;
          }
-
-         if( has_autoscript )
-            file_names += " " + sav_autoscript_name;
-
-         if( has_manuscript )
-            file_names += " " + sav_manuscript_name;
 
          ostringstream osstr;
          osstr << setw( 3 ) << setfill( '0' ) << truncation_count;
@@ -5157,29 +5103,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          remove_file( backup_sql_name );
 
-         if( is_meta )
-         {
-            remove_file( sav_server_sio_name );
-            remove_files( sav_server_db_file_names, ' ' );
-         }
-
          if( has_ltf )
             remove_file( sav_ltf_name );
-
-         if( has_txs_log )
-            remove_file( sav_txs_name );
-
-         if( has_undo_sql )
-            remove_file( sav_undo_name );
 
          if( has_dead_keys )
             remove_file( sav_keys_name );
 
-         if( has_autoscript )
+         if( is_meta )
+         {
             remove_file( sav_autoscript_name );
-
-         if( has_manuscript )
             remove_file( sav_manuscript_name );
+            remove_file( sav_server_sio_name );
+
+            remove_files( sav_server_db_file_names, ' ' );
+         }
 
          if( truncate_log )
          {
@@ -5210,25 +5147,36 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool partial = has_parm_val( parameters, c_cmd_ciyam_session_storage_restore_partial );
          bool quicker = has_parm_val( parameters, c_cmd_ciyam_session_storage_restore_quicker );
 
+         bool is_meta = ( name == "Meta" );
+
          string db_file_names( ods_file_names( name, ' ' ) );
 
          string sql_name( name + ".sql" );
          string log_name( name + ".log" );
+
+         string backup_sql_name( name + ".backup.sql" );
+
          string ltf_name( name + ".ltf" );
-         string txs_name( name + ".txs.log" );
-         string undo_name( name + ".undo.sql" );
          string keys_name( name + ".dead_keys.lst" );
 
          string sav_db_file_names( ods_backup_file_names( name, ".sav", ' ' ) );
 
          string sav_sql_name( sql_name + ".sav" );
          string sav_log_name( log_name + ".sav" );
+
          string sav_ltf_name( ltf_name + ".sav" );
-         string sav_txs_name( txs_name + ".sav" );
-         string sav_undo_name( undo_name + ".sav" );
          string sav_keys_name( keys_name + ".sav" );
 
-         string backup_sql_name( name + ".backup.sql" );
+         string autoscript_name( "autoscript.sio" );
+         string manuscript_name( "manuscript.sio" );
+
+         string sav_autoscript_name( autoscript_name + ".sav" );
+         string sav_manuscript_name( manuscript_name + ".sav" );
+
+         string server_sio_name( "ciyam_server.sio" );
+         string sav_server_sio_name( server_sio_name + ".sav" );
+
+         string sav_server_db_file_names;
 
          vector< string > module_list;
          string module_list_name( name + ".modules.lst" );
@@ -5249,24 +5197,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             string file_names( sav_db_file_names );
 
             file_names += " " + sav_sql_name;
+            file_names += " " + sav_log_name;
 
-            if( !exists_file( log_name ) )
-               file_names += " " + sav_log_name;
-
-            if( !exists_file( ltf_name ) )
-               file_names += " " + sav_ltf_name;
-
-            if( !exists_file( txs_name ) )
-               file_names += " " + sav_txs_name;
-
-            if( !exists_file( undo_name ) )
-               file_names += " " + sav_undo_name;
-
-            if( !exists_file( keys_name ) )
-               file_names += " " + sav_keys_name;
+            file_names += " " + sav_ltf_name;
+            file_names += " " + sav_keys_name;
 
             file_names += " " + backup_sql_name;
             file_names += " " + module_list_name;
+
+            if( is_meta )
+            {
+               file_names += " " + sav_autoscript_name;
+               file_names += " " + sav_manuscript_name;
+               file_names += " " + sav_server_sio_name;
+
+               sav_server_db_file_names = ods_backup_file_names( "ciyam_server", ".sav", ' ' );
+
+               file_names += " " + sav_server_db_file_names;
+            }
 
 #ifdef _WIN32
             string unbundle( "unbundle" );
@@ -5274,21 +5222,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             string unbundle( "./unbundle" );
 #endif
 
-            exec_system( unbundle + " -o -q " + name + ".backup.bun.gz " + file_names );
+            exec_system( unbundle + " -o -qw " + name + ".backup.bun.gz " + file_names );
 
             buffer_file_lines( module_list_name, module_list );
 
             file_names.erase( );
+
             for( size_t i = 0; i < module_list.size( ); i++ )
                file_names += " " + module_list[ i ] + ".init.lst";
 
             if( !file_names.empty( ) )
-               exec_system( unbundle + " -o -q " + name + ".backup.bun.gz " + file_names );
+               exec_system( unbundle + " -o -qw " + name + ".backup.bun.gz " + file_names );
 
             file_names.erase( );
+
             for( size_t i = 0; i < module_list.size( ); i++ )
             {
                string module_init_list( module_list[ i ] + ".init.lst" );
+
                if( exists_file( module_init_list ) )
                {
                   file_names += " " + module_init_list;
@@ -5302,7 +5253,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
 
             if( !file_names.empty( ) )
-               exec_system( unbundle + " -o -q " + name + ".backup.bun.gz" + file_names );
+               exec_system( unbundle + " -o -qw " + name + ".backup.bun.gz" + file_names );
          }
 
          if( !rebuild && !partial && ( !exists_files( sav_db_file_names, ' ' )
@@ -5323,20 +5274,23 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             copy_file( sav_sql_name, sql_name );
 
-            if( !exists_file( log_name ) && exists_file( sav_log_name ) )
+            if( exists_file( sav_log_name ) )
                copy_file( sav_log_name, log_name );
 
-            if( !exists_file( ltf_name ) && exists_file( sav_ltf_name ) )
+            if( exists_file( sav_ltf_name ) )
                copy_file( sav_ltf_name, ltf_name );
 
-            if( !exists_file( txs_name ) && exists_file( sav_txs_name ) )
-               copy_file( sav_txs_name, txs_name );
-
-            if( !exists_file( undo_name ) && exists_file( sav_undo_name ) )
-               copy_file( sav_undo_name, undo_name );
-
-            if( !exists_file( keys_name ) && exists_file( sav_keys_name ) )
+            if( exists_file( sav_keys_name ) )
                copy_file( sav_keys_name, keys_name );
+
+            if( exists_file( sav_autoscript_name ) )
+               copy_file( sav_autoscript_name, autoscript_name );
+
+            if( exists_file( sav_manuscript_name ) )
+               copy_file( sav_manuscript_name, manuscript_name );
+
+            if( exists_file( sav_server_sio_name ) )
+               copy_file( sav_server_sio_name, server_sio_name );
          }
 
          ofstream new_logf;
@@ -5437,6 +5391,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             size_t last_tran_id = start_tran_id;
 
             size_t tline = 0;
+
             bool is_first = true;
             bool first_op = true;
             bool performed_init = false;
@@ -5558,6 +5513,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   if( name == c_meta_model_name )
                   {
                      ifstream std_inpf( "Meta_init_std.cin" );
+
                      if( !std_inpf )
                         throw runtime_error( "unable to open Meta_init_std.cin for input" );
 
@@ -5632,6 +5588,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   if( tran_info[ 0 ] != ';' && ( is_new || tran_id >= start_tran_id ) )
                   {
                      set_transaction_id( new_tran_id );
+
                      handler.execute_command( tran_info );
 
                      if( has_ciyam_logs_tree )
@@ -5703,14 +5660,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( exists_file( sav_ltf_name ) )
                   remove_file( sav_ltf_name );
 
-               if( exists_file( sav_txs_name ) )
-                  remove_file( sav_txs_name );
-
-               if( exists_file( sav_undo_name ) )
-                  remove_file( sav_undo_name );
-
                if( exists_file( sav_keys_name ) )
                   remove_file( sav_keys_name );
+
+               if( exists_file( sav_autoscript_name ) )
+                  remove_file( sav_autoscript_name );
+
+               if( exists_file( sav_manuscript_name ) )
+                  remove_file( sav_manuscript_name );
+
+               if( exists_file( sav_server_sio_name ) )
+                  remove_file( sav_server_sio_name );
 
                remove_file( backup_sql_name );
             }

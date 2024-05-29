@@ -17,6 +17,8 @@ else
   fi
   ./destroy_apps_and_models $1 ~reconstruct_meta
  
+  ./destroy_saved_channel_info $1
+
   if [ -f ~reconstruct_meta ]; then
    rm ~reconstruct_meta
   else
