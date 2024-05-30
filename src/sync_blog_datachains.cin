@@ -86,7 +86,7 @@ SECRET_HASH=$OUTPUT
 ;
 ANY_PEER_CONNECTS=1
 .peer_connect $NEXT_CHAIN $HOST_NAME-$HOST_PORT -data
-.wait 250
+.wait 100
 ;
 @endif
 ;
@@ -100,6 +100,7 @@ CHANNELS=@repstr:$NEXT_IDENTITY,/:$CHANNELS
 @:END_CHANNEL_LOOP
 ;
 @ifdef ANY_PEER_CONNECTS
+.wait 500
 .session_variable @errors_only 1
 .system_variable @datachain_fetching @increment
 .run_script !fetch_from_datachain "@storage=$STORAGE,@identity=$NEXT_CHAIN"

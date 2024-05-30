@@ -19,8 +19,8 @@ ERROR=
 STORAGE=$1
 IDENTITY=$2
 ;
-BLOG_LOG_FILE=@files::$IDENTITY.log
-@ifdef $BLOG_LOG_FILE
+DATA_LOG_FILE=@files::$IDENTITY.log
+@ifdef $DATA_LOG_FILE
 ;
 ~./bundle $IDENTITY $IDENTITY.log
 <import_files.cin . $IDENTITY.tree : $IDENTITY.bun.gz

@@ -28,10 +28,11 @@ WEB_SUBMIT_FILE=@files:$WEBDIR/$STORAGE_DIR:$SUBMIT_FILE
 ;
 @ifdef $WEB_SUBMIT_FILE
 <prepare_for_datachain.cin $STORAGE $IDENTITY
+;
 @ifndef $ERROR
 ~rm $WEBDIR/$STORAGE_DIR/$SUBMIT_FILE
-;
 @endif
+;
 @endif
 ;
 @endif

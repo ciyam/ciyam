@@ -69,6 +69,147 @@ const char* const c_peer_data_type = "type";
 const char* const c_peer_data_height = "height";
 const char* const c_peer_data_channels = "channels";
 
+void update_channel_info( ods_file_system& ofs,
+ const string& identity, const string& blockchain_identity,
+ const string& channel_info_name, bool& has_created_directory )
+{
+   string info_file_name( identity + '.' + channel_info_name + c_csv_file_ext );
+
+   if( file_exists( info_file_name ) )
+   {
+      string new_info( buffer_file( info_file_name ) );
+
+      file_remove( info_file_name );
+
+      string info_changes;
+
+      string all_channel_info;
+      string all_column_names;
+
+      bool append_all_as_changes = false;
+
+      vector< string > lines;
+
+      map< string, string > new_info_keyed;
+      map< string, string > keyed_channel_info;
+
+      split( new_info, lines, '\n' );
+
+      for( size_t i = 0; i < lines.size( ); i++ )
+      {
+         string next_line( lines[ i ] );
+
+         if( i == 0 )
+            all_column_names = next_line;
+         else
+         {
+            if( !next_line.empty( ) )
+            {
+               string::size_type pos = next_line.find( ',' );
+
+               if( pos == string::npos )
+                  throw runtime_error( "unexpected new channel_info line '" + next_line + "'" );
+
+               string key( next_line.substr( 0, pos ) );
+               string data( next_line.substr( pos + 1 ) );
+
+               new_info_keyed.insert( make_pair( key, data ) );
+
+               keyed_channel_info.insert( make_pair( key, data ) );
+            }
+         }
+      }
+
+      if( !ofs.has_file( channel_info_name ) )
+      {
+         append_all_as_changes = true;
+         info_changes = all_channel_info = all_column_names;
+      }
+      else
+      {
+         lines.clear( );
+         info_changes.erase( );
+         all_channel_info.erase( );
+
+         string old_channel_info;
+
+         ofs.fetch_from_text_file( channel_info_name, old_channel_info );
+
+         map< string, string > old_info_keyed;
+
+         split( old_channel_info, lines, '\n' );
+
+         for( size_t i = 0; i < lines.size( ); i++ )
+         {
+            string next_line( lines[ i ] );
+
+            if( !next_line.empty( ) )
+            {
+               if( i == 0 )
+               {
+                  if( next_line != all_column_names )
+                     throw runtime_error( "unexpected next_line != all_column_names (in update_channel_info)" );
+               }
+               else
+               {
+                  string::size_type pos = next_line.find( ',' );
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected old channel info line '" + next_line + "'" );
+
+                  string key( next_line.substr( 0, pos ) );
+                  string data( next_line.substr( pos + 1 ) );
+
+                  old_info_keyed.insert( make_pair( key, data ) );
+
+                  if( !keyed_channel_info.count( key ) )
+                     keyed_channel_info.insert( make_pair( key, data ) );
+               }
+            }
+         }
+
+         for( map< string, string >::const_iterator ci = new_info_keyed.begin( ); ci != new_info_keyed.end( ); ++ci )
+         {
+            bool append_change = false;
+
+            if( old_info_keyed[ ci->first ] != ci->second )
+               append_change = true;
+
+            if( append_change )
+            {
+               if( info_changes.empty( ) )
+                  info_changes = all_column_names;
+
+               info_changes += '\n' + ci->first + ',' + ci->second;
+            }
+         }
+      }
+
+      for( map< string, string >::const_iterator ci = keyed_channel_info.begin( ); ci != keyed_channel_info.end( ); ++ci )
+      {
+         if( all_channel_info.empty( ) )
+            all_channel_info = all_column_names;
+
+         all_channel_info += '\n' + ci->first + ',' + ci->second;
+
+         if( append_all_as_changes )
+            info_changes += '\n' + ci->first + ',' + ci->second;
+      }
+
+      if( !info_changes.empty( ) )
+      {
+         ofs.store_as_text_file( channel_info_name, all_channel_info );
+
+         if( !has_created_directory )
+         {
+            create_dir( blockchain_identity );
+            has_created_directory = true;
+         }
+
+         write_file( blockchain_identity + "/." + channel_info_name + c_csv_file_ext, info_changes );
+      }
+   }
+}
+
 }
 
 mutex& get_mutex_for_ciyam_channels( )
@@ -1518,150 +1659,8 @@ string storage_channel_documents_prepare( const string& identity )
 
    ofs.set_folder( c_channel_folder_ciyam );
 
-   string blog_info_name( identity + '.' + string( c_channel_blog_info ) + c_csv_file_ext );
-
-   if( file_exists( blog_info_name ) )
-   {
-      create_dir( blockchain_identity );
-      has_created_directory = true;
-
-      file_rename( blog_info_name, blockchain_identity + string( "/." ) + string( c_channel_blog_info ) + c_csv_file_ext );
-   }
-
-   string user_info_name( identity + '.' + string( c_channel_user_info ) + c_csv_file_ext );
-
-   if( file_exists( user_info_name ) )
-   {
-      string new_user_info( buffer_file( user_info_name ) );
-
-      file_remove( user_info_name );
-
-      string user_changes;
-
-      string all_user_info;
-      string all_column_names;
-
-      bool append_all_as_changes = false;
-
-      vector< string > lines;
-
-      map< string, string > new_info_keyed;
-      map< string, string > keyed_user_info;
-
-      split( new_user_info, lines, '\n' );
-
-      for( size_t i = 0; i < lines.size( ); i++ )
-      {
-         string next_line( lines[ i ] );
-
-         if( i == 0 )
-            all_column_names = next_line;
-         else
-         {
-            if( !next_line.empty( ) )
-            {
-               string::size_type pos = next_line.find( ',' );
-               if( pos == string::npos )
-                  throw runtime_error( "unexpected new user info line '" + next_line + "'" );
-
-               string key( next_line.substr( 0, pos ) );
-               string data( next_line.substr( pos + 1 ) );
-
-               new_info_keyed.insert( make_pair( key, data ) );
-
-               keyed_user_info.insert( make_pair( key, data ) );
-            }
-         }
-      }
-
-      if( !ofs.has_file( c_channel_user_info ) )
-      {
-         append_all_as_changes = true;
-         user_changes = all_column_names;
-      }
-      else
-      {
-         lines.clear( );
-         user_changes.erase( );
-         all_user_info.erase( );
-
-         string old_user_info;
-
-         ofs.fetch_from_text_file( c_channel_user_info, old_user_info );
-
-         map< string, string > old_info_keyed;
-
-         split( old_user_info, lines, '\n' );
-
-         for( size_t i = 0; i < lines.size( ); i++ )
-         {
-            string next_line( lines[ i ] );
-
-            if( !next_line.empty( ) )
-            {
-               if( i == 0 )
-               {
-                  if( next_line != all_column_names )
-                     throw runtime_error( "unexpected next_line != all_column_names" );
-               }
-               else
-               {
-                  string::size_type pos = next_line.find( ',' );
-                  if( pos == string::npos )
-                     throw runtime_error( "unexpected old user info line '" + next_line + "'" );
-
-                  string key( next_line.substr( 0, pos ) );
-                  string data( next_line.substr( pos + 1 ) );
-
-                  old_info_keyed.insert( make_pair( key, data ) );
-
-                  if( !keyed_user_info.count( key ) )
-                     keyed_user_info.insert( make_pair( key, data ) );
-               }
-            }
-         }
-
-         for( map< string, string >::const_iterator ci = new_info_keyed.begin( ); ci != new_info_keyed.end( ); ++ci )
-         {
-            bool append_change = false;
-
-            if( old_info_keyed[ ci->first ] != ci->second )
-               append_change = true;
-
-            if( append_change )
-            {
-               if( user_changes.empty( ) )
-                  user_changes = all_column_names;
-
-               user_changes += '\n' + ci->first + ',' + ci->second;
-            }
-         }
-      }
-
-      for( map< string, string >::const_iterator ci = keyed_user_info.begin( ); ci != keyed_user_info.end( ); ++ci )
-      {
-         if( all_user_info.empty( ) )
-            all_user_info = all_column_names;
-
-         all_user_info += '\n' + ci->first + ',' + ci->second;
-
-         if( append_all_as_changes )
-            user_changes += '\n' + ci->first + ',' + ci->second;
-      }
-
-      if( !user_changes.empty( ) )
-      {
-         ofs.store_as_text_file( c_channel_user_info, all_user_info );
-
-         if( !has_created_directory )
-         {
-            create_dir( blockchain_identity );
-            has_created_directory = true;
-         }
-
-         write_file( blockchain_identity + string( "/." ) + c_channel_user_info + string( c_csv_file_ext ), user_changes );
-      }
-   }
+   update_channel_info( ofs, identity, blockchain_identity, c_channel_blog_info, has_created_directory );
+   update_channel_info( ofs, identity, blockchain_identity, c_channel_user_info, has_created_directory );
 
    string submitting;
 

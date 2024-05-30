@@ -8,6 +8,7 @@
 
       perform_fetch_rc rc;
       cp_source->perform_fetch( get_obj( ).get_key( ) + "`{`$key_suffix`}", &rc );
+
       if( rc == e_perform_fetch_rc_okay )
       {
          if( get_obj( ).`{`$arg_tfield`}( ) `{`$op`} cp_source->`{`$arg_tfield`}( ) )
