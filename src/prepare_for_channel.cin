@@ -36,26 +36,9 @@ MODULE=%LINES:2%
 ;
 .perform_bulk_ops admin @now $MODULE Peer_Node_User $IDENTITY.user_info.csv -f=Peer_Node=$IDENTITY,Local=1,Name -export=@key,Active,Name
 ;
-HAS_BLOG_CLASS=
-;
 .module_class_list $MODULE -p=Blog
 @ifdef $OUTPUT
-HAS_BLOG_CLASS=1
-@endif
-;
-@ifdef $HAS_BLOG_CLASS
 .perform_bulk_ops admin @now $MODULE Blog $IDENTITY.blog_info.csv -export=Identity,Description
-;
-BLOG_INFO_SAV_FILE=@files::$IDENTITY.blog_info.csv.sav
-;
-@ifndef $BLOG_INFO_SAV_FILE
-~cp $IDENTITY.blog_info.csv $IDENTITY.blog_info.csv.sav
-@else
-; FUTURE: Rather than this "all or nothing" approach it would be better
-; to only export any new records or prior ones that have been modified.
-~./remove_identical $IDENTITY.blog_info.csv.sav $IDENTITY.blog_info.csv
-@endif
-;
 @endif
 ;
 .storage_channel_documents -prepare_for_submit $IDENTITY

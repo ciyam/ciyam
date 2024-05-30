@@ -15,7 +15,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "3"
-#Usage: create_blog_datachain_entry.cin <storage> <identity> <description>
+#Usage: update_blog_datachain_entry.cin <storage> <identity> <description>
 @else
 ERROR=
 ;
@@ -23,19 +23,10 @@ STORAGE=$1
 IDENTITY=$2
 DESCRIPTION=$3
 ;
-DATA_TYPE=0
-;
-<create_datachain_entry.cin $IDENTITY $DATA_TYPE "$DESCRIPTION"
+<update_datachain_entry.cin $IDENTITY "$DESCRIPTION"
 ;
 @ifndef $ERROR
 .storage_init $STORAGE
-;
-; NOTE: Only create peer data details if was not already created.
-.storage_peer_data_details -list
-ALL_DATA_CHAINS=$OUTPUT
-IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
-@ifeq "$ALL_DATA_CHAINS" "$IDENTITY_REMOVED"
-.storage_peer_data_details $IDENTITY -type=0
 ;
 ; NOTE: Touch the <identity>.log file for every active Peer Node.
 .module_list
@@ -44,8 +35,6 @@ MODULES=@repstr: /\n:$MODULES
 MODULE=%MODULES:2%
 ;
 <touch_peer_node_log_files.cin $MODULE
-;
-@endif
 ;
 .storage_term
 @endif
