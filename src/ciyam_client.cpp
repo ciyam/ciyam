@@ -1890,7 +1890,7 @@ int main( int argc, char* argv[ ] )
          usocket.close( );
       }
 #ifdef __GNUG__
-      if( isatty( STDIN_FILENO ) )
+      if( isatty( STDIN_FILENO ) && g_exec_cmd.empty( ) )
          cout << endl;
 #endif
    }
