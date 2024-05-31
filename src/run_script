@@ -7,7 +7,5 @@
 if [ $# -lt 1 ]; then
  echo "Usage: run_script [script name] [[script args,]]"
 else
- echo "<<run_script.cin $1 $2" >~run_script
- ./ciyam_client -echo -quiet -no_prompt -no_stderr <~run_script
- rm ~run_script
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr -exec="<run_script.cin $1 $2"
 fi

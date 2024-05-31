@@ -7,7 +7,5 @@
 if [ $# -lt 1 ]; then
  echo "Usage: import_files [start path] [[tag prefix] [[sub-directory] [[file includes/excludes]] [[path includes/excludes]]]]"
 else
- echo "<<import_files.cin $1 $2 $3 $4 $5" >~import_files
- ./ciyam_client -echo -quiet -no_prompt -no_stderr <~import_files
- rm ~import_files
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr -exec="<import_files.cin $1 $2 $3 $4 $5"
 fi

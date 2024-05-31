@@ -8,20 +8,25 @@ if [ $# -lt 1 ]; then
  echo Usage: init [model name] [[app name]]
 else
  had_error=
+
  export CIYAM_MODEL=$1
  export CIYAM_STORAGE=$1
+
  if [ $# -gt 1 ]; then
   export CIYAM_STORAGE=$2
  fi
+
  if [ "$2" = "ciyam" ]; then
   export CIYAM_TEST_STORAGE=1
  elif [ "$WEBDIR" = "" ]; then
   had_error=true
   echo Error: Missing environment variable 'WEBDIR'.
  fi
+
  if [ ! "$had_error" = "true" ]; then
   rm -f $CIYAM_STORAGE.log $CIYAM_STORAGE.tlg $CIYAM_STORAGE.dat $CIYAM_STORAGE.idx $CIYAM_STORAGE.hdr >/dev/null
   ./ciyam_server -quiet -no_auto -no_peers &
+
   sleep 2
   ./ciyam_client -quiet -no_prompt < init.cin
   touch ciyam_server.stop

@@ -5,9 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 2 ]; then
- echo Usage: export_files [list tag] [start path]
+ echo "Usage: export_files [list tag] [start path]"
 else
- echo "<<export_files.cin $1 $2" >~export_files
- ./ciyam_client -echo -quiet -no_prompt -no_stderr <~export_files
- rm ~export_files
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr -exec="<export_files.cin $1 $2"
 fi

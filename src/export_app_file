@@ -13,8 +13,6 @@ else
  if [ "$WEBDIR" = "" ]; then
   echo "Error: Missing environment variable 'WEBDIR'."
  else
-  echo "<<export_app_file.cin $1 $2 $WEBDIR" >~export_app_file
-  ./ciyam_client -echo -quiet -no_prompt -no_stderr <~export_app_file
-  rm ~export_app_file
+  ./ciyam_client -echo -quiet -no_prompt -no_stderr -exec="<export_app_file.cin $1 $2 $WEBDIR"
  fi
 fi
