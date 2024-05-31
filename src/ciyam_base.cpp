@@ -125,6 +125,11 @@ const char* const c_str_peer = "(peer)";
 
 const char* const c_str_unknown = "unknown";
 
+const char* const c_key_field_name = "Key_";
+const char* const c_rev_field_name = "Rev_";
+const char* const c_typ_field_name = "Typ_";
+const char* const c_ver_field_name = "Ver_";
+
 const char* const c_server_log_file = "ciyam_server.log";
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
@@ -3095,14 +3100,14 @@ inline string get_field_name( class_base& instance,
    class_base_accessor instance_accessor( instance );
 
    if( field_name == c_key_field )
-      field_name = "Key_";
+      field_name = c_key_field_name;
 
-   if( field_name == "Key_" || field_name == "Typ_" )
+   if( field_name == c_key_field_name || field_name == c_typ_field_name )
    {
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
-   else if( field_name == "Ver_" || field_name == "Rev_" )
+   else if( field_name == c_ver_field_name || field_name == c_rev_field_name )
    {
       if( p_sql_numeric )
          *p_sql_numeric = true;
@@ -3188,12 +3193,12 @@ void split_key_info( const string& key_info,
    if( pos == string::npos )
    {
       if( !key_info.empty( ) )
-         fixed_info.push_back( make_pair( "Key_", key_info ) );
+         fixed_info.push_back( make_pair( c_key_field_name, key_info ) );
 
       // NOTE: The primary key is always being added to the end of the order info as it
       // is not known here if the query will have repeatably ordered results without it.
       if( order_required )
-         order_info.push_back( "Key_" );
+         order_info.push_back( c_key_field_name );
    }
    else
    {
@@ -3203,6 +3208,7 @@ void split_key_info( const string& key_info,
       string values( key_info.substr( pos + 1 ) );
 
       pos = fields.find( '#' );
+
       if( pos != string::npos )
       {
          num_fixed = atoi( fields.substr( pos + 1 ).c_str( ) );
@@ -3213,8 +3219,10 @@ void split_key_info( const string& key_info,
       split( fields, order_info );
 
       // NOTE: The primary key is always being added to the end of the order info as it
-      // is not known here if the query will have repeatably ordered results without it.
-      order_info.push_back( "Key_" );
+      // is not known here if the query will have repeatably ordered results without it
+      // (unless it has already been provided as the only field).
+      if( fields != c_key_field )
+         order_info.push_back( c_key_field_name );
 
       if( values.empty( ) )
       {
@@ -14642,6 +14650,7 @@ bool perform_instance_iterate( class_base& instance,
          set< string > transient_field_names;
 
          int num_fields = instance.get_num_fields( );
+
          for( int i = 0; i < num_fields; i++ )
          {
             if( instance.is_field_transient( i ) )
@@ -14818,6 +14827,7 @@ bool perform_instance_iterate( class_base& instance,
                split( keys, all_keys );
 
                pos = extra_key_info.find( ' ' );
+
                if( pos != string::npos && pos != extra_key_info.size( ) - 1 )
                {
                   split( extra_key_info.substr( pos + 1 ), extra_key_values );
@@ -14835,9 +14845,11 @@ bool perform_instance_iterate( class_base& instance,
             for( size_t i = 0; i < all_keys.size( ); i++ )
             {
                string next( all_keys[ i ] );
+
                get_field_name( instance, next );
    
                bool add_extra = false;
+
                if( !transient_field_names.count( next ) )
                {
                   add_extra = true;
@@ -14846,6 +14858,7 @@ bool perform_instance_iterate( class_base& instance,
                else
                {
                   size_t size = final_keys.size( );
+
                   instance.get_transient_replacement_field_names( next, final_keys );
 
                   if( size != final_keys.size( ) )
@@ -14853,6 +14866,7 @@ bool perform_instance_iterate( class_base& instance,
                   else
                   {
                      string next_value;
+
                      if( i < extra_key_values.size( ) )
                      {
                         next_value = escaped( extra_key_values[ i ], "," );
@@ -14891,8 +14905,12 @@ bool perform_instance_iterate( class_base& instance,
             {
                if( !final_key_info.empty( ) )
                   final_key_info += ',';
+
                final_key_info += final_keys[ i ];
             }
+
+            if( final_key_info.empty( ) && !extra_key_info.empty( ) )
+               final_key_info = c_key_field;
 
             final_key_info += extra_key_info;
          }
