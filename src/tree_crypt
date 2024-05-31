@@ -7,7 +7,5 @@
 if [ $# -lt 1 ]; then
  echo "Usage: tree_crypt [[-repo]|[-repo_decrypt]|[-repo_encrypt] [repository]] [tag or hash] [[password]]"
 else
- echo "<<tree_crypt.cin $1 $2 $3 $4" >~tree_crypt
- ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_crypt
- rm ~tree_crypt
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr -exec="<tree_crypt.cin $1 $2 $3 $4"
 fi

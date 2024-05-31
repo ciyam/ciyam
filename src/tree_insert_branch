@@ -7,7 +7,5 @@
 if [ $# -lt 2 ]; then
  echo "Usage: tree_insert_branch [tree tag] [trunk name] [branch tag]"
 else
- echo "<<tree_insert_branch.cin $1 $2 $3" >~tree_insert_branch
- ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_insert_branch
- rm ~tree_insert_branch
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr -exec="<tree_insert_branch.cin $1 $2 $3"
 fi
