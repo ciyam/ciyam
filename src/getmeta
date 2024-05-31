@@ -9,15 +9,14 @@ if [ $# -lt 3 ]; then
 else
 
  if [ "$4" = "" ]; then
-  echo \<getmeta.cin $1 $2 $3>~getmeta.cin
+  script_and_args="getmeta.cin $1 $2 $3"
  else
-  echo \<getmeta.cin $1 $2 $3 files/100/136100/$4.map>~getmeta.cin
+  script_and_args="getmeta.cin $1 $2 $3 files/100/136100/$4.map"
  fi
 
- ./ciyam_client -quiet -no_prompt <~getmeta.cin
+ ./ciyam_client -quiet -no_prompt -exec="<$script_and_args"
 
  retval=$?
- rm ~getmeta.cin
 
  if [ "$retval" != 0 ]; then
   exit 1;

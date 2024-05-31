@@ -7,7 +7,5 @@
 if [ $# -lt 2 ]; then
  echo "Usage: system_variable get|set [name] [[value]]"
 else
- echo "<<system_variable.cin $1 $2 $3" >~system_variable
- ./ciyam_client -echo -quiet -no_prompt -no_stderr <~system_variable
- rm ~system_variable
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr -exec="<system_variable.cin $1 $2 $3"
 fi
