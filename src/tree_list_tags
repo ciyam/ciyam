@@ -7,7 +7,5 @@
 if [ $# -lt 1 ]; then
  echo "Usage: tree_list_tags [tree tag] [[trunk name] [[branch expression]]]"
 else
- echo "<<tree_list_tags.cin $1 $2 $3" >~tree_list_tags
- ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_list_tags
- rm ~tree_list_tags
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr -exec="<tree_list_tags.cin $1 $2 $3"
 fi
