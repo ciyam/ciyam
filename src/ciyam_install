@@ -37,4 +37,3 @@ ln -s "${DESTPATH}/ciyam_base.so" "/usr/lib64/"
 insserv ciyamd
 
 sed -i "s#.WEBDIR#${WEBDIR}#" ciyam_server.sio
-

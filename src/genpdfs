@@ -9,106 +9,113 @@ if [ $# -ne 2 ]; then
 else
  full_name=$1_$2
 
+ # NOTE: As it is expected that 'tmp_file' will be in the current directory
+ # rather than using 'mktemp' is instead using a 'tilda' prefixed UUID name.
+ uuid=$(uuidgen)
+ tmp_file=~$uuid
+
  if [ -f $full_name.pdf.sh ]; then
-  cp $full_name.pdf.sh ~genpdfs
-  chmod a+x ~genpdfs
-  ./~genpdfs
-  rm ~genpdfs
+  cp $full_name.pdf.sh $tmp_file
+  chmod a+x $tmp_file
+  ./$tmp_file
+  rm $tmp_file
   rm $full_name.pdf.sh
  fi
 
  if [ -f $full_name.list.pdf.sh ]; then
-  cp $full_name.list.pdf.sh ~genpdfs
-  chmod a+x ~genpdfs
-  ./~genpdfs
-  rm ~genpdfs
+  cp $full_name.list.pdf.sh $tmp_file
+  chmod a+x $tmp_file
+  ./$tmp_file
+  rm $tmp_file
   rm $full_name.list.pdf.sh
  fi
 
  for n in {1..9}
  do
   if [ -f $full_name.list$n.pdf.sh ]; then
-   cp $full_name.list$n.pdf.sh ~genpdfs
-   chmod a+x ~genpdfs
-   ./~genpdfs
-   rm ~genpdfs
+   cp $full_name.list$n.pdf.sh $tmp_file
+   chmod a+x $tmp_file
+   ./$tmp_file
+   rm $tmp_file
    rm $full_name.list$n.pdf.sh
   fi
  done
 
  if [ -f $full_name.glist.pdf.sh ]; then
-  cp $full_name.glist.pdf.sh ~genpdfs
-  chmod a+x ~genpdfs
-  ./~genpdfs
-  rm ~genpdfs
+  cp $full_name.glist.pdf.sh $tmp_file
+  chmod a+x $tmp_file
+  ./$tmp_file
+  rm $tmp_file
   rm $full_name.glist.pdf.sh
  fi
 
  for n in {1..9}
  do
   if [ -f $full_name.glist$n.pdf.sh ]; then
-   cp $full_name.glist$n.pdf.sh ~genpdfs
-   chmod a+x ~genpdfs
-   ./~genpdfs
-   rm ~genpdfs
+   cp $full_name.glist$n.pdf.sh $tmp_file
+   chmod a+x $tmp_file
+   ./$tmp_file
+   rm $tmp_file
    rm $full_name.glist$n.pdf.sh
   fi
  done
 
  if [ -f $full_name.ulist.pdf.sh ]; then
-  cp $full_name.ulist.pdf.sh ~genpdfs
-  chmod a+x ~genpdfs
-  ./~genpdfs
-  rm ~genpdfs
+  cp $full_name.ulist.pdf.sh $tmp_file
+  chmod a+x $tmp_file
+  ./$tmp_file
+  rm $tmp_file
   rm $full_name.ulist.pdf.sh
  fi
 
  for n in {1..9}
  do
   if [ -f $full_name.ulist$n.pdf.sh ]; then
-   cp $full_name.ulist$n.pdf.sh ~genpdfs
-   chmod a+x ~genpdfs
-   ./~genpdfs
-   rm ~genpdfs
+   cp $full_name.ulist$n.pdf.sh $tmp_file
+   chmod a+x $tmp_file
+   ./$tmp_file
+   rm $tmp_file
    rm $full_name.ulist$n.pdf.sh
   fi
  done
 
  if [ -f $full_name.nglist.pdf.sh ]; then
-  cp $full_name.nglist.pdf.sh ~genpdfs
-  chmod a+x ~genpdfs
-  ./~genpdfs
-  rm ~genpdfs
+  cp $full_name.nglist.pdf.sh $tmp_file
+  chmod a+x $tmp_file
+  ./$tmp_file
+  rm $tmp_file
   rm $full_name.nglist.pdf.sh
  fi
 
  for n in {1..9}
  do
   if [ -f $full_name.nglist$n.pdf.sh ]; then
-   cp $full_name.nglist$n.pdf.sh ~genpdfs
-   chmod a+x ~genpdfs
-   ./~genpdfs
-   rm ~genpdfs
+   cp $full_name.nglist$n.pdf.sh $tmp_file
+   chmod a+x $tmp_file
+   ./$tmp_file
+   rm $tmp_file
    rm $full_name.nglist$n.pdf.sh
   fi
  done
 
  if [ -f $full_name.nulist.pdf.sh ]; then
-  cp $full_name.nulist.pdf.sh ~genpdfs
-  chmod a+x ~genpdfs
-  ./~genpdfs
-  rm ~genpdfs
+  cp $full_name.nulist.pdf.sh $tmp_file
+  chmod a+x $tmp_file
+  ./$tmp_file
+  rm $tmp_file
   rm $full_name.nulist.pdf.sh
  fi
 
  for n in {1..9}
  do
   if [ -f $full_name.nulist$n.pdf.sh ]; then
-   cp $full_name.nulist$n.pdf.sh ~genpdfs
-   chmod a+x ~genpdfs
-   ./~genpdfs
-   rm ~genpdfs
+   cp $full_name.nulist$n.pdf.sh $tmp_file
+   chmod a+x $tmp_file
+   ./$tmp_file
+   rm $tmp_file
    rm $full_name.nulist$n.pdf.sh
   fi
  done
+
+ rm -f $tmp_file
 fi

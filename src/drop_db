@@ -7,9 +7,11 @@
 if [ $# -lt 1 ]; then
  echo Usage: drop_db [db name] [[.]\|[password]]
 else
- echo DROP USER \'$1\'@\'localhost\'\;>~drop_db
- echo DROP DATABASE IF EXISTS $1\;>>~drop_db
- echo quit>>~drop_db
+ tmp_file=$(mktemp --suffix ".tmp")
+
+ echo DROP USER \'$1\'@\'localhost\'\;>$tmp_file
+ echo DROP DATABASE IF EXISTS $1\;>>$tmp_file
+ echo quit>>$tmp_file
 
  if [ "$MYSQL_EXEC" = "" ]; then
   MYSQL_EXEC=mysql
@@ -20,10 +22,10 @@ else
  fi
 
  if [ "$2" = "." ]; then
-  $MYSQL_EXEC -uroot<~drop_db
+  $MYSQL_EXEC -uroot<$tmp_file
  else
-  $MYSQL_EXEC -uroot -p$2<~drop_db
+  $MYSQL_EXEC -uroot -p$2<$tmp_file
  fi
 
- rm ~drop_db
+ rm $tmp_file
 fi

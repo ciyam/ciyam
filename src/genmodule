@@ -13,11 +13,13 @@ else
  mod_alias=$3
  user_vars="user_vars=$1.spec.vars.xrep"
 
- if [ ! "$1" = "-rdbms" ]; then
-  echo model_load $1>~genmodule.tmp
-  echo generate -cmd=./genclass>>~genmodule.tmp
+ tmp_file=$(mktemp --suffix ".tmp")
 
-  ./modeller -quiet -no_prompt -no_stderr <~genmodule.tmp
+ if [ ! "$1" = "-rdbms" ]; then
+  echo model_load $1>$tmp_file
+  echo generate -cmd=./genclass>>$tmp_file
+
+  ./modeller -quiet -no_prompt -no_stderr <$tmp_file
  else
   app_dir=$3
   mod_name=$2
@@ -41,10 +43,12 @@ else
   fi
 
   ./xrep @ciyam_main.cpp.xrep $user_vars >$mod_name.cpp.new
+
   if [ $? -eq 0 ]; then
    ./update $mod_name.cpp $mod_name.cpp.new
 
    ./xrep @ciyam_main.cms.xrep $user_vars >$mod_name.cms.new
+
    if [ $? -eq 0 ]; then
     ./update $mod_name.cms $mod_name.cms.new
 
@@ -62,9 +66,11 @@ else
     fi
 
     if [ $gen_fcgi -eq 1 ]; then
-     ./xrep @module.fcgi.sio.xrep include=$mod_name.spec.vars.xrep >~genmodule.tmp
+     ./xrep @module.fcgi.sio.xrep include=$mod_name.spec.vars.xrep >$tmp_file
+
      if [ $? -eq 0 ]; then
-      ./update $mod_name.fcgi.sio ~genmodule.tmp
+      ./update $mod_name.fcgi.sio $tmp_file
+      chmod a+r $mod_name.fcgi.sio
       cp $mod_name.spec.vars.xrep $mod_name.spec.vars.xrep.sav
      fi
     fi
@@ -77,4 +83,5 @@ else
    fi
   fi
  fi
+ rm -f $tmp_file
 fi

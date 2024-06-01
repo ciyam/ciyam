@@ -18,8 +18,11 @@ else
  if [ -f $directory/$1.fcgi.sio ]; then
   rm $directory/$1.fcgi.sio
  fi
+
  if [ ! "$3" = "" ]; then
-  ./test_sql $3 $3 "SHOW TABLES FROM $3 LIKE 'T_$1_%'" >~remove_app_module
-  ./xrep @remove_app_module.xrep tables=@~remove_app_module >>$3.obsolete.sql
+  tmp_file=$(mktemp --suffix ".tmp")
+
+  ./test_sql $3 $3 "SHOW TABLES FROM $3 LIKE 'T_$1_%'" >$tmp_file
+  ./xrep @remove_app_module.xrep tables=@$tmp_file >>$3.obsolete.sql
  fi
 fi

@@ -13,11 +13,13 @@ else
  full_name=$1_$2
  user_vars="user_vars=$full_name.vars.xrep"
 
- if [ ! "$1" = "-rdbms" ]; then
-  echo model_load $1>~genclass.tmp
-  echo generate $2>>~genclass.tmp
+ tmp_file=$(mktemp --suffix ".tmp")
 
-  ./modeller -quiet -no_prompt <~genclass.tmp
+ if [ ! "$1" = "-rdbms" ]; then
+  echo model_load $1>$tmp_file
+  echo generate $2>>$tmp_file
+
+  ./modeller -quiet -no_prompt <$tmp_file
  else
   module=$2
   classnm=$3
@@ -27,9 +29,9 @@ else
 
  if [ $? -eq 0 ]; then
   if [ -f $full_name.cpp ]; then
-   ./extract $full_name.cpp >~genclass.tmp
+   ./extract $full_name.cpp >$tmp_file
    if [ $? -eq 0 ]; then
-    ./update $full_name.cpp.xrep ~genclass.tmp >/dev/null
+    ./update $full_name.cpp.xrep $tmp_file >/dev/null
    fi
   fi
 
@@ -71,9 +73,8 @@ else
 
   ./genpdfs $module $classnm
 
-  if [ -f ~genclass.tmp ]; then
-   rm ~genclass.tmp
-  fi
+  rm -f $tmp_file
+
   if [ -f $full_name.cpp.xrep ]; then
    rm $full_name.cpp.xrep
   fi

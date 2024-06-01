@@ -28,9 +28,7 @@ else
   echo "Starting restore..."
 
   echo "[app data]"
-  echo \<ciyam_restore.cin $opt >~ciyam_restore.cin
-  ./ciyam_client -quiet -no_prompt <~ciyam_restore.cin
-  rm ~ciyam_restore.cin
+  ./ciyam_client -quiet -no_prompt -exec="<ciyam_restore.cin $opt"
 
   if [ "$app_name" = "Meta" ]; then
    touch ciyam_base.update

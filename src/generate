@@ -15,29 +15,28 @@ else
  rm ~generate
 
  if [ "$CIYAM_MODEL" = "" ]; then
-  echo Error: Unknown module \'$1\'.
+  echo "Error: Unknown module '$1'."
  else
-  echo Starting generate...
-  echo \<generate.cin $CIYAM_MODEL>~generate.cin
-  ./ciyam_client -quiet -no_prompt -no_stderr <~generate.cin >~generate.tmp
-  rm ~generate.cin
+  echo "Starting generate..."
+  tmp_file=$(mktemp --suffix ".tmp")
 
-  cat ~generate.tmp
-  if grep -q "Error" ~generate.tmp || grep -q "error" ~generate.tmp; then
-   rm ~generate.tmp
+  ./ciyam_client -quiet -no_prompt -no_stderr -exec="<generate.cin $CIYAM_MODE" >$tmp_file
+
+  cat $tmp_file
+  if grep -q "Error" $tmp_file || grep -q "error" $tmp_file; then
+   rm $tmp_file
   else
-   rm ~generate.tmp
    ./genmodule -rdbms $1 $2 $3
 
-   echo \<genlinks.cin $CIYAM_MODEL>~genlinks.cin
-   ./ciyam_client -quiet -no_prompt -no_stderr <~genlinks.cin >~genlinks.tmp
-   cat ~genlinks.tmp
-   rm ~genlinks.tmp
-   rm ~genlinks.cin
+   ./ciyam_client -quiet -no_prompt -no_stderr -exec="<genlinks.cin $CIYAM_MODEL" >$tmp_file
+
+   cat $tmp_file
+   rm $tmp_file
+
    if [ -f manuscript.sio.new ]; then
     ./remove_identical manuscript.sio manuscript.sio.new
    fi
-   echo Finished generate...
+   echo "Finished generate..."
   fi
  fi
 fi

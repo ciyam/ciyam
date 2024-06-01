@@ -28,9 +28,7 @@ else
  touch $web_path/ciyam_interface.stop
 
  echo "[app data]"
- echo \<ciyam_backup.cin $opt>~ciyam_backup.cin
- ./ciyam_client -quiet -no_prompt <~ciyam_backup.cin
- rm ~ciyam_backup.cin
+ ./ciyam_client -quiet -no_prompt -exec="<ciyam_backup.cin $opt"
  rm $web_path/ciyam_interface.stop
 
  echo "[web files data]"
