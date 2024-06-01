@@ -2046,12 +2046,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       if( cmd != c_cmd_pview && cmd != c_cmd_plist )
       {
          bool found_slides = false;
+
          if( cmd == c_cmd_home && !p_session_info->logged_in )
          {
             extra_content << "    <div class=\"home clearfix\">\n";
             extra_content << "        <div class=\"home_container clearfix\">\n";
 
             string home_title( mod_info.get_string( "home_title" ) );
+
             if( home_title.empty( ) )
                home_title = title;
 
@@ -2068,6 +2070,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                if( can_output )
                {
                   string header;
+
                   if( !i->second.name.empty( ) )
                      header = get_view_or_list_header( qlink, i->second.name, mod_info, *p_session_info );
 
@@ -2099,16 +2102,24 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         if( !p_session_info->sys_message.empty( ) )
                            extra_content << "               <p class=\"caption center\">" << p_session_info->sys_message << "</p>\n";
 
+                        string key, data;
                         vector< string > columns;
+
+                        key = ( i->second ).row_data[ s ].first;
+
+                        size_t pos = key.find( ' ' );
+
+                        if( pos != string::npos )
+                           key.erase( pos );
+
                         raw_split( ( i->second ).row_data[ s ].second, columns );
 
-                        string data;
                         if( !columns.empty( ) )
                            data = columns[ columns.size( ) - 1 ];
 
                         replace_links_and_output( data, ( i->second ).view,
                          ( i->second ).module, ( i->second ).module_ref, extra_content, true, true,
-                         session_id, *p_session_info, uselect, cookies_permitted, use_url_checksum );
+                         session_id, *p_session_info, uselect, cookies_permitted, use_url_checksum, &key );
 
                         extra_content << "               </div>\n";
                      }
