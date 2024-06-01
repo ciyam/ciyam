@@ -23,8 +23,7 @@ SHARED_IMAGE=$CIYAM_USER_PATH/$IMAGE_NAME
 IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 
 # NOTE: Use this to prevent accidentally executing the export twice.
-if [ ! -f ~shared ]; then
- touch ~shared
+if lockfile -r 0 ~shared2>/dev/null; then
 
  IDENTITY=`./system_variable get @export_needed`
  PEERCHAIN=`./system_variable get @exporting_for_identity`
@@ -35,7 +34,7 @@ if [ ! -f ~shared ]; then
   date >$SHARED_DETAILS
   echo "Error: Unexpected identity for export not found." >>$SHARED_DETAILS
   date >>$SHARED_DETAILS
-  rm ~shared
+  rm -f ~shared
   exit
  fi
 
@@ -43,7 +42,7 @@ if [ ! -f ~shared ]; then
   date >$SHARED_DETAILS
   echo "Error: Unexpected identity exporting for not found." >>$SHARED_DETAILS
   date >>$SHARED_DETAILS
-  rm ~shared
+  rm -f ~shared
   exit
  fi
 
@@ -55,7 +54,7 @@ if [ ! -f ~shared ]; then
     date >$SHARED_DETAILS
     echo "NOTE: Shared files area is not currently available (please try again later)." >>$SHARED_DETAILS
     date >>$SHARED_DETAILS
-    rm ~shared
+    rm -f ~shared
     exit
    fi
   fi
@@ -100,5 +99,5 @@ if [ ! -f ~shared ]; then
  ./system_variable set @export_in_progress ""
  ./system_variable set @exporting_for_identity ""
 
- rm ~shared
+ rm -f ~shared
 fi

@@ -9,18 +9,21 @@ if [ $# -lt 1 ]; then
 else
  export CIYAM_MODEL=
 
- ./test_sql Meta Meta "SELECT CONCAT('export CIYAM_MODEL=', C_Key_) FROM T_Meta_Model WHERE C_Name = '$1'">~generate
- chmod a+x ~generate
- . ./~generate
- rm ~generate
+ # NOTE: As it is expected that 'tmp_file' will be in the current directory
+ # rather than using 'mktemp' is instead using a 'tilda' prefixed UUID name.
+ uuid=$(uuidgen)
+ tmp_file=~$uuid
+
+ ./test_sql Meta Meta "SELECT CONCAT('export CIYAM_MODEL=', C_Key_) FROM T_Meta_Model WHERE C_Name = '$1'">$tmp_file
+ chmod a+x $tmp_file
+ . ./$tmp_file
 
  if [ "$CIYAM_MODEL" = "" ]; then
   echo "Error: Unknown module '$1'."
  else
   echo "Starting generate..."
-  tmp_file=$(mktemp --suffix ".tmp")
 
-  ./ciyam_client -quiet -no_prompt -no_stderr -exec="<generate.cin $CIYAM_MODE" >$tmp_file
+  ./ciyam_client -quiet -no_prompt -no_stderr -exec="<generate.cin $CIYAM_MODEL" >$tmp_file
 
   cat $tmp_file
   if grep -q "Error" $tmp_file || grep -q "error" $tmp_file; then
@@ -31,7 +34,6 @@ else
    ./ciyam_client -quiet -no_prompt -no_stderr -exec="<genlinks.cin $CIYAM_MODEL" >$tmp_file
 
    cat $tmp_file
-   rm $tmp_file
 
    if [ -f manuscript.sio.new ]; then
     ./remove_identical manuscript.sio manuscript.sio.new
@@ -39,4 +41,5 @@ else
    echo "Finished generate..."
   fi
  fi
+ rm -f $tmp_file
 fi
