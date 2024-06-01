@@ -25,29 +25,31 @@ else
   fi
  fi
 
- echo DROP DATABASE IF EXISTS $db_name\;>~create_db
+ tmp_file=$(mktemp --suffix ".tmp")
+
+ echo DROP DATABASE IF EXISTS $db_name\;>$tmp_file
 
  # NOTE: UTF-8 is not being used for 32 bit systems due to index length issues with older MySQL versions.
  if [ ! -d /usr/lib32 ] && [ ! -d /usr/lib64 ]; then
-  echo CREATE DATABASE $db_name\;>>~create_db
+  echo CREATE DATABASE $db_name\;>>$tmp_file
  else
-  echo CREATE DATABASE $db_name CHARACTER SET utf8 COLLATE utf8_bin\;>>~create_db
+  echo CREATE DATABASE $db_name CHARACTER SET utf8 COLLATE utf8_bin\;>>$tmp_file
  fi
 
  if [ "$rebuild" = "true" ]; then
-  echo GRANT USAGE ON \*.\* TO \'$db_name\'@\'localhost\'\;>>~create_db
-  echo DROP USER \'$db_name\'@\'localhost\'\;>>~create_db
+  echo GRANT USAGE ON \*.\* TO \'$db_name\'@\'localhost\'\;>>$tmp_file
+  echo DROP USER \'$db_name\'@\'localhost\'\;>>$tmp_file
  fi
 
- echo CREATE USER \'$db_name\'@\'localhost\'\;>>~create_db
- echo GRANT ALL PRIVILEGES ON $db_name.\* TO \'$db_name\'@\'localhost\'\;>>~create_db
- echo quit>>~create_db
+ echo CREATE USER \'$db_name\'@\'localhost\'\;>>$tmp_file
+ echo GRANT ALL PRIVILEGES ON $db_name.\* TO \'$db_name\'@\'localhost\'\;>>$tmp_file
+ echo quit>>$tmp_file
 
  if [ "$password" = "." ]; then
-  $MYSQL_EXEC -uroot<~create_db
+  $MYSQL_EXEC -uroot<$tmp_file
  else
-  $MYSQL_EXEC -uroot -p$password<~create_db
+  $MYSQL_EXEC -uroot -p$password<$tmp_file
  fi
 
- rm ~create_db
+ rm $tmp_file
 fi

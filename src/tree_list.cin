@@ -35,6 +35,8 @@ DEPTH=2
 .file_info -recurse -d=$DEPTH -p=$PREFIX $TREE
 @endif
 ;
+@ifdef $OUTPUT
 #$OUTPUT
+@endif
 ;
 @endif

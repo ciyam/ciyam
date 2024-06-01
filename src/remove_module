@@ -21,6 +21,7 @@ else
   ./xrep @remove_module.xrep name=$mod_name modules=@modules.lst >modules.lst.new
   if [ $? -eq 0 ]; then
    ./update modules.lst modules.lst.new
+
    ./genmake
 
    if [ "$is_rdbms" = "1" ]; then

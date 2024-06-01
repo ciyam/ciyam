@@ -10,19 +10,21 @@ else
  if [ "$CIYAM_PACKAGE" = "" ]; then
   echo "Error: Missing environment variable 'CIYAM_PACKAGE'."
  else
-  ./getmeta $* $CIYAM_PACKAGE >~getmetap
+  tmp_file=$(mktemp --suffix ".tmp")
+
+  ./getmeta $* $CIYAM_PACKAGE >$tmp_file
 
   if [ $? -ne 0 ]; then
-   cat ~getmetap
+   cat $tmp_file
   else
    # NOTE: Remove the trailing LF if the field list is just "@key".
    if [ "$3" = "@key" ]; then
-    truncate -s -1 ~getmetap
+    truncate -s -1 $tmp_file
    fi
-   cat ~getmetap | xclip -selection clipboard
+   cat $tmp_file | xclip -selection clipboard
    echo "(result is on the clipboard)"
   fi
 
-  rm ~getmetap
+  rm $tmp_file
  fi
 fi

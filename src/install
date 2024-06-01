@@ -16,6 +16,7 @@ else
   echo Error: File \'$directory/fcgi.sio\' does not exist.
  else
   cp $1.fcgi.sio $directory
+  chmod a+r $directory/$1.fcgi.sio
 
   if [ ! "$alias" = "" ]; then
    ./xrep @module.html.xrep model_vars=$1.vars.xrep > $directory/$alias.html

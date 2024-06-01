@@ -4,6 +4,9 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-git ls-files | xargs -l sha256sum > ~src_hash
-cat ~src_hash | sha256sum | tr -d " -"
-rm ~src_hash
+tmp_file=$(mktemp --suffix ".tmp")
+
+git ls-files | xargs -l sha256sum > $tmp_file
+
+cat $tmp_file | sha256sum | tr -d " -"
+rm $tmp_file

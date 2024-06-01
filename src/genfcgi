@@ -24,11 +24,17 @@ else
    if [ ! -f $directory/activate.htms ]; then
     echo Error: File \'$directory/activate.htms\' does not exist.
    else
-    ./xrep @app.fcgi.sio.xrep include=$1.app.vars.xrep >~genfcgi.tmp
-    ./update $directory/fcgi.sio ~genfcgi.tmp
+    tmp_file=$(mktemp --suffix ".tmp")
 
-    ./xrep @ciyam_interface.js.xrep include=$1.app.vars.xrep >~genfcgi.tmp
-    ./update $directory/ciyam_interface.js ~genfcgi.tmp
+    ./xrep @app.fcgi.sio.xrep include=$1.app.vars.xrep >$tmp_file
+
+    ./update $directory/fcgi.sio $tmp_file
+    chmod a+r $directory/fcgi.sio
+
+    ./xrep @ciyam_interface.js.xrep include=$1.app.vars.xrep >$tmp_file
+
+    ./update $directory/ciyam_interface.js $tmp_file
+    chmod a+r $directory/ciyam_interface.js
    fi
   fi
  fi
