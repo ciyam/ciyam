@@ -25,9 +25,7 @@ BACKUP_HEIGHT_FILE=$BACKUP_PATH/$BACKUP_HEIGHT
 IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
 
 # NOTE: Use this to prevent accidentally executing the backup twice.
-if [ ! -f ~backup ]; then
- touch ~backup
-
+if lockfile -r 0 ~backup 2>/dev/null; then
  secs=4
  prepared=0
 
@@ -53,7 +51,7 @@ if [ ! -f ~backup ]; then
     date >Backup.txt
     echo "NOTE: Backup files area is not currently available (please try again later)." >>Backup.txt
     date >>Backup.txt
-    rm ~backup
+    rm -f ~backup
    else
     if [ $num_chunks -gt 1000 ]; then
      date >Backup.txt
@@ -106,5 +104,5 @@ if [ ! -f ~backup ]; then
 
  ./system_variable set @backup_in_progress ""
 
- rm ~backup
+ rm -f ~backup
 fi

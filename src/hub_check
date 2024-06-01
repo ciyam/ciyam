@@ -4,8 +4,7 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-if [ ! -f ~hub ]; then
- touch ~hub
+if lockfile -r 0 ~hub 2>/dev/null; then
 
  GEN_HUB_BLOCK=`./system_variable get @generate_hub_block`
  PEER_HUB_HEIGHT=`./system_variable get @blockchain_peer_hub_height`
@@ -23,5 +22,5 @@ if [ ! -f ~hub ]; then
   fi
  fi
 
- rm ~hub
+ rm -f ~hub
 fi
