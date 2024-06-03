@@ -346,12 +346,12 @@ inline void remove_dir( const std::string& path, bool* p_rc = 0 )
 }
 
 bool file_touch( const char* p_name,
- time_t* p_tm = 0, bool create_if_not_exists = false );
+ time_t* p_tm = 0, bool create_if_not_exists = false, bool force_sync = false );
 
 inline bool file_touch( const std::string& name,
- time_t* p_tm = 0, bool create_if_not_exists = false )
+ time_t* p_tm = 0, bool create_if_not_exists = false, bool force_sync = false )
 {
-   return file_touch( name.c_str( ), p_tm, create_if_not_exists );
+   return file_touch( name.c_str( ), p_tm, create_if_not_exists, force_sync );
 }
 
 bool file_exists( const char* p_name, bool check_link_target = false );

@@ -4,20 +4,21 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+GENERATE_HUB_BLOCK_FILE=.generate_hub_block
+
 if lockfile -r 0 ~hub 2>/dev/null; then
 
- GEN_HUB_BLOCK=`./system_variable get @generate_hub_block`
- PEER_HUB_HEIGHT=`./system_variable get @blockchain_peer_hub_height`
+ if [ -f "$GENERATE_HUB_BLOCK_FILE" ]; then
+  PEER_HUB_HEIGHT=`./system_variable get @blockchain_peer_hub_height`
 
- if [ "$GEN_HUB_BLOCK" = "1" ]; then
-  ./generate_next_block -hub
+  if [ ! "" = "$PEER_HUB_HEIGHT" ]; then
+   ./generate_next_block -hub
 
-  NEW_PEER_HUB_HEIGHT=`./system_variable get @blockchain_peer_hub_height`
+   NEW_PEER_HUB_HEIGHT=`./system_variable get @blockchain_peer_hub_height`
 
-  if [ ! "" = "$NEW_PEER_HUB_HEIGHT" ]; then
    # NOTE: Assume generate failed if the height is unchanged.
    if [ ! "$PEER_HUB_HEIGHT" = "$NEW_PEER_HUB_HEIGHT" ]; then
-    ./system_variable set @generate_hub_block ""
+    ~rm "$GENERATE_HUB_BLOCK_FILE"
    fi
   fi
  fi

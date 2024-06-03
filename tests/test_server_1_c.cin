@@ -101,12 +101,10 @@ system_variable !test_a|!test_b
 system_variable !test_a|!test_x
 system_variable !test_a&!test_x
 system_variable *
-system_variable **
 system_variable >
 system_variable <
 system_variable test_a ddd
 system_variable *
-system_variable **
 system_variable >
 system_variable <
 system_variable test_b eee
@@ -115,7 +113,6 @@ system_variable >
 system_variable <
 system_variable test_c fff
 system_variable *
-system_variable **
 system_variable >
 system_variable <
 system_variable <test_a

@@ -39,6 +39,8 @@ namespace
 const int c_max_lock_attempts = 20;
 const int c_lock_attempt_sleep_time = 200;
 
+const char c_hidden_file_prefix = '.';
+
 const char c_persist_variable_prefix = '>';
 const char c_restore_variable_prefix = '<';
 
@@ -539,6 +541,23 @@ void init_special_variable_names( )
    }
 }
 
+void set_generate_hub_block( )
+{
+   string file_name( c_special_variable_generate_hub_block );
+
+   file_name = c_hidden_file_prefix + file_name.substr( 1 );
+
+   if( file_exists( file_name ) )
+      g_variables[ c_special_variable_generate_hub_block ] = c_true_value;
+   else if( g_variables.count( c_special_variable_generate_hub_block ) )
+      g_variables.erase( c_special_variable_generate_hub_block );
+}
+
+void set_ods_cache_hit_ratios( )
+{
+   g_variables[ c_special_variable_ods_cache_hit_ratios ] = system_ods_instance( ).get_cache_hit_ratios( );
+}
+
 }
 
 string get_special_var_name( special_var var )
@@ -707,73 +726,52 @@ string get_raw_system_variable( const string& name )
    }
    else if( var_name.find_first_of( "?*" ) != string::npos )
    {
-      if( var_name == "*" || var_name == "**" )
+      if( var_name == "*" )
          var_name = sys_var_prefix + var_name;
 
-      // NOTE: Allow use of "**" for reverse iteration.
-      if( var_name.find( "**" ) == string::npos )
+      map< string, string >::const_iterator ci;
+
+      if( wildcard_match( var_name, c_special_variable_generate_hub_block ) )
+         set_generate_hub_block( );
+
+      if( wildcard_match( var_name, c_special_variable_ods_cache_hit_ratios ) )
+         set_ods_cache_hit_ratios( );
+
+      for( ci = g_variables.begin( ); ci != g_variables.end( ); ++ci )
       {
-         map< string, string >::const_iterator ci;
-         for( ci = g_variables.begin( ); ci != g_variables.end( ); ++ci )
+         if( wildcard_match( var_name, ci->first ) )
          {
-            if( wildcard_match( var_name, ci->first ) )
-            {
-               if( !retval.empty( ) )
-                  retval += "\n";
+            if( !retval.empty( ) )
+               retval += "\n";
 
-               retval += quote_if_contains_white_space( ci->first ) + ' ' + ci->second;
-            }
-         }
-
-         map< string, deque< string > >::const_iterator dci;
-         for( dci = g_deque_variables.begin( ); dci != g_deque_variables.end( ); ++dci )
-         {
-            if( wildcard_match( var_name, dci->first ) )
-            {
-               if( !retval.empty( ) )
-                  retval += "\n";
-
-               retval += quote_if_contains_white_space( dci->first ) + ' ' + dci->second.front( );
-
-               if( dci->second.size( ) > 1 )
-                  retval += " (+" + to_string( dci->second.size( ) - 1 ) + ")";
-            }
+            retval += quote_if_contains_white_space( ci->first ) + ' ' + ci->second;
          }
       }
-      else
+
+      map< string, deque< string > >::const_iterator dci;
+
+      for( dci = g_deque_variables.begin( ); dci != g_deque_variables.end( ); ++dci )
       {
-         replace( var_name, "**", "*" );
-
-         map< string, string >::const_reverse_iterator cri;
-         for( cri = g_variables.rbegin( ); cri != g_variables.rend( ); ++cri )
+         if( wildcard_match( var_name, dci->first ) )
          {
-            if( wildcard_match( var_name, cri->first ) )
-            {
-               if( !retval.empty( ) )
-                  retval += "\n";
+            if( !retval.empty( ) )
+               retval += "\n";
 
-               retval += quote_if_contains_white_space( cri->first ) + ' ' + cri->second;
-            }
-         }
+            retval += quote_if_contains_white_space( dci->first ) + ' ' + dci->second.front( );
 
-         map< string, deque< string > >::const_reverse_iterator dcri;
-         for( dcri = g_deque_variables.rbegin( ); dcri != g_deque_variables.rend( ); ++dcri )
-         {
-            if( wildcard_match( var_name, dcri->first ) )
-            {
-               if( !retval.empty( ) )
-                  retval += "\n";
-
-               retval += quote_if_contains_white_space( dcri->first ) + ' ' + dcri->second.front( );
-
-               if( dcri->second.size( ) > 1 )
-                  retval += " (+" + to_string( dcri->second.size( ) - 1 ) + ")";
-            }
+            if( dci->second.size( ) > 1 )
+               retval += " (+" + to_string( dci->second.size( ) - 1 ) + ")";
          }
       }
    }
    else
    {
+      if( var_name == c_special_variable_generate_hub_block )
+         set_generate_hub_block( );
+
+      if( var_name == c_special_variable_ods_cache_hit_ratios )
+         set_ods_cache_hit_ratios( );
+
       if( var_name.find( c_special_variable_queue_prefix ) == 0 )
       {
          if( g_deque_variables.count( var_name ) )
@@ -792,10 +790,8 @@ string get_raw_system_variable( const string& name )
          retval = g_variables[ var_name ];
       else if( name == get_special_var_name( e_special_var_none ) )
          retval = " ";
-      else if( var_name == string( c_special_variable_files_area_dir ) )
-         retval = string( c_files_directory );
-      else if( var_name == string( c_special_variable_ods_cache_hit_ratios ) )
-         retval = system_ods_instance( ).get_cache_hit_ratios( );
+      else if( var_name == c_special_variable_files_area_dir )
+         retval = c_files_directory;
    }
 
    return retval;
@@ -855,6 +851,20 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
       file_remove( tmp_file_name );
    }
+   else if( name == c_special_variable_generate_hub_block )
+   {
+      guard g( g_mutex );
+
+      string file_name( c_hidden_file_prefix + name.substr( 1 ) );
+
+      if( value.empty( ) )
+         set_generate_hub_block( );
+      else
+      {
+         if( file_touch( file_name, 0, true, true ) )
+            g_variables[ name ] = c_true_value;
+      }
+   }
    else
    {
       guard g( g_mutex );
@@ -910,6 +920,8 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          else
             g_deque_variables[ var_name ].push_back( val );
       }
+      else if( var_name == c_special_variable_generate_hub_block )
+         throw runtime_error( "cannot persist variable '" + var_name + "'" );
       else if( pos != string::npos )
       {
          if( persist )

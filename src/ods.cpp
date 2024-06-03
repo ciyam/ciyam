@@ -68,6 +68,7 @@
 
 #include "ods.h"
 #include "cache.h"
+#include "format.h"
 #include "macros.h"
 #include "sha256.h"
 #include "pointers.h"
@@ -4321,12 +4322,15 @@ string ods::get_cache_hit_ratios( ) const
    if( !okay )
       THROW_ODS_ERROR( "database instance in bad state" );
 
-   string retval( "data: " );
-   retval += to_string( p_impl->rp_ods_data_cache_buffer->get_item_hit_ratio( ) * 100.0 ) + "%";
+   float data_ratio = p_impl->rp_ods_data_cache_buffer->get_item_hit_ratio( ) * 100.0;
+   float index_ratio = p_impl->rp_ods_index_cache_buffer->get_item_hit_ratio( ) * 100.0;
 
-   retval += ", index: " + to_string( p_impl->rp_ods_index_cache_buffer->get_item_hit_ratio( ) * 100.0 ) + "%";
+   ostringstream osstr;
 
-   return retval;
+   osstr << "data: " << setfill( '0' ) << ffmt( 1, 2 ) << data_ratio
+    << "%, index: " << setfill( '0' ) << ffmt( 1, 2 ) << index_ratio << '%';
+
+   return osstr.str( );
 }
 
 void ods::dump_file_info( ostream& os, bool omit_dtms ) const

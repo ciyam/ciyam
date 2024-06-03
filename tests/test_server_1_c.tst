@@ -161,10 +161,6 @@ system_variable *
 test_a aaa
 test_b bbb
 test_c ccc
-system_variable **
-test_c ccc
-test_b bbb
-test_a aaa
 system_variable >
 test_a aaa
 test_b bbb
@@ -175,10 +171,6 @@ system_variable *
 test_a ddd
 test_b bbb
 test_c ccc
-system_variable **
-test_c ccc
-test_b bbb
-test_a ddd
 system_variable >
 test_a aaa
 test_b bbb
@@ -202,10 +194,6 @@ system_variable *
 test_a ddd
 test_b eee
 test_c fff
-system_variable **
-test_c fff
-test_b eee
-test_a ddd
 system_variable >
 test_a aaa
 test_b bbb

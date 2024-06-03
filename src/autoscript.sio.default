@@ -8,7 +8,7 @@
 # <script/>
 #  <name>hub_check
 #  <time>00:00:00
-#  <cycle>5m
+#  <cycle>1m
 #  <filename>hub_check:~hub
 # </script>
 # <script/>

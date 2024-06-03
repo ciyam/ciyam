@@ -501,7 +501,7 @@ void remove_dir( const char* p_name, bool* p_rc )
    }
 }
 
-bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists )
+bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists, bool force_sync )
 {
    struct _utimbuf ut;
    struct _utimbuf* p_ut = 0;
@@ -520,8 +520,23 @@ bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists )
    {
       if( !file_exists( p_name ) )
       {
-         ofstream outf( p_name );
-         outf.close( );
+         if( !force_sync )
+         {
+            ofstream outf( p_name );
+            outf.close( );
+         }
+         else
+         {
+#ifndef _WIN32
+            int fd = open( p_name, O_RDWR | O_CREAT, S_IREAD | S_IWRITE | S_IRGRP | S_IROTH );
+
+            if( fd > 0 )
+            {
+               fsync( fd );
+               close( fd );
+            }
+#endif
+         }
 
          if( file_exists( p_name ) )
             rc = 0;
