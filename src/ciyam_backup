@@ -23,15 +23,14 @@ else
   web_path=$WEBDIR/$3
  fi
 
- echo "Starting backup..."
+ echo "Starting $CIYAM_STORAGE backup..."
 
  touch $web_path/ciyam_interface.stop
 
- echo "[app data]"
- ./ciyam_client -quiet -no_prompt -exec="<ciyam_backup.cin $opt"
- rm $web_path/ciyam_interface.stop
+ echo "[application data]"
+ ./ciyam_client -quiet -no_prompt -no_stderr -exec="<ciyam_backup.cin $opt"
 
- echo "[web files data]"
+ echo "[application web files]"
  pushd $web_path >/dev/null
  if [ -f "$work_path/$CIYAM_STORAGE.backup_files.bun.gz" ]; then
   rm "$work_path/$CIYAM_STORAGE.backup_files.bun.gz"
@@ -43,5 +42,7 @@ else
  fi
  popd >/dev/null
 
- echo "Finished backup..."
+ rm $web_path/ciyam_interface.stop
+
+ echo "Finished $CIYAM_STORAGE backup..."
 fi

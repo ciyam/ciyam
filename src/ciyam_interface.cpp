@@ -111,6 +111,7 @@ const char* const c_id_file = "../meta/identity.txt";
 const char* const c_eid_file = "../meta/encrypted.txt";
 
 const char* const c_stop_file = "../meta/ciyam_interface.stop";
+const char* const c_backup_file = "../meta/ciyam_backup.txt";
 
 #ifdef _WIN32
 const char* const c_kill_script = "ciyam_interface.kill.bat";
@@ -127,6 +128,7 @@ const char* const c_password_file = "password.htms";
 const char* const c_ssl_signup_file = "ssl_signup.htms";
 const char* const c_no_identity_file = "no_identity.htms";
 const char* const c_authenticate_file = "authenticate.htms";
+const char* const c_ciyam_backup_file = "ciyam_backup.htms";
 const char* const c_login_password_file = "login_password.htms";
 const char* const c_ciyam_interface_file = "ciyam_interface.htms";
 const char* const c_login_persistent_file = "login_persistent.htms";
@@ -212,6 +214,7 @@ string g_password_html;
 string g_ssl_signup_html;
 string g_no_identity_html;
 string g_authenticate_html;
+string g_ciyam_backup_html;
 
 string g_login_password_html;
 string g_ciyam_interface_html;
@@ -924,9 +927,31 @@ void request_handler::process_request( )
       bool is_activation = ( cmd == c_cmd_activate );
 
       bool is_authorised = false;
+      bool is_backing_up = false;
       bool is_login_screen = false;
 
-      if( file_exists( c_stop_file ) )
+      if( file_exists( c_backup_file ) )
+      {
+         string ciyam_backup_html( g_ciyam_backup_html );
+
+         str_replace( ciyam_backup_html,
+          c_ciyam_backup_text, buffer_file( c_backup_file ) );
+
+         output_form( module_name, extra_content,
+          ciyam_backup_html, "", false, GDS( c_display_backup_in_progress ) );
+
+         vector< string > lines;
+         buffer_file_lines( c_backup_file, lines );
+
+         // NOTE: If the second last line starts with four '=' characters is assuming
+         // that the backup has completed and will delete the file (allowing the user
+         // time to view the file data which disappears after the page is refreshed).
+         if( lines.size( ) > 3 && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
+            file_remove( c_backup_file );
+
+         is_backing_up = true;
+      }
+      else if( file_exists( c_stop_file ) )
       {
          msleep( 2500 );
 
@@ -1114,30 +1139,33 @@ void request_handler::process_request( )
           && userhash.empty( ) && password.empty( ) && !needs_identity
           && ( !using_anonymous || ( is_activation && file_exists( activation_file ) ) ) )
          {
-            string login_html( !cookies_permitted || !get_storage_info( ).login_days
-             || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
-
-            if( cmd != c_cmd_activate )
+            if( !is_backing_up )
             {
-               is_login_screen = true;
-               output_form( module_name, extra_content, login_html );
-            }
-            else
-            {
-               if( chksum != get_checksum( c_cmd_activate + user + data ) )
-                  throw runtime_error( GDS( c_display_invalid_url ) );
+               string login_html( !cookies_permitted || !get_storage_info( ).login_days
+                || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
-               string activate_html( g_activate_html );
-               str_replace( activate_html, c_user_id, user );
+               if( cmd != c_cmd_activate )
+               {
+                  is_login_screen = true;
+                  output_form( module_name, extra_content, login_html );
+               }
+               else
+               {
+                  if( chksum != get_checksum( c_cmd_activate + user + data ) )
+                     throw runtime_error( GDS( c_display_invalid_url ) );
 
-               string message( "<p><b>"
-                + string_message( GDS( c_display_provide_password_to_activate ),
-                make_pair( c_display_provide_password_to_activate_parm_id, user ) ) + "</b></p>" );
+                  string activate_html( g_activate_html );
+                  str_replace( activate_html, c_user_id, user );
 
-               output_form( module_name, extra_content, activate_html, message, false );
+                  string message( "<p><b>"
+                   + string_message( GDS( c_display_provide_password_to_activate ),
+                   make_pair( c_display_provide_password_to_activate_parm_id, user ) ) + "</b></p>" );
+
+                  output_form( module_name, extra_content, activate_html, message, false );
+               }
             }
          }
-         else
+         else if( !is_backing_up )
          {
             if( cmd == c_cmd_activate )
             {
@@ -1237,7 +1265,7 @@ void request_handler::process_request( )
                extra_content_func += "document.cookie = '" + get_cookie_value( "", c_anon_user_key, true ) + "';";
          }
       }
-      else
+      else if( !is_backing_up )
       {
          guard g( g_session_mutex );
 
@@ -2816,6 +2844,9 @@ void request_handler::process_request( )
             extra_content_func += " document.identity.entropy.value = decrypt_hex_data( document.identity.entropy.value, uniqueId );";
       }
 
+      if( is_backing_up && file_exists( c_backup_file ) )
+         extra_content_func += "auto_refresh_seconds = 3;\nauto_refresh( );";
+
       extra_content << "<input type=\"hidden\" value=\"" << extra_content_func << "\" id=\"extra_content_func\"/>\n";
    }
    catch( exception& x )
@@ -3157,6 +3188,7 @@ int main( int argc, char* argv[ ] )
       g_ssl_signup_html = buffer_file( c_ssl_signup_file );
       g_no_identity_html = buffer_file( c_no_identity_file );
       g_authenticate_html = buffer_file( c_authenticate_file );
+      g_ciyam_backup_html = buffer_file( c_ciyam_backup_file );
 
       g_ciyam_interface_html = buffer_file( c_ciyam_interface_file );
 

@@ -218,6 +218,7 @@ const char* const c_special_variable_peer_data_created = "@peer_data_created";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
 const char* const c_special_variable_check_script_error = "@check_script_error";
 const char* const c_special_variable_encrypted_password = "@encrypted_password";
+const char* const c_special_variable_exec_system_append = "@exec_system_append";
 const char* const c_special_variable_extra_field_values = "@extra_field_values";
 const char* const c_special_variable_file_info_buffered = "@file_info_buffered";
 const char* const c_special_variable_fixed_field_values = "@fixed_field_values";
@@ -474,6 +475,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_attached_file_path );
       g_special_variable_names.push_back( c_special_variable_check_script_error );
       g_special_variable_names.push_back( c_special_variable_encrypted_password );
+      g_special_variable_names.push_back( c_special_variable_exec_system_append );
       g_special_variable_names.push_back( c_special_variable_extra_field_values );
       g_special_variable_names.push_back( c_special_variable_file_info_buffered );
       g_special_variable_names.push_back( c_special_variable_fixed_field_values );

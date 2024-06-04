@@ -1,0 +1,44 @@
+#!/bin/sh
+# Copyright (c) 2024 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+#!/bin/bash
+FILES=*.modules.lst
+
+if [ ! "$WEBDIR" = "" ]; then
+ export CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/ciyam_backup.txt
+
+ date_var=`date`
+ date_len=${#date_var}
+ date_line=`eval printf '=%.0s' {1..$date_len}`
+
+ echo "$date_var" > $CIYAM_EXEC_SYSTEM_APPEND
+ echo "$date_line" >> $CIYAM_EXEC_SYSTEM_APPEND
+
+ chmod g+w $CIYAM_EXEC_SYSTEM_APPEND
+fi
+
+for f in $FILES
+do
+ if [ ! "$f" = "ciyam.modules.lst" ]; then
+  app_name=$(basename "$f" ".modules.lst")
+  app_dir=${app_name,,}
+
+  if [ "$WEBDIR" = "" ]; then
+   ./ciyam_backup $app_name $app_dir
+  else
+   ./ciyam_backup $app_name $app_dir >> $CIYAM_EXEC_SYSTEM_APPEND
+  fi
+ fi
+done
+
+if [ ! "$WEBDIR" = "" ]; then
+ date_var=`date`
+ date_len=${#date_var}
+ date_line=`eval printf '=%.0s' {1..$date_len}`
+
+ echo "$date_line" >> $CIYAM_EXEC_SYSTEM_APPEND
+ echo "$date_var" >> $CIYAM_EXEC_SYSTEM_APPEND
+fi
