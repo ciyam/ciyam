@@ -6460,7 +6460,17 @@ int exec_system( const string& cmd, bool async, bool delay )
 {
    int rc = 0;
 
+   string exec_cmd( cmd );
    string async_cmd( cmd );
+
+   string append_file( get_raw_session_variable(
+    get_special_var_name( e_special_var_exec_system_append ) ) );
+
+   if( !append_file.empty( ) )
+   {
+      exec_cmd += " >> " + append_file;
+      async_cmd += " >> " + append_file;
+   }
 
 #ifdef _WIN32
    async_cmd = "start /min " + async_cmd;
@@ -6474,7 +6484,7 @@ int exec_system( const string& cmd, bool async, bool delay )
     && gtp_session->p_storage_handler->get_name( ) != c_meta_storage_name
     && gtp_session->p_storage_handler->get_name( ) != c_ciyam_storage_name
     && gtp_session->p_storage_handler->get_name( ) != c_default_storage_name )
-      throw runtime_error( "invalid exec_system: " + cmd );
+      throw runtime_error( "invalid exec_system: " + exec_cmd );
 
    string async_var( get_raw_session_variable( get_special_var_name( e_special_var_allow_async ) ) );
 
@@ -6491,7 +6501,7 @@ int exec_system( const string& cmd, bool async, bool delay )
       // to be issued synchronously then use "delay".
       if( gtp_session && !gtp_session->transactions.empty( ) )
       {
-         gtp_session->async_or_delayed_system_commands.push_back( async ? async_cmd : cmd );
+         gtp_session->async_or_delayed_system_commands.push_back( async ? async_cmd : exec_cmd );
 
          if( !gtp_session->async_or_delayed_temp_file.empty( ) )
             gtp_session->async_or_delayed_temp_files.push_back( gtp_session->async_or_delayed_temp_file );
@@ -6500,9 +6510,9 @@ int exec_system( const string& cmd, bool async, bool delay )
       }
    }
 
-   TRACE_LOG( TRACE_SESSIONS, async ? async_cmd : cmd );
+   TRACE_LOG( TRACE_SESSIONS, async ? async_cmd : exec_cmd );
 
-   rc = system( async ? async_cmd.c_str( ) : cmd.c_str( ) );
+   rc = system( async ? async_cmd.c_str( ) : exec_cmd.c_str( ) );
 
    // NOTE: If the script had an error and the caller should throw this as an error then do so.
    string check_script_error(
