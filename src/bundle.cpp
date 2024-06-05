@@ -797,16 +797,32 @@ int main( int argc, char* argv[ ] )
                string::size_type wpos = next.find_first_of( "?*" );
 
                string filespec_path;
+
                if( wpos == 0 )
                {
                   filespec_path = g_cwd + "/" + next;
                   wpos = string::npos;
                }
                else
-                  absolute_path( next.substr( 0, wpos ), filespec_path );
+               {
+                  bool rc = false;
+
+                  string name( next.substr( 0, wpos ) );
+
+                  absolute_path( name, filespec_path, &rc );
+
+                  if( !rc )
+                  {
+                     if( get_exclude_filespecs )
+                        continue;
+                     else
+                        throw runtime_error( "unable to determine absolute path for fspec '" + name + "'" );
+                  }
+               }
 
 #ifdef _WIN32
                string::size_type pos;
+
                while( ( pos = filespec_path.find( '\\' ) ) != string::npos )
                   filespec_path[ pos ] = '/';
 #endif
@@ -823,6 +839,7 @@ int main( int argc, char* argv[ ] )
                string::size_type rpos = filespec_path.find_last_of( '/' );
 
                string filename_filter;
+
                if( rpos != string::npos )
                {
                   filename_filter = filespec_path.substr( rpos + 1 );

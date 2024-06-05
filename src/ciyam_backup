@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Copyright (c) 2012-2024 CIYAM Developers
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
@@ -30,17 +30,19 @@ else
  echo "[application data]"
  ./ciyam_client -quiet -no_prompt -no_stderr -exec="<ciyam_backup.cin $opt"
 
- echo "[application web files]"
  pushd $web_path >/dev/null
- if [ -f "$work_path/$CIYAM_STORAGE.backup_files.bun.gz" ]; then
-  rm "$work_path/$CIYAM_STORAGE.backup_files.bun.gz"
+ if [ $? -eq 0 ]; then
+  echo "[application web files]"
+  if [ -f "$work_path/$CIYAM_STORAGE.backup_files.bun.gz" ]; then
+   rm "$work_path/$CIYAM_STORAGE.backup_files.bun.gz"
+  fi
+  if [ ! "$CIYAM_STORAGE" = "Meta" ]; then
+   $work_path/bundle -r -q "$work_path/$CIYAM_STORAGE.backup_files" "files/*" -x "files/*_note_.txt" "files/*.htaccess" "files/tmp/*"
+  else
+   $work_path/bundle -r -q "$work_path/$CIYAM_STORAGE.backup_files" "files/*" -x "files/*_note_.txt" "files/*.htaccess" "files/tmp/*" "files/100/105100/*" "files/100/106100/*" "files/100/135100/*"
+  fi
+  popd >/dev/null
  fi
- if [ ! "$CIYAM_STORAGE" = "Meta" ]; then
-  $work_path/bundle -r -q "$work_path/$CIYAM_STORAGE.backup_files" "files/*" -x "files/*_note_.txt" "files/*.htaccess" "files/tmp/*"
- else
-  $work_path/bundle -r -q "$work_path/$CIYAM_STORAGE.backup_files" "files/*" -x "files/*_note_.txt" "files/*.htaccess" "files/tmp/*" "files/100/105100/*" "files/100/106100/*"
- fi
- popd >/dev/null
 
  rm $web_path/ciyam_interface.stop
 

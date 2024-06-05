@@ -842,6 +842,7 @@ field_add -id=136105 Package Key string mand
 field_add -id=136106 Package Usage_Count int mand -def=0
 field_add -id=136107 Package Plural identifier mand
 field_add -id=136108 Package Type_Name string opt -transient
+field_add -id=136109 Package Installed_Order string opt
 modifier_add -id=136310 Package Is_In_Use @class:lowlight1;list
 procedure_add -id=136410 Package Install
 procedure_add -id=136420 Package Remove

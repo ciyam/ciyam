@@ -2205,6 +2205,7 @@ void buffer_file_lines( const string& file_name, set< string >& lines, bool stri
 
    string next;
    size_t line_num = 0;
+
    while( getline( inpf, next ) )
    {
       ++line_num;
@@ -2230,6 +2231,7 @@ void buffer_file_lines( const string& file_name,
 
    string next;
    size_t line_num = 0;
+
    while( getline( inpf, next ) )
    {
       ++line_num;
@@ -2255,6 +2257,7 @@ void buffer_file_lines( const string& file_name,
 
    string next;
    size_t line_num = 0;
+
    while( getline( inpf, next ) )
    {
       ++line_num;
@@ -2296,7 +2299,7 @@ void buffer_file_tail( const string& file_name,
 
       if( lines.empty( ) && !data.empty( ) )
       {
-         // NOTE: Will always ignore a final trailing black line.
+         // NOTE: Will always ignore a final trailing blank line.
          while( data.size( ) && data[ data.size( ) - 1 ] == '\n' )
          {
             data.erase( data.size( ) - 1 );
@@ -2346,6 +2349,7 @@ void buffer_file_items( const string& file_name,
 
    string next;
    size_t line_num = 0;
+
    while( getline( inpf, next ) )
    {
       ++line_num;
@@ -2383,13 +2387,11 @@ void absolute_path( const string& relative_path, string& absolute_path, bool* p_
    absolute_path = path;
 #endif
 
-   if( !found )
-   {
-      if( p_rc )
-         *p_rc = false;
-      else
-         throw runtime_error( "unable to determine absolute path for '" + relative_path + "'" );
-   }
+   if( !found && !p_rc )
+      throw runtime_error( "unable to determine absolute path for '" + relative_path + "'" );
+
+   if( p_rc )
+      *p_rc = found;
 }
 
 string file_name_without_path( const string& path, bool remove_extension )
