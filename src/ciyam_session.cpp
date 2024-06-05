@@ -5282,15 +5282,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( exists_file( sav_keys_name ) )
                copy_file( sav_keys_name, keys_name );
-
-            if( exists_file( sav_autoscript_name ) )
-               copy_file( sav_autoscript_name, autoscript_name );
-
-            if( exists_file( sav_manuscript_name ) )
-               copy_file( sav_manuscript_name, manuscript_name );
-
-            if( exists_file( sav_server_sio_name ) )
-               copy_file( sav_server_sio_name, server_sio_name );
          }
 
          ofstream new_logf;
@@ -5662,15 +5653,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                if( exists_file( sav_keys_name ) )
                   remove_file( sav_keys_name );
-
-               if( exists_file( sav_autoscript_name ) )
-                  remove_file( sav_autoscript_name );
-
-               if( exists_file( sav_manuscript_name ) )
-                  remove_file( sav_manuscript_name );
-
-               if( exists_file( sav_server_sio_name ) )
-                  remove_file( sav_server_sio_name );
 
                remove_file( backup_sql_name );
             }

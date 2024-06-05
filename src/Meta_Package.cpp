@@ -106,6 +106,7 @@ const int32_t c_version = 1;
 const char* const c_field_id_Actions = "136102";
 const char* const c_field_id_Install_Details = "136104";
 const char* const c_field_id_Installed = "136103";
+const char* const c_field_id_Installed_Order = "136109";
 const char* const c_field_id_Key = "136105";
 const char* const c_field_id_Model = "302800";
 const char* const c_field_id_Name = "136101";
@@ -117,6 +118,7 @@ const char* const c_field_id_Usage_Count = "136106";
 const char* const c_field_name_Actions = "Actions";
 const char* const c_field_name_Install_Details = "Install_Details";
 const char* const c_field_name_Installed = "Installed";
+const char* const c_field_name_Installed_Order = "Installed_Order";
 const char* const c_field_name_Key = "Key";
 const char* const c_field_name_Model = "Model";
 const char* const c_field_name_Name = "Name";
@@ -128,6 +130,7 @@ const char* const c_field_name_Usage_Count = "Usage_Count";
 const char* const c_field_display_name_Actions = "field_package_actions";
 const char* const c_field_display_name_Install_Details = "field_package_install_details";
 const char* const c_field_display_name_Installed = "field_package_installed";
+const char* const c_field_display_name_Installed_Order = "field_package_installed_order";
 const char* const c_field_display_name_Key = "field_package_key";
 const char* const c_field_display_name_Model = "field_package_model";
 const char* const c_field_display_name_Name = "field_package_name";
@@ -136,7 +139,7 @@ const char* const c_field_display_name_Plural = "field_package_plural";
 const char* const c_field_display_name_Type_Name = "field_package_type_name";
 const char* const c_field_display_name_Usage_Count = "field_package_usage_count";
 
-const int c_num_fields = 10;
+const int c_num_fields = 11;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -148,6 +151,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "136106",
    "136107",
    "136108",
+   "136109",
    "302800",
    "302810"
 };
@@ -157,6 +161,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Actions",
    "Install_Details",
    "Installed",
+   "Installed_Order",
    "Key",
    "Model",
    "Name",
@@ -262,6 +267,7 @@ inline validation_error_value_type
 string g_default_Actions = string( "136410" );
 string g_default_Install_Details = string( );
 bool g_default_Installed = bool( 0 );
+string g_default_Installed_Order = string( );
 string g_default_Key = string( );
 string g_default_Model = string( );
 string g_default_Name = string( );
@@ -369,6 +375,12 @@ void Meta_Package_command_functor::operator ( )( const string& command, const pa
          string_getter< bool >( cmd_handler.p_Meta_Package->Installed( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Installed_Order || field_name == c_field_name_Installed_Order )
+      {
+         handled = true;
+         string_getter< string >( cmd_handler.p_Meta_Package->Installed_Order( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Key || field_name == c_field_name_Key )
       {
          handled = true;
@@ -442,6 +454,13 @@ void Meta_Package_command_functor::operator ( )( const string& command, const pa
          handled = true;
          func_string_setter< Meta_Package, bool >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Installed, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Installed_Order || field_name == c_field_name_Installed_Order )
+      {
+         handled = true;
+         func_string_setter< Meta_Package, string >(
+          *cmd_handler.p_Meta_Package, &Meta_Package::Installed_Order, field_value );
       }
 
       if( !handled && field_name == c_field_id_Key || field_name == c_field_name_Key )
@@ -573,6 +592,9 @@ struct Meta_Package::impl : public Meta_Package_command_handler
 
    bool impl_Installed( ) const { return lazy_fetch( p_obj ), v_Installed; }
    void impl_Installed( bool Installed ) { v_Installed = Installed; }
+
+   const string& impl_Installed_Order( ) const { return lazy_fetch( p_obj ), v_Installed_Order; }
+   void impl_Installed_Order( const string& Installed_Order ) { sanity_check( Installed_Order ); v_Installed_Order = Installed_Order; }
 
    const string& impl_Key( ) const { return lazy_fetch( p_obj ), v_Key; }
    void impl_Key( const string& Key ) { sanity_check( Key ); v_Key = Key; }
@@ -788,6 +810,7 @@ struct Meta_Package::impl : public Meta_Package_command_handler
    string v_Actions;
    string v_Install_Details;
    bool v_Installed;
+   string v_Installed_Order;
    string v_Key;
    string v_Name;
    string v_Plural;
@@ -885,6 +908,7 @@ void Meta_Package::impl::impl_Check_Install( )
    {
       get_obj( ).Actions( "136420" );
       get_obj( ).Installed( true );
+      get_obj( ).Installed_Order( get_dtm( ) );
 
       if( get_obj( ).Name( ) == "Standard" && is_null( get_obj( ).Model( ).Workgroup( ).Standard_Package( ) ) )
       {
@@ -914,6 +938,7 @@ void Meta_Package::impl::impl_Complete_Remove( )
 
    get_obj( ).Actions( "136410" );
    get_obj( ).Installed( false );
+   get_obj( ).Installed_Order( "" );
 
    string std_package_key;
    if( !is_null( get_obj( ).Model( ).Workgroup( ).Standard_Package( ) ) )
@@ -986,9 +1011,9 @@ void Meta_Package::impl::impl_Install( )
       vector< string > dependencies;
       map< string, string > installed_types;
 
-      // KLUDGE: Because "Remove_All_Packages" relies upon the last modification time for
-      // determining the package order a delay of one second is required in order to make
-      // sure automated installation scripts have different times for each package "map".
+      // NOTE: Because "Remove_All_Packages" relies upon "Installed_Order" to determine
+      // the package installation ordering (and its value comes from "get_dtm") a delay
+      // of one second is required in to ensure that this ordering will be unambiguous.
       msleep( 1000 );
 
       if( get_obj( ).Model( ).child_Package( ).iterate_forwards( ) )
@@ -1701,30 +1726,34 @@ string Meta_Package::impl::get_field_value( int field ) const
       break;
 
       case 3:
-      retval = to_string( impl_Key( ) );
+      retval = to_string( impl_Installed_Order( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Model( ) );
+      retval = to_string( impl_Key( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Model( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Package_Type( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Plural( ) );
+      retval = to_string( impl_Package_Type( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Type_Name( ) );
+      retval = to_string( impl_Plural( ) );
       break;
 
       case 9:
+      retval = to_string( impl_Type_Name( ) );
+      break;
+
+      case 10:
       retval = to_string( impl_Usage_Count( ) );
       break;
 
@@ -1752,30 +1781,34 @@ void Meta_Package::impl::set_field_value( int field, const string& value )
       break;
 
       case 3:
-      func_string_setter< Meta_Package::impl, string >( *this, &Meta_Package::impl::impl_Key, value );
+      func_string_setter< Meta_Package::impl, string >( *this, &Meta_Package::impl::impl_Installed_Order, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Package::impl, Meta_Model >( *this, &Meta_Package::impl::impl_Model, value );
+      func_string_setter< Meta_Package::impl, string >( *this, &Meta_Package::impl::impl_Key, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Package::impl, string >( *this, &Meta_Package::impl::impl_Name, value );
+      func_string_setter< Meta_Package::impl, Meta_Model >( *this, &Meta_Package::impl::impl_Model, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Package::impl, Meta_Package_Type >( *this, &Meta_Package::impl::impl_Package_Type, value );
+      func_string_setter< Meta_Package::impl, string >( *this, &Meta_Package::impl::impl_Name, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Package::impl, string >( *this, &Meta_Package::impl::impl_Plural, value );
+      func_string_setter< Meta_Package::impl, Meta_Package_Type >( *this, &Meta_Package::impl::impl_Package_Type, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Package::impl, string >( *this, &Meta_Package::impl::impl_Type_Name, value );
+      func_string_setter< Meta_Package::impl, string >( *this, &Meta_Package::impl::impl_Plural, value );
       break;
 
       case 9:
+      func_string_setter< Meta_Package::impl, string >( *this, &Meta_Package::impl::impl_Type_Name, value );
+      break;
+
+      case 10:
       func_string_setter< Meta_Package::impl, int >( *this, &Meta_Package::impl::impl_Usage_Count, value );
       break;
 
@@ -1801,30 +1834,34 @@ void Meta_Package::impl::set_field_default( int field )
       break;
 
       case 3:
-      impl_Key( g_default_Key );
+      impl_Installed_Order( g_default_Installed_Order );
       break;
 
       case 4:
-      impl_Model( g_default_Model );
+      impl_Key( g_default_Key );
       break;
 
       case 5:
-      impl_Name( g_default_Name );
+      impl_Model( g_default_Model );
       break;
 
       case 6:
-      impl_Package_Type( g_default_Package_Type );
+      impl_Name( g_default_Name );
       break;
 
       case 7:
-      impl_Plural( g_default_Plural );
+      impl_Package_Type( g_default_Package_Type );
       break;
 
       case 8:
-      impl_Type_Name( g_default_Type_Name );
+      impl_Plural( g_default_Plural );
       break;
 
       case 9:
+      impl_Type_Name( g_default_Type_Name );
+      break;
+
+      case 10:
       impl_Usage_Count( g_default_Usage_Count );
       break;
 
@@ -1852,30 +1889,34 @@ bool Meta_Package::impl::is_field_default( int field ) const
       break;
 
       case 3:
-      retval = ( v_Key == g_default_Key );
+      retval = ( v_Installed_Order == g_default_Installed_Order );
       break;
 
       case 4:
-      retval = ( v_Model == g_default_Model );
+      retval = ( v_Key == g_default_Key );
       break;
 
       case 5:
-      retval = ( v_Name == g_default_Name );
+      retval = ( v_Model == g_default_Model );
       break;
 
       case 6:
-      retval = ( v_Package_Type == g_default_Package_Type );
+      retval = ( v_Name == g_default_Name );
       break;
 
       case 7:
-      retval = ( v_Plural == g_default_Plural );
+      retval = ( v_Package_Type == g_default_Package_Type );
       break;
 
       case 8:
-      retval = ( v_Type_Name == g_default_Type_Name );
+      retval = ( v_Plural == g_default_Plural );
       break;
 
       case 9:
+      retval = ( v_Type_Name == g_default_Type_Name );
+      break;
+
+      case 10:
       retval = ( v_Usage_Count == g_default_Usage_Count );
       break;
 
@@ -2000,6 +2041,7 @@ void Meta_Package::impl::clear( )
    v_Actions = g_default_Actions;
    v_Install_Details = g_default_Install_Details;
    v_Installed = g_default_Installed;
+   v_Installed_Order = g_default_Installed_Order;
    v_Key = g_default_Key;
    v_Name = g_default_Name;
    v_Plural = g_default_Plural;
@@ -2798,6 +2840,16 @@ void Meta_Package::Installed( bool Installed )
    p_impl->impl_Installed( Installed );
 }
 
+const string& Meta_Package::Installed_Order( ) const
+{
+   return p_impl->impl_Installed_Order( );
+}
+
+void Meta_Package::Installed_Order( const string& Installed_Order )
+{
+   p_impl->impl_Installed_Order( Installed_Order );
+}
+
 const string& Meta_Package::Key( ) const
 {
    return p_impl->impl_Key( );
@@ -3134,6 +3186,16 @@ const char* Meta_Package::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Installed_Order )
+   {
+      p_id = c_field_id_Installed_Order;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Key )
    {
       p_id = c_field_id_Key;
@@ -3244,6 +3306,16 @@ const char* Meta_Package::get_field_name(
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Installed_Order )
+   {
+      p_name = c_field_name_Installed_Order;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
    }
    else if( id == c_field_id_Key )
    {
@@ -3364,6 +3436,11 @@ string Meta_Package::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Installed );
       get_module_string( c_field_display_name_Installed, &next );
    }
+   else if( id_or_name == c_field_id_Installed_Order || id_or_name == c_field_name_Installed_Order )
+   {
+      name = string( c_field_display_name_Installed_Order );
+      get_module_string( c_field_display_name_Installed_Order, &next );
+   }
    else if( id_or_name == c_field_id_Key || id_or_name == c_field_name_Key )
    {
       name = string( c_field_display_name_Key );
@@ -3420,6 +3497,8 @@ string Meta_Package::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Install_Details );
    else if( id_or_name == c_field_id_Installed || id_or_name == c_field_name_Installed )
       display_name = get_module_string( c_field_display_name_Installed );
+   else if( id_or_name == c_field_id_Installed_Order || id_or_name == c_field_name_Installed_Order )
+      display_name = get_module_string( c_field_display_name_Installed_Order );
    else if( id_or_name == c_field_id_Key || id_or_name == c_field_name_Key )
       display_name = get_module_string( c_field_display_name_Key );
    else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
@@ -3716,6 +3795,7 @@ void Meta_Package::get_sql_column_names(
 
    names.push_back( "C_Actions" );
    names.push_back( "C_Installed" );
+   names.push_back( "C_Installed_Order" );
    names.push_back( "C_Key" );
    names.push_back( "C_Model" );
    names.push_back( "C_Name" );
@@ -3735,6 +3815,7 @@ void Meta_Package::get_sql_column_values(
 
    values.push_back( sql_quote( to_string( Actions( ) ) ) );
    values.push_back( to_string( Installed( ) ) );
+   values.push_back( sql_quote( to_string( Installed_Order( ) ) ) );
    values.push_back( sql_quote( to_string( Key( ) ) ) );
    values.push_back( sql_quote( to_string( Model( ) ) ) );
    values.push_back( sql_quote( to_string( Name( ) ) ) );
@@ -3865,6 +3946,7 @@ void Meta_Package::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "136102", "Actions", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "136104", "Install_Details", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "136103", "Installed", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "136109", "Installed_Order", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "136105", "Key", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "302800", "Model", "Meta_Model", true, "", "" ) );
    all_field_info.push_back( field_info( "136101", "Name", "string", false, "", "" ) );
@@ -3919,30 +4001,34 @@ const char* Meta_Package::static_get_field_id( field_id id )
       break;
 
       case 4:
-      p_id = "136105";
+      p_id = "136109";
       break;
 
       case 5:
-      p_id = "302800";
+      p_id = "136105";
       break;
 
       case 6:
-      p_id = "136101";
+      p_id = "302800";
       break;
 
       case 7:
-      p_id = "302810";
+      p_id = "136101";
       break;
 
       case 8:
-      p_id = "136107";
+      p_id = "302810";
       break;
 
       case 9:
-      p_id = "136108";
+      p_id = "136107";
       break;
 
       case 10:
+      p_id = "136108";
+      break;
+
+      case 11:
       p_id = "136106";
       break;
    }
@@ -3972,30 +4058,34 @@ const char* Meta_Package::static_get_field_name( field_id id )
       break;
 
       case 4:
-      p_id = "Key";
+      p_id = "Installed_Order";
       break;
 
       case 5:
-      p_id = "Model";
+      p_id = "Key";
       break;
 
       case 6:
-      p_id = "Name";
+      p_id = "Model";
       break;
 
       case 7:
-      p_id = "Package_Type";
+      p_id = "Name";
       break;
 
       case 8:
-      p_id = "Plural";
+      p_id = "Package_Type";
       break;
 
       case 9:
-      p_id = "Type_Name";
+      p_id = "Plural";
       break;
 
       case 10:
+      p_id = "Type_Name";
+      break;
+
+      case 11:
       p_id = "Usage_Count";
       break;
    }
@@ -4018,20 +4108,22 @@ int Meta_Package::static_get_field_num( const string& field )
       rc += 2;
    else if( field == c_field_id_Installed || field == c_field_name_Installed )
       rc += 3;
-   else if( field == c_field_id_Key || field == c_field_name_Key )
+   else if( field == c_field_id_Installed_Order || field == c_field_name_Installed_Order )
       rc += 4;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( field == c_field_id_Key || field == c_field_name_Key )
       rc += 5;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Model || field == c_field_name_Model )
       rc += 6;
-   else if( field == c_field_id_Package_Type || field == c_field_name_Package_Type )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 7;
-   else if( field == c_field_id_Plural || field == c_field_name_Plural )
+   else if( field == c_field_id_Package_Type || field == c_field_name_Package_Type )
       rc += 8;
-   else if( field == c_field_id_Type_Name || field == c_field_name_Type_Name )
+   else if( field == c_field_id_Plural || field == c_field_name_Plural )
       rc += 9;
-   else if( field == c_field_id_Usage_Count || field == c_field_name_Usage_Count )
+   else if( field == c_field_id_Type_Name || field == c_field_name_Type_Name )
       rc += 10;
+   else if( field == c_field_id_Usage_Count || field == c_field_name_Usage_Count )
+      rc += 11;
 
    return rc - 1;
 }
@@ -4065,6 +4157,7 @@ string Meta_Package::static_get_sql_columns( )
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Actions VARCHAR(200) NOT NULL,"
     "C_Installed INTEGER NOT NULL,"
+    "C_Installed_Order VARCHAR(200) NOT NULL,"
     "C_Key VARCHAR(200) NOT NULL,"
     "C_Model VARCHAR(75) NOT NULL,"
     "C_Name VARCHAR(200) NOT NULL,"

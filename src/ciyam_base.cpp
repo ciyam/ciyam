@@ -1674,7 +1674,7 @@ void init_system_ods( )
          ++num_system_db_files;
    }
 
-   string system_backup_files = ods_backup_file_names( c_ciyam_server, ".sav" );
+   string system_backup_files = ods_backup_file_names( c_ciyam_server, c_sav_file_ext );
 
    vector< string > all_system_backup_files;
 
@@ -1713,12 +1713,14 @@ void init_system_ods( )
          {
             string backup_file_name( all_system_backup_files[ i ] );
 
-            string system_file_name( get_files_area_dir( ) + '/' + replaced( backup_file_name, ".sav", "" ) );
+            string stored_file_name( replaced( backup_file_name, c_sav_file_ext, c_old_file_ext ) );
+
+            string system_file_name( get_files_area_dir( ) + '/' + replaced( backup_file_name, c_sav_file_ext, "" ) );
 
             if( file_exists( backup_file_name ) )
             {
-               if( num_system_backup_files )
-                  file_remove( system_file_name );
+               if( num_system_db_files )
+                  file_rename( system_file_name, stored_file_name );
 
                file_rename( backup_file_name, system_file_name );
             }
@@ -4301,6 +4303,20 @@ void sid_hash( string& s )
    hash.get_digest_as_string( s );
 }
 
+void restore_saved_and_keep_as_older( const string& file_name )
+{
+   string saved_file( file_name + c_sav_file_ext );
+   string older_file( file_name + c_old_file_ext );
+
+   if( file_exists( saved_file ) )
+   {
+      if( file_exists( file_name ) )
+         file_rename( file_name, older_file );
+
+      file_rename( saved_file, file_name );
+   }
+}
+
 struct script_info
 {
    string filename;
@@ -4395,6 +4411,8 @@ void output_script_info( const string& pat, ostream& os )
 
 void read_server_configuration( )
 {
+   restore_saved_and_keep_as_older( c_server_config_file );
+
    ifstream inpf( c_server_config_file );
 
    if( inpf )
@@ -5269,6 +5287,9 @@ void init_globals( const char* p_sid, int* p_use_udp )
       set_system_variable( get_special_var_name( e_special_var_system_identity ), identity );
 
       check_if_is_known_demo_identity( );
+
+      restore_saved_and_keep_as_older( c_autoscript_file );
+      restore_saved_and_keep_as_older( c_manuscript_file );
 
       // NOTE: The manuscript info doesn't actually need to be read until a script is attempted
       // to be run, however, it is been read at startup just to ensure that the .sio file isn't

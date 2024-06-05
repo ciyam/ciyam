@@ -95,6 +95,7 @@ const char* const c_files_ext = ".files";
 
 const char* const c_csv_file_ext = ".csv";
 const char* const c_log_file_ext = ".log";
+const char* const c_old_file_ext = ".old";
 const char* const c_sav_file_ext = ".sav";
 
 const char* const c_ciyam_script = "ciyam_script";

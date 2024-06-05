@@ -12474,6 +12474,18 @@
       </specifications>
      </field>
      <field/>
+      <id>136109
+      <name>Installed_Order
+      <type>string
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
       <id>136105
       <name>Key
       <type>string

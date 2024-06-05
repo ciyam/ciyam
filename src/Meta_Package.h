@@ -39,13 +39,14 @@ class META_PACKAGE_DECL_SPEC Meta_Package : public class_base
       e_field_id_Actions = 1,
       e_field_id_Install_Details = 2,
       e_field_id_Installed = 3,
-      e_field_id_Key = 4,
-      e_field_id_Model = 5,
-      e_field_id_Name = 6,
-      e_field_id_Package_Type = 7,
-      e_field_id_Plural = 8,
-      e_field_id_Type_Name = 9,
-      e_field_id_Usage_Count = 10
+      e_field_id_Installed_Order = 4,
+      e_field_id_Key = 5,
+      e_field_id_Model = 6,
+      e_field_id_Name = 7,
+      e_field_id_Package_Type = 8,
+      e_field_id_Plural = 9,
+      e_field_id_Type_Name = 10,
+      e_field_id_Usage_Count = 11
    };
 
    Meta_Package( );
@@ -59,6 +60,9 @@ class META_PACKAGE_DECL_SPEC Meta_Package : public class_base
 
    bool Installed( ) const;
    void Installed( bool Installed );
+
+   const std::string& Installed_Order( ) const;
+   void Installed_Order( const std::string& Installed_Order );
 
    const std::string& Key( ) const;
    void Key( const std::string& Key );

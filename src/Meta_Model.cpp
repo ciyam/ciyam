@@ -6360,15 +6360,14 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
 //nyi
    if( !storage_locked_for_admin( ) && get_obj( ).child_Package( ).iterate_forwards( ) )
    {
-      map< int64_t, string > packages;
+      map< string, string > packages;
+
       do
       {
          if( get_obj( ).child_Package( ).Installed( ) )
          {
-            int64_t last_mod = last_mod_time(
-             get_obj( ).child_Package( ).get_attached_file_path( get_obj( ).child_Package( ).get_key( ) + ".map" ) );
-
-            packages.insert( make_pair( last_mod, get_obj( ).child_Package( ).get_key( ) ) );
+            packages.insert( make_pair(
+             get_obj( ).child_Package( ).Installed_Order( ), get_obj( ).child_Package( ).get_key( ) ) );
          }
       } while( get_obj( ).child_Package( ).iterate_next( ) );
 
@@ -6396,7 +6395,7 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
 #ifdef _WIN32
          outf << "@echo off\n";
 #endif
-         for( map< int64_t, string >::iterator i = packages.end( ); ; --i )
+         for( map< string, string >::iterator i = packages.end( ); ; --i )
          {
             if( i != packages.end( ) )
             {
