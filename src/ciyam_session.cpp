@@ -5224,36 +5224,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             exec_system( unbundle + " -o -qw " + name + ".backup.bun.gz " + file_names );
 
-            buffer_file_lines( module_list_name, module_list );
-
-            file_names.erase( );
-
-            for( size_t i = 0; i < module_list.size( ); i++ )
-               file_names += " " + module_list[ i ] + ".init.lst";
-
-            if( !file_names.empty( ) )
-               exec_system( unbundle + " -o -qw " + name + ".backup.bun.gz " + file_names );
-
-            file_names.erase( );
-
-            for( size_t i = 0; i < module_list.size( ); i++ )
-            {
-               string module_init_list( module_list[ i ] + ".init.lst" );
-
-               if( exists_file( module_init_list ) )
-               {
-                  file_names += " " + module_init_list;
-
-                  vector< string > init_classes;
-                  buffer_file_lines( module_init_list, init_classes );
-
-                  for( size_t j = 0; j < init_classes.size( ); j++ )
-                     file_names += " " + module_list[ i ] + "_" + init_classes[ j ] + ".csv";
-               }
-            }
-
-            if( !file_names.empty( ) )
-               exec_system( unbundle + " -o -qw " + name + ".backup.bun.gz" + file_names );
+            // NOTE: The ".init.lst" and ".csv" files are omitted (as they should have been
+            // generated) and are only included in the backup itself for debugging purposes.
          }
 
          if( !rebuild && !partial && ( !exists_files( sav_db_file_names, ' ' )

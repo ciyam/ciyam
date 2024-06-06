@@ -1013,8 +1013,8 @@ void Meta_Package::impl::impl_Install( )
 
       // NOTE: Because "Remove_All_Packages" relies upon "Installed_Order" to determine
       // the package installation ordering (and its value comes from "get_dtm") a delay
-      // of one second is required in to ensure that this ordering will be unambiguous.
-      msleep( 1000 );
+      // of 1/10 of a second is here to ensure that this ordering will be unambiguous.
+      msleep( 100 );
 
       if( get_obj( ).Model( ).child_Package( ).iterate_forwards( ) )
       {
