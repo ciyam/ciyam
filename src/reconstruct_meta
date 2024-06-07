@@ -20,6 +20,10 @@ else
   if [ -f ~reconstruct_meta ]; then
    rm ~reconstruct_meta
   else
+   # NOTE: Remove demo channel directories if present.
+   rm -rf 7eaff0316.files
+   rm -rf cce8dd5bd.files
+
    ./reinstall_packages $1
    ./install_packages_list $1
    ./install Meta meta

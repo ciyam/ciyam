@@ -111,7 +111,9 @@ const char* const c_id_file = "../meta/identity.txt";
 const char* const c_eid_file = "../meta/encrypted.txt";
 
 const char* const c_stop_file = "../meta/ciyam_interface.stop";
+
 const char* const c_backup_file = "../meta/ciyam_backup.txt";
+const char* const c_restore_file = "../meta/ciyam_restore.txt";
 
 #ifdef _WIN32
 const char* const c_kill_script = "ciyam_interface.kill.bat";
@@ -927,8 +929,8 @@ void request_handler::process_request( )
       bool is_activation = ( cmd == c_cmd_activate );
 
       bool is_authorised = false;
-      bool is_backing_up = false;
       bool is_login_screen = false;
+      bool is_backup_or_restore = false;
 
       if( file_exists( c_backup_file ) )
       {
@@ -949,7 +951,28 @@ void request_handler::process_request( )
          if( lines.size( ) > 3 && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
             file_remove( c_backup_file );
 
-         is_backing_up = true;
+         is_backup_or_restore = true;
+      }
+      else if( file_exists( c_restore_file ) )
+      {
+         string ciyam_backup_html( g_ciyam_backup_html );
+
+         str_replace( ciyam_backup_html,
+          c_ciyam_backup_text, buffer_file( c_restore_file ) );
+
+         output_form( module_name, extra_content,
+          ciyam_backup_html, "", false, GDS( c_display_restore_in_progress ) );
+
+         vector< string > lines;
+         buffer_file_lines( c_restore_file, lines );
+
+         // NOTE: If the second last line starts with four '=' characters is assuming
+         // that the restore is completed and will delete the file (allowing the user
+         // time to view the file data which disappears after the page is refreshed).
+         if( lines.size( ) > 3 && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
+            file_remove( c_restore_file );
+
+         is_backup_or_restore = true;
       }
       else if( file_exists( c_stop_file ) )
       {
@@ -1139,7 +1162,7 @@ void request_handler::process_request( )
           && userhash.empty( ) && password.empty( ) && !needs_identity
           && ( !using_anonymous || ( is_activation && file_exists( activation_file ) ) ) )
          {
-            if( !is_backing_up )
+            if( !is_backup_or_restore )
             {
                string login_html( !cookies_permitted || !get_storage_info( ).login_days
                 || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
@@ -1165,7 +1188,7 @@ void request_handler::process_request( )
                }
             }
          }
-         else if( !is_backing_up )
+         else if( !is_backup_or_restore )
          {
             if( cmd == c_cmd_activate )
             {
@@ -1265,7 +1288,7 @@ void request_handler::process_request( )
                extra_content_func += "document.cookie = '" + get_cookie_value( "", c_anon_user_key, true ) + "';";
          }
       }
-      else if( !is_backing_up )
+      else if( !is_backup_or_restore )
       {
          guard g( g_session_mutex );
 
@@ -2844,8 +2867,33 @@ void request_handler::process_request( )
             extra_content_func += " document.identity.entropy.value = decrypt_hex_data( document.identity.entropy.value, uniqueId );";
       }
 
-      if( is_backing_up && file_exists( c_backup_file ) )
-         extra_content_func += "auto_refresh_seconds = 3;\nauto_refresh( );";
+      if( is_backup_or_restore )
+      {
+         string scrollx( input_data[ c_param_scrollx ] );
+         string scrolly( input_data[ c_param_scrolly ] );
+
+         if( !scrollx.empty( ) && !scrolly.empty( ) )
+         {
+            if( !extra_content_func.empty( ) )
+               extra_content_func += '\n';
+
+            extra_content_func += "scroll_page( " + scrollx + ", " + scrolly + " );";
+         }
+
+         if( file_exists( c_backup_file ) || file_exists( c_restore_file ) )
+         {
+            if( !extra_content_func.empty( ) )
+               extra_content_func += '\n';
+            extra_content_func += "auto_refresh_seconds = ";
+
+            if( file_exists( c_backup_file ) )
+               extra_content_func +=  "3";
+            else
+               extra_content_func +=  "5";
+
+            extra_content_func += ";\nauto_refresh( );";
+         }
+      }
 
       extra_content << "<input type=\"hidden\" value=\"" << extra_content_func << "\" id=\"extra_content_func\"/>\n";
    }

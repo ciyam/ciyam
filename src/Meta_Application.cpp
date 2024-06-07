@@ -1792,6 +1792,11 @@ void Meta_Application::impl::impl_Generate( )
 
    set_system_variable( "@" + storage_name( ) + "_protect", "1" );
 
+   string generate_log_file( get_raw_session_variable(
+    get_special_var_name( e_special_var_generate_log_file ) ) );
+
+   bool skip_exec = !generate_log_file.empty( );
+
    // NOTE: The UI allows this to be set so use this as the value during
    // the generate but put the value back to its last saved value after.
    int gen_type = get_obj( ).Generate_Type( );
@@ -1824,7 +1829,12 @@ void Meta_Application::impl::impl_Generate( )
       if( exists_file( modules_list ) )
          read_file_lines( modules_list, old_modules );
 
-      string generate_log_file( get_obj( ).Name( ) + ".generate.log" );
+      if( generate_log_file.empty( ) )
+      {
+         generate_log_file = get_obj( ).Name( ) + ".generate.log";
+
+         file_remove( generate_log_file );
+      }
 
       string stage_script_1( get_obj( ).Name( ) + ".generate.1.cin" );
       string stage_script_2( get_obj( ).Name( ) + ".generate.2.cin" );
@@ -1873,12 +1883,14 @@ void Meta_Application::impl::impl_Generate( )
 #ifdef _WIN32
       outs << "@echo off\n";
       outs << "set WEBDIR=" << get_web_root( ) << "\n\n";
+      outs << "echo Starting Generate... >>" << generate_log_file << "\n";
       outs << "if not exist \"" << web_dir_var << "/" << app_dir << "\" call setup.bat "
        << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file << "\n\n";
 
       string bs_web_dir_var( search_replace( get_web_root( ), "/", "\\" ) );
 #else
       outs << "export WEBDIR=" << get_web_root( ) << "\n\n";
+      outs << "echo Starting Generate... >>" << generate_log_file << "\n";
       outs << "if [ ! -d " << web_dir_var << "/" << app_dir << " ]; then\n"
        << " ./setup " << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file
        << "\nfi\n\n";
@@ -1890,12 +1902,6 @@ void Meta_Application::impl::impl_Generate( )
 
       if( !rpc_password.empty( ) )
          standard_client_args += " -rpc_unlock=" + rpc_password;
-
-      ofstream genlog( generate_log_file.c_str( ) );
-      if( !genlog )
-         throw runtime_error( "unexpected error opening '" + generate_log_file + "' for output" );
-
-      genlog << "Starting Generate...\n";
 
 #ifndef _WIN32
       outs << "touch $WEBDIR/" << app_dir << "/ciyam_interface.stop\n";
@@ -2371,10 +2377,6 @@ void Meta_Application::impl::impl_Generate( )
       if( !outupg.good( ) )
          throw runtime_error( "upgrade script output stream is bad" );
 
-      genlog.flush( );
-      if( !genlog.good( ) )
-         throw runtime_error( "generate log output stream is bad" );
-
       get_obj( ).Actions( "" );
       get_obj( ).Generate_Status( "Generating Vars..." );
 
@@ -2386,15 +2388,21 @@ void Meta_Application::impl::impl_Generate( )
       throw;
    }
 
-#ifdef _WIN32
-   // NOTE: Due to file locking inheritance in Win32 prevent a dead socket from
-   // killing this session until the asychronous operations have been completed.
-   capture_session( session_id( ) );
-   exec_system( generate_script, true );
-#else
+#ifndef _WIN32
    chmod( generate_script.c_str( ), 0777 );
-   exec_system( "./" + generate_script, true );
 #endif
+
+   if( !skip_exec )
+   {
+#ifdef _WIN32
+      // NOTE: Due to file locking inheritance in Win32 prevent a dead socket from
+      // killing this session until the asychronous operations have been completed.
+      capture_session( session_id( ) );
+      exec_system( generate_script, true );
+#else
+      exec_system( "./" + generate_script, true );
+#endif
+   }
    // [<finish Generate_impl>]
 }
 
@@ -3735,7 +3743,21 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
 
    // [<start for_store>]
 //nyi
-   if( is_create && !storage_locked_for_admin( ) && get_obj( ).Create_Database( ) )
+   bool skip_create_db = storage_locked_for_admin( );
+
+   if( has_session_variable( get_special_var_name( e_special_var_force_db_create ) ) )
+   {
+      string names( get_session_variable( get_special_var_name( e_special_var_force_db_create ) ) );
+
+      set< string > all_names;
+
+      split( names, all_names );
+
+      if( all_names.count( get_obj( ).Name( ) ) )
+         skip_create_db = false;
+   }
+
+   if( is_create && !skip_create_db && get_obj( ).Create_Database( ) )
    {
 #ifndef _WIN32
       string create_script( "./create_db" );

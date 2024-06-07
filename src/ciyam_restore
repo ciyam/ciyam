@@ -38,7 +38,7 @@ else
    pushd $web_path >/dev/null
    if [ $? -eq 0 ]; then
     echo "[application web files]"
-    if [ "" = "$opt" ] && [ "$CIYAM_STORAGE" = "Meta" ]; then
+    if [ "$opt" = "" ] && [ "$CIYAM_STORAGE" = "Meta" ]; then
      rm -f files/100/105100/*
      rm -f files/100/106100/*
      rm -f files/100/136100/*
