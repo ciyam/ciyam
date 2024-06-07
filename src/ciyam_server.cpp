@@ -566,8 +566,6 @@ int main( int argc, char* argv[ ] )
 
          ap_dynamic_library.reset( new dynamic_library( c_ciyam_base_lib, "ciyam_base" ) );
 
-         file_remove( c_update_signal_file );
-
          fp_trace_flags fp_trace_flags_func;
          fp_trace_flags_func = ( fp_trace_flags )ap_dynamic_library->bind_to_function( c_trace_flags_func_name );
 
@@ -637,6 +635,8 @@ int main( int argc, char* argv[ ] )
          int use_udp = 0;
 
          ( *fp_init_globals_func )( g_entropy.empty( ) ? 0 : g_entropy.c_str( ), &use_udp );
+
+         file_remove( c_update_signal_file );
 
          if( !use_udp )
             g_start_udp_stream_sessions = false;

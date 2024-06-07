@@ -3,4 +3,12 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-storage_restore -rebuild %CIYAM_STORAGE%
+@ifdef $CIYAM_CREATE_DB_NAMES
+.session_variable @force_db_create $CIYAM_CREATE_DB_NAMES
+@endif
+;
+@ifndef $1
+.storage_restore -rebuild $CIYAM_STORAGE
+@else
+.storage_restore -rebuild $1 $CIYAM_STORAGE
+@endif

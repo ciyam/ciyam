@@ -5046,6 +5046,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             file_names += " " + sav_keys_name;
 
          string module_list( name + ".modules.lst" );
+
          file_names += " " + module_list;
 
          // NOTE: Although the initial data lists and .csv files are backed up they
@@ -5072,11 +5073,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( is_meta )
          {
+            file_names += " Meta.cin";
+
             file_names += " " + sav_autoscript_name;
             file_names += " " + sav_manuscript_name;
             file_names += " " + sav_server_sio_name;
 
             file_names += " " + sav_server_db_file_names;
+         }
+         else
+         {
+            if( file_exists( name + ".app.vars.xrep" ) )
+               file_names += " " + name + ".app.vars.xrep";
          }
 
          ostringstream osstr;

@@ -618,6 +618,7 @@ const char* const c_display_missing_mnemonics = "Twelve mnemonic words must be p
 const char* const c_display_permission_denied = "Permission denied";
 const char* const c_display_backup_in_progress = "Backup In Progress";
 const char* const c_display_maximum_characters = "Maximum characters";
+const char* const c_display_restore_in_progress = "Restore In Progress";
 const char* const c_display_click_here_to_login = "Click {@href}here{#href} to login.";
 const char* const c_display_click_here_to_login_parm_href = "{@href}";
 const char* const c_display_click_here_to_retry = "Click {@href}here{#href} to retry.";

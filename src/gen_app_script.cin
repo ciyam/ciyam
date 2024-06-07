@@ -1,6 +1,9 @@
-; Copyright (c) 2017-2024 CIYAM Developers
+; Copyright (c) 2024 CIYAM Developers
 ;
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-storage_restore -rebuild -quicker %CIYAM_STORAGE%
+.storage_init Meta
+.session_variable @generate_log_file /dev/stdout
+.pe 20100101 sys Meta 127100 %1 -127410
+.quit

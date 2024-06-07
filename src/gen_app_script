@@ -1,0 +1,28 @@
+#!/bin/bash
+# Copyright (c) 2024 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 1 ]; then
+ echo "Usage: gen_app_script [app name]"
+else
+ CIYAM_APPLICATION=
+
+ # NOTE: As it is expected that 'tmp_file' will be in the current directory
+ # rather than using 'mktemp' is instead using a 'tilda' prefixed UUID name.
+ uuid=$(uuidgen)
+ tmp_file=~$uuid
+
+ ./test_sql Meta Meta "SELECT CONCAT('export CIYAM_APPLICATION=', C_Key_) FROM T_Meta_Application WHERE C_Name = '$1'">$tmp_file
+
+ chmod a+x $tmp_file
+ . ./$tmp_file
+ rm -f $tmp_file
+
+ if [ "$CIYAM_APPLICATION" = "" ]; then
+  echo "Error: Unknown application '$1'."
+ else
+  ./ciyam_client -quiet -no_prompt -no_stderr -exec="<gen_app_script.cin $CIYAM_APPLICATION"
+ fi
+fi

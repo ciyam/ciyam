@@ -1,22 +1,26 @@
-#!/bin/sh
+#!/bin/bash
 # Copyright (c) 2017-2024 CIYAM Developers
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: restore [[-quicker]] [app name]
+ echo "Usage: restore [[-quicker]] [app name] [[db_name[,...]]]"
 elif [ $# -lt 2 ] && [ "$1" = "-quicker" ]; then
- echo Usage: restore [[-quicker]] [app name]
+ echo "Usage: restore [[-quicker]] [app name] [[db_name[,...]]]"
 else
  if [ -f packages.lst ]; then
   ./construct @packages.lst ciyam_class.cpp.xrep
  fi
  if [ ! "$1" = "-quicker" ]; then
   export CIYAM_STORAGE=$1
+  export CIYAM_CREATE_DB_NAMES=$2
+
   ./ciyam_client -quiet -no_prompt < restore.cin
  else
   export CIYAM_STORAGE=$2
-  ./ciyam_client -quiet -no_prompt < restore_quicker.cin
+  export CIYAM_CREATE_DB_NAMES=$3
+
+  ./ciyam_client -quiet -no_prompt < restore.cin $1
  fi
 fi
