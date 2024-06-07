@@ -2884,14 +2884,8 @@ void request_handler::process_request( )
          {
             if( !extra_content_func.empty( ) )
                extra_content_func += '\n';
-            extra_content_func += "auto_refresh_seconds = ";
 
-            if( file_exists( c_backup_file ) )
-               extra_content_func +=  "3";
-            else
-               extra_content_func +=  "5";
-
-            extra_content_func += ";\nauto_refresh( );";
+            extra_content_func += "auto_refresh_seconds = 5;\nauto_refresh( );";
          }
       }
 
