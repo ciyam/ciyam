@@ -946,10 +946,10 @@ void request_handler::process_request( )
          buffer_file_lines( c_backup_file, lines );
 
          // NOTE: If the second last line starts with four '=' characters is assuming
-         // that the backup has completed and will delete the file (allowing the user
+         // that the backup has completed and will rename the file (allowing the user
          // time to view the file data which disappears after the page is refreshed).
          if( lines.size( ) > 3 && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
-            file_remove( c_backup_file );
+            file_rename( c_backup_file, string( c_backup_file ) + c_sav_file_ext );
 
          is_backup_or_restore = true;
       }
@@ -966,11 +966,9 @@ void request_handler::process_request( )
          vector< string > lines;
          buffer_file_lines( c_restore_file, lines );
 
-         // NOTE: If the second last line starts with four '=' characters is assuming
-         // that the restore is completed and will delete the file (allowing the user
-         // time to view the file data which disappears after the page is refreshed).
+         // NOTE: (see above NOTE)
          if( lines.size( ) > 3 && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
-            file_remove( c_restore_file );
+            file_rename( c_restore_file, string( c_restore_file ) + c_sav_file_ext );
 
          is_backup_or_restore = true;
       }

@@ -4,7 +4,7 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-FILES=*.modules.lst
+files=*.modules.lst
 
 if [ ! "$WEBDIR" = "" ]; then
  export CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/ciyam_backup.txt
@@ -19,7 +19,7 @@ if [ ! "$WEBDIR" = "" ]; then
  chmod g+w $CIYAM_EXEC_SYSTEM_APPEND
 fi
 
-for f in $FILES
+for f in $files
 do
  if [ ! "$f" = "ciyam.modules.lst" ]; then
   app_name=$(basename "$f" ".modules.lst")

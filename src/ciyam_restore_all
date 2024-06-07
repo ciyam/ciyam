@@ -4,7 +4,7 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-FILES=*.backup.bun.gz
+files=*.backup.bun.gz
 
 if [ ! "$WEBDIR" = "" ]; then
  export CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/ciyam_restore.txt
@@ -23,7 +23,7 @@ has_meta=
 app_names=
 missing_apps=
 
-for f in $FILES
+for f in $files
 do
  app_name=$(basename "$f" ".backup.bun.gz")
  app_dir=${app_name,,}
@@ -59,14 +59,14 @@ else
   if [ ! "$missing_apps" = "" ]; then
    ./ciyam_restore Meta meta
   else
-   ./unbundle -q Meta.backup autoscript.sio.sav manuscript.sio.sav "ciyam_server.*"
+   ./unbundle -q Meta.backup "ciyam_server.*"
    touch ciyam_base.update
   fi
  else
   if [ ! "$missing_apps" = "" ]; then
    ./ciyam_restore Meta meta >> $CIYAM_EXEC_SYSTEM_APPEND
   else
-   ./unbundle -q Meta.backup autoscript.sio.sav manuscript.sio.sav "ciyam_server.*"  >> $CIYAM_EXEC_SYSTEM_APPEND
+   ./unbundle -q Meta.backup "ciyam_server.*"  >> $CIYAM_EXEC_SYSTEM_APPEND
    touch ciyam_base.update
   fi
  fi
