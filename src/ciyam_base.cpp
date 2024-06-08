@@ -2099,7 +2099,8 @@ void perform_storage_op( storage_op op,
    if( p_new_handler && ( p_new_handler != gtp_session->p_storage_handler ) )
    {
       if( p_new_handler->get_is_locked_for_admin( ) )
-         throw runtime_error( "storage '" + name + "' is currently locked for administration" );
+         // FUTURE: This message should be handled as a server string message.
+         throw runtime_error( "Application is currently locked for Administration." );
 
       bool created_ods_instance = false;
       storage_handler* p_old_handler = gtp_session->p_storage_handler;

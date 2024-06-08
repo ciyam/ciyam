@@ -4897,8 +4897,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_init_name ) );
          string directory( get_parm_val( parameters, c_cmd_ciyam_session_storage_init_directory ) );
+         bool admin = has_parm_val( parameters, c_cmd_ciyam_session_storage_init_admin );
 
-         init_storage( name, directory, handler, has_parm_val( parameters, c_cmd_ciyam_session_storage_init_admin ) );
+         if( !admin && has_system_variable( get_special_var_name( e_special_var_preparing_backup ) ) )
+            // FUTURE: This message should be handled as a server string message.
+            throw runtime_error( "Application is being prepared for Backup." );
+
+         if( !admin && has_system_variable( get_special_var_name( e_special_var_preparing_restore ) ) )
+            // FUTURE: This message should be handled as a server string message.
+            throw runtime_error( "Application is being prepared for Restore." );
+
+         init_storage( name, directory, handler, admin );
       }
       else if( command == c_cmd_ciyam_session_storage_term )
          term_storage( handler );
