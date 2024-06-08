@@ -1708,10 +1708,11 @@ void request_handler::process_request( )
                      {
                         g_max_user_limit = ( size_t )atoi( identity_info.substr( pos + 1 ).c_str( ) );
 
-                        if( !simple_command( *p_session_info, "storage_init " + get_storage_info( ).storage_name ) )
-                           throw runtime_error( "unable to initialise '" + get_storage_info( ).storage_name + "' storage" );
-
                         string response;
+
+                        if( !simple_command( *p_session_info, "storage_init " + get_storage_info( ).storage_name, &response, true ) )
+                           throw runtime_error( response );
+
                         if( !get_storage_info( ).has_web_root( ) )
                         {
                            if( !simple_command( *p_session_info, "storage_web_root -expand", &response ) )
@@ -2891,29 +2892,36 @@ void request_handler::process_request( )
    }
    catch( exception& x )
    {
+      string error( x.what( ) );
+
+      string::size_type pos = error.find( c_response_error_prefix );
+
+      if( pos == 0 )
+         error.erase( 0, strlen( c_response_error_prefix ) );
+
 #ifdef QUIETER_ERROR_LOGGING
       bool log_error = true;
 
       // NOTE: Filter out some of the more "noisy" (and less serious) error messages.
       if( !g_seed_error.empty( )
-       || x.what( ) == GDS( c_display_invalid_url )
-       || x.what( ) == GDS( c_display_client_script_out_of_date )
-       || x.what( ) == GDS( c_display_unknown_or_invalid_user_id )
-       || x.what( ) == GDS( c_display_you_are_currently_logged_in )
-       || x.what( ) == GDS( c_display_module_name_missing_or_invalid ) )
+       || error == GDS( c_display_invalid_url )
+       || error == GDS( c_display_client_script_out_of_date )
+       || error == GDS( c_display_unknown_or_invalid_user_id )
+       || error == GDS( c_display_you_are_currently_logged_in )
+       || error == GDS( c_display_module_name_missing_or_invalid ) )
          log_error = false;
 
       if( log_error )
 #endif
       {
-         LOG_TRACE( string( "error: " ) + x.what( )
+         LOG_TRACE( string( "error: " ) + error
           + " (at " + date_time::local( ).as_string( true, false ) + " from " + raddr + ")" );
       }
 
       ostringstream osstr;
 
       if( display_error )
-         osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error ) << ": " << x.what( ) << "</p>\n";
+         osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error ) << ": " << error << "</p>\n";
 
       bool is_logged_in = false;
       bool has_output_extra = false;

@@ -2632,6 +2632,20 @@ void save_record( const string& module_id,
       {
          string::size_type pos = next.find( ':' );
 
+         // NOTE: Allows "i/I" rather than a ':' iff all other characters
+         // are hex nibbles (in order to make clipboard selection easier).
+         if( pos == string::npos )
+         {
+            string::size_type ipos = next.find_first_of( "iI" );
+
+            if( ipos != string::npos )
+            {
+               if( are_hex_nibbles( next.substr( 0, ipos ) )
+                && are_hex_nibbles( next.substr( ipos + 1 ) ) )
+                  pos = ipos;
+            }
+         }
+
          key_info = next.substr( 0, pos );
 
          // NOTE: If no separator simply erase the field
