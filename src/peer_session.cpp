@@ -1495,7 +1495,7 @@ void check_for_missing_other_sessions( const date_time& now )
    string paired_identity( get_raw_session_variable(
     get_special_var_name( e_special_var_paired_identity ) ) );
 
-   if( !paired_identity.empty( ) && !has_system_variable( paired_identity ) )
+   if( !paired_identity.empty( ) && !has_raw_system_variable( paired_identity ) )
    {
       string time_value( get_raw_session_variable(
        get_special_var_name( e_special_var_blockchain_time_value ) ) );
@@ -4371,7 +4371,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             {
                if( !has_tree_files )
                {
-                  if( !has_session_variable( get_special_var_name( e_special_var_paired_sync ) ) )
+                  if( !has_raw_session_variable( get_special_var_name( e_special_var_paired_sync ) ) )
                      check_for_missing_other_sessions( date_time::local( ) );
 
                   set_session_variable( get_special_var_name( e_special_var_blockchain_get_tree_files ), "" );
@@ -4418,7 +4418,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          // (by checking how many reads/writes between "not found" being read/written) and if
          // found then sets the session sync time which will flag to both sessions (if paired
          // session has also set it within the elapsed time or one second).
-         if( has_session_variable( get_special_var_name( e_special_var_blockchain_user ) ) )
+         if( has_raw_session_variable( get_special_var_name( e_special_var_blockchain_user ) ) )
          {
             old_rcvd_not_found = num_rcvd_not_found;
             num_rcvd_not_found = socket.get_num_read_lines( );
@@ -4807,7 +4807,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
             // NOTE: If a "put" list had been created and the system has a hub blockchain then will
             // set "@generate_hub_block" so that the next hub block can be automatically generated.
-            if( !is_owner && has_tag( put_tag_name ) && has_system_variable(
+            if( !is_owner && has_tag( put_tag_name ) && has_raw_system_variable(
              get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) )
                set_system_variable( get_special_var_name( e_special_var_generate_hub_block ), c_true_value );
 
@@ -7411,13 +7411,17 @@ void peer_listener::on_start( )
 
                date_time dtm( date_time::local( ) );
 
+               bool is_preparing = has_system_variable(
+                get_special_var_name( e_special_var_preparing_backup )
+                + '|' + get_special_var_name( e_special_var_preparing_restore ) );
+
                // NOTE: Check for accepts and create new sessions.
 #ifdef SSL_SUPPORT
                auto_ptr< ssl_socket > ap_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
 #else
                auto_ptr< tcp_socket > ap_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
 #endif
-               if( !g_server_shutdown && *ap_socket
+               if( !g_server_shutdown && *ap_socket && !is_preparing
                 && !has_max_peers( ) && get_is_accepted_peer_ip_addr( address.get_addr_string( ) ) )
                {
                   peer_session* p_session = 0;

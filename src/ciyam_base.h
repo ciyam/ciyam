@@ -498,6 +498,8 @@ bool CIYAM_BASE_DECL_SPEC has_raw_session_variable( const std::string& name, siz
 
 std::string CIYAM_BASE_DECL_SPEC get_raw_session_variable( const std::string& name, size_t sess_id = 0 );
 
+bool CIYAM_BASE_DECL_SPEC has_session_variable( const std::string& name_or_expr, const std::string* p_sess_id = 0 );
+
 std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name_or_expr, const std::string* p_sess_id = 0 );
 std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name, size_t slot );
 
@@ -522,8 +524,6 @@ inline void set_session_variable_for_matching_blockchains(
 {
    set_session_variable_for_matching_blockchains( name, value, "", "", matching_own_ip_address );
 }
-
-bool CIYAM_BASE_DECL_SPEC has_session_variable( const std::string& name );
 
 bool CIYAM_BASE_DECL_SPEC has_any_session_variable( const std::string& name );
 bool CIYAM_BASE_DECL_SPEC has_any_session_variable( const std::string& name, const std::string& value );
