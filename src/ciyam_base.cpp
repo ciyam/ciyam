@@ -8441,6 +8441,11 @@ struct raw_session_variable_getter : variable_getter
    size_t sess_id;
 };
 
+bool has_session_variable( const string& name_or_expr, const string* p_sess_id )
+{
+   return !get_session_variable( name_or_expr, p_sess_id ).empty( );
+}
+
 string get_session_variable( const string& name_or_expr, const string* p_sess_id )
 {
    size_t sess_id = 0;
@@ -9117,20 +9122,6 @@ void set_session_variable_for_matching_blockchains( const string& name,
          g_sessions[ i ]->variables[ name ] = value;
       }
    }
-}
-
-bool has_session_variable( const string& name )
-{
-   guard g( g_session_mutex );
-
-   bool retval = false;
-
-   if( gtp_session
-    && ( ( gtp_session->variables.count( name ) )
-    || ( gtp_session->deque_variables.count( name ) ) ) )
-      retval = true;
-
-   return retval;
 }
 
 bool has_any_session_variable( const string& name )
