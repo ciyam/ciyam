@@ -3,9 +3,9 @@ activate.htms
 authenticate.htms
 background_image.jpg
 background_texture.png
+backup.htms
 base64.js
 cal.png
-ciyam_backup.htms
 ciyam_interface.css
 ciyam_interface.htms
 ciyam_interface.txt
@@ -32,8 +32,10 @@ password.htms
 password_persistent.htms
 pdf_icon.gif
 pikaday.js
+prepare.htms
 printlist.htms
 printview.htms
+restore.htms
 sha1.js
 sha2.js
 show_less.png

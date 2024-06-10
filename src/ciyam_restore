@@ -5,11 +5,11 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 2 -o $# -gt 3 ]; then
- echo Usage: ciyam_restore [[-rebuild]] [app name] [app dir]
+ echo "Usage: ciyam_restore [[-rebuild]] [app name] [app dir]"
 elif [ $# -lt 3 ] && [ "$1" = "-rebuild" ]; then
- echo Usage: ciyam_restore [[-rebuild]] [app name] [app dir]
+ echo "Usage: ciyam_restore [[-rebuild]] [app name] [app dir]"
 elif [ "$WEBDIR" = "" ]; then
- echo Error: Missing environment variable 'WEBDIR'.
+ echo "Error: Missing environment variable 'WEBDIR'."
 else
  opt=
  work_path=$PWD

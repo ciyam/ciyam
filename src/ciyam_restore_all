@@ -7,7 +7,7 @@
 files=*.backup.bun.gz
 
 if [ ! "$WEBDIR" = "" ]; then
- export CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/ciyam_restore.txt
+ export CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/restore.log
 
  date_var=`date`
  date_len=${#date_var}

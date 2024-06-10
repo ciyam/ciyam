@@ -5,11 +5,11 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 2 -o $# -gt 3 ]; then
- echo Usage: ciyam_backup [[-trunc]] [app name] [app dir]
+ echo "Usage: ciyam_backup [[-trunc]] [app name] [app dir]"
 elif [ $# -lt 3 ] && [ "$1" = "-trunc" ]; then
- echo Usage: ciyam_backup [[-trunc]] [app name] [app dir]
+ echo "Usage: ciyam_backup [[-trunc]] [app name] [app dir]"
 elif [ "$WEBDIR" = "" ]; then
- echo Error: Missing environment variable 'WEBDIR'.
+ echo "Error: Missing environment variable 'WEBDIR'."
 else
  opt=
  export CIYAM_STORAGE=$1
@@ -37,9 +37,9 @@ else
    rm "$work_path/$CIYAM_STORAGE.backup_files.bun.gz"
   fi
   if [ ! "$CIYAM_STORAGE" = "Meta" ]; then
-   $work_path/bundle -r -q "$work_path/$CIYAM_STORAGE.backup_files" "files/*" -x "files/*_note_.txt" "files/*.htaccess" "files/tmp/*"
+   $work_path/bundle -r -qw "$work_path/$CIYAM_STORAGE.backup_files" "files/*" -x "files/*_note_.txt" "files/*.htaccess" "files/tmp/*"
   else
-   $work_path/bundle -r -q "$work_path/$CIYAM_STORAGE.backup_files" "files/*" -x "files/*_note_.txt" "files/*.htaccess" "files/tmp/*" "files/100/105100/*" "files/100/106100/*" "files/100/135100/*"
+   $work_path/bundle -r -qw "$work_path/$CIYAM_STORAGE.backup_files" "files/*" -x "files/*_note_.txt" "files/*.htaccess" "files/tmp/*" "files/100/105100/*" "files/100/106100/*" "files/100/135100/*"
   fi
   popd >/dev/null
  fi

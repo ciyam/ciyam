@@ -90,6 +90,11 @@
   <arguments>fetch_channels.cin @storage
  </script>
  <script/>
+  <name>prepare_backup
+  <filename>*script*
+  <arguments>prepare_backup.cin @storage
+ </script>
+ <script/>
   <name>remove_archive
   <filename>*script*
   <arguments>remove_archive.cin @name
