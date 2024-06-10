@@ -112,29 +112,34 @@ const char* const c_eid_file = "../meta/encrypted.txt";
 
 const char* const c_stop_file = "../meta/ciyam_interface.stop";
 
-const char* const c_backup_file = "../meta/ciyam_backup.txt";
-const char* const c_restore_file = "../meta/ciyam_restore.txt";
+const char* const c_backup_log_file = "../meta/backup.log";
+const char* const c_restore_log_file = "../meta/restore.log";
+
+const char* const c_prepare_backup_file = "../meta/.prepare.backup";
+const char* const c_prepare_restore_file = "../meta/.prepare.restore";
 
 #ifdef _WIN32
 const char* const c_kill_script = "ciyam_interface.kill.bat";
 #endif
 
-const char* const c_login_file = "login.htms";
-const char* const c_footer_file = "footer.htms";
-const char* const c_openup_file = "openup.htms";
-const char* const c_signup_file = "signup.htms";
-const char* const c_unlock_file = "unlock.htms";
-const char* const c_activate_file = "activate.htms";
-const char* const c_identity_file = "identity.htms";
-const char* const c_password_file = "password.htms";
-const char* const c_ssl_signup_file = "ssl_signup.htms";
-const char* const c_no_identity_file = "no_identity.htms";
-const char* const c_authenticate_file = "authenticate.htms";
-const char* const c_ciyam_backup_file = "ciyam_backup.htms";
-const char* const c_login_password_file = "login_password.htms";
-const char* const c_ciyam_interface_file = "ciyam_interface.htms";
-const char* const c_login_persistent_file = "login_persistent.htms";
-const char* const c_password_persistent_file = "password_persistent.htms";
+const char* const c_login_htms = "login.htms";
+const char* const c_backup_htms = "backup.htms";
+const char* const c_footer_htms = "footer.htms";
+const char* const c_openup_htms = "openup.htms";
+const char* const c_signup_htms = "signup.htms";
+const char* const c_unlock_htms = "unlock.htms";
+const char* const c_prepare_htms = "prepare.htms";
+const char* const c_restore_htms = "restore.htms";
+const char* const c_activate_htms = "activate.htms";
+const char* const c_identity_htms = "identity.htms";
+const char* const c_password_htms = "password.htms";
+const char* const c_ssl_signup_htms = "ssl_signup.htms";
+const char* const c_no_identity_htms = "no_identity.htms";
+const char* const c_authenticate_htms = "authenticate.htms";
+const char* const c_login_password_htms = "login_password.htms";
+const char* const c_ciyam_interface_htms = "ciyam_interface.htms";
+const char* const c_login_persistent_htms = "login_persistent.htms";
+const char* const c_password_persistent_htms = "password_persistent.htms";
 
 const char* const c_printlist_file = "printlist.htms";
 const char* const c_printview_file = "printview.htms";
@@ -206,17 +211,19 @@ string g_seed_error;
 int g_unlock_fails = 0;
 
 string g_login_html;
+string g_backup_html;
 string g_footer_html;
 string g_openup_html;
 string g_signup_html;
 string g_unlock_html;
+string g_prepare_html;
+string g_restore_html;
 string g_activate_html;
 string g_identity_html;
 string g_password_html;
 string g_ssl_signup_html;
 string g_no_identity_html;
 string g_authenticate_html;
-string g_ciyam_backup_html;
 
 string g_login_password_html;
 string g_ciyam_interface_html;
@@ -362,11 +369,25 @@ void destroy_session( const string& session_id )
    guard g( g_session_mutex );
 
    session_iterator si = g_sessions.find( session_id );
+
    if( si != g_sessions.end( ) )
    {
       delete si->second;
       g_sessions.erase( si );
    }
+}
+
+void disconnect_all_session_sockets( )
+{
+   guard g( g_session_mutex );
+
+   for( session_iterator si = g_sessions.begin( ), end = g_sessions.end( ); si != end; ++si )
+   {
+      if( si->second && si->second->p_socket )
+         si->second->p_socket = 0;
+   }
+
+   disconnect_sockets( false );
 }
 
 bool has_session_info( const string& session_id )
@@ -397,6 +418,7 @@ void destroy_user_session_info( const string& user_id, const char* p_module = 0 
    guard g( g_session_mutex );
 
    session_iterator si, end;
+
    for( si = g_sessions.begin( ), end = g_sessions.end( ); si != end; ++si )
    {
       if( p_module && string( p_module ) != ( si->second )->user_module )
@@ -638,6 +660,7 @@ void timeout_handler::on_start( )
          else
          {
             module_index_iterator mii;
+
             for( mii = get_storage_info( ).modules_index.begin( ); mii != get_storage_info( ).modules_index.end( ); ++mii )
             {
                t = last_modification_time( mii->first + c_fcgi_sio_ext );
@@ -655,6 +678,7 @@ void timeout_handler::on_start( )
             read_global_storage_info( );
 
             module_index_iterator mii;
+
             for( mii = get_storage_info( ).modules_index.begin( ); mii != get_storage_info( ).modules_index.end( ); ++mii )
                read_module_info( mii->first, *mii->second, get_storage_info( ) );
          }
@@ -932,45 +956,77 @@ void request_handler::process_request( )
       bool is_login_screen = false;
       bool is_backup_or_restore = false;
 
-      if( file_exists( c_backup_file ) )
+      if( file_exists( c_prepare_backup_file ) )
       {
-         string ciyam_backup_html( g_ciyam_backup_html );
+         string prepare_html( g_prepare_html );
 
-         str_replace( ciyam_backup_html,
-          c_ciyam_backup_text, buffer_file( c_backup_file ) );
+         str_replace( prepare_html,
+          c_prepare_text, GDS( c_display_backup_preparation ) );
 
          output_form( module_name, extra_content,
-          ciyam_backup_html, "", false, GDS( c_display_backup_in_progress ) );
+          prepare_html, "", false, GDS( c_display_backup_in_progress ) );
+
+         is_backup_or_restore = true;
+
+         disconnect_all_session_sockets( );
+      }
+      else if( file_exists( c_prepare_restore_file ) )
+      {
+         string prepare_html( g_prepare_html );
+
+         str_replace( prepare_html,
+          c_prepare_text, GDS( c_display_restore_preparation ) );
+
+         output_form( module_name, extra_content,
+          prepare_html, "", false, GDS( c_display_restore_in_progress ) );
+
+         is_backup_or_restore = true;
+
+         disconnect_all_session_sockets( );
+      }
+      else if( file_exists( c_backup_log_file ) )
+      {
+         string backup_html( g_backup_html );
+
+         str_replace( backup_html,
+          c_backup_text, buffer_file( c_backup_log_file ) );
+
+         output_form( module_name, extra_content,
+          backup_html, "", false, GDS( c_display_backup_in_progress ) );
 
          vector< string > lines;
-         buffer_file_lines( c_backup_file, lines );
+         buffer_file_lines( c_backup_log_file, lines );
 
          // NOTE: If the second last line starts with four '=' characters is assuming
          // that the backup has completed and will rename the file (allowing the user
          // time to view the file data which disappears after the page is refreshed).
-         if( lines.size( ) > 3 && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
-            file_rename( c_backup_file, string( c_backup_file ) + c_sav_file_ext );
+         if( lines.size( ) >= 3 && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
+            file_rename( c_backup_log_file, string( c_backup_log_file ) + c_sav_file_ext );
 
          is_backup_or_restore = true;
-      }
-      else if( file_exists( c_restore_file ) )
-      {
-         string ciyam_backup_html( g_ciyam_backup_html );
 
-         str_replace( ciyam_backup_html,
-          c_ciyam_backup_text, buffer_file( c_restore_file ) );
+         disconnect_all_session_sockets( );
+      }
+      else if( file_exists( c_restore_log_file ) )
+      {
+         string restore_html( g_restore_html );
+
+         str_replace( restore_html,
+          c_restore_text, buffer_file( c_restore_log_file ) );
 
          output_form( module_name, extra_content,
-          ciyam_backup_html, "", false, GDS( c_display_restore_in_progress ) );
+          restore_html, "", false, GDS( c_display_restore_in_progress ) );
 
          vector< string > lines;
-         buffer_file_lines( c_restore_file, lines );
+         buffer_file_lines( c_restore_log_file, lines );
 
          // NOTE: (see above NOTE)
          if( lines.size( ) > 3 && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
-            file_rename( c_restore_file, string( c_restore_file ) + c_sav_file_ext );
+            file_rename( c_restore_log_file, string( c_restore_log_file ) + c_sav_file_ext );
 
          is_backup_or_restore = true;
+
+         disconnect_all_session_sockets( );
       }
       else if( file_exists( c_stop_file ) )
       {
@@ -1310,6 +1366,7 @@ void request_handler::process_request( )
             p_session_info->p_socket = &g_socket;
 #else
             p_session_info->p_socket = get_tcp_socket( );
+
             if( !p_session_info->p_socket )
                throw runtime_error( GDS( c_display_service_busy_try_again_later ) );
 #endif
@@ -1788,6 +1845,7 @@ void request_handler::process_request( )
             }
 
             bool was_openid = false;
+
             if( connection_okay && cmd == c_cmd_open && !userhash.empty( ) )
             {
                if( fetch_user_record( id_for_login, module_id, module_name,
@@ -2868,23 +2926,33 @@ void request_handler::process_request( )
 
       if( is_backup_or_restore )
       {
-         string scrollx( input_data[ c_param_scrollx ] );
-         string scrolly( input_data[ c_param_scrolly ] );
-
-         if( !scrollx.empty( ) && !scrolly.empty( ) )
-         {
-            if( !extra_content_func.empty( ) )
-               extra_content_func += '\n';
-
-            extra_content_func += "scroll_page( " + scrollx + ", " + scrolly + " );";
-         }
-
-         if( file_exists( c_backup_file ) || file_exists( c_restore_file ) )
+         if( file_exists( c_prepare_backup_file ) || file_exists( c_prepare_restore_file ) )
          {
             if( !extra_content_func.empty( ) )
                extra_content_func += '\n';
 
             extra_content_func += "auto_refresh_seconds = 5;\nauto_refresh( );";
+         }
+         else
+         {
+            string scrollx( input_data[ c_param_scrollx ] );
+            string scrolly( input_data[ c_param_scrolly ] );
+
+            if( !scrollx.empty( ) && !scrolly.empty( ) )
+            {
+               if( !extra_content_func.empty( ) )
+                  extra_content_func += '\n';
+
+               extra_content_func += "scroll_page( " + scrollx + ", " + scrolly + " );";
+            }
+
+            if( file_exists( c_backup_log_file ) || file_exists( c_restore_log_file ) )
+            {
+               if( !extra_content_func.empty( ) )
+                  extra_content_func += '\n';
+
+               extra_content_func += "auto_refresh_seconds = 5;\nauto_refresh( );";
+            }
          }
       }
 
@@ -3225,20 +3293,22 @@ int main( int argc, char* argv[ ] )
       init_strings( );
       init_extkeys( );
 
-      g_login_html = buffer_file( c_login_file );
-      g_footer_html = buffer_file( c_footer_file );
-      g_openup_html = buffer_file( c_openup_file );
-      g_signup_html = buffer_file( c_signup_file );
-      g_unlock_html = buffer_file( c_unlock_file );
-      g_activate_html = buffer_file( c_activate_file );
-      g_identity_html = buffer_file( c_identity_file );
-      g_password_html = buffer_file( c_password_file );
-      g_ssl_signup_html = buffer_file( c_ssl_signup_file );
-      g_no_identity_html = buffer_file( c_no_identity_file );
-      g_authenticate_html = buffer_file( c_authenticate_file );
-      g_ciyam_backup_html = buffer_file( c_ciyam_backup_file );
+      g_login_html = buffer_file( c_login_htms );
+      g_backup_html = buffer_file( c_backup_htms );
+      g_footer_html = buffer_file( c_footer_htms );
+      g_openup_html = buffer_file( c_openup_htms );
+      g_signup_html = buffer_file( c_signup_htms );
+      g_unlock_html = buffer_file( c_unlock_htms );
+      g_prepare_html = buffer_file( c_prepare_htms );
+      g_restore_html = buffer_file( c_restore_htms );
+      g_activate_html = buffer_file( c_activate_htms );
+      g_identity_html = buffer_file( c_identity_htms );
+      g_password_html = buffer_file( c_password_htms );
+      g_ssl_signup_html = buffer_file( c_ssl_signup_htms );
+      g_no_identity_html = buffer_file( c_no_identity_htms );
+      g_authenticate_html = buffer_file( c_authenticate_htms );
 
-      g_ciyam_interface_html = buffer_file( c_ciyam_interface_file );
+      g_ciyam_interface_html = buffer_file( c_ciyam_interface_htms );
 
       if( file_exists( c_id_file ) )
          g_id = get_id_from_server_identity( buffer_file( c_id_file ).c_str( ) );
@@ -3298,17 +3368,17 @@ int main( int argc, char* argv[ ] )
       str_replace( g_authenticate_html, c_pin_message, GDS( c_display_pin_message ) );
       str_replace( g_authenticate_html, c_continue, GDS( c_display_continue ) );
 
-      if( file_exists( c_login_password_file ) )
+      if( file_exists( c_login_password_htms ) )
       {
-         g_login_password_html = buffer_file( c_login_password_file );
+         g_login_password_html = buffer_file( c_login_password_htms );
 
          str_replace( g_login_password_html, c_login, GDS( c_display_login ) );
          str_replace( g_login_password_html, c_password, GDS( c_display_password ) );
       }
 
-      if( file_exists( c_login_persistent_file ) )
+      if( file_exists( c_login_persistent_htms ) )
       {
-         g_login_persistent_html = buffer_file( c_login_persistent_file );
+         g_login_persistent_html = buffer_file( c_login_persistent_htms );
 
          str_replace( g_login_persistent_html, c_login, GDS( c_display_login ) );
          str_replace( g_login_persistent_html, c_user_id, GDS( c_display_user_id ) );
@@ -3316,9 +3386,9 @@ int main( int argc, char* argv[ ] )
          str_replace( g_login_persistent_html, c_persistent, GDS( c_display_automatic_login ) );
       }
 
-      if( file_exists( c_password_persistent_file ) )
+      if( file_exists( c_password_persistent_htms ) )
       {
-         g_password_persistent_html = buffer_file( c_password_persistent_file );
+         g_password_persistent_html = buffer_file( c_password_persistent_htms );
 
          str_replace( g_password_persistent_html, c_old_password, GDS( c_display_old_password ) );
          str_replace( g_password_persistent_html, c_new_password, GDS( c_display_new_password ) );

@@ -2084,7 +2084,7 @@ void fetch_sys_record( const string& module_id, const module_info& mod_info, ses
 
    if( !fetch_item_info( module_id, mod_info,
     mod_info.sys_class_id, key_info, field_list, "", "", sess_info, sys_info ) )
-      throw runtime_error( "unexpected error occurred processing login" );
+      throw runtime_error( "unexpected error occurred fetching system information" );
 
    vector< string > sys_data;
    split( sys_info.second, sys_data );
@@ -2175,7 +2175,7 @@ bool fetch_user_record(
 
    if( !fetch_item_info( module_id, mod_info,
     mod_info.user_class_id, key_info, field_list, "", "", sess_info, user_info ) )
-      throw runtime_error( "unexpected error occurred processing login" );
+      throw runtime_error( "unexpected error occurred processing login information" );
 
    if( user_info.first.empty( ) )
       throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );

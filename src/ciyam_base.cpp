@@ -5753,6 +5753,10 @@ string get_web_root( )
 
 bool get_is_accepted_ip_addr( const string& ip_addr )
 {
+   if( has_raw_system_variable(
+    get_special_var_name( e_special_var_disallow_connections ) ) )
+      return false;
+
    return ( g_rejected_ip_addrs.empty( ) || g_rejected_ip_addrs.count( ip_addr ) == 0 )
     && ( g_accepted_ip_addrs.empty( ) || ( g_accepted_ip_addrs.count( ip_addr ) > 0 ) );
 }

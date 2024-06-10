@@ -600,6 +600,7 @@ int main( int argc, char* argv[ ] )
    bool use_zlib = true;
    bool is_delete = false;
    bool is_quieter = false;
+   bool skip_warns = false;
 
    string open_mode( "wb" );
 
@@ -672,6 +673,16 @@ int main( int argc, char* argv[ ] )
 
    if( argc > first_arg + 1 )
    {
+      if( string( argv[ first_arg + 1 ] ) == "-qw" )
+      {
+         ++first_arg;
+         is_quiet = true;
+         skip_warns = true;
+      }
+   }
+
+   if( argc > first_arg + 1 )
+   {
       if( string( argv[ first_arg + 1 ] ) == "-qq" )
       {
          ++first_arg;
@@ -711,15 +722,15 @@ int main( int argc, char* argv[ ] )
       if( !is_quiet )
          cout << c_app_title << " v" << c_app_version << "\n";
 #ifndef ZLIB_SUPPORT
-      cout << "usage: bundle [-0|-1|-9] [-d]|[-r [-p]] [-q[q]] [-b64|-esc] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]]" << endl;
+      cout << "usage: bundle [-0|-1|-9] [-d]|[-r [-p]] [-q[w|q]] [-b64|-esc] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]]" << endl;
 #else
-      cout << "usage: bundle [-0|-1|-9] [-d]|[-r [-p]] [-q[q]] [-b64|-esc] [-ngz] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]]" << endl;
+      cout << "usage: bundle [-0|-1|-9] [-d]|[-r [-p]] [-q[w|q]] [-b64|-esc] [-ngz] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]]" << endl;
 #endif
 
       cout << "\nwhere: -0/-1/-9 is used for setting zero/fastest/best compression level" << endl;
       cout << "  and: -d is to delete matching files which exist in an existing bundle" << endl;
       cout << "  and: -r is to recurse sub-directories (-p to prune empty directories)" << endl;
-      cout << "  and: -q for quiet mode (-qq to suppress all output apart from errors)" << endl;
+      cout << "  and: -q for quiet mode (-qw omit warnings and -qq only output errors)" << endl;
       cout << "  and: -b64/-esc stores file data using b64/esc encoding for text lines" << endl;
 #ifdef ZLIB_SUPPORT
       cout << "  and: -ngz in order to not perform zlib compression (similar to 'tar')" << endl;
@@ -990,12 +1001,12 @@ int main( int argc, char* argv[ ] )
                process_directory( next_directory, filespec_path, filename_filters, p_filename_exclusions,
                 matched_filters, file_names, recurse, prune, is_quieter, is_append, encoding, *p_os, use_zlib, gzf );
 #endif
-               if( !is_quieter )
+               if( !skip_warns && !is_quieter )
                {
                   for( size_t i = 0; i < filename_filters.size( ); i++ )
                   {
                      if( matched_filters.count( filename_filters[ i ] ) == 0 )
-                        cerr << "warning: found no files matching '" << filename_filters[ i ] << "'" << endl;
+                        cout << "warning: found no files matching '" << filename_filters[ i ] << "'" << endl;
                   }
                }
             }
@@ -1401,13 +1412,15 @@ int main( int argc, char* argv[ ] )
          if( !file_remove( filename ) || rename( output_filename.c_str( ), filename.c_str( ) ) != 0 )
             throw runtime_error( "unable to replace original '" + filename + "' with '" + output_filename + "'" );
 
-         if( is_delete && !is_quieter && num_deleted == 0 )
+         if( is_delete && !skip_warns && !is_quieter && num_deleted == 0 )
             cout << "warning: found no matching files to delete" << endl;
       }
       else if( matched_filters.empty( ) )
       {
          file_remove( filename );
-         throw runtime_error( "*** nothing to do ***" );
+
+         if( !skip_warns )
+            cout << "warning: *** nothing to do ***" << endl;
       }
 
       if( !is_quiet )

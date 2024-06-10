@@ -238,6 +238,7 @@ const char* const c_special_variable_peer_identity_alias = "@peer_identity_alias
 const char* const c_special_variable_repo_crypt_password = "@repo_crypt_password";
 const char* const c_special_variable_skip_parent_updates = "@skip_parent_updates";
 const char* const c_special_variable_blockchain_hind_hash = "@blockchain_hind_hash";
+const char* const c_special_variable_disallow_connections = "@disallow_connections";
 const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_ratios";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_blockchain_next_extra = "@blockchain_next_extra";
@@ -500,6 +501,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_repo_crypt_password );
       g_special_variable_names.push_back( c_special_variable_skip_parent_updates );
       g_special_variable_names.push_back( c_special_variable_blockchain_hind_hash );
+      g_special_variable_names.push_back( c_special_variable_disallow_connections );
       g_special_variable_names.push_back( c_special_variable_ods_cache_hit_ratios );
       g_special_variable_names.push_back( c_special_variable_secondary_validation );
       g_special_variable_names.push_back( c_special_variable_blockchain_next_extra );
@@ -932,7 +934,13 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          else
             g_deque_variables[ var_name ].push_back( val );
       }
-      else if( var_name == c_special_variable_generate_hub_block )
+      else if( persist
+       && ( ( var_name == c_special_variable_os )
+       || ( var_name == c_special_variable_peer_port )
+       || ( var_name == c_special_variable_files_area_dir )
+       || ( var_name == c_special_variable_generate_hub_block )
+       || ( var_name == c_special_variable_disallow_connections )
+       || ( var_name == c_special_variable_ods_cache_hit_ratios ) ) )
          throw runtime_error( "cannot persist variable '" + var_name + "'" );
       else if( pos != string::npos )
       {
@@ -967,7 +975,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
       }
       else
       {
-         if( val.empty( ) && var_name == string( c_special_variable_files_area_dir ) )
+         if( val.empty( ) && ( var_name == string( c_special_variable_files_area_dir ) ) )
             val = string( c_files_directory );
 
          if( !val.empty( ) )
@@ -979,17 +987,8 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          }
       }
 
-      // NOTE: Do not allow "@os" or "@peer_port" to be persisted.
-      if( ( var_name == string( c_special_variable_os ) )
-       || ( var_name == string( c_special_variable_peer_port ) ) )
-         persist = false;
-
       if( var_name == string( c_special_variable_files_area_dir ) )
       {
-         // NOTE: It makes no sense to persist "@files_area_dir"
-         // as application server files are being stored there.
-         persist = false;
-
          if( !is_init )
          {
             if( g_active_sessions > 1 )
@@ -1013,11 +1012,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          }
       }
       else if( var_name == string( c_special_variable_ods_cache_hit_ratios ) )
-      {
-         persist = false;
-
          system_ods_instance( ).clear_cache_statistics( );
-      }
 
       if( persist )
       {

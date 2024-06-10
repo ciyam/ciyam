@@ -51,6 +51,9 @@ const char* const c_identity = "@@identity";
 const char* const c_password = "@@password";
 const char* const c_mnemonics = "@@mnemonics";
 const char* const c_user_name = "@@user_name";
+const char* const c_backup_text = "@@backup_text";
+const char* const c_prepare_text = "@@prepare_text";
+const char* const c_restore_text = "@@restore_text";
 const char* const c_gpg_public_key = "@@gpg_public_key";
 const char* const c_identity_error = "@@identity_error";
 const char* const c_system_identity = "@@system_identity";
@@ -58,7 +61,6 @@ const char* const c_verify_password = "@@verify_password";
 const char* const c_confirm_identity = "@@confirm_identity";
 const char* const c_identity_entropy = "@@identity_entropy";
 const char* const c_identity_missing = "@@identity_missing";
-const char* const c_ciyam_backup_text = "@@ciyam_backup_text";
 const char* const c_identity_mnemonics = "@@identity_mnemonics";
 const char* const c_identity_retry_message = "@@identity_retry_message";
 const char* const c_identity_introduction_1 = "@@identity_introduction_1";
@@ -617,8 +619,10 @@ const char* const c_display_invalid_key_value_parm_key = "{@key}";
 const char* const c_display_missing_mnemonics = "Twelve mnemonic words must be provided.";
 const char* const c_display_permission_denied = "Permission denied";
 const char* const c_display_backup_in_progress = "Backup In Progress";
+const char* const c_display_backup_preparation = "Backup prepatation currently in progress...";
 const char* const c_display_maximum_characters = "Maximum characters";
 const char* const c_display_restore_in_progress = "Restore In Progress";
+const char* const c_display_restore_preparation = "Restore prepatation currently in progress...";
 const char* const c_display_click_here_to_login = "Click {@href}here{#href} to login.";
 const char* const c_display_click_here_to_login_parm_href = "{@href}";
 const char* const c_display_click_here_to_retry = "Click {@href}here{#href} to retry.";
@@ -719,4 +723,3 @@ const char* const c_display_your_session_has_become_invalid = "Your session has 
 const char* const c_display_selected_records_will_be_removed = "Selected record(s) will be permanently removed. Click OK to confirm.";
 
 #endif
-

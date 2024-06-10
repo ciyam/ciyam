@@ -1,0 +1,88 @@
+; Copyright (c) 2024 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#Usage: prepare_backup.cin <storage>
+@else
+;
+STORAGE=$1
+;
+APP_DIR=@lower:$STORAGE
+;
+.system_variable @backup_session 1 ""
+@ifeq "$OUTPUT" "1"
+.system_variable @prepare_in_progress 1
+~echo "*** BACKUP PREPARATION IS NOW STARTING ***" > Backup.txt
+;
+.wait 5000
+;
+@ifdef $WEBDIR
+~touch $WEBDIR/meta/.prepare.backup
+@endif
+;
+.system_variable @disallow_connections 1
+;
+.session_kill *
+.session_variable @single_string_response 1
+;
+CHECK=0
+NUM_TRIES=0
+MAX_TRIES=60
+;
+@label NEXT
+@:LOOP
+;
+.wait 1000
+NUM_TRIES=@$NUM_TRIES+1
+;
+.session_list -min
+SECOND_LINE=%OUTPUT:2%
+;
+@ifndef $SECOND_LINE
+@label END_LOOP
+@endif
+;
+CHECK=@$NUM_TRIES>$MAX_TRIES
+@ifeq "$CHECK" "1"
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+;
+!!@:LOOP
+;
+@:END_LOOP
+.system_variable @disallow_connections ""
+;
+@ifeq "$CHECK" "1"
+ERROR=Failed due to active sessions not being automatically terminated.
+~echo "*** ERROR: INIT FAILED DUE TO ACTIVE SESSIONS NOT AUTOMATICALLY TERMINATED ***" > Backup.txt
+@else
+@ifdef $WEBDIR
+CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/backup.log
+~rm -f Backup.txt
+~./log_head.sh $CIYAM_EXEC_SYSTEM_APPEND
+~./ciyam_backup Meta meta >> $CIYAM_EXEC_SYSTEM_APPEND
+~./ciyam_backup $STORAGE $APP_DIR >> $CIYAM_EXEC_SYSTEM_APPEND
+~./log_tail.sh $CIYAM_EXEC_SYSTEM_APPEND
+@else
+~./ciyam_backup Meta meta
+~./ciyam_backup $STORAGE $APP_DIR
+@endif
+@endif
+;
+.system_variable @preparing_backup ""
+.system_variable @prepare_in_progress ""
+;
+@ifdef $WEBDIR
+~rm -f $WEBDIR/meta/.prepare.backup
+@endif
+;
+.system_variable @backup_session ""
+@endif
+;
+@endif
