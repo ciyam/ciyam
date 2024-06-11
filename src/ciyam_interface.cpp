@@ -86,6 +86,7 @@
 #  define USE_MOD_FASTCGI_KLUDGE
 #endif
 
+//#define USE_MAXIMUM_REQUEST_HANDLERS
 #define USE_MULTIPLE_REQUEST_HANDLERS
 
 using namespace std;
@@ -95,7 +96,13 @@ namespace
 
 #include "ciyam_constants.h"
 
+#ifdef USE_MULTIPLE_REQUEST_HANDLERS
+#  ifndef USE_MAXIMUM_REQUEST_HANDLERS
 const int c_num_handlers = 10;
+#  else
+const int c_num_handlers = 100;
+#  endif
+#endif
 
 const size_t c_max_fcgi_input_size = 65536;
 const size_t c_max_param_input_size = 4096;
@@ -189,6 +196,8 @@ tcp_socket g_socket;
 #endif
 
 bool g_has_connected = false;
+
+bool g_is_disconnected = false;
 
 bool g_is_blockchain_application = false;
 
@@ -350,6 +359,20 @@ void remove_sockets( )
 }
 #endif
 
+bool get_is_disconnected( )
+{
+   guard g( g_session_mutex );
+
+   return g_is_disconnected;
+}
+
+void set_is_disconnected( bool is_disconnected )
+{
+   guard g( g_session_mutex );
+
+   g_is_disconnected = is_disconnected;
+}
+
 size_t get_num_sessions( )
 {
    guard g( g_session_mutex );
@@ -388,6 +411,8 @@ void disconnect_all_session_sockets( )
    }
 
    disconnect_sockets( false );
+
+   set_is_disconnected( true );
 }
 
 bool has_session_info( const string& session_id )
@@ -584,6 +609,55 @@ void crypt_decoded( const string& pwd_hash, string& decoded, bool decode = true 
    }
 }
 
+bool process_log_file( const string& module_name, const string& log_file_name,
+ const string& title, const string& html, const string& text_to_replace, ostringstream& extra_content )
+{
+   bool has_output_form = false;
+
+   vector< string > lines;
+   buffer_file_lines( log_file_name, lines );
+
+   bool has_any_error = false;
+   bool has_completed = false;
+
+   // NOTE: If the second last line starts with four '=' characters is assuming
+   // that the script has completed and will rename the file (allowing the user
+   // time to view the file data which disappears after the page is refreshed).
+   if( lines.size( ) >= 3 && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
+   {
+      has_completed = true;
+      file_rename( log_file_name, string( log_file_name ) + c_sav_file_ext );
+
+      for( size_t i = 0; i < lines.size( ); i++ )
+      {
+         string next_line( lines[ i ] );
+
+         if( lower( next_line ).find( c_error ) != string::npos )
+         {
+            has_any_error = true;
+            break;
+         }
+      }
+   }
+
+   // NOTE: Unless not completed or an error was found don't display anything.
+   if( has_any_error || !has_completed )
+   {
+      string output_html( html );
+
+      str_replace( output_html, text_to_replace.c_str( ), join( lines, '\n' ) );
+
+      output_form( module_name, extra_content, output_html, "", false, title );
+
+      has_output_form = true;
+
+      if( !get_is_disconnected( ) )
+         disconnect_all_session_sockets( );
+   }
+
+   return has_output_form;
+}
+
 class timeout_handler : public thread
 {
    public:
@@ -599,6 +673,9 @@ void timeout_handler::on_start( )
    while( true )
    {
       msleep( 1000 );
+
+      if( get_is_disconnected( ) )
+         continue;
 
       guard g( g_session_mutex );
 
@@ -623,7 +700,10 @@ void timeout_handler::on_start( )
             }
 
             if( si->second->p_socket )
+            {
                release_socket( si->second->p_socket );
+               si->second->p_socket = 0;
+            }
 
             remove_session_temp_directory( si->second->session_id );
 
@@ -956,77 +1036,33 @@ void request_handler::process_request( )
       bool is_login_screen = false;
       bool is_backup_or_restore = false;
 
-      if( file_exists( c_prepare_backup_file ) )
+      bool is_prepare_backup = file_exists( c_prepare_backup_file );
+      bool is_prepare_restore = file_exists( c_prepare_restore_file );
+
+      if( is_prepare_backup || is_prepare_restore )
       {
-         string prepare_html( g_prepare_html );
+         string prepare_html( is_prepare_backup ? g_prepare_html : g_restore_html );
+         string prepare_title( is_prepare_backup ? GDS( c_display_backup_in_progress ) : GDS( c_display_restore_in_progress ) );
+         string prepare_display_text( is_prepare_backup ? GDS( c_display_backup_preparation ) : GDS( c_display_restore_in_progress ) );
 
-         str_replace( prepare_html,
-          c_prepare_text, GDS( c_display_backup_preparation ) );
+         str_replace( prepare_html, c_prepare_text, prepare_display_text );
 
-         output_form( module_name, extra_content,
-          prepare_html, "", false, GDS( c_display_backup_in_progress ) );
+         output_form( module_name, extra_content, prepare_html, "", false, prepare_title );
 
          is_backup_or_restore = true;
 
-         disconnect_all_session_sockets( );
-      }
-      else if( file_exists( c_prepare_restore_file ) )
-      {
-         string prepare_html( g_prepare_html );
-
-         str_replace( prepare_html,
-          c_prepare_text, GDS( c_display_restore_preparation ) );
-
-         output_form( module_name, extra_content,
-          prepare_html, "", false, GDS( c_display_restore_in_progress ) );
-
-         is_backup_or_restore = true;
-
-         disconnect_all_session_sockets( );
+         if( !get_is_disconnected( ) )
+            disconnect_all_session_sockets( );
       }
       else if( file_exists( c_backup_log_file ) )
       {
-         string backup_html( g_backup_html );
-
-         str_replace( backup_html,
-          c_backup_text, buffer_file( c_backup_log_file ) );
-
-         output_form( module_name, extra_content,
-          backup_html, "", false, GDS( c_display_backup_in_progress ) );
-
-         vector< string > lines;
-         buffer_file_lines( c_backup_log_file, lines );
-
-         // NOTE: If the second last line starts with four '=' characters is assuming
-         // that the backup has completed and will rename the file (allowing the user
-         // time to view the file data which disappears after the page is refreshed).
-         if( lines.size( ) >= 3 && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
-            file_rename( c_backup_log_file, string( c_backup_log_file ) + c_sav_file_ext );
-
-         is_backup_or_restore = true;
-
-         disconnect_all_session_sockets( );
+         is_backup_or_restore = process_log_file( module_name, c_backup_log_file,
+          GDS( c_display_backup_in_progress ), g_backup_html, c_backup_text, extra_content );
       }
       else if( file_exists( c_restore_log_file ) )
       {
-         string restore_html( g_restore_html );
-
-         str_replace( restore_html,
-          c_restore_text, buffer_file( c_restore_log_file ) );
-
-         output_form( module_name, extra_content,
-          restore_html, "", false, GDS( c_display_restore_in_progress ) );
-
-         vector< string > lines;
-         buffer_file_lines( c_restore_log_file, lines );
-
-         // NOTE: (see above NOTE)
-         if( lines.size( ) > 3 && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
-            file_rename( c_restore_log_file, string( c_restore_log_file ) + c_sav_file_ext );
-
-         is_backup_or_restore = true;
-
-         disconnect_all_session_sockets( );
+         is_backup_or_restore = process_log_file( module_name, c_restore_log_file,
+          GDS( c_display_restore_in_progress ), g_restore_html, c_restore_text, extra_content );
       }
       else if( file_exists( c_stop_file ) )
       {
@@ -1038,6 +1074,8 @@ void request_handler::process_request( )
             throw runtime_error( GDS( c_display_under_maintenance_try_again_later ) );
          }
       }
+      else
+         set_is_disconnected( false );
 
       if( !get_storage_info( ).modules_index.count( module_name ) )
          throw runtime_error( GDS( c_display_module_name_missing_or_invalid ) );
@@ -1258,6 +1296,7 @@ void request_handler::process_request( )
             p_session_info = new session_info( get_storage_info( ) );
 
             created_session = true;
+
             p_session_info->locked = true;
             p_session_info->ip_addr = raddr;
 
@@ -1996,7 +2035,7 @@ void request_handler::process_request( )
 #ifdef ALWAYS_REPLACE_SESSION
                      if( created_session )
 #else
-                     if( created_session && persistent == c_true )
+                     if( created_session && ( persistent == c_true ) )
 #endif
                      {
                         is_replacement_session = true;
@@ -3134,7 +3173,10 @@ void request_handler::process_request( )
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
          if( p_session_info->p_socket )
+         {
             release_socket( p_session_info->p_socket );
+            p_session_info->p_socket = 0;
+         }
 #endif
          remove_non_persistent( session_id );
 

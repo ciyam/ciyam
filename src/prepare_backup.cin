@@ -14,7 +14,7 @@ APP_DIR=@lower:$STORAGE
 .system_variable @backup_session 1 ""
 @ifeq "$OUTPUT" "1"
 .system_variable @prepare_in_progress 1
-~echo "*** BACKUP PREPARATION IS NOW STARTING ***" > Backup.txt
+~echo "BACKUP PREPARATION IS NOW STARTING" > Backup.txt
 ;
 .wait 5000
 ;
@@ -69,6 +69,16 @@ CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/backup.log
 ~./ciyam_backup Meta meta >> $CIYAM_EXEC_SYSTEM_APPEND
 ~./ciyam_backup $STORAGE $APP_DIR >> $CIYAM_EXEC_SYSTEM_APPEND
 ~./log_tail.sh $CIYAM_EXEC_SYSTEM_APPEND
+;
+.system_variable @backup_files
+BACKUP_FILES_PATH=$OUTPUT
+;
+@ifdef $BACKUP_FILES_PATH
+~mkdir -p $BACKUP_FILES_PATH/.ciyam
+~mv Meta.backup*.bun.gz $BACKUP_FILES_PATH/.ciyam
+~mv $STORAGE.backup*.bun.gz $BACKUP_FILES_PATH/.ciyam
+.system_variable @backup_needed 1
+@endif
 @else
 ~./ciyam_backup Meta meta
 ~./ciyam_backup $STORAGE $APP_DIR
