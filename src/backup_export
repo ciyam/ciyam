@@ -88,6 +88,10 @@ if lockfile -r 0 ~backup 2>/dev/null; then
  echo "Finished restore..." >>Backup.txt
  date >>Backup.txt
 
+ if [ -f $BACKUP_PATH/.ciyam/Meta.backup.bun.gz ]; then
+  ./system_variable set @system_restore_needed 1
+ fi
+
  ./system_variable set @restore_in_progress ""
 
  rm -f ~backup

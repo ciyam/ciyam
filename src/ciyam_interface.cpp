@@ -969,6 +969,7 @@ void request_handler::process_request( )
       bool has_failed_to_decrypt = false;
 
       string base64_data( input_data[ c_param_base64 ] );
+
       if( !base64_data.empty( ) )
       {
          string decoded( base64::decode( base64_data ) );
@@ -1016,6 +1017,7 @@ void request_handler::process_request( )
       bool is_kept = ( keep == c_true );
 
       string::size_type spos = session_id.find( '=' );
+
       if( spos != string::npos )
          session_id.erase( 0, spos + 1 );
 
@@ -1026,6 +1028,7 @@ void request_handler::process_request( )
       {
          data.erase( );
          user.erase( );
+
          cmd = c_cmd_login;
       }
 
@@ -1041,9 +1044,9 @@ void request_handler::process_request( )
 
       if( is_prepare_backup || is_prepare_restore )
       {
-         string prepare_html( is_prepare_backup ? g_prepare_html : g_restore_html );
+         string prepare_html( g_prepare_html );
          string prepare_title( is_prepare_backup ? GDS( c_display_backup_in_progress ) : GDS( c_display_restore_in_progress ) );
-         string prepare_display_text( is_prepare_backup ? GDS( c_display_backup_preparation ) : GDS( c_display_restore_in_progress ) );
+         string prepare_display_text( is_prepare_backup ? GDS( c_display_backup_preparation ) : GDS( c_display_restore_preparation ) );
 
          str_replace( prepare_html, c_prepare_text, prepare_display_text );
 
@@ -1225,6 +1228,7 @@ void request_handler::process_request( )
          cmd = c_cmd_open;
 
       string activation_file;
+
       if( is_activation )
          activation_file = data + chksum;
 
@@ -1233,10 +1237,12 @@ void request_handler::process_request( )
          if( cmd == c_cmd_open )
          {
             string user_id = input_data[ c_http_param_ruser ];
+
             if( !user_id.empty( ) )
             {
                temp_session = false;
                is_authorised = true;
+
                userhash = sha256( user_id ).get_digest_as_string( );
             }
          }
@@ -1796,6 +1802,7 @@ void request_handler::process_request( )
                            }
 
                            g_id = old_id;
+
                            has_output_form = true;
                         }
                      }
@@ -3190,6 +3197,7 @@ void request_handler::process_request( )
    }
 
    string interface_html;
+
    if( interface_file.empty( ) )
       interface_html = g_ciyam_interface_html;
    else
@@ -3206,7 +3214,9 @@ void request_handler::process_request( )
    replace( interface_html, c_direction, direction );
 
    string output;
+
    size_t pos = interface_html.find( c_title );
+
    if( pos != string::npos )
    {
       output += interface_html.substr( 0, pos );
