@@ -124,7 +124,6 @@ else
 
     ./ciyam_restore $app_name $app_dir >> $CIYAM_EXEC_SYSTEM_APPEND
 
-
     if [ "$needs_restore" = "1" ]; then
      ./restore $app_name >> $CIYAM_EXEC_SYSTEM_APPEND
     fi

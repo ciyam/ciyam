@@ -125,6 +125,11 @@
   <arguments>install_package.cin @storage @name @package_install_extra
  </script>
  <script/>
+  <name>prepare_restore
+  <filename>*script*
+  <arguments>prepare_restore.cin @storage
+ </script>
+ <script/>
   <name>prepare_channels
   <filename>*script*
   <arguments>prepare_channels.cin @storage

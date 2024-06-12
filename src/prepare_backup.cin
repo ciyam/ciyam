@@ -14,7 +14,7 @@ APP_DIR=@lower:$STORAGE
 .system_variable @backup_session 1 ""
 @ifeq "$OUTPUT" "1"
 .system_variable @prepare_in_progress 1
-~echo "BACKUP PREPARATION IS NOW STARTING" > Backup.txt
+~echo "(backup preparation is now commencing)" > Backup.txt
 ;
 .wait 5000
 ;
@@ -60,7 +60,7 @@ CHECK=@$NUM_TRIES>$MAX_TRIES
 ;
 @ifeq "$CHECK" "1"
 ERROR=Failed due to active sessions not being automatically terminated.
-~echo "*** ERROR: INIT FAILED DUE TO ACTIVE SESSIONS NOT AUTOMATICALLY TERMINATED ***" > Backup.txt
+~echo "*** ERROR: BACKUP FAILED DUE TO ACTIVE SESSIONS NOT AUTOMATICALLY TERMINATED ***" > Backup.txt
 @else
 @ifdef $WEBDIR
 CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/backup.log
