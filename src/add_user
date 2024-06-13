@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Copyright (c) 2023-2024 CIYAM Developers
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
@@ -10,31 +10,34 @@ else
  user_id=$1
  password=$2
 
- if [ "$password" = "password.info" ]; then
-  password=$(<password.info)
-  echo -n "temporary_password_file_for_admin_only_access" >password.info
- fi
+ if[ ! -d /home/$user_id ]; then
 
- sudo useradd -g users -m $user_id
+  if [ "$password" = "password.info" ]; then
+   password=$(<password.info)
+   echo -n "temporary_password_file_for_admin_only_access" >password.info
+  fi
 
- tmp_file=$(mktemp --suffix ".tmp")
+  sudo useradd -g users -m $user_id
 
- echo "echo \$PID > /home/$user_id/current_pid" > $tmp_file
- echo "echo $user_id >> /home/admin/ciyam_logins" >> $tmp_file
+  tmp_file=$(mktemp --suffix ".tmp")
 
- sudo sh -c "cat add_user_pid >> /home/$user_id/.bashrc"
- sudo sh -c "cat $tmp_file >> /home/$user_id/.bashrc"
+  echo "echo \$PID > /home/$user_id/current_pid" > $tmp_file
+  echo "echo $user_id >> /home/admin/ciyam_logins" >> $tmp_file
 
- rm $tmp_file
+  sudo sh -c "cat add_user_pid >> /home/$user_id/.bashrc"
+  sudo sh -c "cat $tmp_file >> /home/$user_id/.bashrc"
 
- echo $user_id >> /home/admin/ciyam_users
+  rm $tmp_file
 
- if [ ! "$password" = "" ]; then
-  sudo chpasswd <<< "$user_id:$password"
+  echo $user_id >> /home/admin/ciyam_users
+
+  if [ ! "$password" = "" ]; then
+   sudo chpasswd <<< "$user_id:$password"
 # NOTE: Use this to limit password usage for 1 day.
-# sudo chage -d 1 $user_id
- fi
+#  sudo chage -d 1 $user_id
+  fi
 
- sudo ln -s /home/admin/opened /home/$user_id/opened
- sudo chown -h $user_id:users /home/$user_id/opened
+  sudo ln -s /home/admin/opened /home/$user_id/opened
+  sudo chown -h $user_id:users /home/$user_id/opened
+ fi
 fi
