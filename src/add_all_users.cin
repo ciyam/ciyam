@@ -1,0 +1,63 @@
+; Copyright (c) 2024 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#Usage: add_all_users.cin <storage>
+@else
+ERROR=
+;
+STORAGE=$1
+;
+.storage_init $STORAGE
+;
+@ifndef $ERROR
+.session_variable @deque
+DEQUE=$OUTPUT
+.session_variable @deque ""
+;
+.session_variable @single_string_response 1
+.pf $STORAGE User "Active 1" User_Id -min
+@ifndef $ERROR
+.session_variable @deque "~$OUTPUT"
+;
+@label NEXT
+@:LOOP
+;
+.session_variable @deque front
+@ifndef $OUTPUT
+@label END_LOOP
+@endif
+NEXT_USER=$OUTPUT
+;
+@skip
+;
+@:NEXT
+;
+@ifneq "$NEXT_USER" "admin"
+@ifndef $CIYAM_EXEC_SYSTEM_APPEND
+#Adding user account: $NEXT_USER
+@else
+~echo "Adding user account: $NEXT_USER" >> $CIYAM_EXEC_SYSTEM_APPEND
+@endif
+~./add_user $NEXT_USER
+@endif
+;
+.session_variable @deque pop_front
+!!@:LOOP
+;
+@:END_LOOP
+;
+@endif
+;
+.storage_term
+;
+.session_variable @deque ""
+@ifdef $DEQUE
+.session_variable @deque "~$DEQUE"
+@endif
+;
+@endif
+;
+@endif

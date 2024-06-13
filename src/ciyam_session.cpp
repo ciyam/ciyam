@@ -2529,7 +2529,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          module_list( osstr );
 
-         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
             response = osstr.str( );
          else
             output_response_lines( socket, osstr.str( ) );
@@ -2553,7 +2553,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          module_class_list( module, osstr, ( pattern.empty( ) ? 0 : pattern.c_str( ) ) );
 
-         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
             response = osstr.str( );
          else
             output_response_lines( socket, osstr.str( ) );
@@ -2564,7 +2564,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          module_strings_list( module, osstr );
 
-         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
             response = osstr.str( );
          else
             output_response_lines( socket, osstr.str( ) );
@@ -2576,7 +2576,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          module_class_fields_list( module, class_id_or_name, osstr );
 
-         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
             response = osstr.str( );
          else
             output_response_lines( socket, osstr.str( ) );
@@ -2588,7 +2588,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          module_class_procedures_list( module, class_id_or_name, osstr );
 
-         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
             response = osstr.str( );
          else
             output_response_lines( socket, osstr.str( ) );
@@ -2597,7 +2597,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          list_object_instances( osstr );
 
-         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
             response = osstr.str( );
          else
             output_response_lines( socket, osstr.str( ) );
@@ -2950,6 +2950,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string format_file( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_format_file ) );
          string output_file( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_output_file ) );
          string title_name( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_title_name ) );
+
+         bool single_string_response = false;
+
+         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
+            single_string_response = true;
 
 #ifndef HPDF_SUPPORT
          if( create_pdf )
@@ -3304,10 +3309,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         }
 
                         if( summaries.empty( ) )
-                           socket.write_line( output, c_request_timeout, p_sock_progress );
+                        {
+                           if( single_string_response )
+                           {
+                              if( !response.empty( ) )
+                                 response += '\n';
+                              response += output;
+                           }
+                           else
+                              socket.write_line( output, c_request_timeout, p_sock_progress );
+                        }
                         else
                         {
                            string prefix;
+
                            for( size_t i = 0; i < summaries.size( ); i++ )
                            {
                               if( i > 0 )
@@ -3319,7 +3334,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         }
                      }
 
-                     if( g_server_shutdown || ( num_limit && ++num_found >= num_limit ) )
+                     if( g_server_shutdown || ( num_limit && ( ++num_found >= num_limit ) ) )
                      {
                         instance_iterate_stop( handle, context );
                         break;
@@ -3351,7 +3366,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   for( multimap< string, string >::iterator
                    i = summary_sorted_values.begin( ); i != summary_sorted_values.end( ); ++i )
-                     socket.write_line( i->second, c_request_timeout, p_sock_progress );
+                  {
+                     if( single_string_response )
+                     {
+                        if( !response.empty( ) )
+                           response += '\n';
+                        response += i->second;
+                     }
+                     else
+                        socket.write_line( i->second, c_request_timeout, p_sock_progress );
+                  }
                }
             }
 
@@ -4319,7 +4343,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_name, true );
             }
 
-            string client_message = instance_get_variable( handle, "", get_special_var_name( e_special_var_message ) );
+            string client_message( instance_get_variable( handle, "", get_special_var_name( e_special_var_message ) ) );
 
             if( !client_message.empty( ) && !storage_locked_for_admin( ) )
                handler.output_progress( client_message );
@@ -4701,7 +4725,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          list_sessions( osstr, !minimal, !minimal );
 
-         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
             response = osstr.str( );
          else
             output_response_lines( socket, osstr.str( ) );
@@ -5699,7 +5723,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          dump_storage_cache( osstr );
 
-         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
             response = osstr.str( );
          else
             output_response_lines( socket, osstr.str( ) );
@@ -5708,7 +5732,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          dump_storage_locks( osstr );
 
-         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
             response = osstr.str( );
          else
             output_response_lines( socket, osstr.str( ) );
@@ -6180,7 +6204,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          output_schedule( osstr );
 
-         if( !get_session_variable( get_special_var_name( e_special_var_single_string_response ) ).empty( ) )
+         if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
             response = osstr.str( );
          else
             output_response_lines( socket, osstr.str( ) );
