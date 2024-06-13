@@ -10,7 +10,7 @@ else
  user_id=$1
  password=$2
 
- if[ ! -d /home/$user_id ]; then
+ if [ ! -d /home/$user_id ]; then
 
   if [ "$password" = "password.info" ]; then
    password=$(<password.info)
