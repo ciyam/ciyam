@@ -1548,7 +1548,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                         }
                      }
                   }
-                  else if( is_error || !get_is_quiet_command( ) || is_redirected_output( ) )
+                  else if( is_error || !get_is_quiet_command( ) )
                      handle_command_response( final_response, is_error );
 
                   // NOTE: Will only set the error environment variable if hasn't already been set.

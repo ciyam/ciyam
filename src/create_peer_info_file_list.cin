@@ -1,0 +1,145 @@
+; Copyright (c) 2024 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+<std.fissile
+;
+@ifndef $1
+#Usage: create_peer_info_file_list.cin <file_name>
+@else
+;
+FILE_NAME=$1
+;
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+;
+.file_tags *.0.blk
+ALL_GENESIS_TAGS=$OUTPUT
+;
+@ifdef $ALL_GENESIS_TAGS
+;
+.session_variable @deque
+DEQUE=$OUTPUT
+;
+.session_variable @set ""
+.session_variable @deque ""
+;
+>$FILE_NAME
+;
+.session_variable @deque "~$ALL_GENESIS_TAGS"
+;
+@label NEXT
+;
+@:LOOP
+.session_variable @deque front
+NEXT_GENESIS_TAG=$OUTPUT
+;
+@ifndef $NEXT_GENESIS_TAG
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+INCLUDE=
+REVERSE=
+.file_core -header $NEXT_GENESIS_TAG t
+CHAIN_TYPE=$OUTPUT
+@ifeq "$CHAIN_TYPE" "@peer_user"
+INCLUDE=1
+REVERSE=1
+@else
+@ifeq "$CHAIN_TYPE" "@peer_data"
+INCLUDE=1
+REVERSE=
+@endif
+@endif
+;
+@ifdef $INCLUDE
+.session_variable @set $NEXT_GENESIS_TAG
+@ifdef $REVERSE
+PREFIXED=@repstr:.0.blk/:$NEXT_GENESIS_TAG
+IDENTITY=@repstr:bc./:$PREFIXED
+REVERSED=*!reverse?$IDENTITY
+.session_variable @set bc.$REVERSED.0.blk
+@endif
+@endif
+;
+.session_variable @deque pop_front
+!!@:LOOP
+;
+@:END_LOOP
+;
+.session_variable @set
+ALL_GENESIS_TAGS=$OUTPUT
+.session_variable @deque @set
+.session_variable @set ""
+;
+@label NEXT_TAG
+;
+@:TAG_LOOP
+.session_variable @deque front
+NEXT_GENESIS_TAG=$OUTPUT
+;
+@ifndef $NEXT_GENESIS_TAG
+@label END_TAG_LOOP
+@endif
+;
+@skip
+;
+@:NEXT_TAG
+TAG_PREFIX=@repstr:.0.blk/:$NEXT_GENESIS_TAG
+.file_tags -i=$TAG_PREFIX.* -x=*.zenith
+@ifdef $OUTPUT
+.session_variable @set "~$OUTPUT"
+@endif
+;
+.session_variable @deque pop_front
+!!@:TAG_LOOP
+;
+@:END_TAG_LOOP
+;
+.session_variable @deque @set
+.session_variable @set ""
+@label NEXT_FILE
+;
+@:FILE_LOOP
+.session_variable @deque front
+NEXT_FILE_TAG=$OUTPUT
+;
+@ifndef $NEXT_FILE_TAG
+@label END_FILE_LOOP
+@endif
+;
+@skip
+;
+@:NEXT_FILE
+#$FILES_AREA_DIR/$NEXT_FILE_TAG
+;
+.file_hash $NEXT_FILE_TAG
+FILE_HASH=$OUTPUT
+HASH_PREFIX=@substr:0,2:$FILE_HASH
+HASH_SUFFIX=@substr:2:$FILE_HASH
+;
+#$FILES_AREA_DIR/$HASH_PREFIX/$HASH_SUFFIX
+;
+.session_variable @deque pop_front
+!!@:FILE_LOOP
+;
+@:END_FILE_LOOP
+;
+TRIMMED_TAGS=@repstr:.0.blk/:$ALL_GENESIS_TAGS
+ARCHIVE_DIRS=@repstr:bc./$FILES_AREA_DIR/:$TRIMMED_TAGS
+;
+#$ARCHIVE_DIRS
+>
+;
+.session_variable @deque ""
+@ifdef $DEQUE
+.session_variable @deque "~$DEQUE"
+@endif
+;
+@endif
+;
+@endif
