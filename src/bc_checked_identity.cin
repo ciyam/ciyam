@@ -76,7 +76,10 @@ NEXT_IDENT=%LINES:2%
 ;
 @:END_LOOP
 ;
+.session_variable @deque ""
+@ifdef $DEQUE
 .session_variable @deque "~$DEQUE"
+@endif
 ;
 @ifndef $OKAY
 OUTPUT=

@@ -59,6 +59,7 @@ CHECK=@$NUM_TRIES>$MAX_TRIES
 .system_variable @disallow_connections ""
 ;
 @ifeq "$CHECK" "1"
+.system_variable @preparing_restore ""
 ERROR=Failed due to active sessions not being automatically terminated.
 ~echo "*** ERROR: RESTORE FAILED DUE TO ACTIVE SESSIONS NOT AUTOMATICALLY TERMINATED ***" > Backup.txt
 @else
@@ -78,25 +79,28 @@ WEB_DIRS=@file:~find $WEBDIR -maxdepth 1 -type d -printf "%P~"
 APP_DIR_REMOVED=@repstr:~$APP_DIR~/~:$WEB_DIRS
 ;
 @ifeq "$WEB_DIRS" "$APP_DIR_REMOVED"
+.system_variable @preparing_restore ""
 ERROR=Failed due to unexpected missing '$STORAGE' application directory.
-echo "Error: $ERROR" >> $CIYAM_EXEC_SYSTEM_APPEND
+~echo "Error: $ERROR" >> $CIYAM_EXEC_SYSTEM_APPEND
 @else
 ~./unbundle -q Meta.backup "ciyam_server.*" >> $CIYAM_EXEC_SYSTEM_APPEND
 ~tar -xf $BACKUP_FILES_PATH/.ciyam/System_Files_And_Archives.tar
 ~touch ciyam_base.update
 ;
 ~./ciyam_restore $STORAGE $APP_DIR >> $CIYAM_EXEC_SYSTEM_APPEND
+.system_variable @preparing_restore ""
+<add_all_users.cin $STORAGE
 @endif
 ;
 @endif
 ~./log_tail.sh $CIYAM_EXEC_SYSTEM_APPEND
 @else
+.system_variable @preparing_restore ""
 ERROR=Failed due to a WEBDIR environment variable not having being set.
 ~echo "*** ERROR: RESTORE FAILED DUE TO UNEXPECTED EMPTY WEBDIR ENVIRONMENT VARIABLE ***" > Backup.txt
 @endif
 @endif
 ;
-.system_variable @preparing_restore ""
 .system_variable @restore_in_progress ""
 .system_variable @system_restore_needed ""
 ;
