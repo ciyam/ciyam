@@ -43,7 +43,7 @@ else
      rm -f files/100/106100/*
      rm -f files/100/136100/*
     fi
-    $work_path/unbundle -o -q "$work_path/$CIYAM_STORAGE.backup_files.bun.gz" "files/*"
+    $work_path/unbundle -o -qw "$work_path/$CIYAM_STORAGE.backup_files.bun.gz" "files/*"
     popd >/dev/null
    fi
   fi

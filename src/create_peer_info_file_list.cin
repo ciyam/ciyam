@@ -90,7 +90,7 @@ NEXT_GENESIS_TAG=$OUTPUT
 ;
 @:NEXT_TAG
 TAG_PREFIX=@repstr:.0.blk/:$NEXT_GENESIS_TAG
-.file_tags -i=$TAG_PREFIX.* -x=*.zenith
+.file_tags -i=$TAG_PREFIX.*
 @ifdef $OUTPUT
 .session_variable @set "~$OUTPUT"
 @endif
@@ -117,12 +117,16 @@ NEXT_FILE_TAG=$OUTPUT
 @:NEXT_FILE
 #$FILES_AREA_DIR/$NEXT_FILE_TAG
 ;
+ZENITH_REMOVED=@repstr:.zenith/:$NEXT_FILE_TAG
+;
+@ifeq "$NEXT_FILE_TAG" "$ZENITH_REMOVED"
 .file_hash $NEXT_FILE_TAG
 FILE_HASH=$OUTPUT
 HASH_PREFIX=@substr:0,2:$FILE_HASH
 HASH_SUFFIX=@substr:2:$FILE_HASH
 ;
 #$FILES_AREA_DIR/$HASH_PREFIX/$HASH_SUFFIX
+@endif
 ;
 .session_variable @deque pop_front
 !!@:FILE_LOOP
