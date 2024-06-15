@@ -64,7 +64,6 @@
      <filename>sql_db.cpp
      <filename>tcp_read_write_buffer.cpp
      <filename>text_file_buffer.cpp
-     <filename>tx_create.cpp
      <filename>utilities.cpp
     </cpp_files>
    </lib>
@@ -112,6 +111,7 @@
      <filename>mail_source.cpp
      <filename>module_management.cpp
      <filename>peer_session.cpp
+     <filename>tx_create.cpp
      <filename>udp_stream.cpp
     </cpp_files>
     <cms_files/>

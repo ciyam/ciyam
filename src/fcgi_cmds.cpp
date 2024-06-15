@@ -26,6 +26,7 @@
 #include "date_time.h"
 #include "utilities.h"
 #include "fcgi_utils.h"
+#include "ciyam_common.h"
 #include "crypt_stream.h"
 #include "ciyam_interface.h"
 

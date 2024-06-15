@@ -12,9 +12,9 @@
 #     include <string>
 #  endif
 
+#  include "common.h"
 #  include "config.h"
 #  include "ptypes.h"
-#  include "ciyam_common.h"
 
 stream_cipher stream_cipher_value( const std::string& str );
 

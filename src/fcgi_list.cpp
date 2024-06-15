@@ -25,6 +25,7 @@
 #include "fcgi_info.h"
 #include "utilities.h"
 #include "fcgi_utils.h"
+#include "ciyam_common.h"
 #include "ciyam_interface.h"
 
 using namespace std;
