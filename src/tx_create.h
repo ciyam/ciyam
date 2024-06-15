@@ -14,7 +14,6 @@
 
 #  include "ptypes.h"
 #  include "class_base.h"
-#  include "ciyam_common.h"
 
 std::string reverse_txid( const std::string& txid );
 

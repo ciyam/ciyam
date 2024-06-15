@@ -7,10 +7,7 @@
 #ifndef CIYAM_COMMON_H
 #  define CIYAM_COMMON_H
 
-const int c_max_key_length = 75;
-const int c_max_fields_per_index = 5;
-const int c_max_indexes_per_class = 100;
-const int c_max_string_length_limit = 5000000;
+#  include "common.h"
 
 enum file_type
 {
@@ -42,20 +39,6 @@ const uint64_t c_sys_state_flags = UINT64_C( 0x00000000000000ff );
 const uint64_t c_user_state_flags = UINT64_C( 0xffffffffffffff00 );
 
 const uint64_t c_unconfirmed_revision = UINT64_C( 999999999999999999 );
-
-enum quote_style
-{
-   e_quote_style_both_linux,
-   e_quote_style_both_windows,
-   e_quote_style_windows_linux
-};
-
-enum stream_cipher
-{
-   e_stream_cipher_bd_shift,
-   e_stream_cipher_chacha20,
-   e_stream_cipher_dbl_hash,
-};
 
 enum special_var
 {

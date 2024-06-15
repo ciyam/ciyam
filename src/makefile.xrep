@@ -24,11 +24,15 @@
 ##
 ##  where:
 ##  <target>   is:                  to:
-##             all                  make all targets
-##             dtm                  creates make.dtm
-##             clean                clean all targets
+##
+## Specials
+##             all                  make all standard
+##             dtm                  create 'make.dtm'
+##             list                 create 'make.lst'
+##             clean                clean all standard
 ##             usage                display this output
 ##
+## Standard
 `{`[`$libs`;20`,##             \? make lib\$.a target`+\n`]`}
 `{`[`$dyn_libs`;20`,##             \? make \$.so target`+\n`]`}
 `{`[`$executables`;20`,##             \? make \$ target`+\n`]`}
@@ -66,7 +70,7 @@ CPPFLAGS = -fPIC -fno-gnu-unique -ftemplate-depth-30 -felide-constructors -O3 -M
 # Notes: For file specific options use "file_opts_XXX.o = <opts>" (where XXX.cpp is the source file name)
 # and for target specific options use "target_opts_XXX.so = <opts>" (where XXX.so is the name of the target).
 
-BIND_NORMAL = @echo Binding $@...;$(BIND) -r $@
+BIND_NORMAL = @echo Binding $@...;$(BIND) -r $@ 2>/dev/null
 
 LINK_NORMAL = @echo Linking $@...;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -export-dynamic -o $@
 LINK_NORMAL_DYN_USER = @echo Linking $@...;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -o $@
@@ -134,7 +138,8 @@ ALL_CMH_FILES =\
 ALL_DEP_FILES = $(ALL_CPP_FILES:.cpp=.d)
 
 # Targets
-usage: make_usage
+usage:
+	@grep ^## makefile
 
 `{`[`$libs`,\
 \$: $(TARGET_\^)\n`+
@@ -147,10 +152,10 @@ all:\
 `]`}
 
 dtm:
-	@echo ``date``>make.dtm
+	@echo ``date`` > make.dtm
 
-make_usage:
-	@grep ^## makefile
+list:
+	@echo "`{`[`$libs`,lib_\$.a`+,`]`},`{`[`$dyn_libs`,\$.so`+,`]`},`{`[`$executables`,\$`+,`]`}" | tr ',' '\n' > make.lst
 
 `{`[`$libs`,\
 $(TARGET_\^):: $(TARGET_\^).compile

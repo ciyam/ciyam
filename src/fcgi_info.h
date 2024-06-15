@@ -21,7 +21,6 @@
 #  include "config.h"
 #  include "ptypes.h"
 #  include "threads.h"
-#  include "ciyam_common.h"
 
 #  ifdef SSL_SUPPORT
 class ssl_socket;

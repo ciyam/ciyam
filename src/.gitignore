@@ -82,6 +82,7 @@ compile.bat
 
 # Ignore makefile generation files.
 make.dtm
+make.lst
 makefile
 makefile.bcb
 makefile.mvc
