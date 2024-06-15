@@ -4,139 +4,76 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-files=*.backup.bun.gz
-
-if [ ! "$WEBDIR" = "" ]; then
- export CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/restore.log
-
- date_var=`date`
- date_len=${#date_var}
- date_line=`eval printf '=%.0s' {1..$date_len}`
-
- echo "$date_var" > $CIYAM_EXEC_SYSTEM_APPEND
- echo "$date_line" >> $CIYAM_EXEC_SYSTEM_APPEND
-
- chmod g+w $CIYAM_EXEC_SYSTEM_APPEND
-fi
-
-has_meta=
-app_names=
-missing_apps=
-
-for f in $files
-do
- app_name=$(basename "$f" ".backup.bun.gz")
- app_dir=${app_name,,}
-
- if [ "$app_name" == "Meta" ]; then
-  has_meta=1
- else
-  if [ ! "$app_names" = "" ]; then
-   app_names="$app_names,"
-  fi
-  app_names="$app_names$app_name"
-
-  if [ ! "$WEBDIR" = "" ]; then
-   if [ ! -d "$WEBDIR/$app_dir" ]; then
-    if [ ! "$missing_apps" = "" ]; then
-     missing_apps="$missing_apps,"
-    fi
-    missing_apps="$missing_apps$app_name"
-   fi
-  fi
- fi
-done
-
-if [ "$has_meta" = "" ]; then
- error="Error: Missing application backup metadata."
- if [ "$WEBDIR" = "" ]; then
-   echo "$error"
- else
-   echo "$error" >> $CIYAM_EXEC_SYSTEM_APPEND
- fi
+if [ ! "$1" = "okay" ]; then
+ echo "Usage: ciyam_restore_all [okay]"
+ echo ""
+ echo "WARNING: APPLICATIONS AND MODEL ARTIFACTS WILL BE DESTROYED."
 else
- if [ "$WEBDIR" = "" ]; then
-  if [ ! "$missing_apps" = "" ]; then
-   ./ciyam_restore Meta meta
-  else
-   ./unbundle -q Meta.backup "ciyam_server.*"
-   touch ciyam_base.update
-  fi
- else
-  if [ ! "$missing_apps" = "" ]; then
-   ./ciyam_restore Meta meta >> $CIYAM_EXEC_SYSTEM_APPEND
-  else
-   ./unbundle -q Meta.backup "ciyam_server.*"  >> $CIYAM_EXEC_SYSTEM_APPEND
-   touch ciyam_base.update
-  fi
- fi
+ files=*.backup.bun.gz
 
- CIYAM_BASE_UPDATE_FILE=ciyam_base.update
+ export CIYAM_EXEC_SYSTEM_APPEND=/dev/stdout
 
- tries=0
- limit=59
+ has_meta=
+ app_names=
 
- sleep 0.25
-
- # NOTE: The "ciyam_base.update" file is created by "ciyam_restore"
- # (when called with Meta) so before continuing will need to verify
- # that the application server is ready for connections.
- while true;
+ for f in $files
  do
-  if [ $tries -gt $limit ] || [ ! -f $CIYAM_BASE_UPDATE_FILE ]; then
-   break;
+  app_name=$(basename "$f" ".backup.bun.gz")
+  app_dir=${app_name,,}
+
+  if [ "$app_name" == "Meta" ]; then
+   has_meta=1
+  else
+   if [ ! "$app_names" = "" ]; then
+    app_names="$app_names,"
+   fi
+   app_names="$app_names$app_name"
   fi
-  sleep 1
-  ((tries=tries+1))
  done
 
- if [ $tries -gt $limit ]; then
-  if [ "$WEBDIR" = "" ]; then
-   echo "Error: Unexpected server not available."
-  else
-   echo "Error: Unexpected server not available." >> $CIYAM_EXEC_SYSTEM_APPEND
-  fi
+ if [ "$has_meta" = "" ]; then
+  echo "Error: Missing application backup metadata."
  else
-  if [ ! "$missing_apps" = "" ]; then
-   if [ "$WEBDIR" = "" ]; then
-    ./restore Meta $missing_apps
-   else
-    ./restore Meta $missing_apps >> $CIYAM_EXEC_SYSTEM_APPEND
-   fi
-  fi
+  ./ciyam_restore Meta meta
 
-  for app_name in ${app_names//,/ }
+  CIYAM_BASE_UPDATE_FILE=ciyam_base.update
+
+  tries=0
+  limit=59
+
+  sleep 0.25
+
+  # NOTE: The "ciyam_base.update" file is created by "ciyam_restore"
+  # (when called with Meta) so before continuing will need to verify
+  # that the application server is ready for connections.
+  while true;
   do
-   app_dir=${app_name,,}
+   if [ $tries -gt $limit ] || [ ! -f $CIYAM_BASE_UPDATE_FILE ]; then
+    break;
+   fi
+   sleep 1
+   ((tries=tries+1))
+  done
 
-   if [ "$WEBDIR" = "" ]; then
+  if [ $tries -gt $limit ]; then
+    echo "Error: Unexpected server not available."
+  else
+   if [ ! "$app_names" = "" ]; then
+    ./restore Meta $app_names
+   fi
+
+   for app_name in ${app_names//,/ }
+   do
+    app_dir=${app_name,,}
+
+    ./unbundle -q $app_name.backup $app_name.app.vars.xrep $app_name.modules.lst
+    ./gen_app_script $app_name
+    ./$app_name.generate
+
     ./ciyam_restore $app_name $app_dir
     ./restore $app_name
-   else
-    needs_restore=1
-
-    if [ ! -d "$WEBDIR/$app_dir" ]; then
-     needs_restore=
-     ./unbundle -q $app_name.backup $app_name.app.vars.xrep $app_name.modules.lst >> $CIYAM_EXEC_SYSTEM_APPEND
-     ./gen_app_script $app_name >> $CIYAM_EXEC_SYSTEM_APPEND
-     ./$app_name.generate >> $CIYAM_EXEC_SYSTEM_APPEND
-    fi
-
-    ./ciyam_restore $app_name $app_dir >> $CIYAM_EXEC_SYSTEM_APPEND
-
-    if [ "$needs_restore" = "1" ]; then
-     ./restore $app_name >> $CIYAM_EXEC_SYSTEM_APPEND
-    fi
-   fi
-  done
+   done
+  fi
  fi
-fi
 
-if [ ! "$WEBDIR" = "" ]; then
- date_var=`date`
- date_len=${#date_var}
- date_line=`eval printf '=%.0s' {1..$date_len}`
-
- echo "$date_line" >> $CIYAM_EXEC_SYSTEM_APPEND
- echo "$date_var" >> $CIYAM_EXEC_SYSTEM_APPEND
 fi
