@@ -192,6 +192,7 @@ enum special_var
    e_special_var_peer_clone_key,
    e_special_var_peer_initiator,
    e_special_var_peer_responder,
+   e_special_var_prepare_system,
    e_special_var_progress_clear,
    e_special_var_progress_count,
    e_special_var_progress_fracs,

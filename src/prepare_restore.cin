@@ -11,7 +11,7 @@ STORAGE=$1
 ;
 APP_DIR=@lower:$STORAGE
 ;
-.system_variable @restore_session 1 ""
+.system_variable @prepare_system 1 ""
 @ifeq "$OUTPUT" "1"
 .system_variable @restore_in_progress 1
 ~echo "(restore preparation is now commencing)" > Backup.txt
@@ -110,7 +110,7 @@ ERROR=Failed due to a WEBDIR environment variable not having being set.
 ~rm -f $WEBDIR/meta/.prepare.restore
 @endif
 ;
-.system_variable @restore_session ""
+.system_variable @prepare_system ""
 @endif
 ;
 @endif
