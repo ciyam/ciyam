@@ -181,6 +181,7 @@ const char* const c_special_variable_files_area_dir = "@files_area_dir";
 const char* const c_special_variable_peer_clone_key = "@peer_clone_key";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
+const char* const c_special_variable_prepare_system = "@prepare_system";
 const char* const c_special_variable_progress_clear = "@progress_clear";
 const char* const c_special_variable_progress_count = "@progress_count";
 const char* const c_special_variable_progress_fracs = "@progress_fracs";
@@ -444,6 +445,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_peer_clone_key );
       g_special_variable_names.push_back( c_special_variable_peer_initiator );
       g_special_variable_names.push_back( c_special_variable_peer_responder );
+      g_special_variable_names.push_back( c_special_variable_prepare_system );
       g_special_variable_names.push_back( c_special_variable_progress_clear );
       g_special_variable_names.push_back( c_special_variable_progress_count );
       g_special_variable_names.push_back( c_special_variable_progress_fracs );

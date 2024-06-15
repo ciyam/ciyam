@@ -407,6 +407,12 @@ void autoscript_session::on_start( )
          if( g_server_shutdown )
             break;
 
+         // NOTE: Skip processing if currently preparing
+         // either a system backup or restore operation.
+         if( has_system_variable(
+          get_special_var_name( e_special_var_prepare_system ) ) )
+            continue;
+
          guard g( g_mutex );
 
          date_time now( date_time::local( ) );
