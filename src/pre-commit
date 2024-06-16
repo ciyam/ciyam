@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Pre-commit hook to check correct source code formatting.
 
 git diff --cached --name-status | while read st file; do
