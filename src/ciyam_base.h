@@ -449,7 +449,8 @@ std::string CIYAM_BASE_DECL_SPEC get_encrypted_smtp_password( );
 
 std::string CIYAM_BASE_DECL_SPEC get_session_blockchain( );
 
-unsigned int CIYAM_BASE_DECL_SPEC get_num_sessions_for_blockchain( const std::string& blockchain );
+size_t CIYAM_BASE_DECL_SPEC get_num_sessions_for_blockchain(
+ const std::string& blockchain, bool matching_own_ip_address = false, bool excluding_own_session = false );
 
 inline bool any_session_has_blockchain( const std::string& blockchain )
 {

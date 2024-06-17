@@ -7824,18 +7824,37 @@ string get_session_blockchain( )
    return gtp_session->blockchain;
 }
 
-unsigned int get_num_sessions_for_blockchain( const string& blockchain )
+size_t get_num_sessions_for_blockchain( const string& blockchain, bool matching_own_ip_address, bool excluding_own_session )
 {
    guard g( g_session_mutex );
 
-   unsigned int num_sessions = 0;
+   size_t num_sessions = 0;
+
+   if( !gtp_session && matching_own_ip_address )
+      throw runtime_error( "unexpected call to 'get_num_sessions_for_blockchain' from non-session" );
+
+   string own_ip_addr;
+
+   if( gtp_session )
+      own_ip_addr = gtp_session->ip_addr;
 
    if( !blockchain.empty( ) )
    {
       for( size_t i = 0; i < g_max_sessions; i++ )
       {
-         if( g_sessions[ i ] && blockchain == g_sessions[ i ]->blockchain )
+         if( !g_sessions[ i ] )
+            continue;
+
+         if( excluding_own_session && ( gtp_session == g_sessions[ i ] ) )
+            continue;
+
+         if( blockchain == g_sessions[ i ]->blockchain )
+         {
+            if( matching_own_ip_address && ( own_ip_addr != g_sessions[ i ]->ip_addr ) )
+               continue;
+
             ++num_sessions;
+         }
       }
    }
 

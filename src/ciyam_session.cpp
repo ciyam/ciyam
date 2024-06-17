@@ -2869,14 +2869,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( paired_primary.empty( ) )
             create_peer_initiator( blockchain,
-             host_and_or_port, force, num_supporters, true, false, 0, chain_type );
+             host_and_or_port, force, num_supporters, true, false, false, chain_type );
          else
          {
             create_peer_initiator( paired_primary + ':' + paired_primary,
-             host_and_or_port, force, num_supporters, true, false, 0, chain_type );
+             host_and_or_port, force, num_supporters, true, false, false, chain_type );
 
             create_peer_initiator( paired_secondary + ':' + paired_primary,
-             host_and_or_port, force, num_supporters, true, false, 0, chain_type );
+             host_and_or_port, force, num_supporters, true, false, false, chain_type );
          }
       }
       else if( command == c_cmd_ciyam_session_peer_persist_file )
