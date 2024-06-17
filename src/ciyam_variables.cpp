@@ -269,6 +269,7 @@ const char* const c_special_variable_blockchain_tree_root_hash = "@blockchain_tr
 const char* const c_special_variable_blockchain_backup_identity = "@blockchain_backup_identity";
 const char* const c_special_variable_blockchain_block_file_hash = "@blockchain_block_file_hash";
 const char* const c_special_variable_blockchain_both_are_owners = "@blockchain_both_are_owners";
+const char* const c_special_variable_blockchain_num_for_support = "@blockchain_num_for_support";
 const char* const c_special_variable_blockchain_peer_hub_height = "@blockchain_peer_hub_height";
 const char* const c_special_variable_blockchain_shared_identity = "@blockchain_shared_identity";
 const char* const c_special_variable_use_insecure_peer_protocol = "@use_insecure_peer_protocol";
@@ -533,6 +534,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_backup_identity );
       g_special_variable_names.push_back( c_special_variable_blockchain_block_file_hash );
       g_special_variable_names.push_back( c_special_variable_blockchain_both_are_owners );
+      g_special_variable_names.push_back( c_special_variable_blockchain_num_for_support );
       g_special_variable_names.push_back( c_special_variable_blockchain_peer_hub_height );
       g_special_variable_names.push_back( c_special_variable_blockchain_shared_identity );
       g_special_variable_names.push_back( c_special_variable_use_insecure_peer_protocol );

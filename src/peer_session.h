@@ -65,6 +65,8 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 
    void on_start( );
 
+   void set_num_for_support( size_t new_num ) { num_for_support = new_num; }
+
    void set_backup_identity( const std::string& identity ) { backup_identity = identity; }
 
    static void increment_session_count( );
@@ -88,6 +90,8 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    bool has_set_system_variable;
 
    int64_t time_val;
+
+   size_t num_for_support;
 
    std::string port;
    std::string ip_addr;
@@ -152,7 +156,7 @@ void CIYAM_BASE_DECL_SPEC create_peer_listener( int port, const std::string& blo
 peer_session* CIYAM_BASE_DECL_SPEC create_peer_initiator(
  const std::string& blockchain, const std::string& host_and_or_port,
  bool force = false, size_t num_for_support = 0, bool is_interactive = true,
- bool is_secondary = false, peer_session* p_main_session = 0,
+ bool is_secondary = false, bool has_main_session = false,
  peerchain_type chain_type = e_peerchain_type_any,
  bool has_set_system_variable = false, const std::string* p_extra_value = 0 );
 
