@@ -8390,19 +8390,22 @@ string get_raw_session_variable( const string& name, size_t sess_id )
    {
       if( name == get_special_var_name( e_special_var_set ) )
       {
-         if( !gtp_session->last_set_item.empty( ) )
+         if( gtp_session )
          {
-            retval = gtp_session->last_set_item;
-            gtp_session->last_set_item.erase( );
-         }
-         else
-         {
-            for( set< string >::const_iterator
-             ci = gtp_session->set_items.begin( ); ci != gtp_session->set_items.end( ); ++ci )
+            if( !gtp_session->last_set_item.empty( ) )
             {
-               if( !retval.empty( ) )
-                  retval += '\n';
-               retval += *ci;
+               retval = gtp_session->last_set_item;
+               gtp_session->last_set_item.erase( );
+            }
+            else
+            {
+               for( set< string >::const_iterator
+                ci = gtp_session->set_items.begin( ); ci != gtp_session->set_items.end( ); ++ci )
+               {
+                  if( !retval.empty( ) )
+                     retval += '\n';
+                  retval += *ci;
+               }
             }
          }
       }
@@ -8410,30 +8413,36 @@ string get_raw_session_variable( const string& name, size_t sess_id )
          retval = " ";
       else if( name == get_special_var_name( e_special_var_deque ) )
       {
-         if( !gtp_session->last_deque_item.empty( ) )
+         if( gtp_session )
          {
-            retval = gtp_session->last_deque_item;
-            gtp_session->last_deque_item.erase( );
-         }
-         else
-         {
-            for( deque< string >::const_iterator
-             ci = gtp_session->deque_items.begin( ); ci != gtp_session->deque_items.end( ); ++ci )
+            if( !gtp_session->last_deque_item.empty( ) )
             {
-               if( !retval.empty( ) )
-                  retval += '\n';
-               retval += *ci;
+               retval = gtp_session->last_deque_item;
+               gtp_session->last_deque_item.erase( );
+            }
+            else
+            {
+               for( deque< string >::const_iterator
+                ci = gtp_session->deque_items.begin( ); ci != gtp_session->deque_items.end( ); ++ci )
+               {
+                  if( !retval.empty( ) )
+                     retval += '\n';
+                  retval += *ci;
+               }
             }
          }
       }
       else if( name == get_special_var_name( e_special_var_algos ) )
       {
-         guard g( g_mutex );
-         temporary_algo_prefix tmp_algo_prefix( gtp_session->p_storage_handler->get_name( ) );
+         if( gtp_session )
+         {
+            guard g( g_mutex );
+            temporary_algo_prefix tmp_algo_prefix( gtp_session->p_storage_handler->get_name( ) );
 
-         ostringstream osstr;
-         output_algos( osstr );
-         retval = osstr.str( );
+            ostringstream osstr;
+            output_algos( osstr );
+            retval = osstr.str( );
+         }
       }
    }
 
