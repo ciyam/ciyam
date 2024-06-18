@@ -1496,7 +1496,11 @@ void check_for_missing_other_sessions( const date_time& now )
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
-   string paired_identity( get_raw_session_variable( get_special_var_name( e_special_var_paired_identity ) ) );
+   string backup_identity( get_raw_session_variable(
+    get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+
+   string paired_identity(
+    get_raw_session_variable( get_special_var_name( e_special_var_paired_identity ) ) );
 
    if( !paired_identity.empty( ) && !has_raw_system_variable( paired_identity ) )
    {
@@ -1516,36 +1520,11 @@ void check_for_missing_other_sessions( const date_time& now )
                throw runtime_error( "peer session has been condemned due to missing paired session" );
             }
 
-            string backup_identity( get_raw_session_variable(
-             get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
-
             if( !backup_identity.empty( ) && num_have_session_variable( backup_identity, true ) < 2 )
             {
                condemn_this_session( );
 
                throw runtime_error( "peer session has been condemned due to missing backup session" );
-            }
-
-            size_t num_for_support = from_string< size_t >(
-             get_raw_session_variable( get_special_var_name( e_special_var_blockchain_num_for_support ) ) );
-
-            if( num_for_support && !is_condemned_session( ) )
-            {
-               size_t num_supporters = get_num_sessions_for_blockchain( identity, true, true );
-
-               // NOTE: Create replacements for missing support sessions (unless all are missing).
-               if( num_supporters && ( num_for_support > num_supporters ) )
-               {
-                  string host_and_port( get_raw_session_variable( get_special_var_name( e_special_var_ip_addr ) ) );
-
-                  host_and_port += '-' + get_raw_session_variable( get_special_var_name( e_special_var_port ) );
-
-                  peerchain_type chain_type = get_blockchain_type( blockchain );
-
-                  if( chain_type != e_peerchain_type_any )
-                     create_peer_initiator( blockchain, host_and_port,
-                      false, ( num_for_support - num_supporters ), false, false, true, chain_type );
-               }
             }
          }
       }
@@ -1564,6 +1543,44 @@ void check_for_missing_other_sessions( const date_time& now )
          condemn_this_session( );
 
          throw runtime_error( "peer session has been condemned due to missing any hub using sessions" );
+      }
+   }
+
+   size_t num_for_support = from_string< size_t >(
+    get_raw_session_variable( get_special_var_name( e_special_var_blockchain_num_for_support ) ) );
+
+   if( num_for_support && !g_server_shutdown && !is_condemned_session( ) )
+   {
+      size_t num_supporters = get_num_sessions_for_blockchain( identity, true, true );
+
+      // NOTE: Create replacements for missing support sessions (unless all are missing).
+      if( num_supporters && ( num_for_support > num_supporters ) )
+      {
+         string host_and_port( get_raw_session_variable( get_special_var_name( e_special_var_ip_addr ) ) );
+
+         host_and_port += '-' + get_raw_session_variable( get_special_var_name( e_special_var_port ) );
+
+         peerchain_type chain_type = get_blockchain_type( blockchain );
+
+         string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
+
+         // NOTE: If possible will ensure that the peer session is being secured.
+         string secret_hash( get_raw_system_variable( secret_hash_name + '_' + identity ) );
+
+         if( secret_hash.empty( ) && !paired_identity.empty( ) )
+            secret_hash = get_raw_system_variable( secret_hash_name + '_' + paired_identity );
+
+         if( secret_hash.empty( ) && !backup_identity.empty( ) )
+            secret_hash = get_raw_system_variable( secret_hash_name + '_' + backup_identity );
+
+         auto_ptr< temporary_session_variable > ap_temp_secret_hash;
+
+         if( !secret_hash.empty( ) )
+            ap_temp_secret_hash.reset( new temporary_session_variable( secret_hash_name, secret_hash ) );
+
+         if( chain_type != e_peerchain_type_any )
+            create_peer_initiator( blockchain, host_and_port,
+             false, ( num_for_support - num_supporters ), false, true, true, chain_type );
       }
    }
 }
@@ -6241,6 +6258,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
       identity = string( p_identity );
 
    string::size_type pos = addr_info.find( '=' );
+
    if( pos != string::npos )
    {
       blockchain = addr_info.substr( pos + 1 );
@@ -6248,6 +6266,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
    }
 
    pos = blockchain.find( ':' );
+
    if( pos != string::npos )
    {
       port = blockchain.substr( pos + 1 );
@@ -6281,16 +6300,13 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
       if( !has_raw_system_variable(
        get_special_var_name( e_special_var_use_insecure_peer_protocol ) ) )
       {
-         secret_hash = get_raw_session_variable(
-          get_special_var_name( e_special_var_secret_hash ) );
+         secret_hash = get_raw_session_variable( get_special_var_name( e_special_var_secret_hash ) );
 
          if( secret_hash.empty( ) )
-            secret_hash = get_raw_system_variable(
-             get_special_var_name( e_special_var_secret_hash ) );
+            secret_hash = get_raw_system_variable( get_special_var_name( e_special_var_secret_hash ) );
       }
 
-      if( !blockchain.empty( )
-       && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
+      if( !blockchain.empty( ) && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
          is_owner = true;
    }
 
@@ -6743,6 +6759,7 @@ void peer_session::on_start( )
          }
 
          version_info ver_info;
+
          if( get_version_info( greeting, ver_info ) != string( c_response_okay ) )
          {
             ap_socket->close( );
@@ -7609,10 +7626,33 @@ void create_peer_listener( int port, const string& blockchains )
    }
 }
 
+struct other_session_extras
+{
+   other_session_extras( size_t num = 0, const string* p_backup_identity = 0 )
+   {
+      num_for_support = num;
+
+      if( p_backup_identity )
+         backup_identity = *p_backup_identity;
+   }
+
+   void set_extras( peer_session& s )
+   {
+      if( num_for_support )
+         s.set_num_for_support( num_for_support );
+
+      if( !backup_identity.empty( ) )
+         s.set_backup_identity( backup_identity );
+   }
+
+   size_t num_for_support;
+   string backup_identity;
+};
+
 peer_session* create_peer_initiator( const string& blockchain,
  const string& host_and_or_port, bool force, size_t num_for_support,
  bool is_interactive, bool is_secondary, bool has_main_session, peerchain_type chain_type,
- bool has_set_system_variable, const string* p_extra_value )
+ bool has_set_system_variable, const string* p_extra_value, other_session_extras* p_other_session_extras )
 {
    if( blockchain.empty( ) )
       throw runtime_error( "create_peer_initiator called with empty blockchain identity" );
@@ -7642,6 +7682,11 @@ peer_session* create_peer_initiator( const string& blockchain,
    if( num_for_support > c_max_num_for_support )
       throw runtime_error( "cannot create " + to_string( num_for_support )
        + " sessions for support (max is " + to_string( c_max_num_for_support ) + ")" );
+
+   other_session_extras other_extras( num_for_support );
+
+   if( !p_other_session_extras )
+      p_other_session_extras = &other_extras;
 
    int port = 0;
    string host( c_local_host );
@@ -7775,6 +7820,9 @@ peer_session* create_peer_initiator( const string& blockchain,
                   has_main_session = true;
                   p_main_session = p_session;
                }
+
+               if( p_other_session_extras )
+                  p_other_session_extras->set_extras( *p_session );
 
                p_session->start( );
             }
@@ -7976,14 +8024,18 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    temporary_system_variable tmp_blockchain_connect( identity, c_true_value );
 
+   other_session_extras other_extras( num_for_support );
+
+   size_t zero_or_dummy = ( !num_for_support ? 0 : c_dummy_num_for_support );
+
    // NOTE: First create main sessions for both the local and hosted blockchains.
-   peer_session* p_local_main = create_peer_initiator( blockchain + paired_suffix, info, false,
-    ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, false, chain_type, false, p_extra_value );
+   peer_session* p_local_main = create_peer_initiator( blockchain + paired_suffix, info,
+    false, zero_or_dummy, false, false, false, chain_type, false, p_extra_value, &other_extras );
 
    if( p_local_main && ( peer_type >= 0 ) )
    {
-      peer_session* p_hosted_main = create_peer_initiator( blockchain, info, false,
-       ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, false, chain_type, false, p_extra_value );
+      peer_session* p_hosted_main = create_peer_initiator( blockchain, info,
+       false, zero_or_dummy, false, true, false, chain_type, false, p_extra_value, &other_extras );
 
       if( p_hosted_main )
       {
@@ -7991,15 +8043,11 @@ void peer_session_starter::start_peer_session( const string& peer_info )
          // will now create the requested support sessions for them both.
          if( num_for_support )
          {
-            p_local_main->set_num_for_support( num_for_support );
+            create_peer_initiator( blockchain, info, false,
+             num_for_support, false, false, true, chain_type, false, p_extra_value );
 
-            create_peer_initiator( blockchain, info,
-             false, num_for_support, false, false, true, chain_type, false, p_extra_value );
-
-            p_hosted_main->set_num_for_support( num_for_support );
-
-            create_peer_initiator( blockchain, info,
-             false, num_for_support, false, true, true, chain_type, false, p_extra_value );
+            create_peer_initiator( blockchain, info, false,
+             num_for_support, false, true, true, chain_type, false, p_extra_value );
          }
       }
    }
@@ -8012,28 +8060,22 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
       string reversed_chain( c_bc_prefix + reversed );
 
-      peer_session* p_local_shared = create_peer_initiator( reversed_chain + paired_suffix, info, false,
-       ( !num_for_support ? 0 : c_dummy_num_for_support ), false, false, false, reversed_chain_type, false, p_extra_value );
+      other_extras.backup_identity = identity;
+
+      peer_session* p_local_shared = create_peer_initiator( reversed_chain + paired_suffix, info,
+       false, zero_or_dummy, false, false, false, reversed_chain_type, false, p_extra_value, &other_extras );
 
       if( p_local_shared && ( peer_type >= 0 ) )
       {
-         p_local_shared->set_backup_identity( identity );
-
-         peer_session* p_hosted_shared = create_peer_initiator( reversed_chain, info, false,
-          ( !num_for_support ? 0 : c_dummy_num_for_support ), false, true, false, reversed_chain_type, false, p_extra_value );
+         peer_session* p_hosted_shared = create_peer_initiator( reversed_chain, info,
+          false, zero_or_dummy, false, true, false, reversed_chain_type, false, p_extra_value, &other_extras );
 
          if( p_hosted_shared )
          {
-            p_hosted_shared->set_backup_identity( identity );
-
             if( num_for_support )
             {
-               p_local_shared->set_num_for_support( num_for_support );
-
                create_peer_initiator( reversed_chain, info, false,
                 num_for_support, false, false, true, reversed_chain_type, false, p_extra_value );
-
-               p_hosted_shared->set_num_for_support( num_for_support );
 
                create_peer_initiator( reversed_chain, info, false,
                 num_for_support, false, true, true, reversed_chain_type, false, p_extra_value );

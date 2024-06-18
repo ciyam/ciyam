@@ -2857,15 +2857,30 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string paired_primary, paired_secondary;
 
+         string secret_hash, secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
+
          string::size_type pos = blockchain.find( ':' );
-         if( pos != string::npos )
+
+         if( pos == string::npos )
+            secret_hash = get_raw_system_variable( secret_hash_name + '_' + blockchain );
+         else
          {
             paired_primary = blockchain.substr( 0, pos );
             paired_secondary = blockchain.substr( pos + 1 );
+
+            secret_hash = get_raw_system_variable( secret_hash_name + '_' + paired_primary );
+
+            if( secret_hash.empty( ) )
+               secret_hash = get_raw_system_variable( secret_hash_name + '_' + paired_secondary );
          }
 
          if( type_hub && !paired_primary.empty( ) )
             throw runtime_error( "invalid paired blockchain usage with type hub" );
+
+         auto_ptr< temporary_session_variable > ap_temp_secret_hash;
+
+         if( !secret_hash.empty( ) )
+            ap_temp_secret_hash.reset( new temporary_session_variable( secret_hash_name, secret_hash ) );
 
          if( paired_primary.empty( ) )
             create_peer_initiator( blockchain,
