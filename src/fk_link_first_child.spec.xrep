@@ -12,7 +12,7 @@
 `{`$sep`=`'`'`}`{`!`@eq`(`$arg_status_field`,`'`'`)`&`(`!`@eq`(`$arg_new_only`,`'`'`)`|`!`@eq`(`$arg_not_create`,`'`'`)`)\
 `$sep`=`' && `'`}\
    if( `{`@eq`(`$arg_new_only`,`'true`'`)is_create`}`{`@eq`(`$arg_not_create`,`'true`'`)!is_create`}`{`$sep`}\
-`{`!`@eq`(`$arg_status_field`,`'`'`)get_obj( ).`{`$arg_status_field`}( ).has_changed( ) && to_string( get_obj( ).`{`$arg_status_field`}( ) ) == "`{`$arg_status_value`}"`} )
+`{`!`@eq`(`$arg_status_field`,`'`'`)`{`@eq`(`$arg_status_value`,`'@null`'`)is_null( get_obj( ).`{`$arg_status_field`}( ) )`,to_string( get_obj( ).`{`$arg_status_field`}( ) ) == "`{`$arg_status_value`}"`}`} )
 `}\
    {
 `{`!`@eq`(`$arg_order_field`,`'`'`)\
@@ -20,17 +20,23 @@
       key_info += ' ';
 `,\
       string key_info;
-`}\
+`}
 `{`@eq`(`$arg_reverse`,`'`'`)\
       if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child`}( ).iterate_forwards( key_info, "", true, 1 ) )
 `,\
       if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child`}( ).iterate_backwards( key_info, "", true, 1 ) )
 `}\
       {
-         if( !is_destroy_locked( get_obj( ).child_`{`$arg_child`}( ) ) )
-            get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child`}( ).\
+         do
+         {
+            if( !is_destroy_locked( get_obj( ).child_`{`$arg_child`}( ) ) )
+            {
+               get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child`}( ).\
 `{`!`@eq`(`$arg_child_field`,`'`'`)`{`$arg_child_field`}`,get_key`}( ) );
-         get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child`}( ).iterate_stop( );
+               get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child`}( ).iterate_stop( );
+               break;
+            }
+         } while( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child`}( ).iterate_next( ) );
       }
 `{`@eq`(`$arg_fmandatory`,`'1`'`)\
       else
