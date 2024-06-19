@@ -448,8 +448,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         set_field_values += ",";
                      set_field_values += view.user_force_fields[ i ];
 
-                     // NOTE: If the "force" field is flagged as an encrypted field then encrypt it now.
-                     if( view.encrypted_fields.count( view.user_force_fields[ i ] ) )
+                     // NOTE: If the "force" field is flagged as an encrypted field
+                     // then will encrypt it now (unless it is also a hidden field).
+                     if( !view.hidden_fields.count( view.user_force_fields[ i ] )
+                      && view.encrypted_fields.count( view.user_force_fields[ i ] ) )
                      {
                        set_field_values += "=" + data_encrypt(
                         user_field_info[ view.user_force_fields[ i ] ], sid );
