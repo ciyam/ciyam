@@ -1,2 +1,0 @@
-@echo off
-`{`$files`[`$files`,if exist "\$" del "\$"`+\n`]`}
