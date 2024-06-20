@@ -1749,6 +1749,7 @@ void clone_children_specification::add_specification_data( model& m, specificati
    spec_data.data_pairs.push_back( make_pair( c_data_tvalue, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_cpfield, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tfistexttype, "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_child_class, cclass_name ) );
 }
 
 string clone_children_specification::static_class_name( ) { return "clone_children"; }

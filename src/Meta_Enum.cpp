@@ -1034,7 +1034,9 @@ void Meta_Enum::impl::after_store( bool is_create, bool is_internal )
 
       cp_source->begin_review( get_obj( ).get_clone_key( ) );
 
-      if( cp_source->child_Enum_Item( ).iterate_forwards( ) )
+      string key_info;
+
+      if( cp_source->child_Enum_Item( ).iterate_forwards( key_info ) )
       {
          int child_num = 0;
 
