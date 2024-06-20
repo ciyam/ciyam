@@ -1744,6 +1744,7 @@ void clone_children_specification::add_specification_data( model& m, specificati
    spec_data.data_pairs.push_back( make_pair( "ctvalue", "" ) );
    spec_data.data_pairs.push_back( make_pair( "copy_files", "" ) );
    spec_data.data_pairs.push_back( make_pair( "ctfistexttype", "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_ofield, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tvalue, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_cpfield, "" ) );
