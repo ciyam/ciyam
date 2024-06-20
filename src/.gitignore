@@ -18,10 +18,6 @@ x.cpp
 # Ignore libraries and executables.
 *.a
 *.so
-*.dll
-*.lib
-*.exe
-*.exp
 bundle
 calendar
 check_source
@@ -66,7 +62,7 @@ xvars
 # Except dummy log file template.
 !app.log
 
-# Ignore local files area
+# Ignore local files area.
 files
 
 # Ignore locally generated config.
@@ -78,7 +74,6 @@ manuscript.sio
 
 # Ignore generated compile script.
 compile.sh
-compile.bat
 
 # Ignore makefile generation files.
 make.dtm
@@ -136,9 +131,9 @@ blog*.jpg
 blog*.png
 user*.jpg
 user_*.txt
+Forum_*.png
 photo_*.jpg
 gen_photo_*.xrep
-Forum_*.png
 
 # Ignore ciyam test storage and related.
 ciyam.dat
@@ -159,7 +154,7 @@ ciyam_server.sid
 ciyam_server.sio
 ciyam_server.tlg
 
-# Ignore Meta storage and related
+# Ignore Meta storage and related.
 Meta.dat
 Meta.hdr
 Meta.idx
@@ -171,6 +166,5 @@ Meta.modules.lst
 *.backup.bun.gz
 *.backup_files.bun.gz
 
-# Ignore service and customised environment init file.
+# Ignore service.
 ciyamd.service
-ciyam_init_cmd.bat
