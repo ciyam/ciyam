@@ -1,7 +1,7 @@
-Linux OpenSUSE Specific Instructions
-====================================
+Linux Lubuntu Specific Instructions
+===================================
 
-https://get.opensuse.org/tumbleweed
+https://cdimage.ubuntu.com/lubuntu/releases/24.04/release/
 (download the .ISO image to use with VirtualBox as the boot install CD/DVD)
 
 Create a New machine in VirtualBox with 4096 MB of memory and create a virtual disk
@@ -11,17 +11,15 @@ to bidirectional and in System remove Floppy from the Boot Order.
 NOTE: Select Settings -> Storage -> SATA Controller to set "Use Host I/O Cache" on.
 (is off by default and will make an enormous difference to DB File I/O performance)
 
-The Xfce GUI is recommended (due to being smaller but having decent functionality).
+From the Customize menu select a Normal Installation (in order to approx. UTC select
+the "Atlantic/Reykjavik" timezone along with the Locale setting as "en_SG.UTF-8").
 
 Create the user "admin" when installing (for demo purposes password to be "linux").
 
-Install Guest Additions (normally automatic)
---------------------------------------------
-Change the CD/DVD to Guest Additions then mount, install and reboot:
+Install Guest Additions (if bidirectional clipboard is not working)
+-------------------------------------------------------------------
 
-sudo mount /dev/cdrom /mnt
-cd /mnt
-sudo ./VBoxLinuxAdditions.run
+sudo apt install virtualbox-guest-x11
 
 sudo reboot
 
@@ -32,76 +30,81 @@ sudo visudo
 (add the following line at the bottom of the file)
 admin ALL=(ALL) NOPASSWD:ALL
 
+If you had selected "Allow Login Without Password" to later prevent that:
+sudo vi /etc/sddm.conf
+(comment out the AutoLogin lines)
+
 (to disable "smart indenting" in vim)
-sudo mv /usr/share/vim/current/indent.vim /usr/share/vim/current/indent.vim.sav
+sudo mv /usr/share/vim/vim91/indent.vim /usr/share/vim/vim91/indent.vim.sav
 
 (and to ensure that auto-commenting doesn't occur in vim either)
 echo "set fo-=ro" >>.vimrc
 
-Updgrade to latest version (should reboot immediately after this):
+Update to latest version (should reboot immediately after this):
 
-sudo zypper dup
+sudo apt update
 
 sudo reboot
+
+To prevent unattended upgrades and stop annoying notifications
+--------------------------------------------------------------
+
+sudo systemctl disable --now unattended-upgrades
+
+Preferences -> LXQt Settings -> Session Settings : Auto Start
+ (unselect the "Lubuntu Update Autostart" option)
+ (and "Geoclue Demo agent" if this is not wanted)
+
+Preferences -> LXQt Settings -> Desktop Notifications
+ (check Do Not Disturb)
 
 Install all required packages for CIYAM Software Manufacturing
 --------------------------------------------------------------
 
-sudo zypper install make
-sudo zypper install gcc-c++
-sudo zypper install git-core
-sudo zypper install qrencode
-sudo zypper install png++-devel
-sudo zypper install libharu-devel
-sudo zypper install readline-devel
-sudo zypper install mariadb libmariadb-devel
-sudo zypper install apache2 apache2-mod_fcgid
+sudo apt-get install make
+sudo apt-get install build-essential
 
-Next configure and start required services:
+sudo apt install git
+sudo apt install procmail
+(only needed for "lockfile" and when prompted select No Configuration)
 
-sudo a2enmod fcgid
+sudo apt install libpng-dev
+sudo apt install libhpdf-dev
 
-https://ciyam.org/docs/fcgi_configuration.html
+sudo apt install apache2 libapache2-mod-fcgid
+sudo apt install mariadb-server libmariadb-dev
+
+sudo apt-get install libreadline-dev
+sudo apt-get install libmysqlclient-dev
+
+Next install and start/restart required services
+------------------------------------------------
+
+sudo apt install openssh-server
 
 sudo systemctl enable sshd
 sudo systemctl enable mysql
 sudo systemctl enable apache2
 
+https://ciyam.org/docs/fcgi_configuration.html
+
 sudo systemctl restart mysql
 sudo systemctl restart apache2
 
-To add CIYAM as a known firewall service:
-sudo vi /usr/lib/firewalld/services/ciyam.xml
-
-[ciyam.xml]
-<?xml version="1.0" encoding="utf-8"?>
-<service>
-  <short>CIYAM</short>
-  <description>CIYAM Application Server</description>
-  <port protocol="tcp" port="12021"/>
-</service>
-[ciyam.xml]
-
-sudo firewall-cmd --reload
-
-NOTE: Use "yast" to add "ciyam", "http" and "ssh" to the public zone of the firewall.
-sudo yast
-
-sudo firewall-cmd --state
-sudo firewall-cmd --get-default-zone
-sudo firewall-cmd --list-all
-
-sudo vi /usr/etc/ssh/sshd_config
+sudo vi /etc/ssh/sshd_config
 (uncomment out the following line)
 PasswordAuthentication yes
 
-sudo systemctl restart sshd
-sudo systemctl restart firewalld
+sudo systemctl start ssh
 
-If concerned about the "geoclue" service:
+sudo systemctl enable ufw
 
-sudo systemctl mask geoclue.service
-sudo systemctl status geoclue.service
+sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw allow 12021
+
+sudo ufw allow 13031
+(if using syncthing)
 
 git clone https://github.com/ciyam/fcgi.git
 
@@ -116,9 +119,9 @@ cd ..
 
 Export CIYAM environment variables now and for future sesisons
 --------------------------------------------------------------
-export WEBDIR=/srv/www/htdocs
-echo 'export WEBDIR=/srv/www/htdocs' >> .bashrc
-echo 'export WEBDIR=/srv/www/htdocs' >> .profile
+export WEBDIR=/var/www/html
+echo 'export WEBDIR=/var/www/html' >> .bashrc
+echo 'export WEBDIR=/var/www/html' >> .profile
 
 export MYSQL_EXEC="sudo mariadb"
 echo 'export MYSQL_EXEC="sudo mariadb"' >> .bashrc
@@ -128,10 +131,10 @@ export CIYAM_USER=admin
 echo 'export CIYAM_USER=admin' >> .bashrc
 echo 'export CIYAM_USER=admin' >> .profile
 
-Change default group to "www" then add the "users" group
---------------------------------------------------------
-sudo usermod -g www admin
-newgrp - www
+Change default group to "www-data" then add the "users" group
+-------------------------------------------------------------
+sudo usermod -g www-data admin
+newgrp - www-data
 sudo usermod -a -G users admin
 
 (to confirm logout and back in then type "groups" and touch a new file)
@@ -139,7 +142,7 @@ sudo usermod -a -G users admin
 sudo chmod a+rx /home/admin
 
 sudo chmod g+w $WEBDIR
-sudo chown wwwrun:www $WEBDIR
+sudo chown www-data:www-data $WEBDIR
 
 (if initially created may want to remove the following folders)
 rmdir Documents
@@ -161,7 +164,8 @@ sudo vi /etc/fstab
 
 sudo mkdir backup
 sudo mount backup.img backup
-sudo chown -R admin:www backup
+(ignore hint about modified fstab)
+sudo chown -R admin:www-data backup
 
 sudo umount backup
 
@@ -176,6 +180,7 @@ sudo vi /etc/fstab
 
 sudo mkdir opened
 sudo mount opened.img opened
+(ignore hint about modified fstab)
 sudo chown -R admin:users opened
 sudo chmod g+rx /home/admin/opened
 
@@ -192,7 +197,8 @@ sudo vi /etc/fstab
 
 sudo mkdir shared
 sudo mount shared.img shared
-sudo chown -R admin:www shared
+(ignore hint about modified fstab)
+sudo chown -R admin:www-data shared
 
 sudo umount shared
 
@@ -300,10 +306,7 @@ SYNC     TCP   127.0.0.1   13031    10.0.2.15   13031
 Installing Syncthing User Service
 ---------------------------------
 
-sudo zypper install syncthing
-
-sudo vi /usr/lib/firewalld/services/syncthing.xml
-(change TCP/UDP ports to 13031)
+sudo apt-get install syncthing
 
 mkdir .config/systemd
 mkdir .config/systemd/user
@@ -331,6 +334,3 @@ tcp://:13031
 
 systemctl --user restart syncthing.service
 systemctl --user status syncthing.service
-
-sudo systemctl restart firewalld
-sudo systemctl status firewalld
