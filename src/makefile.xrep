@@ -70,7 +70,7 @@ CPPFLAGS = -fPIC -fno-gnu-unique -ftemplate-depth-30 -felide-constructors -O3 -M
 # Notes: For file specific options use "file_opts_XXX.o = <opts>" (where XXX.cpp is the source file name)
 # and for target specific options use "target_opts_XXX.so = <opts>" (where XXX.so is the name of the target).
 
-BIND_NORMAL = @echo Binding $@...;$(BIND) -r $@ 2>/dev/null
+BIND_NORMAL = @echo Binding $@...;$(BIND) -c -r $@
 
 LINK_NORMAL = @echo Linking $@...;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -export-dynamic -o $@
 LINK_NORMAL_DYN_USER = @echo Linking $@...;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -o $@

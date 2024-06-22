@@ -2,24 +2,47 @@ Linux Lubuntu Specific Instructions
 ===================================
 
 https://cdimage.ubuntu.com/lubuntu/releases/24.04/release/
-(download the .ISO image to use with VirtualBox as the boot install CD/DVD)
+(download the ISO image to use as the VM's install CD/DVD)
+
+Creating VirtualBox Machine
+---------------------------
 
 Create a New machine in VirtualBox with 4096 MB of memory and create a virtual disk
-that is at least 510 GB in size. After create from General set the Shared Clipboard
-to bidirectional and in System remove Floppy from the Boot Order.
+that is at least 510 GB in size. After create click on the Settings button and from
+General set the Shared Clipboard to bidirectional and then in System uncheck Floppy
+so it is removed from the Boot Order. Next in Storage -> Devices -> Controller: IDE
+add the downloaded ".iso" file and finally just below in Controller: SATA check the
+"Use Host I/O Cache" option (this will make a huge difference in DB performance).
 
-NOTE: Select Settings -> Storage -> SATA Controller to set "Use Host I/O Cache" on.
-(is off by default and will make an enormous difference to DB File I/O performance)
+Port Forwarding to access the VM from its Host
+----------------------------------------------
+(Network -> Advanced -> Port Forwarding)
+CIYAM    TCP   127.0.0.1   12021    10.0.2.15   12021
+HTTP     TCP   127.0.0.1   8888     10.0.2.15   80
+SSH      TCP   127.0.0.1   2222     10.0.2.15   22
+SYNC     TCP   127.0.0.1   13031    10.0.2.15   13031
 
-From the Customize menu select a Normal Installation (in order to approx. UTC select
-the "Atlantic/Reykjavik" timezone along with the Locale setting as "en_SG.UTF-8").
+Starting OS Installation
+------------------------
 
-Create the user "admin" when installing (for demo purposes password to be "linux").
+After clicking Start next click Cancel when prompted for an installation CD/DVD (it
+will use the ".iso" file that had been already selected above) and either just wait
+or hit Enter at the console prompt then click on the Install Lubuntu button.
 
-Install Guest Additions (if bidirectional clipboard is not working)
--------------------------------------------------------------------
+The language selection should next be performed and then the Region and Locale need
+to be chosen (if wanting to approximate "UTC" then select "Atlantic/Reykjavik" then
+depending upon date and number formatting one of "en_SG.UTF-8" or "en_US.UTF-8").
 
-sudo apt install virtualbox-guest-x11
+Create the user "admin" when installing (with an initial password as just "linux").
+
+After the Restart select System Tools -> QTerminal to perform all remaining steps.
+
+Install Guest Additions
+-----------------------
+NOTE: Unfortunately this first "apt install" needs to be manually typed in order to
+provide the bidirectional clipboard (which should function after rebooting the VM).
+
+sudo apt install virtualbox-guest-x11 -y
 
 sudo reboot
 
@@ -51,49 +74,83 @@ To prevent unattended upgrades and stop annoying notifications
 
 sudo systemctl disable --now unattended-upgrades
 
+Preferences -> LXQt Settings -> Desktop Notifications
+ (check Do Not Disturb)
+
 Preferences -> LXQt Settings -> Session Settings : Auto Start
  (unselect the "Lubuntu Update Autostart" option)
  (and "Geoclue Demo agent" if this is not wanted)
 
-Preferences -> LXQt Settings -> Desktop Notifications
- (check Do Not Disturb)
-
 Install all required packages for CIYAM Software Manufacturing
 --------------------------------------------------------------
 
-sudo apt-get install make
-sudo apt-get install build-essential
+sudo apt-get install make -y
+sudo apt-get install build-essential -y
 
-sudo apt install git
-sudo apt install procmail
-(only needed for "lockfile" and when prompted select No Configuration)
+sudo apt install git -y
 
-sudo apt install libpng-dev
-sudo apt install libhpdf-dev
+sudo apt install procmail -y
+(only needed for "lockfile" and when prompted select "No configuration")
 
-sudo apt install apache2 libapache2-mod-fcgid
-sudo apt install mariadb-server libmariadb-dev
+sudo apt install libpng-dev -y
+sudo apt install libhpdf-dev -y
 
-sudo apt-get install libreadline-dev
-sudo apt-get install libmysqlclient-dev
+sudo apt install apache2 libapache2-mod-fcgid -y
+sudo apt install mariadb-server libmariadb-dev -y
+
+sudo apt-get install libreadline-dev -y
+sudo apt-get install libmysqlclient-dev -y
 
 Next install and start/restart required services
 ------------------------------------------------
 
-sudo apt install openssh-server
+sudo apt install openssh-server -y
 
-sudo systemctl enable sshd
+sudo systemctl enable ssh
 sudo systemctl enable mysql
 sudo systemctl enable apache2
 
-https://ciyam.org/docs/fcgi_configuration.html
+Apache2 configuration for FCGI support
+--------------------------------------
 
-sudo systemctl restart mysql
+sudo vi /etc/apache2/apache2.conf
+[/etc/apache2/apache2.conf]
+...
+<Directory /var/www/>
+   Options Indexes FollowSymLinks
+*** change the above line and add the second line ***
+   Options ExecCGI FollowSymLinks
+   AddHandler fcgid-script .fcgi
+...
+   AllowOverride None
+*** change the above line to become the following ***
+   AllowOverride All
+...
+</Directory>
+
+*** add all of the following lines here ***
+<IfModule fcgid_module>
+   MaxProcessCount               10
+   MaxRequestLen                 10485760
+   IdleTimeOut                   3600
+   IPCConnectTimeout             20
+   IPCCommTimeout                300
+   DefaultMaxClassProcessCount   1
+   DefaultMinClassProcessCount   1
+</IfModule>
+...
+[/etc/apache2/apache2.conf]
+
+sudo systemctl start mysql
 sudo systemctl restart apache2
 
 sudo vi /etc/ssh/sshd_config
-(uncomment out the following line)
+[/etc/ssh/sshd_config]
+...
+*** uncomment out the following line ***
 PasswordAuthentication yes
+...
+[/etc/ssh/sshd_config]
 
 sudo systemctl start ssh
 
@@ -102,9 +159,7 @@ sudo systemctl enable ufw
 sudo ufw allow ssh
 sudo ufw allow http
 sudo ufw allow 12021
-
 sudo ufw allow 13031
-(if using syncthing)
 
 git clone https://github.com/ciyam/fcgi.git
 
@@ -165,6 +220,7 @@ sudo vi /etc/fstab
 sudo mkdir backup
 sudo mount backup.img backup
 (ignore hint about modified fstab)
+
 sudo chown -R admin:www-data backup
 
 sudo umount backup
@@ -181,6 +237,7 @@ sudo vi /etc/fstab
 sudo mkdir opened
 sudo mount opened.img opened
 (ignore hint about modified fstab)
+
 sudo chown -R admin:users opened
 sudo chmod g+rx /home/admin/opened
 
@@ -198,6 +255,7 @@ sudo vi /etc/fstab
 sudo mkdir shared
 sudo mount shared.img shared
 (ignore hint about modified fstab)
+
 sudo chown -R admin:www-data shared
 
 sudo umount shared
@@ -213,27 +271,48 @@ sudo cp ciyam/shared_readme.md /home/admin/shared/README.md
 
 cd ciyam/src
 
-Next follow these instructions up to running the "./erase_identity" script:
+To compile all targets and run all basic regression tests:
 
-***** https://github.com/ciyam/ciyam/blob/master/getting_started.txt  *****
+./config
+make all
+./dotests
 
-NOTE: If having issues with 'ciyam_server' tests then can try the following:
-(if using VirtualBox first check SATA Controller "Use Host I/O Cache" is on)
-[ciyam_server.sio]
-...
- <ods_use_sync_write>false
-...
-[ciyam_server.sio]
-NOTE: The above setting means that crashes can result in corrupted ODS DB files.
+To ensure that the Meta application will operate correctly:
+
+./create_db ciyam .
+./init Meta ciyam
+./test -t=../tests Meta_tests.sio
+./drop_db ciyam .
+
+./create_db Meta .
+./init Meta Meta
+
+./install_test_fcgi
+
+From the host OS use a browser with the following URL:
+http://localhost:8888/test_fcgi.html
+
+After clicking on the "Perform Post Request" button the following should be output:
+
+Posted Data: name=Joe+Bloggs&age=&sex=male&submit=Perform+Post+Request...
+
+If you go "back" to the page and then click on the button again you should now see:
+
+Found HTTP_COOKIE: TEST=TEST_COOKIE
+
+Posted Data: name=Joe+Bloggs&age=&sex=male&submit=Perform+Post+Request...
+
+Assuming this has worked next execute the following to install the CIYAM IDE:
+
+./setup Meta meta
+./install_fcgi ciyam_interface meta
+./install_fcgi upload meta
+./install Meta meta index
+
+./save_identity
+./erase_identity
 
 rm ciyam.dat ciyam.hdr ciyam.idx ciyam.log ciyam.sql ciyam.tlg ciyam.modules.lst
-
-NOTE: If having permission issues with 'root'@'localhost' for MySQL try the following:
-
-sudo mysql -u root
-SET PASSWORD FOR 'root'@'localhost' = '';
-exit
-sudo systemctl restart mysql
 
 Installing the CIYAM "systemd" Service
 --------------------------------------
@@ -248,15 +327,16 @@ vi autoscript.sio
 sudo cp ciyamd.service /etc/systemd/system
 
 sudo vi /etc/systemd/system/ciyamd.service
-(ensure that the "Environment" value matches the WEBDIR export value above)
+(ensure that the "Environment" values matches the exported values above)
 
 Make necessary changes (for VMs) to the "ciyam_server.sio" configuration file:
+vi ciyam_server.sio
 [ciyam_server.sio]
+...
+ <default_storage>Home
 ...
  <protocol_handler>sftp://@user@localhost:2222
  <ods_use_sync_write>false
-...
- <default_storage>Home
 ...
 [ciyam_server.sio]
 
@@ -269,6 +349,7 @@ sudo systemctl status ciyamd
 Adding extra package types to Meta
 ----------------------------------
 
+vi packages.lst
 [packages.lst]
 ...
 Blog
@@ -291,46 +372,30 @@ Adding 'ciyam.test' host (optional)
 sudo vi /etc/hosts
 [/etc/hosts]
 ...
-10.0.2.2    ciyam.test
+10.0.2.2   ciyam.test
 ...
 [/etc/hosts]
-
-Port Forwarding to access the VM from its Host
-----------------------------------------------
-(Network -> Advanced -> Port Forwarding)
-CIYAM    TCP   127.0.0.1   12021    10.0.2.15   12021
-HTTP     TCP   127.0.0.1   8888     10.0.2.15   80
-SSH      TCP   127.0.0.1   2222     10.0.2.15   22
-SYNC     TCP   127.0.0.1   13031    10.0.2.15   13031
 
 Installing Syncthing User Service
 ---------------------------------
 
 sudo apt-get install syncthing
 
-mkdir .config/systemd
-mkdir .config/systemd/user
-cp /usr/lib/systemd/system/syncthing* ~/.config/systemd/user
+sudo systemctl enable syncthing@admin.service
 
-vi ~/.config/systemd/user/syncthing@.service
-[syncthing@.service]
-...
-#User=%i
-...
-WantedBy=default.target
-[syncthing@.service]
+sudo systemctl start syncthing@admin.service
+sudo systemctl status syncthing@admin.service
 
-systemctl --user enable syncthing.service
-systemctl --user start syncthing.service
-systemctl --user status syncthing.service
-
-Start a tunnel in order to access the Web UI in the host OS:
+In the host OS start a tunnel to access the Syncthing UI:
 ssh -L8384:127.0.0.1:8384 -p 2222 admin@localhost
 
-In local browser: localhost:8384
-* Settings/Connections
+Configure the listener from host OS using the following URL:
+http://localhost:8384
+
+Actions -> Settings/Connections
 Sync Protocol Listen Addresses
 tcp://:13031
 
-systemctl --user restart syncthing.service
-systemctl --user status syncthing.service
+systemctl restart syncthing@admin.service
+
+systemctl status syncthing@admin.service
