@@ -192,7 +192,8 @@ sudo usermod -g www-data admin
 newgrp - www-data
 sudo usermod -a -G users admin
 
-(to confirm logout and back in then type "groups" and touch a new file)
+Confirm groups by logging out and back in then and type the following:
+groups
 
 sudo chmod a+rx /home/admin
 
@@ -274,16 +275,19 @@ cd ciyam/src
 To compile all targets and run all basic regression tests:
 
 ./config
+
 make all
+
 ./dotests
 
 To ensure that the Meta application will operate correctly:
 
 ./create_db ciyam .
 ./init Meta ciyam
-./test -t=../tests Meta_tests.sio
-./drop_db ciyam .
 
+./test -t=../tests Meta_tests.sio
+
+./drop_db ciyam .
 ./create_db Meta .
 ./init Meta Meta
 
@@ -311,7 +315,6 @@ Assuming this has worked next execute the following to install the CIYAM IDE:
 
 ./save_identity
 ./erase_identity
-
 rm ciyam.dat ciyam.hdr ciyam.idx ciyam.log ciyam.sql ciyam.tlg ciyam.modules.lst
 
 Installing the CIYAM "systemd" Service
