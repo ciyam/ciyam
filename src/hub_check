@@ -6,7 +6,7 @@
 
 GENERATE_HUB_BLOCK_FILE=.generate_hub_block
 
-if lockfile -r 0 ~hub 2>/dev/null; then
+if lockfile -r 0 "~hub" 2>/dev/null; then
 
  if [ -f "$GENERATE_HUB_BLOCK_FILE" ]; then
   PEER_HUB_HEIGHT=`./system_variable get @blockchain_peer_hub_height`
@@ -23,5 +23,5 @@ if lockfile -r 0 ~hub 2>/dev/null; then
   fi
  fi
 
- rm -f ~hub
+ rm -f "~hub"
 fi

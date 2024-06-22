@@ -23,7 +23,7 @@ SHARED_IMAGE=$CIYAM_USER_PATH/$IMAGE_NAME
 IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 
 # NOTE: Use this to prevent accidentally executing the import twice.
-if lockfile -r 0 ~shared 2>/dev/null; then
+if lockfile -r 0 "~shared" 2>/dev/null; then
 
  SHARED_DETAILS=`./system_variable get @importing_for_identity`.txt
 
@@ -35,7 +35,7 @@ if lockfile -r 0 ~shared 2>/dev/null; then
     date >$SHARED_DETAILS
     echo "NOTE: Shared files area is not currently available (please try again later)." >>$SHARED_DETAILS
     date >>$SHARED_DETAILS
-    rm -f ~shared
+    rm -f "~shared"
     exit
    fi
   fi
@@ -72,5 +72,5 @@ if lockfile -r 0 ~shared 2>/dev/null; then
   echo `date +%s` > $IMPORTED_TIME_FILE
  fi
 
- rm -f ~shared
+ rm -f "~shared"
 fi

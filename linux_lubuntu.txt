@@ -92,6 +92,8 @@ sudo apt install git -y
 sudo apt install procmail -y
 (only needed for "lockfile" and when prompted select "No configuration")
 
+sudo apt install qrencode
+
 sudo apt install libpng-dev -y
 sudo apt install libhpdf-dev -y
 
