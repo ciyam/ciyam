@@ -101,8 +101,10 @@ sudo apt install mariadb-server libmariadb-dev -y
 sudo apt-get install libreadline-dev -y
 sudo apt-get install libmysqlclient-dev -y
 
-Next install and start/restart required services
-------------------------------------------------
+Next install and start/restart required services and extras
+-----------------------------------------------------------
+
+sudo apt install xclip
 
 sudo apt install openssh-server -y
 
@@ -313,8 +315,6 @@ Assuming this has worked next execute the following to install the CIYAM IDE:
 ./install_fcgi upload meta
 ./install Meta meta index
 
-./save_identity
-./erase_identity
 rm ciyam.dat ciyam.hdr ciyam.idx ciyam.log ciyam.sql ciyam.tlg ciyam.modules.lst
 
 Installing the CIYAM "systemd" Service
@@ -367,7 +367,10 @@ mv package.info Blog.package.info
 ./unbundle Message.package
 mv package.info Message.package.info
 
-./upgrade_prototype
+./reconstruct_meta okay
+
+./save_identity
+./erase_identity
 
 Adding 'ciyam.test' host (optional)
 -----------------------------------
