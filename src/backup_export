@@ -25,7 +25,7 @@ BACKUP_HEIGHT_FILE=$BACKUP_PATH/$BACKUP_HEIGHT
 IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
 
 # NOTE: Use this to prevent accidentally executing the restore twice.
-if lockfile -r 0 ~backup 2>/dev/null; then
+if lockfile -r 0 "~backup" 2>/dev/null; then
  TARGET_FILE=`./system_variable get @backup_target_file`
 
  # NOTE: If unable to umount will exit (so can call repeatedly until okay).
@@ -40,7 +40,7 @@ if lockfile -r 0 ~backup 2>/dev/null; then
      date >Backup.txt
      echo "NOTE: Backup files area is not currently available (please try again later)." >>Backup.txt
      date >>Backup.txt
-     rm -f ~backup
+     rm -f "~backup"
      exit
     fi
    fi
@@ -94,5 +94,5 @@ if lockfile -r 0 ~backup 2>/dev/null; then
 
  ./system_variable set @restore_in_progress ""
 
- rm -f ~backup
+ rm -f "~backup"
 fi
