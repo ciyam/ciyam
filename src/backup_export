@@ -8,6 +8,9 @@ if [ "$USER" = "" ]; then
  USER=$CIYAM_USER
 fi
 
+if [ "$GROUP" = "" ]; then
+ GROUP=$CIYAM_GROUP
+fi
 USER_PATH=/home/$USER
 IMAGE_NAME=backup.img
 
@@ -54,7 +57,7 @@ if lockfile -r 0 "~backup" 2>/dev/null; then
  echo "Starting restore..." >>Backup.txt
 
  if [ "$TARGET_FILE" = "" ]; then
-  sudo chown $USER:www $BACKUP_IMAGE
+  sudo chown $USER:$GROUP $BACKUP_IMAGE
  fi
 
  export CIYAM_SECONDS=2
@@ -76,7 +79,7 @@ if lockfile -r 0 "~backup" 2>/dev/null; then
  if [ "$TARGET_FILE" = "" ]; then
   sudo chown root:root $BACKUP_IMAGE
   sudo mount $BACKUP_IMAGE $BACKUP_PATH
-  sudo chown -R $USER:www $BACKUP_PATH
+  sudo chown -R $USER:$GROUP $BACKUP_PATH
   sudo chmod -R o-rx $BACKUP_PATH
  fi
 

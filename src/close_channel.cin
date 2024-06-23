@@ -36,7 +36,7 @@ OPENED_FILES=$OUTPUT
 @ifdef $OUTPUT
 ~./kill_current_pid_for_user $OUTPUT
 @endif
-~sudo chown -R $CIYAM_USER:www $OPENED_FILES/$IDENTITY
+~sudo chown -R $CIYAM_USER:$CIYAM_GROUP $OPENED_FILES/$IDENTITY
 @endif
 .storage_channel_documents -close $IDENTITY
 @ifdef $ERROR

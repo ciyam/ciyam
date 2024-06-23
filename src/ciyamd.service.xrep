@@ -6,12 +6,14 @@ After=network.target
 Type=forking
 Restart=always
 RestartSec=10
-User=`{`$uid`}
+User=`{`$user`}
+Group=`{`$group`}
 Environment="MYSQL_EXEC=sudo `{`$mysql`}"
 Environment="WEBDIR=`{`$webdir`}"
-Environment="CIYAM_USER=`{`$uid`}"
+Environment="CIYAM_USER=`{`$user`}"
+Environment="CIYAM_GROUP=`{`$group`}"
 ExecStartPre=
-ExecStart=/home/`{`$uid`}/ciyam/src/ciyam_server -daemon -chdir=/home/`{`$uid`}/ciyam/src
+ExecStart=/home/`{`$user`}/ciyam/src/ciyam_server -daemon -chdir=/home/`{`$user`}/ciyam/src
 ExecStartPost=
 ExecStop=
 ExecReload=
