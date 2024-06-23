@@ -8,6 +8,10 @@ if [ "$USER" = "" ]; then
  USER=$CIYAM_USER
 fi
 
+if [ "$GROUP" = "" ]; then
+ GROUP=$CIYAM_GROUP
+fi
+
 USER_PATH=/home/$USER
 IMAGE_NAME=shared.img
 
@@ -68,7 +72,7 @@ if lockfile -r 0 "~shared" 2>/dev/null; then
  date >$SHARED_DETAILS
  echo "Starting export..." >>$SHARED_DETAILS
 
- sudo chown $USER:www $SHARED_IMAGE
+ sudo chown $USER:$GROUP $SHARED_IMAGE
 
  export CIYAM_SECONDS=2
  export CIYAM_FILE_NAME_ONLY=1
@@ -87,7 +91,7 @@ if lockfile -r 0 "~shared" 2>/dev/null; then
 
  sudo chown root:root $SHARED_IMAGE
  sudo mount $SHARED_IMAGE $SHARED_PATH
- sudo chown -R $USER:www $SHARED_PATH
+ sudo chown -R $USER:$GROUP $SHARED_PATH
  sudo chmod -R o-rx $SHARED_PATH
 
  echo `date +%s` > $IMPORTED_TIME_FILE

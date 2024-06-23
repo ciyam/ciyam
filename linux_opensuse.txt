@@ -128,21 +128,26 @@ cd ..
 Export CIYAM environment variables now and for future sesisons
 --------------------------------------------------------------
 export WEBDIR=/srv/www/htdocs
-echo 'export WEBDIR=/srv/www/htdocs' >> .bashrc
-echo 'export WEBDIR=/srv/www/htdocs' >> .profile
+echo "export WEBDIR=$WEBDIR" >> .bashrc
+echo "export WEBDIR=$WEBDIR" >> .profile
 
 export MYSQL_EXEC="sudo mariadb"
-echo 'export MYSQL_EXEC="sudo mariadb"' >> .bashrc
-echo 'export MYSQL_EXEC="sudo mariadb"' >> .profile
+echo "export MYSQL_EXEC=\"$MYSQL_EXEC\"" >> .bashrc
+echo "export MYSQL_EXEC=\"$MYSQL_EXEC\"" >> .profile
 
 export CIYAM_USER=admin
-echo 'export CIYAM_USER=admin' >> .bashrc
-echo 'export CIYAM_USER=admin' >> .profile
+echo "export CIYAM_USER=$CIYAM_USER" >> .bashrc
+echo "export CIYAM_USER=$CIYAM_USER" >> .profile
+
+export CIYAM_GROUP=www
+echo "export CIYAM_GROUP=$CIYAM_GROUP" >> .bashrc
+echo "export CIYAM_GROUP=$CIYAM_GROUP" >> .profile
 
 Change default group to "www" then add the "users" group
 --------------------------------------------------------
 sudo usermod -g www admin
 newgrp - www
+
 sudo usermod -a -G users admin
 
 (to confirm logout and back in then type "groups" and touch a new file)
