@@ -39,7 +39,7 @@ OPENING_USER=$OUTPUT
 @ifdef $CIYAM_USER
 ~sudo chmod -R o-rx $OPENED_FILES/$IDENTITY
 @ifdef $OPENING_USER
-~sudo chown -R $OPENING_USER:users $OPENED_FILES/$IDENTITY
+~sudo chown -R $OPENING_USER:ciyam $OPENED_FILES/$IDENTITY
 @endif
 @endif
 .system_variable @opened_$IDENTITY 1

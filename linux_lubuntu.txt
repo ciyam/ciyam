@@ -190,12 +190,13 @@ echo "export CIYAM_GROUP=$CIYAM_GROUP" >> .bashrc
 export CIYAM_MYSQL="sudo mariadb"
 echo "export CIYAM_MYSQL=\"$CIYAM_MYSQL\"" >> .bashrc
 
-Change default group to "www-data" then add the "users" group
--------------------------------------------------------------
+Change default group to "www-data" and add the "ciyam" group
+------------------------------------------------------------
 sudo usermod -g www-data admin
 newgrp - www-data
 
-sudo usermod -a -G users admin
+sudo groupadd ciyam
+sudo usermod -a -G ciyam admin
 
 Confirm groups by logging out and back in then and type the following:
 groups
@@ -244,7 +245,7 @@ sudo mkdir opened
 sudo mount opened.img opened
 (ignore hint about modified fstab)
 
-sudo chown -R admin:users opened
+sudo chown -R admin:ciyam opened
 sudo chmod g+rx /home/admin/opened
 
 sudo umount opened
@@ -281,7 +282,9 @@ To compile all targets and run all basic regression tests:
 
 ./config
 
-sudo ./xrep @sshd_config_app.xrep user=$USER >> /etc/ssh/sshd_config
+./xrep @sshd_config_app.xrep user=$USER
+(append output of this to the following)
+sudo vi /etc/ssh/sshd_config
 
 ./xrep @ciyam_sftp.sh.xrep user=$USER > /home/$USER/ciyam_sftp.sh
 chmod a+x /home/$USER/ciyam_sftp.sh
