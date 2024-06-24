@@ -17,7 +17,7 @@ else
    echo -n "temporary_password_file_for_admin_only_access" >password.info
   fi
 
-  sudo useradd -g users -m $user_id
+  sudo useradd -g ciyam -m $user_id
 
   echo $user_id >> /home/admin/ciyam_users
 
@@ -28,6 +28,6 @@ else
   fi
 
   sudo ln -s /home/admin/opened /home/$user_id/opened
-  sudo chown -h $user_id:users /home/$user_id/opened
+  sudo chown -h $user_id:ciyam /home/$user_id/opened
  fi
 fi
