@@ -1,0 +1,2 @@
+Match Group users
+	ForceCommand /home/`{`$user`}/ciyam_sftp.sh

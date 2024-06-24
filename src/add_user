@@ -19,16 +19,6 @@ else
 
   sudo useradd -g users -m $user_id
 
-  tmp_file=$(mktemp --suffix ".tmp")
-
-  echo "echo \$PID > /home/$user_id/current_pid" > $tmp_file
-  echo "echo $user_id >> /home/admin/ciyam_logins" >> $tmp_file
-
-  sudo sh -c "cat add_user_pid >> /home/$user_id/.bashrc"
-  sudo sh -c "cat $tmp_file >> /home/$user_id/.bashrc"
-
-  rm $tmp_file
-
   echo $user_id >> /home/admin/ciyam_users
 
   if [ ! "$password" = "" ]; then

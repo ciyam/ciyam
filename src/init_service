@@ -8,7 +8,10 @@ if [ "$WEBDIR" = "" ]; then
  echo "Error: Missing environment variable 'WEBDIR'."
 else
  MYSQL=
- GROUP=`id -gn`
+
+ if [ "$GROUP" = "" ]; then
+  GROUP=`id -gn`
+ fi
 
  if [ -f /usr/bin/mysql ]; then
   MYSQL=mysql

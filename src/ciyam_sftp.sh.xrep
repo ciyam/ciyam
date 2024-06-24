@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ ! "$USER" = "`{`$user`}" ]; then
+ echo $$ > /home/$USER/current_pid
+ echo $USER >> /home/`{`$user`}/ciyam_logins
+fi
+
+sh -c $SSH_ORIGINAL_COMMAND
+
