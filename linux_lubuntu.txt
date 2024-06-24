@@ -180,19 +180,15 @@ Export CIYAM environment variables now and for future sesisons
 --------------------------------------------------------------
 export WEBDIR=/var/www/html
 echo "export WEBDIR=$WEBDIR" >> .bashrc
-echo "export WEBDIR=$WEBDIR" >> .profile
-
-export MYSQL_EXEC="sudo mariadb"
-echo "export MYSQL_EXEC=\"$MYSQL_EXEC\"" >> .bashrc
-echo "export MYSQL_EXEC=\"$MYSQL_EXEC\"" >> .profile
 
 export CIYAM_USER=admin
 echo "export CIYAM_USER=$CIYAM_USER" >> .bashrc
-echo "export CIYAM_USER=$CIYAM_USER" >> .profile
 
 export CIYAM_GROUP=www-data
 echo "export CIYAM_GROUP=$CIYAM_GROUP" >> .bashrc
-echo "export CIYAM_GROUP=$CIYAM_GROUP" >> .profile
+
+export CIYAM_MYSQL="sudo mariadb"
+echo "export CIYAM_MYSQL=\"$CIYAM_MYSQL\"" >> .bashrc
 
 Change default group to "www-data" then add the "users" group
 -------------------------------------------------------------
@@ -284,6 +280,11 @@ cd ciyam/src
 To compile all targets and run all basic regression tests:
 
 ./config
+
+sudo ./xrep @sshd_config_app.xrep user=$USER >> /etc/ssh/sshd_config
+
+./xrep @ciyam_sftp.sh.xrep user=$USER > /home/$USER/ciyam_sftp.sh
+chmod a+x /home/$USER/ciyam_sftp.sh
 
 make all
 

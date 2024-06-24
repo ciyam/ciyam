@@ -8,10 +8,10 @@ Restart=always
 RestartSec=10
 User=`{`$user`}
 Group=`{`$group`}
-Environment="MYSQL_EXEC=sudo `{`$mysql`}"
 Environment="WEBDIR=`{`$webdir`}"
 Environment="CIYAM_USER=`{`$user`}"
 Environment="CIYAM_GROUP=`{`$group`}"
+Environment="CIYAM_MYSQL=sudo `{`$mysql`}"
 ExecStartPre=
 ExecStart=/home/`{`$user`}/ciyam/src/ciyam_server -daemon -chdir=/home/`{`$user`}/ciyam/src
 ExecStartPost=

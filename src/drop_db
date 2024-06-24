@@ -13,18 +13,18 @@ else
  echo DROP DATABASE IF EXISTS $1\;>>$tmp_file
  echo quit>>$tmp_file
 
- if [ "$MYSQL_EXEC" = "" ]; then
-  MYSQL_EXEC=mysql
+ if [ "$CIYAM_MYSQL" = "" ]; then
+  CIYAM_MYSQL=mysql
 
   if [ -f /usr/bin/mariadb ]; then
-   MYSQL_EXEC=mariadb
+   CIYAM_MYSQL=mariadb
   fi
  fi
 
  if [ "$2" = "." ]; then
-  $MYSQL_EXEC -uroot<$tmp_file
+  $CIYAM_MYSQL -uroot<$tmp_file
  else
-  $MYSQL_EXEC -uroot -p$2<$tmp_file
+  $CIYAM_MYSQL -uroot -p$2<$tmp_file
  fi
 
  rm $tmp_file

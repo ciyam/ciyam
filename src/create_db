@@ -17,11 +17,11 @@ else
   password=$2
  fi
 
- if [ "$MYSQL_EXEC" = "" ]; then
-  MYSQL_EXEC=mysql
+ if [ "$CIYAM_MYSQL" = "" ]; then
+  CIYAM_MYSQL=mysql
 
   if [ -f /usr/bin/mariadb ]; then
-   MYSQL_EXEC=mariadb
+   CIYAM_MYSQL=mariadb
   fi
  fi
 
@@ -46,9 +46,9 @@ else
  echo quit>>$tmp_file
 
  if [ "$password" = "." ]; then
-  $MYSQL_EXEC -uroot<$tmp_file
+  $CIYAM_MYSQL -uroot<$tmp_file
  else
-  $MYSQL_EXEC -uroot -p$password<$tmp_file
+  $CIYAM_MYSQL -uroot -p$password<$tmp_file
  fi
 
  rm $tmp_file
