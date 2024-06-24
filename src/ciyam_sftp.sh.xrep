@@ -5,5 +5,13 @@ if [ ! "$USER" = "`{`$user`}" ]; then
  echo $USER >> /home/`{`$user`}/ciyam_logins
 fi
 
-sh -c $SSH_ORIGINAL_COMMAND
-
+if [ "$SSH_ORIGINAL_COMMAND" = "" ]; then
+ if [ "$USER" = "`{`$user`}" ]; then
+  echo ""
+  echo "Welcome to CIYAM administration."
+  echo ""
+  exec /bin/bash -il
+ fi
+else
+ exec /bin/bash -c "$SSH_ORIGINAL_COMMAND"
+fi
