@@ -23,6 +23,9 @@
 #  include <iostream>
 #  include <algorithm>
 #  include <stdexcept>
+#  ifdef __GNUG__
+#     include <unistd.h>
+#  endif
 #endif
 
 #define CIYAM_BASE_IMPL
@@ -1417,6 +1420,8 @@ bool g_script_reconfig = false;
 
 bool g_ods_use_encrypted = true;
 bool g_ods_use_sync_write = true;
+
+set< string > g_checked_script_lock_files;
 
 set< string > g_accepted_ip_addrs;
 set< string > g_rejected_ip_addrs;
@@ -4320,8 +4325,13 @@ void restore_saved_and_keep_as_older( const string& file_name )
 
 struct script_info
 {
+   script_info( ) : check_lock_only( false ) { }
+
    string filename;
    string arguments;
+
+   string lock_filename;
+   bool check_lock_only;
 };
 
 time_t g_scripts_mod;
@@ -4365,6 +4375,27 @@ void read_script_info( )
             string name = reader.read_attribute( c_attribute_name );
 
             info.filename = reader.read_attribute( c_attribute_filename );
+
+            if( !info.filename.empty( ) )
+            {
+               string::size_type pos = info.filename.find( ':' );
+
+               if( pos != string::npos )
+               {
+                  info.lock_filename = info.filename.substr( pos + 1 );
+                  info.filename.erase( pos );
+
+                  if( !info.lock_filename.empty( ) )
+                  {
+                     if( info.lock_filename[ 0 ] == '?' )
+                     {
+                        info.check_lock_only = true;
+                        info.lock_filename.erase( 0, 1 );
+                     }
+                  }
+               }
+            }
+
             info.arguments = reader.read_opt_attribute( c_attribute_arguments );
 
             g_scripts.insert( make_pair( name, info ) );
@@ -4405,6 +4436,11 @@ void output_script_info( const string& pat, ostream& os )
 
       if( !args.empty( ) )
          os << ' ' << args;
+
+      string lock_filename( i->second.lock_filename );
+
+      if( !lock_filename.empty( ) && file_exists( lock_filename ) )
+         os << " [ *** busy *** ]";
 
       os << '\n';
    }
@@ -5223,7 +5259,7 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
    // NOTE: Forces special variables to be populated then verify that final name is "dummy" as would be expected.
    if( get_special_var_name( e_special_var_NOTE_THIS_MUST_ALWAYS_BE_THE_LAST_ENUM_FOR_VERIFICATION ) != c_dummy )
-      throw runtime_error( "unexpected special variables have not been correctly populated" );
+      throw runtime_error( "unexpected special variable names have not been correctly populated" );
 
    try
    {
@@ -6589,117 +6625,144 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
    string filename( g_scripts[ script_name ].filename );
    bool is_script = ( filename == c_script_dummy_filename );
 
-   string arguments( process_script_args( g_scripts[ script_name ].arguments ) );
+   bool is_busy = false;
 
-   auto_ptr< restorable< bool > > ap_running_script;
+   string lock_filename( g_scripts[ script_name ].lock_filename );
 
-   if( gtp_session )
+   if( !lock_filename.empty( ) && !can_create_script_lock_file( lock_filename ) )
+      is_busy = true;
+
+   if( !is_busy )
    {
-      gtp_session->async_or_delayed_temp_file.erase( );
-      ap_running_script.reset( new restorable< bool >( gtp_session->running_script, true ) );
-   }
+      bool locked_script = false;
 
-   if( is_script )
-   {
-      string args_file( "~" + uuid( ).as_string( ) );
+      if( !lock_filename.empty( ) && !g_scripts[ script_name ].check_lock_only )
+         locked_script = true;
 
-      // NOTE: Empty code block for scope purposes.
-      {
-         ofstream outf( args_file.c_str( ) );
-         if( !outf )
-            throw runtime_error( "unable to open '" + args_file + "' for output" );
+      string arguments( process_script_args( g_scripts[ script_name ].arguments ) );
 
-         string rpc_password( get_rpc_password( ) );
-         if( !rpc_password.empty( ) )
-            outf << ".session_rpc_unlock " << rpc_password << endl;
-
-         outf << "<<" << arguments << endl;
-
-         outf.flush( );
-         if( !outf.good( ) )
-            throw runtime_error( "*** unexpected bad file '" + args_file + "' in run_script ***" );
-      }
+      auto_ptr< restorable< bool > > ap_running_script;
 
       if( gtp_session )
       {
-         gtp_session->async_or_delayed_temp_file = args_file;
-
-         string check_script_error(
-          get_raw_session_variable( get_special_var_name( e_special_var_check_script_error ) ) );
-
-         // NOTE: If the script is intended to be synchronous and the "no_logging" argument is true
-         // then the first error to occur in an external script (or scripts if the "delay" argument
-         // has being used) will be thrown as an exception after the calling session's "system" (in 
-         // the case of delayed scripts that will occur at the end of transaction commit). Thus set
-         // special variables for that here. As "ciyam_client" will set a session variable for each
-         // script to the "script args" unique file name (via the "-args_file" command-line option)
-         // a system variable with this same name is being set here (to the value "1"). If an error
-         // occurs in a command being executed by the script and system variable with the same name
-         // as the "args_file" session variable (and whose value is still "1") (i.e. in the case of
-         // multiple delayed scripts will only record the first such error) then this value will be
-         // changed to that of the error message.
-         if( !async && no_logging
-          && check_script_error != "0" && check_script_error != c_false )
-         {
-            set_system_variable( args_file, c_true_value );
-            set_session_variable( get_special_var_name( e_special_var_check_script_error ), c_true_value );
-         }
+         gtp_session->async_or_delayed_temp_file.erase( );
+         ap_running_script.reset( new restorable< bool >( gtp_session->running_script, true ) );
       }
 
-      string script_args( args_file );
+      string cmd_and_args;
 
-      // NOTE: If the "no_logging" argument is set true then make sure that "script" execution
-      // won't be logged (even in the case of an error). For synchronous scripts an error will
-      // be handled (per the special variables set above) as though it had happened within the
-      // caller's session but if the script is intended to be asynchronously executed (even if
-      // it ends up being finally called synchronously) this will result in no record (without
-      // using specific tracing flags) of the script's execution or errors (so it would not be
-      // generally advisable to use it in this manner).
-      if( no_logging )
-         script_args = "-do_not_log " + script_args;
+      if( is_script )
+      {
+         string args_file( "~" + uuid( ).as_string( ) );
+
+         // NOTE: Empty code block for scope purposes.
+         {
+            ofstream outf( args_file.c_str( ) );
+            if( !outf )
+               throw runtime_error( "unable to open '" + args_file + "' for output" );
+
+            string rpc_password( get_rpc_password( ) );
+
+            if( !rpc_password.empty( ) )
+               outf << ".session_rpc_unlock " << rpc_password << endl;
+
+            outf << "<<" << arguments << endl;
+
+            outf.flush( );
+
+            if( !outf.good( ) )
+               throw runtime_error( "*** unexpected bad file '" + args_file + "' in run_script ***" );
+         }
+
+         if( gtp_session )
+         {
+            gtp_session->async_or_delayed_temp_file = args_file;
+
+            string check_script_error(
+             get_raw_session_variable( get_special_var_name( e_special_var_check_script_error ) ) );
+
+            // NOTE: If the script is intended to be synchronous and the "no_logging" argument is true
+            // then the first error to occur in an external script (or scripts if the "delay" argument
+            // has being used) will be thrown as an exception after the calling session's "system" (in
+            // the case of delayed scripts that will occur at the end of transaction commit). Thus set
+            // special variables for that here. As "ciyam_client" will set a session variable for each
+            // script to the "script args" unique file name (via the "-args_file" command-line option)
+            // a system variable with this same name is being set here (to the value "1"). If an error
+            // occurs in a command being executed by the script and system variable with the same name
+            // as the "args_file" session variable (and whose value is still "1") (i.e. in the case of
+            // multiple delayed scripts will only record the first such error) then this value will be
+            // changed to that of the error message.
+            if( !async && no_logging
+             && check_script_error != "0" && check_script_error != c_false )
+            {
+               set_system_variable( args_file, c_true_value );
+               set_session_variable( get_special_var_name( e_special_var_check_script_error ), c_true_value );
+            }
+         }
+
+         string script_args( args_file );
+
+         // NOTE: If the "no_logging" argument is set true then make sure that "script" execution
+         // won't be logged (even in the case of an error). For synchronous scripts an error will
+         // be handled (per the special variables set above) as though it had happened within the
+         // caller's session but if the script is intended to be asynchronously executed (even if
+         // it ends up being finally called synchronously) this will result in no record (without
+         // using specific tracing flags) of the script's execution or errors (so it would not be
+         // generally advisable to use it in this manner).
+         if( no_logging )
+            script_args = "-do_not_log " + script_args;
+         else
+         {
+            string errors_only( get_raw_session_variable( get_special_var_name( e_special_var_errors_only ) ) );
+
+            if( errors_only == c_true || errors_only == c_true_value )
+               script_args = "-log_on_error " + script_args;
+         }
+
+         // NOTE: If making any change to "script_args" then it likely will also need
+         // to be done in "auto_script.cpp" (as it also executes the 'script' script).
+         script_args += " \"" + get_files_area_dir( ) + "\"";
+
+         // NOTE: For cases where one script may end up calling numerous others (i.e.
+         // such as a scan across records) this special session variable is available
+         // to prevent excess log entries appearing in the script log file.
+         string quiet( get_raw_session_variable( get_special_var_name( e_special_var_quiet ) ) );
+
+         if( ( quiet != c_true ) && ( quiet != c_true_value ) )
+            script_args += " " + script_name;
+
+         cmd_and_args = "./script " + script_args;
+      }
       else
       {
-         string errors_only( get_raw_session_variable( get_special_var_name( e_special_var_errors_only ) ) );
+         cmd_and_args = filename;
 
-         if( errors_only == c_true || errors_only == c_true_value )
-            script_args = "-log_on_error " + script_args;
+         if( cmd_and_args.find( '/' ) == string::npos )
+            cmd_and_args = "./" + cmd_and_args;
+
+         if( !arguments.empty( ) )
+            cmd_and_args += " " + arguments;
       }
 
-      // NOTE: If making any change to "script_args" then it likely will also need
-      // to be done in "auto_script.cpp" (as it also executes the 'script' script).
-      script_args += " \"" + get_files_area_dir( ) + "\"";
+      if( locked_script )
+      {
+         is_busy = !create_script_lock_file( lock_filename );
 
-      // NOTE: For cases where one script may end up calling numerous others (i.e.
-      // such as a scan across records) this special session variable is available
-      // to prevent excess log entries appearing in the script log file.
-      string quiet( get_raw_session_variable( get_special_var_name( e_special_var_quiet ) ) );
+         if( !is_busy )
+            cmd_and_args = "./locked.sh \"" + lock_filename + "\" " + cmd_and_args;
+      }
 
-      if( quiet != c_true && quiet != c_true_value )
-         script_args += " " + script_name;
+      if( !is_busy )
+      {
+         rc = exec_system( cmd_and_args, async, delay );
 
-#ifdef _WIN32
-      rc = exec_system( "script " + script_args, async, delay );
-#else
-      rc = exec_system( "./script " + script_args, async, delay );
-#endif
-   }
-   else
-   {
-      string cmd_and_args( filename );
-
-#ifndef _WIN32
-      if( cmd_and_args.find( '/' ) == string::npos )
-         cmd_and_args = "./" + cmd_and_args;
-#endif
-
-      if( !arguments.empty( ) )
-         cmd_and_args += " " + arguments;
-
-      rc = exec_system( cmd_and_args, async, delay );
+         if( sleep_after )
+            msleep( c_sleep_after_script_time );
+      }
    }
 
-   if( sleep_after )
-      msleep( c_sleep_after_script_time );
+   if( is_busy )
+      throw runtime_error( "script '" + script_name + "' appears to be busy" );
 
    return rc;
 }
@@ -6884,6 +6947,63 @@ void generate_new_script_sio( bool for_autoscript )
       for( size_t i = 0; i < new_lines.size( ); i++ )
          outf << new_lines[ i ] << '\n';
    }
+}
+
+bool create_script_lock_file( const string& name )
+{
+   guard g( g_mutex );
+
+   bool okay = can_create_script_lock_file( name );
+
+   if( okay )
+   {
+      file_touch( name, 0, true, true );
+
+      okay = file_exists( name );
+   }
+
+   return okay;
+}
+
+bool can_create_script_lock_file( const string& name )
+{
+   guard g( g_mutex );
+
+   bool okay = !file_exists( name );
+
+   if( !okay )
+   {
+      string pid( buffer_file( name ) );
+
+      // NOTE: If the file is empty (rather than containing a PID)
+      // then provided that this function has not been invoked for
+      // this name will delete the file (assuming it was left over
+      // from an unexpected application server termination).
+      if( pid.empty( ) )
+         okay = !g_checked_script_lock_files.count( name );
+      else
+      {
+         if( getpgid( atoi( pid.c_str( ) ) ) < 0 )
+            okay = true;
+      }
+
+      if( okay )
+      {
+         file_remove( name );
+
+         if( file_exists( name ) )
+         {
+            okay = false;
+
+            if( !g_checked_script_lock_files.count( name ) )
+               TRACE_LOG( TRACE_ANYTHING, "(unexpected lock file '" + name + "' could not be removed)" );
+         }
+      }
+   }
+
+   g_checked_script_lock_files.insert( name );
+
+   return okay;
 }
 
 void generate_new_script_sio_files( )

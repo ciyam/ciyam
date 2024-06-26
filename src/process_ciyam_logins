@@ -13,8 +13,8 @@ elif [ -s /home/admin/ciyam_logins ]; then
  touch /home/admin/ciyam_logins
  chmod a+w /home/admin/ciyam_logins
 
- # NOTE: Wait just in case the file was still being appended to when it was moved.
- sleep 0.5
+ # NOTE: Ensure that a login isn't missed due to file buffering.
+ sync /home/admin/ciyam_logins.new
 
  cat /home/admin/ciyam_logins.new | uniq | while read next; do ./set_random_password "$next"; done
  rm /home/admin/ciyam_logins.new

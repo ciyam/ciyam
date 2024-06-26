@@ -38,18 +38,20 @@ else
  fi
 
  if [ ! -f ciyam_server.sid ]; then
-  ./xrep @ciyam_server.sid.sh.xrep >~config.sh
+  ./xrep @ciyam_server.sid.sh.xrep >"~config.sh"
   chmod a+x ~config.sh
-  ./~config.sh
-  rm ~config.sh
+  "./~config.sh"
+  rm "~config.sh"
 
   chmod o-r password.info
   chmod g-r password.info
  fi
 
- if [ ! -f ciyamd ]; then
-  ./xrep @ciyamd.xrep uid=$USER >ciyamd
- fi
+# NOTE: Obsolete non-systemd service (if
+# needed again would need to be updated).
+# if [ ! -f ciyamd ]; then
+#  ./xrep @ciyamd.xrep uid=$USER >ciyamd
+# fi
 
  if [ ! -f ciyamd.service ]; then
   ./init_service

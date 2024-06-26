@@ -10,9 +10,8 @@ Creating VirtualBox Machine
 Create a New machine in VirtualBox with 4096 MB of memory and create a virtual disk
 that is at least 510 GB in size. After create click on the Settings button and from
 General set the Shared Clipboard to bidirectional and then in System uncheck Floppy
-so it is removed from the Boot Order. Next in Storage -> Devices -> Controller: IDE
-add the downloaded ".iso" file and finally just below in Controller: SATA check the
-"Use Host I/O Cache" option (this will make a huge difference in DB performance).
+so it is not part of the Boot Order. Next in Storage -> Devices -> Controller: SATA
+check the "Use Host I/O Cache" option (for a huge difference to DB performance).
 
 Port Forwarding to access the VM from its Host
 ----------------------------------------------
@@ -25,9 +24,9 @@ SYNC     TCP   127.0.0.1   13031    10.0.2.15   13031
 Starting OS Installation
 ------------------------
 
-After clicking Start next click Cancel when prompted for an installation CD/DVD (it
-will use the ".iso" file that had been already selected above) and either just wait
-or hit Enter at the console prompt then click on the Install Lubuntu button.
+Click the green arrow Start in VirutalBox and after selecting the downloaded ".iso"
+click on the Start button then wait (or hit Enter) and finally click on the Install
+Lubuntu button.
 
 The language selection should next be performed and then the Region and Locale need
 to be chosen (if wanting to approximate "UTC" then select "Atlantic/Reykjavik" then
@@ -84,24 +83,19 @@ Preferences -> LXQt Settings -> Session Settings : Auto Start
 Install all required packages for CIYAM Software Manufacturing
 --------------------------------------------------------------
 
-sudo apt-get install make -y
-sudo apt-get install build-essential -y
-
 sudo apt install git -y
 
-sudo apt install procmail -y
-(only needed for "lockfile" and when prompted select "No configuration")
-
-sudo apt install qrencode
-
+sudo apt install qrencode -y
 sudo apt install libpng-dev -y
 sudo apt install libhpdf-dev -y
 
-sudo apt install apache2 libapache2-mod-fcgid -y
-sudo apt install mariadb-server libmariadb-dev -y
-
+sudo apt-get install make -y
+sudo apt-get install build-essential -y
 sudo apt-get install libreadline-dev -y
 sudo apt-get install libmysqlclient-dev -y
+
+sudo apt install apache2 libapache2-mod-fcgid -y
+sudo apt install mariadb-server libmariadb-dev -y
 
 Next install and start/restart required services and extras
 -----------------------------------------------------------
@@ -288,6 +282,8 @@ sudo vi /etc/ssh/sshd_config
 
 ./xrep @ciyam_sftp.sh.xrep user=$USER > /home/$USER/ciyam_sftp.sh
 chmod a+x /home/$USER/ciyam_sftp.sh
+
+sudo systemctl restart ssh
 
 make all
 

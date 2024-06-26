@@ -4,6 +4,22 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 <sio/>
  <script/>
+  <name>test1
+  <filename>test1.sh:~test.sh
+ </script>
+ <script/>
+  <name>test2
+  <filename>test2.sh:~test.sh
+ </script>
+ <script/>
+  <name>test3
+  <filename>test3.sh:?~test.sh
+ </script>
+ <script/>
+  <name>test4
+  <filename>test4.sh
+ </script>
+ <script/>
   <name>init_ciyam
   <filename>*script*
   <arguments>init_ciyam.cin
@@ -55,11 +71,11 @@
  </script>
  <script/>
   <name>backup_export
-  <filename>backup_export
+  <filename>backup_export:~backup
  </script>
  <script/>
   <name>backup_import
-  <filename>backup_import
+  <filename>backup_import:~backup
  </script>
  <script/>
   <name>bc_next_extra
@@ -78,11 +94,11 @@
  </script>
  <script/>
   <name>shared_export
-  <filename>shared_export
+  <filename>shared_export:~shared
  </script>
  <script/>
   <name>shared_import
-  <filename>shared_import
+  <filename>shared_import:~shared
  </script>
  <script/>
   <name>fetch_channels

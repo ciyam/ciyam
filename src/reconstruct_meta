@@ -15,7 +15,7 @@ else
   if [ -f packages.lst ]; then
    ./construct @packages.lst ciyam_class.cpp.xrep
   fi
-  ./destroy_apps_and_models $1 ~reconstruct_meta
+  ./destroy_apps_and_models $1 "~reconstruct_meta"
  
   if [ -f ~reconstruct_meta ]; then
    rm ~reconstruct_meta

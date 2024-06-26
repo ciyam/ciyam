@@ -6341,7 +6341,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             check_script_args( script_name );
 
-            run_script( script_name, async );
+            int rc = run_script( script_name, async );
+
+            if( rc < 0 )
+               throw runtime_error( "failed to execute script '" + script_name + "'" );
          }
          else
          {

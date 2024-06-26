@@ -26,82 +26,73 @@ SHARED_IMAGE=$CIYAM_USER_PATH/$IMAGE_NAME
 
 IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 
-# NOTE: Use this to prevent accidentally executing the export twice.
-if lockfile -r 0 "~shared" 2>/dev/null; then
+IDENTITY=`./system_variable get @export_needed`
+PEERCHAIN=`./system_variable get @exporting_for_identity`
 
- IDENTITY=`./system_variable get @export_needed`
- PEERCHAIN=`./system_variable get @exporting_for_identity`
+SHARED_DETAILS=$PEERCHAIN.txt
 
- SHARED_DETAILS=$PEERCHAIN.txt
+if [ "$IDENTITY" = "" ]; then
+ date >$SHARED_DETAILS
+ echo "Error: Unexpected identity for export not found." >>$SHARED_DETAILS
+ date >>$SHARED_DETAILS
+ exit
+fi
 
- if [ "$IDENTITY" = "" ]; then
-  date >$SHARED_DETAILS
-  echo "Error: Unexpected identity for export not found." >>$SHARED_DETAILS
-  date >>$SHARED_DETAILS
-  rm -f "~shared"
-  exit
- fi
+if [ "$PEERCHAIN" = "" ]; then
+ date >$SHARED_DETAILS
+ echo "Error: Unexpected identity exporting for not found." >>$SHARED_DETAILS
+ date >>$SHARED_DETAILS
+ exit
+fi
 
- if [ "$PEERCHAIN" = "" ]; then
-  date >$SHARED_DETAILS
-  echo "Error: Unexpected identity exporting for not found." >>$SHARED_DETAILS
-  date >>$SHARED_DETAILS
-  rm -f "~shared"
-  exit
- fi
-
- if [ -d $SHARED_PATH ]; then
-  if mountpoint -q $SHARED_PATH; then
-   sudo umount $SHARED_PATH
-   # NOTE: If unable to umount will exit (so can be called repeatedly until okay).
-   if [ $? -ne 0 ]; then
-    date >$SHARED_DETAILS
-    echo "NOTE: Shared files area is not currently available (please try again later)." >>$SHARED_DETAILS
-    date >>$SHARED_DETAILS
-    rm -f "~shared"
-    exit
-   fi
+if [ -d $SHARED_PATH ]; then
+ if mountpoint -q $SHARED_PATH; then
+  sudo umount $SHARED_PATH
+  # NOTE: If unable to umount will exit (so can be called repeatedly until okay).
+  if [ $? -ne 0 ]; then
+   date >$SHARED_DETAILS
+   echo "NOTE: Shared files area is not currently available (please try again later)." >>$SHARED_DETAILS
+   date >>$SHARED_DETAILS
+   exit
   fi
  fi
-
- ./system_variable set @export_needed ""
- ./system_variable set @export_needed_$PEERCHAIN ""
-
- ./system_variable set @import_needed ""
-
- date >$SHARED_DETAILS
- echo "Starting export..." >>$SHARED_DETAILS
-
- sudo chown $USER:$GROUP $SHARED_IMAGE
-
- export CIYAM_SECONDS=2
- export CIYAM_FILE_NAME_ONLY=1
-
- export CIYAM_STREAM_CIPHER=cc
- export ENCRYPTED_PASSWORD=@shared_secret
-
- export CIYAM_ARCHIVE_PATH=`./ciyam_command file_archives -path_only $IDENTITY`
-
- BLOCK_TREE=`./block_tree_hash $IDENTITY`
- SHARED_LIST=`./tree_list $BLOCK_TREE 0 Shared | tail -n 1`
-
- ./export_files $SHARED_LIST $CIYAM_USER_PATH >>$SHARED_DETAILS
-
- ./ciyam_command file_tag -remove bc.$IDENTITY.shared
-
- sudo chown root:root $SHARED_IMAGE
- sudo mount $SHARED_IMAGE $SHARED_PATH
- sudo chown -R $USER:$GROUP $SHARED_PATH
- sudo chmod -R o-rx $SHARED_PATH
-
- echo `date +%s` > $IMPORTED_TIME_FILE
-
- echo "Finished export..." >>$SHARED_DETAILS
- date >>$SHARED_DETAILS
-
- ./system_variable set @shared_secret ""
- ./system_variable set @export_in_progress ""
- ./system_variable set @exporting_for_identity ""
-
- rm -f "~shared"
 fi
+
+./system_variable set @export_needed ""
+./system_variable set @export_needed_$PEERCHAIN ""
+
+./system_variable set @import_needed ""
+
+date >$SHARED_DETAILS
+echo "Starting export..." >>$SHARED_DETAILS
+
+sudo chown $USER:$GROUP $SHARED_IMAGE
+
+export CIYAM_SECONDS=2
+export CIYAM_FILE_NAME_ONLY=1
+
+export CIYAM_STREAM_CIPHER=cc
+export ENCRYPTED_PASSWORD=@shared_secret
+
+export CIYAM_ARCHIVE_PATH=`./ciyam_command file_archives -path_only $IDENTITY`
+
+BLOCK_TREE=`./block_tree_hash $IDENTITY`
+SHARED_LIST=`./tree_list $BLOCK_TREE 0 Shared | tail -n 1`
+
+./export_files $SHARED_LIST $CIYAM_USER_PATH >>$SHARED_DETAILS
+
+./ciyam_command file_tag -remove bc.$IDENTITY.shared
+
+sudo chown root:root $SHARED_IMAGE
+sudo mount $SHARED_IMAGE $SHARED_PATH
+sudo chown -R $USER:$GROUP $SHARED_PATH
+sudo chmod -R o-rx $SHARED_PATH
+
+echo `date +%s` > $IMPORTED_TIME_FILE
+
+echo "Finished export..." >>$SHARED_DETAILS
+date >>$SHARED_DETAILS
+
+./system_variable set @shared_secret ""
+./system_variable set @export_in_progress ""
+./system_variable set @exporting_for_identity ""

@@ -4,12 +4,13 @@ Linux OpenSUSE Specific Instructions
 https://get.opensuse.org/tumbleweed
 (download the ISO image to use as the VM's install CD/DVD)
 
+NOTE: When creating ensure that the Type is Linux and Version is openSUSE (64 bit).
+
 Create a New machine in VirtualBox with 4096 MB of memory and create a virtual disk
 that is at least 510 GB in size. After create click on the Settings button and from
 General set the Shared Clipboard to bidirectional and then in System uncheck Floppy
-so it is removed from the Boot Order. Next in Storage -> Devices -> Controller: IDE
-add the downloaded ".iso" file and finally just below in Controller: SATA check the
-"Use Host I/O Cache" option (this will make a huge difference in DB performance).
+so it is not part of the Boot Order. Next in Storage -> Devices -> Controller: SATA
+check the "Use Host I/O Cache" option (for a huge difference to DB performance).
 
 Port Forwarding to access the VM from its Host
 ----------------------------------------------
@@ -22,17 +23,18 @@ SYNC     TCP   127.0.0.1   13031    10.0.2.15   13031
 Starting OS Installation
 ------------------------
 
+Click the green arrow Start in VirutalBox and after selecting the downloaded ".iso"
+click on the Start button then wait (or hit Enter) and finally click on the Install
+button.
+
 The Xfce GUI is recommended (due to being smaller but having decent functionality).
 
 Create the user "admin" when installing (with an initial password as just "linux").
 
 Install Guest Additions (normally automatic)
 --------------------------------------------
-Change the CD/DVD to Guest Additions then mount, install and reboot:
 
-sudo mount /dev/cdrom /mnt
-cd /mnt
-sudo ./VBoxLinuxAdditions.run
+sudo zypper install virtualbox-kmp-default virtualbox-guest-tools
 
 sudo reboot
 
@@ -58,21 +60,48 @@ sudo reboot
 Install all required packages for CIYAM Software Manufacturing
 --------------------------------------------------------------
 
-sudo zypper install make
-sudo zypper install gcc-c++
-sudo zypper install git-core
-sudo zypper install qrencode
-sudo zypper install png++-devel
-sudo zypper install libharu-devel
-sudo zypper install readline-devel
-sudo zypper install mariadb libmariadb-devel
-sudo zypper install apache2 apache2-mod_fcgid
+sudo zypper -n install make
+sudo zypper -n install gcc-c++
+sudo zypper -n install git-core
+sudo zypper -n install qrencode
+sudo zypper -n install png++-devel
+sudo zypper -n install libharu-devel
+sudo zypper -n install readline-devel
+sudo zypper -n install mariadb libmariadb-devel
+sudo zypper -n install apache2 apache2-mod_fcgid
 
 Next configure and start required services:
 
 sudo a2enmod fcgid
 
-https://ciyam.org/docs/fcgi_configuration.html
+sudo vi /etc/apache2/default-server.conf
+[/etc/apache2/default-server.conf]
+...
+<Directory "/srv/www/htdocs">
+...
+   Options None
+*** change the above line and add the second line ***
+   Options ExecCGI FollowSymLinks
+   AddHandler fcgid-script .fcgi
+...
+   AllowOverride None
+*** change the above line to become the following ***
+   AllowOverride All
+...
+</Directory>
+
+*** add all of the following lines here ***
+<IfModule fcgid_module>
+   MaxProcessCount               10
+   MaxRequestLen                 10485760
+   IdleTimeOut                   3600
+   IPCConnectTimeout             20
+   IPCCommTimeout                300
+   DefaultMaxClassProcessCount   1
+   DefaultMinClassProcessCount   1
+</IfModule>
+...
+[/etc/apache2/default-server.conf]
 
 sudo systemctl enable sshd
 sudo systemctl enable mysql
@@ -227,10 +256,12 @@ To compile all targets and run all basic regression tests:
 
 ./xrep @sshd_config_app.xrep user=$USER
 (append output of this to the following)
-sudo vi /etc/ssh/sshd_config
+sudo vi /usr/etc/ssh/sshd_config
 
 ./xrep @ciyam_sftp.sh.xrep user=$USER > /home/$USER/ciyam_sftp.sh
 chmod a+x /home/$USER/ciyam_sftp.sh
+
+sudo systemctl restart sshd
 
 make all
 
@@ -331,44 +362,35 @@ Adding 'ciyam.test' host (optional)
 sudo vi /etc/hosts
 [/etc/hosts]
 ...
-10.0.2.2    ciyam.test
+10.0.2.2        ciyam.test
 ...
 [/etc/hosts]
 
 Installing Syncthing User Service
 ---------------------------------
 
-sudo zypper install syncthing
+sudo zypper -n install syncthing
 
 sudo vi /usr/lib/firewalld/services/syncthing.xml
 (change TCP/UDP ports to 13031)
 
-mkdir .config/systemd
-mkdir .config/systemd/user
-cp /usr/lib/systemd/system/syncthing* ~/.config/systemd/user
+sudo systemctl restart firewalld
+sudo systemctl status firewalld
 
-vi ~/.config/systemd/user/syncthing@.service
-[syncthing@.service]
-...
-#User=%i
-...
-WantedBy=default.target
-[syncthing@.service]
+sudo systemctl enable syncthing@admin.service
 
-systemctl --user enable syncthing.service
-systemctl --user start syncthing.service
-systemctl --user status syncthing.service
+sudo systemctl start syncthing@admin.service
+sudo systemctl status syncthing@admin.service
 
-Start a tunnel in order to access the Web UI in the host OS:
+In the host OS start a tunnel to access the Syncthing UI:
 ssh -L8384:127.0.0.1:8384 -p 2222 admin@localhost
 
-In local browser: localhost:8384
-* Settings/Connections
+Configure the listener from host OS using the following URL:
+http://localhost:8384
+
+Actions -> Settings/Connections
 Sync Protocol Listen Addresses
 tcp://:13031
 
-systemctl --user restart syncthing.service
-systemctl --user status syncthing.service
-
-sudo systemctl restart firewalld
-sudo systemctl status firewalld
+systemctl restart syncthing@admin.service
+systemctl status syncthing@admin.service

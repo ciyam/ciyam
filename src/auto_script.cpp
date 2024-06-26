@@ -81,7 +81,7 @@ enum exclude_type
 
 struct script_info
 {
-   script_info( ) : last_mod( 0 ), exclude( e_exclude_type_none ), allow_late_exec( false ) { }
+   script_info( ) : last_mod( 0 ), exclude( e_exclude_type_none ), allow_late_exec( false ), check_lock_only( false ) { }
 
    string name;
 
@@ -99,11 +99,12 @@ struct script_info
    time_t last_mod;
 
    string tsfilename;
-   string busy_filename;
+   string lock_filename;
 
    exclude_type exclude;
 
    bool allow_late_exec;
+   bool check_lock_only;
 };
 
 mutex g_mutex;
@@ -225,8 +226,17 @@ void read_script_info( )
 
             if( pos != string::npos )
             {
-               info.busy_filename = info.filename.substr( pos + 1 );
+               info.lock_filename = info.filename.substr( pos + 1 );
                info.filename.erase( pos );
+
+               if( !info.lock_filename.empty( ) )
+               {
+                  if( info.lock_filename[ 0 ] == '?' )
+                  {
+                     info.check_lock_only = true;
+                     info.lock_filename.erase( 0, 1 );
+                  }
+               }
             }
 
             if( file_exists( info.tsfilename ) )
@@ -352,14 +362,14 @@ void output_schedule( ostream& os )
       string filename( g_scripts[ ssci->second ].filename );
       bool is_script = ( filename == c_script_dummy_filename );
 
-      bool is_busy = false;
+      bool is_locked = false;
 
-      string busy_filename( g_scripts[ ssci->second ].busy_filename );
+      string lock_filename( g_scripts[ ssci->second ].lock_filename );
 
-      if( !busy_filename.empty( ) && file_exists( busy_filename ) )
-         is_busy = true;
+      if( !lock_filename.empty( ) && file_exists( lock_filename ) )
+         is_locked = true;
 
-      if( is_busy )
+      if( is_locked )
          os << " [ *** busy *** ]";
       else if( !g_scripts[ ssci->second ].tsfilename.empty( ) )
          os << " [" << g_scripts[ ssci->second ].tsfilename << "]";
@@ -547,11 +557,13 @@ void autoscript_session::on_start( )
                string filename( g_scripts[ j->second ].filename );
                bool is_script = ( filename == c_script_dummy_filename );
 
-               // NOTE: If a "busy" filename exists then assume that it
-               // is either currently running or not ready to be called.
-               string busy_filename( g_scripts[ j->second ].busy_filename );
+               string lock_filename( g_scripts[ j->second ].lock_filename );
 
-               if( !busy_filename.empty( ) && file_exists( busy_filename ) )
+               // NOTE: If a "lock" filename exists (that was not left over from a
+               // dead process or unexpected application server termination) it is
+               // being assumed that the script is either currently running or may
+               // not be called (perhaps due to another script that is running).
+               if( !lock_filename.empty( ) && !can_create_script_lock_file( lock_filename ) )
                   okay = false;
 
                if( okay && !is_excluded( g_scripts[ j->second ], now )
@@ -563,6 +575,8 @@ void autoscript_session::on_start( )
 
                   if( !tsfilename.empty( ) )
                      g_scripts[ j->second ].last_mod = mod_time;
+
+                  string cmd_and_args;
 
                   if( is_script )
                   {
@@ -581,29 +595,29 @@ void autoscript_session::on_start( )
                      if( cycle_seconds >= c_min_cycle_seconds_for_logging )
                         script_args += " " + name;
 
-#ifdef _WIN32
-                     // KLUDGE: For some reason under Windows if multiple scripts need to be run in
-                     // one pass then subsequent execs can fail to work if this delay is not included.
-                     msleep( 250 );
-                     exec_system( "script " + script_args, true );
-#else
-                     exec_system( "./script " + script_args, true );
-#endif
+                     cmd_and_args = "./script " + script_args;
                   }
                   else
                   {
-                     string cmd_and_args( filename );
+                     cmd_and_args = filename;
 
-#ifndef _WIN32
                      if( cmd_and_args.find( '/' ) == string::npos )
                         cmd_and_args = "./" + cmd_and_args;
-#endif
 
                      if( !arguments.empty( ) )
                         cmd_and_args += " " + arguments;
-
-                     exec_system( cmd_and_args, true );
                   }
+
+                  if( !lock_filename.empty( ) && !g_scripts[ j->second ].check_lock_only )
+                  {
+                     okay = create_script_lock_file( lock_filename );
+
+                     if( okay )
+                        cmd_and_args = "./locked.sh \"" + lock_filename + "\" " + cmd_and_args;
+                  }
+
+                  if( okay )
+                     exec_system( cmd_and_args, true );
                }
 
                size_t count = 0;

@@ -1774,6 +1774,12 @@
       <input>true
       <output>generate
      </test_step>
+     <test_step/>
+      <name>d
+      <exec>!ciyam_client -echo -quiet -no_prompt -no_stderr -no_progress
+      <input>true
+      <output>generate
+     </test_step>
     </test>
     <test/>
      <name>2
