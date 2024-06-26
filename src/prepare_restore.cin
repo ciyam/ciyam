@@ -75,8 +75,8 @@ BACKUP_FILES_PATH=$OUTPUT
 ~cp $BACKUP_FILES_PATH/.ciyam/Meta.backup*.bun.gz .
 ~cp $BACKUP_FILES_PATH/.ciyam/$STORAGE.backup*.bun.gz .
 ;
-WEB_DIRS=@file:~find $WEBDIR -maxdepth 1 -type d -printf "%P~"
-APP_DIR_REMOVED=@repstr:~$APP_DIR~/~:$WEB_DIRS
+WEB_DIRS=@file:~find $WEBDIR -maxdepth 1 -type d -printf "%P?"
+APP_DIR_REMOVED=@repstr:?$APP_DIR?/?:$WEB_DIRS
 ;
 @ifeq "$WEB_DIRS" "$APP_DIR_REMOVED"
 .system_variable @preparing_restore ""

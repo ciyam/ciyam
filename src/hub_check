@@ -6,22 +6,17 @@
 
 GENERATE_HUB_BLOCK_FILE=.generate_hub_block
 
-if lockfile -r 0 "~hub" 2>/dev/null; then
+if [ -f "$GENERATE_HUB_BLOCK_FILE" ]; then
+ PEER_HUB_HEIGHT=`./system_variable get @blockchain_peer_hub_height`
 
- if [ -f "$GENERATE_HUB_BLOCK_FILE" ]; then
-  PEER_HUB_HEIGHT=`./system_variable get @blockchain_peer_hub_height`
+ if [ ! "" = "$PEER_HUB_HEIGHT" ]; then
+  ./generate_next_block -hub
 
-  if [ ! "" = "$PEER_HUB_HEIGHT" ]; then
-   ./generate_next_block -hub
+  NEW_PEER_HUB_HEIGHT=`./system_variable get @blockchain_peer_hub_height`
 
-   NEW_PEER_HUB_HEIGHT=`./system_variable get @blockchain_peer_hub_height`
-
-   # NOTE: Assume generate failed if the height is unchanged.
-   if [ ! "$PEER_HUB_HEIGHT" = "$NEW_PEER_HUB_HEIGHT" ]; then
-    rm "$GENERATE_HUB_BLOCK_FILE"
-   fi
+  # NOTE: Assume generate failed if the height is unchanged.
+  if [ ! "$PEER_HUB_HEIGHT" = "$NEW_PEER_HUB_HEIGHT" ]; then
+   rm "$GENERATE_HUB_BLOCK_FILE"
   fi
  fi
-
- rm -f "~hub"
 fi

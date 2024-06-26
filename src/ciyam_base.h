@@ -181,7 +181,6 @@ inline std::string get_identity( bool append_max_user_limit = false,
    return s;
 }
 
-
 bool CIYAM_BASE_DECL_SPEC has_identity( bool* p_is_encrypted = 0 );
 
 void CIYAM_BASE_DECL_SPEC set_identity( const std::string& info, const char* p_encrypted_sid = 0 );
@@ -332,6 +331,10 @@ void CIYAM_BASE_DECL_SPEC check_script_args( const std::string& script_name, boo
 
 std::string CIYAM_BASE_DECL_SPEC process_script_args(
  const std::string& raw_args, bool use_system_variables = false );
+
+bool CIYAM_BASE_DECL_SPEC create_script_lock_file( const std::string& name );
+
+bool CIYAM_BASE_DECL_SPEC can_create_script_lock_file( const std::string& name );
 
 void CIYAM_BASE_DECL_SPEC generate_new_script_sio_files( );
 

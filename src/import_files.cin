@@ -282,12 +282,12 @@ TAG_NAME=@repstr:\//.:$NEXT_PATH
 @endif
 ;
 .file_put ?~$UUID $TAG_PREFIX$TAG_NAME
-~rm ~$UUID
+~rm "~$UUID"
 .file_tag -remove $UUID
 ;
 @ifdef $HAS_REPO_LIST_INFO
 .file_put ?~$UUID.info .$TAG_PREFIX$TAG_NAME
-~rm ~$UUID.info
+~rm "~$UUID.info"
 .file_tag -remove $UUID.info
 @endif
 ;
