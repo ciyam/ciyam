@@ -281,6 +281,7 @@ const char* const c_special_variable_blockchain_height_processing = "@blockchain
 const char* const c_special_variable_blockchain_peer_hub_identity = "@blockchain_peer_hub_identity";
 const char* const c_special_variable_blockchain_targeted_identity = "@blockchain_targeted_identity";
 const char* const c_special_variable_blockchain_non_extra_identity = "@blockchain_non_extra_identity";
+const char* const c_special_variable_queue_archive_info_for_resize = "@queue_archive_info_for_resize";
 const char* const c_special_variable_blockchain_peer_has_supporters = "@blockchain_peer_has_supporters";
 const char* const c_special_variable_blockchain_primary_pubkey_hash = "@blockchain_primary_pubkey_hash";
 const char* const c_special_variable_blockchain_signature_file_hash = "@blockchain_signature_file_hash";
@@ -546,6 +547,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_peer_hub_identity );
       g_special_variable_names.push_back( c_special_variable_blockchain_targeted_identity );
       g_special_variable_names.push_back( c_special_variable_blockchain_non_extra_identity );
+      g_special_variable_names.push_back( c_special_variable_queue_archive_info_for_resize );
       g_special_variable_names.push_back( c_special_variable_blockchain_peer_has_supporters );
       g_special_variable_names.push_back( c_special_variable_blockchain_primary_pubkey_hash );
       g_special_variable_names.push_back( c_special_variable_blockchain_signature_file_hash );

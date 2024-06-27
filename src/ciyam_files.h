@@ -42,7 +42,7 @@ void CIYAM_BASE_DECL_SPEC term_files_area( );
 
 void CIYAM_BASE_DECL_SPEC resync_files_area( progress* p_progress = 0, bool remove_invalid_tags = false );
 
-void CIYAM_BASE_DECL_SPEC init_archive_info( progress* p_progress = 0 );
+void CIYAM_BASE_DECL_SPEC init_archive_info( progress* p_progress = 0, bool has_restored_system = false );
 
 void CIYAM_BASE_DECL_SPEC resync_archive_info( progress* p_progress = 0 );
 
@@ -194,7 +194,8 @@ void CIYAM_BASE_DECL_SPEC remove_file_archive(
 
 void CIYAM_BASE_DECL_SPEC repair_file_archive( const std::string& name, progress* p_progress = 0 );
 
-void CIYAM_BASE_DECL_SPEC resize_file_archive( const std::string& name, int64_t new_size_limit, progress* p_progress = 0 );
+void CIYAM_BASE_DECL_SPEC resize_file_archive( const std::string& name,
+ int64_t new_size_limit, progress* p_progress = 0, int64_t* p_bytes_used = 0 );
 
 void CIYAM_BASE_DECL_SPEC archives_status_update( const std::string& name );
 

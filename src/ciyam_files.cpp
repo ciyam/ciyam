@@ -1165,7 +1165,7 @@ void resync_files_area( progress* p_progress, bool remove_invalid_tags )
    init_files_area( p_progress, remove_invalid_tags );
 }
 
-void init_archive_info( progress* p_progress )
+void init_archive_info( progress* p_progress, bool has_restored_system )
 {
    guard g( g_mutex, "init_archive_info" );
 
@@ -1257,8 +1257,12 @@ void init_archive_info( progress* p_progress )
 
          if( used != ( limit - avail ) )
          {
-            // FUTURE: This message should be handled as a server string message.
-            TRACE_LOG( TRACE_ANYTHING, "Archive '" + archive + "' needs to be repaired (incorrect size info)." );
+            if( has_restored_system )
+               set_system_variable( get_special_var_name(
+                e_special_var_queue_archive_info_for_resize ), archive + ',' + to_string( used ) );
+            else
+               // FUTURE: This message should be handled as a server string message.
+               TRACE_LOG( TRACE_ANYTHING, "Archive '" + archive + "' needs to be repaired (incorrect size info)." );
          }
       }
    }
@@ -4738,13 +4742,13 @@ void repair_file_archive( const string& name, progress* p_progress )
    }
 }
 
-void resize_file_archive( const string& name, int64_t new_size_limit, progress* p_progress )
+void resize_file_archive( const string& name, int64_t new_size_limit, progress* p_progress, int64_t* p_bytes_used )
 {
    guard g( g_mutex, "resize_file_archive" );
 
    int64_t min_limit = get_files_area_item_max_size( );
 
-   if( new_size_limit < min_limit )
+   if( new_size_limit && ( new_size_limit < min_limit ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Archive minimum size must be at least " + format_bytes( min_limit ) + " bytes." );
 
@@ -4773,6 +4777,17 @@ void resize_file_archive( const string& name, int64_t new_size_limit, progress* 
       ods_fs.fetch_from_text_file( c_file_archive_size_limit, size_limit );
 
       int64_t bytes_used = ( size_limit - size_avail );
+
+      if( p_bytes_used )
+      {
+         bytes_used = *p_bytes_used;
+
+         if( size_limit < bytes_used )
+            size_limit = bytes_used;
+      }
+
+      if( !new_size_limit )
+         new_size_limit = size_limit;
 
       string status_info;
       ods_fs.fetch_from_text_file( c_file_archive_status_info, status_info );
