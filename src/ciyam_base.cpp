@@ -1659,7 +1659,7 @@ struct reconstruct_trace_progress : progress
    size_t num_chars_to_cout;
 };
 
-void init_system_ods( )
+void init_system_ods( bool* p_restored = 0 )
 {
    string ods_db_name( get_files_area_dir( ) );
    ods_db_name += '/' + string( c_ciyam_server );
@@ -1694,9 +1694,9 @@ void init_system_ods( )
          ++num_system_backup_files;
    }
 
-   // NOTE: If system ODS DB is being restored from backup then first check that either the
-   // number of system ODS DB files that currently exists is either zero or exactly matches
-   // the number of backup files that have been found (logging if the number is mismatched).
+   // NOTE: If the system ODS DB is being restored from backup then first check that either
+   // the number of system ODS DB files currently existing is zero or is an exact match for
+   // the number of backup files that have been found (logging if a mismatch is found).
    if( num_system_backup_files )
    {
       bool restore_system_db = true;
@@ -1730,6 +1730,9 @@ void init_system_ods( )
                file_rename( backup_file_name, system_file_name );
             }
          }
+
+         if( p_restored )
+            *p_restored = true;
       }
    }
 
@@ -5295,18 +5298,41 @@ void init_globals( const char* p_sid, int* p_use_udp )
       if( p_use_udp )
          *p_use_udp = g_use_udp;
 
-      init_files_area( );
-      init_system_ods( );
+      bool restored = false;
 
-      init_archive_info( );
+      init_files_area( );
+      init_system_ods( &restored );
+
+      init_archive_info( 0, restored );
+
+      if( restored )
+      {
+         while( true )
+         {
+            string next_info( get_raw_system_variable(
+             get_special_var_name( e_special_var_queue_archive_info_for_resize ) ) );
+
+            if( next_info.empty( ) )
+               break;
+
+            vector< string > columns;
+
+            split( next_info, columns );
+
+            if( columns.size( ) != 2 )
+               throw runtime_error( "unexpected queued archive for repair info found in init_globals" );
+
+            string archive( columns[ 0 ] );
+
+            int64_t bytes_used = from_string< int64_t >( columns[ 1 ] );
+
+            resize_file_archive( archive, 0, 0, &bytes_used );
+         }
+      }
 
       check_timezone_info( );
 
-#ifndef _WIN32
       set_system_variable( get_special_var_name( e_special_var_os ), "Linux" );
-#else
-      set_system_variable( get_special_var_name( e_special_var_os ), "Windows" );
-#endif
 
       set_system_variable(
        get_special_var_name( e_special_var_peer_port ), to_string( c_default_ciyam_peer_port ) );
