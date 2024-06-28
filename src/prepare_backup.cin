@@ -77,9 +77,9 @@ BACKUP_FILES_PATH=$OUTPUT
 ~mkdir -p $BACKUP_FILES_PATH/.ciyam
 ~mv Meta.backup*.bun.gz $BACKUP_FILES_PATH/.ciyam
 ~mv $STORAGE.backup*.bun.gz $BACKUP_FILES_PATH/.ciyam
-<create_peer_info_file_list.cin ~prepare_backup.files
-~tar -cvf $BACKUP_FILES_PATH/.ciyam/System_Files_And_Archives.tar --files-from=~prepare_backup.files
-~rm -f ~prepare_backup.files
+<create_peer_info_file_list.cin "~prepare_backup.files"
+~tar -cvf $BACKUP_FILES_PATH/.ciyam/System_Files_And_Archives.tar --files-from="~prepare_backup.files"
+~rm -f "~prepare_backup.files"
 .system_variable @backup_needed 1
 @endif
 @else

@@ -50,6 +50,8 @@ const char* const c_cmd_execute = "pe";
 const char* const c_perms_r_r = "r--r-----";
 const char* const c_perms_rw_rw_r = "rw-rw-r--";
 
+const char c_hidden_file_prefix = '.';
+
 const char c_key_exchange_suffix = '*';
 
 const char c_notifier_ignore_char = '!';

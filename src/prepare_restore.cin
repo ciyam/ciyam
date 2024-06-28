@@ -89,7 +89,9 @@ ERROR=Failed due to unexpected missing '$STORAGE' application directory.
 ;
 ~./ciyam_restore $STORAGE $APP_DIR >> $CIYAM_EXEC_SYSTEM_APPEND
 .system_variable @preparing_restore ""
+@ifdef $CIYAM_USER
 <add_all_users.cin $STORAGE
+@endif
 @endif
 ;
 @endif
