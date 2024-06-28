@@ -36,17 +36,6 @@ HAS_NO_OPL=
 SEED=
 @endif
 ;
-@ifeq "$SEED" ""
-.system_variable @blockchain_data_key_$IDENT
-@ifdef $OUTPUT
-DATA_KEY=$OUTPUT
-SEED=@@sid:$DATA_KEY
-DATA=1
-@else
-SEED=@sid
-@endif
-@endif
-;
 @ifeq "$IDENT" "-backup"
 BACKUP=1
 @endif
@@ -83,6 +72,17 @@ PEER_HUB=1
 .system_variable @blockchain_peer_hub_?_identity
 @ifdef $OUTPUT
 .session_variable @deque "~$OUTPUT"
+@endif
+@endif
+;
+@ifeq "$SEED" ""
+.system_variable @blockchain_data_key_$IDENT
+@ifdef $OUTPUT
+DATA_KEY=$OUTPUT
+SEED=@@sid:$DATA_KEY
+DATA=1
+@else
+SEED=@sid
 @endif
 @endif
 ;

@@ -2276,6 +2276,7 @@ string create_raw_file( const string& data, bool compress,
    if( !skip_tagging )
    {
       string tag_name;
+
       if( p_tag )
          tag_name = string( p_tag );
 
