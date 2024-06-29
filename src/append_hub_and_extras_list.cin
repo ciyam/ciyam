@@ -1,0 +1,97 @@
+; Copyright (c) 2024 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#Usage: append_hub_file_info.cin <file_name>
+@else
+FILE_NAME=$1
+;
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+;
+.session_variable @deque
+DEQUE=$OUTPUT
+;
+.session_variable @set ""
+.session_variable @deque ""
+;
+>>$FILE_NAME
+;
+.system_variable @blockchain_peer_hub_identity
+PEER_HUB_IDENTITY=$OUTPUT
+.file_tags bc.$PEER_HUB_IDENTITY.*
+@ifdef $OUTPUT
+.session_variable @set "~$OUTPUT"
+@endif
+;
+EXTRA_NUM=1
+;
+@label NEXT_EXTRA
+@:EXTRA_LOOP
+;
+.system_variable @blockchain_peer_hub_%EXTRA_NUM%_identity
+NEXT_EXTRA_IDENTITY=$OUTPUT
+;
+@ifndef $NEXT_EXTRA_IDENTITY
+@label END_EXTRA_LOOP
+@endif
+;
+@skip
+;
+@:NEXT_EXTRA
+;
+.file_tags bc.$NEXT_EXTRA_IDENTITY.*
+@ifdef $OUTPUT
+.session_variable @set "~$OUTPUT"
+@endif
+;
+EXTRA_NUM=@$EXTRA_NUM+1
+;
+!!@:EXTRA_LOOP
+;
+@:END_EXTRA_LOOP
+;
+.session_variable @deque @set
+.session_variable @set ""
+;
+@label NEXT_FILE
+;
+@:FILE_LOOP
+.session_variable @deque front
+NEXT_FILE_TAG=$OUTPUT
+;
+@ifndef $NEXT_FILE_TAG
+@label END_FILE_LOOP
+@endif
+;
+@skip
+;
+@:NEXT_FILE
+#$FILES_AREA_DIR/$NEXT_FILE_TAG
+;
+ZENITH_REMOVED=@repstr:.zenith/:$NEXT_FILE_TAG
+;
+@ifeq "$NEXT_FILE_TAG" "$ZENITH_REMOVED"
+.file_hash $NEXT_FILE_TAG
+FILE_HASH=$OUTPUT
+HASH_PREFIX=@substr:0,2:$FILE_HASH
+HASH_SUFFIX=@substr:2:$FILE_HASH
+;
+#$FILES_AREA_DIR/$HASH_PREFIX/$HASH_SUFFIX
+@endif
+;
+.session_variable @deque pop_front
+!!@:FILE_LOOP
+;
+@:END_FILE_LOOP
+;
+>
+;
+.session_variable @deque ""
+@ifdef $DEQUE
+.session_variable @deque "~$DEQUE"
+@endif
+;
+@endif

@@ -62,6 +62,8 @@ CHECK=@$NUM_TRIES>$MAX_TRIES
 ERROR=Failed due to active sessions not being automatically terminated.
 ~echo "*** ERROR: BACKUP FAILED DUE TO ACTIVE SESSIONS NOT AUTOMATICALLY TERMINATED ***" > Backup.txt
 @else
+<generate_next_block.cin -hub
+;
 @ifdef $WEBDIR
 CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/backup.log
 ~rm -f Backup.txt
@@ -74,10 +76,10 @@ CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/backup.log
 BACKUP_FILES_PATH=$OUTPUT
 ;
 @ifdef $BACKUP_FILES_PATH
-~mkdir -p $BACKUP_FILES_PATH/.ciyam
 ~mv Meta.backup*.bun.gz $BACKUP_FILES_PATH/.ciyam
 ~mv $STORAGE.backup*.bun.gz $BACKUP_FILES_PATH/.ciyam
 <create_peer_info_file_list.cin "~prepare_backup.files"
+<append_hub_and_extras_list.cin "~prepare_backup.files"
 ~tar -cvf $BACKUP_FILES_PATH/.ciyam/System_Files_And_Archives.tar --files-from="~prepare_backup.files"
 ~rm -f "~prepare_backup.files"
 .system_variable @backup_needed 1

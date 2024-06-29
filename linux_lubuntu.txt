@@ -222,6 +222,10 @@ sudo mkdir backup
 sudo mount backup.img backup
 (ignore hint about modified fstab)
 
+sudo mkdir backup/.ciyam
+sudo mkdir backup/.system
+sudo mv backup/lost+found backup/.system
+
 sudo chown -R admin:www-data backup
 
 sudo umount backup
@@ -238,6 +242,9 @@ sudo vi /etc/fstab
 sudo mkdir opened
 sudo mount opened.img opened
 (ignore hint about modified fstab)
+
+sudo mkdir opened/.system
+sudo mv opened/lost+found opened/.system
 
 sudo chown -R admin:ciyam opened
 sudo chmod g+rx /home/admin/opened
@@ -256,6 +263,9 @@ sudo vi /etc/fstab
 sudo mkdir shared
 sudo mount shared.img shared
 (ignore hint about modified fstab)
+
+sudo mkdir shared/.system
+sudo mv shared/lost+found shared/.system
 
 sudo chown -R admin:www-data shared
 
