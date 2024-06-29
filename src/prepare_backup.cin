@@ -62,7 +62,6 @@ CHECK=@$NUM_TRIES>$MAX_TRIES
 ERROR=Failed due to active sessions not being automatically terminated.
 ~echo "*** ERROR: BACKUP FAILED DUE TO ACTIVE SESSIONS NOT AUTOMATICALLY TERMINATED ***" > Backup.txt
 @else
-<generate_next_block.cin -hub
 ;
 @ifdef $WEBDIR
 CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/backup.log
