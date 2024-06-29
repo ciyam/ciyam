@@ -90,7 +90,7 @@ NEXT_GENESIS_TAG=$OUTPUT
 ;
 @:NEXT_TAG
 TAG_PREFIX=@repstr:.0.blk/:$NEXT_GENESIS_TAG
-.file_tags -i=$TAG_PREFIX.*
+.file_tags $TAG_PREFIX.*
 @ifdef $OUTPUT
 .session_variable @set "~$OUTPUT"
 @endif
