@@ -7726,9 +7726,12 @@ void capture_session( size_t sess_id )
 {
    guard g( g_session_mutex );
 
+   if( gtp_session && !sess_id )
+      sess_id = gtp_session->id;
+
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
-      if( g_sessions[ i ] && g_sessions[ i ]->id == sess_id )
+      if( g_sessions[ i ] && ( g_sessions[ i ]->id == sess_id ) )
       {
          g_sessions[ i ]->is_captured = true;
          break;
@@ -7791,9 +7794,15 @@ void release_session( size_t sess_id, bool wait_until_term )
 {
    guard g( g_session_mutex );
 
+   if( !sess_id && gtp_session )
+   {
+      wait_until_term = false;
+      sess_id = gtp_session->id;
+   }
+
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
-      if( g_sessions[ i ] && g_sessions[ i ]->id == sess_id )
+      if( g_sessions[ i ] && ( g_sessions[ i ]->id == sess_id ) )
       {
          if( !wait_until_term )
             g_sessions[ i ]->is_captured = false;

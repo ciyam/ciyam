@@ -6307,6 +6307,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string script_name( get_parm_val( parameters, c_cmd_ciyam_session_system_run_script_script_name ) );
          string arg_val_pairs( get_parm_val( parameters, c_cmd_ciyam_session_system_run_script_arg_val_pairs ) );
 
+         possibly_expected_error = true;
+
          bool async = true;
 
          if( !script_name.empty( ) && script_name[ 0 ] == '!' )
