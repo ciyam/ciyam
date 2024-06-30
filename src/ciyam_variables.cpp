@@ -130,6 +130,7 @@ const char* const c_special_variable_peer_data = "@peer_data";
 const char* const c_special_variable_peer_port = "@peer_port";
 const char* const c_special_variable_peer_user = "@peer_user";
 const char* const c_special_variable_preparing = "@preparing";
+const char* const c_special_variable_repo_lock = "@repo_lock";
 const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_blockchain = "@blockchain";
 const char* const c_special_variable_chain_type = "@chain_type";
@@ -396,6 +397,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_peer_port );
       g_special_variable_names.push_back( c_special_variable_peer_user );
       g_special_variable_names.push_back( c_special_variable_preparing );
+      g_special_variable_names.push_back( c_special_variable_repo_lock );
       g_special_variable_names.push_back( c_special_variable_val_error );
       g_special_variable_names.push_back( c_special_variable_blockchain );
       g_special_variable_names.push_back( c_special_variable_chain_type );
