@@ -63,6 +63,10 @@ const int c_num_digest_characters = c_sha256_digest_size * 2;
 
 const int c_depth_to_omit_blob_content = 999;
 
+const size_t c_max_repo_lock_attempts = 10;
+
+unsigned int c_repo_lock_attempt_msleep = 1000;
+
 const char c_prefix_wildcard_separator = ':';
 
 const char* const c_time_stamp_tag_prefix = "ts.";
@@ -88,6 +92,8 @@ const char* const c_attribute_master_public_key = "master_public_key";
 #include "udp_stream_helper.cpp"
 
 trace_mutex g_mutex;
+
+string g_empty_string;
 
 class file_hash_info
 {
@@ -947,6 +953,43 @@ void output_repository_progress( progress* p_progress,
 
    if( p_has_output_progress )
       *p_has_output_progress = true;
+}
+
+struct repository_lock
+{
+   repository_lock( const string& repository );
+   ~repository_lock( );
+
+   string repo_lock_name;
+};
+
+repository_lock::repository_lock( const string& repository )
+{
+   bool okay = false;
+
+   string repo_lock_prefix( get_special_var_name( e_special_var_repo_lock ) );
+
+   repo_lock_name = ( repo_lock_prefix + '_' + repository );
+
+   string true_value( c_true_value );
+
+   for( size_t i = 0; i < c_max_repo_lock_attempts; i++ )
+   {
+      okay = set_system_variable( repo_lock_name, true_value, g_empty_string );
+
+      if( okay )
+         break;
+
+      msleep( c_repo_lock_attempt_msleep );
+   }
+
+   if( !okay )
+      throw runtime_error( "unable to obtain repository lock for '" + repository + "'" );
+}
+
+repository_lock::~repository_lock( )
+{
+   set_system_variable( repo_lock_name, "" );
 }
 
 }
@@ -5659,6 +5702,8 @@ void store_repository_entry_record( const string& repository, const string& hash
 {
    guard g( g_mutex );
 
+   repository_lock repo_lock( repository );
+
    system_ods_bulk_write ods_bulk_write;
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
@@ -5697,6 +5742,8 @@ bool destroy_repository_entry_record( const string& repository, const string& ha
 {
    guard g( g_mutex );
 
+   repository_lock repo_lock( repository );
+
    system_ods_bulk_write ods_bulk_write;
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
@@ -5719,7 +5766,7 @@ bool destroy_repository_entry_record( const string& repository, const string& ha
 size_t count_total_repository_entries(
  const string& repository, date_time* p_dtm, progress* p_progress )
 {
-   system_ods_bulk_read ods_bulk_read;
+   repository_lock repo_lock( repository );
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -5739,6 +5786,8 @@ size_t count_total_repository_entries(
 
    while( true )
    {
+      system_ods_bulk_read ods_bulk_read;
+
       date_time now( date_time::local( ) );
 
       vector< string > repo_entries;
@@ -5771,7 +5820,7 @@ size_t remove_all_repository_entries( const string& repository,
 {
    bool has_output_progress = false;
 
-   system_ods_bulk_write ods_bulk_write( p_progress );
+   repository_lock repo_lock( repository );
 
    string archive_path;
    vector< string > paths;
@@ -5822,6 +5871,8 @@ size_t remove_all_repository_entries( const string& repository,
 
    while( true )
    {
+      system_ods_bulk_read ods_bulk_read;
+
       date_time now( date_time::local( ) );
 
       vector< string > repo_entries;
@@ -5856,6 +5907,8 @@ size_t remove_all_repository_entries( const string& repository,
 
    if( total_entries )
    {
+      system_ods_bulk_write ods_bulk_write( p_progress );
+
       ods::transaction ods_tx( system_ods_instance( ) );
 
       for( size_t i = 0; i < files_to_remove.size( ); i++ )
@@ -5885,7 +5938,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
 {
    bool has_output_progress = false;
 
-   system_ods_bulk_write ods_bulk_write( p_progress );
+   repository_lock repo_lock( repository );
 
    string archive_path;
    vector< string > paths;
@@ -5936,6 +5989,8 @@ size_t remove_obsolete_repository_entries( const string& repository,
 
    while( true )
    {
+      system_ods_bulk_read ods_bulk_read;
+
       date_time now( date_time::local( ) );
 
       vector< string > repo_entries;
@@ -6007,6 +6062,8 @@ size_t remove_obsolete_repository_entries( const string& repository,
 
    if( total_entries )
    {
+      system_ods_bulk_write ods_bulk_write( p_progress );
+
       ods::transaction ods_tx( system_ods_instance( ) );
 
       for( size_t i = 0; i < total_entries; i++ )
