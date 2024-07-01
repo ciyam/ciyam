@@ -37,8 +37,8 @@ namespace
 
 #include "ciyam_constants.h"
 
-const int c_initial_response_timeout = 25000;
-const int c_subsequent_response_timeout = 2500;
+const int c_initial_response_timeout = 30000;
+const int c_subsequent_response_timeout = 15000;
 
 const char* const c_order_reverse = "reverse";
 
@@ -95,6 +95,7 @@ void read_module_strings( module_info& info, tcp_socket& socket )
    while( true )
    {
       string response;
+
       if( socket.read_line( response, timeout ) <= 0 )
       {
          if( socket.had_timeout( ) )
@@ -119,6 +120,7 @@ void read_module_strings( module_info& info, tcp_socket& socket )
    // will affect the order of the menu items.
    info.list_info.clear( );
    info.list_menus.clear( );
+
    for( size_t i = 0; i < info.lists.size( ); i++ )
    {
       info.lists[ i ].var_ids.clear( );
@@ -154,6 +156,7 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
 #endif
 
    string response;
+
    if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 )
    {
       if( sess_info.p_socket->had_timeout( ) )
@@ -183,6 +186,7 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
       }
 
       response.clear( );
+
       if( sess_info.p_socket->read_line( response, c_subsequent_response_timeout ) <= 0 )
       {
          if( sess_info.p_socket->had_timeout( ) )
@@ -471,7 +475,9 @@ bool perform_action( const string& module_name,
          else
          {
             string next_code_and_version( code_and_versions[ i ] );
+
             string::size_type pos = next_code_and_version.find( ' ' );
+
             if( pos != string::npos )
                next_code_and_version.erase( pos );
 
@@ -509,13 +515,16 @@ bool perform_action( const string& module_name,
    }
 
    int timeout = c_initial_response_timeout;
+
    for( size_t i = 0; i < code_and_versions.size( ); i++ )
    {
       string output, response;
+
       while( response.empty( ) || response[ 0 ] != '(' )
       {
          if( !response.empty( ) )
             timeout = c_subsequent_response_timeout;
+
          response.clear( );
 
          if( sess_info.p_socket->read_line( response, timeout ) <= 0 )
@@ -525,7 +534,7 @@ bool perform_action( const string& module_name,
          }
 
          // NOTE: For a multi-record "exec" the "c_response_okay_more" can occur for all but the last record.
-         if( response != c_response_okay && response != c_response_okay_more )
+         if( ( response != c_response_okay ) && ( response != c_response_okay_more ) )
             output += response;
       }
 
@@ -659,12 +668,14 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    else
    {
       string response;
+
       int timeout = c_initial_response_timeout;
 
-      while( response.empty( ) || response[ 0 ] != '(' )
+      while( response.empty( ) || ( response[ 0 ] != '(' ) )
       {
          if( !response.empty( ) )
             timeout = c_subsequent_response_timeout;
+
          response.clear( );
 
          if( sess_info.p_socket->read_line( response, timeout ) <= 0 )
@@ -823,11 +834,14 @@ bool fetch_list_info( const string& module,
    else
    {
       string response;
+
       int timeout = c_initial_response_timeout;
+
       while( response.empty( ) || response[ 0 ] != '(' )
       {
          if( !response.empty( ) )
             timeout = c_subsequent_response_timeout;
+
          response.clear( );
 
          if( sess_info.p_socket->read_line( response, timeout ) <= 0 )
@@ -932,6 +946,7 @@ bool fetch_parent_row_data( const string& module,
       user_slevel = sess_info.other_slevels.find( sess_info.user_other )->second;
 
    vector< string > extras;
+
    if( !parent_extras.empty( ) )
       split( parent_extras, extras, '+' );
 
@@ -942,6 +957,7 @@ bool fetch_parent_row_data( const string& module,
    for( size_t i = 0; i < extras.size( ); i++ )
    {
       string::size_type pos = extras[ i ].find( '=' );
+
       if( pos != string::npos )
       {
          ++num_fixed;
@@ -970,11 +986,14 @@ bool fetch_parent_row_data( const string& module,
             }
 
             string data;
+
             if( pos != string::npos )
                data = extras[ i ].substr( pos + 1 );
 
             string value;
+
             bool found_special = false;
+
             if( key == c_parent_extra_key )
             {
                value = record_key;
@@ -1547,6 +1566,7 @@ bool populate_list_info( list_source& list,
 
    string fixed_fields;
    string fixed_key_values;
+
    int num_fixed_key_values = 0;
 
    // NOTE: A "user child" list needs to constrain the parent field as just another
@@ -1719,6 +1739,7 @@ bool populate_list_info( list_source& list,
 
    bool next = false;
    bool prev = false;
+
    if( !listinfo.empty( ) )
    {
       if( listinfo[ 0 ] == 'N' )
@@ -1815,6 +1836,7 @@ bool populate_list_info( list_source& list,
 
       size_t index_field = 0;
       size_t index_count = 0;
+
       for( size_t i = 0; i < list.field_ids.size( ); i++ )
       {
          if( list.field_ids[ i ] == list.first_index_field )
@@ -2157,6 +2179,7 @@ bool fetch_user_record(
       field_list += "," + mod_info.user_change_pwd_tm_field_id;
 
    string key_info;
+
    if( userhash.empty( ) )
    {
       if( username.empty( ) )
@@ -2172,6 +2195,7 @@ bool fetch_user_record(
    }
 
    bool login_okay = false;
+
    pair< string, string > user_info;
 
    if( !fetch_item_info( module_id, mod_info,
@@ -2232,6 +2256,7 @@ bool fetch_user_record(
    }
 
    size_t offset = 2;
+
    if( !mod_info.user_hash_field_id.empty( ) )
    {
       string hash = user_data[ offset++ ];
@@ -2252,6 +2277,7 @@ bool fetch_user_record(
       sess_info.user_name = user_data[ offset++ ];
 
    sess_info.user_perms.clear( );
+
    if( !mod_info.user_perm_field_id.empty( ) )
    {
       string user_perm_info( user_data[ offset++ ] );
@@ -2307,6 +2333,7 @@ bool fetch_user_record(
    sess_info.user_module = module_name;
 
    bool is_active = true;
+
    if( !mod_info.user_active_field_id.empty( ) )
       is_active = ( user_data[ offset++ ] == c_true_value );
 
@@ -2355,6 +2382,7 @@ void fetch_user_quick_links( const module_info& mod_info, session_info& sess_inf
       key_info += "#2 " + sess_info.user_key + "," + mod_info.user_qlink_test_field_val;
 
    string field_list( mod_info.user_qlink_url_field_id );
+
    field_list += "," + mod_info.user_qlink_name_field_id;
    field_list += "," + mod_info.user_qlink_checksum_field_id;
 
@@ -2411,6 +2439,7 @@ void add_user( const string& user_id, const string& user_name,
    else
    {
       string response;
+
       if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 )
          okay = false;
       else if( response != c_response_okay )
@@ -2561,6 +2590,7 @@ void save_record( const string& module_id,
    const module_info& mod_info( *get_storage_info( ).modules_index.find( view.module )->second );
 
    string act_cmd;
+
    if( is_new_record )
       act_cmd = c_cmd_create;
    else
@@ -2575,10 +2605,12 @@ void save_record( const string& module_id,
       act_cmd += " -tz=" + sess_info.tz_name;
 
    vector< string > values;
+
    if( !app.empty( ) )
       split( app, values );
 
    vector< string > fields;
+
    if( !fieldlist.empty( ) )
       split( fieldlist, fields );
 
@@ -2612,6 +2644,7 @@ void save_record( const string& module_id,
       string field_id( fields[ i ] );
 
       string next;
+
       if( num >= values.size( ) )
          original_field_values.insert( make_pair( field_id, "" ) );
       else
@@ -2689,6 +2722,7 @@ void save_record( const string& module_id,
          throw runtime_error( "unable to find field '" + field_id + "' in field_ids" );
 
       map< string, string > extra_data;
+
       if( !view.vici->second->fields[ j ].extra.empty( ) )
          parse_field_extra( view.vici->second->fields[ j ].extra, extra_data );
 
@@ -2892,6 +2926,7 @@ void save_record( const string& module_id,
    if( !extra_field_info.empty( ) )
    {
       map< string, string >::const_iterator i;
+
       for( i = extra_field_info.begin( ); i != extra_field_info.end( ); ++i )
       {
          if( i->first != field )
@@ -2939,6 +2974,7 @@ void save_record( const string& module_id,
    else
    {
       string response;
+
       if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 )
          had_send_or_recv_error = true;
       else if( response != c_response_okay )

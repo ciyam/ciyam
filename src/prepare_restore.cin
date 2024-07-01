@@ -83,9 +83,9 @@ APP_DIR_REMOVED=@repstr:?$APP_DIR?/?:$WEB_DIRS
 ERROR=Failed due to unexpected missing '$STORAGE' application directory.
 ~echo "Error: $ERROR" >> $CIYAM_EXEC_SYSTEM_APPEND
 @else
-#Restoring system ODS DB, files and archives (and preparing for reload).
 ~./unbundle -q Meta.backup "ciyam_server.*" >> $CIYAM_EXEC_SYSTEM_APPEND
 ~tar -xf $BACKUP_FILES_PATH/.ciyam/System_Files_And_Archives.tar
+#Restored application server files, archives and databases.
 .session_lock -capture 0
 ~touch ciyam_base.update
 ;

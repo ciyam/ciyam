@@ -21,9 +21,12 @@ else
  for (( i = 1; i <= $NUM_FILES; i++ ))
  do
   head -c 1000000 /dev/urandom >$USER_PATH/prepare_$i.tmp
+
   n=$[ i % 1000 ]
+
   if [ $n -eq 0 ]; then
    echo -n "." >>$OUTPUT_FILE
+   sleep 0.25
   fi
  done
 
