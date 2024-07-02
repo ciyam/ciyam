@@ -2058,6 +2058,7 @@ void perform_storage_op( storage_op op,
          }
 
          string dead_keys_file( ap_handler->get_name( ) + c_dead_keys_ext );
+
          if( exists_file( dead_keys_file ) )
          {
             vector< string > lines;
@@ -2129,11 +2130,13 @@ void perform_storage_op( storage_op op,
          module_directory( &p_new_handler->get_root( ).module_directory );
 
          // NOTE: Modules that have been registered to this storage are now automatically loaded (if not already present).
-         // This is performed in the same order that the modules were registered in as dependencies may exist between them.
+         // This is performed in the same order that the modules were registered (as dependencies may exist between them).
          size_t num_modules( p_new_handler->get_root( ).module_list.size( ) );
+
          for( size_t i = 0; i < num_modules; i++ )
          {
             string next_module( p_new_handler->get_root( ).module_list[ i ] );
+
             if( gtp_session->modules_by_name.find( next_module ) == gtp_session->modules_by_name.end( ) )
             {
                module_load( next_module, cmd_handler );
@@ -2205,6 +2208,7 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
       if( found )
       {
          time_info_iterator tii = handler.get_key_for_time( ).lower_bound( handler.get_time_for_key( ).find( key_info )->second );
+
          while( tii->second != key_info )
             ++tii;
 
@@ -2887,11 +2891,13 @@ bool is_child_constrained( class_base& instance,
    string sql, next_child_field;
 
    size_t num_children = instance_accessor.get_num_foreign_key_children( );
+
    if( num_children && !instance_keys[ instance.get_class_id( ) ].count( instance.get_key( ) ) )
    {
       for( int pass = 0; pass < 2; ++pass )
       {
          cascade_op next_op;
+
          if( pass == 0 )
             next_op = e_cascade_op_restrict;
          else
@@ -2902,6 +2908,7 @@ bool is_child_constrained( class_base& instance,
             p_class_base = instance_accessor.get_next_foreign_key_child( i, next_child_field, next_op );
 
             auto_ptr< class_cascade > ap_tmp_cascading;
+
             if( p_class_base )
                ap_tmp_cascading.reset( new class_cascade( *p_class_base ) );
 
@@ -2978,6 +2985,7 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
    storage_handler& handler( *gtp_session->p_storage_handler );
 
    size_t num_children = instance_accessor.get_num_foreign_key_children( );
+
    if( num_children && !instance_keys[ instance.get_class_id( ) ].count( instance.get_key( ) ) )
    {
       for( int pass = 0; pass < 2; ++pass )
@@ -3148,7 +3156,9 @@ void setup_select_columns( class_base& instance, const vector< string >& field_i
 
    map< int, int > field_nums;
    map< string, int > field_names;
+
    int num_fields = instance.get_num_fields( );
+
    for( int i = 0, c = 0; i < num_fields; i++ )
    {
       if( instance.is_field_transient( i ) )
@@ -3227,6 +3237,7 @@ void split_key_info( const string& key_info,
       }
 
       size_t order_provided = order_info.size( );
+
       split( fields, order_info );
 
       // NOTE: The primary key is always being added to the end of the order info as it
@@ -3272,8 +3283,10 @@ void split_key_info( const string& key_info,
 void split_text_search( const string& text_search, vector< string >& words )
 {
    string next_word;
+
    bool in_quotes = false;
    bool had_escape = false;
+
    for( size_t i = 0; i < text_search.size( ); i++ )
    {
       char ch = text_search[ i ];
@@ -3348,6 +3361,7 @@ size_t split_csv_values( const string& line,
       next_value = line.substr( 0, continuation_offset );
 
    bool in_quotes = last_value_incomplete;
+
    for( size_t i = continuation_offset; i < line.size( ); i++ )
    {
       if( in_quotes )
@@ -4464,10 +4478,12 @@ void read_server_configuration( )
       g_use_udp = ( lower( reader.read_opt_attribute( c_attribute_use_udp, c_false ) ) == c_true );
 
       string ip_addrs( reader.read_opt_attribute( c_attribute_ip_addrs ) );
+
       if( !ip_addrs.empty( ) )
          split( ip_addrs, g_accepted_ip_addrs, ' ' );
 
       string na_addrs( reader.read_opt_attribute( c_attribute_na_addrs ) );
+
       if( !na_addrs.empty( ) )
          split( na_addrs, g_rejected_ip_addrs, ' ' );
 
@@ -4545,10 +4561,12 @@ void read_server_configuration( )
       set_system_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
 
       string peer_ips_permit( reader.read_opt_attribute( c_attribute_peer_ips_permit ) );
+
       if( !peer_ips_permit.empty( ) )
          split( peer_ips_permit, g_accepted_peer_ip_addrs, ' ' );
 
       string peer_ips_reject( reader.read_opt_attribute( c_attribute_peer_ips_reject ) );
+
       if( !peer_ips_reject.empty( ) )
          split( peer_ips_reject, g_rejected_peer_ip_addrs, ' ' );
 
@@ -5110,6 +5128,7 @@ void unregister_listener( int port, const char* p_id_info )
    }
 
    bool found = false;
+
    for( listener_id_const_iterator lidci = g_listener_ids.begin( ); lidci != g_listener_ids.end( ); ++lidci )
    {
       if( lidci->second == port )
@@ -5384,6 +5403,7 @@ void init_globals( const char* p_sid, int* p_use_udp )
       if( file_exists( "ciyam_server.pem" ) )
       {
          string password( c_default_pem_password );
+
          if( !g_pem_password.empty( ) )
             password = get_pem_password( );
 
@@ -7081,26 +7101,64 @@ void term_session( )
    if( gtp_session )
    {
       session* p_main_session = 0;
+      vector< session* > other_supporters;
 
-      // NOTE: If a support session is being terminated then any file
-      // hashes it has yet to "get" or "put" are now returned back to
-      // the main session.
+      // NOTE: If a support session is being terminated then any file hashes
+      // remaining to "get" or "put" are now distributed equally between the
+      // other supporters or returned to the main session (according to what
+      // is found here).
       if( gtp_session->is_support_session )
       {
          for( size_t i = 0; i < g_max_sessions; i++ )
          {
             session* p_next = g_sessions[ i ];
 
-            if( p_next && !p_next->is_support_session
+            if( p_next && ( p_next != gtp_session )
              && ( p_next->ip_addr == gtp_session->ip_addr )
              && ( p_next->blockchain == gtp_session->blockchain ) )
             {
-               p_main_session = p_next;
-               break;
+               if( !p_next->is_support_session )
+                  p_main_session = p_next;
+               else
+                  other_supporters.push_back( p_next );
             }
          }
 
-         if( p_main_session )
+         if( !other_supporters.empty( ) )
+         {
+            size_t num_to_get = gtp_session->file_hashes_to_get.size( );
+
+            if( num_to_get )
+            {
+               size_t supporter = 0;
+
+               for( size_t i = 0; i < num_to_get; i++ )
+               {
+                  other_supporters[ supporter ]->file_hashes_to_get.push_back( gtp_session->file_hashes_to_get.front( ) );
+                  gtp_session->file_hashes_to_get.pop_front( );
+
+                  if( ++supporter >= other_supporters.size( ) )
+                     supporter = 0;
+               }
+            }
+
+            size_t num_to_put = gtp_session->file_hashes_to_put.size( );
+
+            if( num_to_put )
+            {
+               size_t supporter = 0;
+
+               for( size_t i = 0; i < num_to_put; i++ )
+               {
+                  other_supporters[ supporter ]->file_hashes_to_put.push_back( gtp_session->file_hashes_to_put.front( ) );
+                  gtp_session->file_hashes_to_put.pop_front( );
+
+                  if( ++supporter >= other_supporters.size( ) )
+                     supporter = 0;
+               }
+            }
+         }
+         else if( p_main_session )
          {
             size_t num_to_get = gtp_session->file_hashes_to_get.size( );
 
@@ -7313,7 +7371,12 @@ void list_all_sessions( ostream& os, bool inc_dtms, bool include_progress )
              << ' ' << g_sessions[ i ]->dtm_last_cmd.as_string( true, false );
          }
 
-         ss << ' ' << g_sessions[ i ]->last_cmd << ' ';
+         ss << ' ' << g_sessions[ i ]->last_cmd;
+
+         if( include_progress && g_sessions[ i ]->is_peer_session )
+            ss << '<' << g_sessions[ i ]->file_hashes_to_get.size( ) << ':' << g_sessions[ i ]->file_hashes_to_put.size( ) << '>';
+
+         ss << ' ';
 
          if( !g_sessions[ i ]->is_peer_session )
             ss << g_sessions[ i ]->p_storage_handler->get_name( );
@@ -8030,6 +8093,7 @@ void add_peer_file_hash_for_get( const string& hash,
       throw runtime_error( "invalid call to add_peer_file_hash_for_get from non-session" );
 
    string hash_to_remove;
+
    if( p_hash_to_remove )
       hash_to_remove = *p_hash_to_remove;
 
@@ -8061,6 +8125,7 @@ void add_peer_file_hash_for_get( const string& hash,
          session* p_next = g_sessions[ i ];
 
          if( p_next
+          && p_next->is_support_session
           && ( p_next->ip_addr == gtp_session->ip_addr )
           && ( p_next->blockchain == gtp_session->blockchain ) )
          {
@@ -8069,6 +8134,9 @@ void add_peer_file_hash_for_get( const string& hash,
                p_least_full = p_next;
          }
       }
+
+      if( !p_least_full )
+         p_least_full = gtp_session;
 
       if( !add_at_front )
          p_least_full->file_hashes_to_get.push_back( hash );
@@ -8098,7 +8166,11 @@ string top_next_peer_file_hash_to_get( bool take_from_supporter, bool* p_any_sup
       {
          session* p_next = g_sessions[ i ];
 
-         if( p_next && p_next->is_support_session
+         // NOTE: Need to ensure it is not self as support sessions
+         // can also take file hashes from other support sessions.
+         if( p_next
+          && ( p_next != gtp_session )
+          && p_next->is_support_session
           && ( p_next->ip_addr == gtp_session->ip_addr )
           && ( p_next->blockchain == gtp_session->blockchain ) )
          {
@@ -8176,6 +8248,7 @@ void add_peer_file_hash_for_put( const string& hash, bool check_for_supporters )
             session* p_next = g_sessions[ i ];
 
             if( p_next
+             && p_next->is_support_session
              && ( p_next->ip_addr == gtp_session->ip_addr )
              && ( p_next->blockchain == gtp_session->blockchain ) )
             {
@@ -8184,6 +8257,9 @@ void add_peer_file_hash_for_put( const string& hash, bool check_for_supporters )
                   p_least_full = p_next;
             }
          }
+
+         if( !p_least_full )
+            p_least_full = gtp_session;
 
          p_least_full->file_hashes_to_put.push_back( hash );
       }
@@ -8228,7 +8304,9 @@ string top_next_peer_file_hash_to_put( bool take_from_supporter, bool* p_any_sup
       {
          session* p_next = g_sessions[ i ];
 
-         if( p_next && p_next->is_support_session
+         if( p_next
+          && ( p_next != gtp_session )
+          && p_next->is_support_session
           && ( p_next->ip_addr == gtp_session->ip_addr )
           && ( p_next->blockchain == gtp_session->blockchain ) )
          {
