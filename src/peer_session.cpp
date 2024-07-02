@@ -1554,6 +1554,7 @@ void check_for_missing_other_sessions( const date_time& now )
       size_t num_supporters = get_num_sessions_for_blockchain( identity, true, true );
 
       // NOTE: Create replacements for missing support sessions (unless all are missing).
+      // Only creates one support session at a time to avoid creating more than required.
       if( num_supporters && ( num_for_support > num_supporters ) )
       {
          string host_and_port( get_raw_session_variable( get_special_var_name( e_special_var_ip_addr ) ) );
@@ -1579,8 +1580,7 @@ void check_for_missing_other_sessions( const date_time& now )
             ap_temp_secret_hash.reset( new temporary_session_variable( secret_hash_name, secret_hash ) );
 
          if( chain_type != e_peerchain_type_any )
-            create_peer_initiator( blockchain, host_and_port,
-             false, ( num_for_support - num_supporters ), false, true, true, chain_type );
+            create_peer_initiator( blockchain, host_and_port, false, 1, false, true, true, chain_type );
       }
    }
 }
@@ -4217,6 +4217,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          }
 
          system_identity_progress_message( identity );
+
+         if( !has_raw_session_variable( get_special_var_name( e_special_var_paired_sync ) ) )
+            check_for_missing_other_sessions( now );
       }
    }
 
@@ -4234,10 +4237,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    bool any_supporter_has = false;
 
    next_hash_to_get = top_next_peer_file_hash_to_get(
-    ( !is_for_support && check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
+    ( is_for_support || check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
 
    next_hash_to_put = top_next_peer_file_hash_to_put(
-    ( !is_for_support && check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
+    ( is_for_support || check_for_supporters ), !is_for_support ? &any_supporter_has : 0 );
 
    if( !any_supporter_has && !is_waiting_for_hub
     && !block_processing.empty( ) && next_hash_to_get.empty( ) )
@@ -5911,14 +5914,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                if( is_only_session )
                {
                   TRACE_LOG( TRACE_SESSIONS,
-                   "(ending session due to matching paired identity '"
-                   + paired_identity + "' session not being found)" );
+                   "(ending session due to matching paired identity '" + paired_identity + "' session not being found)" );
                }
                else if( is_missing_backup )
                {
                   TRACE_LOG( TRACE_SESSIONS,
-                   "(ending session due to backup identity '"
-                   + backup_identity + "' session not being found)" );
+                   "(ending session due to mandatory backup identity '" + backup_identity + "' session not being found)" );
                }
 
                if( !is_captured_session( ) )
@@ -6876,6 +6877,11 @@ void peer_session::on_start( )
          }
       }
 
+      // NOTE: Wait a little while before calling 'init_session' for a hub session so that
+      // its session id will (in a normal situation) be greater than the support sessions.
+      if( is_hub )
+         msleep( 250 );
+
       init_session( cmd_handler, true, &ip_addr,
        &unprefixed_blockchain, from_string< int >( port ), is_for_support, false );
 
@@ -7188,64 +7194,35 @@ void peer_session::on_start( )
          if( !any_session_has_blockchain( hub_identity )
           && set_system_variable( hub_identity, c_true_value, string( "" ) ) )
          {
-            bool dummy_is_listener = false;
+            string host_and_port( ip_addr + '-' + port );
 
-            // NOTE: Read the "peerchain info" in order to determine which port
-            // should be used to initiate a connection (the "dummy_is_listener"
-            // is required to read host information).
-            string peer_info( get_peerchain_info( identity, &dummy_is_listener ) );
+            string hub_blockchain( c_bc_prefix + hub_identity );
+            string hub_zenith_tag( hub_blockchain + c_zenith_suffix );
 
-            string::size_type pos = peer_info.rfind( ':' );
-
-            bool created_initiator_for_hub = false;
-
-            if( pos != string::npos )
+            if( has_tag( hub_zenith_tag ) )
             {
-               peer_info.erase( pos );
+               string hub_zenith_hash( tag_file_hash( hub_zenith_tag ) );
 
-               pos = peer_info.rfind( '-' );
+               size_t hub_height = 0;
 
-               if( pos != string::npos )
+               if( get_block_height_from_tags( hub_blockchain, hub_zenith_hash, hub_height ) )
                {
-                  string host_and_port( ip_addr );
+                  // FUTURE: This message should be handled as a server string message.
+                  string progress_message( "Currently at height " );
 
-                  host_and_port += peer_info.substr( pos );
+                  progress_message += to_string( hub_height );
 
-                  string hub_blockchain( c_bc_prefix + hub_identity );
-                  string hub_zenith_tag( hub_blockchain + c_zenith_suffix );
-
-                  if( has_tag( hub_zenith_tag ) )
-                  {
-                     string hub_zenith_hash( tag_file_hash( hub_zenith_tag ) );
-
-                     size_t hub_height = 0;
-
-                     if( get_block_height_from_tags( hub_blockchain, hub_zenith_hash, hub_height ) )
-                     {
-                        // FUTURE: This message should be handled as a server string message.
-                        string progress_message( "Currently at height " );
-
-                        progress_message += to_string( hub_height );
-
-                        set_system_variable( c_progress_output_prefix + hub_identity, progress_message );
-                     }
-                  }
-
-                  temporary_session_variable tmp_secret_hash(
-                   get_special_var_name( e_special_var_secret_hash ), secret_hash );
-
-                  create_peer_initiator( hub_blockchain, host_and_port,
-                   false, 0, false, false, false, e_peerchain_type_hub, true );
-
-                  created_initiator_for_hub = true;
+                  set_system_variable( c_progress_output_prefix + hub_identity, progress_message );
                }
             }
 
-            if( !created_initiator_for_hub )
-               set_system_variable( hub_identity, "" );
-            else
-               set_hub_system_variable_if_required( identity, hub_identity );
+            temporary_session_variable tmp_secret_hash(
+             get_special_var_name( e_special_var_secret_hash ), secret_hash );
 
+            create_peer_initiator( hub_blockchain, host_and_port,
+             false, 0, false, false, false, e_peerchain_type_hub, true );
+
+            set_hub_system_variable_if_required( identity, hub_identity );
          }
       }
 
