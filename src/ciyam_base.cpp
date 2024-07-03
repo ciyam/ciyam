@@ -8182,7 +8182,7 @@ string top_next_peer_file_hash_to_get( bool take_from_supporter, bool* p_any_sup
                // until it has finished both fetching and processing of
                // this file it will only take a file hash from the back
                // of the deque if there is more than one present.
-               if( next_num > 1 && take_from_supporter )
+               if( ( next_num > 1 ) && take_from_supporter )
                {
                   if( !p_most_full || ( most_full_num < next_num ) )
                   {
@@ -8202,12 +8202,17 @@ string top_next_peer_file_hash_to_get( bool take_from_supporter, bool* p_any_sup
 
       if( p_most_full )
       {
-         hash = p_most_full->file_hashes_to_get.back( );
-         p_most_full->file_hashes_to_get.pop_back( );
+         size_t num_to_take = max( 1, ( ( int )p_most_full->file_hashes_to_get.size( ) / 10 ) );
 
          // NOTE: After taking from the back of the supporter's
          // queue will now push to the front of one's own queue.
-         gtp_session->file_hashes_to_get.push_front( hash );
+         for( size_t i = 0; i < num_to_take; i++ )
+         {
+            hash = p_most_full->file_hashes_to_get.back( );
+            p_most_full->file_hashes_to_get.pop_back( );
+
+            gtp_session->file_hashes_to_get.push_front( hash );
+         }
       }
    }
 
@@ -8314,7 +8319,7 @@ string top_next_peer_file_hash_to_put( bool take_from_supporter, bool* p_any_sup
 
             if( next_num )
             {
-               if( next_num > 1 && take_from_supporter )
+               if( ( next_num > 1 ) && take_from_supporter )
                {
                   if( !p_most_full || ( most_full_num < next_num ) )
                   {
@@ -8334,10 +8339,15 @@ string top_next_peer_file_hash_to_put( bool take_from_supporter, bool* p_any_sup
 
       if( p_most_full )
       {
-         hash = p_most_full->file_hashes_to_put.back( );
-         p_most_full->file_hashes_to_put.pop_back( );
+         size_t num_to_take = max( 1, ( ( int )p_most_full->file_hashes_to_get.size( ) / 10 ) );
 
-         gtp_session->file_hashes_to_put.push_front( hash );
+         for( size_t i = 0; i < num_to_take; i++ )
+         {
+            hash = p_most_full->file_hashes_to_put.back( );
+            p_most_full->file_hashes_to_put.pop_back( );
+
+            gtp_session->file_hashes_to_put.push_front( hash );
+         }
       }
    }
 
