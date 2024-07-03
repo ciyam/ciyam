@@ -1136,6 +1136,10 @@ void system_variable_expression( const string& expr )
       set_system_variable( name, value );
    }
 
+   if( !expression.empty( )
+    && ( ( expression[ 0 ] == '<' ) || ( expression[ 0 ] == '>' ) ) )
+      expression.erase( 0, 1 );
+
    set_session_variable( c_variable_expression, expression );
 }
 

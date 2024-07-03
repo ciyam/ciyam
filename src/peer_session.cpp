@@ -5217,6 +5217,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   blockchain_height_other = height_from_tag;
 
+                  // NOTE: If fetching was incomplete then the current other height is actually one less.
+                  if( !was_initial_state && blockchain_height_other && !nonce.empty( ) && nonce[ 0 ] == '@' )
+                     --blockchain_height_other;
+
                   if( was_initial_state
                    || ( blockchain_height_other != old_blockchain_height_other ) )
                      socket_handler.set_blockchain_height_other( blockchain_height_other );
@@ -6878,7 +6882,7 @@ void peer_session::on_start( )
       }
 
       // NOTE: Wait a little while before calling 'init_session' for a hub session so that
-      // its session id will (in a normal situation) be greater than the support sessions.
+      // its session id will (in typical situations) be greater than the support sessions.
       if( is_hub )
          msleep( 250 );
 
@@ -7075,7 +7079,7 @@ void peer_session::on_start( )
 
          // NOTE: Initially the identity value is that of the paired initiating session which
          // will not be the blockchain identity (for the paired session). In order to prevent
-         // mistaken usage set it to be the actual blockchain identity value now.
+         // incorrect usage set it to be the actual blockchain identity value now.
          identity = unprefixed_blockchain;
 
          if( !is_for_support )
@@ -7171,7 +7175,7 @@ void peer_session::on_start( )
       }
 
       // NOTE: If a hub identity has been provided then connect to it (unless already connected).
-      if( okay && !is_for_support && !hub_identity.empty( ) )
+      if( okay && !is_responder && !is_for_support && !hub_identity.empty( ) )
       {
          string hub_genesis_hash( get_system_variable( "@" + identity ) );
 
@@ -7454,12 +7458,12 @@ void peer_listener::on_start( )
                {
                   peer_session* p_session = 0;
 
-                  // NOTE: Need to assume it is a support session initially (the first read will
-                  // determine if it actually is or not).
+                  // NOTE: Need to assume that it is a support session initially (as the first read is
+                  // required in order to determine whether it is actually a support session or not).
                   try
                   {
-                     p_session = construct_session( dtm,
-                      true, ap_socket, address.get_addr_string( ) + '=' + blockchains, true );
+                     p_session = construct_session( dtm, true, ap_socket,
+                      address.get_addr_string( ) + '=' + blockchains + ':' + to_string( port ), true );
                   }
                   catch( exception& x )
                   {
@@ -7790,7 +7794,7 @@ peer_session* create_peer_initiator( const string& blockchain,
                has_support_sessions = true;
 
             peer_session* p_session = construct_session( dtm, false, ap_socket,
-             ip_addr + "=" + session_blockchain + ":" + to_string( port ), has_main_session,
+             ip_addr + '=' + session_blockchain + ':' + to_string( port ), has_main_session,
              extra, p_identity, chain_type, has_support_sessions, has_set_system_variable );
 
             if( !p_session )
@@ -7815,12 +7819,10 @@ peer_session* create_peer_initiator( const string& blockchain,
 
             if( !ap_socket->had_timeout( ) )
                // FUTURE: This message should be handled as a server string message.
-               error = "Failed trying to connect to '"
-                + host + "' using port number " + to_string( port ) + ".";
+               error = "Failed trying to connect to '" + host + "' using port number " + to_string( port ) + ".";
             else
                // FUTURE: This message should be handled as a server string message.
-               error = "Timed out trying to connect to '"
-                + host + "' using port number " + to_string( port ) + ".";
+               error = "Timed out trying to connect to '" + host + "' using port number " + to_string( port ) + ".";
 
             if( is_interactive )
                throw runtime_error( error );
