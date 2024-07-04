@@ -4362,8 +4362,12 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                         // NOTE: Use the "nonce" argument to identify the first file needing to
                         // be fetched (so that pull requests are commenced at the right point).
-                        if( !file_hash.empty( ) && ( file_hash.find( ':' ) == string::npos ) )
-                           next_block_tag += string( " " ) + '@' + file_hash;
+                        // If no hash can be found then will use a dummy "none" literal instead
+                        // so that the peer knows that own zenith height is actually one less.
+                        if( file_hash.empty( ) || ( file_hash.find( ':' ) != string::npos ) )
+                           file_hash = string( c_none );
+
+                        next_block_tag += string( " " ) + '@' + file_hash;
 
                         has_tree_files = chk_file( next_block_tag, &next_block_hash );
 
@@ -5342,8 +5346,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          }
          else
          {
-            if( was_initial_state
-             && tag_or_hash.find( c_bc_prefix ) == 0 )
+            if( was_initial_state && tag_or_hash.find( c_bc_prefix ) == 0 )
                nonce.erase( );
 
             if( !nonce.empty( ) && nonce[ 0 ] != '@' )
@@ -5404,6 +5407,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   {
                      was_incomplete = true;
                      first_item_hash = nonce.substr( 1 );
+
+                     if( first_item_hash == string( c_none ) )
+                        first_item_hash.erase( );
                   }
 
                   temporary_session_variable temp_hash(
@@ -5596,10 +5602,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      string progress_total_name( get_special_var_name( e_special_var_progress_total ) );
                      string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
 
-                     // FUTURE: This message should be handled as a server string message.
-                     string progress_message( "Syncing for height " + to_string( blockchain_height_other + 1 ) );
+                     size_t extra = 0;
 
-                     if( blockchain_height != ( blockchain_height_other + 1 ) )
+                     if( blockchain_height > blockchain_height_other )
+                        ++extra;
+
+                     // FUTURE: This message should be handled as a server string message.
+                     string progress_message( "Syncing for height " + to_string( blockchain_height_other + extra ) );
+
+                     if( blockchain_height > ( blockchain_height_other + extra ) )
                         progress_message += '/' + to_string( blockchain_height );
 
                      set_session_variable( progress_count_name, tree_count );

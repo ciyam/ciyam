@@ -40,6 +40,7 @@ if [ -d $BACKUP_PATH ]; then
   fi
 
   retval=0
+
   if [ "$TARGET_FILE" = "" ]; then
    sudo umount $BACKUP_PATH
    retval=$?
@@ -57,6 +58,8 @@ if [ -d $BACKUP_PATH ]; then
    fi
   fi
  fi
+else
+ BACKUP_PATH=`./system_variable get @backup_files`
 fi
 
 ./system_variable set @backup_needed ""
@@ -67,7 +70,7 @@ if [ $prepared -eq 0 ]; then
 fi
 echo "Starting backup..." >>Backup.txt
 
-if [ -f $BACKUP_IMAGE ]; then
+if [ -f $BACKUP_IMAGE ] || [ -f $BACKUP_PATH/$TARGET_FILE ]; then
  export CIYAM_SECONDS=$secs
  export USE_BACKUP_ARCHIVE=1
  export CIYAM_FILE_NAME_ONLY=1
@@ -75,15 +78,17 @@ if [ -f $BACKUP_IMAGE ]; then
  export CIYAM_STREAM_CIPHER=cc
  export REPO_CRYPT_PASSWORD=@sid
 
- if [ "$TARGET_FILE" = "" ]; then
-  ./import_files $CIYAM_USER_PATH Backup : $IMAGE_NAME >>Backup.txt
- else
+ if [ ! "$TARGET_FILE" = "" ]; then
   ./import_files $BACKUP_PATH Backup : $TARGET_FILE >>Backup.txt
+ else
+  ./import_files $CIYAM_USER_PATH Backup : $IMAGE_NAME >>Backup.txt
  fi
 
  ./tree_insert_trunks backup Backup,.Backup >>Backup.txt 2>&1
  ./generate_next_block -backup @sid backup >>Backup.txt 2>&1
  ./block_tree_relegate -backup backup >>Backup.txt 2>&1
+else
+ echo "(no backup image or target found)" >>Backup.txt
 fi
 
 echo "Finished backup..." >>Backup.txt
