@@ -45,6 +45,10 @@ if [ "$TARGET_FILE" = "" ]; then
    fi
   fi
  fi
+else
+ if [ ! -d $BACKUP_PATH ]; then
+  BACKUP_PATH=`./system_variable get @backup_files`
+ fi
 fi
 
 ./system_variable set @backup_needed ""
@@ -82,8 +86,10 @@ fi
 
 BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_backup_height`
 
-echo `date +%s` > $IMPORTED_TIME_FILE
-echo $BLOCKCHAIN_HEIGHT > $BACKUP_HEIGHT_FILE
+if [ -f $BACKUP_IMAGE ]; then
+ echo `date +%s` > $IMPORTED_TIME_FILE
+ echo $BLOCKCHAIN_HEIGHT > $BACKUP_HEIGHT_FILE
+fi
 
 echo "Finished restore..." >>Backup.txt
 date >>Backup.txt
