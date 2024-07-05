@@ -602,6 +602,58 @@ bbb
 ccc
 ddd
 eee
+session_variable @deque ""
+session_variable @deque "push_back aaa"
+session_variable @deque "push_back bbb"
+session_variable @deque "push_back ccc"
+session_variable @deque "push_back ddd"
+session_variable @deque "push_back eee"
+session_variable @deque "push_back fff"
+session_variable @deque "push_back ggg"
+session_variable @deque "push_back hhh"
+session_variable @deque
+aaa
+bbb
+ccc
+ddd
+eee
+fff
+ggg
+hhh
+session_variable @deque "take 0"
+session_variable @deque
+aaa
+bbb
+ccc
+ddd
+eee
+fff
+ggg
+hhh
+session_variable @deque "take 2"
+aaa
+bbb
+session_variable @deque
+ccc
+ddd
+eee
+fff
+ggg
+hhh
+session_variable @deque "take -3"
+ddd
+eee
+session_variable @deque
+ccc
+fff
+ggg
+hhh
+session_variable @deque "take -2"
+fff
+ggg
+session_variable @deque
+ccc
+hhh
 session_variable @queue_test abc
 session_variable @queue_test def
 session_variable @queue_test ghi
