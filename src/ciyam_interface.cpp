@@ -122,6 +122,8 @@ const char* const c_stop_file = "../meta/ciyam_interface.stop";
 const char* const c_backup_log_file = "../meta/backup.log";
 const char* const c_restore_log_file = "../meta/restore.log";
 
+const char* const c_has_restored_file = ".has_restored";
+
 const char* const c_prepare_backup_file = "../meta/.prepare.backup";
 const char* const c_prepare_restore_file = "../meta/.prepare.restore";
 
@@ -1066,6 +1068,9 @@ void request_handler::process_request( )
       {
          is_backup_or_restore = process_log_file( module_name, c_restore_log_file,
           GDS( c_display_restore_in_progress ), g_restore_html, c_restore_text, extra_content );
+
+         if( !file_exists( c_restore_log_file ) )
+            file_touch( c_has_restored_file, 0, true );
       }
       else if( file_exists( c_stop_file ) )
       {
@@ -1560,10 +1565,14 @@ void request_handler::process_request( )
                               throw runtime_error( "unable to unlock encrypted identity information" );
 #endif
                            was_unlock = true;
-                           clear_key( g_id_pwd );
+
+                           if( !file_exists( c_has_restored_file ) )
+                           {
+                              clear_key( g_id_pwd );
+                              g_id_pwd.erase( );
+                           }
 
                            g_seed.erase( );
-                           g_id_pwd.erase( );
 
                            msleep( 250 );
                         }
@@ -1635,6 +1644,7 @@ void request_handler::process_request( )
                      }
 
                      pos = identity_info.find( '!' );
+
                      if( pos == string::npos )
                         throw runtime_error( "unexpected identity information '" + identity_info + "'" );
 
@@ -1658,6 +1668,9 @@ void request_handler::process_request( )
                      if( !sid.empty( ) && matches_server_sid( sid ) )
                      {
                         g_unlock_fails = 0;
+
+                        if( file_exists( c_has_restored_file ) )
+                           has_set_identity = true;
 
                         g_id = get_id_from_server_identity( server_identity.c_str( ) );
 
@@ -1701,6 +1714,7 @@ void request_handler::process_request( )
                            if( ( server_identity != encrypted_identity ) && !file_exists( id_file_name.c_str( ) ) )
                            {
                               login_refresh = true;
+
                               g_seed = string( c_unlock );
                            }
                         }
@@ -1872,6 +1886,8 @@ void request_handler::process_request( )
                            else
                               throw runtime_error( "unexpected server error occurred trying to update 'admin' password" );
                         }
+
+                        file_remove( c_has_restored_file );
 
                         clear_key( g_id_pwd );
 
