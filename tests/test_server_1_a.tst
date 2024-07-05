@@ -603,6 +603,7 @@ ccc
 ddd
 eee
 session_variable @deque ""
+session_variable @deque "take 1"
 session_variable @deque "push_back aaa"
 session_variable @deque "push_back bbb"
 session_variable @deque "push_back ccc"

@@ -1467,21 +1467,29 @@ string take_front_from_deque( deque< string >& src, deque< string >& dest, int t
    size_t num_to_take = ( take_or_divide >= 0 ? take_or_divide
     : max( ( size_t )1, ( src.size( ) / abs( take_or_divide ) ) ) );
 
-   string src_front( src.front( ) );
+   string retval;
 
-   if( take_or_divide < 0 )
-      src.pop_front( );
-
-   for( size_t i = 0; i < num_to_take; i++ )
+   if( !src.empty( ) )
    {
-      dest.push_back( src.front( ) );
-      src.pop_front( );
+      string src_front( src.front( ) );
+
+      if( take_or_divide < 0 )
+         src.pop_front( );
+
+      for( size_t i = 0; i < num_to_take; i++ )
+      {
+         dest.push_back( src.front( ) );
+         src.pop_front( );
+      }
+
+      if( take_or_divide < 0 )
+         src.push_front( src_front );
    }
 
-   if( take_or_divide < 0 )
-      src.push_front( src_front );
+   if( !dest.empty( ) )
+      retval = dest.front( );
 
-   return dest.front( );
+   return retval;
 }
 
 size_t get_last_raw_file_data_chunk(
