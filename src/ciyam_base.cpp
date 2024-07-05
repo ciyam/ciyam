@@ -1457,6 +1457,33 @@ typedef external_client_container::value_type external_client_value_type;
 
 external_client_container g_external_client_info;
 
+const int c_take_total_divided_by_ten = -10;
+
+// NOTE: Takes N (or size / abs(N)) items from the front of a source deque and appends them to
+// the back of a destination deque retaining the source deque's front item (when using abs(N))
+// and preserving the order of all items that are moved to the destination deque.
+string take_front_from_deque( deque< string >& src, deque< string >& dest, int take_or_divide )
+{
+   size_t num_to_take = ( take_or_divide >= 0 ? take_or_divide
+    : max( ( size_t )1, ( src.size( ) / abs( take_or_divide ) ) ) );
+
+   string src_front( src.front( ) );
+
+   if( take_or_divide < 0 )
+      src.pop_front( );
+
+   for( size_t i = 0; i < num_to_take; i++ )
+   {
+      dest.push_back( src.front( ) );
+      src.pop_front( );
+   }
+
+   if( take_or_divide < 0 )
+      src.push_front( src_front );
+
+   return dest.front( );
+}
+
 size_t get_last_raw_file_data_chunk(
  const string& tree_tag, const string& log_blob_file_prefix,
  string& raw_file_data, string* p_last_hash = 0, bool remove_existing_blobs = false )
@@ -8180,8 +8207,9 @@ string top_next_peer_file_hash_to_get( bool take_from_supporter, bool* p_any_sup
             {
                // NOTE: As a support session won't "pop" the front hash
                // until it has finished both fetching and processing of
-               // this file it will only take a file hash from the back
-               // of the deque if there is more than one present.
+               // this file it can only take file hashes from the front
+               // of the deque if there is more than one present (as it
+               // must restore the current front file hash).
                if( ( next_num > 1 ) && take_from_supporter )
                {
                   if( !p_most_full || ( most_full_num < next_num ) )
@@ -8201,19 +8229,8 @@ string top_next_peer_file_hash_to_get( bool take_from_supporter, bool* p_any_sup
       }
 
       if( p_most_full )
-      {
-         size_t num_to_take = max( 1, ( ( int )p_most_full->file_hashes_to_get.size( ) / 10 ) );
-
-         // NOTE: After taking from the back of the supporter's
-         // queue will now push to the front of one's own queue.
-         for( size_t i = 0; i < num_to_take; i++ )
-         {
-            hash = p_most_full->file_hashes_to_get.back( );
-            p_most_full->file_hashes_to_get.pop_back( );
-
-            gtp_session->file_hashes_to_get.push_front( hash );
-         }
-      }
+         hash = take_front_from_deque( p_most_full->file_hashes_to_get,
+          gtp_session->file_hashes_to_get, c_take_total_divided_by_ten );
    }
 
    return hash;
@@ -8338,17 +8355,8 @@ string top_next_peer_file_hash_to_put( bool take_from_supporter, bool* p_any_sup
       }
 
       if( p_most_full )
-      {
-         size_t num_to_take = max( 1, ( ( int )p_most_full->file_hashes_to_get.size( ) / 10 ) );
-
-         for( size_t i = 0; i < num_to_take; i++ )
-         {
-            hash = p_most_full->file_hashes_to_put.back( );
-            p_most_full->file_hashes_to_put.pop_back( );
-
-            gtp_session->file_hashes_to_put.push_front( hash );
-         }
-      }
+         hash = take_front_from_deque( p_most_full->file_hashes_to_put,
+          gtp_session->file_hashes_to_put, c_take_total_divided_by_ten );
    }
 
    return hash;
@@ -9210,6 +9218,22 @@ void set_session_variable( const string& name, const string& value,
                gtp_session->last_deque_item = val;
 
                if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
+            else if( ( pos != string::npos ) && ( val.substr( 0, pos ) == "take" ) )
+            {
+               deque< string > dest;
+
+               take_front_from_deque( gtp_session->deque_items, dest, from_string< int >( val.substr( pos + 1 ) ) );
+
+               if( dest.empty( ) )
+                  val.erase( );
+               else
+                  val = join( dest, '\n' );
+
+               gtp_session->last_deque_item = val;
+
+               if( !val.empty( ) && p_set_special_temporary )
                   *p_set_special_temporary = true;
             }
             else if( pos != string::npos && val.substr( 0, pos ) == "remove" )
