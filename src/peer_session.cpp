@@ -356,7 +356,7 @@ void save_first_prefixed( map< string, size_t >& first_prefixed, size_t total_it
       g_peer_found_bounding[ peer_map_key ] = ( first - 1 );
 }
 
-void check_found_prefixed( const string& hash )
+void check_found_prefixed( const string& hash, unsigned char file_type )
 {
    guard g( g_mutex );
 
@@ -368,9 +368,10 @@ void check_found_prefixed( const string& hash )
       hex_decode( hash.substr( 0, c_prefix_length * 2 ), ( unsigned char* )prefix.data( ), c_prefix_length );
 
       bool increment = false;
+
       size_t last_found = g_peer_found_prefixed[ peer_map_key ];
 
-      if( !g_peer_first_prefixed[ peer_map_key ].count( prefix ) )
+      if( ( file_type == c_file_type_val_list ) || !g_peer_first_prefixed[ peer_map_key ].count( prefix ) )
          increment = true;
       else
       {
@@ -5573,13 +5574,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket.set_delay( );
 
-         fetch_file( hash, socket, p_sock_progress );
+         unsigned char file_type = 0;
+
+         fetch_file( hash, socket, p_sock_progress, &file_type );
 
          if( hash != hello_hash )
          {
             if( !blockchain.empty( ) )
             {
-               check_found_prefixed( hash );
+               check_found_prefixed( hash, file_type );
 
                string tree_count( get_raw_session_variable(
                 get_special_var_name( e_special_var_tree_count ) ) );

@@ -516,6 +516,10 @@ test.jpg.000005
  [blob] 096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 (1.0 kB)
 test.jpg.000006
  [blob] 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 (715 B)
+file_info -total_items test:5*
+4/7
+file_info -total_items test:57*
+5/7
 file_get test.xxx
 Error: file 'test.xxx' not found
 file_get test.xxx
