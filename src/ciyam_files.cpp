@@ -2043,6 +2043,8 @@ void file_list_item_pos(
 
    bool has_set_missing = false;
 
+   string::size_type wpos = item_hash.find_first_of( "?*" );
+
    if( is_top_level && !repository.empty( ) )
       set_session_variable(
        get_special_var_name( e_special_var_repo_entry_missing ), "" );
@@ -2090,8 +2092,16 @@ void file_list_item_pos(
             if( pos != string::npos )
                next_name = next_item.substr( pos + 1 );
 
-            if( !item_pos && !is_hidden && ( next_hash == item_hash ) )
-               item_pos = total;
+            if( !item_pos && !is_hidden )
+            {
+               if( next_hash == item_hash )
+                  item_pos = total;
+               else if( wpos != string::npos )
+               {
+                  if( wildcard_match( item_hash, next_hash ) )
+                     item_pos = total;
+               }
+            }
 
             // NOTE: If a top-level list item name begins with a '.' then any blobs below it
             // will be excluded as "hidden" if the session variable has been set accordingly.
@@ -2121,8 +2131,16 @@ void file_list_item_pos(
                if( is_list_file( next_hash, &is_encrypted ) )
                {
                   // NOTE: Do not ignore a list hash even if it's in a hidden branch.
-                  if( !item_pos && !item_hash.empty( ) && ( next_hash == item_hash ) )
-                     item_pos = total;
+                  if( !item_pos && !item_hash.empty( ) )
+                  {
+                     if( next_hash == item_hash )
+                        item_pos = total;
+                     else if( wpos != string::npos )
+                     {
+                        if( wildcard_match( item_hash, next_hash ) )
+                           item_pos = total;
+                     }
+                  }
 
                   file_list_item_pos( repository, next_hash,
                    total, total_type, item_hash, item_pos, recurse, p_progress, p_dtm, is_hidden, false );
@@ -3710,7 +3728,7 @@ void crypt_file( const string& repository,
    }
 }
 
-void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progress )
+void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progress, unsigned char* p_file_type )
 {
    string archive_path( get_session_variable(
     get_special_var_name( e_special_var_blockchain_archive_path ) ) );
@@ -3736,6 +3754,9 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
 
       unsigned char file_type = ( content[ 0 ] & c_file_type_val_mask );
       unsigned char file_extra = ( content[ 0 ] & c_file_type_val_extra_mask );
+
+      if( p_file_type )
+         *p_file_type = file_type;
 
       bool is_encrypted = ( content[ 0 ] & c_file_type_val_encrypted );
 

@@ -251,6 +251,8 @@ notifier -finish test1
 ~rmdir test1/xxx
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test
+file_info -total_items test:5*
+file_info -total_items test:57*
 file_get test.xxx
 file_get test.xxx
 file_get modules.lst.default
