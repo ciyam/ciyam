@@ -33,8 +33,9 @@ class META_APPLICATION_SCRIPT_DECL_SPEC Meta_Application_Script : public class_b
    {
       e_field_id_none = 0,
       e_field_id_Name = 1,
-      e_field_id_Package_Type = 2,
-      e_field_id_Script_Name = 3
+      e_field_id_Other_Package_Types = 2,
+      e_field_id_Package_Type = 3,
+      e_field_id_Script_Name = 4
    };
 
    Meta_Application_Script( );
@@ -42,6 +43,9 @@ class META_APPLICATION_SCRIPT_DECL_SPEC Meta_Application_Script : public class_b
 
    const std::string& Name( ) const;
    void Name( const std::string& Name );
+
+   const std::string& Other_Package_Types( ) const;
+   void Other_Package_Types( const std::string& Other_Package_Types );
 
    const std::string& Script_Name( ) const;
    void Script_Name( const std::string& Script_Name );

@@ -551,6 +551,36 @@ session_variable @set
 aaa
 bbb
 ccc
+session_variable @set ?a
+0
+session_variable @set ?aa
+0
+session_variable @set ?aaa
+1
+session_variable @set ?aaa,b
+0
+session_variable @set ?aaa,c
+0
+session_variable @set ?aaa,bb
+0
+session_variable @set ?aaa,cc
+0
+session_variable @set ?aaa,bbb
+1
+session_variable @set ?aaa,ccc
+1
+session_variable @set ?aaa,bbb,c
+0
+session_variable @set ?aaa,bbb,d
+0
+session_variable @set ?aaa,bbb,cc
+0
+session_variable @set ?aaa,bbb,dd
+0
+session_variable @set ?aaa,bbb,ccc
+1
+session_variable @set ?aaa,bbb,ddd
+0
 session_variable @deque @set
 session_variable @deque
 aaa

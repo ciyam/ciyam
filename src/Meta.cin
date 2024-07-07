@@ -893,6 +893,7 @@ procedure_add -id=137430 Package_Option Clear
 class_add -id=138100 Application_Script Application_Scripts
 field_add -id=138101 Application_Script Name str100 mand
 field_add -id=138102 Application_Script Script_Name str100 mand
+field_add -id=138103 Application_Script Other_Package_Types str200 opt
 index_add -id=138201 Application_Script Name unique
 class_add -id=139100 Global_Archive Global_Archives -x=global:arch
 field_add -id=139101 Global_Archive Name str100 opt -transient

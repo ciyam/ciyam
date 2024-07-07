@@ -626,18 +626,11 @@ void Meta_Package_Type::impl::impl_Install( )
       else
          package_file = get_obj( ).get_attached_file_path( get_obj( ).File( ) );
 
-#ifdef _WIN32
-      string cmd( "unbundle -o -q " );
-#else
       string cmd( "./unbundle -o -q " );
-#endif
+
       cmd += package_file;
 
-#ifdef _WIN32
-      cmd += " >nul";
-#else
       cmd += " >/dev/null";
-#endif
 
       exec_system( cmd, false );
 
@@ -674,13 +667,16 @@ void Meta_Package_Type::impl::impl_Install( )
    details.erase( 0, pos + 1 );
 
    bool is_multi = false;
+
    if( lower( details ) == "multi" || lower( details ) == "multiple" )
       is_multi = true;
    else if( lower( details ) != "single" )
       throw runtime_error( "unexpected package details: " + lines[ 0 ] );
 
    string key( get_obj( ).get_key( ) );
+
    map< string, int > package_versions;
+
    if( !storage_locked_for_admin( ) && get_obj( ).iterate_forwards( ) )
    {
       do
@@ -695,6 +691,7 @@ void Meta_Package_Type::impl::impl_Install( )
    string single( name );
 
    pos = name.find( ':' );
+
    if( pos != string::npos )
    {
       single = name.substr( pos + 1 );
@@ -786,11 +783,7 @@ void Meta_Package_Type::impl::impl_Install( )
       if( !extra.empty( ) )
          extra = " " + extra;
 
-#ifdef _WIN32
-      exec_system( "install_package.bat " + name + extra + " >nul", false );
-#else
       exec_system( "./install_package " + name + extra + " >/dev/null", false );
-#endif
 
       if( exists_file( name + ".specs.sio" ) )
       {
@@ -1323,6 +1316,40 @@ void Meta_Package_Type::impl::for_destroy( bool is_internal )
    // [(finish file_attachment)] 600803
 
    // [<start for_destroy>]
+//nyi
+   if( !storage_locked_for_admin( ) )
+   {
+      class_pointer< Meta_Application_Script > cp_application_scripts( e_create_instance );
+
+      vector< string > application_scripts_to_remove;
+
+      if( cp_application_scripts->iterate_forwards( ) )
+      {
+         do
+         {
+            string other_package_types( cp_application_scripts->Other_Package_Types( ) );
+
+            if( !other_package_types.empty( ) )
+            {
+               set< string > all_other_package_types;
+
+               split( other_package_types, all_other_package_types );
+
+               if( all_other_package_types.count( get_obj( ).get_key( ) ) )
+                  application_scripts_to_remove.push_back( cp_application_scripts->get_key( ) );
+            }
+         } while( cp_application_scripts->iterate_next( ) );
+      }
+
+      if( !application_scripts_to_remove.empty( ) )
+      {
+         for( size_t i = 0; i < application_scripts_to_remove.size( ); i++ )
+         {
+            cp_application_scripts->op_destroy( application_scripts_to_remove[ i ] );
+            cp_application_scripts->op_apply( );
+         }
+      }
+   }
    // [<finish for_destroy>]
 }
 
