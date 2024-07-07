@@ -6606,6 +6606,15 @@ int exec_system( const string& cmd, bool async, bool delay )
    string exec_cmd( cmd );
    string async_cmd( cmd );
 
+   // NOTE: Prevent command substition from being able to occur.
+   string::size_type pos = cmd.find( "$(" );
+
+   if( pos == string::npos )
+      pos = cmd.find( '`' );
+
+   if( pos != string::npos )
+      throw runtime_error( "disallowed characters found in cmd: " + cmd );
+
    string append_file( get_raw_session_variable(
     get_special_var_name( e_special_var_exec_system_append ) ) );
 
@@ -6615,18 +6624,14 @@ int exec_system( const string& cmd, bool async, bool delay )
       async_cmd += " >> " + append_file;
    }
 
-#ifdef _WIN32
-   async_cmd = "start /min " + async_cmd;
-#else
    async_cmd += " &";
-#endif
 
    // NOTE: For security against potentially malicious module code only permit system calls
    // from the autoscript session, via "run_script", or from specific server storages.
    if( gtp_session && !gtp_session->running_script
-    && gtp_session->p_storage_handler->get_name( ) != c_meta_storage_name
-    && gtp_session->p_storage_handler->get_name( ) != c_ciyam_storage_name
-    && gtp_session->p_storage_handler->get_name( ) != c_default_storage_name )
+    && ( gtp_session->p_storage_handler->get_name( ) != c_meta_storage_name )
+    && ( gtp_session->p_storage_handler->get_name( ) != c_ciyam_storage_name )
+    && ( gtp_session->p_storage_handler->get_name( ) != c_default_storage_name ) )
       throw runtime_error( "invalid exec_system: " + exec_cmd );
 
    string async_var( get_raw_session_variable( get_special_var_name( e_special_var_allow_async ) ) );
@@ -8919,6 +8924,8 @@ void set_session_variable( const string& name, const string& value,
             gtp_session->set_items.clear( );
          else
          {
+            string::size_type pos = val.find( ' ' );
+
             if( val[ 0 ] == '@' )
             {
                if( val != "@deque" )
@@ -8929,6 +8936,31 @@ void set_session_variable( const string& name, const string& value,
             }
             else if( val[ 0 ] == '~' )
                split( val.substr( 1 ), gtp_session->set_items, '\n' );
+            else if( val[ 0 ] == '?' )
+            {
+               vector< string > check_items;
+
+               split( val.substr( 1 ), check_items );
+
+               bool all_found = true;
+
+               for( size_t i = 0; i < check_items.size( ); i++ )
+               {
+                  if( !gtp_session->set_items.count( check_items[ i ] ) )
+                  {
+                     all_found = false;
+                     break;
+                  }
+               }
+
+               if( all_found )
+                  gtp_session->last_set_item = c_true_value;
+               else
+                  gtp_session->last_set_item = c_false_value;
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
             else if( val == "size" )
             {
                val = to_string( gtp_session->set_items.size( ) );

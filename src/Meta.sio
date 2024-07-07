@@ -1013,6 +1013,18 @@
       </specifications>
      </field>
      <field/>
+      <id>138103
+      <name>Other_Package_Types
+      <type>1025
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
       <id>138102
       <name>Script_Name
       <type>1020

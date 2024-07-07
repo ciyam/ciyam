@@ -452,6 +452,21 @@ session_variable @set aaa
 session_variable @set bbb
 session_variable @set ccc
 session_variable @set
+session_variable @set ?a
+session_variable @set ?aa
+session_variable @set ?aaa
+session_variable @set ?aaa,b
+session_variable @set ?aaa,c
+session_variable @set ?aaa,bb
+session_variable @set ?aaa,cc
+session_variable @set ?aaa,bbb
+session_variable @set ?aaa,ccc
+session_variable @set ?aaa,bbb,c
+session_variable @set ?aaa,bbb,d
+session_variable @set ?aaa,bbb,cc
+session_variable @set ?aaa,bbb,dd
+session_variable @set ?aaa,bbb,ccc
+session_variable @set ?aaa,bbb,ddd
 session_variable @deque @set
 session_variable @deque
 session_variable @deque @set
