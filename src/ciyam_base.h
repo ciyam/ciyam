@@ -691,7 +691,7 @@ class CIYAM_BASE_DECL_SPEC system_ods_bulk_write
 std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC get_uid( bool remove_display_name = true );
-void CIYAM_BASE_DECL_SPEC set_uid( const std::string& uid );
+void CIYAM_BASE_DECL_SPEC set_uid( const std::string& uid, bool do_not_erase_sec = false );
 
 struct temporary_user_id
 {

@@ -80,6 +80,23 @@ USER_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
+.pf 100 137100 -q=302820=$USER_PACKAGE_KEY,137101=opt_user_bool_use_access_level "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate User package option 'use_access_level'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+USER_OPTION_KEY=$OUTPUT
+.pu $CIYAM_UID @now 100 137100 $USER_OPTION_KEY "137102=1"
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+
+;
 .pe $CIYAM_UID @now 100 136100 "-v=@async=false,@message=Installing User Package..." $USER_PACKAGE_KEY -136410
 @ifdef $ERROR
 @label ERROR
@@ -117,6 +134,22 @@ BLOG_PACKAGE_KEY=$OUTPUT
 .pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_bool_use_home_list "" @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'use_home_list'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+BLOG_OPTION_KEY=$OUTPUT
+.pu $CIYAM_UID @now 100 137100 $BLOG_OPTION_KEY "137102=1"
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_bool_use_user_access_level "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Blog package option 'use_user_access_level'.
 @endif
 @ifdef $ERROR
 @label ERROR

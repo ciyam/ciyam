@@ -3965,6 +3965,7 @@ string construct_sql_select(
    }
 
    string security_field;
+
    if( !security_info.empty( ) )
    {
       // NOTE: The 'security_info' can either be just a field id (in which case the security level
@@ -11010,19 +11011,22 @@ string get_uid( bool remove_display_name )
    return uid.substr( 0, pos );
 }
 
-void set_uid( const string& uid )
+void set_uid( const string& uid, bool do_not_erase_sec )
 {
    string s( uid );
 
    string::size_type pos = uid.find( ':' );
    string::size_type spos = uid.find( '!' );
 
-   gtp_session->sec.erase( );
-   set_session_variable( get_special_var_name( e_special_var_sec ), "" );
+   if( !do_not_erase_sec )
+   {
+      gtp_session->sec.erase( );
+      set_session_variable( get_special_var_name( e_special_var_sec ), "" );
+   }
 
    if( spos != string::npos )
    {
-      if( pos == string::npos || pos > spos )
+      if( ( pos == string::npos ) || ( pos > spos ) )
       {
          string sec = uid.substr( spos + 1, pos == string::npos ? pos : pos - spos - 1 );
 
@@ -11030,12 +11034,14 @@ void set_uid( const string& uid )
          set_session_variable( get_special_var_name( e_special_var_sec ), sec );
 
          s = uid.substr( 0, spos );
+
          if( pos != string::npos )
             s += uid.substr( pos );
       }
    }
 
    pos = s.find( ':' );
+
    string user_key( s.substr( 0, pos ) );
 
    if( user_key == c_uid_anon )

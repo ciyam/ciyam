@@ -2387,8 +2387,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `{`#default_to_field.spec.xrep section=to_or_for_store class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_sfield=$specification_\0_sfield\
  arg_tpfield=$specification_\0_tpfield arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue\
- arg_append=$specification_\0_append arg_not_dflt=$specification_\0_not_dflt arg_cvt_func=$specification_\0_cvt_func\
- arg_fistexttype=$specification_\0_fistexttype arg_tfistexttype=$specification_\0_tfistexttype\
+ arg_append=$specification_\0_append arg_not_dflt=$specification_\0_not_dflt arg_new_only=$specification_\0_new_only\
+ arg_cvt_func=$specification_\0_cvt_func arg_fistexttype=$specification_\0_fistexttype arg_tfistexttype=$specification_\0_tfistexttype\
  arg_tcfistexttype=$specification_\0_tcfistexttype arg_inc_clones=$specification_\0_inc_clones`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_field_id`'`)`&`@eq`(`$specification_\0_ftransient`,`'0`'`)
@@ -2782,8 +2782,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `{`#default_to_field.spec.xrep section=to_or_for_store class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_sfield=$specification_\0_sfield\
  arg_tpfield=$specification_\0_tpfield arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue\
- arg_append=$specification_\0_append arg_not_dflt=$specification_\0_not_dflt arg_cvt_func=$specification_\0_cvt_func\
- arg_fistexttype=$specification_\0_fistexttype arg_tfistexttype=$specification_\0_tfistexttype\
+ arg_append=$specification_\0_append arg_not_dflt=$specification_\0_not_dflt arg_new_only=$specification_\0_new_only\
+ arg_cvt_func=$specification_\0_cvt_func arg_fistexttype=$specification_\0_fistexttype arg_tfistexttype=$specification_\0_tfistexttype\
  arg_tcfistexttype=$specification_\0_tcfistexttype arg_inc_clones=$specification_\0_inc_clones`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_global`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
@@ -3330,7 +3330,7 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `@eq`(`'\1`'`,`'trigger_peer`'`)
 `{`#trigger_peer.spec.xrep section=after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
- arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
+ arg_o2field=$specification_\0_o2field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
  arg_modifier=$specification_\0_modifier arg_update=$specification_\0_update\
  arg_submit_type=$specification_\0_submit_type`}\
 `,\
