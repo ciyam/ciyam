@@ -63,7 +63,7 @@ inline string format_numeric_value( const numeric& n, const string& mask )
 void output_view_tabs( ostream& os, const view_source& source,
  const session_info& sess_info, int vtab_num, bool is_in_edit, const string& data,
  const string& user_select_key, bool use_url_checksum, const string& cont_act, int back_count,
- bool is_new_record, bool is_record_owner )
+ bool is_new_record, bool is_record_owner, bool is_user_class_view )
 {
    const storage_info& sinfo( get_storage_info( ) );
 
@@ -78,10 +78,24 @@ void output_view_tabs( ostream& os, const view_source& source,
    for( size_t i = 0; i < source.tab_names.size( ); i++ )
    {
       map< string, string > extra_data;
+
       if( !source.tab_extras[ i ].empty( ) )
          parse_field_extra( source.tab_extras[ i ], extra_data );
 
+      if( sess_info.user_id.empty( )
+       && extra_data.count( c_field_extra_no_anon ) )
+         continue;
+
       if( !sess_info.is_admin_user
+       && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) )
+         continue;
+
+      // NOTE: Although "no_anon" would generally not make any sense for "admin_only"
+      // access but it is being used as a special case to prevent the output of a tab
+      // for the actual "admin" user record.
+      if( sess_info.is_admin_user
+       && is_user_class_view && ( data == c_admin )
+       && extra_data.count( c_field_extra_no_anon )
        && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) )
          continue;
 
@@ -91,9 +105,6 @@ void output_view_tabs( ostream& os, const view_source& source,
 
       if( !is_new_record && !sess_info.is_admin_user && !is_record_owner
        && has_perm_extra( c_view_field_extra_admin_owner_only, extra_data, sess_info ) )
-         continue;
-
-      if( sess_info.user_id.empty( ) && extra_data.count( c_field_extra_no_anon ) )
          continue;
 
       if( i + 1 == vtab_num )
@@ -629,12 +640,16 @@ bool output_view_form( ostream& os, const string& act,
    const module_info& mod_info( *sinfo.modules_index.find( source.module )->second );
 
    bool is_new_record = false;
+
    if( !data.empty( ) && data[ 0 ] == ' ' )
       is_new_record = true;
 
    bool is_in_edit = false;
+
    if( act == c_act_edit || ( is_new_record && ( act.empty( ) || act == c_act_undo ) ) )
       is_in_edit = true;
+
+   bool is_user_class_view = ( mod_info.user_class_id == source.cid );
 
    bool is_editable( !is_in_edit );
 
@@ -1364,8 +1379,8 @@ bool output_view_form( ostream& os, const string& act,
          ++num_displayed; // NOTE: Increment for even/odd row display of row following the tabs.
          has_displayed_tabs = true;
 
-         output_view_tabs( os, source, sess_info, vtab_num, is_in_edit, data,
-          user_select_key, use_url_checksum, cont_act, back_count, is_new_record, is_record_owner );
+         output_view_tabs( os, source, sess_info, vtab_num, is_in_edit, data, user_select_key,
+          use_url_checksum, cont_act, back_count, is_new_record, is_record_owner, is_user_class_view );
       }
 
       // NOTE: Determine whether fields should be protected, relegated or displayed differently according
@@ -3253,8 +3268,8 @@ bool output_view_form( ostream& os, const string& act,
    clear_key( sid );
 
    if( display_tabs && !has_displayed_tabs )
-      output_view_tabs( os, source, sess_info, vtab_num, is_in_edit, data,
-       user_select_key, use_url_checksum, cont_act, back_count, is_new_record, is_record_owner );
+      output_view_tabs( os, source, sess_info, vtab_num, is_in_edit, data, user_select_key,
+       use_url_checksum, cont_act, back_count, is_new_record, is_record_owner, is_user_class_view );
 
    os << "</tbody>\n";
    os << "</table>\n";
