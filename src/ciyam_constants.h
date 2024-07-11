@@ -268,6 +268,10 @@ const char* const c_init = "init";
 const char* const c_peer = "peer";
 const char* const c_admin = "admin";
 
+const char* const c_peers = "peers";
+const char* const c_users = "users";
+const char* const c_guests = "guests";
+
 const char* const c_both = "both";
 const char* const c_create = "create";
 const char* const c_update = "update";

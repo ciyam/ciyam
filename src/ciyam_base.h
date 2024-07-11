@@ -693,20 +693,24 @@ std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0 );
 std::string CIYAM_BASE_DECL_SPEC get_uid( bool remove_display_name = true );
 void CIYAM_BASE_DECL_SPEC set_uid( const std::string& uid, bool do_not_erase_sec = false );
 
-struct temporary_user_id
+struct temporary_uid
 {
-   temporary_user_id( const std::string& new_uid )
+   temporary_uid( const std::string& new_uid, bool do_not_erase_sec = false )
    {
       old_uid = get_uid( false );
-      set_uid( new_uid );
+      set_uid( new_uid, do_not_erase_sec );
+
+      this->do_not_erase_sec = do_not_erase_sec;
    }
 
-   ~temporary_user_id( )
+   ~temporary_uid( )
    {
-      set_uid( old_uid );
+      set_uid( old_uid, do_not_erase_sec );
    }
 
    std::string old_uid;
+
+   bool do_not_erase_sec;
 };
 
 bool CIYAM_BASE_DECL_SPEC is_sys_uid( );
@@ -726,6 +730,31 @@ bool CIYAM_BASE_DECL_SPEC has_sec_level( const std::string& level );
 
 std::string CIYAM_BASE_DECL_SPEC get_grp( );
 void CIYAM_BASE_DECL_SPEC set_grp( const std::string& grp );
+
+struct temporary_grp_and_uid
+{
+   temporary_grp_and_uid( const std::string& new_grp, const std::string& new_uid, bool do_not_erase_sec = false )
+   {
+      old_grp = get_grp( );
+      old_uid = get_uid( do_not_erase_sec );
+
+      this->do_not_erase_sec = do_not_erase_sec;
+
+      set_grp( new_grp );
+      set_uid( new_uid, true );
+   }
+
+   ~temporary_grp_and_uid( )
+   {
+      set_grp( old_grp );
+      set_uid( old_uid, do_not_erase_sec );
+   }
+
+   std::string old_grp;
+   std::string old_uid;
+
+   bool do_not_erase_sec;
+};
 
 std::string CIYAM_BASE_DECL_SPEC get_dtm( );
 void CIYAM_BASE_DECL_SPEC set_dtm( const std::string& dtm );
