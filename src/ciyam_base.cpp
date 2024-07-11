@@ -928,6 +928,7 @@ bool storage_handler::obtain_lock( size_t& handle,
     + ", instance = " + lock_instance + ", type = " + to_string( type ) + " (" + op_lock::lock_type_name( type ) + ")" );
 
    bool found = false;
+
    while( attempts-- )
    {
       // NOTE: Empty scope for lock object.
@@ -4105,7 +4106,7 @@ void append_undo_sql_statements( storage_handler& handler )
    }
 }
 
-string extract_mod_cls_and_key_from_command( const string& command )
+string extract_mod_cls_and_key_from_command( const string& command, string* p_fields_and_values = 0 )
 {
    string retval;
 
@@ -4117,6 +4118,21 @@ string extract_mod_cls_and_key_from_command( const string& command )
       throw runtime_error( "unexpected command format '" + command + "' in extract_key_from_command" );
 
    string::size_type npos = command.find( ' ', pos + 1 );
+
+   if( p_fields_and_values && ( npos != string::npos ) && ( command.length( ) > npos + 1 ) )
+   {
+      size_t skip = 1;
+
+      if( command[ npos + skip ] == '"' )
+         ++skip;
+
+      size_t total = command.length( ) - ( npos + skip );
+
+      if( ( skip > 1 ) && ( command[ command.length( ) - 1 ] == '"' ) )
+         --total;
+
+      *p_fields_and_values = command.substr( npos + skip, total );
+   }
 
    // NOTE: Now set pos back to before the mod: " <mod> <cls> <key >[ ...]"
    pos = find_nth_occurrence( command, ' ', 3 );
@@ -4160,9 +4176,126 @@ void append_peerchain_log_commands( )
 
          string command( next_command.substr( 0, pos ) );
 
-         // NOTE: If a record is being destroy that had previously been created in the identity log
-         // file will remove that line from that file (or remove the identity log file itself if it
-         // was the only line found).
+         // NOTE: If a record is being updated then check whether it had previously been created in
+         // the identity log file and if so that this update does change one field value (including
+         // prior updates). If created and no change found then will not append the update command.
+         if( command == c_cmd_update )
+         {
+            string update_fields_and_values;
+
+            string update_info( extract_mod_cls_and_key_from_command( next_command, &update_fields_and_values ) );
+
+            if( file_exists( identity_log ) )
+            {
+               vector< string > lines;
+               buffer_file_lines( identity_log, lines );
+
+               bool had_created = false;
+               bool has_changed_any_values = false;
+
+               map< string, string > field_and_value_info;
+
+               for( size_t i = 0; i < lines.size( ); i++ )
+               {
+                  string next_line( lines[ i ] );
+
+                  pos = next_line.find( ' ' );
+
+                  if( pos != string::npos )
+                  {
+                     command = next_line.substr( 0, pos );
+
+                     if( command == c_cmd_create )
+                     {
+                        string create_fields_and_values;
+
+                        string create_info( extract_mod_cls_and_key_from_command( next_line, &create_fields_and_values ) );
+
+                        if( !create_fields_and_values.empty( ) && ( create_info == update_info ) )
+                        {
+                           had_created = true;
+
+                           vector< string > field_and_value_pairs;
+
+                           raw_split( create_fields_and_values, field_and_value_pairs );
+
+                           for( size_t j = 0; j < field_and_value_pairs.size( ); j++ )
+                           {
+                              string next_field_and_value( field_and_value_pairs[ j ] );
+
+                              string::size_type pos = next_field_and_value.find( '=' );
+
+                              if( pos != string::npos )
+                              {
+                                 string field( next_field_and_value.substr( 0, pos ) );
+                                 string value( next_field_and_value.substr( pos + 1 ) );
+
+                                 field_and_value_info[ field ] = value;
+                              }
+                           }
+                        }
+                     }
+                     else if( had_created && ( command == c_cmd_update ) )
+                     {
+                        string prior_update_fields_and_values;
+
+                        string prior_update_info( extract_mod_cls_and_key_from_command( next_line, &prior_update_fields_and_values ) );
+
+                        if( !prior_update_fields_and_values.empty( ) && ( prior_update_info == update_info ) )
+                        {
+                           vector< string > field_and_value_pairs;
+
+                           raw_split( prior_update_fields_and_values, field_and_value_pairs );
+
+                           for( size_t j = 0; j < field_and_value_pairs.size( ); j++ )
+                           {
+                              string next_field_and_value( field_and_value_pairs[ j ] );
+
+                              if( pos != string::npos )
+                              {
+                                 string field( next_field_and_value.substr( 0, pos ) );
+                                 string value( next_field_and_value.substr( pos + 1 ) );
+
+                                 field_and_value_info[ field ] = value;
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+
+               vector< string > field_and_value_pairs;
+
+               raw_split( update_fields_and_values, field_and_value_pairs );
+
+               for( size_t i = 0; i < field_and_value_pairs.size( ); i++ )
+               {
+                  string next_field_and_value( field_and_value_pairs[ i ] );
+
+                  string::size_type pos = next_field_and_value.find( '=' );
+
+                  if( pos != string::npos )
+                  {
+                     string field( next_field_and_value.substr( 0, pos ) );
+                     string value( next_field_and_value.substr( pos + 1 ) );
+
+                     if( field_and_value_info[ field ] != value )
+                     {
+                        has_changed_any_values = true;
+                        break;
+                     }
+                  }
+               }
+
+               if( had_created && !has_changed_any_values )
+                  append_command = false;
+            }
+         }
+
+         // NOTE: If the record being destroyed had also previously been created in the identity log
+         // file will remove that line from the file (or remove the identity log file itself if this
+         // was the only line found). Any matching update lines that are found after the create will
+         // now also be removed.
          if( command == c_cmd_destroy )
          {
             string destroy_info( extract_mod_cls_and_key_from_command( next_command ) );
@@ -4191,10 +4324,15 @@ void append_peerchain_log_commands( )
                         if( create_info == destroy_info )
                         {
                            removed_create = true;
-                           lines.erase( lines.begin( ) + i );
-
-                           break;
+                           lines.erase( lines.begin( ) + i-- );
                         }
+                     }
+                     else if( removed_create && ( command == c_cmd_update ) )
+                     {
+                        string update_info( extract_mod_cls_and_key_from_command( next_line ) );
+
+                        if( update_info == destroy_info )
+                           lines.erase( lines.begin( ) + i-- );
                      }
                   }
                }
@@ -4320,10 +4458,11 @@ void append_transaction_log_command( storage_handler& handler,
          tx_id = ++identity.next_id;
       }
 
+      string next_line;
       vector< string > lines;
+
       raw_split( gtp_session->transaction_log_command, lines, '\n' );
 
-      string next_line;
       for( size_t i = 0; i < lines.size( ); i++ )
       {
          next_line = "[" + to_string( tx_id ) + "]" + lines[ i ] + "\n";
@@ -4343,6 +4482,7 @@ void append_transaction_log_command( storage_handler& handler,
          append_transaction_log_lines_to_blob_files( handler.get_name( ) + c_log_file_ext, tx_log_lines, is_restoring );
 
       log_file.flush( );
+
       if( !log_file.good( ) )
          throw runtime_error( "*** unexpected error occurred writing to transaction log ***" );
    }
