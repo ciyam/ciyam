@@ -353,7 +353,6 @@ struct session
     cache_count( 0 ),
     next_handle( 0 ),
     p_tx_helper( 0 ),
-    ods_tlg_size( 0 ),
     is_captured( false ),
     running_script( false ),
     skip_fk_fetches( false ),
@@ -366,7 +365,6 @@ struct session
     cmd_handler( cmd_handler ),
     skip_is_constrained( false ),
     session_commands_executed( 0 ),
-    has_ciyam_logs_list_tag( false ),
     is_peer_session( is_peer_session ),
     p_storage_handler( p_storage_handler ),
     is_support_session( is_support_session )
@@ -453,8 +451,6 @@ struct session
    bool is_peer_session;
    bool is_support_session;
 
-   int64_t ods_tlg_size;
-
    bool skip_fk_fetches;
    bool skip_validation;
    bool skip_is_constrained;
@@ -470,8 +466,6 @@ struct session
    int64_t peer_bytes_downloaded;
 
    size_t session_commands_executed;
-
-   bool has_ciyam_logs_list_tag;
 
    module_container modules_by_id;
    module_container modules_by_name;
@@ -1531,61 +1525,6 @@ size_t get_last_raw_file_data_chunk(
       *p_last_hash = last_hash;
 
    return raw_file_chunk;
-}
-
-void append_system_ods_transaction_log_files( )
-{
-   string separator( ":" );
-
-   string server_tx_log_file( get_files_area_dir( ) );
-   server_tx_log_file += '/' + string( c_server_tx_log_file );
-
-   string raw_file_data, old_raw_file_data;
-   size_t raw_file_chunk = get_last_raw_file_data_chunk( c_ciyam_logs_tag, c_server_tx_log_file, old_raw_file_data );
-
-   size_t max_chunk_size = g_files_area_item_max_size - 1;
-
-   // NOTE: The initial "chunk" of the ODS transaction log needs to always be re-written as the
-   // ODS transaction log header is being updated every time that the log is being appended to.
-   raw_file_data = string( c_file_type_str_blob ) + buffer_file( server_tx_log_file, max_chunk_size );
-
-   string log_raw_file_tag_name( string( c_server_tx_log_file ) + "." + to_comparable_string( 0, false, 6 ) );
-
-   create_raw_file( raw_file_data, true, log_raw_file_tag_name.c_str( ) );
-
-   create_list_tree( log_raw_file_tag_name, log_raw_file_tag_name,
-    true, c_ciyam_logs_tag + separator + c_server_tx_log_file, c_ciyam_logs_tag, "" );
-
-   if( raw_file_chunk > 0 )
-   {
-      raw_file_data = old_raw_file_data;
-
-      size_t bytes_buffered = raw_file_data.size( );
-
-      int64_t total_size = file_size( server_tx_log_file );
-
-      while( true )
-      {
-         raw_file_data.erase( );
-
-         if( bytes_buffered < max_chunk_size )
-         {
-            raw_file_data += buffer_file( server_tx_log_file,
-             max_chunk_size - bytes_buffered, 0, ( raw_file_chunk * max_chunk_size ) + bytes_buffered );
-
-            // NOTE: Each "line" is a chunk of the transaction log data.
-            vector< string > lines;
-            lines.push_back( raw_file_data );
-
-            append_transaction_log_lines_to_blob_files( server_tx_log_file, lines );
-         }
-
-         if( ++raw_file_chunk * max_chunk_size >= total_size )
-            break;
-
-         bytes_buffered = 0;
-      }
-   }
 }
 
 struct reconstruct_trace_progress : progress
@@ -4412,12 +4351,7 @@ void append_transaction_log_command( storage_handler& handler,
          log_file.open( log_filename.c_str( ), ios::out | ios::app );
 
       if( is_new )
-      {
          log_file << c_storage_identity_tx_id << handler.get_root( ).identity << '\n';
-
-         if( gtp_session->has_ciyam_logs_list_tag )
-            tx_log_lines.push_back( c_storage_identity_tx_id + handler.get_root( ).identity + "\n" );
-      }
 
       int32_t tx_id;
 
@@ -4468,18 +4402,12 @@ void append_transaction_log_command( storage_handler& handler,
          next_line = "[" + to_string( tx_id ) + "]" + lines[ i ] + "\n";
 
          log_file << next_line;
-
-         if( gtp_session->has_ciyam_logs_list_tag )
-            tx_log_lines.push_back( next_line );
       }
 
       bool is_restoring = handler.get_is_locked_for_admin( );
 
       if( !get_session_variable( get_special_var_name( e_special_var_package_install_extra ) ).empty( ) )
          is_restoring = true;
-
-      if( gtp_session->has_ciyam_logs_list_tag )
-         append_transaction_log_lines_to_blob_files( handler.get_name( ) + c_log_file_ext, tx_log_lines, is_restoring );
 
       log_file.flush( );
 
@@ -7270,9 +7198,6 @@ void init_session(
       throw runtime_error( "max. permitted concurrent sessions already active" );
 
    set_default_session_variables( port );
-
-   if( has_files_area_tag( c_ciyam_logs_tag, e_file_type_list ) )
-      gtp_session->has_ciyam_logs_list_tag = true;
 }
 
 void term_session( )
@@ -13745,14 +13670,6 @@ void transaction_start( )
       exec_sql( *gtp_session->ap_db, "BEGIN" );
    }
 
-   if( gtp_session->has_ciyam_logs_list_tag )
-   {
-      string server_tx_log_file( get_files_area_dir( ) );
-      server_tx_log_file += '/' + string( c_server_tx_log_file );
-
-      gtp_session->ods_tlg_size = file_size( server_tx_log_file );
-   }
-
    gtp_session->transactions.push( new ods::transaction( *ods::instance( ) ) );
 }
 
@@ -13805,21 +13722,6 @@ void transaction_commit( )
          gtp_session->sql_undo_statements.clear( );
 
          handler.release_locks_for_commit( gtp_session );
-      }
-   }
-
-   if( gtp_session->has_ciyam_logs_list_tag )
-   {
-      string server_tx_log_file( get_files_area_dir( ) );
-      server_tx_log_file += '/' + string( c_server_tx_log_file );
-
-      string all_tags( list_file_tags( string( c_server_tx_log_file ) + ".*" ) );
-
-      if( all_tags.empty( )
-       || ( file_size( server_tx_log_file ) > gtp_session->ods_tlg_size ) )
-      {
-         append_system_ods_transaction_log_files( );
-         insert_log_blobs_into_tree( c_ciyam_logs_tag, c_server_tx_log_file );
       }
    }
 
@@ -14015,100 +13917,6 @@ void append_transaction_log_command( const string& log_command )
          gtp_session->transaction_log_command += '\n';
 
       gtp_session->transaction_log_command += log_command;
-   }
-}
-
-void insert_log_blobs_into_tree( const string& tree_tag, const string& log_blob_file_prefix )
-{
-   guard g( g_mutex );
-
-   if( !log_blob_file_prefix.empty( ) )
-   {
-      string separator( ":" );
-
-      string all_tags( list_file_tags( log_blob_file_prefix + ".*" ) );
-
-      if( !all_tags.empty( ) )
-      {
-         vector< string > tags;
-         split( all_tags, tags, '\n' );
-
-         for( size_t i = 0; i < tags.size( ); i++ )
-         {
-            string next_tag( tags[ i ] );
-
-            create_list_tree( next_tag, next_tag,
-             true, tree_tag + separator + log_blob_file_prefix, tree_tag, "" );
-
-            if( i != tags.size( ) - 1 )
-               tag_del( tags[ i ] );
-         }
-      }
-   }
-}
-
-void append_transaction_log_lines_to_blob_files(
- const string& log_blob_file_prefix, const vector< string >& log_lines, bool is_restoring, bool remove_existing_blobs )
-{
-   guard g( g_mutex );
-
-   if( !log_blob_file_prefix.empty( ) && !log_lines.empty( ) )
-   {
-      string log_raw_file_tag;
-      string raw_file_data( c_file_type_str_blob );
-
-      string separator( ":" );
-      string last_tag, last_hash;
-
-      size_t raw_file_chunk = get_last_raw_file_data_chunk(
-       c_ciyam_logs_tag, log_blob_file_prefix, raw_file_data, &last_hash, remove_existing_blobs );
-
-      log_raw_file_tag = log_blob_file_prefix + "." + to_comparable_string( raw_file_chunk, false, 6 );
-
-      string next_line;
-      for( size_t i = 0; i < log_lines.size( ); i++ )
-      {
-         next_line = log_lines[ i ];
-
-         if( raw_file_data.size( ) + next_line.size( ) > g_files_area_item_max_size )
-         {
-            // NOTE: Don't re-create if existing file wasn't actually appended to.
-            if( i > 0 )
-            {
-               create_raw_file( raw_file_data, true, log_raw_file_tag.c_str( ) );
-
-               if( is_restoring )
-               {
-                  if( !last_hash.empty( ) )
-                     delete_file( last_hash, true );
-               }
-               else
-                  create_list_tree( log_raw_file_tag, log_raw_file_tag,
-                   true, c_ciyam_logs_tag + separator + log_blob_file_prefix, c_ciyam_logs_tag, "" );
-            }
-
-            ++raw_file_chunk;
-
-            raw_file_data.erase( 1 );
-            log_raw_file_tag = log_blob_file_prefix + "." + to_comparable_string( raw_file_chunk, false, 6 );
-         }
-
-         raw_file_data += next_line;
-      }
-
-      if( raw_file_data.size( ) > 1 )
-      {
-         create_raw_file( raw_file_data, true, log_raw_file_tag.c_str( ) );
-
-         if( is_restoring )
-         {
-            if( !last_hash.empty( ) )
-               delete_file( last_hash, true );
-         }
-         else
-            create_list_tree( log_raw_file_tag, log_raw_file_tag,
-             true, c_ciyam_logs_tag + separator + log_blob_file_prefix, c_ciyam_logs_tag, "" );
-      }
    }
 }
 

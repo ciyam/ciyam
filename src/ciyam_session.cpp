@@ -5417,8 +5417,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             bool is_skipping_legacy = false;
             bool finished_skipping_legacy = false;
 
-            bool has_ciyam_logs_tree = has_files_area_tag( c_ciyam_logs_tag, e_file_type_list );
-
             while( getline( inpf, next ) )
             {
                remove_trailing_cr_from_text_file_line( next, is_first );
@@ -5487,19 +5485,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      new_logf << c_storage_identity_tx_id << storage_identity( ) << '\n';
 
-                     if( has_ciyam_logs_tree )
-                        new_tx_log_lines.push_back( c_storage_identity_tx_id + storage_identity( ) + "\n" );
-
                      for( size_t i = 0; i < module_tx_info.size( ); i++ )
-                     {
                         new_logf << module_tx_info[ i ] << '\n';
-
-                        if( has_ciyam_logs_tree )
-                           new_tx_log_lines.push_back( module_tx_info[ i ] + "\n" );
-                     }
-
-                     if( has_ciyam_logs_tree )
-                        append_transaction_log_lines_to_blob_files( name + ".log", new_tx_log_lines, true, true );
                   }
 
                   verified = true;
@@ -5609,14 +5596,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      set_transaction_id( new_tran_id );
 
                      handler.execute_command( tran_info );
-
-                     if( has_ciyam_logs_tree )
-                     {
-                        vector< string > log_lines;
-                        log_lines.push_back( "[" + to_string( new_tran_id ) + "]" + tran_info + "\n" );
-
-                        append_transaction_log_lines_to_blob_files( name + ".log", log_lines, true );
-                     }
                   }
 
                   if( is_new )
@@ -5647,17 +5626,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             // NOTE: Ensure that reserved transaction id's cannot be used later.
             if( next_transaction_id( ) < c_tx_id_standard - 1 )
                set_transaction_id( c_tx_id_standard - 1 );
-
-            if( is_new && has_ciyam_logs_tree )
-               insert_log_blobs_into_tree( c_ciyam_logs_tag, name + ".log" );
-
-            if( has_ciyam_logs_tree )
-            {
-               vector< string > dummy_lines;
-               dummy_lines.push_back( "" );
-
-               append_transaction_log_lines_to_blob_files( name + ".log", dummy_lines, false, false );
-            }
 
             storage_unlock_all_tables( );
 
