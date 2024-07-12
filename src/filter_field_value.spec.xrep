@@ -1,6 +1,7 @@
 `{`@eq`(`'is_filtered`'`,`$section`)\
    // [(start filter_field_value)] `{`$arg_id`}
-   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+   if( `{`@eq`(`$arg_admin_always`,`'true`'`)!is_admin_uid( )
+    && `}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
     && `}`{`!`@eq`(`$arg_perm`,`'`'`)!get_perms( ).count( "`{`$arg_perm`}" )
     && `}`{`@eq`(`$arg_non_print`,`'true`'`)get_obj( ).get_variable( get_special_var_name( e_special_var_print ) ).empty( )
     && `}`{`@eq`(`$arg_print_only`,`'true`'`)!get_obj( ).get_variable( get_special_var_name( e_special_var_print ) ).empty( )
