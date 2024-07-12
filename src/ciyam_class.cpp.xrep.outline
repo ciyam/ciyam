@@ -3511,8 +3511,8 @@ bool `{`$full_class_name`}::impl::is_filtered( ) const
 `{`#filter_field_value.spec.xrep section=is_filtered arg_name=\0\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_fistexttype=$specification_\0_fistexttype\
  arg_value=$specification_\0_value arg_tfield=$specification_\0_tfield arg_spfield=$specification_\0_spfield\
- arg_modifier=$specification_\0_modifier arg_perm=$specification_\0_perm arg_non_print=$specification_\0_non_print\
- arg_print_only=$specification_\0_print_only`}
+ arg_modifier=$specification_\0_modifier arg_perm=$specification_\0_perm arg_admin_always=$specification_\0_admin_always\
+ arg_non_print=$specification_\0_non_print arg_print_only=$specification_\0_print_only`}
 `,\
 `@eq`(`'\1`'`,`'filter_fk_in_uid_set`'`)\
 `{`#filter_fk_in_uid_set.spec.xrep section=is_filtered arg_name=\0\
