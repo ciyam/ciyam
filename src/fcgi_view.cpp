@@ -2057,6 +2057,7 @@ bool output_view_form( ostream& os, const string& act,
          else
          {
             os << "<select name=\"field_" << source_field_id;
+
             if( !class_extra.empty( ) )
                os << "\" class=\"" << class_extra.substr( 1 );
 
@@ -2158,7 +2159,14 @@ bool output_view_form( ostream& os, const string& act,
             // be automatically selected).
             if( source.mandatory_fields.count( source_value_id )
              && ( was_special_parent || parent_row_data.size( ) != 1 ) )
-               os << "<option value=\"\">&lt;" << GDS( c_display_choose ) << "&gt;&nbsp;&nbsp;</option>\n";
+            {
+               if( data != c_new_record )
+                  os << "<option value=\"\" disabled=\"disabled\">&lt;";
+               else
+                  os << "<option value=\"\" disabled=\"disabled\" selected=\"selected\">&lt;";
+
+               os << GDS( c_display_choose ) << "&gt;&nbsp;&nbsp;</option>\n";
+            }
 
             for( size_t j = 0; j < parent_row_data.size( ); j++ )
             {
@@ -2167,6 +2175,7 @@ bool output_view_form( ostream& os, const string& act,
 
                // NOTE: Remove parent version information as its not really relevant for foreign key selection.
                size_t pos = key.find( ' ' );
+
                if( pos != string::npos )
                   key.erase( pos );
 

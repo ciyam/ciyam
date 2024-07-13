@@ -3916,11 +3916,13 @@ void output_list_form( ostream& os,
          if( !( source.lici->second )->dfield.empty( ) && ( source.lici->second )->dvalue.empty( ) )
          {
             if( !is_ui_prototype( ) )
-               os << "<select name=\"new_record\" onchange=\"sel_new_loc( document." << source.id << ".new_record );\">\n";
+               os << "<select name=\"new_record\"";
             else
-               os << "<select class=\"newrecord_select\" name=\"new_record\" onchange=\"sel_new_loc( document." << source.id << ".new_record );\">\n";
+               os << "<select class=\"newrecord_select\" name=\"new_record\"";
 
-            os << "<option>" << GDS( c_display_create_new ) << "</option>\n";
+            os << " onchange=\"sel_new_loc( document." << source.id << ".new_record );\">\n";
+
+            os << "<option value=\"\" disabled=\"disabled\" selected=\"selected\">" << GDS( c_display_create_new ) << "</option>\n";
 
             for( size_t i = 0; i < source.new_record_list.size( ); i++ )
             {
@@ -3936,10 +3938,12 @@ void output_list_form( ostream& os,
                raw_split( source.new_record_list[ i ].second, columns );
 
                string view_id( source.view );
+
                if( source.new_record_list_has_view_id && !columns[ 1 ].empty( ) )
                   view_id = columns[ 1 ];
 
                view_info_const_iterator vici = mod_info.view_info.find( view_id );
+
                if( vici == mod_info.view_info.end( ) )
                   throw runtime_error( "unknown view '" + view_id + "'" );
 
@@ -3948,6 +3952,7 @@ void output_list_form( ostream& os,
                string new_data( c_new_record );
 
                bool is_clone = false;
+
                if( ( source.lici->second )->nclass == ( source.lici->second )->cid )
                {
                   new_data += key;
