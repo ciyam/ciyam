@@ -604,6 +604,7 @@ void output_list_form( ostream& os,
    bool is_admin_owner_erase = has_perm_extra( c_list_type_extra_admin_owner_erase, extras, sess_info );
 
    bool ignore_parent_state = false;
+
    if( extras.count( c_list_type_extra_ignore_parent_state ) )
       ignore_parent_state = true;
 
@@ -679,6 +680,7 @@ void output_list_form( ostream& os,
    os << "<form name=\"" << source.id << "\" id=\"" << source.id << "\"";
 
    bool allow_quick_links = false;
+
    if( using_session_cookie && !sess_info.user_id.empty( )
     && !mod_info.user_qlink_class_id.empty( ) && extras.count( c_list_type_extra_quick_link ) )
       allow_quick_links = true;
@@ -1634,7 +1636,8 @@ void output_list_form( ostream& os,
                os << "' );\" style=\"cursor:pointer\"/>";
             }
 
-            if( sess_info.is_admin_user || ( list_type != c_list_type_admin && list_type != c_list_type_child_admin ) )
+            if( sess_info.is_admin_user
+             || ( ( list_type != c_list_type_admin ) && ( list_type != c_list_type_child_admin ) ) )
             {
                for( size_t i = 0; i < ( source.lici->second )->actions.size( ); i++ )
                {
@@ -1647,6 +1650,7 @@ void output_list_form( ostream& os,
 
                   // KLUDGE: Much of the following action syntax checking is duplicated in "output_actions".
                   string::size_type pos = next_action.find( '&' );
+
                   if( pos != string::npos )
                   {
                      if( !( sess_info.is_admin_user && list_type == c_list_type_admin )
@@ -1801,6 +1805,7 @@ void output_list_form( ostream& os,
                 || sess_info.user_perms.count( ( source.lici->second )->parents[ i ].operations.find( c_operation_link )->second ) ) )
                {
                   map< string, string > parent_extras;
+
                   if( !( source.lici->second )->parents[ i ].extra.empty( ) )
                      parse_field_extra( ( source.lici->second )->parents[ i ].extra, parent_extras );
 
@@ -1833,8 +1838,8 @@ void output_list_form( ostream& os,
 
                   os << "' );\">\n";
 
-                  os << "<option>" << GDS( c_display_assign_to ) << " "
-                   << get_display_string( ( source.lici->second )->parents[ i ].name ) << ":&nbsp;&nbsp;</option>\n";
+                  os << "<option value=\"\" disabled=\"disabled\" selected=\"selected\">" << GDS( c_display_assign_to )
+                   << " " << get_display_string( ( source.lici->second )->parents[ i ].name ) << "&nbsp;&nbsp;</option>\n";
 
                   bool is_folder = false;
                   if( ( source.lici->second )->parents[ i ].folder )
@@ -1895,6 +1900,7 @@ void output_list_form( ostream& os,
                 || sess_info.user_perms.count( ( source.lici->second )->restricts[ i ].operations.find( c_operation_link )->second ) ) )
                {
                   map< string, string > restrict_extras;
+
                   if( !( source.lici->second )->restricts[ i ].extra.empty( ) )
                      parse_field_extra( ( source.lici->second )->restricts[ i ].extra, restrict_extras );
 
@@ -1938,8 +1944,8 @@ void output_list_form( ostream& os,
 
                   os << "' );\">\n";
 
-                  os << "<option>" << GDS( c_display_assign_to ) << " "
-                   << get_display_string( ( source.lici->second )->restricts[ i ].name ) << ":&nbsp;&nbsp;</option>\n";
+                  os << "<option value=\"\" disabled=\"disabled\" selected=\"selected\">" << GDS( c_display_assign_to )
+                   << " " << get_display_string( ( source.lici->second )->restricts[ i ].name ) << "&nbsp;&nbsp;</option>\n";
 
                   if( ( source.lici->second )->restricts[ i ].ftype == c_field_type_bool )
                   {
@@ -1990,6 +1996,7 @@ void output_list_form( ostream& os,
          if( !source.text_search_title_fields.empty( ) )
          {
             string text_search_title;
+
             for( size_t j = 0; j < source.text_search_title_fields.size( ); j++ )
             {
                if( j > 0 )
