@@ -49,12 +49,14 @@
 
 `{`!`@eq`(`$arg_procedure_arg`,`'`'`)\
       cp_source->`{`$arg_spfield`}( `{`$arg_procedure_arg`} );
+
 `}\
       cp_source->set_is_for_peer( cp_source->`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) );
 
+`{`!`@eq`(`$arg_no_temp_user`,`'true`'`)\
       temporary_grp_and_uid tmp_grp_and_uid( c_peers, c_admin, true );
 
-`{`!`@eq`(`$arg_key_transform`,`'`'`)\
+`}`{`!`@eq`(`$arg_key_transform`,`'`'`)\
       temporary_session_variable tmp_peer_clone_key(
        get_special_var_name( e_special_var_peer_clone_key ), cp_source->get_peer_identity( ) );
 

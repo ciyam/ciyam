@@ -1047,8 +1047,8 @@ void request_handler::process_request( )
       if( is_prepare_backup || is_prepare_restore )
       {
          string prepare_html( g_prepare_html );
-         string prepare_title( is_prepare_backup ? GDS( c_display_backup_in_progress ) : GDS( c_display_restore_in_progress ) );
-         string prepare_display_text( is_prepare_backup ? GDS( c_display_backup_preparation ) : GDS( c_display_restore_preparation ) );
+         string prepare_title( is_prepare_backup ? GDS( c_display_backup_preparation ) : GDS( c_display_restore_completion ) );
+         string prepare_display_text( is_prepare_backup ? GDS( c_display_backup_in_progress ) : GDS( c_display_restore_in_progress ) );
 
          str_replace( prepare_html, c_prepare_text, prepare_display_text );
 
