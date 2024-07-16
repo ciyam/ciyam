@@ -18,6 +18,9 @@
 `{`@eq`(`$arg_copy_files`,`'true`'`)
          vector< string > file_field_names;
          get_obj( ).child_`{`$arg_child`}( ).get_file_field_names( file_field_names );
+`}`{`!`@eq`(`$arg_skip_child_updates`,`'`'`)
+         temporary_object_variable tmp_skip_update( get_obj( ),
+          get_special_var_name( e_special_var_skip_update ), c_true_value );
 `}
          do
          {

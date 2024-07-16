@@ -4,7 +4,8 @@
    if( is_create`{`!`@eq`(`$arg_skip_clones`,`'`'`) && get_obj( ).get_clone_key( ).empty( )`} && !is_admin_uid_key( get_obj( ).get_key( ) ) )
 `,\
    if( is_create`{`!`@eq`(`$arg_skip_clones`,`'`'`) && get_obj( ).get_clone_key( ).empty( )`}
-    && get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} && !is_admin_uid_key( get_obj( ).get_key( ) ) )
+    && `{`!`@eq`(`$arg_tvalue`,`'`'`)( `}get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`} )`}
+    && !is_admin_uid_key( get_obj( ).get_key( ) ) )
 `}\
    {
       class_pointer< `{`$module_name`}_`{`$class_name`} > cp_user( e_create_instance );

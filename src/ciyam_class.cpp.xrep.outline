@@ -3196,7 +3196,7 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_id=$specification_\0_id arg_child=$specification_\0_child arg_child_class=$specification_\0_child_class\
  arg_ofield=$specification_\0_ofield arg_tfield=$specification_\0_tfield arg_pfield=$specification_\0_pfield\
  arg_cpfield=$specification_\0_cpfield arg_ctfield=$specification_\0_ctfield arg_ctvalue=$specification_\0_ctvalue\
- arg_ctfistexttype=$specification_\0_ctfistexttype arg_copy_files=$specification_\0_copy_files`}\
+ arg_ctfistexttype=$specification_\0_ctfistexttype arg_copy_files=$specification_\0_copy_files arg_skip_child_updates=$specification_\0_skip_child_updates`}\
 `,\
 `@eq`(`'\1`'`,`'clone_children_for_create`'`)
 `{`#clone_children_for_create.spec.xrep section=after_store full_class_name=$full_class_name\
@@ -3348,6 +3348,10 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `,\
 `@eq`(`'\1`'`,`'trigger_update_clone_source`'`)
 `{`#trigger_update_clone_source.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
+ arg_id=$specification_\0_id arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'trigger_update_self_for_create`'`)
+`{`#trigger_update_self_for_create.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
  arg_id=$specification_\0_id arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'update_children`'`)`&`@eq`(`$specification_\0_after_self`,`'true`'`)
