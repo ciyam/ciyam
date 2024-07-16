@@ -1719,19 +1719,22 @@ bool populate_list_info( list_source& list,
          key_info = sess_info.user_key + ":" + key_prefix;
 
       class_info = mod_info.user_class_id;
+
       if( list.type != c_list_type_user_child )
       {
+         class_info += ":_" + ( list.lici->second )->pfield;
+
          if( !field_list.empty( ) )
             field_list += ",";
          field_list += ( list.lici->second )->pfield;
-         class_info += ":_" + ( list.lici->second )->pfield;
       }
       else
       {
+         class_info += ":_" + ( list.lici->second )->ufield;
+
          if( !field_list.empty( ) )
             field_list += ",";
          field_list += ( list.lici->second )->ufield;
-         class_info += ":_" + ( list.lici->second )->ufield;
       }
    }
 
