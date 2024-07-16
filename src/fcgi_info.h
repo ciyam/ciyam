@@ -343,6 +343,9 @@ struct module_info
 
    std::string home_info;
 
+   std::string anon_group;
+   std::string anon_groups;
+
    std::string sys_class_id;
    std::string sys_name_field_id;
    std::string sys_vendor_field_id;

@@ -1908,7 +1908,7 @@ void request_handler::process_request( )
 
             bool was_openid = false;
 
-            if( connection_okay && cmd == c_cmd_open && !userhash.empty( ) )
+            if( connection_okay && ( cmd == c_cmd_open ) && !userhash.empty( ) )
             {
                if( fetch_user_record( id_for_login, module_id, module_name,
                 mod_info, *p_session_info, true, true, username, userhash, password, unique_id ) )
@@ -1924,11 +1924,11 @@ void request_handler::process_request( )
             if( connection_okay && mod_info.strings.empty( ) )
                read_module_strings( mod_info, *p_session_info->p_socket );
 
-            if( connection_okay && cmd != c_cmd_open && p_session_info->user_id.empty( ) )
+            if( connection_okay && ( cmd != c_cmd_open ) && p_session_info->user_id.empty( ) )
             {
                bool is_replacement_session = false;
 
-               if( cmd != c_cmd_join && !mod_info.user_class_name.empty( ) )
+               if( ( cmd != c_cmd_join ) && !mod_info.user_class_name.empty( ) )
                {
                   if( is_activation )
                   {
@@ -1999,13 +1999,19 @@ void request_handler::process_request( )
 
                      is_authorised = true;
                      using_anonymous = false;
+
                      password = activate_password;
                      p_session_info->user_id = user;
                      userhash = sha256( user + activate_password ).get_digest_as_string( );
                   }
 
                   if( using_anonymous )
+                  {
                      p_session_info->user_module = module_name;
+
+                     p_session_info->user_group = mod_info.anon_group;
+                     p_session_info->user_mgrps = mod_info.anon_groups;
+                  }
                   else
                   {
                      // NOTE: Avoid displaying an error if the user information has yet to be provided.
