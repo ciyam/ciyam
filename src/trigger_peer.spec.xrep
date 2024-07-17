@@ -26,7 +26,7 @@
       cp_source->op_update( key_info );
 `}\
 
-      temporary_grp_and_uid tmp_grp_and_uid( c_peers, c_admin, true );
+      temporary_grp_and_uid tmp_grp_and_uid( c_others, c_admin, true );
 
       cp_source->`{`$arg_field`}( get_obj( ).`{`$arg_field`}( ) );
 `{`!`@eq`(`$arg_ofield`,`'`'`)\

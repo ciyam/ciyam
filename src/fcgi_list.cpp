@@ -145,6 +145,100 @@ bool has_access( const string& extra, const session_info& sess_info, bool has_ow
    return rc;
 }
 
+void replace_with_search_matches_highlighted( string& cell_data,
+ const string& text_search_value, const map< string, string >& extras, bool is_text_only = false )
+{
+   string prefix, suffix( "</span>" );
+
+   if( extras.count( c_list_type_extra_text_highlight ) )
+      prefix = "<span class = \"text_highlight\">";
+   else
+      prefix = "<span class = \"text_highlight1\">";
+
+   vector< pair< bool, string > > parts;
+
+   if( is_text_only )
+      parts.push_back( make_pair( false, cell_data ) );
+   else
+   {
+      bool in_tag = false;
+
+      string next_string;
+
+      size_t num_chars = cell_data.size( );
+
+      // NOTE: Separate tags from text so that
+      // matches will not occur within a tag.
+      for( size_t i = 0; i < num_chars; i++ )
+      {
+         char ch = cell_data[ i ];
+
+         if( ch == '>' )
+         {
+            next_string += ch;
+            parts.push_back( make_pair( in_tag, next_string ) );
+
+            in_tag = false;
+            next_string.erase( );
+         }
+         else if( ch == '<' )
+         {
+            if( !next_string.empty( ) )
+               parts.push_back( make_pair( in_tag, next_string ) );
+
+            in_tag = true;
+            next_string = ch;
+         }
+         else
+            next_string += ch;
+      }
+
+      if( !next_string.empty( ) )
+         parts.push_back( make_pair( in_tag, next_string ) );
+   }
+
+   cell_data.erase( );
+
+   size_t num_parts = parts.size( );
+
+   string search_lower( lower( text_search_value ) );
+
+   for( size_t i = 0; i < num_parts; i++ )
+   {
+      bool next_is_tag = parts[ i ].first;
+      string next_string( parts[ i ].second );
+
+      if( next_is_tag )
+      {
+         cell_data += next_string;
+         continue;
+      }
+
+      string next_lower( lower( next_string ) );
+
+      // NOTE: The matching is case insensitive but will preserve
+      // the original text for what will actually be displayed.
+      while( true )
+      {
+         string::size_type pos = next_lower.find( search_lower );
+
+         if( pos == string::npos )
+         {
+            cell_data += next_string;
+            break;
+         }
+
+         string original( next_string.substr( pos, search_lower.size( ) ) );
+
+         cell_data += next_string.substr( 0, pos );
+         cell_data += prefix + original + suffix;
+
+         next_lower.erase( 0, pos + search_lower.size( ) );
+         next_string.erase( 0, pos + search_lower.size( ) );
+      }
+   }
+}
+
 }
 
 void setup_list_fields( list_source& list,
@@ -2712,37 +2806,12 @@ void output_list_form( ostream& os,
 
       parse_key_ver_rev_state_and_type_info( key_ver_rev_state_and_type_info, key_and_version, state, type_info );
 
-      // NOTE: If a text search value exists then highlight if a list extra highlight was specified
-      // for it and an exact match of the text search value (in any column) was found in the row.
-      // FUTURE: Perhaps it would be beter to have a secondary class so that text highlighting can
-      // be in combination with other state driven display effects.
-      string display_effect;
-      if( !text_search_value.empty( )
-       && ( extras.count( c_list_type_extra_text_highlight ) || extras.count( c_list_type_extra_text_highlight1 ) ) )
-      {
-         vector< string > columns;
-         raw_split( source.row_data[ i ].second, columns );
-
-         for( size_t j = 0; j < columns.size( ); j++ )
-         {
-            if( columns[ j ] == text_search_value )
-            {
-               if( extras.count( c_list_type_extra_text_highlight ) )
-                  display_effect = c_modifier_effect_highlight;
-               else
-                  display_effect = c_modifier_effect_highlight1;
-               break;
-            }
-         }
-      }
-
-      string extra_effect;
+      string extra_effect, display_effect;
 
       // NOTE: Determine whether rows should be displayed differently according to class scoped modifiers
       // and state. It is being assumed here that the original list fields and source fields have the same
       // offsets.
-      if( display_effect.empty( )
-       && !extras.count( c_list_type_extra_ignore_display_state )
+      if( !extras.count( c_list_type_extra_ignore_display_state )
        && ( !is_printable || !extras.count( c_list_type_extra_print_no_highlight ) ) )
       {
          for( size_t k = 0; k < ARRAY_SIZE( state_modifiers ); k++ )
@@ -2768,6 +2837,7 @@ void output_list_form( ostream& os,
       }
 
       string row_class_suffix( "data" );
+
       if( display_effect == c_modifier_effect_lowlight )
          row_class_suffix = "lowlight";
       else if( display_effect == c_modifier_effect_lowlight1 )
@@ -2785,6 +2855,7 @@ void output_list_form( ostream& os,
 
       size_t column = 0;
       size_t fk_column = 0;
+
       set< string > fk_refs;
 
       bool had_link = false;
@@ -2799,6 +2870,7 @@ void output_list_form( ostream& os,
          string source_value_id( source.value_ids[ j ] );
 
          map< string, string > extra_data;
+
          if( !( source.lici->second )->fields[ j ].extra.empty( ) )
             parse_field_extra( ( source.lici->second )->fields[ j ].extra, extra_data );
 
@@ -3681,6 +3753,11 @@ void output_list_form( ostream& os,
                if( !cell_data.empty( ) )
                   unescape( cell_data, "rn\r\n" );
 
+               if( !text_search_value.empty( )
+                && ( extras.count( c_list_type_extra_text_highlight )
+                || extras.count( c_list_type_extra_text_highlight1 ) ) )
+                  replace_with_search_matches_highlighted( cell_data, text_search_value, extras );
+
                replace_links_and_output( cell_data, source.view,
                 source.module, source.module_ref, os, true, !is_printable,
                 session_id, sess_info, user_select_key, using_session_cookie, use_url_checksum, &key );
@@ -3710,6 +3787,11 @@ void output_list_form( ostream& os,
                   if( character_trunc_limit != 1 ) // i.e. none
                      utf8_truncate( cell_data, character_trunc_limit, "..." );
                }
+
+               if( !text_search_value.empty( )
+                && ( extras.count( c_list_type_extra_text_highlight )
+                || extras.count( c_list_type_extra_text_highlight1 ) ) )
+                  replace_with_search_matches_highlighted( cell_data, text_search_value, extras, true );
             }
             else if( source.replace_underbar_fields.count( source_value_id ) )
                cell_data = replace_underbars( cell_data );
