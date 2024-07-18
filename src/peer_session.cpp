@@ -404,7 +404,10 @@ void check_found_prefixed( const string& hash, unsigned char file_type )
 
             if( !has_raw_session_variable(
              get_special_var_name( e_special_var_blockchain_peer_supporter ) ) )
+            {
+               set_session_variable( get_special_var_name( e_special_var_tree_prefix ), hex_encode( prefix ) );
                set_session_variable( get_special_var_name( e_special_var_tree_count ), to_string( next_found ) );
+            }
          }
          else
             increment = true;
@@ -1554,9 +1557,9 @@ void check_for_missing_other_sessions( const date_time& now )
    {
       size_t num_supporters = get_num_sessions_for_blockchain( identity, true, true );
 
-      // NOTE: Create replacements for missing support sessions (unless all are missing).
-      // Only creates one support session at a time to avoid creating more than required.
-      if( num_supporters && ( num_for_support > num_supporters ) )
+      // NOTE: Create replacements for missing support sessions (only create
+      // one support session at a time to avoid creating more than required).
+      if( num_for_support > num_supporters )
       {
          string host_and_port( get_raw_session_variable( get_special_var_name( e_special_var_ip_addr ) ) );
 
@@ -3314,11 +3317,13 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
 
                   set_session_variable( get_special_var_name( e_special_var_tree_count ), "" );
                   set_session_variable( get_special_var_name( e_special_var_tree_total ), "" );
+                  set_session_variable( get_special_var_name( e_special_var_tree_prefix ), "" );
                }
                else
                {
                   set_session_variable( get_special_var_name( e_special_var_tree_count ), "0" );
                   set_session_variable( get_special_var_name( e_special_var_tree_total ), to_string( total_items ) );
+                  set_session_variable( get_special_var_name( e_special_var_tree_prefix ), "" );
                }
 
                save_first_prefixed( first_prefixed, total_items );
@@ -5215,6 +5220,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                set_session_variable( get_special_var_name( e_special_var_tree_count ), "" );
                set_session_variable( get_special_var_name( e_special_var_tree_total ), "" );
+               set_session_variable( get_special_var_name( e_special_var_tree_prefix ), "" );
 
                if( has || was_initial_state )
                {
@@ -5500,11 +5506,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                            set_session_variable( get_special_var_name( e_special_var_tree_count ), "" );
                            set_session_variable( get_special_var_name( e_special_var_tree_total ), "" );
+                           set_session_variable( get_special_var_name( e_special_var_tree_prefix ), "" );
                         }
                         else
                         {
                            set_session_variable( get_special_var_name( e_special_var_tree_count ), "0" );
                            set_session_variable( get_special_var_name( e_special_var_tree_total ), to_string( total_items ) );
+                           set_session_variable( get_special_var_name( e_special_var_tree_prefix ), "" );
                         }
 
                         save_first_prefixed( first_prefixed, total_items );
