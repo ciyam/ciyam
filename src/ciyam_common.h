@@ -154,6 +154,7 @@ enum special_var
    e_special_var_style_brief,
    e_special_var_submit_type,
    e_special_var_transaction,
+   e_special_var_tree_prefix,
    e_special_var_backup_files,
    e_special_var_block_height,
    e_special_var_opened_files,
