@@ -1479,7 +1479,9 @@ void Meta_Model::impl::impl_Generate( )
 
       string all_enums;
       vector< pair< string, string > > all_enum_info;
+
       string enum_key_info( to_string( Meta_Enum::static_get_field_id( Meta_Enum::e_field_id_Name ) ) + ' ' );
+
       if( get_obj( ).Workgroup( ).child_Enum( ).iterate_forwards( enum_key_info ) )
       {
          do
@@ -1571,6 +1573,7 @@ void Meta_Model::impl::impl_Generate( )
       map< string, vector< string > > all_class_strings;
 
       string class_key_info( to_string( Meta_Class::static_get_field_id( Meta_Class::e_field_id_Name ) ) + ' ' );
+
       if( get_obj( ).child_Class( ).iterate_forwards( class_key_info ) )
       {
          string all_classes;
@@ -1798,6 +1801,7 @@ void Meta_Model::impl::impl_Generate( )
       // NOTE: To ensure consistency views are processed in name order but as this is transient
       // first determine the key order from a map.
       map< string, string > view_records;
+
       if( get_obj( ).child_View( ).iterate_forwards( true, 0, e_sql_optimisation_unordered ) )
       {
          do
@@ -1902,9 +1906,11 @@ void Meta_Model::impl::impl_Generate( )
             }
 
             string id( get_obj( ).child_View( ).Class( ).Id( ) );
+
             all_class_strings[ id ].push_back( get_obj( ).child_View( ).Id( ) + "_name \"" + title + "\"" );
 
             string extras;
+
             switch( get_obj( ).child_View( ).Change_Restriction( ) )
             {
                case 0:
@@ -2152,10 +2158,12 @@ void Meta_Model::impl::impl_Generate( )
                   }
 
                   string access_perm = get_obj( ).child_View( ).child_View_Field( ).Access_Permission( ).Id( );
+
                   if( !access_perm.empty( ) )
                   {
                      if( access_restriction.empty( ) )
                         access_restriction = "hidden";
+
                      access_restriction += "=!" + access_perm;
                   }
 
@@ -2206,9 +2214,12 @@ void Meta_Model::impl::impl_Generate( )
                             + to_string( get_obj( ).child_View( ).child_View_Field( ).Change_Scope( ) ) + " in Model::Generate" );
                      }
 
+                     bool no_change_restriction = false;
+
                      switch( get_obj( ).child_View( ).child_View_Field( ).Change_Restriction( ) )
                      {
                         case 0:
+                        no_change_restriction = true;
                         break;
 
                         case 1:
@@ -2246,6 +2257,9 @@ void Meta_Model::impl::impl_Generate( )
                      {
                         if( extras.empty( ) )
                            extras = "no_edit";
+                        else if( no_change_restriction )
+                           extras += "+no_edit";
+
                         extras += "=!" + change_perm;
                      }
 
