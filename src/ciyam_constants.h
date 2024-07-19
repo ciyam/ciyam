@@ -267,9 +267,9 @@ const char* const c_init = "init";
 const char* const c_peer = "peer";
 const char* const c_admin = "admin";
 
-const char* const c_adults = "adults";
 const char* const c_guests = "guests";
-const char* const c_others = "others";
+const char* const c_public = "public";
+const char* const c_unsure = "unsure";
 
 const char* const c_both = "both";
 const char* const c_create = "create";
