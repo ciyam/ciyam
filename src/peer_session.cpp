@@ -2158,7 +2158,7 @@ bool has_all_list_items(
                string local_hash( next_hash );
 
                // NOTE: Omit all list files from prefix mapping.
-               if( !( has_next_file || is_list_file( next_hash ) ) )
+               if( !has_next_file || !is_list_file( next_hash ) )
                {
                   if( !has_next_file && fetch_repository_entry_record( identity, next_hash, local_hash, false ) )
                   {
