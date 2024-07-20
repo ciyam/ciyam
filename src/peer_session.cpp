@@ -405,7 +405,7 @@ void check_found_prefixed( const string& hash, unsigned char file_type )
             if( !has_raw_session_variable(
              get_special_var_name( e_special_var_blockchain_peer_supporter ) ) )
             {
-               set_session_variable( get_special_var_name( e_special_var_tree_prefix ), hex_encode( prefix ) );
+               set_session_variable( get_special_var_name( e_special_var_tree_match ), hex_encode( prefix ) );
                set_session_variable( get_special_var_name( e_special_var_tree_count ), to_string( next_found ) );
             }
          }
@@ -2157,8 +2157,8 @@ bool has_all_list_items(
             {
                string local_hash( next_hash );
 
-               // NOTE: Omit list files from prefix mapping.
-               if( !has_next_file || !is_list_file( next_hash ) )
+               // NOTE: Omit all list files from prefix mapping.
+               if( !( has_next_file || is_list_file( next_hash ) ) )
                {
                   if( !has_next_file && fetch_repository_entry_record( identity, next_hash, local_hash, false ) )
                   {
@@ -3316,14 +3316,14 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
                   first_prefixed.clear( );
 
                   set_session_variable( get_special_var_name( e_special_var_tree_count ), "" );
+                  set_session_variable( get_special_var_name( e_special_var_tree_match ), "" );
                   set_session_variable( get_special_var_name( e_special_var_tree_total ), "" );
-                  set_session_variable( get_special_var_name( e_special_var_tree_prefix ), "" );
                }
                else
                {
                   set_session_variable( get_special_var_name( e_special_var_tree_count ), "0" );
+                  set_session_variable( get_special_var_name( e_special_var_tree_match ), "" );
                   set_session_variable( get_special_var_name( e_special_var_tree_total ), to_string( total_items ) );
-                  set_session_variable( get_special_var_name( e_special_var_tree_prefix ), "" );
                }
 
                save_first_prefixed( first_prefixed, total_items );
@@ -5219,8 +5219,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                clear_first_prefixed( );
 
                set_session_variable( get_special_var_name( e_special_var_tree_count ), "" );
+               set_session_variable( get_special_var_name( e_special_var_tree_match ), "" );
                set_session_variable( get_special_var_name( e_special_var_tree_total ), "" );
-               set_session_variable( get_special_var_name( e_special_var_tree_prefix ), "" );
 
                if( has || was_initial_state )
                {
@@ -5505,14 +5505,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                            first_prefixed.clear( );
 
                            set_session_variable( get_special_var_name( e_special_var_tree_count ), "" );
+                           set_session_variable( get_special_var_name( e_special_var_tree_match ), "" );
                            set_session_variable( get_special_var_name( e_special_var_tree_total ), "" );
-                           set_session_variable( get_special_var_name( e_special_var_tree_prefix ), "" );
                         }
                         else
                         {
                            set_session_variable( get_special_var_name( e_special_var_tree_count ), "0" );
+                           set_session_variable( get_special_var_name( e_special_var_tree_match ), "" );
                            set_session_variable( get_special_var_name( e_special_var_tree_total ), to_string( total_items ) );
-                           set_session_variable( get_special_var_name( e_special_var_tree_prefix ), "" );
                         }
 
                         save_first_prefixed( first_prefixed, total_items );
