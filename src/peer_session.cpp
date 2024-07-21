@@ -408,7 +408,7 @@ void check_found_prefixed( const string& hash, unsigned char file_type )
                string hex_prefix( hex_encode( prefix ) );
                string str_next_found( to_string( next_found ) );
 
-               TRACE_LOG( TRACE_PEER_OPS, "(check_found_prefixed) prefix '" + hex_prefix + "' found at: " + str_next_found );
+               TRACE_LOG( TRACE_PEER_OPS, "(check_found_prefixed) prefix '" + hex_prefix + "' found for tree item #" + str_next_found );
 
                set_session_variable( get_special_var_name( e_special_var_tree_match ), hex_prefix );
                set_session_variable( get_special_var_name( e_special_var_tree_count ), str_next_found );
