@@ -405,8 +405,13 @@ void check_found_prefixed( const string& hash, unsigned char file_type )
             if( !has_raw_session_variable(
              get_special_var_name( e_special_var_blockchain_peer_supporter ) ) )
             {
-               set_session_variable( get_special_var_name( e_special_var_tree_match ), hex_encode( prefix ) );
-               set_session_variable( get_special_var_name( e_special_var_tree_count ), to_string( next_found ) );
+               string hex_prefix( hex_encode( prefix ) );
+               string str_next_found( to_string( next_found ) );
+
+               TRACE_LOG( TRACE_PEER_OPS, "(check_found_prefixed) prefix '" + hex_prefix + "' found at: " + str_next_found );
+
+               set_session_variable( get_special_var_name( e_special_var_tree_match ), hex_prefix );
+               set_session_variable( get_special_var_name( e_special_var_tree_count ), str_next_found );
             }
          }
          else
@@ -2157,15 +2162,18 @@ bool has_all_list_items(
             {
                string local_hash( next_hash );
 
-               // NOTE: Omit all list files from prefix mapping.
-               if( !has_next_file || !is_list_file( next_hash ) )
+               if( !has_next_file && fetch_repository_entry_record( identity, next_hash, local_hash, false ) )
                {
-                  if( !has_next_file && fetch_repository_entry_record( identity, next_hash, local_hash, false ) )
-                  {
-                     has_next_repo_entry = true;
-                     last_repo_entry_hash = next_hash;
-                  }
+                  has_next_repo_entry = true;
 
+                  if( local_hash.empty( ) )
+                     local_hash = next_hash;
+
+                  last_repo_entry_hash = next_hash;
+               }
+
+               if( has_next_repo_entry || !is_list_file( next_hash ) )
+               {
                   string prefix( c_prefix_length, '\0' );
                   hex_decode( local_hash.substr( 0, c_prefix_length * 2 ), ( unsigned char* )prefix.data( ), c_prefix_length );
 
@@ -5126,6 +5134,18 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    if( has_raw_session_variable( blockchain_peer_has_supporters_name ) )
       check_for_supporters = true;
 
+   string peer_msleep( get_raw_system_variable( get_special_var_name( e_special_var_peer_msleep ) ) );
+
+   // NOTE: The @peer_msleep system variable is supported to assist with peer testing.
+   if( !peer_msleep.empty( ) )
+   {
+      unsigned long num_msecs = from_string< unsigned long >( peer_msleep );
+
+      TRACE_LOG( TRACE_PEER_OPS, "*** peer sleep for " + to_string( num_msecs ) + "ms ***" );
+
+      msleep( num_msecs );
+   }
+
    try
    {
       ostringstream osstr;
@@ -6724,7 +6744,7 @@ void peer_session::on_start( )
 
          if( !is_owner && ( chain_type == e_peerchain_type_backup ) )
          {
-            string hub_identity( get_hub_identity( unprefixed_blockchain ) );
+            string hub_identity( get_hub_identity( identity ) );
 
             if( !hub_identity.empty( ) )
                extra += '&' + hub_identity;
