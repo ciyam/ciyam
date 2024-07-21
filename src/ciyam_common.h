@@ -147,6 +147,7 @@ enum special_var
    e_special_var_output_file,
    e_special_var_paired_sync,
    e_special_var_path_prefix,
+   e_special_var_peer_msleep,
    e_special_var_permissions,
    e_special_var_queue_peers,
    e_special_var_secret_hash,

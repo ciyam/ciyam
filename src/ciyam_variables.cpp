@@ -151,6 +151,7 @@ const char* const c_special_variable_opened_user = "@opened_user";
 const char* const c_special_variable_output_file = "@output_file";
 const char* const c_special_variable_paired_sync = "@paired_sync";
 const char* const c_special_variable_path_prefix = "@path_prefix";
+const char* const c_special_variable_peer_msleep = "@peer_msleep";
 const char* const c_special_variable_permissions = "@permissions";
 const char* const c_special_variable_queue_peers = "@queue_peers";
 const char* const c_special_variable_secret_hash = "@secret_hash";
@@ -419,6 +420,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_output_file );
       g_special_variable_names.push_back( c_special_variable_paired_sync );
       g_special_variable_names.push_back( c_special_variable_path_prefix );
+      g_special_variable_names.push_back( c_special_variable_peer_msleep );
       g_special_variable_names.push_back( c_special_variable_permissions );
       g_special_variable_names.push_back( c_special_variable_queue_peers );
       g_special_variable_names.push_back( c_special_variable_secret_hash );
