@@ -1,0 +1,14 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_update_field)] `{`$arg_id`}
+   // NOTE: Empty code block for scope purposes.
+   {
+      string field_value( to_string( get_obj( ).`{`$arg_sfield`}( ) ) );
+
+      get_obj( ).op_update( );
+
+      get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( field_value ) );
+
+      get_obj( ).op_apply( );
+   }
+   // [(finish for_update_field)] `{`$arg_id`}
+`}

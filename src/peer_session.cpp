@@ -196,6 +196,12 @@ void decrement_active_listeners( )
    --g_active_listeners;
 }
 
+string get_current_height_prefix( )
+{
+   // FUTURE: This message should be handled as a server string message.
+   return "Currently at height ";
+}
+
 string get_hub_identity( const string& own_identity )
 {
    string hub_identity_var_name( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) );
@@ -408,7 +414,7 @@ void check_found_prefixed( const string& hash, unsigned char file_type )
                string hex_prefix( hex_encode( prefix ) );
                string str_next_found( to_string( next_found ) );
 
-               TRACE_LOG( TRACE_PEER_OPS, "(check_found_prefixed) prefix '" + hex_prefix + "' found for tree item #" + str_next_found );
+               TRACE_LOG( TRACE_PEER_OPS, "(check_found_prefixed) matched '" + hex_prefix + "' prefix for tree item #" + str_next_found );
 
                set_session_variable( get_special_var_name( e_special_var_tree_match ), hex_prefix );
                set_session_variable( get_special_var_name( e_special_var_tree_count ), str_next_found );
@@ -522,8 +528,9 @@ void system_identity_progress_message( const string& identity )
 
    bool is_changing = ( progress_message.find( c_ellipsis ) != string::npos );
 
-   // FUTURE: This message should be handled as a server string message.
-   string prefix( "Currently at height " + to_string( zenith_height ) );
+   string current_prefix( get_current_height_prefix( ) );
+
+   string prefix( current_prefix + to_string( zenith_height ) );
 
    if( is_changing )
    {
@@ -536,6 +543,7 @@ void system_identity_progress_message( const string& identity )
       }
    }
 
+   bool paired_is_current = false;
    bool has_paired_session = false;
    bool paired_is_changing = false;
 
@@ -554,6 +562,8 @@ void system_identity_progress_message( const string& identity )
 
          string paired_progress_message( get_raw_session_variable( progress_message_name, paired_session_id ) );
 
+         paired_is_current = ( paired_progress_message.find( current_prefix ) == 0 );
+
          paired_is_changing = ( paired_progress_message.find( c_ellipsis ) != string::npos );
 
          paired_base_height = from_string< size_t >(
@@ -568,8 +578,8 @@ void system_identity_progress_message( const string& identity )
 
          if( paired_is_changing )
          {
-            if( !has_raw_session_variable( get_special_var_name(
-             e_special_var_blockchain_is_fetching ), paired_session_id ) )
+            if( !paired_is_current && !has_raw_session_variable(
+             get_special_var_name( e_special_var_blockchain_is_fetching ), paired_session_id ) )
                ++paired_other_height;
          }
 
@@ -647,8 +657,7 @@ void output_sync_progress_message( const string& identity,
    bool is_shared = ( identity == shared_identity );
    bool is_peer_hub = ( identity == peer_hub_identity );
 
-   // FUTURE: This message should be handled as a server string message.
-   progress_message = "Currently at height ";
+   progress_message = get_current_height_prefix( );
 
    // NOTE: In general it would not be expected for this to occur as the
    // only blockchains that should be exposed publicly are "extra" ones.
@@ -3470,8 +3479,7 @@ class socket_command_handler : public command_handler
       // NOTE: Replace the current progress message with the last zenith height.
       if( !is_for_support && !get_identity( ).empty( ) )
       {
-         // FUTURE: This message should be handled as server string messages.
-         string progress_message( "Currently at height " );
+         string progress_message( get_current_height_prefix( ) );
 
          progress_message += to_string( blockchain_height );
 
@@ -7253,8 +7261,7 @@ void peer_session::on_start( )
 
                if( get_block_height_from_tags( hub_blockchain, hub_zenith_hash, hub_height ) )
                {
-                  // FUTURE: This message should be handled as a server string message.
-                  string progress_message( "Currently at height " );
+                  string progress_message( get_current_height_prefix( ) );
 
                   progress_message += to_string( hub_height );
 
