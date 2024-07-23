@@ -375,9 +375,13 @@ void check_found_prefixed( const string& hash, unsigned char file_type )
 
       bool increment = false;
 
+      bool is_list = ( file_type == c_file_type_char_list );
+
+      bool has_found = g_peer_first_prefixed[ peer_map_key ].count( prefix );
+
       size_t last_found = g_peer_found_prefixed[ peer_map_key ];
 
-      if( ( file_type == c_file_type_val_list ) || !g_peer_first_prefixed[ peer_map_key ].count( prefix ) )
+      if( is_list || !has_found || has_any_tags( hash ) )
          increment = true;
       else
       {
@@ -4382,8 +4386,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         if( file_hash.empty( ) )
                            file_hash = first_mapped;
 
-                        // NOTE: Use the "nonce" argument to identify the first file needing to
-                        // be fetched (so that pull requests are commenced at the right point).
+                        // NOTE: Uses the "nonce" argument to identify the first file required.
                         // If no hash can be found then will use a dummy "none" literal instead
                         // so that the peer knows that own zenith height is actually one less.
                         if( file_hash.empty( ) || ( file_hash.find( ':' ) != string::npos ) )

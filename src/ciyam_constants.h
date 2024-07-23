@@ -205,34 +205,36 @@ const int c_file_type_val_extra_mask = 0x30;
 const int c_file_type_val_no_encrypt = 0x40;
 const int c_file_type_val_no_compress = 0x80;
 
-const char c_file_type_char_blob = '\x01';
-const char c_file_type_char_list = '\x02';
+const unsigned char c_file_type_char_blob = '\x01';
+const unsigned char c_file_type_char_list = '\x02';
 
-const char c_file_type_char_core_blob = '\x11';
-const char c_file_type_char_core_list = '\x12';
+const unsigned char c_file_type_char_core_blob = '\x11';
+const unsigned char c_file_type_char_core_list = '\x12';
 
-const char c_file_type_char_mime_blob = '\x21';
+const unsigned char c_file_type_char_mime_blob = '\x21';
 
-const char c_file_type_char_encrypted = '\x04';
-const char c_file_type_char_compressed = '\x08';
+const unsigned char c_file_type_char_encrypted = '\x04';
+const unsigned char c_file_type_char_compressed = '\x08';
 
-const char c_file_type_char_blob_encrypted = '\x05';
+const unsigned char c_file_type_char_blob_encrypted = '\x05';
 
-const char c_file_type_char_blob_compressed = '\x09';
-const char c_file_type_char_list_compressed = '\x0a';
+const unsigned char c_file_type_char_blob_compressed = '\x09';
+const unsigned char c_file_type_char_list_compressed = '\x0a';
 
-const char c_file_type_char_blob_no_compress = '\x81';
+const unsigned char c_file_type_char_blob_no_compress = '\x81';
 
-const char c_file_type_char_core_blob_compressed = '\x19';
-const char c_file_type_char_core_list_compressed = '\x1a';
+const unsigned char c_file_type_char_core_blob_compressed = '\x19';
+const unsigned char c_file_type_char_core_list_compressed = '\x1a';
 
-const char c_file_type_char_mime_blob_compressed = '\x29';
+const unsigned char c_file_type_char_mime_blob_compressed = '\x29';
 
 const char* const c_file_type_str_blob = "\x01";
 const char* const c_file_type_str_list = "\x02";
 
 const char* const c_file_type_str_core_blob = "\x11";
 const char* const c_file_type_str_core_list = "\x12";
+
+const char* const c_file_type_str_mime_blob = "\x21";
 
 const char* const c_file_type_str_blob_encrypted = "\x05";
 const char* const c_file_type_str_blob_no_compress = "\x81";
