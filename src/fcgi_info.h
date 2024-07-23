@@ -734,6 +734,7 @@ struct view_source : source
    std::string actions_field;
    std::string qr_scan_field;
    std::string filename_field;
+   std::string key_suffix_field;
    std::string owning_user_field;
    std::string qr_scan_key_field;
    std::string hpassword_salt_field;

@@ -490,6 +490,7 @@ const char* const c_view_field_extra_hpassword = "hpassword";
 const char* const c_view_field_extra_new_value = "new_value";
 const char* const c_view_field_extra_view_only = "view_only";
 const char* const c_view_field_extra_admin_edit = "admin_edit";
+const char* const c_view_field_extra_key_suffix = "key_suffix";
 const char* const c_view_field_extra_owner_edit = "owner_edit";
 const char* const c_view_field_extra_owner_only = "owner_only";
 const char* const c_view_field_extra_quick_link = "quick_link";

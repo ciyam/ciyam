@@ -1748,6 +1748,7 @@ void clone_children_specification::add_specification_data( model& m, specificati
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tvalue, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_cpfield, "" ) );
+   spec_data.data_pairs.push_back( make_pair( "skip_child_updates", "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tfistexttype, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_child_class, cclass_name ) );
 }
@@ -3186,6 +3187,7 @@ void default_to_field_specification::add_specification_data( model& m, specifica
 
    spec_data.data_pairs.push_back( make_pair( c_data_cvt_func, convertor ) );
 
+   spec_data.data_pairs.push_back( make_pair( c_data_new_only, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_inc_clones, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tcfistexttype, "0" ) );
 }
@@ -3395,7 +3397,7 @@ void default_to_global_specification::add_specification_data( model& m, specific
    bool is_text_type( !is_non_string_type( tfield_type ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tfistexttype, is_text_type ? "1" : "0" ) );
 
-   spec_data.data_pairs.push_back( make_pair( string( c_data_new_only ), new_only ? c_true : "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_new_only, new_only ? c_true : "" ) );
 
    spec_data.data_pairs.push_back( make_pair( "ename", "" ) );
    spec_data.data_pairs.push_back( make_pair( "modifier", "" ) );

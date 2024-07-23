@@ -25,8 +25,8 @@
 #endif
 #include "date_time.h"
 #include "utilities.h"
+#include "ciyam_core.h"
 #include "fcgi_utils.h"
-#include "ciyam_common.h"
 #include "crypt_stream.h"
 #include "ciyam_interface.h"
 
@@ -2632,6 +2632,7 @@ void save_record( const string& module_id,
    if( !extra_field_info.empty( ) && !view.ignore_encrypted_field.empty( ) )
    {
       map< string, string >::const_iterator i;
+
       for( i = extra_field_info.begin( ); i != extra_field_info.end( ); ++i )
       {
          if( i->first == view.ignore_encrypted_field )
@@ -2850,6 +2851,7 @@ void save_record( const string& module_id,
       // of the unescaping that is being performed by the server's command parser.
       if( used++ > 0 )
          field_values += ',';
+
       field_values += field_id + '=' + escaped( next, "\"", '\\', "rn\r\n" );
    }
 
@@ -2915,6 +2917,7 @@ void save_record( const string& module_id,
    if( !new_field_and_values.empty( ) )
    {
       map< string, string >::const_iterator i;
+
       for( i = new_field_and_values.begin( ); i != new_field_and_values.end( ); ++i )
       {
          if( !found_new_fields.count( i->first ) )
@@ -2964,6 +2967,9 @@ void save_record( const string& module_id,
          }
       }
    }
+
+   if( extra_field_info.count( view.key_suffix_field ) )
+      key_info += " -ks=" + extra_field_info.find( view.key_suffix_field )->second;
 
    act_cmd += " " + key_info + " \"" + field_values + "\"";
 
