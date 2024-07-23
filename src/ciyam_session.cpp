@@ -3419,6 +3419,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string grp( get_parm_val( parameters, c_cmd_ciyam_session_perform_create_grp ) );
          string tz_name( get_parm_val( parameters, c_cmd_ciyam_session_perform_create_tz_name ) );
          string key( get_parm_val( parameters, c_cmd_ciyam_session_perform_create_key ) );
+         string key_suffix( get_parm_val( parameters, c_cmd_ciyam_session_perform_create_key_suffix ) );
          string field_values( get_parm_val( parameters, c_cmd_ciyam_session_perform_create_field_values ) );
          string method( get_parm_val( parameters, c_cmd_ciyam_session_perform_create_method ) );
 
@@ -3430,14 +3431,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          set_dtm_if_now( dtm, next_command );
 
-         string key_suffix( get_raw_session_variable( get_special_var_name( e_special_var_key_suffix ) ) );
+         // NOTE: Use of the session variable '@key_suffix' will check a provided key value while the key_suffix
+         // argument is used when generating a new key (by providing this value as a temporary identity suffix).
+         string check_key_suffix( get_raw_session_variable( get_special_var_name( e_special_var_key_suffix ) ) );
 
-         if( !key_suffix.empty( ) )
-            check_key_has_suffix( key, key_suffix );
+         if( !check_key_suffix.empty( ) )
+            check_key_has_suffix( key, check_key_suffix );
 
          // NOTE: If no key was provided then will automatically generate a key.
          if( key.empty( ) || key[ 0 ] == ' ' )
          {
+            auto_ptr< temporary_identity_suffix > ap_identity_suffix;
+
+            if( !key_suffix.empty( ) )
+               ap_identity_suffix.reset( new temporary_identity_suffix( key_suffix ) );
+
             string new_key( gen_key( ) );
 
             // NOTE: If the system identity had been recognised as a "demo" one then (if located) will

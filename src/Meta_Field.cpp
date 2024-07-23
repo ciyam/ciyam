@@ -619,6 +619,7 @@ const int c_enum_field_extra_filename( 22 );
 const int c_enum_field_extra_field_hash( 25 );
 const int c_enum_field_extra_password( 10 );
 const int c_enum_field_extra_key_name( 34 );
+const int c_enum_field_extra_key_suffix( 37 );
 const int c_enum_field_extra_defcurrent( 11 );
 const int c_enum_field_extra_permission( 17 );
 const int c_enum_field_extra_orientation( 24 );
@@ -687,6 +688,8 @@ string get_enum_string_field_extra( int val )
       string_name = "enum_field_extra_password";
    else if( to_string( val ) == to_string( "34" ) )
       string_name = "enum_field_extra_key_name";
+   else if( to_string( val ) == to_string( "37" ) )
+      string_name = "enum_field_extra_key_suffix";
    else if( to_string( val ) == to_string( "11" ) )
       string_name = "enum_field_extra_defcurrent";
    else if( to_string( val ) == to_string( "17" ) )
@@ -8397,6 +8400,7 @@ void Meta_Field::static_get_all_enum_pairs( vector< pair< string, string > >& pa
    pairs.push_back( make_pair( "enum_field_extra_25", get_enum_string_field_extra( 25 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_10", get_enum_string_field_extra( 10 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_34", get_enum_string_field_extra( 34 ) ) );
+   pairs.push_back( make_pair( "enum_field_extra_37", get_enum_string_field_extra( 37 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_11", get_enum_string_field_extra( 11 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_17", get_enum_string_field_extra( 17 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_24", get_enum_string_field_extra( 24 ) ) );
@@ -8531,6 +8535,7 @@ void Meta_Field::static_class_init( const char* p_module_name )
    g_field_extra_enum.insert( 25 );
    g_field_extra_enum.insert( 10 );
    g_field_extra_enum.insert( 34 );
+   g_field_extra_enum.insert( 37 );
    g_field_extra_enum.insert( 11 );
    g_field_extra_enum.insert( 17 );
    g_field_extra_enum.insert( 24 );

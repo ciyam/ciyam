@@ -24,8 +24,8 @@
 #include "date_time.h"
 #include "fcgi_info.h"
 #include "utilities.h"
+#include "ciyam_core.h"
 #include "fcgi_utils.h"
-#include "ciyam_common.h"
 #include "crypt_stream.h"
 #include "ciyam_interface.h"
 
@@ -209,6 +209,7 @@ void setup_view_fields( view_source& view,
    }
 
    map< string, size_t > field_id_counts;
+
    for( size_t i = 0; i < vinfo.fields.size( ); i++ )
    {
       fld_info fld( vinfo.fields[ i ] );
@@ -227,6 +228,7 @@ void setup_view_fields( view_source& view,
    }
 
    int key_field_index = -1;
+
    string key_field_display_name;
 
    for( size_t i = 0; i < vinfo.fields.size( ); i++ )
@@ -438,6 +440,9 @@ void setup_view_fields( view_source& view,
 
          if( extra_data.count( c_view_field_extra_qr_scan ) )
             view.qr_scan_field = field_id;
+
+         if( extra_data.count( c_view_field_extra_key_suffix ) )
+            view.key_suffix_field = field_id;
 
          if( extra_data.count( c_view_field_extra_qr_scan_key ) )
             view.qr_scan_key_field = field_id;

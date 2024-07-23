@@ -644,6 +644,11 @@
      <name>enum_field_extra_key_name
     </value>
     <value/>
+     <data>37
+     <name>enum_field_extra_key_suffix
+     <filter>str
+    </value>
+    <value/>
      <data>11
      <name>enum_field_extra_defcurrent
      <filter>dtm|dte|tme

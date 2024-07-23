@@ -13,8 +13,9 @@
 #     include <vector>
 #  endif
 
+#  include "common.h"
 #  include "ptypes.h"
-#  include "ciyam_common.h"
+#  include "ciyam_core.h"
 
 #  ifdef CIYAM_BASE_IMPL
 #     define CIYAM_BASE_DECL_SPEC DYNAMIC_EXPORT
