@@ -3061,6 +3061,20 @@ string get_hash( const string& prefix )
    return retval;
 }
 
+bool has_any_tags( const string& hash )
+{
+   guard g( g_mutex );
+
+   bool retval = false;
+
+   multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
+
+   if( ( i != g_hash_tags.end( ) ) && ( i->first.get_hash_string( ) == hash ) )
+      retval = true;
+
+   return retval;
+}
+
 string get_hash_tags( const string& hash )
 {
    guard g( g_mutex );

@@ -110,6 +110,8 @@ void CIYAM_BASE_DECL_SPEC touch_file( const std::string& hash,
 
 std::string CIYAM_BASE_DECL_SPEC get_hash( const std::string& prefix );
 
+bool CIYAM_BASE_DECL_SPEC has_any_tags( const std::string& hash );
+
 std::string CIYAM_BASE_DECL_SPEC get_hash_tags( const std::string& hash );
 
 std::string CIYAM_BASE_DECL_SPEC tag_file_hash( const std::string& name, bool* p_rc = 0 );

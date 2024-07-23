@@ -1882,9 +1882,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                data = buffer_file_lines( data.substr( 1 ) );
 
             if( is_blob )
-               data = c_file_type_char_core_blob + data;
+               data = c_file_type_str_core_blob + data;
             else if( is_list )
-               data = c_file_type_char_core_list + data;
+               data = c_file_type_str_core_list + data;
             else
                throw runtime_error( "unexpected unknown core type" );
 
@@ -1893,7 +1893,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else if( is_mime )
          {
             if( is_blob )
-               data = c_file_type_char_mime_blob + data;
+               data = c_file_type_str_mime_blob + data;
             else
                throw runtime_error( "only blob type is supported for MIME" );
          }
