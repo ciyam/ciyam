@@ -618,12 +618,22 @@ void system_identity_progress_message( const string& identity )
 
    if( has_paired_session )
    {
-      identity_progress_message += " (" + to_string( paired_other_height );
+      identity_progress_message += " (";
 
-      if( paired_base_height > paired_other_height )
+      if( !paired_other_height && ( paired_base_height > 1 ) )
       {
          paired_is_changing = true;
-         identity_progress_message += '/' + to_string( paired_base_height );
+         identity_progress_message += "<" + to_string( paired_base_height );
+      }
+      else
+      {
+         identity_progress_message += to_string( paired_other_height );
+
+         if( paired_base_height > paired_other_height )
+         {
+            paired_is_changing = true;
+            identity_progress_message += '/' + to_string( paired_base_height );
+         }
       }
 
       identity_progress_message += ')';
