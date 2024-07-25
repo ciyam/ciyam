@@ -6420,6 +6420,18 @@
      <pextra>
     </field>
     <field/>
+     <name>field_specification_source_grandchild
+     <field>301476
+     <ftype>@class
+     <extra>link
+     <mandatory>false
+     <modifiers>4000000000:relegate
+     <pclass>107100
+     <pfield>107101
+     <pfname>field_field_name
+     <pextra>@fkey8:300700+107101
+    </field>
+    <field/>
      <name>field_specification_other_source_child
      <field>301496
      <ftype>@class
@@ -6442,18 +6454,6 @@
      <pfield>107101
      <pfname>field_field_name
      <pextra>@fkey4:300700+107101
-    </field>
-    <field/>
-     <name>field_specification_source_grandchild
-     <field>301476
-     <ftype>@class
-     <extra>link
-     <mandatory>false
-     <modifiers>4000000000:relegate
-     <pclass>107100
-     <pfield>107101
-     <pfname>field_field_name
-     <pextra>@fkey8:300700+107101
     </field>
     <field/>
      <name>field_specification_child_relationship

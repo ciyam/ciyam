@@ -1,0 +1,59 @@
+`{`@eq`(`'validate`'`,`$section`)\
+   // [(start check_fk_child_is_found)] `{`$arg_id`}
+`{`$check_create`=`'`'`}\
+`{`@eq`(`$arg_create_only`,`'true`'`)`$check_create`=`'true`'`}\
+`{`@eq`(`$arg_update_only`,`'true`'`)`$check_create`=`'true`'`}\
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$check_create`,`'`'`)`|`@eq`(`$arg_allow_internal`,`'true`'`)`$i`=`'   `'`}\
+`{`!`@eq`(`$i`,`'`'`)\
+   if( `{`@eq`(`$arg_allow_internal`,`'true`'`)!is_internal`{`!`@eq`(`$check_create`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`) && `}`}\
+`{`!`@eq`(`$check_create`,`'`'`)`{`@eq`(`$arg_update_only`,`'true`'`)!`}get_obj( ).get_is_creating( )`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`} )
+   {
+`}\
+`{`$i`}   string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_scfield`} ) );
+`{`@eq`(`$arg_oscfield`,`'`'`)
+`{`$i`}   key_info += "#1 " + get_obj( ).`{`$arg_sfield`}( ).get_key( );
+`,\
+`{`$i`}   key_info += "," + string( FIELD_ID( `{`$module_name`}, `{`$arg_spfield`}, `{`$arg_oscfield`} ) );
+`{`$i`}   key_info += "#2 " + get_obj( ).`{`$arg_sfield`}( ).get_key( ) + "," + get_uid( );
+`}
+`{`$i`}   class_pointer< `{`$module_name`}_`{`$arg_spclass`} > cp_key_source( e_create_instance );
+
+`{`$i`}   perform_fetch_rc rc;
+`{`$i`}   cp_key_source->perform_fetch( key_info, &rc, false, true );
+
+`{`$i`}   if( rc != e_perform_fetch_rc_okay )
+`{`$i`}   {
+`{`!`@eq`(`$arg_message`,`'`'`)\
+`{`$i`}      string message( get_module_string( "`{`$arg_id`}_message" ) );
+
+`{`$i`}      message = search_replace( message, "@class", get_obj( ).get_display_name( ) );
+`{`!`@eq`(`$arg_field`,`'`'`)\
+`{`$i`}      message = search_replace( message, "@field", get_obj( ).get_field_display_name( "`{`$arg_field`}") );
+`}\
+`{`!`@eq`(`$arg_sfield`,`'`'`)\
+`{`$i`}      message = search_replace( message, "@source_field", get_obj( ).`{`$arg_sfield`}( ) );
+`}`{`!`@eq`(`$arg_spfield`,`'`'`)\
+`{`$i`}      message = search_replace( message, "@source_class", get_obj( ).`{`$arg_spfield`}( ).get_display_name( ) );
+`{`$i`}      message = search_replace( message, "@source_parent", get_obj( ).get_field_display_name( "`{`$arg_spfield`}" ) );
+`{`!`@eq`(`$arg_scfield`,`'`'`)\
+`{`$i`}      message = search_replace( message, "@source_child", get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) );
+`{`!`@eq`(`$arg_sgcfield`,`'`'`)\
+`{`$i`}      message = search_replace( message, "@source_grand_child", get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ).`{`$arg_sgcfield`}( ) );
+`}`}`}\
+
+`{`$i`}      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_`{`$arg_sfield`}, message ) );
+`,\
+`{`$i`}      p_validation_errors->insert( construct_validation_error( vf.num, "",
+`{`$i`}       get_string_message( GS( c_str_found_child_record ),
+`{`$i`}       make_pair( c_str_parm_found_child_record_class, cp_key_source->get_display_name( ) ),
+`{`@eq`(`$arg_scfield`,`'`'`)\
+`{`$i`}       make_pair( c_str_parm_found_child_record_field, get_obj( ).`{`$arg_sfield`}( ) ) ) ) );
+`,\
+`{`$i`}       make_pair( c_str_parm_found_child_record_field, get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) ) ) ) );
+`}`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+      }
+`}\
+   }
+   // [(finish check_fk_child_is_found)] `{`$arg_id`}
+`}
