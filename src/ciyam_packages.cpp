@@ -55,27 +55,32 @@ void export_data( ostream& outs,
  map< int, deque< pair< string, string > > >& future_rounds, time_t& ts, size_t& total )
 {
    size_t handle = create_object_instance( module, class_id );
+
    class_base& cb( get_class_base_from_handle_for_op( handle, "" ) );
 
    string class_name;
-   vector< pair< string, string > > base_class_info;
 
    vector< field_data > all_field_data;
+   vector< pair< string, string > > base_class_info;
+
    get_all_field_data( handle, "", key, all_field_data, &class_id, &class_name, &base_class_info );
 
    if( !all_class_ids.count( class_id ) )
       throw runtime_error( "unable to find '" + class_id + "' in all_class_ids for export" );
 
    string exclude_suffix;
+
+   bool has_seen = false;
    bool skip_record = false;
 
    set< string > first_output_ids;
 
-   bool has_seen = false;
    if( partial_export[ class_id ].count( key ) )
    {
       has_seen = true;
+
       partial_export[ class_id ].erase( key );
+
       for( size_t i = 0; i < base_class_info.size( ); i++ )
          partial_export[ base_class_info[ i ].first ].erase( key );
    }
@@ -83,7 +88,9 @@ void export_data( ostream& outs,
    if( will_be_exported[ class_id ].count( key ) )
    {
       has_seen = true;
+
       will_be_exported[ class_id ].erase( key );
+
       for( size_t i = 0; i < base_class_info.size( ); i++ )
          will_be_exported[ base_class_info[ i ].first ].erase( key );
    }
@@ -101,6 +108,7 @@ void export_data( ostream& outs,
             string test_expr;
 
             set< string > key_values;
+
             if( tests.find( class_id )->second.count( c_key_field ) )
             {
                next_value = key;
@@ -116,6 +124,7 @@ void export_data( ostream& outs,
                string suffix;
 
                string::size_type pos = test_expr.find( ';' );
+
                if( pos != string::npos )
                {
                   suffix = test_expr.substr( pos );
@@ -123,6 +132,7 @@ void export_data( ostream& outs,
                }
 
                bool is_negative = false;
+
                if( !test_expr.empty( ) && test_expr[ 0 ] == '!' )
                {
                   is_negative = true;
@@ -309,6 +319,7 @@ void export_data( ostream& outs,
             class_base_accessor instance_accessor( cb );
 
             size_t num_children = instance_accessor.get_num_foreign_key_children( );
+
             for( int pass = 0; pass < 2; ++pass )
             {
                cascade_op next_op;
@@ -367,6 +378,7 @@ void export_data( ostream& outs,
             }
 
             exported_children[ class_id ].insert( key );
+
             for( size_t i = 0; i < base_class_info.size( ); i++ )
                exported_children[ base_class_info[ i ].first ].insert( key );
          }
@@ -539,6 +551,33 @@ void create_new_package_file( const string& module_id, const string& filename,
 
                string output_values( field_values[ 0 ] );
 
+               string key_value( output_values );
+
+               if( !key_value.empty( ) && key_value[ 0 ] == '!' )
+                  key_value.erase( 0, 1 );
+
+               if( !key_value.empty( ) && key_value[ 0 ] == '@' )
+               {
+                  string::size_type pos = key_value.find( '_' );
+
+                  if( pos != string::npos )
+                     key_value.erase( 0, pos + 1 );
+               }
+
+               string extra_key_value;
+
+               if( ( key_value.size( ) > 7 )
+                && ( key_value[ key_value.length( ) - 2 ] == '_' ) )
+               {
+                  char last_ch = key_value[ key_value.length( ) - 1 ];
+
+                  if( ( last_ch >= 'a' ) && ( last_ch <= 'z' ) )
+                  {
+                     extra_key_value = key_value;
+                     key_value = key_value.substr( 0, key_value.length( ) - 2 );
+                  }
+               }
+
                bool skip_record = false;
 
                for( size_t i = 0; i < field_names.size( ); i++ )
@@ -561,12 +600,22 @@ void create_new_package_file( const string& module_id, const string& filename,
                if( skip_record )
                {
                   if( p_skipped_keys )
-                     p_skipped_keys->insert( field_values[ 0 ] );
+                  {
+                     p_skipped_keys->insert( key_value );
+
+                     if( !extra_key_value.empty( ) )
+                        p_skipped_keys->insert( extra_key_value );
+                  }
                }
                else
                {
                   if( p_found_keys )
-                     p_found_keys->insert( field_values[ 0 ] );
+                  {
+                     p_found_keys->insert( key_value );
+
+                     if( !extra_key_value.empty( ) )
+                        p_found_keys->insert( extra_key_value );
+                  }
 
                   writer.write_attribute( c_attribute_record, output_values );
                }
@@ -1497,10 +1546,31 @@ void update_package( const string& name )
 
       if( !missing_keys.empty( ) )
       {
-         outf << "\nMissing Keys:" << endl;
+         bool first = true;
 
          for( set< string >::iterator i = missing_keys.begin( ); i != missing_keys.end( ); ++i )
-            outf << *i << endl;
+         {
+            string key_value( *i );
+
+            string::size_type pos = key_value.find( "loc_" );
+
+            if( pos != 0 )
+               pos = key_value.find( "opt_" );
+
+            if( pos != 0 )
+               pos = key_value.find( "var_" );
+
+            if( pos != 0 )
+            {
+               if( first )
+               {
+                  outf << "\nMissing Keys:" << endl;
+                  first = false;
+               }
+
+               outf << key_value << endl;
+            }
+         }
       }
 
       if( !skipped_keys.empty( ) )
