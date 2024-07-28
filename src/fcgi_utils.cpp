@@ -61,6 +61,8 @@ set< string > g_non_persistent;
 map< string, string > g_strings;
 map< string, string > g_extkeys;
 
+const char c_extended_action_id = 'x';
+
 const char* const c_log_file = "ciyam_interface.log";
 const char* const c_str_file = "ciyam_interface.txt";
 
@@ -1470,9 +1472,9 @@ void output_actions( ostream& os,
    if( pos != string::npos )
       key.erase( pos );
 
-   // NOTE: Full action syntax is as follows (spaces are just here for clarity):
+   // NOTE: Full action syntax is as follows (spaces are only used here for clarity):
    //
-   // [*?][@~#%] [<][>] [:] [+][-][!][^][_][/] Id[+arg1+arg2...] [$class[.field[=@user|value]]] [[%|*]@id|value]] [&[!]perm]
+   // [*?][@~#%] [<][>] [:] [+][-][!][^][_][/] [Idx]Id[+arg1+arg2...] [$class[.field[=@user|value]]] [[%|*]@id|value]] [&[!]perm]
    //
    // where args can be: @rfields|@rvalues|value
 
@@ -1513,6 +1515,7 @@ void output_actions( ostream& os,
          next_action.erase( pos );
 
          pos = child_class.find( '%' );
+
          if( pos != string::npos )
          {
             clone_key = child_class.substr( pos + 1 );
@@ -1536,6 +1539,7 @@ void output_actions( ostream& os,
          }
 
          pos = child_class.find( '.' );
+
          if( pos != string::npos )
          {
             child_field = child_class.substr( pos + 1 );
@@ -1636,11 +1640,28 @@ void output_actions( ostream& os,
       else
          replace_action_parms( next_id, next_action, *p_pfield, data );
 
-      string next_label;
+      string next_label( next_id );
+
+      pos = next_id.find( c_extended_action_id );
+
+      // NOTE: If "<Id1>x<Id2>" is found then the label for "Id1"
+      // is displayed but the action to be invoked will be "Id2".
+      if( pos != string::npos )
+      {
+         next_id.erase( 0, pos + 1 );
+         next_label.erase( pos );
+
+         // NOTE: Need to also erase the label part from the 'action'.
+         pos = next_action.find( next_label + c_extended_action_id );
+
+         if( pos != string::npos )
+            next_action.erase( pos, next_label.length( ) + 1 );
+      }
+
       if( next_action == "create_copy" )
          next_label = GDS( c_display_create_copy );
       else
-         next_label = get_display_string( "procedure_" + next_id );
+         next_label = get_display_string( "procedure_" + next_label );
 
       if( is_default && p_default )
          *p_default = next_id;

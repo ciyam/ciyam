@@ -1956,7 +1956,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `,\
 `@eq`(`'\1`'`,`'transient_field_action_for_mod`'`)
 `{`#transient_field_action_for_mod.spec.xrep section=after_fetch class_name=$class_name\
- arg_id=$specification_\0_id arg_actions=$specification_\0_actions arg_procedure=$specification_\0_procedure\
+ arg_id=$specification_\0_id arg_actions=$specification_\0_actions\
+ arg_procedure=$specification_\0_procedure arg_oprocedure=$specification_\0_oprocedure\
  arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
  arg_tfistexttype=$specification_\0_tfistexttype arg_default=$specification_\0_default\
  arg_prompt=$specification_\0_prompt arg_back_for_view=$specification_\0_back_for_view\
