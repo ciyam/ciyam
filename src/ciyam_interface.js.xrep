@@ -29,6 +29,7 @@ var useLoadProgress = true;
 var debugDynamicContent = false;
 
 var source = window.location.href.split( ':' );
+
 if( secureOnly && source[ 0 ] != 'https' )
    window.location.replace( 'https:' + source[ 1 ] );
 
@@ -530,6 +531,7 @@ function load2( )
 
    var is_login = false;
    var non_cookie = false;
+
    var qvars = qs_both.split( '&' );
 
    for( var i = 0; i < qvars.length; i++ )
@@ -617,6 +619,7 @@ function load2( )
       {
          if( !has_session )
             full_context += '&userhash=' + localStorage.getItem( 'hash' ) + '&persistent=true&session=new_session';
+
          localStorage.setItem( 'skey', localStorage.getItem( 'key' ) );
       }
       else if( !loggedIn && encryptPosts && localStorage.getItem( 'skey' ) == null )
@@ -632,7 +635,7 @@ function load2( )
 
    xmlReq.open( 'POST', ServerApp, true );
 
-   if( !encryptPosts || source[ 0 ] == 'https' )
+   if( !encryptPosts )
       xmlReq.send( full_context );
    else
    {
@@ -655,10 +658,10 @@ function load2( )
 
          post_data = 'base64=' + Base64.encode( encrypted );
 
-         if( non_cookie )
-            post_data += '&' + module + '&session=' + session_id;
-         else
+         if( non_cookie == false )
             post_data += '&' + module;
+         else
+            post_data += '&' + module + '&session=' + session_id;
       }
       else
          post_data = full_context;
@@ -750,10 +753,6 @@ function after_force( )
 
    if( !loggedIn && encryptPosts && can_write_to_session_storage( ) )
       sessionStorage.removeItem( 'key' );
-
-   if( loggedIn && encryptPosts && source[ 0 ] == 'https'
-    && can_write_to_local_storage( ) && localStorage.getItem( 'skey' ) == null )
-      localStorage.setItem( 'skey', '' );
 
    if( uniqueId != '' && can_write_to_session_storage( ) )
       sessionStorage.setItem( 'unique', uniqueId );
@@ -1110,7 +1109,7 @@ function hash_password( salt, pwd, skip_id )
    {
       retval = hash_value( serverId + pwd + salt, rounds ).toLowerCase( );
 
-      if( !loggedIn && rounds == hashRounds && hashRounds != newHashRounds && can_write_to_session_storage( ) )
+      if( !loggedIn && ( rounds == hashRounds ) && ( hashRounds != newHashRounds ) && can_write_to_session_storage( ) )
          sessionStorage.setItem( 'newhash', hash_value( serverId + pwd + salt, newHashRounds ).toLowerCase( ) );
    }
 

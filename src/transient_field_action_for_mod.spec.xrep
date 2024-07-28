@@ -39,6 +39,10 @@
 `{`@eq`(`$arg_log_as_update`,`'true`'`)\
       actions += '/';
 `}\
+`{`!`@eq`(`$arg_oprocedure`,`'`'`)\
+      actions += c_procedure_id_`{`$arg_oprocedure`};
+      actions += 'x';
+`}\
       actions += c_procedure_id_`{`$arg_procedure`};
 `{`!`@eq`(`$arg_arg1`,`'`'`)\
       actions += "+`{`$arg_arg1`}";
@@ -67,6 +71,10 @@
 `}\
 `{`@eq`(`$arg_back_for_view`,`'true`'`)\
          actions += '<';
+`}\
+`{`!`@eq`(`$arg_oprocedure`,`'`'`)\
+         actions += c_procedure_id_`{`$arg_oprocedure`};
+         actions += 'x';
 `}\
          actions += c_procedure_id_`{`$arg_procedure`};
 `{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
