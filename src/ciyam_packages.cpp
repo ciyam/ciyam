@@ -1552,7 +1552,10 @@ void update_package( const string& name )
          {
             string key_value( *i );
 
-            string::size_type pos = key_value.find( "loc_" );
+            string::size_type pos = key_value.find( "ext_" );
+
+            if( pos != 0 )
+               pos = key_value.find( "loc_" );
 
             if( pos != 0 )
                pos = key_value.find( "opt_" );
