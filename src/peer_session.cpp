@@ -122,9 +122,10 @@ const size_t c_key_pair_separator_pos = 44;
 const size_t c_wait_sleep_time = 250;
 const size_t c_start_sleep_time = 2500;
 
-const size_t c_initial_timeout = 25000;
-const size_t c_request_timeout = 60000;
-const size_t c_support_timeout = 15000;
+const size_t c_connect_timeout = 15000;
+const size_t c_initial_timeout = 10000;
+const size_t c_request_timeout = 30000;
+const size_t c_support_timeout = 10000;
 
 const size_t c_num_hash_rounds = 1000000;
 
@@ -6460,13 +6461,13 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          }
       }
 
-      this->ap_socket->write_line( pid, c_request_timeout, p_sock_progress );
+      this->ap_socket->write_line( pid, c_initial_timeout, p_sock_progress );
    }
    else
    {
       pid.erase( );
 
-      this->ap_socket->read_line( pid, c_request_timeout, c_max_greeting_size, p_sock_progress );
+      this->ap_socket->read_line( pid, c_initial_timeout, c_max_greeting_size, p_sock_progress );
 
       string::size_type pos = pid.find( '=' );
 
@@ -6637,7 +6638,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
                if( !error.empty( ) )
                {
-                  this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_request_timeout );
+                  this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_initial_timeout );
 
                   throw runtime_error( error );
                }
@@ -6682,7 +6683,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
             // FUTURE: This message should be handled as a server string message.
             string error( "Unsupported peerchain identity '" + unprefixed_blockchain + "'." );
 
-            this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_request_timeout );
+            this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_initial_timeout );
 
             throw runtime_error( error );
          }
@@ -6791,16 +6792,17 @@ void peer_session::on_start( )
          }
 
          ap_socket->write_line( string( c_protocol_version )
-          + ':' + extra + '\n' + string( c_response_okay ), c_request_timeout, p_sock_progress );
+          + ':' + extra + '\n' + string( c_response_okay ), c_initial_timeout, p_sock_progress );
       }
       else
       {
          string greeting;
 
-         if( ap_socket->read_line( greeting, c_request_timeout, c_max_greeting_size, p_sock_progress ) <= 0 )
+         if( ap_socket->read_line( greeting, c_initial_timeout, c_max_greeting_size, p_sock_progress ) <= 0 )
          {
-            // FUTURE: This message should be handled as a server string message.
             string error;
+
+            // FUTURE: These messages should be handled as a server string messages.
             if( ap_socket->had_timeout( ) )
                error = "Timeout occurred trying to connect to peer.";
             else
@@ -6810,7 +6812,10 @@ void peer_session::on_start( )
                set_system_variable( c_error_message_prefix + identity, error );
 
             if( !unprefixed_blockchain.empty( ) )
+            {
+               set_system_variable( unprefixed_blockchain, "" );
                set_system_variable( c_error_message_prefix + unprefixed_blockchain, error );
+            }
 
             ap_socket->close( );
             throw runtime_error( error );
@@ -7837,7 +7842,7 @@ peer_session* create_peer_initiator( const string& blockchain,
             }
          }
 
-         if( ap_socket->connect( address, !has_main_session ? c_initial_timeout : c_support_timeout ) )
+         if( ap_socket->connect( address, !has_main_session ? c_connect_timeout : c_support_timeout ) )
          {
             const char* p_identity = 0;
             peer_extra extra = e_peer_extra_none;
@@ -8068,7 +8073,7 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    set_system_variable( c_error_message_prefix + identity, "" );
 
-   temporary_system_variable tmp_blockchain_connect( identity, c_true_value );
+   set_system_variable( identity, c_true_value );
 
    other_session_extras other_extras( num_for_support );
 
@@ -8076,9 +8081,11 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    // NOTE: First create main sessions for both the local and hosted blockchains.
    peer_session* p_local_main = create_peer_initiator( blockchain + paired_suffix, info,
-    false, zero_or_dummy, false, false, false, chain_type, false, p_extra_value, &other_extras );
+    false, zero_or_dummy, false, false, false, chain_type, true, p_extra_value, &other_extras );
 
-   if( p_local_main && ( peer_type >= 0 ) )
+   if( !p_local_main )
+      set_system_variable( identity, "" );
+   else if( peer_type >= 0 )
    {
       peer_session* p_hosted_main = create_peer_initiator( blockchain, info,
        false, zero_or_dummy, false, true, false, chain_type, false, p_extra_value, &other_extras );
