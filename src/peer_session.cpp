@@ -6255,13 +6255,13 @@ peer_session* construct_session(
  const date_time& dtm, bool is_responder, auto_ptr< ssl_socket >& ap_socket,
  const string& addr_info, bool is_for_support = false, peer_extra extra = e_peer_extra_none,
  const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any,
- bool has_support_sessions = false, bool has_set_system_variable = false )
+ bool has_support_sessions = false, bool must_clear_system_variable = false )
 #else
 peer_session* construct_session(
  const date_time& dtm, bool is_responder, auto_ptr< tcp_socket >& ap_socket,
  const string& addr_info, bool is_for_support = false, peer_extra extra = e_peer_extra_none,
  const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any,
- bool has_support_sessions = false, bool has_set_system_variable = false )
+ bool has_support_sessions = false, bool must_clear_system_variable = false )
 #endif
 {
    peer_session* p_session = 0;
@@ -6289,7 +6289,7 @@ peer_session* construct_session(
     || addr_info.substr( 0, pos ) == c_local_ip_addr_for_ipv6 )
       p_session = new peer_session( unix_time( dtm ),
        is_responder, ap_socket, addr_info, is_for_support, extra,
-       p_identity, chain_type, has_support_sessions, has_set_system_variable );
+       p_identity, chain_type, has_support_sessions, must_clear_system_variable );
 
    return p_session;
 }
@@ -6300,12 +6300,12 @@ peer_session* construct_session(
 peer_session::peer_session( int64_t time_val, bool is_responder,
  auto_ptr< ssl_socket >& ap_socket, const string& addr_info,
  bool is_for_support, peer_extra extra, const char* p_identity,
- peerchain_type chain_type, bool has_support_sessions, bool has_set_system_variable )
+ peerchain_type chain_type, bool has_support_sessions, bool must_clear_system_variable )
 #else
 peer_session::peer_session( int64_t time_val, bool is_responder,
  auto_ptr< tcp_socket >& ap_socket, const string& addr_info,
  bool is_for_support, peer_extra extra, const char* p_identity,
- peerchain_type chain_type, bool has_support_sessions, bool has_set_system_variable )
+ peerchain_type chain_type, bool has_support_sessions, bool must_clear_system_variable )
 #endif
  :
  is_hub( false ),
@@ -6323,7 +6323,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
  both_are_owners( false ),
  needs_key_exchange( false ),
  has_support_sessions( has_support_sessions ),
- has_set_system_variable( has_set_system_variable )
+ must_clear_system_variable( must_clear_system_variable )
 {
    if( !( *this->ap_socket ) )
       throw runtime_error( "unexpected invalid socket in peer_session::peer_session" );
@@ -7152,10 +7152,10 @@ void peer_session::on_start( )
 
          if( !is_for_support )
             set_session_variable( identity, c_true_value );
-      }
 
-      if( has_set_system_variable )
-         set_system_variable( identity, "" );
+         if( must_clear_system_variable )
+            set_system_variable( paired_identity.empty( ) ? identity : paired_identity, "" );
+      }
 
       if( !is_responder )
       {
@@ -7809,7 +7809,7 @@ peer_session* create_peer_initiator( const string& blockchain,
 
    auto_ptr< temporary_system_variable > ap_blockchain_connect;
 
-   if( !has_set_system_variable )
+   if( !has_main_session && !has_set_system_variable )
       ap_blockchain_connect.reset( new temporary_system_variable( identity, c_true_value ) );
 
    for( size_t i = 0; i < total_to_create; i++ )
@@ -8073,6 +8073,8 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    set_system_variable( c_error_message_prefix + identity, "" );
 
+   // NOTE: This will be cleared by the peer session after it has started
+   // (or cleared below if 'p_local_main' is returned as a null pointer).
    set_system_variable( identity, c_true_value );
 
    other_session_extras other_extras( num_for_support );
