@@ -52,13 +52,13 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
     std::auto_ptr< ssl_socket >& ap_socket, const std::string& addr_info,
     bool is_for_support = false, peer_extra extra = e_peer_extra_none,
     const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any,
-    bool has_support_sessions = false, bool has_set_system_variable = false );
+    bool has_support_sessions = false, bool must_clear_system_variable = false );
 #  else
    peer_session( int64_t time_val, bool is_responder,
     std::auto_ptr< tcp_socket >& ap_socket, const std::string& addr_info,
     bool is_for_support = false, peer_extra extra = e_peer_extra_none,
     const char* p_identity = 0, peerchain_type chain_type = e_peerchain_type_any,
-    bool has_support_sessions = false, bool has_set_system_variable = false );
+    bool has_support_sessions = false, bool must_clear_system_variable = false );
 #  endif
 
    ~peer_session( );
@@ -87,7 +87,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    bool both_are_owners;
    bool needs_key_exchange;
    bool has_support_sessions;
-   bool has_set_system_variable;
+   bool must_clear_system_variable;
 
    int64_t time_val;
 
