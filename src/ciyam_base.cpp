@@ -3468,8 +3468,9 @@ string construct_sql_select(
  const vector< string >& order_info,
  const vector< pair< string, string > >& query_info,
  const vector< pair< string, string > >& fixed_info,
- const vector< pair< string, string > >& paging_info, const string& security_info,
- bool is_reverse, bool is_inclusive, int row_limit, bool only_sys_fields, const string& text_search )
+ const vector< pair< string, string > >& paging_info,
+ const string& security_info, bool is_reverse, bool is_inclusive, int row_limit,
+ bool only_sys_fields, const string& text_search, vector< string >* p_order_columns = 0 )
 {
    string sql, sql_fields_and_table( "SELECT " );
 
@@ -3954,6 +3955,9 @@ string construct_sql_select(
 
          sql += "C_" + next_field;
          index += "C_" + next_field;
+
+         if( p_order_columns )
+            p_order_columns->push_back( "C_" + next_field );
 
          if( is_reverse )
             sql += " DESC";
@@ -15259,9 +15263,11 @@ bool perform_instance_iterate( class_base& instance,
 
          if( persistence_type == 0 ) // i.e. SQL persistence
          {
+            vector< string > order_columns;
+
             sql = construct_sql_select( instance,
              field_info, order_info, query_info, fixed_info, paging_info, security_info,
-             ( direction == e_iter_direction_backwards ), inclusive, row_limit, ( fields == c_key_field ), text );
+             ( direction == e_iter_direction_backwards ), inclusive, row_limit, ( fields == c_key_field ), text, &order_columns );
 
             if( instance_accessor.p_sql_data( ) )
                delete instance_accessor.p_sql_data( );
@@ -15278,7 +15284,7 @@ bool perform_instance_iterate( class_base& instance,
                }
 
                instance_accessor.p_sql_data( ) = new sql_dataset_group(
-                *gtp_session->ap_db, sql_stmts, ( direction == e_iter_direction_backwards ), false, &order_info, "C_" );
+                *gtp_session->ap_db, sql_stmts, ( direction == e_iter_direction_backwards ), false, &order_columns );
             }
             else
             {
