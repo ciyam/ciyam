@@ -3935,6 +3935,7 @@ string construct_sql_select(
       set< string > sorted_unique_indexes( unique_indexes.begin( ), unique_indexes.end( ) );
 
       string index;
+
       for( size_t i = 0; i < order_info.size( ); i++ )
       {
          string next_field( order_info[ i ] );
@@ -3942,7 +3943,7 @@ string construct_sql_select(
 
          // NOTE: As the "key" is always appended to the ordering (in case no unique index found)
          // here if a unique index is found on all but the last order field then skip this field.
-         if( i == order_info.size( ) - 1 && sorted_unique_indexes.count( index ) )
+         if( ( i == order_info.size( ) - 1 ) && sorted_unique_indexes.count( index ) )
             break;
 
          if( i > 0 )
@@ -3984,6 +3985,7 @@ string construct_sql_select(
       }
 
       bool found = false;
+
       string index_to_use;
 
       for( size_t i = 0; i < indexes.size( ); i++ )
@@ -15276,7 +15278,7 @@ bool perform_instance_iterate( class_base& instance,
                }
 
                instance_accessor.p_sql_data( ) = new sql_dataset_group(
-                *gtp_session->ap_db, sql_stmts, ( direction == e_iter_direction_backwards ), true );
+                *gtp_session->ap_db, sql_stmts, ( direction == e_iter_direction_backwards ), false, &order_info, "C_" );
             }
             else
             {

@@ -257,7 +257,10 @@ void sql_dataset::get_fields( )
       const char* p_fld = sqlite3_column_name( p_impl->p_stmt, i );
 
       if( p_fld )
+      {
          fields[ p_fld ] = i;
+         names[ i ] = string( p_fld );
+      }
    }
 #else
    int i = 0;
@@ -266,7 +269,10 @@ void sql_dataset::get_fields( )
    if( p_impl->p_stmt )
    {
       while( ( p_field = mysql_fetch_field( p_impl->p_stmt ) ) )
+      {
+         names[ i ] = p_field->name;
          fields[ p_field->name ] = i++;
+      }
    }
 #endif
 }
@@ -356,18 +362,6 @@ bool sql_dataset::next( )
 #endif
 }
 
-void sql_dataset::set_param( const string& param, const string& value )
-{
-#ifdef RDBMS_SQLITE
-   int col = params[ param ];
-
-   if( sqlite3_bind_text( p_impl->p_stmt, col, value.c_str( ), value.length( ), SQLITE_STATIC ) )
-      throw sql_exception( p_impl->p_db );
-#else
-   throw sql_exception( "Query parameters not yet implemented in MySQL wrapper." );
-#endif
-}
-
 void sql_dataset::set_param( const string& param, int value )
 {
 #ifdef RDBMS_SQLITE
@@ -380,20 +374,32 @@ void sql_dataset::set_param( const string& param, int value )
 #endif
 }
 
-void sql_dataset::set_param( int param, const string& value )
+void sql_dataset::set_param( const string& param, const string& value )
 {
 #ifdef RDBMS_SQLITE
-   if( sqlite3_bind_text( p_impl->p_stmt, param, value.c_str( ), value.length( ), SQLITE_STATIC ) )
+   int col = params[ param ];
+
+   if( sqlite3_bind_text( p_impl->p_stmt, col, value.c_str( ), value.length( ), SQLITE_STATIC ) )
       throw sql_exception( p_impl->p_db );
 #else
    throw sql_exception( "Query parameters not yet implemented in MySQL wrapper." );
 #endif
 }
 
-void sql_dataset::set_param( int p, int val )
+void sql_dataset::set_param( int param, int value )
 {
 #ifdef RDBMS_SQLITE
-   if( sqlite3_bind_int( p_impl->p_stmt, p, val ) )
+   if( sqlite3_bind_int( p_impl->p_stmt, param, value ) )
+      throw sql_exception( p_impl->p_db );
+#else
+   throw sql_exception( "Query parameters not yet implemented in MySQL wrapper." );
+#endif
+}
+
+void sql_dataset::set_param( int param, const string& value )
+{
+#ifdef RDBMS_SQLITE
+   if( sqlite3_bind_text( p_impl->p_stmt, param, value.c_str( ), value.length( ), SQLITE_STATIC ) )
       throw sql_exception( p_impl->p_db );
 #else
    throw sql_exception( "Query parameters not yet implemented in MySQL wrapper." );
@@ -412,7 +418,7 @@ int sql_dataset::as_int( const string& column ) const
 
 int sql_dataset::as_int( int col ) const
 {
-   if( col >= fieldcount )
+   if( ( col < 0 ) || ( col >= fieldcount ) )
       throw sql_exception( "Column is out of range" );
 
 #ifdef RDBMS_SQLITE
@@ -439,7 +445,7 @@ string sql_dataset::as_string( const string& column ) const
 
 string sql_dataset::as_string( int col ) const
 {
-   if( col >= fieldcount )
+   if( ( col < 0 ) || ( col >= fieldcount ) )
       throw sql_exception( "Column is out of range" );
 
 #ifdef RDBMS_SQLITE
@@ -454,15 +460,38 @@ string sql_dataset::as_string( int col ) const
       return string( p_text );
 }
 
+int sql_dataset::get_col( const string& name ) const
+{
+   if( !fields.count( name ) )
+      throw sql_exception( "Unknown column name '" + name + "'" );
+
+   return fields.find( name )->second;
+}
+
+string sql_dataset::get_column( int col ) const
+{
+   if( !names.count( col ) )
+      throw sql_exception( "Column name for " + to_string( col ) + " not found" );
+
+   return names.find( col )->second;
+}
+
 struct sql_dataset_group::impl
 {
-   impl( sql_db& db, const vector< string >& sql_queries, bool is_reverse, bool ignore_first )
+   impl( sql_db& db, const vector< string >& sql_queries,
+    bool is_reverse, bool ignore_first, vector< string >* p_order_columns, const char* p_column_prefix )
     :
     is_new( true ),
     next_dataset( -1 ),
     is_reverse( is_reverse ),
     ignore_first( ignore_first )
    {
+      if( p_order_columns )
+         order_columns = *p_order_columns;
+
+      if( p_column_prefix )
+         column_prefix = string( p_column_prefix );
+
       for( size_t i = 0; i < sql_queries.size( ); i++ )
          sql_datasets.push_back( ref_count_ptr< sql_dataset >( new sql_dataset( db, sql_queries[ i ] ) ) );
    }
@@ -474,14 +503,22 @@ struct sql_dataset_group::impl
    int next_dataset;
    vector< string > next_values;
 
+   vector< int > order_cols;
+   vector< string > order_columns;
+
+   string column_prefix;
+
    vector< bool > has_more;
    vector< ref_count_ptr< sql_dataset > > sql_datasets;
 };
 
-sql_dataset_group::sql_dataset_group( sql_db& db,
- const vector< string >& sql_queries, bool is_reverse, bool ignore_first_column_for_ordering )
+sql_dataset_group::sql_dataset_group(
+ sql_db& db, const vector< string >& sql_queries,
+ bool is_reverse, bool ignore_first_column_for_ordering,
+ vector< string >* p_order_columns, const char* p_column_prefix )
 {
-   p_impl = new impl( db, sql_queries, is_reverse, ignore_first_column_for_ordering );
+   p_impl = new impl( db, sql_queries, is_reverse,
+    ignore_first_column_for_ordering, p_order_columns, p_column_prefix );
 }
 
 sql_dataset_group::~sql_dataset_group( )
@@ -498,7 +535,8 @@ bool sql_dataset_group::next( )
       if( p_impl->next_dataset < 0 || p_impl->next_dataset >= p_impl->sql_datasets.size( ) )
          throw runtime_error( "unexpected next_dataset out of range" );
 
-      p_impl->has_more[ p_impl->next_dataset ] = p_impl->sql_datasets[ p_impl->next_dataset ]->next( );
+      if( p_impl->has_more[ p_impl->next_dataset ] )
+         p_impl->has_more[ p_impl->next_dataset ] = p_impl->sql_datasets[ p_impl->next_dataset ]->next( );
 
       p_impl->next_values.clear( );
    }
@@ -509,7 +547,19 @@ bool sql_dataset_group::next( )
       bool next = p_impl->is_new ? p_impl->sql_datasets[ i ]->next( ) : p_impl->has_more[ i ];
 
       if( p_impl->is_new )
+      {
          p_impl->has_more.push_back( next );
+
+         if( p_impl->order_cols.empty( ) && !p_impl->order_columns.empty( ) )
+         {
+            for( size_t j = 0; j < p_impl->order_columns.size( ); j++ )
+            {
+               string next_column( p_impl->column_prefix + p_impl->order_columns[ j ] );
+
+               p_impl->order_cols.push_back( p_impl->sql_datasets[ i ]->get_col( next_column ) );
+            }
+         }
+      }
 
       if( next )
       {
@@ -525,27 +575,37 @@ bool sql_dataset_group::next( )
          else
          {
             size_t start = 0;
+            size_t finish = field_count;
 
-            if( p_impl->ignore_first )
+            bool using_order_cols = ( p_impl->order_cols.size( ) > 0 );
+
+            if( using_order_cols )
+               finish = p_impl->order_cols.size( );
+            else if( p_impl->ignore_first )
                ++start;
 
-            for( size_t j = start; j < field_count; j++ )
+            for( size_t j = start; j < finish; j++ )
             {
-               string value( p_impl->sql_datasets[ i ]->as_string( j ) );
+               int col = j;
 
-               if( j >= p_impl->next_values.size( ) )
+               if( using_order_cols )
+                  col = p_impl->order_cols[ j ];
+
+               string value( p_impl->sql_datasets[ i ]->as_string( col ) );
+
+               if( col >= p_impl->next_values.size( ) )
                   break;
 
-               if( ( !p_impl->is_reverse && value < p_impl->next_values[ j ] )
-                || ( p_impl->is_reverse && value > p_impl->next_values[ j ] ) )
+               if( ( !p_impl->is_reverse && value < p_impl->next_values[ col ] )
+                || ( p_impl->is_reverse && value > p_impl->next_values[ col ] ) )
                {
                   is_next = true;
                   p_impl->next_dataset = i;
                }
 
                if( is_next
-                || ( ( !p_impl->is_reverse && value > p_impl->next_values[ j ] )
-                || ( p_impl->is_reverse && value < p_impl->next_values[ j ] ) ) )
+                || ( ( !p_impl->is_reverse && value > p_impl->next_values[ col ] )
+                || ( p_impl->is_reverse && value < p_impl->next_values[ col ] ) ) )
                   break;
             }
          }

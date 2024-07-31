@@ -64,11 +64,11 @@ struct sql_data
 
 class sql_dataset : public sql_data
 {
-   private:
-
    protected:
-   std::map< std::string, int > params;
+   std::map< int, std::string > names;
    std::map< std::string, int > fields;
+
+   std::map< std::string, int > params;
 
    void get_params( );
    void get_fields( );
@@ -86,18 +86,22 @@ class sql_dataset : public sql_data
 
    bool next( );
 
-   void set_param( const std::string&, const std::string& );
-   void set_param( const std::string&, int );
-   void set_param( int, const std::string& );
-   void set_param( int, int );
+   void set_param( const std::string& param, int value );
+   void set_param( const std::string& param, const std::string& value );
+
+   void set_param( int param, int value );
+   void set_param( int param, const std::string& value );
 
    int get_fieldcount( ) const { return fieldcount; }
 
-   int as_int( const std::string& ) const;
-   int as_int( int ) const;
+   int as_int( const std::string& column ) const;
+   int as_int( int col ) const;
 
-   std::string as_string( const std::string& ) const;
-   std::string as_string( int ) const;
+   std::string as_string( const std::string& column ) const;
+   std::string as_string( int col ) const;
+
+   int get_col( const std::string& name ) const;
+   std::string get_column( int col ) const;
 
    private:
    struct impl;
@@ -109,7 +113,8 @@ class sql_dataset_group : public sql_data
    public:
    sql_dataset_group( sql_db& db,
     const std::vector< std::string >& sql_queries,
-    bool is_reverse = false, bool ignore_first_column_for_ordering = true );
+    bool is_reverse = false, bool ignore_first_column_for_ordering = true,
+    std::vector< std::string >* p_order_columns = 0, const char* p_column_prefix = 0 );
 
    ~sql_dataset_group( );
 
