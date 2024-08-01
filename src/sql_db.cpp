@@ -479,7 +479,7 @@ string sql_dataset::get_column( int col ) const
 struct sql_dataset_group::impl
 {
    impl( sql_db& db, const vector< string >& sql_queries,
-    bool is_reverse, bool ignore_first, vector< string >* p_order_columns, const char* p_column_prefix )
+    bool is_reverse, bool ignore_first, vector< string >* p_order_columns )
     :
     is_new( true ),
     next_dataset( -1 ),
@@ -488,9 +488,6 @@ struct sql_dataset_group::impl
    {
       if( p_order_columns )
          order_columns = *p_order_columns;
-
-      if( p_column_prefix )
-         column_prefix = string( p_column_prefix );
 
       for( size_t i = 0; i < sql_queries.size( ); i++ )
          sql_datasets.push_back( ref_count_ptr< sql_dataset >( new sql_dataset( db, sql_queries[ i ] ) ) );
@@ -506,19 +503,16 @@ struct sql_dataset_group::impl
    vector< int > order_cols;
    vector< string > order_columns;
 
-   string column_prefix;
-
    vector< bool > has_more;
    vector< ref_count_ptr< sql_dataset > > sql_datasets;
 };
 
 sql_dataset_group::sql_dataset_group(
  sql_db& db, const vector< string >& sql_queries,
- bool is_reverse, bool ignore_first_column_for_ordering,
- vector< string >* p_order_columns, const char* p_column_prefix )
+ bool is_reverse, bool ignore_first_order_column, vector< string >* p_order_columns )
 {
-   p_impl = new impl( db, sql_queries, is_reverse,
-    ignore_first_column_for_ordering, p_order_columns, p_column_prefix );
+   p_impl = new impl( db, sql_queries,
+    is_reverse, ignore_first_order_column, p_order_columns );
 }
 
 sql_dataset_group::~sql_dataset_group( )
@@ -554,9 +548,12 @@ bool sql_dataset_group::next( )
          {
             for( size_t j = 0; j < p_impl->order_columns.size( ); j++ )
             {
-               string next_column( p_impl->column_prefix + p_impl->order_columns[ j ] );
+               if( ( j > 0 ) || !p_impl->ignore_first )
+               {
+                  string next_column( p_impl->order_columns[ j ] );
 
-               p_impl->order_cols.push_back( p_impl->sql_datasets[ i ]->get_col( next_column ) );
+                  p_impl->order_cols.push_back( p_impl->sql_datasets[ i ]->get_col( next_column ) );
+               }
             }
          }
       }

@@ -4,14 +4,14 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 @ifndef $1
-#Usage: prepare_restore.cin <storage>
+#Usage: complete_restore.cin <storage>
 @else
 ;
 STORAGE=$1
 ;
 APP_DIR=@lower:$STORAGE
 ;
-.system_variable @prepare_system 1 ""
+.system_variable @restore_system 1 ""
 @ifeq "$OUTPUT" "1"
 .system_variable @restore_in_progress 1
 ~echo "(restore completion is now commencing)" > Backup.txt
@@ -105,8 +105,8 @@ ERROR=Failed due to a WEBDIR environment variable not having being set.
 @endif
 @endif
 ;
+~rm -f .complete_restore_needed
 .system_variable @restore_in_progress ""
-.system_variable @system_restore_needed ""
 ;
 @ifdef $WEBDIR
 ; NOTE: Restart the web server in order to force the FCGI UI to reload all application server information.
@@ -114,7 +114,7 @@ ERROR=Failed due to a WEBDIR environment variable not having being set.
 ~rm -f $WEBDIR/meta/.prepare.restore
 @endif
 ;
-.system_variable @prepare_system ""
+.system_variable @restore_system ""
 .session_lock -release 0
 @endif
 ;

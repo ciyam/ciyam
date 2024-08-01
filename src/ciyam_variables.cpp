@@ -190,6 +190,7 @@ const char* const c_special_variable_progress_prior = "@progress_prior";
 const char* const c_special_variable_progress_total = "@progress_total";
 const char* const c_special_variable_progress_value = "@progress_value";
 const char* const c_special_variable_restore_needed = "@restore_needed";
+const char* const c_special_variable_restore_system = "@restore_system";
 const char* const c_special_variable_style_extended = "@style_extended";
 const char* const c_special_variable_sys_var_prefix = "@sys_var_prefix";
 const char* const c_special_variable_blockchain_data = "@blockchain_data";
@@ -256,6 +257,7 @@ const char* const c_special_variable_blockchain_archive_path = "@blockchain_arch
 const char* const c_special_variable_blockchain_first_mapped = "@blockchain_first_mapped";
 const char* const c_special_variable_blockchain_height_other = "@blockchain_height_other";
 const char* const c_special_variable_blockchain_op_list_hash = "@blockchain_op_list_hash";
+const char* const c_special_variable_complete_restore_needed = "@complete_restore_needed";
 const char* const c_special_variable_blockchain_backup_height = "@blockchain_backup_height";
 const char* const c_special_variable_blockchain_put_list_hash = "@blockchain_put_list_hash";
 const char* const c_special_variable_blockchain_shared_height = "@blockchain_shared_height";
@@ -459,6 +461,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_progress_total );
       g_special_variable_names.push_back( c_special_variable_progress_value );
       g_special_variable_names.push_back( c_special_variable_restore_needed );
+      g_special_variable_names.push_back( c_special_variable_restore_system );
       g_special_variable_names.push_back( c_special_variable_style_extended );
       g_special_variable_names.push_back( c_special_variable_sys_var_prefix );
       g_special_variable_names.push_back( c_special_variable_blockchain_data );
@@ -525,6 +528,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_first_mapped );
       g_special_variable_names.push_back( c_special_variable_blockchain_height_other );
       g_special_variable_names.push_back( c_special_variable_blockchain_op_list_hash );
+      g_special_variable_names.push_back( c_special_variable_complete_restore_needed );
       g_special_variable_names.push_back( c_special_variable_blockchain_backup_height );
       g_special_variable_names.push_back( c_special_variable_blockchain_put_list_hash );
       g_special_variable_names.push_back( c_special_variable_blockchain_shared_height );
@@ -580,6 +584,18 @@ void set_generate_hub_block( )
 void set_ods_cache_hit_ratios( )
 {
    g_variables[ c_special_variable_ods_cache_hit_ratios ] = system_ods_instance( ).get_cache_hit_ratios( );
+}
+
+void set_complete_restore_needed( )
+{
+   string file_name( c_special_variable_complete_restore_needed );
+
+   file_name = c_hidden_file_prefix + file_name.substr( 1 );
+
+   if( file_exists( file_name ) )
+      g_variables[ c_special_variable_complete_restore_needed ] = c_true_value;
+   else if( g_variables.count( c_special_variable_complete_restore_needed ) )
+      g_variables.erase( c_special_variable_complete_restore_needed );
 }
 
 }
@@ -761,6 +777,9 @@ string get_raw_system_variable( const string& name )
       if( wildcard_match( var_name, c_special_variable_ods_cache_hit_ratios ) )
          set_ods_cache_hit_ratios( );
 
+      if( wildcard_match( var_name, c_special_variable_complete_restore_needed ) )
+         set_complete_restore_needed( );
+
       for( ci = g_variables.begin( ); ci != g_variables.end( ); ++ci )
       {
          if( wildcard_match( var_name, ci->first ) )
@@ -795,6 +814,9 @@ string get_raw_system_variable( const string& name )
 
       if( var_name == c_special_variable_ods_cache_hit_ratios )
          set_ods_cache_hit_ratios( );
+
+      if( var_name == c_special_variable_complete_restore_needed )
+         set_complete_restore_needed( );
 
       if( var_name.find( c_special_variable_queue_prefix ) == 0 )
       {
@@ -889,6 +911,20 @@ void set_system_variable( const string& name, const string& value, bool is_init,
             g_variables[ name ] = c_true_value;
       }
    }
+   else if( name == c_special_variable_complete_restore_needed )
+   {
+      guard g( g_mutex );
+
+      string file_name( c_hidden_file_prefix + name.substr( 1 ) );
+
+      if( value.empty( ) )
+         set_complete_restore_needed( );
+      else
+      {
+         if( file_touch( file_name, 0, true, true ) )
+            g_variables[ name ] = c_true_value;
+      }
+   }
    else
    {
       guard g( g_mutex );
@@ -950,7 +986,8 @@ void set_system_variable( const string& name, const string& value, bool is_init,
        || ( var_name == c_special_variable_files_area_dir )
        || ( var_name == c_special_variable_generate_hub_block )
        || ( var_name == c_special_variable_disallow_connections )
-       || ( var_name == c_special_variable_ods_cache_hit_ratios ) ) )
+       || ( var_name == c_special_variable_ods_cache_hit_ratios )
+       || ( var_name == c_special_variable_complete_restore_needed ) ) )
          throw runtime_error( "cannot persist variable '" + var_name + "'" );
       else if( pos != string::npos )
       {

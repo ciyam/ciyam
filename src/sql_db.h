@@ -112,9 +112,8 @@ class sql_dataset_group : public sql_data
 {
    public:
    sql_dataset_group( sql_db& db,
-    const std::vector< std::string >& sql_queries,
-    bool is_reverse = false, bool ignore_first_column_for_ordering = true,
-    std::vector< std::string >* p_order_columns = 0, const char* p_column_prefix = 0 );
+    const std::vector< std::string >& sql_queries, bool is_reverse = false,
+    bool ignore_first_order_column = true, std::vector< std::string >* p_order_columns = 0 );
 
    ~sql_dataset_group( );
 

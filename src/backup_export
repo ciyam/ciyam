@@ -95,7 +95,7 @@ echo "Finished restore..." >>Backup.txt
 date >>Backup.txt
 
 if [ -f $BACKUP_PATH/.ciyam/Meta.backup.bun.gz ]; then
- ./system_variable set @system_restore_needed 1
+ touch .complete_restore_needed
 fi
 
 ./system_variable set @restore_in_progress ""
