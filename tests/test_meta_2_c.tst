@@ -20,7 +20,7 @@ Restore_Needed,M001C100F107
 Status,M001C100F108
 Raw_Sync_Status,M001C100F109
 System_Checksum,M001C100F110
-System_Restore_Needed,M001C100F111
+Complete_Restore_Needed,M001C100F111
 Raw_Sync_Status_Has_Ellipsis,M001C100F112
 Sync_Status,M001C100F113
 Vendor,M001C100F114

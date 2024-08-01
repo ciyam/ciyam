@@ -1836,8 +1836,12 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
          if( using_anonymous )
          {
-            user_group = "guests";
             is_admin_user = false;
+
+            if( p_session_info->is_meta_module )
+               user_group = "guests";
+            else
+               user_group = c_everyone;
          }
          else
          {

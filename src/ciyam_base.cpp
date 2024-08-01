@@ -15284,7 +15284,7 @@ bool perform_instance_iterate( class_base& instance,
                }
 
                instance_accessor.p_sql_data( ) = new sql_dataset_group(
-                *gtp_session->ap_db, sql_stmts, ( direction == e_iter_direction_backwards ), false, &order_columns );
+                *gtp_session->ap_db, sql_stmts, ( direction == e_iter_direction_backwards ), true, &order_columns );
             }
             else
             {
