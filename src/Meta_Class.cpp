@@ -43,7 +43,7 @@
 #include "Meta_Class.h"
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -367,6 +367,8 @@ aggregate_domain< string,
  domain_string_label_format,
  domain_string_max_size< 30 > > g_Static_Instance_Key_domain;
 
+string g_group_field_name;
+string g_level_field_name;
 string g_order_field_name;
 string g_owner_field_name;
 
@@ -2533,6 +2535,7 @@ void Meta_Class::impl::impl_Generate( )
    outf << "\x60{\x60$instance_create\x60=\x60'" << instance_create << "\x60'\x60}\n";
 
    string instance_update;
+
    switch( get_obj( ).Change_Restriction( ) )
    {
       case 0: // i.e. none
@@ -2567,6 +2570,7 @@ void Meta_Class::impl::impl_Generate( )
    outf << "\x60{\x60$instance_update\x60=\x60'" << instance_update << "\x60'\x60}\n";
 
    string instance_destroy;
+
    switch( get_obj( ).Destroy_Restriction( ) )
    {
       case 0: // i.e. none
@@ -2602,7 +2606,7 @@ void Meta_Class::impl::impl_Generate( )
 
    vector< pair< string, string > > default_values;
 
-   string order_field, owner_field, user_perms_field, permission_field;
+   string group_field, level_field, order_field, owner_field, user_perms_field, permission_field;
 
    vector< string > basic_fields;
    vector< string > parent_fields;
@@ -2677,6 +2681,7 @@ void Meta_Class::impl::impl_Generate( )
          do
          {
             bool is_custom = false;
+
             string field_type( meta_field_type_name( get_obj( ).child_Field( ).Primitive( ),
              get_obj( ).child_Field( ).Mandatory( ), get_obj( ).child_Field( ).Parent_Class( ).Name( ), get_obj( ).Model( ).Name( ), &is_custom ) );
 
@@ -2701,6 +2706,7 @@ void Meta_Class::impl::impl_Generate( )
                outf << " \\\n";
 
             string field_scope( c_both );
+
             if( get_obj( ).child_Field( ).Change_Scope( ) != 0 )
             {
                if( get_obj( ).child_Field( ).Change_Scope( ) == 1 ) // i.e. create_only
@@ -2719,6 +2725,7 @@ void Meta_Class::impl::impl_Generate( )
             }
 
             string field_update;
+
             switch( get_obj( ).child_Field( ).Change_Restriction( ) )
             {
                case 0: // i.e. none
@@ -2750,7 +2757,17 @@ void Meta_Class::impl::impl_Generate( )
             else if( field_update.empty( ) )
                field_update = c_anyone;
 
+            bool is_group_fk = false;
             bool is_owner_fk = false;
+
+            if( get_obj( ).child_Field( ).Extra( ) == -2 ) // i.e. "user_group"
+            {
+               is_group_fk = true;
+               group_field = get_obj( ).child_Field( ).Name( );
+            }
+
+            if( get_obj( ).child_Field( ).Extra( ) == 18 ) // i.e. "security_level"
+               level_field = get_obj( ).child_Field( ).Name( );
 
             if( get_obj( ).child_Field( ).Extra( ) == -1 ) // i.e. "owning_user"
             {
@@ -2926,6 +2943,12 @@ void Meta_Class::impl::impl_Generate( )
 
    for( size_t i = 0; i < default_values.size( ); i++ )
       outf << "\x60{\x60$field_default_" << default_values[ i ].first << "\x60=\x60'" << default_values[ i ].second << "\x60'\x60}\n";
+
+   if( !group_field.empty( ) )
+      outf << "\x60{\x60$group_field\x60=\x60'" << group_field << "\x60'\x60}\n";
+
+   if( !level_field.empty( ) )
+      outf << "\x60{\x60$level_field\x60=\x60'" << level_field << "\x60'\x60}\n";
 
    if( !order_field.empty( ) )
       outf << "\x60{\x60$order_field\x60=\x60'" << order_field << "\x60'\x60}\n";
@@ -3114,6 +3137,7 @@ void Meta_Class::impl::impl_Generate( )
    }
 
    bool had_child_info_parents_or_custom = false;
+
    if( get_obj( ).child_Relationship_Parent( ).iterate_forwards( ) )
    {
       set< string > child_types;
@@ -3301,6 +3325,7 @@ void Meta_Class::impl::impl_Generate( )
       string all_indexes, all_sql_indexes, all_unique_indexes, all_sql_unique_indexes;
 
       string index_key_info( to_string( Meta_Index::static_get_field_id( Meta_Index::e_field_id_Order ) ) + ' ' );
+
       if( get_obj( ).child_Index( ).iterate_forwards( index_key_info ) )
       {
          do
@@ -3413,6 +3438,7 @@ void Meta_Class::impl::impl_Generate( )
    }
 
    string modifier_key_info( to_string( Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
+
    if( get_obj( ).child_Modifier( ).iterate_forwards( modifier_key_info ) )
    {
       string all_modifiers;
@@ -3421,11 +3447,15 @@ void Meta_Class::impl::impl_Generate( )
       do
       {
          ostringstream osstr;
+
          osstr << hex << flag_value;
+
          if( !all_modifiers.empty( ) )
             all_modifiers += ' ';
          all_modifiers += get_obj( ).child_Modifier( ).Name( ) + ',' + osstr.str( );
+
          flag_value <<= 1;
+
       } while( get_obj( ).child_Modifier( ).iterate_next( ) );
 
       outf << "\x60{\x60$all_modifiers\x60=\x60'" << all_modifiers << "\x60'\x60}\n";
@@ -3436,6 +3466,7 @@ void Meta_Class::impl::impl_Generate( )
    if( get_obj( ).Source_Class( ).get_key( ).empty( ) )
    {
       string procedure_key_info( to_string( Meta_Procedure::static_get_field_id( Meta_Procedure::e_field_id_Name ) ) + ' ' );
+
       if( get_obj( ).child_Procedure( ).iterate_forwards( procedure_key_info ) )
       {
          string all_procedures, all_procedure_info;
@@ -3449,11 +3480,13 @@ void Meta_Class::impl::impl_Generate( )
          map< string, string > all_procedure_non_inputs;
          map< string, string > all_procedure_simple_inputs;
          map< string, string > all_procedure_complex_inputs;
+
          do
          {
             if( !all_procedures.empty( ) )
                all_procedures += ' ';
             all_procedures += get_obj( ).child_Procedure( ).Name( );
+
             all_procedure_names.push_back( get_obj( ).child_Procedure( ).Name( ) );
 
             if( !all_procedure_info.empty( ) )
@@ -3461,6 +3494,7 @@ void Meta_Class::impl::impl_Generate( )
             all_procedure_info += get_obj( ).child_Procedure( ).Id( ) + ',' + get_obj( ).child_Procedure( ).Name( );
 
             string procedure_access;
+
             switch( get_obj( ).child_Procedure( ).Access_Restriction( ) )
             {
                case 0: // i.e. none
@@ -3497,6 +3531,7 @@ void Meta_Class::impl::impl_Generate( )
             string next_args, next_inputs, next_outputs, next_output_names, next_simple_inputs, next_complex_inputs;
 
             bool has_args = false;
+
             if( get_obj( ).child_Procedure( ).child_Procedure_Arg( ).iterate_forwards( ) )
             {
                do
@@ -3590,6 +3625,7 @@ void Meta_Class::impl::impl_Generate( )
 
    // FUTURE: It would be more efficient to iterate only the non-child specifications here (assuming an appropriate index exists).
    string specification_key_info( to_string( Meta_Specification::static_get_field_id( Meta_Specification::e_field_id_Order ) ) + ' ' );
+
    if( get_obj( ).child_Specification( ).iterate_forwards( specification_key_info ) )
    {
       vector< string > all_specification_details;
@@ -3665,6 +3701,7 @@ void Meta_Class::impl::impl_Generate( )
                 + "_id\x60=\x60'" + get_mapped_id( model_name, get_obj( ).child_Specification( ).Id( ) ) + "\x60'\x60}\n";
 
             string gen_script;
+
             while( true )
             {
                pos = vars.find( '\n' );
@@ -3784,7 +3821,7 @@ void Meta_Class::impl::impl_Generate( )
 
    outf.flush( );
    if( !outf.good( ) )
-      throw runtime_error( "output stream is bad" );
+      throw runtime_error( "generate output stream is bad" );
    // [<finish Generate_impl>]
 }
 
@@ -6891,6 +6928,16 @@ const char* Meta_Class::get_field_name(
    return p_name;
 }
 
+string& Meta_Class::get_group_field_name( ) const
+{
+   return g_group_field_name;
+}
+
+string& Meta_Class::get_level_field_name( ) const
+{
+   return g_level_field_name;
+}
+
 string& Meta_Class::get_order_field_name( ) const
 {
    return g_order_field_name;
@@ -8587,6 +8634,20 @@ void Meta_Class::static_get_all_enum_pairs( vector< pair< string, string > >& pa
    pairs.push_back( make_pair( "enum_class_type_4", get_enum_string_class_type( 4 ) ) );
    pairs.push_back( make_pair( "enum_class_type_2", get_enum_string_class_type( 2 ) ) );
    pairs.push_back( make_pair( "enum_class_type_3", get_enum_string_class_type( 3 ) ) );
+}
+
+void Meta_Class::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+   pairs.push_back( make_pair( "Model,Delay_Initial_Records,Name", "string,bool,string" ) );
+   pairs.push_back( make_pair( "Model,Id", "string,string" ) );
+   pairs.push_back( make_pair( "Model,Name", "string,string" ) );
+}
+
+void Meta_Class::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+   unique_indexes.push_back( "Model,Delay_Initial_Records,Name" );
+   unique_indexes.push_back( "Model,Id" );
+   unique_indexes.push_back( "Model,Name" );
 }
 
 void Meta_Class::static_get_sql_indexes( vector< string >& indexes )

@@ -40,7 +40,7 @@
 #include "Meta_Procedure_Arg.h"
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -714,6 +714,8 @@ domain_string_max_size< 100 > g_Options_domain;
 domain_string_max_size< 100 > g_Test_Value_domain;
 domain_string_max_size< 200 > g_Value_domain;
 
+string g_group_field_name;
+string g_level_field_name;
 string g_order_field_name( "Order" );
 string g_owner_field_name;
 
@@ -11625,6 +11627,16 @@ const char* Meta_Specification::get_field_name(
    return p_name;
 }
 
+string& Meta_Specification::get_group_field_name( ) const
+{
+   return g_group_field_name;
+}
+
+string& Meta_Specification::get_level_field_name( ) const
+{
+   return g_level_field_name;
+}
+
 string& Meta_Specification::get_order_field_name( ) const
 {
    return g_order_field_name;
@@ -16411,6 +16423,32 @@ void Meta_Specification::static_get_text_search_fields( vector< string >& fields
 void Meta_Specification::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
 {
    ( void )pairs;
+}
+
+void Meta_Specification::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+   pairs.push_back( make_pair( "Class,Parent_Specification,Order", "string,string,string" ) );
+   pairs.push_back( make_pair( "Class,Specification_Type,@pk", "string,string,string" ) );
+   pairs.push_back( make_pair( "Model,Id", "string,string" ) );
+   pairs.push_back( make_pair( "Model,Order", "string,string" ) );
+   pairs.push_back( make_pair( "Model,Parent_Specification,Can_Access_Below_Model,Order", "string,string,bool,string" ) );
+   pairs.push_back( make_pair( "Model,Parent_Specification,Id", "string,string,string" ) );
+   pairs.push_back( make_pair( "Model,Parent_Specification,Name", "string,string,string" ) );
+   pairs.push_back( make_pair( "Model,Parent_Specification,Order", "string,string,string" ) );
+   pairs.push_back( make_pair( "Parent_Specification,@pk", "string,string" ) );
+   pairs.push_back( make_pair( "Parent_Specification,Order", "string,string" ) );
+}
+
+void Meta_Specification::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+   unique_indexes.push_back( "Class,Parent_Specification,Order" );
+   unique_indexes.push_back( "Model,Id" );
+   unique_indexes.push_back( "Model,Order" );
+   unique_indexes.push_back( "Model,Parent_Specification,Can_Access_Below_Model,Order" );
+   unique_indexes.push_back( "Model,Parent_Specification,Id" );
+   unique_indexes.push_back( "Model,Parent_Specification,Name" );
+   unique_indexes.push_back( "Model,Parent_Specification,Order" );
+   unique_indexes.push_back( "Parent_Specification,Order" );
 }
 
 void Meta_Specification::static_get_sql_indexes( vector< string >& indexes )

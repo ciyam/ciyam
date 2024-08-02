@@ -29,7 +29,7 @@
 #include "Meta_Procedure_Arg.h"
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -161,6 +161,8 @@ aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Name_domain;
 
+string g_group_field_name;
+string g_level_field_name;
 string g_order_field_name( "Order" );
 string g_owner_field_name;
 
@@ -1926,6 +1928,16 @@ const char* Meta_Procedure_Arg::get_field_name(
    return p_name;
 }
 
+string& Meta_Procedure_Arg::get_group_field_name( ) const
+{
+   return g_group_field_name;
+}
+
+string& Meta_Procedure_Arg::get_level_field_name( ) const
+{
+   return g_level_field_name;
+}
+
 string& Meta_Procedure_Arg::get_order_field_name( ) const
 {
    return g_order_field_name;
@@ -2627,6 +2639,18 @@ void Meta_Procedure_Arg::static_get_all_enum_pairs( vector< pair< string, string
 
    pairs.push_back( make_pair( "enum_arg_type_0", get_enum_string_arg_type( 0 ) ) );
    pairs.push_back( make_pair( "enum_arg_type_1", get_enum_string_arg_type( 1 ) ) );
+}
+
+void Meta_Procedure_Arg::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+   pairs.push_back( make_pair( "Procedure,Name", "string,string" ) );
+   pairs.push_back( make_pair( "Procedure,Order", "string,string" ) );
+}
+
+void Meta_Procedure_Arg::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+   unique_indexes.push_back( "Procedure,Name" );
+   unique_indexes.push_back( "Procedure,Order" );
 }
 
 void Meta_Procedure_Arg::static_get_sql_indexes( vector< string >& indexes )

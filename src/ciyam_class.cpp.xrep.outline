@@ -128,6 +128,9 @@
 `{`$non_transient_fields`=`$non_transient_fields`+`'\0`'`}\
 `}`]`}
 `{`}
+`{`$num_indexes`=`'`{`@count`(`$all_indexes`)`}`'`}
+`{`$num_unique_indexes`=`'`{`@count`(`$all_unique_indexes`)`}`'`}
+`{`}
 `{`?`$all_procedures`[`$all_procedures`,`{`?`$\$_all_args`$\$_all_non_inputs`=`'`'`}`]`}
 `{`?`$all_procedures`[`$all_procedures`,`{`?`$\$_all_outputs`[`$\$_all_outputs`%,`,`{`$\$_all_non_inputs`=`$\$_all_non_inputs`+`'\\0`'`}`]`}`]`}
 `{`}
@@ -260,7 +263,7 @@
 `]`}
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -453,6 +456,8 @@ const string c_fixed_key_value( "`{`$fixed_key`}" );\
 `{`$domain_type_\$`} g_\$_domain;\
 `]`}
 
+string g_group_field_name`{`(`?`$group_field`)( "`{`$group_field`}" )`};
+string g_level_field_name`{`(`?`$level_field`)( "`{`$level_field`}" )`};
 string g_order_field_name`{`(`?`$order_field`)( "`{`$order_field`}" )`};
 string g_owner_field_name`{`(`?`$owner_field`)( "`{`$owner_field`}" )`};
 
@@ -4025,6 +4030,24 @@ const char* `{`$full_class_name`}::get_field_name(
    return p_name;
 }
 
+string& `{`$full_class_name`}::get_group_field_name( ) const
+{
+`{`(`?`$parent_class`)\
+   return parent_class_type::get_group_field_name( );\
+`,\
+   return g_group_field_name;\
+`}
+}
+
+string& `{`$full_class_name`}::get_level_field_name( ) const
+{
+`{`(`?`$parent_class`)\
+   return parent_class_type::get_level_field_name( );\
+`,\
+   return g_level_field_name;\
+`}
+}
+
 string& `{`$full_class_name`}::get_order_field_name( ) const
 {
 `{`(`?`$parent_class`)\
@@ -5095,6 +5118,32 @@ void `{`$full_class_name`}::static_get_all_enum_pairs( vector< pair< string, str
 `{`[`$enum_\0`%=`,\
    pairs.push_back( make_pair( "enum_\0_\\0", get_enum_string_\0( `{`@eq`(`'\2`'`,`'numlit`'`)\\0`,"\\0"`} ) ) );\
 `+\n`]`}`+\n\n`]`}
+}
+
+void `{`$full_class_name`}::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+`{`(`?`$parent_class`)\
+   parent_class_type::static_get_all_index_pairs( pairs );\
+`,\
+`!`(`?`$all_indexes`)\
+   ( void )pairs;\
+`}
+`{`(`?`$all_indexes`)`[`$all_indexes`,\
+   pairs.push_back( make_pair( `{`$tmp`=`'\$`'`}`{`[`$tmp`%;`,"\\0", "\\1"`]`} ) );\
+`+\n`]`}
+}
+
+void `{`$full_class_name`}::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+`{`(`?`$parent_class`)\
+   parent_class_type::static_get_all_unique_indexes( unique_indexes );\
+`,\
+`!`(`?`$all_unique_indexes`)\
+   ( void )unique_indexes;\
+`}
+`{`(`?`$all_unique_indexes`)`[`$all_unique_indexes`,\
+   unique_indexes.push_back( "\$" );\
+`+\n`]`}
 }
 
 void `{`$full_class_name`}::static_get_sql_indexes( vector< string >& indexes )

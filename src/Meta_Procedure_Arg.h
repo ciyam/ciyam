@@ -181,6 +181,8 @@ class META_PROCEDURE_ARG_DECL_SPEC Meta_Procedure_Arg : public class_base
 
    int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const { return static_get_num_fields( p_done, p_class_name ); }
 
+   std::string& get_group_field_name( ) const;
+   std::string& get_level_field_name( ) const;
    std::string& get_order_field_name( ) const;
    std::string& get_owner_field_name( ) const;
 
@@ -195,6 +197,9 @@ class META_PROCEDURE_ARG_DECL_SPEC Meta_Procedure_Arg : public class_base
    void get_text_search_fields( std::vector< std::string >& fields ) const { return static_get_text_search_fields( fields ); }
 
    void get_all_enum_pairs( std::vector< std::pair< std::string, std::string > >& pairs ) const { return static_get_all_enum_pairs( pairs ); }
+
+   void get_all_index_pairs( std::vector< std::pair< std::string, std::string > >& pairs ) const { return static_get_all_index_pairs( pairs ); }
+   void get_all_unique_indexes( std::vector< std::string >& unique_indexes ) const { return static_get_all_unique_indexes( unique_indexes ); }
 
    std::string get_sql_columns( ) const { return static_get_sql_columns( ); }
 
@@ -254,9 +259,12 @@ class META_PROCEDURE_ARG_DECL_SPEC Meta_Procedure_Arg : public class_base
 
    static procedure_info_container& static_get_procedure_info( );
 
+   static void static_get_text_search_fields( std::vector< std::string >& fields );
+
    static void static_get_all_enum_pairs( std::vector< std::pair< std::string, std::string > >& pairs );
 
-   static void static_get_text_search_fields( std::vector< std::string >& fields );
+   static void static_get_all_index_pairs( std::vector< std::pair< std::string, std::string > >& pairs );
+   static void static_get_all_unique_indexes( std::vector< std::string >& unique_indexes );
 
    static std::string static_get_sql_columns( );
 

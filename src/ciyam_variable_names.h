@@ -4,11 +4,8 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef CIYAM_COMMON_H
-#  define CIYAM_COMMON_H
-
-#  include "common.h"
-#  include "ciyam_core.h"
+#ifndef CIYAM_SPECIAL_VARS_H
+#  define CIYAM_SPECIAL_VARS_H
 
 enum special_var
 {

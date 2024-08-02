@@ -28,7 +28,7 @@
 #include "Meta_Initial_Record.h"
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -129,6 +129,8 @@ const int c_num_transient_fields = 0;
 
 bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }
 
+string g_group_field_name;
+string g_level_field_name;
 string g_order_field_name;
 string g_owner_field_name;
 
@@ -1191,6 +1193,16 @@ const char* Meta_Initial_Record_Value::get_field_name(
    return p_name;
 }
 
+string& Meta_Initial_Record_Value::get_group_field_name( ) const
+{
+   return g_group_field_name;
+}
+
+string& Meta_Initial_Record_Value::get_level_field_name( ) const
+{
+   return g_level_field_name;
+}
+
 string& Meta_Initial_Record_Value::get_order_field_name( ) const
 {
    return g_order_field_name;
@@ -1705,6 +1717,16 @@ void Meta_Initial_Record_Value::static_get_text_search_fields( vector< string >&
 void Meta_Initial_Record_Value::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
 {
    ( void )pairs;
+}
+
+void Meta_Initial_Record_Value::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+   ( void )pairs;
+}
+
+void Meta_Initial_Record_Value::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+   ( void )unique_indexes;
 }
 
 void Meta_Initial_Record_Value::static_get_sql_indexes( vector< string >& indexes )

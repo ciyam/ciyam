@@ -27,6 +27,7 @@
 #include "sql_db.h"
 #include "utilities.h"
 #include "date_time.h"
+#include "ciyam_core.h"
 #include "console_commands.h"
 
 using namespace std;
@@ -1018,9 +1019,10 @@ void modeller_command_functor::operator ( )( const string& command, const parame
             string next_fixed_key_val( all_class_data[ i ].fixed_key_val );
             string next_base_class_name( all_class_data[ i ].base_class_name );
 
-            string order_field;
+            string group_field, order_field;
 
             string class_file_name( g_model.get_name( ) );
+
             class_file_name += '_';
             class_file_name += next_class_name;
             class_file_name += c_cpp_ext;
@@ -1055,7 +1057,9 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                if( !command.empty( ) )
                {
                   ostringstream osstr;
+
                   osstr << command << ' ' << g_model.get_name( ) << ' ' << next_class_name;
+
                   if( system( osstr.str( ).c_str( ) ) != 0 )
                      throw runtime_error( "unexpected system failure" );
                   else if( !modeller_handler.has_option_quiet( ) )
@@ -1247,6 +1251,9 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                   string field_name( all_field_data[ i ].name );
                   string field_type( all_field_data[ i ].type );
 
+                  if( all_field_data[ i ].extra.find( "group" ) != string::npos )
+                     group_field = field_name;
+
                   if( all_field_data[ i ].extra.find( "order" ) != string::npos )
                      order_field = field_name;
 
@@ -1405,6 +1412,9 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                      outf << "`{`$field_default_" << all_field_data[ i ].name << "`=`'" << default_value << "`'`}\n";
                   }
                }
+
+               if( !group_field.empty( ) )
+                  outf << "`{`$group_field`=`'" << group_field << "`'`}\n";
 
                if( !order_field.empty( ) )
                   outf << "`{`$order_field`=`'" << order_field << "`'`}\n";
@@ -1606,6 +1616,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                string all_sql_indexes;
                string all_unique_indexes;
                string all_sql_unique_indexes;
+
                for( size_t i = 0; i < all_index_data.size( ); i++ )
                {
                   string field_types;

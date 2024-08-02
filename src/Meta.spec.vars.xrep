@@ -5928,7 +5928,7 @@
 `{`$specification_User_list_column02`=`'300100`'`}
 `{`$specification_User_list_clname02`=`'User_Workgroup`'`}
 `{`$specification_User_list_cltype02`=`'@class`'`}
-`{`$specification_User_list_clxtra02`=`'max_size=100`'`}
+`{`$specification_User_list_clxtra02`=`'max_size=100+user_group`'`}
 `{`$specification_User_list_clmods02`=`'`'`}
 `{`$specification_User_list_cluniq02`=`'false`'`}
 `{`$specification_User_list_cindex02`=`'false`'`}
@@ -6031,7 +6031,7 @@
 `{`$specification_User_view_fmand005`=`'false`'`}
 `{`$specification_User_view_field006`=`'300100`'`}
 `{`$specification_User_view_ftype006`=`'@class`'`}
-`{`$specification_User_view_extra006`=`'max_size=100`'`}
+`{`$specification_User_view_extra006`=`'max_size=100+user_group`'`}
 `{`$specification_User_view_fmods006`=`'`'`}
 `{`$specification_User_view_fname006`=`'field_user_workgroup`'`}
 `{`$specification_User_view_fmand006`=`'false`'`}

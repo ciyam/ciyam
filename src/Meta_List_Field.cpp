@@ -35,7 +35,7 @@
 #include "Meta_List_Field_Type.h"
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -531,6 +531,8 @@ domain_string_max_size< 100 > g_Procedure_Args_domain;
 domain_string_max_size< 100 > g_Restriction_Value_domain;
 domain_string_max_size< 100 > g_Select_Key_Exclusions_domain;
 
+string g_group_field_name;
+string g_level_field_name;
 string g_order_field_name( "Order" );
 string g_owner_field_name;
 
@@ -7324,6 +7326,16 @@ const char* Meta_List_Field::get_field_name(
    return p_name;
 }
 
+string& Meta_List_Field::get_group_field_name( ) const
+{
+   return g_group_field_name;
+}
+
+string& Meta_List_Field::get_level_field_name( ) const
+{
+   return g_level_field_name;
+}
+
 string& Meta_List_Field::get_order_field_name( ) const
 {
    return g_order_field_name;
@@ -9575,6 +9587,16 @@ void Meta_List_Field::static_get_all_enum_pairs( vector< pair< string, string > 
    pairs.push_back( make_pair( "enum_list_field_view_parent_extra_8", get_enum_string_list_field_view_parent_extra( 8 ) ) );
    pairs.push_back( make_pair( "enum_list_field_view_parent_extra_9", get_enum_string_list_field_view_parent_extra( 9 ) ) );
    pairs.push_back( make_pair( "enum_list_field_view_parent_extra_10", get_enum_string_list_field_view_parent_extra( 10 ) ) );
+}
+
+void Meta_List_Field::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+   pairs.push_back( make_pair( "List,Order", "string,string" ) );
+}
+
+void Meta_List_Field::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+   unique_indexes.push_back( "List,Order" );
 }
 
 void Meta_List_Field::static_get_sql_indexes( vector< string >& indexes )

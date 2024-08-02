@@ -34,7 +34,7 @@
 #include "Meta_View.h"
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -474,6 +474,8 @@ const uint64_t c_modifier_Is_Time = UINT64_C( 0x8000000 );
 domain_string_max_size< 100 > g_Id_domain;
 domain_string_max_size< 100 > g_Name_domain;
 
+string g_group_field_name;
+string g_level_field_name;
 string g_order_field_name;
 string g_owner_field_name;
 
@@ -5494,6 +5496,16 @@ const char* Meta_Package_Option::get_field_name(
    return p_name;
 }
 
+string& Meta_Package_Option::get_group_field_name( ) const
+{
+   return g_group_field_name;
+}
+
+string& Meta_Package_Option::get_level_field_name( ) const
+{
+   return g_level_field_name;
+}
+
 string& Meta_Package_Option::get_order_field_name( ) const
 {
    return g_order_field_name;
@@ -7380,6 +7392,16 @@ void Meta_Package_Option::static_get_all_enum_pairs( vector< pair< string, strin
    pairs.push_back( make_pair( "enum_primitive_4", get_enum_string_primitive( 4 ) ) );
    pairs.push_back( make_pair( "enum_primitive_5", get_enum_string_primitive( 5 ) ) );
    pairs.push_back( make_pair( "enum_primitive_6", get_enum_string_primitive( 6 ) ) );
+}
+
+void Meta_Package_Option::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+   pairs.push_back( make_pair( "Package,Name", "string,string" ) );
+}
+
+void Meta_Package_Option::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+   unique_indexes.push_back( "Package,Name" );
 }
 
 void Meta_Package_Option::static_get_sql_indexes( vector< string >& indexes )
