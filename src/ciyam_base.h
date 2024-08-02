@@ -874,10 +874,8 @@ std::string CIYAM_BASE_DECL_SPEC get_field_value( size_t handle, const std::stri
 std::string CIYAM_BASE_DECL_SPEC get_field_values( size_t handle,
  const std::string& parent_context, const std::vector< std::string >& field_list,
  const std::string& tz_name, bool is_default = false, bool as_csv = false,
- std::vector< std::string >* p_raw_values = 0,
- const std::multimap< size_t, std::string >* p_inserts = 0,
- const std::map< std::string, std::string >* p_replace_map = 0,
- const std::vector< std::string >* p_omit_matching = 0, bool decrypt_for_blockchain_minter = false );
+ std::vector< std::string >* p_raw_values = 0, const std::multimap< size_t, std::string >* p_inserts = 0,
+ const std::map< std::string, std::string >* p_replace_map = 0, const std::vector< std::string >* p_omit_matching = 0 );
 
 void CIYAM_BASE_DECL_SPEC set_any_field_ids_to_names( size_t handle,
  const std::string& context, std::vector< std::string >& fields );
@@ -959,6 +957,14 @@ std::string CIYAM_BASE_DECL_SPEC instance_key_info( size_t handle, const std::st
 
 std::string CIYAM_BASE_DECL_SPEC instance_get_variable( size_t handle, const std::string& context, const std::string& vname );
 void CIYAM_BASE_DECL_SPEC instance_set_variable( size_t handle, const std::string& context, const std::string& vname, const std::string& value );
+
+void CIYAM_BASE_DECL_SPEC instance_special_field_names( size_t handle, const std::string& context, const std::string& empty,
+ std::string* p_group_name = 0, std::string* p_level_name = 0, std::string* p_order_name = 0, std::string* p_owner_name = 0 );
+
+std::string CIYAM_BASE_DECL_SPEC instance_group_field_name( size_t handle, const std::string& context );
+std::string CIYAM_BASE_DECL_SPEC instance_level_field_name( size_t handle, const std::string& context );
+std::string CIYAM_BASE_DECL_SPEC instance_order_field_name( size_t handle, const std::string& context );
+std::string CIYAM_BASE_DECL_SPEC instance_owner_field_name( size_t handle, const std::string& context );
 
 enum instance_check_rc
 {

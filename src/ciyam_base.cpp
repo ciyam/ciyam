@@ -320,6 +320,11 @@ bool g_encrypted_identity;
 
 string g_storage_name_lock;
 
+inline string empty_or_value( const string& empty, const string& value )
+{
+   return value.empty( ) ? empty : value;
+}
+
 struct global_storage_name_lock
 {
    global_storage_name_lock( const string& name )
@@ -12180,10 +12185,23 @@ string get_field_values( size_t handle,
  const string& parent_context, const vector< string >& field_list,
  const string& tz_name, bool is_default, bool as_csv, vector< string >* p_raw_values,
  const multimap< size_t, string >* p_inserts, const map< string, string >* p_replace_map,
- const vector< string >* p_omit_matching, bool decrypt_for_blockchain_minter )
+ const vector< string >* p_omit_matching )
 {
    string field_values;
+
    string key_value( instance_key_info( handle, parent_context, true ) );
+
+   string group_field_name, level_field_name, order_field_name, owner_field_name;
+
+   instance_special_field_names( handle, parent_context, c_ignore_field,
+    &group_field_name, &level_field_name, &order_field_name, &owner_field_name );
+
+   map< string, string > special_field_names;
+
+   special_field_names.insert( make_pair( c_group_field, group_field_name ) );
+   special_field_names.insert( make_pair( c_level_field, level_field_name ) );
+   special_field_names.insert( make_pair( c_order_field, order_field_name ) );
+   special_field_names.insert( make_pair( c_owner_field, owner_field_name ) );
 
    if( p_omit_matching && p_omit_matching->size( ) != field_list.size( ) )
       throw runtime_error( "unexpected 'omit matching' vector size mismatch" );
@@ -12194,6 +12212,7 @@ string get_field_values( size_t handle,
       size_t pos = next_field.find_last_of( "." );
 
       string field, field_context;
+
       if( pos != string::npos )
       {
          field = next_field.substr( pos + 1 );
@@ -12203,6 +12222,7 @@ string get_field_values( size_t handle,
          field = next_field;
 
       string context( parent_context );
+
       if( !field_context.empty( ) )
       {
          if( !context.empty( ) )
@@ -12228,13 +12248,24 @@ string get_field_values( size_t handle,
 
          string insert_name( ci->second );
 
+         bool is_special = false;
+
+         if( special_field_names.count( insert_name ) )
+         {
+            is_special = true;
+            insert_name = special_field_names[ insert_name ];
+         }
+
          if( insert_name == c_key_field )
          {
-            if( !p_replace_map || p_replace_map->find( key_value ) == p_replace_map->end( ) )
+            if( !p_replace_map || ( p_replace_map->find( key_value ) == p_replace_map->end( ) ) )
                add_next_value( as_csv, key_value, field_values );
             else
                add_next_value( as_csv, p_replace_map->find( key_value )->second, field_values );
          }
+         else if( is_special && ( insert_name != c_ignore_field ) )
+            add_next_value( as_csv,
+             get_field_value( handle, parent_context, insert_name ), field_values );
          else if( !insert_name.empty( ) && insert_name[ 0 ] == '@' )
             add_next_value( as_csv,
              instance_get_variable( handle, parent_context, insert_name ), field_values );
@@ -12242,12 +12273,31 @@ string get_field_values( size_t handle,
             add_next_value( as_csv, insert_name, field_values );
       }
 
+      // NOTE: Use the parent special field names map to check if the field
+      // name is special then obtain the actual name with the field context.
+      if( special_field_names.count( field ) )
+      {
+         class_base& instance( get_class_base_from_handle( handle, context ) );
+
+         if( field == c_group_field )
+            field = instance.get_group_field_name( );
+         else if( field == c_level_field )
+            field = instance.get_level_field_name( );
+         else if( field == c_order_field )
+            field = instance.get_order_field_name( );
+         else if( field == c_owner_field )
+            field = instance.get_owner_field_name( );
+      }
+
       if( field == c_key_field )
          next_value = key_value;
-      else if( !field.empty( ) && field[ 0 ] == '@' )
-         next_value = instance_get_variable( handle, context, field );
-      else if( field != c_ignore_field )
-         next_value = execute_object_command( handle, context, "get " + field );
+      else if( !field.empty( ) )
+      {
+         if( field[ 0 ] == '@' )
+            next_value = instance_get_variable( handle, context, field );
+         else if( field != c_ignore_field )
+            next_value = execute_object_command( handle, context, "get " + field );
+      }
 
       if( p_replace_map && !next_value.empty( ) )
       {
@@ -12277,7 +12327,7 @@ string get_field_values( size_t handle,
          if( !field_values.empty( ) || ( i > 0 && !p_omit_matching ) )
             field_values += ',';
 
-         if( field != c_key_field && !next_value.empty( ) )
+         if( !next_value.empty( ) && ( field != c_key_field ) )
          {
             bool is_encrypted = false;
             string type_name = get_field_type_name( handle, context, field, &is_encrypted );
@@ -12322,6 +12372,14 @@ string get_field_values( size_t handle,
 
       string insert_name( ci->second );
 
+      bool is_special = false;
+
+      if( special_field_names.count( insert_name ) )
+      {
+         is_special = true;
+         insert_name = special_field_names[ insert_name ];
+      }
+
       if( insert_name == c_key_field )
       {
          if( !p_replace_map || p_replace_map->find( key_value ) == p_replace_map->end( ) )
@@ -12329,6 +12387,9 @@ string get_field_values( size_t handle,
          else
             add_next_value( as_csv, p_replace_map->find( key_value )->second, field_values );
       }
+      else if( is_special && ( insert_name != c_ignore_field ) )
+         add_next_value( as_csv,
+          get_field_value( handle, parent_context, insert_name ), field_values );
       else if( !insert_name.empty( ) && insert_name[ 0 ] == '@' )
          add_next_value( as_csv,
           instance_get_variable( handle, parent_context, insert_name ), field_values );
@@ -13388,6 +13449,53 @@ void instance_set_variable( size_t handle, const string& context, const string& 
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
    instance.set_variable( vname, value );
+}
+
+void instance_special_field_names(
+ size_t handle, const string& context, const string& empty,
+ string* p_group_name, string* p_level_name, string* p_order_name, string* p_owner_name )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   if( p_group_name )
+      *p_group_name = empty_or_value( empty, instance.get_group_field_name( ) );
+
+   if( p_level_name )
+      *p_level_name = empty_or_value( empty, instance.get_level_field_name( ) );
+
+   if( p_order_name )
+      *p_order_name = empty_or_value( empty, instance.get_order_field_name( ) );
+
+   if( p_owner_name )
+      *p_owner_name = empty_or_value( empty, instance.get_owner_field_name( ) );
+}
+
+string instance_group_field_name( size_t handle, const string& context )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   return instance.get_group_field_name( );
+}
+
+string instance_level_field_name( size_t handle, const string& context )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   return instance.get_level_field_name( );
+}
+
+string instance_order_field_name( size_t handle, const string& context )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   return instance.get_order_field_name( );
+}
+
+string instance_owner_field_name( size_t handle, const string& context )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   return instance.get_owner_field_name( );
 }
 
 void instance_check( class_base& instance, instance_check_rc* p_rc )
@@ -15017,6 +15125,27 @@ bool perform_instance_iterate( class_base& instance,
             set< string > field_dependents;
 
             instance.get_required_field_names( required_fields, false, &field_dependents );
+
+            // NOTE: Any special fields found will be treated as required fields.
+            string group_field_name( instance.get_group_field_name( ) );
+
+            if( !group_field_name.empty( ) )
+               required_fields.insert( group_field_name );
+
+            string level_field_name( instance.get_level_field_name( ) );
+
+            if( !level_field_name.empty( ) )
+               required_fields.insert( level_field_name );
+
+            string order_field_name( instance.get_order_field_name( ) );
+
+            if( !order_field_name.empty( ) )
+               required_fields.insert( order_field_name );
+
+            string owner_field_name( instance.get_owner_field_name( ) );
+
+            if( !owner_field_name.empty( ) )
+               required_fields.insert( owner_field_name );
 
             int iterations = 0;
 
