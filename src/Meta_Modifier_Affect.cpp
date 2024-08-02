@@ -30,7 +30,7 @@
 #include "Meta_Modifier_Affect.h"
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -181,6 +181,8 @@ bool is_transient_field( const string& ) { static bool false_value( false ); ret
 const uint64_t c_modifier_Is_Class = UINT64_C( 0x100 );
 const uint64_t c_modifier_Is_Internal = UINT64_C( 0x200 );
 
+string g_group_field_name;
+string g_level_field_name;
 string g_order_field_name;
 string g_owner_field_name;
 
@@ -1871,6 +1873,16 @@ const char* Meta_Modifier_Affect::get_field_name(
    return p_name;
 }
 
+string& Meta_Modifier_Affect::get_group_field_name( ) const
+{
+   return g_group_field_name;
+}
+
+string& Meta_Modifier_Affect::get_level_field_name( ) const
+{
+   return g_level_field_name;
+}
+
 string& Meta_Modifier_Affect::get_order_field_name( ) const
 {
    return g_order_field_name;
@@ -2581,6 +2593,16 @@ void Meta_Modifier_Affect::static_get_all_enum_pairs( vector< pair< string, stri
    pairs.push_back( make_pair( "enum_modifier_affect_type_5", get_enum_string_modifier_affect_type( 5 ) ) );
    pairs.push_back( make_pair( "enum_modifier_affect_type_6", get_enum_string_modifier_affect_type( 6 ) ) );
    pairs.push_back( make_pair( "enum_modifier_affect_type_7", get_enum_string_modifier_affect_type( 7 ) ) );
+}
+
+void Meta_Modifier_Affect::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+   ( void )pairs;
+}
+
+void Meta_Modifier_Affect::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+   ( void )unique_indexes;
 }
 
 void Meta_Modifier_Affect::static_get_sql_indexes( vector< string >& indexes )

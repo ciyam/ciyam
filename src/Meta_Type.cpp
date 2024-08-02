@@ -28,7 +28,7 @@
 #include "Meta_Workgroup.h"
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -236,6 +236,8 @@ domain_string_max_size< 100 > g_Name_domain;
 domain_int_range< 0, 16 > g_Numeric_Decimals_domain;
 domain_int_range< 0, 16 > g_Numeric_Digits_domain;
 
+string g_group_field_name( "Workgroup" );
+string g_level_field_name;
 string g_order_field_name;
 string g_owner_field_name;
 
@@ -3133,6 +3135,16 @@ const char* Meta_Type::get_field_name(
    return p_name;
 }
 
+string& Meta_Type::get_group_field_name( ) const
+{
+   return g_group_field_name;
+}
+
+string& Meta_Type::get_level_field_name( ) const
+{
+   return g_level_field_name;
+}
+
 string& Meta_Type::get_order_field_name( ) const
 {
    return g_order_field_name;
@@ -4184,6 +4196,18 @@ void Meta_Type::static_get_all_enum_pairs( vector< pair< string, string > >& pai
    pairs.push_back( make_pair( "enum_zero_padding_1", get_enum_string_zero_padding( 1 ) ) );
    pairs.push_back( make_pair( "enum_zero_padding_2", get_enum_string_zero_padding( 2 ) ) );
    pairs.push_back( make_pair( "enum_zero_padding_3", get_enum_string_zero_padding( 3 ) ) );
+}
+
+void Meta_Type::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+   pairs.push_back( make_pair( "Workgroup,Id", "string,string" ) );
+   pairs.push_back( make_pair( "Workgroup,Name", "string,string" ) );
+}
+
+void Meta_Type::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+   unique_indexes.push_back( "Workgroup,Id" );
+   unique_indexes.push_back( "Workgroup,Name" );
 }
 
 void Meta_Type::static_get_sql_indexes( vector< string >& indexes )

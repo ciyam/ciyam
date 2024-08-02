@@ -33,7 +33,7 @@
 #include "Meta_Relationship.h"
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -318,6 +318,8 @@ aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Name_domain;
 
+string g_group_field_name;
+string g_level_field_name;
 string g_order_field_name;
 string g_owner_field_name;
 
@@ -3584,6 +3586,16 @@ const char* Meta_Relationship::get_field_name(
    return p_name;
 }
 
+string& Meta_Relationship::get_group_field_name( ) const
+{
+   return g_group_field_name;
+}
+
+string& Meta_Relationship::get_level_field_name( ) const
+{
+   return g_level_field_name;
+}
+
 string& Meta_Relationship::get_order_field_name( ) const
 {
    return g_order_field_name;
@@ -4735,6 +4747,16 @@ void Meta_Relationship::static_get_all_enum_pairs( vector< pair< string, string 
    pairs.push_back( make_pair( "enum_relationship_extra_1", get_enum_string_relationship_extra( 1 ) ) );
    pairs.push_back( make_pair( "enum_relationship_extra_4", get_enum_string_relationship_extra( 4 ) ) );
    pairs.push_back( make_pair( "enum_relationship_extra_5", get_enum_string_relationship_extra( 5 ) ) );
+}
+
+void Meta_Relationship::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+   pairs.push_back( make_pair( "Model,Child_Class,Name", "string,string,string" ) );
+}
+
+void Meta_Relationship::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+   unique_indexes.push_back( "Model,Child_Class,Name" );
 }
 
 void Meta_Relationship::static_get_sql_indexes( vector< string >& indexes )

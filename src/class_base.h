@@ -468,6 +468,8 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    virtual int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const = 0;
 
+   virtual std::string& get_group_field_name( ) const = 0;
+   virtual std::string& get_level_field_name( ) const = 0;
    virtual std::string& get_order_field_name( ) const = 0;
    virtual std::string& get_owner_field_name( ) const = 0;
 
@@ -484,6 +486,9 @@ class CIYAM_BASE_DECL_SPEC class_base
    virtual void get_text_search_fields( std::vector< std::string >& fields ) const = 0;
 
    virtual void get_all_enum_pairs( std::vector< std::pair< std::string, std::string > >& pairs ) const = 0;
+
+   virtual void get_all_index_pairs( std::vector< std::pair< std::string, std::string > >& pairs ) const = 0;
+   virtual void get_all_unique_indexes( std::vector< std::string >& unique_indexes ) const = 0;
 
    virtual std::string get_sql_columns( ) const = 0;
 

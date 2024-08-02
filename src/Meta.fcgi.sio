@@ -8055,7 +8055,7 @@
      <name>field_user_workgroup
      <field>300100
      <ftype>@class
-     <extra>max_size=100
+     <extra>max_size=100+user_group
      <mandatory>false
      <modifiers>
      <pclass>101100
@@ -10435,7 +10435,7 @@
      <name>field_user_workgroup
      <field>300100
      <ftype>@class
-     <extra>max_size=100
+     <extra>max_size=100+user_group
      <modifiers>
      <pclass>101100
      <pfield>101101

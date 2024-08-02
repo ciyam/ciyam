@@ -36,7 +36,7 @@
 #include "Meta_Workgroup.h"
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -300,6 +300,8 @@ aggregate_domain< string,
 domain_string_max_size< 5 > g_Version_domain;
 domain_int_range< 2005, 2055 > g_Year_Created_domain;
 
+string g_group_field_name( "Workgroup" );
+string g_level_field_name;
 string g_order_field_name;
 string g_owner_field_name;
 
@@ -8584,6 +8586,16 @@ const char* Meta_Model::get_field_name(
    return p_name;
 }
 
+string& Meta_Model::get_group_field_name( ) const
+{
+   return g_group_field_name;
+}
+
+string& Meta_Model::get_level_field_name( ) const
+{
+   return g_level_field_name;
+}
+
 string& Meta_Model::get_order_field_name( ) const
 {
    return g_order_field_name;
@@ -9642,6 +9654,18 @@ void Meta_Model::static_get_all_enum_pairs( vector< pair< string, string > >& pa
 
    pairs.push_back( make_pair( "enum_model_type_0", get_enum_string_model_type( 0 ) ) );
    pairs.push_back( make_pair( "enum_model_type_1", get_enum_string_model_type( 1 ) ) );
+}
+
+void Meta_Model::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+   pairs.push_back( make_pair( "Workgroup,Id", "string,string" ) );
+   pairs.push_back( make_pair( "Workgroup,Name", "string,string" ) );
+}
+
+void Meta_Model::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+   unique_indexes.push_back( "Workgroup,Id" );
+   unique_indexes.push_back( "Workgroup,Name" );
 }
 
 void Meta_Model::static_get_sql_indexes( vector< string >& indexes )

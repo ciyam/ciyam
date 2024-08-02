@@ -6,6 +6,11 @@
 #ifndef CIYAM_CORE_H
 #  define CIYAM_CORE_H
 
+const int c_max_key_length = 75;
+const int c_max_fields_per_index = 5;
+const int c_max_indexes_per_class = 100;
+const int c_max_string_length_limit = 5000000;
+
 enum file_type
 {
    e_file_type_any,

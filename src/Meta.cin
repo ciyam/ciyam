@@ -946,11 +946,11 @@ field_add -id=150101 Global_Repository_Entry File_Hash str100 opt -transient
 field_add -id=150102 Global_Repository_Entry Local_Hash str100 mand
 field_add -id=150103 Global_Repository_Entry Local_Public_Key str100 mand
 field_add -id=150104 Global_Repository_Entry Master_Public_Key str100 mand
-relationship_add -id=200100 -fid=300100 User {Workgroup} Workgroup opt restrict
-relationship_add -id=200200 -fid=300200 Type {Workgroup} Workgroup opt restrict
-relationship_add -id=200300 -fid=300300 Enum {Workgroup} Workgroup opt restrict
+relationship_add -id=200100 -fid=300100 User {Workgroup} Workgroup opt restrict -x=user_group
+relationship_add -id=200200 -fid=300200 Type {Workgroup} Workgroup opt restrict -x=user_group
+relationship_add -id=200300 -fid=300300 Enum {Workgroup} Workgroup opt restrict -x=user_group
 relationship_add -id=200400 -fid=300400 Enum_Item {Enum} Enum mand destroy
-relationship_add -id=200500 -fid=300500 Model {Workgroup} Workgroup mand restrict
+relationship_add -id=200500 -fid=300500 Model {Workgroup} Workgroup mand restrict -x=user_group
 relationship_add -id=200600 -fid=300600 Class {Model} Model mand destroy
 relationship_add -id=200610 -fid=300610 Class Source_{Model} Model opt restrict
 relationship_add -id=200620 -fid=300620 Class Source_{Class} Class opt destroy
@@ -1041,7 +1041,7 @@ relationship_add -id=201496 -fid=301496 Specification Other_Source_Child Field o
 relationship_add -id=201497 -fid=301497 Specification Other_Source_Child_2 Field opt restrict
 relationship_add -id=201498 -fid=301498 Specification {Procedure_Arg} Procedure_Arg opt restrict
 relationship_add -id=201499 -fid=301499 Specification {Permission} Permission opt restrict
-relationship_add -id=201500 -fid=301500 Permission {Workgroup} Workgroup mand destroy
+relationship_add -id=201500 -fid=301500 Permission {Workgroup} Workgroup mand destroy -x=user_group
 relationship_add -id=201600 -fid=301600 Model {Permission} Permission opt restrict
 relationship_add -id=201700 -fid=301700 Specification_Type Parent_{Specification_Type} Specification_Type opt destroy
 relationship_add -id=201710 -fid=301710 Specification_Type Child_{Specification_Type} Specification_Type opt restrict
@@ -1099,7 +1099,7 @@ relationship_add -id=202198 -fid=302198 List_Field Child_Rel_Source_Child Field 
 relationship_add -id=202199 -fid=302199 List_Field Access_Parent_Modifier Modifier opt destroy
 relationship_add -id=202200 -fid=302200 Module {Model} Model mand restrict
 relationship_add -id=202210 -fid=302210 Module {Application} Application mand destroy
-relationship_add -id=202220 -fid=302220 Application {Workgroup} Workgroup mand restrict
+relationship_add -id=202220 -fid=302220 Application {Workgroup} Workgroup mand restrict -x=user_group
 relationship_add -id=202225 -fid=302225 Application Creation_Script Application_Script opt restrict
 relationship_add -id=202300 -fid=302300 Specification_Field_Action New_Record_Class Class opt restrict
 relationship_add -id=202310 -fid=302310 Specification_Field_Action New_Record_FK_Field Field opt restrict

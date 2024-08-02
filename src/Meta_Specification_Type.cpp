@@ -28,7 +28,7 @@
 #include "Meta_Specification_Type.h"
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -710,6 +710,8 @@ domain_string_max_size< 200 > g_Specification_Name_domain;
 domain_string_max_size< 100 > g_Specification_Object_domain;
 domain_string_max_size< 10 > g_View_Id_domain;
 
+string g_group_field_name;
+string g_level_field_name;
 string g_order_field_name;
 string g_owner_field_name;
 
@@ -10254,6 +10256,16 @@ const char* Meta_Specification_Type::get_field_name(
    return p_name;
 }
 
+string& Meta_Specification_Type::get_group_field_name( ) const
+{
+   return g_group_field_name;
+}
+
+string& Meta_Specification_Type::get_level_field_name( ) const
+{
+   return g_level_field_name;
+}
+
 string& Meta_Specification_Type::get_order_field_name( ) const
 {
    return g_order_field_name;
@@ -13352,6 +13364,24 @@ void Meta_Specification_Type::static_get_all_enum_pairs( vector< pair< string, s
    pairs.push_back( make_pair( "enum_test_field_type_35", get_enum_string_test_field_type( 35 ) ) );
    pairs.push_back( make_pair( "enum_test_field_type_38", get_enum_string_test_field_type( 38 ) ) );
    pairs.push_back( make_pair( "enum_test_field_type_99", get_enum_string_test_field_type( 99 ) ) );
+}
+
+void Meta_Specification_Type::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+   pairs.push_back( make_pair( "Is_Child_Only,Is_System,Parent_Specification_Type,Can_Access_Below_Model,Name", "bool,bool,string,bool,string" ) );
+   pairs.push_back( make_pair( "Is_Child_Only,Is_System,Parent_Specification_Type,Name", "bool,bool,string,string" ) );
+   pairs.push_back( make_pair( "Is_Child_Only,Parent_Specification_Type,Can_Access_Below_Model,Name", "bool,string,bool,string" ) );
+   pairs.push_back( make_pair( "Is_Child_Only,Parent_Specification_Type,Name", "bool,string,string" ) );
+   pairs.push_back( make_pair( "Parent_Specification_Type,Name", "string,string" ) );
+}
+
+void Meta_Specification_Type::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+   unique_indexes.push_back( "Is_Child_Only,Is_System,Parent_Specification_Type,Can_Access_Below_Model,Name" );
+   unique_indexes.push_back( "Is_Child_Only,Is_System,Parent_Specification_Type,Name" );
+   unique_indexes.push_back( "Is_Child_Only,Parent_Specification_Type,Can_Access_Below_Model,Name" );
+   unique_indexes.push_back( "Is_Child_Only,Parent_Specification_Type,Name" );
+   unique_indexes.push_back( "Parent_Specification_Type,Name" );
 }
 
 void Meta_Specification_Type::static_get_sql_indexes( vector< string >& indexes )

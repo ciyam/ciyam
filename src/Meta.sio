@@ -854,6 +854,7 @@
       <name>{Workgroup}
       <type>@class
       <mandatory>true
+      <extra>user_group
       <class_id>101100
       <relationship_id>202220
       <indexes/>
@@ -2595,6 +2596,7 @@
       <name>{Workgroup}
       <type>@class
       <mandatory>false
+      <extra>user_group
       <class_id>101100
       <relationship_id>200300
       <indexes/>
@@ -11502,6 +11504,7 @@
       <name>{Workgroup}
       <type>@class
       <mandatory>true
+      <extra>user_group
       <class_id>101100
       <relationship_id>200500
       <indexes/>
@@ -14514,6 +14517,7 @@
       <name>{Workgroup}
       <type>@class
       <mandatory>true
+      <extra>user_group
       <class_id>101100
       <relationship_id>201500
       <indexes/>
@@ -26196,6 +26200,7 @@
       <name>{Workgroup}
       <type>@class
       <mandatory>false
+      <extra>user_group
       <class_id>101100
       <relationship_id>200200
       <indexes/>
@@ -26564,6 +26569,7 @@
       <name>{Workgroup}
       <type>@class
       <mandatory>false
+      <extra>user_group
       <class_id>101100
       <relationship_id>200100
       <indexes/>

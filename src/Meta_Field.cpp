@@ -43,7 +43,7 @@
 #include "numeric_helper.h"
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -402,6 +402,8 @@ aggregate_domain< string,
 domain_string_max_size< 100 > g_UOM_Name_domain;
 domain_string_max_size< 10 > g_UOM_Symbol_domain;
 
+string g_group_field_name;
+string g_level_field_name;
 string g_order_field_name;
 string g_owner_field_name;
 
@@ -6446,6 +6448,16 @@ const char* Meta_Field::get_field_name(
    return p_name;
 }
 
+string& Meta_Field::get_group_field_name( ) const
+{
+   return g_group_field_name;
+}
+
+string& Meta_Field::get_level_field_name( ) const
+{
+   return g_level_field_name;
+}
+
 string& Meta_Field::get_order_field_name( ) const
 {
    return g_order_field_name;
@@ -8446,6 +8458,18 @@ void Meta_Field::static_get_all_enum_pairs( vector< pair< string, string > >& pa
    pairs.push_back( make_pair( "enum_uom_901", get_enum_string_uom( 901 ) ) );
    pairs.push_back( make_pair( "enum_uom_902", get_enum_string_uom( 902 ) ) );
    pairs.push_back( make_pair( "enum_uom_999", get_enum_string_uom( 999 ) ) );
+}
+
+void Meta_Field::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+   pairs.push_back( make_pair( "Class,Id", "string,string" ) );
+   pairs.push_back( make_pair( "Class,Name", "string,string" ) );
+}
+
+void Meta_Field::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+   unique_indexes.push_back( "Class,Id" );
+   unique_indexes.push_back( "Class,Name" );
 }
 
 void Meta_Field::static_get_sql_indexes( vector< string >& indexes )

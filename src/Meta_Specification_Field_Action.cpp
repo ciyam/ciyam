@@ -40,7 +40,7 @@
 #include "Meta_Field.h"
 
 #include "ciyam_base.h"
-#include "ciyam_common.h"
+#include "ciyam_core.h"
 #include "class_domains.h"
 #include "ciyam_channels.h"
 #include "module_strings.h"
@@ -446,6 +446,8 @@ const uint64_t c_modifier_Hide_Record_Create_Info = UINT64_C( 0x40000000000000 )
 domain_string_max_size< 100 > g_Clone_Key_domain;
 domain_string_max_size< 100 > g_New_Record_FK_Value_domain;
 
+string g_group_field_name;
+string g_level_field_name;
 string g_order_field_name;
 string g_owner_field_name;
 
@@ -2145,6 +2147,16 @@ const char* Meta_Specification_Field_Action::get_field_name(
    return p_name;
 }
 
+string& Meta_Specification_Field_Action::get_group_field_name( ) const
+{
+   return parent_class_type::get_group_field_name( );
+}
+
+string& Meta_Specification_Field_Action::get_level_field_name( ) const
+{
+   return parent_class_type::get_level_field_name( );
+}
+
 string& Meta_Specification_Field_Action::get_order_field_name( ) const
 {
    return parent_class_type::get_order_field_name( );
@@ -2955,6 +2967,16 @@ void Meta_Specification_Field_Action::static_get_all_enum_pairs( vector< pair< s
 
    pairs.push_back( make_pair( "enum_field_action_type_0", get_enum_string_field_action_type( 0 ) ) );
    pairs.push_back( make_pair( "enum_field_action_type_1", get_enum_string_field_action_type( 1 ) ) );
+}
+
+void Meta_Specification_Field_Action::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
+{
+   parent_class_type::static_get_all_index_pairs( pairs );
+}
+
+void Meta_Specification_Field_Action::static_get_all_unique_indexes( vector< string >& unique_indexes )
+{
+   parent_class_type::static_get_all_unique_indexes( unique_indexes );
 }
 
 void Meta_Specification_Field_Action::static_get_sql_indexes( vector< string >& indexes )
