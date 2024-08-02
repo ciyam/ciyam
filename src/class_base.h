@@ -39,6 +39,11 @@ struct sql_data;
 
 const char* const c_key_field = "@key";
 
+const char* const c_group_field = "@group";
+const char* const c_level_field = "@level";
+const char* const c_order_field = "@order";
+const char* const c_owner_field = "@owner";
+
 const char* const c_dtm_now = "@now";
 const char* const c_date_today = "@today";
 const char* const c_date_tomorrow = "@tomorrow";

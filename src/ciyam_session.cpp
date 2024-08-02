@@ -2979,7 +2979,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             tz_name = get_timezone( );
 
          string context;
+
          string::size_type pos = mclass.find( ':' );
+
          if( pos != string::npos )
          {
             context = mclass.substr( pos + 1 );
@@ -2988,16 +2990,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          mclass = get_class_id_for_id_or_name( module, mclass );
 
-         // NOTE: For usage with the "getmeta" script.
-         if( module == "Meta" && fields == "@all" )
+         // NOTE: For usage with "getmeta/getmetap" script.
+         if( ( module == "Meta" ) && ( fields == "@all" ) )
             fields = get_meta_class_field_list( mclass );
 
          string parent_key;
+
          bool found_parent_key = false;
 
          if( !context.empty( ) && !key_info.empty( ) )
          {
             pos = key_info.find( ':' );
+
             if( pos != string::npos )
             {
                parent_key = key_info.substr( 0, pos );
@@ -3012,12 +3016,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          multimap< size_t, string > field_inserts;
 
          vector< string > field_list;
+
          if( !fields.empty( ) )
             split( fields, field_list );
 
          string normal_fields;
+
          size_t non_inserts = 0;
          vector< summary_info > summaries;
+
          for( size_t i = 0; i < field_list.size( ); i++ )
          {
             if( !field_list[ i ].empty( ) && field_list[ i ][ 0 ] == '@' )
@@ -3052,20 +3059,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          vector< string > filter_list;
+
          if( !filters.empty( ) )
             split( filters, filter_list );
 
          set< string > filter_set( filter_list.begin( ), filter_list.end( ) );
 
          int num_limit = create_pdf ? c_pdf_default_limit : 0;
+
          if( !limit.empty( ) )
             num_limit = from_string< int >( limit );
 
          map< string, string > set_value_items;
+
          if( !set_values.empty( ) )
             parse_field_values( module, mclass, set_values, set_value_items, &socket_handler.get_transformations( ) );
 
          map< string, string > search_replaces;
+
          if( !map_file.empty( ) )
          {
             string path( storage_web_root( true ) );
@@ -3165,12 +3176,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             set_dtm( dtm );
             set_grp( grp );
             set_uid( uid );
+
             set_tz_name( tz_name );
+
             set_tmp_directory( tmp_dir );
             
             set< string > perm_set;
+
             if( !perms.empty( ) )
                split( perms, perm_set );
+
             set_perms( perm_set );
 
             // NOTE: If a space is provided as the key then fetch the default record values or if the
