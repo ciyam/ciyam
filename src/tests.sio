@@ -268,7 +268,7 @@
      </test_step>
      <test_step/>
       <name>b
-      <exec>type test.bun
+      <exec>$cat test.bun
       <input>false
       <output>generate
      </test_step>
@@ -280,7 +280,7 @@
      </test_step>
      <test_step/>
       <name>d
-      <exec>type test.bun
+      <exec>$cat test.bun
       <input>false
       <output>generate
      </test_step>
@@ -292,7 +292,7 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>type test.bun
+      <exec>$cat test.bun
       <input>false
       <output>generate
      </test_step>
@@ -310,7 +310,7 @@
      </test_step>
      <test_step/>
       <name>i
-      <exec>type test.bun
+      <exec>$cat test.bun
       <input>false
       <output>generate
      </test_step>
@@ -328,7 +328,7 @@
      </test_step>
      <test_step/>
       <name>l
-      <exec>type test.bun
+      <exec>$cat test.bun
       <input>false
       <output>generate
      </test_step>
@@ -340,7 +340,7 @@
      </test_step>
      <test_step/>
       <name>n
-      <exec>type test.bun
+      <exec>$cat test.bun
       <input>false
       <output>generate
      </test_step>
@@ -358,7 +358,7 @@
      </test_step>
      <test_step/>
       <name>q
-      <exec>type test.bun
+      <exec>$cat test.bun
       <input>false
       <output>generate
      </test_step>
@@ -370,7 +370,7 @@
      </test_step>
      <test_step/>
       <name>s
-      <exec>type test.bun
+      <exec>$cat test.bun
       <input>false
       <output>generate
      </test_step>
@@ -382,7 +382,7 @@
      </test_step>
      <test_step/>
       <name>u
-      <exec>type test.bun
+      <exec>$cat test.bun
       <input>false
       <output>generate
      </test_step>
@@ -412,7 +412,7 @@
      </test_step>
      <test_step/>
       <name>z
-      <exec>type test.bun
+      <exec>$cat test.bun
       <input>false
       <output>generate
      </test_step>
@@ -896,7 +896,7 @@
      </test_step>
      <test_step/>
       <name>c
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr
+      <exec>$rm test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -914,7 +914,7 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr
+      <exec>$rm test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -980,7 +980,7 @@
      </test_step>
      <test_step/>
       <name>q
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg.1
+      <exec>$rm test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg.1
       <input>false
       <output>none
      </test_step>
@@ -1020,7 +1020,7 @@
      </test_step>
      <test_step/>
       <name>c
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr
+      <exec>$rm test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1038,7 +1038,7 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr
+      <exec>$rm test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1056,7 +1056,7 @@
      </test_step>
      <test_step/>
       <name>i
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr
+      <exec>$rm test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1074,7 +1074,7 @@
      </test_step>
      <test_step/>
       <name>l
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr
+      <exec>$rm test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1092,7 +1092,7 @@
      </test_step>
      <test_step/>
       <name>o
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr
+      <exec>$rm test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1110,7 +1110,7 @@
      </test_step>
      <test_step/>
       <name>r
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr
+      <exec>$rm test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1156,7 +1156,7 @@
      </test_step>
      <test_step/>
       <name>e
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg
+      <exec>$rm test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg
       <input>false
       <output>none
      </test_step>
@@ -1186,7 +1186,7 @@
      </test_step>
      <test_step/>
       <name>j
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg
+      <exec>$rm test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg
       <input>false
       <output>none
      </test_step>
@@ -1216,7 +1216,7 @@
      </test_step>
      <test_step/>
       <name>o
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg
+      <exec>$rm test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg
       <input>false
       <output>none
      </test_step>
@@ -1246,7 +1246,7 @@
      </test_step>
      <test_step/>
       <name>t
-      <exec>del test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg
+      <exec>$rm test_ods.dat test_ods.idx test_ods.hdr test_ods.tlg
       <input>false
       <output>none
      </test_step>
@@ -1501,7 +1501,7 @@
      </test_step>
      <test_step/>
       <name>d
-      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
+      <exec>$rm ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1513,7 +1513,7 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
+      <exec>$rm ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1525,7 +1525,7 @@
      </test_step>
      <test_step/>
       <name>h
-      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
+      <exec>$rm ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1555,7 +1555,7 @@
      </test_step>
      <test_step/>
       <name>m
-      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
+      <exec>$rm ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1573,7 +1573,7 @@
      </test_step>
      <test_step/>
       <name>p
-      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
+      <exec>$rm ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1619,7 +1619,7 @@
      </test_step>
      <test_step/>
       <name>d
-      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
+      <exec>$rm ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1631,7 +1631,7 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
+      <exec>$rm ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1643,7 +1643,7 @@
      </test_step>
      <test_step/>
       <name>h
-      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
+      <exec>$rm ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1673,7 +1673,7 @@
      </test_step>
      <test_step/>
       <name>m
-      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr
+      <exec>$rm ods_fsed.dat ods_fsed.idx ods_fsed.hdr
       <input>false
       <output>none
      </test_step>
@@ -1691,7 +1691,7 @@
      </test_step>
      <test_step/>
       <name>p
-      <exec>del ods_fsed.dat ods_fsed.idx ods_fsed.hdr ods_fsed.tlg.1
+      <exec>$rm ods_fsed.dat ods_fsed.idx ods_fsed.hdr ods_fsed.tlg.1
       <input>false
       <output>none
      </test_step>
