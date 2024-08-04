@@ -117,6 +117,8 @@ const int c_num_extra_entropy_chars = 10;
 
 const size_t c_num_txs_for_reset = 250000;
 
+const size_t c_max_required_field_iterations = 100;
+
 const size_t c_minimum_encrypted_password_size = 10;
 
 // NOTE: Limit the buffer to twice the maximum file size (if a compression
@@ -128,8 +130,11 @@ const char* const c_str_peer = "(peer)";
 
 const char* const c_str_unknown = "unknown";
 
+const int c_num_sys_field_names = 5;
+
 const char* const c_key_field_name = "Key_";
 const char* const c_rev_field_name = "Rev_";
+const char* const c_sec_field_name = "Sec_";
 const char* const c_typ_field_name = "Typ_";
 const char* const c_ver_field_name = "Ver_";
 
@@ -2210,23 +2215,24 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
          instance_accessor.set_key( columns[ 0 ], true );
          instance_accessor.set_version( from_string< uint16_t >( columns[ 1 ] ) );
          instance_accessor.set_revision( from_string< uint64_t >( columns[ 2 ] ) );
+         instance_accessor.set_security( from_string< uint64_t >( columns[ 3 ] ) );
+         instance_accessor.set_original_identity( columns[ 4 ] );
 
          instance_accessor.set_original_revision( instance.get_revision( ) );
-         instance_accessor.set_original_identity( columns[ 3 ] );
 
          if( !sys_only_fields )
          {
             TRACE_LOG( TRACE_SQLCLSET, "(from cache)" );
 
-            int fnum = 4;
+            int fnum = c_num_sys_field_names;
 
             for( int i = fnum; i < columns.size( ); i++, fnum++ )
             {
-               while( instance.is_field_transient( fnum - 4 ) )
+               while( instance.is_field_transient( fnum - c_num_sys_field_names ) )
                   fnum++;
 
-               TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - 4 + 1 ) + " to " + columns[ i ] );
-               instance.set_field_value( fnum - 4, columns[ i ] );
+               TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - c_num_sys_field_names + 1 ) + " to " + columns[ i ] );
+               instance.set_field_value( fnum - c_num_sys_field_names, columns[ i ] );
             }
 
             instance_accessor.after_fetch_from_db( );
@@ -2269,18 +2275,19 @@ bool fetch_instance_from_db( class_base& instance,
       instance_accessor.set_key( sd.as_string( 0 ), true );
       instance_accessor.set_version( from_string< uint16_t >( sd.as_string( 1 ) ) );
       instance_accessor.set_revision( from_string< uint64_t >( sd.as_string( 2 ) ) );
+      instance_accessor.set_security( from_string< uint64_t >( sd.as_string( 3 ) ) );
+      instance_accessor.set_original_identity( sd.as_string( 4 ) );
 
       instance_accessor.set_original_revision( instance.get_revision( ) );
-      instance_accessor.set_original_identity( sd.as_string( 3 ) );
 
       int fcount = sd.get_fieldcount( );
 
-      for( int i = 4; i < fcount; i++ )
+      for( int i = c_num_sys_field_names; i < fcount; i++ )
       {
-         if( !fields.count( columns[ i - 4 ] ) )
-            throw runtime_error( "unexpected field # not found for column #" + to_string( i - 4 ) );
+         if( !fields.count( columns[ i - c_num_sys_field_names ] ) )
+            throw runtime_error( "unexpected field # not found for column #" + to_string( i - c_num_sys_field_names ) );
 
-         int fnum( fields.find( columns[ i - 4 ] )->second );
+         int fnum( fields.find( columns[ i - c_num_sys_field_names ] )->second );
 
          TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum + 1 ) + " to " + sd.as_string( i ) );
          instance.set_field_value( fnum, sd.as_string( i ) );
@@ -2324,22 +2331,24 @@ bool fetch_instance_from_db( class_base& instance,
          {
             instance_accessor.set_version( from_string< uint16_t >( ds.as_string( 1 ) ) );
             instance_accessor.set_revision( from_string< uint64_t >( ds.as_string( 2 ) ) );
+            instance_accessor.set_security( from_string< uint64_t >( ds.as_string( 3 ) ) );
+            instance_accessor.set_original_identity( ds.as_string( 4 ) );
 
             instance_accessor.set_original_revision( instance.get_revision( ) );
-            instance_accessor.set_original_identity( ds.as_string( 3 ) );
 
             if( !sys_only_fields )
             {
                TRACE_LOG( TRACE_SQLCLSET, "(from temporary dataset)" );
 
-               int fnum = 4;
+               int fnum = c_num_sys_field_names;
+
                for( int i = fnum; i < ds.get_fieldcount( ); i++, fnum++ )
                {
-                  while( instance.is_field_transient( fnum - 4 ) )
+                  while( instance.is_field_transient( fnum - c_num_sys_field_names ) )
                      fnum++;
 
-                  TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - 4 + 1 ) + " to " + ds.as_string( i ) );
-                  instance.set_field_value( fnum - 4, ds.as_string( i ) );
+                  TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - c_num_sys_field_names + 1 ) + " to " + ds.as_string( i ) );
+                  instance.set_field_value( fnum - c_num_sys_field_names, ds.as_string( i ) );
                }
 
                if( allow_caching && !is_minimal_fetch )
@@ -2598,6 +2607,7 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
 
          p_columns->push_back( "1" );
          p_columns->push_back( "0" );
+         p_columns->push_back( "0" );
 
          p_columns->push_back( instance.get_module_id( ) + ':' + instance.get_class_id( ) );
       }
@@ -2607,6 +2617,7 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
 
          instance_accessor.set_version( 1 );
          instance_accessor.set_revision( 0 );
+         instance_accessor.set_security( 0 );
 
          instance_accessor.set_original_revision( instance.get_revision( ) );
          instance_accessor.set_original_identity( instance.get_module_id( ) + ':' + instance.get_class_id( ) );
@@ -2761,6 +2772,7 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
 
          p_columns->push_back( "1" );
          p_columns->push_back( "0" );
+         p_columns->push_back( "0" );
 
          p_columns->push_back( instance.get_module_id( ) + ':' + instance.get_class_id( ) );
       }
@@ -2770,6 +2782,7 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
 
          instance_accessor.set_version( 1 );
          instance_accessor.set_revision( 0 );
+         instance_accessor.set_security( 0 );
 
          instance_accessor.set_original_revision( instance.get_revision( ) );
          instance_accessor.set_original_identity( instance.get_module_id( ) + ':' + instance.get_class_id( ) );
@@ -3101,12 +3114,13 @@ inline string get_field_name( class_base& instance,
    if( field_name == c_key_field )
       field_name = c_key_field_name;
 
-   if( field_name == c_key_field_name || field_name == c_typ_field_name )
+   if( ( field_name == c_key_field_name ) || ( field_name == c_typ_field_name ) )
    {
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
-   else if( field_name == c_ver_field_name || field_name == c_rev_field_name )
+   else if( ( field_name == c_ver_field_name )
+    || ( field_name == c_rev_field_name ) || ( field_name == c_sec_field_name ) )
    {
       if( p_sql_numeric )
          *p_sql_numeric = true;
@@ -3488,11 +3502,11 @@ string construct_sql_select(
       if( !only_sys_fields )
          sql_fields_and_table += "*";
       else
-         sql_fields_and_table += "C_Key_,C_Ver_,C_Rev_,C_Typ_";
+         sql_fields_and_table += "C_Key_,C_Ver_,C_Rev_,C_Sec_,C_Typ_";
    }
    else
    {
-      sql_fields_and_table += "C_Key_,C_Ver_,C_Rev_,C_Typ_";
+      sql_fields_and_table += "C_Key_,C_Ver_,C_Rev_,C_Sec_,C_Typ_";
 
       for( size_t i = 0; i < field_info.size( ); i++ )
       {
@@ -3507,12 +3521,22 @@ string construct_sql_select(
       }
    }
 
+   bool has_sec_restrict = false;
+
    sql_fields_and_table += " FROM T_"
     + string( instance.get_module_name( ) ) + "_" + string( instance.get_class_name( ) );
 
    if( !query_info.empty( ) || !text_search.empty( )
     || !fixed_info.empty( ) || !paging_info.empty( ) || !security_info.empty( ) )
+   {
       sql += " WHERE ";
+
+      if( row_limit != 1 )
+      {
+         sql += "C_Sec_ = 0";
+         has_sec_restrict = true;
+      }
+   }
 
    if( !query_info.empty( ) )
    {
@@ -3521,7 +3545,7 @@ string construct_sql_select(
          string field_name( query_info[ i ].first );
          string field_values( query_info[ i ].second );
 
-         if( i > 0 )
+         if( ( i > 0 ) || has_sec_restrict )
             sql += " AND ";
 
          bool invert = false;
@@ -3622,6 +3646,7 @@ string construct_sql_select(
          if( !was_like )
          {
             string::size_type pos = field_values.find( ".." );
+
             if( pos != string::npos )
             {
                sql += columns + invert_prefix + " BETWEEN ";
@@ -3709,10 +3734,6 @@ string construct_sql_select(
          if( is_sub_select )
             sql += sub_select_sql_suffix;
       }
-
-      if( !text_search.empty( )
-       || !fixed_info.empty( ) || !paging_info.empty( ) || !security_info.empty( ) )
-         sql += " AND ";
    }
 
    if( !text_search.empty( ) )
@@ -3726,12 +3747,15 @@ string construct_sql_select(
       vector< string > text_search_words;
       split_text_search( text_search, text_search_words );
 
+      if( has_sec_restrict )
+         sql += " AND ";
+
       if( text_search_words.size( ) > 1 )
          sql += "(";
 
       for( size_t i = 0; i < text_search_words.size( ); i++ )
       {
-         if( i > 0 )
+         if( ( i > 0 ) || has_sec_restrict )
             sql += " AND ";
 
          sql += "(";
@@ -3755,9 +3779,6 @@ string construct_sql_select(
 
       if( text_search_words.size( ) > 1 )
          sql += ")";
-
-      if( !fixed_info.empty( ) || !paging_info.empty( ) || !security_info.empty( ) )
-         sql += " AND ";
    }
 
    if( !fixed_info.empty( ) )
@@ -3767,7 +3788,7 @@ string construct_sql_select(
          string next_field( fixed_info[ i ].first );
          string next_value( fixed_info[ i ].second );
 
-         if( i > 0 )
+         if( ( i > 0 ) || has_sec_restrict )
             sql += " AND ";
 
          string field_type;
@@ -3787,6 +3808,7 @@ string construct_sql_select(
          // are stripped off to behave as though they are in an IN list (although "ORs"
          // are actually used in the SQL generated here).
          string::size_type pos = next_value.find( '+' );
+
          if( pos != string::npos )
          {
             has_multiple_values = true;
@@ -3831,6 +3853,7 @@ string construct_sql_select(
          // NOTE: If a fixed key value ends with a '*' then the value preceeding
          // it will become a LIKE prefix and the '*' is changed to a SQL wildcard.
          bool value_is_like_prefix = false;
+
          if( !next_value.empty( ) && next_value[ next_value.length( ) - 1 ] == '*' )
          {
             value_is_like_prefix = true;
@@ -3839,6 +3862,7 @@ string construct_sql_select(
 
          string lhs, rhs;
          bool is_between = false;
+
          if( !value_is_like_prefix )
          {
             string::size_type pos = next_value.find( ".." );
@@ -3876,9 +3900,6 @@ string construct_sql_select(
          if( has_multiple_values )
             sql += ")";
       }
-
-      if( !paging_info.empty( ) || !security_info.empty( ) )
-         sql += " AND ";
    }
 
    if( !paging_info.empty( ) )
@@ -3904,10 +3925,10 @@ string construct_sql_select(
          modified_paging_info.push_back( make_pair( next_field, next_value ) );
       }
 
-      sql += construct_paging_sql( modified_paging_info, is_reverse, is_inclusive );
-
-      if( !security_info.empty( ) )
+      if( has_sec_restrict )
          sql += " AND ";
+
+      sql += construct_paging_sql( modified_paging_info, is_reverse, is_inclusive );
    }
 
    string security_field;
@@ -3920,6 +3941,7 @@ string construct_sql_select(
       string::size_type pos = security_info.find( ':' );
 
       string security_level( get_raw_session_variable( get_special_var_name( e_special_var_sec ) ) );
+
       if( pos != string::npos )
          security_level = security_info.substr( pos + 1 );
 
@@ -3928,12 +3950,18 @@ string construct_sql_select(
       bool is_sql_numeric;
       get_field_name( instance, security_field, &is_sql_numeric );
 
+      if( has_sec_restrict )
+         sql += " AND ";
+
       sql += "C_" + security_field + " LIKE '" + security_level + "%'";
    }
 
    if( !order_info.empty( ) )
    {
-      sql += " ORDER BY ";
+      sql += " ORDER BY C_Sec_";
+
+      if( is_reverse )
+         sql += " DESC";
 
       vector< string > unique_indexes;
       instance.get_sql_unique_indexes( unique_indexes );
@@ -3952,11 +3980,8 @@ string construct_sql_select(
          if( ( i == order_info.size( ) - 1 ) && sorted_unique_indexes.count( index ) )
             break;
 
-         if( i > 0 )
-         {
-            sql += ',';
-            index += ',';
-         }
+         sql += ',';
+         index += ',';
 
          sql += "C_" + next_field;
          index += "C_" + next_field;
@@ -4825,9 +4850,10 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
    instance_accessor.set_key( instance_accessor.row_cache( )[ 0 ][ 0 ], true );
    instance_accessor.set_version( from_string< uint16_t >( instance_accessor.row_cache( )[ 0 ][ 1 ] ) );
    instance_accessor.set_revision( from_string< uint64_t >( instance_accessor.row_cache( )[ 0 ][ 2 ] ) );
+   instance_accessor.set_security( from_string< uint64_t >( instance_accessor.row_cache( )[ 0 ][ 3 ] ) );
+   instance_accessor.set_original_identity( instance_accessor.row_cache( )[ 0 ][ 4 ] );
 
    instance_accessor.set_original_revision( instance.get_revision( ) );
-   instance_accessor.set_original_identity( instance_accessor.row_cache( )[ 0 ][ 3 ] );
 
    if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
    {
@@ -4838,12 +4864,12 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
 
       TRACE_LOG( TRACE_SQLCLSET, "(from row cache)" );
 
-      for( int i = 4; i < instance_accessor.row_cache( )[ 0 ].size( ); i++ )
+      for( int i = c_num_sys_field_names; i < instance_accessor.row_cache( )[ 0 ].size( ); i++ )
       {
-         if( !fields.count( columns[ i - 4 ] ) )
-            throw runtime_error( "unexpected field # not found for column #" + to_string( i - 4 ) );
+         if( !fields.count( columns[ i - c_num_sys_field_names ] ) )
+            throw runtime_error( "unexpected field # not found for column #" + to_string( i - c_num_sys_field_names ) );
 
-         int fnum = fields.find( columns[ i - 4 ] )->second;
+         int fnum = fields.find( columns[ i - c_num_sys_field_names ] )->second;
 
          TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum + 1 ) + " to " + instance_accessor.row_cache( )[ 0 ][ i ] );
          instance.set_field_value( fnum, instance_accessor.row_cache( )[ 0 ][ i ] );
@@ -4851,12 +4877,12 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
    }
    else
    {
-      for( int i = 4; i < instance_accessor.row_cache( )[ 0 ].size( ); i++ )
+      for( int i = c_num_sys_field_names; i < instance_accessor.row_cache( )[ 0 ].size( ); i++ )
       {
-         if( instance_accessor.field_nums( ).size( ) < ( i - 4 ) )
-            throw runtime_error( "unexpected field # not found for for column #" + to_string( i - 4 ) );
+         if( instance_accessor.field_nums( ).size( ) < ( i - c_num_sys_field_names ) )
+            throw runtime_error( "unexpected field # not found for for column #" + to_string( i - c_num_sys_field_names ) );
 
-         int fnum = instance_accessor.field_nums( )[ i - 4 ];
+         int fnum = instance_accessor.field_nums( )[ i - c_num_sys_field_names ];
 
          instance.set_field_value( fnum, instance_accessor.row_cache( )[ 0 ][ i ] );
       }
@@ -9891,6 +9917,7 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
                   sql_column_names.push_back( "C_Key_" );
                   sql_column_names.push_back( "C_Ver_" );
                   sql_column_names.push_back( "C_Rev_" );
+                  sql_column_names.push_back( "C_Sec_" );
                   sql_column_names.push_back( "C_Typ_" );
 
                   instance.get_sql_column_names( sql_column_names );
@@ -9976,10 +10003,10 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
                      outf << '0';
                   outf << j << " ON " << table_name << '\n';
                   outf << "(\n";
+                  outf << " C_Sec_";
                   for( size_t k = 0; k < index_columns.size( ); k++ )
                   {
-                     if( k > 0 )
-                        outf << ",\n";
+                     outf << ",\n";
                      outf << " " << index_columns[ k ];
                   }
                   outf << "\n);\n";
@@ -11549,10 +11576,10 @@ void module_load( const string& module_name,
                            outf << '0';
                         outf << j << " ON " << table_name << '\n';
                         outf << "(\n";
+                        outf << " C_Sec_";
                         for( size_t k = 0; k < index_columns.size( ); k++ )
                         {
-                           if( k > 0 )
-                              outf << ",\n";
+                           outf << ",\n";
                            outf << " " << index_columns[ k ];
                         }
                         outf << "\n);\n";
@@ -15064,7 +15091,7 @@ bool perform_instance_iterate( class_base& instance,
       throw runtime_error( "cannot begin iteration whilst currently perfoming an instance operation" );
    else
    {
-      if( row_limit >= 0 && key_info != c_null_key )
+      if( ( row_limit >= 0 ) && ( key_info != c_null_key ) )
       {
          vector< string > field_info;
          vector< string > order_info;
@@ -15089,7 +15116,7 @@ bool perform_instance_iterate( class_base& instance,
 
          instance_accessor.transient_filter_field_values( ).clear( );
 
-         if( !fields.empty( ) && fields != c_key_field )
+         if( !fields.empty( ) && ( fields != c_key_field ) )
          {
             set< string > fetch_field_names;
 
@@ -15126,7 +15153,7 @@ bool perform_instance_iterate( class_base& instance,
 
             instance.get_required_field_names( required_fields, false, &field_dependents );
 
-            // NOTE: Any special fields found will be treated as required fields.
+            // NOTE: Any special fields found are treated as required fields.
             string group_field_name( instance.get_group_field_name( ) );
 
             if( !group_field_name.empty( ) )
@@ -15147,7 +15174,7 @@ bool perform_instance_iterate( class_base& instance,
             if( !owner_field_name.empty( ) )
                required_fields.insert( owner_field_name );
 
-            int iterations = 0;
+            size_t iterations = 0;
 
             // NOTE: It is possible that due to "interdependent" required fields
             // some required fields may not have been added in the first or even
@@ -15164,7 +15191,7 @@ bool perform_instance_iterate( class_base& instance,
                 && field_dependents_size == field_dependents.size( ) )
                   break;
 
-               if( ++iterations > 100 )
+               if( ++iterations > c_max_required_field_iterations )
                   throw runtime_error( "unexpected excessive get_required_field_names( ) iterations" );
 
                required_fields_size = required_fields.size( );
@@ -15279,7 +15306,7 @@ bool perform_instance_iterate( class_base& instance,
 
                pos = extra_key_info.find( ' ' );
 
-               if( pos != string::npos && pos != extra_key_info.size( ) - 1 )
+               if( ( pos != string::npos ) && ( pos != extra_key_info.size( ) - 1 ) )
                {
                   split( extra_key_info.substr( pos + 1 ), extra_key_values );
                   extra_key_info.erase( pos + 1 );
@@ -15346,7 +15373,7 @@ bool perform_instance_iterate( class_base& instance,
                }
             }
 
-            if( !extra_key_info.empty( ) && extra_key_info[ 0 ] == '#'
+            if( !extra_key_info.empty( ) && ( extra_key_info[ 0 ] == '#' )
              && !instance_accessor.transient_filter_field_values( ).empty( ) )
             {
                extra_key_info[ 1 ] -= ( unsigned char )instance_accessor.transient_filter_field_values( ).size( );

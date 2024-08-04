@@ -673,6 +673,7 @@ class_base::class_base( )
  :
  version( 0 ),
  revision( 0 ),
+ security( 0 ),
  original_revision( 0 ),
  op( e_op_type_none ),
  index_num( 0 ),
@@ -1098,10 +1099,12 @@ void class_base::perform_lazy_fetch( )
          last_lazy_fetch_key = s;
          last_lazy_fetch_ver = version;
          last_lazy_fetch_rev = revision;
+         last_lazy_fetch_sec = security;
 
          last_lazy_fetch_field_values.clear( );
 
          int num_fields = get_num_fields( );
+
          for( size_t i = 0; i < num_fields; i++ )
             last_lazy_fetch_field_values.push_back( get_field_value( i ) );
       }
@@ -1109,7 +1112,10 @@ void class_base::perform_lazy_fetch( )
       {
          key = last_lazy_fetch_key;
          version = last_lazy_fetch_ver;
-         revision = original_revision = last_lazy_fetch_rev;
+         revision = last_lazy_fetch_rev;
+         security = last_lazy_fetch_sec;
+
+         original_revision = revision;
 
          for( size_t i = 0; i < last_lazy_fetch_field_values.size( ); i++ )
             set_field_value( i, last_lazy_fetch_field_values[ i ] );
@@ -1697,6 +1703,7 @@ void class_base::fetch( string& sql, bool check_only, bool use_lazy_key )
       // assumed that the columns being fetched are the same number (and also in the same order) as
       // the fields in the class.
       size_t transient_offset = 0;
+
       for( size_t i = 0; i < sql_column_names.size( ); i++ )
       {
          while( is_field_transient( i + transient_offset ) )
@@ -1719,7 +1726,8 @@ void class_base::fetch( string& sql, bool check_only, bool use_lazy_key )
          sql = "SELECT C_Key_";
       else
       {
-         sql = "SELECT C_Key_,C_Ver_,C_Rev_,C_Typ_";
+         sql = "SELECT C_Key_,C_Ver_,C_Rev_,C_Sec_,C_Typ_";
+
          for( size_t i = 0; i < sql_column_names.size( ); i++ )
          {
             sql += ',';
@@ -2184,7 +2192,8 @@ string class_base::generate_sql_insert( const string& class_name, string* p_undo
       sql_stmt.erase( );
    else
    {
-      sql_stmt += " (C_Key_,C_Ver_,C_Rev_,C_Typ_";
+      sql_stmt += " (C_Key_,C_Ver_,C_Rev_,C_Sec_,C_Typ_";
+
       for( size_t i = 0; i < sql_column_names.size( ); i++ )
       {
          sql_stmt += ',';
@@ -2199,6 +2208,9 @@ string class_base::generate_sql_insert( const string& class_name, string* p_undo
 
       sql_stmt += ',';
       sql_stmt += to_string( revision );
+
+      sql_stmt += ',';
+      sql_stmt += to_string( security );
 
       sql_stmt += ',';
       sql_stmt += sql_quote( original_identity );
@@ -2225,10 +2237,12 @@ string class_base::generate_sql_insert( const string& class_name, string* p_undo
 string class_base::generate_sql_update( const string& class_name, string* p_undo_stmt ) const
 {
    string sql_stmt( "UPDATE T_" + get_module_name( ) + "_" + class_name );
+
    if( p_undo_stmt )
       *p_undo_stmt = sql_stmt;
 
    sql_stmt += " SET C_Rev_=" + to_string( revision );
+
    if( p_undo_stmt )
       *p_undo_stmt += " SET C_Rev_=" + to_string( original_revision );
 
@@ -2258,6 +2272,7 @@ string class_base::generate_sql_update( const string& class_name, string* p_undo
       done = false;
 
       int num_fields = get_num_fields( &done, &class_name );
+
       for( int i = 0; i < num_fields; i++ )
       {
          if( is_field_transient( i ) )
@@ -2290,6 +2305,7 @@ string class_base::generate_sql_update( const string& class_name, string* p_undo
       }
 
       sql_stmt += " WHERE C_Key_=" + sql_quote( key ) + ";";
+
       if( p_undo_stmt )
          *p_undo_stmt += " WHERE C_Key_=" + sql_quote( key ) + ";";
    }

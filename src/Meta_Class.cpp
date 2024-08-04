@@ -2643,7 +2643,8 @@ void Meta_Class::impl::impl_Generate( )
       sql_columns += "C_Key_ VARCHAR(" + to_string( c_max_key_length ) + "),\n";
       sql_columns += "C_Ver_ SMALLINT UNSIGNED NOT NULL,\n";
       sql_columns += "C_Rev_ BIGINT UNSIGNED NOT NULL,\n";
-      sql_columns += "C_Typ_ VARCHAR(24) NOT NULL";
+      sql_columns += "C_Sec_ BIGINT UNSIGNED NOT NULL,\n";
+      sql_columns += "C_Typ_ VARCHAR(16) NOT NULL";
    }
    else
    {
@@ -8563,7 +8564,8 @@ string Meta_Class::static_get_sql_columns( )
     "C_Key_ VARCHAR(75),"
     "C_Ver_ SMALLINT UNSIGNED NOT NULL,"
     "C_Rev_ BIGINT UNSIGNED NOT NULL,"
-    "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Sec_ BIGINT UNSIGNED NOT NULL,"
+    "C_Typ_ VARCHAR(16) NOT NULL,"
     "C_Access_Permission VARCHAR(75) NOT NULL,"
     "C_Access_Restriction INTEGER NOT NULL,"
     "C_Change_Permission VARCHAR(75) NOT NULL,"

@@ -1184,12 +1184,14 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                   outf << "`{`$is_alias`=`'false`'`}\n";
 
                string sql_columns;
+
                if( !all_field_data.empty( ) )
                {
                   sql_columns += "C_Key_ VARCHAR(" + to_string( c_max_key_length ) + "),\n";
                   sql_columns += "C_Ver_ SMALLINT UNSIGNED NOT NULL,\n";
                   sql_columns += "C_Rev_ BIGINT UNSIGNED NOT NULL,\n";
-                  sql_columns += "C_Typ_ VARCHAR(24) NOT NULL";
+                  sql_columns += "C_Sec_ BIGINT UNSIGNED NOT NULL,\n";
+                  sql_columns += "C_Typ_ VARCHAR(16) NOT NULL";
 
                   if( !next_base_class_name.empty( ) )
                   {
@@ -1235,6 +1237,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                         bool is_sql_numeric;
 
                         sql_columns += field_name;
+
                         sql_columns += " " + get_sql_type(
                          base_field_data[ i ].sys_type, base_field_data[ i ].is_mandatory,
                          base_field_data[ i ].is_foreign_key, &is_sql_numeric, is_large_text, is_large_table );
