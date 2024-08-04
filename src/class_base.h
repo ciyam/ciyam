@@ -310,6 +310,7 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    inline uint16_t get_version( ) const { return version; }
    inline uint64_t get_revision( ) const { return revision; }
+   inline uint64_t get_security( ) const { return security; }
 
    std::string get_version_info( ) const;
 
@@ -536,7 +537,10 @@ class CIYAM_BASE_DECL_SPEC class_base
    private:
    uint16_t version;
    uint64_t revision;
+   uint64_t security;
+
    uint64_t original_revision;
+
    std::string original_identity;
    std::vector< std::string > original_values;
 
@@ -550,6 +554,8 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    uint16_t last_lazy_fetch_ver;
    uint64_t last_lazy_fetch_rev;
+   uint64_t last_lazy_fetch_sec;
+
    std::string last_lazy_fetch_key;
    std::string last_lazy_fetch_identity;
    std::vector< std::string > last_lazy_fetch_field_values;
@@ -739,6 +745,7 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    inline void set_version( uint16_t new_version ) { version = new_version; }
    inline void set_revision( uint64_t new_revision ) { revision = new_revision; }
+   inline void set_security( uint64_t new_security ) { security = new_security; }
 
    inline void set_original_revision( uint64_t new_revision ) { original_revision = new_revision; }
    inline void set_original_identity( const std::string& new_original_identity ) { original_identity = new_original_identity; }
@@ -961,6 +968,7 @@ struct class_base_accessor
 
    void set_version( uint16_t new_version ) { cb.set_version( new_version ); }
    void set_revision( uint64_t new_revision ) { cb.set_revision( new_revision ); }
+   void set_security( uint64_t new_security ) { cb.set_security( new_security ); }
 
    void set_original_revision( uint64_t new_revision ) { cb.set_original_revision( new_revision ); }
    void set_original_identity( const std::string& new_original_identity ) { cb.set_original_identity( new_original_identity ); }
