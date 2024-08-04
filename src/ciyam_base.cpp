@@ -3521,7 +3521,8 @@ string construct_sql_select(
       }
    }
 
-   bool has_sec_restrict = false;
+   bool had_any_restrict = false;
+   bool had_sec_restrict = false;
 
    sql_fields_and_table += " FROM T_"
     + string( instance.get_module_name( ) ) + "_" + string( instance.get_class_name( ) );
@@ -3531,10 +3532,19 @@ string construct_sql_select(
    {
       sql += " WHERE ";
 
-      if( row_limit != 1 )
+      bool is_primary_only = false;
+
+      if( ( fixed_info.size( ) == 1 )
+       && ( fixed_info.size( ) == order_info.size( ) ) )
+      {
+         if( fixed_info.back( ).first == c_key_field_name )
+            is_primary_only = true;
+      }
+
+      if( !is_primary_only && !order_info.empty( ) )
       {
          sql += "C_Sec_ = 0";
-         has_sec_restrict = true;
+         had_any_restrict = had_sec_restrict = true;
       }
    }
 
@@ -3545,8 +3555,10 @@ string construct_sql_select(
          string field_name( query_info[ i ].first );
          string field_values( query_info[ i ].second );
 
-         if( ( i > 0 ) || has_sec_restrict )
+         if( had_any_restrict )
             sql += " AND ";
+
+         had_any_restrict = true;
 
          bool invert = false;
          string invert_prefix;
@@ -3747,15 +3759,17 @@ string construct_sql_select(
       vector< string > text_search_words;
       split_text_search( text_search, text_search_words );
 
-      if( has_sec_restrict )
+      if( had_any_restrict )
          sql += " AND ";
+
+      had_any_restrict = true;
 
       if( text_search_words.size( ) > 1 )
          sql += "(";
 
       for( size_t i = 0; i < text_search_words.size( ); i++ )
       {
-         if( ( i > 0 ) || has_sec_restrict )
+         if( i > 0 )
             sql += " AND ";
 
          sql += "(";
@@ -3788,8 +3802,10 @@ string construct_sql_select(
          string next_field( fixed_info[ i ].first );
          string next_value( fixed_info[ i ].second );
 
-         if( ( i > 0 ) || has_sec_restrict )
+         if( had_any_restrict )
             sql += " AND ";
+
+         had_any_restrict = true;
 
          string field_type;
          bool is_sql_numeric;
@@ -3925,8 +3941,10 @@ string construct_sql_select(
          modified_paging_info.push_back( make_pair( next_field, next_value ) );
       }
 
-      if( has_sec_restrict )
+      if( had_any_restrict )
          sql += " AND ";
+
+      had_any_restrict = true;
 
       sql += construct_paging_sql( modified_paging_info, is_reverse, is_inclusive );
    }
@@ -3950,18 +3968,27 @@ string construct_sql_select(
       bool is_sql_numeric;
       get_field_name( instance, security_field, &is_sql_numeric );
 
-      if( has_sec_restrict )
+      if( had_any_restrict )
          sql += " AND ";
+
+      had_any_restrict = true;
 
       sql += "C_" + security_field + " LIKE '" + security_level + "%'";
    }
 
    if( !order_info.empty( ) )
    {
-      sql += " ORDER BY C_Sec_";
+      sql += " ORDER BY ";
 
-      if( is_reverse )
-         sql += " DESC";
+      if( had_sec_restrict )
+      {
+         sql += "C_Sec_";
+
+         if( !is_reverse )
+            sql += " DESC";
+
+         sql += ",";
+      }
 
       vector< string > unique_indexes;
       instance.get_sql_unique_indexes( unique_indexes );
@@ -3980,8 +4007,11 @@ string construct_sql_select(
          if( ( i == order_info.size( ) - 1 ) && sorted_unique_indexes.count( index ) )
             break;
 
-         sql += ',';
-         index += ',';
+         if( i > 0 )
+         {
+            sql += ',';
+            index += ',';
+         }
 
          sql += "C_" + next_field;
          index += "C_" + next_field;
