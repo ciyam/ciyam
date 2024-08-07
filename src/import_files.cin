@@ -13,6 +13,9 @@ SUB_DIRECTORY=$3
 FILES_EXPRESSION=@repstr:;/,:$4
 PATHS_EXPRESSION=@repstr:;/,:$5
 ;
+.session_variable @set commence
+.session_variable @deque commence
+;
 @ifdef $CIYAM_STREAM_CIPHER
 .session_variable @stream_cipher $CIYAM_STREAM_CIPHER
 @endif
@@ -308,6 +311,9 @@ TAG_NAME=@repstr:\//.:$NEXT_PATH
 .session_variable @encrypted_password ""
 @endif
 @endif
+;
+.session_variable @set complete
+.session_variable @deque complete
 ;
 @endif
 @endif

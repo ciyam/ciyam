@@ -13,9 +13,7 @@ STORAGE=$1
 .storage_init $STORAGE
 ;
 @ifndef $ERROR
-.session_variable @deque
-DEQUE=$OUTPUT
-.session_variable @deque ""
+.session_variable @deque commence
 ;
 .session_variable @single_string_response 1
 .pf $STORAGE User "Active 1" User_Id -min
@@ -53,10 +51,7 @@ NEXT_USER=$OUTPUT
 ;
 .storage_term
 ;
-.session_variable @deque ""
-@ifdef $DEQUE
-.session_variable @deque "~$DEQUE"
-@endif
+.session_variable @deque complete
 ;
 @endif
 ;

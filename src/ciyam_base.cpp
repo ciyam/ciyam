@@ -503,9 +503,11 @@ struct session
 
    string last_set_item;
    set< string > set_items;
+   deque< set< string > > kept_set_items;
 
    string last_deque_item;
    deque< string > deque_items;
+   deque< deque< string > > kept_deque_items;
 
    map< string, string > variables;
 
@@ -9098,6 +9100,22 @@ void set_session_variable( const string& name, const string& value,
                if( p_set_special_temporary )
                   *p_set_special_temporary = true;
             }
+            else if( val == "commence" )
+            {
+               gtp_session->kept_set_items.push_back( gtp_session->set_items );
+
+               gtp_session->set_items.clear( );
+            }
+            else if( val == "complete" )
+            {
+               if( gtp_session->kept_set_items.empty( ) )
+                  gtp_session->set_items.clear( );
+               else
+               {
+                  gtp_session->set_items = gtp_session->kept_set_items.back( );
+                  gtp_session->kept_set_items.pop_back( );
+               }
+            }
             else
             {
                if( gtp_session->set_items.count( val ) )
@@ -9450,6 +9468,22 @@ void set_session_variable( const string& name, const string& value,
             {
                if( !gtp_session->deque_items.empty( ) )
                   reverse( gtp_session->deque_items.begin( ), gtp_session->deque_items.end( ) );
+            }
+            else if( val == "commence" )
+            {
+               gtp_session->kept_deque_items.push_back( gtp_session->deque_items );
+
+               gtp_session->deque_items.clear( );
+            }
+            else if( val == "complete" )
+            {
+               if( gtp_session->kept_deque_items.empty( ) )
+                  gtp_session->deque_items.clear( );
+               else
+               {
+                  gtp_session->deque_items = gtp_session->kept_deque_items.back( );
+                  gtp_session->kept_deque_items.pop_back( );
+               }
             }
             else if( val.substr( 0, pos ) == "pop_back" )
             {

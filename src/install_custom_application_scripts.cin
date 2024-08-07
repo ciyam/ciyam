@@ -3,15 +3,21 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-storage_init Meta
+.storage_init Meta
+@ifndef $ERROR
 ;
-session_variable @single_string_response 1
+.session_variable @set commence
+;
+.session_variable @single_string_response 1
 ;
 .pf Meta Package_Type "" Name -min
-session_variable @set "~$OUTPUT"
+.session_variable @set "~$OUTPUT"
 ;
 .session_variable @set ?Group,Blog,Message
 @ifeq "$OUTPUT" "1"
 .pc admin @now 100 138100 " " "138101=CIYAM Blockchain Application,138102=create_ciyam_blockchain_application,138103=Blog\\,Message,302840=Group"
 @endif
-.quit
+;
+.session_variable @set complete
+;
+@endif

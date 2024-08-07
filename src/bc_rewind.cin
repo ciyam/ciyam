@@ -32,9 +32,8 @@ BACKUP=
 SHARED=
 PEER_HUB=
 ;
-.session_variable @deque
-DEQUE=$OUTPUT
-.session_variable @deque ""
+.session_variable @deque commence
+;
 .session_variable @deque "push_back $IDENT"
 ;
 .system_variable @blockchain_backup_identity
@@ -158,7 +157,7 @@ BACKUP_HEIGHT_FILE=@files:$BACKUP_PATH:.backup.height
 ;
 @:DONE
 ;
-.session_variable @deque "~$DEQUE"
+.session_variable @deque complete
 ;
 @endif
 @endif

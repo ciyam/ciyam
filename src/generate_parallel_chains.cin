@@ -44,6 +44,8 @@ ERROR=Identity '$IDENTITY' is not a '$TYPE' identity.
 #Error: $ERROR
 @else
 ;
+.session_variable @deque commence
+;
 .file_core -header bc.$IDENTITY.zenith h
 @ifndef $ERROR
 ZENITH_HEIGHT=$OUTPUT
@@ -58,7 +60,6 @@ NEXT_IDENTITY=$OUTPUT
 .session_variable @blockchain_archive_path $OUTPUT
 @endif
 ;
-.session_variable @deque ""
 .system_variable @blockchain_%TYPE%_?_identity
 .session_variable @deque "~$OUTPUT"
 ;
@@ -112,6 +113,8 @@ NEXT_IDENTITY=%NEXT_LINES:2%
 @endif
 ;
 @endif
+;
+.session_variable @deque complete
 ;
 @endif
 ;

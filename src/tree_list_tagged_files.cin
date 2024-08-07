@@ -30,7 +30,9 @@ ITEMS=
 TTRUNK=Tags
 PREFIX=
 WANT_INFO=
-.session_variable @set ""
+;
+.session_variable @set commence
+.session_variable @deque commence
 ;
 BRANCH=@substr:1:$BRANCH
 @ifdef $BRANCH
@@ -46,7 +48,6 @@ DEPTH=4
 NUM_DIRS=0
 @ifdef $BRANCH
 LINES=@repstr:\:/\n:$BRANCH
-.session_variable @deque ""
 .session_variable @deque "~$LINES"
 .session_variable @deque size
 NUM_DIRS=$OUTPUT
@@ -73,7 +74,7 @@ ITEMS=
 @:NEXT
 NEXT_TAG=$OUTPUT
 .session_variable @deque
-DEQUE=$OUTPUT
+OUTER_DEQUE=$OUTPUT
 .session_variable @deque ""
 .file_info -recurse -d=-$DEPTH -p=$PREFIX:$NEXT_TAG:$SUFFIX* $TREE
 .session_variable @deque "~$OUTPUT"
@@ -137,12 +138,15 @@ ITEMS=@repstr:,/\n:$ITEMS
 ;
 FIRST=
 .session_variable @deque ""
-.session_variable @deque "~$DEQUE"
+.session_variable @deque "~$OUTER_DEQUE"
 .session_variable @deque pop_front
 !!@:LOOP
 @:END_LOOP
 ;
 .session_variable @set
 #$OUTPUT
+;
+.session_variable @set complete
+.session_variable @deque complete
 ;
 @endif

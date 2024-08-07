@@ -25,8 +25,9 @@ EXCLUDES=bc.$IDENT.zenith
 EXCLUDES=$EXCLUDES,bc.$OUTPUT.zenith
 @endif
 ;
+.session_variable @deque commence
+;
 ALL_PUTS=
-.session_variable @deque ""
 ;
 .file_tags -i=*.zenith -x=$EXCLUDES
 .session_variable @deque "~$OUTPUT"
@@ -73,5 +74,7 @@ LIST_TAG_NAME=bc.$IDENT.$HEIGHT.opl
 .file_raw blob "$ALL_PUTS" $LIST_TAG_NAME
 @endif
 @endif
+;
+.session_variable @deque complete
 ;
 @endif

@@ -12,6 +12,8 @@ TREE=$1
 TRUNK=$2
 BRANCH=$3
 ;
+.session_variable @deque commence
+;
 @ifndef $TRUNK
 PREFIX=X
 @else
@@ -68,7 +70,7 @@ LINES=$OUTPUT
 @:NEXT
 LINES=@repstr: /\n:$OUTPUT
 .session_variable @deque
-DEQUE=$OUTPUT
+LOOP_DEQUE=$OUTPUT
 ; NOTE: As a tag can contain spaces temporarily use the @deque
 ; to first remove the first two columns (file type/line number
 ; and hash) and then the last two columns (file size info).
@@ -91,7 +93,7 @@ TAG_NAME=%OUTPUT:2%
 ;
 #$TAG_NAME
 .session_variable @deque ""
-.session_variable @deque "~$DEQUE"
+.session_variable @deque "~$LOOP_DEQUE"
 ;
 @ifneq "$DEPTH" "2"
 .session_variable @deque pop_front
@@ -102,4 +104,7 @@ TAG_NAME=%OUTPUT:2%
 @endif
 ;
 @:FINISH
+;
+.session_variable @deque complete
+;
 @endif

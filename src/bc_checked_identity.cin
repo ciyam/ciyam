@@ -45,9 +45,7 @@ NEXT_IDENT=
 .system_variable @blockchain_%TYPE%_identity
 NEXT_IDENT=$OUTPUT
 ;
-.session_variable @deque
-DEQUE=$OUTPUT
-.session_variable @deque ""
+.session_variable @deque commence
 ;
 .system_variable @blockchain_%TYPE%_?_identity
 @ifdef $OUTPUT
@@ -76,10 +74,7 @@ NEXT_IDENT=%LINES:2%
 ;
 @:END_LOOP
 ;
-.session_variable @deque ""
-@ifdef $DEQUE
-.session_variable @deque "~$DEQUE"
-@endif
+.session_variable @deque complete
 ;
 @ifndef $OKAY
 OUTPUT=

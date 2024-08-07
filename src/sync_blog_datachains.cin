@@ -18,6 +18,8 @@ STORAGE=$1
 .storage_init $STORAGE
 ;
 @ifndef $ERROR
+.session_variable @deque commence
+;
 .module_list
 MODULES=$OUTPUT
 MODULES=@repstr: /\n:$MODULES
@@ -137,6 +139,8 @@ BLOG_ENTRY_CHANGING_FILE=@files:$STORAGE_WEB_DIR:$UI_BLOG_ENTRY_CHANGING
 @ifdef $BLOG_ENTRY_CHANGING_FILE
 ~rm $STORAGE_WEB_DIR/$UI_BLOG_ENTRY_CHANGING
 @endif
+;
+.session_variable @deque complete
 ;
 .system_variable @blog_sync_datachains ""
 ;

@@ -11,6 +11,8 @@ ERROR=
 TREE=$1
 PREFIX=$2
 ;
+.session_variable @deque commence
+;
 @ifeq "$PREFIX" ""
 .file_info -recurse -d=0 $TREE
 @else
@@ -39,5 +41,7 @@ NEXT_HASH=$OUTPUT
 @:DONE
 ;
 @endif
+;
+.session_variable @deque complete
 ;
 @endif
