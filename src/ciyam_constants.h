@@ -11,6 +11,7 @@ const int c_tx_id_initial = 2;
 const int c_tx_id_standard = 5;
 
 const size_t c_max_extras = 9;
+const size_t c_chunk_digits = 6;
 
 const size_t c_identity_length = 7;
 

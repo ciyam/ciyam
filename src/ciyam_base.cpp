@@ -88,7 +88,6 @@ const char c_global_storage_file_not_folder_suffix = '!';
 
 const int c_identity_burn = 100;
 
-const int c_min_needed_for_support = 3;
 const int c_min_smtp_max_send_attempts = 1;
 
 const size_t c_default_seconds = 1;
@@ -8280,9 +8279,7 @@ void add_peer_file_hash_for_get( const string& hash,
          gtp_session->file_hashes_to_get.erase( i );
    }
 
-   if( !check_for_supporters
-    || gtp_session->is_support_session
-    || ( gtp_session->file_hashes_to_get.size( ) < c_min_needed_for_support ) )
+   if( !check_for_supporters )
    {
       if( !add_at_front )
          gtp_session->file_hashes_to_get.push_back( hash );
@@ -8403,9 +8400,7 @@ void add_peer_file_hash_for_put( const string& hash, bool check_for_supporters )
    if( find( gtp_session->file_hashes_to_put.begin( ),
     gtp_session->file_hashes_to_put.end( ), hash ) == gtp_session->file_hashes_to_put.end( ) )
    {
-      if( !check_for_supporters
-       || gtp_session->is_support_session
-       || ( gtp_session->file_hashes_to_put.size( ) < c_min_needed_for_support ) )
+      if( !check_for_supporters )
          gtp_session->file_hashes_to_put.push_back( hash );
       else
       {
