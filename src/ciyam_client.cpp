@@ -596,7 +596,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   was_no_compress = true;
 
                   chunk_name = file_name;
-                  chunk_name += '.' + to_comparable_string( chunk, false, 6 );
+                  chunk_name += '.' + to_comparable_string( chunk, false, c_chunk_digits );
 
                   if( chunk == 0 )
                   {

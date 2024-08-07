@@ -2399,6 +2399,23 @@ void process_list_items( const string& blockchain,
     get_special_var_name( e_special_var_blockchain_peer_has_supporters ) ) )
       check_for_supporters = true;
 
+   // NOTE: If the list does not contain file chunks then will not use any
+   // support sessions (i.e. limit the support sessions to processing file
+   // chunks rather then lists).
+   if( !list_items.empty( ) )
+   {
+      string first_list_item( list_items[ 0 ] );
+
+      string initial_file_chunk( c_chunk_digits, '0' );
+
+      initial_file_chunk = "." + initial_file_chunk;
+
+      string::size_type pos = first_list_item.rfind( initial_file_chunk );
+
+      if( ( pos == string::npos ) || ( pos != first_list_item.length( ) - initial_file_chunk.length( ) ) )
+         check_for_supporters = false;
+   }
+
    bool has_set_first_mapped = false;
 
    string num_tree_items( get_raw_session_variable(
@@ -4570,7 +4587,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
              get_special_var_name( e_special_var_num_put_files ), get_special_var_name( e_special_var_decrement ) );
          }
 
-         next_hash = top_next_peer_file_hash_to_get( );
+         next_hash = top_next_peer_file_hash_to_get( is_for_support || check_for_supporters );
       }
 
       if( !next_hash.empty( ) )
