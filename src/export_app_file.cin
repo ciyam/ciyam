@@ -15,9 +15,10 @@ LIST_HASH=$2
 WEBDIR=$3
 @endif
 ;
+.session_variable @deque commence
+;
 @ifndef $WEBDIR
 PREFIX=
-.session_variable @deque ""
 .storage_web_root -expand
 FIRST=@substr:0,1:$OUTPUT
 @ifeq "/" "$FIRST"
@@ -43,4 +44,7 @@ WEBDIR=$PREFIX$WEBDIR
 .file_get $LIST_HASH *$WEBDIR/$APPDIR/files/
 @endif
 @endif
+;
+.session_variable @deque complete
+;
 @endif

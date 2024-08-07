@@ -19,11 +19,8 @@ ALL_GENESIS_TAGS=$OUTPUT
 ;
 @ifdef $ALL_GENESIS_TAGS
 ;
-.session_variable @deque
-DEQUE=$OUTPUT
-;
-.session_variable @set ""
-.session_variable @deque ""
+.session_variable @set commence
+.session_variable @deque commence
 ;
 >$FILE_NAME
 ;
@@ -139,10 +136,8 @@ ARCHIVE_DIRS=@repstr:bc./$FILES_AREA_DIR/:$TRIMMED_TAGS
 #$ARCHIVE_DIRS
 >
 ;
-.session_variable @deque ""
-@ifdef $DEQUE
-.session_variable @deque "~$DEQUE"
-@endif
+.session_variable @set complete
+.session_variable @deque complete
 ;
 @endif
 ;

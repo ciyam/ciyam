@@ -14,6 +14,8 @@ SKIPPED=
 ;
 .storage_init $STORAGE
 @ifndef $ERROR
+.session_variable @deque commence
+;
 .module_list
 MODULES=$OUTPUT
 MODULES=@repstr: /\n:$MODULES
@@ -81,6 +83,8 @@ SKIPPED=1
 APP_DIR=@lower:$STORAGE
 ~rm -f $WEBDIR/$APP_DIR/ui_peer_submit
 @endif
+;
+.session_variable @deque complete
 ;
 @endif
 @endif

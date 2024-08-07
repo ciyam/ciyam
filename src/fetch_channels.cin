@@ -10,6 +10,8 @@ ERROR=
 ;
 STORAGE=$1
 ;
+.session_variable @deque commence
+;
 .system_variable @skip_fetch_connects
 SKIP_CONNECTS=$OUTPUT
 ;
@@ -69,4 +71,7 @@ ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 .system_variable @skip_fetch_connects ""
 ;
 @endif
+;
+.session_variable @deque complete
+;
 @endif

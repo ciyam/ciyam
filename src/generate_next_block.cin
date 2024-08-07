@@ -20,6 +20,8 @@ PEER_HUB=
 ;
 HAS_NO_OPL=
 ;
+.session_variable @deque commence
+;
 @label NEXT
 ;
 @ifdef $TREE
@@ -43,8 +45,6 @@ BACKUP=1
 @ifdef $CIYAM_SECONDS
 .session_variable @progress_seconds $CIYAM_SECONDS
 @endif
-;
-.session_variable @deque ""
 ;
 @ifdef $BACKUP
 .system_variable @blockchain_backup_identity
@@ -148,5 +148,7 @@ IDENT=%LINES:2%
 !!@:LOOP
 ;
 @:END_LOOP
+;
+.session_variable @deque complete
 ;
 @endif

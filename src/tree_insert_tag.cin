@@ -37,6 +37,8 @@ TTRUNK=Tags
 #Error: Tree '$TREE' does not exist.
 @else
 ;
+.session_variable @deque commence
+;
 .session_variable @deque ""
 LINES=@repstr:\:/\n:$TRUNK:$BRANCH:xxx
 .session_variable @deque "~$LINES"
@@ -53,6 +55,8 @@ LINES=@repstr: /\n:$OUTPUT
 HASH=%LINES:2%
 .file_list "-a=$HASH ?" "-d=$ITEM" -sort $TREE:$TTRUNK:$NAME:$TRUNK:$BRANCH !$TREE
 @endif
+;
+.session_variable @deque complete
 ;
 @endif
 @endif

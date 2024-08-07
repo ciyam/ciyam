@@ -20,6 +20,8 @@ ERROR=1
 IDENT=$1
 OTHER=$2
 ;
+.session_variable @set commence
+;
 BIN1=*!hex2bin?$IDENT
 BIN1=00000000000000000000000000000000000$BIN1
 BIN1=@substr:-36:$BIN1
@@ -48,7 +50,6 @@ COMBINED=$PREFIX$HEX
 REVERSED=*!reverse?$COMBINED
 @endif
 ;
-.session_variable @set ""
 .session_variable @set "$IDENT"
 .session_variable @set "$OTHER"
 ;
@@ -62,5 +63,7 @@ TEMP_VAL=$COMBINED
 COMBINED=$REVERSED
 REVERSED=$TEMP_VAL
 @endif
+;
+.session_variable @set complete
 ;
 @endif

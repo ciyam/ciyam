@@ -13,9 +13,8 @@ NUM_ARGS=@$NUM_ARGS+1
 @else
 MODULE=$1
 ;
-.session_variable @deque
-DEQUE=$OUTPUT
-.session_variable @deque ""
+.session_variable @deque commence
+;
 .pf $MODULE Peer_Node "Active,Identity#1 1" Identity -min
 ;
 @ifndef $ERROR
@@ -40,6 +39,6 @@ DEQUE=$OUTPUT
 ;
 @endif
 ;
-.session_variable @deque "~$DEQUE"
+.session_variable @deque complete
 ;
 @endif

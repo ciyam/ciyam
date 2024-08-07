@@ -22,6 +22,8 @@ BRANCH=X$3
 WANT_INFO=
 PREFIX=$TRUNK
 ;
+.session_variable @deque commence
+;
 BRANCH=@substr:1:$BRANCH
 ;
 @ifdef $BRANCH
@@ -72,5 +74,7 @@ SIZE=$SIZE $EXTRA
 .session_variable @deque pop_front
 !!@:LOOP
 @:END_LOOP
+;
+.session_variable @deque complete
 ;
 @endif

@@ -24,24 +24,25 @@ VARIABLE=$3
 ;
 DEPTH=2
 ;
+.session_variable @deque commence
+;
 @ifeq "$BRANCH" "."
 BRANCH_AND_NAME=$VARIABLE
 @else
 BRANCH_AND_NAME=$BRANCH:$VARIABLE
 @endif
 ;
-.session_variable @deque ""
 LINES=@repstr:\:/\n:$BRANCH_AND_NAME
 .session_variable @deque "~$LINES"
 .session_variable @deque size
 DEPTH=@$DEPTH+$OUTPUT
-;
-.session_variable @deque ""
 ;
 .file_info -recurse -d=-$DEPTH -p=Variables:$BRANCH_AND_NAME $TREE
 ;
 @ifdef $OUTPUT
 #%OUTPUT:-1%
 @endif
+;
+.session_variable @deque complete
 ;
 @endif

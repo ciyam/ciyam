@@ -11,11 +11,8 @@ FILE_NAME=$1
 .system_variable @files_area_dir
 FILES_AREA_DIR=$OUTPUT
 ;
-.session_variable @deque
-DEQUE=$OUTPUT
-;
-.session_variable @set ""
-.session_variable @deque ""
+.session_variable @set commence
+.session_variable @deque commence
 ;
 >>$FILE_NAME
 ;
@@ -89,9 +86,7 @@ HASH_SUFFIX=@substr:2:$FILE_HASH
 ;
 >
 ;
-.session_variable @deque ""
-@ifdef $DEQUE
-.session_variable @deque "~$DEQUE"
-@endif
+.session_variable @set complete
+.session_variable @deque complete
 ;
 @endif
