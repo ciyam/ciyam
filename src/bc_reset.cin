@@ -8,71 +8,56 @@
 @else
 ERROR=
 ;
-IDENTITY=$1
+IDENT=$1
 ;
-.file_hash bc.$IDENTITY.zenith
-@ifndef $ERROR
-.file_tag -remove bc.$IDENTITY.zenith
-.file_hash bc.$IDENTITY.0.blk
-;
-@ifndef $ERROR
-GENESIS_HASH=$OUTPUT
-.file_tag -remove bc.$IDENTITY.0.blk
-.file_hash bc.$IDENTITY.0.pub
-;
-@ifndef $ERROR
-PUB0000_HASH=$OUTPUT
-.file_tag -remove bc.$IDENTITY.0.pub
-.file_hash bc.$IDENTITY.49.pub
-;
-@ifndef $ERROR
-PUB0049_HASH=$OUTPUT
-.file_tag -remove bc.$IDENTITY.49.pub
-.file_hash bc.$IDENTITY.2499.pub
-;
-@ifndef $ERROR
-PUB2499_HASH=$OUTPUT
-.file_tag -remove bc.$IDENTITY.2499.pub
-;
-.file_kill -q -p=bc.$IDENTITY.*
-;
-.file_archives -path_only $IDENTITY
-@ifdef $OUTPUT
-.file_archive -clear $IDENTITY
-@endif
-;
-.file_repo_entries -total $IDENTITY
-@ifneq "$OUTPUT" "0"
-.file_repo_entries -remove_all $IDENTITY
-@endif
-;
-.file_tag $GENESIS_HASH bc.$IDENTITY.0.blk,bc.$IDENTITY.zenith
-.file_tag $PUB0000_HASH bc.$IDENTITY.0.pub
-.file_tag $PUB0049_HASH bc.$IDENTITY.49.pub
-.file_tag $PUB2499_HASH bc.$IDENTITY.2499.pub
-;
-.system_variable "#$IDENTITY" ""
-.system_variable "%%$IDENTITY" "Currently at height 0"
+.session_variable @deque commence
 ;
 .system_variable @blockchain_backup_identity
-@ifeq "$OUTPUT" "$IDENTITY"
-.system_variable >@blockchain_backup_height 0
+@ifeq "$IDENT" "$OUTPUT"
+.system_variable @blockchain_backup_?_identity
+@ifdef $OUTPUT
+.session_variable @deque "~$OUTPUT"
+@endif
 @endif
 ;
 .system_variable @blockchain_shared_identity
-@ifeq "$OUTPUT" "$IDENTITY"
-.system_variable >@blockchain_shared_height 0
+@ifeq "$IDENT" "$OUTPUT"
+.system_variable @blockchain_shared_?_identity
+@ifdef $OUTPUT
+.session_variable @deque "~$OUTPUT"
+@endif
 @endif
 ;
 .system_variable @blockchain_peer_hub_identity
-@ifeq "$OUTPUT" "$IDENTITY"
-.system_variable >@blockchain_peer_hub_height 0
+@ifeq "$IDENT" "$OUTPUT"
+.system_variable @blockchain_peer_hub_?_identity
+@ifdef $OUTPUT
+.session_variable @deque "~$OUTPUT"
+@endif
 @endif
 ;
+<bc_reset_chain.cin $IDENT
+;
+@label NEXT
+;
+@:LOOP
+.session_variable @deque front
+@ifndef $OUTPUT
+@label END_LOOP
 @endif
-@endif
-@endif
-@endif
-@endif
+;
+@skip
+;
+@:NEXT
+LINES=@repstr: /\n:$OUTPUT
+NEXT_IDENT=%LINES:2%
+;
+<bc_reset_chain.cin $NEXT_IDENT
+.session_variable @deque pop_front
+!!@:LOOP
+;
+@:END_LOOP
+;
+.session_variable @deque complete
 ;
 @endif
