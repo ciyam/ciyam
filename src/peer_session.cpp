@@ -329,6 +329,7 @@ void add_to_blockchain_tree_item( const string& blockchain, size_t num_to_add, s
 map< string, size_t > g_peer_total_items;
 
 map< string, size_t > g_peer_found_bounding;
+map< string, string > g_peer_found_matching;
 map< string, size_t > g_peer_found_prefixed;
 
 map< string, map< string, size_t > > g_peer_first_prefixed;
@@ -342,6 +343,7 @@ void save_first_prefixed( map< string, size_t >& first_prefixed, size_t total_it
    g_peer_total_items[ peer_map_key ] = total_items;
 
    g_peer_found_bounding[ peer_map_key ] = 0;
+   g_peer_found_matching[ peer_map_key ] = string( );
    g_peer_found_prefixed[ peer_map_key ] = 0;
 
    g_peer_first_prefixed[ peer_map_key ].swap( first_prefixed );
@@ -413,16 +415,18 @@ void check_found_prefixed( const string& hash, unsigned char file_type )
             else
                g_peer_found_bounding[ peer_map_key ] = ( following - 1 );
 
+            string count_found( to_string( next_found ) );
+            string hex_match_prefix( hex_encode( prefix ) );
+
+            g_peer_found_matching[ peer_map_key ] = hex_match_prefix;
+
+            TRACE_LOG( TRACE_PEER_OPS, "(check_found_prefixed) matched '" + hex_match_prefix + "' prefix for tree item #" + count_found );
+
             if( !has_raw_session_variable(
              get_special_var_name( e_special_var_blockchain_peer_supporter ) ) )
             {
-               string hex_prefix( hex_encode( prefix ) );
-               string str_next_found( to_string( next_found ) );
-
-               TRACE_LOG( TRACE_PEER_OPS, "(check_found_prefixed) matched '" + hex_prefix + "' prefix for tree item #" + str_next_found );
-
-               set_session_variable( get_special_var_name( e_special_var_tree_match ), hex_prefix );
-               set_session_variable( get_special_var_name( e_special_var_tree_count ), str_next_found );
+               set_session_variable( get_special_var_name( e_special_var_tree_count ), count_found );
+               set_session_variable( get_special_var_name( e_special_var_tree_match ), hex_match_prefix );
             }
          }
          else
@@ -436,7 +440,10 @@ void check_found_prefixed( const string& hash, unsigned char file_type )
 
          if( !has_raw_session_variable(
           get_special_var_name( e_special_var_blockchain_peer_supporter ) ) )
+         {
             set_session_variable( get_special_var_name( e_special_var_tree_count ), to_string( last_found ) );
+            set_session_variable( get_special_var_name( e_special_var_tree_match ), g_peer_found_matching[ peer_map_key ] );
+         }
       }
    }
 }
@@ -450,6 +457,7 @@ void clear_first_prefixed( )
    g_peer_total_items[ peer_map_key ] = 0;
 
    g_peer_found_bounding[ peer_map_key ] = 0;
+   g_peer_found_matching[ peer_map_key ] = string( );
    g_peer_found_prefixed[ peer_map_key ] = 0;
 
    g_peer_first_prefixed[ peer_map_key ].clear( );
@@ -462,6 +470,7 @@ void clear_first_prefixed( const string& peer_map_key )
    g_peer_total_items[ peer_map_key ] = 0;
 
    g_peer_found_bounding[ peer_map_key ] = 0;
+   g_peer_found_matching[ peer_map_key ] = string( );
    g_peer_found_prefixed[ peer_map_key ] = 0;
 
    g_peer_first_prefixed[ peer_map_key ].clear( );
