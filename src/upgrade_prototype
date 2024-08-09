@@ -11,7 +11,7 @@ else
   echo "Error: Saved identity (ciyam_server.sid.sav) was not found."
  else
   ./restore_identity
-  sudo service ciyamd restart
+  sudo systemctl restart ciyamd
   sleep 1
   ./restore Meta
   ./save_identity
