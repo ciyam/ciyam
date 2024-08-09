@@ -7835,7 +7835,7 @@ peer_session* create_peer_initiator( const string& blockchain,
 
    auto_ptr< temporary_system_variable > ap_blockchain_connect;
 
-   if( !has_main_session && !has_set_system_variable )
+   if( !is_secondary && !num_for_support && !has_set_system_variable )
       ap_blockchain_connect.reset( new temporary_system_variable( identity, c_true_value ) );
 
    for( size_t i = 0; i < total_to_create; i++ )
