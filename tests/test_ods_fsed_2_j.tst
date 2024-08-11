@@ -20,7 +20,7 @@ Total number of nodes = 1
 Total number of items = 7
 
 Dumping level #0
-[Node 2] flags = 3, dge_link = -1
+[Node 1] flags = 3, dge_link = -1
          lft_link = -1, rgt_link = -1
 Item #0, data = /111, link = -1
 Item #1, data = /111/222, link = -1
@@ -42,7 +42,7 @@ Total number of nodes = 1
 Total number of items = 6
 
 Dumping level #0
-[Node 2] flags = 3, dge_link = -1
+[Node 1] flags = 3, dge_link = -1
          lft_link = -1, rgt_link = -1
 Item #0, data = /111, link = -1
 Item #1, data = /111/222, link = -1

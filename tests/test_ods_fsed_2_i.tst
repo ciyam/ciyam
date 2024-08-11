@@ -22,15 +22,15 @@ Total number of nodes = 1
 Total number of items = 23
 
 Dumping level #0
-[Node 2] flags = 3, dge_link = -1
+[Node 1] flags = 3, dge_link = -1
          lft_link = -1, rgt_link = -1
 Item #0, data = /111, link = -1
 Item #1, data = /111/222, link = -1
 Item #2, data = /111/222/333, link = -1
-Item #3, data = 1!/xxx, link = -1
-Item #4, data = 1|111/ccc, link = -1
-Item #5, data = 1|111|222/fff, link = -1
-Item #6, data = 1|111|222|333/iii, link = -1
+Item #3, data = 2!/xxx, link = -1
+Item #4, data = 2|111/ccc, link = -1
+Item #5, data = 2|111|222/fff, link = -1
+Item #6, data = 2|111|222|333/iii, link = -1
 Item #7, data = 3!/yyy, link = -1
 Item #8, data = 3|111/bbb, link = -1
 Item #9, data = 3|111|222/eee, link = -1
