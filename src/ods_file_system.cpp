@@ -957,6 +957,11 @@ void ods_file_system::add_file( const string& name,
 {
    string file_name( source );
 
+   bool is_empty_file = false;
+
+   if( file_name == "*" )
+      is_empty_file = true;
+
    if( file_name.empty( ) )
       file_name = name;
 
@@ -968,7 +973,7 @@ void ods_file_system::add_file( const string& name,
       throw runtime_error( "invalid file name '" + name + "'" );
    else
    {
-      if( !p_is && !file_exists( file_name ) )
+      if( !p_is && !is_empty_file && !file_exists( file_name ) )
          throw runtime_error( "file '" + file_name + "' not found" );
 
       string value( key_value( name ) );
@@ -1016,7 +1021,7 @@ void ods_file_system::add_file( const string& name,
 
             if( !p_is )
             {
-               if( file_name != "*" )
+               if( !is_empty_file )
                {
                   tmp_item.set_perms( p_perms ? *p_perms : file_perms( file_name ) );
 
@@ -1028,7 +1033,7 @@ void ods_file_system::add_file( const string& name,
                // NOTE: If the source was "*" or is a zero length file then in order not
                // to waste space on a second object the special zero OID is instead used
                // as an empty file content indicator.
-               if( file_name == "*" || ( file_exists( file_name ) && !file_size( file_name ) ) )
+               if( is_empty_file || ( file_exists( file_name ) && !file_size( file_name ) ) )
                   tmp_item.o_file.set_id( 0 );
                else
                   tmp_item.get_file( new storable_file_extra( file_name, 0, p_progress ) ).store( );

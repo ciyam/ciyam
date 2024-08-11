@@ -1,4 +1,6 @@
-file_add xxx test.jpg
+file_add xxx *
+files
+file_replace xxx test.jpg
 files
 file_move xxx yyy
 files
