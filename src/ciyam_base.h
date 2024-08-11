@@ -782,6 +782,8 @@ void CIYAM_BASE_DECL_SPEC session_shared_decrypt(
 void CIYAM_BASE_DECL_SPEC session_shared_encrypt(
  std::string& data, const std::string& pubkey, const std::string& message );
 
+std::string CIYAM_BASE_DECL_SPEC convert_groups_keys_to_numbers( const std::string& group_keys );
+
 size_t CIYAM_BASE_DECL_SPEC get_next_handle( );
 
 void CIYAM_BASE_DECL_SPEC module_list( std::ostream& os );
