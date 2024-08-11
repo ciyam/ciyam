@@ -738,7 +738,12 @@ bool fetch_list_info( const string& module,
    fetch_cmd += " -d=" + date_time::standard( ).as_string( );
 
    if( !sess_info.user_group.empty( ) )
+   {
       fetch_cmd += " -g=" + sess_info.user_group;
+
+      if( !sess_info.user_mgrps.empty( ) )
+         fetch_cmd += ':' + sess_info.user_mgrps;
+   }
 
    if( !sess_info.user_id.empty( ) )
       fetch_cmd += " -td=tmp/" + sess_info.session_id;
@@ -1691,18 +1696,13 @@ bool populate_list_info( list_source& list,
    string field_list( is_printable ? list.pfield_list : list.field_list );
 
    // NOTE: A "group" list is a parent qualified list where the parent is the nominated "group" class whilst a
-   // "user" list, along with its variants, are parent qualified lists where the parent is the nominated "user" class.
+   // "user" list (and its variants) are parent qualified lists where the parent is the nominated "user" class.
    if( list.type == c_list_type_group || list.type == c_list_type_nongroup )
    {
       if( list.type == c_list_type_nongroup )
          key_info = ":" + key_prefix;
       else
-      {
-         if( sess_info.user_mgrps.empty( ) )
-            key_info = sess_info.user_group + ":" + key_prefix;
-         else
-            key_info = sess_info.user_mgrps + ":" + key_prefix;
-      }
+         key_info = sess_info.user_group + ":" + key_prefix;
 
       class_info = ( list.lici->second )->pclass;
       class_info += ":_" + ( list.lici->second )->pfield;

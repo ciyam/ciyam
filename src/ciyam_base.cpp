@@ -248,6 +248,7 @@ const char* const c_storable_file_name_id = "id";
 const char* const c_storable_file_name_limit = "limit";
 const char* const c_storable_file_name_log_id = "log_id";
 const char* const c_storable_file_name_mod_dir = "mod_dir";
+const char* const c_storable_file_name_num_gid = "num_gid";
 const char* const c_storable_file_name_trunc_n = "trunc_n";
 const char* const c_storable_file_name_version = "version";
 const char* const c_storable_file_name_web_root = "web_root";
@@ -312,6 +313,7 @@ class storage_handler;
 trace_mutex g_mutex;
 trace_mutex g_cloning_mutex;
 
+mutex g_gid_mutex;
 mutex g_trace_mutex;
 mutex g_mapping_mutex;
 mutex g_session_mutex;
@@ -696,7 +698,9 @@ struct storage_root
     identity( uuid( ).as_string( ) ),
     web_root( c_default_web_root ),
     type( e_storage_type_standard ),
-    truncation_count( 0 )
+    truncation_count( 0 ),
+    group_identity_new( 0 ),
+    group_identity_old( 0 )
    {
    }
 
@@ -714,6 +718,9 @@ struct storage_root
 
    vector< string > module_list;
 
+   int32_t group_identity_new;
+   int32_t group_identity_old;
+
    log_identity log_id;
 
    void store_as_text_files( ods_file_system& ofs );
@@ -724,6 +731,12 @@ void storage_root::store_as_text_files( ods_file_system& ofs )
 {
    string prefix( ( type == e_storage_type_peerchain ) ? "@" : "" );
    ofs.store_as_text_file( c_storable_file_name_id, prefix + identity );
+
+   if( group_identity_old != group_identity_new )
+   {
+      group_identity_old = group_identity_new;
+      ofs.store_as_text_file( c_storable_file_name_num_gid, group_identity_new );
+   }
 
    ofs.store_as_text_file( c_storable_file_name_limit, cache_limit );
    ofs.store_as_text_file( c_storable_file_name_log_id, log_id.next_id );
@@ -743,6 +756,12 @@ void storage_root::fetch_from_text_files( ods_file_system& ofs )
    {
       identity.erase( 0, 1 );
       type = e_storage_type_peerchain;
+   }
+
+   if( ofs.has_file( c_storable_file_name_num_gid ) )
+   {
+      ofs.fetch_from_text_file( c_storable_file_name_num_gid, group_identity_new );
+      group_identity_old = group_identity_new;
    }
 
    ofs.fetch_from_text_file( c_storable_file_name_limit, cache_limit );
@@ -801,6 +820,8 @@ class storage_handler
    const storage_root& get_root( ) const { return root; }
 
    bool supports_sql_undo( ) const { return has_sql_undo_support; }
+
+   bool is_special_storage_name( ) { return ( name == c_meta_storage_name ) || ( name == c_ciyam_storage_name ); }
 
    bool is_using_verbose_logging( ) const { return ( name == c_meta_storage_name ); }
 
@@ -3488,9 +3509,9 @@ string construct_sql_select(
  const vector< string >& order_info,
  const vector< pair< string, string > >& query_info,
  const vector< pair< string, string > >& fixed_info,
- const vector< pair< string, string > >& paging_info,
- const string& security_info, bool is_reverse, bool is_inclusive, int row_limit,
- bool only_sys_fields, const string& text_search, vector< string >* p_order_columns = 0 )
+ const vector< pair< string, string > >& paging_info, const string& security_info,
+ bool is_reverse, bool is_inclusive, int row_limit, bool only_sys_fields,
+ const string& text_search, vector< string >* p_order_columns = 0, const string* p_sec_marker = 0 )
 {
    string sql, sql_fields_and_table( "SELECT " );
 
@@ -3529,6 +3550,7 @@ string construct_sql_select(
     + string( instance.get_module_name( ) ) + "_" + string( instance.get_class_name( ) );
 
    if( !query_info.empty( ) || !text_search.empty( )
+    || ( fixed_info.empty( ) && !order_info.empty( ) )
     || !fixed_info.empty( ) || !paging_info.empty( ) || !security_info.empty( ) )
    {
       sql += " WHERE ";
@@ -3544,7 +3566,13 @@ string construct_sql_select(
 
       if( !is_primary_only && !order_info.empty( ) )
       {
-         sql += "C_Sec_ = 0";
+         sql += "C_Sec_ = ";
+
+         if( !p_sec_marker )
+            sql += "0";
+         else
+            sql += *p_sec_marker;
+
          had_any_restrict = had_sec_restrict = true;
       }
    }
@@ -3985,7 +4013,7 @@ string construct_sql_select(
       {
          sql += "C_Sec_";
 
-         if( !is_reverse )
+         if( is_reverse )
             sql += " DESC";
 
          sql += ",";
@@ -11311,8 +11339,15 @@ void set_grp( const string& grp )
 {
    if( gtp_session )
    {
-      gtp_session->grp = grp;
-      set_session_variable( get_special_var_name( e_special_var_grp ), grp );
+      string::size_type pos = grp.find( ':' );
+
+      gtp_session->grp = grp.substr( 0, pos );
+      set_session_variable( get_special_var_name( e_special_var_grp ), grp.substr( 0, pos ) );
+
+      if( pos == string::npos )
+         set_session_variable( get_special_var_name( e_special_var_gids ), "" );
+      else
+         set_session_variable( get_special_var_name( e_special_var_gids ), grp.substr( pos + 1 ) );
    }
 }
 
@@ -11414,6 +11449,41 @@ void session_shared_encrypt( string& data, const string& pubkey, const string& m
 #else
    throw runtime_error( "session_shared_encrypt requires SSL support" );
 #endif
+}
+
+string convert_groups_keys_to_numbers( const string& group_keys )
+{
+   string group_numbers;
+
+   if( !group_keys.empty( ) )
+   {
+      guard g( g_gid_mutex );
+
+      vector< string > groups;
+
+      split( group_keys, groups, '|' );
+
+      ods_file_system ofs( *ods::instance( ) );
+
+      ofs.set_folder( c_storable_folder_name_gid_data );
+
+      for( size_t i = 0; i < groups.size( ); i++ )
+      {
+         string next( groups[ i ] );
+
+         string group_number;
+
+         if( !ofs.has_file( next + '.', true, &group_number ) )
+            throw runtime_error( "unexpected gid_data for '" + next + "' not found" );
+
+         if( !group_numbers.empty( ) )
+            group_numbers += '|';
+
+         group_numbers += group_number;
+      }
+   }
+
+   return group_numbers;
 }
 
 size_t get_next_handle( )
@@ -13902,6 +13972,15 @@ void transaction_commit( )
          if( handler.get_root( ).type == e_storage_type_peerchain )
             append_peerchain_log_commands( );
 
+         if( handler.get_root( ).group_identity_old != handler.get_root( ).group_identity_new )
+         {
+            ods_file_system ofs( *ods::instance( ) );
+
+            ofs.store_as_text_file( c_storable_file_name_num_gid, handler.get_root( ).group_identity_new );
+
+            handler.get_root( ).group_identity_old = handler.get_root( ).group_identity_new;
+         }
+
          append_transaction_log_command( handler );
 
          if( gtp_session->ap_db.get( ) )
@@ -14764,6 +14843,50 @@ void finish_instance_op( class_base& instance, bool apply_changes,
          }
          else
          {
+            // NOTE: If not Meta and instance is being created or updated then if either
+            // a group or level fields are being used then determine the security value.
+            if( ( op != class_base::e_op_type_destroy )
+             && !gtp_session->p_storage_handler->is_special_storage_name( ) )
+            {
+               string group_field_name( instance.get_group_field_name( ) );
+               string level_field_name( instance.get_level_field_name( ) );
+
+               if( !group_field_name.empty( ) || !level_field_name.empty( ) )
+               {
+                  int64_t security_value = 0;
+
+                  if( !group_field_name.empty( ) )
+                  {
+                     string group_key_value( instance.get_field_value( instance.get_field_num( group_field_name ) ) );
+
+                     if( !group_key_value.empty( ) )
+                     {
+                        guard g( g_gid_mutex );
+
+                        ods_file_system ofs( *ods::instance( ) );
+
+                        ofs.set_folder( c_storable_folder_name_gid_data );
+
+                        string group_number;
+
+                        if( !ofs.has_file( group_key_value + '.', true, &group_number ) )
+                           throw runtime_error( "unexpected gid_data for '" + group_key_value + "' not found" );
+
+                        security_value = from_string< int64_t >( group_number ) * 10;
+                     }
+                  }
+
+                  if( !level_field_name.empty( ) )
+                  {
+                     string level_key_value( instance.get_field_value( instance.get_field_num( level_field_name ) ) );
+
+                     security_value += 10 - level_key_value.length( );
+                  }
+
+                  instance_accessor.set_security( security_value );
+               }
+            }
+
             if( persistence_type == 0 ) // i.e. SQL persistence
             {
                vector< string > sql_stmts;
@@ -14901,6 +15024,26 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
          const string& key( instance.get_key( ) );
          storage_handler& handler( *gtp_session->p_storage_handler );
+
+         // NOTE: If creating a new "user_group" record then also will
+         // create a group identity number (to be used for "security").
+         if( ( instance.get_class_type( ) == 2 ) // i.e. user_group
+          && ( op == class_base::e_op_type_create ) )
+         {
+            guard g( g_gid_mutex );
+
+            ods_file_system ofs( *ods::instance( ) );
+
+            if( !ofs.has_folder( c_storable_folder_name_gid_data ) )
+               ofs.add_folder( c_storable_folder_name_gid_data );
+
+            ofs.set_folder( c_storable_folder_name_gid_data );
+
+            string gid_file_name( instance.get_key( ) + '.'
+             + to_string( ++gtp_session->p_storage_handler->get_root( ).group_identity_new ) );
+
+            ofs.add_file( gid_file_name, "*" );
+         }
 
          if( !op_is_in_transaction )
             tx.commit( );
@@ -15159,8 +15302,33 @@ bool perform_instance_iterate( class_base& instance,
          vector< pair< string, string > > fixed_info;
          vector< pair< string, string > > paging_info;
 
-         string group_key_marker;
-         vector< string > group_keys;
+         bool has_gids = false;
+
+         string sec_marker;
+         vector< string > sec_values;
+
+         string group_field_name( instance.get_group_field_name( ) );
+         string level_field_name( instance.get_level_field_name( ) );
+         string order_field_name( instance.get_order_field_name( ) );
+         string owner_field_name( instance.get_owner_field_name( ) );
+
+         string gids( get_session_variable( get_special_var_name( e_special_var_gids ) ) );
+
+         if( !gids.empty( ) && !group_field_name.empty( ) )
+         {
+            has_gids = true;
+            sec_marker = uuid( ).as_string( );
+
+            vector< string > gid_vals;
+            split( gids, gid_vals, '|' );
+
+            for( size_t i = 0; i < gid_vals.size( ); i++ )
+            {
+               size_t next = from_string< int64_t >( gid_vals[ i ] );
+
+               sec_values.push_back( to_string( next * 10 ) );
+            }
+         }
 
          set< string > supplied_fields;
          set< string > transient_field_names;
@@ -15210,28 +15378,20 @@ bool perform_instance_iterate( class_base& instance,
             set< string > required_fields;
             set< string > field_dependents;
 
-            instance.get_required_field_names( required_fields, false, &field_dependents );
-
             // NOTE: Any special fields found are treated as required fields.
-            string group_field_name( instance.get_group_field_name( ) );
-
             if( !group_field_name.empty( ) )
                required_fields.insert( group_field_name );
-
-            string level_field_name( instance.get_level_field_name( ) );
 
             if( !level_field_name.empty( ) )
                required_fields.insert( level_field_name );
 
-            string order_field_name( instance.get_order_field_name( ) );
-
             if( !order_field_name.empty( ) )
                required_fields.insert( order_field_name );
 
-            string owner_field_name( instance.get_owner_field_name( ) );
-
             if( !owner_field_name.empty( ) )
                required_fields.insert( owner_field_name );
+
+            instance.get_required_field_names( required_fields, false, &field_dependents );
 
             size_t iterations = 0;
 
@@ -15278,14 +15438,6 @@ bool perform_instance_iterate( class_base& instance,
             if( !is_transient )
             {
                string parent_key_value( instance.get_graph_parent( )->get_key( ) );
-
-               // NOTE: If the parent key value has one or more pipe separators then
-               // it will instead considered to be multiple keys in a "query group".
-               if( parent_key_value.find( '|' ) != string::npos )
-               {
-                  split( parent_key_value, group_keys, '|' );
-                  parent_key_value = group_key_marker = uuid( ).as_string( );
-               }
 
                fixed_info.push_back( make_pair( fk_field, parent_key_value ) );
             }
@@ -15481,25 +15633,29 @@ bool perform_instance_iterate( class_base& instance,
             vector< string > order_columns;
 
             sql = construct_sql_select( instance,
-             field_info, order_info, query_info, fixed_info, paging_info, security_info,
-             ( direction == e_iter_direction_backwards ), inclusive, row_limit, ( fields == c_key_field ), text, &order_columns );
+             field_info, order_info, query_info, fixed_info, paging_info,
+             security_info, ( direction == e_iter_direction_backwards ), inclusive, row_limit,
+             ( fields == c_key_field ), text, &order_columns, ( has_gids ? &sec_marker : 0 ) );
 
             if( instance_accessor.p_sql_data( ) )
                delete instance_accessor.p_sql_data( );
 
-            if( !group_keys.empty( ) )
+            if( has_gids )
             {
                vector< string > sql_stmts;
 
-               for( size_t i = 0; i < group_keys.size( ); i++ )
+               for( size_t i = 0; i < sec_values.size( ); i++ )
                {
-                  sql_stmts.push_back( replaced( sql, group_key_marker, group_keys[ i ] ) );
+                  sql_stmts.push_back( replaced( sql, sec_marker, sec_values[ i ] ) );
 
                   TRACE_LOG( TRACE_SQLSTMTS, sql_stmts.back( ) );
                }
 
                instance_accessor.p_sql_data( ) = new sql_dataset_group(
                 *gtp_session->ap_db, sql_stmts, ( direction == e_iter_direction_backwards ), true, &order_columns );
+
+               // NOTE: Replace the 'sec_marker' so the SQL will be valid for creating a query plan.
+               replace( sql, sec_marker, "0" );
             }
             else
             {
