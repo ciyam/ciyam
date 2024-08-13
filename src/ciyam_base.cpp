@@ -3570,7 +3570,12 @@ string construct_sql_select(
          sql += "C_Sec_ ";
 
          if( !p_sec_marker )
-            sql += ">= 0";
+         {
+            if( !is_reverse )
+               sql += ">= 0";
+            else
+               sql += "<= 99999999";
+         }
          else
             sql += "= " + *p_sec_marker;
 
@@ -11468,21 +11473,24 @@ string convert_groups_keys_to_numbers( const string& group_keys )
 
       ods_file_system ofs( *ods::instance( ) );
 
-      ofs.set_folder( c_storable_folder_name_gid_data );
-
-      for( size_t i = 0; i < groups.size( ); i++ )
+      if( ofs.has_folder( c_storable_folder_name_gid_data ) )
       {
-         string next( groups[ i ] );
+         ofs.set_folder( c_storable_folder_name_gid_data );
 
-         string group_number;
+         for( size_t i = 0; i < groups.size( ); i++ )
+         {
+            string next( groups[ i ] );
 
-         if( !ofs.has_file( next + '.', true, &group_number ) )
-            throw runtime_error( "unexpected gid_data for '" + next + "' not found" );
+            string group_number;
 
-         if( !group_numbers.empty( ) )
-            group_numbers += '|';
+            if( !ofs.has_file( next + '.', true, &group_number ) )
+               throw runtime_error( "unexpected gid_data for '" + next + "' not found" );
 
-         group_numbers += group_number;
+            if( !group_numbers.empty( ) )
+               group_numbers += '|';
+
+            group_numbers += group_number;
+         }
       }
    }
 
@@ -15317,22 +15325,25 @@ bool perform_instance_iterate( class_base& instance,
 
          string gids( get_session_variable( get_special_var_name( e_special_var_gids ) ) );
 
-         if( gids.empty( ) )
-            gids = gtp_session->gid;
-
-         if( !gids.empty( ) && !group_field_name.empty( ) )
+         if( instance.get_class_type( ) != 1 ) // i.e. user
          {
-            has_gids = true;
-            sec_marker = uuid( ).as_string( );
+            if( gids.empty( ) && !group_field_name.empty( ) )
+               gids = gtp_session->gid;
 
-            vector< string > gid_vals;
-            split( gids, gid_vals, '|' );
-
-            for( size_t i = 0; i < gid_vals.size( ); i++ )
+            if( !gids.empty( ) && !group_field_name.empty( ) )
             {
-               size_t next = from_string< int64_t >( gid_vals[ i ] );
+               has_gids = true;
+               sec_marker = uuid( ).as_string( );
 
-               sec_values.push_back( to_string( next * 10 ) );
+               vector< string > gid_vals;
+               split( gids, gid_vals, '|' );
+
+               for( size_t i = 0; i < gid_vals.size( ); i++ )
+               {
+                  size_t next = from_string< int64_t >( gid_vals[ i ] );
+
+                  sec_values.push_back( to_string( next * 10 ) );
+               }
             }
          }
 
