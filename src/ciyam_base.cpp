@@ -430,6 +430,7 @@ struct session
 
    string dtm;
    string grp;
+   string gid;
    string uid;
    string sec;
 
@@ -3566,12 +3567,12 @@ string construct_sql_select(
 
       if( !is_primary_only && !order_info.empty( ) )
       {
-         sql += "C_Sec_ = ";
+         sql += "C_Sec_ ";
 
          if( !p_sec_marker )
-            sql += "0";
+            sql += ">= 0";
          else
-            sql += *p_sec_marker;
+            sql += "= " + *p_sec_marker;
 
          had_any_restrict = had_sec_restrict = true;
       }
@@ -11344,6 +11345,8 @@ void set_grp( const string& grp )
       gtp_session->grp = grp.substr( 0, pos );
       set_session_variable( get_special_var_name( e_special_var_grp ), grp.substr( 0, pos ) );
 
+      gtp_session->gid = convert_groups_keys_to_numbers( gtp_session->grp );
+
       if( pos == string::npos )
          set_session_variable( get_special_var_name( e_special_var_gids ), "" );
       else
@@ -15313,6 +15316,9 @@ bool perform_instance_iterate( class_base& instance,
          string owner_field_name( instance.get_owner_field_name( ) );
 
          string gids( get_session_variable( get_special_var_name( e_special_var_gids ) ) );
+
+         if( gids.empty( ) )
+            gids = gtp_session->gid;
 
          if( !gids.empty( ) && !group_field_name.empty( ) )
          {
