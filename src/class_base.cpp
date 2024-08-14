@@ -675,6 +675,7 @@ class_base::class_base( )
  revision( 0 ),
  security( 0 ),
  original_revision( 0 ),
+ original_security( 0 ),
  op( e_op_type_none ),
  index_num( 0 ),
  p_sql_data( 0 ),
@@ -1116,6 +1117,7 @@ void class_base::perform_lazy_fetch( )
          security = last_lazy_fetch_sec;
 
          original_revision = revision;
+         original_security = revision;
 
          for( size_t i = 0; i < last_lazy_fetch_field_values.size( ); i++ )
             set_field_value( i, last_lazy_fetch_field_values[ i ] );
@@ -2241,10 +2243,10 @@ string class_base::generate_sql_update( const string& class_name, string* p_undo
    if( p_undo_stmt )
       *p_undo_stmt = sql_stmt;
 
-   sql_stmt += " SET C_Rev_=" + to_string( revision );
+   sql_stmt += " SET C_Rev_=" + to_string( revision ) + ", C_Sec_=" + to_string( security );
 
    if( p_undo_stmt )
-      *p_undo_stmt += " SET C_Rev_=" + to_string( original_revision );
+      *p_undo_stmt += " SET C_Rev_=" + to_string( original_revision ) + ", C_Sec_=" + to_string( original_security );
 
    bool done = false;
 
