@@ -540,6 +540,7 @@ class CIYAM_BASE_DECL_SPEC class_base
    uint64_t security;
 
    uint64_t original_revision;
+   uint64_t original_security;
 
    std::string original_identity;
    std::vector< std::string > original_values;

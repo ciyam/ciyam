@@ -14866,32 +14866,35 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                {
                   int64_t security_value = 0;
 
-                  if( !group_field_name.empty( ) )
+                  if( instance.get_class_type( ) != 1 ) // i.e. user
                   {
-                     string group_key_value( instance.get_field_value( instance.get_field_num( group_field_name ) ) );
-
-                     if( !group_key_value.empty( ) )
+                     if( !group_field_name.empty( ) )
                      {
-                        guard g( g_gid_mutex );
+                        string group_key_value( instance.get_field_value( instance.get_field_num( group_field_name ) ) );
 
-                        ods_file_system ofs( *ods::instance( ) );
+                        if( !group_key_value.empty( ) )
+                        {
+                           guard g( g_gid_mutex );
 
-                        ofs.set_folder( c_storable_folder_name_gid_data );
+                           ods_file_system ofs( *ods::instance( ) );
 
-                        string group_number;
+                           ofs.set_folder( c_storable_folder_name_gid_data );
 
-                        if( !ofs.has_file( group_key_value + '.', true, &group_number ) )
-                           throw runtime_error( "unexpected gid_data for '" + group_key_value + "' not found" );
+                           string group_number;
 
-                        security_value = from_string< int64_t >( group_number ) * 10;
+                           if( !ofs.has_file( group_key_value + '.', true, &group_number ) )
+                              throw runtime_error( "unexpected gid_data for '" + group_key_value + "' not found" );
+
+                           security_value = from_string< int64_t >( group_number ) * 10;
+                        }
                      }
-                  }
 
-                  if( !level_field_name.empty( ) )
-                  {
-                     string level_key_value( instance.get_field_value( instance.get_field_num( level_field_name ) ) );
+                     if( !level_field_name.empty( ) )
+                     {
+                        string level_key_value( instance.get_field_value( instance.get_field_num( level_field_name ) ) );
 
-                     security_value += 10 - level_key_value.length( );
+                        security_value += ( 10 - level_key_value.length( ) );
+                     }
                   }
 
                   instance_accessor.set_security( security_value );
@@ -15323,28 +15326,47 @@ bool perform_instance_iterate( class_base& instance,
          string order_field_name( instance.get_order_field_name( ) );
          string owner_field_name( instance.get_owner_field_name( ) );
 
+         string sec( get_session_variable( get_special_var_name( e_special_var_sec ) ) );
+
+         size_t sec_level = 0;
+
+         if( !sec.empty( ) )
+            sec_level = ( 10 - sec.length( ) );
+
          string gids( get_session_variable( get_special_var_name( e_special_var_gids ) ) );
 
          if( instance.get_class_type( ) != 1 ) // i.e. user
          {
             if( gids.empty( ) && !group_field_name.empty( ) )
                gids = gtp_session->gid;
+         }
 
-            if( !gids.empty( ) && !group_field_name.empty( ) )
+         if( !gids.empty( ) && !group_field_name.empty( ) )
+         {
+            has_gids = true;
+            sec_marker = uuid( ).as_string( );
+
+            vector< string > gid_vals;
+            split( gids, gid_vals, '|' );
+
+            for( size_t i = 0; i < gid_vals.size( ); i++ )
             {
-               has_gids = true;
-               sec_marker = uuid( ).as_string( );
+               size_t next = from_string< int64_t >( gid_vals[ i ] );
 
-               vector< string > gid_vals;
-               split( gids, gid_vals, '|' );
+               sec_values.push_back( to_string( next * 10 ) );
 
-               for( size_t i = 0; i < gid_vals.size( ); i++ )
+               if( sec_level && !level_field_name.empty( ) )
                {
-                  size_t next = from_string< int64_t >( gid_vals[ i ] );
-
-                  sec_values.push_back( to_string( next * 10 ) );
+                  for( size_t j = 1; j <= sec_level; j++ )
+                     sec_values.push_back( to_string( ( next * 10 ) + j ) );
                }
             }
+         }
+
+         if( sec_level && sec_values.empty( ) && !level_field_name.empty( ) )
+         {
+            for( size_t i = 1; i <= sec_level; i++ )
+               sec_values.push_back( to_string( i ) );
          }
 
          set< string > supplied_fields;
