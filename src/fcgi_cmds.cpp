@@ -709,9 +709,9 @@ bool fetch_list_info( const string& module,
  bool is_reverse, int row_limit, const string& key_info, const string& field_list,
  const string& filters, const string& search_text, const string& search_query,
  const string& set_field_values, data_container& rows, const string& exclude_key_info,
- bool* p_prev, string* p_perms, const string* p_security_info, const string* p_extra_debug,
- const set< string >* p_exclude_keys, const string* p_pdf_spec_name, const string* p_pdf_link_filename,
- string* p_pdf_view_file_name, bool* p_can_delete_any, bool is_printable, bool* p_any_actionable )
+ bool* p_prev, string* p_perms, const string* p_extra_debug, const set< string >* p_exclude_keys,
+ const string* p_pdf_spec_name, const string* p_pdf_link_filename, string* p_pdf_view_file_name,
+ bool* p_can_delete_any, bool is_printable, bool* p_any_actionable )
 {
    bool okay = true;
 
@@ -756,9 +756,6 @@ bool fetch_list_info( const string& module,
 
    if( p_perms && !p_perms->empty( ) )
       fetch_cmd += " -p=" + *p_perms;
-
-   if( p_security_info )
-      fetch_cmd += " -s=" + *p_security_info;
 
    if( !search_text.empty( ) )
       fetch_cmd += " \"-t=" + escaped( search_text, "\"" ) + "\"";
@@ -927,9 +924,6 @@ bool fetch_parent_row_data( const string& module,
 
    string perms;
    string* p_perms = 0;
-
-   string security_info;
-   string* p_security_info = 0;
 
    string exclude_key_info;
 
@@ -1249,15 +1243,6 @@ bool fetch_parent_row_data( const string& module,
                value = parent_key;
                found_special = true;
             }
-            else if( key == c_parent_extra_slevel )
-            {
-               security_info = data;
-               security_info += ":";
-               security_info += user_slevel;
-
-               p_security_info = &security_info;
-               continue;
-            }
             else if( key == c_parent_extra_xself )
             {
                exclude_key_info = sess_info.user_key;
@@ -1418,8 +1403,8 @@ bool fetch_parent_row_data( const string& module,
       pfield += view_id_field;
    }
 
-   okay = fetch_list_info( module, mod_info, pclass_id, sess_info, false, 0, key_info, pfield, filters,
-    "", "", "", parent_row_data, exclude_key_info, 0, p_perms, p_security_info, &extra_debug, p_exclude_keys );
+   okay = fetch_list_info( module, mod_info, pclass_id, sess_info, false, 0, key_info, pfield,
+    filters, "", "", "", parent_row_data, exclude_key_info, 0, p_perms, &extra_debug, p_exclude_keys );
 
    if( needs_decrypting )
    {
@@ -1773,31 +1758,12 @@ bool populate_list_info( list_source& list,
       perms += i->first;
    }
 
-   string security_info;
-   string* p_security_info = 0;
-
-   if( !list.security_level_field.empty( ) )
-   {
-      security_info = list.security_level_field;
-      security_info += ":";
-
-      // NOTE: If there are user other security level overrides then use them unless
-      // the list is a user or user child list (i.e. the user's own property).
-      if( !sess_info.other_slevels.count( sess_info.user_other )
-       || ( list.type == c_list_type_user && list.type == c_list_type_user_child ) )
-         security_info += sess_info.user_slevel;
-      else
-         security_info += sess_info.other_slevels.find( sess_info.user_other )->second;
-
-      p_security_info = &security_info;
-   }
-
    list.print_limited = false;
    list.can_delete_any = false;
 
-   if( !fetch_list_info( list.module_id, mod_info, class_info, sess_info,
-    is_reverse, row_limit, key_info, field_list, filters, search_text, search_query,
-    set_field_values, list.row_data, "", &prev, &perms, p_security_info, 0, 0,
+   if( !fetch_list_info( list.module_id, mod_info, class_info,
+    sess_info, is_reverse, row_limit, key_info, field_list, filters,
+    search_text, search_query, set_field_values, list.row_data, "", &prev, &perms, 0, 0,
     p_pdf_spec_name, p_pdf_link_filename, p_pdf_view_file_name, &list.can_delete_any, is_printable, &list.can_action_any ) )
       okay = false;
    else if( is_printable )

@@ -50,9 +50,8 @@ bool fetch_list_info( const std::string& module,
  const std::string& filters, const std::string& search_text, const std::string& search_query,
  const std::string& set_field_values, data_container& rows,
  const std::string& exclude_key, bool* p_prev = 0, std::string* p_perms = 0,
- const std::string* p_security_info = 0, const std::string* p_extra_debug = 0,
- const std::set< std::string >* p_exclude_keys = 0, const std::string* p_pdf_spec_name = 0,
- const std::string* p_pdf_link_filename = 0, std::string* p_pdf_view_file_name = 0,
+ const std::string* p_extra_debug = 0, const std::set< std::string >* p_exclude_keys = 0,
+ const std::string* p_pdf_spec_name = 0, const std::string* p_pdf_link_filename = 0, std::string* p_pdf_view_file_name = 0,
  bool* p_can_delete_any = 0, bool is_printable = false, bool* p_any_actionable = 0 );
 
 bool fetch_parent_row_data( const std::string& module, const module_info& mod_info,

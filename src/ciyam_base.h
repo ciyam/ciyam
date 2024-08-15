@@ -782,7 +782,10 @@ void CIYAM_BASE_DECL_SPEC session_shared_decrypt(
 void CIYAM_BASE_DECL_SPEC session_shared_encrypt(
  std::string& data, const std::string& pubkey, const std::string& message );
 
-std::string CIYAM_BASE_DECL_SPEC convert_groups_keys_to_numbers( const std::string& group_keys );
+std::string CIYAM_BASE_DECL_SPEC convert_group_keys_to_numbers( const std::string& group_keys );
+
+bool CIYAM_BASE_DECL_SPEC get_uid_data( const std::string& uid, size_t& level, std::string& gids );
+void CIYAM_BASE_DECL_SPEC set_uid_data( const std::string& uid, const std::string& level, const std::string& group_keys );
 
 size_t CIYAM_BASE_DECL_SPEC get_next_handle( );
 
@@ -1021,10 +1024,9 @@ enum iter_direction
 };
 
 bool CIYAM_BASE_DECL_SPEC instance_iterate( size_t handle,
- const std::string& context, const std::string& key_info,
- const std::string& fields, const std::string& text, const std::string& query,
- const std::string& security_info, iter_direction direction, bool inclusive, int row_limit = 0,
- sql_optimisation optimisation = e_sql_optimisation_none, const std::set< std::string >* p_filters = 0 );
+ const std::string& context, const std::string& key_info, const std::string& fields,
+ const std::string& text, const std::string& query, iter_direction direction, bool inclusive,
+ int row_limit = 0, sql_optimisation optimisation = e_sql_optimisation_none, const std::set< std::string >* p_filters = 0 );
 
 bool CIYAM_BASE_DECL_SPEC instance_iterate_next( size_t handle, const std::string& context );
 void CIYAM_BASE_DECL_SPEC instance_iterate_stop( size_t handle, const std::string& context );
@@ -1135,11 +1137,9 @@ void CIYAM_BASE_DECL_SPEC perform_instance_fetch(
  class_base& instance, const std::string& key_info,
  instance_fetch_rc* p_rc = 0, bool only_sys_fields = false, bool do_not_use_cache = false );
 
-bool CIYAM_BASE_DECL_SPEC perform_instance_iterate(
- class_base& instance, const std::string& key_info,
- const std::string& fields, const std::string& text,
- const std::string& query, const std::string& security_info,
- iter_direction direction, bool inclusive = true, int row_limit = 0,
+bool CIYAM_BASE_DECL_SPEC perform_instance_iterate( class_base& instance,
+ const std::string& key_info, const std::string& fields, const std::string& text,
+ const std::string& query, iter_direction direction, bool inclusive = true, int row_limit = 0,
  sql_optimisation optimisation = e_sql_optimisation_none, const std::set< std::string >* p_filters = 0 );
 
 bool CIYAM_BASE_DECL_SPEC perform_instance_iterate_next( class_base& instance );

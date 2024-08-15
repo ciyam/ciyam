@@ -1137,41 +1137,41 @@ void class_base::ensure_original_fetch( )
 
 bool class_base::iterate_forwards( bool inclusive, int row_limit, sql_optimisation optimisation )
 {
-   return perform_instance_iterate( *this, "", "", "", "", "",
+   return perform_instance_iterate( *this, "", "", "", "",
     e_iter_direction_forwards, inclusive, row_limit, optimisation );
 }
 
 bool class_base::iterate_forwards( const string& key_info,
  bool inclusive, int row_limit, sql_optimisation optimisation )
 {
-   return perform_instance_iterate( *this, key_info, "", "", "", "",
+   return perform_instance_iterate( *this, key_info, "", "", "",
     e_iter_direction_forwards, inclusive, row_limit, optimisation );
 }
 
 bool class_base::iterate_forwards( const string& key_info,
  const string& fields, bool inclusive, int row_limit, sql_optimisation optimisation )
 {
-   return perform_instance_iterate( *this, key_info, fields, "", "", "",
+   return perform_instance_iterate( *this, key_info, fields, "", "",
     e_iter_direction_forwards, inclusive, row_limit, optimisation );
 }
 
 bool class_base::iterate_backwards( bool inclusive, int row_limit, sql_optimisation optimisation )
 {
-   return perform_instance_iterate( *this, "", "", "", "", "",
+   return perform_instance_iterate( *this, "", "", "", "",
     e_iter_direction_backwards, inclusive, row_limit, optimisation );
 }
 
 bool class_base::iterate_backwards( const string& key_info,
  bool inclusive, int row_limit, sql_optimisation optimisation )
 {
-   return perform_instance_iterate( *this, key_info, "", "", "", "",
+   return perform_instance_iterate( *this, key_info, "", "", "",
     e_iter_direction_backwards, inclusive, row_limit, optimisation );
 }
 
 bool class_base::iterate_backwards( const string& key_info,
  const string& fields, bool inclusive, int row_limit, sql_optimisation optimisation )
 {
-   return perform_instance_iterate( *this, key_info, fields, "", "", "",
+   return perform_instance_iterate( *this, key_info, fields, "", "",
     e_iter_direction_backwards, inclusive, row_limit, optimisation );
 }
 
