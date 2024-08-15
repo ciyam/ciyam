@@ -314,6 +314,8 @@ trace_mutex g_mutex;
 trace_mutex g_cloning_mutex;
 
 mutex g_gid_mutex;
+mutex g_uid_mutex;
+
 mutex g_trace_mutex;
 mutex g_mapping_mutex;
 mutex g_session_mutex;
@@ -893,6 +895,8 @@ class storage_handler
    map< string, time_t > time_for_key;
 
    map< string, vector< string > > record_cache;
+
+   map< string, pair< size_t, string > > user_level_and_gids;
 
    storage_handler( const storage_handler& );
    storage_handler& operator ==( const storage_handler& );
@@ -2414,6 +2418,7 @@ bool fetch_instance_from_db( class_base& instance,
                      }
 
                      time_t tm( time( 0 ) );
+
                      handler.get_key_for_time( ).insert( make_pair( tm, key_info ) );
                      handler.get_time_for_key( ).insert( make_pair( key_info, tm ) );
                      handler.get_record_cache( ).insert( make_pair( key_info, columns ) );
@@ -3510,7 +3515,7 @@ string construct_sql_select(
  const vector< string >& order_info,
  const vector< pair< string, string > >& query_info,
  const vector< pair< string, string > >& fixed_info,
- const vector< pair< string, string > >& paging_info, const string& security_info,
+ const vector< pair< string, string > >& paging_info,
  bool is_reverse, bool is_inclusive, int row_limit, bool only_sys_fields,
  const string& text_search, vector< string >* p_order_columns = 0, const string* p_sec_marker = 0 )
 {
@@ -3552,7 +3557,7 @@ string construct_sql_select(
 
    if( !query_info.empty( ) || !text_search.empty( )
     || ( fixed_info.empty( ) && !order_info.empty( ) )
-    || !fixed_info.empty( ) || !paging_info.empty( ) || !security_info.empty( ) )
+    || !fixed_info.empty( ) || !paging_info.empty( ) )
    {
       sql += " WHERE ";
 
@@ -3982,33 +3987,6 @@ string construct_sql_select(
       had_any_restrict = true;
 
       sql += construct_paging_sql( modified_paging_info, is_reverse, is_inclusive );
-   }
-
-   string security_field;
-
-   if( !security_info.empty( ) )
-   {
-      // NOTE: The 'security_info' can either be just a field id (in which case the security level
-      // is taken from the session variable 'e_special_var_sec') or alternatively a field id and a
-      // security level value separated by a colon.
-      string::size_type pos = security_info.find( ':' );
-
-      string security_level( get_raw_session_variable( get_special_var_name( e_special_var_sec ) ) );
-
-      if( pos != string::npos )
-         security_level = security_info.substr( pos + 1 );
-
-      security_field = security_info.substr( 0, pos );
-
-      bool is_sql_numeric;
-      get_field_name( instance, security_field, &is_sql_numeric );
-
-      if( had_any_restrict )
-         sql += " AND ";
-
-      had_any_restrict = true;
-
-      sql += "C_" + security_field + " LIKE '" + security_level + "%'";
    }
 
    if( !order_info.empty( ) )
@@ -11350,7 +11328,7 @@ void set_grp( const string& grp )
       gtp_session->grp = grp.substr( 0, pos );
       set_session_variable( get_special_var_name( e_special_var_grp ), grp.substr( 0, pos ) );
 
-      gtp_session->gid = convert_groups_keys_to_numbers( gtp_session->grp );
+      gtp_session->gid = convert_group_keys_to_numbers( gtp_session->grp );
 
       if( pos == string::npos )
          set_session_variable( get_special_var_name( e_special_var_gids ), "" );
@@ -11459,7 +11437,7 @@ void session_shared_encrypt( string& data, const string& pubkey, const string& m
 #endif
 }
 
-string convert_groups_keys_to_numbers( const string& group_keys )
+string convert_group_keys_to_numbers( const string& group_keys )
 {
    string group_numbers;
 
@@ -11495,6 +11473,53 @@ string convert_groups_keys_to_numbers( const string& group_keys )
    }
 
    return group_numbers;
+}
+
+bool get_uid_data( const string& uid, size_t& level, string& gids )
+{
+   guard g( g_uid_mutex );
+
+   bool retval = false;
+
+   ods_file_system ofs( *ods::instance( ) );
+
+   if( ofs.has_folder( c_storable_folder_name_uid_data ) )
+   {
+      ofs.set_folder( c_storable_folder_name_uid_data );
+
+      string level_suffix;
+
+      if( ofs.has_file( uid + '.', true, &level_suffix ) )
+      {
+         retval = true;
+
+         level = from_string< size_t >( level_suffix );
+
+         ofs.fetch_from_text_file( uid + '.' + level_suffix, gids );
+      }
+   }
+
+   return retval;
+}
+
+void set_uid_data( const string& uid, const string& level, const string& group_keys )
+{
+   string gids( convert_group_keys_to_numbers( group_keys ) );
+
+   guard g( g_uid_mutex );
+
+   ods_file_system ofs( *ods::instance( ) );
+
+   if( !ofs.has_folder( c_storable_folder_name_uid_data ) )
+      ofs.add_folder( c_storable_folder_name_uid_data );
+
+   ofs.set_folder( c_storable_folder_name_uid_data );
+
+   size_t level_value = ( 10 - level.length( ) );
+
+   string file_name( uid + '.' + to_string( level_value ) );
+
+   ofs.store_as_text_file( file_name, gids );
 }
 
 size_t get_next_handle( )
@@ -12833,7 +12858,7 @@ string exec_bulk_ops( const string& module,
          outf << "\n";
 
          if( instance_iterate( handle, "", key_info,
-          fields_for_iteration, search_text, search_query, "", e_iter_direction_forwards, true ) )
+          fields_for_iteration, search_text, search_query, e_iter_direction_forwards, true ) )
          {
             do
             {
@@ -13846,12 +13871,12 @@ bool instance_persistence_type_is_sql( size_t handle )
 
 bool instance_iterate( size_t handle, const string& context,
  const string& key_info, const string& fields, const string& text,
- const string& query, const string& security_info, iter_direction direction,
- bool inclusive, int row_limit, sql_optimisation optimisation, const set< string >* p_filters )
+ const string& query, iter_direction direction, bool inclusive,
+ int row_limit, sql_optimisation optimisation, const set< string >* p_filters )
 {
    return perform_instance_iterate(
     get_class_base_from_handle_for_op( handle, context, e_permit_op_type_value_none, false ),
-    key_info, fields, text, query, security_info, direction, inclusive, row_limit, optimisation, p_filters );
+    key_info, fields, text, query, direction, inclusive, row_limit, optimisation, p_filters );
 }
 
 bool instance_iterate_next( size_t handle, const string& context )
@@ -15227,7 +15252,7 @@ void perform_instance_fetch( class_base& instance,
          split_key_info( key_info, fixed_info, paging_info, order_info, false );
 
          sql = construct_sql_select( instance, field_info, order_info,
-          query_info, fixed_info, paging_info, "", false, true, 1, only_sys_fields, "" );
+          query_info, fixed_info, paging_info, false, true, 1, only_sys_fields, "" );
 
          found = fetch_instance_from_db( instance, sql,
           only_sys_fields, false, has_simple_keyinfo && !has_tx_key_info );
@@ -15259,8 +15284,8 @@ void perform_instance_fetch( class_base& instance,
 
 bool perform_instance_iterate( class_base& instance,
  const string& key_info, const string& fields, const string& text,
- const string& query, const string& security_info, iter_direction direction,
- bool inclusive, int row_limit, sql_optimisation optimisation, const set< string >* p_filters )
+ const string& query, iter_direction direction, bool inclusive,
+ int row_limit, sql_optimisation optimisation, const set< string >* p_filters )
 {
    bool found = false;
 
@@ -15316,8 +15341,6 @@ bool perform_instance_iterate( class_base& instance,
          vector< pair< string, string > > fixed_info;
          vector< pair< string, string > > paging_info;
 
-         bool has_gids = false;
-
          string sec_marker;
          vector< string > sec_values;
 
@@ -15327,23 +15350,33 @@ bool perform_instance_iterate( class_base& instance,
          string owner_field_name( instance.get_owner_field_name( ) );
 
          string sec( get_session_variable( get_special_var_name( e_special_var_sec ) ) );
+         string uid( get_session_variable( get_special_var_name( e_special_var_uid ) ) );
+
+         string gids;
 
          size_t sec_level = 0;
 
-         if( !sec.empty( ) )
-            sec_level = ( 10 - sec.length( ) );
-
-         string gids( get_session_variable( get_special_var_name( e_special_var_gids ) ) );
-
          if( instance.get_class_type( ) != 1 ) // i.e. user
          {
+            bool found_uid_data = false;
+
+            if( !uid.empty( ) && ( uid != c_admin ) && get_uid_data( uid, sec_level, gids ) )
+               found_uid_data = true;
+
+            if( !found_uid_data )
+            {
+               if( !sec.empty( ) )
+                  sec_level = ( 10 - sec.length( ) );
+
+               gids = get_session_variable( get_special_var_name( e_special_var_gids ) );
+            }
+
             if( gids.empty( ) && !group_field_name.empty( ) )
                gids = gtp_session->gid;
          }
 
          if( !gids.empty( ) && !group_field_name.empty( ) )
          {
-            has_gids = true;
             sec_marker = uuid( ).as_string( );
 
             vector< string > gid_vals;
@@ -15363,8 +15396,11 @@ bool perform_instance_iterate( class_base& instance,
             }
          }
 
+         // NOTE: Handle records where security level is used without a group.
          if( sec_level && sec_values.empty( ) && !level_field_name.empty( ) )
          {
+            sec_marker = uuid( ).as_string( );
+
             for( size_t i = 1; i <= sec_level; i++ )
                sec_values.push_back( to_string( i ) );
          }
@@ -15673,13 +15709,13 @@ bool perform_instance_iterate( class_base& instance,
 
             sql = construct_sql_select( instance,
              field_info, order_info, query_info, fixed_info, paging_info,
-             security_info, ( direction == e_iter_direction_backwards ), inclusive, row_limit,
-             ( fields == c_key_field ), text, &order_columns, ( has_gids ? &sec_marker : 0 ) );
+             ( direction == e_iter_direction_backwards ), inclusive, row_limit,
+             ( fields == c_key_field ), text, &order_columns, ( !sec_marker.empty( ) ? &sec_marker : 0 ) );
 
             if( instance_accessor.p_sql_data( ) )
                delete instance_accessor.p_sql_data( );
 
-            if( has_gids )
+            if( !sec_marker.empty( ) )
             {
                vector< string > sql_stmts;
 
@@ -15998,6 +16034,6 @@ bool perform_instance_iterate_next( class_base& instance )
    if( found || cache_depleted )
       return found;
    else
-      return perform_instance_iterate( instance, c_null_key, "", "", "", "",
+      return perform_instance_iterate( instance, c_null_key, "", "", "",
        instance.get_is_in_forwards_iteration( ) ? e_iter_direction_forwards : e_iter_direction_backwards, false, -1 );
 }

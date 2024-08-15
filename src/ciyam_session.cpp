@@ -2758,7 +2758,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool inclusive = has_parm_val( parameters, c_cmd_ciyam_session_object_iterate_forwards_inc );
 
          bool rc = instance_iterate( atoi( handle.c_str( ) ),
-          context, key_info, "", "", "", "", e_iter_direction_forwards, inclusive );
+          context, key_info, "", "", "", e_iter_direction_forwards, inclusive );
 
          if( !rc )
          {
@@ -2774,7 +2774,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool inclusive = has_parm_val( parameters, c_cmd_ciyam_session_object_iterate_backwards_inc );
 
          bool rc = instance_iterate( atoi( handle.c_str( ) ),
-          context, key_info, "", "", "", "", e_iter_direction_backwards, inclusive );
+          context, key_info, "", "", "", e_iter_direction_backwards, inclusive );
 
          if( !rc )
          {
@@ -2950,7 +2950,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string tmp_dir( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_tmp_dir ) );
          string filters( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_filters ) );
          string perms( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_perms ) );
-         string security_info( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_security_info ) );
          string search_text( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_search_text ) );
          string search_query( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_search_query ) );
          string extra_vars( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_extra_vars ) );
@@ -3285,7 +3284,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   instance_set_variable( handle, context, get_special_var_name( e_special_var_skip_after_fetch ), "1" );
 
                if( instance_iterate( handle, context,
-                key_info, normal_fields, search_text, search_query, security_info,
+                key_info, normal_fields, search_text, search_query,
                 is_reverse ? e_iter_direction_backwards : e_iter_direction_forwards,
                 true, num_limit, e_sql_optimisation_none, !filter_set.empty( ) ? &filter_set : 0 ) )
                {
