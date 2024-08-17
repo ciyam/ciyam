@@ -2112,6 +2112,7 @@ void Meta_Model::impl::impl_Generate( )
             outf << "\x60{\x60$specification_" << specification_name + "_binfo\x60=\x60'" << view_binfo << "\x60'\x60}\n";
 
             string view_field_key_info( to_string( Meta_View_Field::static_get_field_id( Meta_View_Field::e_field_id_Order ) ) + ' ' );
+
             if( get_obj( ).child_View( ).child_View_Field( ).iterate_forwards( view_field_key_info ) )
             {
                vector< string > field_ids;
@@ -3053,12 +3054,6 @@ void Meta_Model::impl::impl_Generate( )
                                  if( !field_extra.empty( ) )
                                     field_extra += "+";
                                  field_extra += p_field->Class( ).child_Field( ).Id( );
-                              }
-                              else if( p_field->Class( ).child_Field( ).Extra( ) == 18 ) // i.e. "security_level"
-                              {
-                                 if( !field_extra.empty( ) )
-                                    field_extra += "+";
-                                 field_extra += "@slevel:" + p_field->Class( ).child_Field( ).Id( );
                               }
                               else if( p_field->Class( ).child_Field( ).Extra( ) == 17 ) // i.e. "permission"
                               {
@@ -5053,12 +5048,6 @@ void Meta_Model::impl::impl_Generate( )
                                  pextras += "+";
                               pextras += "@manuallink";
                            }
-                           else if( p_field->Class( ).child_Field( ).Extra( ) == 18 ) // i.e. "security_level"
-                           {
-                              if( !pextras.empty( ) )
-                                 pextras += "+";
-                              pextras += "@slevel:" + p_field->Class( ).child_Field( ).Id( );
-                           }
                            else if( p_field->Class( ).child_Field( ).Extra( ) == 17 ) // i.e. "permission"
                            {
                               // NOTE: If the field belongs to an aliased class then need to instead use
@@ -5470,12 +5459,6 @@ void Meta_Model::impl::impl_Generate( )
                                  if( !new_select_extras.empty( ) )
                                     new_select_extras += "+";
                                  new_select_extras += p_field->Class( ).child_Field( ).Id( );
-                              }
-                              else if( p_field->Class( ).child_Field( ).Extra( ) == 18 ) // i.e. "security_level"
-                              {
-                                 if( !new_select_extras.empty( ) )
-                                    new_select_extras += "+";
-                                 new_select_extras += "@slevel:" + p_field->Class( ).child_Field( ).Id( );
                               }
                               else if( p_field->Class( ).child_Field( ).Extra( ) == 17 ) // i.e. "permission"
                               {
