@@ -367,7 +367,6 @@ struct module_info
 
    std::string user_perm_field_id;
    std::string user_group_field_id;
-   std::string user_mgrps_field_id;
    std::string user_other_field_id;
    std::string user_extra1_field_id;
    std::string user_extra2_field_id;
