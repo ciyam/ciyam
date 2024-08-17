@@ -738,12 +738,7 @@ bool fetch_list_info( const string& module,
    fetch_cmd += " -d=" + date_time::standard( ).as_string( );
 
    if( !sess_info.user_group.empty( ) )
-   {
       fetch_cmd += " -g=" + sess_info.user_group;
-
-      if( !sess_info.user_mgrps.empty( ) )
-         fetch_cmd += ':' + sess_info.user_mgrps;
-   }
 
    if( !sess_info.user_id.empty( ) )
       fetch_cmd += " -td=tmp/" + sess_info.session_id;
@@ -2117,9 +2112,6 @@ bool fetch_user_record(
    if( !mod_info.user_group_field_id.empty( ) )
       field_list += "," + mod_info.user_group_field_id;
 
-   if( !mod_info.user_mgrps_field_id.empty( ) )
-      field_list += "," + mod_info.user_group_field_id + "." + mod_info.user_mgrps_field_id;
-
    if( !mod_info.user_other_field_id.empty( ) )
       field_list += "," + mod_info.user_other_field_id;
 
@@ -2283,9 +2275,6 @@ bool fetch_user_record(
 
    if( !mod_info.user_group_field_id.empty( ) )
       sess_info.user_group = user_data[ offset++ ];
-
-   if( !mod_info.user_mgrps_field_id.empty( ) )
-      sess_info.user_mgrps = user_data[ offset++ ];
 
    if( !mod_info.user_other_field_id.empty( ) )
       sess_info.user_other = user_data[ offset++ ];

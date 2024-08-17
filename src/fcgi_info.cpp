@@ -676,22 +676,6 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          {
             info.anon_group = info.user_group_field_id.substr( pos + 1 );
             info.user_group_field_id.erase( pos );
-
-            pos = info.anon_group.find( ' ' );
-
-            if( pos != string::npos )
-            {
-               info.anon_groups = info.anon_group.substr( pos + 1 );
-               info.anon_group.erase( pos );
-            }
-         }
-
-         pos = info.user_group_field_id.find( ':' );
-
-         if( pos != string::npos )
-         {
-            info.user_mgrps_field_id = info.user_group_field_id.substr( pos + 1 );
-            info.user_group_field_id.erase( pos );
          }
       }
 
