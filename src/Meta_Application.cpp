@@ -2247,7 +2247,9 @@ void Meta_Application::impl::impl_Generate( )
 
       outupg << "#Starting DB Rebuild...\n";
 
-      outupg << "storage_restore -rebuild " << get_obj( ).Name( ) << "\n";
+      outupg << "CIYAM_STORAGE=" << get_obj( ).Name( ) << "\n";
+      outupg << "CIYAM_OUTPUT_COMMANDS=1\n";
+      outupg << "<restore.cin\n";
 
       outupg << "#Finished DB Rebuild...\n";
 

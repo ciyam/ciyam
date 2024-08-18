@@ -218,7 +218,7 @@ void set_script_error_if_applicable( const string& error_message )
    {
       string args_file_value = get_raw_system_variable( args_file );
 
-      if( args_file_value == string( "1" ) )
+      if( args_file_value == string( c_true_value ) )
          set_system_variable( args_file, error_message );
    }
 }
@@ -3212,7 +3212,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   // NOTE: Set this variable in order for a "new" record to be able to detect (after
                   // the cancel that is immediately prior to this) that it was cloned.
-                  instance_set_variable( handle, "", get_special_var_name( e_special_var_cloned ), "1" );
+                  instance_set_variable(
+                   handle, "", get_special_var_name( e_special_var_cloned ), c_true_value );
                }
 
                for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
@@ -3281,7 +3282,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 #endif
                if( !set_value_items.empty( ) )
-                  instance_set_variable( handle, context, get_special_var_name( e_special_var_skip_after_fetch ), "1" );
+                  instance_set_variable( handle, context,
+                   get_special_var_name( e_special_var_skip_after_fetch ), c_true_value );
 
                if( instance_iterate( handle, context,
                 key_info, normal_fields, search_text, search_query,
@@ -4136,7 +4138,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_tz_name( tz_name );
 
                if( progress )
-                  instance_set_variable( handle, "", get_special_var_name( e_special_var_progress ), "1" );
+                  instance_set_variable( handle, "",
+                   get_special_var_name( e_special_var_progress ), c_true_value );
 
                for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
                {
@@ -5391,15 +5394,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             socket_handler.set_restore_error( "" );
             auto_ptr< restorable< bool > > ap_restoring( socket_handler.set_restoring( ) );
 
-            set_session_variable( get_special_var_name( e_special_var_restore ), "1" );
+            set_session_variable( get_special_var_name( e_special_var_restore ), c_true_value );
 
-            time_t ts;
             string next;
+
             size_t line = 0;
+
             bool verified = false;
             bool is_partial = true;
 
-            ts = time( 0 );
+            time_t ts = time( 0 );
 
             int trace_flags = 0;
             size_t trace_start = 0;
@@ -5767,6 +5771,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = to_string( cache_limit );
       }
+      else if( command == c_cmd_ciyam_session_storage_export_data )
+         export_storage( handler );
       else if( command == c_cmd_ciyam_session_storage_file_export )
       {
          string hash( get_parm_val( parameters, c_cmd_ciyam_session_storage_file_export_hash ) );
