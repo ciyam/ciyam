@@ -99,6 +99,7 @@ storage_dump_locks "dump storage lock information"
 storage_log_splice "splice individual module logs into a master storage log" <val//name><list//modules>
 storage_cache_clear "clear the storage record cache"
 storage_cache_limit "get/set storage record cache limit" [<oval//new_limit>]
+storage_export_data "export channel and peer data information"
 storage_file_export "export an attached file from the files area" <val//hash><val//module><val//mclass><val//filename>
 storage_file_import "import an attached file into the files area" <val//module><val//mclass><val//filename>[<val//tag>]
 storage_channel_list "list all existing channels"

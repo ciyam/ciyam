@@ -68,6 +68,22 @@ if( ( flag == TRACE_ANYTHING ) || ( get_trace_flags( ) & flag ) )\
 uint64_t CIYAM_BASE_DECL_SPEC get_trace_flags( );
 void CIYAM_BASE_DECL_SPEC set_trace_flags( uint64_t flags );
 
+struct temp_trace_flags
+{
+   temp_trace_flags( uint64_t tmp_flags )
+   {
+      flags = get_trace_flags( );
+      set_trace_flags( tmp_flags );
+   }
+
+   ~temp_trace_flags( )
+   {
+      set_trace_flags( flags );
+   }
+
+   uint64_t flags;
+};
+
 extern "C" void CIYAM_BASE_DECL_SPEC trace_flags( uint64_t flags );
 
 typedef void ( *fp_trace_flags )( uint64_t );
@@ -620,6 +636,8 @@ void CIYAM_BASE_DECL_SPEC attach_storage( const std::string& name, command_handl
 
 void CIYAM_BASE_DECL_SPEC backup_storage(
  command_handler& cmd_handler, int* p_truncation_count = 0, std::string* p_sav_db_file_names = 0 );
+
+void CIYAM_BASE_DECL_SPEC export_storage( command_handler& cmd_handler );
 
 void CIYAM_BASE_DECL_SPEC restore_storage( command_handler& cmd_handler );
 

@@ -1954,6 +1954,8 @@ void perform_storage_op( storage_op op,
          const char* p_password = 0;
 
          bool has_exported_objects = false;
+         bool has_imported_channels = false;
+         bool has_imported_peer_data = false;
 
          if( g_encrypted_identity
           && ( name != c_meta_storage_name ) && ( name != c_ciyam_storage_name ) )
@@ -2004,6 +2006,17 @@ void perform_storage_op( storage_op op,
             tx.commit( );
 
             delete_directory_files( name, true );
+
+            if( !ofs.has_folder( c_storable_folder_name_modules ) )
+            {
+               has_exported_objects = false;
+
+               if( ofs.has_folder( c_storable_folder_name_channels ) )
+                  has_imported_channels = true;
+
+               if( ofs.has_folder( c_storable_folder_name_peer_data ) )
+                  has_imported_peer_data = true;
+            }
          }
 
          if( ap_ods->is_new( ) && !has_exported_objects )
@@ -2031,8 +2044,11 @@ void perform_storage_op( storage_op op,
 
             if( is_peerchain_application )
             {
-               ofs.add_folder( c_storable_folder_name_channels );
-               ofs.add_folder( c_storable_folder_name_peer_data );
+               if( !has_imported_channels )
+                  ofs.add_folder( c_storable_folder_name_channels );
+
+               if( !has_imported_peer_data )
+                  ofs.add_folder( c_storable_folder_name_peer_data );
             }
 
             ap_handler->get_root( ).store_as_text_files( ofs );
@@ -6922,11 +6938,10 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
             // the case of delayed scripts that will occur at the end of transaction commit). Thus set
             // special variables for that here. As "ciyam_client" will set a session variable for each
             // script to the "script args" unique file name (via the "-args_file" command-line option)
-            // a system variable with this same name is being set here (to the value "1"). If an error
+            // a system variable with the same name is being set here (to "c_true_value"). If an error
             // occurs in a command being executed by the script and system variable with the same name
-            // as the "args_file" session variable (and whose value is still "1") (i.e. in the case of
-            // multiple delayed scripts will only record the first such error) then this value will be
-            // changed to that of the error message.
+            // as the "args_file" session variable then the value will be changed to that of the error
+            // message.
             if( !async && no_logging
              && check_script_error != "0" && check_script_error != c_false )
             {
@@ -10115,6 +10130,61 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
           + date_time::local( ).as_string( e_time_format_hhmmss, true ) );
 
          append_transaction_log_command( handler, true );
+      }
+   }
+}
+
+void export_storage( command_handler& cmd_handler )
+{
+   if( ods::instance( ) && gtp_session->p_storage_handler->get_ods( ) )
+   {
+      if( ods::instance( )->get_transaction_level( ) )
+         throw runtime_error( "cannot perform storage export whilst a transaction is active" );
+
+      storage_handler& handler( *gtp_session->p_storage_handler );
+
+      if( !handler.get_is_locked_for_admin( ) )
+         throw runtime_error( "cannot export from storage unless it has been locked for admin" );
+
+      ods_file_system ofs( *ods::instance( ) );
+
+      bool has_exported_any = false;
+
+      string name( handler.get_name( ) );
+
+      if( ofs.has_folder( c_storable_folder_name_channels ) )
+      {
+         ofs.set_folder( c_storable_folder_name_channels );
+
+         create_dir( name );
+
+         string child_folder_name( name + '/' );
+         child_folder_name += c_storable_folder_name_channels;
+
+         create_dir( child_folder_name );
+
+         export_objects( ofs, child_folder_name, 0, 0, &cmd_handler );
+
+         ofs.set_folder( ".." );
+         has_exported_any = true;
+      }
+
+      if( ofs.has_folder( c_storable_folder_name_peer_data ) )
+      {
+         if( !has_exported_any )
+            create_dir( name );
+
+         ofs.set_folder( c_storable_folder_name_peer_data );
+
+         string child_folder_name( name + '/' );
+         child_folder_name += c_storable_folder_name_peer_data;
+
+         create_dir( child_folder_name );
+
+         export_objects( ofs, child_folder_name, 0, 0, &cmd_handler );
+
+         ofs.set_folder( ".." );
+         has_exported_any = true;
       }
    }
 }
@@ -14052,7 +14122,7 @@ void transaction_commit( )
 
       // NOTE: If the "args_file" session variable exists and a system variable with a name matching
       // its value is found then it is expected that the first (if any) error reported for a command
-      // in the executed script will have replaced its value (which was initially set to "1"). Where
+      // in the executed script will have replaced its value (initially set to "c_true_value"). When
       // such an error message is found it will be thrown as an exception from here (even though the
       // transaction commit has completed and the command for this session has already been logged).
       string script_error;
