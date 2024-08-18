@@ -27,4 +27,17 @@ Dumping level #0
 Item #0, data = |/xxx, link = -1
 Item #1, data = |/yyy, link = -1
 Item #2, data = |/zzz, link = -1
+trans
+begin transaction (level = 1)
+file_add aaa modules.lst.default
+list
+aaa (5 B)
+xxx (6.7 kB)
+yyy (5.7 kB)
+zzz (3.1 kB)
+file_get aaa -c
+Meta
+
+rollback
+transaction rolled back (level = 1)
 exit

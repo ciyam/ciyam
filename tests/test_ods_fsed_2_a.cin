@@ -10,4 +10,9 @@ file_add yyy test1.jpg
 file_add zzz test2.jpg
 branch objects
 dump
+trans
+file_add aaa modules.lst.default
+list
+file_get aaa -c
+rollback
 exit
