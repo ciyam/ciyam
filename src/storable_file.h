@@ -102,4 +102,3 @@ class FILE_DECL_SPEC storable_file : public storable_base
 };
 
 #endif
-

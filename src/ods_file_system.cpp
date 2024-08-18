@@ -1124,6 +1124,7 @@ void ods_file_system::get_file( const string& name,
       tmp_item = *tmp_iter;
 
       scoped_ods_instance so( o );
+
       *tmp_item.get_file( new storable_file_extra( file_name, p_os, p_progress ) );
 
       if( !p_os && tmp_item.perm_val )

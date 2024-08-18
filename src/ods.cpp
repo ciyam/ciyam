@@ -3479,7 +3479,9 @@ int64_t ods::get_size( const oid& id )
       THROW_ODS_ERROR( "database instance in bad state" );
 
    DEBUG_LOG( "ods::get_size( )" );
+
    ods_index_entry index_entry;
+
    if( id.get_num( ) < 0 )
       return 0;
 
@@ -3512,7 +3514,16 @@ int64_t ods::get_size( const oid& id )
    if( !found )
       THROW_ODS_ERROR( "cannot get_size (max. attempts exceeded)" );
 
-   return index_entry.data.size;
+   if( ( index_entry.trans_flag != ods_index_entry::e_trans_none )
+    && ( index_entry.data.tran_id == p_impl->p_trans_buffer->tran_id ) )
+   {
+      transaction_op op;
+      read_transaction_op( op, index_entry.data.tran_op - 1 );
+
+      return op.data.size;
+   }
+   else
+      return index_entry.data.size;
 }
 
 void ods::destroy( const oid& id )

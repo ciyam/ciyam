@@ -4,13 +4,13 @@ Num Logs = 0
 Num Trans = 0
 Num Writers = 0
 Init Tranlog = 0
-Total Entries = 5
+Total Entries = 6
 Tranlog Offset = 0
-Transaction Id = 8
-Index Free List = n/a
+Transaction Id = 9
+Index Free List = 5
 Total Size of Data = 16804
 Data Transformation Id = 7
-Index Transformation Id = 20
+Index Transformation Id = 24
 
 ** Entry Info for: 0-4
 num: 0000000000000000          pos: 0000000000000000          len: 0000000000000100
@@ -1081,4 +1081,7 @@ txn: 0000000000000007          txo: 0000000000000000               flags: lk=0 t
 0000000000004198  80 0a 28 a2 80 0a 28 a2 80 3f ff d9              ..(...(..?..
 
 ** Freelist Info
-No freelist entries.
+First freelist entry = 5
+Iterating over freelist...(OK)
+Final freelist entry = 5
+Total freelist entries = 1
