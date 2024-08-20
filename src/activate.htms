@@ -27,7 +27,7 @@
       <input name="submit" class="button" id="submit" tabindex="3" value="@@login" type="submit"/>
    </td>
 </tr>
-<input type="hidden" name="username" value="@@user_id">
+<input type="hidden" name="username" value="@@username">
 </tbody>
 </table>
 </form>

@@ -15,9 +15,9 @@
      'requsername=' + escape( document.sign_up.username.value )
      + '&email=' + escape( document.sign_up.email.value )
      + '&accttype=' + document.sign_up.account_type.value, false );">
-       <label for="username">@@user_id<br/>
+       <label for="username">@@username<br/>
           <input type="text" name="username" tabindex="1"
-           id="username" size="20" maxlength="30" validate="reqd" value="@@user_id" />
+           id="username" size="20" maxlength="30" validate="reqd" value="@@username" />
        </label>
        <br/>
        <br/>
