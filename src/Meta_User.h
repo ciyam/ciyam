@@ -38,7 +38,7 @@ class META_USER_DECL_SPEC Meta_User : public class_base
       e_field_id_Password_Hash = 6,
       e_field_id_Permissions = 7,
       e_field_id_User_Hash = 8,
-      e_field_id_User_Id = 9,
+      e_field_id_Username = 9,
       e_field_id_Workgroup = 10
    };
 
@@ -69,8 +69,8 @@ class META_USER_DECL_SPEC Meta_User : public class_base
    const std::string& User_Hash( ) const;
    void User_Hash( const std::string& User_Hash );
 
-   const std::string& User_Id( ) const;
-   void User_Id( const std::string& User_Id );
+   const std::string& Username( ) const;
+   void Username( const std::string& Username );
 
    Meta_Workgroup& Workgroup( );
    const Meta_Workgroup& Workgroup( ) const;

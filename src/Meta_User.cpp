@@ -82,7 +82,7 @@ const char* const c_field_id_Password = "100103";
 const char* const c_field_id_Password_Hash = "100108";
 const char* const c_field_id_Permissions = "100106";
 const char* const c_field_id_User_Hash = "100107";
-const char* const c_field_id_User_Id = "100101";
+const char* const c_field_id_Username = "100101";
 const char* const c_field_id_Workgroup = "300100";
 
 const char* const c_field_name_Active = "Active";
@@ -93,7 +93,7 @@ const char* const c_field_name_Password = "Password";
 const char* const c_field_name_Password_Hash = "Password_Hash";
 const char* const c_field_name_Permissions = "Permissions";
 const char* const c_field_name_User_Hash = "User_Hash";
-const char* const c_field_name_User_Id = "User_Id";
+const char* const c_field_name_Username = "Username";
 const char* const c_field_name_Workgroup = "Workgroup";
 
 const char* const c_field_display_name_Active = "field_user_active";
@@ -104,7 +104,7 @@ const char* const c_field_display_name_Password = "field_user_password";
 const char* const c_field_display_name_Password_Hash = "field_user_password_hash";
 const char* const c_field_display_name_Permissions = "field_user_permissions";
 const char* const c_field_display_name_User_Hash = "field_user_user_hash";
-const char* const c_field_display_name_User_Id = "field_user_user_id";
+const char* const c_field_display_name_Username = "field_user_username";
 const char* const c_field_display_name_Workgroup = "field_user_workgroup";
 
 const int c_num_fields = 10;
@@ -133,7 +133,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Password_Hash",
    "Permissions",
    "User_Hash",
-   "User_Id",
+   "Username",
    "Workgroup"
 };
 
@@ -192,7 +192,7 @@ inline bool is_transient_field( const string& field )
 domain_string_max_size< 100 > g_Description_domain;
 domain_string_max_size< 200 > g_New_Password_domain;
 domain_string_max_size< 200 > g_Password_domain;
-domain_string_max_size< 30 > g_User_Id_domain;
+domain_string_max_size< 30 > g_Username_domain;
 
 string g_group_field_name( "Workgroup" );
 string g_level_field_name;
@@ -247,7 +247,7 @@ string g_default_Password = string( );
 string g_default_Password_Hash = string( );
 string g_default_Permissions = string( );
 string g_default_User_Hash = string( );
-string g_default_User_Id = string( );
+string g_default_Username = string( );
 string g_default_Workgroup = string( );
 
 // [<start anonymous>]
@@ -379,10 +379,10 @@ void Meta_User_command_functor::operator ( )( const string& command, const param
          string_getter< string >( cmd_handler.p_Meta_User->User_Hash( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_User_Id || field_name == c_field_name_User_Id )
+      if( !handled && field_name == c_field_id_Username || field_name == c_field_name_Username )
       {
          handled = true;
-         string_getter< string >( cmd_handler.p_Meta_User->User_Id( ), cmd_handler.retval );
+         string_getter< string >( cmd_handler.p_Meta_User->Username( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
@@ -459,11 +459,11 @@ void Meta_User_command_functor::operator ( )( const string& command, const param
           *cmd_handler.p_Meta_User, &Meta_User::User_Hash, field_value );
       }
 
-      if( !handled && field_name == c_field_id_User_Id || field_name == c_field_name_User_Id )
+      if( !handled && field_name == c_field_id_Username || field_name == c_field_name_Username )
       {
          handled = true;
          func_string_setter< Meta_User, string >(
-          *cmd_handler.p_Meta_User, &Meta_User::User_Id, field_value );
+          *cmd_handler.p_Meta_User, &Meta_User::Username, field_value );
       }
 
       if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
@@ -537,8 +537,8 @@ struct Meta_User::impl : public Meta_User_command_handler
    const string& impl_User_Hash( ) const { return lazy_fetch( p_obj ), v_User_Hash; }
    void impl_User_Hash( const string& User_Hash ) { sanity_check( User_Hash ); v_User_Hash = User_Hash; }
 
-   const string& impl_User_Id( ) const { return lazy_fetch( p_obj ), v_User_Id; }
-   void impl_User_Id( const string& User_Id ) { sanity_check( User_Id ); v_User_Id = User_Id; }
+   const string& impl_Username( ) const { return lazy_fetch( p_obj ), v_Username; }
+   void impl_Username( const string& Username ) { sanity_check( Username ); v_Username = Username; }
 
    Meta_Workgroup& impl_Workgroup( )
    {
@@ -638,7 +638,7 @@ struct Meta_User::impl : public Meta_User_command_handler
    string v_Password_Hash;
    string v_Permissions;
    string v_User_Hash;
-   string v_User_Id;
+   string v_Username;
 
    string v_Workgroup;
    mutable class_pointer< Meta_Workgroup > cp_Workgroup;
@@ -683,7 +683,7 @@ string Meta_User::impl::get_field_value( int field ) const
       break;
 
       case 8:
-      retval = to_string( impl_User_Id( ) );
+      retval = to_string( impl_Username( ) );
       break;
 
       case 9:
@@ -734,7 +734,7 @@ void Meta_User::impl::set_field_value( int field, const string& value )
       break;
 
       case 8:
-      func_string_setter< Meta_User::impl, string >( *this, &Meta_User::impl::impl_User_Id, value );
+      func_string_setter< Meta_User::impl, string >( *this, &Meta_User::impl::impl_Username, value );
       break;
 
       case 9:
@@ -783,7 +783,7 @@ void Meta_User::impl::set_field_default( int field )
       break;
 
       case 8:
-      impl_User_Id( g_default_User_Id );
+      impl_Username( g_default_Username );
       break;
 
       case 9:
@@ -834,7 +834,7 @@ bool Meta_User::impl::is_field_default( int field ) const
       break;
 
       case 8:
-      retval = ( v_User_Id == g_default_User_Id );
+      retval = ( v_Username == g_default_Username );
       break;
 
       case 9:
@@ -933,7 +933,7 @@ void Meta_User::impl::clear( )
    v_Password_Hash = g_default_Password_Hash;
    v_Permissions = g_default_Permissions;
    v_User_Hash = g_default_User_Hash;
-   v_User_Id = g_default_User_Id;
+   v_Username = g_default_Username;
 
    v_Workgroup = string( );
    if( cp_Workgroup )
@@ -972,10 +972,10 @@ void Meta_User::impl::validate(
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Password ) ) ) ) );
 
-   if( is_null( v_User_Id ) && !value_will_be_provided( c_field_name_User_Id ) )
-      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_User_Id,
+   if( is_null( v_Username ) && !value_will_be_provided( c_field_name_Username ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Username,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_User_Id ) ) ) ) );
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Username ) ) ) ) );
 
    if( !is_null( v_Description )
     && ( v_Description != g_default_Description
@@ -998,12 +998,12 @@ void Meta_User::impl::validate(
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Password,
        get_module_string( c_field_display_name_Password ) + " " + error_message ) );
 
-   if( !is_null( v_User_Id )
-    && ( v_User_Id != g_default_User_Id
-    || !value_will_be_provided( c_field_name_User_Id ) )
-    && !g_User_Id_domain.is_valid( v_User_Id, error_message = "" ) )
-      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_User_Id,
-       get_module_string( c_field_display_name_User_Id ) + " " + error_message ) );
+   if( !is_null( v_Username )
+    && ( v_Username != g_default_Username
+    || !value_will_be_provided( c_field_name_Username ) )
+    && !g_Username_domain.is_valid( v_Username, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Username,
+       get_module_string( c_field_display_name_Username ) + " " + error_message ) );
 
    // [<start validate>]
    // [<finish validate>]
@@ -1038,11 +1038,11 @@ void Meta_User::impl::validate_set_fields(
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Password,
        get_module_string( c_field_display_name_Password ) + " " + error_message ) );
 
-   if( !is_null( v_User_Id )
-    && ( fields_set.count( c_field_id_User_Id ) || fields_set.count( c_field_name_User_Id ) )
-    && !g_User_Id_domain.is_valid( v_User_Id, error_message = "" ) )
-      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_User_Id,
-       get_module_string( c_field_display_name_User_Id ) + " " + error_message ) );
+   if( !is_null( v_Username )
+    && ( fields_set.count( c_field_id_Username ) || fields_set.count( c_field_name_Username ) )
+    && !g_Username_domain.is_valid( v_Username, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Username,
+       get_module_string( c_field_display_name_Username ) + " " + error_message ) );
 }
 
 void Meta_User::impl::after_fetch( )
@@ -1122,7 +1122,7 @@ void Meta_User::impl::for_store( bool is_create, bool is_internal )
       get_obj( ).Password( get_obj( ).New_Password( ) );
 
    get_obj( ).Password_Hash( decrypt( get_obj( ).Password( ) ) );
-   get_obj( ).User_Hash( hash_sha256( get_obj( ).User_Id( ) + get_obj( ).Password_Hash( ) ) );
+   get_obj( ).User_Hash( hash_sha256( get_obj( ).Username( ) + get_obj( ).Password_Hash( ) ) );
    // [<finish for_store>]
 }
 
@@ -1313,14 +1313,14 @@ void Meta_User::User_Hash( const string& User_Hash )
    p_impl->impl_User_Hash( User_Hash );
 }
 
-const string& Meta_User::User_Id( ) const
+const string& Meta_User::Username( ) const
 {
-   return p_impl->impl_User_Id( );
+   return p_impl->impl_Username( );
 }
 
-void Meta_User::User_Id( const string& User_Id )
+void Meta_User::Username( const string& Username )
 {
-   p_impl->impl_User_Id( User_Id );
+   p_impl->impl_Username( Username );
 }
 
 Meta_Workgroup& Meta_User::Workgroup( )
@@ -1589,9 +1589,9 @@ const char* Meta_User::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
-   else if( name == c_field_name_User_Id )
+   else if( name == c_field_name_Username )
    {
-      p_id = c_field_id_User_Id;
+      p_id = c_field_id_Username;
 
       if( p_type_name )
          *p_type_name = "string";
@@ -1700,9 +1700,9 @@ const char* Meta_User::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
-   else if( id == c_field_id_User_Id )
+   else if( id == c_field_id_Username )
    {
-      p_name = c_field_name_User_Id;
+      p_name = c_field_name_Username;
 
       if( p_type_name )
          *p_type_name = "string";
@@ -1804,10 +1804,10 @@ string Meta_User::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_User_Hash );
       get_module_string( c_field_display_name_User_Hash, &next );
    }
-   else if( id_or_name == c_field_id_User_Id || id_or_name == c_field_name_User_Id )
+   else if( id_or_name == c_field_id_Username || id_or_name == c_field_name_Username )
    {
-      name = string( c_field_display_name_User_Id );
-      get_module_string( c_field_display_name_User_Id, &next );
+      name = string( c_field_display_name_Username );
+      get_module_string( c_field_display_name_Username, &next );
    }
    else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
    {
@@ -1845,8 +1845,8 @@ string Meta_User::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Permissions );
    else if( id_or_name == c_field_id_User_Hash || id_or_name == c_field_name_User_Hash )
       display_name = get_module_string( c_field_display_name_User_Hash );
-   else if( id_or_name == c_field_id_User_Id || id_or_name == c_field_name_User_Id )
-      display_name = get_module_string( c_field_display_name_User_Id );
+   else if( id_or_name == c_field_id_Username || id_or_name == c_field_name_Username )
+      display_name = get_module_string( c_field_display_name_Username );
    else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
       display_name = get_module_string( c_field_display_name_Workgroup );
 
@@ -2061,7 +2061,7 @@ void Meta_User::get_sql_column_names(
    names.push_back( "C_Password" );
    names.push_back( "C_Permissions" );
    names.push_back( "C_User_Hash" );
-   names.push_back( "C_User_Id" );
+   names.push_back( "C_Username" );
    names.push_back( "C_Workgroup" );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -2080,7 +2080,7 @@ void Meta_User::get_sql_column_values(
    values.push_back( sql_quote( to_string( Password( ) ) ) );
    values.push_back( sql_quote( to_string( Permissions( ) ) ) );
    values.push_back( sql_quote( to_string( User_Hash( ) ) ) );
-   values.push_back( sql_quote( to_string( User_Id( ) ) ) );
+   values.push_back( sql_quote( to_string( Username( ) ) ) );
    values.push_back( sql_quote( to_string( Workgroup( ) ) ) );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -2170,7 +2170,7 @@ void Meta_User::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "100108", "Password_Hash", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "100106", "Permissions", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "100107", "User_Hash", "string", false, "", "" ) );
-   all_field_info.push_back( field_info( "100101", "User_Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "100101", "Username", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "300100", "Workgroup", "Meta_Workgroup", false, "", "" ) );
 }
 
@@ -2291,7 +2291,7 @@ const char* Meta_User::static_get_field_name( field_id id )
       break;
 
       case 9:
-      p_id = "User_Id";
+      p_id = "Username";
       break;
 
       case 10:
@@ -2327,7 +2327,7 @@ int Meta_User::static_get_field_num( const string& field )
       rc += 7;
    else if( field == c_field_id_User_Hash || field == c_field_name_User_Hash )
       rc += 8;
-   else if( field == c_field_id_User_Id || field == c_field_name_User_Id )
+   else if( field == c_field_id_Username || field == c_field_name_Username )
       rc += 9;
    else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
       rc += 10;
@@ -2358,7 +2358,7 @@ string Meta_User::static_get_sql_columns( )
     "C_Password VARCHAR(200) NOT NULL,"
     "C_Permissions VARCHAR(200) NOT NULL,"
     "C_User_Hash VARCHAR(200) NOT NULL,"
-    "C_User_Id VARCHAR(200) NOT NULL,"
+    "C_Username VARCHAR(200) NOT NULL,"
     "C_Workgroup VARCHAR(75) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
@@ -2378,45 +2378,45 @@ void Meta_User::static_get_all_enum_pairs( vector< pair< string, string > >& pai
 void Meta_User::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
 {
    pairs.push_back( make_pair( "Active,Description,@pk", "bool,string,string" ) );
-   pairs.push_back( make_pair( "Active,User_Id", "bool,string" ) );
+   pairs.push_back( make_pair( "Active,Username", "bool,string" ) );
    pairs.push_back( make_pair( "Description,@pk", "string,string" ) );
    pairs.push_back( make_pair( "User_Hash", "string" ) );
-   pairs.push_back( make_pair( "User_Id", "string" ) );
+   pairs.push_back( make_pair( "Username", "string" ) );
    pairs.push_back( make_pair( "Workgroup,Active,Description,@pk", "string,bool,string,string" ) );
-   pairs.push_back( make_pair( "Workgroup,Active,User_Id", "string,bool,string" ) );
+   pairs.push_back( make_pair( "Workgroup,Active,Username", "string,bool,string" ) );
    pairs.push_back( make_pair( "Workgroup,Description,@pk", "string,string,string" ) );
-   pairs.push_back( make_pair( "Workgroup,User_Id", "string,string" ) );
+   pairs.push_back( make_pair( "Workgroup,Username", "string,string" ) );
 }
 
 void Meta_User::static_get_all_unique_indexes( vector< string >& unique_indexes )
 {
-   unique_indexes.push_back( "Active,User_Id" );
+   unique_indexes.push_back( "Active,Username" );
    unique_indexes.push_back( "User_Hash" );
-   unique_indexes.push_back( "User_Id" );
-   unique_indexes.push_back( "Workgroup,Active,User_Id" );
-   unique_indexes.push_back( "Workgroup,User_Id" );
+   unique_indexes.push_back( "Username" );
+   unique_indexes.push_back( "Workgroup,Active,Username" );
+   unique_indexes.push_back( "Workgroup,Username" );
 }
 
 void Meta_User::static_get_sql_indexes( vector< string >& indexes )
 {
    indexes.push_back( "C_Active,C_Description,C_Key_" );
-   indexes.push_back( "C_Active,C_User_Id" );
+   indexes.push_back( "C_Active,C_Username" );
    indexes.push_back( "C_Description,C_Key_" );
    indexes.push_back( "C_User_Hash" );
-   indexes.push_back( "C_User_Id" );
+   indexes.push_back( "C_Username" );
    indexes.push_back( "C_Workgroup,C_Active,C_Description,C_Key_" );
-   indexes.push_back( "C_Workgroup,C_Active,C_User_Id" );
+   indexes.push_back( "C_Workgroup,C_Active,C_Username" );
    indexes.push_back( "C_Workgroup,C_Description,C_Key_" );
-   indexes.push_back( "C_Workgroup,C_User_Id" );
+   indexes.push_back( "C_Workgroup,C_Username" );
 }
 
 void Meta_User::static_get_sql_unique_indexes( vector< string >& indexes )
 {
-   indexes.push_back( "C_Active,C_User_Id" );
+   indexes.push_back( "C_Active,C_Username" );
    indexes.push_back( "C_User_Hash" );
-   indexes.push_back( "C_User_Id" );
-   indexes.push_back( "C_Workgroup,C_Active,C_User_Id" );
-   indexes.push_back( "C_Workgroup,C_User_Id" );
+   indexes.push_back( "C_Username" );
+   indexes.push_back( "C_Workgroup,C_Active,C_Username" );
+   indexes.push_back( "C_Workgroup,C_Username" );
 }
 
 void Meta_User::static_insert_derivation( const string& module_and_class_id )

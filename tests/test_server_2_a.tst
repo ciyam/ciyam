@@ -64,7 +64,7 @@ module_class_field_list Meta User
 100108 Password_Hash string normal
 100106 Permissions string normal
 100107 User_Hash string normal
-100101 User_Id string normal
+100101 Username string normal
 300100 Workgroup 101100:Meta_Workgroup normal
 module_class_field_list Meta Workgroup
 101102 Id string normal

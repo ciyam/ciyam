@@ -72,7 +72,7 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
       e_field_id_Ignore_State_For_Display = 26,
       e_field_id_Ignore_Unactionable_Records = 27,
       e_field_id_Ignore_Uneditable_Parent = 28,
-      e_field_id_Ignore_User_Id_Filter = 29,
+      e_field_id_Ignore_Username_Filter = 29,
       e_field_id_Is_Admin = 30,
       e_field_id_Is_Child = 31,
       e_field_id_Is_Home = 32,
@@ -164,8 +164,8 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
    bool Ignore_Uneditable_Parent( ) const;
    void Ignore_Uneditable_Parent( bool Ignore_Uneditable_Parent );
 
-   bool Ignore_User_Id_Filter( ) const;
-   void Ignore_User_Id_Filter( bool Ignore_User_Id_Filter );
+   bool Ignore_Username_Filter( ) const;
+   void Ignore_Username_Filter( bool Ignore_Username_Filter );
 
    bool Is_Admin( ) const;
    void Is_Admin( bool Is_Admin );
