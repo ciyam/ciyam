@@ -2201,7 +2201,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             if( pos != string::npos )
                str_replace( password_html, c_checked, p_session_info->is_persistent ? "checked" : "" );
 
-            str_replace( password_html, c_user_id, p_session_info->user_id );
+            str_replace( password_html, c_username, p_session_info->user_id );
 
             extra_content << password_html;
          }
@@ -2396,8 +2396,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   string gpg_message( buffer_file( "join.txt" ) );
 
                   str_replace( gpg_message, c_app_name, get_app_name( ) );
-                  str_replace( gpg_message, c_user_id, req_username );
                   str_replace( gpg_message, c_password, password );
+                  str_replace( gpg_message, c_username, req_username );
 
                   write_file( key, gpg_message );
 
@@ -2600,9 +2600,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          {
             string signup_html( !is_ssl ? g_signup_html : g_ssl_signup_html );
 
+            str_replace( signup_html, c_username, oreq_username );
             str_replace( signup_html, c_error_message, error_message );
-
-            str_replace( signup_html, c_user_id, oreq_username );
 
             if( is_ssl )
             {

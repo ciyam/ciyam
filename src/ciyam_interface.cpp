@@ -1281,7 +1281,7 @@ void request_handler::process_request( )
                      throw runtime_error( GDS( c_display_invalid_url ) );
 
                   string activate_html( g_activate_html );
-                  str_replace( activate_html, c_user_id, user );
+                  str_replace( activate_html, c_username, user );
 
                   string message( "<p><b>"
                    + string_message( GDS( c_display_provide_password_to_activate ),
@@ -3386,8 +3386,8 @@ int main( int argc, char* argv[ ] )
          g_id = get_id_from_server_identity( buffer_file( c_id_file ).c_str( ) );
 
       str_replace( g_login_html, c_login, GDS( c_display_login ) );
-      str_replace( g_login_html, c_user_id, GDS( c_display_user_id ) );
       str_replace( g_login_html, c_password, GDS( c_display_password ) );
+      str_replace( g_login_html, c_username, GDS( c_display_username ) );
 
       str_replace( g_openup_html, c_user_name, GDS( c_display_user_name ) );
       str_replace( g_openup_html, c_account_type, GDS( c_display_account_type ) );
@@ -3401,7 +3401,7 @@ int main( int argc, char* argv[ ] )
       str_replace( g_unlock_html, c_continue, GDS( c_display_continue ) );
       str_replace( g_unlock_html, c_unlock_message, GDS( c_display_unlock_message ) );
 
-      str_replace( g_signup_html, c_user_id, GDS( c_display_user_id ) );
+      str_replace( g_signup_html, c_username, GDS( c_display_username ) );
       str_replace( g_signup_html, c_account_type, GDS( c_display_account_type ) );
       str_replace( g_signup_html, c_send_request, GDS( c_display_send_request ) );
       str_replace( g_signup_html, c_account_type_0, GDS( c_display_account_type_0 ) );
@@ -3424,8 +3424,8 @@ int main( int argc, char* argv[ ] )
       str_replace( g_password_html, c_verify_new_password, GDS( c_display_verify_new_password ) );
 
       str_replace( g_ssl_signup_html, c_email, GDS( c_display_email ) );
-      str_replace( g_ssl_signup_html, c_user_id, GDS( c_display_user_id ) );
       str_replace( g_ssl_signup_html, c_password, GDS( c_display_password ) );
+      str_replace( g_ssl_signup_html, c_username, GDS( c_display_username ) );
       str_replace( g_ssl_signup_html, c_verify_password, GDS( c_display_verify_password ) );
       str_replace( g_ssl_signup_html, c_account_type, GDS( c_display_account_type ) );
       str_replace( g_ssl_signup_html, c_send_request, GDS( c_display_send_request ) );
@@ -3453,8 +3453,8 @@ int main( int argc, char* argv[ ] )
          g_login_persistent_html = buffer_file( c_login_persistent_htms );
 
          str_replace( g_login_persistent_html, c_login, GDS( c_display_login ) );
-         str_replace( g_login_persistent_html, c_user_id, GDS( c_display_user_id ) );
          str_replace( g_login_persistent_html, c_password, GDS( c_display_password ) );
+         str_replace( g_login_persistent_html, c_username, GDS( c_display_username ) );
          str_replace( g_login_persistent_html, c_persistent, GDS( c_display_automatic_login ) );
       }
 

@@ -3,7 +3,7 @@
 Welcome to CIYAM @@app_name
 ---------------------------------------------------------------------------
 
-User Id: @@user_id
+User Id: @@username
 
 Password: @@password
 

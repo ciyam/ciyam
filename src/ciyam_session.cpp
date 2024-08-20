@@ -2635,10 +2635,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string args( get_parm_val( parameters, c_cmd_ciyam_session_object_execute_args ) );
 
          string method_and_args( method );
+
          if( !args.empty( ) )
             method_and_args += ' ' + args;
 
-         response = execute_object_command( atoi( handle.c_str( ) ), context, method_and_args );
+         try
+         {
+            response = execute_object_command( atoi( handle.c_str( ) ), context, method_and_args );
+         }
+         catch( ... )
+         {
+            possibly_expected_error = true;
+            throw;
+         }
       }
       else if( command == c_cmd_ciyam_session_object_op_apply )
       {
@@ -2671,6 +2680,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string new_value( get_parm_val( parameters, c_cmd_ciyam_session_object_variable_new_value ) );
 
          possibly_expected_error = true;
+
          if( has_new_val )
          {
             check_not_possible_protocol_response( new_value );

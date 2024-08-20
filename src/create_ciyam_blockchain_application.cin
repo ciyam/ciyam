@@ -218,6 +218,152 @@ BLOG_OPTION_KEY=$OUTPUT
 .pc $CIYAM_UID @now 100 127100 " " "127101=$CIYAM_MODEL,302220=$CIYAM_GRP,127137=0"
 @endif
 ;
+.pf 100 106100 -q=106101=User "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Class for 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+USER_CLASS_KEY=$OUTPUT
+;
+.pf 100 129100 -q=129101=Awarder "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Initial_Record for 'Awarder'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+INITIAL_RECORD_AWARDER_KEY=$OUTPUT
+;
+.pf 100 129100 -q=129101=Creator "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Initial_Record for 'Creator'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+INITIAL_RECORD_CREATOR_KEY=$OUTPUT
+;
+.pf 100 103100 -q=103101=User_Access "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Enum 'User_Access'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+USER_ACCESS_ENUM_KEY=$OUTPUT
+;
+.pf 100 104100 -q=300400=$USER_ACCESS_ENUM_KEY,104101=Guided "" Value -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Enum Item 'Guided' for Enum 'User_Access'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+USER_ACCESS_GUIDED_VALUE=$OUTPUT
+;
+.pf 100 104100 -q=300400=$USER_ACCESS_ENUM_KEY,104101=Restricted "" Value -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Enum Item 'Restricted' for Enum 'User_Access'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+USER_ACCESS_RESTRICTED_VALUE=$OUTPUT
+;
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Access "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Access' for Class 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+ACCESS_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_AWARDER_KEY%_%ACCESS_KEY% 130101=$USER_ACCESS_RESTRICTED_VALUE
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_CREATOR_KEY%_%ACCESS_KEY% 130101=$USER_ACCESS_GUIDED_VALUE
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Change_Default_Group "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Can_Change_Default_Group' for Class 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+CAN_CHANGE_DEFAULT_GROUP_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_AWARDER_KEY%_%CAN_CHANGE_DEFAULT_GROUP_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Maintain_Blogs "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Can_Maintain_Blogs' for Class 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+CAN_MAINTAIN_BLOGS_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_AWARDER_KEY%_%CAN_MAINTAIN_BLOGS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_CREATOR_KEY%_%CAN_MAINTAIN_BLOGS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Submit_Blogs "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Can_Submit_Blogs' for Class 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+CAN_SUBMIT_BLOGS_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_AWARDER_KEY%_%CAN_SUBMIT_BLOGS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
 @label END
 @skip
 ;
