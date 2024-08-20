@@ -16,7 +16,7 @@ STORAGE=$1
 .session_variable @deque commence
 ;
 .session_variable @single_string_response 1
-.pf $STORAGE User "Active 1" User_Id -min
+.pf $STORAGE User "Template,Active,Username#2 0,1" Username -min
 @ifndef $ERROR
 .session_variable @deque "~$OUTPUT"
 ;

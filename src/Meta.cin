@@ -123,7 +123,7 @@ user_defined_type_add -id=1051 mid_identifier str50 "format identifier"
 user_defined_type_add -id=1055 long_identifier str100 "format identifier"
 user_defined_type_add -id=1060 year_created int "range 2005 2055"
 class_add -id=100100 User Users
-field_add -id=100101 User User_Id str30 mand -x=hpassword_salt
+field_add -id=100101 User Username str30 mand -x=hpassword_salt
 field_add -id=100102 User Active bool mand -def=1
 field_add -id=100103 User Password str200 mand -x=hpassword+encrypted
 field_add -id=100104 User Description str100 mand
@@ -133,8 +133,8 @@ field_add -id=100107 User User_Hash string opt
 field_add -id=100108 User Password_Hash string opt -transient
 field_add -id=100109 User New_Password str200 opt -transient -x=hpassword+encrypted
 index_add -id=100201 User User_Hash unique
-index_add -id=100202 User User_Id unique
-index_add -id=100203 User Active,User_Id unique
+index_add -id=100202 User Username unique
+index_add -id=100203 User Active,Username unique
 index_add -id=100204 User Description
 index_add -id=100205 User Active,Description
 class_add -id=101100 Workgroup Workgroups
@@ -647,7 +647,7 @@ field_add -id=122120 List Ignore_Unactionable_Records bool mand -def=0
 field_add -id=122121 List Is_Home bool mand -def=0
 field_add -id=122122 List Sort_Rows_In_UI bool mand -def=0
 field_add -id=122123 List Print_Restriction int mand -def=0 -e=list_print_restrict
-field_add -id=122124 List Ignore_User_Id_Filter bool mand -def=0
+field_add -id=122124 List Ignore_Username_Filter bool mand -def=0
 field_add -id=122135 List Ignore_Implicit_Ordering bool mand -def=0
 field_add -id=122136 List PDF_List_Type int mand -def=0 -e=list_pdf_list_type
 field_add -id=122137 List PDF_Font_Type int mand -def=0 -e=pdf_font_type
@@ -1123,8 +1123,8 @@ relationship_add -id=202832 -fid=302832 Package_Option {Modifier} Modifier opt u
 relationship_add -id=202833 -fid=302833 Package_Option {Procedure} Procedure opt unlink
 relationship_add -id=202835 -fid=302835 Workgroup Standard_Package Package opt unlink
 relationship_add -id=202840 -fid=302840 Application_Script {Package_Type} Package_Type mand destroy
-index_add -id=400100 User {Workgroup},User_Id unique
-index_add -id=400101 User {Workgroup},Active,User_Id unique
+index_add -id=400100 User {Workgroup},Username unique
+index_add -id=400101 User {Workgroup},Active,Username unique
 index_add -id=400102 User {Workgroup},Description
 index_add -id=400103 User {Workgroup},Active,Description
 index_add -id=400200 Type {Workgroup},Name unique
@@ -1301,7 +1301,7 @@ modifier_add -id=500826 List Anonymous_Disallowed Allow_Anonymous_Access:relegat
 modifier_add -id=500830 List Is_Home Style:relegate,Limit_Scroll_And_New:relegate\
 ,Is_Variation:relegate,Allow_Text_Search:relegate,Print_Without_Highlight:relegate,Multiline_Truncate_For_Print:relegate\
 ,PDF_List_Type:relegate,PDF_Font_Type:relegate,Number_Multiple_Pages:relegate\
-,Ignore_User_Id_Filter:relegate,Ignore_Implicit_Ordering:relegate,Display_Security_Level:relegate\
+,Ignore_Username_Filter:relegate,Ignore_Implicit_Ordering:relegate,Display_Security_Level:relegate\
 ,Ignore_Uneditable_Parent:relegate,Ignore_State_For_Display:relegate,Ignore_Unactionable_Records:relegate\
 ,File_Links_Always_As_Single:relegate,Create_Only_If_Default_Other:relegate\
 ,Destroy_Only_If_Default_Other:relegate,Display_Only_If_Default_Other:relegate,Create_Restriction:relegate,Create_{Permission}:relegate\
@@ -2086,10 +2086,10 @@ specification_add -id=600098h {Global_Peerchain_Entry}_Is_Connecting_protect sta
 specification_add -id=600098i {Global_Peerchain_Entry}_Is_Disconnecting_protect state_protect "equal Global_Peerchain_Entry Status 4 -changing"
 specification_add -id=600098j {Global_Peerchain_Entry}_Not_Is_Halted modifier_field_value "Global_Peerchain_Entry Not_Is_Halted Status 0 -not_equal"
 specification_add -id=600098k {Global_Peerchain_Entry}_Not_Is_Halted_protect state_protect "not_equal Global_Peerchain_Entry Status 0 -scope=delete"
-specification_add -id=600999 user_info user_info "User User_Id Password User_Hash -group={Workgroup} -active=Active -perm=Permissions"
-specification_add -id=601000 {User}_list list "* admin:no_erase User User_Id,Description,{Workgroup}:Name,Active Active,checked:1"
-specification_add -id=601010 {User}_child_list0 list "@601010_* child:no_erase User User_Id,Description,Active {Workgroup} Active,checked:1"
-specification_add -id=601020 {User}_view view "? admin User User_Id,Active,Password;new_only,New_Password;non_new+admin_only,Description,Email,{Workgroup}:Name"
+specification_add -id=600999 user_info user_info "User Username Password User_Hash -group={Workgroup} -active=Active -perm=Permissions"
+specification_add -id=601000 {User}_list list "* admin:no_erase User Username,Description,{Workgroup}:Name,Active Active,checked:1"
+specification_add -id=601010 {User}_child_list0 list "@601010_* child:no_erase User Username,Description,Active {Workgroup} Active,checked:1"
+specification_add -id=601020 {User}_view view "? admin User Username,Active,Password;new_only,New_Password;non_new+admin_only,Description,Email,{Workgroup}:Name"
 specification_add -id=601100 {Workgroup}_list list "* admin Workgroup Name,Id"
 specification_add -id=601110 {Workgroup}_view view "? admin Workgroup Name,Id;no_edit+non_new\
 ,Next_Type_Id;no_edit+non_new,Next_Enum_Id;no_edit+non_new,Next_Model_Id;no_edit+non_new,Next_Permission_Id;no_edit+non_new"
@@ -2265,7 +2265,7 @@ specification_add -id=602800 {List}_view view "? standard List {Model}:Name;no_e
 ,Limit_Scroll_And_New,Is_Variation,Display_Totals,Display_Sub_Totals,Allow_Text_Search;force,Text_Match_Highlight\
 ,Print_Without_Highlight,Multiline_Truncate_For_Print,PDF_List_Type;force,PDF_Font_Type,Number_Multiple_Pages\
 ,@tab:Advanced_UI_Options\
-,Ignore_User_Id_Filter,Ignore_Implicit_Ordering,Ignore_Uneditable_Parent,Ignore_State_For_Display,Ignore_Unactionable_Records\
+,Ignore_Username_Filter,Ignore_Implicit_Ordering,Ignore_Uneditable_Parent,Ignore_State_For_Display,Ignore_Unactionable_Records\
 ,Display_Security_Level,File_Links_Always_As_Single,Create_Only_If_Default_Other,Display_Only_If_Default_Other,Destroy_Only_If_Default_Other"
 specification_add -id=602810 {List}_child_list0 list "@602810_* child:sort_no_limit List Name,Access_Restriction,Access_{Permission}:Name {Model}"
 specification_add -id=602850 {List_Field}_view view "? standard List_Field {List}:Name;no_edit+link\

@@ -8,14 +8,14 @@ Error: Password must not be empty.
 object_execute 1 set "Password \"Test Password\""
 okay
 object_validate 1
-Error: User Id must not be empty.
-object_execute 1 set "User_Id \"Test User_Id\""
+Error: Username must not be empty.
+object_execute 1 set "Username \"Test Username\""
 okay
 object_validate 1
 object_execute 1 get Description
 Test Description
-object_execute 1 get User_Id
-Test User_Id
+object_execute 1 get Username
+Test Username
 object_execute 1 get Password
 Test Password
 object_variable 1 test1 "first value"

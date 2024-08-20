@@ -4,10 +4,10 @@ object_execute 1 set "Description \"Test Description\""
 object_validate 1
 object_execute 1 set "Password \"Test Password\""
 object_validate 1
-object_execute 1 set "User_Id \"Test User_Id\""
+object_execute 1 set "Username \"Test Username\""
 object_validate 1
 object_execute 1 get Description
-object_execute 1 get User_Id
+object_execute 1 get Username
 object_execute 1 get Password
 object_variable 1 test1 "first value"
 object_variable 1 test2 "second value"

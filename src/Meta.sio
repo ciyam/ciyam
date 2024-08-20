@@ -7221,7 +7221,7 @@
      </field>
      <field/>
       <id>122124
-      <name>Ignore_User_Id_Filter
+      <name>Ignore_Username_Filter
       <type>bool
       <mandatory>true
       <default_value>0
@@ -26521,7 +26521,7 @@
      </field>
      <field/>
       <id>100101
-      <name>User_Id
+      <name>Username
       <type>1010
       <mandatory>true
       <extra>hpassword_salt
@@ -26616,7 +26616,7 @@
      </index>
      <index/>
       <id>100203
-      <name>[Active],[User_Id]
+      <name>[Active],[Username]
       <unique>true
      </index>
      <index/>
@@ -26631,7 +26631,7 @@
      </index>
      <index/>
       <id>100202
-      <name>[User_Id]
+      <name>[Username]
       <unique>true
      </index>
      <index/>
@@ -26641,7 +26641,7 @@
      </index>
      <index/>
       <id>400101
-      <name>[{Workgroup}],[Active],[User_Id]
+      <name>[{Workgroup}],[Active],[Username]
       <unique>true
      </index>
      <index/>
@@ -26651,7 +26651,7 @@
      </index>
      <index/>
       <id>400100
-      <name>[{Workgroup}],[User_Id]
+      <name>[{Workgroup}],[Username]
       <unique>true
      </index>
     </indexes>

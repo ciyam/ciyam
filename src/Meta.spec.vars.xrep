@@ -2048,7 +2048,7 @@
 `{`$specification_List_view_ftype040`=`'bool`'`}
 `{`$specification_List_view_extra040`=`'`'`}
 `{`$specification_List_view_fmods040`=`'1000:relegate`'`}
-`{`$specification_List_view_fname040`=`'field_list_ignore_user_id_filter`'`}
+`{`$specification_List_view_fname040`=`'field_list_ignore_username_filter`'`}
 `{`$specification_List_view_fmand040`=`'true`'`}
 `{`$specification_List_view_field041`=`'122135`'`}
 `{`$specification_List_view_ftype041`=`'bool`'`}
@@ -5912,7 +5912,7 @@
 `{`$specification_User_list_rfxtra0`=`'`'`}
 `{`$specification_User_list_rfldops0`=`'checked:1`'`}
 `{`$specification_User_list_column00`=`'100101`'`}
-`{`$specification_User_list_clname00`=`'User_User_Id`'`}
+`{`$specification_User_list_clname00`=`'User_Username`'`}
 `{`$specification_User_list_cltype00`=`'string`'`}
 `{`$specification_User_list_clxtra00`=`'hpassword_salt+max_size=30`'`}
 `{`$specification_User_list_clmods00`=`'`'`}
@@ -5964,7 +5964,7 @@
 `{`$specification_User_child_list0_rfxtra0`=`'`'`}
 `{`$specification_User_child_list0_rfldops0`=`'checked:1`'`}
 `{`$specification_User_child_list0_column00`=`'100101`'`}
-`{`$specification_User_child_list0_clname00`=`'User_User_Id`'`}
+`{`$specification_User_child_list0_clname00`=`'User_Username`'`}
 `{`$specification_User_child_list0_cltype00`=`'string`'`}
 `{`$specification_User_child_list0_clxtra00`=`'hpassword_salt+max_size=30`'`}
 `{`$specification_User_child_list0_clmods00`=`'`'`}
@@ -5997,7 +5997,7 @@
 `{`$specification_User_view_ftype000`=`'string`'`}
 `{`$specification_User_view_extra000`=`'hpassword_salt+max_size=30`'`}
 `{`$specification_User_view_fmods000`=`'`'`}
-`{`$specification_User_view_fname000`=`'field_user_user_id`'`}
+`{`$specification_User_view_fname000`=`'field_user_username`'`}
 `{`$specification_User_view_fmand000`=`'true`'`}
 `{`$specification_User_view_field001`=`'100102`'`}
 `{`$specification_User_view_ftype001`=`'bool`'`}

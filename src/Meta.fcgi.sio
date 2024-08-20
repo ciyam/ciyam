@@ -4395,7 +4395,7 @@
      <modifiers>
     </field>
     <field/>
-     <name>field_list_ignore_user_id_filter
+     <name>field_list_ignore_username_filter
      <field>122124
      <ftype>bool
      <extra>
@@ -8004,7 +8004,7 @@
    <module>Meta
    <fields/>
     <field/>
-     <name>field_user_user_id
+     <name>field_user_username
      <field>100101
      <ftype>string
      <extra>hpassword_salt+max_size=30
@@ -10414,7 +10414,7 @@
    <module>Meta
    <columns/>
     <column/>
-     <name>field_user_user_id
+     <name>field_user_username
      <field>100101
      <ftype>string
      <extra>hpassword_salt+max_size=30
@@ -10484,7 +10484,7 @@
    <module>Meta
    <columns/>
     <column/>
-     <name>field_user_user_id
+     <name>field_user_username
      <field>100101
      <ftype>string
      <extra>hpassword_salt+max_size=30
