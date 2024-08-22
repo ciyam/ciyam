@@ -229,16 +229,16 @@ ERROR=Unable to locate Class for 'User'.
 ;
 USER_CLASS_KEY=$OUTPUT
 ;
-.pf 100 129100 -q=129101=Awarder "" @key -min
+.pf 100 129100 -q=129101=Adopter "" @key -min
 @ifndef $OUTPUT
-ERROR=Unable to locate Initial_Record for 'Awarder'.
+ERROR=Unable to locate Initial_Record for 'Adopter'.
 @endif
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
 ;
-INITIAL_RECORD_AWARDER_KEY=$OUTPUT
+INITIAL_RECORD_ADOPTER_KEY=$OUTPUT
 ;
 .pf 100 129100 -q=129101=Creator "" @key -min
 @ifndef $OUTPUT
@@ -295,7 +295,7 @@ ERROR=Unable to locate Field 'Access' for Class 'User'.
 ;
 ACCESS_KEY=$OUTPUT
 ;
-.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_AWARDER_KEY%_%ACCESS_KEY% 130101=$USER_ACCESS_RESTRICTED_VALUE
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%ACCESS_KEY% 130101=$USER_ACCESS_RESTRICTED_VALUE
 @ifdef $ERROR
 @label ERROR
 @endif
@@ -318,7 +318,7 @@ ERROR=Unable to locate Field 'Can_Change_Default_Group' for Class 'User'.
 ;
 CAN_CHANGE_DEFAULT_GROUP_KEY=$OUTPUT
 ;
-.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_AWARDER_KEY%_%CAN_CHANGE_DEFAULT_GROUP_KEY% 130101=1
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_CHANGE_DEFAULT_GROUP_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
@@ -335,7 +335,7 @@ ERROR=Unable to locate Field 'Can_Maintain_Blogs' for Class 'User'.
 ;
 CAN_MAINTAIN_BLOGS_KEY=$OUTPUT
 ;
-.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_AWARDER_KEY%_%CAN_MAINTAIN_BLOGS_KEY% 130101=1
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MAINTAIN_BLOGS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
@@ -358,7 +358,7 @@ ERROR=Unable to locate Field 'Can_Submit_Blogs' for Class 'User'.
 ;
 CAN_SUBMIT_BLOGS_KEY=$OUTPUT
 ;
-.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_AWARDER_KEY%_%CAN_SUBMIT_BLOGS_KEY% 130101=1
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_SUBMIT_BLOGS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
