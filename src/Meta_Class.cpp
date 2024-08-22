@@ -3650,12 +3650,14 @@ void Meta_Class::impl::impl_Generate( )
             string specification_object( get_obj( ).child_Specification( ).Specification_Type( ).Specification_Object( ) );
 
             string gen_xrep, gen_extra;
+
             bool is_gen_script_object = false;
             bool is_gen_script_object_only = false;
 
             if( specification_object == "gen_script"
              || specification_object == "gen_ext_script"
-             || specification_object == "field_from_script" )
+             || specification_object == "field_from_script"
+             || specification_object == "gen_script_vars_list" )
             {
 #ifdef _WIN32
                gen_xrep = "xrep ";
@@ -3678,6 +3680,9 @@ void Meta_Class::impl::impl_Generate( )
 
                if( specification_object != "field_from_script" )
                   is_gen_script_object_only = true;
+
+               if( specification_object == "gen_script_vars_list" )
+                  gen_extra = '.' + get_obj( ).Model( ).Name( ) + ".vars.lst";
             }
 
             if( !is_gen_script_object_only )
