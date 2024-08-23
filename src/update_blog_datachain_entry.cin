@@ -28,13 +28,13 @@ DESCRIPTION=$3
 @ifndef $ERROR
 .storage_init $STORAGE
 ;
-; NOTE: Touch the <identity>.log file for every active Peer Node.
+; NOTE: Touch the <identity>.log file for every active channel.
 .module_list
 MODULES=$OUTPUT
 MODULES=@repstr: /\n:$MODULES
 MODULE=%MODULES:2%
 ;
-<touch_peer_node_log_files.cin $MODULE
+<touch_channel_log_files.cin $MODULE
 ;
 .storage_term
 @endif

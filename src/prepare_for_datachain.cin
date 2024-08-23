@@ -28,6 +28,13 @@ DATA_LOG_FILE=@files::$IDENTITY.log
 .storage_init $STORAGE
 @ifndef $ERROR
 ;
+.module_list
+MODULES=$OUTPUT
+MODULES=@repstr: /\n:$MODULES
+MODULE=%MODULES:2%
+;
+<channel_information.$MODULE.vars.lst
+;
 <generate_next_block.cin $IDENTITY dummy $IDENTITY.tree
 ;
 @ifndef $ERROR
@@ -36,7 +43,7 @@ DATA_LOG_FILE=@files::$IDENTITY.log
 .storage_peer_data_details $IDENTITY -height=$OUTPUT
 ~rm $IDENTITY.log
 ;
-.pf $STORAGE Peer_Node "Active#1 1" Identity,Host_Name,Port_Number -min
+.pf $STORAGE $CLASS_NAME "$FLD_ACTIVE#1 1" $FLD_IDENTITY,$FLD_HOST_NAME,$FLD_PORT_NUMBER -min
 @ifndef $ERROR
 ;
 ROWS=$OUTPUT
