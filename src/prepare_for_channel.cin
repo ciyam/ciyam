@@ -38,9 +38,12 @@ MODULE=%LINES:2%
 ;
 .perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.user_info.csv -f=$FLD_PEER_NODE=$IDENTITY,$FLD_LOCAL=1,$FLD_NAME -export=@key,$FLD_ACTIVE,$FLD_NAME
 ;
-.module_class_list $MODULE -p=Blog
-@ifdef $OUTPUT
-.perform_bulk_ops admin @now $MODULE Blog $IDENTITY.blog_info.csv -export=Identity,Description
+BLOG_INFO_FILE=@files::blog_information.$MODULE.vars.lst
+;
+@ifdef BLOG_INFO_FILE
+<blog_information.$MODULE.vars.lst
+;
+.perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.blog_info.csv -export=$FLD_IDENTITY,$FLD_DESCRIPTION
 @endif
 ;
 .storage_channel_documents -prepare_for_submit $IDENTITY

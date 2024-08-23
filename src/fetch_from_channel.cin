@@ -183,14 +183,8 @@ USER_FLD_LOCAL=$FLD_LOCAL
 USER_FLD_USER=$FLD_USER
 USER_FLD_PEER_NODE=$FLD_PEER_NODE
 ;
-.module_class_list $MODULE -p=Blog
-@ifdef $OUTPUT
-HAS_BLOG_CLASS=1
 @endif
 ;
-@endif
-;
-@ifdef $HAS_BLOG_CLASS
 BLOG_INFO_FILE=@files::$IN_REVERSE.blog_info.csv
 @ifdef $BLOG_INFO_FILE
 .session_variable @key_suffix $IDENTITY
@@ -198,7 +192,6 @@ BLOG_INFO_FILE=@files::$IN_REVERSE.blog_info.csv
 .perform_bulk_ops admin @now $MODULE $LINK_CLASS_NAME $IN_REVERSE.blog_info.csv -f=$LINK_FLD_PEER_NODE=$IDENTITY,$LINK_FLD_DATA_TYPE=0
 ~rm $IN_REVERSE.blog_info.csv
 ~rm $IN_REVERSE.blog_info.log
-@endif
 @endif
 ;
 USER_INFO_FILE=@files::$IN_REVERSE.user_info.csv
