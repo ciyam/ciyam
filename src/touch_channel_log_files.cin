@@ -9,13 +9,15 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "1"
-#Usage: touch_peer_node_log_files.cin <module>
+#Usage: touch_channel_log_files.cin <module>
 @else
 MODULE=$1
 ;
+<channel_information.$MODULE.vars.lst
+;
 .session_variable @deque commence
 ;
-.pf $MODULE Peer_Node "Active,Identity#1 1" Identity -min
+.pf $MODULE $CLASS_NAME "$FLD_ACTIVE,$FLD_IDENTITY#1 1" $FLD_IDENTITY -min
 ;
 @ifndef $ERROR
 .session_variable @deque "~$OUTPUT"

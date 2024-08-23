@@ -34,7 +34,9 @@ HEIGHT=@$OUTPUT+1
 LINES=@repstr: /\n:$OUTPUT
 MODULE=%LINES:2%
 ;
-.perform_bulk_ops admin @now $MODULE Peer_Node_User $IDENTITY.user_info.csv -f=Peer_Node=$IDENTITY,Local=1,Name -export=@key,Active,Name
+<channel_user_information.$MODULE.vars.lst
+;
+.perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.user_info.csv -f=$FLD_PEER_NODE=$IDENTITY,$FLD_LOCAL=1,$FLD_NAME -export=@key,$FLD_ACTIVE,$FLD_NAME
 ;
 .module_class_list $MODULE -p=Blog
 @ifdef $OUTPUT

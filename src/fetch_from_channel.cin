@@ -21,6 +21,9 @@ ERROR=
 STORAGE=$1
 IDENTITY=$2
 ;
+MODULE=
+HAS_BLOG_CLASS=
+;
 .session_variable @uuid
 UUID=$OUTPUT
 ;
@@ -164,15 +167,27 @@ BUNDLE_HASH=%OUTPUT:2%
 .session_variable @updating_$IDENTITY $FETCH_HEIGHT
 .storage_channel_documents -update_retrieved $IDENTITY
 ;
-HAS_BLOG_CLASS=
-;
+@ifndef $MODULE
 .module_list
 LINES=@repstr: /\n:$OUTPUT
 MODULE=%LINES:2%
 ;
+<channel_link_information.$MODULE.vars.lst
+LINK_CLASS_NAME=$CLASS_NAME
+LINK_FLD_DATA_TYPE=$FLD_DATA_TYPE
+LINK_FLD_PEER_NODE=$FLD_PEER_NODE
+;
+<channel_user_information.$MODULE.vars.lst
+USER_CLASS_NAME=$CLASS_NAME
+USER_FLD_LOCAL=$FLD_LOCAL
+USER_FLD_USER=$FLD_USER
+USER_FLD_PEER_NODE=$FLD_PEER_NODE
+;
 .module_class_list $MODULE -p=Blog
 @ifdef $OUTPUT
 HAS_BLOG_CLASS=1
+@endif
+;
 @endif
 ;
 @ifdef $HAS_BLOG_CLASS
@@ -180,7 +195,7 @@ BLOG_INFO_FILE=@files::$IN_REVERSE.blog_info.csv
 @ifdef $BLOG_INFO_FILE
 .session_variable @key_suffix $IDENTITY
 .session_variable @key_prefix_is_first 1
-.perform_bulk_ops admin @now $MODULE Peer_Node_Link $IN_REVERSE.blog_info.csv -f=Peer_Node=$IDENTITY,Data_Type=0
+.perform_bulk_ops admin @now $MODULE $LINK_CLASS_NAME $IN_REVERSE.blog_info.csv -f=$LINK_FLD_PEER_NODE=$IDENTITY,$LINK_FLD_DATA_TYPE=0
 ~rm $IN_REVERSE.blog_info.csv
 ~rm $IN_REVERSE.blog_info.log
 @endif
@@ -190,7 +205,7 @@ USER_INFO_FILE=@files::$IN_REVERSE.user_info.csv
 @ifdef $USER_INFO_FILE
 .session_variable @key_suffix $IDENTITY
 .session_variable @key_prefix_is_first ""
-.perform_bulk_ops peer @now $MODULE Peer_Node_User $IN_REVERSE.user_info.csv -f=Peer_Node=$IDENTITY,Local=0,User=admin
+.perform_bulk_ops peer @now $MODULE $USER_CLASS_NAME $IN_REVERSE.user_info.csv -f=$USER_FLD_PEER_NODE=$IDENTITY,$USER_FLD_LOCAL=0,$USER_FLD_USER=admin
 ~rm $IN_REVERSE.user_info.csv
 ~rm $IN_REVERSE.user_info.log
 @endif

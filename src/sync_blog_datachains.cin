@@ -25,6 +25,8 @@ MODULES=$OUTPUT
 MODULES=@repstr: /\n:$MODULES
 MODULE=%MODULES:2%
 ;
+<channel_information.$MODULE.vars.lst
+;
 .storage_web_root -expand
 STORAGE_WEB_DIR=$OUTPUT
 ;
@@ -70,7 +72,7 @@ REMAINING=@repstr:$NEXT_IDENTITY/:$CHANNELS
 @endif
 ;
 .storage_init $STORAGE
-.pf $MODULE Peer_Node "Active,Identity#2 1,$NEXT_IDENTITY" Submit_Chain_Id,Host_Name,Port_Number -min
+.pf $MODULE $CLASS_NAME "$FLD_ACTIVE,$FLD_IDENTITY#2 1,$NEXT_IDENTITY" $FLD_SUBMIT_CHAIN_ID,$FLD_HOST_NAME,$FLD_PORT_NUMBER -min
 LINES=@repstr:,/\n:$OUTPUT
 .storage_term
 ;
