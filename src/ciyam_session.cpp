@@ -3320,8 +3320,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( !set_value_items.empty( ) )
                         prepare_object_instance( handle, context, false );
 
-                     if( ( !filter_set.empty( ) || instance_has_transient_filter_fields( handle, context ) )
-                      && instance_filtered( handle, context ) )
+                     // NOTE: If iterating (rather than reading one instance) records such
+                     // as the 'admin' user record will be automatically filtered by this.
+                     if( ( num_limit != 1 ) && instance_uid_filtered( handle, context ) )
+                        continue;
+
+                     bool has_any_filters = !filter_set.empty( );
+
+                     if( !has_any_filters )
+                        has_any_filters = instance_has_transient_filter_fields( handle, context );
+
+                     if( has_any_filters && instance_filtered( handle, context ) )
                         continue;
 
 #ifdef HPDF_SUPPORT
@@ -3345,6 +3354,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         else
                         {
                            output = key_output;
+
                            if( !field_output.empty( ) )
                               output += " " + field_output;
                         }
@@ -3355,6 +3365,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                            {
                               if( !response.empty( ) )
                                  response += '\n';
+
                               response += output;
                            }
                            else
@@ -3368,6 +3379,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                            {
                               if( i > 0 )
                                  prefix += "\1";
+
                               prefix += raw_values[ summaries[ i ].idx ];
                            }
 
@@ -3412,6 +3424,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      {
                         if( !response.empty( ) )
                            response += '\n';
+
                         response += i->second;
                      }
                      else
@@ -3665,6 +3678,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                op_instance_create( handle, "", key, false );
 
                set< string > fields_set;
+
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
@@ -3919,6 +3933,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_name, true );
 
                string update_fields;
+
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
@@ -3954,6 +3969,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 
                set< string > fields_set;
+
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".

@@ -13975,6 +13975,19 @@ bool instance_filtered( size_t handle, const string& context )
    return get_class_base_from_handle( handle, context ).filtered( );
 }
 
+bool instance_uid_filtered( size_t handle, const string& context )
+{
+   bool retval = false;
+
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   if( !get_session_variable( get_special_var_name( e_special_var_uid ) ).empty( )
+    && ( instance.get_key( ) == c_admin ) && ( instance.get_class_type( ) == 1 ) ) // i.e. user
+      retval = true;
+
+   return retval;
+}
+
 bool instance_has_transient_filter_fields( size_t handle, const string& context )
 {
    return get_class_base_from_handle( handle, context ).has_transient_filter_fields( );
@@ -16073,6 +16086,7 @@ bool perform_instance_iterate_next( class_base& instance )
       throw runtime_error( "cannot continue iteration whilst currently perfoming an instance operation" );
 
    bool found = false, cache_depleted = false;
+
    if( !instance_accessor.row_cache( ).empty( ) )
    {
       if( instance_accessor.row_cache( ).size( ) == 1 && instance_accessor.row_cache( )[ 0 ].empty( ) )
