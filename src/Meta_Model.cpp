@@ -5654,7 +5654,6 @@ void Meta_Model::impl::impl_Generate( )
 
                   if( specification_type == "filter_field_value"
                    || specification_type == "filter_fk_in_uid_set"
-                   || specification_type == "filter_security_level"
                    || specification_type == "filter_perm_restricted"
                    || specification_type == "filter_field_value_perm"
                    || ( !get_obj( ).child_List( ).Ignore_Username_Filter( )
