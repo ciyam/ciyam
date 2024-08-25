@@ -16,15 +16,18 @@
    {
       temporary_session_variable tmp_session_key_var(
        get_special_var_name( e_special_var_key ), get_obj( ).get_key( ) );
-`{`!`@eq`(`$arg_field`,`'`'`)\
-
+`{`@eq`(`$arg_logging_errors`,`'true`'`)
+      temporary_session_variable tmp_session_errors_only(
+       get_special_var_name( e_special_var_errors_only ), c_true_value );
+`}`{`!`@eq`(`$arg_field`,`'`'`)
       temporary_session_variable tmp_session_arg1_var( "`{`$script_arg1`}", get_obj( ).`{`$arg_field`}( ) );
 `}`{`!`@eq`(`$arg_ofield`,`'`'`)\
       temporary_session_variable tmp_session_arg2_var( "`{`$script_arg2`}", get_obj( ).`{`$arg_ofield`}( ) );
 `}`{`!`@eq`(`$arg_o2field`,`'`'`)\
       temporary_session_variable tmp_session_arg3_var( "`{`$script_arg3`}", get_obj( ).`{`$arg_o2field`}( ) );
 `}
-      `{`!`@eq`(`$arg_pre_func`,`'`'`)`{`$arg_pre_func`}( ), `}run_script( "`{`$arg_script_name`}", `{`@eq`(`$arg_async`,`'`'`)false`,true`} );
+      `{`!`@eq`(`$arg_pre_func`,`'`'`)`{`$arg_pre_func`}( ), `}run_script( "`{`$arg_script_name`}",\
+ `{`@eq`(`$arg_async`,`'`'`)false`,true`}, false, `{`@eq`(`$arg_logging_none`,`'`'`)false`,true`} );
 `{`!`@eq`(`$arg_add_dead_key`,`'`'`)
       storage_add_dead_key( get_obj( ).get_class_id( ), get_obj( ).get_key( ) );
 `}\
