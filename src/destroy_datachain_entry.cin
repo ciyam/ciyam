@@ -11,18 +11,10 @@ ERROR=
 STORAGE=$1
 IDENTITY=$2
 ;
-.storage_init Meta
-;
-.pd sys @now Meta Global_Datachain_Entry $IDENTITY
-.storage_term
-;
-@ifndef $ERROR
 .storage_init $STORAGE
 .storage_peer_data_details $IDENTITY -remove
 .storage_term
 ;
 ~rm -f $IDENTITY.log
-#Destroyed global datachain entry for identity '$IDENTITY'.
-@endif
 ;
 @endif

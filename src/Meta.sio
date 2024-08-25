@@ -5007,94 +5007,6 @@
     </procedures>
    </class>
    <class/>
-    <id>142100
-    <name>Global_Datachain_Entry
-    <plural>Global_Datachain_Entries
-    <version>
-    <extra>global:data!
-    <specifications/>
-     <specification/>
-      <id>603955
-      <item>class
-     </specification>
-     <specification/>
-      <id>603956
-      <item>class
-     </specification>
-    </specifications>
-    <fields/>
-     <field/>
-      <id>142101
-      <name>Chain_Id
-      <type>1015
-      <mandatory>false
-      <transient>true
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>603955
-        <item>field
-       </specification>
-       <specification/>
-        <id>603956
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>142102
-      <name>Data_Type
-      <type>int
-      <mandatory>true
-      <enum_id>952
-      <default_value>0
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>603955
-        <item>field
-       </specification>
-       <specification/>
-        <id>603956
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>142103
-      <name>Description
-      <type>1020
-      <mandatory>true
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>603955
-        <item>field
-       </specification>
-       <specification/>
-        <id>603956
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-    </fields>
-    <indexes/>
-    </indexes>
-    <modifiers/>
-    </modifiers>
-    <procedures/>
-    </procedures>
-   </class>
-   <class/>
     <id>145100
     <name>Global_Peerchain_Entry
     <plural>Global_Peerchain_Entries
@@ -32401,36 +32313,6 @@
     </data>
    </specification>
    <specification/>
-    <id>603955
-    <name>{Global_Datachain_Entry}_list
-    <type>list
-    <data/>
-     <name>*
-     <type>admin
-     <extra>no_new,no_erase
-     <class_id>142100
-     <ordering>forward
-     <field_info>142101
-     <field_info>142102;enum=952
-     <field_info>142103
-    </data>
-   </specification>
-   <specification/>
-    <id>603956
-    <name>{Global_Datachain_Entry}_view
-    <type>view
-    <data/>
-     <name>?
-     <type>admin
-     <extra>no_edit
-     <class_id>142100
-     <field_info>@key
-     <field_info>142101;key_name
-     <field_info>142102;no_edit+enum=952
-     <field_info>142103
-    </data>
-   </specification>
-   <specification/>
     <id>600898c
     <name>{Global_Peerchain_Entry}_Is_Backup_Only
     <type>modifier_field_value
@@ -39602,12 +39484,6 @@
     <name>class_type
     <type>int
     <key_values>0=normal,1=user,4=system,2=user_group,3=user_other
-   </user_defined_enum>
-   <user_defined_enum/>
-    <id>952
-    <name>datachain_type
-    <type>int
-    <key_values>0=Blog
    </user_defined_enum>
    <user_defined_enum/>
     <id>511

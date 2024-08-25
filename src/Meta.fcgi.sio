@@ -440,16 +440,6 @@
    </values>
   </enum>
   <enum/>
-   <id>952
-   <name>enum_datachain_type
-   <values/>
-    <value/>
-     <data>0
-     <name>enum_datachain_type_blog
-    </value>
-   </values>
-  </enum>
-  <enum/>
    <id>511
    <name>enum_date_precision
    <values/>
@@ -3624,51 +3614,6 @@
      <ftype>string
      <extra>key_name+max_size=100
      <mandatory>false
-     <modifiers>
-    </field>
-   </fields>
-  </view>
-  <view/>
-   <id>603956
-   <cid>142100
-   <name>603956_name
-   <type>admin
-   <extra>no_edit
-   <modifiers>
-   <class>Global_Datachain_Entry
-   <bclass>
-   <module>Meta
-   <fields/>
-    <field/>
-     <name>field_key
-     <field>@key
-     <ftype>
-     <extra>
-     <mandatory>true
-     <modifiers>
-    </field>
-    <field/>
-     <name>field_global_datachain_entry_chain_id
-     <field>142101
-     <ftype>string
-     <extra>key_name+max_size=50
-     <mandatory>false
-     <modifiers>
-    </field>
-    <field/>
-     <name>field_global_datachain_entry_data_type
-     <field>142102
-     <ftype>int
-     <extra>no_edit+enum=952
-     <mandatory>true
-     <modifiers>
-    </field>
-    <field/>
-     <name>field_global_datachain_entry_description
-     <field>142103
-     <ftype>string
-     <extra>max_size=100
-     <mandatory>true
      <modifiers>
     </field>
    </fields>
@@ -9082,53 +9027,6 @@
     <column/>
      <name>field_global_blacklist_entry_content_hash
      <field>140101
-     <ftype>string
-     <extra>max_size=100
-     <modifiers>
-     <unique>false
-     <indexed>false
-    </column>
-   </columns>
-   <parents/>
-   </parents>
-   <restricts/>
-   </restricts>
-  </list>
-  <list/>
-   <id>603955
-   <cid>142100
-   <name>603955_name
-   <type>admin
-   <extra>no_new,no_erase
-   <actions>
-   <modifiers>
-   <view>603956
-   <class>Global_Datachain_Entry
-   <bclass>
-   <order>forward
-   <module>Meta
-   <columns/>
-    <column/>
-     <name>field_global_datachain_entry_chain_id
-     <field>142101
-     <ftype>string
-     <extra>max_size=50
-     <modifiers>
-     <unique>false
-     <indexed>false
-    </column>
-    <column/>
-     <name>field_global_datachain_entry_data_type
-     <field>142102
-     <ftype>int
-     <extra>enum=952
-     <modifiers>
-     <unique>false
-     <indexed>false
-    </column>
-    <column/>
-     <name>field_global_datachain_entry_description
-     <field>142103
      <ftype>string
      <extra>max_size=100
      <modifiers>

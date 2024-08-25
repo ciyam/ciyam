@@ -25,9 +25,6 @@ DESCRIPTION=$3
 ;
 DATA_TYPE=0
 ;
-<create_datachain_entry.cin $IDENTITY $DATA_TYPE "$DESCRIPTION"
-;
-@ifndef $ERROR
 .storage_init $STORAGE
 ;
 ; NOTE: Only create peer data details if was not already created.
@@ -48,6 +45,5 @@ MODULE=%MODULES:2%
 @endif
 ;
 .storage_term
-@endif
 ;
 @endif

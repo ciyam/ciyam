@@ -39,7 +39,6 @@ module_class_list Meta
 138100 Application_Script 0
 139100 Global_Archive 0
 140100 Global_Blacklist_Entry 0
-142100 Global_Datachain_Entry 0
 145100 Global_Peerchain_Entry 0
 150100 Global_Repository_Entry 0
 module_class_list Meta -p=Field

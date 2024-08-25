@@ -23,9 +23,6 @@ STORAGE=$1
 IDENTITY=$2
 DESCRIPTION=$3
 ;
-<update_datachain_entry.cin $IDENTITY "$DESCRIPTION"
-;
-@ifndef $ERROR
 .storage_init $STORAGE
 ;
 ; NOTE: Touch the <identity>.log file for every active channel.
@@ -37,6 +34,5 @@ MODULE=%MODULES:2%
 <touch_channel_log_files.cin $MODULE
 ;
 .storage_term
-@endif
 ;
 @endif
