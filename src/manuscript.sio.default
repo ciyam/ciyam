@@ -191,11 +191,6 @@
   <arguments>fetch_from_datachain.cin @storage @identity
  </script>
  <script/>
-  <name>link_datachain_entry
-  <filename>*script*
-  <arguments>link_datachain_entry.cin @storage @channel @identity_and_type
- </script>
- <script/>
   <name>sync_blog_datachains
   <filename>*script*
   <arguments>sync_blog_datachains.cin @storage
@@ -226,24 +221,19 @@
   <arguments>destroy_peerchain_data.cin @key
  </script>
  <script/>
-  <name>unlink_datachain_entry
-  <filename>*script*
-  <arguments>unlink_datachain_entry.cin @storage @channel @identity
- </script>
- <script/>
   <name>update_peerchain_entry
   <filename>*script*
   <arguments>update_peerchain_entry.cin @identity @auto_start @description @host_name @host_port @num_helpers @shared_secret
  </script>
  <script/>
+  <name>link_channel_datachain
+  <filename>*script*
+  <arguments>link_channel_datachain.cin @storage @channel @identity_and_type
+ </script>
+ <script/>
   <name>create_hosted_peerchain
   <filename>*script*
   <arguments>create_hosted_peerchain.cin @identity @description @shared_secret_hash
- </script>
- <script/>
-  <name>destroy_datachain_entry
-  <filename>*script*
-  <arguments>destroy_datachain_entry.cin @storage @identity
  </script>
  <script/>
   <name>destroy_peerchain_entry
@@ -261,6 +251,21 @@
   <arguments>remove_all_repo_entries.cin @identity
  </script>
  <script/>
+  <name>create_datachain_details
+  <filename>*script*
+  <arguments>create_datachain_details.cin @storage @identity @data_type
+ </script>
+ <script/>
+  <name>unlink_channel_datachain
+  <filename>*script*
+  <arguments>unlink_channel_datachain.cin @storage @channel @identity
+ </script>
+ <script/>
+  <name>update_datachain_details
+  <filename>*script*
+  <arguments>update_datachain_details.cin @storage @identity
+ </script>
+ <script/>
   <name>destroy_hosted_peerchain
   <filename>*script*
   <arguments>destroy_hosted_peerchain.cin @identity
@@ -271,19 +276,14 @@
   <arguments>generate_parallel_chains.cin @chain_type @identity
  </script>
  <script/>
+  <name>destroy_datachain_details
+  <filename>*script*
+  <arguments>destroy_datachain_details.cin @storage @identity
+ </script>
+ <script/>
   <name>install_application_script
   <filename>*script*
   <arguments>install_application_script.cin @storage @key @name @fields_and_values @package_install_extra
- </script>
- <script/>
-  <name>create_blog_datachain_entry
-  <filename>*script*
-  <arguments>create_blog_datachain_entry.cin @storage @identity @description
- </script>
- <script/>
-  <name>update_blog_datachain_entry
-  <filename>*script*
-  <arguments>update_blog_datachain_entry.cin @storage @identity @description
  </script>
 ### [<start generated>]
 ### [<finish generated>]

@@ -15,24 +15,22 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "3"
-#Usage: create_blog_datachain_entry.cin <storage> <identity> <description>
+#Usage: create_datachain_details.cin <storage> <identity> <data_type>
 @else
 ERROR=
 ;
 STORAGE=$1
 IDENTITY=$2
-DESCRIPTION=$3
-;
-DATA_TYPE=0
+DATA_TYPE=$3
 ;
 .storage_init $STORAGE
 ;
-; NOTE: Only create peer data details if was not already created.
-.storage_peer_data_details -list
+; NOTE: Only create datachain details if was not already created.
+.storage_datachain_details -list
 ALL_DATA_CHAINS=$OUTPUT
 IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
 @ifeq "$ALL_DATA_CHAINS" "$IDENTITY_REMOVED"
-.storage_peer_data_details $IDENTITY -type=0
+.storage_datachain_details $IDENTITY -type=$DATA_TYPE
 ;
 ; NOTE: Touch the <identity>.log file for every active channel.
 .module_list

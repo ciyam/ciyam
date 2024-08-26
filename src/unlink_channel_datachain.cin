@@ -15,24 +15,28 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "3"
-#Usage: update_blog_datachain_entry.cin <storage> <identity> <description>
+#Usage: unlink_channel_datachain.cin <storage> <channel> <identity>
 @else
 ERROR=
 ;
 STORAGE=$1
-IDENTITY=$2
-DESCRIPTION=$3
+CHANNEL=$2
+IDENTITY=$3
 ;
 .storage_init $STORAGE
+@ifndef $ERROR
+.storage_channel_list
+ALL_CHANNELS=$OUTPUT
+CHANNEL_REMOVED=@repstr:$CHANNEL/:$ALL_CHANNELS
+@ifeq "$ALL_CHANNELS" "$CHANNEL_REMOVED"
+ERROR=Unexpected unknown channel '$CHANNEL'.
+#Error: $ERROR
+@else
 ;
-; NOTE: Touch the <identity>.log file for every active channel.
-.module_list
-MODULES=$OUTPUT
-MODULES=@repstr: /\n:$MODULES
-MODULE=%MODULES:2%
+.storage_datachain_details $IDENTITY -unlink $CHANNEL
 ;
-<touch_channel_log_files.cin $MODULE
-;
+@endif
 .storage_term
+@endif
 ;
 @endif

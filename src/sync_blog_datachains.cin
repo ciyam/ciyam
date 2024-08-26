@@ -30,7 +30,7 @@ MODULE=%MODULES:2%
 .storage_web_root -expand
 STORAGE_WEB_DIR=$OUTPUT
 ;
-.storage_peer_data_details -list -type=0
+.storage_datachain_details -list -type=0
 DATA_CHAINS=$OUTPUT
 .storage_term
 ;
@@ -51,7 +51,7 @@ NEXT_CHAIN=$OUTPUT
 ;
 @:NEXT
 .storage_init $STORAGE
-.storage_peer_data_details $NEXT_CHAIN
+.storage_datachain_details $NEXT_CHAIN
 PEER_DATA_INFO=@repstr: /\n:$OUTPUT
 .storage_term
 ;

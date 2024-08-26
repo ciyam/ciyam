@@ -65,9 +65,9 @@ const char* const c_channel_folder_ciyam = ".ciyam";
 const char* const c_channel_readme_file = "README.md";
 const char* const c_channel_readme_source = "channel_readme.md";
 
-const char* const c_peer_data_type = "type";
-const char* const c_peer_data_height = "height";
-const char* const c_peer_data_channels = "channels";
+const char* const c_datachain_type = "type";
+const char* const c_datachain_height = "height";
+const char* const c_datachain_channels = "channels";
 
 void update_channel_info( ods_file_system& ofs,
  const string& identity, const string& blockchain_identity,
@@ -2445,7 +2445,7 @@ void list_datachains( ostream& os )
 
    ods::bulk_read bulk_read( storage_ods_instance( ) );
 
-   ofs.set_root_folder( c_storable_folder_name_peer_data );
+   ofs.set_root_folder( c_storable_folder_name_datachains );
 
    ofs.list_folders( os );
 }
@@ -2458,7 +2458,7 @@ void list_datachains( vector< string >& datachains )
 
    ods::bulk_read bulk_read( storage_ods_instance( ) );
 
-   ofs.set_root_folder( c_storable_folder_name_peer_data );
+   ofs.set_root_folder( c_storable_folder_name_datachains );
 
    ofs.list_folders( datachains );
 }
@@ -2471,7 +2471,7 @@ bool has_datachain( const string& identity )
 
    ods::bulk_read bulk_read( storage_ods_instance( ) );
 
-   ofs.set_root_folder( c_storable_folder_name_peer_data );
+   ofs.set_root_folder( c_storable_folder_name_datachains );
 
    if( !ofs.has_folder( identity ) )
       throw runtime_error( "datachain '" + identity + "' not found" );
@@ -2489,7 +2489,7 @@ string get_datachain_info( const string& identity, size_t* p_data_type, size_t* 
 
    ods::bulk_read bulk_read( storage_ods_instance( ) );
 
-   ofs.set_root_folder( c_storable_folder_name_peer_data );
+   ofs.set_root_folder( c_storable_folder_name_datachains );
 
    if( !ofs.has_folder( identity ) )
       throw runtime_error( "datachain '" + identity + "' not found" );
@@ -2501,9 +2501,9 @@ string get_datachain_info( const string& identity, size_t* p_data_type, size_t* 
 
    string channels;
 
-   ofs.fetch_from_text_file( c_peer_data_type, data_type );
-   ofs.fetch_from_text_file( c_peer_data_height, height );
-   ofs.fetch_from_text_file( c_peer_data_channels, channels );
+   ofs.fetch_from_text_file( c_datachain_type, data_type );
+   ofs.fetch_from_text_file( c_datachain_height, height );
+   ofs.fetch_from_text_file( c_datachain_channels, channels );
 
    if( p_data_type )
       *p_data_type = data_type;
@@ -2538,7 +2538,7 @@ void create_datachain_info( const string& identity, size_t data_type )
    if( channels.find( identity ) != channels.end( ) )
       throw runtime_error( "datachain '" + identity + "' is a channel identity" );
 
-   ofs.set_root_folder( c_storable_folder_name_peer_data );
+   ofs.set_root_folder( c_storable_folder_name_datachains );
 
    folders.clear( );
 
@@ -2552,10 +2552,10 @@ void create_datachain_info( const string& identity, size_t data_type )
 
       ofs.set_folder( identity );
 
-      ofs.store_as_text_file( c_peer_data_type, ( int32_t )data_type );
+      ofs.store_as_text_file( c_datachain_type, ( int32_t )data_type );
 
-      ofs.store_as_text_file( c_peer_data_height, ( int32_t )0 );
-      ofs.store_as_text_file( c_peer_data_channels, "" );
+      ofs.store_as_text_file( c_datachain_height, ( int32_t )0 );
+      ofs.store_as_text_file( c_datachain_channels, "" );
 
       ods_tx.commit( );
    }
@@ -2569,7 +2569,7 @@ void remove_datachain_info( const string& identity )
 
    ods::bulk_write bulk_write( storage_ods_instance( ) );
 
-   ofs.set_root_folder( c_storable_folder_name_peer_data );
+   ofs.set_root_folder( c_storable_folder_name_datachains );
 
    if( !ofs.has_folder( identity ) )
       throw runtime_error( "datachain '" + identity + "' not found" );
@@ -2591,7 +2591,7 @@ void set_datachain_height( const string& identity, size_t new_height )
 
    ods::bulk_write bulk_write( storage_ods_instance( ) );
 
-   ofs.set_root_folder( c_storable_folder_name_peer_data );
+   ofs.set_root_folder( c_storable_folder_name_datachains );
 
    if( !ofs.has_folder( identity ) )
       throw runtime_error( "datachain '" + identity + "' not found" );
@@ -2602,13 +2602,13 @@ void set_datachain_height( const string& identity, size_t new_height )
       ods::transaction ods_tx( storage_ods_instance( ) );
 
       int32_t height;
-      ofs.fetch_from_text_file( c_peer_data_height, height );
+      ofs.fetch_from_text_file( c_datachain_height, height );
 
       if( height == new_height )
          ods_tx.rollback( );
       else
       {
-         ofs.store_as_text_file( c_peer_data_height, ( int32_t )new_height );
+         ofs.store_as_text_file( c_datachain_height, ( int32_t )new_height );
 
          ods_tx.commit( );
       }
@@ -2625,7 +2625,7 @@ bool is_linked_to_datachain( const string& channel, const string& identity )
 
    vector< string > folders;
 
-   ofs.set_root_folder( c_storable_folder_name_peer_data );
+   ofs.set_root_folder( c_storable_folder_name_datachains );
 
    bool retval = false;
 
@@ -2635,7 +2635,7 @@ bool is_linked_to_datachain( const string& channel, const string& identity )
 
       string channels;
 
-      ofs.fetch_from_text_file( c_peer_data_channels, channels );
+      ofs.fetch_from_text_file( c_datachain_channels, channels );
 
       set< string > all_channels;
 
@@ -2668,7 +2668,7 @@ void link_channel_to_datachain( const string& channel, const string& identity )
    if( channels.find( channel ) == channels.end( ) )
       throw runtime_error( "channel '" + channel + "' not found" );
 
-   ofs.set_root_folder( c_storable_folder_name_peer_data );
+   ofs.set_root_folder( c_storable_folder_name_datachains );
 
    folders.clear( );
 
@@ -2682,13 +2682,13 @@ void link_channel_to_datachain( const string& channel, const string& identity )
    {
       ods::transaction ods_tx( storage_ods_instance( ) );
 
-      ofs.set_root_folder( c_storable_folder_name_peer_data );
+      ofs.set_root_folder( c_storable_folder_name_datachains );
 
       ofs.set_folder( identity );
 
       string channels;
 
-      ofs.fetch_from_text_file( c_peer_data_channels, channels );
+      ofs.fetch_from_text_file( c_datachain_channels, channels );
 
       set< string > all_channels;
 
@@ -2703,7 +2703,7 @@ void link_channel_to_datachain( const string& channel, const string& identity )
 
          channels = join( all_channels );
 
-         ofs.store_as_text_file( c_peer_data_channels, channels );
+         ofs.store_as_text_file( c_datachain_channels, channels );
 
          ods_tx.commit( );
       }
@@ -2720,7 +2720,7 @@ void unlink_channel_from_datachain( const string& channel, const string& identit
 
    vector< string > folders;
 
-   ofs.set_root_folder( c_storable_folder_name_peer_data );
+   ofs.set_root_folder( c_storable_folder_name_datachains );
 
    ofs.list_folders( folders );
 
@@ -2732,13 +2732,13 @@ void unlink_channel_from_datachain( const string& channel, const string& identit
    {
       ods::transaction ods_tx( storage_ods_instance( ) );
 
-      ofs.set_root_folder( c_storable_folder_name_peer_data );
+      ofs.set_root_folder( c_storable_folder_name_datachains );
 
       ofs.set_folder( identity );
 
       string channels;
 
-      ofs.fetch_from_text_file( c_peer_data_channels, channels );
+      ofs.fetch_from_text_file( c_datachain_channels, channels );
 
       set< string > all_channels;
 
@@ -2753,7 +2753,7 @@ void unlink_channel_from_datachain( const string& channel, const string& identit
 
          channels = join( all_channels );
 
-         ofs.store_as_text_file( c_peer_data_channels, channels );
+         ofs.store_as_text_file( c_datachain_channels, channels );
 
          ods_tx.commit( );
       }

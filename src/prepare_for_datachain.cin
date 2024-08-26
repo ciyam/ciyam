@@ -40,7 +40,7 @@ MODULE=%MODULES:2%
 @ifndef $ERROR
 <block_tree_relegate.cin $IDENTITY $IDENTITY.tree
 .file_core -header bc.$IDENTITY.zenith h
-.storage_peer_data_details $IDENTITY -height=$OUTPUT
+.storage_datachain_details $IDENTITY -height=$OUTPUT
 ~rm $IDENTITY.log
 ;
 .pf $STORAGE $CLASS_NAME "$FLD_ACTIVE#1 1" $FLD_IDENTITY,$FLD_HOST_NAME,$FLD_PORT_NUMBER -min

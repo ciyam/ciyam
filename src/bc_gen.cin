@@ -430,14 +430,14 @@ CHANNEL_SIZE=1GB
 @ifndef $EXTRA
 #Created keys and genesis block for hub identity '$IDENT'.
 @else
-#Created keys and genesis block for extra (hub) identity '$IDENT'.
+#Created keys and genesis block for extra hub identity '$IDENT'.
 @endif
 @else
 @ifdef $EXTRA
 @ifndef $SHARED
-#Created keys and genesis block for extra (backup) identity '$IDENT'.
+#Created keys and genesis block for extra backup identity '$IDENT'.
 @else
-#Created keys and genesis block for extra (shared) identity '$IDENT'.
+#Created keys and genesis block for extra shared identity '$IDENT'.
 @endif
 @else
 @ifndef $CHANNEL

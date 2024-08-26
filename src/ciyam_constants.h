@@ -157,7 +157,7 @@ const char* const c_storable_folder_name_modules = "modules";
 const char* const c_storable_folder_name_channels = "channels";
 const char* const c_storable_folder_name_gid_data = "gid_data";
 const char* const c_storable_folder_name_uid_data = "uid_data";
-const char* const c_storable_folder_name_peer_data = "peer_data";
+const char* const c_storable_folder_name_datachains = "datachains";
 
 const char* const c_special_regex_for_domain_name = "@domain_name";
 const char* const c_special_regex_for_email_address = "@email_address";
