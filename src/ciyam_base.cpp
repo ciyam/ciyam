@@ -1955,7 +1955,7 @@ void perform_storage_op( storage_op op,
 
          bool has_exported_objects = false;
          bool has_imported_channels = false;
-         bool has_imported_peer_data = false;
+         bool has_imported_datachains = false;
 
          if( g_encrypted_identity
           && ( name != c_meta_storage_name ) && ( name != c_ciyam_storage_name ) )
@@ -2014,8 +2014,8 @@ void perform_storage_op( storage_op op,
                if( ofs.has_folder( c_storable_folder_name_channels ) )
                   has_imported_channels = true;
 
-               if( ofs.has_folder( c_storable_folder_name_peer_data ) )
-                  has_imported_peer_data = true;
+               if( ofs.has_folder( c_storable_folder_name_datachains ) )
+                  has_imported_datachains = true;
             }
          }
 
@@ -2047,8 +2047,8 @@ void perform_storage_op( storage_op op,
                if( !has_imported_channels )
                   ofs.add_folder( c_storable_folder_name_channels );
 
-               if( !has_imported_peer_data )
-                  ofs.add_folder( c_storable_folder_name_peer_data );
+               if( !has_imported_datachains )
+                  ofs.add_folder( c_storable_folder_name_datachains );
             }
 
             ap_handler->get_root( ).store_as_text_files( ofs );
@@ -10169,15 +10169,15 @@ void export_storage( command_handler& cmd_handler )
          has_exported_any = true;
       }
 
-      if( ofs.has_folder( c_storable_folder_name_peer_data ) )
+      if( ofs.has_folder( c_storable_folder_name_datachains ) )
       {
          if( !has_exported_any )
             create_dir( name );
 
-         ofs.set_folder( c_storable_folder_name_peer_data );
+         ofs.set_folder( c_storable_folder_name_datachains );
 
          string child_folder_name( name + '/' );
-         child_folder_name += c_storable_folder_name_peer_data;
+         child_folder_name += c_storable_folder_name_datachains;
 
          create_dir( child_folder_name );
 

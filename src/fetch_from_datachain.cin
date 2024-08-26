@@ -48,7 +48,7 @@ ZENITH_HEIGHT=$OUTPUT
 ;
 .storage_init $STORAGE
 @ifndef $ERROR
-.storage_peer_data_details $IDENTITY -height
+.storage_datachain_details $IDENTITY -height
 @ifndef $ERROR
 CURRENT_HEIGHT=$OUTPUT
 @endif
@@ -81,7 +81,7 @@ DATA_LOG_FILE=@files::$IDENTITY.log
 ~rm $BUNDLE_FILE
 @endif
 ;
-.storage_peer_data_details $IDENTITY -height=$CURRENT_HEIGHT
+.storage_datachain_details $IDENTITY -height=$CURRENT_HEIGHT
 ;
 !!@:FETCH_LOOP
 ;

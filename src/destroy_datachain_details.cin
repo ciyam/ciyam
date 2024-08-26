@@ -4,7 +4,7 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 @ifeq "$1" ""
-#Usage: destroy_datachain_entry.cin <storage> <identity>
+#Usage: destroy_datachain_details.cin <storage> <identity>
 @else
 ERROR=
 ;
@@ -12,7 +12,7 @@ STORAGE=$1
 IDENTITY=$2
 ;
 .storage_init $STORAGE
-.storage_peer_data_details $IDENTITY -remove
+.storage_datachain_details $IDENTITY -remove
 .storage_term
 ;
 ~rm -f $IDENTITY.log

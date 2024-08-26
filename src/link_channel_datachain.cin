@@ -15,7 +15,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "3"
-#Usage: link_datachain_entry.cin <storage> <channel> <identity:type>
+#Usage: link_channel_datachain.cin <storage> <channel> <identity:type>
 @else
 ERROR=
 ;
@@ -58,15 +58,15 @@ ERROR=Unexpected unknown channel '$CHANNEL'.
 #Error: $ERROR
 @else
 ;
-.storage_peer_data_details -list
+.storage_datachain_details -list
 ALL_DATA_CHAINS=$OUTPUT
 IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
 @ifeq "$ALL_DATA_CHAINS" "$IDENTITY_REMOVED"
-.storage_peer_data_details $IDENTITY -type=$DATA_TYPE
+.storage_datachain_details $IDENTITY -type=$DATA_TYPE
 ~mkdir files/$IDENTITY
 .file_archive -add files/$IDENTITY $DATA_SIZE $IDENTITY
 @endif
-.storage_peer_data_details $IDENTITY -link $CHANNEL
+.storage_datachain_details $IDENTITY -link $CHANNEL
 ;
 @endif
 .storage_term

@@ -5897,17 +5897,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
             response = storage_channel_documents_specific( identity, specific_type );
       }
-      else if( command == c_cmd_ciyam_session_storage_peer_data_details )
+      else if( command == c_cmd_ciyam_session_storage_datachain_details )
       {
-         bool list = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_list );
-         string identity( get_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_identity ) );
-         string data_type( get_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_data_type ) );
-         bool height = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_height );
-         string new_height( get_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_new_height ) );
-         bool remove = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_remove );
-         bool is_link = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_link );
-         bool is_unlink = has_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_unlink );
-         string channel( get_parm_val( parameters, c_cmd_ciyam_session_storage_peer_data_details_channel ) );
+         bool list = has_parm_val( parameters, c_cmd_ciyam_session_storage_datachain_details_list );
+         string identity( get_parm_val( parameters, c_cmd_ciyam_session_storage_datachain_details_identity ) );
+         string data_type( get_parm_val( parameters, c_cmd_ciyam_session_storage_datachain_details_data_type ) );
+         bool height = has_parm_val( parameters, c_cmd_ciyam_session_storage_datachain_details_height );
+         string new_height( get_parm_val( parameters, c_cmd_ciyam_session_storage_datachain_details_new_height ) );
+         bool remove = has_parm_val( parameters, c_cmd_ciyam_session_storage_datachain_details_remove );
+         bool is_link = has_parm_val( parameters, c_cmd_ciyam_session_storage_datachain_details_link );
+         bool is_unlink = has_parm_val( parameters, c_cmd_ciyam_session_storage_datachain_details_unlink );
+         string channel( get_parm_val( parameters, c_cmd_ciyam_session_storage_datachain_details_channel ) );
 
          if( list )
          {
