@@ -29,6 +29,9 @@
       temporary_grp_and_uid tmp_grp_and_uid( c_watchers, c_admin, true );
 
       cp_source->`{`$arg_field`}( get_obj( ).`{`$arg_field`}( ) );
+`{`@eq`(`$arg_update`,`'`'`)\
+      cp_source->`{`$arg_sfield`}( get_obj( ).`{`$arg_sfield`}( ) );
+`}\
 `{`!`@eq`(`$arg_ofield`,`'`'`)\
       cp_source->`{`$arg_ofield`}( get_obj( ).`{`$arg_ofield`}( ) );
 `}\

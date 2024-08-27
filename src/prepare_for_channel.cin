@@ -43,7 +43,7 @@ BLOG_INFO_FILE=@files::blog_information.$MODULE.vars.lst
 @ifdef BLOG_INFO_FILE
 <blog_information.$MODULE.vars.lst
 ;
-.perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.blog_info.csv -export=$FLD_IDENTITY,$FLD_DESCRIPTION
+.perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.blog_info.csv -export=$FLD_IDENTITY,$FLD_NAME,$FLD_DESCRIPTION
 @endif
 ;
 .storage_channel_documents -prepare_for_submit $IDENTITY
