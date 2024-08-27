@@ -3843,7 +3843,7 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
       set_session_variable( get_special_var_name( e_special_var_name ), get_obj( ).Name( ) );
       set_session_variable( get_special_var_name( e_special_var_script ), get_obj( ).Creation_Script( ).Script_Name( ) );
 
-      run_script( "install_application" );
+      run_script( "install_application", true, true );
    }
    // [<finish for_store>]
 }

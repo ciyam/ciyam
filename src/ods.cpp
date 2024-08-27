@@ -3136,6 +3136,7 @@ void ods::rewind_transactions(
    bool is_encrypted = p_impl->is_encrypted;
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
+
    if( !*p_impl->rp_bulk_level )
       ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
@@ -3486,6 +3487,7 @@ int64_t ods::get_size( const oid& id )
       return 0;
 
    bool found = false;
+
    int attempts = c_review_max_attempts;
 
    while( attempts-- )
@@ -3548,6 +3550,7 @@ void ods::destroy( const oid& id )
    ods_index_entry index_entry;
 
    bool deleted = false;
+
    int attempts = c_delete_max_attempts;
 
    while( attempts-- )
@@ -3690,6 +3693,7 @@ string ods::backup_database( const char* p_ext, char sep )
       THROW_ODS_ERROR( "cannot backup a database when bulk locked for dumping or reading" );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
+
    if( !*p_impl->rp_bulk_level )
       ap_bulk_write.reset( new ods::bulk_write( *this ) );
 
@@ -3779,6 +3783,7 @@ void ods::move_free_data_to_end( progress* p_progress )
       THROW_ODS_ERROR( "cannot move free data to end when bulk locked for dumping or reading" );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
+
    if( !*p_impl->rp_bulk_level )
       ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
@@ -4040,6 +4045,7 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
       THROW_ODS_ERROR( "cannot truncate log when bulk locked for dumping or reading" );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
+
    if( !*p_impl->rp_bulk_level )
       ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
@@ -4304,6 +4310,7 @@ void ods::compress_and_reset_tx_log( progress* p_progress )
       THROW_ODS_ERROR( "cannot truncate log when bulk locked for dumping or reading" );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
+
    if( !*p_impl->rp_bulk_level )
       ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
@@ -4767,6 +4774,7 @@ ods::bulk_dump::bulk_dump( ods& o, progress* p_progress )
  : bulk_base( o, p_progress )
 {
    int i;
+
    for( i = 0; i < c_bulk_dump_max_attempts; i++ )
    {
       if( i > 0 )
@@ -4818,6 +4826,7 @@ ods::bulk_read::bulk_read( ods& o, progress* p_progress, bool allow_thread_demot
  : bulk_base( o, p_progress )
 {
    int i;
+
    for( i = 0; i < c_bulk_read_max_attempts; i++ )
    {
       if( i > 0 )
@@ -4889,6 +4898,7 @@ ods::bulk_write::bulk_write( ods& o, progress* p_progress, bool allow_thread_pro
       THROW_ODS_ERROR( "attempt to obtain bulk write lock when database was opened for read only access" );
 
    int i;
+
    for( i = 0; i < c_bulk_write_max_attempts; i++ )
    {
       if( i > 0 )
@@ -5567,6 +5577,7 @@ void ods::transaction_rollback( )
    }
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
+
    if( !*p_impl->rp_bulk_level )
       ap_bulk_write.reset( new ods::bulk_write( *this ) );
 
@@ -5727,6 +5738,7 @@ void ods::lock_header_file( )
       return;
 
    int attempts = c_header_lock_max_attempts;
+
    while( attempts )
    {
       if( p_impl->rp_header_file->lock( ) )
@@ -6018,6 +6030,7 @@ void ods::rollback_dead_transactions( progress* p_progress )
    temp_set_value< bool > temp_is_restoring( p_impl->is_restoring, true );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
+
    if( !*p_impl->rp_bulk_level )
       ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
@@ -6104,6 +6117,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
    temp_set_value< bool > temp_is_restoring( p_impl->is_restoring, true );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
+
    if( !*p_impl->rp_bulk_level )
       ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
@@ -6675,16 +6689,20 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
    p_impl->rp_header_info->num_trans = 0;
    p_impl->rp_header_info->num_writers = 0;
 
+   bool for_close = false;
+
    // NOTE: If no write has occurred then act as though
    // one has in order to ensure that the "num_writers"
    // will be correctly zeroed.
    if( !*p_impl->rp_has_changed )
    {
+      for_close = true;
+
       *p_impl->rp_has_changed = true;
       ++p_impl->rp_header_info->num_writers;
    }
 
-   p_impl->write_header_file_info( );
+   p_impl->write_header_file_info( for_close );
 
    *p_impl->rp_has_changed = false;
 }
@@ -7347,6 +7365,7 @@ void ods::set_write_data_pos( int64_t pos, bool skip_decrypt, bool skip_encrypt 
       if( data_write_buffer_num != -1 )
       {
          int attempts = c_data_lock_max_attempts;
+
          while( attempts )
          {
             if( p_impl->rp_ods_data_cache_buffer->lock_region(
@@ -7467,6 +7486,7 @@ void ods::write_data_bytes( const char* p_src, int64_t len, bool skip_decrypt, b
          data_write_buffer_offs = 0;
 
          int attempts = c_data_lock_max_attempts;
+
          while( attempts )
          {
             if( p_impl->rp_ods_data_cache_buffer->lock_region(
