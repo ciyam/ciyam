@@ -652,6 +652,8 @@ struct class_base::impl
    foreign_key_lock_container foreign_key_locks;
    foreign_key_data_container foreign_key_values;
 
+   impl( ) : has_changed_user_fields( false ) { }
+
    void release_fk_locks( );
 };
 
@@ -1628,6 +1630,7 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts,
          else
             revision = from_string< uint64_t >( block_height );
       }
+
       p_impl->has_changed_user_fields = false;
 
       if( sql_stmts.empty( ) )
