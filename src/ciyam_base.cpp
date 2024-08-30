@@ -14604,7 +14604,9 @@ void begin_instance_op( instance_op op, class_base& instance,
       }
       else if( ( op == e_instance_op_review ) || ( op == e_instance_op_update ) )
       {
-         if( !instance.get_is_for_peer( ) || ( op == e_instance_op_review ) )
+         if( instance.get_is_for_peer( ) )
+            instance_accessor.clear( );
+         else
          {
             bool found = false;
 
