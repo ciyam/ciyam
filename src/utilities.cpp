@@ -86,7 +86,8 @@ const unsigned char c_space = 0x20;
 const unsigned char c_low_mask = 0x3f;
 const unsigned char c_high_mask = 0xc0;
 
-const int c_tail_buffer_size = 1024;
+const unsigned int c_tail_buffer_size = 1024;
+const unsigned int c_tail_maximum_lines = 10000;
 
 #ifndef _WIN32
 const int c_open_directory_perms = S_IRWXU | S_IRWXG | S_IRWXO;
@@ -2286,6 +2287,9 @@ void buffer_file_tail( const string& file_name,
 
    string data;
    bool finished_buffering = false;
+
+   if( !num_lines )
+      num_lines = c_tail_maximum_lines;
 
    long max_bytes = c_tail_buffer_size;
 
