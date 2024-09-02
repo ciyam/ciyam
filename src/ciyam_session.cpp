@@ -6085,6 +6085,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string num_lines( get_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_lines ) );
 
          unsigned int num = c_cmd_ciyam_session_system_log_tail_lines_default;
+
          if( !num_lines.empty( ) )
             num = atoi( num_lines.c_str( ) );
 
@@ -6096,6 +6097,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          log_file_name += c_log_file_ext;
 
          deque< string > lines;
+
          buffer_file_tail( log_file_name, lines, num );
 
          for( size_t i = 0; i < lines.size( ); i++ )

@@ -12,6 +12,8 @@ STORAGE_LOG_FILE=@files::$CIYAM_STORAGE.log
 ;
 @ifdef $STORAGE_LOG_FILE
 .storage_init -admin $CIYAM_STORAGE
+;
+@ifndef $ERROR
 @ifdef $CIYAM_OUTPUT_COMMANDS
 storage_export_data
 @else
@@ -19,8 +21,11 @@ storage_export_data
 @endif
 .storage_term
 @endif
+@endif
 ;
 @endif
+;
+@ifndef $ERROR
 ;
 @ifndef $1
 @ifdef $CIYAM_OUTPUT_COMMANDS
@@ -32,4 +37,6 @@ storage_export_data
 #storage_restore -rebuild $1 $CIYAM_STORAGE
 @endif
 .storage_restore -rebuild $1 $CIYAM_STORAGE
+@endif
+;
 @endif

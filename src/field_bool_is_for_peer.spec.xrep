@@ -1,0 +1,8 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+   // [(start field_bool_is_for_peer)] `{`$arg_id`}
+   if( get_obj( ).get_is_for_peer( ) )
+      get_obj( ).`{`$arg_field`}( true );
+   else
+      get_obj( ).`{`$arg_field`}( false );
+   // [(finish field_bool_is_for_peer)] `{`$arg_id`}
+`}

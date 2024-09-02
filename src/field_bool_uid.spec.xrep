@@ -1,13 +1,9 @@
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start field_bool_uid)] `{`$arg_id`}
-`{`!`@eq`(`$arg_admin`,`'`'`)`&`!`@eq`(`$arg_system`,`'`'`)\
-   if( is_admin_uid( ) || is_system_uid( ) )
-`,\
-`{`!`@eq`(`$arg_admin`,`'`'`)\
-   if( is_admin_uid( ) )
-`,\
-   if( is_system_uid( ) )
-`}`}\
+`{`$sep`=`'`'`}\
+   if( `{`!`@eq`(`$arg_peer`,`'`'`)is_peer_uid( )`{`$sep`=`' || `'`}`}\
+`{`!`@eq`(`$arg_admin`,`'`'`)`{`$sep`}is_admin_uid( )`{`$sep`=`' || `'`}`}\
+`{`!`@eq`(`$arg_system`,`'`'`)`{`$sep`}is_system_uid( )`} )
       get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_not_equal`,`'true`'`)false`,true`} );
    else
       get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_not_equal`,`'true`'`)true`,false`} );

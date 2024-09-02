@@ -9,7 +9,14 @@
 `}\
     && `{`@eq`(`$arg_update`,`'true`'`)!`}is_create && !get_obj( ).get_is_for_peer( ) )
    {
+`{`@eq`(`$arg_identity_suffix`,`'`'`)\
       string key_info( get_obj( ).`{`$arg_sfield`}( ) );
+`,\
+      temporary_identity_suffix tmp_identity_suffix( get_obj( ).`{`$arg_sfield`}( ) );
+
+      string key_info( replaced( get_obj( ).get_key( ),
+       tmp_identity_suffix.original_suffix, tmp_identity_suffix.current_suffix ) );
+`}\
 
       class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
 

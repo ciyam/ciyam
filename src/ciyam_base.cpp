@@ -14605,7 +14605,12 @@ void begin_instance_op( instance_op op, class_base& instance,
       else if( ( op == e_instance_op_review ) || ( op == e_instance_op_update ) )
       {
          if( instance.get_is_for_peer( ) )
-            instance_accessor.clear( );
+         {
+            if( op == e_instance_op_update )
+               instance_accessor.clear( );
+            else
+               throw runtime_error( "unexpected review op for peer record in begin_instance_op" );
+         }
          else
          {
             bool found = false;
@@ -14824,15 +14829,18 @@ void finish_instance_op( class_base& instance, bool apply_changes,
        || ( op == class_base::e_op_type_update && !instance.get_is_minimal_update( ) ) )
       {
          bool valid = true;
-         // NOTE: Validation can be switched off as an optimisation during a "storage restore".
-         if( p_fields_set && !session_skip_validation( ) && !instance.is_valid( internal_operation, p_fields_set ) )
+
+         // NOTE: Validation is not applicable for "peer records" and can also be switched off as a
+         // performance optimisation during a "storage restore".
+         if( p_fields_set && !instance.get_is_for_peer( )
+          && !session_skip_validation( ) && !instance.is_valid( internal_operation, p_fields_set ) )
             valid = false;
 
          if( valid )
          {
             instance_accessor.perform_to_store( op == class_base::e_op_type_create, internal_operation );
 
-            if( !session_skip_validation( ) && !instance.is_valid( internal_operation ) )
+            if( !instance.get_is_for_peer( ) && !session_skip_validation( ) && !instance.is_valid( internal_operation ) )
                valid = false;
          }
 
@@ -14897,7 +14905,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             temporary_object_variable tmp_object_secondary_validation(
              instance_accessor.get_obj( ), get_special_var_name( e_special_var_secondary_validation ), c_true_value );
 
-            if( !session_skip_validation( ) && !instance.is_valid( internal_operation ) )
+            if( !instance.get_is_for_peer( ) && !session_skip_validation( ) && !instance.is_valid( internal_operation ) )
             {
                string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
 
