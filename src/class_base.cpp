@@ -959,7 +959,7 @@ bool class_base::is_valid( bool is_internal, set< string >* p_fields_set )
    validation_errors.clear( );
 
    TRACE_LOG( TRACE_CLASSOPS, "is_valid( ) [class: "
-    + get_class_name( ) + " ] is_internal = " + to_string( is_internal )
+    + get_class_name( ) + " ] key = '" + key + "', is_internal = " + to_string( is_internal )
     + " calling post_init( ) and then " + string( !p_fields_set ? "validate" : "validate_set_fields" ) + "( )" );
 
    post_init( );

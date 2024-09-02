@@ -1,0 +1,47 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+`{`$suffix`=`'_C`'`}`{`!`@eq`(`$arg_key_suffix`,`'`'`)`$suffix`=`$arg_key_suffix`}\
+   // [(start for_update_clone)] `{`$arg_id`}
+`{`@eq`(`$arg_fld_clone_only`,`'`'`)\
+   transaction_start( );
+`}\
+   try
+   {
+`{`@eq`(`$arg_fld_clone_only`,`'`'`)\
+      get_obj( ).op_update( );
+
+      get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) );
+
+`}\
+      class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
+
+      cp_source->op_update( get_obj( ).get_key( ) + "`{`$suffix`}" );
+
+`{`@eq`(`$arg_fld_self_only`,`'`'`)\
+      cp_source->`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) );
+
+`}`{`!`@eq`(`$arg_spfield`,`'`'`)\
+      cp_source->`{`$arg_spfield`}( get_obj( ).get_key( ) );
+
+`}\
+      cp_source->op_apply( );
+`{`@eq`(`$arg_fld_clone_only`,`'`'`)\
+
+      get_obj( ).op_apply( );
+
+      transaction_commit( );
+`}\
+
+      // FUTURE: The return message itself should be a module string.
+      `{`$arg_output_arg`} = get_obj( ).get_display_name( ) + " "
+       + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
+   }
+   catch( ... )
+   {
+      get_obj( ).op_cancel( );
+`{`@eq`(`$arg_fld_clone_only`,`'`'`)\
+      transaction_rollback( );
+`}\
+      throw;
+   }
+   // [(finish for_update_clone)] `{`$arg_id`}
+`}

@@ -2,7 +2,7 @@
 `{`$op`=`'==`'`}`{`@eq`(`$arg_not_equal`,`'true`'`)`$op`=`'!=`'`}\
 `{`$key_suffix`=`'_C`'`}`{`!`@eq`(`$arg_key_suffix`,`'`'`)`$key_suffix`=`$arg_key_suffix`}\
    // [(start field_bool_matched_clone)] `{`$arg_id`}
-   // NOTE: Empty code block for scope purposes.
+   if( !get_obj( ).get_is_for_peer( ) )
    {
       class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
 
