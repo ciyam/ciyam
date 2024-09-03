@@ -812,7 +812,7 @@ field_add -id=129101 Initial_Record Key label mand
 field_add -id=129102 Initial_Record Comments str100 opt
 field_add -id=129103 Initial_Record Order string mand -x=order
 class_add -id=130100 Initial_Record_Value Initial_Record_Values
-field_add -id=130101 Initial_Record_Value Value string opt -x=text
+field_add -id=130101 Initial_Record_Value Value string opt -x=notes
 procedure_add -id=130410 Initial_Record Move_Up
 procedure_arg_add -id=130411 Initial_Record Move_Up Restrict_Fields string in
 procedure_arg_add -id=130412 Initial_Record Move_Up Restrict_Values string in
