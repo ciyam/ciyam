@@ -788,7 +788,8 @@ string replace_spaces( const string& input, const char* p_rep, size_t spos )
    return str;
 }
 
-string replace_crlfs_and_spaces( const string& input, const char* p_rep, const char* p_srep )
+string replace_crlfs_and_spaces( const string& input,
+ const char* p_rep, const char* p_srep, bool only_when_doubled )
 {
    string str( input );
 
@@ -803,36 +804,54 @@ string replace_crlfs_and_spaces( const string& input, const char* p_rep, const c
    // NOTE: Replace all remaining CR's with LF's.
    replace( str, "\\r", "\\n" );
 
-   // NOTE: Use the provided replacement for doubled LF's.
-   while( true )
+   if( !only_when_doubled )
    {
-      pos = str.find( "\\n\\n" );
+      while( true )
+      {
+         pos = str.find( "\\n" );
 
-      if( pos == string::npos )
-         break;
+         if( pos == string::npos )
+            break;
 
-      str.replace( pos, 4, p_rep );
+         str.replace( pos, 2, p_rep );
 
-      if( p_srep && *p_srep != 0 )
-         str = replace_spaces( str, p_srep, pos + strlen( p_rep ) );
+         if( p_srep && *p_srep != 0 )
+            str = replace_spaces( str, p_srep, pos + strlen( p_rep ) );
+      }
    }
-
-   // NOTE: Use the space replacement for single LF's
-   // (or if was not provided then just remove them).
-   while( true )
+   else
    {
-      pos = str.find( "\\n" );
+      // NOTE: Use the provided replacement for doubled LF's.
+      while( true )
+      {
+         pos = str.find( "\\n\\n" );
 
-      if( pos == string::npos )
-         break;
+         if( pos == string::npos )
+            break;
 
-      if( !p_srep )
-         str.erase( pos, 2 );
-      else
-         str.replace( pos, 2, p_srep );
+         str.replace( pos, 4, p_rep );
 
-      if( p_srep && *p_srep != 0 )
-         str = replace_spaces( str, p_srep, pos + strlen( p_rep ) );
+         if( p_srep && *p_srep != 0 )
+            str = replace_spaces( str, p_srep, pos + strlen( p_rep ) );
+      }
+
+      // NOTE: Use the space replacement for single LF's
+      // (or if was not provided then just remove them).
+      while( true )
+      {
+         pos = str.find( "\\n" );
+
+         if( pos == string::npos )
+            break;
+
+         if( !p_srep )
+            str.erase( pos, 2 );
+         else
+            str.replace( pos, 2, p_srep );
+
+         if( p_srep && *p_srep != 0 )
+            str = replace_spaces( str, p_srep, pos + strlen( p_rep ) );
+      }
    }
 
    if( p_srep && *p_srep != 0 )
@@ -1273,7 +1292,7 @@ void replace_links_and_output( const string& s,
  const string& id, const string& module, const string& module_ref,
  ostream& os, bool is_content, bool output_hrefs, const string& session_id,
  const session_info& sess_info, const string& user_select_key, bool using_session_cookie,
- bool use_url_checksum, const string* p_key )
+ bool use_url_checksum, const string* p_key, bool cr_lfs_only_when_doubled )
 {
    const module_info& mod_info( *get_storage_info( ).modules_index.find( module )->second );
 
@@ -1287,10 +1306,12 @@ void replace_links_and_output( const string& s,
       {
          if( is_content )
             os << unescaped(
-             replace_crlfs_and_spaces( cell_data.substr( 0, lpos ), "<br/>", "&nbsp;" ) );
+             replace_crlfs_and_spaces(
+             cell_data.substr( 0, lpos ), "<br/>", "&nbsp;", cr_lfs_only_when_doubled ) );
          else
             os << data_or_nbsp( unescaped(
-             replace_crlfs_and_spaces( escape_markup( cell_data.substr( 0, lpos ) ), "<br/>", "&nbsp;" ) ) );
+             replace_crlfs_and_spaces( escape_markup(
+             cell_data.substr( 0, lpos ) ), "<br/>", "&nbsp;", cr_lfs_only_when_doubled ) ) );
 
          cell_data.erase( 0, lpos );
       }
@@ -1394,10 +1415,10 @@ void replace_links_and_output( const string& s,
 
       if( is_content )
          os << unescaped(
-          replace_crlfs_and_spaces( display, "<br/>", "&nbsp;" ) );
+          replace_crlfs_and_spaces( display, "<br/>", "&nbsp;", cr_lfs_only_when_doubled ) );
       else
          os << data_or_nbsp( unescaped(
-          replace_crlfs_and_spaces( escape_markup( display ), "<br/>", "&nbsp;" ) ) );
+          replace_crlfs_and_spaces( escape_markup( display ), "<br/>", "&nbsp;", cr_lfs_only_when_doubled ) ) );
 
       if( is_href )
          os << "</a>";
@@ -1407,10 +1428,10 @@ void replace_links_and_output( const string& s,
    {
       if( is_content )
          os << unescaped(
-          replace_crlfs_and_spaces( cell_data, "<br/>", "&nbsp;" ) );
+          replace_crlfs_and_spaces( cell_data, "<br/>", "&nbsp;", cr_lfs_only_when_doubled ) );
       else
          os << data_or_nbsp( unescaped(
-          replace_crlfs_and_spaces( escape_markup( cell_data ), "<br/>", "&nbsp;" ) ) );
+          replace_crlfs_and_spaces( escape_markup( cell_data ), "<br/>", "&nbsp;", cr_lfs_only_when_doubled ) ) );
    }
 }
 

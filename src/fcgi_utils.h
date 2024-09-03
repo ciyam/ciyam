@@ -123,7 +123,7 @@ std::string escape_specials( const std::string& input );
 
 std::string replace_spaces( const std::string& input, const char* p_rep, size_t spos );
 
-std::string replace_crlfs_and_spaces( const std::string& input, const char* p_rep, const char* p_srep );
+std::string replace_crlfs_and_spaces( const std::string& input, const char* p_rep, const char* p_srep, bool only_when_doubled = false );
 
 inline std::string replace_crlfs( const std::string& input, const char* p_rep ) { return replace_crlfs_and_spaces( input, p_rep, 0 ); }
 
@@ -150,7 +150,8 @@ std::string remove_links( const std::string& s );
 void replace_links_and_output( const std::string& s, const std::string& id,
  const std::string& module, const std::string& module_ref, std::ostream& os,
  bool is_content, bool output_hrefs, const std::string& session_id, const session_info& sess_info,
- const std::string& user_select_key, bool using_session_cookie, bool use_url_checksum, const std::string* p_key = 0 );
+ const std::string& user_select_key, bool using_session_cookie, bool use_url_checksum,
+ const std::string* p_key = 0, bool cr_lfs_only_when_doubled = false );
 
 void output_form(
  const std::string& module_name, std::ostream& os, const std::string& extra_details,
