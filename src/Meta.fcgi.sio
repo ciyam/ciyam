@@ -3961,7 +3961,7 @@
      <name>field_initial_record_value_value
      <field>130101
      <ftype>string
-     <extra>text
+     <extra>notes
      <mandatory>false
      <modifiers>
     </field>
@@ -9317,7 +9317,7 @@
      <name>field_initial_record_value_value
      <field>130101
      <ftype>string
-     <extra>text
+     <extra>notes
      <modifiers>
      <unique>false
      <indexed>false
