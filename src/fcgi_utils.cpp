@@ -797,9 +797,17 @@ string replace_crlfs_and_spaces( const string& input, const char* p_rep, const c
    if( p_srep && *p_srep != 0 )
       str = replace_spaces( str, p_srep, 0 );
 
+   // NOTE: Replace all paired CR-LF's with LF's.
+   replace( str, "\\r\\n", "\\n" );
+
+   // NOTE: Replace all remaining CR's with LF's.
+   replace( str, "\\r", "\\n" );
+
+   // NOTE: Use the provided replacement for doubled LF's.
    while( true )
    {
-      pos = str.find( "\\r\\n" );
+      pos = str.find( "\\n\\n" );
+
       if( pos == string::npos )
          break;
 
@@ -809,25 +817,19 @@ string replace_crlfs_and_spaces( const string& input, const char* p_rep, const c
          str = replace_spaces( str, p_srep, pos + strlen( p_rep ) );
    }
 
-   while( true )
-   {
-      pos = str.find( "\\r" );
-      if( pos == string::npos )
-         break;
-
-      str.replace( pos, 2, p_rep );
-
-      if( p_srep && *p_srep != 0 )
-         str = replace_spaces( str, p_srep, pos + strlen( p_rep ) );
-   }
-
+   // NOTE: Use the space replacement for single LF's
+   // (or if was not provided then just remove them).
    while( true )
    {
       pos = str.find( "\\n" );
+
       if( pos == string::npos )
          break;
 
-      str.replace( pos, 2, p_rep );
+      if( !p_srep )
+         str.erase( pos, 2 );
+      else
+         str.replace( pos, 2, p_srep );
 
       if( p_srep && *p_srep != 0 )
          str = replace_spaces( str, p_srep, pos + strlen( p_rep ) );
@@ -1284,9 +1286,11 @@ void replace_links_and_output( const string& s,
       if( lpos != 0 )
       {
          if( is_content )
-            os << unescaped( cell_data.substr( 0, lpos ) );
+            os << unescaped(
+             replace_crlfs_and_spaces( cell_data.substr( 0, lpos ), "<br/>", "&nbsp;" ) );
          else
-            os << data_or_nbsp( escape_markup( unescaped( cell_data.substr( 0, lpos ) ) ) );
+            os << data_or_nbsp( unescaped(
+             replace_crlfs_and_spaces( escape_markup( cell_data.substr( 0, lpos ) ), "<br/>", "&nbsp;" ) ) );
 
          cell_data.erase( 0, lpos );
       }
