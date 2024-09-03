@@ -2126,7 +2126,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                         replace_links_and_output( data, ( i->second ).view,
                          ( i->second ).module, ( i->second ).module_ref, extra_content, true, true,
-                         session_id, *p_session_info, uselect, cookies_permitted, use_url_checksum, &key );
+                         session_id, *p_session_info, uselect, cookies_permitted, use_url_checksum, &key, true );
 
                         extra_content << "               </div>\n";
                      }
