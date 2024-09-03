@@ -50,6 +50,11 @@ DATA_SIZE=100MB
 ;
 .storage_init $STORAGE
 @ifndef $ERROR
+.module_list
+MODULES=$OUTPUT
+MODULES=@repstr: /\n:$MODULES
+MODULE=%MODULES:2%
+;
 .storage_channel_list
 ALL_CHANNELS=$OUTPUT
 CHANNEL_REMOVED=@repstr:$CHANNEL/:$ALL_CHANNELS
@@ -61,12 +66,30 @@ ERROR=Unexpected unknown channel '$CHANNEL'.
 .storage_datachain_details -list
 ALL_DATA_CHAINS=$OUTPUT
 IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
+;
 @ifeq "$ALL_DATA_CHAINS" "$IDENTITY_REMOVED"
 .storage_datachain_details $IDENTITY -type=$DATA_TYPE
 ~mkdir files/$IDENTITY
 .file_archive -add files/$IDENTITY $DATA_SIZE $IDENTITY
 @endif
 .storage_datachain_details $IDENTITY -link $CHANNEL
+;
+<channel_information.$MODULE.vars.lst
+;
+.pf $MODULE $CLASS_NAME "$FLD_ACTIVE,$FLD_IDENTITY#2 1,$CHANNEL" $FLD_HOST_NAME,$FLD_PORT_NUMBER -min
+LINES=@repstr:,/\n:$OUTPUT
+;
+@ifdef $LINES
+HOST_NAME=%LINES:1%
+HOST_PORT=%LINES:2%
+;
+.peer_connect $IDENTITY $HOST_NAME-$HOST_PORT -data
+@ifndef $ERROR
+.wait 250
+.session_variable @errors_only 1
+run_script fetch_from_datachain "@storage=$STORAGE,@identity=$IDENTITY"
+@endif
+@endif
 ;
 @endif
 .storage_term
