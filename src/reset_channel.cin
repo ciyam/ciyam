@@ -17,15 +17,8 @@ REVERSE=*!reverse?$CHANNEL
 ;
 #Resetting archives and blockchain files for '$1' ($CHANNEL/$REVERSE).
 ;
-.file_tags bc.$CHANNEL.zenith*
-@ifdef $OUTPUT
 <bc_reset.cin $CHANNEL
-@endif
-;
-.file_tags bc.$REVERSE.zenith*
-@ifdef $OUTPUT
 <bc_reset.cin $REVERSE
-@endif
 ;
 @endif
 ;

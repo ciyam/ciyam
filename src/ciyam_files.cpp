@@ -4337,13 +4337,13 @@ void delete_file_tree( const string& hash, progress* p_progress )
    }
 }
 
-void delete_files_for_tags( const string& pat, progress* p_progress )
+void delete_files_for_tags( const string& pat, progress* p_progress, const char* p_excludes )
 {
    guard g( g_mutex );
 
    date_time dtm( date_time::local( ) );
 
-   string tags( list_file_tags( pat, 0, 0, 0, 0, 0, true, p_progress, &dtm ) );
+   string tags( list_file_tags( pat, p_excludes, 0, 0, 0, 0, true, p_progress, &dtm ) );
 
    if( !tags.empty( ) )
    {

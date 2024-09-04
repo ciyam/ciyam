@@ -22,14 +22,7 @@ OTHER=$2
 ;
 #Resetting channel archives and blockchain files for $COMBINED and $REVERSED.
 ;
-.file_tags bc.$COMBINED.zenith*
-@ifdef $OUTPUT
 <bc_reset.cin $COMBINED
-@endif
-;
-.file_tags bc.$REVERSED.zenith*
-@ifdef $OUTPUT
 <bc_reset.cin $REVERSED
-@endif
 ;
 @endif
