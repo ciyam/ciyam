@@ -1232,21 +1232,43 @@ file_info -content list9
 eea991ff5a78687de5f72eb04ca41d874f25041b3375fcbba3ade8419134e2fa aaa
 82c63533c98e0a4fc3e2ac610841c79cfb3c7cc7e357656b8e6bf2c3af7c1d6d ccc
 7623bf435855f90d41755d83e5fc61c4ad4f95da4d2d665ebfd0c50c92779515 eee
-file_kill list0
-file_kill list1
-file_kill list2
-file_kill list3
-file_kill list4
-file_kill list5
-file_kill list6
-file_kill list7
-file_kill list8
-file_kill list9
-file_kill aaa
-file_kill bbb
+file_tags
+aaa
+bbb
+ccc
+ddd
+eee
+list0
+list1
+list2
+list3
+list4
+list5
+list6
+list7
+list8
+list9
+file_kill -p=list? -x=list1,list3,list5
+file_tags
+aaa
+bbb
+ccc
+ddd
+eee
+list1
+list3
+list5
+file_kill -p=l*
+file_tags
+aaa
+bbb
+ccc
+ddd
+eee
+file_kill -p=??? -x=ccc
+file_tags
+ccc
 file_kill ccc
-file_kill ddd
-file_kill eee
 file_stats
 [0/100000]0 B/100.0 GB:0 tag(s)
 file_put 1K*mnemonics.txt x0

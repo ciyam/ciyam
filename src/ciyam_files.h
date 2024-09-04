@@ -164,7 +164,7 @@ void CIYAM_BASE_DECL_SPEC delete_file( const std::string& hash, bool even_if_tag
 
 void CIYAM_BASE_DECL_SPEC delete_file_tree( const std::string& hash, progress* p_progress = 0 );
 
-void CIYAM_BASE_DECL_SPEC delete_files_for_tags( const std::string& pat, progress* p_progress = 0 );
+void CIYAM_BASE_DECL_SPEC delete_files_for_tags( const std::string& pat, progress* p_progress = 0, const char* p_excludes = 0 );
 
 void CIYAM_BASE_DECL_SPEC copy_raw_file( const std::string& hash, const std::string& dest_file_name );
 

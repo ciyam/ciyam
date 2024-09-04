@@ -546,21 +546,14 @@ file_list -d=ddd*2 list5 list8
 file_info -content list8
 file_list -d=bbb,ddd*,eee list5 list9
 file_info -content list9
-file_kill list0
-file_kill list1
-file_kill list2
-file_kill list3
-file_kill list4
-file_kill list5
-file_kill list6
-file_kill list7
-file_kill list8
-file_kill list9
-file_kill aaa
-file_kill bbb
+file_tags
+file_kill -p=list? -x=list1,list3,list5
+file_tags
+file_kill -p=l*
+file_tags
+file_kill -p=??? -x=ccc
+file_tags
 file_kill ccc
-file_kill ddd
-file_kill eee
 file_stats
 file_put 1K*mnemonics.txt x0
 file_info -content x0

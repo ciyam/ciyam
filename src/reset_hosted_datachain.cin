@@ -16,9 +16,6 @@ IDENTITY=$1
 ;
 #Resetting archive and blockchain files for $IDENTITY.
 ;
-.file_tags bc.$IDENTITY.zenith*
-@ifdef $OUTPUT
 <bc_reset.cin $IDENTITY
-@endif
 ;
 @endif

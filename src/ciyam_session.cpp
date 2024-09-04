@@ -2110,6 +2110,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_file_kill )
       {
          string pat( get_parm_val( parameters, c_cmd_ciyam_session_file_kill_pat ) );
+         string excludes( get_parm_val( parameters, c_cmd_ciyam_session_file_kill_excludes ) );
          string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_kill_tag_or_hash ) );
          bool quiet = has_parm_val( parameters, c_cmd_ciyam_session_file_kill_quiet );
          bool recurse = has_parm_val( parameters, c_cmd_ciyam_session_file_kill_recurse );
@@ -2129,7 +2130,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   delete_file_tree( hash, &handler );
             }
             else
-               delete_files_for_tags( pat, &handler );
+            {
+               const char* p_excludes = 0;
+
+               if( !excludes.empty( ) )
+                  p_excludes = excludes.c_str( );
+
+               delete_files_for_tags( pat, &handler, p_excludes );
+            }
          }
          catch( exception& )
          {
