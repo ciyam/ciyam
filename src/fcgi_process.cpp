@@ -3128,10 +3128,18 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             }
 
             string ui_class_changing( c_ui_class_changing );
+            string ui_group_changing( c_ui_group_changing );
 
-            replace( ui_class_changing, c_ui_class_marker, lower( list.mclass ) );
+            string ui_class_name( lower( list.mclass ) );
 
-            if( file_exists( ui_class_changing ) )
+            replace( ui_class_changing, c_ui_class_marker, ui_class_name );
+
+            string ui_group_name( '@' + ui_class_name );
+            string::size_type pos = ui_group_name.find( '_' );
+
+            replace( ui_group_changing, c_ui_group_marker, ui_group_name.substr( 0, pos ) );
+
+            if( file_exists( ui_class_changing ) || file_exists( ui_group_changing ) )
                has_any_changing_records = true;
 
             output_list_form( extra_content, list, session_id, uselect, error_message,

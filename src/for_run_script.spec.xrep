@@ -16,7 +16,17 @@
        get_special_var_name( e_special_var_errors_only ), c_true_value );
 `}
 `{`@eq`(`$arg_ui_class_changing`,`'true`'`)\
-      touch_web_file( "ui_" + lower( get_obj( ).get_class_name( ) ) + "_changing" );
+      string ui_class_name( lower( get_obj( ).get_class_name( ) );
+
+      touch_web_file( "ui_" + ui_class_name + "_changing" );
+
+`}\
+`{`@eq`(`$arg_ui_group_changing`,`'true`'`)\
+      string ui_group_name( '@' + lower( get_obj( ).get_class_name( ) ) );
+
+      string::size_type pos = ui_group_name.find( '_' );
+
+      touch_web_file( "ui_" + ui_group_name.substr( 0, pos ) + "_changing" );
 
 `}\
       run_script( "`{`$arg_script`}",\

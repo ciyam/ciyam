@@ -74,25 +74,21 @@ IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
 @endif
 .storage_datachain_details $IDENTITY -link $CHANNEL
 ;
-<channel_information.$MODULE.vars.lst
-;
-.pf $MODULE $CLASS_NAME "$FLD_ACTIVE,$FLD_IDENTITY#2 1,$CHANNEL" $FLD_HOST_NAME,$FLD_PORT_NUMBER -min
-LINES=@repstr:,/\n:$OUTPUT
-;
-@ifdef $LINES
-HOST_NAME=%LINES:1%
-HOST_PORT=%LINES:2%
-;
-.peer_connect $IDENTITY $HOST_NAME-$HOST_PORT -data
-@ifndef $ERROR
-.wait 250
-.session_variable @errors_only 1
-run_script fetch_from_datachain "@storage=$STORAGE,@identity=$IDENTITY"
-@endif
 @endif
 ;
-@endif
 .storage_term
+;
+@ifndef $ERROR
+@ifeq "$DATA_TYPE" "0"
+.system_variable @blog_sync_datachains 1 ""
+@ifeq $OUTPUT 1
+.session_variable @errors_only 1
+~touch $WEBDIR/$STORAGE/ui_@blog_changing
+.run_script sync_blog_datachains "@storage=$STORAGE"
+@endif
+@endif
+@endif
+;
 @endif
 @endif
 ;
