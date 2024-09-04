@@ -775,11 +775,12 @@ void output_list_form( ostream& os,
 
    bool allow_quick_links = false;
 
-   if( using_session_cookie && !sess_info.user_id.empty( )
+   if( using_session_cookie && !sess_info.user_id.empty( ) && !has_any_changing
     && !mod_info.user_qlink_class_id.empty( ) && extras.count( c_list_type_extra_quick_link ) )
       allow_quick_links = true;
 
    size_t search_opt_limit = c_default_search_opt_limit;
+
    if( extras.count( c_list_type_extra_search_opt_limit ) )
    {
       search_opt_limit = atoi( extras.find( c_list_type_extra_search_opt_limit )->second.c_str( ) );
@@ -870,6 +871,7 @@ void output_list_form( ostream& os,
    os << ">\n";
 
    string text_search_value;
+
    if( !is_printable && qlink.empty( ) && extras.count( c_list_type_extra_search ) )
    {
       os << "<table name=\"" << source.id << "_search\" id=\"" << source.id << "_search\""
@@ -922,6 +924,7 @@ void output_list_form( ostream& os,
       }
 
       values skey_values;
+
       for( size_t i = 0; i < ( source.lici->second )->parents.size( ); i++ )
       {
          if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent, parent_state ) )
@@ -1023,12 +1026,14 @@ void output_list_form( ostream& os,
             bool is_unselected_skey_owner = false;
 
             map< string, string > extra_data;
+
             if( !( source.lici->second )->parents[ i ].extra.empty( ) )
                parse_field_extra( ( source.lici->second )->parents[ i ].extra, extra_data );
 
             os << "<tr>";
 
             string label_name( ( source.lici->second )->parents[ i ].name );
+
             if( extra_data.count( c_list_field_extra_label_class ) )
                label_name = extra_data.find( c_list_field_extra_label_class )->second;
 
@@ -1054,6 +1059,7 @@ void output_list_form( ostream& os,
                string svname( opt + ( source.lici->second )->parents[ i ].field );
 
                string any_display( GDS( c_display_any ) );
+
                if( opt != first_prefix )
                {
                   if( !is_select_child )
@@ -1127,6 +1133,7 @@ void output_list_form( ostream& os,
                }
 
                set< string > parent_extras;
+
                if( !( source.lici->second )->parents[ i ].pextra.empty( ) )
                   split( ( source.lici->second )->parents[ i ].pextra, parent_extras, '+' );
 
@@ -1373,9 +1380,11 @@ void output_list_form( ostream& os,
                   int input_size = 25;
                   int max_length = 100;
                   bool is_datetime = false;
+
                   string extra, validate, use_time( "false" ), use_secs( "true" );
 
                   string range_min, range_max, range_extra;
+
                   if( field_extras.count( c_field_extra_range ) )
                   {
                      string::size_type pos = field_extras[ c_field_extra_range ].find( ".." );
@@ -1396,6 +1405,7 @@ void output_list_form( ostream& os,
                      validate = "datetime";
 
                      string date_precision;
+
                      if( field_extras.count( c_field_extra_date_precision ) )
                         date_precision = field_extras[ c_field_extra_date_precision ];
 
@@ -1423,6 +1433,7 @@ void output_list_form( ostream& os,
                      validate = "time";
 
                      string time_precision;
+
                      if( field_extras.count( c_field_extra_time_precision ) )
                         time_precision = field_extras[ c_field_extra_time_precision ];
 
@@ -1448,6 +1459,7 @@ void output_list_form( ostream& os,
                      is_datetime = true;
 
                      string time_precision;
+
                      if( field_extras.count( c_field_extra_time_precision ) )
                         time_precision = field_extras[ c_field_extra_time_precision ];
 
@@ -1692,7 +1704,8 @@ void output_list_form( ostream& os,
                   is_no_erase = !sess_info.is_default_other( );
             }
 
-            if( !is_no_erase && source.can_delete_any
+            if( !is_no_erase
+             && !has_any_changing && source.can_delete_any
              && ( !is_admin_erase || sess_info.is_admin_user )
              && ( !is_owner_erase || has_owner_parent_or_is_user_list )
              && ( !is_admin_owner_erase || sess_info.is_admin_user || has_owner_parent_or_is_user_list ) )
@@ -1889,192 +1902,195 @@ void output_list_form( ostream& os,
                }
             }
 
-            for( size_t i = 0; i < ( source.lici->second )->parents.size( ); i++ )
+            if( !has_any_changing )
             {
-               if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent, parent_state ) )
-                  continue;
-
-               if( ( source.lici->second )->parents[ i ].operations.count( c_operation_link )
-                && ( ( ( source.lici->second )->parents[ i ].operations.find( c_operation_link ) )->second.empty( )
-                || sess_info.user_perms.count( ( source.lici->second )->parents[ i ].operations.find( c_operation_link )->second ) ) )
+               for( size_t i = 0; i < ( source.lici->second )->parents.size( ); i++ )
                {
-                  map< string, string > parent_extras;
+                  if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent, parent_state ) )
+                     continue;
 
-                  if( !( source.lici->second )->parents[ i ].extra.empty( ) )
-                     parse_field_extra( ( source.lici->second )->parents[ i ].extra, parent_extras );
-
-                  if( !had_data )
-                     had_data = true;
-                  else
-                     os << "&nbsp;&nbsp;";
-
-                  string checksum_values;
-                  string new_checksum_value;
-
-                  if( use_url_checksum )
+                  if( ( source.lici->second )->parents[ i ].operations.count( c_operation_link )
+                   && ( ( ( source.lici->second )->parents[ i ].operations.find( c_operation_link ) )->second.empty( )
+                   || sess_info.user_perms.count( ( source.lici->second )->parents[ i ].operations.find( c_operation_link )->second ) ) )
                   {
-                     checksum_values = string( c_act_link )
-                      + ( is_child_list ? string( c_cmd_view ) : string( c_cmd_list ) ) + parent_key
-                      + ( pident.empty( ) ? oident : pident ) + user_select_key + to_string( sess_info.checksum_serial );
+                     map< string, string > parent_extras;
 
-                     if( has_hashval )
-                        checksum_values += c_hash_suffix;
+                     if( !( source.lici->second )->parents[ i ].extra.empty( ) )
+                        parse_field_extra( ( source.lici->second )->parents[ i ].extra, parent_extras );
 
-                     new_checksum_value = get_checksum( sess_info, checksum_values );
-                  }
+                     if( !had_data )
+                        had_data = true;
+                     else
+                        os << "&nbsp;&nbsp;";
 
-                  os << "<select onchange=\"sel_list_action( document."
-                   << source.id << ", '" << source.cid << "', '" << c_act_link << "', '"
-                   << source.id << "', this, '" << ( source.lici->second )->parents[ i ].field;
+                     string checksum_values;
+                     string new_checksum_value;
 
-                  if( use_url_checksum )
-                     os << "', '" << c_param_chksum << "', '" << new_checksum_value;
-
-                  os << "' );\">\n";
-
-                  os << "<option value=\"\" disabled=\"disabled\" selected=\"selected\">" << GDS( c_display_assign_to )
-                   << " " << get_display_string( ( source.lici->second )->parents[ i ].name ) << "&nbsp;&nbsp;</option>\n";
-
-                  bool is_folder = false;
-                  if( ( source.lici->second )->parents[ i ].folder )
-                     is_folder = true;
-
-                  if( !( source.lici->second )->parents[ i ].mandatory
-                   && !parent_extras.count( c_list_field_extra_link_none_denied_always )
-                   && ( has_owner_parent || !parent_extras.count( c_list_field_extra_link_none_owner_only ) )
-                   && ( sess_info.is_admin_user || !parent_extras.count( c_list_field_extra_link_none_admin_only ) )
-                   && ( ( has_owner_parent || sess_info.is_admin_user ) || !parent_extras.count( c_list_field_extra_link_none_admin_owner ) )
-                   && ( !is_folder || ( source.lici->second )->parents[ i ].field != ( source.lici->second )->parents[ i ].pclass ) )
-                     os << "<option value=\"\">&lt;" << GDS( c_display_none ) << "&gt;&nbsp;&nbsp;</option>\n";
-
-                  const data_container& parent_row_data = source.parent_lists[ i ];
-
-                  set< string > parent_pextras;
-                  if( !( source.lici->second )->parents[ i ].pextra.empty( ) )
-                     split( ( source.lici->second )->parents[ i ].pextra, parent_pextras, '+' );
-
-                  for( size_t j = 0; j < parent_row_data.size( ); j++ )
-                  {
-                     string key( parent_row_data[ j ].first );
-                     string display( parent_row_data[ j ].second );
-
-                     // NOTE: Remove parent version information as its not relevant for a link operation.
-                     size_t pos = key.find( ' ' );
-                     if( pos != string::npos )
-                        key.erase( pos );
-
-                     if( display.empty( ) )
-                        display = key;
-
-                     if( parent_pextras.count( c_parent_extra_manuallink ) )
+                     if( use_url_checksum )
                      {
-                        stringstream ss;
+                        checksum_values = string( c_act_link )
+                         + ( is_child_list ? string( c_cmd_view ) : string( c_cmd_list ) ) + parent_key
+                         + ( pident.empty( ) ? oident : pident ) + user_select_key + to_string( sess_info.checksum_serial );
 
-                        replace_links_and_output( display, "",
-                         source.module, source.module_ref, ss, false, false, session_id,
-                         sess_info, user_select_key, using_session_cookie, use_url_checksum );
+                        if( has_hashval )
+                           checksum_values += c_hash_suffix;
 
-                        display = ss.str( );
+                        new_checksum_value = get_checksum( sess_info, checksum_values );
                      }
 
-                     os << "<option value=\"" << key << "\">" << unescaped( display ) << "&nbsp;&nbsp;</option>\n";
-                  }
+                     os << "<select onchange=\"sel_list_action( document."
+                      << source.id << ", '" << source.cid << "', '" << c_act_link << "', '"
+                      << source.id << "', this, '" << ( source.lici->second )->parents[ i ].field;
 
-                  os << "</select>";
+                     if( use_url_checksum )
+                        os << "', '" << c_param_chksum << "', '" << new_checksum_value;
+
+                     os << "' );\">\n";
+
+                     os << "<option value=\"\" disabled=\"disabled\" selected=\"selected\">" << GDS( c_display_assign_to )
+                      << " " << get_display_string( ( source.lici->second )->parents[ i ].name ) << "&nbsp;&nbsp;</option>\n";
+
+                     bool is_folder = false;
+                     if( ( source.lici->second )->parents[ i ].folder )
+                        is_folder = true;
+
+                     if( !( source.lici->second )->parents[ i ].mandatory
+                      && !parent_extras.count( c_list_field_extra_link_none_denied_always )
+                      && ( has_owner_parent || !parent_extras.count( c_list_field_extra_link_none_owner_only ) )
+                      && ( sess_info.is_admin_user || !parent_extras.count( c_list_field_extra_link_none_admin_only ) )
+                      && ( ( has_owner_parent || sess_info.is_admin_user ) || !parent_extras.count( c_list_field_extra_link_none_admin_owner ) )
+                      && ( !is_folder || ( source.lici->second )->parents[ i ].field != ( source.lici->second )->parents[ i ].pclass ) )
+                        os << "<option value=\"\">&lt;" << GDS( c_display_none ) << "&gt;&nbsp;&nbsp;</option>\n";
+
+                     const data_container& parent_row_data = source.parent_lists[ i ];
+
+                     set< string > parent_pextras;
+                     if( !( source.lici->second )->parents[ i ].pextra.empty( ) )
+                        split( ( source.lici->second )->parents[ i ].pextra, parent_pextras, '+' );
+
+                     for( size_t j = 0; j < parent_row_data.size( ); j++ )
+                     {
+                        string key( parent_row_data[ j ].first );
+                        string display( parent_row_data[ j ].second );
+
+                        // NOTE: Remove parent version information as its not relevant for a link operation.
+                        size_t pos = key.find( ' ' );
+                        if( pos != string::npos )
+                           key.erase( pos );
+
+                        if( display.empty( ) )
+                           display = key;
+
+                        if( parent_pextras.count( c_parent_extra_manuallink ) )
+                        {
+                           stringstream ss;
+
+                           replace_links_and_output( display, "",
+                            source.module, source.module_ref, ss, false, false, session_id,
+                            sess_info, user_select_key, using_session_cookie, use_url_checksum );
+
+                           display = ss.str( );
+                        }
+
+                        os << "<option value=\"" << key << "\">" << unescaped( display ) << "&nbsp;&nbsp;</option>\n";
+                     }
+
+                     os << "</select>";
+                  }
                }
-            }
 
-            for( size_t i = 0; i < ( source.lici->second )->restricts.size( ); i++ )
-            {
-               if( !has_access( ( source.lici->second )->restricts[ i ].extra, sess_info, has_owner_parent, parent_state ) )
-                  continue;
-
-               if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_link )
-                && ( ( ( source.lici->second )->restricts[ i ].operations.find( c_operation_link ) )->second.empty( )
-                || sess_info.user_perms.count( ( source.lici->second )->restricts[ i ].operations.find( c_operation_link )->second ) ) )
+               for( size_t i = 0; i < ( source.lici->second )->restricts.size( ); i++ )
                {
-                  map< string, string > restrict_extras;
+                  if( !has_access( ( source.lici->second )->restricts[ i ].extra, sess_info, has_owner_parent, parent_state ) )
+                     continue;
 
-                  if( !( source.lici->second )->restricts[ i ].extra.empty( ) )
-                     parse_field_extra( ( source.lici->second )->restricts[ i ].extra, restrict_extras );
-
-                  // NOTE: If the restrict link field is actually the security level and the user is
-                  // anonymous or only has "level 0" security then don't display the security level.
-                  if( restrict_extras.count( c_field_extra_enum )
-                   && restrict_extras.count( c_field_extra_security_level ) )
+                  if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_link )
+                   && ( ( ( source.lici->second )->restricts[ i ].operations.find( c_operation_link ) )->second.empty( )
+                   || sess_info.user_perms.count( ( source.lici->second )->restricts[ i ].operations.find( c_operation_link )->second ) ) )
                   {
-                     const enum_info& info( sinfo.enums.find( restrict_extras.find( c_field_extra_enum )->second )->second );
+                     map< string, string > restrict_extras;
 
-                     if( sess_info.user_id.empty( ) || ( info.values[ 0 ].first == sess_info.user_slevel ) )
-                        continue;
-                  }
+                     if( !( source.lici->second )->restricts[ i ].extra.empty( ) )
+                        parse_field_extra( ( source.lici->second )->restricts[ i ].extra, restrict_extras );
 
-                  if( !had_data )
-                     had_data = true;
-                  else
-                     os << "&nbsp;&nbsp;";
-
-                  string checksum_values;
-                  string new_checksum_value;
-
-                  if( use_url_checksum )
-                  {
-                     checksum_values = string( c_act_link )
-                      + ( is_child_list ? string( c_cmd_view ) : string( c_cmd_list ) ) + parent_key
-                      + ( pident.empty( ) ? oident : pident ) + user_select_key + to_string( sess_info.checksum_serial );
-
-                     if( has_hashval )
-                        checksum_values += c_hash_suffix;
-
-                     new_checksum_value = get_checksum( sess_info, checksum_values );
-                  }
-
-                  os << "<select onchange=\"sel_list_action( document."
-                   << source.id << ", '" << source.cid << "', '" << c_act_link << "', '"
-                   << source.id << "', this, '" << ( source.lici->second )->restricts[ i ].field;
-
-                  if( use_url_checksum )
-                     os << "', '" << c_param_chksum << "', '" << new_checksum_value;
-
-                  os << "' );\">\n";
-
-                  os << "<option value=\"\" disabled=\"disabled\" selected=\"selected\">" << GDS( c_display_assign_to )
-                   << " " << get_display_string( ( source.lici->second )->restricts[ i ].name ) << "&nbsp;&nbsp;</option>\n";
-
-                  if( ( source.lici->second )->restricts[ i ].ftype == c_field_type_bool )
-                  {
-                     os << "<option value=\"0\">" << GDS( c_display_false ) << "&nbsp;&nbsp;</option>\n";
-                     os << "<option value=\"1\">" << GDS( c_display_true ) << "&nbsp;&nbsp;</option>\n";
-                  }
-                  else
-                  {
-                     if( restrict_extras.count( c_field_extra_enum ) )
+                     // NOTE: If the restrict link field is actually the security level and the user is
+                     // anonymous or only has "level 0" security then don't display the security level.
+                     if( restrict_extras.count( c_field_extra_enum )
+                      && restrict_extras.count( c_field_extra_security_level ) )
                      {
                         const enum_info& info( sinfo.enums.find( restrict_extras.find( c_field_extra_enum )->second )->second );
 
-                        for( size_t j = 0; j < info.values.size( ); j++ )
-                        {
-                           // NOTE: Enum values that start with a '-' are not included for user selection
-                           // as they are deemed as being only available for internal application purposes.
-                           if( info.values[ j ].first[ 0 ] == '-' )
-                              continue;
+                        if( sess_info.user_id.empty( ) || ( info.values[ 0 ].first == sess_info.user_slevel ) )
+                           continue;
+                     }
 
-                           os << "<option value=\"" << info.values[ j ].first << "\">"
-                            << get_display_string( info.values[ j ].second ) << "&nbsp;&nbsp;</option>\n";
+                     if( !had_data )
+                        had_data = true;
+                     else
+                        os << "&nbsp;&nbsp;";
 
-                           // NOTE: Security level enumeration is stopped at the user's level so it is
-                           // not possible for a user to create or modify an instance's security level
-                           // to a level greater than the level the user has been granted.
-                           if( restrict_extras.count( c_field_extra_security_level )
-                            && ( sess_info.user_id.empty( ) || info.values[ j ].first == sess_info.user_slevel ) )
-                              break;
-                        }
+                     string checksum_values;
+                     string new_checksum_value;
+
+                     if( use_url_checksum )
+                     {
+                        checksum_values = string( c_act_link )
+                         + ( is_child_list ? string( c_cmd_view ) : string( c_cmd_list ) ) + parent_key
+                         + ( pident.empty( ) ? oident : pident ) + user_select_key + to_string( sess_info.checksum_serial );
+
+                        if( has_hashval )
+                           checksum_values += c_hash_suffix;
+
+                        new_checksum_value = get_checksum( sess_info, checksum_values );
+                     }
+
+                     os << "<select onchange=\"sel_list_action( document."
+                      << source.id << ", '" << source.cid << "', '" << c_act_link << "', '"
+                      << source.id << "', this, '" << ( source.lici->second )->restricts[ i ].field;
+
+                     if( use_url_checksum )
+                        os << "', '" << c_param_chksum << "', '" << new_checksum_value;
+
+                     os << "' );\">\n";
+
+                     os << "<option value=\"\" disabled=\"disabled\" selected=\"selected\">" << GDS( c_display_assign_to )
+                      << " " << get_display_string( ( source.lici->second )->restricts[ i ].name ) << "&nbsp;&nbsp;</option>\n";
+
+                     if( ( source.lici->second )->restricts[ i ].ftype == c_field_type_bool )
+                     {
+                        os << "<option value=\"0\">" << GDS( c_display_false ) << "&nbsp;&nbsp;</option>\n";
+                        os << "<option value=\"1\">" << GDS( c_display_true ) << "&nbsp;&nbsp;</option>\n";
                      }
                      else
-                        throw runtime_error( "unexpected non-bool/enum restrict link" );
-                  }
+                     {
+                        if( restrict_extras.count( c_field_extra_enum ) )
+                        {
+                           const enum_info& info( sinfo.enums.find( restrict_extras.find( c_field_extra_enum )->second )->second );
 
-                  os << "</select>";
+                           for( size_t j = 0; j < info.values.size( ); j++ )
+                           {
+                              // NOTE: Enum values that start with a '-' are not included for user selection
+                              // as they are deemed as being only available for internal application purposes.
+                              if( info.values[ j ].first[ 0 ] == '-' )
+                                 continue;
+
+                              os << "<option value=\"" << info.values[ j ].first << "\">"
+                               << get_display_string( info.values[ j ].second ) << "&nbsp;&nbsp;</option>\n";
+
+                              // NOTE: Security level enumeration is stopped at the user's level so it is
+                              // not possible for a user to create or modify an instance's security level
+                              // to a level greater than the level the user has been granted.
+                              if( restrict_extras.count( c_field_extra_security_level )
+                               && ( sess_info.user_id.empty( ) || info.values[ j ].first == sess_info.user_slevel ) )
+                                 break;
+                           }
+                        }
+                        else
+                           throw runtime_error( "unexpected non-bool/enum restrict link" );
+                     }
+
+                     os << "</select>";
+                  }
                }
             }
          }
