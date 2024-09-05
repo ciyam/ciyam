@@ -77,6 +77,9 @@ SECRET_HASH=$OUTPUT
 .session_variable @secret_hash $SECRET_HASH
 @endif
 .peer_connect $IDENTITY $HOST_NAME-$HOST_PORT -data
+@ifdef $ERROR
+ERROR=
+@endif
 @endif
 ;
 ROWS=%ROWS:-1%

@@ -9,11 +9,12 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "1"
-#Usage: sync_blog_datachains.cin <storage>
+#Usage: sync_blog_datachains.cin <storage> [<identity>]
 @else
 ERROR=
 ;
 STORAGE=$1
+IDENTITY=$2
 ;
 .storage_init $STORAGE
 ;
@@ -30,14 +31,21 @@ MODULE=%MODULES:2%
 .storage_web_root -expand
 STORAGE_WEB_DIR=$OUTPUT
 ;
+@ifdef $IDENTITY
+DATA_CHAINS=$IDENTITY
+@else
 .storage_datachain_details -list -type=0
 DATA_CHAINS=$OUTPUT
+@endif
+;
 .storage_term
 ;
 @ifdef $DATA_CHAINS
 .session_variable @deque "~$DATA_CHAINS"
 ;
 @:LOOP
+;
+.storage_init $STORAGE
 ;
 @label NEXT
 .session_variable @deque front
@@ -50,10 +58,8 @@ NEXT_CHAIN=$OUTPUT
 @skip
 ;
 @:NEXT
-.storage_init $STORAGE
 .storage_datachain_details $NEXT_CHAIN
 PEER_DATA_INFO=@repstr: /\n:$OUTPUT
-.storage_term
 ;
 CHANNELS=%PEER_DATA_INFO:3%
 @ifdef $CHANNELS
@@ -71,10 +77,8 @@ REMAINING=@repstr:$NEXT_IDENTITY/:$CHANNELS
 @label END_CHANNEL_LOOP
 @endif
 ;
-.storage_init $STORAGE
 .pf $MODULE $CLASS_NAME "$FLD_ACTIVE,$FLD_IDENTITY#2 1,$NEXT_IDENTITY" $FLD_SUBMIT_CHAIN_ID,$FLD_HOST_NAME,$FLD_PORT_NUMBER -min
 LINES=@repstr:,/\n:$OUTPUT
-.storage_term
 ;
 @ifdef $LINES
 HASH_ID=%LINES:1%
@@ -108,6 +112,8 @@ CHANNELS=@repstr:$NEXT_IDENTITY,/:$CHANNELS
 ;
 !!@:CHANNEL_LOOP
 @:END_CHANNEL_LOOP
+;
+.storage_term
 ;
 @ifdef ANY_PEER_CONNECTS
 .wait 500

@@ -68,6 +68,10 @@ APP_LOG_INFO_FILE=@files::$NEXT_IDENT.log
 .system_variable @secret_hash_$SUBMIT_IDENTITY
 .session_variable @secret_hash $OUTPUT
 .peer_connect $SUBMIT_IDENTITY:$RECEIVE_IDENTITY $HOST_NAME-$HOST_PORT -user
+@ifdef $ERROR
+ERROR=
+SKIPPED=1
+@endif
 @endif
 ;
 @else

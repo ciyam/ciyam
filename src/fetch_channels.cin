@@ -59,7 +59,11 @@ HOST_PORT=%NEXT_LINE:6%
 .system_variable @secret_hash_$SUBMIT_IDENTITY
 .session_variable @secret_hash $OUTPUT
 .peer_connect $RECEIVE_IDENTITY:$SUBMIT_IDENTITY $HOST_NAME-$HOST_PORT -user
+@ifdef $ERROR
+ERROR=
+@else
 .wait 250
+@endif
 @endif
 ;
 .system_variable @shared_secret_$IDENTITY $SHARED_SECRET

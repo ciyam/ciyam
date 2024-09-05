@@ -1,0 +1,25 @@
+; Copyright (c) 2022-2024 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#Usage: test.cin @one @two [@opt1 [@opt2]]
+@else
+;
+ONE=$1
+TWO=$2
+OPT1=$3
+OPT2=$4
+;
+@ifndef $OPT1
+.system_variable @test "$ONE $TWO"
+@else
+@ifndef $OPT2
+.system_variable @test "$ONE $TWO $OPT1"
+@else
+.system_variable @test "$ONE $TWO $OPT1 $OPT2"
+@endif
+@endif
+;
+@endif

@@ -2571,9 +2571,7 @@ void remove_datachain_info( const string& identity )
 
    ofs.set_root_folder( c_storable_folder_name_datachains );
 
-   if( !ofs.has_folder( identity ) )
-      throw runtime_error( "datachain '" + identity + "' not found" );
-   else
+   if( ofs.has_folder( identity ) )
    {
       ods::transaction ods_tx( storage_ods_instance( ) );
 

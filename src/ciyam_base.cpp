@@ -137,6 +137,8 @@ const char* const c_sec_field_name = "Sec_";
 const char* const c_typ_field_name = "Typ_";
 const char* const c_ver_field_name = "Ver_";
 
+const char* const c_script_arg_opt = "opt";
+
 const char* const c_server_log_file = "ciyam_server.log";
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
@@ -7039,19 +7041,32 @@ void check_script_args( const string& script_name, bool* p_rc )
    {
       split( arguments, all_args, ' ' );
 
+      size_t adjust = 0;
+
       for( size_t i = 0; i < all_args.size( ); i++ )
       {
          string next_arg( all_args[ i ] );
 
-         if( !next_arg.empty( ) && ( next_arg[ 0 ] == '@' ) && !has_session_variable( next_arg ) )
+         if( next_arg == c_script_arg_opt )
+            break;
+
+         if( !next_arg.empty( ) && ( next_arg[ 0 ] == '@' ) )
          {
-            if( !p_rc )
-               // FUTURE: This message should be handled as a server string message.
-               throw runtime_error( "Script '" + script_name + "' missing argument '" + next_arg + "'." );
-            else
+            if( i == 0 )
+               ++adjust;
+
+            string next_argx( "@arg" + to_string( i + adjust ) );
+
+            if( !has_session_variable( next_arg ) && !has_session_variable( next_argx ) )
             {
-               *p_rc = false;
-               break;
+               if( !p_rc )
+                  // FUTURE: This message should be handled as a server string message.
+                  throw runtime_error( "Script '" + script_name + "' missing argument '" + next_arg + "'." );
+               else
+               {
+                  *p_rc = false;
+                  break;
+               }
             }
          }
       }
@@ -7068,10 +7083,17 @@ string process_script_args( const string& raw_args, bool use_system_variables )
       split( raw_args, all_args, ' ' );
 
       size_t adjust = 0;
+      size_t skipped = 0;
 
       for( size_t i = 0; i < all_args.size( ); i++ )
       {
          string next_arg( all_args[ i ] );
+
+         if( next_arg == c_script_arg_opt )
+         {
+            ++skipped;
+            continue;
+         }
 
          if( !next_arg.empty( ) && next_arg[ 0 ] == '@' )
          {
@@ -7087,7 +7109,8 @@ string process_script_args( const string& raw_args, bool use_system_variables )
             {
                // NOTE: Always use "@argX" value if found otherwise will use the value
                // of the session variable that matches the name of the script argument.
-               string arg_value( get_raw_session_variable( "@arg" + to_string( i + adjust ) ) );
+               string arg_value(
+                get_raw_session_variable( "@arg" + to_string( i + adjust - skipped ) ) );
 
                if( !arg_value.empty( ) )
                   next_arg = arg_value;

@@ -1,4 +1,46 @@
+session_variable @errors_only 1
+run_script !test "@one=aaa"
+Error: Script 'test' missing argument '@two'.
+run_script !test "@one=aaa,@two=bbb"
+system_variable @test
+aaa bbb
+run_script !test "@one=aaa,@two=bbb,@opt1=ccc"
+system_variable @test
+aaa bbb ccc
+run_script !test "@one=aaa,@two=bbb,@opt1=ccc,@opt2=ddd"
+system_variable @test
+aaa bbb ccc ddd
+run_script !test "@arg1=aaa"
+Error: Script 'test' missing argument '@two'.
+run_script !test "@arg1=aaa,@arg2=bbb"
+system_variable @test
+aaa bbb
+run_script !test "@arg1=aaa,@arg2=bbb,@arg3=ccc"
+system_variable @test
+aaa bbb ccc
+run_script !test "@arg1=aaa,@arg2=bbb,@arg3=ccc,@arg4=ddd"
+system_variable @test
+aaa bbb ccc ddd
+run_script !test "@one=aaa,@arg2=bbb"
+system_variable @test
+aaa bbb
+run_script !test "@arg1=aaa,@two=bbb"
+system_variable @test
+aaa bbb
+run_script !test "@one=aaa,@arg2=bbb,@opt1=ccc"
+system_variable @test
+aaa bbb ccc
+run_script !test "@arg1=aaa,@two=bbb,@arg3=ccc"
+system_variable @test
+aaa bbb ccc
+run_script !test "@one=aaa,@arg2=bbb,@opt1=ccc,@arg4=ddd"
+system_variable @test
+aaa bbb ccc ddd
+run_script !test "@arg1=aaa,@two=bbb,@arg3=ccc,@opt2=ddd"
+system_variable @test
+aaa bbb ccc ddd
 run_script test*
+test @one @two opt @opt1 @opt2
 test1 [ *** busy *** ]
 test2 [ *** busy *** ]
 test3 [ *** busy *** ]

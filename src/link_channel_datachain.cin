@@ -26,6 +26,8 @@ IDENTITY_AND_TYPE=$3
 IDENTITY=
 DATA_TYPE=
 ;
+APP_DIR=@lower:$STORAGE
+;
 IDENTITY_AND_TYPE=@repstr:\:/\n:$IDENTITY_AND_TYPE
 ;
 IDENTITY=%IDENTITY_AND_TYPE:1%
@@ -83,8 +85,8 @@ IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
 .system_variable @blog_sync_datachains 1 ""
 @ifeq $OUTPUT 1
 .session_variable @errors_only 1
-~touch $WEBDIR/$STORAGE/ui_@blog_changing
-.run_script sync_blog_datachains "@storage=$STORAGE"
+~touch $WEBDIR/$APP_DIR/ui_@blog_changing
+.run_script sync_blog_datachains "@storage=$STORAGE,@identity=$IDENTITY"
 @endif
 @endif
 @endif

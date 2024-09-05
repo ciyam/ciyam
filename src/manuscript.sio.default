@@ -4,6 +4,11 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 <sio/>
  <script/>
+  <name>test
+  <filename>*script*
+  <arguments>test.cin @one @two opt @opt1 @opt2
+ </script>
+ <script/>
   <name>test1
   <filename>test1.sh:~test.sh
  </script>
@@ -28,11 +33,6 @@
   <name>add_archive
   <filename>*script*
   <arguments>add_archive.cin @path @size @name
- </script>
- <script/>
-  <name>app_blk_txs
-  <filename>*script*
-  <arguments>app_blk_txs.cin @application @rewind_height @block_height
  </script>
  <script/>
   <name>ext_request
@@ -193,7 +193,7 @@
  <script/>
   <name>sync_blog_datachains
   <filename>*script*
-  <arguments>sync_blog_datachains.cin @storage
+  <arguments>sync_blog_datachains.cin @storage opt @identity
  </script>
  <script/>
   <name>create_hosted_channel
