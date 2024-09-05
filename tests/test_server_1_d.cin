@@ -1,3 +1,32 @@
+.system_variable @test ""
+session_variable @errors_only 1
+run_script !test "@one=aaa"
+run_script !test "@one=aaa,@two=bbb"
+system_variable @test
+run_script !test "@one=aaa,@two=bbb,@opt1=ccc"
+system_variable @test
+run_script !test "@one=aaa,@two=bbb,@opt1=ccc,@opt2=ddd"
+system_variable @test
+run_script !test "@arg1=aaa"
+run_script !test "@arg1=aaa,@arg2=bbb"
+system_variable @test
+run_script !test "@arg1=aaa,@arg2=bbb,@arg3=ccc"
+system_variable @test
+run_script !test "@arg1=aaa,@arg2=bbb,@arg3=ccc,@arg4=ddd"
+system_variable @test
+run_script !test "@one=aaa,@arg2=bbb"
+system_variable @test
+run_script !test "@arg1=aaa,@two=bbb"
+system_variable @test
+run_script !test "@one=aaa,@arg2=bbb,@opt1=ccc"
+system_variable @test
+run_script !test "@arg1=aaa,@two=bbb,@arg3=ccc"
+system_variable @test
+run_script !test "@one=aaa,@arg2=bbb,@opt1=ccc,@arg4=ddd"
+system_variable @test
+run_script !test "@arg1=aaa,@two=bbb,@arg3=ccc,@opt2=ddd"
+system_variable @test
+.system_variable @test ""
 ~touch ~test.sh
 run_script test*
 ~rm -f ~test.txt
