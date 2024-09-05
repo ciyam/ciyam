@@ -300,7 +300,9 @@ class log_stream : public read_write_stream
       if( fd && _close( fd ) != 0 )
       {
          ostringstream osstr;
+
          osstr << "_close failed for fd in term (errno = " << errno << ')';
+
          DEBUG_LOG( osstr.str( ) );
       }
 #endif
@@ -1278,7 +1280,9 @@ header_file::~header_file( )
       if( _close( lock_handle ) != 0 )
       {
          ostringstream osstr;
+
          osstr << "_close lock failed in ~header_file (errno = " << errno << ')';
+
          DEBUG_LOG( osstr.str( ) );
       }
       else
@@ -1307,7 +1311,9 @@ header_file::~header_file( )
       if( _close( handle ) != 0 )
       {
          ostringstream osstr;
+
          osstr << "_close failed in ~header_file (errno = " << errno << ')';
+
          DEBUG_LOG( osstr.str( ) );
       }
       else
@@ -1449,21 +1455,27 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       if( read_data_handle && _close( read_data_handle ) != 0 )
       {
          ostringstream osstr;
+
          osstr << "_close failed for read handle in ~ods_data_cache_buffer (errno = " << errno << ')';
+
          DEBUG_LOG( osstr.str( ) );
       }
 
       if( write_data_handle && _close( write_data_handle ) != 0 )
       {
          ostringstream osstr;
+
          osstr << "_close failed for write handle in ~ods_data_cache_buffer (errno = " << errno << ')';
+
          DEBUG_LOG( osstr.str( ) );
       }
 
       if( write_lock_handle && _close( write_lock_handle ) != 0 )
       {
          ostringstream osstr;
+
          osstr << "_close failed for locking handle in ~ods_data_cache_buffer (errno = " << errno << ')';
+
          DEBUG_LOG( osstr.str( ) );
       }
 #endif
@@ -1473,7 +1485,9 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
+
       osstr << "ods_data_cache_buffer::lock_region( ) start = " << start << ", len = " << len;
+
       DEBUG_LOG( osstr.str( ) );
 #endif
       bool retval = false;
@@ -1517,7 +1531,9 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
+
       osstr << "ods_data_cache_buffer::unlock_region( ) start = " << start << ", len = " << len;
+
       DEBUG_LOG( osstr.str( ) );
 #endif
       guard lock_data( data_lock );
@@ -1564,7 +1580,9 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
+
       osstr << "ods_data_cache_buffer::perform_fetch( ) num = " << num;
+
       DEBUG_LOG( osstr.str( ) );
 #endif
       guard lock_data( data_lock );
@@ -1614,7 +1632,9 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
+
       osstr << "ods_data_cache_buffer::perform_store( ) num = " << num;
+
       DEBUG_LOG( osstr.str( ) );
 #endif
       guard lock_data( data_lock );
@@ -1695,21 +1715,27 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( lock_index_handle && _close( lock_index_handle ) != 0 )
       {
          ostringstream osstr;
+
          osstr << "_close failed for lock handle in ~ods_index_cache_buffer (errno = " << errno << ')';
+
          DEBUG_LOG( osstr.str( ) );
       }
 
       if( read_index_handle && _close( read_index_handle ) != 0 )
       {
          ostringstream osstr;
+
          osstr << "_close failed for read handle in ~ods_index_cache_buffer (errno = " << errno << ')';
+
          DEBUG_LOG( osstr.str( ) );
       }
 
       if( write_index_handle && _close( write_index_handle ) != 0 )
       {
          ostringstream osstr;
+
          osstr << "_close failed for write handle in ~ods_index_cache_buffer (errno = " << errno << ')';
+
          DEBUG_LOG( osstr.str( ) );
       }
 #endif
@@ -1792,7 +1818,9 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
+
       osstr << "ods_index_cache_buffer::unlock_entry( ) entry_num = " << entry_num << ", is_write = " << is_write;
+
       DEBUG_LOG( osstr.str( ) );
 #endif
       guard lock_index( index_lock );
@@ -1847,7 +1875,9 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
+
       osstr << "ods_index_cache_buffer::perform_fetch( ) num = " << num;
+
       DEBUG_LOG( osstr.str( ) );
 #endif
       guard lock_index( index_lock );
@@ -1897,7 +1927,9 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
+
       osstr << "ods_index_cache_buffer::perform_store( ) num = " << num;
+
       DEBUG_LOG( osstr.str( ) );
 #endif
       guard lock_index( index_lock );
@@ -5036,6 +5068,7 @@ void ods::open_store( )
 
 #ifdef ODS_DEBUG
    ostringstream osstr;
+
    osstr << "(header info read from store)"
     << "\nversion = 0x0" << hex << ( p_impl->rp_header_info->version & c_version_mask ) << dec
     << ( ( p_impl->rp_header_info->version & c_encrypted_flag ) ? " (encrypted)" : "" )
@@ -5050,6 +5083,7 @@ void ods::open_store( )
     << ", total_size_of_data = " << p_impl->rp_header_info->total_size_of_data
     << ", data_transform_id = " << p_impl->rp_header_info->data_transform_id
     << ", index_transform_id = " << p_impl->rp_header_info->index_transform_id;
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -5261,6 +5295,7 @@ void ods::transaction_start( const char* p_label )
    ostringstream osstr;
 
    osstr << "ods::transaction_start( ) level = " << p_impl->trans_level;
+
    if( p_label )
       osstr << ", label = " << p_label;
 
@@ -5296,8 +5331,10 @@ void ods::transaction_commit( )
 
 #ifdef ODS_DEBUG
    ostringstream osstr;
+
    osstr << "ods::transaction_commit( )"
     << "\nop_count = " << op_count << "\nsize = " << size;
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -5352,7 +5389,9 @@ void ods::transaction_commit( )
       {
 #ifdef ODS_DEBUG
          ostringstream osstr;
+
          osstr << "==> processing op #" << i;
+
          DEBUG_LOG( osstr.str( ) );
 #endif
          read_transaction_op( op, i );
@@ -5592,8 +5631,10 @@ void ods::transaction_rollback( )
 
 #ifdef ODS_DEBUG
    ostringstream osstr;
+
    osstr << "ods::transaction_rollback( )"
      << "\nsize = " << size << "\nop_count = " << op_count << "\nop_offset = " << op_offset;
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -5661,8 +5702,10 @@ void ods::transaction_rollback( )
 
 #ifdef ODS_DEBUG
    osstr.clear( );
+
    osstr << "\ntotal_trans_size = " << ( int64_t )p_impl->total_trans_size
     << "\ntotal_trans_op_count = " << ( int64_t )p_impl->total_trans_op_count;
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -5691,7 +5734,9 @@ void ods::transaction_completed( bool keep_buffered )
 
 #ifdef ODS_DEBUG
    ostringstream osstr;
+
    osstr << "ods::transaction_completed( ) level = " << p_impl->trans_level;
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -6841,10 +6886,11 @@ ods& operator >>( ods& o, storable_base& s )
 
    // NOTE: If within a transaction then reading data that has been committed by another transaction
    // that commenced after this one is prevented (this is needed to make transactions serializable).
-   if( o.p_impl->trans_level && index_entry.data.tran_id > o.p_impl->p_trans_buffer->tran_id )
+   if( o.p_impl->trans_level && ( index_entry.data.tran_id > o.p_impl->p_trans_buffer->tran_id ) )
    {
       if( has_locked )
          o.p_impl->rp_ods_index_cache_buffer->unlock_entry( s.id.get_num( ), false );
+
       THROW_ODS_ERROR( "unable to read due to interim transaction write" );
    }
 
@@ -6864,8 +6910,10 @@ ods& operator >>( ods& o, storable_base& s )
    if( o.bytes_retrieved > o.bytes_stored )
    {
       ostringstream osstr;
+
       osstr << "max. data length exceeded (retrieved = "
        << o.bytes_retrieved << ", stored = " << o.bytes_stored << ")";
+
       THROW_ODS_ERROR( osstr.str( ) );
    }
 
@@ -6928,7 +6976,9 @@ ods& operator <<( ods& o, storable_base& s )
 
 #ifdef ODS_DEBUG
          ostringstream osstr;
+
          osstr << "oid: num = " << s.id.get_num( );
+
          DEBUG_LOG( osstr.str( ) );
 #endif
          if( s.id.get_num( ) >= 0 )
@@ -6983,7 +7033,9 @@ ods& operator <<( ods& o, storable_base& s )
 
 #ifdef ODS_DEBUG
             ostringstream osstr;
+
             osstr << "oid (new): num = " << s.id.get_num( );
+
             DEBUG_LOG( osstr.str( ) );
 #endif
             can_write = true;
@@ -7071,7 +7123,7 @@ ods& operator <<( ods& o, storable_base& s )
             }
             else
             {
-               if( !is_new_object && o.bytes_reserved <= index_entry.data.size )
+               if( !is_new_object && ( o.bytes_reserved <= index_entry.data.size ) )
                   was_updated_in_place = true;
                else
                   index_entry.data.pos = old_total_size;
@@ -7152,9 +7204,11 @@ ods& operator <<( ods& o, storable_base& s )
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
+
       osstr << "<<< adding zero padding for "
        << ( o.bytes_reserved - o.bytes_used )
        << " unused bytes that were reserved >>>";
+
       DEBUG_LOG( osstr.str( ) );
 #endif
       restorable< bool > force_padding( o.p_impl->force_padding, true );
@@ -7220,7 +7274,7 @@ ods& operator <<( ods& o, storable_base& s )
          o.had_interim_trans_op_write = true;
       }
 
-      if( o.p_impl->trans_level && o.trans_write_data_buffer_num != -1 )
+      if( o.p_impl->trans_level && ( o.trans_write_data_buffer_num != -1 ) )
       {
          if( o.p_impl->is_encrypted )
             crypt_data_buffer( o.trans_write_buffer.data,
@@ -7241,8 +7295,10 @@ ods& operator <<( ods& o, storable_base& s )
    if( o.bytes_used > o.bytes_reserved )
    {
       ostringstream osstr;
+
       osstr << "max. data length exceeded (reserved = "
        << o.bytes_reserved << ", used = " << o.bytes_used << ")";
+
       THROW_ODS_ERROR( osstr.str( ) );
    }
 
@@ -7253,7 +7309,9 @@ void ods::read( unsigned char* p_buf, int64_t len )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
+
    osstr << "ods::read (len = " << len << ")";
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -7271,7 +7329,9 @@ void ods::write( const unsigned char* p_buf, int64_t len )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
+
    osstr << "ods::write (len = " << len << ")";
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -7289,7 +7349,9 @@ void ods::set_read_data_pos( int64_t pos, bool force_get, bool skip_decrypt )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
+
    osstr << "ods::set_read_data_pos( ) pos = " << pos << ", data_read_buffer_num = " << data_read_buffer_num;
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -7325,8 +7387,10 @@ void ods::set_write_data_pos( int64_t pos, bool skip_decrypt, bool skip_encrypt 
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
+
    osstr << "ods::set_write_data_pos( ) pos = " << pos
     << ", data_write_buffer_num = " << data_write_buffer_num;
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -7397,7 +7461,9 @@ void ods::adjust_read_data_pos( int64_t adjust, bool skip_decrypt )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
+
    osstr << "ods::adjust_read_data_pos( ) adjust = " << adjust;
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -7699,9 +7765,11 @@ void ods::set_read_trans_data_pos( int64_t pos )
 
 #ifdef ODS_DEBUG
    ostringstream osstr;
+
    osstr << "ods::set_read_trans_data_pos( ) pos = " << pos
     << "\ntrans_read_data_buffer_num = " << trans_read_data_buffer_num
     << ", trans_read_data_buffer_offs = " << trans_read_data_buffer_offs;
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -7729,9 +7797,11 @@ void ods::set_write_trans_data_pos( int64_t pos )
 
 #ifdef ODS_DEBUG
    ostringstream osstr;
+
    osstr << "ods::set_write_trans_data_pos( ) pos = " << pos
     << "\ntrans_write_data_buffer_num = " << trans_write_data_buffer_num
     << ", trans_write_data_buffer_offs = " << trans_write_data_buffer_offs;
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -7767,9 +7837,11 @@ void ods::read_trans_data_bytes( char* p_dest, int64_t len )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
+
    osstr << "ods::read_trans_data_bytes( ) len = " << len
     << "\ntrans_read_data_buffer_num = " << trans_read_data_buffer_num
     << "\ntrans_read_data_buffer_offs = " << trans_read_data_buffer_offs;
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -7809,9 +7881,11 @@ void ods::write_trans_data_bytes( const char* p_src, int64_t len )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
+
    osstr << "ods::write_trans_data_bytes( ) len = " << len
     << "\ntrans_write_data_buffer_num = " << trans_write_data_buffer_num
     << "\ntrans_write_data_buffer_offs = " << trans_write_data_buffer_offs;
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 
