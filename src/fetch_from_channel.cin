@@ -207,9 +207,9 @@ APP_LOG_INFO_FILE=@files::$IN_REVERSE.log
 @ifdef $APP_LOG_INFO_FILE
 .session_variable @key_suffix $IDENTITY
 .session_variable @key_prefix_is_first ""
- session_restrict $UUID perform_create
+.session_restrict $UUID perform_create
 <$IN_REVERSE.log
- session_restrict $UUID ""
+.session_restrict $UUID ""
 ~rm $IN_REVERSE.log
 @endif
 ;

@@ -317,6 +317,23 @@ void check_instance_field_permission( const string& module,
       check_instance_op_permission( module, handle, perm_info, true );
 }
 
+void append_datachain_as_variable_if_found( size_t handle, string& field_values_to_log )
+{
+   string datachain_var_name( get_special_var_name( e_special_var_datachain ) );
+
+   string datachain( get_raw_session_variable( datachain_var_name ) );
+
+   if( !datachain.empty( ) )
+   {
+      if( !field_values_to_log.empty( ) )
+         field_values_to_log += ',';
+
+      field_values_to_log += datachain_var_name + '=' + datachain;
+
+      instance_set_variable( handle, "", datachain_var_name, datachain );
+   }
+}
+
 string get_shortened_field_id( const string& module, const string& mclass, const string& field_id )
 {
    // KLUDGE: If the module starts with a number assume it is Meta (which doesn't support field shortening).
@@ -3676,11 +3693,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_name, true );
 
-               for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
+               if( get_raw_session_variable( get_special_var_name( e_special_var_skip_set_vars ) ).empty( ) )
                {
-                  // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
-                  if( !i->first.empty( ) && i->first[ 0 ] == '@' )
-                     instance_set_variable( handle, "", i->first, i->second );
+                  for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
+                  {
+                     // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
+                     if( !i->first.empty( ) && ( i->first[ 0 ] == '@' ) )
+                        instance_set_variable( handle, "", i->first, i->second );
+                  }
                }
 
                op_instance_create( handle, "", key, false );
@@ -3765,6 +3785,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                   check_instance_op_permission( module, handle, get_create_instance_info( handle, "" ) );
+
+               string uid_check( get_raw_session_variable( get_special_var_name( e_special_var_uid_check ) ) );
+
+               if( !uid_check.empty( ) )
+               {
+                  if( !uid_check.empty( ) && ( get_uid( ) != uid_check ) )
+                     throw runtime_error( "unexpected uid found '" + get_uid( ) + "' but needs to be '" + uid_check + "'" );
+
+                  append_datachain_as_variable_if_found( handle, field_values_to_log );
+               }
 
                remove_uid_extra_from_log_command( next_command );
 
@@ -3942,11 +3972,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                string update_fields;
 
+               bool skip_set_vars = !get_raw_session_variable( get_special_var_name( e_special_var_skip_set_vars ) ).empty( );
+
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
-                  if( !i->first.empty( ) && i->first[ 0 ] == '@' )
-                     instance_set_variable( handle, "", i->first, i->second );
+                  if( !i->first.empty( ) && ( i->first[ 0 ] == '@' ) )
+                  {
+                     if( !skip_set_vars )
+                        instance_set_variable( handle, "", i->first, i->second );
+                  }
                   else
                   {
                      if( !update_fields.empty( ) )
@@ -4057,6 +4092,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 
                remove_uid_extra_from_log_command( next_command );
+
+               string uid_check( get_raw_session_variable( get_special_var_name( e_special_var_uid_check ) ) );
+
+               if( !uid_check.empty( ) )
+               {
+                  if( !uid_check.empty( ) && ( get_uid( ) != uid_check ) )
+                     throw runtime_error( "unexpected uid found '" + get_uid( ) + "' but needs to be '" + uid_check + "'" );
+
+                  append_datachain_as_variable_if_found( handle, field_values_to_log );
+               }
 
                if( !using_verbose_logging )
                {
