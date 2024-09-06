@@ -14841,7 +14841,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
    int persistence_type = instance.get_persistence_type( );
 
-   if( !apply_changes || op == class_base::e_op_type_review )
+   if( !apply_changes || ( op == class_base::e_op_type_review ) )
       perform_op_cancel( handler, instance, op );
    else
    {
@@ -14899,6 +14899,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
       // now in order to allow "for_store" or "for_destroy" to perform operations with the
       // clone record itself if required.
       size_t xlock_handle( instance_accessor.get_xlock_handle( ) );
+
       if( xlock_handle )
       {
          release_obtained_lock( xlock_handle );
@@ -14906,6 +14907,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
       }
 
       bool executing_sql = false;
+
       try
       {
          // NOTE: The "for_store" or "for_destroy" triggers may result in further create, update
@@ -15059,6 +15061,12 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                // derivation) then all update statements are discarded to skip the unnecessary SQL.
                if( op == class_base::e_op_type_update && instance_accessor.has_skipped_empty_update( ) )
                   sql_stmts.clear( );
+
+               if( sql_stmts.empty( ) && ( op == class_base::e_op_type_create ) )
+               {
+                  // NOTE: If creating and no SQL exists then will log if is tracing.
+                  TRACE_LOG( TRACE_SQLSTMTS, "*** no SQL statement for create ***" );
+               }
 
                if( !sql_stmts.empty( ) && gtp_session->ap_db.get( ) )
                {

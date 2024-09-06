@@ -2202,6 +2202,8 @@ table table th
 .home_slide p
 {
    color: #808080;
+   margin-top: 0px;
+   margin-bottom: 0px;
 }
 
 .home_slide p span
@@ -2223,7 +2225,8 @@ table table th
 
 .home_slide p.text
 {
-   line-height: 30px;
+   color: #222;
+   font-size: 18px;
    overflow: hidden;
    max-height: 60px;
 }

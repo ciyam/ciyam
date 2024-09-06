@@ -23,6 +23,9 @@ IDENTITY=$2
 ;
 .session_variable $IDENTITY 1
 ;
+.session_variable @uuid
+UUID=$OUTPUT
+;
 ; NOTE: Wait for peers to finish syncing.
 @:WAIT_LOOP
 ;
@@ -56,9 +59,14 @@ CURRENT_HEIGHT=$OUTPUT
 @:FETCH_LOOP
 ;
 @label FETCH_NEXT
+;
+@ifdef $ERROR
+@label FETCH_DONE
+@else
 IS_LESS=@$CURRENT_HEIGHT<$ZENITH_HEIGHT
 @ifneq "$IS_LESS" "1"
 @label FETCH_DONE
+@endif
 @endif
 ;
 @skip
@@ -72,16 +80,28 @@ CURRENT_HEIGHT=@$CURRENT_HEIGHT+1
 BUNDLE_FILE=@files::$IDENTITY.bun.gz
 ;
 @ifdef $BUNDLE_FILE
+~rm -f $IDENTITY.log
 ~./unbundle -qq $BUNDLE_FILE $IDENTITY.log
 DATA_LOG_FILE=@files::$IDENTITY.log
 @ifdef $DATA_LOG_FILE
+.session_variable @uid_check peer
+.session_variable @datachain $IDENTITY
+.session_variable @key_suffix $IDENTITY
+.session_variable @@skip_set_vars 1
+.session_restrict $UUID perform_create,perform_update
 <$DATA_LOG_FILE
+.session_restrict $UUID ""
+.session_variable @datachain ""
+.session_variable @key_suffix ""
+.session_variable @@skip_set_vars ""
 ~rm $DATA_LOG_FILE
 @endif
 ~rm $BUNDLE_FILE
 @endif
 ;
+@ifndef $ERROR
 .storage_datachain_details $IDENTITY -height=$CURRENT_HEIGHT
+@endif
 ;
 !!@:FETCH_LOOP
 ;
