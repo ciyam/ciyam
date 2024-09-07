@@ -790,7 +790,7 @@ void Meta_Package_Type::impl::impl_Install( )
       if( exists_file( name + ".specs.sio" ) )
       {
          set_session_variable( get_special_var_name( e_special_var_name ), name );
-         run_script( "install_package" );
+         run_script( "install_package", false, true );
       }
 
       copy_file( info_filename, name + "." + info_filename );
