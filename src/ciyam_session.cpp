@@ -6597,6 +6597,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          decrypt_data( response, data, no_ssl, no_salt, false, harden_key, pwd_and_data );
 
          clear_response = true;
+
+         // NOTE: Decrypted output is expected to be printable (so will verify that it is).
+         if( !response.empty( ) )
+         {
+            bool invalid = false;
+
+            for( size_t i = 0; i < response.size( ); i++ )
+            {
+               if( ( response[ i ] < ' ' ) || ( response[ i ] > '~' ) )
+               {
+                  invalid = true;
+                  break;
+               }
+            }
+
+            if( invalid )
+               throw runtime_error( "unexpected non-printable response (incorrect password?)" );
+         }
       }
       else if( command == c_cmd_ciyam_session_utils_encrypt )
       {
