@@ -145,7 +145,6 @@ string application_title( app_info_request request )
 int g_pid = get_pid( );
 
 bool g_use_tls = false;
-bool g_had_error = false;
 
 size_t g_seconds = 1;
 
@@ -1464,7 +1463,6 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                    && response.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) )
                   {
                      is_error = true;
-                     g_had_error = true;
                      start = err_prefix_length;
                   }
 
@@ -1906,15 +1904,12 @@ int main( int argc, char* argv[ ] )
    }
 
    // NOTE: Return an error if a script has set the ERROR variable.
-   if( !get_environment_variable( c_env_var_error ).empty( ) )
-      g_had_error = true;
+   if( !rc && !get_environment_variable( c_env_var_error ).empty( ) )
+      rc = 1;
 
 #ifdef SSL_SUPPORT
    term_ssl( );
 #endif
-
-   if( g_had_error )
-      rc = 1;
 
    return rc;
 }
