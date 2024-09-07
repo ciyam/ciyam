@@ -38,14 +38,10 @@ DATA_CHAINS=$IDENTITY
 DATA_CHAINS=$OUTPUT
 @endif
 ;
-.storage_term
-;
 @ifdef $DATA_CHAINS
 .session_variable @deque "~$DATA_CHAINS"
 ;
 @:LOOP
-;
-.storage_init $STORAGE
 ;
 @label NEXT
 .session_variable @deque front
@@ -62,6 +58,7 @@ NEXT_CHAIN=$OUTPUT
 PEER_DATA_INFO=@repstr: /\n:$OUTPUT
 ;
 CHANNELS=%PEER_DATA_INFO:3%
+;
 @ifdef $CHANNELS
 ANY_PEER_CONNECTS=
 ;
@@ -73,6 +70,7 @@ LINES=@repstr:,/\n:$CHANNELS
 NEXT_IDENTITY=%LINES:1%
 ;
 REMAINING=@repstr:$NEXT_IDENTITY/:$CHANNELS
+;
 @ifeq "$REMAINING" ""
 @label END_CHANNEL_LOOP
 @endif
@@ -113,8 +111,6 @@ CHANNELS=@repstr:$NEXT_IDENTITY,/:$CHANNELS
 !!@:CHANNEL_LOOP
 @:END_CHANNEL_LOOP
 ;
-.storage_term
-;
 @ifdef ANY_PEER_CONNECTS
 .wait 500
 .session_variable @errors_only 1
@@ -129,6 +125,8 @@ CHANNELS=@repstr:$NEXT_IDENTITY,/:$CHANNELS
 @:END_LOOP
 ;
 @endif
+;
+.storage_term
 ;
 @:WAIT_LOOP
 ;
