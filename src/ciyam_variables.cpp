@@ -255,6 +255,7 @@ const char* const c_special_variable_package_install_extra = "@package_install_e
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
 const char* const c_special_variable_blockchain_is_checking = "@blockchain_is_checking";
 const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
+const char* const c_special_variable_peer_limited_arguments = "@peer_limited_arguments";
 const char* const c_special_variable_single_string_response = "@single_string_response";
 const char* const c_special_variable_skip_tagging_if_exists = "@skip_tagging_if_exists";
 const char* const c_special_variable_blockchain_archive_path = "@blockchain_archive_path";
@@ -530,6 +531,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_peer_is_synchronising );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_checking );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_fetching );
+      g_special_variable_names.push_back( c_special_variable_peer_limited_arguments );
       g_special_variable_names.push_back( c_special_variable_single_string_response );
       g_special_variable_names.push_back( c_special_variable_skip_tagging_if_exists );
       g_special_variable_names.push_back( c_special_variable_blockchain_archive_path );

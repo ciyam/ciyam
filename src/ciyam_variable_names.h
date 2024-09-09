@@ -218,6 +218,7 @@ enum special_var
    e_special_var_peer_is_synchronising,
    e_special_var_blockchain_is_checking,
    e_special_var_blockchain_is_fetching,
+   e_special_var_peer_limited_arguments,
    e_special_var_single_string_response,
    e_special_var_skip_tagging_if_exists,
    e_special_var_blockchain_archive_path,

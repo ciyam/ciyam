@@ -87,13 +87,15 @@ DATA_LOG_FILE=@files::$IDENTITY.log
 .session_variable @uid_check peer
 .session_variable @datachain $IDENTITY
 .session_variable @key_suffix $IDENTITY
-.session_variable @@skip_set_vars 1
+.session_variable @skip_set_vars 1
+.session_variable @peer_limited_arguments 1
 .session_restrict $UUID perform_create,perform_update
 <$DATA_LOG_FILE
 .session_restrict $UUID ""
 .session_variable @datachain ""
 .session_variable @key_suffix ""
-.session_variable @@skip_set_vars ""
+.session_variable @skip_set_vars ""
+.session_variable @peer_limited_arguments ""
 ~rm $DATA_LOG_FILE
 @endif
 ~rm $BUNDLE_FILE
