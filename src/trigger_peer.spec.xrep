@@ -27,13 +27,13 @@
 `}\
 `{`@eq`(`$arg_update`,`'`'`)\
       cp_source->op_create( key_info );
+
       cp_source->set_is_for_peer( get_obj( ).`{`$arg_sfield`}( ) );
 `,\
       cp_source->set_is_for_peer( get_obj( ).`{`$arg_sfield`}( ) );
+
       cp_source->op_update( key_info );
 `}\
-
-      temporary_grp_and_uid tmp_grp_and_uid( c_watchers, c_admin, true );
 
       cp_source->`{`$arg_field`}( get_obj( ).`{`$arg_field`}( ) );
 `{`@eq`(`$arg_update`,`'`'`)\

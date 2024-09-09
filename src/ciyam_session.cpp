@@ -3487,6 +3487,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string field_values( get_parm_val( parameters, c_cmd_ciyam_session_perform_create_field_values ) );
          string method( get_parm_val( parameters, c_cmd_ciyam_session_perform_create_method ) );
 
+         bool peer_limited_arguments = !get_raw_session_variable(
+          get_special_var_name( e_special_var_peer_limited_arguments ) ).empty( );
+
+         if( peer_limited_arguments )
+         {
+            grp.erase( );
+            method.erase( );
+            tz_name.erase( );
+         }
+
          string field_values_to_log;
          string module_and_class( module + ' ' + mclass );
 
@@ -3858,17 +3868,29 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string method( get_parm_val( parameters, c_cmd_ciyam_session_perform_update_method ) );
          string check_values( get_parm_val( parameters, c_cmd_ciyam_session_perform_update_check_values ) );
 
+         bool peer_limited_arguments = !get_raw_session_variable(
+          get_special_var_name( e_special_var_peer_limited_arguments ) ).empty( );
+
+         if( peer_limited_arguments )
+         {
+            grp.erase( );
+            method.erase( );
+            tz_name.erase( );
+            ver_info.erase( );
+            check_values.erase( );
+         }
+
          string field_values_to_log;
          string module_and_class( module + ' ' + mclass );
 
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
 
+         set_dtm_if_now( dtm, next_command );
+
          // NOTE: Ignore version information during storage recovery.
          if( socket_handler.is_restoring( ) )
             ver_info.erase( );
-
-         set_dtm_if_now( dtm, next_command );
 
          string extra_field_values_prefix( get_special_var_name( e_special_var_extra_field_values ) + "," );
 
