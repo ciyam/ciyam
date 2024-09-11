@@ -1888,7 +1888,15 @@ void output_list_form( ostream& os,
                   if( not_changing )
                      os << "\" not_changing=\"" << c_true_value;
 
-                  os << "\" onclick=\"this.style.display = 'none'; list_exec_action( document."
+                  os << "\" onclick=\"this.style.display = 'none'; ";
+
+                  if( use_url_checksum )
+                  {
+                     os << "var old_checksum = query_value( '" << c_param_ochksum << "' ); ";
+                     os << "if( old_checksum == '' ) old_checksum = query_value( '" << c_param_chksum << "' ); ";
+                  }
+
+                  os << "list_exec_action( document."
                    << source.id << ", '" << source.cid << "', '" << source.id << "', '" << next_action;
 
                   os << "', '" << c_param_keepchecks << "', '" << keep_checks;
@@ -1898,7 +1906,12 @@ void output_list_form( ostream& os,
                   else
                      os << "', '" << c_param_chksum << "', '" << new_checksum_value;
 
-                  os << "', " << ( ignore_selections ? "true" : "false" ) << " );\" style=\"cursor:pointer\"/>";
+                  os << "', " << ( ignore_selections ? "true" : "false" ) << " );";
+
+                  if( use_url_checksum )
+                     os << " query_update( '" << c_param_chksum << "', old_checksum, true );";
+
+                  os << "\" style=\"cursor:pointer\"/>";
                }
             }
 
