@@ -1482,7 +1482,7 @@ void output_actions( ostream& os,
  const string& class_id, const string& class_name, const string& actions_value,
  const string& owner, const string& session_id, const string& user_select_key,
  const string& listarg, bool using_session_cookie, bool use_url_checksum, bool has_hashval,
- string* p_default, const string* p_pfield, bool is_changing )
+ string* p_default, const string* p_pfield, bool is_changing, int back_count )
 {
    const module_info& mod_info( *get_storage_info( ).modules_index.find( src.module )->second );
 
@@ -1746,7 +1746,7 @@ void output_actions( ostream& os,
             os << " query_update( '" << c_param_chksum << "', old_checksum, true );";
 
          if( go_back )
-            os << " if( !had_act_error ) go_back( 1 );";
+            os << " if( !had_act_error ) go_back( " << to_string( back_count ) << " );";
       }
       else
       {

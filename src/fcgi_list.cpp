@@ -3181,9 +3181,9 @@ void output_list_form( ostream& os,
 
             if( !is_printable && allow_list_actions
              && !cell_data.empty( ) && !sess_info.is_read_only && !sess_info.user_id.empty( ) )
-               output_actions( os, source, cmd, parent_key, sess_info, ident,
-                key_and_version, source.lici->second->cid, source.lici->second->mclass, cell_data, "", session_id,
-                user_select_key, listarg, using_session_cookie, use_url_checksum, has_hashval, 0, &source.pfield, has_any_changing );
+               output_actions( os, source, cmd, parent_key, sess_info, ident, key_and_version,
+                source.lici->second->cid, source.lici->second->mclass, cell_data, "", session_id, user_select_key,
+                listarg, using_session_cookie, use_url_checksum, has_hashval, 0, &source.pfield, has_any_changing, back_count );
             else
                os << c_nbsp;
 
