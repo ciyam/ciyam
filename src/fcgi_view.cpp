@@ -832,10 +832,10 @@ bool output_view_form( ostream& os, const string& act,
                else
                   had_any = true;
 
-               output_actions( os, source, c_cmd_view, data,
-                sess_info, source.vici->second->id, source.key_info,
-                source.vici->second->cid, source.vici->second->mclass, all_actions, owner, session_id,
-                user_select_key, "", using_session_cookie, use_url_checksum, false, &enter_action, 0, is_changing );
+               output_actions( os, source, c_cmd_view, data, sess_info,
+                source.vici->second->id, source.key_info, source.vici->second->cid,
+                source.vici->second->mclass, all_actions, owner, session_id, user_select_key, "",
+                using_session_cookie, use_url_checksum, false, &enter_action, 0, is_changing, back_count );
             }
          }
          else
@@ -853,10 +853,10 @@ bool output_view_form( ostream& os, const string& act,
                else
                   had_any = true;
 
-               output_actions( os, source, c_cmd_view, data,
-                sess_info, source.vici->second->id, source.key_info,
-                source.vici->second->cid, source.vici->second->mclass, source.actions_value, owner, session_id,
-                user_select_key, "", using_session_cookie, use_url_checksum, false, &enter_action, 0, is_changing );
+               output_actions( os, source, c_cmd_view, data, sess_info,
+                source.vici->second->id, source.key_info, source.vici->second->cid,
+                source.vici->second->mclass, source.actions_value, owner, session_id, user_select_key, "",
+                using_session_cookie, use_url_checksum, false, &enter_action, 0, is_changing, back_count );
             }
          }
 
