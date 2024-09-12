@@ -291,11 +291,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          else
          {
             string response;
+
             int timeout = c_initial_response_timeout;
+
             while( response.empty( ) || response[ 0 ] != '(' )
             {
                if( !response.empty( ) )
                   timeout = c_subsequent_response_timeout;
+
                response.clear( );
 
                if( p_session_info->p_socket->read_line( response, timeout ) <= 0 )
@@ -308,6 +311,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                {
                   if( !user_home_info.empty( ) )
                      user_home_info += "<br/>\n";
+
                   user_home_info += replace_crlfs_and_spaces( response, "<br/>", "&nbsp;" );
                }
             }
@@ -2123,6 +2127,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                         if( !columns.empty( ) )
                            data = columns[ columns.size( ) - 1 ];
+
+                        data = replace_display_strings( data );
 
                         replace_links_and_output( data, ( i->second ).view,
                          ( i->second ).module, ( i->second ).module_ref, extra_content, true, true,

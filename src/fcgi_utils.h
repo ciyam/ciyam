@@ -63,6 +63,8 @@ std::string get_app_name( );
 
 std::string get_display_string( const std::string& key );
 
+std::string replace_display_strings( const std::string& str );
+
 std::string get_module_id( const std::string& module_name );
 std::string get_module_id_for_attached_file( const source& source );
 
