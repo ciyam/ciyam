@@ -201,14 +201,63 @@ string get_display_string( const string& key )
    storage_info& sinfo( get_storage_info( ) );
 
    module_const_iterator mci, end;
+
    for( mci = sinfo.modules.begin( ), end = sinfo.modules.end( ); mci != end; ++mci )
    {
       display_string = mci->get_string( key );
+
       if( display_string != key )
          break;
    }
 
    return display_string;
+}
+
+string replace_display_strings( const string& str )
+{
+   string output, input( str );
+
+   string::size_type pos = 0;
+
+   // NOTE: Will transform "@~tags: Awaiting" into "Tags: Awaiting"
+   // (assuming that "c_display_tags" is the display string "Tags")
+   // with the first character not in "a-z", "0-9" and "_"  treated
+   // as the delimiter (thus ':' in the above example is optional).
+   while( true )
+   {
+      string::size_type pos = input.find( "@~" );
+
+      if( pos == string::npos )
+      {
+         output += input;
+         break;
+      }
+      else
+      {
+         if( pos > 0 )
+         {
+            output += input.substr( 0, pos );
+            input.erase( 0, pos );
+         }
+
+         input.erase( 0, 2 );
+
+         if( input.empty( ) )
+            break;
+         else
+         {
+            pos = input.find_first_not_of( "0123456789_abcdefghijklmnopqrstuvwxyz_" );
+
+            string display_key( "c_display_" + input.substr( 0, pos ) );
+
+            output += get_string( display_key.c_str( ) );
+
+            input.erase( 0, pos );
+         }
+      }
+   }
+
+   return output;
 }
 
 string get_module_id( const string& module_name )
@@ -1317,11 +1366,13 @@ void replace_links_and_output( const string& s,
       }
 
       string::size_type rpos = cell_data.find( '}' );
+
       if( rpos == string::npos )
          throw runtime_error( "unexpected manual link format in '" + cell_data + "'" );
 
       string::size_type npos = cell_data.find( ':' );
-      if( npos == string::npos || npos > rpos )
+
+      if( npos == string::npos || ( npos > rpos ) )
          throw runtime_error( "unexpected manual link format in '" + cell_data + "'" );
 
       string next( cell_data.substr( 1, rpos - 1 ) );
@@ -1370,6 +1421,7 @@ void replace_links_and_output( const string& s,
             dt += ( seconds )sess_info.gmt_offset;
 
          dtpos = display.find( ';' );
+
          if( dtpos == string::npos )
             display = format_date_time( dt, display.c_str( ) );
          else

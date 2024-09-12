@@ -533,6 +533,7 @@ const char* const c_display_next = "Next";
 const char* const c_display_none = "None";
 const char* const c_display_okay = "Okay";
 const char* const c_display_only = "only";
+const char* const c_display_tags = "Tags";
 const char* const c_display_true = "True";
 const char* const c_display_email = "Email";
 const char* const c_display_error = "Error";

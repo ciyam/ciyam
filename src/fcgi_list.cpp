@@ -3782,6 +3782,8 @@ void output_list_form( ostream& os,
                if( !cell_data.empty( ) )
                   unescape( cell_data, "rn\r\n" );
 
+               cell_data = replace_display_strings( cell_data );
+
                if( !text_search_value.empty( )
                 && ( extras.count( c_list_type_extra_text_highlight )
                 || extras.count( c_list_type_extra_text_highlight1 ) ) )

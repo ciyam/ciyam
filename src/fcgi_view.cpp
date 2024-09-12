@@ -2378,7 +2378,8 @@ bool output_view_form( ostream& os, const string& act,
             }
             else
             {
-               if( cell_data.find( "</HTML>" ) == string::npos && cell_data.find( "</html>" ) == string::npos )
+               if( ( cell_data.find( "</HTML>" ) == string::npos )
+                && ( cell_data.find( "</html>" ) == string::npos ) )
                {
                   bool output_hrefs = true;
 
@@ -2388,6 +2389,8 @@ bool output_view_form( ostream& os, const string& act,
 
                   if( !cell_data.empty( ) )
                      unescape( cell_data, "rn\r\n" );
+
+                  cell_data = replace_display_strings( cell_data );
 
                   replace_links_and_output( cell_data, source.vici->second->id,
                    source.module, source.module_ref, os, true, output_hrefs, session_id,
