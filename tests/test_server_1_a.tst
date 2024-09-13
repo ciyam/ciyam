@@ -503,6 +503,73 @@ crypto_hash -x=9 hello -s=4
 62aa30bc3e176557d12fb53839a149397928af912a9477f07a8b5b2eb8353bcb
 crypto_hash -x=9 hello -s=5
 ade14a0f9610a7cea12f1b549679e96fb51f21d7a305c902eb3d142643607a19
+regex "^[@]?[a-b][a-b]+$$" "@"
+regex "^[@]?[a-b][a-b]+$$" "a"
+regex "^[@]?[a-b][a-b]+$$" "@@"
+regex "^[@]?[a-b][a-b]+$$" "@a"
+regex "^[@]?[a-b][a-b]+$$" "@b"
+regex "^[@]?[a-b][a-b]+$$" "aa"
+aa
+regex "^[@]?[a-b][a-b]+$$" "ab"
+ab
+regex "^[@]?[a-b][a-b]+$$" "ba"
+ba
+regex "^[@]?[a-b][a-b]+$$" "bb"
+bb
+regex "^[@]?[a-b][a-b]+$$" "a@"
+regex "^[@]?[a-b][a-b]+$$" "b@"
+regex "^[@]?[a-b][a-b]+$$" "@aa"
+@aa
+regex "^[@]?[a-b][a-b]+$$" "@ab"
+@ab
+regex "^[@]?[a-b][a-b]+$$" "@ba"
+@ba
+regex "^[@]?[a-b][a-b]+$$" "@bb"
+@bb
+regex "^[@]?[a-b][a-b]+$$" "@@a"
+regex "^[@]?[a-b][a-b]+$$" "@@b"
+regex "^[@]?[a-b][a-b]+$$" "@a@"
+regex "^[@]?[a-b][a-b]+$$" "@b@"
+regex "^[@]?[a-b][a-b]+$$" "aaa"
+aaa
+regex "^[@]?[a-b][a-b]+$$" "aab"
+aab
+regex "^[@]?[a-b][a-b]+$$" "aba"
+aba
+regex "^[@]?[a-b][a-b]+$$" "abb"
+abb
+regex "^[@]?[a-b][a-b]+$$" "baa"
+baa
+regex "^[@]?[a-b][a-b]+$$" "bab"
+bab
+regex "^[@]?[a-b][a-b]+$$" "bba"
+bba
+regex "^[@]?[a-b][a-b]+$$" "bbb"
+bbb
+regex "^[@]?[a-b][a-b]+$$" "@aaa"
+@aaa
+regex "^[@]?[a-b][a-b]+$$" "@aab"
+@aab
+regex "^[@]?[a-b][a-b]+$$" "@aba"
+@aba
+regex "^[@]?[a-b][a-b]+$$" "@abb"
+@abb
+regex "^[@]?[a-b][a-b]+$$" "@baa"
+@baa
+regex "^[@]?[a-b][a-b]+$$" "@bab"
+@bab
+regex "^[@]?[a-b][a-b]+$$" "@bba"
+@bba
+regex "^[@]?[a-b][a-b]+$$" "@bbb"
+@bbb
+regex "^[@]?[a-b][a-b]+$$" "@aa@"
+regex "^[@]?[a-b][a-b]+$$" "@aa@"
+regex "^[@]?[a-b][a-b]+$$" "@ab@"
+regex "^[@]?[a-b][a-b]+$$" "@ab@"
+regex "^[@]?[a-b][a-b]+$$" "@ba@"
+regex "^[@]?[a-b][a-b]+$$" "@ba@"
+regex "^[@]?[a-b][a-b]+$$" "@bb@"
+regex "^[@]?[a-b][a-b]+$$" "@bb@"
 regex @peerchain_identity 012343210
 012343210
 regex @peerchain_identity abcdedbca
