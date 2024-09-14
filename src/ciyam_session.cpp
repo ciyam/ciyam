@@ -6676,6 +6676,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = random_characters( minimum_chars_val, max_extra_val, type );
       }
+      else if( command == c_cmd_ciyam_session_utils_soundex )
+      {
+         bool skip_prefix_specials = has_parm_val( parameters, c_cmd_ciyam_session_utils_soundex_skip_prefix_specials );
+         string word_or_phonic_letters( get_parm_val( parameters, c_cmd_ciyam_session_utils_soundex_word_or_phonic_letters ) );
+
+         response = soundex( word_or_phonic_letters, skip_prefix_specials );
+      }
    }
    catch( exception& x )
    {

@@ -143,3 +143,4 @@ utils_encode|encode "encode hex to base64" [<opt/-url/url>][<opt/-text/text>]<va
 utils_decrypt|decrypt "decrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-harden_key/harden_key>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]
 utils_encrypt|encrypt "encrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-harden_key/harden_key>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]
 utils_entropy|entropy "output random characters" [<val/-x=/max_extra>][<opt/-numeric/numeric>|<opt/-alpha_lower/alpha_lower>]<val//minimum_chars>
+utils_soundex|soundex "output soundex value for a word/phonic" [<opt/-skip/skip_prefix_specials>]<val//word_or_phonic_letters>

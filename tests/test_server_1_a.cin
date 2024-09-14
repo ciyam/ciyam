@@ -472,6 +472,29 @@ regex @peerchain_identity abcdefg01
 regex @peerchain_identity 0123456789
 regex @peerchain_identity 1234567890
 ;
+soundex no
+soundex now
+soundex our
+soundex hour
+soundex know
+soundex ours
+soundex hours
+soundex nemonics
+soundex mnemonics
+soundex sycolagee
+soundex psychology
+;
+soundex -skip no
+soundex -skip now
+soundex -skip hour
+soundex -skip know
+soundex -skip ours
+soundex -skip hours
+soundex -skip nemonics
+soundex -skip mnemonics
+soundex -skip sycolagee
+soundex -skip psychology
+;
 session_variable test (okay)
 session_variable test
 session_variable test @increment

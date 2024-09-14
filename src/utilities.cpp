@@ -99,6 +99,8 @@ const int c_confidential_directory_perms = S_IRWXU;
 const int c_default_directory_perms = c_standard_directory_perms;
 #endif
 
+const char* const p_soundex_map_values = "01230120022455012623010202";
+
 const char* const c_env_var_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
 }
@@ -243,6 +245,85 @@ string uuid::as_string( ) const
    }
 
    return str;
+}
+
+string soundex( const char* p_str, bool skip_prefix_specials )
+{
+   string retval;
+
+   if( p_str && p_str[ 0 ] )
+   {
+      size_t offset = 0;
+
+      char ch = toupper( p_str[ 0 ] );
+
+      if( ( ch < 'A' ) || ( ch > 'Z' ) )
+         ch = '?';
+
+      retval += ch;
+
+      while( true )
+      {
+         ch = toupper( p_str[ ++offset ] );
+
+         if( ch == 0 )
+            break;
+
+         // NOTE: If requested will change the prefix
+         // character for simple cases like "Knowing"
+         // (from a 'K' to an 'N').
+         if( skip_prefix_specials && ( offset == 1 ) )
+         {
+            bool replace = false;
+
+            if( ( ch == 'N' ) && ( retval == "G" ) )
+               replace = true;
+
+            if( ( ch == 'N' ) && ( retval == "K" ) )
+               replace = true;
+
+            if( ( ch == 'N' ) && ( retval == "M" ) )
+               replace = true;
+
+            if( ( ch == 'N' ) && ( retval == "P" ) )
+               replace = true;
+
+            if( ( ch == 'S' ) && ( retval == "P" ) )
+               replace = true;
+
+            if( ( ch == 'T' ) && ( retval == "P" ) )
+               replace = true;
+
+            if( ( ch == 'R' ) && ( retval == "W" ) )
+               replace = true;
+
+            if( replace )
+            {
+               retval[ 0 ] = ch;
+               continue;
+            }
+         }
+
+         if( ( ch >= 'A' ) && ( ch <= 'Z' ) )
+         {
+            char mapped = p_soundex_map_values[ ch - 65 ];
+
+            if( mapped != '0' )
+            {
+               if( mapped != retval[ offset - 1 ] )
+                  retval += mapped;
+            }
+
+            if( retval.length( ) > 3 )
+               break;
+         }
+      }
+   }
+
+   while( retval.length( ) < 4 )
+      retval += '0';
+
+   return retval;
 }
 
 string random_characters( size_t minimum, size_t max_extra, printable_type type )
