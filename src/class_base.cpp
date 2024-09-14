@@ -2938,6 +2938,11 @@ int64_t get_unix_time( bool use_dtm )
    return unix_time( dt );
 }
 
+string get_soundex( const string& str, bool skip_prefix_specials )
+{
+   return soundex( str, skip_prefix_specials );
+}
+
 string get_notifier_files_viewed( const string& watch_root )
 {
    string watch_path( get_raw_system_variable(

@@ -296,6 +296,13 @@ enum printable_type
    e_printable_type_alpha_numeric
 };
 
+std::string soundex( const char* p_str, bool skip_prefix_specials = false );
+
+inline std::string soundex( const std::string& s, bool skip_prefix_specials = false )
+{
+   return soundex( s.c_str( ), skip_prefix_specials );
+}
+
 std::string random_characters( size_t minimum, size_t max_extra = 0, printable_type type = e_printable_type_alpha_numeric );
 
 void msleep( unsigned long amt );

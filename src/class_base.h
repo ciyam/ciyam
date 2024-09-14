@@ -1193,6 +1193,8 @@ std::string CIYAM_BASE_DECL_SPEC get_random_hash( );
 
 int64_t CIYAM_BASE_DECL_SPEC get_unix_time( bool use_dtm = true );
 
+std::string CIYAM_BASE_DECL_SPEC get_soundex( const std::string& str, bool skip_prefix_specials = true );
+
 std::string CIYAM_BASE_DECL_SPEC get_notifier_files_viewed( const std::string& watch_root );
 
 std::string CIYAM_BASE_DECL_SPEC extract_unviewed_file_list(

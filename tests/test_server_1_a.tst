@@ -579,6 +579,48 @@ abcd01234
 regex @peerchain_identity abcdefg01
 regex @peerchain_identity 0123456789
 regex @peerchain_identity 1234567890
+soundex no
+N000
+soundex now
+N000
+soundex our
+O600
+soundex hour
+H600
+soundex know
+K500
+soundex ours
+O620
+soundex hours
+H620
+soundex nemonics
+N552
+soundex mnemonics
+M555
+soundex sycolagee
+S242
+soundex psychology
+P224
+soundex -skip no
+N000
+soundex -skip now
+N000
+soundex -skip hour
+H600
+soundex -skip know
+N000
+soundex -skip ours
+O620
+soundex -skip hours
+H620
+soundex -skip nemonics
+N552
+soundex -skip mnemonics
+N552
+soundex -skip sycolagee
+S242
+soundex -skip psychology
+S242
 session_variable test (okay)
 Error: invalid value '(okay)' (could be confused with a protocol response)
 session_variable test
