@@ -1363,6 +1363,19 @@ function focus_on_first_text( )
    var done = false;
    var first = true;
 
+   // NOTE: The 'auto_back' check is performed here as
+   // the DOM must first be updated to locate the item.
+   if( sessionStorage.getItem( 'auto_back' ) != null )
+   {
+      sessionStorage.removeItem( 'auto_back' );
+
+      if( !had_act_error )
+      {
+         go_back( 1 );
+         return;
+      }
+   }
+
    for( var i = 0; i < document.forms.length; i++ )
    {
       var form = document.forms[ i ];
