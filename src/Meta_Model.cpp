@@ -3650,13 +3650,6 @@ void Meta_Model::impl::impl_Generate( )
                list_extra += "allow_anonymous";
             }
 
-            if( get_obj( ).child_List( ).Display_Security_Level( ) )
-            {
-               if( !list_extra.empty( ) )
-                  list_extra += ',';
-               list_extra += "show_security";
-            }
-
             if( get_obj( ).child_List( ).Ignore_Uneditable_Parent( ) )
             {
                if( !list_extra.empty( ) )

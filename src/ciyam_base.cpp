@@ -15526,11 +15526,11 @@ bool perform_instance_iterate( class_base& instance,
          }
 
          // NOTE: Handle records where security level is used without a group.
-         if( sec_level && sec_values.empty( ) && !level_field_name.empty( ) )
+         if( !sec.empty( ) && sec_values.empty( ) && !level_field_name.empty( ) )
          {
             sec_marker = uuid( ).as_string( );
 
-            for( size_t i = 1; i <= sec_level; i++ )
+            for( size_t i = 0; i <= sec_level; i++ )
                sec_values.push_back( to_string( i ) );
          }
 

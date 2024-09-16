@@ -4380,14 +4380,6 @@
      <modifiers>1000:relegate
     </field>
     <field/>
-     <name>field_list_display_security_level
-     <field>122139
-     <ftype>bool
-     <extra>
-     <mandatory>true
-     <modifiers>1000:relegate
-    </field>
-    <field/>
      <name>field_list_file_links_always_as_single
      <field>122149
      <ftype>bool

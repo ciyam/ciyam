@@ -651,6 +651,7 @@ field_add -id=122135 List Ignore_Implicit_Ordering bool mand -def=0
 field_add -id=122136 List PDF_List_Type int mand -def=0 -e=list_pdf_list_type
 field_add -id=122137 List PDF_Font_Type int mand -def=0 -e=pdf_font_type
 field_add -id=122138 List Ignore_Uneditable_Parent bool mand -def=0
+;;; NOTE: Display_Security_Level is no longer in use (but has been left for backwards compatibility).
 field_add -id=122139 List Display_Security_Level bool mand -def=0
 field_add -id=122140 List Create_Only_If_Default_Other bool mand -def=0
 field_add -id=122141 List Display_Only_If_Default_Other bool mand -def=0
@@ -1296,7 +1297,7 @@ modifier_add -id=500826 List Anonymous_Disallowed Allow_Anonymous_Access:relegat
 modifier_add -id=500830 List Is_Home Style:relegate,Limit_Scroll_And_New:relegate\
 ,Is_Variation:relegate,Allow_Text_Search:relegate,Print_Without_Highlight:relegate,Multiline_Truncate_For_Print:relegate\
 ,PDF_List_Type:relegate,PDF_Font_Type:relegate,Number_Multiple_Pages:relegate\
-,Ignore_Username_Filter:relegate,Ignore_Implicit_Ordering:relegate,Display_Security_Level:relegate\
+,Ignore_Username_Filter:relegate,Ignore_Implicit_Ordering:relegate\
 ,Ignore_Uneditable_Parent:relegate,Ignore_State_For_Display:relegate,Ignore_Unactionable_Records:relegate\
 ,File_Links_Always_As_Single:relegate,Create_Only_If_Default_Other:relegate\
 ,Destroy_Only_If_Default_Other:relegate,Display_Only_If_Default_Other:relegate,Create_Restriction:relegate,Create_{Permission}:relegate\
@@ -2261,7 +2262,7 @@ specification_add -id=602800 {List}_view view "? standard List {Model}:Name;no_e
 ,Print_Without_Highlight,Multiline_Truncate_For_Print,PDF_List_Type;force,PDF_Font_Type,Number_Multiple_Pages\
 ,@tab:Advanced_UI_Options\
 ,Ignore_Username_Filter,Ignore_Implicit_Ordering,Ignore_Uneditable_Parent,Ignore_State_For_Display,Ignore_Unactionable_Records\
-,Display_Security_Level,File_Links_Always_As_Single,Create_Only_If_Default_Other,Display_Only_If_Default_Other,Destroy_Only_If_Default_Other"
+,File_Links_Always_As_Single,Create_Only_If_Default_Other,Display_Only_If_Default_Other,Destroy_Only_If_Default_Other"
 specification_add -id=602810 {List}_child_list0 list "@602810_* child:sort_no_limit List Name,Access_Restriction,Access_{Permission}:Name {Model}"
 specification_add -id=602850 {List_Field}_view view "? standard List_Field {List}:Name;no_edit+link\
 ,{Class};hidden+fkey1,Name;no_edit,Type:Name;force+new_edit,Use_Source_Parent;force\

@@ -6948,16 +6948,8 @@
       <indexes/>
       </indexes>
       <modifiers/>
-       <modifier/>
-        <id>500830
-        <affect>relegate
-       </modifier>
       </modifiers>
       <specifications/>
-       <specification/>
-        <id>602800
-        <item>field
-       </specification>
       </specifications>
      </field>
      <field/>
@@ -33891,7 +33883,6 @@
      <field_info>122138
      <field_info>122148
      <field_info>122120
-     <field_info>122139
      <field_info>122149
      <field_info>122140
      <field_info>122141
