@@ -1,6 +1,7 @@
 `{`@eq`(`'after_store`'`,`$section`)\
    // [(start clone_children)] `{`$arg_id`}
-   if( !get_obj( ).get_clone_key( ).empty( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
+   if( `{`@eq`(`$arg_not_peer`,`'true`'`)!get_obj( ).get_is_for_peer( )
+    && `}!get_obj( ).get_clone_key( ).empty( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
    {
       class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
 

@@ -1,0 +1,24 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_fk_via_user_info)] `{`$arg_id`}
+   // NOTE: Empty code block for scope purposes.
+   {
+      string user_id( get_session_variable( get_special_var_name( e_special_var_uid ) ) );
+
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_scfield`} ) );
+`{`@eq`(`$arg_oscfield`,`'`'`)
+      key_info += "#1 " + user_id;
+`,
+      key_info += "," + string( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_oscfield`} ) );
+
+      key_info += "#2 " + user_id + "," + to_string( get_obj( ).`{`$arg_sfield`}( ) );
+`}
+      class_pointer< `{`$module_name`}_`{`$arg_spclass`} > cp_source( e_create_instance );
+
+      perform_fetch_rc rc;
+      cp_source->perform_fetch( key_info, &rc, false, true );
+
+      if( rc == e_perform_fetch_rc_okay )
+         get_obj( ).`{`$arg_spfield`}( cp_source->get_key( ) );
+   }
+   // [(finish transient_fk_via_user_info)] `{`$arg_id`}
+`}
