@@ -464,11 +464,8 @@ void setup_list_fields( list_source& list,
          if( extra_data.count( c_field_extra_orientation ) )
             list.orientation_field = field_id;
 
-         if( !( list.lici->second )->extras.count( c_list_type_extra_show_security ) )
-         {
-            if( extra_data.count( c_field_extra_security_level ) )
-               list.security_level_field = field_id;
-         }
+         if( extra_data.count( c_field_extra_security_level ) )
+            list.security_level_field = field_id;
 
          if( extra_data.count( c_field_extra_ignore_encrypted ) )
             list.ignore_encrypted_field = field_id;
@@ -2726,12 +2723,6 @@ void output_list_form( ostream& os,
          continue;
       }
 
-      if( source.value_ids[ i ] == source.security_level_field )
-      {
-         display_offset++;
-         continue;
-      }
-
       if( source.print_summary_fields.count( source.value_ids[ i ] ) )
       {
          print_summary_counts.push_back( 0 );
@@ -2966,9 +2957,6 @@ void output_list_form( ostream& os,
 
          if( source.pstate_fields.count( source_value_id )
           && !( parent_state & source.pstate_fields.find( source_value_id )->second ) )
-            skip_column = true;
-
-         if( source_value_id == source.security_level_field )
             skip_column = true;
 
          if( skip_column )
