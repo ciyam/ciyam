@@ -2121,9 +2121,11 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_value=$specification_\0_value\
  arg_admin_always=$specification_\0_admin_always`}\
 `,\
-`@eq`(`'\1`'`,`'transient_fk_field`'`)
-`{`#transient_fk_field.spec.xrep section=after_fetch class_name=$class_name\
- arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield arg_pfield=$specification_\0_pfield arg_cfield=$specification_\0_cfield`}\
+`@eq`(`'\1`'`,`'transient_fk_via_user_info`'`)
+`{`#transient_fk_via_user_info.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
+ arg_id=$specification_\0_id arg_sfield=$specification_\0_sfield\
+ arg_spclass=$specification_\0_spclass arg_spfield=$specification_\0_spfield\
+ arg_scfield=$specification_\0_scfield arg_oscfield=$specification_\0_oscfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_permission_concat`'`)
 `{`#transient_permission_concat.spec.xrep section=after_fetch class_name=$class_name\
@@ -3231,7 +3233,8 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_id=$specification_\0_id arg_child=$specification_\0_child arg_child_class=$specification_\0_child_class\
  arg_ofield=$specification_\0_ofield arg_tfield=$specification_\0_tfield arg_pfield=$specification_\0_pfield\
  arg_cpfield=$specification_\0_cpfield arg_ctfield=$specification_\0_ctfield arg_ctvalue=$specification_\0_ctvalue\
- arg_ctfistexttype=$specification_\0_ctfistexttype arg_copy_files=$specification_\0_copy_files arg_skip_child_updates=$specification_\0_skip_child_updates`}\
+ arg_ctfistexttype=$specification_\0_ctfistexttype arg_not_peer=$specification_\0_not_peer arg_copy_files=$specification_\0_copy_files\
+ arg_skip_child_updates=$specification_\0_skip_child_updates`}\
 `,\
 `@eq`(`'\1`'`,`'clone_children_for_create`'`)
 `{`#clone_children_for_create.spec.xrep section=after_store full_class_name=$full_class_name\
