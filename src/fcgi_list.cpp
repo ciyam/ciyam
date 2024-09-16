@@ -1733,14 +1733,27 @@ void output_list_form( ostream& os,
                }
 
                os << "<input type=\"button\" class=\"button\" value=\"" << GDS( c_display_delete )
-                << "\" onclick=\"confirm_delete( document." << source.id << " )"
+                << "\" onclick=\"";
+
+               if( use_url_checksum )
+               {
+                  os << "\nvar old_checksum = query_value( '" << c_param_ochksum << "' );\n";
+                  os << "if( old_checksum == '' ) old_checksum = query_value( '" << c_param_chksum << "' );\n";
+               }
+
+               os << "confirm_delete( document." << source.id << " )"
                 " && list_action( document." << source.id << ", '" << source.cid
                 << "', '" << act << "', '" << source.id;
 
                if( use_url_checksum )
                   os << "', '" << c_param_chksum << "', '" << new_checksum_value;
 
-               os << "' );\" style=\"cursor:pointer\"/>";
+               os << "' );";
+
+               if( use_url_checksum )
+                  os << "\nquery_update( '" << c_param_chksum << "', old_checksum, true );";
+
+               os << "\" style=\"cursor:pointer\"/>";
             }
 
             if( sess_info.is_admin_user
@@ -1888,12 +1901,14 @@ void output_list_form( ostream& os,
                   if( not_changing )
                      os << "\" not_changing=\"" << c_true_value;
 
-                  os << "\" onclick=\"this.style.display = 'none'; ";
+                  os << "\" onclick=\"this.style.display = 'none';";
 
-                  if( use_url_checksum )
+                  if( !use_url_checksum )
+                     os << " ";
+                  else
                   {
-                     os << "var old_checksum = query_value( '" << c_param_ochksum << "' ); ";
-                     os << "if( old_checksum == '' ) old_checksum = query_value( '" << c_param_chksum << "' ); ";
+                     os << "\nvar old_checksum = query_value( '" << c_param_ochksum << "' );\n";
+                     os << "if( old_checksum == '' ) old_checksum = query_value( '" << c_param_chksum << "' );\n";
                   }
 
                   os << "list_exec_action( document."
@@ -1909,7 +1924,7 @@ void output_list_form( ostream& os,
                   os << "', " << ( ignore_selections ? "true" : "false" ) << " );";
 
                   if( use_url_checksum )
-                     os << " query_update( '" << c_param_chksum << "', old_checksum, true );";
+                     os << "\nquery_update( '" << c_param_chksum << "', old_checksum, true );";
 
                   os << "\" style=\"cursor:pointer\"/>";
                }
@@ -1951,14 +1966,25 @@ void output_list_form( ostream& os,
                         new_checksum_value = get_checksum( sess_info, checksum_values );
                      }
 
-                     os << "<select onchange=\"sel_list_action( document."
+                     os << "<select onchange=\"";
+
+                     if( use_url_checksum )
+                     {
+                        os << "\nvar old_checksum = query_value( '" << c_param_ochksum << "' );\n";
+                        os << "if( old_checksum == '' ) old_checksum = query_value( '" << c_param_chksum << "' );\n";
+                     }
+
+                     os << "sel_list_action( document."
                       << source.id << ", '" << source.cid << "', '" << c_act_link << "', '"
                       << source.id << "', this, '" << ( source.lici->second )->parents[ i ].field;
 
                      if( use_url_checksum )
                         os << "', '" << c_param_chksum << "', '" << new_checksum_value;
 
-                     os << "' );\">\n";
+                     if( !use_url_checksum )
+                        os << "' );\">\n";
+                     else
+                        os << "' );\nquery_update( '" << c_param_chksum << "', old_checksum, true );\">\n";
 
                      os << "<option value=\"\" disabled=\"disabled\" selected=\"selected\">" << GDS( c_display_assign_to )
                       << " " << get_display_string( ( source.lici->second )->parents[ i ].name ) << "&nbsp;&nbsp;</option>\n";
