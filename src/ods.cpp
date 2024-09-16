@@ -3143,7 +3143,7 @@ void ods::rewind_transactions(
    if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
       THROW_ODS_ERROR( "cannot rewind transactions unless locked for exclusive write" );
 
-   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+   if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot rewind transactions when bulk locked for dumping or reading" );
 
    if( !rewind_value && label_or_txid.empty( ) )
@@ -3721,7 +3721,7 @@ string ods::backup_database( const char* p_ext, char sep )
    if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
       THROW_ODS_ERROR( "cannot backup a database unless locked for exclusive write" );
 
-   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+   if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot backup a database when bulk locked for dumping or reading" );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
@@ -3811,7 +3811,7 @@ void ods::move_free_data_to_end( progress* p_progress )
    if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
       THROW_ODS_ERROR( "cannot move free data to end unless locked for exclusive write" );
 
-   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+   if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot move free data to end when bulk locked for dumping or reading" );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
@@ -4073,7 +4073,7 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
    if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
       THROW_ODS_ERROR( "cannot truncate log unless locked for exclusive write" );
 
-   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+   if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot truncate log when bulk locked for dumping or reading" );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
@@ -4338,7 +4338,7 @@ void ods::compress_and_reset_tx_log( progress* p_progress )
    if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
       THROW_ODS_ERROR( "cannot truncate log unless locked for exclusive write" );
 
-   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+   if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot truncate log when bulk locked for dumping or reading" );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
@@ -4940,8 +4940,8 @@ ods::bulk_write::bulk_write( ods& o, progress* p_progress, bool allow_thread_pro
       guard lock_read( o.read_lock );
       guard lock_impl( *o.p_impl->rp_impl_lock );
 
-      if( *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_none
-       && *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+      if( ( *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_none )
+       && ( *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       {
          if( *o.p_impl->rp_bulk_read_thread_id != current_thread_id( ) )
             continue;
@@ -5142,7 +5142,8 @@ void ods::bulk_operation_open( )
       open_store( );
 
       if( !p_impl->is_restoring
-       && p_impl->rp_header_info->num_writers && *p_impl->rp_bulk_mode != impl::e_bulk_mode_dump )
+       && p_impl->rp_header_info->num_writers
+       && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_dump ) )
       {
          if( !permit_copy )
             p_impl->is_corrupt = true;
@@ -5315,7 +5316,7 @@ void ods::transaction_commit( )
    if( !okay )
       THROW_ODS_ERROR( "database instance in bad state" );
 
-   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+   if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot commit transaction when bulk locked for dumping or reading" );
 
    int64_t size = p_impl->p_trans_buffer->levels.top( ).size;
@@ -5586,7 +5587,7 @@ void ods::transaction_rollback( )
    if( !okay )
       THROW_ODS_ERROR( "database instance in bad state" );
 
-   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+   if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot rollback transaction when bulk locked for dumping or reading" );
 
    int64_t size = p_impl->p_trans_buffer->levels.top( ).size;
@@ -6067,7 +6068,7 @@ void ods::rollback_dead_transactions( progress* p_progress )
    if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
       THROW_ODS_ERROR( "cannot rollback dead transactions unless locked for exclusive write" );
 
-   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+   if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot rollback dead transactions when bulk locked for dumping or reading" );
 
    date_time dtm( date_time::local( ) );
@@ -6154,7 +6155,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
    if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
       THROW_ODS_ERROR( "cannot restore from transaction log unless locked for exclusive write" );
 
-   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+   if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot restore from transaction log when bulk locked for dumping or reading" );
 
    date_time dtm( date_time::local( ) );
@@ -6933,7 +6934,7 @@ ods& operator <<( ods& o, storable_base& s )
    if( o.is_in_write )
       THROW_ODS_ERROR( "invalid attempt to re-enter database instance write" );
 
-   if( *o.p_impl->rp_bulk_level && *o.p_impl->rp_bulk_mode != ods::impl::e_bulk_mode_write )
+   if( *o.p_impl->rp_bulk_level && ( *o.p_impl->rp_bulk_mode != ods::impl::e_bulk_mode_write ) )
       THROW_ODS_ERROR( "cannot write when database bulk locked for dumping or reading" );
 
    if( o.p_impl->is_read_only )
