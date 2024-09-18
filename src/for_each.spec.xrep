@@ -12,7 +12,25 @@
 `{`$i`}      split_string( get_obj( ).`{`$arg_field`}( ), all, "`{`$arg_separator`}" );
 
 `{`$i`}      for( size_t i = 0; i < all.size( ); i++ )
-`{`$i`}         get_obj( ).`{`$arg_oprocedure`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}all[ i ] `{`!`@eq`(`$arg_func`,`'`'`)) `});
+`{`!`@eq`(`$arg_use_loopvar`,`'`'`)`|`!`@eq`(`$arg_item_var`,`'`'`)\
+`{`$i`}      {
+`{`!`@eq`(`$arg_item_var`,`'`'`)\
+`{`$i`}         string next( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}all[ i ]`{`!`@eq`(`$arg_func`,`'`'`) )`} );
+
+`{`$i`}         get_obj( ).set_variable( "`{`$arg_item_var`}", next );
+
+`}`{`@eq`(`$arg_use_loopvar`,`'true`'`)\
+`{`$i`}         get_obj( ).set_variable( get_special_var_name(
+`{`$i`}          e_special_var_loop ), construct_key_from_int( "", i + 1 ) );
+
+`}`}\
+`{`!`@eq`(`$arg_item_var`,`'`'`)\
+`{`$i`}         get_obj( ).`{`$arg_oprocedure`}( );
+`,\
+`{`$i`}         get_obj( ).`{`$arg_oprocedure`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}all[ i ]`{`!`@eq`(`$arg_func`,`'`'`) )`} );
+`}`{`!`@eq`(`$arg_use_loopvar`,`'`'`)`|`!`@eq`(`$arg_item_var`,`'`'`)\
+`{`$i`}      }
+`}\
 `{`@eq`(`$arg_use_trans`,`'true`'`)\
 
          transaction_commit( );

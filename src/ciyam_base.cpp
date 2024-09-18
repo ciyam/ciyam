@@ -15173,16 +15173,16 @@ void finish_instance_op( class_base& instance, bool apply_changes,
          }
 
          // NOTE: In order to be able to create child records (or to review the just created instance)
-         // the "create" lock is downgraded to an "update" lock after the SQL is executed but prior to
-         // the transaction being committed. If the SQL engine allows "phantom" reads then it could be
+         // the "create" lock is downgraded to an "update" lock after DB record is stored but prior to
+         // the transaction being committed. If the DB engine permits "phantom" reads then it could be
          // possible for data to become corrupted if the transaction does not end up being committed.
          if( op == class_base::e_op_type_create )
             handler.transform_lock( instance_accessor.get_lock_handle( ), op_lock::e_lock_type_update );
 
-         // NOTE: Although "after_store" is normally skipped for "minimal" updates in the case of Meta
-         // it must still be called so that "aliased" class artifacts will behave as would be expected.
          if( op == class_base::e_op_type_destroy )
             instance_accessor.after_destroy( internal_operation );
+         // NOTE: Although "after_store" is normally skipped for "minimal" updates in the case of Meta
+         // it must still be called so that "aliased" class artifacts will behave as would be expected.
          else if( op == class_base::e_op_type_create || ( op == class_base::e_op_type_update
           && ( handler.get_name( ) == c_meta_storage_name || !instance.get_is_minimal_update( ) ) ) )
          {

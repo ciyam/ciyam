@@ -8,6 +8,7 @@
 `,\
    if( get_obj( ).`{`$arg_tfield`}( )
     && !is_null( get_obj( ).`{`$arg_spfield`}( ) )
+    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_parent_updates ) ).empty( )
     && ( !get_obj( ).get_graph_parent( )
     || get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )
 `}\
@@ -22,7 +23,10 @@
 `}
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
    // [(start update_parent)] `{`$arg_id`}
-   if( !is_null( get_obj( ).`{`$arg_spfield`}( ) )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
+   if( !is_null( get_obj( ).`{`$arg_spfield`}( ) )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`}
+    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_parent_updates ) ).empty( )
+    && ( !get_obj( ).get_graph_parent( )
+    || get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )
    {
       get_obj( ).`{`$arg_spfield`}( ).op_update( );
       get_obj( ).`{`$arg_spfield`}( ).op_apply( );
