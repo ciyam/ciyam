@@ -1,0 +1,35 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_new_or_existing)] `{`$arg_id`}
+`{`$input`=`$arg_var_left`}`{`$output`=`$arg_var_right`}\
+`{`!`@eq`(`$arg_field`,`'`'`)\
+   string value( get_obj( ).`{`$arg_field`}( ) );`{`@eq`(`$arg_var_right`,`'`'`)`$output`=`$arg_var_left`}
+`,\
+   string value( get_obj( ).get_variable( "`{`$input`}" ) );
+`}
+   string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_scfield`} ) );
+
+   key_info += "#1 " + value;
+
+   class_pointer< `{`$module_name`}_`{`$arg_spclass`} > cp_source( e_create_instance );
+
+   perform_fetch_rc rc;
+
+   cp_source->perform_fetch( key_info, &rc, false, true );
+
+   if( rc != e_perform_fetch_rc_okay )
+   {
+      string key( hash_sha256( value, 20 ) );
+
+      cp_source->op_create( key );
+
+      cp_source->`{`$arg_scfield`}( value );
+`{`!`@eq`(`$arg_oscfield`,`'`'`)
+      cp_source->`{`$arg_oscfield`}( get_obj( ).`{`$arg_ofield`}( ) );
+`}
+      cp_source->op_apply( );
+   }
+`{`!`@eq`(`$output`,`'`'`)
+   get_obj( ).set_variable( "`{`$output`}", cp_source->get_key( ) );
+`}\
+   // [(finish for_new_or_existing)] `{`$arg_id`}
+`}

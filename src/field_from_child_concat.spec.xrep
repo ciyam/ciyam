@@ -6,7 +6,7 @@
 `{`!`@eq`(`$arg_tfield`,`'`'`)`{`$arg_tfield`},`}`{`$arg_xpfield`}"`'`}\
 `{`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_xpfield`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$field`=`'"`{`$arg_tfield`}"`'`}\
    // [(start field_from_child_concat)] `{`$arg_id`}
-   if( !is_create && get_obj( ).get_is_editing( ) )
+   if( !is_create && get_obj( ).get_is_editing( ) `{`!`@eq`(`$arg_xtfield`,`'`'`)&& get_obj( ).`{`$arg_xtfield`}( ) `})
    {
       map< string, string > parts;
 
@@ -109,20 +109,23 @@
 `{`!`@eq`(`$arg_cfield`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$has_two`=`'true`'`}\
 `{`!`@eq`(`$arg_ofield`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$has_two`=`'true`'`}\
 `{`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_ofield`,`'`'`)\
-   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
+   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
 `,`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_ofield`,`'`'`)`&`@eq`(`$arg_tfield`,`'`'`)\
-   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
+   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
 `,`@eq`(`$has_two`,`'true`'`)\
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
     && ( `{`!`@eq`(`$arg_cfield`,`'`'`)get_obj( ).has_field_changed( c_field_id_`{`$arg_cfield`} )
     || `}`{`!`@eq`(`$arg_ofield`,`'`'`)get_obj( ).has_field_changed( c_field_id_`{`$arg_ofield`} )`}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`!`@eq`(`$arg_ofield`,`'`'`)
-    || `}get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`} ) )
+    || `}get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`} )
 `,\
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )`{`!`@eq`(`$arg_cfield`,`'`'`)\
  && get_obj( ).has_field_changed( c_field_id_`{`$arg_cfield`} )`}`{`!`@eq`(`$arg_ofield`,`'`'`)\
  && get_obj( ).has_field_changed( c_field_id_`{`$arg_ofield`} )`}`{`!`@eq`(`$arg_tfield`,`'`'`)\
- && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`} )
+ && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`}
 `}\
+    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_parent_updates ) ).empty( )
+    && ( !get_obj( ).get_graph_parent( )
+    || get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       get_obj( ).`{`$arg_pfield`}( ).op_apply( );
@@ -139,7 +142,10 @@
 `,\
     && get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$tvalue`}`}
 `}`}\
-    && !is_destroy_locked( get_obj( ).`{`$arg_pfield`}( ), true ) )
+    && !is_destroy_locked( get_obj( ).`{`$arg_pfield`}( ), true )
+    && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_parent_updates ) ).empty( )
+    && ( !get_obj( ).get_graph_parent( )
+    || get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       get_obj( ).`{`$arg_pfield`}( ).op_apply( );
