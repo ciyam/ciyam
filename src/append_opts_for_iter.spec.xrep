@@ -1,4 +1,4 @@
-`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
 `{`$separator`=`$arg_separator`}`{`@eq`(`$separator`,`'@CR`'`)`$separator`=`'\\r`'`}`{`@eq`(`$separator`,`'@LF`'`)`$separator`=`'\\n`'`}\
 `{`$is_user`=`'`'`}`{`@eq`(`$arg_rvalue`,`'@user`'`)`$is_user`=`'1`'`}\
 `{`$is_group`=`'`'`}`{`@eq`(`$arg_rvalue`,`'@group`'`)`$is_group`=`'1`'`}\
@@ -29,8 +29,9 @@
 `,\
       key_info += "#1 " + `{`@eq`(`$is_user`,`'`'`)get_grp( )`,get_uid( )`};
 `}`}`}
-      // NOTE: Perform child iteration only if parent is not iterating to avoid infinite recusion
-      // in case of the child or a foreign key of the child is the same class type as this class.
+      // NOTE: Perform child iteration only if the parent is not iterating to prevent infinite
+      // recursion for cases where grandchildren (or even parent records of the child records)
+      // are actually the same records.
       if( ( !get_obj( ).get_graph_parent( )
        || !get_obj( ).get_graph_parent( )->get_is_iterating( ) )
 `{`!`@eq`(`$arg_cfield`,`'`'`)\
@@ -64,8 +65,11 @@
 
          } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
 
+`{`@eq`(`$arg_default_as_prefix`,`'`'`)\
          string str( get_obj( ).`{`$arg_field`}( ) );
-
+`,\
+         string str, prefix( get_obj( ).`{`$arg_field`}( ) );
+`}
          for( map< string, string >::iterator i = parts.begin( ); i!= parts.end( ); ++i )
          {
             if( !str.empty( ) )
@@ -74,8 +78,17 @@
             str += i->second;
          }      
 
-         get_obj( ).`{`$arg_field`}( str );
+`{`@eq`(`$arg_prevent_only_prefix`,`'true`'`)\
+         if( str.empty( ) )
+            prefix.erase( );
+
+`}\
+         get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_default_as_prefix`,`'true`'`)prefix + `}str );
       }
+`{`@eq`(`$arg_default_as_prefix`,`'true`'`)`&`@eq`(`$arg_prevent_only_prefix`,`'true`'`)\
+      else
+         get_obj( ).`{`$arg_field`}( "" );
+`}\
    }
    // [(finish append_opts_for_iter)] `{`$arg_id`}
 `}
