@@ -47,7 +47,7 @@ LINK = $(CPP)
 uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
 
 # Compiler flags
-CPPFLAGS = -fPIC -fno-gnu-unique -ftemplate-depth-30 -felide-constructors -O3 -MMD -D__STDC_CONSTANT_MACROS -I/usr/local/ssl/include -Wno-deprecated-declarations
+CPP_OPTS = $(CIYAM_CPP_OPTS) -fPIC -fno-gnu-unique -ftemplate-depth-30 -felide-constructors -O3 -MMD -D__STDC_CONSTANT_MACROS -I/usr/local/ssl/include -Wno-deprecated-declarations
 
 # Implicit rules (and override for simple builtins)
 %: %.o
@@ -61,10 +61,10 @@ CPPFLAGS = -fPIC -fno-gnu-unique -ftemplate-depth-30 -felide-constructors -O3 -M
 	@./generate_commands $<
 
 %.compile:
-#	@echo echo [$@] $(CPP) $(target_opts_$*) -c \$$3 $(CPPFLAGS) -o \$$1 \$$2>compile.sh
+#	@echo echo [$@] $(CPP) $(target_opts_$*) -c \$$3 $(CPP_OPTS) -o \$$1 \$$2>compile.sh
 	@echo echo \$$2>compile.sh
 	@echo "if [ \"\$$2\" = \"ciyam_base.cpp\" ] || [ \"\$$2\" = \"fcgi_utils.cpp\" ] && [ -f sid.enc.chk ]; then encrypt=1; ./crypt -h -t sid.enc; fi">>compile.sh
-	@echo $(CPP) $(target_opts_$*) -c \$$3 $(CPPFLAGS) -o \$$1 \$$2>>compile.sh
+	@echo $(CPP) $(target_opts_$*) -c \$$3 $(CPP_OPTS) -o \$$1 \$$2>>compile.sh
 	@echo "if [ \"\$$2\" = \"ciyam_base.cpp\" ] || [ \"\$$2\" = \"fcgi_utils.cpp\" ] && [ \"\$$encrypt\" = \"1\" ]; then ./crypt -c -h -t sid.enc; fi">>compile.sh;chmod u+x compile.sh
 
 # Notes: For file specific options use "file_opts_XXX.o = <opts>" (where XXX.cpp is the source file name)

@@ -40,8 +40,29 @@
        && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( key_info, string( "@key" ) ) )
 `}\
       {
+`{`!`@eq`(`$arg_pfield`,`'`'`)`&`@eq`(`$arg_check_child_fk_security`,`'true`'`)\
+         string sec_level( get_session_variable( get_special_var_name( e_special_var_sec ) ) );
+
+`}\
          do
          {
+`{`!`@eq`(`$arg_pfield`,`'`'`)`&`@eq`(`$arg_check_child_fk_security`,`'true`'`)\
+            // NOTE: If has a "@sec" session variable and the child FK has a security level field
+            // then will check and omit the current record if the security value is insufficient.
+            if( !sec_level.empty( ) )
+            {
+               string level_field_name( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_pfield`}( ).get_level_field_name( ) );
+
+               if( !level_field_name.empty( ) )
+               {
+                  int level_field_num = get_obj( ).child_`{`$arg_child`}( ).`{`$arg_pfield`}( ).get_field_num( level_field_name );
+
+                  if( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_pfield`}( ).get_field_value( level_field_num ) < sec_level )
+                     continue;
+               }
+            }
+
+`}\
             string order, display;
 
 `{`!`@eq`(`$arg_ctfield`,`'`'`)\
@@ -65,7 +86,7 @@
 
          } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
 
-`{`@eq`(`$arg_default_as_prefix`,`'`'`)\
+`{`@eq`(`$arg_default_is_prefix`,`'`'`)\
          string str( get_obj( ).`{`$arg_field`}( ) );
 `,\
          string str, prefix( get_obj( ).`{`$arg_field`}( ) );
@@ -83,9 +104,9 @@
             prefix.erase( );
 
 `}\
-         get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_default_as_prefix`,`'true`'`)prefix + `}str );
+         get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_default_is_prefix`,`'true`'`)prefix + `}str );
       }
-`{`@eq`(`$arg_default_as_prefix`,`'true`'`)`&`@eq`(`$arg_prevent_only_prefix`,`'true`'`)\
+`{`@eq`(`$arg_default_is_prefix`,`'true`'`)`&`@eq`(`$arg_prevent_only_prefix`,`'true`'`)\
       else
          get_obj( ).`{`$arg_field`}( "" );
 `}\
