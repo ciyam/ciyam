@@ -4,12 +4,17 @@ CIYAM Software Manufacturing
 The following environment variables are required by various scripts:
 
 Name   | Description                 | Sample Value
------- | --------------------------- | ---------------
-WEBDIR | Web Document Root path**    | /srv/www/htdocs
+------ | --------------------------- | -------------
+WEBDIR | Web Document Root path**    | /var/www/html
 
 ** This path must *not* contain spaces and each directory in the path must have "rwx" permissions set so that
 both the Apache2 user (wwwrun) and the user account being used for development can create, update, append and
 delete files in and below the path (for a development only environment it is quickest to just `chmod a+rwx`).
+
+An optional CIYAM_CPP_OPTS environment variable can be used to include extra compiler options (which is handy
+for development environments where debug information is desirable):
+
+export CIYAM_CPP_OPTS=-g
 
 An optional MARKER environment variable can be used as a way of preventing accidental source code commits due
 to some temporary tracing code (as it is used in the pre-commit hook script's call to 'check_source').

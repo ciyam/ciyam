@@ -1649,6 +1649,8 @@ void output_list_form( ostream& os,
    string new_record_fields;
    string new_record_values;
 
+   bool has_any_selection_actions = false;
+
    if( !is_printable && list_type != c_list_type_home )
    {
       if( is_child_list )
@@ -1708,6 +1710,7 @@ void output_list_form( ostream& os,
              && ( !is_admin_owner_erase || sess_info.is_admin_user || has_owner_parent_or_is_user_list ) )
             {
                had_data = true;
+               has_any_selection_actions = true;
 
                string checksum_values;
                string new_checksum_value;
@@ -1948,6 +1951,8 @@ void output_list_form( ostream& os,
                      else
                         os << "&nbsp;&nbsp;";
 
+                     has_any_selection_actions = true;
+
                      string checksum_values;
                      string new_checksum_value;
 
@@ -2064,6 +2069,8 @@ void output_list_form( ostream& os,
                         had_data = true;
                      else
                         os << "&nbsp;&nbsp;";
+
+                     has_any_selection_actions = true;
 
                      string checksum_values;
                      string new_checksum_value;
@@ -2647,7 +2654,10 @@ void output_list_form( ostream& os,
    if( list_type != c_list_type_home && !sess_info.is_read_only && !sess_info.user_id.empty( ) )
    {
       if( !is_printable )
-         display_list_checks = ( allow_list_actions && source.can_action_any );
+      {
+         if( has_any_selection_actions )
+            display_list_checks = ( allow_list_actions && source.can_action_any );
+      }
       else if( print_list_opts.count( c_list_print_opt_show_checks ) )
          display_list_checks = true;
 
