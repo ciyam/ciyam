@@ -3541,12 +3541,19 @@ string construct_sql_select(
 
    class_base_accessor instance_accessor( instance );
 
+   set< string > field_set;
+
+   bool has_all_fields = false;
+
    vector< string > use_index_fields;
 
    if( field_info.empty( ) )
    {
       if( !only_sys_fields )
+      {
+         has_all_fields = true;
          sql_fields_and_table += "*";
+      }
       else
          sql_fields_and_table += "C_Key_,C_Ver_,C_Rev_,C_Sec_,C_Typ_";
    }
@@ -3562,6 +3569,8 @@ string construct_sql_select(
             throw runtime_error( "unexpected empty field found in sql select preparation" );
 
          get_field_name( instance, next_field );
+
+         field_set.insert( next_field );
 
          sql_fields_and_table += ",C_" + next_field;
       }
@@ -4048,7 +4057,10 @@ string construct_sql_select(
          index += "C_" + next_field;
 
          if( p_order_columns )
-            p_order_columns->push_back( "C_" + next_field );
+         {
+            if( has_all_fields || field_set.count( next_field ) )
+               p_order_columns->push_back( "C_" + next_field );
+         }
 
          if( is_reverse )
             sql += " DESC";
@@ -14416,11 +14428,13 @@ void begin_instance_op( instance_op op, class_base& instance,
     + ", internal = " + to_string( internal_modification ) + ", key = " + key );
 
    string sql;
+
    bool is_cascade_op = false;
 
    string key_in_use( instance.get_key( ) );
 
    string key_for_op( key );
+
    if( key_for_op.empty( ) )
       key_for_op = key_in_use;
 
@@ -14444,6 +14458,7 @@ void begin_instance_op( instance_op op, class_base& instance,
 
    size_t lock_handle( 0 );
    size_t xlock_handle( 0 );
+
    class_base_accessor instance_accessor( instance );
 
    if( instance.get_is_in_op( ) && !instance_accessor.get_in_op_begin( ) )
@@ -14678,6 +14693,7 @@ void begin_instance_op( instance_op op, class_base& instance,
             }
 
             string ver_expected( instance_accessor.get_ver_exp( ) );
+
             if( !ver_expected.empty( ) && ver_expected != instance.get_version_info( ) )
                throw runtime_error( get_string_message( GS( c_str_version_mismatch ),
                 make_pair( c_str_parm_version_mismatch_found, instance.get_version_info( ) ),
@@ -14754,6 +14770,7 @@ void begin_instance_op( instance_op op, class_base& instance,
          if( !is_cascade_op )
          {
             map< string, set< string > > instance_keys;
+
             if( !obtain_cascade_locks_for_destroy( instance, instance, instance_keys ) )
             {
                handler.release_locks_for_owner( instance, true );
@@ -15384,7 +15401,7 @@ void perform_instance_fetch( class_base& instance,
           query_info, fixed_info, paging_info, false, true, 1, only_sys_fields, "" );
 
          found = fetch_instance_from_db( instance, sql,
-          only_sys_fields, false, has_simple_keyinfo && !has_tx_key_info );
+          only_sys_fields, false, ( has_simple_keyinfo && !has_tx_key_info ) );
       }
       else if( persistence_type == 1 ) // i.e. ODS global persistence
          found = fetch_instance_from_global_storage( instance, key_info );
@@ -15534,7 +15551,6 @@ bool perform_instance_iterate( class_base& instance,
                sec_values.push_back( to_string( i ) );
          }
 
-         set< string > supplied_fields;
          set< string > transient_field_names;
 
          int num_fields = instance.get_num_fields( );
@@ -15567,10 +15583,7 @@ bool perform_instance_iterate( class_base& instance,
                      fetch_field_names.insert( next );
 
                      if( !transient_field_names.count( next ) )
-                     {
                         field_info.push_back( tmp_field_info[ i ] );
-                        supplied_fields.insert( tmp_field_info[ i ] );
-                     }
                   }
                }
             }
@@ -15623,7 +15636,7 @@ bool perform_instance_iterate( class_base& instance,
 
             for( set< string >::iterator i = required_fields.begin( ); i != required_fields.end( ); ++i )
             {
-               if( !supplied_fields.count( *i ) )
+               if( !fetch_field_names.count( *i ) )
                {
                   field_info.push_back( *i );
                   instance_accessor.fetch_field_names( ).insert( *i );
@@ -15856,7 +15869,7 @@ bool perform_instance_iterate( class_base& instance,
                }
 
                instance_accessor.p_sql_data( ) = new sql_dataset_group(
-                *gtp_session->ap_db, sql_stmts, ( direction == e_iter_direction_backwards ), true, &order_columns );
+                *gtp_session->ap_db, sql_stmts, ( direction == e_iter_direction_backwards ), false, &order_columns );
 
                // NOTE: Replace the 'sec_marker' so the SQL will be valid for creating a query plan.
                replace( sql, sec_marker, "0" );
