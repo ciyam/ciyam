@@ -2094,7 +2094,9 @@ bool output_view_form( ostream& os, const string& act,
 
                   string new_checksum( get_checksum( sess_info, checksum_values ) );
 
-                  os << "query_update( '" << c_param_ochksum << "', query_value( '" << c_param_chksum << "' ), true ); ";
+                  os << "\nvar old_checksum = query_value( '" << c_param_ochksum << "' );\n";
+                  os << "if( old_checksum == '' ) old_checksum = query_value( '" << c_param_chksum << "' );\n";
+
                   os << "query_update( '" << c_param_chksum << "', '" + new_checksum + "', true ); ";
                }
 
@@ -2144,7 +2146,12 @@ bool output_view_form( ostream& os, const string& act,
 
                os << "dyn_load( null, 'act=" << cont_act;
                os << "&" << c_param_userfetch << "=" << source_field_id;
-               os << "&app=' + get_all_field_values( document." << source.id << " ), false );\"";
+               os << "&app=' + get_all_field_values( document." << source.id << " ), false );";
+
+               if( use_url_checksum )
+                  os << "\nquery_update( '" << c_param_chksum << "', old_checksum, true );";
+
+               os << "\"";
             }
 
             os << ">";

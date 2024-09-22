@@ -419,7 +419,7 @@ int sql_dataset::as_int( const string& column ) const
 int sql_dataset::as_int( int col ) const
 {
    if( ( col < 0 ) || ( col >= fieldcount ) )
-      throw sql_exception( "Column is out of range" );
+      throw sql_exception( "column is out of range" );
 
 #ifdef RDBMS_SQLITE
    return sqlite3_column_int( p_impl->p_stmt, col );
@@ -446,7 +446,7 @@ string sql_dataset::as_string( const string& column ) const
 string sql_dataset::as_string( int col ) const
 {
    if( ( col < 0 ) || ( col >= fieldcount ) )
-      throw sql_exception( "Column is out of range" );
+      throw sql_exception( "column is out of range" );
 
 #ifdef RDBMS_SQLITE
    const char* p_text = ( const char* )sqlite3_column_text( p_impl->p_stmt, col );
@@ -463,7 +463,7 @@ string sql_dataset::as_string( int col ) const
 int sql_dataset::get_col( const string& name ) const
 {
    if( !fields.count( name ) )
-      throw sql_exception( "Unknown column name '" + name + "'" );
+      throw sql_exception( "unknown column name '" + name + "'" );
 
    return fields.find( name )->second;
 }
@@ -471,7 +471,7 @@ int sql_dataset::get_col( const string& name ) const
 string sql_dataset::get_column( int col ) const
 {
    if( !names.count( col ) )
-      throw sql_exception( "Column name for " + to_string( col ) + " not found" );
+      throw sql_exception( "column name for " + to_string( col ) + " not found" );
 
    return names.find( col )->second;
 }

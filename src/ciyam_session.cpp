@@ -3276,6 +3276,32 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                socket.write_line( output, c_request_timeout, p_sock_progress );
             }
+            // NOTE: If just performing a simple record fetch then use "instance_fetch"
+            // instead of "instance_iterate" (reduces complexity and supports caching).
+            else if( !create_pdf && ( num_limit == 1 )
+             && filter_set.empty( ) && parent_key.empty( ) && set_value_items.empty( ) )
+            {
+               instance_fetch_rc rc;
+               instance_fetch( handle, context, key_info, &rc );
+
+               if( rc == e_instance_fetch_rc_okay )
+               {
+                  string key_output( "[" + instance_key_info( handle, context ) + "]" );
+
+                  string field_output( get_field_values( handle, context, field_list, tz_name,
+                   false, false, 0, &field_inserts, &search_replaces, no_default_values ? &default_values : 0 ) );
+
+                  if( minimal )
+                     response = field_output;
+                  else
+                  {
+                     response = key_output;
+
+                     if( !field_output.empty( ) )
+                        response += " " + field_output;
+                  }
+               }
+            }
             else
             {
                size_t num_found = 0;
