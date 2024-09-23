@@ -65,6 +65,8 @@ fi
 ./system_variable set @backup_needed ""
 ./system_variable set @restore_needed ""
 
+./system_variable set @backup_in_progress "1"
+
 if [ $prepared -eq 0 ]; then
  date >Backup.txt
 fi

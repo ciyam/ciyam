@@ -47,9 +47,9 @@ test3 [ *** busy *** ]
 test4
 run_script test1
 run_script test2
-Error: script 'test2' appears to be busy
+Error: Script 'test2' appears to be busy.
 run_script test3
-Error: script 'test3' appears to be busy
+Error: Script 'test3' appears to be busy.
 run_script test4
 wait 350
 (started test1)
@@ -58,9 +58,9 @@ wait 350
 (finished test1)
 run_script test2
 run_script test1
-Error: script 'test1' appears to be busy
+Error: Script 'test1' appears to be busy.
 run_script test3
-Error: script 'test3' appears to be busy
+Error: Script 'test3' appears to be busy.
 run_script test4
 wait 350
 (started test1)
@@ -72,7 +72,7 @@ wait 350
 (finished test4)
 (finished test2)
 run_script test3
-Error: script 'test3' appears to be busy
+Error: Script 'test3' appears to be busy.
 run_script test4
 wait 350
 (started test1)

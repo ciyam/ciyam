@@ -54,6 +54,8 @@ fi
 ./system_variable set @backup_needed ""
 ./system_variable set @restore_needed ""
 
+./system_variable set @restore_in_progress "1"
+
 date >Backup.txt
 echo "Starting restore..." >>Backup.txt
 

@@ -103,6 +103,8 @@ const size_t c_default_cache_limit = 1000;
 
 const size_t c_iteration_row_cache_limit = 100;
 
+const int c_lock_file_sleep_time = 100;
+
 const int c_max_lock_attempts = 20;
 const int c_lock_attempt_sleep_time = 200;
 
@@ -7026,7 +7028,8 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
    }
 
    if( is_busy )
-      throw runtime_error( "script '" + script_name + "' appears to be busy" );
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Script '" + script_name + "' appears to be busy." );
 
    return rc;
 }
@@ -7261,16 +7264,26 @@ bool can_create_script_lock_file( const string& name )
 
    bool okay = !file_exists( name );
 
+   // NOTE: If found first sleep and check
+   // again (instead of an immediate fail).
    if( !okay )
+   {
+      msleep( c_lock_file_sleep_time );
+
+      okay = !file_exists( name );
+   }
+
+   if( okay )
+      g_checked_script_lock_files.erase( name );
+   else
    {
       string pid( buffer_file( name ) );
 
       // NOTE: If the file is empty (rather than containing a PID)
-      // then provided that this function has not been invoked for
-      // this name will delete the file (assuming it was left over
-      // from an unexpected application server termination).
+      // then will delete the file (assuming it was left over from
+      // an unexpected application server termination).
       if( pid.empty( ) )
-         okay = !g_checked_script_lock_files.count( name );
+         okay = true;
       else
       {
          if( getpgid( atoi( pid.c_str( ) ) ) < 0 )
@@ -7281,17 +7294,23 @@ bool can_create_script_lock_file( const string& name )
       {
          file_remove( name );
 
-         if( file_exists( name ) )
+         if( !file_exists( name ) )
+            g_checked_script_lock_files.erase( name );
+         else
          {
             okay = false;
 
+            // NOTE: If unable to delete the lock file then
+            // will log this (but only once per file name).
             if( !g_checked_script_lock_files.count( name ) )
+            {
+               g_checked_script_lock_files.insert( name );
+
                TRACE_LOG( TRACE_ANYTHING, "(unexpected lock file '" + name + "' could not be removed)" );
+            }
          }
       }
    }
-
-   g_checked_script_lock_files.insert( name );
 
    return okay;
 }
