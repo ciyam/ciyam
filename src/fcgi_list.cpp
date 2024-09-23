@@ -37,7 +37,12 @@ namespace
 
 const size_t c_default_search_opt_limit = 3;
 
+const char* const c_gt = "&gt;";
+const char* const c_lt = "&lt;";
 const char* const c_nbsp = "&nbsp;";
+const char* const c_dbl_nbsp = "&nbsp;&nbsp;";
+
+const char* const c_dummy_check_symbol = "-";
 
 string g_nbsp( c_nbsp );
 
@@ -728,7 +733,7 @@ void output_list_form( ostream& os,
 
    if( p_pdf_file_name && !p_pdf_file_name->empty( ) )
       os << "<p class=\"screen\"><a href=\"" << *p_pdf_file_name << "\" target=\"_blank\">"
-      "<img src=\"pdf_icon.gif\" border=\"0\">&nbsp;" << GDS( c_display_pdf_version ) << "</a></p>";
+      "<img src=\"pdf_icon.gif\" border=\"0\">" << c_nbsp << GDS( c_display_pdf_version ) << "</a></p>";
 
    if( !is_printable && !qlink.empty( ) )
    {
@@ -1046,7 +1051,7 @@ void output_list_form( ostream& os,
             for( size_t j = 0; j < next_search_opt_limit; j++ )
             {
                if( j > 0 )
-                  os << "&nbsp;&nbsp;";
+                  os << c_dbl_nbsp;
 
                char first_prefix = 'A';
                if( is_select_child )
@@ -1064,7 +1069,7 @@ void output_list_form( ostream& os,
                   else
                      os << GDS( c_display_and );
 
-                  os << "&nbsp;&nbsp;";
+                  os << c_dbl_nbsp;
                   any_display = GDS( c_display_choose );
                }
 
@@ -1115,7 +1120,7 @@ void output_list_form( ostream& os,
 
                os << " onkeypress=\"return form_keys( event, search );\">\n";
 
-               os << "<option value=\"\">&lt;" << any_display << "&gt;&nbsp;&nbsp;</option>\n";
+               os << "<option value=\"\">" << c_lt << any_display << c_gt << c_dbl_nbsp << "</option>\n";
 
                size_t opt_count = 0;
 
@@ -1126,7 +1131,7 @@ void output_list_form( ostream& os,
                   os << "<option value=\"~\"";
                   if( value == "~" )
                      os << " selected";
-                  os << ">&lt;" << GDS( c_display_none ) << "&gt;&nbsp;&nbsp;</option>\n";
+                  os << ">" << c_lt << GDS( c_display_none ) << c_gt << c_dbl_nbsp << "</option>\n";
                }
 
                set< string > parent_extras;
@@ -1166,7 +1171,7 @@ void output_list_form( ostream& os,
                   if( key == value )
                      os << " selected";
 
-                  os << ">" << unescaped( display ) << "&nbsp;&nbsp;</option>\n";
+                  os << ">" << unescaped( display ) << c_dbl_nbsp << "</option>\n";
                }
                os << "</select>";
 
@@ -1189,7 +1194,7 @@ void output_list_form( ostream& os,
 
             // FUTURE: Rather than an asterisk probably should use an image with a text flyover explanation.
             if( is_unselected_skey_owner )
-               os << "&nbsp;&nbsp;*";
+               os << c_dbl_nbsp << "*";
 
             os << "</td></tr>\n";
          }
@@ -1253,7 +1258,7 @@ void output_list_form( ostream& os,
                for( size_t j = 0; j < search_opt_limit; j++ )
                {
                   if( j > 0 )
-                     os << "&nbsp;&nbsp;";
+                     os << c_dbl_nbsp;
 
                   opt = 'A' + j;
                   svname = opt + ( source.lici->second )->restricts[ i ].field;
@@ -1262,7 +1267,7 @@ void output_list_form( ostream& os,
                   if( opt != 'A' )
                   {
                      os << GDS( c_display_or );
-                     os << "&nbsp;&nbsp;";
+                     os << c_dbl_nbsp;
                      any_display = GDS( c_display_choose );
                   }
 
@@ -1293,7 +1298,7 @@ void output_list_form( ostream& os,
                   os << " onchange=\"return search.click( );\"";
                   os << " onkeypress=\"return form_keys( event, search );\">\n";
 
-                  os << "<option value=\"\">&lt;" << any_display << "&gt;&nbsp;&nbsp;</option>\n";
+                  os << "<option value=\"\">" << c_lt << any_display << c_gt << c_dbl_nbsp << "</option>\n";
 
                   size_t opt_count = 0;
 
@@ -1304,7 +1309,7 @@ void output_list_form( ostream& os,
                      os << "<option value=\"~\"";
                      if( value == "~" )
                         os << " selected";
-                     os << ">&lt;" << GDS( c_display_none ) << "&gt;&nbsp;&nbsp;</option>\n";
+                     os << ">" << c_lt << GDS( c_display_none ) << c_gt << c_dbl_nbsp << "</option>\n";
                   }
 
                   const enum_info& info( sinfo.enums.find( field_extras.find( c_field_extra_enum )->second )->second );
@@ -1332,7 +1337,7 @@ void output_list_form( ostream& os,
                      if( !value.empty( ) && k == value_offset )
                         os << " selected";
                      os << " value=\"" << info.values[ k ].first << "\">"
-                      << get_display_string( info.values[ k ].second ) << "&nbsp;&nbsp;</option>\n";
+                      << get_display_string( info.values[ k ].second ) << c_dbl_nbsp << "</option>\n";
                   }
 
                   os << "</select>";
@@ -1358,17 +1363,17 @@ void output_list_form( ostream& os,
                   os << " onchange=\"return search.click( );\"";
                   os << " onkeypress=\"return form_keys( event, search );\">\n";
 
-                  os << "<option value=\"\">&lt;" << GDS( c_display_any ) << "&gt;&nbsp;&nbsp;</option>\n";
+                  os << "<option value=\"\">" << c_lt << GDS( c_display_any ) << c_gt << c_dbl_nbsp << "</option>\n";
 
                   os << "<option value=\"0\"";
                   if( value == c_false_value )
                      os << " selected";
-                  os << ">" << GDS( c_display_false ) << "&nbsp;&nbsp;</option>\n";
+                  os << ">" << GDS( c_display_false ) << c_dbl_nbsp << "</option>\n";
 
                   os << "<option value=\"1\"";
                   if( value == c_true_value )
                      os << " selected";
-                  os << ">" << GDS( c_display_true ) << "&nbsp;&nbsp;</option>\n";
+                  os << ">" << GDS( c_display_true ) << c_dbl_nbsp << "</option>\n";
 
                   os << "</select>";
                }
@@ -1500,7 +1505,7 @@ void output_list_form( ostream& os,
 
                   if( is_datetime )
                   {
-                     os << "&nbsp;<input type=\"button\" id=\"search_" << svname
+                     os << c_nbsp << "<input type=\"button\" id=\"search_" << svname
                       << "img\" class=\"pikaday_button\"" << GDS( c_display_pick_a_date ) << "\">";
                      
                      extra_content_func += "var pika" + svname + " = new Pikaday("
@@ -1567,9 +1572,9 @@ void output_list_form( ostream& os,
                         }
                      }
 
-                     os << "&nbsp;&nbsp;";
+                     os << c_dbl_nbsp;
                      os << GDS( c_display_and );
-                     os << "&nbsp;&nbsp;";
+                     os << c_dbl_nbsp;
 
                      os << "<input type=\"text\" " << extra
                       << "size=\"" << input_size << "\" maxlength=\"" << max_length
@@ -1578,7 +1583,7 @@ void output_list_form( ostream& os,
 
                      if( is_datetime )
                      {
-                        os << "&nbsp;<input type=\"button\" id=\"search_" << svname
+                        os << c_nbsp << "<input type=\"button\" id=\"search_" << svname
                          << "_img\" class=\"pikaday_button\""
                          << GDS( c_display_pick_a_date ) << "\">";
                      
@@ -1609,7 +1614,7 @@ void output_list_form( ostream& os,
          if( allow_quick_links )
          {
             os << "<td class=\"center\"><label>"
-             << GDS( c_display_add_user_link ) << "</label>&nbsp;&nbsp;";
+             << GDS( c_display_add_user_link ) << "</label>" << c_dbl_nbsp;
 
             os << "<input type=\"text\" " << "size=\"40\" maxlength=\"100\""
              << " id=\"quick_link\" name=\"quick_link\" value=\"\"/></td>";
@@ -1632,7 +1637,7 @@ void output_list_form( ostream& os,
          if( allow_quick_links )
          {
             os << "<span class=\"spacer-ten-percent\"/><label>"
-             << GDS( c_display_add_user_link ) << "</label>&nbsp;&nbsp;";
+             << GDS( c_display_add_user_link ) << "</label>" << c_dbl_nbsp;
 
             os << "<input type=\"text\" " << "size=\"40\" maxlength=\"100\""
              << " id=\"quick_link\" name=\"quick_link\" value=\"\"/>";
@@ -1949,7 +1954,7 @@ void output_list_form( ostream& os,
                      if( !had_data )
                         had_data = true;
                      else
-                        os << "&nbsp;&nbsp;";
+                        os << c_dbl_nbsp;
 
                      has_any_selection_actions = true;
 
@@ -1989,7 +1994,7 @@ void output_list_form( ostream& os,
                         os << "' );\nquery_update( '" << c_param_chksum << "', old_checksum, true );\">\n";
 
                      os << "<option value=\"\" disabled=\"disabled\" selected=\"selected\">" << GDS( c_display_assign_to )
-                      << " " << get_display_string( ( source.lici->second )->parents[ i ].name ) << "&nbsp;&nbsp;</option>\n";
+                      << " " << get_display_string( ( source.lici->second )->parents[ i ].name ) << c_dbl_nbsp << "</option>\n";
 
                      bool is_folder = false;
                      if( ( source.lici->second )->parents[ i ].folder )
@@ -2001,7 +2006,7 @@ void output_list_form( ostream& os,
                       && ( sess_info.is_admin_user || !parent_extras.count( c_list_field_extra_link_none_admin_only ) )
                       && ( ( has_owner_parent || sess_info.is_admin_user ) || !parent_extras.count( c_list_field_extra_link_none_admin_owner ) )
                       && ( !is_folder || ( source.lici->second )->parents[ i ].field != ( source.lici->second )->parents[ i ].pclass ) )
-                        os << "<option value=\"\">&lt;" << GDS( c_display_none ) << "&gt;&nbsp;&nbsp;</option>\n";
+                        os << "<option value=\"\">" << c_lt << GDS( c_display_none ) << c_gt << c_dbl_nbsp << "</option>\n";
 
                      const data_container& parent_row_data = source.parent_lists[ i ];
 
@@ -2033,7 +2038,7 @@ void output_list_form( ostream& os,
                            display = ss.str( );
                         }
 
-                        os << "<option value=\"" << key << "\">" << unescaped( display ) << "&nbsp;&nbsp;</option>\n";
+                        os << "<option value=\"" << key << "\">" << unescaped( display ) << c_dbl_nbsp << "</option>\n";
                      }
 
                      os << "</select>";
@@ -2068,7 +2073,7 @@ void output_list_form( ostream& os,
                      if( !had_data )
                         had_data = true;
                      else
-                        os << "&nbsp;&nbsp;";
+                        os << c_dbl_nbsp;
 
                      has_any_selection_actions = true;
 
@@ -2097,12 +2102,12 @@ void output_list_form( ostream& os,
                      os << "' );\">\n";
 
                      os << "<option value=\"\" disabled=\"disabled\" selected=\"selected\">" << GDS( c_display_assign_to )
-                      << " " << get_display_string( ( source.lici->second )->restricts[ i ].name ) << "&nbsp;&nbsp;</option>\n";
+                      << " " << get_display_string( ( source.lici->second )->restricts[ i ].name ) << c_dbl_nbsp << "</option>\n";
 
                      if( ( source.lici->second )->restricts[ i ].ftype == c_field_type_bool )
                      {
-                        os << "<option value=\"0\">" << GDS( c_display_false ) << "&nbsp;&nbsp;</option>\n";
-                        os << "<option value=\"1\">" << GDS( c_display_true ) << "&nbsp;&nbsp;</option>\n";
+                        os << "<option value=\"0\">" << GDS( c_display_false ) << c_dbl_nbsp << "</option>\n";
+                        os << "<option value=\"1\">" << GDS( c_display_true ) << c_dbl_nbsp << "</option>\n";
                      }
                      else
                      {
@@ -2118,7 +2123,7 @@ void output_list_form( ostream& os,
                                  continue;
 
                               os << "<option value=\"" << info.values[ j ].first << "\">"
-                               << get_display_string( info.values[ j ].second ) << "&nbsp;&nbsp;</option>\n";
+                               << get_display_string( info.values[ j ].second ) << c_dbl_nbsp << "</option>\n";
 
                               // NOTE: Security level enumeration is stopped at the user's level so it is
                               // not possible for a user to create or modify an instance's security level
@@ -2144,7 +2149,7 @@ void output_list_form( ostream& os,
          if( !had_data )
             had_data = true;
          else
-            os << "&nbsp;&nbsp;";
+            os << c_dbl_nbsp;
 
          if( !source.text_search_title_fields.empty( ) )
          {
@@ -2165,7 +2170,7 @@ void output_list_form( ostream& os,
 
             text_search_title += " " + GDS( c_display_contains );
 
-            os << text_search_title << "&nbsp;";
+            os << text_search_title << c_nbsp;
          }
 
          os << "<input type=\"text\" id=\"text_search\" size=\"15\"";
@@ -2175,7 +2180,7 @@ void output_list_form( ostream& os,
             os << " value=\"" << escape_markup( text_search_value ) << "\"";
          }
          os << "/>";
-         os << "&nbsp;<input type=\"submit\" class=\"button\" value=\"" << GDS( c_display_search ) << "\"></input>";
+         os << c_nbsp << "<input type=\"submit\" class=\"button\" value=\"" << GDS( c_display_search ) << "\"></input>";
       }
 
       string checksum_values;
@@ -2199,7 +2204,7 @@ void output_list_form( ostream& os,
                if( !had_data )
                   had_data = true;
                else
-                  os << "&nbsp;&nbsp;";
+                  os << c_dbl_nbsp;
 
                set< string > parent_extras;
                if( !( source.lici->second )->parents[ i ].pextra.empty( ) )
@@ -2237,7 +2242,7 @@ void output_list_form( ostream& os,
 
                os << "sel_qry_update( this, '" << sel_id << "' );\">\n";
 
-               os << "<option value=\"\">&lt;" << GDS( c_display_any ) << "&gt;&nbsp;&nbsp;</option>\n";
+               os << "<option value=\"\">" << c_lt << GDS( c_display_any ) << c_gt << c_dbl_nbsp << "</option>\n";
 
                string selected_value;
                if( list_selections.count( sel_id ) )
@@ -2259,7 +2264,7 @@ void output_list_form( ostream& os,
                   os << "<option value=\"~\"";
                   if( selected_value == "~" )
                      os << " selected";
-                  os << ">&lt;" << GDS( c_display_none ) << "&gt;&nbsp;&nbsp;</option>\n";
+                  os << ">" << c_lt << GDS( c_display_none ) << c_gt << c_dbl_nbsp << "</option>\n";
                }
 
                const data_container& parent_row_data = source.parent_lists[ i ];
@@ -2292,7 +2297,7 @@ void output_list_form( ostream& os,
                   if( key == selected_value )
                      os << " selected";
 
-                  os << ">" << unescaped( display ) << "&nbsp;&nbsp;</option>\n";
+                  os << ">" << unescaped( display ) << c_dbl_nbsp << "</option>\n";
                }
 
                os << "</select>";
@@ -2310,7 +2315,7 @@ void output_list_form( ostream& os,
             if( !had_data )
                had_data = true;
             else
-               os << "&nbsp;&nbsp;";
+               os << c_dbl_nbsp;
 
             string sel_id( source.id );
             sel_id += c_prnt_suffix;
@@ -2371,7 +2376,7 @@ void output_list_form( ostream& os,
                }
             }
 
-            os << "&nbsp;" << display_name << " " << GDS( c_display_only ) << "</input>";
+            os << c_nbsp << display_name << " " << GDS( c_display_only ) << "</input>";
          }
       }
 
@@ -2391,7 +2396,7 @@ void output_list_form( ostream& os,
             if( !had_data )
                had_data = true;
             else
-               os << "&nbsp;&nbsp;";
+               os << c_dbl_nbsp;
 
             string sel_id( source.id );
             sel_id += c_rest_suffix;
@@ -2454,7 +2459,7 @@ void output_list_form( ostream& os,
 
             os << "sel_qry_update( this, '" << sel_id << "' );\">\n";
 
-            os << "<option value=\"\">&lt;" << GDS( c_display_any ) << "&gt;&nbsp;&nbsp;</option>\n";
+            os << "<option value=\"\">" << c_lt << GDS( c_display_any ) << c_gt << c_dbl_nbsp << "</option>\n";
 
             for( size_t j = 0; j < info.values.size( ); j++ )
             {
@@ -2467,7 +2472,7 @@ void output_list_form( ostream& os,
                if( value_offset && ( j + 1 == value_offset ) )
                   os << " selected";
                os << " value=\"" << info.values[ j ].first << "\">"
-                << get_display_string( info.values[ j ].second ) << "&nbsp;&nbsp;</option>\n";
+                << get_display_string( info.values[ j ].second ) << c_dbl_nbsp << "</option>\n";
             }
 
             os << "</select>";
@@ -2483,7 +2488,7 @@ void output_list_form( ostream& os,
             if( !had_data )
                had_data = true;
             else
-               os << "&nbsp;&nbsp;";
+               os << c_dbl_nbsp;
 
             string sel_id( source.id );
             sel_id += c_rest_suffix;
@@ -2560,7 +2565,7 @@ void output_list_form( ostream& os,
             os << "query_update( '"
              << sel_id << "', '' + document." << source.id << ".check" << i << ".checked );\">";
 
-            os << "&nbsp;" << get_display_string( ( source.lici->second )->restricts[ i ].name )
+            os << c_nbsp << get_display_string( ( source.lici->second )->restricts[ i ].name )
              << " " << GDS( c_display_only ) << "</input>";
          }
       }
@@ -2650,6 +2655,7 @@ void output_list_form( ostream& os,
 
    bool display_list_checks = false;
    bool display_row_numbers = false;
+   bool display_dummy_checks = false;
 
    if( list_type != c_list_type_home && !sess_info.is_read_only && !sess_info.user_id.empty( ) )
    {
@@ -2657,6 +2663,9 @@ void output_list_form( ostream& os,
       {
          if( has_any_selection_actions )
             display_list_checks = ( allow_list_actions && source.can_action_any );
+
+         if( !display_list_checks )
+            display_dummy_checks = true;
       }
       else if( print_list_opts.count( c_list_print_opt_show_checks ) )
          display_list_checks = true;
@@ -2664,12 +2673,17 @@ void output_list_form( ostream& os,
       if( is_printable && print_list_opts.count( c_list_print_opt_show_numbers ) )
          display_row_numbers = true;
 
-      if( display_list_checks )
+      if( display_dummy_checks )
+      {
+         os << "  <th class=\"list\" width=\"25\" align=\"center\">";
+         os << c_dummy_check_symbol;
+         os << "  </th>\n";
+      }
+      else if( display_list_checks )
       {
          os << "  <th class=\"list\" width=\"25\" align=\"center\">";
          os << "<input type=\"checkbox\" name=\"all\" onclick=\"check_or_uncheck_all( document." << source.id << ", this );\"/>";
-         os << "</th>\n";
-
+         os << "  </th>\n";
       }
 
       if( display_row_numbers )
@@ -2761,7 +2775,7 @@ void output_list_form( ostream& os,
          class_tag += " justify";
 
       if( source.omit_label_fields.count( source.value_ids[ i ] ) )
-         os << "  <th class=\"" << class_tag << "\">&nbsp;";
+         os << "  <th class=\"" << class_tag << "\">" << c_nbsp;
       else if( source.use_list_title_fields.count( source.value_ids[ i ] ) )
          os << "  <th class=\"" << class_tag << "\">" << mod_info.get_string( source.lici->second->id + "_name" );
       else
@@ -2792,7 +2806,7 @@ void output_list_form( ostream& os,
       {
          if( source.sort_fields.count( source.field_ids[ i ] ) )
          {
-            os << "&nbsp;<a href=\"javascript:";
+            os << c_nbsp << "<a href=\"javascript:";
 
             if( use_url_checksum )
             {
@@ -3037,18 +3051,18 @@ void output_list_form( ostream& os,
                      else
                         osxs << "<tr class=\"odd_data\">\n";
 
-                     if( display_list_checks )
-                        osxs << "  <td class=\"list\" width=\"25\" align=\"center\">&nbsp;</td>\n";
+                     if( display_list_checks || display_dummy_checks )
+                        osxs << "  <td class=\"list\" width=\"25\" align=\"center\">" << c_nbsp << "</td>\n";
 
                      if( display_row_numbers )
-                        osxs << "  <td class=\"list\" width=\"30\" align=\"center\">&nbsp;</td>\n";
+                        osxs << "  <td class=\"list\" width=\"30\" align=\"center\">" << c_nbsp << "</td>\n";
 
                      osxs << "  <td>";
 
                      // FUTURE: Rather than using the bold tag a different style tag should
                      // be used for each level (to support different appearances per level).
                      if( k > 0 )
-                        osxs << "&nbsp;&nbsp;" << GDS( c_display_subtotal );
+                        osxs << c_dbl_nbsp << GDS( c_display_subtotal );
                      else
                         osxs << "<b>" << GDS( c_display_subtotal ) << "</b>";
 
@@ -3056,7 +3070,7 @@ void output_list_form( ostream& os,
                      if( j != last_j_val || i != source.row_data.size( ) - 1 )
                         --count;
 
-                     osxs << "&nbsp;&nbsp;" << count << " " << GDS( c_display_records ) << "</td>\n";
+                     osxs << c_dbl_nbsp << count << " " << GDS( c_display_records ) << "</td>\n";
                      print_summary_counts.at( k ) = 1;
 
                      for( int x = 1; x < total_display_cols; x++ )
@@ -3089,7 +3103,7 @@ void output_list_form( ostream& os,
                         }
 
                         if( print_total_col_nums.at( next_total ) != x )
-                           osxs << "  <td>&nbsp;</td>\n";
+                           osxs << "  <td>" << c_nbsp << "</td>\n";
                         else
                         {
                            print_summary_sub_totals[ ( source.print_total_fields.size( ) * k ) + next_total ] = 0;
@@ -3109,17 +3123,17 @@ void output_list_form( ostream& os,
                      else
                         osx << "<tr class=\"odd_data\">\n";
 
-                     if( display_list_checks )
-                        osx << "  <td class=\"list\" width=\"25\" align=\"center\">&nbsp;</td>\n";
+                     if( display_list_checks || display_dummy_checks )
+                        osx << "  <td class=\"list\" width=\"25\" align=\"center\">" << c_nbsp << "</td>\n";
 
                      if( display_row_numbers )
-                        osx << "  <td class=\"list\" width=\"30\" align=\"center\">&nbsp;</td>\n";
+                        osx << "  <td class=\"list\" width=\"30\" align=\"center\">" << c_nbsp << "</td>\n";
 
                      // FUTURE: Rather than using the bold tag a different style tag should
                      // be used for each level (to support different appearances per level).
                      osx << "  <td colspan=\"" << ( source.field_ids.size( ) ) << "\">";
                      if( k > 0 )
-                        osx << "&nbsp;&nbsp;" << cell_data;
+                        osx << c_dbl_nbsp << cell_data;
                      else
                         osx << "<b>" << cell_data << "</b>";
                      osx << "</td>\n</tr>\n";
@@ -3168,13 +3182,13 @@ void output_list_form( ostream& os,
             if( ( keep_checks && selected_records.count( key ) ) || rci != source.row_errors.end( ) )
                checked = " checked";
 
-            if( display_list_checks )
+            if( display_list_checks || display_dummy_checks )
             {
                os << "   <td class=\"list\" width=\"25\" align=\"center\">";
 
                if( !display_list_checks || ( list_type == c_list_type_home ) || sess_info.user_id.empty( )
                 || ( ( state & c_state_unactionable ) && !extras.count( c_list_type_extra_ignore_unactionable ) ) )
-                  os << "&nbsp;";
+                  os << c_dummy_check_symbol;
                else
                {
                   os << "<input type=\"checkbox\" name=\"item " << key_and_version << "\"" << checked;
@@ -3797,7 +3811,7 @@ void output_list_form( ostream& os,
             else if( is_printable && extras.count( c_list_type_extra_print_no_trunc ) )
             {
                was_output = true;
-               os << data_or_nbsp( unescaped( replace_crlfs_and_spaces( escape_markup( cell_data ), "<br/>", "&nbsp;" ) ) );
+               os << data_or_nbsp( unescaped( replace_crlfs_and_spaces( escape_markup( cell_data ), "<br/>", c_nbsp ) ) );
             }
             else if( source.html_fields.count( source_value_id ) )
             {
@@ -3891,7 +3905,7 @@ void output_list_form( ostream& os,
          else
             os << "<tr class=\"odd_error\">\n";
 
-         os << "  <td width=\"25\">&nbsp;</td>\n";
+         os << "  <td width=\"25\">" << c_nbsp << "</td>\n";
 
          if( !is_real_error )
             os << "  <td class=\"list\" colspan=\"" << ( source.field_ids.size( ) ) << "\">" << error << "</td>\n";
@@ -3919,28 +3933,28 @@ void output_list_form( ostream& os,
       {
          os << "<tr class=\"footer\">\n";
 
-         if( display_list_checks )
-            os << "  <td>&nbsp;</td>\n";
+         if( display_list_checks || display_dummy_checks )
+            os << "  <td>" << c_nbsp << "</td>\n";
 
          if( print_total_values.empty( ) )
             os << "  <td colspan=\"" << ( total_display_cols + extra )
-             << "\"><b>" << GDS( c_display_total ) << "</b>&nbsp;&nbsp;"
-              << source.row_data.size( ) << " " << GDS( c_display_records ) << "</td>\n";
+             << "\"><b>" << GDS( c_display_total ) << "</b>" << c_dbl_nbsp
+             << source.row_data.size( ) << " " << GDS( c_display_records ) << "</td>\n";
          else
          {
             int next_total = 0;
 
             if( !print_total_col_nums.empty( ) )
-               os << "  <td><b>" << GDS( c_display_total ) << "</b>&nbsp;&nbsp;"
+               os << "  <td><b>" << GDS( c_display_total ) << "</b>" << c_dbl_nbsp
                 << source.row_data.size( ) << " " << GDS( c_display_records ) << "</td>\n";
 
             if( extra )
-               os << "  <td>&nbsp;</td>\n";
+               os << "  <td>" << c_nbsp << "</td>\n";
 
             for( int i = 1; i < total_display_cols; i++ )
             {
                if( next_total >= print_total_col_nums.size( ) || print_total_col_nums.at( next_total ) != i )
-                  os << "  <td>&nbsp;</td>\n";
+                  os << "  <td>" << c_nbsp << "</td>\n";
                else
                {
                   string class_tag( "list" );
@@ -3979,8 +3993,8 @@ void output_list_form( ostream& os,
       {
          os << "<tr class=\"footer\">\n";
 
-         if( display_list_checks )
-            os << "  <td>&nbsp;</td>\n";
+         if( display_list_checks || display_dummy_checks )
+            os << "  <td>" << c_nbsp << "</td>\n";
 
          os << "  <td class=\"center\" colspan=\"" << ( total_display_cols + extra )
           << "\">(" << GDS( c_display_output_has_been_limited ) << ")</td>\n";
@@ -4041,7 +4055,7 @@ void output_list_form( ostream& os,
       if( !allow_new_record )
       {
          if( !is_ui_prototype( ) )
-            os << "  <td>&nbsp;</td>\n";
+            os << "  <td>" << c_nbsp << "</td>\n";
       }
       else
       {
@@ -4233,7 +4247,7 @@ void output_list_form( ostream& os,
             else
                os << "<span class=\"disabled\">&laquo; " << GDS( c_display_last ) << "</span>";
 
-            os << " &nbsp; | &nbsp; ";
+            os << " " << c_nbsp << " | " << c_nbsp << " ";
 
             if( !source.next_key_info.empty( ) )
             {
