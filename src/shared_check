@@ -11,7 +11,6 @@ fi
 USER_PATH=/home/$USER
 IMAGE_NAME=shared.img
 
-IMPORT_TIME=.import.time
 IMPORTED_TIME=.imported.time
 
 if [ "$CIYAM_USER_PATH" = "" ]; then
@@ -37,20 +36,5 @@ if mountpoint -q $SHARED_PATH; then
  if [ ! "$NEW_CHANGE" = "" ]; then
   ./system_variable set @export_needed ""
   ./system_variable set @import_needed "1"
- fi
-fi
-
-if [ -f $IMPORT_TIME ]; then
- NOW=`date +%s`
- TIME=`cat $IMPORT_TIME`
-
- # NOTE: Allows the use of "touch" to trigger.
- if [ "$TIME" = "" ]; then
-  TIME=$NOW
- fi
-
- if [ $NOW -ge $TIME ]; then
-  rm $IMPORT_TIME
-  ./run_script shared_import @errors_only=1
  fi
 fi
