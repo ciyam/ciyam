@@ -3278,7 +3278,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             // NOTE: If just performing a simple record fetch then use "instance_fetch"
             // instead of "instance_iterate" (reduces complexity and supports caching).
-            else if( !create_pdf && ( num_limit == 1 )
+            else if( !create_pdf && !key_info.empty( ) && ( num_limit == 1 )
              && filter_set.empty( ) && parent_key.empty( ) && set_value_items.empty( ) )
             {
                instance_fetch_rc rc;
