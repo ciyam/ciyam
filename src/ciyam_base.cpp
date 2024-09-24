@@ -15507,6 +15507,7 @@ bool perform_instance_iterate( class_base& instance,
          vector< pair< string, string > > paging_info;
 
          string sec_marker;
+
          vector< string > sec_values;
 
          string group_field_name( instance.get_group_field_name( ) );
@@ -15521,53 +15522,59 @@ bool perform_instance_iterate( class_base& instance,
 
          size_t sec_level = 0;
 
-         if( instance.get_class_type( ) != 1 ) // i.e. user
+         // NOTE: Cascade operations are not constrained by security.
+         if( instance.get_is_being_cascaded( ) )
+            sec.erase( );
+         else
          {
-            bool found_uid_data = false;
-
-            if( !uid.empty( ) && ( uid != c_admin ) && get_uid_data( uid, sec_level, gids ) )
-               found_uid_data = true;
-
-            if( !found_uid_data )
+            if( instance.get_class_type( ) != 1 ) // i.e. user
             {
-               if( !sec.empty( ) )
-                  sec_level = ( 10 - sec.length( ) );
+               bool found_uid_data = false;
 
-               gids = get_session_variable( get_special_var_name( e_special_var_gids ) );
+               if( !uid.empty( ) && ( uid != c_admin ) && get_uid_data( uid, sec_level, gids ) )
+                  found_uid_data = true;
+
+               if( !found_uid_data )
+               {
+                  if( !sec.empty( ) )
+                     sec_level = ( 10 - sec.length( ) );
+
+                  gids = get_session_variable( get_special_var_name( e_special_var_gids ) );
+               }
+
+               if( gids.empty( ) && !group_field_name.empty( ) )
+                  gids = gtp_session->gid;
             }
 
-            if( gids.empty( ) && !group_field_name.empty( ) )
-               gids = gtp_session->gid;
-         }
-
-         if( !gids.empty( ) && !group_field_name.empty( ) )
-         {
-            sec_marker = uuid( ).as_string( );
-
-            vector< string > gid_vals;
-            split( gids, gid_vals, '|' );
-
-            for( size_t i = 0; i < gid_vals.size( ); i++ )
+            if( !gids.empty( ) && !group_field_name.empty( ) )
             {
-               size_t next = from_string< int64_t >( gid_vals[ i ] );
+               sec_marker = uuid( ).as_string( );
 
-               sec_values.push_back( to_string( next * 10 ) );
+               vector< string > gid_vals;
+               split( gids, gid_vals, '|' );
 
-               if( sec_level && !level_field_name.empty( ) )
+               for( size_t i = 0; i < gid_vals.size( ); i++ )
                {
-                  for( size_t j = 1; j <= sec_level; j++ )
-                     sec_values.push_back( to_string( ( next * 10 ) + j ) );
+                  size_t next = from_string< int64_t >( gid_vals[ i ] );
+
+                  sec_values.push_back( to_string( next * 10 ) );
+
+                  if( sec_level && !level_field_name.empty( ) )
+                  {
+                     for( size_t j = 1; j <= sec_level; j++ )
+                        sec_values.push_back( to_string( ( next * 10 ) + j ) );
+                  }
                }
             }
-         }
 
-         // NOTE: Handle records where security level is used without a group.
-         if( !sec.empty( ) && sec_values.empty( ) && !level_field_name.empty( ) )
-         {
-            sec_marker = uuid( ).as_string( );
+            // NOTE: Handle records where security level is used without a group.
+            if( !sec.empty( ) && sec_values.empty( ) && !level_field_name.empty( ) )
+            {
+               sec_marker = uuid( ).as_string( );
 
-            for( size_t i = 0; i <= sec_level; i++ )
-               sec_values.push_back( to_string( i ) );
+               for( size_t i = 0; i <= sec_level; i++ )
+                  sec_values.push_back( to_string( i ) );
+            }
          }
 
          set< string > transient_field_names;
@@ -15664,7 +15671,7 @@ bool perform_instance_iterate( class_base& instance,
          }
 
          // NOTE: If this class instance is its graph parent's "child" then the iteration is
-         // restricted to those instances that belong to the parent (via a non-primary index).
+         // restricted to those instances that belong to the parent (via a secondary index).
          if( instance.get_graph_parent( ) && !instance.get_is_singular( ) )
          {
             string fk_field = instance.get_graph_parent_fk_field( );
