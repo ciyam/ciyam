@@ -42,7 +42,7 @@ const char* const c_lt = "&lt;";
 const char* const c_nbsp = "&nbsp;";
 const char* const c_dbl_nbsp = "&nbsp;&nbsp;";
 
-const char* const c_dummy_check_symbol = "-";
+const char* const c_dummy_check_symbol = ": :";
 
 string g_nbsp( c_nbsp );
 
