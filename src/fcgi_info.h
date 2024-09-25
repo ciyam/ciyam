@@ -736,6 +736,7 @@ struct view_source : source
    std::string key_suffix_field;
    std::string owning_user_field;
    std::string qr_scan_key_field;
+   std::string key_from_hash_field;
    std::string hpassword_salt_field;
    std::string create_user_key_field;
    std::string modify_user_key_field;

@@ -2535,6 +2535,7 @@ void save_record( const string& module_id,
  bool& was_invalid, bool& had_send_or_recv_error )
 {
    string key_info;
+
    if( !is_new_record )
       key_info = chk;
    else
@@ -2618,6 +2619,7 @@ void save_record( const string& module_id,
       {
          if( is_new_record )
             key_info = next;
+
          continue;
       }
 
@@ -2664,6 +2666,9 @@ void save_record( const string& module_id,
             return;
          }
       }
+
+      if( field_id == view.key_from_hash_field )
+         key_info = sha256( next ).get_digest_as_string( ).substr( 0, 20 );
 
       // NOTE: If an "ignore_encrypted" field is editable then it will need to appear *before*
       // any actual fields that have the "encrypted" extra.
