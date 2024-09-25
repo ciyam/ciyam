@@ -335,6 +335,7 @@ string storage_info::get_module_ref( const string& module_name )
    else
    {
       string::size_type pos = module_name.find( module_prefix );
+
       if( pos != 0 )
          throw runtime_error( "unexpected module prefix '"
           + module_prefix + "' not found in module name '" + module_name + "'" );
@@ -408,6 +409,7 @@ void read_storage_info( storage_info& info, vector< string > log_messages )
    string filename( c_fcgi_sio );
 
    ifstream inpf( filename.c_str( ) );
+
    if( inpf )
    {
       info.clear( );
@@ -415,12 +417,14 @@ void read_storage_info( storage_info& info, vector< string > log_messages )
       sio_reader reader( inpf );
 
       string use_tls = reader.read_opt_attribute( c_attribute_use_tls );
+
       if( use_tls == "1" || use_tls == c_true )
          info.use_tls = true;
 
       info.url_opts = reader.read_opt_attribute( c_attribute_url_opts );
 
       string row_limit = reader.read_opt_attribute( c_attribute_row_limit );
+
       if( !row_limit.empty( ) )
          info.row_limit = atoi( row_limit.c_str( ) );
 
@@ -429,60 +433,73 @@ void read_storage_info( storage_info& info, vector< string > log_messages )
       info.blockchain = reader.read_opt_attribute( c_attribute_blockchain );
 
       string login_days = reader.read_opt_attribute( c_attribute_login_days );
+
       if( !login_days.empty( ) )
          info.login_days = atoi( login_days.c_str( ) );
 
       info.login_opts = reader.read_opt_attribute( c_attribute_login_opts );
 
       string notes_rmin = reader.read_opt_attribute( c_attribute_notes_rmin );
+
       if( !notes_rmin.empty( ) )
          info.notes_rmin = atoi( notes_rmin.c_str( ) );
 
       string notes_rmax = reader.read_opt_attribute( c_attribute_notes_rmax );
+
       if( !notes_rmax.empty( ) )
          info.notes_rmax = atoi( notes_rmax.c_str( ) );
 
       string notes_trunc = reader.read_opt_attribute( c_attribute_notes_trunc );
+
       if( !notes_trunc.empty( ) )
          info.notes_trunc = atoi( notes_trunc.c_str( ) );
 
       string notes_limit = reader.read_opt_attribute( c_attribute_notes_limit );
+
       if( !notes_limit.empty( ) )
          info.notes_limit = atoi( notes_limit.c_str( ) );
 
       string print_limit = reader.read_opt_attribute( c_attribute_print_limit );
+
       if( !print_limit.empty( ) )
          info.print_limit = atoi( print_limit.c_str( ) );
 
       info.print_list_opts = reader.read_opt_attribute( c_attribute_print_list_opts );
 
       string image_width = reader.read_opt_attribute( c_attribute_image_width );
+
       if( !image_width.empty( ) )
          info.image_width = atoi( image_width.c_str( ) );
 
       string image_height = reader.read_opt_attribute( c_attribute_image_height );
+
       if( !image_height.empty( ) )
          info.image_height = atoi( image_height.c_str( ) );
 
       string embed_images = reader.read_opt_attribute( c_attribute_embed_images );
+
       if( !embed_images.empty( ) )
          info.embed_images = ( embed_images == c_true );
 
       string encrypt_data = reader.read_opt_attribute( c_attribute_encrypt_data );
+
       if( !encrypt_data.empty( ) )
          info.encrypt_data = ( encrypt_data == c_true );
 
       info.rpc_password = reader.read_opt_attribute( c_attribute_rpc_password );
 
       string view_show_key = reader.read_opt_attribute( c_attribute_view_show_key );
+
       if( !view_show_key.empty( ) )
          info.view_show_key = ( view_show_key == c_true );
 
       string checkbox_bools = reader.read_opt_attribute( c_attribute_checkbox_bools );
+
       if( !checkbox_bools.empty( ) )
          info.checkbox_bools = ( checkbox_bools == c_true );
 
       string filesize_limit = reader.read_opt_attribute( c_attribute_filesize_limit );
+
       if( !filesize_limit.empty( ) )
          info.filesize_limit = atol( filesize_limit.c_str( ) );
 
@@ -532,6 +549,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
    string filename( name + c_fcgi_sio_ext );
 
    ifstream inpf( filename.c_str( ) );
+
    if( inpf )
    {
       sio_reader reader( inpf );
@@ -546,7 +564,9 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
       {
          vector< string > perms;
          split( info.perm, perms, ',' );
+
          vector< string > new_perms;
+
          for( int i = 0; i < perms.size( ); ++i )
          {
             if( perms[ i ] == "@anon" )
@@ -554,17 +574,20 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
             else
                new_perms.push_back( perms[ i ] );
          }
+
          info.perm = join( new_perms, ',' );
       }
 
       info.title = reader.read_attribute( c_attribute_title );
 
       string sys_info = reader.read_opt_attribute( c_attribute_sys_info );
+
       if( !sys_info.empty( ) )
       {
          string str( sys_info );
 
          string::size_type pos = str.find( ':' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected sys_info format '" + sys_info + "'" );
 
@@ -591,6 +614,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          string str( user_info );
 
          string::size_type pos = str.find( '@' );
+
          if( pos != string::npos )
          {
             info.user_change_pwd_tm_field_id = str.substr( pos + 1 );
@@ -598,6 +622,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          }
 
          pos = str.find( '!' );
+
          if( pos != string::npos )
          {
             info.user_read_only_field_id = str.substr( pos + 1 );
@@ -605,6 +630,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          }
 
          pos = str.find( ':' );
+
          if( pos != string::npos )
          {
             info.user_crypt_field_id = str.substr( pos + 1 );
@@ -612,6 +638,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          }
 
          pos = str.find( ';' );
+
          if( pos != string::npos )
          {
             info.user_email_field_id = str.substr( pos + 1 );
@@ -619,6 +646,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          }
 
          pos = str.find( ',' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected user_info format '" + user_info + "'" );
 
@@ -626,6 +654,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          str.erase( 0, pos + 1 );
 
          pos = str.find( ',' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected user_info format '" + user_info + "'" );
 
@@ -633,6 +662,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          str.erase( 0, pos + 1 );
 
          pos = str.find( ',' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected user_info format '" + user_info + "'" );
 
@@ -640,6 +670,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          str.erase( 0, pos + 1 );
 
          pos = str.find( ',' );
+
          info.user_pwd_field_id = str.substr( 0, pos );
 
          if( pos != string::npos )
@@ -686,6 +717,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          string str( user_qlink_info );
 
          string::size_type pos = str.find( ':' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected user qlink info format '" + user_qlink_info + "'" );
 
@@ -693,6 +725,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          str.erase( 0, pos + 1 );
 
          pos = str.find( ',' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected user qlink info format '" + user_qlink_info + "'" );
 
@@ -700,6 +733,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          str.erase( 0, pos + 1 );
 
          pos = str.find( ',' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected user qlink info format '" + user_qlink_info + "'" );
 
@@ -707,6 +741,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          str.erase( 0, pos + 1 );
 
          pos = str.find( ',' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected user qlink info format '" + user_qlink_info + "'" );
 
@@ -714,11 +749,14 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          str.erase( 0, pos + 1 );
 
          pos = str.find( ',' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected user qlink info format '" + user_qlink_info + "'" );
 
          info.user_qlink_order_field_id = str.substr( 0, pos );
+
          string::size_type tpos = info.user_qlink_order_field_id.find_last_of( ':' );
+
          if( tpos != string::npos )
          {
             string test_field_and_value = info.user_qlink_order_field_id.substr( 0, tpos );
@@ -747,6 +785,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
       info.user_active_field_id = reader.read_opt_attribute( c_attribute_user_active );
 
       string user_select_info( reader.read_opt_attribute( c_attribute_user_select ) );
+
       if( !user_select_info.empty( ) )
       {
          if( user_select_info[ 0 ] == '!' )
@@ -756,6 +795,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          }
 
          string::size_type pos = user_select_info.find( '#' );
+
          if( pos != string::npos )
          {
             info.user_select_sl_field = user_select_info.substr( pos + 1 );
@@ -763,6 +803,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          }
 
          pos = user_select_info.find( '@' );
+
          if( pos != string::npos )
          {
             info.user_select_uo_field = user_select_info.substr( pos + 1 );
@@ -770,6 +811,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          }
 
          pos = user_select_info.find( ':' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected user select info format '" + user_select_info + "'" );
 
@@ -777,6 +819,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          user_select_info.erase( 0, pos + 1 );
 
          pos = info.user_select_field.find( '.' );
+
          if( pos != string::npos )
          {
             info.user_select_cfield = info.user_select_field.substr( pos + 1 );
@@ -784,6 +827,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          }
 
          pos = user_select_info.find( ';' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected user select info format '" + user_select_info + "'" );
 
@@ -791,6 +835,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          user_select_info.erase( 0, pos + 1 );
 
          pos = info.user_select_pfield.find( '!' );
+
          if( pos != string::npos )
          {
             info.user_select_ofield = info.user_select_pfield.substr( pos + 1 );
@@ -824,6 +869,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
             e.name = reader.read_attribute( c_attribute_name );
 
             reader.start_section( c_section_values );
+
             while( reader.has_started_section( c_section_value ) )
             {
                string data( reader.read_attribute( c_attribute_data ) );
@@ -861,6 +907,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
             view.type = reader.read_attribute( c_attribute_type );
 
             string::size_type pos = view.type.find( '=' );
+
             if( pos != string::npos )
             {
                view.perm = view.type.substr( pos + 1 );
@@ -870,6 +917,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
             string extra = reader.read_attribute( c_attribute_extra );
 
             vector< string > extras;
+
             if( !extra.empty( ) )
                split( extra, extras );
 
@@ -904,6 +952,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
             reader.start_section( c_section_fields );
 
             int tab_id = 0;
+
             while( reader.has_started_section( c_section_field ) )
             {
                fld_info fld;
@@ -984,6 +1033,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
                info.user_qlink_list_id = list.id;
 
             string::size_type pos = list.type.find( '=' );
+
             if( pos != string::npos )
             {
                list.perm = list.type.substr( pos + 1 );
@@ -993,6 +1043,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
             string extra = reader.read_attribute( c_attribute_extra );
 
             vector< string > extras;
+
             if( !extra.empty( ) )
                split( extra, extras );
 
@@ -1031,6 +1082,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
             list.nclass = reader.read_opt_attribute( c_attribute_nclass );
             list.nfield = reader.read_opt_attribute( c_attribute_nfield );
             list.nextra = reader.read_opt_attribute( c_attribute_nextra );
+
             if( list.nextra.empty( ) || list.nextra[ 0 ] != '~' )
                list.nexclude = false;
             else
@@ -1069,7 +1121,9 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
                string indexed( reader.read_attribute( c_attribute_indexed ) );
 
                int index_count = 1;
+
                string::size_type pos = indexed.find( ':' );
+
                if( pos != string::npos )
                {
                   index_count = atoi( indexed.substr( pos + 1 ).c_str( ) );
@@ -1100,6 +1154,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
                   par.pextra = reader.read_attribute( c_attribute_pextra );
 
                   string::size_type fpos = par.pextra.find( c_list_field_parent_extra_folder );
+
                   if( fpos == 0 )
                   {
                      par.folder = true;
@@ -1109,6 +1164,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
                      throw runtime_error( "unexpected position for '" + to_string( c_list_field_parent_extra_folder ) + "' extra" );
 
                   string::size_type xpos = par.pextra.find( '-' );
+
                   if( xpos != string::npos )
                   {
                      string excludes( par.pextra.substr( xpos + 1 ) );
@@ -1140,8 +1196,11 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
                      for( size_t i = 0; i < operation_items.size( ); i++ )
                      {
                         string::size_type pos = operation_items[ i ].find( ':' );
+
                         string operation_key( operation_items[ i ].substr( 0, pos ) );
+
                         string operation_data;
+
                         if( pos != string::npos )
                            operation_data = operation_items[ i ].substr( pos + 1 );
 

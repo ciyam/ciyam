@@ -692,6 +692,10 @@
      <name>enum_field_extra_suffix_special
     </value>
     <value/>
+     <data>38
+     <name>enum_field_extra_key_from_hash
+    </value>
+    <value/>
      <data>27
      <name>enum_field_extra_hpassword_salt
      <filter>str

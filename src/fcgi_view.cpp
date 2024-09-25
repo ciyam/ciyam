@@ -447,6 +447,9 @@ void setup_view_fields( view_source& view,
          if( extra_data.count( c_view_field_extra_qr_scan_key ) )
             view.qr_scan_key_field = field_id;
 
+         if( extra_data.count( c_view_field_extra_key_from_hash ) )
+            view.key_from_hash_field = field_id;
+
          if( fld.pclass.empty( ) )
          {
             if( extra_data.count( c_field_extra_enum ) )
@@ -1637,7 +1640,7 @@ bool output_view_form( ostream& os, const string& act,
 
       bool is_protected_field = false;
 
-      if( view_edit_effect == c_modifier_effect_protect
+      if( ( view_edit_effect == c_modifier_effect_protect )
        || new_field_and_values.count( source_field_id ) || source.protected_fields.count( source_value_id ) )
       {
          is_special_field = true;

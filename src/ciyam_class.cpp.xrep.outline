@@ -1288,6 +1288,12 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_op=$specification_\0_op arg_sfield=$specification_\0_sfield arg_pfield=$specification_\0_pfield\
  arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield`}\
 `,\
+`@eq`(`'\1`'`,`'modifier_field_is_default`'`)
+`{`#modifier_field_is_default.spec.xrep section=get_state\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
+ arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield arg_tvalue=$specification_\0_tvalue\
+ arg_not_default=$specification_\0_not_default`}\
+`,\
 `@eq`(`'\1`'`,`'modifier_field_null`'`)
 `{`#modifier_field_null.spec.xrep section=get_state\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_modifier=$specification_\0_modifier\
@@ -4803,6 +4809,11 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `{`#modifier_field_compare.spec.xrep section=get_always_required_field_names\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_pfield=$specification_\0_pfield\
  arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield`}\
+`,\
+`@eq`(`'\1`'`,`'modifier_field_is_default`'`)
+`{`#modifier_field_is_default.spec.xrep section=get_always_required_field_names\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
+ arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_field_null`'`)
 `{`#modifier_field_null.spec.xrep section=get_always_required_field_names\

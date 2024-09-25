@@ -8336,6 +8336,10 @@ string meta_field_extras( int uom,
       all_extras.push_back( "key_suffix" );
       break;
 
+      case 38:
+      all_extras.push_back( "key_from_hash" );
+      break;
+
       default:
       throw runtime_error( "unexpected field extra #" + to_string( extra ) + " in meta_field_extras" );
    }
