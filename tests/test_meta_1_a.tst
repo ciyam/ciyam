@@ -1,4 +1,229 @@
 storage_init ciyam
+session_variable @dump_minimal 1
+storage_lock_create view test
+1
+storage_lock_create view test
+2
+storage_lock_create view test
+3
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         view      
+storage_lock_modify 2 review
+storage_lock_modify 3 review
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         review    
+3      test:                                         review    
+storage_lock_modify 3 obtain
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         review    
+3      test:                                         obtain    
+storage_lock_modify 2 obtain
+Error: unable to transform lock due to locking conflict
+storage_lock_modify 3 update
+Error: unable to transform lock due to locking conflict
+storage_lock_modify 2 view
+storage_lock_modify 3 update
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         update    
+storage_lock_modify 2 review
+Error: unable to transform lock due to locking conflict
+storage_lock_modify 3 obtain
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         obtain    
+storage_lock_modify 2 review
+storage_lock_modify 3 destroy
+Error: unable to transform lock due to locking conflict
+storage_lock_modify 2 view
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         obtain    
+storage_lock_modify 3 destroy
+storage_lock_modify 2 review
+Error: unable to transform lock due to locking conflict
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         destroy   
+storage_lock_modify 3 obtain
+storage_lock_create review test abc
+4
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         obtain    
+4      test:abc                                      review    
+storage_lock_modify 3 update
+Error: unable to transform lock due to locking conflict
+storage_lock_modify 4 view
+storage_lock_modify 3 update
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         update    
+4      test:abc                                      view      
+storage_lock_modify 4 review
+Error: unable to transform lock due to locking conflict
+storage_lock_create review test def
+Error: unable to obtain lock due to locking conflict
+storage_lock_modify 3 obtain
+storage_lock_create review test def
+5
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         obtain    
+4      test:abc                                      view      
+5      test:def                                      review    
+storage_lock_modify 4 review
+storage_lock_modify 4 update
+Error: unable to transform lock due to locking conflict
+storage_lock_modify 3 view
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         view      
+4      test:abc                                      review    
+5      test:def                                      review    
+storage_lock_modify 4 update
+storage_lock_modify 5 update
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         view      
+4      test:abc                                      update    
+5      test:def                                      update    
+storage_lock_modify 3 obtain
+Error: unable to transform lock due to locking conflict
+storage_lock_modify 4 review
+storage_lock_modify 3 obtain
+Error: unable to transform lock due to locking conflict
+storage_lock_modify 5 review
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         view      
+4      test:abc                                      review    
+5      test:def                                      review    
+storage_lock_modify 3 obtain
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         obtain    
+4      test:abc                                      review    
+5      test:def                                      review    
+storage_lock_modify 3 update
+Error: unable to transform lock due to locking conflict
+storage_lock_remove 5
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         obtain    
+4      test:abc                                      review    
+storage_lock_modify 3 update
+Error: unable to transform lock due to locking conflict
+storage_lock_remove 4
+storage_lock_modify 3 update
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         view      
+3      test:                                         update    
+storage_lock_modify 2 update
+Error: unable to transform lock due to locking conflict
+storage_lock_remove 3
+storage_lock_modify 2 update
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         view      
+2      test:                                         update    
+storage_lock_modify 1 obtain
+Error: unable to transform lock due to locking conflict
+storage_lock_modify 2 review
+storage_lock_modify 1 obtain
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+1      test:                                         obtain    
+2      test:                                         review    
+storage_lock_remove 1
+storage_lock_modify 2 destroy
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+2      test:                                         destroy   
+storage_lock_modify 2 create
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+2      test:                                         create    
+storage_lock_create link test
+Error: unable to obtain lock due to locking conflict
+storage_lock_modify 2 destroy
+storage_lock_create link test
+Error: unable to obtain lock due to locking conflict
+storage_lock_modify 2 update
+storage_lock_create link test
+6
+storage_lock_create link test
+7
+storage_lock_modify 2 destroy
+Error: unable to transform lock due to locking conflict
+storage_lock_remove 7
+storage_lock_modify 2 destroy
+Error: unable to transform lock due to locking conflict
+storage_lock_remove 6
+storage_lock_modify 2 destroy
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+2      test:                                         destroy   
+storage_lock_modify 2 view
+storage_dump_locks
+handle key (class_id:instance)                       type
+------ --------------------------------------------- ----------
+2      test:                                         view      
+storage_lock_remove 2
 session_variable @attached_file_path .
 object_create 100 100100
 1

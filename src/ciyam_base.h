@@ -915,9 +915,16 @@ void CIYAM_BASE_DECL_SPEC get_foreign_field_and_class_ids( size_t handle,
 void CIYAM_BASE_DECL_SPEC get_base_class_info( size_t handle,
  const std::string& context, std::vector< std::pair< std::string, std::string > >& base_class_info );
 
+size_t CIYAM_BASE_DECL_SPEC obtain_storage_lock(
+ const std::string& type, const std::string& lock_class_id, const std::string& key, size_t num_attempts = 0 );
+
+size_t CIYAM_BASE_DECL_SPEC obtain_instance_lock( const std::string& type, class_base& instance, size_t num_attempts = 0 );
+
 size_t CIYAM_BASE_DECL_SPEC obtain_instance_fk_lock( const std::string& lock_class_id, const std::string& key, bool review_required );
 
 void CIYAM_BASE_DECL_SPEC release_obtained_lock( size_t lock_handle );
+
+void CIYAM_BASE_DECL_SPEC transform_obtained_lock( size_t lock_handle, const std::string& type, size_t num_attempts = 0 );
 
 void CIYAM_BASE_DECL_SPEC dump_storage_cache( std::ostream& os );
 void CIYAM_BASE_DECL_SPEC dump_storage_locks( std::ostream& os );

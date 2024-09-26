@@ -558,7 +558,6 @@ struct op_lock
       e_lock_type_update,
       e_lock_type_create,
       e_lock_type_destroy,
-      e_lock_type_propagate,
       e_lock_type_dummy_value
    };
 
@@ -593,6 +592,8 @@ struct op_lock
    }
 
    static string lock_type_name( lock_type type );
+
+   static lock_type lock_type_for_name( const string& name );
 
    size_t handle;
 
@@ -634,10 +635,30 @@ string op_lock::lock_type_name( lock_type type )
       retval = "create";
    else if( type == e_lock_type_destroy )
       retval = "destroy";
-   else if( type == e_lock_type_propagate )
-      retval = "propagate";
    else
       retval = "**unknown**";
+
+   return retval;
+}
+
+op_lock::lock_type op_lock::lock_type_for_name( const string& name )
+{
+   lock_type retval = e_lock_type_none;
+
+   if( name == "view" )
+      retval = e_lock_type_view;
+   else if( name == "link" )
+      retval = e_lock_type_link;
+   else if( name == "review" )
+      retval = e_lock_type_review;
+   else if( name == "obtain" )
+      retval = e_lock_type_obtain;
+   else if( name == "update" )
+      retval = e_lock_type_update;
+   else if( name == "create" )
+      retval = e_lock_type_create;
+   else if( name == "destroy" )
+      retval = e_lock_type_destroy;
 
    return retval;
 }
@@ -652,15 +673,14 @@ bool locks_can_coexist( op_lock::lock_type lhs, op_lock::lock_type rhs )
    }
    g_locks_can_coexist[ ] =
    {
-   //   V  L  R  O  U  C  D  P
-      { 1, 1, 1, 1, 1, 1, 1, 1 }, // V
-      { 1, 1, 1, 1, 1, 0, 0, 0 }, // L
-      { 1, 1, 1, 1, 0, 0, 0, 0 }, // R
-      { 1, 1, 1, 0, 0, 0, 0, 0 }, // O
-      { 1, 1, 0, 0, 0, 0, 0, 0 }, // U
-      { 1, 0, 0, 0, 0, 0, 0, 0 }, // C
-      { 1, 0, 0, 0, 0, 0, 0, 0 }, // D
-      { 1, 0, 0, 0, 0, 0, 0, 1 }, // P
+   //   V  L  R  O  U  C  D
+      { 1, 1, 1, 1, 1, 1, 1 }, // V
+      { 1, 1, 1, 1, 1, 0, 0 }, // L
+      { 1, 1, 1, 1, 0, 0, 0 }, // R
+      { 1, 1, 1, 0, 0, 0, 0 }, // O
+      { 1, 1, 0, 0, 0, 0, 0 }, // U
+      { 1, 0, 0, 0, 0, 0, 0 }, // C
+      { 1, 0, 0, 0, 0, 0, 0 }, // D
    };
 
    if( lhs == op_lock::e_lock_type_none || rhs == op_lock::e_lock_type_none )
@@ -799,7 +819,7 @@ class storage_handler
     p_ods( p_ods ),
     ref_count( 0 ),
     p_bulk_write( 0 ),
-    next_lock_handle( 1 ),
+    next_lock_handle( 0 ),
     p_alternative_log_file( 0 ),
     is_locked_for_admin( false ),
     has_sql_undo_support( false )
@@ -838,10 +858,14 @@ class storage_handler
    void dump_cache( ostream& os ) const;
    void dump_locks( ostream& os ) const;
 
-   bool obtain_lock( size_t& handle, const string& lock_class, const string& lock_instance,
-    op_lock::lock_type type, session* p_session, class_base* p_class_base = 0, class_base* p_root_class_base = 0 );
+   bool obtain_lock( size_t& handle,
+    const string& lock_class, const string& lock_instance,
+    op_lock::lock_type type, session* p_session, class_base* p_class_base = 0,
+    class_base* p_root_class_base = 0, size_t num_attempts = 0, size_t check_handle = 0 );
 
-   void transform_lock( size_t handle, op_lock::lock_type new_type );
+   void transform_lock(
+    size_t handle, op_lock::lock_type new_type,
+    session* p_session = 0, size_t num_attempts = 0 );
 
    void release_lock( size_t handle, bool force_removal = false );
 
@@ -910,6 +934,7 @@ void storage_handler::dump_cache( ostream& os ) const
 {
    os << "date_time_accessed  key (class_id:instance)                                          ver.rev\n";
    os << "------------------- ---------------------------------------------------------------- -------\n";
+
    for( time_info_const_iterator ci = key_for_time.begin( ); ci != key_for_time.end( ); ++ci )
    {
       time_t t = ci->first;
@@ -932,10 +957,22 @@ void storage_handler::dump_cache( ostream& os ) const
 
 void storage_handler::dump_locks( ostream& os ) const
 {
-   os << "handle key (lock_class:instance)                     type       tx_type    tran_id    tran_level p_session      p_class_base   p_root_class\n";
-   os << "------ --------------------------------------------- ---------- ---------- ---------- ---------- -------------- -------------- --------------\n";
-
    lock_index_const_iterator lici;
+
+   bool minimal_output = !get_raw_session_variable(
+    get_special_var_name( e_special_var_dump_minimal ) ).empty( );
+
+   if( minimal_output )
+   {
+      os << "handle key (class_id:instance)                       type\n";
+      os << "------ --------------------------------------------- ----------\n";
+   }
+   else
+   {
+      os << "handle key (class_id:instance)                       type       tx_type    tran_id    tran_level p_session      p_class_base   p_root_class\n";
+      os << "------ --------------------------------------------- ---------- ---------- ---------- ---------- -------------- -------------- --------------\n";
+   }
+
    for( lici = lock_index.begin( ); lici != lock_index.end( ); ++lici )
    {
       op_lock& next_lock( lici->second->second );
@@ -944,20 +981,28 @@ void storage_handler::dump_locks( ostream& os ) const
 
       os << setw( 6 ) << lici->first
        << ' ' << setw( 45 ) << lici->second->first
-       << ' ' << setw( 10 ) << op_lock::lock_type_name( next_lock.type )
-       << ' ' << setw( 10 ) << op_lock::lock_type_name( next_lock.tx_type )
-       << ' ' << setw( 10 ) << next_lock.transaction_id
-       << ' ' << setw( 10 ) << next_lock.transaction_level
-       << ' ' << setw( 14 ) << next_lock.p_session
-       << ' ' << setw( 14 ) << next_lock.p_class_base << ' ' << next_lock.p_root_class << '\n';
+       << ' ' << setw( 10 ) << op_lock::lock_type_name( next_lock.type );
+
+      if( minimal_output )
+      {
+         os << '\n';
+         continue;
+      }
+
+      os << ' ' << setw( 10 ) << op_lock::lock_type_name( next_lock.tx_type )
+       << ' ' << setw( 10 ) << next_lock.transaction_id << ' ' << setw( 10 ) << next_lock.transaction_level
+       << ' ' << setw( 14 ) << next_lock.p_session << ' ' << setw( 14 ) << next_lock.p_class_base << ' ' << next_lock.p_root_class << '\n';
    }
 }
 
 bool storage_handler::obtain_lock( size_t& handle,
- const string& lock_class, const string& lock_instance,
- op_lock::lock_type type, session* p_session, class_base* p_class_base, class_base* p_root_class )
+ const string& lock_class, const string& lock_instance, op_lock::lock_type type,
+ session* p_session, class_base* p_class_base, class_base* p_root_class, size_t num_attempts, size_t check_handle )
 {
    int attempts = c_max_lock_attempts;
+
+   if( num_attempts )
+      attempts = num_attempts;
 
    TRACE_LOG( TRACE_LOCK_OPS, "[obtain lock] class = " + lock_class
     + ", instance = " + lock_instance + ", type = " + to_string( type ) + " (" + op_lock::lock_type_name( type ) + ")" );
@@ -966,7 +1011,7 @@ bool storage_handler::obtain_lock( size_t& handle,
 
    while( attempts-- )
    {
-      // NOTE: Empty scope for lock object.
+      // NOTE: Empty scope for guard.
       {
          guard g( lock_mutex );
 
@@ -979,7 +1024,7 @@ bool storage_handler::obtain_lock( size_t& handle,
          lock_iterator li( locks.lower_bound( lock_class ) );
 
          // NOTE: Check existing locks of the same class for a conflicting lock
-         // (an empty lock instance is treated as a class-wide lock).
+         // (and an empty lock instance is being treated as a class-wide lock).
          op_lock last_lock;
          bool lock_conflict = false;
 
@@ -987,6 +1032,7 @@ bool storage_handler::obtain_lock( size_t& handle,
          {
             string next_lock_class, next_lock_instance;
             string::size_type pos = li->first.find( ':' );
+
             if( pos == string::npos )
                throw runtime_error( "lock key '" + li->first + "' is missing class/instance separator" );
 
@@ -996,7 +1042,8 @@ bool storage_handler::obtain_lock( size_t& handle,
             if( lock_class != next_lock_class )
                break;
 
-            if( !lock_instance.empty( ) && !next_lock_instance.empty( ) && lock_instance != next_lock_instance )
+            if( !lock_instance.empty( )
+             && !next_lock_instance.empty( ) && ( lock_instance != next_lock_instance ) )
             {
                // NOTE: If both locks being compared are instance locks then if greater finish or if less then
                // skip to the first instance that is equal or greater (as only equal instance locks can clash).
@@ -1011,10 +1058,16 @@ bool storage_handler::obtain_lock( size_t& handle,
 
             op_lock& next_lock( li->second );
 
+            if( check_handle && ( next_lock.handle == check_handle ) )
+            {
+               ++li;
+               continue;
+            }
+
             // NOTE: Locks that are effectively "dead" (i.e. awaiting cleanup when the tx completes) can
             // result in increasingly poorer performance if duplicates are allowed to exist (due to lock
             // clash scanning) therefore remove any duplicates as they are discovered.
-            if( next_lock.type == op_lock::e_lock_type_none && next_lock == last_lock )
+            if( ( next_lock.type == op_lock::e_lock_type_none ) && ( next_lock == last_lock ) )
             {
                lock_duplicates.insert( next_lock.handle );
 
@@ -1032,10 +1085,10 @@ bool storage_handler::obtain_lock( size_t& handle,
             // NOTE: Cascade locks will be ignored within the same session as it can sometimes be necessary for
             // update or delete operations to occur on an already cascade locked instance. Locks that are being
             // held for the duration of a transaction are ignored within the same session.
-            if( ( lock_instance.empty( ) || next_lock_instance.empty( ) || lock_instance == next_lock_instance )
+            if( ( lock_instance.empty( ) || next_lock_instance.empty( ) || ( lock_instance == next_lock_instance ) )
              && ( ( !locks_can_coexist( type, next_lock.type )
-             && ( p_session != next_lock.p_session || p_root_class || p_root_class == next_lock.p_root_class ) )
-             || ( next_lock.tx_type && p_session != next_lock.p_session && !locks_can_coexist( type, next_lock.tx_type ) ) ) )
+             && ( ( p_session != next_lock.p_session ) || p_root_class || ( p_root_class == next_lock.p_root_class ) ) )
+             || ( next_lock.tx_type && ( p_session != next_lock.p_session ) && !locks_can_coexist( type, next_lock.tx_type ) ) ) )
             {
                // NOTE: Allow "update" locks to be obtained for an already "update" locked instance provided
                // that the instances are separate but owned by the same session and that the existing locked
@@ -1043,24 +1096,33 @@ bool storage_handler::obtain_lock( size_t& handle,
                // are owned by the same session (even if class locked).
                if( p_session != next_lock.p_session
                 || ( p_class_base == next_lock.p_class_base )
-                || ( type != next_lock.type && type != op_lock::e_lock_type_review )
-                || ( !next_lock.p_class_base && type != op_lock::e_lock_type_review )
-                || ( type != op_lock::e_lock_type_review && type != op_lock::e_lock_type_update )
-                || ( type != op_lock::e_lock_type_review && !next_lock.p_class_base->get_is_after_store( ) ) )
+                || ( ( type != next_lock.type ) && ( type != op_lock::e_lock_type_review ) )
+                || ( !next_lock.p_class_base && ( type != op_lock::e_lock_type_review ) )
+                || ( ( type != op_lock::e_lock_type_review ) && ( type != op_lock::e_lock_type_update ) )
+                || ( ( type != op_lock::e_lock_type_review ) && !next_lock.p_class_base->get_is_after_store( ) ) )
                {
                   lock_conflict = true;
+
                   if( !attempts )
                      TRACE_LOG( TRACE_LOCK_OPS, "*** failed to acquire lock ***" );
+
                   break;
                }
             }
 
             last_lock = next_lock;
+
             ++li;
          }
 
          if( !lock_conflict )
          {
+            if( check_handle )
+            {
+               found = true;
+               break;
+            }
+
             int64_t tran_id( p_ods->get_transaction_id( ) );
             int64_t tran_level( p_ods->get_transaction_level( ) );
 
@@ -1071,11 +1133,13 @@ bool storage_handler::obtain_lock( size_t& handle,
 
             handle = next_lock_handle;
             found = true;
+
             break;
          }
       }
 
-      msleep( c_lock_attempt_sleep_time );
+      if( attempts )
+         msleep( c_lock_attempt_sleep_time );
    }
 
    IF_IS_TRACING( TRACE_LOCK_OPS )
@@ -1089,19 +1153,39 @@ bool storage_handler::obtain_lock( size_t& handle,
    return found;
 }
 
-void storage_handler::transform_lock( size_t handle, op_lock::lock_type new_type )
+void storage_handler::transform_lock( size_t handle,
+ op_lock::lock_type new_type, session* p_session, size_t num_attempts )
 {
    guard g( lock_mutex );
 
    TRACE_LOG( TRACE_LOCK_OPS, "[transform lock] handle = "
     + to_string( handle ) + ", new_type = " + to_string( new_type ) );
 
-   if( handle && lock_duplicates.find( handle ) == lock_duplicates.end( ) )
+   if( handle && ( lock_duplicates.find( handle ) == lock_duplicates.end( ) ) )
    {
       lock_index_iterator lii = lock_index.find( handle );
+
       if( lii != lock_index.end( ) )
       {
          lock_iterator li( lii->second );
+
+         if( new_type > li->second.type )
+         {
+            string key( li->first );
+
+            string::size_type pos = key.find( ':' );
+
+            if( pos == string::npos )
+               throw runtime_error( "lock key '" + key + "' is missing class/instance separator" );
+
+            string lock_class( key.substr( 0, pos ) );
+            string lock_instance( key.substr( pos + 1 ) );
+
+            if( !obtain_lock( handle,
+             lock_class, lock_instance, new_type, p_session, 0, 0, num_attempts, handle ) )
+               throw runtime_error( "unable to transform lock due to locking conflict" );
+         }
+
          li->second.type = new_type;
       }
    }
@@ -1125,10 +1209,12 @@ void storage_handler::release_lock( size_t handle, bool force_removal )
    if( handle && lock_duplicates.find( handle ) == lock_duplicates.end( ) )
    {
       lock_index_iterator lii = lock_index.find( handle );
+
       if( lii != lock_index.end( ) )
       {
          lock_iterator li( lii->second );
-         if( !force_removal && li->second.transaction_level > 0 )
+
+         if( !force_removal && ( li->second.transaction_level > 0 ) )
             li->second.type = op_lock::e_lock_type_none;
          else
          {
@@ -1152,6 +1238,7 @@ bool storage_handler::has_lock_info( size_t handle ) const
    guard g( lock_mutex );
 
    lock_index_const_iterator lici = lock_index.find( handle );
+
    if( lici == lock_index.end( ) )
       return false;
 
@@ -1163,6 +1250,7 @@ op_lock storage_handler::get_lock_info( size_t handle ) const
    guard g( lock_mutex );
 
    lock_index_const_iterator lici = lock_index.find( handle );
+
    if( lici == lock_index.end( ) )
       throw runtime_error( "unable to locate lock handle #" + to_string( handle ) );
 
@@ -1178,6 +1266,7 @@ op_lock storage_handler::get_lock_info( const string& lock_class, const string& 
    key += lock_instance;
 
    op_lock lock;
+
    for( lock_const_iterator lci = locks.lower_bound( key ), end = locks.end( ); lci != end; ++lci )
    {
       if( lci->first != key )
@@ -1200,6 +1289,7 @@ op_lock storage_handler::get_lock_info_for_owner( const string& lock_class, cons
    key += lock_instance;
 
    op_lock lock;
+
    for( lock_const_iterator lci = locks.lower_bound( key ), end = locks.end( ); lci != end; ++lci )
    {
       if( lci->first != key )
@@ -1223,6 +1313,7 @@ void storage_handler::release_locks_for_owner( class_base& owner, bool force_rem
     + to_string( &owner ) + ", force_removal = " + to_string( force_removal ) );
 
    lock_index_iterator lii;
+
    for( lii = lock_index.begin( ); lii != lock_index.end( ); )
    {
       op_lock& next_lock( lii->second->second );
@@ -1262,6 +1353,7 @@ void storage_handler::release_locks_for_commit( session* p_session )
    ods* p_ods( ods::instance( ) );
 
    lock_index_iterator lii;
+
    for( lii = lock_index.begin( ); lii != lock_index.end( ); )
    {
       op_lock& next_lock( lii->second->second );
@@ -1309,6 +1401,7 @@ void storage_handler::release_locks_for_rollback( session* p_session )
    ods* p_ods( ods::instance( ) );
 
    lock_index_iterator lii;
+
    for( lii = lock_index.begin( ); lii != lock_index.end( ); )
    {
       op_lock& next_lock( lii->second->second );
@@ -3128,15 +3221,17 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
    return true;
 }
 
-size_t obtain_keyed_lock( const string& lock_class, const string& key, op_lock::lock_type lock_type )
+size_t obtain_keyed_lock( const string& lock_class, const string& key, op_lock::lock_type lock_type, size_t num_attempts = 0 )
 {
    if( !gtp_session->p_storage_handler->get_ods( ) )
       throw runtime_error( "no storage is currently linked" );
 
    storage_handler& handler( *gtp_session->p_storage_handler );
 
-   size_t lock_handle( 0 );
-   handler.obtain_lock( lock_handle, lock_class, key, lock_type, gtp_session );
+   size_t lock_handle = 0;
+
+   handler.obtain_lock( lock_handle, lock_class, key, lock_type, gtp_session, 0, 0, num_attempts );
+
    return lock_handle;
 }
 
@@ -12838,6 +12933,42 @@ void get_base_class_info( size_t handle,
    dcb.get_base_class_info( base_class_info );
 }
 
+size_t obtain_storage_lock( const string& type, const string& lock_class_id, const string& key, size_t num_attempts )
+{
+   op_lock::lock_type type_val = op_lock::lock_type_for_name( type );
+
+   if( type_val == 0 )
+      throw runtime_error( "invalid lock type '" + type + "'" );
+
+   size_t lock_handle = obtain_keyed_lock( lock_class_id, key, type_val, num_attempts );
+
+   if( !lock_handle )
+      throw runtime_error( "unable to obtain lock due to locking conflict" );
+
+   return lock_handle;
+}
+
+size_t obtain_instance_lock( const string& type, class_base& instance, size_t num_attempts )
+{
+   size_t lock_handle;
+
+   op_lock::lock_type type_val = op_lock::lock_type_for_name( type );
+
+   if( type_val == 0 )
+      throw runtime_error( "invalid lock type '" + type + "'" );
+
+   if( !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   storage_handler& handler( *gtp_session->p_storage_handler );
+
+   if( !handler.obtain_lock( lock_handle, instance.get_lock_class_id( ),
+    instance.get_key( ), type_val, gtp_session, &instance, &instance, num_attempts ) )
+      throw runtime_error( "unable to obtain lock due to locking conflict" );
+
+   return lock_handle;
+}
+
 size_t obtain_instance_fk_lock( const string& lock_class_id, const string& key, bool review_required )
 {
    if( lock_class_id.empty( ) || key.empty( ) )
@@ -12855,7 +12986,23 @@ void release_obtained_lock( size_t lock_handle )
       throw runtime_error( "no storage is currently linked" );
 
    storage_handler& handler( *gtp_session->p_storage_handler );
+
    handler.release_lock( lock_handle );
+}
+
+void transform_obtained_lock( size_t lock_handle, const string& type, size_t num_attempts )
+{
+   op_lock::lock_type type_val = op_lock::lock_type_for_name( type );
+
+   if( type_val == 0 )
+      throw runtime_error( "invalid lock type '" + type + "'" );
+
+   if( !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   storage_handler& handler( *gtp_session->p_storage_handler );
+
+   handler.transform_lock( lock_handle, type_val, gtp_session, num_attempts );
 }
 
 void dump_storage_cache( ostream& os )
@@ -14475,8 +14622,8 @@ void begin_instance_op( instance_op op, class_base& instance,
           GS( c_str_key_invalid ), make_pair( c_str_parm_key_invalid_key, key_for_op ) ) );
    }
 
-   size_t lock_handle( 0 );
-   size_t xlock_handle( 0 );
+   size_t lock_handle = 0;
+   size_t xlock_handle = 0;
 
    class_base_accessor instance_accessor( instance );
 
