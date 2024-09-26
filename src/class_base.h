@@ -1865,7 +1865,7 @@ std::string CIYAM_BASE_DECL_SPEC meta_field_extras( int uom,
  int max_size, const std::string& enum_id, const std::string& enum_filter_id, int primitive,
  const std::string& min_value, const std::string& max_value, int numeric_digits, int numeric_decimals,
  int string_domain, int date_precision, int time_precision, bool show_plus_sign, int zero_padding,
- int int_type, int numeric_type );
+ int int_type, int numeric_type, bool is_child_or_grandchild = false );
 
 std::string CIYAM_BASE_DECL_SPEC meta_procedure_arg_type( int primitive );
 

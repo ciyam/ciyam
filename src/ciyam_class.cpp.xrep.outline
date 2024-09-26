@@ -1081,7 +1081,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `{`#for_new_or_existing.spec.xrep section=procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name\
  arg_id=$specification_\\0_id arg_field=$specification_\\0_field arg_ofield=$specification_\\0_ofield\
  arg_spclass=$specification_\\0_spclass arg_spfield=$specification_\\0_spfield arg_scfield=$specification_\\0_scfield\
- arg_oscfield=$specification_\\0_oscfield arg_var_left=$specification_\\0_var_left arg_var_right=$specification_\\0_var_right`}\
+ arg_oscfield=$specification_\\0_oscfield arg_o2scfield=$specification_\\0_o2scfield\
+ arg_var_left=$specification_\\0_var_left arg_var_right=$specification_\\0_var_right`}\
 `,\
 `@eq`(`'\\1`'`,`'for_parent_value_mismatch`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_parent_value_mismatch.spec.xrep section=procedure module_name=$module_name class_name=$class_name\

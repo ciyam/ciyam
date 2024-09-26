@@ -14,7 +14,7 @@
 
    perform_fetch_rc rc;
 
-   cp_source->perform_fetch( key_info, &rc, false, true );
+   cp_source->perform_fetch( key_info, &rc );
 
    if( rc != e_perform_fetch_rc_okay )
    {
@@ -28,7 +28,13 @@
 `}
       cp_source->op_apply( );
    }
-`{`!`@eq`(`$output`,`'`'`)
+`{`!`@eq`(`$arg_o2scfield`,`'`'`)\
+   else
+   {
+      while( !is_null( cp_source->`{`$arg_o2scfield`}( ) ) )
+         cp_source->perform_fetch( cp_source->`{`$arg_o2scfield`}( ).get_key( ) );
+   }
+`}`{`!`@eq`(`$output`,`'`'`)
    get_obj( ).set_variable( "`{`$output`}", cp_source->get_key( ) );
 `}\
    // [(finish for_new_or_existing)] `{`$arg_id`}
