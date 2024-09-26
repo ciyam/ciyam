@@ -2740,6 +2740,7 @@ void Meta_Model::impl::impl_Generate( )
                            is_mandatory = true;
 
                         bool is_manual_link = false;
+
                         if( p_field->Extra( ) == 13 ) // i.e. "manual_link"
                            is_manual_link = true;
 
@@ -2818,6 +2819,7 @@ void Meta_Model::impl::impl_Generate( )
                         }
 
                         bool invert_perm = false;
+
                         switch( get_obj( ).child_View( ).child_View_Field( ).Link_Restriction( ) )
                         {
                            case 0:
@@ -3024,6 +3026,7 @@ void Meta_Model::impl::impl_Generate( )
                          get_obj( ).child_View( ).child_View_Field( ).Source_Child( ).Class( ).Name( ) ) ) );
 
                         string id( p_field->Id( ) );
+
                         if( !get_obj( ).child_View( ).child_View_Field( ).Source_Edit_Child( ).Id( ).empty( ) )
                         {
                            p_xfield = &get_obj( ).child_View( ).child_View_Field( ).Source_Edit_Child( );
@@ -3039,6 +3042,7 @@ void Meta_Model::impl::impl_Generate( )
 
                         string field_extra;
                         bool is_restricted = false;
+
                         if( !is_null( get_obj( ).child_View( ).child_View_Field( ).Restriction_Spec( ) ) )
                         {
                            is_restricted = true;
@@ -3292,7 +3296,7 @@ void Meta_Model::impl::impl_Generate( )
                       p_xfield->Type( ).Numeric_Digits( ), p_xfield->Type( ).Numeric_Decimals( ),
                       p_xfield->Type( ).String_Domain( ), has_date_precision ? 0 : p_xfield->Type( ).Date_Precision( ),
                       p_xfield->Type( ).Time_Precision( ), p_xfield->Type( ).Show_Plus_Sign( ), p_xfield->Type( ).Zero_Padding( ),
-                      p_xfield->Type( ).Int_Type( ), p_xfield->Type( ).Numeric_Type( ) ) );
+                      p_xfield->Type( ).Int_Type( ), p_xfield->Type( ).Numeric_Type( ), ( p_pfield != 0 ) ) );
 
                      if( !other_extras.empty( ) )
                      {
@@ -3307,6 +3311,7 @@ void Meta_Model::impl::impl_Generate( )
 
                      string modifiers;
                      string modifier_key_info( to_string( Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
+
                      if( p_mfield->Class( ).child_Modifier( ).iterate_forwards( modifier_key_info ) )
                      {
                         uint64_t flag_value( UINT64_C( 0x100 ) );
@@ -4612,6 +4617,7 @@ void Meta_Model::impl::impl_Generate( )
                      bool is_fk_field = false;
                      Meta_Field* p_list_field = 0;
                      Meta_Field* p_modifier_field = 0;
+
                      if( is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) ) )
                      {
                         p_list_field = p_modifier_field = &get_obj( ).child_List( ).child_List_Field( ).Source_Field( );
@@ -4630,6 +4636,7 @@ void Meta_Model::impl::impl_Generate( )
                         column_pids.push_back( "" );
 
                         Meta_Field* p_type_field = &get_obj( ).child_List( ).child_List_Field( ).Source_Field( );
+
                         if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Use_Type_Field( ) ) )
                            p_type_field = &get_obj( ).child_List( ).child_List_Field( ).Use_Type_Field( );
 
@@ -4695,6 +4702,7 @@ void Meta_Model::impl::impl_Generate( )
                            column_pids.push_back( "" );
 
                            Meta_Field* p_type_field = &get_obj( ).child_List( ).child_List_Field( ).Source_Child( );
+
                            if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Use_Type_Field( ) ) )
                               p_type_field = &get_obj( ).child_List( ).child_List_Field( ).Use_Type_Field( );
 
@@ -4721,7 +4729,7 @@ void Meta_Model::impl::impl_Generate( )
                             p_type_field->Type( ).Show_Plus_Sign( ),
                             p_type_field->Type( ).Zero_Padding( ),
                             p_type_field->Type( ).Int_Type( ),
-                            p_type_field->Type( ).Numeric_Type( ) );
+                            p_type_field->Type( ).Numeric_Type( ), true );
 
                            if( !get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ).Transient( ) )
                               column_index_info.insert(
@@ -4769,7 +4777,7 @@ void Meta_Model::impl::impl_Generate( )
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Show_Plus_Sign( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Zero_Padding( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Int_Type( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Numeric_Type( ) );
+                            get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Numeric_Type( ), true );
 
                            if( !get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ).Transient( ) )
                               column_index_info.insert(

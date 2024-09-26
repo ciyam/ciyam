@@ -8159,7 +8159,7 @@ string meta_field_extras( int uom,
  int max_size, const string& enum_id, const string& enum_filter_id, int primitive,
  const string& min_value, const string& max_value, int numeric_digits, int numeric_decimals,
  int string_domain, int date_precision, int time_precision, bool show_plus_sign, int zero_padding,
- int int_type, int numeric_type )
+ int int_type, int numeric_type, bool is_child_or_grandchild )
 {
    vector< string > all_extras;
 
@@ -8329,7 +8329,8 @@ string meta_field_extras( int uom,
       break;
 
       case 36:
-      all_extras.push_back( "qr_scan_key" );
+      if( !is_child_or_grandchild )
+         all_extras.push_back( "qr_scan_key" );
       break;
 
       case 37:
@@ -8337,7 +8338,8 @@ string meta_field_extras( int uom,
       break;
 
       case 38:
-      all_extras.push_back( "key_from_hash" );
+      if( !is_child_or_grandchild )
+         all_extras.push_back( "key_from_hash" );
       break;
 
       default:
