@@ -165,6 +165,7 @@ const char* const c_special_variable_submit_type = "@submit_type";
 const char* const c_special_variable_transaction = "@transaction";
 const char* const c_special_variable_backup_files = "@backup_files";
 const char* const c_special_variable_block_height = "@block_height";
+const char* const c_special_variable_dump_minimal = "@dump_minimal";
 const char* const c_special_variable_opened_files = "@opened_files";
 const char* const c_special_variable_peer_map_key = "@peer_map_key";
 const char* const c_special_variable_shared_files = "@shared_files";
@@ -441,6 +442,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_transaction );
       g_special_variable_names.push_back( c_special_variable_backup_files );
       g_special_variable_names.push_back( c_special_variable_block_height );
+      g_special_variable_names.push_back( c_special_variable_dump_minimal );
       g_special_variable_names.push_back( c_special_variable_opened_files );
       g_special_variable_names.push_back( c_special_variable_peer_map_key );
       g_special_variable_names.push_back( c_special_variable_shared_files );

@@ -128,6 +128,7 @@ enum special_var
    e_special_var_transaction,
    e_special_var_backup_files,
    e_special_var_block_height,
+   e_special_var_dump_minimal,
    e_special_var_opened_files,
    e_special_var_peer_map_key,
    e_special_var_shared_files,

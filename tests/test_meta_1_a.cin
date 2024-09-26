@@ -1,4 +1,90 @@
 storage_init ciyam
+session_variable @dump_minimal 1
+storage_lock_create view test
+storage_lock_create view test
+storage_lock_create view test
+storage_dump_locks
+storage_lock_modify 2 review
+storage_lock_modify 3 review
+storage_dump_locks
+storage_lock_modify 3 obtain
+storage_dump_locks
+storage_lock_modify 2 obtain
+storage_lock_modify 3 update
+storage_lock_modify 2 view
+storage_lock_modify 3 update
+storage_dump_locks
+storage_lock_modify 2 review
+storage_lock_modify 3 obtain
+storage_dump_locks
+storage_lock_modify 2 review
+storage_lock_modify 3 destroy
+storage_lock_modify 2 view
+storage_dump_locks
+storage_lock_modify 3 destroy
+storage_lock_modify 2 review
+storage_dump_locks
+storage_lock_modify 3 obtain
+storage_lock_create review test abc
+storage_dump_locks
+storage_lock_modify 3 update
+storage_lock_modify 4 view
+storage_lock_modify 3 update
+storage_dump_locks
+storage_lock_modify 4 review
+storage_lock_create review test def
+storage_lock_modify 3 obtain
+storage_lock_create review test def
+storage_dump_locks
+storage_lock_modify 4 review
+storage_lock_modify 4 update
+storage_lock_modify 3 view
+storage_dump_locks
+storage_lock_modify 4 update
+storage_lock_modify 5 update
+storage_dump_locks
+storage_lock_modify 3 obtain
+storage_lock_modify 4 review
+storage_lock_modify 3 obtain
+storage_lock_modify 5 review
+storage_dump_locks
+storage_lock_modify 3 obtain
+storage_dump_locks
+storage_lock_modify 3 update
+storage_lock_remove 5
+storage_dump_locks
+storage_lock_modify 3 update
+storage_lock_remove 4
+storage_lock_modify 3 update
+storage_dump_locks
+storage_lock_modify 2 update
+storage_lock_remove 3
+storage_lock_modify 2 update
+storage_dump_locks
+storage_lock_modify 1 obtain
+storage_lock_modify 2 review
+storage_lock_modify 1 obtain
+storage_dump_locks
+storage_lock_remove 1
+storage_lock_modify 2 destroy
+storage_dump_locks
+storage_lock_modify 2 create
+storage_dump_locks
+storage_lock_create link test
+storage_lock_modify 2 destroy
+storage_lock_create link test
+storage_lock_modify 2 update
+storage_lock_create link test
+storage_lock_create link test
+storage_lock_modify 2 destroy
+storage_lock_remove 7
+storage_lock_modify 2 destroy
+storage_lock_remove 6
+storage_lock_modify 2 destroy
+storage_dump_locks
+storage_lock_modify 2 view
+storage_dump_locks
+storage_lock_remove 2
 session_variable @attached_file_path .
 object_create 100 100100
 object_op_update 1 guest
