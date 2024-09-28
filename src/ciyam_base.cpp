@@ -1082,6 +1082,8 @@ bool storage_handler::obtain_lock( size_t& handle,
             if( storage_locked_for_admin( ) )
                break;
 
+            bool is_review = ( type == op_lock::e_lock_type_review );
+
             // NOTE: Cascade locks will be ignored within the same session as it can sometimes be necessary for
             // update or delete operations to occur on an already cascade locked instance. Locks that are being
             // held for the duration of a transaction are ignored within the same session.
@@ -1096,10 +1098,10 @@ bool storage_handler::obtain_lock( size_t& handle,
                // are owned by the same session (even if class locked).
                if( p_session != next_lock.p_session
                 || ( p_class_base == next_lock.p_class_base )
-                || ( ( type != next_lock.type ) && ( type != op_lock::e_lock_type_review ) )
-                || ( !next_lock.p_class_base && ( type != op_lock::e_lock_type_review ) )
-                || ( ( type != op_lock::e_lock_type_review ) && ( type != op_lock::e_lock_type_update ) )
-                || ( ( type != op_lock::e_lock_type_review ) && !next_lock.p_class_base->get_is_after_store( ) ) )
+                || ( !is_review && !next_lock.p_class_base )
+                || ( !is_review && ( type != next_lock.type ) )
+                || ( !is_review && ( type != op_lock::e_lock_type_update ) )
+                || ( !is_review && !next_lock.p_class_base->get_is_after_store( ) ) )
                {
                   lock_conflict = true;
 
@@ -3125,6 +3127,7 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
       for( int pass = 0; pass < 2; ++pass )
       {
          cascade_op next_op;
+
          if( pass == 0 )
             next_op = e_cascade_op_destroy;
          else
@@ -3162,14 +3165,11 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
                   // lock belonging to the same session is found for this instance then this is the case.
                   if( pass == 1 )
                   {
-                     // FUTURE: Although extremely unlinkely it's possible for the destroy lock to not be
-                     // that of the original operation (i.e. instead part of a completely separate op for
-                     // the same session). As the key protocol commands only deal with a single operation
-                     // the assumption that the lock is part of the same operation is fine, however, were
-                     // it to become desirable for multiple operations (belonging to the same session) to
-                     // be supported then this assumption could be incorrect and lead to potential issues.
-                     lock = handler.get_lock_info( p_class_base->get_lock_class_id( ), p_class_base->get_key( ) );
-                     if( lock.p_session == gtp_session && lock.type == op_lock::e_lock_type_destroy )
+                     lock = handler.get_lock_info(
+                      p_class_base->get_lock_class_id( ), p_class_base->get_key( ) );
+
+                     if( ( lock.p_session == gtp_session )
+                      && ( lock.type == op_lock::e_lock_type_destroy ) )
                         continue;
                   }
 
@@ -3241,7 +3241,7 @@ inline void perform_op_cancel( storage_handler& handler, class_base& instance, c
 
    // FUTURE: It would be more efficient not to call "release_locks_for_owner" unless
    // it is known that cascade locks had actually been obtained when the destroy began.
-   if( op == class_base::e_op_type_destroy && !instance.get_is_being_cascaded( ) )
+   if( !instance.get_is_being_cascaded( ) && ( op == class_base::e_op_type_destroy ) )
       handler.release_locks_for_owner( instance, true );
 
    instance_accessor.cancel( );
@@ -12297,7 +12297,9 @@ void destroy_object_instance( size_t handle )
       throw runtime_error( "invalid object instance handle #" + to_string( handle ) );
 
    class_base* p_class_base( ( oiri->second ).p_class_base );
+
    dynamic_library* p_dynamic_library( ( oiri->second ).p_dynamic_library );
+
    destroy_object( p_dynamic_library->get_module_name( ), p_class_base->get_class_id( ), p_class_base );
 
    assert( p_class_base == 0 );
@@ -12308,6 +12310,7 @@ void destroy_object_instance( size_t handle )
 void destroy_object_instances( const string& module_name )
 {
    dynamic_library* p_dynamic_library = get_module_ptr( module_name );
+
    if( !p_dynamic_library )
       throw runtime_error( "unknown module name '" + module_name + "'" );
 
@@ -12319,7 +12322,9 @@ void destroy_object_instances( const string& module_name )
       if( ( oiri->second ).p_dynamic_library == p_dynamic_library )
       {
          class_base* p_class_base( ( oiri->second ).p_class_base );
+
          dynamic_library* p_dynamic_library( ( oiri->second ).p_dynamic_library );
+
          destroy_object( p_dynamic_library->get_module_name( ), p_class_base->get_class_id( ), p_class_base );
 
          assert( p_class_base == 0 );
@@ -12341,6 +12346,7 @@ void destroy_all_object_instances( )
       class_base* p_class_base( ( oiri->second ).p_class_base );
 
       dynamic_library* p_dynamic_library( ( oiri->second ).p_dynamic_library );
+
       destroy_object( p_dynamic_library->get_module_name( ), p_class_base->get_class_id( ), p_class_base );
 
       assert( p_class_base == 0 );
@@ -13711,7 +13717,9 @@ string exec_bulk_ops( const string& module,
 
       if( in_trans )
          transaction_rollback( );
+
       destroy_object_instance( handle );
+
       throw;
    }
    catch( ... )
@@ -13722,7 +13730,9 @@ string exec_bulk_ops( const string& module,
 
       if( in_trans )
          transaction_rollback( );
+
       destroy_object_instance( handle );
+
       throw;
    }
 

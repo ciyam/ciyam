@@ -90,6 +90,7 @@ inline string module_id_from_id_or_name( const string& module_id_or_name )
    string module_id( module_id_or_name );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
@@ -104,6 +105,7 @@ inline string module_name_from_id_or_name( const string& module_id_or_name )
    string module_name( module_id_or_name );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
@@ -135,6 +137,7 @@ module_class_list_error list_module_classes_impl(
     = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
+
    ( *obtain_class_registry_func )( p_class_registry );
 
    class_registry_const_iterator crci, end;
@@ -264,6 +267,7 @@ module_load_error load_module( const string& module_name )
    fp_obtain_module_details_func = ( fp_obtain_module_details )ap_dynamic_library->bind_to_function( c_obtain_module_details_func_name );
 
    const module_details* p_details;
+
    ( *fp_obtain_module_details_func )( p_details );
 
    ( *fp_init_dir_func )( directory.c_str( ) );
@@ -275,6 +279,7 @@ module_load_error load_module( const string& module_name )
    ( *fp_init_classes_func )( p_details->p_id );
 
    externals_container* p_externals;
+
    ( *fp_obtain_externals_func )( p_externals );
 
    for( size_t i = 0; i < p_externals->size( ); i++ )
@@ -310,6 +315,7 @@ module_unload_error unload_module( const string& module_id_or_name )
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
@@ -334,6 +340,7 @@ module_unload_error unload_module( const string& module_id_or_name )
       ( *( mi->second ).fp_term_classes_func )( module_id_from_id_or_name( module_id_or_name ).c_str( ) );
 
       delete ( mi->second ).p_dynamic_library;
+
       g_modules.erase( mi );
 
       if( g_module_ids.count( directory + module_id_or_name ) )
@@ -356,6 +363,7 @@ void list_modules( ostream& os )
    guard g( g_mutex );
 
    module_const_iterator mci, end;
+
    for( mci = g_modules.begin( ), end = g_modules.end( ); mci != end; ++mci )
       os << mci->first << " (" << ( mci->second ).ref_count << ")\n";
 }
@@ -382,10 +390,12 @@ void init_module_class_info( const string& module_id_or_name, module_library_inf
    guard g( g_mutex );
 
    module_class_list_error rc = list_module_classes( module_id_or_name, module_info.class_ids, true );
+
    if( rc != e_module_class_list_error_none )
       throw runtime_error( "unexpected module class list error in init_module_class_info" );
 
    rc = list_module_classes( module_id_or_name, module_info.class_names, false );
+
    if( rc != e_module_class_list_error_none )
       throw runtime_error( "unexpected module class list error in init_module_class_info" );
 }
@@ -413,9 +423,11 @@ void init_module_class_field_info( const string& module_id_or_name,
           = ( fp_obtain_class_registry )( module_info ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
          const class_registry_container* p_class_registry;
+
          ( *obtain_class_registry_func )( p_class_registry );
 
          class_registry_const_iterator crci, end;
+
          for( crci = p_class_registry->begin( ), end = p_class_registry->end( ); crci != end; ++crci )
          {
             if( class_id == ( crci->second )->class_id( ) )
@@ -444,10 +456,12 @@ module_string_list_error list_module_strings( const string& module_id_or_name, o
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       return e_module_string_list_error_name_unknown;
 
@@ -457,6 +471,7 @@ module_string_list_error list_module_strings( const string& module_id_or_name, o
     = ( fp_obtain_module_strings )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_module_strings_func_name );
 
    const module_strings_container* p_module_strings;
+
    ( *obtain_module_strings_func )( p_module_strings );
 
    for( module_strings_const_iterator
@@ -472,10 +487,12 @@ module_class_field_list_error list_module_class_fields(
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       return e_module_class_field_list_error_name_unknown;
 
@@ -485,10 +502,13 @@ module_class_field_list_error list_module_class_fields(
     = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
+
    ( *obtain_class_registry_func )( p_class_registry );
 
    bool found = false;
+
    class_registry_const_iterator crci, end;
+
    for( crci = p_class_registry->begin( ), end = p_class_registry->end( ); crci != end; ++crci )
    {
       if( class_id_or_name == ( crci->second )->class_id( ) || class_id_or_name == ( crci->second )->class_name( ) )
@@ -496,9 +516,11 @@ module_class_field_list_error list_module_class_fields(
          found = true;
 
          field_info_container all_field_info;
+
          ( crci->second )->get_field_info( all_field_info );
 
          field_info_const_iterator fici;
+
          for( fici = all_field_info.begin( ); fici != all_field_info.end( ); ++fici )
          {
             string type_name( fici->type_name );
@@ -549,10 +571,12 @@ module_class_procedure_list_error list_module_class_procedures(
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       return e_module_class_procedure_list_error_name_unknown;
 
@@ -562,10 +586,13 @@ module_class_procedure_list_error list_module_class_procedures(
     = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
+
    ( *obtain_class_registry_func )( p_class_registry );
 
    bool found = false;
+
    class_registry_const_iterator crci, end;
+
    for( crci = p_class_registry->begin( ), end = p_class_registry->end( ); crci != end; ++crci )
    {
       if( class_id_or_name == ( crci->second )->class_id( ) || class_id_or_name == ( crci->second )->class_name( ) )
@@ -609,10 +636,12 @@ size_t get_module_ref_count( const string& module_id_or_name )
    size_t rc = 0;
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi != g_modules.end( ) )
       rc = ( mi->second ).ref_count;
 
@@ -626,10 +655,12 @@ dynamic_library* get_module_ptr( const string& module_id_or_name )
    dynamic_library* p_dynamic_library( 0 );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi != g_modules.end( ) )
       p_dynamic_library = ( mi->second ).p_dynamic_library;
 
@@ -643,13 +674,16 @@ class_base* construct_object( const string& module_id_or_name, const string& cla
    class_base* p_class_base( 0 );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi != g_modules.end( ) )
    {
       fp_create_class_object create_class_object_func;
+
       create_class_object_func
        = ( fp_create_class_object )( mi->second ).p_dynamic_library->bind_to_function( c_create_class_object_func_name );
 
@@ -664,17 +698,21 @@ void destroy_object( const string& module_id_or_name, const string& class_id, cl
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi != g_modules.end( ) )
    {
       fp_destroy_class_object destroy_class_object_func;
+
       destroy_class_object_func
        = ( fp_destroy_class_object )( mi->second ).p_dynamic_library->bind_to_function( c_destroy_class_object_func_name );
 
       ( *destroy_class_object_func )( class_id.c_str( ), p_cb );
+
       p_cb = 0;
    }
 }
@@ -684,10 +722,12 @@ void get_class_info_for_module_class( const string& module_id_or_name, const str
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_info_for_module_class" );
 
@@ -697,9 +737,11 @@ void get_class_info_for_module_class( const string& module_id_or_name, const str
     = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
+
    ( *obtain_class_registry_func )( p_class_registry );
 
    class_registry_const_iterator crci = p_class_registry->find( class_id );
+
    if( crci == p_class_registry->end( ) )
       throw runtime_error( "unable to locate class '" + class_id + "' in the module's class registry" );
 
@@ -725,10 +767,12 @@ string get_class_id_for_id_or_name( const string& module_id_or_name, const strin
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_id_for_id_or_name" );
 
@@ -755,10 +799,12 @@ string get_class_name_for_id_or_name( const string& module_id_or_name, const str
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_id_for_id_or_name" );
 
@@ -779,10 +825,12 @@ string get_field_id_for_id_or_name(
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_id_for_id_or_name" );
 
@@ -817,10 +865,12 @@ string get_field_name_for_id_or_name(
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_id_for_id_or_name" );
 
@@ -850,10 +900,12 @@ bool get_module_class_has_derivations( const string& module_id_or_name, const st
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_module_class_has_derivations" );
 
@@ -863,9 +915,11 @@ bool get_module_class_has_derivations( const string& module_id_or_name, const st
     = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
+
    ( *obtain_class_registry_func )( p_class_registry );
 
    class_registry_const_iterator crci = p_class_registry->find( class_id );
+
    if( crci == p_class_registry->end( ) )
       throw runtime_error( "unable to locate class '" + class_id + "' in the module's class registry" );
 
@@ -878,10 +932,12 @@ void get_foreign_key_info_for_module_class( const string& module_id_or_name,
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_foreign_key_info_for_module_class" );
 
@@ -891,9 +947,11 @@ void get_foreign_key_info_for_module_class( const string& module_id_or_name,
     = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
+
    ( *obtain_class_registry_func )( p_class_registry );
 
    class_registry_const_iterator crci = p_class_registry->find( class_id );
+
    if( crci == p_class_registry->end( ) )
       throw runtime_error( "unable to locate class '" + class_id + "' in the module's class registry" );
 
@@ -905,10 +963,12 @@ const procedure_info_container& get_procedure_info_for_module_class( const strin
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_procedure_info_for_module_class" );
 
@@ -918,9 +978,11 @@ const procedure_info_container& get_procedure_info_for_module_class( const strin
     = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
+
    ( *obtain_class_registry_func )( p_class_registry );
 
    class_registry_const_iterator crci = p_class_registry->find( class_id );
+
    if( crci == p_class_registry->end( ) )
       throw runtime_error( "unable to locate class '" + class_id + "' in the module's class registry" );
 
@@ -934,10 +996,12 @@ string get_sql_columns_for_module_class( const string& module_id_or_name, const 
    string sql_columns;
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_sql_columns_for_module_class" );
 
@@ -947,9 +1011,11 @@ string get_sql_columns_for_module_class( const string& module_id_or_name, const 
     = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
+
    ( *obtain_class_registry_func )( p_class_registry );
 
    class_registry_const_iterator crci = p_class_registry->find( class_id );
+
    if( crci == p_class_registry->end( ) )
       throw runtime_error( "unable to locate class '" + class_id + "' in the module's class registry" );
 
@@ -965,10 +1031,12 @@ void get_sql_indexes_for_module_class(
    guard g( g_mutex );
 
    string directory( module_directory( ) );
+
    if( !directory.empty( ) )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_sql_indexes_for_module_class" );
 
@@ -978,13 +1046,14 @@ void get_sql_indexes_for_module_class(
     = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
+
    ( *obtain_class_registry_func )( p_class_registry );
 
    class_registry_const_iterator crci = p_class_registry->find( class_id );
+
    if( crci == p_class_registry->end( ) )
       throw runtime_error( "unable to locate class '" + class_id + "' in the module's class registry" );
 
    if( crci->second->persistence_type( ) == 0 ) // i.e. SQL persistence
       crci->second->get_sql_indexes( indexes );
 }
-

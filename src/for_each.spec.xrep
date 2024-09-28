@@ -11,6 +11,10 @@
 `{`$i`}      vector< string > all;
 `{`$i`}      split_string( get_obj( ).`{`$arg_field`}( ), all, "`{`$arg_separator`}" );
 
+`{`!`@eq`(`$arg_clear_var`,`'`'`)\
+`{`$i`}      get_obj( ).set_variable( "`{`$arg_clear_var`}", "" );
+
+`}\
 `{`$i`}      for( size_t i = 0; i < all.size( ); i++ )
 `{`!`@eq`(`$arg_use_loopvar`,`'`'`)`|`!`@eq`(`$arg_item_var`,`'`'`)\
 `{`$i`}      {

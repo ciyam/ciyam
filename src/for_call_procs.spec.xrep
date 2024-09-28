@@ -34,7 +34,15 @@
 `{`$j`}   temporary_session_variable tmp_session_skip_submit_file(
 `{`$j`}    get_special_var_name( e_special_var_skip_submit_file ), c_true_value );
 
+`}`{`!`@eq`(`$arg_unique_var`,`'`'`)\
+`{`$j`}   unique_items_object_variable unique_items( get_obj( ), "`{`$arg_unique_var`}" );
+
 `}`{`$j`}   get_obj( ).`{`$arg_procedure1`}( `{`!`@eq`(`$proc_arg`,`'`'`)`{`$proc_arg`} `});
+`{`!`@eq`(`$arg_unique_var`,`'`'`)`{`$j`^`'   `'`}
+`{`$j`}unique_items.check_unique( );
+
+`{`$j`}if( unique_items.is_unique( ) )
+`}\
 `{`$j`}   get_obj( ).`{`$arg_procedure2`}( `{`!`@eq`(`$proc_arg`,`'`'`)`{`$proc_arg`} `});
 `{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$arg_modifier`,`'`'`)\
 `{`$i`}   }
