@@ -895,8 +895,22 @@ struct temporary_object_variable
    }
 
    class_base& cb;
+
    std::string name;
    std::string original_value;
+};
+
+struct CIYAM_BASE_DECL_SPEC unique_items_object_variable
+{
+   unique_items_object_variable( class_base& cb, const std::string& name );
+   ~unique_items_object_variable( );
+
+   void check_unique( );
+
+   bool is_unique( ) const;
+
+   struct impl;
+   impl* p_impl;
 };
 
 struct CIYAM_BASE_DECL_SPEC procedure_progress
@@ -1313,6 +1327,10 @@ std::string CIYAM_BASE_DECL_SPEC trim_whitespace( const std::string& s );
 std::string CIYAM_BASE_DECL_SPEC trim_whitespace_and_quotes( const std::string& s );
 
 std::string CIYAM_BASE_DECL_SPEC truncate_string( const std::string& s, int max_length, const char* p_overflow_suffix = 0 );
+
+std::string CIYAM_BASE_DECL_SPEC join_string( const std::set< std::string >& c, char sep = ',' );
+std::string CIYAM_BASE_DECL_SPEC join_string( const std::deque< std::string >& c, char sep = ',' );
+std::string CIYAM_BASE_DECL_SPEC join_string( const std::vector< std::string >& c, char sep = ',' );
 
 size_t CIYAM_BASE_DECL_SPEC split_count( const std::string& s, char sep = ',' );
 

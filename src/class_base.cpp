@@ -91,12 +91,14 @@ const size_t c_num_hash_rounds = 1000000;
 
 const size_t c_cascade_progress_seconds = 10;
 
+const char* const c_unique_item_set_suffix = "_uis";
+
+const char* const c_dummy_identity = "123456789";
+
 const char* const c_lamport_key_ext = ".key";
 const char* const c_lamport_pub_ext = ".pub";
 const char* const c_lamport_sig_ext = ".sig";
 const char* const c_lamport_src_ext = ".src";
-
-const char* const c_dummy_identity = "123456789";
 
 const char* const c_protocol_bitcoin = "bitcoin";
 const char* const c_protocol_blockchain = "blockchain";
@@ -719,6 +721,9 @@ class_base::~class_base( )
    TRACE_LOG( TRACE_CTR_DTRS, "~class_base( ) [this = "
     + to_string( this ) + ", owner = " + to_string( p_owning_instance ) + "]" );
 
+   if( op != e_op_type_none )
+      clean_up( );
+
    if( p_class_pointer_base )
       p_class_pointer_base->instance_destroyed( );
 
@@ -1022,6 +1027,7 @@ void class_base::unlink_from_graph_parent( )
 void class_base::begin_review( const string& key, begin_review_rc* p_rc )
 {
    bool could_be_dynamic = false;
+
    if( is_dynamic_enabled )
    {
       instance_fetch_rc rc;
@@ -1050,7 +1056,7 @@ void class_base::begin_review( const string& key, begin_review_rc* p_rc )
       if( p_rc )
          *p_rc = ( begin_review_rc )( int )rc;
 
-      if( could_be_dynamic && p_dynamic_instance->op != e_op_type_review )
+      if( could_be_dynamic && ( p_dynamic_instance->op != e_op_type_review ) )
          cleanup_dynamic_instance( );
    }
    catch( ... )
@@ -1097,6 +1103,7 @@ void class_base::perform_lazy_fetch( )
       if( ( get_is_in_op( ) && !get_in_op_begin( ) ) || s != last_lazy_fetch_key )
       {
          perform_fetch_rc rc;
+
          perform_fetch( s, &rc );
 
          last_lazy_fetch_key = s;
@@ -1236,15 +1243,16 @@ void class_base::copy_all_field_values( const class_base& src )
        + src.get_class_name( ) + "' to a '" + get_class_name( ) + "'" );
 
    size_t num_fields( get_num_fields( ) );
+
    for( size_t i = 0; i < num_fields; i++ )
    {
       // NOTE: If either the source or destination is in a "minimal update" then only copy
       // those fields that have been fetched (otherwise fields will incorrectly be changed).
       if( ( op != e_op_type_update
-       || utype != e_update_type_minimal
+       || ( utype != e_update_type_minimal )
        || fetch_field_names.count( get_field_name( i ) ) )
-       && ( src.op != e_op_type_update
-       || src.utype != e_update_type_minimal
+       && ( ( src.op != e_op_type_update )
+       || ( src.utype != e_update_type_minimal )
        || src.fetch_field_names.count( src.get_field_name( i ) ) ) )
          set_field_value( i, src.get_field_value( i ) );
    }
@@ -1428,6 +1436,7 @@ void remove_files_area_archive( const string& archive, bool destroy, bool remove
 int class_base::get_graph_depth( ) const
 {
    int depth = 1;
+
    class_base* p_next( p_graph_parent );
 
    while( p_next )
@@ -1750,7 +1759,9 @@ void class_base::fetch( string& sql, bool check_only, bool use_lazy_key )
 void class_base::destroy( )
 {
    string next_child_field;
-   class_base* p_class_base;
+
+   class_base* p_class_base = 0;
+
    size_t num_children = get_num_foreign_key_children( );
 
    // NOTE: Perform any applicable cascade operations to the child instances.
@@ -1765,16 +1776,18 @@ void class_base::destroy( )
       for( int pass = 0; pass < 2; ++pass )
       {
          cascade_op next_op;
-         if( pass == 0 )
-            next_op = e_cascade_op_destroy;
-         else
+
+         if( pass != 0 )
             next_op = e_cascade_op_unlink;
+         else
+            next_op = e_cascade_op_destroy;
 
          for( size_t i = 0; i < num_children; i++ )
          {
             p_class_base = get_next_foreign_key_child( i, next_child_field, next_op );
 
             auto_ptr< class_cascade > ap_tmp_cascading;
+
             if( p_class_base )
                ap_tmp_cascading.reset( new class_cascade( *p_class_base ) );
 
@@ -1785,6 +1798,7 @@ void class_base::destroy( )
              && p_class_base->iterate_forwards( "", c_key_field, true, 0, e_sql_optimisation_unordered ) )
             {
                p_class_base->set_dynamic_if_class_has_derivations( );
+
                do
                {
                   if( output_progress && time( 0 ) - ts > c_cascade_progress_seconds )
@@ -2543,6 +2557,76 @@ string construct_class_identity( const class_base& cb )
    return identity;
 }
 #endif
+
+struct unique_items_object_variable::impl
+{
+   impl( class_base& cb, const string& name )
+    :
+    cb( cb ),
+    name( name ),
+    is_unique( false )
+   {
+      if( cb.get_variable( name ).empty( ) )
+      {
+         is_unique = true;
+         cb.set_variable( name + c_unique_item_set_suffix, "" );
+      }
+   }
+
+   ~impl( )
+   {
+      if( is_unique )
+      {
+         unique_items.insert( cb.get_variable( name ) );
+         cb.set_variable( name + c_unique_item_set_suffix, join_string( unique_items ) );
+      }
+   }
+
+   void check_unique( )
+   {
+      string all_unique_items( cb.get_variable( name + c_unique_item_set_suffix ) );
+
+      is_unique = false;
+
+      if( all_unique_items.empty( ) )
+         is_unique = true;
+      else
+      {
+         split_string( all_unique_items, unique_items );
+
+         if( !unique_items.count( cb.get_variable( name ) ) )
+            is_unique = true;
+      }
+   }
+
+   class_base& cb;
+
+   string name;
+
+   bool is_unique;
+
+   set< string > unique_items;
+};
+
+unique_items_object_variable::unique_items_object_variable( class_base& cb, const string& name )
+{
+   p_impl = new impl( cb, name );
+}
+
+unique_items_object_variable::~unique_items_object_variable( )
+{
+   delete p_impl;
+}
+
+void unique_items_object_variable::check_unique( )
+{
+   p_impl->check_unique( );
+}
+
+bool unique_items_object_variable::is_unique( ) const
+{
+   return p_impl->is_unique;
+}
 
 struct procedure_progress::impl
 {
@@ -3630,6 +3714,21 @@ string truncate_string( const string& s, int max_length, const char* p_overflow_
 {
    string tmp( s );
    return utf8_truncate( tmp, max_length, p_overflow_suffix );
+}
+
+string join_string( const set< string >& c, char sep )
+{
+   return join( c, sep );
+}
+
+string join_string( const deque< string >& c, char sep )
+{
+   return join( c, sep );
+}
+
+string join_string( const vector< string >& c, char sep )
+{
+   return join( c, sep );
 }
 
 size_t split_count( const string& s, char sep )
