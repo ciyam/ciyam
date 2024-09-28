@@ -1,7 +1,7 @@
 `{`$spec`=`$object`}
 `{`$spec`^`'.spec.xrep`'`}
-`{`$arg_id`=`'12345`'`}
-`{`$module_name`=`'Sample`'`}
-`{`$class_name`=`'Class`'`}
-`{`$full_class_name`=`'Sample_Class`'`}
+`{`!`(`?`$arg_id`)`{`$arg_id`=`'12345`'`}`}
+`{`!`(`?`$module_name`)`{`$module_name`=`'Module`'`}`}
+`{`!`(`?`$class_name`)`{`$class_name`=`'Class`'`}`}
+`{`$full_class_name`=`'`{`$module_name`}_`{`$class_name`}`'`}
 `{`#$spec @`}
