@@ -1084,24 +1084,35 @@ bool storage_handler::obtain_lock( size_t& handle,
 
             bool is_review = ( type == op_lock::e_lock_type_review );
 
+            bool can_coexist = locks_can_coexist( type, next_lock.type );
+
+            bool same_session = ( p_session == next_lock.p_session );
+
+            bool same_class_base = ( p_class_base == next_lock.p_class_base );
+            bool same_root_class = ( p_root_class == next_lock.p_root_class );
+
             // NOTE: Cascade locks will be ignored within the same session as it can sometimes be necessary for
             // update or delete operations to occur on an already cascade locked instance. Locks that are being
-            // held for the duration of a transaction are ignored within the same session.
-            if( ( lock_instance.empty( ) || next_lock_instance.empty( ) || ( lock_instance == next_lock_instance ) )
-             && ( ( !locks_can_coexist( type, next_lock.type )
-             && ( ( p_session != next_lock.p_session ) || p_root_class || ( p_root_class == next_lock.p_root_class ) ) )
-             || ( next_lock.tx_type && ( p_session != next_lock.p_session ) && !locks_can_coexist( type, next_lock.tx_type ) ) ) )
+            // held for the duration of a transaction are only being checked here if it's not the same session.
+            if( ( lock_instance.empty( )
+             || next_lock_instance.empty( ) || ( lock_instance == next_lock_instance ) )
+             && ( ( !can_coexist && ( !same_session || !p_root_class || !same_root_class ) )
+             || ( !same_session && next_lock.tx_type && !locks_can_coexist( type, next_lock.tx_type ) ) ) )
             {
-               // NOTE: Allow "update" locks to be obtained for an already "update" locked instance provided
+               // NOTE: Will allow "review" locks for separate instances that are owned by the same session.
+               // Also allows "update" locks to be obtained for an already "update" locked instance provided
                // that the instances are separate but owned by the same session and that the existing locked
-               // instance is in the "after_store" trigger. Allow "review" locks for separate instances that
-               // are owned by the same session (even if class locked).
-               if( p_session != next_lock.p_session
-                || ( p_class_base == next_lock.p_class_base )
-                || ( !is_review && !next_lock.p_class_base )
-                || ( !is_review && ( type != next_lock.type ) )
-                || ( !is_review && ( type != op_lock::e_lock_type_update ) )
-                || ( !is_review && !next_lock.p_class_base->get_is_after_store( ) ) )
+               // instance is in the "after_store" trigger.
+               bool ignore_conflict = false;
+
+               if( same_session && is_review && !same_class_base )
+                  ignore_conflict = true;
+               else if( same_session
+                && ( type == next_lock.type ) && !same_class_base && next_lock.p_class_base
+                && ( type == op_lock::e_lock_type_update ) && next_lock.p_class_base->get_is_after_store( ) )
+                  ignore_conflict = true;
+
+               if( !ignore_conflict )
                {
                   lock_conflict = true;
 
@@ -14556,8 +14567,8 @@ void transaction::commit( )
       if( !can_commit )
          throw runtime_error( "cannot commit already completed transaction" );
 
-      transaction_commit( );
       can_commit = false;
+      transaction_commit( );
    }
 }
 
@@ -14568,8 +14579,8 @@ void transaction::rollback( )
       if( !can_commit )
          throw runtime_error( "cannot rollback already completed transaction" );
 
-      transaction_rollback( );
       can_commit = false;
+      transaction_rollback( );
    }
 }
 
