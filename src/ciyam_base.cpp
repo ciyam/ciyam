@@ -1005,7 +1005,8 @@ bool storage_handler::obtain_lock( size_t& handle,
       attempts = num_attempts;
 
    TRACE_LOG( TRACE_LOCK_OPS, "[obtain lock] class = " + lock_class
-    + ", instance = " + lock_instance + ", type = " + to_string( type ) + " (" + op_lock::lock_type_name( type ) + ")" );
+    + ", instance = " + lock_instance + ", type = " + to_string( type ) + " (" + op_lock::lock_type_name( type ) + ")"
+    + ", p_session = " + to_string( p_session ) + ", p_class_base = " + to_string( p_class_base ) + ", p_root_class = " + to_string( p_root_class ) );
 
    bool found = false;
 
@@ -1082,7 +1083,7 @@ bool storage_handler::obtain_lock( size_t& handle,
             if( storage_locked_for_admin( ) )
                break;
 
-            bool is_review = ( type == op_lock::e_lock_type_review );
+            bool is_review = ( type == op_lock::e_lock_type_review ) || ( next_lock.type == op_lock::e_lock_type_review );
 
             bool can_coexist = locks_can_coexist( type, next_lock.type );
 
