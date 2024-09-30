@@ -109,7 +109,6 @@ TARGET_\^_CPPS = `{`[`$\$_cpps`,\\$`+\\\\\\n `]`}
 TARGET_\^_OBJS = $(TARGET_\^_CPPS:.cpp=.o)\n`+
 `]`}
 `{`[`$dyn_libs`,\
-target_opts_\$.so = -fpic
 TARGET_\^_CPPS = `{`[`$\$_cpps`,\\$`+\\\\\\n `]`}
 TARGET_\^_OBJS = $(TARGET_\^_CPPS:.cpp=.o)\n`{`?`$\$_cmss`[`$\$_cmss`/.cms`/.cmh`'TARGET_\^_CMHS = `'\\?`+\\\\\\n `]\n`}`+
 `]`}
