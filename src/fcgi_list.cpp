@@ -2174,12 +2174,15 @@ void output_list_form( ostream& os,
          }
 
          os << "<input type=\"text\" id=\"text_search\" size=\"15\"";
+
          if( list_search_text.count( source.id + c_srch_suffix ) )
          {
             text_search_value = list_search_text.find( source.id + c_srch_suffix )->second;
             os << " value=\"" << escape_markup( text_search_value ) << "\"";
          }
+
          os << "/>";
+
          os << c_nbsp << "<input type=\"submit\" class=\"button\" value=\"" << GDS( c_display_search ) << "\"></input>";
       }
 
@@ -2201,14 +2204,15 @@ void output_list_form( ostream& os,
 
             if( ( source.lici->second )->parents[ i ].operations.count( c_operation_select ) )
             {
+               set< string > parent_extras;
+
+               if( !( source.lici->second )->parents[ i ].pextra.empty( ) )
+                  split( ( source.lici->second )->parents[ i ].pextra, parent_extras, '+' );
+
                if( !had_data )
                   had_data = true;
                else
                   os << c_dbl_nbsp;
-
-               set< string > parent_extras;
-               if( !( source.lici->second )->parents[ i ].pextra.empty( ) )
-                  split( ( source.lici->second )->parents[ i ].pextra, parent_extras, '+' );
 
                string sel_id( source.id );
                sel_id += c_prnt_suffix;
@@ -2404,6 +2408,17 @@ void output_list_form( ostream& os,
 
             const enum_info& info( sinfo.enums.find( restrict_extras.find( c_field_extra_enum )->second )->second );
 
+            // NOTE: If the restrict link field is actually the security level and the user is
+            // anonymous or only has "level 0" security then don't display the security level.
+            if( restrict_extras.count( c_field_extra_enum )
+             && restrict_extras.count( c_field_extra_security_level ) )
+            {
+               const enum_info& info( sinfo.enums.find( restrict_extras.find( c_field_extra_enum )->second )->second );
+
+               if( sess_info.user_id.empty( ) || ( info.values[ 0 ].first == sess_info.user_slevel ) )
+                  continue;
+            }
+
             string current_value;
             if( list_selections.count( sel_id ) )
             {
@@ -2473,6 +2488,11 @@ void output_list_form( ostream& os,
                   os << " selected";
                os << " value=\"" << info.values[ j ].first << "\">"
                 << get_display_string( info.values[ j ].second ) << c_dbl_nbsp << "</option>\n";
+
+               // NOTE: Security level enumeration is stopped at the user's level.
+               if( restrict_extras.count( c_field_extra_security_level )
+                && ( sess_info.user_id.empty( ) || info.values[ j ].first == sess_info.user_slevel ) )
+                  break;
             }
 
             os << "</select>";
