@@ -397,6 +397,29 @@ CAN_MAINTAIN_BLOG_TAGS_KEY=$OUTPUT
 @endif
 @skip
 ;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_CREATOR_KEY%_%CAN_MAINTAIN_BLOG_TAGS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Maintain_Blog_Tag_Access "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Can_Maintain_Blog_Tag_Access' for Class 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+CAN_MAINTAIN_BLOG_TAG_ACCESS_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MAINTAIN_BLOG_TAG_ACCESS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
 @label END
 @skip
 ;
