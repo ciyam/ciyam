@@ -4078,7 +4078,7 @@ void Meta_Model::impl::impl_Generate( )
 
             while( true )
             {
-               pos = title.find_first_of( "?*%#$" );
+               pos = title.find_first_of( "?*^%#$" );
 
                if( pos == string::npos )
                   break;
@@ -4087,6 +4087,8 @@ void Meta_Model::impl::impl_Generate( )
                   title.insert( pos + 1, search_replace( get_obj( ).child_List( ).Class( ).Name( ), "_", " " ) );
                else if( title.substr( pos, 1 ) == "*" )
                   title.insert( pos + 1, search_replace( get_obj( ).child_List( ).Class( ).Plural( ), "_", " " ) );
+               else if( title.substr( pos, 1 ) == "^" )
+                  title.insert( pos + 1, search_replace( pfield_name, "_", " " ) );
                else if( title.substr( pos, 1 ) == "%" )
                   title.insert( pos + 1, search_replace( pclass_name, "_", " " ) );
                else if( title.substr( pos, 1 ) == "#" )
