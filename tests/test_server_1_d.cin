@@ -32,25 +32,27 @@ run_script test*
 ~rm -f ~test.txt
 run_script test1
 run_script test2
+wait 250
 run_script test3
 run_script test4
-wait 350
+wait 250
 ~cat ~test.txt
 run_script test2
 run_script test1
+wait 250
 run_script test3
 run_script test4
-wait 350
+wait 250
 ~cat ~test.txt
 ~echo -n "1" >~test.sh
 run_script test3
 run_script test4
-wait 350
+wait 250
 ~cat ~test.txt
 ~rm -f ~test.sh
 run_script test3
 run_script test4
-wait 350
+wait 250
 ~cat ~test.txt
 ~rm -f ~test.txt
 quit
