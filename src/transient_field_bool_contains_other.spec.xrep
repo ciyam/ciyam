@@ -5,7 +5,7 @@
       string check_str( to_string( get_obj( ).`{`$arg_ofield`}( ) ) );
       string check_val( to_string( get_obj( ).`{`$arg_o2field`}( ) ) );
 
-      if( check_str.find( check_val ) != string::npos )
+      if( !check_val.empty( ) && ( check_str.find( check_val ) != string::npos ) )
          get_obj( ).`{`$arg_field`}( true );
       else
          get_obj( ).`{`$arg_field`}( false );
