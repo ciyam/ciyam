@@ -2875,7 +2875,7 @@ bool output_view_form( ostream& os, const string& act,
                   // not possible for a user to create or modify an instance's security level
                   // to a level greater than the level the user has been granted.
                   if( extra_data.count( c_field_extra_security_level )
-                   && ( sess_info.user_id.empty( ) || info.values[ i ].first == sess_info.user_slevel ) )
+                   && ( sess_info.user_id.empty( ) || ( info.values[ i ].first == sess_info.user_slevel ) ) )
                      break;
                }
 

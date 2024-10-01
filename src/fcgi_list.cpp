@@ -2129,7 +2129,7 @@ void output_list_form( ostream& os,
                               // not possible for a user to create or modify an instance's security level
                               // to a level greater than the level the user has been granted.
                               if( restrict_extras.count( c_field_extra_security_level )
-                               && ( sess_info.user_id.empty( ) || info.values[ j ].first == sess_info.user_slevel ) )
+                               && ( sess_info.user_id.empty( ) || ( info.values[ j ].first == sess_info.user_slevel ) ) )
                                  break;
                            }
                         }
@@ -2491,7 +2491,7 @@ void output_list_form( ostream& os,
 
                // NOTE: Security level enumeration is stopped at the user's level.
                if( restrict_extras.count( c_field_extra_security_level )
-                && ( sess_info.user_id.empty( ) || info.values[ j ].first == sess_info.user_slevel ) )
+                && ( sess_info.user_id.empty( ) || ( info.values[ j ].first == sess_info.user_slevel ) ) )
                   break;
             }
 
