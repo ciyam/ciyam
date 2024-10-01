@@ -14826,7 +14826,6 @@ void begin_instance_op( instance_op op, class_base& instance,
                }
                else
                   throw runtime_error( get_string_message( GS( c_str_record_exists ),
-                   make_pair( c_str_parm_record_exists_key, instance.get_key( ) ),
                    make_pair( c_str_parm_record_exists_class, instance.get_display_name( ) ) ) );
             }
          }
