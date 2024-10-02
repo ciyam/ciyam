@@ -376,6 +376,8 @@ Blog
 ...
 Message
 ...
+Tag
+...
 [packages.lst]
 
 ./unbundle Blog.package
@@ -383,6 +385,9 @@ mv package.info Blog.package.info
 
 ./unbundle Message.package
 mv package.info Message.package.info
+
+./unbundle Tag.package
+mv package.info Tag.package.info
 
 ./reconstruct_meta okay
 
