@@ -1115,8 +1115,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `,\
 `@eq`(`'\\1`'`,`'for_tag`'`)`&`@eq`(`'\$`'`,`$specification_\\0_tag_proc`)
 `{`#for_tag.spec.xrep section=tag_procedure module_name=$module_name class_name=$class_name\
- arg_id=$specification_\\0_id arg_tag=$specification_\\0_tag arg_tags=$specification_\\0_tags\
- arg_tags_user=$specification_\\0_tags_user arg_tags_group=$specification_\\0_tags_group\
+ arg_id=$specification_\\0_id arg_tag=$specification_\\0_tag arg_modifier=$specification_\\0_modifier\
+ arg_tags=$specification_\\0_tags arg_tags_user=$specification_\\0_tags_user arg_tags_group=$specification_\\0_tags_group\
  arg_tags_tag=$specification_\\0_tags_tag arg_tags_item=$specification_\\0_tags_item`}\
 `,\
 `@eq`(`'\\1`'`,`'for_tag`'`)`&`@eq`(`'\$`'`,`$specification_\\0_untag_proc`)
@@ -1932,8 +1932,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `,\
 `@eq`(`'\1`'`,`'for_tag`'`)
 `{`#for_tag.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
- arg_id=$specification_\0_id arg_tag=$specification_\0_tag arg_tag_class=$specification_\0_tag_class\
- arg_tag_user=$specification_\0_tag_user arg_tag_group=$specification_\0_tag_group\
+ arg_id=$specification_\0_id arg_tag=$specification_\0_tag arg_modifier=$specification_\0_modifier\
+ arg_tag_class=$specification_\0_tag_class arg_tag_user=$specification_\0_tag_user arg_tag_group=$specification_\0_tag_group\
  arg_tags=$specification_\0_tags arg_tags_tag=$specification_\0_tags_tag arg_untag_key=$specification_\0_untag_key\
  arg_actions=$specification_\0_actions arg_tag_proc=$specification_\0_tag_proc arg_untag_proc=$specification_\0_untag_proc`}\
 `,\
@@ -3124,10 +3124,10 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_auto_class=$specification_\0_auto_class\
  arg_inc_proc=$specification_\0_inc_proc arg_inc_clones=$specification_\0_inc_clones arg_key=$specification_\0_key`}\
 `,\
-`@eq`(`'\1`'`,`'for_tag`'`)
+`@eq`(`'\1`'`,`'for_tag`'`)`&`@eq`(`$specification_\0_only_procs`,`'`'`)
 `{`#for_tag.spec.xrep section=for_store class_name=$class_name module_name=$module_name\
- arg_id=$specification_\0_id arg_tag=$specification_\0_tag arg_tags=$specification_\0_tags\
- arg_tags_item=$specification_\0_tags_item arg_tags_tag=$specification_\0_tags_tag`}\
+ arg_id=$specification_\0_id arg_tag=$specification_\0_tag arg_modifier=$specification_\0_modifier\
+ arg_tags=$specification_\0_tags arg_tags_item=$specification_\0_tags_item arg_tags_tag=$specification_\0_tags_tag`}\
 `,\
 `@eq`(`'\1`'`,`'meta_relationship_field`'`)
 `{`#meta_relationship_field.spec.xrep section=for_store module_name=$module_name\
