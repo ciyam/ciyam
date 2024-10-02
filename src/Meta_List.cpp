@@ -2373,12 +2373,8 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
    if( Variation_Num )
       list_ext += to_string( Variation_Num );
 
-   string bat_filename( get_obj( ).Model( ).Name( ) );
-#ifdef _WIN32
-   bat_filename += "_" + get_obj( ).Class( ).Name( ) + list_ext + ".pdf.bat";
-#else
-   bat_filename += "_" + get_obj( ).Class( ).Name( ) + list_ext + ".pdf.sh";
-#endif
+   string sh_filename( get_obj( ).Model( ).Name( ) );
+   sh_filename += "_" + get_obj( ).Class( ).Name( ) + list_ext + ".pdf.sh";
 
    string sio_filename( get_obj( ).Model( ).Name( ) );
    sio_filename += "_" + get_obj( ).Class( ).Name( ) + list_ext + ".pdf.sio";
@@ -2777,20 +2773,14 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
             throw runtime_error( "maximum number of print summary fields is 2" );
          }
 
-         ofstream batf( bat_filename.c_str( ) );
+         ofstream batf( sh_filename.c_str( ) );
 
-#ifdef _WIN32
-         batf << "@echo off\n";
-         batf << "xrep @" << pdf_sio_xrep_name << " vars=" << vars_filename << " >" << sio_filename << ".new\n";
-         batf << "call update " << sio_filename << " " << sio_filename << ".new\n";
-#else
          batf << "./xrep @" << pdf_sio_xrep_name << " vars=" << vars_filename << " >" << sio_filename << ".new\n";
          batf << "./update " << sio_filename << " " << sio_filename << ".new\n";
-#endif
 
          batf.flush( );
          if( !batf.good( ) )
-            throw runtime_error( "'" + bat_filename + "' output stream is bad" );
+            throw runtime_error( "'" + sh_filename + "' output stream is bad" );
 
          ofstream varsf( vars_filename.c_str( ) );
          if( !varsf )

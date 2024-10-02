@@ -103,6 +103,8 @@ const char* const c_sav_file_ext = ".sav";
 const char* const c_ciyam_script = "ciyam_script";
 const char* const c_ciyam_server = "ciyam_server";
 
+const char* const c_ciyam_dummy_date = "20211202";
+
 const char* const c_ui_class_marker = "CLASS";
 const char* const c_ui_group_marker = "GROUP";
 const char* const c_ui_class_changing = "ui_CLASS_changing";

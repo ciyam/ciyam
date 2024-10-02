@@ -3659,20 +3659,10 @@ void Meta_Class::impl::impl_Generate( )
              || specification_object == "field_from_script"
              || specification_object == "gen_script_vars_list" )
             {
-#ifdef _WIN32
-               gen_xrep = "xrep ";
-#else
                gen_xrep = "./xrep ";
-#endif
+
                if( specification_object == "gen_ext_script" )
-               {
-#ifndef _WIN32
                   gen_xrep += "@" + specification_type + ".xrep";
-#else
-                  gen_extra = ".bat";
-                  gen_xrep += "@" + specification_type + ".bat.xrep";
-#endif
-               }
                else
                   gen_xrep += "@" + specification_type + ".cin.xrep";
 
@@ -3805,23 +3795,13 @@ void Meta_Class::impl::impl_Generate( )
 
    if( !old_extras.empty( ) )
    {
-#ifdef _WIN32
-      string cleanup_filename( get_obj( ).Model( ).Name( ) + ".cleanup.bat" );
-#else
       string cleanup_filename( get_obj( ).Model( ).Name( ) + ".cleanup.sh" );
-#endif
 
       ofstream outc( cleanup_filename.c_str( ), ios::out | ios::app );
       if( outc )
       {
          for( set< string >::iterator i = old_extras.begin( ); i != old_extras.end( ); ++i )
-         {
-#ifdef _WIN32
-            outc << "if exist \"" << *i << "\" del \"" << *i << "\"\n";
-#else
             outc << "if [ -f \"" << *i << "\" ]; then\n rm \"" << *i << "\"\nfi\n";
-#endif
-         }
       }
    }
 

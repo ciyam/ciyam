@@ -1242,12 +1242,8 @@ void Meta_View::impl::impl_Generate_PDF_View( )
 
    // [<start Generate_PDF_View_impl>]
 //nyi
-   string bat_filename( get_obj( ).Model( ).Name( ) );
-#ifdef _WIN32
-   bat_filename += "_" + get_obj( ).Class( ).Name( ) + ".pdf.bat";
-#else
-   bat_filename += "_" + get_obj( ).Class( ).Name( ) + ".pdf.sh";
-#endif
+   string sh_filename( get_obj( ).Model( ).Name( ) );
+   sh_filename += "_" + get_obj( ).Class( ).Name( ) + ".pdf.sh";
 
    string sio_filename( get_obj( ).Model( ).Name( ) );
    sio_filename += "_" + get_obj( ).Class( ).Name( ) + ".pdf.sio";
@@ -1469,20 +1465,14 @@ void Meta_View::impl::impl_Generate_PDF_View( )
 
          } while( get_obj( ).child_View_Field( ).iterate_next( ) );
 
-         ofstream batf( bat_filename.c_str( ) );
+         ofstream batf( sh_filename.c_str( ) );
 
-#ifdef _WIN32
-         batf << "@echo off\n";
-         batf << "xrep @Standard_A4_View.pdf.sio.xrep vars=" << vars_filename << " >" << sio_filename << ".new\n";
-         batf << "call update " << sio_filename << " " << sio_filename << ".new\n";
-#else
          batf << "./xrep @Standard_A4_View.pdf.sio.xrep vars=" << vars_filename << " >" << sio_filename << ".new\n";
          batf << "./update " << sio_filename << " " << sio_filename << ".new\n";
-#endif
 
          batf.flush( );
          if( !batf.good( ) )
-            throw runtime_error( "'" + bat_filename + "' output stream is bad" );
+            throw runtime_error( "'" + sh_filename + "' output stream is bad" );
 
          ofstream varsf( vars_filename.c_str( ) );
          if( !varsf )
