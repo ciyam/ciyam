@@ -1,0 +1,109 @@
+`{`@eq`(`'tag_procedure`'`,`$section`)\
+   // [(start for_tag)] `{`$arg_id`}
+   if( !is_null( get_obj( ).`{`$arg_tag`}( ) )`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`} )
+   {
+      get_obj( ).child_`{`$arg_tags`}( ).op_create( get_obj( ).get_key( ) + "_" + get_obj( ).`{`$arg_tag`}( ).get_key( ) );
+
+`{`!`@eq`(`$arg_tags_user`,`'`'`)\
+      get_obj( ).child_`{`$arg_tags`}( ).`{`$arg_tags_user`}( get_uid( ) );
+`}\
+`{`!`@eq`(`$arg_tags_group`,`'`'`)\
+      get_obj( ).child_`{`$arg_tags`}( ).`{`$arg_tags_group`}( get_grp( ) );
+`}\
+      get_obj( ).child_`{`$arg_tags`}( ).`{`$arg_tags_item`}( get_obj( ).get_key( ) );
+      get_obj( ).child_`{`$arg_tags`}( ).`{`$arg_tags_tag`}( get_obj( ).`{`$arg_tag`}( ) );
+
+      get_obj( ).child_`{`$arg_tags`}( ).op_apply( );
+
+      get_obj( ).set_variable( get_special_var_name( e_special_var_return ), "{@no_send}" );
+   }
+   // [(finish for_tag)] `{`$arg_id`}
+`}
+`{`@eq`(`'untag_procedure`'`,`$section`)\
+   // [(start for_tag)] `{`$arg_id`}
+   if( !is_null( get_obj( ).`{`$arg_untag_key`}( ) ) )
+   {
+      get_obj( ).child_`{`$arg_tags`}( ).op_destroy( get_obj( ).`{`$arg_untag_key`}( ) );
+      get_obj( ).child_`{`$arg_tags`}( ).op_apply( );
+
+      get_obj( ).set_variable( get_special_var_name( e_special_var_return ), "{@no_send}" );
+   }
+   // [(finish for_tag)] `{`$arg_id`}
+`}
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start for_tag)] `{`$arg_id`}
+`{`@eq`(`$arg_tag_user`,`'`'`)`&`@eq`(`$arg_tag_group`,`'`'`)\
+   if( !is_null( get_obj( ).`{`$arg_tag`}( ) ) )
+   {
+      bool found = false;
+
+      if( get_obj( ).child_`{`$arg_tags`}( ).iterate_forwards( ) )
+`,\
+   if( `{`@eq`(`$arg_tag_user`,`'`'`)!get_grp`,!get_uid`}( ).empty( ) && !is_null( get_obj( ).`{`$arg_tag`}( ) ) )
+   {
+      bool found = false;
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_tag_class`}, `{`$arg_tag_user`}`{`$arg_tag_group`} ) );
+      key_info += "#1 " + `{`@eq`(`$arg_tag_user`,`'`'`)get_grp`,get_uid`}( );
+
+      if( get_obj( ).child_`{`$arg_tags`}( ).iterate_forwards( key_info ) )
+`}\
+      {
+         do
+         {
+            if( get_obj( ).child_`{`$arg_tags`}( ).`{`$arg_tags_tag`}( ).get_key( ) == get_obj( ).`{`$arg_tag`}( ).get_key( ) )
+            {
+               found = true;
+               get_obj( ).`{`$arg_untag_key`}( get_obj( ).child_`{`$arg_tags`}( ).get_key( ) );
+
+               get_obj( ).child_`{`$arg_tags`}( ).iterate_stop( );
+               break;
+            }
+         } while( get_obj( ).child_`{`$arg_tags`}( ).iterate_next( ) );
+      }
+
+      string actions( get_obj( ).`{`$arg_actions`}( ) );
+
+      string tag_action;
+
+      if( !found )
+`{`!`@eq`(`$arg_modifier`,`'`'`)`{`$i`=`'   `'`}\
+      {
+         if( state & c_modifier_`{`$arg_modifier`} )
+`}\
+`{`$i`}         tag_action = c_procedure_id_`{`$arg_tag_proc`};
+`{`!`@eq`(`$arg_modifier`,`'`'`)\
+      }
+`}\
+      else
+         tag_action = c_procedure_id_`{`$arg_untag_proc`};
+
+      if( !tag_action.empty( ) )
+      {
+         if( !actions.empty( ) )
+            actions += ',';
+
+         actions += tag_action;
+      }
+
+      get_obj( ).`{`$arg_actions`}( actions );
+   }
+   // [(finish for_tag)] `{`$arg_id`}
+`}
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start for_tag)] `{`$arg_id`}
+   if( !is_null( get_obj( ).`{`$arg_tag`}( ) ) )
+   {
+      op_create_rc rc;
+
+      get_obj( ).child_`{`$arg_tags`}( ).op_create( get_obj( ).get_key( ) + "_" + get_obj( ).`{`$arg_tag`}( ).get_key( ), &rc );
+
+      if( rc == e_op_create_rc_okay )
+      {
+         get_obj( ).child_`{`$arg_tags`}( ).`{`$arg_tags_item`}( get_obj( ).get_key( ) );
+         get_obj( ).child_`{`$arg_tags`}( ).`{`$arg_tags_tag`}( get_obj( ).`{`$arg_tag`}( ) );
+
+         get_obj( ).child_`{`$arg_tags`}( ).op_apply( );
+      }
+   }
+   // [(finish for_tag)] `{`$arg_id`}
+`}
