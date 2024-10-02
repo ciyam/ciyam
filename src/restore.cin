@@ -7,6 +7,12 @@
 .session_variable @force_db_create $CIYAM_CREATE_DB_NAMES
 @endif
 ;
+REBUILD=-rebuild
+;
+@ifdef $CIYAM_STOP_REGEX
+REBUILD=-stop_regex="$CIYAM_STOP_REGEX" -rebuild
+@endif
+;
 @ifneq "$CIYAM_STORAGE" "Meta"
 STORAGE_LOG_FILE=@files::$CIYAM_STORAGE.log
 ;
@@ -29,14 +35,14 @@ storage_export_data
 ;
 @ifndef $1
 @ifdef $CIYAM_OUTPUT_COMMANDS
-#storage_restore -rebuild $CIYAM_STORAGE
+#storage_restore $REBUILD $CIYAM_STORAGE
 @endif
-.storage_restore -rebuild $CIYAM_STORAGE
+.storage_restore $REBUILD $CIYAM_STORAGE
 @else
 @ifdef $CIYAM_OUTPUT_COMMANDS
-#storage_restore -rebuild $1 $CIYAM_STORAGE
+#storage_restore $REBUILD $1 $CIYAM_STORAGE
 @endif
-.storage_restore -rebuild $1 $CIYAM_STORAGE
+.storage_restore $REBUILD $1 $CIYAM_STORAGE
 @endif
 ;
 @endif
