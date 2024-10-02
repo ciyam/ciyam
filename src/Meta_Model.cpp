@@ -1352,11 +1352,7 @@ void Meta_Model::impl::impl_Create_Module( )
    {
       get_obj( ).op_update( );
 
-#ifdef _WIN32
-      exec_system( "create_module -rdbms " + get_obj( ).Name( ) + " >nul" );
-#else
       exec_system( "./create_module -rdbms " + get_obj( ).Name( ) + " >/dev/null" );
-#endif
 
       bool found = false;
       string modules_list( "modules.lst" );
@@ -5969,23 +5965,14 @@ void Meta_Model::impl::impl_Generate( )
 
       if( !old_class_names.empty( ) )
       {
-#ifdef _WIN32
-         string cleanup_filename( get_obj( ).Name( ) + ".cleanup.bat" );
-#else
          string cleanup_filename( get_obj( ).Name( ) + ".cleanup.sh" );
-#endif
 
          ofstream outf( cleanup_filename.c_str( ), ios::out | ios::app );
          if( outf )
          {
             for( set< string >::iterator i = old_class_names.begin( ); i != old_class_names.end( ); ++i )
-#ifdef _WIN32
-               outf << "if exist " << get_obj( ).Name( )
-                << '_' << *i << ".cpp call remove_class " << get_obj( ).Name( ) << ' ' << *i << '\n';
-#else
                outf << "if [ -f " << get_obj( ).Name( ) << '_' << *i
                 << ".cpp ]; then\n ./remove_class " << get_obj( ).Name( ) << ' ' << *i << "\nfi\n";
-#endif
          }
 
          outf.close( );
@@ -6372,11 +6359,7 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
          }
       } while( get_obj( ).child_Package( ).iterate_next( ) );
 
-#ifndef _WIN32
       string script_filename( get_obj( ).get_key( ) );
-#else
-      string script_filename( get_obj( ).get_key( ) + ".bat" );
-#endif
 
       string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
 
@@ -6393,9 +6376,6 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
          ofstream outf( script_filename.c_str( ) );
          set_system_variable( "@" + model_key, "1" );
 
-#ifdef _WIN32
-         outf << "@echo off\n";
-#endif
          for( map< string, string >::iterator i = packages.end( ); ; --i )
          {
             if( i != packages.end( ) )
@@ -6408,13 +6388,8 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
 
                get_obj( ).child_Package( ).Remove( );
 
-#ifndef _WIN32
                outf << "./" << get_obj( ).child_Package( ).get_key( ) << '\n';
                outf << "rm " << get_obj( ).child_Package( ).get_key( ) << '\n';
-#else
-               outf << "call " << get_obj( ).child_Package( ).get_key( ) << ".bat" << '\n';
-               outf << "del " << get_obj( ).child_Package( ).get_key( ) << ".bat" << '\n';
-#endif
             }
 
             if( i == packages.begin( ) )
@@ -6433,12 +6408,9 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
          if( async )
             capture_session( session_id( ) );
 
-#ifdef _WIN32
-         exec_system( "run_temp " + script_filename, async );
-#else
          chmod( script_filename.c_str( ), 0777 );
          exec_system( "./run_temp " + script_filename, async );
-#endif
+
          if( !async )
             set_system_variable( model_key, "" );
       }
@@ -6458,9 +6430,11 @@ void Meta_Model::impl::impl_Remove_Module( )
       return;
 
    bool already_updating( get_obj( ).get_is_updating( ) );
+
    try
    {
       string name;
+
       if( already_updating )
          name = get_obj( ).get_original_field_value( c_field_name_Name );
       else
@@ -6469,22 +6443,21 @@ void Meta_Model::impl::impl_Remove_Module( )
          name = get_obj( ).Name( );
       }
 
-#ifdef _WIN32
-      exec_system( "remove_module -rdbms " + name + " >nul" );
-#else
       exec_system( "./remove_module -rdbms " + name + " >/dev/null" );
-#endif
 
       bool found = false;
+
       string modules_list( "modules.lst" );
 
       if( exists_file( modules_list ) )
       {
          ifstream inpf( modules_list.c_str( ) );
+
          if( !inpf )
             throw runtime_error( "unexpected error opening '" + modules_list + "' for input" );
 
          string next;
+
          while( getline( inpf, next ) )
          {
             if( next == name )
@@ -6516,22 +6489,10 @@ void Meta_Model::impl::impl_Remove_Module( )
       generate_new_script_sio_files( );
 
       if( exists_file( "autoscript.sio.new" ) )
-      {
-#ifdef _WIN32
-         exec_system( "update autoscript.sio autoscript.sio.new >nul" );
-#else
          exec_system( "./update autoscript.sio autoscript.sio.new >/dev/null" );
-#endif
-      }
 
       if( exists_file( "manuscript.sio.new" ) )
-      {
-#ifdef _WIN32
-         exec_system( "update manuscript.sio manuscript.sio.new >nul" );
-#else
          exec_system( "./update manuscript.sio manuscript.sio.new >/dev/null" );
-#endif
-      }
    }
    catch( ... )
    {
@@ -7248,11 +7209,7 @@ void Meta_Model::impl::after_fetch( )
 
    // [<start after_fetch>]
 //nyi
-#ifndef _WIN32
    string script_filename( get_obj( ).get_key( ) );
-#else
-   string script_filename( get_obj( ).get_key( ) + ".bat" );
-#endif
 
    string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
 
@@ -7551,33 +7508,17 @@ void Meta_Model::impl::for_destroy( bool is_internal )
 
    // [<start for_destroy>]
 //nyi
-   if( get_obj( ).Created( ) )
+   if( exists_file( get_obj( ).Name( ) + ".classes.lst" ) )
    {
-#ifdef _WIN32
-      exec_system( "remove_module -rdbms " + get_obj( ).Name( ) + " >nul" );
-#else
       exec_system( "./remove_module -rdbms " + get_obj( ).Name( ) + " >/dev/null" );
-#endif
 
       generate_new_script_sio_files( );
 
       if( exists_file( "autoscript.sio.new" ) )
-      {
-#ifdef _WIN32
-         exec_system( "update autoscript.sio autoscript.sio.new >nul" );
-#else
          exec_system( "./update autoscript.sio autoscript.sio.new >/dev/null" );
-#endif
-      }
 
       if( exists_file( "manuscript.sio.new" ) )
-      {
-#ifdef _WIN32
-         exec_system( "update manuscript.sio manuscript.sio.new >nul" );
-#else
          exec_system( "./update manuscript.sio manuscript.sio.new >/dev/null" );
-#endif
-      }
    }
    // [<finish for_destroy>]
 }

@@ -1136,11 +1136,8 @@ void Meta_Package::impl::impl_Install( )
 
       string temp_name( "~" + get_uuid( ) );
       string list_filename( temp_name + ".lst" );
-#ifndef _WIN32
+
       string script_filename( temp_name );
-#else
-      string script_filename( temp_name + ".bat" );
-#endif
       string commands_filename( temp_name + ".cin" );
 
       string type_name( get_obj( ).Package_Type( ).Name( ) );
@@ -1284,7 +1281,9 @@ void Meta_Package::impl::impl_Install( )
             outf << i->first << '=' << i->second << '\n';
 
          string next;
+
          set< string > options_processed;
+
          while( getline( inpf, next ) )
          {
             remove_trailing_cr_from_text_file_line( next );
@@ -1311,29 +1310,25 @@ void Meta_Package::impl::impl_Install( )
          string install_log( get_obj( ).get_key( ) + ".install.log" );
 
          ofstream outl( install_log.c_str( ) );
+
          if( !outl )
             throw runtime_error( "unable to open '" + install_log + "' for output" );
 
          outl << "Starting Install...\n"; // FUTURE: Should be a module string...
 
          ofstream outs( script_filename.c_str( ) );
+
          if( !outs )
             throw runtime_error( "unable to open '" + script_filename + "' for output" );
-#ifdef _WIN32
-         outs << "@echo off\n";
-         outs << "ciyam_client " << standard_client_args << " -no_stderr < ";
-#else
+
          outs << "./ciyam_client " << standard_client_args << " -no_stderr < ";
-#endif
          outs << commands_filename << " >>" << install_log << "\n";
          outs << "echo Finished Install..." << ">>" << install_log << "\n"; // FUTURE: Should be a module string...
 
-#ifdef _WIN32
-         outs << "del " << list_filename << " " << commands_filename << "\n";
-#else
          outs << "rm " << list_filename << " " << commands_filename << "\n";
-#endif
+
          ofstream outc( commands_filename.c_str( ) );
+
          if( !outc )
             throw runtime_error( "unable to open '" + commands_filename + "' for output" );
 
@@ -1371,12 +1366,8 @@ void Meta_Package::impl::impl_Install( )
       if( async )
          capture_session( session_id( ) );
 
-#ifdef _WIN32
-      exec_system( "run_temp " + script_filename, async );
-#else
       chmod( script_filename.c_str( ), 0777 );
       exec_system( "./run_temp " + script_filename, async );
-#endif
    }
    // [<finish Install_impl>]
 }
@@ -1389,17 +1380,20 @@ void Meta_Package::impl::impl_Remove( )
    // [<start Remove_impl>]
 //nyi
    string std_package_key;
+
    if( !is_null( get_obj( ).Model( ).Workgroup( ).Standard_Package( ) ) )
       std_package_key = get_obj( ).Model( ).Workgroup( ).Standard_Package( ).get_key( );
 
    string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
 
    bool do_exec = true;
+
    if( get_obj( ).get_variable( get_special_var_name( e_special_var_do_exec ) ) == "0"
     || get_obj( ).get_variable( get_special_var_name( e_special_var_do_exec ) ) == "false" )
       do_exec = false;
 
    bool is_last = false;
+
    if( get_obj( ).get_variable( get_special_var_name( e_special_var_is_last ) ) == "1"
     || get_obj( ).get_variable( get_special_var_name( e_special_var_is_last ) ) == "true" )
    {
@@ -1407,13 +1401,15 @@ void Meta_Package::impl::impl_Remove( )
       set_system_variable( "@" + model_key, "" );
    }
 
-   if( !std_package_key.empty( ) && get_obj( ).get_key( ) != std_package_key && get_obj( ).Name( ) == "Standard" )
+   if( !std_package_key.empty( )
+    && ( get_obj( ).get_key( ) != std_package_key ) && ( get_obj( ).Name( ) == "Standard" ) )
    {
       get_obj( ).op_update( );
 
       get_obj( ).Model( ).Workgroup( ).Standard_Package( ).op_update( );
 
       int count = get_obj( ).Model( ).Workgroup( ).Standard_Package( ).Usage_Count( );
+
       get_obj( ).Model( ).Workgroup( ).Standard_Package( ).Usage_Count( --count );
 
       get_obj( ).Model( ).Workgroup( ).Standard_Package( ).op_apply( );
@@ -1425,6 +1421,7 @@ void Meta_Package::impl::impl_Remove( )
       string install_details( load_file( install_log, true ) );
 
       ofstream outl( install_log.c_str( ) );
+
       if( !outl )
          throw runtime_error( "unable to open '" + install_log + "' for output" );
 
@@ -1438,6 +1435,7 @@ void Meta_Package::impl::impl_Remove( )
    else if( !storage_locked_for_admin( ) )
    {
       bool skip = false;
+
       if( get_obj( ).Usage_Count( ) )
       {
          if( do_exec )
@@ -1447,11 +1445,12 @@ void Meta_Package::impl::impl_Remove( )
       }
 
       class_pointer< Meta_Package > cp_other( e_create_instance );
+
       if( do_exec && cp_other->iterate_forwards( ) )
       {
          do
          {
-            if( cp_other->Installed( ) && cp_other->get_key( ) != get_obj( ).get_key( ) )
+            if( cp_other->Installed( ) && ( cp_other->get_key( ) != get_obj( ).get_key( ) ) )
             {
                string deps( cp_other->Package_Type( ).Dependencies( ) );
                deps = search_replace( deps, "\n", "," );
@@ -1466,12 +1465,14 @@ void Meta_Package::impl::impl_Remove( )
                      string next( dependencies[ i ] );
 
                      string::size_type pos = next.find( ' ' );
+
                      if( pos != string::npos )
                         next.erase( pos );
 
                      if( next == get_obj( ).Package_Type( ).Name( ) )
                      {
                         cp_other->iterate_stop( );
+
                         set_system_variable( model_key, "" );
                         set_system_variable( "@" + model_key, "" );
 
@@ -1490,6 +1491,7 @@ void Meta_Package::impl::impl_Remove( )
                         cp_other->child_Package_Option( ).iterate_stop( );
 
                         cp_other->iterate_stop( );
+
                         set_system_variable( model_key, "" );
                         set_system_variable( "@" + model_key, "" );
 
@@ -1513,6 +1515,7 @@ void Meta_Package::impl::impl_Remove( )
          standard_client_args += " -rpc_unlock=" + rpc_password;
 
       string new_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".new" ) );
+
       if( exists_file( new_filename ) )
       {
          vector< string > lines;
@@ -1531,16 +1534,13 @@ void Meta_Package::impl::impl_Remove( )
             class_keys[ next.substr( 0, pos ) ].push_back( next.substr( pos + 1 ) );
          }
 
-#ifndef _WIN32
          string script_filename( get_obj( ).get_key( ) );
-#else
-         string script_filename( get_obj( ).get_key( ) + ".bat" );
-#endif
          string commands_filename( get_obj( ).get_key( ) + ".cin" );
 
          // NOTE: Empty code block for scope purposes.
          {
             ofstream outf( commands_filename.c_str( ) );
+
             if( !outf )
                throw runtime_error( "unable to open file '" + commands_filename + "' for output" );
 
@@ -1567,13 +1567,16 @@ void Meta_Package::impl::impl_Remove( )
                // the package will be processed for just this purpose (the keys for such updates are marked
                // specifically for this purpose).
                string map_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".map" ) );
+
                if( exists_file( map_filename ) )
                   outf << ".perform_package_import " << get_uid( ) << " @now "
                    << get_obj( ).get_module_name( ) << " " << get_obj( ).Package_Type( ).Name( )
                    << ".package.sio -for_remove -r=@" << escaped_string( map_filename ) << "\n";
 
                vector< string > ordered;
+
                string acyclic_filename( get_obj( ).get_module_name( ) + ".acyclic.lst" );
+
                read_file_lines( acyclic_filename, ordered );
 
                // NOTE: Forcing the order to reach "Class" as quickly as possible is done as a performance
@@ -1595,9 +1598,11 @@ void Meta_Package::impl::impl_Remove( )
                reverse( ordered.begin( ), ordered.end( ) );
 
                int total = 0;
+
                for( size_t i = 0; i < ordered.size( ); i++ )
                {
                   string next_cid = get_class_id_for_id_or_name( get_obj( ).get_module_name( ), ordered[ i ] );
+
                   for( int j = 0; j < class_keys[ next_cid ].size( ); j++ )
                   {
                      outf << "@ifndef %ERROR%\n";
@@ -1641,6 +1646,7 @@ void Meta_Package::impl::impl_Remove( )
             outf << ".quit\n";
 
             string install_log( get_obj( ).get_key( ) + ".install.log" );
+
             if( !skip )
             {
                ofstream outl( install_log.c_str( ), ios::out | ios::app );
@@ -1651,20 +1657,14 @@ void Meta_Package::impl::impl_Remove( )
             }
 
             ofstream outs( script_filename.c_str( ) );
+
             if( !outs )
                throw runtime_error( "unable to open '" + script_filename + "' for output" );
-#ifdef _WIN32
-            outs << "@echo off\n";
-            outs << "ciyam_client " << standard_client_args << " < ";
-#else
+
             outs << "./ciyam_client " << standard_client_args << " < ";
-#endif
             outs << commands_filename << " >>" << install_log << "\n";
-#ifdef _WIN32
-            outs << "del " << commands_filename << "\n";
-#else
             outs << "rm " << commands_filename << "\n";
-#endif
+
             if( !skip )
             {
                outs << "echo Finished Remove...>>" << install_log << "\n";
@@ -1684,17 +1684,11 @@ void Meta_Package::impl::impl_Remove( )
             // to the async request and will be released at the end of the script.
             capture_session( session_id( ) );
 
-#ifdef _WIN32
-            exec_system( "run_temp " + script_filename, true );
-#else
             chmod( script_filename.c_str( ), 0777 );
             exec_system( "./run_temp " + script_filename, true );
-#endif
          }
-#ifndef _WIN32
          else
             chmod( script_filename.c_str( ), 0777 );
-#endif
       }
       else
       {

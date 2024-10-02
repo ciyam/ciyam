@@ -1811,23 +1811,18 @@ void Meta_Application::impl::impl_Generate( )
 
    get_obj( ).Generate_Type( gen_type );
    get_obj( ).Keep_Existing_Data( keep_data );
-#ifndef _WIN32
+
    string generate_script( get_obj( ).Name( ) + ".generate" );
-#else
-   string generate_script( get_obj( ).Name( ) + ".generate.bat" );
-#endif
+
    try
    {
       string app_dir( lower( get_obj( ).Name( ) ) );
-#ifndef _WIN32
       string web_dir_var( "$WEBDIR" );
-#else
-      string web_dir_var( "%WEBDIR%" );
-#endif
       string app_vars( get_obj( ).Name( ) + ".app.vars.xrep" );
       string modules_list( get_obj( ).Name( ) + ".modules.lst" );
 
       set< string > old_modules;
+
       if( exists_file( modules_list ) )
          read_file_lines( modules_list, old_modules );
 
@@ -1882,21 +1877,11 @@ void Meta_Application::impl::impl_Generate( )
       if( !outupg )
          throw runtime_error( "unexpected error opening '" + upgrade_script + "' for output" );
 
-#ifdef _WIN32
-      outs << "@echo off\n";
-      outs << "set WEBDIR=" << get_web_root( ) << "\n\n";
-      outs << "echo Starting Generate... >>" << generate_log_file << "\n";
-      outs << "if not exist \"" << web_dir_var << "/" << app_dir << "\" call setup.bat "
-       << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file << "\n\n";
-
-      string bs_web_dir_var( search_replace( get_web_root( ), "/", "\\" ) );
-#else
       outs << "export WEBDIR=" << get_web_root( ) << "\n\n";
       outs << "echo Starting Generate... >>" << generate_log_file << "\n";
       outs << "if [ ! -d " << web_dir_var << "/" << app_dir << " ]; then\n"
        << " ./setup " << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file
        << "\nfi\n\n";
-#endif
 
       string standard_client_args( "-quiet -no_prompt" );
 
@@ -1905,22 +1890,21 @@ void Meta_Application::impl::impl_Generate( )
       if( !rpc_password.empty( ) )
          standard_client_args += " -rpc_unlock=" + rpc_password;
 
-#ifndef _WIN32
       outs << "touch $WEBDIR/" << app_dir << "/ciyam_interface.stop\n";
-#else
-      outs << "call touch.bat %WEBDIR%/" << app_dir << "/ciyam_interface.stop\n";
-#endif
 
       outv << "\x60{\x60$year_created\x60=\x60'" << get_obj( ).Year_Created( ) << "\x60'\x60}\n";
 
       string url_opts;
+
       if( get_obj( ).Use_URL_Checksum( ) )
          url_opts = "use_checksum";
+
       outv << "\x60{\x60$url_opts\x60=\x60'" << url_opts << "\x60'\x60}\n";
 
       outv << "\x60{\x60$row_limit\x60=\x60'" << get_obj( ).Default_List_Row_Limit( ) << "\x60'\x60}\n";
 
       string menu_opts;
+
       if( get_obj( ).Use_Vertical_Menu( ) )
          menu_opts = "use_vertical_menu";
 
@@ -1936,6 +1920,7 @@ void Meta_Application::impl::impl_Generate( )
       outv << "\x60{\x60$login_days\x60=\x60'" << get_obj( ).Auto_Login_Days( ) << "\x60'\x60}\n";
 
       string login_opts;
+
       if( get_obj( ).Allow_Duplicate_Logins( ) )
          login_opts = "allow_multiple";
 
@@ -1958,22 +1943,27 @@ void Meta_Application::impl::impl_Generate( )
       outv << "\x60{\x60$filesize_limit\x60=\x60'" << get_obj( ).Default_Max_Attached_File_Size( ) << "\x60'\x60}\n";
 
       string use_tls( "false" );
+
       if( get_obj( ).Use_TLS_Sessions( ) )
          use_tls = "true";
 
       string embed_images( "false" );
+
       if( get_obj( ).Use_Embedded_Images( ) )
          embed_images = "true";
 
       string encrypt_data( "false" );
+
       if( get_obj( ).Encrypt_Dynamic_Content( ) )
          encrypt_data = "true";
 
       string checkbox_bools( "false" );
+
       if( get_obj( ).Use_Check_Boxes_for_Bools( ) )
          checkbox_bools = "true";
 
       string print_list_ops;
+
       if( get_obj( ).Print_Lists_With_Check_Boxes( ) )
          print_list_ops = "show_checks";
 
@@ -2058,45 +2048,26 @@ void Meta_Application::impl::impl_Generate( )
 
       if( !module_packages.empty( ) )
       {
-#ifdef _WIN32
-         outs << "if exist \"" << bs_web_dir_var << "\\" << app_dir
-          << "\\extkeys.txt\" del \"" << bs_web_dir_var << "\\" << app_dir << "\\extkeys.txt\" >nul\n";
-#else
          outs << "if [ -f " << web_dir_var << "/" << app_dir << "/extkeys.txt ]; then\n"
           << " rm " << web_dir_var << "/" << app_dir << "/extkeys.txt"
           << "\nfi\n\n";
-#endif
+
          for( map< string, string >::iterator i = module_packages.begin( ); i != module_packages.end( ); ++i )
          {
-#ifdef _WIN32
-            outs << "if exist " << i->second << "_extkeys.txt type " << i->second
-             << "_extkeys.txt >>" << web_dir_var << "/" << app_dir << "/extkeys.txt\n";
-#else
             outs << "if [ -f " << i->second << "_extkeys.txt ]; then\n"
              << " cat " << i->second << "_extkeys.txt >>" << web_dir_var << "/" << app_dir << "/extkeys.txt"
              << "\nfi\n\n";
-#endif
+
             string algo_training_script( "train_" + lower( i->second ) + "_algos.cin" );
 
             if( exists_file( algo_training_script ) )
                package_training.push_back( algo_training_script );
          }
-#ifdef _WIN32
-         outs << "\n";
-#endif
       }
-
-#ifdef _WIN32
-      string script_prefix( "call " );
-      string script_suffix( ".bat" );
-#else
-      string script_prefix( "./" );
-      string script_suffix;
-#endif
 
       for( map< string, string >::iterator i = module_packages.begin( ); i != module_packages.end( ); ++i )
       {
-         outs << script_prefix << "copy_icons" << script_suffix << " " << i->first << " "
+         outs << "./copy_icons " << i->first << " "
           << i->second << " " << app_dir << " " << web_dir_var << " >>" << generate_log_file << "\n";
       }
 
@@ -2106,24 +2077,17 @@ void Meta_Application::impl::impl_Generate( )
       outv << "\x60{\x60$modules\x60=\x60'" << all_modules << "\x60'\x60}\n";
 
       outss1 << "storage_init " << storage_name( ) << "\n";
-      outss1 << "pe sys 20080101 " << get_obj( ).get_module_id( )
+      outss1 << "pe sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( )
        << " " << to_string( c_procedure_id_Generate_Modules ) << "\n";
-      outss1 << "pu sys 20080101 " << get_obj( ).get_module_id( )
+      outss1 << "pu sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Generating Source...\"\n";
       outss1 << "quit\n";
 
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
-      {
-#ifdef _WIN32
-         outs << "ciyam_client " << standard_client_args << " -no_stderr < "
-          << get_obj( ).Name( ) << ".generate.1.cin >>" << generate_log_file << "\n";
-#else
          outs << "./ciyam_client " << standard_client_args << " -no_stderr < "
           << get_obj( ).Name( ) << ".generate.1.cin >>" << generate_log_file << "\n";
-#endif
-      }
 
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
       {
@@ -2135,20 +2099,19 @@ void Meta_Application::impl::impl_Generate( )
                module_alias.erase( 0, get_obj( ).Module_Prefix( ).size( ) );
 
             if( !active_modules.count( modules[ i ] ) )
-               outs << script_prefix << "genmodule" << script_suffix << " -rdbms " << modules[ i ]
+               outs << "./genmodule -rdbms " << modules[ i ]
                 << " " << app_dir << " >>" << generate_log_file << " 2>&1\n";
             else
-               outs << script_prefix << "genmodule" << script_suffix << " -rdbms " << modules[ i ]
+               outs << "./genmodule -rdbms " << modules[ i ]
                 << " " << app_dir << " " << lower( module_alias ) << " >>" << generate_log_file << " 2>&1\n";
          }
       }
-      outs << script_prefix << "genfcgi" << script_suffix << " "
-       << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file << "\n";
+      outs << "./genfcgi " << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file << "\n";
 
       for( set< string >::iterator i = old_modules.begin( ); i != old_modules.end( ); ++i )
       {
-         outs << script_prefix << "remove_app_module" << script_suffix
-          << " " << *i << " " << app_dir << " " << get_obj( ).Name( ) << " >>" << generate_log_file << "\n";
+         outs << "./remove_app_module " << *i << " "
+          << app_dir << " " << get_obj( ).Name( ) << " >>" << generate_log_file << "\n";
 
          string class_list( *i + ".classes.lst" );
          if( exists_file( class_list ) )
@@ -2172,10 +2135,10 @@ void Meta_Application::impl::impl_Generate( )
       }
 
       outss2 << "storage_init " << storage_name( ) << "\n";
-      outss2 << "pu sys 20080101 " << get_obj( ).get_module_id( )
+      outss2 << "pu sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Updating Links...\"\n";
-      outss2 << "pe sys 20080101 " << get_obj( ).get_module_id( )
+      outss2 << "pe sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( )
        << " " << to_string( c_procedure_id_Generate_File_Links ) << "\n";
       outss2 << "quit\n";
@@ -2183,15 +2146,11 @@ void Meta_Application::impl::impl_Generate( )
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
       {
          outs << "\necho Updating Links... >>" << generate_log_file << "\n";
-#ifdef _WIN32
-         outs << "ciyam_client " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".generate.2.cin\n";
-#else
          outs << "./ciyam_client " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".generate.2.cin\n";
-#endif
       }
 
       outss3 << "storage_init " << storage_name( ) << "\n";
-      outss3 << "pu sys 20080101 " << get_obj( ).get_module_id( )
+      outss3 << "pu sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Performing Make...\"\n";
       outss3 << "quit\n";
@@ -2199,29 +2158,15 @@ void Meta_Application::impl::impl_Generate( )
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
       {
          outs << "\necho Starting Make... >>" << generate_log_file << "\n";
-#ifdef _WIN32
-         outs << "ciyam_client " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".generate.3.cin\n";
-         outs << "if exist make.dtm del make.dtm\n";
-         outs << "call make.bat " << all_modules << " dtm >>" << generate_log_file << " 2>&1\n";
-#else
          outs << "./ciyam_client " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".generate.3.cin\n";
          outs << "if [ -f make.dtm ]; then\n";
          outs << " rm make.dtm\n";
          outs << "fi\n";
          outs << "make " << all_modules << " dtm >>" << generate_log_file << " 2>&1\n";
-#endif
          outs << "echo Finished Make... >>" << generate_log_file << "\n\n";
 
-#ifdef _WIN32
-         outs << "if not exist make.dtm goto skip_cleanup\n";
-         for( size_t i = 0; i < modules.size( ); i++ )
-         {
-            outs << "if exist " << modules[ i ] << ".cleanup.bat call " << modules[ i ] << ".cleanup.bat\n";
-            outs << "if exist " << modules[ i ] << ".cleanup.bat del " << modules[ i ] << ".cleanup.bat\n";
-         }
-         outs << "\n:skip_cleanup\n";
-#else
          outs << "if [ -f make.dtm ]; then\n";
+
          for( size_t i = 0; i < modules.size( ); i++ )
          {
             outs << " if [ -f " << modules[ i ] << ".cleanup.sh ]; then\n";
@@ -2230,17 +2175,17 @@ void Meta_Application::impl::impl_Generate( )
             outs << "  rm " << modules[ i ] << ".cleanup.sh\n";
             outs << " fi\n";
          }
+
          outs << "fi\n\n";
-#endif
       }
 
       outss4 << "storage_init " << storage_name( ) << "\n";
 
-      outss4 << "pe sys 20080101 " << get_obj( ).get_module_id( )
+      outss4 << "pe sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( )
        << " " << to_string( c_procedure_id_Generate_Upgrade_DDL ) << "\n";
 
-      outss4 << "pu sys 20080101 " << get_obj( ).get_module_id( )
+      outss4 << "pu sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Upgrading DB...\"\n";
       outss4 << "quit\n";
@@ -2272,18 +2217,6 @@ void Meta_Application::impl::impl_Generate( )
 
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Skip_DB_Upgrade )
       {
-#ifdef _WIN32
-         outs << "if not exist make.dtm goto skip_upgrade\n";
-         if( !get_obj( ).Keep_Existing_Data( ) )
-         {
-            outs << "if exist " << get_obj( ).Name( ) << ".log del " << get_obj( ).Name( ) << ".log\n";
-            outs << "if exist " << get_obj( ).Name( ) << ".dead_keys.lst del " << get_obj( ).Name( ) << ".dead_keys.lst\n";
-         }
-         outs << "if not exist " << get_obj( ).Name( ) << ".log copy app.log " << get_obj( ).Name( ) << ".log >nul\n";
-         outs << "if exist autoscript.sio.new call update autoscript.sio autoscript.sio.new >>" << generate_log_file << "\n";
-         outs << "if exist manuscript.sio.new call update manuscript.sio manuscript.sio.new >>" << generate_log_file << "\n";
-         outs << "\nciyam_client " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".generate.4.cin\n";
-#else
          outs << "if [ -f make.dtm ]; then\n";
          if( !get_obj( ).Keep_Existing_Data( ) )
          {
@@ -2304,19 +2237,13 @@ void Meta_Application::impl::impl_Generate( )
          outs << "  ./update manuscript.sio manuscript.sio.new >>" << generate_log_file << "\n";
          outs << " fi\n";
          outs << " ./ciyam_client " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".generate.4.cin\n";
-#endif
 
-#ifdef _WIN32
-         outs << "ciyam_client -echo " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".upgrade.cin >>" << generate_log_file << "\n";
-         outs << "\n:skip_upgrade\n";
-#else
          outs << " ./ciyam_client -echo " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".upgrade.cin >>" << generate_log_file << "\n";
          outs << "fi\n";
-#endif
       }
 
       outssx << "storage_init " << storage_name( ) << "\n";
-      outssx << "pu sys 20080101 " << get_obj( ).get_module_id( )
+      outssx << "pu sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Actions ) << "=127410,"
        << get_obj( ).static_get_field_id( e_field_id_Generate_Type ) << "=" << to_string( orig_gen_type ) << ","
@@ -2324,27 +2251,13 @@ void Meta_Application::impl::impl_Generate( )
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Generated\"\n";
 
       outssx << "system_variable @" << storage_name( ) << "_protect \"\"\n";
-#ifdef _WIN32
-      outssx << "session_lock -release " << session_id( ) << "\n"; // see NOTE below...
-#endif
       outssx << "quit\n";
 
-#ifdef _WIN32
-      outs << "ciyam_client " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".generate.x.cin\n";
-#else
       outs << "\n./ciyam_client -quiet " << standard_client_args << " < " << get_obj( ).Name( ) << ".generate.x.cin\n";
-#endif
 
-#ifndef _WIN32
       outs << "\nrm $WEBDIR/" << app_dir << "/ciyam_interface.stop\n";
-#else
-      outs << "\ndel " << bs_web_dir_var << "\\" << app_dir << "\\ciyam_interface.stop\n";
-#endif
       outs << "echo Finished Generate... >>" << generate_log_file << "\n";
 
-#ifdef _WIN32
-      outs << "exit\n";
-#endif
       outv.flush( );
       if( !outv.good( ) )
          throw runtime_error( "app vars output stream is bad" );
@@ -2392,21 +2305,10 @@ void Meta_Application::impl::impl_Generate( )
       throw;
    }
 
-#ifndef _WIN32
    chmod( generate_script.c_str( ), 0777 );
-#endif
 
    if( !skip_exec )
-   {
-#ifdef _WIN32
-      // NOTE: Due to file locking inheritance in Win32 prevent a dead socket from
-      // killing this session until the asychronous operations have been completed.
-      capture_session( session_id( ) );
-      exec_system( generate_script, true );
-#else
       exec_system( "./" + generate_script, true );
-#endif
-   }
    // [<finish Generate_impl>]
 }
 
@@ -2483,14 +2385,17 @@ void Meta_Application::impl::impl_Generate_Upgrade_DDL( )
    }
 
    bool app_is_module = false;
+
    if( modules.size( ) == 1 && modules[ 0 ] == get_obj( ).Name( ) )
       app_is_module = true;
 
    string upgrade_ddl( get_obj( ).Name( ) + ".upgrade.sql" );
+
    if( exists_file( upgrade_ddl ) )
       remove_file( upgrade_ddl );
 
    string obsolete_ddl( get_obj( ).Name( ) + ".obsolete.sql" );
+
    if( exists_file( obsolete_ddl ) )
    {
       ifstream inpf( obsolete_ddl.c_str( ) );
@@ -3763,11 +3668,7 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
 
    if( is_create && !skip_create_db && get_obj( ).Create_Database( ) )
    {
-#ifndef _WIN32
       string create_script( "./create_db" );
-#else
-      string create_script( "create_db.bat" );
-#endif
       string tmp_filename( "~" + get_uuid( ) );
 
       string script( create_script + " "
@@ -3919,34 +3820,25 @@ void Meta_Application::impl::for_destroy( bool is_internal )
    {
       if( get_obj( ).Created_Database( ) )
       {
-#ifndef _WIN32
          string drop_script( "./drop_db" );
-#else
-         string drop_script( "drop_db.bat" );
-#endif
+
          string script( drop_script + " "
           + get_obj( ).Name( ) + " " + get_sql_password( ) );
 
          exec_system( script, false );
       }
 
-#ifndef _WIN32
       string remove_script( "./remove_app" );
-#else
-      string remove_script( "remove_app.bat" );
-#endif
       string script( remove_script + " " + get_obj( ).Name( ) );
 
       exec_system( script, false );
 
       string app_dir( get_web_root( ) + "/" + lower( get_obj( ).Name( ) ) );
+
       if( exists_file( app_dir + "/fcgi.sio" ) )
       {
-#ifndef _WIN32
          string remove_script( "./remove_fcgi" );
-#else
-         string remove_script( "remove_fcgi.bat" );
-#endif
+
          string script( remove_script + " " + lower( get_obj( ).Name( ) ) + " " + get_web_root( ) );
 
          exec_system( script, false );
