@@ -34,6 +34,7 @@
 
 #include "ods.h"
 #include "sio.h"
+#include "regex.h"
 #include "base64.h"
 #include "config.h"
 #include "format.h"
@@ -5350,10 +5351,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_restore_name ) );
          string directory( get_parm_val( parameters, c_cmd_ciyam_session_storage_restore_directory ) );
          string trace_info( get_parm_val( parameters, c_cmd_ciyam_session_storage_restore_trace_info ) );
+         string stop_regex( get_parm_val( parameters, c_cmd_ciyam_session_storage_restore_stop_regex ) );
          int stop_at_tx = atoi( get_parm_val( parameters, c_cmd_ciyam_session_storage_restore_stop_at_tx ).c_str( ) );
          bool rebuild = has_parm_val( parameters, c_cmd_ciyam_session_storage_restore_rebuild );
          bool partial = has_parm_val( parameters, c_cmd_ciyam_session_storage_restore_partial );
          bool quicker = has_parm_val( parameters, c_cmd_ciyam_session_storage_restore_quicker );
+
+         auto_ptr< regex > ap_regex;
+
+         if( !stop_regex.empty( ) )
+         {
+            if( ( stop_regex.length( ) > 2 )
+             && ( stop_regex[ 0 ] = '"' ) && ( stop_regex[ stop_regex.length( ) - 1 ] == '"' ) )
+               stop_regex = stop_regex.substr( 1, stop_regex.length( ) - 2 );
+
+            ap_regex.reset( new regex( stop_regex ) );
+         }
 
          bool is_meta = ( name == "Meta" );
 
@@ -5580,7 +5593,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                ++line;
                string::size_type pos = next.find( ']' );
 
-               if( trace_flags && line >= trace_start )
+               if( trace_flags && ( line >= trace_start ) )
                {
                   set_trace_flags( trace_flags );
                   trace_flags = 0;
@@ -5588,7 +5601,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                // NOTE: As recovery can take a long time issue "progress" messages to ensure that
                // client applications don't end up timing out whilst waiting for the final response.
-               if( time( 0 ) - ts >= 5 )
+               if( ( time( 0 ) - ts ) >= 5 )
                {
                   ts = time( 0 );
 
@@ -5617,17 +5630,23 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( stop_at_tx && tran_id >= stop_at_tx )
                   break;
 
-               if( !in_trans && line >= tline && tran_id >= c_tx_id_standard )
+               if( ap_regex.get( ) )
+               {
+                  if( ap_regex->search( next ) != string::npos )
+                     break;
+               }
+
+               if( !in_trans && ( line >= tline ) && ( tran_id >= c_tx_id_standard ) )
                {
                   in_trans = true;
                   transaction_start( );
                }
 
                // FUTURE: This message should be handled as a server string message.
-               if( tran_id == 0 && !is_new && tran_info != storage_identity( ) )
+               if( !tran_id && !is_new && ( tran_info != storage_identity( ) ) )
                   throw runtime_error( "DB identity mismatch with transaction log." );
 
-               if( tran_id == 0 )
+               if( !tran_id )
                {
                   if( is_new && !verified )
                   {
@@ -5650,10 +5669,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                if( tran_id == c_tx_id_module )
                   is_partial = false;
-               else if( tran_id >= c_tx_id_initial && is_new && is_partial )
+               else if( ( tran_id >= c_tx_id_initial ) && is_new && is_partial )
                   throw runtime_error( "cannot restore from empty DB with a partial transaction log" );
 
-               if( tran_id > c_tx_id_module && is_new && !performed_init )
+               if( ( tran_id > c_tx_id_module ) && is_new && !performed_init )
                {
                   if( in_trans )
                      transaction_commit( );
@@ -5699,6 +5718,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      for( size_t i = 0; i < module_list.size( ); i++ )
                      {
                         string module_init_list( module_list[ i ] + ".init.lst" );
+
                         if( exists_file( module_init_list ) )
                         {
                            vector< string > init_classes;
@@ -5727,7 +5747,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 
                // NOTE: Any operation whose transaction id is less than standard is skipped during a restore.
-               if( !tran_info.empty( ) && tran_id >= c_tx_id_standard )
+               if( !tran_info.empty( ) && ( tran_id >= c_tx_id_standard ) )
                {
                   if( first_op )
                   {
@@ -5777,7 +5797,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                transaction_commit( );
 
             // NOTE: Ensure that reserved transaction id's cannot be used later.
-            if( next_transaction_id( ) < c_tx_id_standard - 1 )
+            if( next_transaction_id( ) < ( c_tx_id_standard - 1 ) )
                set_transaction_id( c_tx_id_standard - 1 );
 
             storage_unlock_all_tables( );
