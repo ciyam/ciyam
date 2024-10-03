@@ -11,7 +11,7 @@
    {
       class_base* p_parent = get_obj( ).get_graph_parent( );
 
-      if( !p_parent || !p_parent->get_is_editing( )
+      if( !p_parent || !p_parent->get_is_creating( )
        || p_parent->get_key( ) != get_obj( ).`{`$arg_pfield`}( ).get_key( )
        || p_parent->get_lock_class_id( ) != get_obj( ).`{`$arg_pfield`}( ).get_lock_class_id( ) )
       {
@@ -102,7 +102,7 @@
       class_base* p_parent = get_obj( ).get_graph_parent( );
 
       if( !is_null( original.`{`$arg_pfield`}( ) )
-       && ( !p_parent || !p_parent->get_is_editing( )
+       && ( !p_parent || !p_parent->get_is_creating( )
        || p_parent->get_key( ) != original.`{`$arg_pfield`}( ).get_key( )
        || p_parent->get_lock_class_id( ) != original.`{`$arg_pfield`}( ).get_lock_class_id( ) ) )
       {

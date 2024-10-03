@@ -2880,8 +2880,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_value=$specification_\0_value arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield\
  arg_inc_clones=$specification_\0_inc_clones arg_system=$specification_\0_system arg_session=$specification_\0_session`}\
 `,\
-`@eq`(`'\1`'`,`'destroy_children`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)
-`{`#destroy_children.spec.xrep section=for_store class_name=$class_name\
+`@eq`(`'\1`'`,`'destroy_children`'`)`&`@eq`(`$specification_\0_after_store`,`'`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)
+`{`#destroy_children.spec.xrep section=for_or_after_store class_name=$class_name\
  arg_id=$specification_\0_id arg_child=$specification_\0_child arg_tfield=$specification_\0_tfield arg_output_arg= arg_output_field=\
  arg_separator=$specification_\0_separator arg_use_test_field_as_suffix=$specification_\0_use_test_field_as_suffix\
  arg_skip_child_updates=$specification_\0_skip_child_updates`}\
@@ -3327,6 +3327,12 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_id=$specification_\0_id arg_fkfield=$specification_\0_fkfield arg_fkcfield=$specification_\0_fkcfield\
  arg_cname=$specification_\0_cname arg_cfield=$specification_\0_cfield\
  arg_field_list=$specification_\0_field_list`}\
+`,\
+`@eq`(`'\1`'`,`'destroy_children`'`)`&`@eq`(`$specification_\0_after_store`,`'true`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)
+`{`#destroy_children.spec.xrep section=for_or_after_store class_name=$class_name\
+ arg_id=$specification_\0_id arg_child=$specification_\0_child arg_tfield=$specification_\0_tfield arg_output_arg= arg_output_field=\
+ arg_separator=$specification_\0_separator arg_use_test_field_as_suffix=$specification_\0_use_test_field_as_suffix\
+ arg_skip_child_updates=$specification_\0_skip_child_updates`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_child_concat`'`)`&`!`?`$specification_\0_class\
 `&`?`$specification_\0_cclass`&`@eq`(`$class_name`,`$specification_\0_cclass`)
