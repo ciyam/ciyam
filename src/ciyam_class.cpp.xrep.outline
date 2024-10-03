@@ -2041,7 +2041,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_init=$specification_\0_init\
  arg_admin=$specification_\0_admin arg_peer=$specification_\0_peer arg_system=$specification_\0_system`}\
 `,\
-`@eq`(`'\1`'`,`'transient_field_concat`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
+`@eq`(`'\1`'`,`'transient_field_concat`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)`&`@eq`(`$specification_\0_finalise_fetch`,`'`'`)
 `{`#transient_field_concat.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield\
  arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
@@ -2207,6 +2207,17 @@ void `{`$full_class_name`}::impl::finalise_fetch( bool skip_set_original )
  arg_scfield=$specification_\0_scfield arg_def_value=$specification_\0_def_value\
  arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod\
  arg_top_level=$specification_\0_top_level arg_top_or_iter=$specification_\0_top_or_iter`}
+`,\
+`@eq`(`'\1`'`,`'transient_field_concat`'`)`&`@eq`(`$specification_\0_finalise_fetch`,`'true`'`)\
+`{`#transient_field_concat.spec.xrep section=finalise_fetch class_name=$class_name\
+ arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield\
+ arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
+ arg_mask1=?domain_mask_$specification_\0_field1 arg_mask2=?domain_mask_$specification_\0_field2\
+ arg_field3=$specification_\0_field3 arg_cfield=$specification_\0_cfield\
+ arg_new_only=$specification_\0_new_only arg_inc_dflt=$specification_\0_inc_dflt\
+ arg_separator=$specification_\0_separator arg_rfield=$specification_\0_rfield arg_reverse=$specification_\0_reverse\
+ arg_non_empty=$specification_\0_non_empty arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
+ arg_top_level=$specification_\0_top_level arg_always_use_separator=$specification_\0_always_use_separator`}
 ### finalise_fetch
 `}`]`}
    // [<start finalise_fetch>]

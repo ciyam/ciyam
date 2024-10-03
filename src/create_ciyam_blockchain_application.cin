@@ -220,6 +220,22 @@ BLOG_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
+.pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_bool_use_tags_limit "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Blog package option 'use_tags_limit'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+BLOG_OPTION_KEY=$OUTPUT
+.pu $CIYAM_UID @now 100 137100 $BLOG_OPTION_KEY "137102=1"
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
 .pe $CIYAM_UID @now 100 136100 "-v=@async=false,@message=Installing Blog Package..." $BLOG_PACKAGE_KEY -136410
 @ifdef $ERROR
 @label ERROR
