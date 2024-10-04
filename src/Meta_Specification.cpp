@@ -7395,6 +7395,7 @@ void Meta_Specification::impl::after_fetch( )
 
    // [(start field_from_search_replace)] 600207
    if( !get_obj( ).get_key( ).empty( )
+    && !get_obj( ).get_is_for_peer( )
     && ( get_obj( ).needs_field_value( "Vars" )
     || required_transients.count( "Vars" ) ) )
    {
@@ -7520,6 +7521,7 @@ void Meta_Specification::impl::after_fetch( )
 
    // [(start field_from_search_replace)] 600208
    if( !get_obj( ).get_key( ).empty( )
+    && !get_obj( ).get_is_for_peer( )
     && ( get_obj( ).needs_field_value( "Strings" )
     || required_transients.count( "Strings" ) ) )
    {
@@ -8298,7 +8300,8 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish meta_spec_field_pairs)] 600203a
 
    // [(start field_from_search_replace)] 600204
-   if( get_obj( ).get_is_editing( ) )
+   if( get_obj( ).get_is_editing( )
+    && !get_obj( ).get_is_for_peer( ) )
    {
       string str( get_obj( ).Specification_Type( ).Specification_Name( ) );
 

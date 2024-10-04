@@ -4994,6 +4994,7 @@ void Meta_List_Field::impl::after_fetch( )
 
    // [(start field_from_search_replace)] 600459
    if( !get_obj( ).get_key( ).empty( )
+    && !get_obj( ).get_is_for_peer( )
     && ( get_obj( ).needs_field_value( "Name" )
     || required_transients.count( "Name" ) ) )
    {

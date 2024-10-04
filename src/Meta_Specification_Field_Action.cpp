@@ -1535,7 +1535,8 @@ void Meta_Specification_Field_Action::impl::to_store( bool is_create, bool is_in
    ( void )state;
 
    // [(start field_from_search_replace)] 600260
-   if( get_obj( ).get_is_editing( ) )
+   if( get_obj( ).get_is_editing( )
+    && !get_obj( ).get_is_for_peer( ) )
    {
       string str( get_obj( ).Specification_Type( ).Specification_Name( ) );
 
