@@ -4931,33 +4931,6 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    }
    // [(finish child_field_change_cascade)] 600029
 
-   // [(start child_field_cascade)] 600036
-   if( !is_create )
-   {
-      if( get_obj( ).has_field_changed( c_field_id_Name )
-       || get_obj( ).has_field_changed( c_field_id_Plural )
-       || get_obj( ).has_field_changed( c_field_id_Type )
-       || get_obj( ).has_field_changed( c_field_id_Extra )
-       || get_obj( ).has_field_changed( c_field_id_Static_Instance_Key ) )
-      {
-         if( get_obj( ).child_Class_Source( ).iterate_forwards( "", "@key", true, 0, e_sql_optimisation_unordered ) )
-         {
-            do
-            {
-               get_obj( ).child_Class_Source( ).op_update( );
-               get_obj( ).child_Class_Source( ).Name( get_obj( ).Name( ) );
-               get_obj( ).child_Class_Source( ).Plural( get_obj( ).Plural( ) );
-               get_obj( ).child_Class_Source( ).Type( get_obj( ).Type( ) );
-               get_obj( ).child_Class_Source( ).Extra( get_obj( ).Extra( ) );
-               get_obj( ).child_Class_Source( ).Static_Instance_Key( get_obj( ).Static_Instance_Key( ) );
-               get_obj( ).child_Class_Source( ).op_apply( );
-
-            } while( get_obj( ).child_Class_Source( ).iterate_next( ) );
-         }
-      }
-   }
-   // [(finish child_field_cascade)] 600036
-
    // [(start parent_auto_int_inc)] 600037
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
@@ -5141,6 +5114,33 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
       }
    }
    // [(finish clone_children_from_fk)] 600035
+
+   // [(start child_field_cascade)] 600036
+   if( !is_create )
+   {
+      if( get_obj( ).has_field_changed( c_field_id_Name )
+       || get_obj( ).has_field_changed( c_field_id_Plural )
+       || get_obj( ).has_field_changed( c_field_id_Type )
+       || get_obj( ).has_field_changed( c_field_id_Extra )
+       || get_obj( ).has_field_changed( c_field_id_Static_Instance_Key ) )
+      {
+         if( get_obj( ).child_Class_Source( ).iterate_forwards( "", "@key", true, 0, e_sql_optimisation_unordered ) )
+         {
+            do
+            {
+               get_obj( ).child_Class_Source( ).op_update( );
+               get_obj( ).child_Class_Source( ).Name( get_obj( ).Name( ) );
+               get_obj( ).child_Class_Source( ).Plural( get_obj( ).Plural( ) );
+               get_obj( ).child_Class_Source( ).Type( get_obj( ).Type( ) );
+               get_obj( ).child_Class_Source( ).Extra( get_obj( ).Extra( ) );
+               get_obj( ).child_Class_Source( ).Static_Instance_Key( get_obj( ).Static_Instance_Key( ) );
+               get_obj( ).child_Class_Source( ).op_apply( );
+
+            } while( get_obj( ).child_Class_Source( ).iterate_next( ) );
+         }
+      }
+   }
+   // [(finish child_field_cascade)] 600036
 
    // [(start update_children)] 610027
    if( !is_create

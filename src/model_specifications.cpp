@@ -1395,6 +1395,7 @@ void child_field_cascade_specification::add( model& m, const vector< string >& a
    string child_class_name( arg_cclass_info.substr( 0, pos ) );
 
    string cpfield_name;
+
    if( pos != string::npos )
       cpfield_name = arg_cclass_info.substr( pos + 1 );
 
@@ -1415,6 +1416,7 @@ void child_field_cascade_specification::add( model& m, const vector< string >& a
    }
 
    vector< string > field_ids;
+
    while( true )
    {
       string::size_type pos = arg_field_info.find( ',' );
@@ -1447,6 +1449,7 @@ void child_field_cascade_specification::add( model& m, const vector< string >& a
    }
 
    details.push_back( specification_detail( class_id, "class", e_model_element_type_class ) );
+
    if( class_id != child_class_id )
       details.push_back( specification_detail( child_class_id, "child_class", e_model_element_type_class ) );
 
@@ -1465,6 +1468,7 @@ void child_field_cascade_specification::read_data( sio_reader& reader )
    cpfield_id = reader.read_opt_attribute( c_attribute_cpfield_id );
 
    string next;
+
    while( reader.has_read_attribute( c_attribute_field_info, next ) )
       field_info.push_back( next );
 }
@@ -1488,6 +1492,7 @@ void child_field_cascade_specification::add_specification_data( model& m, specif
    string child_class_name = get_class_name_for_id( m, child_class_id );
 
    string cpfield_name;
+
    if( !cpfield_id.empty( ) )
    {
       cpfield_name = get_field_name_for_id( m, child_class_name, cpfield_id, 0, false, true );
@@ -1496,10 +1501,11 @@ void child_field_cascade_specification::add_specification_data( model& m, specif
       cpfield_name = m.determine_child_rel_suffix( cpfield_name );
    }
 
-   // KLUDGE: Assumes class name is the child name.
-    spec_data.data_pairs.push_back( make_pair( c_data_child, cpfield_name.empty( ) ? child_class_name : cpfield_name ) );
+   // KLUDGE: Assumes that class name is the child name.
+   spec_data.data_pairs.push_back( make_pair( c_data_child, cpfield_name.empty( ) ? child_class_name : cpfield_name ) );
 
    string field_list;
+
    for( size_t i = 0; i < field_info.size( ); i++ )
    {
       if( !field_list.empty( ) )
@@ -1519,7 +1525,6 @@ void child_field_cascade_specification::add_specification_data( model& m, specif
    spec_data.data_pairs.push_back( make_pair( "ctfield", "" ) );
    spec_data.data_pairs.push_back( make_pair( "check_orig", "" ) );
    spec_data.data_pairs.push_back( make_pair( "any_change", "" ) );
-   spec_data.data_pairs.push_back( make_pair( "after_self", "" ) );
 }
 
 string child_field_cascade_specification::static_class_name( ) { return "child_field_cascade"; }
@@ -1742,6 +1747,7 @@ void clone_children_specification::add_specification_data( model& m, specificati
 
    spec_data.data_pairs.push_back( make_pair( "ctfield", "" ) );
    spec_data.data_pairs.push_back( make_pair( "ctvalue", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "not_peer", "" ) );
    spec_data.data_pairs.push_back( make_pair( "copy_files", "" ) );
    spec_data.data_pairs.push_back( make_pair( "ctfistexttype", "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_ofield, "" ) );
@@ -2464,6 +2470,7 @@ struct copy_child_links_from_fk_specification : specification
 
    vector< string > field_info;
 
+   bool not_create;
    bool self_child;
    bool combine_keys;
 
@@ -2481,14 +2488,19 @@ void copy_child_links_from_fk_specification::add( model& m, const vector< string
    string arg_fkcclass_name( args[ 3 ] );
    string arg_field_info( args[ 4 ] );
 
+   not_create = false;
    self_child = false;
    combine_keys = false;
+
    string arg_fk_child_field;
+
    for( size_t arg = 5; arg < args.size( ); arg++ )
    {
       string next_arg( args[ arg ] );
 
-      if( next_arg == c_arg_self_child )
+      if( next_arg == c_arg_not_create )
+         not_create = true;
+      else if( next_arg == c_arg_self_child )
          self_child = true;
       else if( next_arg == string( c_arg_combine_keys ) )
          combine_keys = true;
@@ -2499,6 +2511,7 @@ void copy_child_links_from_fk_specification::add( model& m, const vector< string
    }
 
    class_id = get_class_id_for_name( m, arg_class_name );
+
    if( self_child )
    {
       cclass_id = class_id;
@@ -2513,6 +2526,7 @@ void copy_child_links_from_fk_specification::add( model& m, const vector< string
       cclass_id = get_class_id_for_name( m, arg_cclass_name );
 
    fkclass_id = get_class_id_for_name( m, arg_fkclass_name );
+
    if( self_child )
    {
       fkcclass_id = fkclass_id;
@@ -2597,6 +2611,7 @@ void copy_child_links_from_fk_specification::read_data( sio_reader& reader )
    while( reader.has_read_attribute( c_attribute_field_info, next ) )
       field_info.push_back( next );
 
+   not_create = ( reader.read_opt_attribute( c_attribute_not_create ) == c_true );
    self_child = ( reader.read_opt_attribute( c_attribute_self_child ) == c_true );
    combine_keys = ( reader.read_opt_attribute( c_attribute_combine_keys ) == c_true );
 
@@ -2615,6 +2630,7 @@ void copy_child_links_from_fk_specification::write_data( sio_writer& writer ) co
    for( size_t i = 0; i < field_info.size( ); i++ )
       writer.write_attribute( c_attribute_field_info, field_info[ i ] );
 
+   writer.write_opt_attribute( c_attribute_not_create, not_create ? c_true : "" );
    writer.write_opt_attribute( c_attribute_self_child, self_child ? c_true : "" );
    writer.write_opt_attribute( c_attribute_combine_keys, combine_keys ? c_true : "" );
 
@@ -2654,6 +2670,7 @@ void copy_child_links_from_fk_specification::add_specification_data( model& m, s
 
    spec_data.data_pairs.push_back( make_pair( string( c_data_fields ), field_list ) );
 
+   spec_data.data_pairs.push_back( make_pair( c_data_not_create, not_create ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_self_child, self_child ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_combine_keys, combine_keys ? c_true : "" ) );
 
@@ -10641,7 +10658,6 @@ void update_children_specification::add_specification_data( model& m, specificat
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, tfield_name ) );
 
    spec_data.data_pairs.push_back( make_pair( "tvalue", "" ) );
-   spec_data.data_pairs.push_back( make_pair( "after_self", "true" ) );
    spec_data.data_pairs.push_back( make_pair( "not_var", "" ) );
    spec_data.data_pairs.push_back( make_pair( "procedure", "" ) );
    spec_data.data_pairs.push_back( make_pair( "set_loopvar", "" ) );

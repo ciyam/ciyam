@@ -1,4 +1,4 @@
-`{`@eq`(`'for_store`'`,`$section`)\
+`{`@eq`(`'after_store`'`,`$section`)\
    // [(start child_status_cascade)] `{`$arg_id`}
    if( !is_create`{`!`@eq`(`$arg_neq_status_field`,`'`'`) && get_obj( ).`{`$arg_neq_status_field`}( ).has_changed( ) && to_string( get_obj( ).`{`$arg_neq_status_field`}( ) ) != "`{`$arg_neq_status_value`}"`} )
    {
