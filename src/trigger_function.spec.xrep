@@ -1,4 +1,4 @@
-`{`@eq`(`'for_or_after_store`'`,`$section`)`|`@eq`(`'for_destroy`'`,`$section`)\
+`{`@eq`(`'after_store`'`,`$section`)`|`@eq`(`'after_destroy`'`,`$section`)\
    // [(start trigger_function)] `{`$arg_id`}
 `{`!`@eq`(`$arg_create_only`,`'`'`)`|`!`@eq`(`$arg_update_only`,`'`'`)\
 `|`!`@eq`(`$arg_modifier`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$arg_skip_restore`,`'`'`)\
