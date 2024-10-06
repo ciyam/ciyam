@@ -793,7 +793,7 @@ void list_specification::add( model& m, const vector< string >& args, vector< sp
             {
                if( all_spec_data[ j ].decorated_name == filter_names[ i ] )
                {
-                  if( all_spec_data[ j ].type != "filter" && all_spec_data[ j ].type != "prior_version_filter" )
+                  if( all_spec_data[ j ].type != "filter" )
                      throw runtime_error( "specification '" + filter_names[ i ] + "' is not a filter" );
 
                   next_spec_id = all_spec_data[ j ].id;
