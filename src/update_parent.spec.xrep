@@ -1,4 +1,4 @@
-`{`@eq`(`'for_or_after_store`'`,`$section`)\
+`{`@eq`(`'after_store`'`,`$section`)\
    // [(start update_parent)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
    if( !is_null( get_obj( ).`{`$arg_spfield`}( ) )
@@ -21,7 +21,7 @@
    }
    // [(finish update_parent)] `{`$arg_id`}
 `}
-`{`@eq`(`'for_or_after_destroy`'`,`$section`)\
+`{`@eq`(`'after_destroy`'`,`$section`)\
    // [(start update_parent)] `{`$arg_id`}
    if( !is_null( get_obj( ).`{`$arg_spfield`}( ) )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`}
     && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_parent_updates ) ).empty( )

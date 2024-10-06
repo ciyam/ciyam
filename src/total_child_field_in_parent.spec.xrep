@@ -1,4 +1,4 @@
-`{`@eq`(`'for_or_after_store`'`,`$section`)\
+`{`@eq`(`'after_store`'`,`$section`)\
    // [(start total_child_field_in_parent)] `{`$arg_id`}
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
 `{`!`@eq`(`$arg_sfield`,`'`'`)\
@@ -119,7 +119,7 @@
    }
    // [(finish total_child_field_in_parent)] `{`$arg_id`}
 `}
-`{`@eq`(`'for_or_after_destroy`'`,`$section`)\
+`{`@eq`(`'after_destroy`'`,`$section`)\
    // [(start total_child_field_in_parent)] `{`$arg_id`}
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
     && !is_destroy_locked_by_own_session( get_obj( ).`{`$arg_pfield`}( ) )
