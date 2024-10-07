@@ -1848,7 +1848,7 @@ bool populate_list_info( list_source& list,
          }
 
          // NOTE: If one extra row was found then store the last row's key/data for "next" link.
-         if( row_limit && list.row_data.size( ) == row_limit + 1 )
+         if( row_limit && ( list.row_data.size( ) == ( row_limit + 1 ) ) )
          {
             string key_ver_and_state( list.row_data.back( ).first );
             string key( key_ver_and_state.substr( 0, key_ver_and_state.find( ' ' ) ) );

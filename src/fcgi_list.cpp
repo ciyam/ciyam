@@ -4043,10 +4043,12 @@ void output_list_form( ostream& os,
       if( ( source.lici->second )->extras.count( c_list_type_extra_fixed ) )
       {
          allow_scroll = false;
+
          if( ( source.lici->second )->extras.count( c_list_type_extra_limit ) )
          {
             size_t row_limit = atoi( ( source.lici->second )->extras.find( c_list_type_extra_limit )->second.c_str( ) );
-            if( row_limit && source.row_data.size( ) >= row_limit )
+
+            if( row_limit && ( source.row_data.size( ) >= row_limit ) )
                allow_new_record = false;
          }
       }
