@@ -3122,6 +3122,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                throw runtime_error( "unable to open file '" + path + "' for input in perform_fetch" );
 
             string next;
+
             while( getline( inpf, next ) )
             {
                if( next.empty( ) )
@@ -3372,17 +3373,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( !set_value_items.empty( ) )
                         prepare_object_instance( handle, context, false );
 
-                     // NOTE: If iterating (rather than reading one instance) records such
-                     // as the 'admin' user record will be automatically filtered by this.
-                     if( ( num_limit != 1 ) && instance_uid_filtered( handle, context ) )
-                        continue;
-
                      bool has_any_filters = !filter_set.empty( );
 
                      if( !has_any_filters )
                         has_any_filters = instance_has_transient_filter_fields( handle, context );
 
                      if( has_any_filters && instance_filtered( handle, context ) )
+                        continue;
+
+                     // NOTE: If iterating over all records (e.g. for a FK selection) then
+                     // special records (such as the 'admin' user record) will be filtered
+                     // automatically. This implicit filtering will only occur if there is
+                     // either no record limit or if record filters were provided directly
+                     // or indirectly due to transient fields (otherwise list paging would
+                     // not function correctly as it relies upon an extra record fetch).
+                     if( ( !num_limit || has_any_filters ) && instance_uid_filtered( handle, context ) )
                         continue;
 
 #ifdef HPDF_SUPPORT
