@@ -11751,7 +11751,10 @@ void set_uid_data( const string& uid, const string& level, const string& group_k
 
    ofs.set_folder( c_storable_folder_name_uid_data );
 
-   size_t level_value = ( 10 - level.length( ) );
+   size_t level_value = 0;
+
+   if( level.length( ) )
+      level_value = 10 - level.length( );
 
    string file_name( uid + '.' + to_string( level_value ) );
 
