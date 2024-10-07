@@ -5,11 +5,12 @@
    // [(finish field_to_value)] `{`$arg_id`}
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
-`{`$value`=`$arg_value`}\
+`{`$source`=`$arg_value`}`{`!`@eq`(`$arg_evalue`,`'`'`)`$source`=`$arg_evalue`}\
+`{`$value`=`$source`}\
 `{`@eq`(`$arg_value`,`'@uid`'`)`$value`=`'get_uid( )`'`,\
 `@eq`(`$arg_value`,`'@uuid`'`)`$value`=`'get_uuid( )`'`,\
 `@eq`(`$arg_value`,`'@unix`'`)`$value`=`'get_unix_time( )`'`,\
-`@eq`(`$arg_fistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}\
+`@eq`(`$arg_fistexttype`,`'1`'`)`$value`=`'"`{`$source`}"`'`}\
 `{`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_create_only`=`'`'`}\
 `{`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_update_only`=`'`'`}\
 `{`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_internal_only`=`'`'`}\
@@ -33,7 +34,7 @@
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    get_obj( ).op_update( );
 `}\
-   get_obj( ).`{`$arg_field`}( `{`!`@eq`(`$arg_evalue`,`'`'`)`$arg_evalue`,`$value`} );`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_value`}`}
+   get_obj( ).`{`$arg_field`}( `{`$value`} );`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_value`}`}
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    get_obj( ).op_apply( );
 `}\
@@ -48,7 +49,7 @@
    {
       get_obj( ).op_update( );
 `}\
-      get_obj( ).`{`$arg_field`}( `{`!`@eq`(`$arg_evalue`,`'`'`)`$arg_evalue`,`$value`} );`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_value`}`}
+      get_obj( ).`{`$arg_field`}( `{`$value`} );`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_value`}`}
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
       get_obj( ).op_apply( );
    }
