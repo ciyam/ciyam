@@ -2717,6 +2717,14 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value arg_tvalue=$specification_\0_tvalue\
  arg_fistexttype=$specification_\0_fistexttype arg_tfistexttype=$specification_\0_tfistexttype`}\
 `,\
+`@eq`(`'\1`'`,`'field_to_variable`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
+`{`#field_to_variable.spec.xrep section=to_or_for_store class_name=$class_name\
+ arg_id=$specification_\0_id arg_variable=$specification_\0_variable arg_field=$specification_\0_field\
+ arg_fistexttype=$specification_\0_fistexttype arg_ofield=$specification_\0_ofield\
+ arg_ofisfk=$specification_\0_ofisfk arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
+ arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only\
+ arg_session=$specification_\0_session arg_system=$specification_\0_system`}\
+`,\
 `@eq`(`'\1`'`,`'field_value`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_value.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield\
@@ -2784,14 +2792,6 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'transient_default_trigger_script`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_default_trigger_script.spec.xrep section=to_store\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_script=$specification_\0_script`}\
-`,\
-`@eq`(`'\1`'`,`'trigger_set_variable`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
-`{`#trigger_set_variable.spec.xrep section=to_or_for_store class_name=$class_name\
- arg_id=$specification_\0_id arg_variable=$specification_\0_variable arg_field=$specification_\0_field\
- arg_fistexttype=$specification_\0_fistexttype arg_ofield=$specification_\0_ofield\
- arg_ofisfk=$specification_\0_ofisfk arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
- arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only\
- arg_session=$specification_\0_session arg_system=$specification_\0_system`}\
 ### to_store
 `}`]`}
 
@@ -3057,6 +3057,14 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value arg_tvalue=$specification_\0_tvalue\
  arg_fistexttype=$specification_\0_fistexttype arg_tfistexttype=$specification_\0_tfistexttype`}\
 `,\
+`@eq`(`'\1`'`,`'field_to_variable`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#field_to_variable.spec.xrep section=to_or_for_store class_name=$class_name\
+ arg_id=$specification_\0_id arg_variable=$specification_\0_variable arg_field=$specification_\0_field\
+ arg_fistexttype=$specification_\0_fistexttype arg_ofield=$specification_\0_ofield\
+ arg_ofisfk=$specification_\0_ofisfk arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
+ arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only\
+ arg_session=$specification_\0_session arg_system=$specification_\0_system`}\
+`,\
 `@eq`(`'\1`'`,`'field_value`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_value.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield\
@@ -3166,14 +3174,6 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_skip_restore=$specification_\0_skip_restore arg_restore_script=$specification_\0_restore_script\
  arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only\
  arg_has_key_already= arg_func= arg_oproc_arg= arg_session_var= arg_src_is_for_func= arg_sess_var_is_test= arg_pre_func=$specification_\0_pre_func`}\
-`,\
-`@eq`(`'\1`'`,`'trigger_set_variable`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
-`{`#trigger_set_variable.spec.xrep section=to_or_for_store class_name=$class_name\
- arg_id=$specification_\0_id arg_variable=$specification_\0_variable arg_field=$specification_\0_field\
- arg_fistexttype=$specification_\0_fistexttype arg_ofield=$specification_\0_ofield\
- arg_ofisfk=$specification_\0_ofisfk arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
- arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only\
- arg_session=$specification_\0_session arg_system=$specification_\0_system`}\
 ### for_store
 `}`]`}
 
@@ -3383,10 +3383,6 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `,\
 `@eq`(`'\1`'`,`'trigger_update_clone_source`'`)
 `{`#trigger_update_clone_source.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
- arg_id=$specification_\0_id arg_tfield=$specification_\0_tfield`}\
-`,\
-`@eq`(`'\1`'`,`'trigger_update_self_for_create`'`)
-`{`#trigger_update_self_for_create.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
  arg_id=$specification_\0_id arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'update_children`'`)
