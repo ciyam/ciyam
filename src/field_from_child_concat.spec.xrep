@@ -108,20 +108,21 @@
 `{`$has_two`=`'`'`}`{`!`@eq`(`$arg_cfield`,`'`'`)`&`!`@eq`(`$arg_ofield`,`'`'`)`$has_two`=`'true`'`}\
 `{`!`@eq`(`$arg_cfield`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$has_two`=`'true`'`}\
 `{`!`@eq`(`$arg_ofield`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$has_two`=`'true`'`}\
-`{`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_ofield`,`'`'`)\
+`{`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_ofield`,`'`'`)`&`@eq`(`$arg_tfield`,`'`'`)\
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
 `,`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_ofield`,`'`'`)`&`@eq`(`$arg_tfield`,`'`'`)\
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
 `,`@eq`(`$has_two`,`'true`'`)\
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
-    && ( `{`!`@eq`(`$arg_cfield`,`'`'`)get_obj( ).has_field_changed( c_field_id_`{`$arg_cfield`} )
+    && ( is_create
+    || `{`!`@eq`(`$arg_cfield`,`'`'`)get_obj( ).has_field_changed( c_field_id_`{`$arg_cfield`} )
     || `}`{`!`@eq`(`$arg_ofield`,`'`'`)get_obj( ).has_field_changed( c_field_id_`{`$arg_ofield`} )`}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`!`@eq`(`$arg_ofield`,`'`'`)
     || `}get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`} )
 `,\
-   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )`{`!`@eq`(`$arg_cfield`,`'`'`)\
- && get_obj( ).has_field_changed( c_field_id_`{`$arg_cfield`} )`}`{`!`@eq`(`$arg_ofield`,`'`'`)\
- && get_obj( ).has_field_changed( c_field_id_`{`$arg_ofield`} )`}`{`!`@eq`(`$arg_tfield`,`'`'`)\
- && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`}
+   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )`{`!`@eq`(`$arg_cfield`,`'`'`)
+    && ( is_create || get_obj( ).has_field_changed( c_field_id_`{`$arg_cfield`} )`}`{`!`@eq`(`$arg_ofield`,`'`'`) )
+    && ( is_create || get_obj( ).has_field_changed( c_field_id_`{`$arg_ofield`} )`}`{`!`@eq`(`$arg_tfield`,`'`'`) )
+    && ( is_create || get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`} )
 `}\
     && get_obj( ).get_variable( get_special_var_name( e_special_var_skip_parent_updates ) ).empty( )
     && ( !get_obj( ).get_graph_parent( )
