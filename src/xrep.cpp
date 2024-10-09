@@ -98,6 +98,8 @@ Special tokens for item expressions in template expressions:
 \! switch between initial and modified secondary set values
 \0..9 secondary set value (secondary set separator is literal text after `% in value expression)
 
+\=n (where n is a number between 1 and 9) expands to (n*2) \ characters (so \=5 becomes \\\\\\\\\\)
+
 Literal text (as used in template expressions) can be broken across multiple lines (and a trailing \ can be used as a continuation).
 
 Grammar:
@@ -117,24 +119,35 @@ assign_append_expression      ::= variable_identifier "`="
                               ::= variable_identifier "`^"
 
 or_expression                 ::= and_expression [ "`|" or_expression ]
+
 and_expression                ::= unary_expression [ "`&" and_expression ]
+
 unary_expression              ::= [ "`!" ] unary_expression
                               ::= "`?" variable_identifier
                               ::= function
                               ::= basic_expression
+
 function                      ::= "`@eq" "`(" unary_expression "`," unary_expression "`)"
                               ::= "`@in" "`(" unary_set_expression "`," unary_set_expression "`)"
                               ::= "`@count" "`(" unary_set_expression "`)"
+
 basic_expression              ::= set_union_expression
                               ::= "`(" or_expression "`)"
+
 set_union_expression          ::= set_intersection_expression [ "`+" | "`*" set_union_expression ]
+
 set_intersection_expression   ::= basic_set_expression [ "`%" | "`~" set_intersection_expression ]
+
 basic_set_expression          ::= "`(" set_union_expression "`)"
                               ::= unary_set_expression
+
 unary_set_expression          ::= set_function
                               ::= set_simple_expression
+
 set_function                  ::= set_function_name "`(" set_union_expression "`)"
+
 set_function_name             ::= "`@sort" | "`@upper" | "`@lower" | "`@encode"
+
 set_simple_expression         ::= value_expression
                               ::= literal_expression
 
@@ -148,8 +161,10 @@ value_expression              ::= variable_identifier [ replacement_expression ]
                               ::= include_expression [ replacement_expression ]
 
 prefix_expression             ::= "`," | literal_expression
+
 replacement_expression        ::= "`/" variable_or_literal_text "`/" [ variable_or_literal_text ] [ replacement_expression ]
                               ::= "`:" variable_or_literal_text "`=" [ variable_or_literal_text ] [ replacement_expression ]
+
 variable_or_literal_text      ::= variable_identifier | literal_text
 
 padding_expression            ::= "`;" number_and_opt_fill_character
@@ -159,12 +174,17 @@ primary_split_expression      ::= "`*" literal_text
 secondary_split_expression    ::= "`%" literal_text
 
 template_item_expression      ::= item_expression [ item_separator_expression ]
+
 item_expression               ::= literal_text
+
 item_separator_expression     ::= "`+" [ literal_text ]
 
 variable_identifier           ::= "`$" name_expression
+
 name_expression               ::= first_char subsequent_char ...
+
 first_char                    ::= "A".."Z" | "a".."z" | "_"
+
 subsequent_char               ::= first_char | "0".."9"
 
 literal_expression            ::= "`'" escaped_character ... "`'"
@@ -173,7 +193,9 @@ literal_text                  ::= escaped_character ...
 
 escaped_character             ::= "`" escaped_character
                               ::= simple_character
+
 simple_character              ::= any_char except "`"
+
 any_char                      ::= any printable character
 
 */
@@ -245,6 +267,7 @@ const char* const c_do_not_split_into_set_name = "!";
 const char* const c_padding_info_variable_name = "#";
 
 string c_true = string( 1, ( char )( 27 ) ); // i.e. ASCII ESC
+
 string c_false;
 
 bool g_exec_system = false;
@@ -252,6 +275,7 @@ bool g_is_include_exception = false;
 
 #ifdef DEBUG
 int function_call_depth = -1;
+
 struct function_call_debug
 {
    function_call_debug( const char* p_name, bool is_opt )
@@ -341,6 +365,7 @@ size_t find_escape_level_sequence( const string& input, size_t pos = 0 )
    size_t retval( string::npos );
 
    int match_count = 0;
+
    for( size_t i = pos; i < input.length( ); i++ )
    {
       if( input[ i ] == '\\' )
@@ -367,6 +392,7 @@ void replace_escape_level_sequence( string& str, size_t pos )
    int level = str[ pos + 2 ] - '0';
 
    string extra( "\\" );
+
    while( --level > 0 )
       extra += extra;
 
@@ -377,6 +403,7 @@ bool split_padding_info( const string& padding_info, int& num, char& fill, bool 
 {
    num = 0;
    fill = '\0';
+
    for( string::size_type i = 0; i < padding_info.size( ); i++ )
    {
       if( padding_info[ i ] >= '0' && padding_info[ i ] <= '9' )
@@ -401,6 +428,7 @@ bool split_padding_info( const string& padding_info, int& num, char& fill, bool 
             else
                throw runtime_error( "invalid padding info '" + padding_info + "'" );
          }
+
          fill = padding_info[ i ];
       }
    }
@@ -419,6 +447,7 @@ string join_set( const vector< string >& set, const string& separator = " " )
    {
       if( i > 0 )
          retval += separator;
+
       retval += set[ i ];
    }
 
@@ -461,6 +490,7 @@ string set_union( const string& lhs, const string& rhs, const string& separator 
       {
          if( !result.empty( ) )
             result += separator;
+
          result += lhs_set[ i ];
       }
    }
@@ -469,6 +499,7 @@ string set_union( const string& lhs, const string& rhs, const string& separator 
    {
       if( !result.empty( ) )
          result += separator;
+
       result += rhs_set[ i ];
    }
 
@@ -542,6 +573,7 @@ class xrep_info
    private:
    bool handled_include;
    bool optional_variables;
+
    map< string, string > variables;
 };
 
@@ -576,15 +608,19 @@ string xrep_info::get_variable( const string& identifier, bool opt )
    else if( variable == "i" )
    {
       string prompt( "Input: " );
+
       if( has_variable( "ip" ) && !variables[ "ip" ].empty( ) )
          prompt = variables[ "ip" ];
+
       retval = get_line( prompt.c_str( ) );
    }
    else if( variable == "p" )
    {
       string prompt( "Password: " );
+
       if( has_variable( "pp" ) && !variables[ "pp" ].empty( ) )
          prompt = variables[ "pp" ];
+
       retval = get_password( prompt );
    }
    else if( !opt && !optional_variables )
@@ -686,11 +722,13 @@ class xrep_lexer : public lexer
    bool read_next_token( const string& token )
    {
       string::size_type pos = input.find( token );
+
       if( pos != 0 )
          return false;
 
       last_read_token = token;
       input.erase( 0, token.size( ) );
+
       return true;
    }
 
@@ -707,6 +745,7 @@ class xrep_lexer : public lexer
    string initial;
 
    int error_width;
+
    string last_read_token;
 
    stack< string > input_stack;
@@ -741,10 +780,12 @@ class scoped_lexer_input_holder
 string xrep_lexer::get_next_token( )
 {
    string retval;
+
    if( !has_input( ) )
       throw runtime_error( "unexpected end-of-input" );
 
    string::size_type i;
+
    if( input[ 0 ] == c_escape )
    {
       if( input.size( ) == 1 )
@@ -800,6 +841,7 @@ string xrep_lexer::get_input_error( const string& prefix )
    val += '\n';
 
    string::size_type pos = prefix.size( );
+
    for( string::size_type i = 0; i < initial.size( ); i++ )
    {
       if( i == initial.size( ) - input.size( ) )
@@ -860,6 +902,7 @@ class expression_base
 
    protected:
    bool okay;
+
    auto_ptr< expression_base > ap_lhs;
    auto_ptr< expression_base > ap_rhs;
 };
@@ -873,8 +916,10 @@ void dump_expression_nodes( const expression_base* p_node, ostream& outs, int in
    if( p_node )
    {
       string prefix;
+
       if( indent > 0 )
          prefix += string( indent, ' ' );
+
       outs << prefix << p_node->get_node_type( ) << " (" << p_node->get_label( ) << ")\n";
 
       outs << prefix << "[lhs]\n";
@@ -1001,6 +1046,7 @@ cout << "evaluate include_expression" << endl;
       }
 
       pos = str.find( '=' );
+
       if( pos == string::npos )
          throw runtime_error( "unexpected include argument format '" + str + "'" );
 
@@ -1008,9 +1054,11 @@ cout << "evaluate include_expression" << endl;
       str.erase( 0, pos + 1 );
 
       pos = str.find( ' ' );
+
       if( !str.empty( ) && str[ 0 ] == '"' )
       {
          str.erase( 0, 1 );
+
          for( string::size_type i = 0; i < str.size( ); i++ )
          {
             if( str[ i ] == '"' )
@@ -1036,6 +1084,7 @@ cout << "evaluate include_expression" << endl;
       filename = xi.get_variable( filename.substr( 1 ) );
 
    string retval;
+
    // NOTE: If the filename is specified as "." then this is specially handled as though
    // an include had been successfully processed with an empty return string (i.e. dummy).
    if( filename == "." )
@@ -1043,10 +1092,12 @@ cout << "evaluate include_expression" << endl;
    else
    {
       ifstream inpf( filename.c_str( ) );
+
       if( !inpf )
          throw runtime_error( "unable to open file '" + filename + "' for input" );
 
       xrep_info new_xi;
+
       for( vector< pair< string, string > >::size_type i = 0; i < variable_values.size( ); i++ )
          new_xi.set_variable( variable_values[ i ].first, variable_values[ i ].second );
 
@@ -1063,9 +1114,11 @@ cout << "evaluate include_expression" << endl;
          g_is_include_exception = true;
 
          string xx( "(" );
+
          xx += filename;
          xx += ") ";
          xx += x.what( );
+
          throw runtime_error( xx );
       }
    }
@@ -1137,6 +1190,7 @@ class replacement_expression : public expression_base
 
    private:
    bool is_multi;
+
    string replacement_text;
    string replacement_variable;
 };
@@ -1152,10 +1206,12 @@ cout << "evaluate replacement_expression" << endl;
 string replacement_expression::get_label( ) const
 {
    string retval;
+
    retval += '"';
    retval += replacement_text;
    retval += replacement_variable;
    retval += '"';
+
    return retval;
 }
 
@@ -1258,6 +1314,7 @@ class value_expression : public expression_base
    private:
    string primary_split_value;
    string secondary_split_value;
+
    bool do_not_split_into_set_name;
 };
 
@@ -1271,14 +1328,18 @@ cout << "evaluate value_expression" << endl;
    xi.set_variable( c_original_variable_name, retval );
 
    expression_base* p_rhs( ap_rhs.get( ) );
+
    while( p_rhs )
    {
       replacement_expression* p_rep_expr( dynamic_cast< replacement_expression* >( p_rhs ) );
+
       if( !p_rep_expr )
          throw runtime_error( "unexpected non-replacement expression in rhs of value expression" );
 
       string::size_type lpos = 0;
+
       string find_text( p_rep_expr->evaluate( xi ) );
+
       while( true )
       {
          string::size_type pos = retval.find( find_text, lpos );
@@ -1345,9 +1406,11 @@ class item_expression : public expression_base
 string item_expression::get_label( ) const
 {
    string retval;
+
    retval += '"';
    retval += separator_text;
    retval += '"';
+
    return retval;
 }
 
@@ -1387,6 +1450,7 @@ cout << "evaluate template_expression" << endl;
    string prefix;
 
    prefix_expression* p_prefix = dynamic_cast< prefix_expression* >( ap_lhs->get_lhs( ) );
+
    if( p_prefix )
       prefix = unescaped( p_prefix->evaluate( xi ), c_special_characters );
 
@@ -1396,6 +1460,7 @@ cout << "evaluate template_expression" << endl;
    if( xi.has_variable( c_do_not_split_into_set_name ) )
    {
       xi.remove_variable( c_do_not_split_into_set_name );
+
       original_set.push_back( xi.get_variable( c_original_variable_name ) );
       modified_set.push_back( xi.get_variable( c_modified_variable_name ) );
    }
@@ -1408,18 +1473,22 @@ cout << "evaluate template_expression" << endl;
    }
 
    string padding_info;
+
    if( xi.has_variable( c_padding_info_variable_name ) )
    {
       padding_info = xi.get_variable( c_padding_info_variable_name );
+
       xi.remove_variable( c_padding_info_variable_name );
 
       int num;
       char fill;
+
       split_padding_info( padding_info, num, fill );
 
       for( vector< string >::size_type i = 0; i < modified_set.size( ); i++ )
       {
          int pad = num - modified_set[ i ].size( );
+
          if( pad > 0 )
             modified_set[ i ] = modified_set[ i ] + string( pad, fill );
       }
@@ -1428,15 +1497,19 @@ cout << "evaluate template_expression" << endl;
    string rhs( ap_rhs->evaluate( xi ) );
 
    string separator;
+
    item_expression* p_item = dynamic_cast< item_expression* >( ap_rhs.get( ) );
+
    if( p_item )
       separator = unescaped( p_item->get_separator_text( ), c_special_characters );
 
    string secondary_separator;
+
    if( xi.has_variable( c_secondary_split_value ) )
       secondary_separator = unescaped( xi.get_variable( c_secondary_split_value ), c_special_characters );
 
    string retval;
+
    for( vector< string >::size_type i = 0; i < min( original_set.size( ), modified_set.size( ) ); i++ )
    {
       if( i == 0 )
@@ -1446,6 +1519,7 @@ cout << "evaluate template_expression" << endl;
 
       vector< string > secondary_original_set;
       vector< string > secondary_modified_set;
+
       if( !secondary_separator.empty( ) )
       {
          split_set( original_set[ i ], secondary_original_set, secondary_separator );
@@ -1455,6 +1529,7 @@ cout << "evaluate template_expression" << endl;
       vector< string >* p_secondary_set( &secondary_original_set );
 
       bool was_escaped = false;
+
       for( string::size_type j = 0; j < rhs.size( ); j++ )
       {
          if( was_escaped )
@@ -1532,6 +1607,7 @@ string or_expression::evaluate( xrep_info& xi )
 cout << "evaluate or_expression" << endl;
 #endif
    string lhs( ap_lhs->evaluate( xi ) );
+
    if( !lhs.empty( ) )
       return c_true;
 
@@ -1568,6 +1644,7 @@ string and_expression::evaluate( xrep_info& xi )
 cout << "evaluate and_expression" << endl;
 #endif
    string lhs( ap_lhs->evaluate( xi ) );
+
    if( lhs.empty( ) )
       return lhs;
 
@@ -1812,6 +1889,7 @@ string eq_function_expression::evaluate( xrep_info& xi )
 cout << "evaluate eq_function_expression" << endl;
 #endif
    string retval( c_false );
+
    string lhs( ap_lhs->evaluate( xi ) );
    string rhs( ap_rhs->evaluate( xi ) );
 
@@ -1824,7 +1902,9 @@ cout << "evaluate eq_function_expression" << endl;
 string eq_function_expression::get_label( ) const
 {
    string retval( c_function_prefix );
+
    retval += string( c_func_name_eq );
+
    return retval;
 }
 
@@ -1874,7 +1954,9 @@ cout << "evaluate in_function_expression" << endl;
 string in_function_expression::get_label( ) const
 {
    string retval( c_function_prefix );
+
    retval += string( c_func_name_in );
+
    return retval;
 }
 
@@ -1905,6 +1987,7 @@ cout << "evaluate count_function_expression" << endl;
    string lhs( ap_lhs->evaluate( xi ) );
 
    vector< string > lhs_set;
+
    split_set( lhs, lhs_set );
 
    return to_string( lhs_set.size( ) );
@@ -1913,7 +1996,9 @@ cout << "evaluate count_function_expression" << endl;
 string count_function_expression::get_label( ) const
 {
    string retval( c_function_prefix );
+
    retval += string( c_func_name_count );
+
    return retval;
 }
 
@@ -1950,7 +2035,9 @@ cout << "evaluate set_function_expression" << endl;
    if( func_name == c_set_func_name_sort )
    {
       vector< string > items;
+
       split_set( retval, items );
+
       sort( items.begin( ), items.end( ) );
 
       retval = join_set( items );
@@ -1970,7 +2057,9 @@ cout << "evaluate set_function_expression" << endl;
 string set_function_expression::get_label( ) const
 {
    string retval( c_function_prefix );
+
    retval += func_name;
+
    return retval;
 }
 
@@ -2002,9 +2091,11 @@ class literal_expression : public expression_base
 string literal_expression::get_label( ) const
 {
    string retval;
+
    retval += '"';
    retval += value;
    retval += '"';
+
    return retval;
 }
 
@@ -2066,6 +2157,7 @@ auto_ptr< expression_base > parse_literal_text(
    while( true )
    {
       string s( xl.read_next_token( ) );
+
       if( s.size( ) && s[ 0 ] == c_escape )
       {
          if( s == c_escaped_special )
@@ -2087,6 +2179,7 @@ auto_ptr< expression_base > parse_literal_text(
          if( is_opt )
          {
             sli.restore( );
+
             return ap_node;
          }
          else
@@ -2119,6 +2212,7 @@ auto_ptr< expression_base > parse_literal_expression( xrep_lexer& xl, bool is_op
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -2143,16 +2237,19 @@ auto_ptr< expression_base > parse_set_simple_expression( xrep_lexer& xl, bool is
    scoped_lexer_input_holder sli( xl );
 
    ap_node = parse_literal_expression( xl, true );
+
    if( ap_node.get( ) )
       return ap_node;
    else
    {
       ap_node = parse_value_expression( xl, is_opt );
+
       if( !ap_node.get( ) )
       {
          if( is_opt )
          {
             sli.restore( );
+
             return ap_node;
          }
          else
@@ -2178,6 +2275,7 @@ auto_ptr< expression_base > parse_set_function( xrep_lexer& xl, bool is_opt )
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -2190,6 +2288,7 @@ auto_ptr< expression_base > parse_set_function( xrep_lexer& xl, bool is_opt )
     && func_name != c_set_func_name_lower && func_name != c_set_func_name_encode )
    {
       sli.restore( );
+
       return ap_node;
    }
 
@@ -2201,6 +2300,7 @@ auto_ptr< expression_base > parse_set_function( xrep_lexer& xl, bool is_opt )
       throw runtime_error( "missing expected token '" + string( c_left_parenthesis ) + "' after set function name" );
 
    ap_lhs_expr = parse_set_union_expression( xl, is_opt );
+
    if( !ap_lhs_expr.get( ) )
       throw runtime_error( "missing expected set union expression" );
 
@@ -2222,6 +2322,7 @@ auto_ptr< expression_base > parse_unary_set_expression( xrep_lexer& xl, bool is_
    scoped_lexer_input_holder sli( xl );
 
    ap_node = parse_set_function( xl, true );
+
    if( ap_node.get( ) )
       return ap_node;
    else
@@ -2232,6 +2333,7 @@ auto_ptr< expression_base > parse_unary_set_expression( xrep_lexer& xl, bool is_
          if( is_opt )
          {
             sli.restore( );
+
             return ap_node;
          }
          else
@@ -2262,6 +2364,7 @@ auto_ptr< expression_base > parse_basic_set_expression( xrep_lexer& xl, bool is_
          if( is_opt )
          {
             sli.restore( );
+
             return ap_node;
          }
          else
@@ -2274,6 +2377,7 @@ auto_ptr< expression_base > parse_basic_set_expression( xrep_lexer& xl, bool is_
          {
             sli.restore( );
             ap_node.reset( );
+
             return ap_node;
          }
          else
@@ -2286,11 +2390,13 @@ auto_ptr< expression_base > parse_basic_set_expression( xrep_lexer& xl, bool is_
    else
    {
       ap_node = parse_unary_set_expression( xl, is_opt );
+
       if( !ap_node.get( ) )
       {
          if( is_opt )
          {
             sli.restore( );
+
             return ap_node;
          }
          else
@@ -2313,11 +2419,13 @@ auto_ptr< expression_base > parse_set_intersection_expression( xrep_lexer& xl, b
    scoped_lexer_input_holder sli( xl );
 
    ap_lhs_expr = parse_basic_set_expression( xl, is_opt );
+
    if( !ap_lhs_expr.get( ) )
    {
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -2325,6 +2433,7 @@ auto_ptr< expression_base > parse_set_intersection_expression( xrep_lexer& xl, b
    }
 
    bool is_exclusive = false;
+
    if( xl.read_next_token( c_op_exclude ) )
       is_exclusive = true;
 
@@ -2335,6 +2444,7 @@ auto_ptr< expression_base > parse_set_intersection_expression( xrep_lexer& xl, b
        << "(parse_set_intersection_expression) parsed: " << ( is_exclusive ? c_op_exclude : c_op_mod ) << endl;
 #endif
       ap_rhs_expr = parse_set_intersection_expression( xl, false );
+
       if( !ap_rhs_expr.get( ) )
          throw runtime_error( "missing expected basic set expression in rhs of set intersection expression" );
    }
@@ -2359,11 +2469,13 @@ auto_ptr< expression_base > parse_set_union_expression( xrep_lexer& xl, bool is_
    scoped_lexer_input_holder sli( xl );
 
    ap_lhs_expr = parse_set_intersection_expression( xl, is_opt );
+
    if( !ap_lhs_expr.get( ) )
    {
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -2371,12 +2483,14 @@ auto_ptr< expression_base > parse_set_union_expression( xrep_lexer& xl, bool is_
    }
 
    bool is_append = false;
+
    if( xl.read_next_token( c_op_add ) )
    {
 #ifdef DEBUG
       cout << string( function_call_depth, ' ' ) << "(parse_set_union_expression) parsed: " << c_op_add << endl;
 #endif
       ap_rhs_expr = parse_set_union_expression( xl, false );
+
       if( !ap_rhs_expr.get( ) )
          throw runtime_error( "missing expected set intersection expression in rhs of set union expression" );
    }
@@ -2386,7 +2500,9 @@ auto_ptr< expression_base > parse_set_union_expression( xrep_lexer& xl, bool is_
       cout << string( function_call_depth, ' ' ) << "(parse_set_union_expression) parsed: " << c_op_mul << endl;
 #endif
       is_append = true;
+
       ap_rhs_expr = parse_set_union_expression( xl, false );
+
       if( !ap_rhs_expr.get( ) )
          throw runtime_error( "missing expected set intersection expression in rhs of set union expression" );
    }
@@ -2414,6 +2530,7 @@ auto_ptr< expression_base > parse_basic_expression( xrep_lexer& xl, bool is_opt 
    scoped_lexer_input_holder sli( xl );
 
    ap_node = parse_set_union_expression( xl, true );
+
    if( ap_node.get( ) )
       return ap_node;
 
@@ -2423,6 +2540,7 @@ auto_ptr< expression_base > parse_basic_expression( xrep_lexer& xl, bool is_opt 
       cout << string( function_call_depth, ' ' ) << "(parse_basic_expression) parsed: " << c_left_parenthesis << endl;
 #endif
       ap_node = parse_or_expression( xl, false );
+
       if( !ap_node.get( ) )
          throw runtime_error( "missing expected or expression in basic expression" );
 
@@ -2455,6 +2573,7 @@ auto_ptr< expression_base > parse_function( xrep_lexer& xl, bool is_opt )
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -2473,6 +2592,7 @@ auto_ptr< expression_base > parse_function( xrep_lexer& xl, bool is_opt )
    if( func_name == c_func_name_in )
    {
       ap_lhs_expr = parse_unary_set_expression( xl, true );
+
       if( !ap_lhs_expr.get( ) )
          throw runtime_error( "missing expected lhs unary set expression" );
 
@@ -2484,6 +2604,7 @@ auto_ptr< expression_base > parse_function( xrep_lexer& xl, bool is_opt )
 #endif
 
       ap_rhs_expr = parse_unary_set_expression( xl, true );
+
       if( !ap_rhs_expr.get( ) )
          throw runtime_error( "missing expected rhs unary set expression" );
 
@@ -2495,6 +2616,7 @@ auto_ptr< expression_base > parse_function( xrep_lexer& xl, bool is_opt )
    else if( func_name == c_func_name_count )
    {
       ap_lhs_expr = parse_unary_set_expression( xl, true );
+
       if( !ap_lhs_expr.get( ) )
          throw runtime_error( "missing expected unary set expression" );
 
@@ -2506,6 +2628,7 @@ auto_ptr< expression_base > parse_function( xrep_lexer& xl, bool is_opt )
    else if( func_name == c_func_name_eq )
    {
       ap_lhs_expr = parse_unary_expression( xl, true );
+
       if( !ap_lhs_expr.get( ) )
          throw runtime_error( "missing expected lhs unary expression" );
 
@@ -2517,6 +2640,7 @@ auto_ptr< expression_base > parse_function( xrep_lexer& xl, bool is_opt )
 #endif
 
       ap_rhs_expr = parse_unary_expression( xl, true );
+
       if( !ap_rhs_expr.get( ) )
          throw runtime_error( "missing expected rhs unary expression" );
 
@@ -2528,6 +2652,7 @@ auto_ptr< expression_base > parse_function( xrep_lexer& xl, bool is_opt )
    else
    {
       sli.restore( );
+
       return ap_node;
    }
 
@@ -2549,10 +2674,12 @@ auto_ptr< expression_base > parse_unary_expression( xrep_lexer& xl, bool is_opt 
       cout << string( function_call_depth, ' ' ) << "(parse_unary_expression) parsed: " << c_op_not << endl;
 #endif
       ap_node = parse_unary_expression( xl, false );
+
       if( !ap_node.get( ) )
          throw runtime_error( "missing expected unary expression after not operator" );
 
       ap_node.reset( new not_expression( ap_node.release( ) ) );
+
       return ap_node;
    }
 
@@ -2562,24 +2689,29 @@ auto_ptr< expression_base > parse_unary_expression( xrep_lexer& xl, bool is_opt 
       cout << string( function_call_depth, ' ' ) << "(parse_unary_expression) parsed: " << c_op_test << endl;
 #endif
       ap_node = parse_variable_identifier( xl, true, is_opt );
+
       if( !ap_node.get( ) )
          throw runtime_error( "missing expected variable identifier after test operator" );
 
       ap_node.reset( new test_expression( ap_node.release( ) ) );
+
       return ap_node;
    }
 
    ap_node = parse_function( xl, true );
+
    if( ap_node.get( ) )
       return ap_node;
    else
    {
       ap_node = parse_basic_expression( xl, is_opt );
+
       if( !ap_node.get( ) )
       {
          if( is_opt )
          {
             sli.restore( );
+
             return ap_node;
          }
          else
@@ -2602,11 +2734,13 @@ auto_ptr< expression_base > parse_and_expression( xrep_lexer& xl, bool is_opt )
    scoped_lexer_input_holder sli( xl );
 
    ap_lhs_expr = parse_unary_expression( xl, is_opt );
+
    if( !ap_lhs_expr.get( ) )
    {
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -2619,6 +2753,7 @@ auto_ptr< expression_base > parse_and_expression( xrep_lexer& xl, bool is_opt )
       cout << string( function_call_depth, ' ' ) << "(parse_and_expression) parsed: " << c_op_and << endl;
 #endif
       ap_rhs_expr = parse_and_expression( xl, false );
+
       if( !ap_rhs_expr.get( ) )
          throw runtime_error( "missing expected unary expression in rhs of and expression" );
    }
@@ -2643,11 +2778,13 @@ auto_ptr< expression_base > parse_or_expression( xrep_lexer& xl, bool is_opt )
    scoped_lexer_input_holder sli( xl );
 
    ap_lhs_expr = parse_and_expression( xl, is_opt );
+
    if( !ap_lhs_expr.get( ) )
    {
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -2660,6 +2797,7 @@ auto_ptr< expression_base > parse_or_expression( xrep_lexer& xl, bool is_opt )
       cout << string( function_call_depth, ' ' ) << "(parse_or_expression) parsed: " << c_op_or << endl;
 #endif
       ap_rhs_expr = parse_or_expression( xl, false );
+
       if( !ap_rhs_expr.get( ) )
          throw runtime_error( "missing expected and expression in rhs of or expression" );
    }
@@ -2686,6 +2824,7 @@ auto_ptr< expression_base > parse_variable_identifier( xrep_lexer& xl, bool is_r
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -2693,6 +2832,7 @@ auto_ptr< expression_base > parse_variable_identifier( xrep_lexer& xl, bool is_r
    }
 
    string identifier( xl.read_next_token( ) );
+
    for( string::size_type i = 0; i < identifier.size( ); i++ )
    {
       if( i == 0 )
@@ -2701,6 +2841,7 @@ auto_ptr< expression_base > parse_variable_identifier( xrep_lexer& xl, bool is_r
          {
             xl.write_back_token( identifier );
             xl.set_error_width( identifier.size( ) );
+
             throw runtime_error( "invalid first character for variable identifier" );
          }
       }
@@ -2710,6 +2851,7 @@ auto_ptr< expression_base > parse_variable_identifier( xrep_lexer& xl, bool is_r
          {
             xl.write_back_token( identifier );
             xl.set_error_width( identifier.size( ) );
+
             throw runtime_error( "invalid character '" + string( 1, identifier[ i ] ) + "' found in variable identifier" );
          }
       }
@@ -2733,11 +2875,13 @@ auto_ptr< expression_base > parse_assign_append_expression( xrep_lexer& xl, bool
    scoped_lexer_input_holder sli( xl );
 
    ap_node = parse_variable_identifier( xl, true, is_opt );
+
    if( !ap_node.get( ) )
    {
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -2750,6 +2894,7 @@ auto_ptr< expression_base > parse_assign_append_expression( xrep_lexer& xl, bool
       {
          sli.restore( );
          ap_node.reset( );
+
          return ap_node;
       }
       else
@@ -2779,6 +2924,7 @@ auto_ptr< expression_base > parse_variable_or_literal_text( xrep_lexer& xl, bool
    scoped_lexer_input_holder sli( xl );
 
    ap_node = parse_variable_identifier( xl, false, true );
+
    if( !ap_node.get( ) )
       ap_node = parse_literal_text( xl, true, false, true );
 
@@ -2787,6 +2933,7 @@ auto_ptr< expression_base > parse_variable_or_literal_text( xrep_lexer& xl, bool
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -2809,11 +2956,13 @@ auto_ptr< expression_base > parse_replacement_expression( xrep_lexer& xl, bool i
    scoped_lexer_input_holder sli( xl );
 
    bool is_multi = false;
+
    if( !xl.read_next_token( c_find_repl ) && !xl.read_next_token( c_op_colon ) )
    {
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -2825,6 +2974,7 @@ auto_ptr< expression_base > parse_replacement_expression( xrep_lexer& xl, bool i
       is_multi = true;
 
    ap_find_node = parse_variable_or_literal_text( xl, false );
+
    if( !ap_find_node.get( ) )
       throw runtime_error( "missing expected literal or variable for find part of basic replacement expression" );
 
@@ -2834,7 +2984,9 @@ auto_ptr< expression_base > parse_replacement_expression( xrep_lexer& xl, bool i
 
    string replacement_text;
    string replacement_variable;
+
    ap_repl_node = parse_variable_or_literal_text( xl, true );
+
    if( ap_repl_node.get( ) )
    {
       literal_expression* p_lit_node = dynamic_cast< literal_expression* >( ap_repl_node.get( ) );
@@ -2850,6 +3002,7 @@ auto_ptr< expression_base > parse_replacement_expression( xrep_lexer& xl, bool i
    }
 
    ap_temp_node = parse_replacement_expression( xl, true );
+
    ap_node.reset( new replacement_expression( is_multi,
     replacement_text, replacement_variable, ap_find_node.release( ), ap_temp_node.release( ) ) );
 
@@ -2868,6 +3021,7 @@ auto_ptr< expression_base > parse_padding_expression( auto_ptr< expression_base 
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -2876,13 +3030,17 @@ auto_ptr< expression_base > parse_padding_expression( auto_ptr< expression_base 
 
    int num;
    char fill;
+
    string padding_info = xl.read_next_token( );
+
    if( padding_info.empty( ) || !split_padding_info( padding_info, num, fill, false ) )
    {
       xl.write_back_token( padding_info );
+
       if( !padding_info.empty( ) && padding_info[ 0 ] != c_escape )
       {
          xl.set_error_width( padding_info.size( ) );
+
          throw runtime_error( "invalid padding info provided for padding expression" );
       }
       else
@@ -2908,6 +3066,7 @@ auto_ptr< expression_base > parse_value_expression( xrep_lexer& xl, bool is_opt 
    scoped_lexer_input_holder sli( xl );
 
    ap_lhs_expr = parse_variable_identifier( xl, false, is_opt );
+
    if( !ap_lhs_expr.get( ) )
       ap_lhs_expr = parse_include_expression( xl, is_opt );
 
@@ -2951,6 +3110,7 @@ auto_ptr< expression_base > parse_template_value_expression( xrep_lexer& xl, boo
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -2960,6 +3120,7 @@ auto_ptr< expression_base > parse_template_value_expression( xrep_lexer& xl, boo
    if( xl.read_next_token( c_op_not ) )
    {
       value_expression* p_val_expr( dynamic_cast< value_expression* >( ap_lhs_node.get( ) ) );
+
       if( !p_val_expr )
          throw runtime_error( "unexpected dynamic cast< value_expression* > failure" );
 
@@ -2971,6 +3132,7 @@ auto_ptr< expression_base > parse_template_value_expression( xrep_lexer& xl, boo
    if( xl.read_next_token( c_op_mul ) )
    {
       value_expression* p_val_expr( dynamic_cast< value_expression* >( ap_lhs_node.get( ) ) );
+
       if( !p_val_expr )
          throw runtime_error( "unexpected dynamic cast< value_expression* > failure" );
 
@@ -2981,6 +3143,7 @@ auto_ptr< expression_base > parse_template_value_expression( xrep_lexer& xl, boo
    if( xl.read_next_token( c_op_mod ) )
    {
       value_expression* p_val_expr( dynamic_cast< value_expression* >( ap_lhs_node.get( ) ) );
+
       if( !p_val_expr )
          throw runtime_error( "unexpected dynamic cast< value_expression* > failure" );
 
@@ -2989,6 +3152,7 @@ auto_ptr< expression_base > parse_template_value_expression( xrep_lexer& xl, boo
    }
 
    ap_rhs_node = parse_literal_expression( xl, true );
+
    if( ap_rhs_node.get( ) )
       ap_rhs_node.reset( new prefix_expression( ap_rhs_node.release( ) ) );
    else
@@ -3015,11 +3179,13 @@ auto_ptr< expression_base > parse_item_expression( xrep_lexer& xl, bool is_opt )
    scoped_lexer_input_holder sli( xl );
 
    ap_node = parse_literal_text( xl, is_opt );
+
    if( !ap_node.get( ) )
    {
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -3043,6 +3209,7 @@ auto_ptr< expression_base > parse_item_separator_expression( xrep_lexer& xl, boo
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -3050,6 +3217,7 @@ auto_ptr< expression_base > parse_item_separator_expression( xrep_lexer& xl, boo
    }
 
    ap_node = parse_literal_text( xl, true );
+
    return ap_node;
 }
 
@@ -3071,6 +3239,7 @@ auto_ptr< expression_base > parse_template_item_expression( xrep_lexer& xl, bool
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -3078,12 +3247,16 @@ auto_ptr< expression_base > parse_template_item_expression( xrep_lexer& xl, bool
    }
 
    string separator_text;
+
    ap_rhs_node = parse_item_separator_expression( xl, true );
+
    if( ap_rhs_node.get( ) )
    {
       literal_expression* p_lit_node = dynamic_cast< literal_expression* >( ap_rhs_node.get( ) );
+
       if( !p_lit_node )
          throw runtime_error( "unexpected non-literal text node for item expression separator" );
+
       separator_text = p_lit_node->get_literal_value( );
    }
 
@@ -3108,6 +3281,7 @@ auto_ptr< expression_base > parse_template_expression( xrep_lexer& xl, bool is_o
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -3121,6 +3295,7 @@ auto_ptr< expression_base > parse_template_expression( xrep_lexer& xl, bool is_o
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -3134,6 +3309,7 @@ auto_ptr< expression_base > parse_template_expression( xrep_lexer& xl, bool is_o
       if( is_opt )
       {
          sli.restore( );
+
          return ap_node;
       }
       else
@@ -3148,6 +3324,7 @@ auto_ptr< expression_base > parse_template_expression( xrep_lexer& xl, bool is_o
       {
          sli.restore( );
          ap_node.reset( );
+
          return ap_node;
       }
       else
@@ -3220,12 +3397,16 @@ auto_ptr< expression_base > parse_xrep_expression( xrep_lexer& xl, bool is_opt, 
    bool had_include = false;
 
    bool is_append;
+
    ap_lhs_expr = parse_assign_append_expression( xl, true, is_append );
+
    if( ap_lhs_expr.get( ) )
       had_assign = true;
 
    bool is_conditional = false;
+
    ap_temp_expr = parse_or_expression( xl, !had_assign );
+
    if( ap_temp_expr.get( ) )
       is_conditional = true;
 
@@ -3240,6 +3421,7 @@ auto_ptr< expression_base > parse_xrep_expression( xrep_lexer& xl, bool is_opt, 
    if( !had_assign )
    {
       ap_rhs_expr = parse_include_expression( xl, true );
+
       if( ap_rhs_expr.get( ) )
          had_include = true;
    }
@@ -3251,6 +3433,7 @@ auto_ptr< expression_base > parse_xrep_expression( xrep_lexer& xl, bool is_opt, 
       if( ap_temp_expr.get( ) )
       {
          had_assign = true;
+
          ap_rhs_expr.reset( new assign_append_expression(
           ap_temp_expr.release( ), parse_or_expression( xl, false ).release( ), is_append ) );
       }
@@ -3272,6 +3455,7 @@ auto_ptr< expression_base > parse_xrep_expression( xrep_lexer& xl, bool is_opt, 
       ap_rhs_expr = parse_basic_expression( xl, true );
 
    auto_ptr< expression_base > ap_else_expr;
+
    if( is_conditional && ap_rhs_expr.get( ) )
    {
       if( xl.read_next_token( c_op_comma ) )
@@ -3281,6 +3465,7 @@ auto_ptr< expression_base > parse_xrep_expression( xrep_lexer& xl, bool is_opt, 
    if( ap_rhs_expr.get( ) )
    {
       bool new_condition = true;
+
       if( !ap_else_expr.get( ) )
          new_condition = false;
 
@@ -3526,8 +3711,9 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
          remove_trailing_cr_from_text_file_line( next );
 
          // NOTE: A character sequence in the form \=n (where n is a number between 1 and 9) will be replaced
-         // with the appropriate number of \ characters for the level (n) of nesting (e.g. \=4 ==> \\\\\\\\).
+         // with the number of \ characters for the specified level (n) of nesting (e.g. \=5 ==> \\\\\\\\\\).
          size_t pos = 0;
+
          while( ( pos = find_escape_level_sequence( next, pos ) ) != string::npos )
             replace_escape_level_sequence( next, pos );
       }
@@ -3571,7 +3757,8 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
       if( !last.empty( ) )
       {
          string::size_type pos = last.find_last_not_of( '\\' );
-         if( pos != last.size( ) - 1 && ( last.size( ) - pos - 1 ) % 2 )
+
+         if( ( pos != last.size( ) - 1 ) && ( ( last.size( ) - pos - 1 ) % 2 ) )
             last.erase( last.size( ) - 1 );
          else if( !had_expression )
             last += '\n';
@@ -3580,6 +3767,7 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
       if( had_result )
       {
          line_number += num_continuations;
+
          num_continuations = 0;
 
          if( result.find( c_left_brace ) != string::npos )
@@ -3598,6 +3786,7 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
                   os << '\n';
 
                had_output = true;
+
                if( result != c_true )
                {
                   if( !g_exec_system )
@@ -3673,6 +3862,7 @@ int main( int argc, char* argv[ ] )
             {
                cout << "xrep v0.1u\n";
                cout << "Usage: xrep [-x] [@<filename>] [var1=<value> [var2=<value> [...]]]\n\n";
+
                cout << "Notes: If the @<filename> is not provided then input is read from std::cin.\n";
                cout << "       If the -x option is used then each line is executed as a system command.\n";
                cout << "       Each <value> can also be expressed as @<filename> (useful for large values).\n";
@@ -3693,6 +3883,7 @@ int main( int argc, char* argv[ ] )
          }
 
          string::size_type pos = arg.find( '=' );
+
          if( pos == string::npos )
             throw runtime_error( "invalid format for argument '" + arg + "'" );
 
@@ -3727,10 +3918,13 @@ int main( int argc, char* argv[ ] )
       }
 
       istream* p_input( &cin );
+
       auto_ptr< ifstream > ap_fstream;
+
       if( !input_filename.empty( ) )
       {
          ap_fstream.reset( new ifstream( input_filename.c_str( ) ) );
+
          if( !*ap_fstream )
             throw runtime_error( "unable to open file '" + input_filename + "' for input" );
 
@@ -3749,9 +3943,11 @@ int main( int argc, char* argv[ ] )
       ss.seekg( 0 );
 
       string next, first;
+
       while( getline( ss, next ) )
       {
          post_process_result( next );
+
          if( first.empty( ) )
             first = next;
          else
