@@ -207,9 +207,15 @@ APP_LOG_INFO_FILE=@files::$IN_REVERSE.log
 @ifdef $APP_LOG_INFO_FILE
 .session_variable @key_suffix $IDENTITY
 .session_variable @key_prefix_is_first ""
+.storage_transaction_start
 .session_restrict $UUID perform_create
 <$IN_REVERSE.log
 .session_restrict $UUID ""
+@ifndef $ERROR
+.storage_transaction_commit
+@else
+.storage_transaction_rollback
+@endif
 ~rm $IN_REVERSE.log
 @endif
 ;
