@@ -89,9 +89,15 @@ DATA_LOG_FILE=@files::$IDENTITY.log
 .session_variable @key_suffix $IDENTITY
 .session_variable @skip_set_vars 1
 .session_variable @peer_limited_arguments 1
+.storage_transaction_start
 .session_restrict $UUID perform_create,perform_update
 <$DATA_LOG_FILE
 .session_restrict $UUID ""
+@ifndef $ERROR
+.storage_transaction_commit
+@else
+.storage_transaction_rollback
+@endif
 .session_variable @datachain ""
 .session_variable @key_suffix ""
 .session_variable @skip_set_vars ""
