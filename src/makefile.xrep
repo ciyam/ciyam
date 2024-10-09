@@ -29,8 +29,9 @@
 ##             all                  make all standard
 ##             dtm                  create 'make.dtm'
 ##             list                 create 'make.lst'
-##             clean                clean all standard
-##             usage                display this output
+##             clean                clean standard targets
+##             strip                strip executable targets
+##             usage                outputs usage information
 ##
 ## Standard
 `{`[`$libs`;20`,##             \? make lib\$.a target`+\n`]`}
@@ -195,6 +196,9 @@ $(TARGET_\^):: $(TARGET_\^_OBJS)\
 `]`}
 clean:
 	@rm -f compile.sh $(ALL_CMH_FILES) $(ALL_OBJ_FILES) $(ALL_DEP_FILES) $(ALL_TARGETS)
+
+strip:
+	@strip `{`[`$dyn_libs`,\$.so`+ `]`} `{`[`$executables`,\$`+ `]`}
 
 # Dependency include
 -include $(ALL_DEP_FILES)
