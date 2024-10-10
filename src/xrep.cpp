@@ -12,6 +12,7 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <ctype.h>
 #  include <cassert>
+#  include <cstring>
 #  include <map>
 #  include <stack>
 #  include <memory>
@@ -22,11 +23,7 @@
 #  include <iostream>
 #  include <algorithm>
 #  include <stdexcept>
-#  ifdef _WIN32
-#     include <ctime>
-#  else
-#     include <sys/time.h>
-#  endif
+#  include <sys/time.h>
 #endif
 
 #include "macros.h"
@@ -81,9 +78,9 @@ Basic tokens:
 
 `# include expression file
 
-Note: If `! is used after the template value expression then the value expression is not split into a set (i.e. is a single item).
+Note: If `! is used after the template value expression then the value expression will not be split into a set.
 
-Special tokens for item expressions in template expressions:
+Special tokens for item expressions in template expressions (versions above zero require ` prior to initial \):
 
 \\ \
 \t tab
@@ -98,9 +95,12 @@ Special tokens for item expressions in template expressions:
 \! switch between initial and modified secondary set values
 \0..9 secondary set value (secondary set separator is literal text after `% in value expression)
 
-\=n (where n is a number between 1 and 9) expands to (n*2) \ characters (so \=5 becomes \\\\\\\\\\)
+Version zero only:
+\=n (where n is a number between 1 and 9) expands to (n*2) \ characters (so \=5 becomes \\\\\\\\\\) *
 
-Literal text (as used in template expressions) can be broken across multiple lines (and a trailing \ can be used as a continuation).
+Literal text (as used in template expressions) can be broken across multiple lines. Version zero expressions can be
+split across lines with a trailing \ and for newer versions lines ending with `\ are considered line continuations.
+
 
 Grammar:
 --------
@@ -269,6 +269,19 @@ const char* const c_padding_info_variable_name = "#";
 string c_true = string( 1, ( char )( 27 ) ); // i.e. ASCII ESC
 
 string c_false;
+
+const char* const c_minimum_version = "0";
+const char* const c_using_version_1 = "1";
+
+const char* const c_var_name_uuid = "uuid";
+const char* const c_var_name_linux = "linux";
+const char* const c_var_name_version = "version";
+
+const char* const c_xrep_using_version_1 = "`{`$1`}";
+
+const char* const c_ver_1_cont = "`\\";
+
+size_t g_ver_1_cont_len = 0;
 
 bool g_exec_system = false;
 bool g_is_include_exception = false;
@@ -555,10 +568,14 @@ class xrep_info
    public:
    xrep_info( bool optional_variables = false )
     :
+    version( 0 ),
     handled_include( false ),
     optional_variables( optional_variables )
    {
    }
+
+   size_t get_version( ) const { return version; }
+   void set_version( size_t version_num ) { version = version_num; }
 
    bool had_handled_include( ) const { return handled_include; }
    void set_handled_include( bool handled ) { handled_include = handled; }
@@ -571,6 +588,8 @@ class xrep_info
    void remove_variable( const string& identifier );
 
    private:
+   size_t version;
+
    bool handled_include;
    bool optional_variables;
 
@@ -653,7 +672,6 @@ void add_date_variables( xrep_info& xi )
    xi.set_variable( "y", to_string( p_t->tm_year + 1900 ) );
 
    xi.set_variable( "ut", to_string( t ) );
-   xi.set_variable( "uu", uuid( ).as_string( ) );
 }
 
 struct lexer
@@ -680,9 +698,10 @@ struct lexer
 class xrep_lexer : public lexer
 {
    public:
-   xrep_lexer( const string& input )
+   xrep_lexer( const string& input, size_t version )
     :
     input( input ),
+    version( version ),
     error_width( 1 )
    {
       initial = input;
@@ -736,6 +755,8 @@ class xrep_lexer : public lexer
 
    void write_back_token( const string& token );
 
+   size_t get_version( ) const { return version; }
+
    void set_error_width( int width ) { error_width = width; }
 
    string get_input_error( const string& prefix );
@@ -743,6 +764,8 @@ class xrep_lexer : public lexer
    private:
    string input;
    string initial;
+
+   size_t version;
 
    int error_width;
 
@@ -797,7 +820,7 @@ string xrep_lexer::get_next_token( )
    {
       for( i = 0; i < input.size( ); i++ )
       {
-         if( ( i < input.size( ) - 1 && input[ i + 1 ] == c_escape ) )
+         if( ( i < input.size( ) - 1 ) && ( input[ i + 1 ] == c_escape ) )
          {
             ++i;
             break;
@@ -1039,7 +1062,7 @@ cout << "evaluate include_expression" << endl;
    {
       str.erase( 0, pos + 1 );
 
-      if( variable_values.empty( ) && str == "@" )
+      if( variable_values.empty( ) && ( str == "@" ) )
       {
          use_current_variables = true;
          break;
@@ -1100,6 +1123,9 @@ cout << "evaluate include_expression" << endl;
 
       for( vector< pair< string, string > >::size_type i = 0; i < variable_values.size( ); i++ )
          new_xi.set_variable( variable_values[ i ].first, variable_values[ i ].second );
+
+      if( !new_xi.has_variable( c_var_name_version ) )
+         new_xi.set_variable( c_var_name_version, c_minimum_version );
 
       try
       {
@@ -1528,10 +1554,20 @@ cout << "evaluate template_expression" << endl;
 
       vector< string >* p_secondary_set( &secondary_original_set );
 
+      bool can_escape = true;
       bool was_escaped = false;
+
+      if( xi.get_version( ) )
+         can_escape = false;
 
       for( string::size_type j = 0; j < rhs.size( ); j++ )
       {
+         if( xi.get_version( ) && ( rhs[ j ] == c_escape ) )
+         {
+            can_escape = true;
+            continue;
+         }
+
          if( was_escaped )
          {
             was_escaped = false;
@@ -1571,7 +1607,15 @@ cout << "evaluate template_expression" << endl;
                retval += rhs[ j ];
          }
          else if( rhs[ j ] == c_template_escape )
-            was_escaped = true;
+         {
+            was_escaped = can_escape;
+
+            if( !was_escaped )
+               retval += rhs[ j ];
+
+            if( xi.get_version( ) )
+               can_escape = false;
+         }
          else
             retval += rhs[ j ];
       }
@@ -2131,6 +2175,7 @@ cout << "evaluate variable_expression" << endl;
 #endif
    if( is_ref )
       return identifier;
+
    return xi.get_variable( identifier );
 }
 
@@ -2160,6 +2205,15 @@ auto_ptr< expression_base > parse_literal_text(
 
       if( s.size( ) && s[ 0 ] == c_escape )
       {
+         if( xl.get_version( ) )
+         {
+            if( ( s.length( ) > 1 ) && ( s[ 1 ] == c_template_escape ) )
+            {
+               literal_text += s;
+               continue;
+            }
+         }
+
          if( s == c_escaped_special )
             literal_text += c_escape;
          else
@@ -3482,6 +3536,7 @@ auto_ptr< expression_base > parse_xrep_expression( xrep_lexer& xl, bool is_opt, 
          if( is_opt )
          {
             sli.restore( );
+
             return ap_node;
          }
          else
@@ -3503,21 +3558,27 @@ auto_ptr< expression_base > parse_xrep_expression( xrep_lexer& xl, bool is_opt, 
    return ap_node;
 }
 
-auto_ptr< expression_base > parse_expression( const string& input, int line_number )
+auto_ptr< expression_base > parse_expression( const string& input, int line_number, size_t version )
 {
-   xrep_lexer xl( input );
+   xrep_lexer xl( input, version );
+
    try
    {
       auto_ptr< expression_base > ap_node( parse_xrep_expression( xl, false ) );
+
       return ap_node;
    }
    catch( exception& x )
    {
       ostringstream osstr;
+
       osstr << "line #" << line_number << ' ' << x.what( );
+
       string xx( osstr.str( ) );
+
       xx += '\n';
       xx += xl.get_input_error( "input: " );
+
       throw runtime_error( xx );
    }
 }
@@ -3525,15 +3586,17 @@ auto_ptr< expression_base > parse_expression( const string& input, int line_numb
 string evaluate_expression( xrep_info& xi, expression_base* p_node )
 {
    string retval;
+
    if( p_node )
       retval = p_node->evaluate( xi );
+
    return retval;
 }
 
 string process_expression( const string& input, xrep_info& xi, int line_number )
 {
    string retval;
-   auto_ptr< expression_base > ap_node( parse_expression( input, line_number ) );
+   auto_ptr< expression_base > ap_node( parse_expression( input, line_number, xi.get_version( ) ) );
 #ifdef DEBUG
    dump_expression_nodes( ap_node.get( ), cout );
 #endif
@@ -3546,15 +3609,20 @@ string process_expression( const string& input, xrep_info& xi, int line_number )
       if( g_is_include_exception )
       {
          g_is_include_exception = false;
+
          throw;
       }
       else
       {
          ostringstream osstr;
+
          osstr << "line #" << line_number << ' ' << x.what( );
+
          string xx( osstr.str( ) );
+
          xx += "\ninput: ";
          xx += input;
+
          throw runtime_error( xx );
       }
    }
@@ -3643,6 +3711,7 @@ bool process_next( const string& line, string& result,
             else
             {
                string expr( last );
+
                expr += line.substr( start, i - start + 1 );
 #ifdef DEBUG
                cout << "[[[ expr:\n" << expr << "\n]]]" << endl;
@@ -3689,9 +3758,56 @@ bool process_next( const string& line, string& result,
    return has_processed_expression || !result.empty( );
 }
 
+bool had_continuation( xrep_info& xi, string& line )
+{
+   bool retval = false;
+
+   if( !xi.get_version( ) )
+   {
+      string::size_type pos = line.find_last_not_of( '\\' );
+
+      if( ( pos != line.size( ) - 1 ) && ( ( line.size( ) - pos - 1 ) % 2 ) )
+      {
+         line.erase( line.size( ) - 1 );
+
+         retval = true;
+      }
+   }
+   else
+   {
+      string::size_type pos = line.find(
+       c_ver_1_cont, line.length( ) - g_ver_1_cont_len );
+
+      if( pos != string::npos )
+      {
+         size_t num_escapes = 1;
+
+         while( true )
+         {
+            if( !pos )
+               break;
+
+            if( line[ --pos ] != c_escape )
+               break;
+
+            ++num_escapes;
+         }
+
+         if( num_escapes % 2 )
+         {
+            line.erase( line.size( ) - g_ver_1_cont_len );
+
+            retval = true;
+         }
+      }
+   }
+
+   return retval;
+}
+
 void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_lf )
 {
-   string last, next, result;
+   string cont, last, next, result;
 
    int line_number = 0;
    int num_continuations = 0;
@@ -3704,18 +3820,53 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
 
    while( has_expression || getline( is, next ) )
    {
+      if( !line_number && !num_continuations )
+      {
+         size_t pos = next.find( c_xrep_using_version_1 );
+
+         if( pos == 0 )
+         {
+            next.erase( 0, strlen( c_xrep_using_version_1 ) );
+
+            xi.set_version( 1 );
+
+            xi.set_variable( c_var_name_version, c_using_version_1 );
+         }
+      }
+
+      if( !cont.empty( ) )
+      {
+         next = cont + next;
+
+         cont.erase( );
+      }
+
       if( !has_expression )
       {
          xi.set_handled_include( false );
 
          remove_trailing_cr_from_text_file_line( next );
 
-         // NOTE: A character sequence in the form \=n (where n is a number between 1 and 9) will be replaced
-         // with the number of \ characters for the specified level (n) of nesting (e.g. \=5 ==> \\\\\\\\\\).
-         size_t pos = 0;
+         if( !xi.get_version( ) )
+         {
+            // NOTE: A character sequence in the form \=n (where n is a number between 1 and 9) will be replaced
+            // with the number of \ characters for the specified level (n) of nesting (e.g. \=5 ==> \\\\\\\\\\).
+            size_t pos = 0;
 
-         while( ( pos = find_escape_level_sequence( next, pos ) ) != string::npos )
-            replace_escape_level_sequence( next, pos );
+            while( ( pos = find_escape_level_sequence( next, pos ) ) != string::npos )
+               replace_escape_level_sequence( next, pos );
+         }
+      }
+
+      if( xi.get_version( ) && had_continuation( xi, next ) )
+      {
+         cont = next;
+
+         next.erase( );
+
+         ++num_continuations;
+
+         continue;
       }
 
       if( next.empty( ) )
@@ -3726,6 +3877,7 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
          {
             if( !g_exec_system )
                os << '\n';
+
             ++line_number;
          }
          else
@@ -3756,10 +3908,8 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
 
       if( !last.empty( ) )
       {
-         string::size_type pos = last.find_last_not_of( '\\' );
-
-         if( ( pos != last.size( ) - 1 ) && ( ( last.size( ) - pos - 1 ) % 2 ) )
-            last.erase( last.size( ) - 1 );
+         if( !xi.get_version( ) && had_continuation( xi, last ) )
+            ;
          else if( !had_expression )
             last += '\n';
       }
@@ -3837,6 +3987,8 @@ int main( int argc, char* argv[ ] )
    int rc = 0;
    string input_filename;
 
+   g_ver_1_cont_len = strlen( c_ver_1_cont );
+
    try
    {
       string next;
@@ -3844,13 +3996,10 @@ int main( int argc, char* argv[ ] )
 
       add_date_variables( xi );
 
-      xi.set_variable( "uuid", uuid( ).as_string( ) );
+      xi.set_variable( c_var_name_uuid, uuid( ).as_string( ) );
 
-#ifndef _WIN32
-      xi.set_variable( "linux", c_true );
-#else
-      xi.set_variable( "windows", c_true );
-#endif
+      xi.set_variable( c_var_name_linux, c_true );
+      xi.set_variable( c_var_name_version, c_minimum_version );
 
       for( int i = 1; i < argc; i++ )
       {
@@ -3860,7 +4009,7 @@ int main( int argc, char* argv[ ] )
          {
             if( arg == string( "?" ) || arg == string( "-?" ) || arg == string( "/?" ) )
             {
-               cout << "xrep v0.1u\n";
+               cout << "xrep v0.1v\n";
                cout << "Usage: xrep [-x] [@<filename>] [var1=<value> [var2=<value> [...]]]\n\n";
 
                cout << "Notes: If the @<filename> is not provided then input is read from std::cin.\n";
@@ -3888,6 +4037,7 @@ int main( int argc, char* argv[ ] )
             throw runtime_error( "invalid format for argument '" + arg + "'" );
 
          string value( arg.substr( pos + 1 ) );
+
          arg.erase( pos );
 
          if( !value.empty( ) )
@@ -3899,6 +4049,7 @@ int main( int argc, char* argv[ ] )
                   throw runtime_error( "unable to open file '" + value.substr( 1 ) + "' for input" );
 
                value.erase( );
+
                while( getline( inpf, next ) )
                {
                   remove_trailing_cr_from_text_file_line( next );
@@ -3914,6 +4065,7 @@ int main( int argc, char* argv[ ] )
             else
                unescape( value, c_special_characters );
          }
+
          xi.set_variable( arg, value );
       }
 

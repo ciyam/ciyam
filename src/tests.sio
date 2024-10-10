@@ -1835,6 +1835,12 @@
       <input>false
       <output>generate
      </test_step>
+     <test_step/>
+      <name>e
+      <exec>xrep @$TESTS_DIR/test_xrep_1_e.xrep
+      <input>false
+      <output>generate
+     </test_step>
     </test>
    </tests>
   </group>

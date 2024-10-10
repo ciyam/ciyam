@@ -1,1 +1,1 @@
-echo -n "`{`$uu`}" >ciyam_server.sid
+echo -n "`{`$uuid`}" >ciyam_server.sid
