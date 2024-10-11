@@ -1,24 +1,26 @@
-`{`@eq`(`'can_destroy`'`,`$section`)\
+`{`$1`}`{`@eq`(`'can_destroy`'`,`$section`)`\
+`{`$value`=`$arg_value`}`\
+`{`@eq`(`$arg_sfistexttype`,`'1`'`)`|`@eq`(`$arg_scfistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}`\
    // [(start destroy_restrict)] `{`$arg_id`}
-   if( `{`@eq`(`$arg_allow_internal`,`'true`'`)!is_internal && `}\
-get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) == `{`$arg_value`} )
+   if( `{`@eq`(`$arg_allow_internal`,`'true`'`)!is_internal && `}`\
+get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) == `{`$value`} )
       retval = false;
    // [(finish destroy_restrict)] `{`$arg_id`}
 `}
-`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)`\
    // [(start destroy_restrict)] `{`$arg_id`}
-`{`@eq`(`$arg_pfield`,`'`'`)\
+`{`@eq`(`$arg_pfield`,`'`'`)`\
    dependents.insert( "`{`$arg_field`}" );
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
-      names.insert( "`{`$arg_field`}" );\
-`,\
+      names.insert( "`{`$arg_field`}" );
+`,`\
    dependents.insert( "`{`$arg_pfield`}" );
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
-      names.insert( "`{`$arg_pfield`}" );\
-`}
+      names.insert( "`{`$arg_pfield`}" );
+`}`\
    // [(finish destroy_restrict)] `{`$arg_id`}
 `}
