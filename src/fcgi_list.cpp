@@ -1656,7 +1656,7 @@ void output_list_form( ostream& os,
 
    bool has_any_selection_actions = false;
 
-   if( !is_printable && list_type != c_list_type_home )
+   if( !is_printable && ( list_type != c_list_type_home ) )
    {
       if( is_child_list )
       {

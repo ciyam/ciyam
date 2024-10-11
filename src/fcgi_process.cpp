@@ -2980,10 +2980,12 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   if( n == vtabc_num )
                   {
                      string child_list_info( c_list_prefix + to_string( x - 1 ) + c_info_suffix );
+
                      if( input_data.count( child_list_info ) )
                         child_list_info = input_data[ child_list_info ];
 
                      string child_list_sort( c_list_prefix + to_string( x - 1 ) + c_sort_suffix );
+
                      if( input_data.count( child_list_sort ) )
                         child_list_sort = input_data[ child_list_sort ];
 
