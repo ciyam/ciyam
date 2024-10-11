@@ -1,41 +1,41 @@
-`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+`{`$1`}`{`@eq`(`'value_will_be_provided`'`,`$section`)`\
    // [(start field_from_variable)] `{`$arg_id`}
    if( field_name == "`{`$arg_field`}" )
       return true;
    // [(finish field_from_variable)] `{`$arg_id`}
 `}
-`{`@eq`(`'to_or_for_store`'`,`$section`)\
+`{`@eq`(`'to_or_for_store`'`,`$section`)`\
    // [(start field_from_variable)] `{`$arg_id`}
-`{`$peer_not_or_only`=`'`'`}`{`@eq`(`$arg_not_peer`,`'true`'`)`$peer_not_or_only`=`'true`'`}`{`@eq`(`$arg_peer_only`,`'true`'`)`$peer_not_or_only`=`'true`'`}\
-`{`$create_or_update`=`'`'`}`{`@eq`(`$arg_create_only`,`'true`'`)`$create_or_update`=`'true`'`}`{`@eq`(`$arg_update_only`,`'true`'`)`$create_or_update`=`'true`'`}\
-`{`$new_create_or_update`=`'`'`}`{`@eq`(`$arg_new_only`,`'true`'`)`$new_create_or_update`=`'true`'`}\
-`{`@eq`(`$arg_create_only`,`'true`'`)`$new_create_or_update`=`'true`'`}`{`@eq`(`$arg_update_only`,`'true`'`)`$new_create_or_update`=`'true`'`}\
-`{`$any_conditional`=`'`'`}`{`@eq`(`$peer_not_or_only`,`'true`'`)`$any_conditional`=`'true`'`}`{`@eq`(`$new_create_or_update`,`'true`'`)`$any_conditional`=`'true`'`}\
-`{`!`@eq`(`$arg_tfield`,`'`'`)`$any_conditional`=`'true`'`}`{`!`@eq`(`$arg_modifier`,`'`'`)`$any_conditional`=`'true`'`}\
-`{`$i`=`'`'`}`{`$c`=`'`'`}`{`@eq`(`$any_conditional`,`'true`'`)`{`$i`=`'   `'`}\
-   if( `{`@eq`(`$peer_not_or_only`,`'true`'`)`{`@eq`(`$arg_peer_only`,`'`'`)!`}get_obj( ).get_is_for_peer( )`{`$c`=`'1`'`}`}\
+`{`$peer_not_or_only`=`'`'`}`{`@eq`(`$arg_not_peer`,`'true`'`)`$peer_not_or_only`=`'true`'`}`{`@eq`(`$arg_peer_only`,`'true`'`)`$peer_not_or_only`=`'true`'`}`\
+`{`$create_or_update`=`'`'`}`{`@eq`(`$arg_create_only`,`'true`'`)`$create_or_update`=`'true`'`}`{`@eq`(`$arg_update_only`,`'true`'`)`$create_or_update`=`'true`'`}`\
+`{`$new_create_or_update`=`'`'`}`{`@eq`(`$arg_new_only`,`'true`'`)`$new_create_or_update`=`'true`'`}`\
+`{`@eq`(`$arg_create_only`,`'true`'`)`$new_create_or_update`=`'true`'`}`{`@eq`(`$arg_update_only`,`'true`'`)`$new_create_or_update`=`'true`'`}`\
+`{`$any_conditional`=`'`'`}`{`@eq`(`$peer_not_or_only`,`'true`'`)`$any_conditional`=`'true`'`}`{`@eq`(`$new_create_or_update`,`'true`'`)`$any_conditional`=`'true`'`}`\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`$any_conditional`=`'true`'`}`{`!`@eq`(`$arg_modifier`,`'`'`)`$any_conditional`=`'true`'`}`\
+`{`$i`=`'`'`}`{`$c`=`'`'`}`{`@eq`(`$any_conditional`,`'true`'`)`{`$i`=`'   `'`}`\
+   if( `{`@eq`(`$peer_not_or_only`,`'true`'`)`{`@eq`(`$arg_peer_only`,`'`'`)!`}get_obj( ).get_is_for_peer( )`{`$c`=`'1`'`}`}`\
 `{`@eq`(`$new_create_or_update`,`'true`'`)`{`@eq`(`$c`,`'1`'`)
-    && `}`{`!`@eq`(`$create_or_update`,`'`'`)`{`@eq`(`$arg_update_only`,`'true`'`)!`}is_create\
- && `}`{`@eq`(`$arg_new_only`,`'`'`)!`}get_obj( ).get_key( ).empty( )`{`$c`=`'1`'`}`}\
+    && `}`{`!`@eq`(`$create_or_update`,`'`'`)`{`@eq`(`$arg_update_only`,`'true`'`)!`}is_create`\
+ && `}`{`@eq`(`$arg_new_only`,`'`'`)!`}get_obj( ).get_key( ).empty( )`{`$c`=`'1`'`}`}`\
 `{`!`@eq`(`$arg_tfield`,`'`'`)`{`@eq`(`$c`,`'1`'`)
-    && `}get_obj( ).`{`$arg_tfield`}( )`{`$c`=`'1`'`}`}\
+    && `}get_obj( ).`{`$arg_tfield`}( )`{`$c`=`'1`'`}`}`\
 `{`!`@eq`(`$arg_modifier`,`'`'`)`{`@eq`(`$c`,`'1`'`)
     && `}( state & c_modifier_`{`$arg_modifier`} )`} )
-`}`{`@eq`(`$arg_system`,`'true`'`)\
+`}`{`@eq`(`$arg_system`,`'true`'`)`\
 `{`$i`}   get_obj( ).`{`$arg_field`}( from_string< typeof(
-`{`$i`}    get_obj( ).`{`$arg_field`}( ) ) >( get_system_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
- + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}\
+`{`$i`}    get_obj( ).`{`$arg_field`}( ) ) >( get_system_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`)`\
+ + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}`\
  ) ) );
-`,`@eq`(`$arg_session`,`'true`'`)\
+`,`@eq`(`$arg_session`,`'true`'`)`\
 `{`$i`}   get_obj( ).`{`$arg_field`}( from_string< typeof(
-`{`$i`}    get_obj( ).`{`$arg_field`}( ) ) >( get_session_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
- + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}\
+`{`$i`}    get_obj( ).`{`$arg_field`}( ) ) >( get_session_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`)`\
+ + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}`\
  ) ) );
-`,\
+`,`\
 `{`$i`}   get_obj( ).`{`$arg_field`}( from_string< typeof(
-`{`$i`}    get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
- + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}\
+`{`$i`}    get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`)`\
+ + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}`\
  ) ) );
-`}\
+`}`\
    // [(finish field_from_variable)] `{`$arg_id`}
 `}
