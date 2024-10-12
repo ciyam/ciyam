@@ -1343,7 +1343,7 @@ void Meta_Package::impl::impl_Install( )
          outc << "perform_package_import " << get_uid( ) << " @now " << get_obj( ).get_module_name( )
           << " " << type_name << ".package.sio -new_only -s=@Meta_Class.skips.lst -r=@" << list_filename << "\n";
 
-         outc << ".pe " << get_uid( ) << " @now " << get_obj( ).get_module_name( ) << " "
+         outc << ".pe " << get_uid( ) << " @now " << get_obj( ).get_module_id( ) << " "
           << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " 136430\n";
 
          if( async )
@@ -1607,7 +1607,7 @@ void Meta_Package::impl::impl_Remove( )
                   {
                      outf << "@ifndef %ERROR%\n";
                      outf << ".pd " << get_uid( ) << " @now "
-                      << get_obj( ).get_module_name( ) << ' ' << next_cid << " -p -q " << class_keys[ next_cid ][ j ] << '\n';
+                      << get_obj( ).get_module_id( ) << ' ' << next_cid << " -p -q " << class_keys[ next_cid ][ j ] << '\n';
                      outf << "@ifdef %ERROR%\n";
                      outf << "#(failed to delete " << ordered[ i ] << " record " << class_keys[ next_cid ][ j ] << ")\n";
                      outf << "@endif\n";
@@ -1632,10 +1632,10 @@ void Meta_Package::impl::impl_Remove( )
                }
 
                outf << "@ifndef %ERROR%\n";
-               outf << ".pe " << get_uid( ) << " @now " << get_obj( ).get_module_name( ) << " "
+               outf << ".pe " << get_uid( ) << " @now " << get_obj( ).get_module_id( ) << " "
                 << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " 136440\n"; // i.e. Complete_Remove
                outf << "@else\n";
-               outf << ".pe " << get_uid( ) << " @now " << get_obj( ).get_module_name( ) << " "
+               outf << ".pe " << get_uid( ) << " @now " << get_obj( ).get_module_id( ) << " "
                 << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " 136450\n"; // i.e. Cancel_Remove
                outf << "@endif\n";
 

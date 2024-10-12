@@ -426,18 +426,22 @@ string get_mapped_id( const string& model, const string& id )
    string retval( id );
 
    string file_name( model + ".ids.txt" );
+
    if( ids.empty( ) && exists_file( file_name ) )
    {
       ifstream inpf( file_name.c_str( ) );
+
       if( !inpf )
          throw runtime_error( "unable to open '" + file_name + "' for input" );
 
       string next;
+
       while( getline( inpf, next ) )
       {
          if( !next.empty( ) )
          {
             string::size_type pos = next.find( '=' );
+
             if( pos == string::npos )
                throw runtime_error( "unexpected format in id map line '" + next + "'" );
 
@@ -1355,15 +1359,18 @@ void Meta_Model::impl::impl_Create_Module( )
       exec_system( "./create_module -rdbms " + get_obj( ).Name( ) + " >/dev/null" );
 
       bool found = false;
+
       string modules_list( "modules.lst" );
 
       if( exists_file( modules_list ) )
       {
          ifstream inpf( modules_list.c_str( ) );
+
          if( !inpf )
             throw runtime_error( "unexpected error opening '" + modules_list + "' for input" );
 
          string next;
+
          while( getline( inpf, next ) )
          {
             if( next == get_obj( ).Name( ) )
@@ -1400,7 +1407,9 @@ void Meta_Model::impl::impl_Generate( )
       return;
 
    string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
+
    set_system_variable( model_key, "Generating model artifacts..." ); // FUTURE: Should be a module string...
+
    try
    {
       output_progress_message( "Generating " + get_obj( ).Name( ) + " vars..." );
@@ -1412,6 +1421,7 @@ void Meta_Model::impl::impl_Generate( )
       string classes_file_name( get_obj( ).Name( ) + ".classes.lst" );
 
       set< string > old_class_names;
+
       if( exists_file( classes_file_name ) )
          read_file_lines( classes_file_name, old_class_names );
 
@@ -1436,6 +1446,7 @@ void Meta_Model::impl::impl_Generate( )
          throw runtime_error( "unexpected error opening '" + classes_file_name + "' for output" );
 
       string model_perm;
+
       if( get_obj( ).Allow_Anonymous_Access( ) )
          model_perm = "@anon";
 
@@ -1454,6 +1465,7 @@ void Meta_Model::impl::impl_Generate( )
       string model_name( get_obj( ).Name( ) );
 
       string title( get_obj( ).Name( ) + "_" );
+
       if( atof( get_obj( ).Version( ).c_str( ) ) < 1.0 )
          title += "Beta";
       else
@@ -1496,20 +1508,25 @@ void Meta_Model::impl::impl_Generate( )
 
                      if( enum_names.count( name ) )
                         continue;
+
                      enum_names.insert( name );
 
                      if( !all_enums.empty( ) )
                         all_enums += ' ';
+
                      all_enums += get_mapped_id( model_name, get_obj( ).Workgroup( ).child_Enum( ).Id( ) ) + ',' + name;
 
                      string enum_prefix( "enum_" + lower( name ) );
 
                      outs << enum_prefix << " \"" << search_replace( name, "_", " " ) << "\"\n";
 
-                     string enum_item_key_info( to_string( Meta_Enum_Item::static_get_field_id( Meta_Enum_Item::e_field_id_Order ) ) + ' ' );
+                     string enum_item_key_info( to_string(
+                      Meta_Enum_Item::static_get_field_id( Meta_Enum_Item::e_field_id_Order ) ) + ' ' );
+
                      if( get_obj( ).Workgroup( ).child_Enum( ).child_Enum_Item( ).iterate_forwards( enum_item_key_info ) )
                      {
                         string next_enum_info;
+
                         do
                         {
                            string label( get_obj( ).Workgroup( ).child_Enum( ).child_Enum_Item( ).Label( ) );
@@ -1531,6 +1548,7 @@ void Meta_Model::impl::impl_Generate( )
                      }
 
                      get_obj( ).Workgroup( ).child_Enum( ).child_Field( ).iterate_stop( );
+
                      break;
                   }
                } while( get_obj( ).Workgroup( ).child_Enum( ).child_Field( ).iterate_next( ) );
@@ -1567,6 +1585,7 @@ void Meta_Model::impl::impl_Generate( )
       set< string > external_modules;
 
       size_t class_num = 0;
+
       map< size_t, string > class_ids;
       map< string, vector< string > > all_class_strings;
 
@@ -1575,6 +1594,7 @@ void Meta_Model::impl::impl_Generate( )
       if( get_obj( ).child_Class( ).iterate_forwards( class_key_info ) )
       {
          string all_classes;
+
          do
          {
             vector< string > class_strings;
@@ -1599,6 +1619,7 @@ void Meta_Model::impl::impl_Generate( )
 
             if( !all_classes.empty( ) )
                all_classes += ' ';
+
             all_classes += get_obj( ).child_Class( ).Name( );
 
             if( get_obj( ).child_Class( ).Type( ) == 1 ) // i.e. user
@@ -1684,18 +1705,22 @@ void Meta_Model::impl::impl_Generate( )
       if( !external_modules.empty( ) )
       {
          outf << "\x60{\x60$all_externals\x60=\x60'";
+
          for( set< string >::iterator i = external_modules.begin( ); i != external_modules.end( ); ++i )
          {
             if( i != external_modules.begin( ) )
                outf << ' ';
             outf << *i;
          }
+
          outf << "\x60'\x60}\n";
       }
 
       outm << "\x60{\x60$" << get_obj( ).Name( ) << "_dylk\x60=\x60'ciyam_base";
+
       for( set< string >::iterator i = external_modules.begin( ); i != external_modules.end( ); ++i )
          outm << " " << *i;
+
       outm << "\x60'\x60}\n";
 
       outm << "\x60{\x60$" << get_obj( ).Name( ) << "_cpps\x60=\x60'"
@@ -2021,14 +2046,20 @@ void Meta_Model::impl::impl_Generate( )
             }
 
             string modifiers;
-            string modifier_key_info( to_string( Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
+
+            string modifier_key_info( to_string(
+             Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
+
             if( get_obj( ).child_View( ).Class( ).child_Modifier( ).iterate_forwards( modifier_key_info ) )
             {
                uint64_t flag_value( UINT64_C( 0x100 ) );
+
                do
                {
                   ostringstream osstr;
+
                   osstr << hex << flag_value;
+
                   flag_value <<= 1;
 
                   if( get_obj( ).child_View( ).Class( ).child_Modifier( ).child_Modifier_Affect( ).iterate_forwards( ) )
@@ -2041,9 +2072,11 @@ void Meta_Model::impl::impl_Generate( )
                         {
                            if( !modifiers.empty( ) )
                               modifiers += ',';
+
                            modifiers += osstr.str( ) + ':';
 
                            int type = get_obj( ).child_View( ).Class( ).child_Modifier( ).child_Modifier_Affect( ).Type( );
+
                            switch( type )
                            {
                               case 0:
@@ -2088,6 +2121,7 @@ void Meta_Model::impl::impl_Generate( )
             }
 
             string view_binfo;
+
             if( !is_null( get_obj( ).child_View( ).Class( ).Source_Model( ) ) )
             {
                view_binfo = get_obj( ).child_View( ).Class( ).Source_Model( ).Name( );
@@ -2130,6 +2164,7 @@ void Meta_Model::impl::impl_Generate( )
                   ++field_num;
 
                   string access_restriction;
+
                   switch( get_obj( ).child_View( ).child_View_Field( ).Access_Restriction( ) )
                   {
                      case 0:
@@ -2169,6 +2204,7 @@ void Meta_Model::impl::impl_Generate( )
                   if( get_obj( ).child_View( ).child_View_Field( ).Type( ).get_key( ) == "field" )
                   {
                      string field_name( "field_" );
+
                      field_name += lower( get_obj( ).child_View( ).Class( ).Name( ) );
 
                      string extras;
@@ -2194,6 +2230,7 @@ void Meta_Model::impl::impl_Generate( )
                      {
                         if( !extras.empty( ) )
                            extras += '+';
+
                         extras += access_restriction;
                      }
 
@@ -3311,10 +3348,13 @@ void Meta_Model::impl::impl_Generate( )
                      if( p_mfield->Class( ).child_Modifier( ).iterate_forwards( modifier_key_info ) )
                      {
                         uint64_t flag_value( UINT64_C( 0x100 ) );
+
                         do
                         {
                            ostringstream osstr;
+
                            osstr << hex << flag_value;
+
                            flag_value <<= 1;
 
                            if( p_mfield->Class( ).child_Modifier( ).child_Modifier_Affect( ).iterate_forwards( ) )
@@ -3328,9 +3368,11 @@ void Meta_Model::impl::impl_Generate( )
                                  {
                                     if( !modifiers.empty( ) )
                                        modifiers += ',';
+
                                     modifiers += osstr.str( ) + ':';
 
                                     int type = p_mfield->Class( ).child_Modifier( ).child_Modifier_Affect( ).Type( );
+
                                     switch( type )
                                     {
                                        case 0:
@@ -3389,6 +3431,7 @@ void Meta_Model::impl::impl_Generate( )
                   else if( get_obj( ).child_View( ).child_View_Field( ).Type( ).get_key( ) == "tab" )
                   {
                      string tab_extras( access_restriction );
+
                      if( !get_obj( ).child_View( ).child_View_Field( ).Allow_Anonymous_Access( ) )
                      {
                         if( !tab_extras.empty( ) )
@@ -3410,16 +3453,20 @@ void Meta_Model::impl::impl_Generate( )
                } while( get_obj( ).child_View( ).child_View_Field( ).iterate_next( ) );
 
                string fnums;
+
                for( size_t i = 0; i < field_ids.size( ); i++ )
                {
                   string fnum( to_string( i ) );
+
                   if( fnum.length( ) < 3 )
                      fnum = '0' + fnum;
+
                   if( fnum.length( ) < 3 )
                      fnum = '0' + fnum;
 
                   if( i > 0 )
                      fnums += ' ';
+
                   fnums += fnum;
                }
 
@@ -3428,8 +3475,10 @@ void Meta_Model::impl::impl_Generate( )
                for( size_t i = 0; i < field_ids.size( ); i++ )
                {
                   string fnum( to_string( i ) );
+
                   if( fnum.length( ) < 3 )
                      fnum = '0' + fnum;
+
                   if( fnum.length( ) < 3 )
                      fnum = '0' + fnum;
 
@@ -3484,6 +3533,7 @@ void Meta_Model::impl::impl_Generate( )
       // NOTE: As the list names are transient determine the key order from a map (the lists need to be
       // processed in such a manner so that variations can be found immediately after the original list).
       map< string, string > list_records;
+
       if( get_obj( ).child_List( ).iterate_forwards( true, 0, e_sql_optimisation_unordered ) )
       {
          do
@@ -3495,6 +3545,7 @@ void Meta_Model::impl::impl_Generate( )
       if( !list_records.empty( ) )
       {
          int variation = 0;
+
          map< string, int > child_lists;
 
          for( map< string, string >::iterator li = list_records.begin( ); li != list_records.end( ); ++li )
@@ -3723,15 +3774,19 @@ void Meta_Model::impl::impl_Generate( )
             if( !is_null( get_obj( ).child_List( ).Access_Parent_Modifier( ) ) )
             {
                Meta_Class* p_parent_Class = &get_obj( ).child_List( ).Parent_Class( );
+
                string modifier_key_info( to_string( Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
 
                if( p_parent_Class->child_Modifier( ).iterate_forwards( modifier_key_info ) )
                {
                   uint64_t flag_value( UINT64_C( 0x100 ) );
+
                   do
                   {
                      ostringstream osstr;
+
                      osstr << hex << flag_value;
+
                      flag_value <<= 1;
 
                      if( get_obj( ).child_List( ).Access_Parent_Modifier( ) == p_parent_Class->child_Modifier( ) )
@@ -3781,27 +3836,33 @@ void Meta_Model::impl::impl_Generate( )
             {
                if( !list_extra.empty( ) )
                   list_extra += ',';
+
                list_extra += "no_new=!" + get_obj( ).child_List( ).Create_Permission( ).Id( );
             }
 
             if( !is_null( get_obj( ).child_List( ).Create_Parent_Modifier( ) ) )
             {
                Meta_Class* p_parent_Class = &get_obj( ).child_List( ).Parent_Class( );
+
                string modifier_key_info( to_string( Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
 
                if( p_parent_Class->child_Modifier( ).iterate_forwards( modifier_key_info ) )
                {
                   uint64_t flag_value( UINT64_C( 0x100 ) );
+
                   do
                   {
                      ostringstream osstr;
+
                      osstr << hex << flag_value;
+
                      flag_value <<= 1;
 
                      if( get_obj( ).child_List( ).Create_Parent_Modifier( ) == p_parent_Class->child_Modifier( ) )
                      {
                         if( !list_extra.empty( ) )
                            list_extra += ',';
+
                         list_extra += "cpstate=" + osstr.str( );
                      }
                   } while( p_parent_Class->child_Modifier( ).iterate_next( ) );
@@ -3814,24 +3875,28 @@ void Meta_Model::impl::impl_Generate( )
                {
                   if( !list_extra.empty( ) )
                      list_extra += ',';
+
                   list_extra += "owner_erase";
                }
                else if( get_obj( ).child_List( ).Destroy_Restriction( ) == 2 )
                {
                   if( !list_extra.empty( ) )
                      list_extra += ',';
+
                   list_extra += "admin_erase";
                }
                else if( get_obj( ).child_List( ).Destroy_Restriction( ) == 3 )
                {
                   if( !list_extra.empty( ) )
                      list_extra += ',';
+
                   list_extra += "admin_owner_erase";
                }
                else if( get_obj( ).child_List( ).Destroy_Restriction( ) == 4 )
                {
                   if( !list_extra.empty( ) )
                      list_extra += ',';
+
                   list_extra += "no_erase";
                }
                else
@@ -3845,27 +3910,33 @@ void Meta_Model::impl::impl_Generate( )
             {
                if( !list_extra.empty( ) )
                   list_extra += ',';
+
                list_extra += "no_erase=!" + get_obj( ).child_List( ).Destroy_Permission( ).Id( );
             }
 
             if( !is_null( get_obj( ).child_List( ).Destroy_Parent_Modifier( ) ) )
             {
                Meta_Class* p_parent_Class = &get_obj( ).child_List( ).Parent_Class( );
+
                string modifier_key_info( to_string( Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
 
                if( p_parent_Class->child_Modifier( ).iterate_forwards( modifier_key_info ) )
                {
                   uint64_t flag_value( UINT64_C( 0x100 ) );
+
                   do
                   {
                      ostringstream osstr;
+
                      osstr << hex << flag_value;
+
                      flag_value <<= 1;
 
                      if( get_obj( ).child_List( ).Destroy_Parent_Modifier( ) == p_parent_Class->child_Modifier( ) )
                      {
                         if( !list_extra.empty( ) )
                            list_extra += ',';
+
                         list_extra += "dpstate=" + osstr.str( );
                      }
                   } while( p_parent_Class->child_Modifier( ).iterate_next( ) );
@@ -3876,6 +3947,7 @@ void Meta_Model::impl::impl_Generate( )
             {
                if( !list_extra.empty( ) )
                   list_extra += ',';
+
                list_extra += "fixed";
             }
 
@@ -3896,9 +3968,11 @@ void Meta_Model::impl::impl_Generate( )
             }
 
             string pclass_id, pclass_name, pfield_id, pfield_name;
+
             vector< string > rfield_ids;
 
             string type_key( get_obj( ).child_List( ).Type( ).get_key( ) );
+
             if( type_key == "normal" || type_key == "additional" )
             {
                specification_name += "list";
@@ -4070,6 +4144,7 @@ void Meta_Model::impl::impl_Generate( )
              + "_cid\x60=\x60'" << get_mapped_id( model_name, get_obj( ).child_List( ).Class( ).Id( ) ) << "\x60'\x60}\n";
 
             string title( search_replace( get_obj( ).child_List( ).Title( ), "_", " " ) );
+
             string::size_type pos = 0;
 
             while( true )
@@ -4096,6 +4171,7 @@ void Meta_Model::impl::impl_Generate( )
             }
 
             string id( get_obj( ).child_List( ).Class( ).Id( ) );
+
             all_class_strings[ id ].push_back( get_obj( ).child_List( ).Id( ) + "_name \"" + title + "\"" );
 
             outf << "\x60{\x60$specification_" << specification_name + "_name\x60=\x60'" << title << "\x60'\x60}\n";
@@ -4139,7 +4215,10 @@ void Meta_Model::impl::impl_Generate( )
             map< string, pair< string, string > > column_parent_classes;
 
             string actions, filters;
-            string list_field_key_info( to_string( Meta_List_Field::static_get_field_id( Meta_List_Field::e_field_id_Order ) ) + ' ' );
+
+            string list_field_key_info( to_string(
+             Meta_List_Field::static_get_field_id( Meta_List_Field::e_field_id_Order ) ) + ' ' );
+
             if( get_obj( ).child_List( ).child_List_Field( ).iterate_forwards( list_field_key_info ) )
             {
                // NOTE: If the Class is "ordered" (and the list is neither set to order the rows in the UI or to
@@ -4205,7 +4284,6 @@ void Meta_Model::impl::impl_Generate( )
                   else if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ) ) )
                      extras += "hidden=!" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Id( );
 
-
                   if( !get_obj( ).child_List( ).child_List_Field( ).Allow_Anonymous_Access( ) )
                   {
                      if( !extras.empty( ) )
@@ -4259,21 +4337,27 @@ void Meta_Model::impl::impl_Generate( )
                   if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Parent_Modifier( ) ) )
                   {
                      Meta_Class* p_parent_Class = &get_obj( ).child_List( ).child_List_Field( ).Parent_Class( );
-                     string modifier_key_info( to_string( Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
+
+                     string modifier_key_info( to_string(
+                      Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
 
                      if( p_parent_Class->child_Modifier( ).iterate_forwards( modifier_key_info ) )
                      {
                         uint64_t flag_value( UINT64_C( 0x100 ) );
+
                         do
                         {
                            ostringstream osstr;
+
                            osstr << hex << flag_value;
+
                            flag_value <<= 1;
 
                            if( get_obj( ).child_List( ).child_List_Field( ).Access_Parent_Modifier( ) == p_parent_Class->child_Modifier( ) )
                            {
                               if( !extras.empty( ) )
                                  extras += '+';
+
                               extras += "pstate=" + osstr.str( );
                            }
                         } while( p_parent_Class->child_Modifier( ).iterate_next( ) );
@@ -4287,104 +4371,129 @@ void Meta_Model::impl::impl_Generate( )
                         switch( get_obj( ).child_List( ).child_List_Field( ).Link_Restriction( ) )
                         {
                            case 0: // i.e. none
-                           if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 0 )
                            {
-                              if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) ) )
+                              if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 0 )
                               {
-                                 if( !extras.empty( ) )
-                                    extras += '+';
-                                 extras += "link";
-                              }
-                           }
-                           else if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 1 )
-                           {
-                              if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) ) )
-                              {
-                                 if( !extras.empty( ) )
-                                    extras += '+';
-                                 extras += "non_fk_link";
-                              }
-                           }
-                           else
-                              throw runtime_error( "unexpected Link_Type value #"
-                               + to_string( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) ) + " in Model::Generate" );
+                                 if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) ) )
+                                 {
+                                    if( !extras.empty( ) )
+                                       extras += '+';
 
-                           if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Link_Permission( ) ) )
+                                    extras += "link";
+                                 }
+                              }
+                              else if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 1 )
+                              {
+                                 if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) ) )
+                                 {
+                                    if( !extras.empty( ) )
+                                       extras += '+';
+
+                                    extras += "non_fk_link";
+                                 }
+                              }
+                              else
+                                 throw runtime_error( "unexpected Link_Type value #"
+                                  + to_string( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) ) + " in Model::Generate" );
+
+                              if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Link_Permission( ) ) )
+                              {
+                                 if( !extras.empty( ) )
+                                    extras += '+';
+
+                                 extras += "non_link";
+                              }
+
+                              break;
+                           }
+
+                           case 1: // i.e. owner_only
+                           {
+                              if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 0 )
+                                 ; // i.e. do nothing here
+                              else if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 1 )
+                              {
+                                 if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) ) )
+                                 {
+                                    if( !extras.empty( ) )
+                                       extras += '+';
+
+                                    extras += "non_fk_link";
+                                 }
+                              }
+                              else
+                                 throw runtime_error( "unexpected Link_Type value #"
+                                  + to_string( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) ) + " in Model::Generate" );
+
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "owner_link";
+
+                              break;
+                           }
+
+                           case 2: // i.e. admin_only
+                           {
+                              if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 0 )
+                                 ; // i.e. do nothing here
+                              else if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 1 )
+                              {
+                                 if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) ) )
+                                 {
+                                    if( !extras.empty( ) )
+                                       extras += '+';
+
+                                    extras += "non_fk_link";
+                                 }
+                              }
+                              else
+                                 throw runtime_error( "unexpected Link_Type value #"
+                                  + to_string( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) ) + " in Model::Generate" );
+
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "admin_link";
+
+                              break;
+                           }
+
+                           case 3: // i.e. admin_owner_only
+                           {
+                              if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 0 )
+                                 ; // i.e. do nothing here
+                              else if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 1 )
+                              {
+                                 if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) ) )
+                                 {
+                                    if( !extras.empty( ) )
+                                       extras += '+';
+
+                                    extras += "non_fk_link";
+                                 }
+                              }
+                              else
+                                 throw runtime_error( "unexpected Link_Type value #"
+                                  + to_string( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) ) + " in Model::Generate" );
+
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "admin_owner_link";
+
+                              break;
+                           }
+
+                           case 4: // i.e. denied_always
                            {
                               if( !extras.empty( ) )
                                  extras += '+';
+
                               extras += "non_link";
+
+                              break;
                            }
-                           break;
-
-                           case 1: // i.e. owner_only
-                           if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 0 )
-                              ; // i.e. do nothing here
-                           else if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 1 )
-                           {
-                              if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) ) )
-                              {
-                                 if( !extras.empty( ) )
-                                    extras += '+';
-                                 extras += "non_fk_link";
-                              }
-                           }
-                           else
-                              throw runtime_error( "unexpected Link_Type value #"
-                               + to_string( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) ) + " in Model::Generate" );
-
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "owner_link";
-                           break;
-
-                           case 2: // i.e. admin_only
-                           if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 0 )
-                              ; // i.e. do nothing here
-                           else if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 1 )
-                           {
-                              if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) ) )
-                              {
-                                 if( !extras.empty( ) )
-                                    extras += '+';
-                                 extras += "non_fk_link";
-                              }
-                           }
-                           else
-                              throw runtime_error( "unexpected Link_Type value #"
-                               + to_string( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) ) + " in Model::Generate" );
-
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "admin_link";
-                           break;
-
-                           case 3: // i.e. admin_owner_only
-                           if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 0 )
-                              ; // i.e. do nothing here
-                           else if( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) == 1 )
-                           {
-                              if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) ) )
-                              {
-                                 if( !extras.empty( ) )
-                                    extras += '+';
-                                 extras += "non_fk_link";
-                              }
-                           }
-                           else
-                              throw runtime_error( "unexpected Link_Type value #"
-                               + to_string( get_obj( ).child_List( ).child_List_Field( ).Link_Type( ) ) + " in Model::Generate" );
-
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "admin_owner_link";
-                           break;
-
-                           case 4: // i.e. denied_always
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "non_link";
-                           break;
 
                            default:
                            throw runtime_error( "unexpected Link_Restriction value #"
@@ -4401,28 +4510,44 @@ void Meta_Model::impl::impl_Generate( )
                            break;
 
                            case 1:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "large";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "large";
+
+                              break;
+                           }
 
                            case 2:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "larger";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "larger";
+
+                              break;
+                           }
 
                            case 5:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "small";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "small";
+
+                              break;
+                           }
 
                            case 6:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "smaller";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "smaller";
+
+                              break;
+                           }
 
                            default:
                            throw runtime_error( "unexpected Font_Size value #"
@@ -4436,28 +4561,44 @@ void Meta_Model::impl::impl_Generate( )
                            break;
 
                            case 1:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "left";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "left";
+
+                              break;
+                           }
 
                            case 2:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "right";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "right";
+
+                              break;
+                           }
 
                            case 3:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "center";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "center";
+
+                              break;
+                           }
 
                            case 4:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "justify";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "justify";
+
+                              break;
+                           }
 
                            default:
                            throw runtime_error( "unexpected Alignment value #"
@@ -4470,22 +4611,34 @@ void Meta_Model::impl::impl_Generate( )
                            switch( get_obj( ).child_List( ).child_List_Field( ).Orientation( ) )
                            {
                               case 0:
-                              if( !extras.empty( ) )
-                                 extras += '+';
-                              extras += "landscape";
-                              break;
+                              {
+                                 if( !extras.empty( ) )
+                                    extras += '+';
+
+                                 extras += "landscape";
+
+                                 break;
+                              }
 
                               case 1:
-                              if( !extras.empty( ) )
-                                 extras += '+';
-                              extras += "portrait";
-                              break;
+                              {
+                                 if( !extras.empty( ) )
+                                    extras += '+';
+
+                                 extras += "portrait";
+
+                                 break;
+                              }
 
                               case 2:
-                              if( !extras.empty( ) )
-                                 extras += '+';
-                              extras += "neither";
-                              break;
+                              {
+                                 if( !extras.empty( ) )
+                                    extras += '+';
+
+                                 extras += "neither";
+
+                                 break;
+                              }
 
                               default:
                               throw runtime_error( "unexpected Orientation value #"
@@ -4500,40 +4653,64 @@ void Meta_Model::impl::impl_Generate( )
                            break;
 
                            case 1:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "non_print";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "non_print";
+
+                              break;
+                           }
 
                            case 2:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "print_only";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "print_only";
+
+                              break;
+                           }
 
                            case 3:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "print_total";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "print_total";
+
+                              break;
+                           }
 
                            case 4:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "print_summary";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "print_summary";
+
+                              break;
+                           }
 
                            case 5:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "print_only_total";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "print_only_total";
+
+                              break;
+                           }
 
                            case 6:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "print_only_summary";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "print_only_summary";
+
+                              break;
+                           }
 
                            default:
                            throw runtime_error( "unexpected Print_Type value #"
@@ -4547,9 +4724,12 @@ void Meta_Model::impl::impl_Generate( )
                            break;
 
                            default:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "trunc=" + to_string( get_obj( ).child_List( ).child_List_Field( ).Notes_Truncation( ) );
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "trunc=" + to_string( get_obj( ).child_List( ).child_List_Field( ).Notes_Truncation( ) );
+                           }
                         }
 
                         switch( get_obj( ).child_List( ).child_List_Field( ).Label_Source( ) )
@@ -4558,16 +4738,24 @@ void Meta_Model::impl::impl_Generate( )
                            break;
 
                            case 1:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "use_list_title";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "use_list_title";
+
+                              break;
+                           }
 
                            case 2:
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "omit_label";
-                           break;
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "omit_label";
+
+                              break;
+                           }
 
                            default:
                            throw runtime_error( "unexpected Label_Source value #"
@@ -4584,7 +4772,9 @@ void Meta_Model::impl::impl_Generate( )
                            {
                               if( !extras.empty( ) )
                                  extras += '+';
+
                               extras += "non_prefixed";
+
                               break;
                            }
 
@@ -4592,7 +4782,9 @@ void Meta_Model::impl::impl_Generate( )
                            {
                               if( !extras.empty( ) )
                                  extras += '+';
+
                               extras += "child_always";
+
                               break;
                            }
 
@@ -4803,14 +4995,20 @@ void Meta_Model::impl::impl_Generate( )
                      }
 
                      string modifiers;
-                     string modifier_key_info( to_string( Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
+
+                     string modifier_key_info( to_string(
+                      Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
+
                      if( p_modifier_field->Class( ).child_Modifier( ).iterate_forwards( modifier_key_info ) )
                      {
                         uint64_t flag_value( UINT64_C( 0x100 ) );
+
                         do
                         {
                            ostringstream osstr;
+
                            osstr << hex << flag_value;
+
                            flag_value <<= 1;
 
                            if( p_modifier_field->Class( ).child_Modifier( ).child_Modifier_Affect( ).iterate_forwards( ) )
@@ -4824,6 +5022,7 @@ void Meta_Model::impl::impl_Generate( )
                                  {
                                     if( !modifiers.empty( ) )
                                        modifiers += ',';
+
                                     modifiers += osstr.str( ) + ':';
 
                                     int type = p_modifier_field->Class( ).child_Modifier( ).child_Modifier_Affect( ).Type( );
@@ -4894,6 +5093,7 @@ void Meta_Model::impl::impl_Generate( )
                    && !get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ).get_key( ).empty( ) ) )
                   {
                      Meta_Field* p_field;
+
                      bool is_mandatory = false;
 
                      string dextras( extras );
@@ -4904,28 +5104,44 @@ void Meta_Model::impl::impl_Generate( )
                         break;
 
                         case 1:
-                        if( !dextras.empty( ) )
-                           dextras += '+';
-                        dextras += "large";
-                        break;
+                        {
+                           if( !dextras.empty( ) )
+                              dextras += '+';
+
+                           dextras += "large";
+
+                           break;
+                        }
 
                         case 2:
-                        if( !dextras.empty( ) )
-                           dextras += '+';
-                        dextras += "larger";
-                        break;
+                        {
+                           if( !dextras.empty( ) )
+                              dextras += '+';
+
+                           dextras += "larger";
+
+                           break;
+                        }
 
                         case 5:
-                        if( !dextras.empty( ) )
-                           dextras += '+';
-                        dextras += "small";
-                        break;
+                        {
+                           if( !dextras.empty( ) )
+                              dextras += '+';
+
+                           dextras += "small";
+
+                           break;
+                        }
 
                         case 6:
-                        if( !dextras.empty( ) )
-                           dextras += '+';
-                        dextras += "smaller";
-                        break;
+                        {
+                           if( !dextras.empty( ) )
+                              dextras += '+';
+
+                           dextras += "smaller";
+
+                           break;
+                        }
 
                         default:
                         throw runtime_error( "unexpected Font_Size value #"
@@ -4967,11 +5183,15 @@ void Meta_Model::impl::impl_Generate( )
                            break;
 
                            case 1:
-                           if( !dextras.empty( ) )
-                              dextras += '+';
-                           dextras += "label_class=plural_"
-                            + lower( get_obj( ).child_List( ).child_List_Field( ).Child_Rel_Source_Parent( ).Class( ).Name( ) );
-                           break;
+                           {
+                              if( !dextras.empty( ) )
+                                 dextras += '+';
+
+                              dextras += "label_class=plural_"
+                               + lower( get_obj( ).child_List( ).child_List_Field( ).Child_Rel_Source_Parent( ).Class( ).Name( ) );
+
+                              break;
+                           }
 
                            default:
                            throw runtime_error( "unexpected Label_Class value #"
@@ -5007,6 +5227,7 @@ void Meta_Model::impl::impl_Generate( )
                      {
                         if( !pextras.empty( ) )
                            pextras += '+';
+
                         pextras += "@decrypt";
                      }
 
@@ -5014,6 +5235,7 @@ void Meta_Model::impl::impl_Generate( )
                      {
                         if( !pextras.empty( ) )
                            pextras += '+';
+
                         pextras += "@sort";
                      }
 
@@ -5039,12 +5261,14 @@ void Meta_Model::impl::impl_Generate( )
                            {
                               if( !pextras.empty( ) )
                                  pextras += "+";
+
                               pextras += p_field->Class( ).child_Field( ).Id( );
                            }
                            else if( p_field->Class( ).child_Field( ).Extra( ) == 13 ) // i.e. "manual_link"
                            {
                               if( !pextras.empty( ) )
                                  pextras += "+";
+
                               pextras += "@manuallink";
                            }
                            else if( p_field->Class( ).child_Field( ).Extra( ) == 17 ) // i.e. "permission"
@@ -5064,9 +5288,11 @@ void Meta_Model::impl::impl_Generate( )
                                     {
                                        if( !pextras.empty( ) )
                                           pextras += "+";
+
                                        pextras += "@permission:" + p_sfield->child_Specification( ).Id( );
 
                                        p_sfield->child_Specification( ).iterate_stop( );
+
                                        break;
                                     }
                                  } while( p_sfield->child_Specification( ).iterate_next( ) );
@@ -5076,6 +5302,7 @@ void Meta_Model::impl::impl_Generate( )
                         } while( p_field->Class( ).child_Field( ).iterate_next( ) );
 
                         string select_key_exclusions( get_obj( ).child_List( ).child_List_Field( ).Select_Key_Exclusions( ) );
+
                         if( !select_key_exclusions.empty( ) )
                         {
                            string str( "-" );
@@ -5102,6 +5329,7 @@ void Meta_Model::impl::impl_Generate( )
                      parent_column_other_info.push_back( is_mandatory );
 
                      string operations;
+
                      if( get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "link_select" )
                      {
                         operations = "link";
@@ -5114,6 +5342,7 @@ void Meta_Model::impl::impl_Generate( )
                         operations = "select";
 
                         string select_opt;
+
                         switch( get_obj( ).child_List( ).child_List_Field( ).Trigger_Option( ) )
                         {
                            case 0:
@@ -5270,6 +5499,7 @@ void Meta_Model::impl::impl_Generate( )
                      {
                         if( !field_extras.empty( ) )
                            field_extras += "+";
+
                         field_extras += "exact_match";
                      }
 
@@ -5279,28 +5509,44 @@ void Meta_Model::impl::impl_Generate( )
                         break;
 
                         case 1:
-                        if( !field_extras.empty( ) )
-                           field_extras += '+';
-                        field_extras += "large";
-                        break;
+                        {
+                           if( !field_extras.empty( ) )
+                              field_extras += '+';
+
+                           field_extras += "large";
+
+                           break;
+                        }
 
                         case 2:
-                        if( !field_extras.empty( ) )
-                           field_extras += '+';
-                        field_extras += "larger";
-                        break;
+                        {
+                           if( !field_extras.empty( ) )
+                              field_extras += '+';
+
+                           field_extras += "larger";
+
+                           break;
+                        }
 
                         case 5:
-                        if( !field_extras.empty( ) )
-                           field_extras += '+';
-                        field_extras += "small";
-                        break;
+                        {
+                           if( !field_extras.empty( ) )
+                              field_extras += '+';
+
+                           field_extras += "small";
+
+                           break;
+                        }
 
                         case 6:
-                        if( !field_extras.empty( ) )
-                           field_extras += '+';
-                        field_extras += "smaller";
-                        break;
+                        {
+                           if( !field_extras.empty( ) )
+                              field_extras += '+';
+
+                           field_extras += "smaller";
+
+                           break;
+                        }
 
                         default:
                         throw runtime_error( "unexpected Font_Size value #"
@@ -5309,6 +5555,7 @@ void Meta_Model::impl::impl_Generate( )
                      }
 
                      string vext;
+
                      switch( get_obj( ).child_List( ).child_List_Field( ).View_Parent_Extra( ) )
                      {
                         case 0: // i.e. none
@@ -5360,12 +5607,14 @@ void Meta_Model::impl::impl_Generate( )
                      {
                         if( !field_extras.empty( ) )
                            field_extras += "+";
+
                         field_extras += vext;
                      }
 
                      restrict_field_other.push_back( make_pair( p_field->Mandatory( ), field_extras ) );
 
                      string operations;
+
                      if( get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "link_select" )
                      {
                         operations = "link";
@@ -5376,6 +5625,7 @@ void Meta_Model::impl::impl_Generate( )
                      else if( get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "restrict_field" )
                      {
                         operations = "restricted";
+
                         if( !p_field->Transient( ) )
                            rfield_ids.push_back( p_field->Id( ) );
                      }
@@ -5446,6 +5696,7 @@ void Meta_Model::impl::impl_Generate( )
                            new_select_extras += "~";
 
                         string rvalues( get_obj( ).child_List( ).child_List_Field( ).Restriction_Spec( ).Restrict_Values( ) );
+
                         if( !rvalues.empty( ) )
                            new_select_extras += rvalues;
 
@@ -5571,7 +5822,10 @@ void Meta_Model::impl::impl_Generate( )
             }
 
             string modifiers;
-            string modifier_key_info( to_string( Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
+
+            string modifier_key_info( to_string(
+             Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
+
             if( get_obj( ).child_List( ).Class( ).child_Modifier( ).iterate_forwards( modifier_key_info ) )
             {
                uint64_t flag_value( UINT64_C( 0x100 ) );
@@ -5579,7 +5833,9 @@ void Meta_Model::impl::impl_Generate( )
                do
                {
                   ostringstream osstr;
+
                   osstr << hex << flag_value;
+
                   flag_value <<= 1;
 
                   if( get_obj( ).child_List( ).Class( ).child_Modifier( ).child_Modifier_Affect( ).iterate_forwards( ) )
@@ -5592,9 +5848,11 @@ void Meta_Model::impl::impl_Generate( )
                         {
                            if( !modifiers.empty( ) )
                               modifiers += ',';
+
                            modifiers += osstr.str( ) + ':';
 
                            int type = get_obj( ).child_List( ).Class( ).child_Modifier( ).child_Modifier_Affect( ).Type( );
+
                            switch( type )
                            {
                               case 0:
@@ -5670,16 +5928,20 @@ void Meta_Model::impl::impl_Generate( )
             outf << "\x60{\x60$specification_" << specification_name + "_extra\x60=\x60'" << list_extra << "\x60'\x60}\n";
 
             string list_order( "forward" );
+
             if( get_obj( ).child_List( ).Direction( ) == 1 )
                list_order = "reverse";
+
             outf << "\x60{\x60$specification_" << specification_name + "_order\x60=\x60'" << list_order << "\x60'\x60}\n";
 
             string list_binfo;
+
             if( !is_null( get_obj( ).child_List( ).Class( ).Source_Model( ) ) )
             {
                list_binfo = get_obj( ).child_List( ).Class( ).Source_Model( ).Name( );
                list_binfo += ":" + get_obj( ).child_List( ).Class( ).Name( );
             }
+
             outf << "\x60{\x60$specification_" << specification_name + "_binfo\x60=\x60'" << list_binfo << "\x60'\x60}\n";
 
             if( !filters.empty( ) )
@@ -5855,10 +6117,12 @@ void Meta_Model::impl::impl_Generate( )
             for( size_t i = 0; i < column_ids.size( ); i++ )
             {
                string cnum( to_string( i ) );
+
                if( cnum.length( ) < 2 )
                   cnum = '0' + cnum;
 
                string column_id( column_ids[ i ] );
+
                if( !column_pids[ i ].empty( ) )
                   column_id += "." + column_pids[ i ];
 
@@ -5881,6 +6145,7 @@ void Meta_Model::impl::impl_Generate( )
                 << ( column_index_info[ column_ids[ i ] ].second ? "true" : "false" ) << "\x60'\x60}\n";
 
                string fcount;
+
                if( column_index_fcount.count( column_ids[ i ] ) )
                   fcount = ":" + to_string( column_index_fcount[ column_ids[ i ] ] );
 
@@ -6030,6 +6295,7 @@ void Meta_Model::impl::impl_Generate( )
                if( initial_Record.child_Initial_Record_Value( ).iterate_forwards( ) )
                {
                   bool is_first_column = true;
+
                   do
                   {
                      if( is_first_column )
@@ -6116,6 +6382,7 @@ void Meta_Model::impl::impl_Generate( )
 
                outi << next_column_name;
             }
+
             outi << '\n';
 
             for( size_t i = 0; i < values.size( ); i++ )
@@ -6162,7 +6429,9 @@ void Meta_Model::impl::impl_Generate_File_Links( )
       generate_new_script_sio_files( );
 
    string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
+
    set_system_variable( model_key, "Generating file links..." ); // FUTURE: Should be a module string...
+
    try
    {
       if( get_obj( ).Source_File( ).empty( )
