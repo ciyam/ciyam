@@ -2825,7 +2825,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
             string edit_field_list;
 
-            bool is_owner;
+            bool is_owner = false;
+
             string extra_html_content;
 
             is_editable = output_view_form( extra_content,
@@ -2878,6 +2879,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
                {
                   ++x;
+
                   string list_perm( child_lists[ i->second ].perm );
                   string list_type = child_lists[ i->second ].lici->second->type;
 
@@ -2933,6 +2935,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   string name( get_display_name( mod_info.get_string( child_lists[ i->second ].name ) ) );
 
                   string li_class;
+
                   if( is_first )
                   {
                      is_first = false;
