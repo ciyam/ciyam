@@ -4,6 +4,7 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-export CIYAM_STOP_REGEX=" Meta 136100 [0-9]{20} 136430\$"
+# NOTE: Restore stops at the first manually created specification.
+export CIYAM_STOP_REGEX="pc guest [0-9]{17} 100 115100 -g=guests "
 
 ./restore Meta
