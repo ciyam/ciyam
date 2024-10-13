@@ -2288,6 +2288,7 @@ void request_handler::process_request( )
                   checksum_values += to_string( p_session_info->checksum_serial++ );
 
                string name, other_values;
+
                for( int i = 0; i < 10; i++ )
                {
                   name = c_list_prefix;
@@ -2382,10 +2383,12 @@ void request_handler::process_request( )
             string server_command( cmd );
 
             bool is_new_record = false;
+
             if( !data.empty( ) && data[ 0 ] == ' ' )
                is_new_record = true;
 
             bool module_access_denied = false;
+
             if( module_name != p_session_info->user_module )
                module_access_denied = true;
 
@@ -2580,6 +2583,7 @@ void request_handler::process_request( )
             for( int i = 0; i < 10; i++ )
             {
                string name( c_list_prefix );
+
                name += c_rest_suffix;
                name += ( '0' + i );
 
@@ -2587,6 +2591,7 @@ void request_handler::process_request( )
                   list_selections.insert( make_pair( name, input_data[ name ] ) );
 
                string child_list( c_list_prefix );
+
                child_list += ( '0' + i );
 
                for( int j = 0; j < 10; j++ )
@@ -2605,6 +2610,7 @@ void request_handler::process_request( )
             for( int i = 0; i < 10; i++ )
             {
                string name( c_vext_prefix );
+
                name += ( '0' + i );
 
                if( input_data.count( name ) )
@@ -2682,7 +2688,8 @@ void request_handler::process_request( )
                   {
                      list_source next_list;
 
-                     if( lici->second->type == c_list_type_home )
+                     if( ( lici->second->type == c_list_type_home )
+                      || ( using_anonymous && ( lici->second->type == c_list_type_home_anon ) ) )
                      {
                         next_list.module_id = module_id;
                         next_list.module_ref = module_ref;
@@ -2707,6 +2714,7 @@ void request_handler::process_request( )
                   olist.lici = lici;
 
                   string pkey;
+
                   if( ( lici->second )->type == c_list_type_group )
                      pkey = p_session_info->user_group;
                   else if( ( lici->second )->type == c_list_type_user || ( lici->second )->type == c_list_type_user_child )

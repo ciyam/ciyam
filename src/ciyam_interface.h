@@ -365,6 +365,7 @@ const char* const c_list_type_group = "group";
 const char* const c_list_type_nonuser = "nonuser";
 const char* const c_list_type_nongroup = "nongroup";
 const char* const c_list_type_standard = "standard";
+const char* const c_list_type_home_anon = "home_anon";
 const char* const c_list_type_no_access = "no_access";
 const char* const c_list_type_user_child = "user_child";
 const char* const c_list_type_child_admin = "child_admin";
