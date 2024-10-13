@@ -675,6 +675,7 @@ void output_list_form( ostream& os,
  bool has_hashval, bool has_owner_parent, bool& has_any_changing, int back_count, const string* p_pdf_file_name )
 {
    string list_type( source.lici->second->type );
+
    const storage_info& sinfo( get_storage_info( ) );
 
    const map< string, string >& extras( source.lici->second->extras );
@@ -682,6 +683,7 @@ void output_list_form( ostream& os,
    const module_info& mod_info( *sinfo.modules_index.find( source.module )->second );
 
    set< string > print_list_opts;
+
    if( !sess_info.print_list_opts.empty( ) )
       split( sess_info.print_list_opts, print_list_opts, '+' );
 
@@ -742,6 +744,7 @@ void output_list_form( ostream& os,
       string columns( sess_info.quick_link_data[ qlink_num ].second );
 
       vector< string > column_info;
+
       raw_split( columns, column_info );
 
       if( column_info.size( ) != 3 )
@@ -1403,7 +1406,9 @@ void output_list_form( ostream& os,
                   {
                      input_size = 11;
                      max_length = 10;
+
                      is_datetime = true;
+
                      validate = "datetime";
 
                      string date_precision;
@@ -1432,6 +1437,7 @@ void output_list_form( ostream& os,
                   {
                      input_size = 9;
                      max_length = 8;
+
                      validate = "time";
 
                      string time_precision;
@@ -1456,8 +1462,10 @@ void output_list_form( ostream& os,
                   {
                      input_size = 21;
                      max_length = 19;
+
                      validate = "datetime";
                      use_time = "true";
+
                      is_datetime = true;
 
                      string time_precision;
@@ -1469,6 +1477,7 @@ void output_list_form( ostream& os,
                      {
                         input_size = 18;
                         max_length = 16;
+
                         use_secs = "false";
                      }
 
@@ -1482,12 +1491,14 @@ void output_list_form( ostream& os,
                   {
                      input_size = 9;
                      max_length = 8;
+
                      validate = "int";
                   }
                   else if( field_type == c_field_type_numeric )
                   {
                      input_size = 13;
                      max_length = 12;
+
                      validate = "numeric";
                   }
 
@@ -1495,6 +1506,7 @@ void output_list_form( ostream& os,
                   {
                      if( !extra.empty( ) )
                         extra += " ";
+
                      extra += "validate=\"" + validate + "\" ";
                   }
 
@@ -1696,6 +1708,7 @@ void output_list_form( ostream& os,
                istringstream isstr( extras.find( c_list_type_extra_dpstate )->second );
 
                uint64_t flag;
+
                isstr >> hex >> flag;
 
                if( !( parent_state & flag ) )
@@ -1788,7 +1801,9 @@ void output_list_form( ostream& os,
                   if( next_action[ 0 ] == '[' )
                   {
                      string pstate;
+
                      bool okay = false;
+
                      for( pos = 1; pos < next_action.length( ); pos++ )
                      {
                         if( next_action[ pos ] == ']' )
@@ -1806,6 +1821,7 @@ void output_list_form( ostream& os,
                      istringstream isstr( pstate );
 
                      uint64_t flag;
+
                      isstr >> hex >> flag;
 
                      if( !( parent_state & flag ) )
@@ -1852,6 +1868,7 @@ void output_list_form( ostream& os,
 
                   // NOTE: Actions starting with '+' will retain the list row "checks".
                   bool keep_checks = false;
+
                   if( next_action[ 0 ] == '+' )
                   {
                      keep_checks = true;
@@ -1860,6 +1877,7 @@ void output_list_form( ostream& os,
 
                   // NOTE: Actions starting with '-' are not passed any instance keys.
                   bool ignore_selections = false;
+
                   if( next_action[ 0 ] == '-' )
                   {
                      ignore_selections = true;
@@ -1868,8 +1886,10 @@ void output_list_form( ostream& os,
 
                   string next_id( next_action );
 
-                  bool is_reverse( source.is_reverse );
                   int num_fixed_key_values = 0;
+
+                  bool is_reverse = source.is_reverse;
+
                   string restrict_fields, restrict_values;
 
                   determine_fixed_query_info( restrict_fields, restrict_values,
@@ -1880,6 +1900,9 @@ void output_list_form( ostream& os,
 
                   if( !replace_action_parms( next_id, next_action, restrict_fields, restrict_values, &no_log, &not_changing ) )
                      continue;
+
+                  if( !ignore_selections )
+                     has_any_selection_actions = true;
 
                   if( no_log )
                      next_action = '_' + next_action;
