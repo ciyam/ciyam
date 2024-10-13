@@ -4306,6 +4306,11 @@ uint64_t Meta_List::impl::get_state( ) const
 
    // [<start get_state>]
 //nyi
+   // NOTE: Anonymous is permitted even if access is
+   // restricted (for "home" to become "home_anon").
+   if( get_obj( ).Is_Home( ) == true )
+      state &= ~c_modifier_Anonymous_Disallowed;
+
    if( get_obj( ).Class( ).Access_Restriction( ) != 0
     || !is_null( get_obj( ).Class( ).Access_Permission( ) ) )
       state |= c_modifier_Protect_Access;
