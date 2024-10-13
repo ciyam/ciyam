@@ -3992,10 +3992,16 @@ void Meta_Model::impl::impl_Generate( )
             else if( type_key == "home" )
             {
                list_type = "home";
-               specification_name += "home_list";
 
                if( is_no_access_list )
-                  throw runtime_error( "'home' list is not compatible with this access restriction" );
+               {
+                  if( get_obj( ).child_List( ).Allow_Anonymous_Access( ) )
+                     list_type = "home_anon";
+                  else
+                     throw runtime_error( "'home' list is not compatible with this access restriction (unless allowing anonymous access)" );
+               }
+
+               specification_name += "home_list";
 
                if( !list_extra.empty( ) )
                   list_extra += ',';
@@ -4129,7 +4135,8 @@ void Meta_Model::impl::impl_Generate( )
             if( !is_null( get_obj( ).child_List( ).Access_Permission( ) ) )
             {
                string s;
-               if( list_type == "admin" || ( list_type == "view_child" && is_admin_list ) )
+
+               if( ( list_type == "admin" ) || ( is_admin_list && ( list_type == "view_child" ) ) )
                   s = "!";
 
                list_type += "=" + s + get_obj( ).child_List( ).Access_Permission( ).Id( );
