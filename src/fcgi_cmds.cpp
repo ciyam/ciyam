@@ -133,9 +133,10 @@ void read_module_strings( module_info& info, tcp_socket& socket )
 
          info.list_info[ info.lists[ i ].pid ]->var_ids.push_back( info.lists[ i ].id );
       }
-      else if( info.lists[ i ].type != c_list_type_child
-       && info.lists[ i ].type != c_list_type_user_child && info.lists[ i ].type != c_list_type_child_admin
-       && info.lists[ i ].type != c_list_type_child_owner && info.lists[ i ].type != c_list_type_child_admin_owner )
+      else if( ( info.lists[ i ].type != c_list_type_home )
+       && ( info.lists[ i ].type != c_list_type_home_anon ) && ( info.lists[ i ].type != c_list_type_child )
+       && ( info.lists[ i ].type != c_list_type_user_child ) && ( info.lists[ i ].type != c_list_type_child_admin )
+       && ( info.lists[ i ].type != c_list_type_child_owner ) && ( info.lists[ i ].type != c_list_type_child_admin_owner ) )
          info.list_menus.insert( make_pair( info.get_string( info.lists[ i ].name ), &info.lists[ i ] ) );
    }
 }
