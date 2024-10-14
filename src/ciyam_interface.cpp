@@ -2236,16 +2236,17 @@ void request_handler::process_request( )
             string extravalues( input_data[ c_param_extravalues ] );
 
             set< string > url_opts;
+
             if( !get_storage_info( ).url_opts.empty( ) )
                split( get_storage_info( ).url_opts, url_opts, '+' );
 
             bool use_url_checksum = ( url_opts.count( c_url_opt_use_checksum ) > 0 );
 
-            bool is_checksummed_home = ( cmd == c_cmd_home && !uselect.empty( ) );
+            bool is_checksummed_home = ( ( cmd == c_cmd_home ) && !uselect.empty( ) );
 
-            if( use_url_checksum && !cmd.empty( ) && cmd != c_cmd_join && cmd != c_cmd_open
-             && ( is_checksummed_home || ( cmd != c_cmd_home && cmd != c_cmd_quit && cmd != c_cmd_login
-             && cmd != c_cmd_status && ( cmd != c_cmd_view || ( act != c_act_cont && act != c_act_undo ) ) ) ) )
+            if( use_url_checksum && !cmd.empty( ) && ( cmd != c_cmd_join ) && ( cmd != c_cmd_open )
+             && ( is_checksummed_home || ( ( cmd != c_cmd_home ) && ( cmd != c_cmd_quit ) && ( cmd != c_cmd_login )
+             && ( cmd != c_cmd_status ) && ( cmd != c_cmd_view || ( ( act != c_act_cont ) && ( act != c_act_undo ) ) ) ) ) )
             {
                string prefix;
 
@@ -2284,7 +2285,8 @@ void request_handler::process_request( )
 
                // NOTE: For actions (and for new records) a serial number is being used to both prevent
                // URL tampering and replaying (also a defense against any browser repeating POST bugs).
-               if( ( !act.empty( ) && act != c_act_view ) || ( cmd == c_cmd_view && data.find( c_new_record ) == 0 ) )
+               if( ( !act.empty( ) && ( act != c_act_view ) )
+                || ( ( cmd == c_cmd_view ) && data.find( c_new_record ) == 0 ) )
                   checksum_values += to_string( p_session_info->checksum_serial++ );
 
                string name, other_values;
@@ -2313,8 +2315,10 @@ void request_handler::process_request( )
 
                // NOTE: For list searches part of an SHA1 hash of the "findinfo" parameter is used to
                // ensure the search data hasn't been changed via URL tampering.
-               if( !has_just_logged_in && ( ( !hashval.empty( ) && hashval != get_hash( hash_values ) )
-                || ( chksum != get_checksum( identity_values ) && chksum != get_checksum( *p_session_info, checksum_values ) ) ) )
+               if( !has_just_logged_in
+                && ( ( !hashval.empty( ) && ( hashval != get_hash( hash_values ) ) )
+                || ( ( chksum != get_checksum( identity_values ) )
+                && ( chksum != get_checksum( *p_session_info, checksum_values ) ) ) ) )
                {
 #ifdef DEBUG
                   for( map< string, string >::const_iterator ci = input_data.begin( ); ci != input_data.end( ); ++ci )
@@ -2373,6 +2377,7 @@ void request_handler::process_request( )
             }
 
             int vtab_num = 1;
+
             if( !vtab.empty( ) )
                vtab_num = atoi( vtab.c_str( ) );
 
@@ -2404,10 +2409,11 @@ void request_handler::process_request( )
             if( !mod_info.perm.empty( ) && !p_session_info->user_perms.count( mod_info.perm ) )
                throw runtime_error( GDS( c_display_permission_denied ) );
 
-            if( cmd == c_cmd_login || module_access_denied )
+            if( ( cmd == c_cmd_login ) || module_access_denied )
             {
                act.erase( );
                cmd.erase( );
+
                server_command.erase( );
             }
             else if( cmd == c_cmd_pview )
@@ -2423,7 +2429,7 @@ void request_handler::process_request( )
             // NOTE: When logging in after having previously logged out the initial URL will actually
             // be the "quit" command so now verify that the session being logged out matches the same
             // one that the quit was issued from (via "extra").
-            if( cmd == c_cmd_quit && extra != session_id )
+            if( ( cmd == c_cmd_quit ) && ( extra != session_id ) )
             {
                cmd = c_cmd_home;
                server_command.erase( );
@@ -2441,8 +2447,8 @@ void request_handler::process_request( )
             try
             {
                if( !has_just_logged_in && p_session_info->logged_in
-                && ( cmd == c_cmd_home || cmd == c_cmd_pwd || cmd == c_cmd_view
-                || cmd == c_cmd_pview || cmd == c_cmd_list || cmd == c_cmd_plist ) )
+                && ( ( cmd == c_cmd_home ) || ( cmd == c_cmd_pwd ) || ( cmd == c_cmd_view )
+                || ( cmd == c_cmd_pview ) || ( cmd == c_cmd_list ) || ( cmd == c_cmd_plist ) ) )
                   fetch_user_record( g_id, module_id, module_name, mod_info,
                    *p_session_info, is_authorised, false, p_session_info->user_id, "", "", "" );
             }
@@ -2455,13 +2461,15 @@ void request_handler::process_request( )
                // is being killed in the same way as would occur for an invalid login.
                p_session_info->logged_in = false;
                created_session = true;
+
                throw;
             }
 
             // NOTE: The PIN is compared against the current and previous (if has already checked)
             // expected value to allow for a little bit more margin with the device time accuracy.
             if( !pin.empty( )
-             && ( pin == p_session_info->user_pin_value || pin == p_session_info->last_user_pin_value ) )
+             && ( ( pin == p_session_info->user_pin_value )
+             || ( pin == p_session_info->last_user_pin_value ) ) )
                p_session_info->needs_pin = false;
 
             // NOTE: If not logging out and needs either a PIN or to change
@@ -2482,13 +2490,14 @@ void request_handler::process_request( )
             map< string, string > user_field_info;
             map< string, string > extra_field_info;
 
-            if( !fieldlist.empty( ) && ( act == c_act_edit
-             || act == c_act_cont || act == c_act_save || act == c_act_exec || act == c_act_view ) )
+            if( !fieldlist.empty( ) && ( ( act == c_act_edit )
+             || ( act == c_act_cont ) || ( act == c_act_save ) || ( act == c_act_exec ) || ( act == c_act_view ) ) )
             {
                vector< string > field_ids;
                vector< string > field_values;
 
                split( fieldlist, field_ids );
+
                if( act != c_act_exec )
                   raw_split( app, field_values );
                else
@@ -2506,6 +2515,7 @@ void request_handler::process_request( )
                   vector< string > extra_field_values;
 
                   split( extrafields, extra_field_ids );
+
                   raw_split( extravalues, extra_field_values );
 
                   if( extra_field_ids.size( ) != extra_field_values.size( ) )
@@ -2520,9 +2530,11 @@ void request_handler::process_request( )
             }
 
             set< string > selected_records;
+
             if( !app.empty( ) && act != c_act_save && act != c_act_cont && act != c_act_view )
             {
                vector< string > record_keys;
+
                split( app, record_keys );
 
                for( size_t i = 0; i < record_keys.size( ); i++ )
@@ -2547,6 +2559,7 @@ void request_handler::process_request( )
             for( int i = 0; i < 10; i++ )
             {
                string child_name( c_list_prefix );
+
                child_name += ( '0' + i );
                child_name += c_srch_suffix;
 
@@ -2560,6 +2573,7 @@ void request_handler::process_request( )
             for( int i = 0; i < 10; i++ )
             {
                string name( c_list_prefix );
+
                name += c_prnt_suffix;
                name += ( '0' + i );
 
@@ -2567,11 +2581,13 @@ void request_handler::process_request( )
                   list_selections.insert( make_pair( name, input_data[ name ] ) );
 
                string child_list( c_list_prefix );
+
                child_list += ( '0' + i );
 
                for( int j = 0; j < 10; j++ )
                {
                   string child_name( child_list + c_prnt_suffix );
+
                   child_name += ( '0' + j );
 
                   if( input_data.count( child_name ) )
@@ -2607,6 +2623,7 @@ void request_handler::process_request( )
             // NOTE: These special extra variables are used to indicate a restrict check/uncheck
             // has occurred for a view child list when fetching the parent view.
             map< string, string > view_extra_vars;
+
             for( int i = 0; i < 10; i++ )
             {
                string name( c_vext_prefix );
@@ -2665,11 +2682,11 @@ void request_handler::process_request( )
 
             bool is_in_edit = false;
 
-            if( act == c_act_edit || act == c_act_save
-             || act == c_act_cont || ( is_new_record && ( act.empty( ) || act == c_act_undo ) ) )
+            if( ( act == c_act_edit ) || ( act == c_act_save )
+             || ( act == c_act_cont ) || ( is_new_record && ( act.empty( ) || ( act == c_act_undo ) ) ) )
                is_in_edit = true;
 
-            if( cmd == c_cmd_view || cmd == c_cmd_pview )
+            if( ( cmd == c_cmd_view ) || ( cmd == c_cmd_pview ) )
             {
                vici = mod_info.view_info.find( ident );
                if( vici == mod_info.view_info.end( ) )
@@ -2680,7 +2697,7 @@ void request_handler::process_request( )
                setup_view_fields( view, *vici->second,
                 mod_info, *p_session_info, ident, login_opts, module_id, module_ref, is_in_edit, is_new_record );
             }
-            else if( cmd == c_cmd_home || cmd == c_cmd_list || cmd == c_cmd_plist )
+            else if( ( cmd == c_cmd_home ) || ( cmd == c_cmd_list ) || ( cmd == c_cmd_plist ) )
             {
                if( cmd == c_cmd_home )
                {

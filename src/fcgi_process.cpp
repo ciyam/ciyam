@@ -214,6 +214,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
    // NOTE: For each tab (with 0 being for the fields above the tabs)
    // a "show" option allows for more or less fields to be displayed.
    map< string, string > show_opts;
+
    for( int i = 0; i < 10; i++ )
    {
       string show_opt( c_show_prefix );
@@ -232,6 +233,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       if( !mod_info.sys_class_id.empty( ) )
       {
          issued_command = true;
+
          fetch_sys_record( module_id, mod_info, *p_session_info );
 
          ostringstream osstr;
@@ -269,6 +271,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             bool found = false;
 
             string::size_type pos = home_info_cmd.find( c_user_key_arg );
+
             if( pos != string::npos )
             {
                found = true;
@@ -276,6 +279,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             }
 
             pos = home_info_cmd.find( c_user_perms_arg );
+
             if( pos != string::npos )
             {
                found = true;
@@ -344,7 +348,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       if( !simple_command( *p_session_info, dummy_command ) )
          throw runtime_error( "unexpected response to dummy server command" );
    }
-   else if( cmd == c_cmd_view || cmd == c_cmd_pview )
+   else if( ( cmd == c_cmd_view ) || ( cmd == c_cmd_pview ) )
    {
       server_command.erase( );
       pair< string, string > item_info;
@@ -404,7 +408,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
       bool was_user_force_field = false;
 
-      if( is_new_record || act == c_act_edit || act == c_act_exec || act == c_act_view )
+      if( is_new_record
+       || ( act == c_act_edit ) || ( act == c_act_exec ) || ( act == c_act_view ) )
       {
          // NOTE: In the case where an edit occurs via an action a field assignment may
          // be required via use of the field/extra query string variables.
@@ -1236,7 +1241,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          }
       }
    }
-   else if( cmd == c_cmd_list || cmd == c_cmd_plist )
+   else if( ( cmd == c_cmd_list ) || ( cmd == c_cmd_plist ) )
    {
       server_command.erase( );
       list.id = c_list_prefix;
@@ -1338,6 +1343,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          LOG_TRACE( "session terminated" );
 
       ostringstream osstr;
+
       if( had_send_or_recv_error || !mod_info.allows_anonymous_access )
       {
          if( g_ciyam_interface_html.find( c_form_content_comment ) == string::npos )
@@ -1397,17 +1403,18 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
    else
    {
       string pwd_display_name;
+
       if( cookies_permitted && get_storage_info( ).login_days && !g_login_persistent_html.empty( ) )
          pwd_display_name = g_display_login_info;
       else
          pwd_display_name = g_display_change_password;
 
-      if( cmd != c_cmd_pview && cmd != c_cmd_plist )
+      if( ( cmd != c_cmd_pview ) && ( cmd != c_cmd_plist ) )
          extra_content << "\n<div id=\"normal_content\">\n";
       else
          extra_content << "\n<div id=\"print_content\">\n";
 
-      if( cmd != c_cmd_pview && cmd != c_cmd_plist && !module_access_denied )
+      if( ( cmd != c_cmd_pview ) && ( cmd != c_cmd_plist ) && !module_access_denied )
       {
          extra_content << "\n<div id=\"header\"><div id=\"appname\">";
 
@@ -1431,7 +1438,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                
          if( using_anonymous )
          {
-            if( cmd != c_cmd_join && cmd != c_cmd_open && !mod_info.user_class_id.empty( ) )
+            if( ( cmd != c_cmd_join ) && ( cmd != c_cmd_open ) && !mod_info.user_class_id.empty( ) )
             {
                if( !get_storage_info( ).blockchain.empty( ) )
                {
@@ -1467,6 +1474,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   // as lines to the list of "sign up testers" file (to let *all* users
                   // have access simply remove the file).
                   set< string > testers;
+
                   if( file_exists( c_sign_up_testers_file ) )
                   {
                      testers.insert( "10.0.0.1" );
@@ -1520,9 +1528,11 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                }
 
                bool has_user_link = false;
-               if( cmd != c_cmd_view || ident != user_info_view_id || data != p_session_info->user_key )
+
+               if( ( cmd != c_cmd_view ) || ( ident != user_info_view_id ) || ( data != p_session_info->user_key ) )
                {
                   module_const_iterator mci, end;
+
                   for( mci = get_storage_info( ).modules.begin( ), end = get_storage_info( ).modules.end( ); mci != end; ++mci )
                   {
                      string next_module( mci->name );
@@ -1532,7 +1542,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                      string module_ref( get_storage_info( ).get_module_ref( next_module ) );
 
-                     if( module_ref == user_info_module_ref && ( module_name == next_module || allow_module_switching ) )
+                     if( ( module_ref == user_info_module_ref )
+                      && ( ( module_name == next_module ) || allow_module_switching ) )
                      {
                         has_user_link = true;
 
@@ -1554,6 +1565,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         }
 
                         extra_content << "\">";
+
                         break;
                      }
                   }
@@ -1574,7 +1586,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             if( !p_session_info->needs_pin
              && !mod_info.user_pwd_field_id.empty( ) && !p_session_info->is_openid )
             {
-               if( cmd == c_cmd_pwd && !input_data.count( c_param_newpwd ) )
+               if( ( cmd == c_cmd_pwd ) && !input_data.count( c_param_newpwd ) )
                   extra_content << " | " << pwd_display_name << "";
                else
                {
@@ -1690,11 +1702,13 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             extra_content << "            </select>\n";
          }
 
-         if( !using_anonymous && !p_session_info->needs_pin && allow_module_switching && cmd != c_cmd_join )
+         if( !using_anonymous && !p_session_info->needs_pin
+          && allow_module_switching && ( cmd != c_cmd_join ) )
          {
             bool had_first = false;
 
             module_const_iterator mci, end;
+
             for( mci = get_storage_info( ).modules.begin( ), end = get_storage_info( ).modules.end( ); mci != end; ++mci )
             {
                string next_module( mci->name );
@@ -1705,6 +1719,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                {
                   if( !menu_opts.count( c_menu_opt_show_inaccessible_modules ) )
                      continue;
+
                   can_link = false;
                }
 
@@ -1727,14 +1742,16 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                // NOTE: Remove the module prefix (if present) and trailing version information.
                str_replace( prefix, "_", " " );
+
                if( prefix.length( ) && title.find( prefix ) == 0 )
                   title.erase( 0, prefix.length( ) );
 
                string::size_type pos = title.find_last_of( " " );
+
                if( pos != string::npos )
                   title.erase( pos );
 
-               if( !can_link || module_name == next_module )
+               if( !can_link || ( module_name == next_module ) )
                   extra_content << title;
                else
                {
@@ -1805,8 +1822,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
       map< string, vector< string > > menu_items;
 
-      if( !p_session_info->needs_pin && cmd != c_cmd_join && cmd != c_cmd_open
-       && cmd != c_cmd_pview && cmd != c_cmd_plist && !module_access_denied )
+      if( !p_session_info->needs_pin && ( cmd != c_cmd_join ) && ( cmd != c_cmd_open )
+       && ( cmd != c_cmd_pview ) && ( cmd != c_cmd_plist ) && !module_access_denied )
       {
          extra_content << "\n<div id=\"menuband\" class=\"clearfix\">\n";
          extra_content << "   <ul id=\"menubar\">\n";
@@ -1859,6 +1876,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
           lmci = mod_info.list_menus.begin( ), end = mod_info.list_menus.end( ); lmci != end; ++lmci )
          {
             string list_perm( lmci->second->perm );
+
             if( !list_perm.empty( ) && list_perm[ 0 ] == '!' )
                list_perm.erase( 0, 1 );
 
@@ -1899,7 +1917,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             if( has_perm && lmci->second->type != c_list_type_home
              && ( !user_group.empty( ) || lmci->second->type != c_list_type_group )
              && ( is_admin_user || !lmci->second->perm.empty( )
-             || ( lmci->second->type != c_list_type_admin && lmci->second->type != c_list_type_child_admin ) ) )
+             || ( ( lmci->second->type != c_list_type_admin )
+             && ( lmci->second->type != c_list_type_child_admin ) ) ) )
             {
                string display_name( get_display_name( lmci->first ) );
 
@@ -1920,7 +1939,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             // NOTE: If a menu has only one item (and that item has the same name as the menu) then rather
             // than create a menu just make the menu itself behave as the menu item link.
             string id, item_name;
+
             bool menu_is_item = false;
+
             if( i->second.size( ) == 1 )
             {
                string::size_type pos = i->second[ 0 ].find( '!' );
@@ -1957,6 +1978,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                extra_content << "     <li class=\"\"><a href=\"#\">" << i->first << "</a>\n";
 
                extra_content << "      <ul>\n";
+
                for( size_t j = 0; j < i->second.size( ); j++ )
                {
                   string::size_type pos = i->second[ j ].find( '!' );
@@ -1982,6 +2004,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                   extra_content << "\">" << item_name << "</a></li>\n";
                }
+
                extra_content << "      </ul>\n";
             }
 
@@ -1990,13 +2013,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
          // NOTE: If the selected list has become inaccessible (to due a uselect change)
          // then force a jump back to "home".
-         if( !has_selected_list && qlink.empty( ) && cmd == c_cmd_list && !uselect.empty( ) )
+         if( !has_selected_list && qlink.empty( ) && ( cmd == c_cmd_list ) && !uselect.empty( ) )
             cmd.erase( );
 
          if( p_session_info->quick_link_data.size( ) )
          {
             extra_content << "     <li class=\"\"><a href=\"#\">"
              << get_display_name( mod_info.get_string( mod_info.user_qlink_list_id + "_name" ) ) << "</a>\n";
+
             extra_content << "      <ul>\n";
          }
 
@@ -2005,6 +2029,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             string columns( p_session_info->quick_link_data[ i ].second );
 
             vector< string > column_info;
+
             raw_split( columns, column_info );
 
             if( column_info.size( ) != 3 )
@@ -2031,10 +2056,12 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   else
                   {
                      string::size_type pos = column_info[ 2 ].find( '+' );
+
                      if( pos == string::npos )
                         throw runtime_error( "unexpected quick link data format" );
 
                      string checksum_values( string( c_cmd_list ) + column_info[ 2 ].substr( 0, pos ) + uselect );
+
                      extra_content << "&" << c_param_chksum << "="
                       << get_checksum( *p_session_info, checksum_values + c_hash_suffix );
 
@@ -2054,7 +2081,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          extra_content << "</div>\n";
       }
 
-      if( cmd != c_cmd_pview && cmd != c_cmd_plist )
+      if( ( cmd != c_cmd_pview ) && ( cmd != c_cmd_plist ) )
       {
          bool found_slides = false;
 
@@ -2167,7 +2194,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          }
       }
 
-      if( cmd != c_cmd_pview && cmd != c_cmd_plist )
+      if( ( cmd != c_cmd_pview ) && ( cmd != c_cmd_plist ) )
          extra_content << "<div id=\"remainder\">\n";
       else
          extra_content << "<div id=\"print_remainder\">\n";
@@ -2181,7 +2208,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
           make_pair( c_display_session_logged_into_other_module_parm_href,
           "<a href=\"javascript:history.back( )\">" ), "</a>" ) << "</p>";
       }
-      else if( cmd == c_cmd_pview || cmd == c_cmd_plist )
+      else if( ( cmd == c_cmd_pview ) || ( cmd == c_cmd_plist ) )
       {
          extra_content << "<p class=\"screen text_with_back\">"
           << string_message( GDS( c_display_click_the_printer_icon_to_print ),
@@ -2204,6 +2231,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
              || g_password_persistent_html.empty( ) ? g_password_html : g_password_persistent_html );
 
             string::size_type pos = password_html.find( c_checked );
+
             if( pos != string::npos )
                str_replace( password_html, c_checked, p_session_info->is_persistent ? "checked" : "" );
 
@@ -2225,9 +2253,11 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
          bool has_completed = false;
          bool had_unexpected_error = false;
+
          string email, account_type, req_username, oreq_username, gpg_public_key;
 
          email = input_data[ c_param_email ];
+
          req_username = oreq_username = input_data[ c_param_requsername ];
 
          if( !email.empty( ) || input_data.count( c_param_gpgpubkey ) )
@@ -2236,9 +2266,11 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             gpg_public_key = input_data[ c_param_gpgpubkey ];
 
             bool is_help_request = false;
+
             if( !gpg_public_key.empty( ) )
             {
                string::size_type pos = req_username.find( "help " );
+
                if( pos == 0 )
                {
                   is_help_request = true;
@@ -2261,6 +2293,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   throw runtime_error( "unexpected error occurred checking for user" );
 
                vector< string > user_data;
+
                split( user_info.second, user_data );
 
                if( user_data.size( ) < 2 )
@@ -2281,7 +2314,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             }
 
             string clone_key;
+
             map< string, string > sign_up_types_map;
+
             if( file_exists( c_sign_up_types_map ) )
             {
                buffer_file_items( c_sign_up_types_map, sign_up_types_map );
@@ -2336,7 +2371,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      {
                         result = first_line.substr( pos + len + 1 );
 
-                        if( result == "not changed" && !is_help_request )
+                        if( ( result == "not changed" ) && !is_help_request )
                         {
                            error_message = "<p class=\"error\" align=\"center\">"
                             + GDS( c_display_gpg_encrypted_email_should_have_already_been_sent )
@@ -2348,14 +2383,16 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         }
                      }
 
-                     if( result == "imported" || ( result == "not changed" && is_help_request ) )
+                     if( ( result == "imported" ) || ( ( result == "not changed" ) && is_help_request ) )
                      {
                         pos = first_line.find( " key " );
+
                         if( pos == string::npos )
                            had_unexpected_error = true;
                         else
                         {
                            string::size_type epos = first_line.find( ':' );
+
                            if( epos == string::npos )
                               had_unexpected_error = true;
                            else
@@ -2375,6 +2412,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                               if( pos == string::npos )
                               {
                                  cmd = "gpg --batch --delete-key --yes " + key + ">x.tmp 2>&1";
+
                                  if( system( cmd.c_str( ) ) != 0 )
                                     LOG_TRACE( buffer_file( "x.tmp" ) );
 
@@ -2408,6 +2446,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   write_file( key, gpg_message );
 
                   string gpg_password;
+
                   if( !simple_command( *p_session_info, "password gpg", &gpg_password ) )
                      throw runtime_error( "unable to access GPG password" );
 
@@ -2417,6 +2456,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   gpg_password = data_decrypt( gpg_password, sid );
 
                   string smtp_sender;
+
                   if( !simple_command( *p_session_info, "smtpinfo", &smtp_sender ) )
                      throw runtime_error( "unable to access SMTP info" );
 
@@ -2430,6 +2470,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   if( !file_exists( key + ".asc" ) )
                   {
                      gpg_message = buffer_file( key + ".tmp" );
+
                      LOG_TRACE( "error: " + gpg_message );
 
                      has_completed = false;
@@ -2442,7 +2483,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      password = data_encrypt( password, sid );
 
                      bool is_anon_email_addr = false;
+
                      string::size_type pos = email_addr.find( "@" );
+
                      if( pos != string::npos )
                      {
                         if( email_addr.substr( 0, pos ) == c_anon_user_key )
@@ -2546,6 +2589,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                clear_key( sid );
 
                string new_key;
+
                add_user( req_username, req_username, encrypted_email,
                 clone_key, req_username, error_message, mod_info, *p_session_info, &new_key, false );
 
@@ -2628,13 +2672,16 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       else if( cmd == c_cmd_open )
       {
          bool has_completed = false;
+
          string account_type( input_data[ c_param_accttype ] );
          string req_username( input_data[ c_param_requsername ] );
 
          if( !req_username.empty( ) )
          {
             string clone_key;
+
             map< string, string > sign_up_types_map;
+
             if( file_exists( c_sign_up_types_map ) )
             {
                buffer_file_items( c_sign_up_types_map, sign_up_types_map );
@@ -2759,7 +2806,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             }
          }
       }
-      else if( cmd == c_cmd_view || cmd == c_cmd_pview )
+      else if( ( cmd == c_cmd_view ) || ( cmd == c_cmd_pview ) )
       {
          extra_content << "<div id=\"title\">";
          extra_content << "<h3><span class=\"alignleft\">";
@@ -2873,7 +2920,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                }
 
                int n = 0, x = 0;
+
                bool is_first = true;
+
                set< string > children_not_permitted;
 
                for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
@@ -3045,7 +3094,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          if( cmd == c_cmd_pview && file_exists( ident + ".htms" ) )
             extra_content << buffer_file( ident + ".htms" );
       }
-      else if( cmd == c_cmd_list || cmd == c_cmd_plist )
+      else if( ( cmd == c_cmd_list ) || ( cmd == c_cmd_plist ) )
       {
          string list_perm( list.perm );
 
@@ -3105,6 +3154,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   for( size_t i = 0; i < p_var_ids->size( ); i++ )
                   {
                      list_info_const_iterator lici = mod_info.list_info.find( ( *p_var_ids )[ i ] );
+
                      if( lici == mod_info.list_info.end( ) )
                         throw runtime_error( "Unknown variation list id '" + ( *p_var_ids )[ i ] + "'." );
 
@@ -3165,7 +3215,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          extra_content << "<pre>\n";
 
          string response;
+
          int timeout = c_initial_response_timeout;
+
          while( response.empty( ) || response[ 0 ] != '(' )
          {
             response.erase( );
@@ -3176,6 +3228,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   extra_content << "\n*** response truncated due to timeout ***\n";
                else
                   extra_content << "\n*** response truncated due to closure ***\n";
+
                break;
             }
 
@@ -3226,8 +3279,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             extra_content << "<p>Located session " << session_id << ".</p>\n";
 
          extra_content << "<p>\n";
+
          for( map< string, string >::const_iterator ci = input_data.begin( ); ci != input_data.end( ); ++ci )
             extra_content << "Input[ " << ci->first << " ] => " << ci->second << "<br/>\n";
+
          extra_content << "</p>\n";
 
          extra_content << "<p>Total number of sessions = " << get_num_sessions( ) << ".</p>\n";
@@ -3306,7 +3361,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       extra_content_func += "displayPasswordVerificationIncorrect = '"
        + replaced( GDS( c_display_password_verification_incorrect ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
-      if( cont != c_true && !new_key.empty( ) )
+      if( ( cont != c_true ) && !new_key.empty( ) )
       {
          string extra( ident );
 
