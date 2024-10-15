@@ -2008,7 +2008,7 @@ void request_handler::process_request( )
                   if( using_anonymous )
                   {
                      p_session_info->user_module = module_name;
-                     p_session_info->user_group = mod_info.anon_group;
+                     p_session_info->user_group = mod_info.anon_ginfo;
                   }
                   else
                   {
