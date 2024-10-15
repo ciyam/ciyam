@@ -11566,10 +11566,12 @@ void set_grp( const string& grp )
 
       gtp_session->gid = convert_group_keys_to_numbers( gtp_session->grp );
 
-      if( pos == string::npos )
-         set_session_variable( get_special_var_name( e_special_var_gids ), "" );
-      else
-         set_session_variable( get_special_var_name( e_special_var_gids ), grp.substr( pos + 1 ) );
+      string gids;
+
+      if( pos != string::npos )
+         gids = convert_group_keys_to_numbers( grp.substr( pos + 1 ) );
+
+      set_session_variable( get_special_var_name( e_special_var_gids ), gids );
    }
 }
 
