@@ -705,7 +705,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
 
          if( pos != string::npos )
          {
-            info.anon_group = info.user_group_field_id.substr( pos + 1 );
+            info.anon_ginfo = info.user_group_field_id.substr( pos + 1 );
             info.user_group_field_id.erase( pos );
          }
       }
