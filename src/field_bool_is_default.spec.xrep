@@ -9,9 +9,11 @@
 `{`!`@eq`(`$arg_pfield`,`'`'`)\
 `{`$i`}   get_obj( ).`{`$arg_pfield`}( ).`{`$arg_sfield`}( ); // KLUDGE: To ensure a fetch has been forced for the FK.
 
-`{`$i`}   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( ) && `}`{`@eq`(`$arg_is_neq`,`'true`'`)!`}get_obj( ).`{`$arg_pfield`}( ).is_field_default( "`{`$arg_sfield`}" ) )
+`{`$i`}   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( ) && ( `}`{`@eq`(`$arg_is_neq`,`'true`'`)!`}\
+get_obj( ).`{`$arg_pfield`}( ).is_field_default( "`{`$arg_sfield`}" ) )`{`!`@eq`(`$arg_tfield`,`'`'`) )`}
 `,\
-`{`$i`}   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( ) && `}get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_is_neq`,`'`'`)==`,!=`} g_default_`{`$arg_sfield`} )
+`{`$i`}   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( ) && ( `}\
+get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_is_neq`,`'`'`)==`,!=`} g_default_`{`$arg_sfield`} )`{`!`@eq`(`$arg_tfield`,`'`'`) )`}
 `}\
 `{`$i`}      get_obj( ).`{`$arg_field`}( true );
 `{`$i`}   else
