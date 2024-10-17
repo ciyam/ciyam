@@ -24,11 +24,18 @@ IDENTITY=$2
 DATA_TYPE=$3
 ;
 .storage_init $STORAGE
+@ifndef $ERROR
+;
+.storage_lock_create -num=10 obtain @datachain
+@ifndef $ERROR
+LOCK_HANDLE=$OUTPUT
 ;
 ; NOTE: Only create datachain details if was not already created.
 .storage_datachain_details -list
 ALL_DATA_CHAINS=$OUTPUT
+;
 IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
+;
 @ifeq "$ALL_DATA_CHAINS" "$IDENTITY_REMOVED"
 .storage_datachain_details $IDENTITY -type=$DATA_TYPE
 ;
@@ -42,6 +49,11 @@ MODULE=%MODULES:2%
 ;
 @endif
 ;
+@endif
+;
+.storage_lock_remove $LOCK_HANDLE
+;
 .storage_term
+@endif
 ;
 @endif
