@@ -770,7 +770,7 @@ class fissile_string
    {
       if( compressed )
       {
-         if( i >= len || ( l && ( l + i >= len ) ) )
+         if( ( i >= len ) || ( l && ( l + i >= len ) ) )
             return string( );
 
          uint64_t slen = ( l ? l : len - i );
@@ -931,7 +931,7 @@ string replace_char_with_spaces( const string& str, char ch = '_', bool double_a
    {
       if( str[ i ] == ch )
       {
-         if( double_as_single && i < str.size( ) - 1 && str[ i + 1 ] == ch )
+         if( double_as_single && ( i < str.size( ) - 1 ) && ( str[ i + 1 ] == ch ) )
             rs += str[ ++i ];
          else
             rs += ' ';
@@ -1010,7 +1010,7 @@ string::size_type find_item_in_set( const string& item,
          {
             pos = item_set.rfind( ',' + item );
 
-            if( pos == item_set.length( ) - item.length( ) - 1 )
+            if( pos == ( item_set.length( ) - item.length( ) - 1 ) )
             {
                if( p_len )
                   ++( *p_len );
@@ -1057,7 +1057,7 @@ bool compare_fissile_values( char op, const fissile_string& lhs, const fissile_s
          {
             for( size_t i = 0; i < lhs.length( ); i++ )
             {
-               if( lhs[ i ] < rhs[ i ] && rhs[ i ] != '.' )
+               if( ( lhs[ i ] < rhs[ i ] ) && ( rhs[ i ] != '.' ) )
                {
                   rc = true;
                   break;
@@ -1078,7 +1078,7 @@ bool compare_fissile_values( char op, const fissile_string& lhs, const fissile_s
          {
             for( size_t i = 0; i < lhs.length( ); i++ )
             {
-               if( lhs[ i ] > rhs[ i ] && rhs[ i ] != '.' )
+               if( ( lhs[ i ] > rhs[ i ] ) && ( rhs[ i ] != '.' ) )
                {
                   rc = true;
                   break;
@@ -1182,7 +1182,7 @@ string append_to_fissile_str(
          ch = rhs[ rpos++ ];
       }
 
-      if( ch == special && old_length )
+      if( ( ch == special ) && old_length )
       {
          if( lpos >= old_length )
             lpos = 0;
@@ -1388,7 +1388,7 @@ fissile_string handle_numeric_fissile_op(
 
    string::size_type tpos = next.find( '#' );
 
-   if( tpos == string::npos && op == c_fissile_op_none )
+   if( ( tpos == string::npos ) && ( op == c_fissile_op_none ) )
    {
       if( !next.empty( ) )
          next += '#';
@@ -1397,7 +1397,7 @@ fissile_string handle_numeric_fissile_op(
    }
    else
    {
-      if( tpos == next.length( ) - 1 )
+      if( tpos == ( next.length( ) - 1 ) )
       {
          next.erase( tpos );
          tpos = string::npos;
@@ -1501,7 +1501,7 @@ string get_fissile_name( const map< string, fissile_string >& fissile_values, co
 
    while( true )
    {
-      if( var_name.empty( ) || var_name == "?" || var_name == "!" )
+      if( var_name.empty( ) || ( var_name == "?" ) || ( var_name == "!" ) )
          break;
 
       if( !fissile_values.count( var_name ) )
@@ -1509,7 +1509,7 @@ string get_fissile_name( const map< string, fissile_string >& fissile_values, co
 
       string new_name( fissile_values.find( var_name )->second );
 
-      if( !new_name.empty( ) && new_name[ 0 ] == '@' )
+      if( !new_name.empty( ) && ( new_name[ 0 ] == '@' ) )
          var_name = new_name.substr( 1 );
       else
          break;
@@ -1542,11 +1542,12 @@ fissile_string get_fissile_value(
 
    while( true )
    {
-      if( !value.empty( ) && value[ 0 ] == '@' )
+      if( !value.empty( ) && ( value[ 0 ] == '@' ) )
       {
          string next_var( value.substr( 1 ) );
 
          string::size_type pos = next_var.find( "," );
+
          if( pos != string::npos )
          {
             remainder = next_var.substr( pos );
@@ -1571,6 +1572,7 @@ fissile_string get_fissile_value(
          }
 
          value += remainder;
+
          remainder.erase( );
       }
       else
@@ -1578,6 +1580,7 @@ fissile_string get_fissile_value(
          if( !remainder.empty( ) )
          {
             value += remainder;
+
             remainder.erase( );
          }
 
@@ -1664,7 +1667,8 @@ void process_fissile_commands(
          {
             char op = '\0';
 
-            if( next[ 1 ] == '=' || next[ 1 ] == '<' || next[ 1 ] == '>' || next[ 1 ] == '?' )
+            if( ( next[ 1 ] == '=' ) || ( next[ 1 ] == '<' )
+             || ( next[ 1 ] == '>' ) || ( next[ 1 ] == '?' ) )
             {
                op = next[ 1 ];
                next.erase( 1, 1 );
@@ -1678,8 +1682,8 @@ void process_fissile_commands(
                next.erase( pos );
 
                if( final_execute.size( ) > 1
-                && final_execute[ 0 ] == '!' && final_execute[ 1 ] != '!'
-                && final_execute[ 1 ] != '?' && !isalpha( final_execute[ 1 ] ) )
+                && ( final_execute[ 0 ] == '!' ) && ( final_execute[ 1 ] != '!' )
+                && ( final_execute[ 1 ] != '?' ) && !isalpha( final_execute[ 1 ] ) )
                   final_execute.erase( 0, 1 );
             }
 
@@ -1692,7 +1696,7 @@ void process_fissile_commands(
             //
             // FUTURE: Perhaps such a prefix should be required in order for
             // literals to be used in place of variables.
-            if( !check_var.empty( ) && check_var[ 0 ] == '@' )
+            if( !check_var.empty( ) && ( check_var[ 0 ] == '@' ) )
                check_var.erase( 0, 1 );
 
             if( op != '\0' )
@@ -1724,7 +1728,7 @@ void process_fissile_commands(
 
          if( check_value.empty( ) )
          {
-            if( final_execute.length( ) >= 2 && final_execute.substr( 0, 2 ) == "!!" )
+            if( ( final_execute.length( ) >= 2 ) && ( final_execute.substr( 0, 2 ) == "!!" ) )
             {
                while( !cmds.empty( ) )
                {
@@ -1805,7 +1809,7 @@ void process_fissile_commands(
             {
                bool optional = false;
 
-               if( next.size( ) > 2 && next[ 1 ] == '?' )
+               if( next.size( ) > 2 && ( next[ 1 ] == '?' ) )
                {
                   optional = true;
                   next.erase( 1, 1 );
@@ -1839,7 +1843,7 @@ void process_fissile_commands(
       {
          if( next.size( ) > 1 )
          {
-            if( next.size( ) == 2 && next[ 1 ] == next[ 0 ] )
+            if( ( next.size( ) == 2 ) && ( next[ 1 ] == next[ 0 ] ) )
                outs << '\n';
             else
                outs << replace_variable_names_with_fissile_values(
@@ -1852,7 +1856,7 @@ void process_fissile_commands(
       {
          bool matching_prefix_only = false;
 
-         if( next.length( ) > 2 && next[ next.length( ) - 1 ] == '*' )
+         if( ( next.length( ) > 2 ) && ( next[ next.length( ) - 1 ] == '*' ) )
          {
             matching_prefix_only = true;
             next.erase( next.length( ) - 1 );
@@ -1875,7 +1879,7 @@ void process_fissile_commands(
             has_output = true;
          }
       }
-      else if( next.length( ) > 2 && next.substr( 0, 2 ) == "*=" )
+      else if( ( next.length( ) > 2 ) && ( next.substr( 0, 2 ) == "*=" ) )
          fissile_values[ c_fissile_cmds_limit_variable ] = next.substr( 2 );
       else if( next == "--" )
       {
@@ -1887,7 +1891,7 @@ void process_fissile_commands(
                --fissile_data[ i ];
          }
       }
-      else if( next.length( ) > 2 && next.substr( 0, 2 ) == "--" )
+      else if( ( next.length( ) > 2 ) && ( next.substr( 0, 2 ) == "--" ) )
       {
          next.erase( 0, 2 );
          string::size_type pos = next.find( ',' );
@@ -1929,7 +1933,7 @@ void process_fissile_commands(
                ++fissile_data[ i ];
          }
       }
-      else if( next.length( ) > 2 && next.substr( 0, 2 ) == "++" )
+      else if( ( next.length( ) > 2 ) && ( next.substr( 0, 2 ) == "++" ) )
       {
          next.erase( 0, 2 );
 
@@ -1958,7 +1962,7 @@ void process_fissile_commands(
                fissile_values[ lhs_var ] = item_set;
          }
       }
-      else if( next[ 0 ] == '<' || next[ 0 ] == '>' )
+      else if( ( next[ 0 ] == '<' ) || ( next[ 0 ] == '>' ) )
       {
          char separator = ',';
          bool is_right = false;
@@ -1967,14 +1971,17 @@ void process_fissile_commands(
             is_right = true;
 
          bool is_item = false;
-         if( next.size( ) > 1 && next[ 0 ] == next[ 1 ] )
+
+         if( ( next.size( ) > 1 ) && ( next[ 0 ] == next[ 1 ] ) )
          {
             is_item = true;
+
             next.erase( 0, 2 );
 
             if( !next.empty( ) && !isalnum( next[ next.length( ) - 1 ] ) )
             {
                separator = next[ next.length( ) - 1 ];
+
                next.erase( next.length( ) - 1 );
 
                if( separator == '`' )
@@ -2207,7 +2214,7 @@ void process_fissile_commands(
                has_output = true;
             }
          }
-         else if( next[ pos ] == '=' && pos == next.size( ) - 1 )
+         else if( ( next[ pos ] == '=' ) && ( pos == next.size( ) - 1 ) )
          {
             if( dest_var == "?" )
                fissile_data.erase( );
@@ -2225,7 +2232,7 @@ void process_fissile_commands(
                char var_type;
                size_t offset = 1;
 
-               if( op == '#' || op == '$' )
+               if( ( op == '#' ) || ( op == '$' ) )
                {
                   op = c_fissile_op_none;
                   var_type = next[ pos ];
@@ -2329,6 +2336,7 @@ void process_fissile_commands(
                   }
 
                   string new_value;
+
                   for( set< string >::iterator i = items.begin( ); i != items.end( ); ++i )
                   {
                      if( !new_value.empty( ) )
@@ -2366,6 +2374,7 @@ void process_fissile_commands(
    while( true )
    {
       map< string, fissile_string >::iterator i = fissile_values.lower_bound( "^" );
+
       if( i == fissile_values.end( ) || i->first.empty( ) || i->first[ 0 ] != '^' )
          break;
 
@@ -2579,7 +2588,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
       bool add_to_history = allow_history_addition;
 
       // NOTE: Any single space prefixed command will not be added to history.
-      if( !str.empty( ) && str[ 0 ] == ' ' )
+      if( !str.empty( ) && ( str[ 0 ] == ' ' ) )
       {
          str.erase( 0, 1 );
          add_to_history = false;
@@ -2615,11 +2624,11 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   cout << c_comment_command_prefix << str_for_history << endl;
             }
          }
-         else if( str[ 0 ] != c_quiet_command_prefix
-          && str[ 0 ] != c_comment_command_prefix && str[ 0 ] != c_history_command_prefix
-          && ( ( apos == string::npos && str[ 0 ] != c_read_input_prefix
-          && str[ 0 ] != c_write_output_prefix && str[ 0 ] != c_system_command_prefix
-          && str[ 0 ] != c_envcond_command_prefix && str[ 0 ] != c_message_command_prefix )
+         else if( ( str[ 0 ] != c_quiet_command_prefix )
+          && ( str[ 0 ] != c_comment_command_prefix ) && ( str[ 0 ] != c_history_command_prefix )
+          && ( ( ( apos == string::npos ) && ( str[ 0 ] != c_read_input_prefix )
+          && ( str[ 0 ] != c_write_output_prefix ) && ( str[ 0 ] != c_system_command_prefix )
+          && ( str[ 0 ] != c_envcond_command_prefix ) && ( str[ 0 ] != c_message_command_prefix ) )
           || !has_option( c_cmd_quiet ) ) )
             cout << str << endl;
       }
@@ -2732,7 +2741,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          {
             bool not_replaced = false;
 
-            if( !str.empty( ) && str[ 0 ] == '@' )
+            if( !str.empty( ) && ( str[ 0 ] == '@' ) )
             {
                str.erase( 0, 1 );
 
@@ -2841,6 +2850,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               if( pos != string::npos )
                               {
                                  string all_extras( rhs.substr( pos + 1 ) );
+
                                  rhs.erase( pos );
 
                                  pos = all_extras.find( ':' );
@@ -2975,7 +2985,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                               str = to_string( val );
                            }
-                           else if( lhs == c_function_hexbig || lhs == c_function_hexlit )
+                           else if( ( lhs == c_function_hexbig ) || ( lhs == c_function_hexlit ) )
                            {
                               str = hex_encode( ( const unsigned char* )&rval, sizeof( rval ) );
 #ifdef LITTLE_ENDIAN
@@ -3044,6 +3054,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  string rhs( str.substr( pos + 1 ) );
 
                                  str.erase( pos );
+
                                  pos = str.find( ',' );
 
                                  if( pos != string::npos )
@@ -3204,7 +3215,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                if( not_replaced )
                   str.insert( str.begin( ), '@' );
             }
-            else if( !str.empty( ) && str[ 0 ] == '*' )
+            else if( !str.empty( ) && ( str[ 0 ] == '*' ) )
             {
                ostringstream osstr;
 
@@ -3242,7 +3253,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                   // NOTE: If the read input prefix is repeated then each command read from the input file will
                   // be added to the history rather than adding the read input line itself as the history item.
-                  if( str.size( ) > 1 && str[ 1 ] == c_read_input_prefix )
+                  if( ( str.size( ) > 1 ) && ( str[ 1 ] == c_read_input_prefix ) )
                   {
                      ++file_name_offset;
 
@@ -3307,9 +3318,12 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                      if( is_first )
                         is_first = false;
 
-                     // NOTE: A trailing backslash (that is not escaped) is interpreted as a line continuation.
+                     // NOTE: A trailing backslash (which is not escaped)
+                     // will be interpreted as being a line continuation.
                      string::size_type pos = next.find_last_not_of( '\\' );
-                     if( pos != next.size( ) - 1 && ( next.size( ) - pos - 1 ) % 2 )
+
+                     if( ( pos != next.size( ) - 1 )
+                      && ( ( next.size( ) - pos - 1 ) % 2 ) )
                      {
                         next.erase( next.size( ) - 1 );
                         is_continuation = true;
@@ -3365,13 +3379,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                ios::openmode output_flags = ios::out;
 
                // NOTE: If the write output prefix is repeated then open the output file for append.
-               if( str.size( ) > 1 && str[ 1 ] == c_write_output_prefix )
+               if( ( str.size( ) > 1 ) && ( str[ 1 ] == c_write_output_prefix ) )
                {
                   ++file_name_offset;
                   output_flags |= ios::app;
                }
 
-               if( file_name_offset > str.size( ) - 1 )
+               if( file_name_offset > ( str.size( ) - 1 ) )
                {
                   p_impl->output_file.close( );
 
@@ -3389,7 +3403,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                str.erase( );
             }
-            else if( str[ 0 ] == c_output_command_usage || str.substr( 0, pos ) == c_help_command )
+            else if( ( str[ 0 ] == c_output_command_usage ) || ( str.substr( 0, pos ) == c_help_command ) )
             {
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
@@ -3426,7 +3440,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                add_to_history = false;
 
                // NOTE: Use "!=" to display or "!=N" to set the max history size.
-               if( str.size( ) > 1 && str[ 1 ] == '=' )
+               if( ( str.size( ) > 1 ) && ( str[ 1 ] == '=' ) )
                {
                   if( str.size( ) == 2 )
                      cout << max_history_lines << '\n';
@@ -3455,7 +3469,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                {
                   if( str.size( ) > 1 )
                   {
-                     if( str.size( ) > 2 && str[ 1 ] == c_write_output_prefix )
+                     if( ( str.size( ) > 2 ) && ( str[ 1 ] == c_write_output_prefix ) )
                      {
                         str.erase( 0, 1 );
 
@@ -3463,7 +3477,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         ios::openmode output_flags = ios::out;
 
                         // NOTE: If the write output prefix is repeated then open the output file for append.
-                        if( str.size( ) > 1 && str[ 1 ] == c_write_output_prefix )
+                        if( ( str.size( ) > 1 ) && ( str[ 1 ] == c_write_output_prefix ) )
                         {
                            ++file_name_offset;
                            output_flags = ios::app;
@@ -3480,9 +3494,10 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                      else
                      {
                         size_t offset = 1;
+
                         bool remove = false;
 
-                        if( str.size( ) >= 2 && str[ 1 ] == '-' )
+                        if( ( str.size( ) >= 2 ) && ( str[ 1 ] == '-' ) )
                         {
                            offset = 2;
                            remove = true;
@@ -3510,9 +3525,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            str.erase( pos );
                         }
 
-                        if( str.size( ) >= 2 && str[ 1 ] == c_history_command_prefix )
+                        if( ( str.size( ) >= 2 ) && ( str[ 1 ] == c_history_command_prefix ) )
                         {
-                           if( str.size( ) > 2 && str[ 2 ] == '@' )
+                           if( ( str.size( ) > 2 ) && ( str[ 2 ] == '@' ) )
                            {
                               for( vector< string >::size_type i = command_history.size( ) - 1; i > 0; i-- )
                               {
@@ -3544,7 +3559,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               if( !is_loop )
                                  throw runtime_error( "command '" + str.substr( 2 ) + "' not found in history" );
                            }
-                           else if( str.size( ) == 3 && str[ 2 ] == '-' )
+                           else if( ( str.size( ) == 3 ) && ( str[ 2 ] == '-' ) )
                            {
                               remove = true;
 
@@ -3562,7 +3577,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               n = atoi( str.substr( offset ).c_str( ) );
                         }
 
-                        if( n < 0 || n > ( int )( command_history.size( ) ) )
+                        if( ( n < 0 ) || ( n > ( int )( command_history.size( ) ) ) )
                            throw runtime_error( "command #" + str.substr( 1 ) + " is invalid" );
 
                         if( is_range )
@@ -3580,7 +3595,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               e = command_history.size( );
                         }
 
-                        if( e == 0 || e > command_history.size( ) )
+                        if( ( e == 0 ) || ( e > command_history.size( ) ) )
                            e = command_history.size( );
 
                         if( !remove )
@@ -3611,7 +3626,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               {
                                  for( vector< string >::size_type i = b; i < e; i++ )
                                  {
-                                    if( is_loop && i == e - 1 )
+                                    if( is_loop && ( i == e - 1 ) )
                                     {
                                        if( is_skipping_to_label )
                                           is_loop = false;
@@ -3705,13 +3720,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   // then will ignore all 'skip', 'depth' and 'label' commands.
                   if( !conditions.empty( )
                    && ( !conditions.back( ) || !dummy_conditions.empty( ) )
-                   && ( token == c_envcond_command_skip
-                   || token == c_envcond_command_depth || token == c_envcond_command_label ) )
+                   && ( ( token == c_envcond_command_skip )
+                   || ( token == c_envcond_command_depth ) || ( token == c_envcond_command_label ) ) )
                      token.erase( );
 
                   // NOTE: This first condition must take place before the next
                   // one in order for skipping to label to operate as expected.
-                  if( !token.empty( ) && token[ 0 ] == ':' )
+                  if( !token.empty( ) && ( token[ 0 ] == ':' ) )
                   {
                      if( is_skipping_to_label && token.substr( 1 ) == label )
                      {
@@ -3864,6 +3879,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                if( !has_option( c_cmd_no_pause ) )
                {
                   string msg( c_message_press_any_key );
+
                   if( str.length( ) > 1 )
                      msg = str.substr( 1 );
 
@@ -4040,9 +4056,9 @@ startup_command_processor::startup_command_processor( console_command_handler& h
    int i;
    for( i = 1; i < argc; i++ )
    {
-      if( argv[ i ][ 0 ] == c_startup_prefix
-       || string( argv[ i ] ) == string( c_startup_alt_help )
-       || string( argv[ i ] ) == string( 1, c_output_command_usage ) )
+      if( ( argv[ i ][ 0 ] == c_startup_prefix )
+       || ( string( argv[ i ] ) == string( c_startup_alt_help ) )
+       || ( string( argv[ i ] ) == string( 1, c_output_command_usage ) ) )
          args.push_back( argv[ i ] );
       else
          break;
@@ -4065,9 +4081,9 @@ startup_command_processor::startup_command_processor( console_command_handler& h
    int i;
    for( i = 1; i < argc; i++ )
    {
-      if( argv[ i ][ 0 ] == c_startup_prefix
-       || string( argv[ i ] ) == string( c_startup_alt_help )
-       || string( argv[ i ] ) == string( 1, c_output_command_usage ) )
+      if( ( argv[ i ][ 0 ] == c_startup_prefix )
+       || ( string( argv[ i ] ) == string( c_startup_alt_help ) )
+       || ( string( argv[ i ] ) == string( 1, c_output_command_usage ) ) )
          args.push_back( argv[ i ] );
       else
          break;
@@ -4097,6 +4113,7 @@ void startup_command_processor::get_cmd_and_args( string& cmd_and_args )
    string next( args.back( ) );
 
    size_t pos = next.find( '=' );
+
    if( pos != string::npos )
       next[ pos ] = ' ';
 
