@@ -1911,6 +1911,58 @@
       <output>generate
      </test_step>
     </test>
+    <test/>
+     <name>2
+     <description>Perform various test_xrep_spec tests for the "destroy_restrict" specification.
+     <test_step/>
+      <name>a
+      <exec>!test_xrep_spec destroy_restrict can_destroy -f $TESTS_DIR/test_xrep_spec_2_a.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>!test_xrep_spec destroy_restrict can_destroy -f $TESTS_DIR/test_xrep_spec_2_b.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>!test_xrep_spec destroy_restrict can_destroy -f $TESTS_DIR/test_xrep_spec_2_c.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>!test_xrep_spec destroy_restrict can_destroy -f $TESTS_DIR/test_xrep_spec_2_d.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>!test_xrep_spec destroy_restrict can_destroy -f $TESTS_DIR/test_xrep_spec_2_e.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>f
+      <exec>!test_xrep_spec destroy_restrict can_destroy -f $TESTS_DIR/test_xrep_spec_2_f.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>g
+      <exec>!test_xrep_spec destroy_restrict get_always_required_field_names -f $TESTS_DIR/test_xrep_spec_2_g.txt
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>h
+      <exec>!test_xrep_spec destroy_restrict get_always_required_field_names -f $TESTS_DIR/test_xrep_spec_2_h.txt
+      <input>false
+      <output>generate
+     </test_step>
+    </test>
 #comment test 16...
    </tests>
 #comment test 17...

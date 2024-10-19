@@ -1,0 +1,6 @@
+arg_sfield=Field
+arg_value=abc
+arg_pfield=Parent
+arg_sfistexttype=
+arg_scfistexttype=1
+arg_allow_internal=
