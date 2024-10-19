@@ -1,0 +1,18 @@
+`{`@eq`(`'for_or_after_store`'`,`$section`)\
+   // [(start trigger_update_parent_for_null)] `{`$arg_id`}
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_create_only`,`'`'`)`{`$i`=`'   `'`}\
+   if( is_create )
+   {
+`}`{`$i`}   if( is_null( get_obj( ).`{`$arg_field`}( ) ) )
+`{`$i`}   {
+`{`$i`}      get_obj( ).`{`$arg_spfield`}( ).op_update( );
+`{`!`@eq`(`$arg_ofield`,`'`'`)`&`!`@eq`(`$arg_scfield`,`'`'`)
+`{`$i`}      get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( get_obj( ).`{`$arg_ofield`}( ) );
+`}
+`{`$i`}      get_obj( ).`{`$arg_spfield`}( ).op_apply( );
+`{`$i`}   }
+`{`!`@eq`(`$arg_create_only`,`'`'`)\
+   }
+`}\
+   // [(finish trigger_update_parent_for_null)] `{`$arg_id`}
+`}
