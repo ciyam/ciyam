@@ -5039,7 +5039,8 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
 
    if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
    {
-      TRACE_LOG( TRACE_SQLSTMTS, "(row cache for '" + instance.get_class_id( ) + "')" );
+      TRACE_LOG( TRACE_SQLSTMTS, "(row cache for '" + instance.get_class_id( )
+       + ")" + string( !skip_after_fetch ? "" : " *** skip_after_fetch ***" ) );
 
       const map< int, int >& fields( instance_accessor.select_fields( ) );
       const vector< int >& columns( instance_accessor.select_columns( ) );
@@ -15695,8 +15696,9 @@ bool perform_instance_iterate( class_base& instance,
 
          size_t sec_level = 0;
 
-         // NOTE: Cascade operations are not constrained by security.
-         if( instance.get_is_being_cascaded( ) )
+         // NOTE: Cascade operations are not constrained by security
+         // (and the "admin" user is also likewise always exempted).
+         if( instance.get_is_being_cascaded( ) || ( uid == c_admin ) )
             sec.erase( );
          else
          {
@@ -15704,7 +15706,7 @@ bool perform_instance_iterate( class_base& instance,
             {
                bool found_uid_data = false;
 
-               if( !uid.empty( ) && ( uid != c_admin ) && get_uid_data( uid, sec_level, gids ) )
+               if( !uid.empty( ) && get_uid_data( uid, sec_level, gids ) )
                   found_uid_data = true;
 
                if( !found_uid_data )
@@ -16002,9 +16004,7 @@ bool perform_instance_iterate( class_base& instance,
 
             if( !extra_key_info.empty( ) && ( extra_key_info[ 0 ] == '#' )
              && !instance_accessor.transient_filter_field_values( ).empty( ) )
-            {
                extra_key_info[ 1 ] -= ( unsigned char )instance_accessor.transient_filter_field_values( ).size( );
-            }
 
             for( size_t i = 0; i < final_keys.size( ); i++ )
             {
@@ -16031,6 +16031,7 @@ bool perform_instance_iterate( class_base& instance,
             for( size_t i = 0; i < query_parts.size( ); i++ )
             {
                string::size_type pos = query_parts[ i ].find( ':' );
+
                if( pos == string::npos )
                   pos = query_parts[ i ].find( '=' ); // i.e. allow for either <field>:<value_info> or <field>=<value_info>
 
@@ -16091,7 +16092,7 @@ bool perform_instance_iterate( class_base& instance,
       string skip_after_fetch_var(
        instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
-      if( skip_after_fetch_var == c_true || skip_after_fetch_var == c_true_value )
+      if( ( skip_after_fetch_var == c_true ) || ( skip_after_fetch_var == c_true_value ) )
          skip_after_fetch = true;
 
       size_t row_cache_limit = c_iteration_row_cache_limit;
