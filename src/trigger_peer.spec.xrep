@@ -9,7 +9,10 @@
 `}\
     && `{`@eq`(`$arg_update`,`'true`'`)!`}is_create && !get_obj( ).get_is_for_peer( ) )
    {
-`{`@eq`(`$arg_identity_suffix`,`'`'`)\
+`{`@eq`(`$arg_force_after_fetch`,`'true`'`)\
+      get_obj( ).after_fetch( );
+
+`}`{`@eq`(`$arg_identity_suffix`,`'`'`)\
       string key_info( get_obj( ).`{`$arg_sfield`}( ) );
 `,\
       temporary_identity_suffix tmp_identity_suffix( get_obj( ).`{`$arg_sfield`}( ) );
@@ -36,20 +39,27 @@
 `}\
 
       cp_source->`{`$arg_field`}( get_obj( ).`{`$arg_field`}( ) );
+      cp_source->set_variable( "@" + to_string( cp_source->get_field_num( "`{`$arg_field`}" ) ), c_true_value );
+
 `{`@eq`(`$arg_update`,`'`'`)\
       cp_source->`{`$arg_sfield`}( get_obj( ).`{`$arg_sfield`}( ) );
+      cp_source->set_variable( "@" + to_string( cp_source->get_field_num( "`{`$arg_sfield`}" ) ), c_true_value );
+
 `}\
 `{`!`@eq`(`$arg_ofield`,`'`'`)\
       cp_source->`{`$arg_ofield`}( get_obj( ).`{`$arg_ofield`}( ) );
+      cp_source->set_variable( "@" + to_string( cp_source->get_field_num( "`{`$arg_ofield`}" ) ), c_true_value );
+
 `}\
 `{`!`@eq`(`$arg_o2field`,`'`'`)\
       cp_source->`{`$arg_o2field`}( get_obj( ).`{`$arg_o2field`}( ) );
+      cp_source->set_variable( "@" + to_string( cp_source->get_field_num( "`{`$arg_o2field`}" ) ), c_true_value );
+
 `}\
 `{`!`@eq`(`$arg_spfield`,`'`'`)\
-
       cp_source->`{`$arg_spfield`}( get_obj( ).get_key( ) );
-`}\
 
+`}\
       cp_source->op_apply( );
    }
    // [(finish trigger_peer)] `{`$arg_id`}

@@ -1581,9 +1581,11 @@ string class_base::get_fields_and_values(
 
    for( size_t i = 0; i < num_fields; i++ )
    {
+      string force_field_num( "@" + to_string( i ) );
+
       if( ( ( include_defaults || !is_field_default( i ) )
-       && ( include_transients || !is_field_transient( i ) ) )
-       || ( !graph_parent_fk_field.empty( ) && graph_parent_fk_field == get_field_id( i ) ) )
+       && ( include_transients || !is_field_transient( i ) || has_variable( force_field_num ) ) )
+       || ( !graph_parent_fk_field.empty( ) && ( graph_parent_fk_field == get_field_id( i ) ) ) )
       {
          if( !had_first )
             had_first = true;
