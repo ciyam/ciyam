@@ -6,25 +6,10 @@
 `,`@eq`(`$arg_var_type`,`'session`'`)`$value`=`'get_session_variable( "`{`$arg_var_name`}" )`'\
 `}`}\
    // [(start create_child)] `{`$arg_id`}
-`{`@eq`(`$arg_create_only`,`'`'`)\
-`{`!`@eq`(`$arg_tfield`,`'`'`)\
-`{`@eq`(`$arg_tfistexttype`,`'0`'`)\
-   if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`} )
-`,\
-   if( !is_null( get_obj( ).`{`$arg_tfield`}( ) )`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`} )
-`}`,\
-`{`@eq`(`$arg_modifier`,`'`'`)\
-   // NOTE: Empty code block for scope purposes.
-`,\
-   if( state & c_modifier_`{`$arg_modifier`} )
-`}`}`,\
-`{`@eq`(`$arg_tfistexttype`,`'0`'`)\
-   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`)
-    && get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`} )
-`,\
-   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`)
-    && !is_null( get_obj( ).`{`$arg_tfield`}( ) )`}`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`} )
-`}`}\
+   if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create
+    && `}!get_obj( ).get_is_for_peer( )`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && ( state & c_modifier_`{`$arg_modifier`} )`}`{`!`@eq`(`$arg_tfield`,`'`'`)
+    && `{`@eq`(`$arg_tfistexttype`,`'1`'`)!is_null( `}get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}`} )
    {
 `{`@eq`(`$arg_skip_child_updates`,`'true`'`)\
       temporary_object_variable tmp_skip_update( get_obj( ),
