@@ -475,9 +475,11 @@ const char* const c_data_grand_parent = "grand_parent";
 const char* const c_data_status_field = "status_field";
 const char* const c_data_status_value = "status_value";
 const char* const c_data_append_to_ext = "append_to_ext";
+const char* const c_data_sfistexttype = "sfistexttype";
 const char* const c_data_tfistexttype = "tfistexttype";
 const char* const c_data_fk_from_child = "fk_from_child";
 const char* const c_data_primary_class = "primary_class";
+const char* const c_data_scfistexttype = "scfistexttype";
 const char* const c_data_special_value = "special_value";
 const char* const c_data_special_field = "special_field";
 const char* const c_data_tcfistexttype = "tcfistexttype";
@@ -2699,6 +2701,8 @@ void copy_child_links_from_fk_specification::add_specification_data( model& m, s
    if( !cfk_from_field_id.empty( ) )
       ckf_from_field_name = get_field_name_for_id( m, cclass_name, cfk_from_field_id );
    spec_data.data_pairs.push_back( make_pair( c_data_fk_from_child, ckf_from_field_name ) );
+
+   spec_data.data_pairs.push_back( make_pair( "skip_child_updates", "" ) );
 }
 
 string copy_child_links_from_fk_specification::static_class_name( ) { return "copy_child_links_from_fk"; }
@@ -3554,12 +3558,18 @@ void destroy_restrict_specification::add_specification_data( model& m, specifica
       pfield_name = get_field_name_for_id( m, class_name, pfield_id );
    spec_data.data_pairs.push_back( make_pair( c_data_pfield, pfield_name ) );
 
-   string field_name = get_field_name_for_id( m, pclass_name, field_id );
+   string field_type;
+   string field_name = get_field_name_for_id( m, pclass_name, field_id, &field_type );
    spec_data.data_pairs.push_back( make_pair( c_data_field, field_name ) );
+
+   bool is_text_type( !is_non_string_type( field_type ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_value, restrict_value ) );
 
    spec_data.data_pairs.push_back( make_pair( string( c_data_allow_internal ), allow_internal ? c_true : "" ) );
+
+   spec_data.data_pairs.push_back( make_pair( c_data_sfistexttype, is_text_type ? "1" : "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_scfistexttype, "" ) );
 }
 
 string destroy_restrict_specification::static_class_name( ) { return "destroy_restrict"; }

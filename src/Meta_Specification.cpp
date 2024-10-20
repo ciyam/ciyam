@@ -8434,6 +8434,7 @@ void Meta_Specification::impl::after_store( bool is_create, bool is_internal )
     && get_obj( ).Specification_Type( ).child_Specification_Type_Parent( ).iterate_forwards( ) )
    {
       int child_num = 0;
+
       do
       {
          string child_key( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
@@ -8566,7 +8567,7 @@ bool Meta_Specification::impl::can_destroy( bool is_internal )
    bool retval = is_internal || !( state & c_state_undeletable );
 
    // [(start destroy_restrict)] 600180
-   if( !is_internal && get_obj( ).Specification_Type( ).Is_System( ) == true )
+   if( !is_internal && ( get_obj( ).Specification_Type( ).Is_System( ) == true ) )
       retval = false;
    // [(finish destroy_restrict)] 600180
 
