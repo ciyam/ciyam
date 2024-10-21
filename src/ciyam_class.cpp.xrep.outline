@@ -2648,6 +2648,11 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2 arg_check=$specification_\0_check\
  arg_append=$specification_\0_append`}\
 `,\
+`@eq`(`'\1`'`,`'field_from_peer_identity`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
+`{`#field_from_peer_identity.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
+ arg_o2field=$specification_\0_o2field arg_create_only=$specification_\0_create_only`}\
+`,\
 `@eq`(`'\1`'`,`'field_from_procedure_call`'`)`&`@eq`(`$specification_\0_transient`,`'`'`)
 `{`#field_from_procedure_call.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_procedure=$specification_\0_procedure arg_value=$specification_\0_value`}\
@@ -2728,7 +2733,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'field_value`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_value.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield\
- arg_value=$specification_\0_value arg_not_null=$specification_\0_not_null arg_not_create=$specification_\0_not_create`}\
+ arg_value=$specification_\0_value arg_not_null=$specification_\0_not_null\
+ arg_create_only=$specification_\0_create_only arg_not_create=$specification_\0_not_create`}\
 `,\
 `@eq`(`'\1`'`,`'field_value_for_enum_item`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_value_for_enum_item.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -3011,6 +3017,11 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2 arg_check=$specification_\0_check\
  arg_append=$specification_\0_append`}\
 `,\
+`@eq`(`'\1`'`,`'field_from_peer_identity`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#field_from_peer_identity.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
+ arg_o2field=$specification_\0_o2field arg_create_only=$specification_\0_create_only`}\
+`,\
 `@eq`(`'\1`'`,`'field_from_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_uid.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
@@ -3068,7 +3079,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'field_value`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_value.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield\
- arg_value=$specification_\0_value arg_not_null=$specification_\0_not_null arg_not_create=$specification_\0_not_create`}\
+ arg_value=$specification_\0_value arg_not_null=$specification_\0_not_null\
+ arg_create_only=$specification_\0_create_only arg_not_create=$specification_\0_not_create`}\
 `,\
 `@eq`(`'\1`'`,`'field_value_for_enum_item`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_value_for_enum_item.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -3218,7 +3230,7 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_id=$specification_\0_id arg_child=$specification_\0_child arg_child_class=$specification_\0_child_class\
  arg_ofield=$specification_\0_ofield arg_tfield=$specification_\0_tfield arg_pfield=$specification_\0_pfield\
  arg_cpfield=$specification_\0_cpfield arg_ctfield=$specification_\0_ctfield arg_ctvalue=$specification_\0_ctvalue\
- arg_ctfistexttype=$specification_\0_ctfistexttype arg_not_peer=$specification_\0_not_peer arg_copy_files=$specification_\0_copy_files\
+ arg_ctfistexttype=$specification_\0_ctfistexttype arg_copy_files=$specification_\0_copy_files\
  arg_skip_child_updates=$specification_\0_skip_child_updates`}\
 `,\
 `@eq`(`'\1`'`,`'clone_children_for_create`'`)
@@ -3376,7 +3388,7 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_o2field=$specification_\0_o2field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier arg_update=$specification_\0_update\
  arg_identity_suffix=$specification_\0_identity_suffix arg_submit_type=$specification_\0_submit_type\
- arg_force_after_fetch=$specification_\0_force_after_fetch`}\
+ arg_force_after_fetch=$specification_\0_force_after_fetch arg_create_field_record=$specification_\0_create_field_record`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_procedure`'`)
 `{`#trigger_procedure.spec.xrep section=after_store class_name=$class_name module_name=$module_name\

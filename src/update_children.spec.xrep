@@ -1,6 +1,7 @@
 `{`@eq`(`'after_store`'`,`$section`)\
    // [(start update_children)] `{`$arg_id`}
-   if( !is_create`{`!`@eq`(`$arg_tfield`,`'`'`)
+   if( !is_create
+    && !get_obj( ).get_is_for_peer( )`{`!`@eq`(`$arg_tfield`,`'`'`)
     && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`}
 `{`!`@eq`(`$arg_tfield`,`'`'`)`&`!`@eq`(`$arg_tvalue`,`'`'`)\
     && ( get_obj( ).`{`$arg_tfield`}( ) == `{`$arg_tvalue`} )

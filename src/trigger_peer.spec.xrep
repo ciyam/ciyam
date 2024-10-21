@@ -9,7 +9,10 @@
 `}\
     && `{`@eq`(`$arg_update`,`'true`'`)!`}is_create && !get_obj( ).get_is_for_peer( ) )
    {
-`{`@eq`(`$arg_force_after_fetch`,`'true`'`)\
+`{`@eq`(`$arg_create_field_record`,`'true`'`)\
+      bool was_null_identity = is_null( get_obj( ).Identity( ) );
+
+`}`{`@eq`(`$arg_force_after_fetch`,`'true`'`)\
       get_obj( ).after_fetch( );
 
 `}`{`@eq`(`$arg_identity_suffix`,`'`'`)\
@@ -38,8 +41,16 @@
       cp_source->op_update( key_info );
 `}\
 
+`{`@eq`(`$arg_create_field_record`,`'`'`)\
       cp_source->`{`$arg_field`}( get_obj( ).`{`$arg_field`}( ) );
       cp_source->set_variable( "@" + to_string( cp_source->get_field_num( "`{`$arg_field`}" ) ), c_true_value );
+`,\
+      if( was_null_identity )
+      {
+         cp_source->`{`$arg_field`}( ).op_create( get_obj( ).`{`$arg_sfield`}( ) );
+         cp_source->`{`$arg_field`}( ).op_apply( );
+      }
+`}\
 
 `{`@eq`(`$arg_update`,`'`'`)\
       cp_source->`{`$arg_sfield`}( get_obj( ).`{`$arg_sfield`}( ) );
