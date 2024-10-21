@@ -1,6 +1,6 @@
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start field_value)] `{`$arg_id`}
-   if( `{`@eq`(`$arg_not_create`,`'true`'`)!is_create && `}\
+   if( `{`@eq`(`$arg_create_only`,`'true`'`)`|`@eq`(`$arg_not_create`,`'true`'`)`{`@eq`(`$arg_not_create`,`'true`'`)!`}is_create && `}\
 `{`@eq`(`$arg_not_null`,`'true`'`)!`}is_null( get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) ) )
       get_obj( ).`{`$arg_field`}( `{`$arg_value`} );
    // [(finish field_value)] `{`$arg_id`}

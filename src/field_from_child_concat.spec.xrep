@@ -6,7 +6,9 @@
 `{`!`@eq`(`$arg_tfield`,`'`'`)`{`$arg_tfield`},`}`{`$arg_xpfield`}"`'`}\
 `{`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_xpfield`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$field`=`'"`{`$arg_tfield`}"`'`}\
    // [(start field_from_child_concat)] `{`$arg_id`}
-   if( !is_create && get_obj( ).get_is_editing( ) `{`!`@eq`(`$arg_xtfield`,`'`'`)&& get_obj( ).`{`$arg_xtfield`}( ) `})
+   if( !is_create
+    && get_obj( ).get_is_editing( )
+    && !get_obj( ).get_is_for_peer( )`{`!`@eq`(`$arg_xtfield`,`'`'`)&& get_obj( ).`{`$arg_xtfield`}( ) `} )
    {
       map< string, string > parts;
 

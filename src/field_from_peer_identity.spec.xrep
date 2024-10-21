@@ -1,0 +1,18 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+   // [(start field_from_peer_identity)] `{`$arg_id`}
+   if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}get_obj( ).get_is_for_peer( ) )
+`{`!`@eq`(`$arg_ofield`,`'`'`)`|`!`@eq`(`$arg_o2field`,`'`'`)\
+   {
+`}\
+      get_obj( ).`{`$arg_field`}( get_obj( ).get_peer_identity( ) );
+`{`!`@eq`(`$arg_ofield`,`'`'`)\
+      get_obj( ).`{`$arg_ofield`}( get_obj( ).get_peer_identity( ) );
+`}\
+`{`!`@eq`(`$arg_o2field`,`'`'`)\
+      get_obj( ).`{`$arg_o2field`}( get_obj( ).get_peer_identity( ) );
+`}\
+`{`!`@eq`(`$arg_ofield`,`'`'`)`|`!`@eq`(`$arg_o2field`,`'`'`)\
+   }
+`}\
+   // [(finish field_from_peer_identity)] `{`$arg_id`}
+`}

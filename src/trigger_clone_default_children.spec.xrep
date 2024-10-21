@@ -1,9 +1,13 @@
 `{`@eq`(`'after_store`'`,`$section`)\
    // [(start trigger_clone_default_children)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
-   if( is_create`{`!`@eq`(`$arg_skip_clones`,`'`'`) && get_obj( ).get_clone_key( ).empty( )`} && !is_admin_uid_key( get_obj( ).get_key( ) ) )
+   if( is_create
+    && !get_obj( ).get_is_for_peer( )`{`!`@eq`(`$arg_skip_clones`,`'`'`)
+    && get_obj( ).get_clone_key( ).empty( )`} && !is_admin_uid_key( get_obj( ).get_key( ) ) )
 `,\
-   if( is_create`{`!`@eq`(`$arg_skip_clones`,`'`'`) && get_obj( ).get_clone_key( ).empty( )`}
+   if( is_create
+    && !get_obj( ).get_is_for_peer( )`{`!`@eq`(`$arg_skip_clones`,`'`'`)
+    && get_obj( ).get_clone_key( ).empty( )`}
     && `{`!`@eq`(`$arg_tvalue`,`'`'`)( `}get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`} )`}
     && !is_admin_uid_key( get_obj( ).get_key( ) ) )
 `}\
