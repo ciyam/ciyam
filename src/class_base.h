@@ -1323,6 +1323,9 @@ std::string CIYAM_BASE_DECL_SPEC after_string( const std::string& s, const std::
 
 std::string CIYAM_BASE_DECL_SPEC reversed_string( const std::string& s );
 
+std::string CIYAM_BASE_DECL_SPEC replaced_suffix(
+ const std::string& s, const std::string& old_suffix, const std::string& new_suffix );
+
 std::string CIYAM_BASE_DECL_SPEC trim_whitespace( const std::string& s );
 std::string CIYAM_BASE_DECL_SPEC trim_whitespace_and_quotes( const std::string& s );
 
