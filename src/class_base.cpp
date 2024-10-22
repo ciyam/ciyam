@@ -3693,6 +3693,21 @@ string reversed_string( const string& s )
    return reversed;
 }
 
+string replaced_suffix( const string& s, const string& old_suffix, const string& new_suffix )
+{
+   string retval( s );
+
+   string::size_type pos = retval.rfind( old_suffix );
+
+   if( pos != string::npos )
+   {
+      retval.erase( pos, old_suffix.length( ) );
+      retval.insert( pos, new_suffix );
+   }
+
+   return retval;
+}
+
 string trim_whitespace( const string& s )
 {
    return trim( s );

@@ -20,7 +20,7 @@
 `,\
       temporary_identity_suffix tmp_identity_suffix( get_obj( ).`{`$arg_sfield`}( ) );
 
-      string key_info( replaced( get_obj( ).get_key( ),
+      string key_info( replaced_suffix( get_obj( ).get_key( ),
        tmp_identity_suffix.original_suffix, tmp_identity_suffix.current_suffix ) );
 `}\
 
