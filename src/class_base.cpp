@@ -1577,14 +1577,22 @@ string class_base::get_fields_and_values(
    string str;
 
    bool had_first = false;
+
    int num_fields = get_num_fields( );
+
+   string identity_suffix( get_system_variable( get_special_var_name( e_special_var_system_identity ) ) );
 
    for( size_t i = 0; i < num_fields; i++ )
    {
       string force_field_num( "@" + to_string( i ) );
 
+      // NOTE: A "force field" object variable is in the form "@n"
+      // (where "n" is the field number) and if found will "force"
+      // the field to be included even if it is transient.
+      string force_field_value( get_variable( force_field_num ) );
+
       if( ( ( include_defaults || !is_field_default( i ) )
-       && ( include_transients || !is_field_transient( i ) || has_variable( force_field_num ) ) )
+       && ( include_transients || !is_field_transient( i ) || !force_field_value.empty( ) ) )
        || ( !graph_parent_fk_field.empty( ) && ( graph_parent_fk_field == get_field_id( i ) ) ) )
       {
          if( !had_first )
@@ -1597,7 +1605,23 @@ string class_base::get_fields_and_values(
          else
             str += ( label_type == e_field_label_type_full_id ) ? get_field_id( i ) : get_short_field_id( i );
 
-         str += "=" + escaped( escaped( get_field_value( i ), "," ), ",\"", c_nul, "rn\r\n" );
+         string value( get_field_value( i ) );
+
+         // NOTE: If the "force field value" is not just a flag then it is treated
+         // as an identity suffix replacement (used to transform peer record FKs).
+         if( !identity_suffix.empty( )
+          && !force_field_value.empty( ) && ( force_field_value != c_true_value ) )
+         {
+            string::size_type pos = value.rfind( identity_suffix );
+
+            if( pos != string::npos )
+            {
+               value.erase( pos, identity_suffix.length( ) );
+               value.insert( pos, force_field_value );
+            }
+         }
+
+         str += "=" + escaped( escaped( value, "," ), ",\"", c_nul, "rn\r\n" );
       }
    }
 
