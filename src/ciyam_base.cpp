@@ -8407,7 +8407,18 @@ void set_session_timeout( unsigned int seconds )
 
 string get_session_blockchain( )
 {
+   if( !gtp_session )
+      return g_empty_string;
+
    return gtp_session->blockchain;
+}
+
+string get_session_identity_suffix( )
+{
+   if( !gtp_session )
+      return g_empty_string;
+
+   return gtp_session->identity_suffix;
 }
 
 size_t get_num_sessions_for_blockchain( const string& blockchain, bool matching_own_ip_address, bool excluding_own_session )
