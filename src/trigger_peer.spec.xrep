@@ -10,10 +10,8 @@
     && `{`@eq`(`$arg_update`,`'true`'`)!`}is_create && !get_obj( ).get_is_for_peer( ) )
    {
 `{`@eq`(`$arg_create_field_record`,`'true`'`)\
-      bool was_null_identity = is_null( get_obj( ).Identity( ) );
-
-`}`{`@eq`(`$arg_force_after_fetch`,`'true`'`)\
-      get_obj( ).after_fetch( );
+      bool was_null_identity = !get_obj( ).get_variable( "@!"
+       + to_string( get_obj( ).get_field_num( "`{`$arg_sfield`}" ) ) ).empty( );
 
 `}`{`@eq`(`$arg_identity_suffix`,`'`'`)\
       string key_info( get_obj( ).`{`$arg_sfield`}( ) );
