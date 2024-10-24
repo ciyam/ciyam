@@ -10,7 +10,11 @@
 `{`$i`}      get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( get_obj( ).`{`$arg_ofield`}( ) );
 `}
 `{`$i`}      get_obj( ).`{`$arg_spfield`}( ).op_apply( );
-`{`$i`}   }
+`{`!`@eq`(`$arg_oscfield`,`'`'`)
+`{`$i`}      get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_oscfield`}( ) );
+
+`{`$i`}      get_obj( ).set_variable( "@!" + to_string( get_obj( ).get_field_num( "`{`$arg_field`}" ) ), c_true_value );
+`}`{`$i`}   }
 `{`!`@eq`(`$arg_create_only`,`'`'`)\
    }
 `}\
