@@ -57,6 +57,7 @@ const char* const c_channel_peer_info = "peer_info";
 const char* const c_channel_user_info = "user_info";
 const char* const c_channel_submitted = "submitted";
 const char* const c_channel_reviewing = "reviewing";
+const char* const c_channel_forum_info = "forum_info";
 const char* const c_channel_submitting = "submitting";
 
 const char* const c_submit_type_view = "*view*";
@@ -1402,6 +1403,11 @@ string storage_channel_documents_update( const string& identity, bool submitted 
       if( !submitted && file_exists( blog_info_name ) )
          file_rename( blog_info_name, blockchain_identity + '.' + string( c_channel_blog_info ) + c_csv_file_ext );
 
+      string forum_info_name( blockchain_identity + "/." + string( c_channel_forum_info ) + c_csv_file_ext );
+
+      if( !submitted && file_exists( forum_info_name ) )
+         file_rename( forum_info_name, blockchain_identity + '.' + string( c_channel_forum_info ) + c_csv_file_ext );
+
       string user_info_name( blockchain_identity + "/." + string( c_channel_user_info ) + c_csv_file_ext );
 
       if( !submitted && file_exists( user_info_name ) )
@@ -1656,6 +1662,7 @@ string storage_channel_documents_prepare( const string& identity )
    ofs.set_folder( c_channel_folder_ciyam );
 
    update_channel_info( ofs, identity, blockchain_identity, c_channel_blog_info, has_created_directory );
+   update_channel_info( ofs, identity, blockchain_identity, c_channel_forum_info, has_created_directory );
    update_channel_info( ofs, identity, blockchain_identity, c_channel_user_info, has_created_directory );
 
    string submitting;

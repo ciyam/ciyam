@@ -256,6 +256,11 @@
   <arguments>create_datachain_details.cin @storage @identity @data_type
  </script>
  <script/>
+  <name>prepare_forum_for_submit
+  <filename>*script*
+  <arguments>prepare_forum_for_submit.cin @storage @identity
+ </script>
+ <script/>
   <name>unlink_channel_datachain
   <filename>*script*
   <arguments>unlink_channel_datachain.cin @storage @channel @identity

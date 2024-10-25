@@ -6995,7 +6995,11 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
       return 0;
 
    if( !g_scripts.count( script_name ) )
+   {
+      TRACE_LOG( TRACE_ANYTHING, "attempt to run unknown script '" + script_name + "'" );
+
       throw runtime_error( "unknown script '" + script_name + "'" );
+   }
 
    string filename( g_scripts[ script_name ].filename );
    bool is_script = ( filename == c_script_dummy_filename );

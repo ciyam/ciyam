@@ -3,7 +3,7 @@
    if( get_obj( ).get_is_for_peer( ) )
    {
       string force_field_var_name( "@"
-       + to_string( get_obj( ).get_field_num( "`{`$arg_spfield`}" ) ) );
+       + to_string( get_obj( ).get_field_num( "`{`$arg_sfield`}" ) ) );
 
       get_obj( ).set_variable( force_field_var_name, get_obj( ).`{`$arg_field`}( ) );
    }
