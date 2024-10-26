@@ -847,7 +847,7 @@ std::string CIYAM_BASE_DECL_SPEC execute_object_command(
 void CIYAM_BASE_DECL_SPEC init_object_instance( size_t handle, const std::string& context, bool for_create = false );
 
 void CIYAM_BASE_DECL_SPEC prepare_object_instance( size_t handle,
- const std::string& context, bool for_create = false, bool call_to_store = true );
+ const std::string& context, bool for_create = false, bool call_to_store = true, bool starting_iteration = false );
 
 void CIYAM_BASE_DECL_SPEC validate_object_instance( size_t handle, const std::string& context );
 

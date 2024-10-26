@@ -248,7 +248,7 @@ class CIYAM_BASE_DECL_SPEC class_base
    void op_cancel( bool is_internal = true );
 
    void init( bool for_create );
-   void prepare( bool for_create, bool call_to_store = true );
+   void prepare( bool for_create, bool call_to_store = true, bool starting_iteration = false );
 
    bool is_valid( bool is_internal = false, std::set< std::string >* p_fields_set = 0 );
    bool has_changed( ) const;
@@ -1427,6 +1427,8 @@ std::string CIYAM_BASE_DECL_SPEC valid_non_utf8_filename( const std::string& str
 
 std::string CIYAM_BASE_DECL_SPEC unix_to_locktime( const numeric& unix_time );
 std::string CIYAM_BASE_DECL_SPEC unix_to_datetime( const numeric& unix_time );
+
+numeric CIYAM_BASE_DECL_SPEC datetime_to_unix( const date_time& dtm );
 
 std::string CIYAM_BASE_DECL_SPEC formatted_int( int n, const std::string& mask );
 std::string CIYAM_BASE_DECL_SPEC formatted_numeric( const numeric& n, const std::string& mask );

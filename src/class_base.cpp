@@ -938,14 +938,19 @@ void class_base::init( bool for_create )
    cache_original_values( );
 }
 
-void class_base::prepare( bool for_create, bool call_to_store )
+void class_base::prepare( bool for_create, bool call_to_store, bool starting_iteration )
 {
    bool is_create( op == e_op_type_create );
 
    TRACE_LOG( TRACE_CLASSOPS, "prepare( ) [class: " + get_class_name( )
-    + "] is_create = " + to_string( is_create ) + ", for_create = " + to_string( for_create ) );
+    + "] is_create = " + to_string( is_create ) + ", call_to_store = "
+    + to_string( call_to_store ) + ", for_create = " + to_string( for_create )
+    + ", starting_iteration = " + to_string( starting_iteration ) );
 
    restorable< bool > tmp_is_preparing( is_preparing, true );
+
+   if( starting_iteration )
+      set_iteration_starting( true );
 
    // NOTE: As "prepare" is expected to be called after field values have been set
    // the call to "perform_after_fetch" is occurring here (rather than immediately
@@ -4312,6 +4317,11 @@ string unix_to_datetime( const numeric& unix_time )
    int64_t val( unix_time.as_int64_t( ) );
 
    return date_time( val ).as_string( );
+}
+
+numeric datetime_to_unix( const date_time& dtm )
+{
+   return unix_time( dtm );
 }
 
 string formatted_int( int n, const string& mask )

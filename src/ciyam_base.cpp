@@ -12302,11 +12302,12 @@ void init_object_instance( size_t handle, const string& context, bool for_create
    instance.init( for_create );
 }
 
-void prepare_object_instance( size_t handle, const string& context, bool for_create, bool call_to_store )
+void prepare_object_instance( size_t handle,
+ const string& context, bool for_create, bool call_to_store, bool starting_iteration )
 {
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
-   instance.prepare( for_create, call_to_store );
+   instance.prepare( for_create, call_to_store, starting_iteration );
 }
 
 void validate_object_instance( size_t handle, const string& context )

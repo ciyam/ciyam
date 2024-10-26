@@ -3344,6 +3344,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   }
                }
 #endif
+               // NOTE: The call to "after_fetch" occurs via "prepare_object_instance" instead.
                if( !set_value_items.empty( ) )
                   instance_set_variable( handle, context,
                    get_special_var_name( e_special_var_skip_after_fetch ), c_true_value );
@@ -3353,6 +3354,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                 is_reverse ? e_iter_direction_backwards : e_iter_direction_forwards,
                 true, num_limit, e_sql_optimisation_none, !filter_set.empty( ) ? &filter_set : 0 ) )
                {
+                  bool is_first = true;
+
                   do
                   {
                      for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
@@ -3371,7 +3374,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      }
 
                      if( !set_value_items.empty( ) )
-                        prepare_object_instance( handle, context, false );
+                        prepare_object_instance( handle, context, false, true, is_first );
+
+                     is_first = false;
 
                      bool has_any_filters = !filter_set.empty( );
 
