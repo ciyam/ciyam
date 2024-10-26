@@ -2,10 +2,16 @@
    // [(start for_update_field)] `{`$arg_id`}
    // NOTE: Empty code block for scope purposes.
    {
+`{`@eq`(`$arg_use_value_after`,`'`'`)\
       string field_value( to_string( get_obj( ).`{`$arg_sfield`}( ) ) );
 
+`}\
       get_obj( ).op_update( );
 
+`{`@eq`(`$arg_use_value_after`,`'true`'`)\
+      string field_value( to_string( get_obj( ).`{`$arg_sfield`}( ) ) );
+
+`}\
       get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( field_value ) );
 
       get_obj( ).op_apply( );
