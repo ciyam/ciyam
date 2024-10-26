@@ -2295,7 +2295,7 @@ void Meta_Application::impl::impl_Generate( )
          throw runtime_error( "upgrade script output stream is bad" );
 
       get_obj( ).Actions( "" );
-      get_obj( ).Generate_Status( "Generating Vars..." );
+      get_obj( ).Generate_Status( "Generating Variables..." );
 
       get_obj( ).op_apply( );
    }

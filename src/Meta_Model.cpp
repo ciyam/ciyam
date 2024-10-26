@@ -1412,7 +1412,7 @@ void Meta_Model::impl::impl_Generate( )
 
    try
    {
-      output_progress_message( "Generating " + get_obj( ).Name( ) + " vars..." );
+      output_progress_message( "Generating " + get_obj( ).Name( ) + " variables..." );
 
       string vars_file_name( get_obj( ).Name( ) + ".vars.xrep" );
       string make_file_name( get_obj( ).Name( ) + ".make.vars.xrep" );
