@@ -1258,11 +1258,14 @@ bool output_view_form( ostream& os, const string& act,
             {
                string new_class_effect( ci->second );
 
-               if( new_class_effect == c_modifier_effect_lowlight || new_class_effect == c_modifier_effect_lowlight1
-                || new_class_effect == c_modifier_effect_highlight || new_class_effect == c_modifier_effect_highlight1 )
+               if( ( new_class_effect == c_modifier_effect_lowlight )
+                || ( new_class_effect == c_modifier_effect_lowlight1 )
+                || ( new_class_effect == c_modifier_effect_highlight )
+                || ( new_class_effect == c_modifier_effect_highlight1 ) )
                   class_display_effect = new_class_effect;
 
-               if( new_class_effect == c_modifier_effect_extralight || new_class_effect == c_modifier_effect_extralight1 )
+               if( ( new_class_effect == c_modifier_effect_extralight )
+                || ( new_class_effect == c_modifier_effect_extralight1 ) )
                   class_extra_effect = new_class_effect;
             }
          }
@@ -1391,6 +1394,7 @@ bool output_view_form( ostream& os, const string& act,
       // to modifiers and state. It is being assumed here that the original view fields and source fields
       // have the same offsets.
       string display_effect( class_display_effect ), extra_effect( class_extra_effect ), view_edit_effect;
+
       if( !view_extras.count( c_view_type_extra_print_no_highlight ) )
       {
          for( size_t j = 0; j < ARRAY_SIZE( state_modifiers ); j++ )
@@ -1404,15 +1408,18 @@ bool output_view_form( ostream& os, const string& act,
                {
                   string new_effect( ci->second );
 
-                  if( new_effect == c_modifier_effect_lowlight || new_effect == c_modifier_effect_lowlight1
-                   || new_effect == c_modifier_effect_highlight || new_effect == c_modifier_effect_highlight1 )
+                  if( ( new_effect == c_modifier_effect_lowlight )
+                   || ( new_effect == c_modifier_effect_lowlight1 )
+                   || ( new_effect == c_modifier_effect_highlight )
+                   || ( new_effect == c_modifier_effect_highlight1 ) )
                      display_effect = new_effect;
 
-                  if( new_effect == c_modifier_effect_relegate
-                   || ( view_edit_effect.empty( ) && new_effect == c_modifier_effect_protect ) )
+                  if( ( new_effect == c_modifier_effect_relegate )
+                   || ( view_edit_effect.empty( ) && ( new_effect == c_modifier_effect_protect ) ) )
                      view_edit_effect = new_effect;
 
-                  if( new_effect == c_modifier_effect_extralight || new_effect == c_modifier_effect_extralight1 )
+                  if( ( new_effect == c_modifier_effect_extralight )
+                   || ( new_effect == c_modifier_effect_extralight1 ) )
                      extra_effect = new_effect;
                }
             }
@@ -1424,7 +1431,7 @@ bool output_view_form( ostream& os, const string& act,
       if( !view_edit_effect.empty( ) || source.protected_fields.count( source_value_id ) )
       {
          bool is_relegated = ( view_edit_effect == c_modifier_effect_relegate );
-         bool is_protected = ( view_edit_effect == c_modifier_effect_protect || source.protected_fields.count( source_value_id ) );
+         bool is_protected = ( ( view_edit_effect == c_modifier_effect_protect ) || source.protected_fields.count( source_value_id ) );
 
          if( is_relegated )
             is_protected = false;
@@ -1595,6 +1602,7 @@ bool output_view_form( ostream& os, const string& act,
          td_extra = " colspan=\"2\"";
 
       string class_extra;
+
       if( !extra_effect.empty( ) )
          class_extra += " " + extra_effect;
 

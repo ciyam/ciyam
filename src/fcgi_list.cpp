@@ -2938,11 +2938,14 @@ void output_list_form( ostream& os,
                {
                   string new_effect( ci->second );
 
-                  if( new_effect == c_modifier_effect_lowlight || new_effect == c_modifier_effect_lowlight1
-                   || new_effect == c_modifier_effect_highlight || new_effect == c_modifier_effect_highlight1 )
+                  if( ( new_effect == c_modifier_effect_lowlight )
+                   || ( new_effect == c_modifier_effect_lowlight1 )
+                   || ( new_effect == c_modifier_effect_highlight )
+                   || ( new_effect == c_modifier_effect_highlight1 ) )
                      display_effect = new_effect;
 
-                  if( new_effect == c_modifier_effect_extralight || new_effect == c_modifier_effect_extralight1 )
+                  if( ( new_effect == c_modifier_effect_extralight )
+                   || ( new_effect == c_modifier_effect_extralight1 ) )
                      extra_effect = new_effect;
                }
             }
@@ -3046,11 +3049,13 @@ void output_list_form( ostream& os,
          if( j > last_j_val )
             last_j_val = j;
 
+         bool is_last_row = ( i == ( source.row_data.size( ) - 1 ) );
+
          // NOTE: Subtotals are normally output when a change to a summary field is detected (i.e. when
          // the next row is being processed), however, if we are processing the last column of the last
          // row then need to prepare the subtotals here so they can be output before the totals.
          if( ( is_first_column && !print_summary_col_nums.empty( ) )
-          || ( j == last_j_val && i == source.row_data.size( ) - 1 && !print_summary_col_nums.empty( ) ) )
+          || ( ( j == last_j_val ) && is_last_row && !print_summary_col_nums.empty( ) ) )
          {
             ostringstream osx;
             deque< string > subtotals;
@@ -3292,6 +3297,7 @@ void output_list_form( ostream& os,
             // to modifiers and state. It is being assumed here that the original list fields and source fields
             // have the same offsets.
             string extra_effect, display_effect, view_edit_effect;
+
             if( !is_printable || !extras.count( c_list_type_extra_print_no_highlight ) )
             {
                for( size_t k = 0; k < ARRAY_SIZE( state_modifiers ); k++ )
@@ -3305,15 +3311,18 @@ void output_list_form( ostream& os,
                      {
                         string new_effect( ci->second );
 
-                        if( new_effect == c_modifier_effect_lowlight || new_effect == c_modifier_effect_lowlight1
-                         || new_effect == c_modifier_effect_highlight || new_effect == c_modifier_effect_highlight1 )
+                        if( ( new_effect == c_modifier_effect_lowlight )
+                         || ( new_effect == c_modifier_effect_lowlight1 )
+                         || ( new_effect == c_modifier_effect_highlight )
+                         || ( new_effect == c_modifier_effect_highlight1 ) )
                            display_effect = new_effect;
 
-                        if( new_effect == c_modifier_effect_relegate
-                         || ( view_edit_effect.empty( ) && new_effect == c_modifier_effect_protect ) )
+                        if( ( new_effect == c_modifier_effect_relegate )
+                         || ( view_edit_effect.empty( ) && ( new_effect == c_modifier_effect_protect ) ) )
                            view_edit_effect = new_effect;
 
-                        if( new_effect == c_modifier_effect_extralight || new_effect == c_modifier_effect_extralight1 )
+                        if( ( new_effect == c_modifier_effect_extralight )
+                         || ( new_effect == c_modifier_effect_extralight1 ) )
                            extra_effect = new_effect;
                      }
                   }
