@@ -1,8 +1,8 @@
-`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'after_fetch`'`,`$section`)\
    // [(start transient_field_from_dtm)] `{`$arg_id`}
    if( !get_dtm( ).empty( )
     && ( required_transients.count( "`{`$arg_field`}" )
     || get_obj( ).needs_field_value( "`{`$arg_field`}" ) ) )
-      get_obj( ).`{`$arg_field`}( ( date_time )get_dtm( ) );
+      get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_unix`,`'true`'`)unix_time( `}( date_time )get_dtm( )`{`@eq`(`$arg_unix`,`'true`'`) )`} );
    // [(finish transient_field_from_dtm)] `{`$arg_id`}
 `}
