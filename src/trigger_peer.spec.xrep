@@ -14,11 +14,11 @@
        + to_string( get_obj( ).get_field_num( "`{`$arg_sfield`}" ) ) ).empty( );
 
 `}`{`@eq`(`$arg_identity_suffix`,`'`'`)\
-      string key_info( get_obj( ).`{`$arg_sfield`}( ) );
+      string key( get_obj( ).`{`$arg_sfield`}( ) );
 `,\
       temporary_identity_suffix tmp_identity_suffix( get_obj( ).`{`$arg_sfield`}( ) );
 
-      string key_info( replaced_suffix( get_obj( ).get_key( ),
+      string key( replaced_suffix( get_obj( ).get_key( ),
        tmp_identity_suffix.original_suffix, tmp_identity_suffix.current_suffix ) );
 `}\
 
@@ -30,13 +30,13 @@
 
 `}\
 `{`@eq`(`$arg_update`,`'`'`)\
-      cp_source->op_create( key_info );
+      cp_source->op_create( key );
 
       cp_source->set_is_for_peer( get_obj( ).`{`$arg_sfield`}( ) );
 `,\
       cp_source->set_is_for_peer( get_obj( ).`{`$arg_sfield`}( ) );
 
-      cp_source->op_update( key_info );
+      cp_source->op_update( key );
 `}\
 
 `{`@eq`(`$arg_create_field_record`,`'`'`)\
@@ -69,6 +69,34 @@
       cp_source->`{`$arg_spfield`}( get_obj( ).get_key( ) );
 
 `}\
+      cp_source->op_apply( );
+   }
+   // [(finish trigger_peer)] `{`$arg_id`}
+`}
+`{`@eq`(`'after_destroy`'`,`$section`)\
+   // [(start trigger_peer)] `{`$arg_id`}
+   if( !storage_locked_for_admin( )
+    && ( get_uid( ) != c_peer ) && !get_obj( ).get_is_for_peer( ) )
+   {
+`{`@eq`(`$arg_identity_suffix`,`'`'`)\
+      string key( get_obj( ).`{`$arg_sfield`}( ) );
+`,\
+      temporary_identity_suffix tmp_identity_suffix( get_obj( ).`{`$arg_sfield`}( ) );
+
+      string key( replaced_suffix( get_obj( ).get_key( ),
+       tmp_identity_suffix.original_suffix, tmp_identity_suffix.current_suffix ) );
+`}
+      class_pointer< Sample_Forum_Topic > cp_source( e_create_instance );
+
+`{`!`@eq`(`$arg_submit_type`,`'`'`)\
+      temporary_session_variable tmp_session_submit_type(
+       get_special_var_name( e_special_var_submit_type ), "`{`$arg_submit_type`}" );
+
+`}\
+      cp_source->set_is_for_peer( get_obj( ).`{`$arg_sfield`}( ) );
+
+      cp_source->op_destroy( key );
+
       cp_source->op_apply( );
    }
    // [(finish trigger_peer)] `{`$arg_id`}
