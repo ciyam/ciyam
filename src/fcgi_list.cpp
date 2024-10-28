@@ -271,6 +271,7 @@ void setup_list_fields( list_source& list,
    }
 
    map< string, size_t > field_id_counts;
+
    for( size_t i = 0; i < ( list.lici->second )->fields.size( ); i++ )
    {
       fld_info fld( ( list.lici->second )->fields[ i ] );
@@ -883,8 +884,10 @@ void output_list_form( ostream& os,
        << " class=\"list\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n";
 
       os << "<thead><tr>\n";
+
       os << "<th class=\"list\">" << GDS( c_display_search_field ) << "</th><th class=\"list\">"
        << GDS( c_display_search_type ) << "</th><th class=\"list\">" << GDS( c_display_search_values ) << "</th>";
+
       os << "\n</tr></thead>\n";
 
       os << "<tbody>\n";
@@ -898,6 +901,7 @@ void output_list_form( ostream& os,
          else
          {
             string text_search_title;
+
             for( size_t j = 0; j < source.text_search_title_fields.size( ); j++ )
             {
                if( j > 0 )
@@ -910,6 +914,7 @@ void output_list_form( ostream& os,
 
                text_search_title += source.text_search_title_fields[ j ];
             }
+
             os << "<td class=\"list\">" << text_search_title << "</td>";
          }
 
@@ -918,11 +923,14 @@ void output_list_form( ostream& os,
          os << "<td class=\"list\">";
 
          os << "<input type=\"text\" id=\"text_search\" size=\"25\"";
+
          if( list_search_text.count( source.id + c_srch_suffix ) )
          {
             text_search_value = list_search_text.find( source.id + c_srch_suffix )->second;
+
             os << " value=\"" << escape_markup( text_search_value ) << "\"";
          }
+
          os << "/>";
 
          os << "</td></tr>\n";
@@ -939,11 +947,13 @@ void output_list_form( ostream& os,
           || ( source.lici->second )->parents[ i ].operations.count( c_operation_select_child ) )
          {
             string op( c_operation_select );
+
             bool is_select_child = false;
 
             if( ( source.lici->second )->parents[ i ].operations.count( c_operation_select_child ) )
             {
                is_select_child = true;
+
                op = string( c_operation_select_child );
             }
 
@@ -951,34 +961,34 @@ void output_list_form( ostream& os,
             {
                string skey( ( source.lici->second )->parents[ i ].skey );
 
-               if( skey == c_parent_extra_skey0 && skey_values.value0.empty( ) )
+               if( ( skey == c_parent_extra_skey0 ) && skey_values.value0.empty( ) )
                   continue;
 
-               if( skey == c_parent_extra_skey1 && skey_values.value1.empty( ) )
+               if( ( skey == c_parent_extra_skey1 ) && skey_values.value1.empty( ) )
                   continue;
 
-               if( skey == c_parent_extra_skey2 && skey_values.value2.empty( ) )
+               if( ( skey == c_parent_extra_skey2 ) && skey_values.value2.empty( ) )
                   continue;
 
-               if( skey == c_parent_extra_skey3 && skey_values.value3.empty( ) )
+               if( ( skey == c_parent_extra_skey3 ) && skey_values.value3.empty( ) )
                   continue;
 
-               if( skey == c_parent_extra_skey4 && skey_values.value4.empty( ) )
+               if( ( skey == c_parent_extra_skey4 ) && skey_values.value4.empty( ) )
                   continue;
 
-               if( skey == c_parent_extra_skey5 && skey_values.value5.empty( ) )
+               if( ( skey == c_parent_extra_skey5 ) && skey_values.value5.empty( ) )
                   continue;
 
-               if( skey == c_parent_extra_skey6 && skey_values.value6.empty( ) )
+               if( ( skey == c_parent_extra_skey6 ) && skey_values.value6.empty( ) )
                   continue;
 
-               if( skey == c_parent_extra_skey7 && skey_values.value7.empty( ) )
+               if( ( skey == c_parent_extra_skey7 ) && skey_values.value7.empty( ) )
                   continue;
 
-               if( skey == c_parent_extra_skey8 && skey_values.value8.empty( ) )
+               if( ( skey == c_parent_extra_skey8 ) && skey_values.value8.empty( ) )
                   continue;
 
-               if( skey == c_parent_extra_skey9 && skey_values.value9.empty( ) )
+               if( ( skey == c_parent_extra_skey9 ) && skey_values.value9.empty( ) )
                   continue;
             }
 
@@ -988,9 +998,11 @@ void output_list_form( ostream& os,
             size_t next_search_opt_limit( search_opt_limit );
 
             string::size_type lpos = suffix.substr( 0, pos ).find( '#' );
+
             if( lpos != string::npos )
             {
                size_t specific_limit = atoi( suffix.substr( lpos + 1, pos - lpos - 1 ).c_str( ) );
+
                if( specific_limit < next_search_opt_limit )
                   next_search_opt_limit = specific_limit;
 
@@ -1057,10 +1069,12 @@ void output_list_form( ostream& os,
                   os << c_dbl_nbsp;
 
                char first_prefix = 'A';
+
                if( is_select_child )
                   first_prefix = 'H';
 
                char opt( first_prefix + j );
+
                string svname( opt + ( source.lici->second )->parents[ i ].field );
 
                string any_display( GDS( c_display_any ) );
@@ -1132,8 +1146,10 @@ void output_list_form( ostream& os,
                   ++opt_count;
 
                   os << "<option value=\"~\"";
+
                   if( value == "~" )
                      os << " selected";
+
                   os << ">" << c_lt << GDS( c_display_none ) << c_gt << c_dbl_nbsp << "</option>\n";
                }
 
@@ -1164,6 +1180,7 @@ void output_list_form( ostream& os,
 
                   // NOTE: Remove parent version information as its not relevant for a select operation.
                   size_t pos = key.find( ' ' );
+
                   if( pos != string::npos )
                      key.erase( pos );
 
@@ -1171,6 +1188,7 @@ void output_list_form( ostream& os,
                      display = key;
 
                   os << "<option value=\"" << key << "\"";
+
                   if( key == value )
                      os << " selected";
 
@@ -1188,10 +1206,10 @@ void output_list_form( ostream& os,
 
                int z = ( int )is_select_child;
 
-               if( opt_count < 2 || ( opt_count == 2 && j == z )
-                || ( opt_count == 3 && j == 1 + z ) || ( opt_count == 4 && j == 2 + z )
-                || ( opt_count == 5 && j == 3 + z ) || ( opt_count == 6 && j == 4 + z )
-                || ( opt_count == 7 && j == 5 + z ) || ( opt_count == 8 && j == 6 + z ) )
+               if( ( opt_count < 2 ) || ( ( opt_count == 2 ) && ( j == z ) )
+                || ( ( opt_count == 3 ) && ( j == 1 + z ) ) || ( ( opt_count == 4 ) && ( j == 2 + z ) )
+                || ( ( opt_count == 5 ) && ( j == 3 + z ) ) || ( ( opt_count == 6 ) && ( j == 4 + z ) )
+                || ( ( opt_count == 7 ) && ( j == 5 + z ) ) || ( ( opt_count == 8 ) && ( j == 6 + z ) ) )
                   break;
             }
 
@@ -1318,6 +1336,7 @@ void output_list_form( ostream& os,
                   const enum_info& info( sinfo.enums.find( field_extras.find( c_field_extra_enum )->second )->second );
 
                   size_t value_offset = 0;
+
                   for( size_t k = 0; k < info.values.size( ); k++ )
                   {
                      if( info.values[ k ].first == value )
@@ -1369,13 +1388,17 @@ void output_list_form( ostream& os,
                   os << "<option value=\"\">" << c_lt << GDS( c_display_any ) << c_gt << c_dbl_nbsp << "</option>\n";
 
                   os << "<option value=\"0\"";
+
                   if( value == c_false_value )
                      os << " selected";
+
                   os << ">" << GDS( c_display_false ) << c_dbl_nbsp << "</option>\n";
 
                   os << "<option value=\"1\"";
+
                   if( value == c_true_value )
                      os << " selected";
+
                   os << ">" << GDS( c_display_true ) << c_dbl_nbsp << "</option>\n";
 
                   os << "</select>";
@@ -1384,6 +1407,7 @@ void output_list_form( ostream& os,
                {
                   int input_size = 25;
                   int max_length = 100;
+
                   bool is_datetime = false;
 
                   string extra, validate, use_time( "false" ), use_secs( "true" );
@@ -1393,6 +1417,7 @@ void output_list_form( ostream& os,
                   if( field_extras.count( c_field_extra_range ) )
                   {
                      string::size_type pos = field_extras[ c_field_extra_range ].find( ".." );
+
                      if( pos == string::npos )
                         throw runtime_error( "unexpected range format" );
 
@@ -1666,6 +1691,9 @@ void output_list_form( ostream& os,
    string new_record_fields;
    string new_record_values;
 
+   size_t num_sel_actions = 0;
+
+   bool has_delete_action = false;
    bool has_any_selection_actions = false;
 
    if( !is_printable && ( list_type != c_list_type_home ) )
@@ -1728,7 +1756,10 @@ void output_list_form( ostream& os,
              && ( !is_admin_owner_erase || sess_info.is_admin_user || has_owner_parent_or_is_user_list ) )
             {
                had_data = true;
-               has_any_selection_actions = true;
+
+               has_delete_action = true;
+
+               has_any_selection_actions = ++num_sel_actions;
 
                string checksum_values;
                string new_checksum_value;
@@ -1902,7 +1933,7 @@ void output_list_form( ostream& os,
                      continue;
 
                   if( !ignore_selections )
-                     has_any_selection_actions = true;
+                     has_any_selection_actions = ++num_sel_actions;
 
                   if( no_log )
                      next_action = '_' + next_action;
@@ -1979,7 +2010,7 @@ void output_list_form( ostream& os,
                      else
                         os << c_dbl_nbsp;
 
-                     has_any_selection_actions = true;
+                     has_any_selection_actions = ++num_sel_actions;
 
                      string checksum_values;
                      string new_checksum_value;
@@ -2098,7 +2129,7 @@ void output_list_form( ostream& os,
                      else
                         os << c_dbl_nbsp;
 
-                     has_any_selection_actions = true;
+                     has_any_selection_actions = ++num_sel_actions;
 
                      string checksum_values;
                      string new_checksum_value;
@@ -3033,6 +3064,7 @@ void output_list_form( ostream& os,
          {
             if( is_fk_column )
                ++fk_column;
+
             continue;
          }
 
@@ -3227,14 +3259,16 @@ void output_list_form( ostream& os,
                os << "\">\n";
             }
 
-            if( ( keep_checks && selected_records.count( key ) ) || rci != source.row_errors.end( ) )
+            if( ( keep_checks && selected_records.count( key ) ) || ( rci != source.row_errors.end( ) ) )
                checked = " checked";
 
             if( display_list_checks || display_dummy_checks )
             {
                os << "   <td class=\"list\" width=\"25\" align=\"center\">";
 
-               if( !display_list_checks || ( list_type == c_list_type_home ) || sess_info.user_id.empty( )
+               if( !display_list_checks
+                || sess_info.user_id.empty( ) || ( list_type == c_list_type_home )
+                || ( ( state & c_state_undeletable ) && has_delete_action && ( num_sel_actions == 1 ) )
                 || ( ( state & c_state_unactionable ) && !extras.count( c_list_type_extra_ignore_unactionable ) ) )
                   os << c_dummy_check_symbol;
                else
@@ -3258,6 +3292,7 @@ void output_list_form( ostream& os,
          {
             if( is_fk_column )
                ++fk_column;
+
             continue;
          }
 
@@ -3268,13 +3303,15 @@ void output_list_form( ostream& os,
 
             string cmd( c_cmd_list );
             string ident( source.lici->second->id );
+
             if( !parent_key.empty( ) )
             {
-               cmd = c_cmd_view;
                ident = pident;
+               cmd = c_cmd_view;
             }
 
             string listarg;
+
             if( is_child_list )
                listarg = source.id;
 
