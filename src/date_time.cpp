@@ -3250,12 +3250,17 @@ void convert_julian_to_calendar( julian jdt,
    julian_to_calendar( jdt, yr, mo, dy, hr, mn, sc, te, hd, th );
 }
 
-int64_t unix_time( const date_time& dt, time_t* p_tt )
+int64_t unix_time( const date_time& dt, time_t* p_tt, bool force_epoch_if_earlier )
 {
    julian j( dt );
 
    if( j < c_unix_epoch )
-      throw runtime_error( "unix time is not valid before the unix epoch" );
+   {
+      if( force_epoch_if_earlier )
+         j = c_unix_epoch;
+      else
+         throw runtime_error( "unix time is not valid before the unix epoch" );
+   }
 
    if( p_tt )
    {

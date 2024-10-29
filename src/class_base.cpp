@@ -1682,7 +1682,9 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts,
       case e_op_type_destroy:
       do_generate_sql( e_generate_sql_type_delete, sql_stmts, tx_key_info, p_sql_undo_stmts );
 
-      destroy( );
+      if( !get_is_for_peer( ) )
+         destroy( );
+
       retval = true;
       break;
    }
@@ -1801,6 +1803,8 @@ void class_base::destroy( )
       time_t ts = time( 0 );
       bool output_progress = false;
 
+      TRACE_LOG( TRACE_CLASSOPS, "=== begin cascade [class: " + get_class_name( ) + ", key = " + get_key( ) + "] ===" );
+
       if( !get_raw_variable( get_special_var_name( e_special_var_progress ) ).empty( ) )
          output_progress = true;
 
@@ -1832,9 +1836,10 @@ void class_base::destroy( )
 
                do
                {
-                  if( output_progress && time( 0 ) - ts > c_cascade_progress_seconds )
+                  if( output_progress && ( ( time( 0 ) - ts ) > c_cascade_progress_seconds ) )
                   {
                      ts = time( 0 );
+
                      // FUTURE: This message should be handled as a server string message.
                      output_progress_message( "Cascaded " + to_string( i ) + " children..." );
                   }
@@ -1865,6 +1870,8 @@ void class_base::destroy( )
             }
          }
       }
+
+      TRACE_LOG( TRACE_CLASSOPS, "=== finish cascade [class: " + get_class_name( ) + ", key = " + get_key( ) + "] ===" );
    }
 }
 
@@ -4321,7 +4328,7 @@ string unix_to_datetime( const numeric& unix_time )
 
 numeric datetime_to_unix( const date_time& dtm )
 {
-   return unix_time( dtm );
+   return unix_time( dtm, 0, true );
 }
 
 string formatted_int( int n, const string& mask )
