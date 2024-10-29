@@ -4,14 +4,15 @@
    // [(start transient_field_alias)] `{`$arg_id`}
 `{`@eq`(`$arg_def_value`,`'`'`)\
 `{`@eq`(`$arg_iter_only`,`'`'`)\
-   if( `{`@eq`(`$arg_not_new`,`'true`'`)!get_obj( ).get_key( ).empty( ) && `}`{`@eq`(`$arg_top_level`,`'true`'`)!get_obj( ).get_graph_parent( )
+   if( `{`@eq`(`$arg_not_new`,`'true`'`)!get_obj( ).get_key( ).empty( )
+    && ( `}`{`@eq`(`$arg_top_level`,`'true`'`)!get_obj( ).get_graph_parent( )
     && `}`{`@eq`(`$arg_top_or_iter`,`'true`'`)( !get_obj( ).get_graph_parent( ) || get_obj( ).get_is_iterating( ) )
     && `}`{`!`@eq`(`$arg_check_mod`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)( `}get_obj( ).needs_field_value( "`{`$arg_field`}" )
 `{`@eq`(`$arg_check_mod`,`'`'`)\
 `{`@eq`(`$arg_tfield`,`'`'`)\
-    || required_transients.count( "`{`$arg_field`}" ) )\
+    || required_transients.count( "`{`$arg_field`}" )`{`@eq`(`$arg_not_new`,`'true`'`) )`} )\
 `,\
-    || required_transients.count( "`{`$arg_field`}" ) )
+    || required_transients.count( "`{`$arg_field`}" )`{`@eq`(`$arg_not_new`,`'true`'`) )`} )
 `{`@eq`(`$arg_tfistexttype`,`'0`'`)\
     && get_obj( ).`{`$arg_tfield`}( ) )\
 `,\
@@ -29,7 +30,8 @@
 `}\
     && ( state & c_modifier_`{`$arg_check_mod`} ) )\
 `}`}`,\
-   if( `{`@eq`(`$arg_not_new`,`'true`'`)!get_obj( ).get_key( ).empty( ) && `}get_obj( ).get_is_iterating( )`{`@eq`(`$arg_top_level`,`'true`'`)
+   if( `{`@eq`(`$arg_not_new`,`'true`'`)!get_obj( ).get_key( ).empty( )
+    && `}get_obj( ).get_is_iterating( )`{`@eq`(`$arg_top_level`,`'true`'`)
     && !get_obj( ).get_graph_parent( )`}
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tfistexttype`,`'0`'`)\
@@ -43,10 +45,11 @@
     || required_transients.count( "`{`$arg_field`}" ) ) )\
 `}`,\
 `{`@eq`(`$arg_iter_only`,`'`'`)\
-   if( `{`@eq`(`$arg_not_new`,`'true`'`)!get_obj( ).get_key( ).empty( ) && `}`{`@eq`(`$arg_top_level`,`'true`'`)!get_obj( ).get_graph_parent( )
+   if( `{`@eq`(`$arg_not_new`,`'true`'`)!get_obj( ).get_key( ).empty( )
+    && ( `}`{`@eq`(`$arg_top_level`,`'true`'`)!get_obj( ).get_graph_parent( )
     && `}`{`@eq`(`$arg_top_or_iter`,`'true`'`)( !get_obj( ).get_graph_parent( ) || get_obj( ).get_is_iterating( ) )
     && `}( get_obj( ).needs_field_value( "`{`$arg_field`}" )
-    || required_transients.count( "`{`$arg_field`}" ) )
+    || required_transients.count( "`{`$arg_field`}" )`{`@eq`(`$arg_not_new`,`'true`'`) )`} )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tfistexttype`,`'0`'`)\
     && get_obj( ).`{`$arg_tfield`}( )
@@ -57,10 +60,11 @@
 `}\
     && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )\
 `,\
-   if( `{`@eq`(`$arg_not_new`,`'true`'`)!get_obj( ).get_key( ).empty( ) && `}get_obj( ).get_is_iterating( )`{`@eq`(`$arg_top_level`,`'true`'`)
+   if( `{`@eq`(`$arg_not_new`,`'true`'`)!get_obj( ).get_key( ).empty( )
+    && (`}get_obj( ).get_is_iterating( )`{`@eq`(`$arg_top_level`,`'true`'`)
     && !get_obj( ).get_graph_parent( )`}
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
-    || required_transients.count( "`{`$arg_field`}" ) )
+    || required_transients.count( "`{`$arg_field`}" )`{`@eq`(`$arg_not_new`,`'true`'`) )`} )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tfistexttype`,`'0`'`)\
     && get_obj( ).`{`$arg_tfield`}( )
