@@ -3150,6 +3150,7 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
             p_class_base = instance_accessor.get_next_foreign_key_child( i, next_child_field, next_op );
 
             auto_ptr< class_cascade > ap_tmp_cascading;
+
             if( p_class_base )
                ap_tmp_cascading.reset( new class_cascade( *p_class_base ) );
 
@@ -4311,6 +4312,27 @@ void append_peerchain_log_commands( )
    {
       guard g( g_mutex );
    
+      string first_command( gtp_session->peerchain_log_commands[ 0 ] );
+
+      string::size_type pos = first_command.find( '=' );
+
+      if( pos == string::npos )
+         throw runtime_error( "unexpected format for peerchain tx log command '" + first_command + "'" );
+
+      string identity( first_command.substr( 0, pos ) );
+
+      string identity_log( identity + c_log_file_ext );
+
+      bool had_log_file = false;
+
+      vector< string > log_lines;
+
+      if( file_exists( identity_log ) )
+      {
+         had_log_file = true;
+         buffer_file_lines( identity_log, log_lines );
+      }
+
       for( size_t i = 0; i < num_commands; i++ )
       {
          string next_command( gtp_session->peerchain_log_commands[ i ] );
@@ -4320,7 +4342,8 @@ void append_peerchain_log_commands( )
          if( pos == string::npos )
             throw runtime_error( "unexpected format for peerchain tx log command '" + next_command + "'" );
 
-         string identity_log( next_command.substr( 0, pos ) + c_log_file_ext );
+         if( next_command.substr( 0, pos ) != identity )
+            throw runtime_error( "found identity '" + next_command.substr( 0, pos ) + "' when '" + identity + "' was expected" );
 
          next_command.erase( 0, pos + 1 );
 
@@ -4342,19 +4365,16 @@ void append_peerchain_log_commands( )
 
             string update_info( extract_mod_cls_and_key_from_command( next_command, &update_fields_and_values ) );
 
-            if( file_exists( identity_log ) )
+            if( !log_lines.empty( ) )
             {
-               vector< string > lines;
-               buffer_file_lines( identity_log, lines );
-
                bool had_created = false;
                bool has_changed_any_values = false;
 
                map< string, string > field_and_value_info;
 
-               for( size_t i = 0; i < lines.size( ); i++ )
+               for( size_t i = 0; i < log_lines.size( ); i++ )
                {
-                  string next_line( lines[ i ] );
+                  string next_line( log_lines[ i ] );
 
                   pos = next_line.find( ' ' );
 
@@ -4457,16 +4477,13 @@ void append_peerchain_log_commands( )
          {
             string destroy_info( extract_mod_cls_and_key_from_command( next_command ) );
 
-            if( file_exists( identity_log ) )
+            if( !log_lines.empty( ) )
             {
-               vector< string > lines;
-               buffer_file_lines( identity_log, lines );
-
                bool removed_create = false;
 
-               for( size_t i = 0; i < lines.size( ); i++ )
+               for( size_t i = 0; i < log_lines.size( ); i++ )
                {
-                  string next_line( lines[ i ] );
+                  string next_line( log_lines[ i ] );
 
                   pos = next_line.find( ' ' );
 
@@ -4481,7 +4498,8 @@ void append_peerchain_log_commands( )
                         if( create_info == destroy_info )
                         {
                            removed_create = true;
-                           lines.erase( lines.begin( ) + i-- );
+
+                           log_lines.erase( log_lines.begin( ) + i-- );
                         }
                      }
                      else if( removed_create && ( command == c_cmd_update ) )
@@ -4489,36 +4507,25 @@ void append_peerchain_log_commands( )
                         string update_info( extract_mod_cls_and_key_from_command( next_line ) );
 
                         if( update_info == destroy_info )
-                           lines.erase( lines.begin( ) + i-- );
+                           log_lines.erase( log_lines.begin( ) + i-- );
                      }
                   }
                }
 
                if( removed_create )
-               {
                   append_command = false;
-
-                  if( lines.empty( ) )
-                     remove_file( identity_log );
-                  else
-                     write_file_lines( identity_log, lines );
-               }
             }
          }
 
          if( append_command )
-         {
-            ofstream outf( identity_log.c_str( ), ios::out | ios::app );
-
-            outf << next_command << '\n';
-
-            outf.flush( );
-            if( !outf.good( ) )
-               throw runtime_error( "*** unexpected error occurred writing to peerchain tx log for '" + identity_log + "' ***" );
-
-            outf.close( );
-         }
+            log_lines.push_back( next_command );
       }
+
+      if( had_log_file && log_lines.empty( ) )
+         file_remove( identity_log );
+
+      if( !log_lines.empty( ) )
+         write_file_lines( identity_log, log_lines );
 
       gtp_session->peerchain_log_commands.clear( );
    }
@@ -14652,6 +14659,7 @@ void begin_instance_op( instance_op op, class_base& instance,
       throw runtime_error( "cannot perform an instance operation without a key or current instance" );
 
    string clone_key;
+
    if( op == e_instance_op_create )
    {
       string::size_type pos = key_for_op.find( ' ' );
@@ -14689,7 +14697,7 @@ void begin_instance_op( instance_op op, class_base& instance,
 
    // NOTE: A create op can be started (but not applied) without an instance key (this is to help with record
    // preparation when cloning in order to create a new instance).
-   if( op != e_instance_op_create || !key_for_op.empty( ) )
+   if( ( op != e_instance_op_create ) || !key_for_op.empty( ) )
    {
       bool obtained_lock = false;
 
@@ -14972,6 +14980,7 @@ void begin_instance_op( instance_op op, class_base& instance,
              + "' stored instance using '" + instance.get_current_identity( ) + "' object instance" );
 
          string constraining_class;
+
          bool is_constrained = false;
 
          // NOTE: Unless performing the cascade obtain locks to all children (which are held in
