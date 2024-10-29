@@ -1,7 +1,8 @@
 `{`@eq`(`'after_store`'`,`$section`)\
    // [(start trigger_peer)] `{`$arg_id`}
-   if( !storage_locked_for_admin( )
+   if( !is_internal
     && ( get_uid( ) != c_peer )
+    && !storage_locked_for_admin( )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && get_obj( ).`{`$arg_tfield`}( )
 `}`{`!`@eq`(`$arg_modifier`,`'`'`)\
@@ -75,8 +76,12 @@
 `}
 `{`@eq`(`'after_destroy`'`,`$section`)\
    // [(start trigger_peer)] `{`$arg_id`}
-   if( !storage_locked_for_admin( )
-    && ( get_uid( ) != c_peer ) && !get_obj( ).get_is_for_peer( ) )
+   if( ( get_uid( ) != c_peer )
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && get_obj( ).`{`$arg_tfield`}( )
+`}\
+    && !storage_locked_for_admin( )
+    && !get_obj( ).get_is_for_peer( ) )
    {
 `{`@eq`(`$arg_identity_suffix`,`'`'`)\
       string key( get_obj( ).`{`$arg_sfield`}( ) );
@@ -86,7 +91,7 @@
       string key( replaced_suffix( get_obj( ).get_key( ),
        tmp_identity_suffix.original_suffix, tmp_identity_suffix.current_suffix ) );
 `}
-      class_pointer< Sample_Forum_Topic > cp_source( e_create_instance );
+      class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
 
 `{`!`@eq`(`$arg_submit_type`,`'`'`)\
       temporary_session_variable tmp_session_submit_type(
