@@ -686,6 +686,7 @@ class_base::class_base( )
  lock_handle( 0 ),
  xlock_handle( 0 ),
  p_graph_parent( 0 ),
+ force_fetch( false ),
  in_op_begin( false ),
  is_singular( false ),
  is_fetching( false ),
@@ -770,6 +771,7 @@ void class_base::op_update( const string& key, const string& fields, op_update_r
    last_lazy_fetch_key.erase( );
 
    bool could_be_dynamic = false;
+
    if( is_dynamic_enabled )
    {
       instance_fetch_rc rc;
@@ -1846,6 +1848,8 @@ void class_base::destroy( )
 
                   if( next_op == e_cascade_op_destroy )
                   {
+                     restorable< bool > tmp_force_fetch( p_class_base->force_fetch, true );
+
                      op_destroy_rc rc;
                      p_class_base->op_destroy( &rc );
 
@@ -1901,10 +1905,11 @@ void class_base::perform_after_fetch( bool is_minimal, bool is_for_prepare )
    restorable< bool > tmp_is_fetching( is_fetching, true );
 
    TRACE_LOG( TRACE_CLASSOPS, "perform_after_fetch( ) [class: " + get_class_name( )
-     + "] key = " + key + ", is_minimal = " + to_string( is_minimal ) + ", is_for_prepare = "
-     + to_string( is_for_prepare ) + ", is_being_cascaded = " + to_string( is_being_cascaded ) );
+    + "] key = " + key + ", force_fetch = " + to_string( force_fetch ) + ", is_minimal = "
+    + to_string( is_minimal ) + ", is_for_prepare = " + to_string( is_for_prepare )
+    + ", is_being_cascaded = " + to_string( is_being_cascaded ) );
 
-   if( !is_minimal && !is_being_cascaded )
+   if( force_fetch || ( !is_minimal && !is_being_cascaded ) )
    {
       search_replace_separators.clear( );
       p_impl->search_replacements.clear( );
@@ -1974,6 +1979,8 @@ void class_base::construct_dynamic_instance( )
 
       p_dynamic_instance->p_graph_parent = p_graph_parent;
       p_dynamic_instance->graph_parent_fk_field = graph_parent_fk_field;
+
+      p_dynamic_instance->force_fetch = force_fetch;
 
       p_dynamic_instance->in_op_begin = in_op_begin;
 

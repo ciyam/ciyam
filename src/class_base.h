@@ -587,6 +587,8 @@ class CIYAM_BASE_DECL_SPEC class_base
    std::map< std::string, char > search_replace_separators;
    std::set< std::string > search_replace_has_opt_prefixing;
 
+   bool force_fetch;
+
    bool in_op_begin;
 
    bool is_singular;
