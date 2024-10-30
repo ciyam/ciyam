@@ -4377,6 +4377,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600055
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification( ).iterate_forwards( ) )
    {
@@ -4393,6 +4394,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600055a
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Other( ).iterate_forwards( ) )
    {
@@ -4409,6 +4411,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600055b
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Other_Field_2( ).iterate_forwards( ) )
    {
@@ -4425,6 +4428,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600055c
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Other_Class( ).iterate_forwards( ) )
    {
@@ -4441,6 +4445,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600056
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Source( ).iterate_forwards( ) )
    {
@@ -4457,6 +4462,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600057
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Source_Parent( ).iterate_forwards( ) )
    {
@@ -4473,6 +4479,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600058
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Source_Child( ).iterate_forwards( ) )
    {
@@ -4489,6 +4496,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600059
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Test( ).iterate_forwards( ) )
    {
@@ -4505,6 +4513,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600060
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Test_Parent( ).iterate_forwards( ) )
    {
@@ -4521,6 +4530,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600061
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Test_Child( ).iterate_forwards( ) )
    {
@@ -4578,6 +4588,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 610058
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Other_Source_Child( ).iterate_forwards( ) )
    {
@@ -4594,6 +4605,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 620058
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Other_Source_Child_2( ).iterate_forwards( ) )
    {
@@ -4610,6 +4622,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 630058
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Source_Grandchild( ).iterate_forwards( ) )
    {

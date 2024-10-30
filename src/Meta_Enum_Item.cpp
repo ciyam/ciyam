@@ -1224,6 +1224,7 @@ void Meta_Enum_Item::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600024
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).child_Specification( ).iterate_forwards( ) )
    {
       do

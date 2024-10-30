@@ -1121,6 +1121,7 @@ void Meta_Modifier::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600075
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification( ).iterate_forwards( ) )
    {
@@ -1137,6 +1138,7 @@ void Meta_Modifier::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600075a
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Other( ).iterate_forwards( ) )
    {
@@ -1153,6 +1155,7 @@ void Meta_Modifier::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600075b
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Other_Modifier_2( ).iterate_forwards( ) )
    {

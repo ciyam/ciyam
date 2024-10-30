@@ -1063,6 +1063,7 @@ void Meta_Enum::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600018
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification( ).iterate_forwards( ) )
    {

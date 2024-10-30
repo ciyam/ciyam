@@ -8596,7 +8596,9 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    ( void )state;
 
    // [(start update_parent_cascade)] 620194
-   if( !get_obj( ).get_is_being_cascaded( ) && get_obj( ).Specification_Type( ).get_key( ) == "field" )
+   if( !get_obj( ).get_is_being_cascaded( )
+    && !is_destroy_locked_by_own_session( get_obj( ).Parent_Specification( ) )
+    && get_obj( ).Specification_Type( ).get_key( ) == "field" )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
@@ -8609,7 +8611,9 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    // [(finish update_parent_cascade)] 620194
 
    // [(start update_parent_cascade)] 630194
-   if( !get_obj( ).get_is_being_cascaded( ) && get_obj( ).Specification_Type( ).get_key( ) == "field_pair" )
+   if( !get_obj( ).get_is_being_cascaded( )
+    && !is_destroy_locked_by_own_session( get_obj( ).Parent_Specification( ) )
+    && get_obj( ).Specification_Type( ).get_key( ) == "field_pair" )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
@@ -8622,7 +8626,9 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    // [(finish update_parent_cascade)] 630194
 
    // [(start update_parent_cascade)] 640194
-   if( !get_obj( ).get_is_being_cascaded( ) && get_obj( ).Specification_Type( ).get_key( ) == "field_pair2" )
+   if( !get_obj( ).get_is_being_cascaded( )
+    && !is_destroy_locked_by_own_session( get_obj( ).Parent_Specification( ) )
+    && get_obj( ).Specification_Type( ).get_key( ) == "field_pair2" )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
@@ -8635,7 +8641,9 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    // [(finish update_parent_cascade)] 640194
 
    // [(start update_parent_cascade)] 650194
-   if( !get_obj( ).get_is_being_cascaded( ) && get_obj( ).Specification_Type( ).get_key( ) == "field_pair_g" )
+   if( !get_obj( ).get_is_being_cascaded( )
+    && !is_destroy_locked_by_own_session( get_obj( ).Parent_Specification( ) )
+    && get_obj( ).Specification_Type( ).get_key( ) == "field_pair_g" )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
@@ -8648,7 +8656,9 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    // [(finish update_parent_cascade)] 650194
 
    // [(start update_parent_cascade)] 660194
-   if( !get_obj( ).get_is_being_cascaded( ) && get_obj( ).Specification_Type( ).get_key( ) == "field_restrict" )
+   if( !get_obj( ).get_is_being_cascaded( )
+    && !is_destroy_locked_by_own_session( get_obj( ).Parent_Specification( ) )
+    && get_obj( ).Specification_Type( ).get_key( ) == "field_restrict" )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
@@ -8661,7 +8671,9 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    // [(finish update_parent_cascade)] 660194
 
    // [(start update_parent_cascade)] 670194
-   if( !get_obj( ).get_is_being_cascaded( ) && get_obj( ).Specification_Type( ).get_key( ) == "field_source_and_value" )
+   if( !get_obj( ).get_is_being_cascaded( )
+    && !is_destroy_locked_by_own_session( get_obj( ).Parent_Specification( ) )
+    && get_obj( ).Specification_Type( ).get_key( ) == "field_source_and_value" )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
@@ -8674,7 +8686,9 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    // [(finish update_parent_cascade)] 670194
 
    // [(start update_parent_cascade)] 680194
-   if( !get_obj( ).get_is_being_cascaded( ) && get_obj( ).Specification_Type( ).get_key( ) == "home_message_stats_info" )
+   if( !get_obj( ).get_is_being_cascaded( )
+    && !is_destroy_locked_by_own_session( get_obj( ).Parent_Specification( ) )
+    && get_obj( ).Specification_Type( ).get_key( ) == "home_message_stats_info" )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ) );
 
@@ -8687,7 +8701,9 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    // [(finish update_parent_cascade)] 680194
 
    // [(start update_parent_cascade)] 690194
-   if( !get_obj( ).get_is_being_cascaded( ) && get_obj( ).Specification_Type( ).get_key( ) == "field_ocpair" )
+   if( !get_obj( ).get_is_being_cascaded( )
+    && !is_destroy_locked_by_own_session( get_obj( ).Parent_Specification( ) )
+    && get_obj( ).Specification_Type( ).get_key( ) == "field_ocpair" )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 

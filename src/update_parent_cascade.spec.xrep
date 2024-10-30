@@ -25,7 +25,8 @@
 `{`@eq`(`'after_destroy`'`,`$section`)\
    // [(start update_parent_cascade)] `{`$arg_id`}
 `{`@eq`(`$arg_fkfield`,`'`'`)
-   if( !get_obj( ).get_is_being_cascaded( ) )
+   if( !get_obj( ).get_is_being_cascaded( )
+    && !is_destroy_locked_by_own_session( get_obj( ).`{`$arg_pfield`}( ) )
    {
       class_pointer< `{`$module_name`}_`{`$arg_pclass`} > cp_parent( &get_obj( ).`{`$arg_pfield`}( )`{`@eq`(`$arg_grand_parent`,`'true`'`).`{`$arg_pfield`}( )`} );
 
@@ -36,7 +37,9 @@
       }
    }\
 `,\
-   if( !get_obj( ).get_is_being_cascaded( ) && get_obj( ).`{`$arg_fkfield`}( ).get_key( ) == "`{`$arg_tvalue`}" )
+   if( !get_obj( ).get_is_being_cascaded( )
+    && !is_destroy_locked_by_own_session( get_obj( ).`{`$arg_pfield`}( ) )
+    && get_obj( ).`{`$arg_fkfield`}( ).get_key( ) == "`{`$arg_tvalue`}" )
    {
       class_pointer< `{`$module_name`}_`{`$arg_pclass`} > cp_parent( &get_obj( ).`{`$arg_pfield`}( )`{`@eq`(`$arg_grand_parent`,`'true`'`).`{`$arg_pfield`}( )`} );
 

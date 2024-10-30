@@ -1342,6 +1342,7 @@ void Meta_Permission::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600298
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification( ).iterate_forwards( ) )
    {
@@ -1358,6 +1359,7 @@ void Meta_Permission::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600298a
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Other( ).iterate_forwards( ) )
    {
@@ -1374,6 +1376,7 @@ void Meta_Permission::impl::after_store( bool is_create, bool is_internal )
 
    // [(start update_children)] 600298b
    if( !is_create
+    && !get_obj( ).get_is_for_peer( )
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Other_Permission_2( ).iterate_forwards( ) )
    {
