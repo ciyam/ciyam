@@ -1,7 +1,11 @@
 `{`@eq`(`'for_or_after_store`'`,`$section`)\
    // [(start trigger_parent_update_for_null)] `{`$arg_id`}
 `{`$i`=`'`'`}`{`!`@eq`(`$arg_create_only`,`'`'`)`{`$i`=`'   `'`}\
-   if( is_create && !get_obj( ).get_is_for_peer( ) )
+   if( is_create
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && get_obj( ).`{`$arg_tfield`}( )
+`}\
+    && !get_obj( ).get_is_for_peer( ) )
    {
 `}`{`$i`}   if( is_null( get_obj( ).`{`$arg_field`}( ) ) )
 `{`$i`}   {
