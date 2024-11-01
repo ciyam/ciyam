@@ -7078,7 +7078,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
             // as the "args_file" session variable then the value will be changed to that of the error
             // message.
             if( !async && no_logging
-             && check_script_error != "0" && check_script_error != c_false )
+             && ( check_script_error != c_false ) && ( check_script_error != c_false_value ) )
             {
                set_system_variable( args_file, c_true_value );
                set_session_variable( get_special_var_name( e_special_var_check_script_error ), c_true_value );
