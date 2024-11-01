@@ -49,9 +49,9 @@
 `,`{`@eq`(`$arg_check_orig`,`'`'`)\
                if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_ctfield`,`'`'`) `{`$op`} get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( )`} )
 `,\
-               if( to_string( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( ) )
-                == get_obj( ).get_original_field_value( c_field_name_`{`$arg_tfield`} )
-                || get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_ctfield`,`'`'`) `{`$op`} get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( )`} )
+               if( ( to_string( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( ) )
+                == get_obj( ).get_original_field_value( c_field_name_`{`$arg_tfield`} ) )
+                || ( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_ctfield`,`'`'`) `{`$op`} get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( )`} ) )
 `}\
                {
                   has_changed = true;
