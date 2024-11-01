@@ -78,6 +78,9 @@ else
     if [ -f $mod_name.spec.vars.xrep.sav ]; then
      rm $mod_name.spec.vars.xrep.sav
     fi
+    if [ -f *_information.$mod_name.vars.lst ]; then
+     rm *_information.$mod_name.spec.vars.lst
+    fi
    else
     echo ""
     echo \*\*\* Module has been removed \(it should now be safe to delete all applicable \'$mod_name\*\' files\).
