@@ -1753,9 +1753,8 @@ void output_actions( ostream& os,
 
       if( needs_confirmation )
       {
-         // KLUDGE: If not executed before the "confirm" then "go_back" can end up doing nothing.
-         if( go_back )
-            os << "window.onblur = window.onfocus = null; ";
+         // KLUDGE: If not executed before the "confirm" then can end up doing nothing.
+         os << "window.onblur = window.onfocus = null; ";
 
          os << "if( confirm( '" << string_message( GDS( c_display_proceed_with_action ),
           make_pair( c_display_proceed_with_action_parm_label, next_label ) ) << "' ) ) { ";
