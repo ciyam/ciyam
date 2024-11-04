@@ -1,0 +1,22 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start child_optional_fk_cascade)] `{`$arg_id`}
+   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
+   {
+      class_pointer< `{`$module_name`}_`{`$arg_child_class`} > cp_child( e_create_instance );
+
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_child_class`}, `{`$arg_child_field`} ) );
+
+      key_info += "#1 " + get_obj( ).get_key( );
+
+      if( cp_child->iterate_forwards( key_info ) )
+      {
+         do
+         {
+            cp_child->op_update( );
+            cp_child->op_apply( );
+
+         } while( cp_child->iterate_next( ) );
+      }
+   }
+   // [(finish child_optional_fk_cascade)] `{`$arg_id`}
+`}

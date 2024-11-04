@@ -1,0 +1,31 @@
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start parent_from_optional_fk)] `{`$arg_id`}
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && `}!is_null( get_obj( ).`{`$arg_sfield`}( ) ) )
+   {
+      class_pointer< `{`$module_name`}_`{`$arg_spclass`} > cp_source( e_create_instance );
+
+      string parent_key( get_obj( ).`{`$arg_sfield`}( ) );
+
+      begin_review_rc rc;
+      cp_source->begin_review( parent_key, &rc );
+
+      if( rc != e_begin_review_rc_not_found )
+      {
+         // NOTE: If was not okay then must have been locked so will
+         // retry again (i.e. allowing an exception throw this time).
+         if( ( rc != e_begin_review_rc_okay )
+          && !is_update_locked_by_own_session( *cp_source, parent_key.c_str( ) ) )
+            cp_source->begin_review( parent_key );
+
+         get_obj( ).`{`$arg_spfield`}( parent_key );
+
+         if( cp_source->get_is_reviewing( ) )
+            cp_source->finish_review( );
+`{`!`@eq`(`$arg_clear_if_found`,`'`'`)
+         get_obj( ).`{`$arg_sfield`}( string( ) );
+`}
+      }
+   }
+   // [(finish parent_from_optional_fk)] `{`$arg_id`}
+`}
