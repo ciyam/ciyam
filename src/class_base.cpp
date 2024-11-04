@@ -1061,7 +1061,25 @@ void class_base::begin_review( const string& key, begin_review_rc* p_rc )
       begin_instance_op( e_instance_op_review, *p_dynamic_instance, key, true, p_rc ? &rc : 0 );
 
       if( p_rc )
-         *p_rc = ( begin_review_rc )( int )rc;
+      {
+         switch( rc )
+         {
+            case e_instance_op_rc_okay:
+            *p_rc = e_begin_review_rc_okay;
+            break;
+
+            case e_instance_op_rc_locked:
+            *p_rc = e_begin_review_rc_locked;
+            break;
+
+            case e_instance_op_rc_not_found:
+            *p_rc = e_begin_review_rc_not_found;
+            break;
+
+            default:
+            throw runtime_error( "unexpected instance_op_rc #" + to_string( rc ) + " in begin_review" );
+         }
+      }
 
       if( could_be_dynamic && ( p_dynamic_instance->op != e_op_type_review ) )
          cleanup_dynamic_instance( );
