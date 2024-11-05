@@ -13107,6 +13107,7 @@ string exec_bulk_ops( const string& module,
       is_export = true;
 
       outf.open( filename.c_str( ), ios::out );
+
       if( !outf )
          throw runtime_error( "unable to open '" + filename + "' for output" );
    }
@@ -13118,7 +13119,9 @@ string exec_bulk_ops( const string& module,
          throw runtime_error( "unable to open '" + filename + "' for input" );
 
       string log_file_name( filename.substr( 0, filename.find_last_of( "." ) ) + c_log_file_ext );
+
       outf.open( log_file_name.c_str( ), ios::out );
+
       if( !outf )
          throw runtime_error( "unable to open '" + log_file_name + "' for output" );
    }
@@ -13128,6 +13131,7 @@ string exec_bulk_ops( const string& module,
    try
    {
       vector< string > fields;
+      vector< string > column_names;
       vector< string > original_fields;
 
       if( is_export )
@@ -13146,12 +13150,33 @@ string exec_bulk_ops( const string& module,
             original_fields.push_back( c_key_field );
 
             get_all_field_names( handle, "", fields );
+            get_all_field_names( handle, "", column_names );
             get_all_field_names( handle, "", original_fields );
          }
          else
          {
             split( export_fields, fields );
-            split( export_fields, original_fields );
+
+            for( size_t i = 0; i < fields.size( ); i++ )
+            {
+               string next_field( fields[ i ] );
+               string next_column;
+
+               string::size_type pos = next_field.find( ':' );
+
+               if( pos == string::npos )
+                  next_column = next_field;
+               else
+               {
+                  next_column = next_field.substr( pos + 1 );
+                  next_field.erase( pos );
+
+                  fields[ i ] = next_field;
+               }
+
+               column_names.push_back( next_column );
+               original_fields.push_back( next_field );
+            }
          }
 
          set_any_field_ids_to_names( handle, "", fields );
@@ -13159,7 +13184,8 @@ string exec_bulk_ops( const string& module,
          string fields_for_iteration;
 
          string key_info;
-         for( size_t i = 0; i < fields.size( ); i++ )
+
+         for( size_t i = 0; i < original_fields.size( ); i++ )
          {
             if( original_fields[ i ] != c_key_field )
             {
@@ -13170,12 +13196,14 @@ string exec_bulk_ops( const string& module,
 
                if( !fields_for_iteration.empty( ) )
                   fields_for_iteration += ",";
+
                fields_for_iteration += original_fields[ i ];
             }
 
             if( i > 0 )
                outf << ",";
-            outf << fields[ i ];
+
+            outf << column_names[ i ];
          }
 
          outf << "\n";
@@ -13186,6 +13214,7 @@ string exec_bulk_ops( const string& module,
             do
             {
                outf << get_field_values( handle, "", fields, tz_name, false, true ) << "\n";
+
             } while( instance_iterate_next( handle, "" ) );
          }
       }
