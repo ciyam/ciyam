@@ -194,6 +194,15 @@ BLOG_INFO_FILE=@files::$IN_REVERSE.blog_info.csv
 ~rm $IN_REVERSE.blog_info.log
 @endif
 ;
+FORUM_INFO_FILE=@files::$IN_REVERSE.forum_info.csv
+@ifdef $FORUM_INFO_FILE
+.session_variable @key_suffix $IDENTITY
+.session_variable @key_prefix_is_first 1
+.perform_bulk_ops admin @now $MODULE $LINK_CLASS_NAME $IN_REVERSE.forum_info.csv -f=$LINK_FLD_PEER_NODE=$IDENTITY,$LINK_FLD_DATA_TYPE=1
+~rm $IN_REVERSE.forum_info.csv
+~rm $IN_REVERSE.forum_info.log
+@endif
+;
 USER_INFO_FILE=@files::$IN_REVERSE.user_info.csv
 @ifdef $USER_INFO_FILE
 .session_variable @key_suffix $IDENTITY

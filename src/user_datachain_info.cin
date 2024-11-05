@@ -29,7 +29,7 @@ FILE_SUFFIX=_info
 NAME_SUFFIX=_Identity
 ;
 .session_variable @single_string_response 1
-.pf Sample User "" $TYPE_NAME$NAME_SUFFIX,Name -min
+.pf $MODULE User "" $TYPE_NAME$NAME_SUFFIX,Name -min
 ROWS=$OUTPUT
 ;
 .session_variable @deque commence
@@ -47,7 +47,7 @@ NEXT_ROW=$OUTPUT
 COLUMNS=@repstr:,/\n:$NEXT_ROW
 ;
 @ifdef %COLUMNS:1%
-#$NEXT_ROW,All $TYPE_NAME Information for %COLUMNS:2%.
+#$NEXT_ROW,All $TYPE_NAME data for %COLUMNS:2%.
 @endif
 ;
 @ifndef $NEXT_ROW

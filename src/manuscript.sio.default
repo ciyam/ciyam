@@ -206,6 +206,11 @@
   <arguments>create_peerchain_data.cin @key
  </script>
  <script/>
+  <name>sync_forum_datachains
+  <filename>*script*
+  <arguments>sync_forum_datachains.cin @storage opt @identity
+ </script>
+ <script/>
   <name>create_peerchain_entry
   <filename>*script*
   <arguments>create_peerchain_entry.cin @identity @auto_start @peer_type @description @host_name @host_port @num_helpers @extra_value @shared_secret

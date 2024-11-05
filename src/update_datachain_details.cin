@@ -12,7 +12,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "2"
-#Usage: update_blog_datachain_entry.cin <storage> <identity>
+#Usage: update_datachain_details.cin <storage> <identity>
 @else
 ERROR=
 ;

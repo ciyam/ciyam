@@ -354,20 +354,20 @@ vi packages.lst
 ...
 Blog
 ...
-Message
+Forum
 ...
-Tag
+Message
 ...
 [packages.lst]
 
 ./unbundle Blog.package
 mv package.info Blog.package.info
 
+./unbundle Forum.package
+mv package.info Forum.package.info
+
 ./unbundle Message.package
 mv package.info Message.package.info
-
-./unbundle Tag.package
-mv package.info Tag.package.info
 
 ./reconstruct_meta okay
 

@@ -13,9 +13,9 @@
 .pf Meta Package_Type "" Name -min
 .session_variable @set "~$OUTPUT"
 ;
-.session_variable @set ?Group,Blog,Message
+.session_variable @set ?Group,Blog,Forum,Message
 @ifeq "$OUTPUT" "1"
-.pc admin @now 100 138100 " " "138101=CIYAM Blockchain Application,138102=create_ciyam_blockchain_application,138103=Blog\\,Message,302840=Group"
+.pc admin @now 100 138100 " " "138101=CIYAM Blockchain Application,138102=create_ciyam_blockchain_application,138103=Blog\\,Forum\\,Message,302840=Group"
 @endif
 ;
 .session_variable @set complete

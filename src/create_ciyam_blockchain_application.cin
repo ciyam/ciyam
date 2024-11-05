@@ -258,6 +258,63 @@ BLOG_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
+.pc $CIYAM_UID @now 100 136100 " " "136101=Forum,136107=Forums,302810=Forum,302800=$MODEL_KEY"
+FORUM_PACKAGE_KEY=$OUTPUT
+;
+.pf 100 137100 -q=302820=$FORUM_PACKAGE_KEY,137101=opt_forum_bool_use_home_list "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Forum package option 'use_home_list'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+FORUM_OPTION_KEY=$OUTPUT
+.pu $CIYAM_UID @now 100 137100 $FORUM_OPTION_KEY "137102=1"
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 137100 -q=302820=$FORUM_PACKAGE_KEY,137101=opt_forum_bool_use_user_access "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Forum package option 'use_user_access'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+FORUM_OPTION_KEY=$OUTPUT
+.pu $CIYAM_UID @now 100 137100 $FORUM_OPTION_KEY "137102=1"
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 137100 -q=302820=$FORUM_PACKAGE_KEY,137101=opt_forum_package_group_package "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Forum package option 'group_package'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+FORUM_OPTION_KEY=$OUTPUT
+.pu $CIYAM_UID @now 100 137100 $FORUM_OPTION_KEY "302830=$GROUP_PACKAGE_KEY"
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pe $CIYAM_UID @now 100 136100 "-v=@async=false,@message=Installing Forum Package..." $FORUM_PACKAGE_KEY -136410
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
 @ifdef $CIYAM_APP_KEY
 .pc $CIYAM_UID @now 100 126100 " " "302200=$MODEL_KEY,302210=$CIYAM_APP_KEY"
 .pu $CIYAM_UID @now 100 127100 $CIYAM_APP_KEY "127105=,127107=1,127138=0,127134=1"
@@ -447,6 +504,114 @@ ERROR=Unable to locate Field 'Can_Maintain_Blog_Tag_Access' for Class 'User'.
 CAN_MAINTAIN_BLOG_TAG_ACCESS_KEY=$OUTPUT
 ;
 .pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MAINTAIN_BLOG_TAG_ACCESS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Pin_Topics "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Can_Pin_Topics' for Class 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+CAN_PIN_TOPICS_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_PIN_TOPICS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Move_Topics "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Can_Move_Topics' for Class 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+CAN_MOVE_TOPICS_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MOVE_TOPICS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Lock_Own_Topics "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Can_Lock_Own_Topics' for Class 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+CAN_LOCK_OWN_TOPICS_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_LOCK_OWN_TOPICS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Submit_Forum_Posts "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Can_Submit_Forum_Posts' for Class 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+CAN_SUBMIT_FORUM_POSTS_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_SUBMIT_FORUM_POSTS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Create_Top_Level_Boards "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Can_Create_Top_Level_Boards' for Class 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+CAN_CREATE_TOP_LEVEL_BOARDS_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_CREATE_TOP_LEVEL_BOARDS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Maintain_Topics_And_Posts "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Can_Maintain_Topics_And_Posts' for Class 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+CAN_MAINTAIN_TOPICS_AND_POSTS_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MAINTAIN_TOPICS_AND_POSTS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_CREATOR_KEY%_%CAN_MAINTAIN_TOPICS_AND_POSTS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif

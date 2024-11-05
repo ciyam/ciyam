@@ -81,6 +81,7 @@ IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
 .storage_term
 ;
 @ifndef $ERROR
+;
 @ifeq "$DATA_TYPE" "0"
 .system_variable @blog_sync_datachains 1 ""
 @ifeq $OUTPUT 1
@@ -89,6 +90,16 @@ IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
 .run_script sync_blog_datachains "@storage=$STORAGE,@identity=$IDENTITY"
 @endif
 @endif
+;
+@ifeq "$DATA_TYPE" "1"
+.system_variable @forum_sync_datachains 1 ""
+@ifeq $OUTPUT 1
+.session_variable @errors_only 1
+~touch $WEBDIR/$APP_DIR/ui_@forum_changing
+.run_script sync_forum_datachains "@storage=$STORAGE,@identity=$IDENTITY"
+@endif
+@endif
+;
 @endif
 ;
 @endif
