@@ -41,7 +41,7 @@ MODULE=%LINES:2%
 ;
 BLOG_INFO_FILE=@files::blog_information.$MODULE.vars.lst
 ;
-@ifdef BLOG_INFO_FILE
+@ifdef $BLOG_INFO_FILE
 <blog_information.$MODULE.vars.lst
 ;
 .perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.blog_info.csv -export=$FLD_IDENTITY,$FLD_NAME,$FLD_DESCRIPTION
@@ -49,7 +49,7 @@ BLOG_INFO_FILE=@files::blog_information.$MODULE.vars.lst
 ;
 FORUM_INFO_FILE=@files::forum_information.$MODULE.vars.lst
 ;
-@ifdef FORUM_INFO_FILE
+@ifdef $FORUM_INFO_FILE
 <forum_information.$MODULE.vars.lst
 ;
 .perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.forum_info.csv\
