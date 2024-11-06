@@ -36,7 +36,8 @@ MODULE=%LINES:2%
 ;
 <channel_user_information.$MODULE.vars.lst
 ;
-.perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.user_info.csv -f=$FLD_PEER_NODE=$IDENTITY,$FLD_LOCAL=1,$FLD_NAME -export=@key,$FLD_ACTIVE,$FLD_NAME
+.perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.user_info.csv\
+ -f=$FLD_PEER_NODE=$IDENTITY,$FLD_LOCAL=1,$FLD_NAME -export=@key,$FLD_ACTIVE,$FLD_NAME
 ;
 BLOG_INFO_FILE=@files::blog_information.$MODULE.vars.lst
 ;
@@ -51,7 +52,8 @@ FORUM_INFO_FILE=@files::forum_information.$MODULE.vars.lst
 @ifdef FORUM_INFO_FILE
 <forum_information.$MODULE.vars.lst
 ;
-.perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.forum_info.csv -export=$FLD_FORUM_IDENTITY:$FLD_IDENTITY,$FLD_DESCRIPTION:$FLD_NAME,$FLD_DESCRIPTION -q=$FLD_POSTS=1..999999
+.perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.forum_info.csv\
+ -export=$FLD_FORUM_IDENTITY:$FLD_IDENTITY,$FLD_DESCRIPTION:$FLD_NAME,$FLD_DESCRIPTION -q=$FLD_FORUM_SUBMITTED=1..9999999999
 @endif
 ;
 .storage_channel_documents -prepare_for_submit $IDENTITY
