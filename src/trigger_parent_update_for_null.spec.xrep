@@ -2,6 +2,7 @@
    // [(start trigger_parent_update_for_null)] `{`$arg_id`}
 `{`$i`=`'`'`}`{`!`@eq`(`$arg_create_only`,`'`'`)`{`$i`=`'   `'`}\
    if( is_create
+    && !is_internal
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && get_obj( ).`{`$arg_tfield`}( )
 `}\
