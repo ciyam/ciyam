@@ -7,6 +7,22 @@
 
       string parent_key( get_obj( ).`{`$arg_sfield`}( ) );
 
+      // FUTURE: This logic should probably be moved into a function.
+      if( !get_obj( ).get_variable(
+       get_special_var_name( e_special_var_datachain ) ).empty( ) )
+      {
+         string system_identity( get_raw_system_variable(
+          get_special_var_name( e_special_var_system_identity ) ) );
+
+         if( parent_key.length( ) > system_identity.length( ) )
+         {
+            string suffix( parent_key.substr( parent_key.length( ) - system_identity.length( ) ) );
+
+            if( has_system_variable( get_special_var_name( e_special_var_blockchain_data_key ) + "_" + suffix ) )
+               parent_key = replaced_suffix( parent_key, suffix, system_identity );
+         }
+      }
+
       begin_review_rc rc;
       cp_source->begin_review( parent_key, &rc );
 
