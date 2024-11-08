@@ -2503,11 +2503,14 @@ bool output_view_form( ostream& os, const string& act,
                if( file_exists( file_name ) )
                {
                   string tmp_link_path( c_files_directory );
+
                   tmp_link_path += "/" + string( c_tmp_directory );
                   tmp_link_path += "/" + session_id;
 
                   bool has_utf8_chars;
+
                   string link_file_name( source.display_names[ i ] );
+
                   if( !source.filename_field.empty( ) && source.field_values.count( source.filename_field ) )
                   {
                      // NOTE: If an empty filename is found then "file_ext" will end up becoming the name.
@@ -2545,6 +2548,7 @@ bool output_view_form( ostream& os, const string& act,
                   }
 
                   bool has_image = false;
+
                   if( !is_in_edit && !is_printable )
                   {
                      has_attached_file_link = true;
@@ -2571,6 +2575,7 @@ bool output_view_form( ostream& os, const string& act,
                   if( has_image )
                   {
                      bool is_href = false;
+
                      if( !is_printable && !embed_images )
                      {
                         is_href = true;
@@ -2648,6 +2653,7 @@ bool output_view_form( ostream& os, const string& act,
                else
                {
                   string upload_info( session_id );
+
                   upload_info += ":" + get_module_id_for_attached_file( source ) + "/" + ( source.vici->second )->cid;
                   upload_info += ";" + data + "-" + source_field_id + "?" + to_string( sinfo.filesize_limit );
 
@@ -2677,6 +2683,7 @@ bool output_view_form( ostream& os, const string& act,
             if( !cell_data.empty( ) )
             {
                string temp_file_name( c_files_directory );
+
                temp_file_name += "/" + string( c_tmp_directory );
                temp_file_name += "/" + session_id;
 
@@ -2700,6 +2707,7 @@ bool output_view_form( ostream& os, const string& act,
                ( void )rc;
 
                bool is_href = false;
+
                if( !embed_images )
                {
                   is_href = true;
@@ -2707,6 +2715,7 @@ bool output_view_form( ostream& os, const string& act,
                }
 
                string image_src( temp_file_name );
+
                if( embed_images )
                {
                   string buffer( buffer_file( temp_file_name ) );
@@ -2730,11 +2739,13 @@ bool output_view_form( ostream& os, const string& act,
             if( info.values.size( ) == 1 )
                is_protected_field = true;
 
-            if( has_value && !is_protected_field )
+            if( has_value )
                cell_data = user_values.find( source_field_id )->second;
 
             string enum_image_file;
+
             size_t value_offset = 0;
+
             for( size_t i = 0; i < info.values.size( ); i++ )
             {
                if( info.values[ i ].first == cell_data )
@@ -2751,6 +2762,7 @@ bool output_view_form( ostream& os, const string& act,
                      enum_image_file = info.values[ i ].second + ".gif";
 
                   cell_data = get_display_string( info.values[ i ].second );
+
                   break;
                }
             }
@@ -2795,9 +2807,11 @@ bool output_view_form( ostream& os, const string& act,
                os << ">";
 
                string estart, efinish;
+
                if( extra_data.count( c_view_field_extra_estart ) )
                {
                   string from( extra_data[ c_view_field_extra_estart ] );
+
                   for( size_t j = 0; j < source.field_ids.size( ); j++ )
                   {
                      string source_field_id( source.field_ids[ j ] );
@@ -2818,12 +2832,14 @@ bool output_view_form( ostream& os, const string& act,
                if( extra_data.count( c_view_field_extra_efinish ) )
                {
                   string from( extra_data[ c_view_field_extra_efinish ] );
+
                   for( size_t j = 0; j < source.field_ids.size( ); j++ )
                   {
                      string source_field_id( source.field_ids[ j ] );
                      string source_value_id( source.value_ids[ j ] );
 
                      map< string, string > extra_data;
+
                      if( !source.vici->second->fields[ j ].extra.empty( ) )
                         parse_field_extra( source.vici->second->fields[ j ].extra, extra_data );
 
@@ -2836,11 +2852,13 @@ bool output_view_form( ostream& os, const string& act,
                }
 
                string enum_filter_value;
+
                if( source.enum_filter_fields.count( info.id ) )
                   enum_filter_value = source.field_values.find(
                    source.enum_filter_fields.find( info.id )->second )->second;
 
                bool found_start = false;
+
                for( size_t i = 0; i < info.values.size( ); i++ )
                {
                   // NOTE: Enum values that start with a '-' are not included for user selection
@@ -2853,6 +2871,7 @@ bool output_view_form( ostream& os, const string& act,
                   if( !enum_filter_value.empty( ) && info.filters.count( info.values[ i ].first ) )
                   {
                      string all_filters( info.filters.find( info.values[ i ].first )->second );
+
                      set< string > filters;
 
                      if( !all_filters.empty( ) )
@@ -2871,8 +2890,10 @@ bool output_view_form( ostream& os, const string& act,
                   }
 
                   os << "<option";
+
                   if( i == value_offset )
                      os << " selected";
+
                   os << " value=\"" << info.values[ i ].first << "\">"
                    << escape_markup( get_display_string( info.values[ i ].second ) ) << "&nbsp;&nbsp;</option>\n";
 
@@ -2893,6 +2914,11 @@ bool output_view_form( ostream& os, const string& act,
                   os << "&nbsp;&nbsp;";
             }
 
+            // NOTE: If is in edit but is protected then display the name
+            // rather than an icon (which may actually be a "blank icon").
+            if( is_in_edit && is_protected_field )
+               enum_image_file.erase( );
+
             if( !enum_image_file.empty( ) )
                os << "<img src=\"" << enum_image_file << "\" border=\"0\">";
             else if( !add_to_field_list )
@@ -2909,12 +2935,14 @@ bool output_view_form( ostream& os, const string& act,
                   add_to_field_list = true;
 
                bool is_checked = false;
+
                if( cell_data == "1" )
                   is_checked = true;
 
                if( sess_info.checkbox_bools )
                {
                   os << "<input";
+
                   if( is_protected_field || ( !is_in_edit && !is_always_editable ) )
                      os << " disabled";
 
@@ -2968,21 +2996,27 @@ bool output_view_form( ostream& os, const string& act,
                if( !sess_info.checkbox_bools )
                {
                   os << "<option";
+
                   if( cell_data == c_true_value )
                      os << " selected";
+
                   os << " value=\"" << c_true_value << "\">" << GDS( c_display_true ) << "&nbsp;&nbsp;</option>\n";
 
                   os << "<option";
+
                   if( cell_data == c_false_value )
                      os << " selected";
+
                   os << " value=\"" << c_false_value << "\">" << GDS( c_display_false ) << "&nbsp;&nbsp;</option>\n";
 
                   // FUTURE: This provides support for a tri-state boolean (currently not in use).
                   if( !source.mandatory_fields.count( source_value_id ) )
                   {
                      os << "<option";
+
                      if( cell_data.empty( ) )
                         os << " selected";
+
                      os << " value=\"\">" << GDS( c_display_unknown ) << "&nbsp;&nbsp;</option>\n";
                   }
 
@@ -3235,6 +3269,7 @@ bool output_view_form( ostream& os, const string& act,
                string value( extra );
 
                const data_container& parent_row_data = source.parent_lists.find( source_field_id )->second;
+
                for( size_t j = 0; j < parent_row_data.size( ); j++ )
                {
                   string key( parent_row_data[ j ].first );
@@ -3258,7 +3293,8 @@ bool output_view_form( ostream& os, const string& act,
 
             // NOTE: Change the password value to asterisks for display or if applicable
             // replace underbars with spaces.
-            if( source.password_fields.count( source_value_id ) || source.hpassword_fields.count( source_value_id ) )
+            if( source.password_fields.count( source_value_id )
+             || source.hpassword_fields.count( source_value_id ) )
                cell_data = string( cell_data.length( ), '*' );
             else if( source.replace_underbar_fields.count( source_value_id ) )
                cell_data = replace_underbars( cell_data );
