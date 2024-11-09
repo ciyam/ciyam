@@ -78,8 +78,20 @@ else
     if [ -f $mod_name.spec.vars.xrep.sav ]; then
      rm $mod_name.spec.vars.xrep.sav
     fi
-    if [ -f *_information.$mod_name.vars.lst ]; then
-     rm *_information.$mod_name.spec.vars.lst
+    if [ -f blog_information.$mod_name.vars.lst ]; then
+     rm blog_information.$mod_name.vars.lst
+    fi
+    if [ -f forum_information.$mod_name.vars.lst ]; then
+     rm forum_information.$mod_name.vars.lst
+    fi
+    if [ -f channel_information.$mod_name.vars.lst ]; then
+     rm channel_information.$mod_name.vars.lst
+    fi
+    if [ -f channel_link_information.$mod_name.vars.lst ]; then
+     rm channel_link_information.$mod_name.vars.lst
+    fi
+    if [ -f channel_user_information.$mod_name.vars.lst ]; then
+     rm channel_user_information.$mod_name.vars.lst
     fi
    else
     echo ""
