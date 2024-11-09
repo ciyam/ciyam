@@ -2,7 +2,8 @@
    // [(start trigger_uid_data)] `{`$arg_id`}
    if( `{`!`@eq`(`$arg_ofield`,`'`'`)!is_create
     && `}`{`!`@eq`(`$arg_tfield`,`'`'`)!get_obj( ).`{`$arg_tfield`}( )
-    && `}!get_obj( ).get_is_for_peer( ) && !is_admin_uid_key( get_obj( ).get_key( ) ) )
+    && `}!get_obj( ).get_is_for_peer( )
+    && get_obj( ).`{`$arg_sfield`}( ) && !is_admin_uid_key( get_obj( ).get_key( ) ) )
       set_uid_data( get_obj( ).get_key( ), `{`@eq`(`$arg_field`,`'`'`)""`,get_obj( ).`{`$arg_field`}( )`}, `{`@eq`(`$arg_ofield`,`'`'`)""`,get_obj( ).`{`$arg_ofield`}( )`} );
    // [(finish trigger_uid_data)] `{`$arg_id`}
 `}

@@ -1,7 +1,7 @@
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start field_from_peer_identity)] `{`$arg_id`}
    if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}get_obj( ).get_is_for_peer( ) )
-`{`!`@eq`(`$arg_ofield`,`'`'`)`|`!`@eq`(`$arg_o2field`,`'`'`)\
+`{`!`@eq`(`$arg_ofield`,`'`'`)`|`!`@eq`(`$arg_o2field`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
    {
 `}\
       get_obj( ).`{`$arg_field`}( get_obj( ).get_peer_identity( ) );
@@ -11,7 +11,10 @@
 `{`!`@eq`(`$arg_o2field`,`'`'`)\
       get_obj( ).`{`$arg_o2field`}( get_obj( ).get_peer_identity( ) );
 `}\
-`{`!`@eq`(`$arg_ofield`,`'`'`)`|`!`@eq`(`$arg_o2field`,`'`'`)\
+`{`!`@eq`(`$arg_tfield`,`'`'`)
+      get_obj( ).`{`$arg_tfield`}( `{`@eq`(`$arg_tfistexttype`,`'1`'`)"`}`{`$arg_tvalue`}`{`@eq`(`$arg_tfistexttype`,`'1`'`)"`} );
+`}\
+`{`!`@eq`(`$arg_ofield`,`'`'`)`|`!`@eq`(`$arg_o2field`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
    }
 `}\
    // [(finish field_from_peer_identity)] `{`$arg_id`}
