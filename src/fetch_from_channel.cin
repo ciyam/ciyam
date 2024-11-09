@@ -165,6 +165,8 @@ BUNDLE_HASH=%OUTPUT:2%
 <export_files.cin $BUNDLE_HASH .
 ;
 .session_variable @updating_$IDENTITY $FETCH_HEIGHT
+;
+.storage_transaction_start
 .storage_channel_documents -update_retrieved $IDENTITY
 ;
 @ifndef $MODULE
@@ -216,16 +218,16 @@ APP_LOG_INFO_FILE=@files::$IN_REVERSE.log
 @ifdef $APP_LOG_INFO_FILE
 .session_variable @key_suffix $IDENTITY
 .session_variable @key_prefix_is_first ""
-.storage_transaction_start
 .session_restrict $UUID perform_create
 <$IN_REVERSE.log
 .session_restrict $UUID ""
+~rm $IN_REVERSE.log
+@endif
+;
 @ifndef $ERROR
 .storage_transaction_commit
 @else
 .storage_transaction_rollback
-@endif
-~rm $IN_REVERSE.log
 @endif
 ;
 @endif
