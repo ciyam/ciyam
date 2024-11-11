@@ -3411,7 +3411,7 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_o2field=$specification_\0_o2field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier arg_update=$specification_\0_update\
  arg_identity_suffix=$specification_\0_identity_suffix arg_submit_type=$specification_\0_submit_type\
- arg_create_field_record=$specification_\0_create_field_record`}\
+ arg_create_field_record=$specification_\0_create_field_record arg_allow_internal=$specification_\0_allow_internal`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_procedure`'`)
 `{`#trigger_procedure.spec.xrep section=after_store class_name=$class_name module_name=$module_name\

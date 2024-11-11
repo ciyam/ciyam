@@ -1,7 +1,7 @@
 `{`@eq`(`'after_store`'`,`$section`)\
    // [(start trigger_peer)] `{`$arg_id`}
-   if( !is_internal
-    && ( get_uid( ) != c_peer )
+   if( `{`!`@eq`(`$arg_allow_internal`,`'true`'`)!is_internal
+    && `}( get_uid( ) != c_peer )
     && !storage_locked_for_admin( )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && get_obj( ).`{`$arg_tfield`}( )
