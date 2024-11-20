@@ -627,23 +627,6 @@ class_cascade::~class_cascade( )
    delete p_impl;
 }
 
-struct class_after_store::impl
-{
-   impl( class_base& cb ) : tmp_being_cascaded( cb.is_after_store, true ) { }
-
-   restorable< bool > tmp_being_cascaded;
-};
-
-class_after_store::class_after_store( class_base& cb )
-{
-   p_impl = new impl( cb );
-}
-
-class_after_store::~class_after_store( )
-{
-   delete p_impl;
-}
-
 struct class_base::impl
 {
    bool has_changed_user_fields;
@@ -2008,6 +1991,7 @@ void class_base::construct_dynamic_instance( )
       p_dynamic_instance->is_executing = is_executing;
       p_dynamic_instance->is_preparing = is_preparing;
 
+      p_dynamic_instance->is_after_store = is_after_store;
       p_dynamic_instance->is_being_cascaded = is_being_cascaded;
 
       p_dynamic_instance->iteration_starting = iteration_starting;
@@ -2049,6 +2033,11 @@ void class_base::set_is_executing( bool executing )
       is_executing = false;
 
    set_variable( get_special_var_name( e_special_var_executing ), value );
+}
+
+void class_base::set_is_after_store( bool after_store )
+{
+   is_after_store = after_store;
 }
 
 void class_base::set_is_in_iteration( bool is_in_iter, bool is_forwards )

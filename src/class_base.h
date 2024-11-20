@@ -186,22 +186,10 @@ struct CIYAM_BASE_DECL_SPEC class_cascade
    impl* p_impl;
 };
 
-struct CIYAM_BASE_DECL_SPEC class_after_store
-{
-   class_after_store( class_base& cb );
-   ~class_after_store( );
-
-   struct impl;
-   impl* p_impl;
-};
-
 class CIYAM_BASE_DECL_SPEC class_base
 {
    friend struct class_cascade;
-   friend struct class_after_store;
-
    friend struct class_cascade::impl;
-   friend struct class_after_store::impl;
 
    friend struct class_base_accessor;
 
@@ -671,6 +659,8 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    void set_is_executing( bool executing );
 
+   void set_is_after_store( bool after_store );
+
    inline void set_iteration_starting( bool starting ) { iteration_starting = starting; }
    void set_is_in_iteration( bool is_in_iter, bool is_forwards = true );
 
@@ -974,6 +964,8 @@ struct class_base_accessor
    void set_op( class_base::op_type new_op, bool is_new_key ) { cb.set_op( new_op, is_new_key ); }
 
    void set_is_executing( bool is_executing ) { cb.set_is_executing( is_executing ); }
+
+   void set_is_after_store( bool is_after_store ) { cb.set_is_after_store( is_after_store ); }
 
    void set_is_dynamic_enabled( bool enabled ) { cb.set_is_dynamic_enabled( enabled ); }
 
