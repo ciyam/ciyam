@@ -1032,6 +1032,7 @@ bool storage_handler::obtain_lock( size_t& handle,
          while( li != locks.end( ) )
          {
             string next_lock_class, next_lock_instance;
+
             string::size_type pos = li->first.find( ':' );
 
             if( pos == string::npos )
@@ -1118,7 +1119,7 @@ bool storage_handler::obtain_lock( size_t& handle,
                   lock_conflict = true;
 
                   if( !attempts )
-                     TRACE_LOG( TRACE_LOCK_OPS, "*** failed to acquire lock ***" );
+                     TRACE_LOG( TRACE_LOCK_OPS, "*** failed to acquire lock due to lock #" + to_string( next_lock.handle ) + " ***" );
 
                   break;
                }
@@ -3758,6 +3759,7 @@ string construct_sql_select(
          if( !field_name.empty( ) && field_name[ 0 ] == '_' )
          {
             string::size_type pos = field_name.find( '.' );
+
             if( pos == string::npos )
                throw runtime_error( "unexpected field name format '" + field_name + "'" );
 
@@ -3765,9 +3767,11 @@ string construct_sql_select(
 
             is_sub_select = true;
             p_instance = &child_instance;
+
             field_name.erase( 0, pos + 1 );
 
             string graph_parent_fk_field( p_instance->get_graph_parent_fk_field( ) );
+
             get_field_name( *p_instance, graph_parent_fk_field );
 
             sub_select_sql_prefix = "C_Key_ " + invert_prefix + "IN (SELECT C_"
@@ -3888,12 +3892,14 @@ string construct_sql_select(
                         sql += columns + ( invert ? " <> " : " = " );
 
                         string next_value( field_values.substr( 0, pos ) );
+
                         sql += is_sql_numeric ? next_value : sql_quote( formatted_value( next_value, field_type ) );
 
                         if( pos == string::npos )
                            break;
 
                         field_values.erase( 0, pos + 1 );
+
                         pos = field_values.find( '&' );
                      }
                   }
@@ -3905,13 +3911,16 @@ string construct_sql_select(
                   while( true )
                   {
                      string next_value( field_values.substr( 0, pos ) );
+
                      sql += is_sql_numeric ? next_value : sql_quote( formatted_value( next_value, field_type ) );
 
                      if( pos == string::npos )
                         break;
 
                      sql += ",";
+
                      field_values.erase( 0, pos + 1 );
+
                      pos = field_values.find( '|' );
                   }
 
@@ -13082,6 +13091,7 @@ string exec_bulk_ops( const string& module,
    string response;
 
    string module_id( module );
+
    if( !gtp_session->modules_by_id.count( module ) )
    {
       if( !gtp_session->modules_by_name.count( module ) )
@@ -13099,6 +13109,7 @@ string exec_bulk_ops( const string& module,
 
    size_t line = 1;
    time_t ts( time( 0 ) );
+
    bool in_trans = false;
    bool is_export = false;
 
@@ -13130,6 +13141,8 @@ string exec_bulk_ops( const string& module,
 
    try
    {
+      set< int > non_nulls;
+
       vector< string > fields;
       vector< string > column_names;
       vector< string > original_fields;
@@ -13140,8 +13153,7 @@ string exec_bulk_ops( const string& module,
          {
             class_base& instance( get_class_base_from_handle( handle, "" ) );
 
-            instance.set_variable( get_special_var_name(
-             e_special_var_fixed_field_values ), fixed_field_values );
+            instance.set_variable( get_special_var_name( e_special_var_fixed_field_values ), fixed_field_values );
          }
 
          if( export_fields == "*" )
@@ -13161,6 +13173,12 @@ string exec_bulk_ops( const string& module,
             {
                string next_field( fields[ i ] );
                string next_column;
+
+               if( !next_field.empty( ) && ( next_field[ 0 ] == '!' ) )
+               {
+                  non_nulls.insert( i );
+                  next_field.erase( 0, 1 );
+               }
 
                string::size_type pos = next_field.find( ':' );
 
@@ -13213,6 +13231,23 @@ string exec_bulk_ops( const string& module,
          {
             do
             {
+               if( !non_nulls.empty( ) )
+               {
+                  bool okay = true;
+
+                  for( set< int >::iterator i = non_nulls.begin( ); i != non_nulls.end( ); ++i )
+                  {
+                     if( get_field_value( handle, "", fields[ *i ] ).empty( ) )
+                     {
+                        okay = false;
+                        break;
+                     }
+                  }
+
+                  if( !okay )
+                     continue;
+               }
+
                outf << get_field_values( handle, "", fields, tz_name, false, true ) << "\n";
 
             } while( instance_iterate_next( handle, "" ) );
@@ -13235,6 +13270,7 @@ string exec_bulk_ops( const string& module,
          if( !fixed_field_values.empty( ) )
          {
             vector< string > fixed_field_value_pairs;
+
             split( fixed_field_values, fixed_field_value_pairs );
 
             for( size_t i = 0; i < fixed_field_value_pairs.size( ); i++ )
@@ -13584,7 +13620,7 @@ string exec_bulk_ops( const string& module,
 
                for( size_t i = 0; i < num_values; i++ )
                {
-                  if( ( has_key_field && i == key_field_num ) || fields[ i ] == c_ignore_field )
+                  if( ( has_key_field && ( i == key_field_num ) ) || ( fields[ i ] == c_ignore_field ) )
                      continue;
 
                   bool is_transient = false;
@@ -13592,7 +13628,7 @@ string exec_bulk_ops( const string& module,
 
                   string type_name( get_field_type_name( handle, "", fields[ i ], &is_transient ) );
 
-                  if( type_name == "date_time" || type_name == "tdatetime" )
+                  if( ( type_name == "date_time" ) || ( type_name == "tdatetime" ) )
                   {
                      was_date_time = true;
 
@@ -14834,6 +14870,8 @@ void begin_instance_op( instance_op op, class_base& instance,
 
    instance_accessor.set_in_op_begin( true );
 
+   instance_accessor.set_is_after_store( false );
+
    if( op != e_instance_op_update )
       instance_accessor.fetch_field_names( ).clear( );
 
@@ -15210,6 +15248,10 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             }
          }
 
+         // NOTE: For the purposes of cascading must also set this true when destroying
+         // as locks for cascaded child record updates are tied to the parent instance.
+         instance_accessor.set_is_after_store( true );
+
          bool supports_sql_undo = handler.supports_sql_undo( );
 
          if( instance.get_is_for_peer( ) )
@@ -15449,10 +15491,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
          // it must still be called so that "aliased" class artifacts will behave as would be expected.
          else if( op == class_base::e_op_type_create || ( op == class_base::e_op_type_update
           && ( handler.get_name( ) == c_meta_storage_name || !instance.get_is_minimal_update( ) ) ) )
-         {
-            class_after_store cas( instance );
             instance_accessor.after_store( op == class_base::e_op_type_create, internal_operation );
-         }
 
          const string& key( instance.get_key( ) );
          storage_handler& handler( *gtp_session->p_storage_handler );
