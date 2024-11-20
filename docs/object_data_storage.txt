@@ -1,10 +1,9 @@
 Object Data Storage
 -------------------
 
-One of the less obvious features of the CIYAM platform is the Object Database named ODS (Object Data Storage)
-as it currently isn't being used for much other than the "global" Meta entities (e.g. Global Archives) and as
-a way to permanently store "system" variables. It is also used for keeping track of the transaction id for an
-application's storage log and holding some basic information about the storage itself and its modules.
+A core feature of the CIYAM platform is an Object DB named ODS (Object Data Storage) which is currently being
+used for Global Meta entities (e.g. Global Archives), persistent "system" variable tuples and for application
+specific meta-data and information that is not very well suited to a SQL DB (such as peer node files).
 
 It is envisioned that the ODS will be used for other useful things down the track as being in-process and not
 being a SQL DB it can be a much more efficient method of storing and retrieving information.
@@ -135,17 +134,17 @@ is for the ODS index file, one for the ODS data file and one each for transactio
 In order to prevent an ODS DB from being cached by the OS file caching system specific sizes has been set for
 each of the four caches. Relevant constants in ods.cpp are:
 
-const int c_data_bytes_per_node = 4096;
+const int c_data_bytes_per_item = c_ods_page_size;
 ...
-const int c_index_items_per_node = 128;
+const int c_index_items_per_item = 128;
 
 and in ods.h:
 
-const int_t c_trans_ops_per_node = 64;
-const int_t c_trans_bytes_per_node = 4096;
+const int_t c_trans_ops_per_item = 64;
+const int_t c_trans_bytes_per_item = c_ods_page_size;
 
-The "page" size being used here is 4K and an index entry takes 32 bytes (therefore c_index_items_per_node has
-been assigned 128). A transaction op entry requires 64 bytes thus c_trans_ops_per_node has been set to 64. If
+The "page" size being used here is 4K and an index entry takes 32 bytes (therefore c_index_items_per_item has
+been assigned 128). A transaction op entry requires 64 bytes thus c_trans_ops_per_item has been set to 64. If
 your OS page size is bigger than 4096 (say 8194) then these sizes should be doubled otherwise the I/O will be
 only half as efficient (if your page size is smaller than 4096 it shouldn't matter).
 
