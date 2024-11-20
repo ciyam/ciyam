@@ -16,7 +16,7 @@ typedef nullable< mtime > nullable_mtime;
 class ttime : public nullable_mtime
 {
    public:
-   ttime( ) { }
+   ttime( ) { set_null( ); }
 
    ttime( const mtime& mt ) : nullable_mtime( mt ) { }
 

@@ -17,7 +17,7 @@ typedef nullable< date_time > nullable_date_time;
 class tdatetime : public nullable_date_time
 {
    public:
-   tdatetime( ) { }
+   tdatetime( ) { set_null( ); }
 
    tdatetime( const date_time& dt ) : nullable_date_time( dt ) { }
 

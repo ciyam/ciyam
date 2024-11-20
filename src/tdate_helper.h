@@ -16,7 +16,7 @@ typedef nullable< udate > nullable_udate;
 class tdate : public nullable_udate
 {
    public:
-   tdate( ) { }
+   tdate( ) { set_null( ); }
 
    tdate( const udate& ud ) : nullable_udate( ud ) { }
 
