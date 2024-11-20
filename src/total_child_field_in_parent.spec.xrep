@@ -1,6 +1,7 @@
 `{`@eq`(`'after_store`'`,`$section`)\
    // [(start total_child_field_in_parent)] `{`$arg_id`}
    if( !get_obj( ).get_is_for_peer( )
+    && !get_obj( ).get_is_being_cascaded( )
     && !is_null( get_obj( ).`{`$arg_pfield`}( ) )
 `{`!`@eq`(`$arg_sfield`,`'`'`)\
     && get_obj( ).`{`$arg_sfield`}( )
@@ -92,6 +93,7 @@
    }
    else if( !is_create
     && !get_obj( ).get_is_for_peer( )
+    && !get_obj( ).get_is_being_cascaded( )
 `{`!`@eq`(`$arg_sfield`,`'`'`)\
     && get_obj( ).`{`$arg_sfield`}( )
 `}`{`!`@eq`(`$arg_tfield`,`'`'`)\
