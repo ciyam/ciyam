@@ -3224,6 +3224,40 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             set_perms( perm_set );
 
+            // NOTE: For peer record links that are actually to local records the
+            // key suffix needs to be replaced by the session identity suffix.
+            if( !key_info.empty( ) && ( key_info.find( ' ' ) == string::npos ) )
+            {
+               string::size_type pos = key_info.find( '_' );
+
+               string key_prefix( key_info.substr( 0, pos ) );
+
+               string key_suffix;
+
+               if( pos != string::npos )
+                  key_suffix = key_info.substr( pos );
+
+               if( key_prefix.length( ) > 9 )
+               {
+                  string identity( key_prefix.substr( key_prefix.length( ) - 9 ) );
+
+                  string data_key( get_system_variable(
+                   get_special_var_name( e_special_var_blockchain_data_key ) + '_' + identity ) );
+
+                  if( !data_key.empty( ) )
+                  {
+                     string identity_suffix( get_session_identity_suffix( ) );
+
+                     if( !identity_suffix.empty( ) )
+                     {
+                        key_prefix = replaced_suffix( key_prefix, identity, identity_suffix );
+
+                        key_info = key_prefix + key_suffix;
+                     }
+                  }
+               }
+            }
+
             // NOTE: If a space is provided as the key then fetch the default record values or if the
             // first character of the key is a space then clone a default record from another.
             if( !key_info.empty( ) && key_info[ 0 ] == ' ' )
