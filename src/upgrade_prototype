@@ -13,7 +13,7 @@ else
   ./restore_identity
   sudo systemctl restart ciyamd
   sleep 1
-  ./restore Meta
+  ./reconstruct_meta okay
   ./save_identity
   ./erase_identity
  fi
