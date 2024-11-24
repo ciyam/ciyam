@@ -1,9 +1,7 @@
-
-** Copyright (c) 2012-2024 CIYAM Developers
-**
-** Distributed under the MIT/X11 software license, please refer to the file license.txt
-** in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-*/
+// Copyright (c) 2012-2024 CIYAM Developers
+//
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 @font-face
 {
@@ -1420,141 +1418,61 @@ table table th
       background: #eee;
    }
 
-   tr.invisible
-   {
-      display: none;
-   }
-
+   tr.invisible,
    tr.odd_invisible
    {
       display: none;
    }
 
-   tbody td.lowlight
-   {
-      color: gray;
-   }
-
-   tbody td.lowlight a:link
-   {
-      color: gray;
-   }
-
-   tbody td.lowlight a:active
-   {
-      color: gray;
-   }
-
+   tbody td.lowlight,
+   tbody td.lowlight a:link,
+   tbody td.lowlight a:active,
    tbody td.lowlight a:visited
    {
       color: gray;
    }
 
-   tbody td.lowlight1
-   {
-      color: #066;
-   }
-
-   tbody td.lowlight1 a:link
-   {
-      color: #066;
-   }
-
-   tbody td.lowlight1 a:active
-   {
-      color: #066;
-   }
-
+   tbody td.lowlight1,
+   tbody td.lowlight1 a:link,
+   tbody td.lowlight1 a:active,
    tbody td.lowlight1 a:visited
    {
       color: #066;
    }
 
-   tbody td.highlight
-   {
-      color: #f70;
-   }
-
-   tbody td.highlight a:link
-   {
-      color: #f70;
-   }
-
-   tbody td.highlight a:active
-   {
-      color: #f70;
-   }
-
+   tbody td.highlight,
+   tbody td.highlight a:link,
+   tbody td.highlight a:active,
    tbody td.highlight a:visited
    {
       color: #f70;
    }
 
-   tbody td.highlight1
-   {
-      color: blue;
-   }
-
-   tbody td.highlight1 a:link
-   {
-      color: blue;
-   }
-
-   tbody td.highlight1 a:active
-   {
-      color: blue;
-   }
-
+   tbody td.highlight1,
+   tbody td.highlight1 a:link,
+   tbody td.highlight1 a:active,
    tbody td.highlight1 a:visited
    {
       color: blue;
    }
 
-   tbody td.extralight
-   {
-      background: #ffe5cc;
-   }
-
-   tbody td.extralight a:link
-   {
-      background: #ffe5cc;
-   }
-
-   tbody td.extralight a:active
-   {
-      background: #ffe5cc;
-   }
-
+   tbody td.extralight,
+   tbody td.extralight a:link,
+   tbody td.extralight a:active,
    tbody td.extralight a:visited
    {
       background: #ffe5cc;
    }
 
-   tbody td.extralight1
-   {
-      background: #d9deea;
-   }
-
-   tbody td.extralight1 a:link
-   {
-      background: #d9deea;
-   }
-
-   tbody td.extralight1 a:active
-   {
-      background: #d9deea;
-   }
-
+   tbody td.extralight1,
+   tbody td.extralight1 a:link,
+   tbody td.extralight1 a:active,
    tbody td.extralight1 a:visited
    {
       background: #d9deea;
    }
 
-   tbody th
-   {
-      background: #999;
-   }
-
+   tbody th,
    tbody tf
    {
       background: #999;
@@ -1575,41 +1493,17 @@ table table th
       background: #fff;
    }
 
-   tbody tr.odd_data td.extralight
-   {
-      background: #ffe5cc;
-   }
-
-   tbody tr.odd_data td.extralight a:link
-   {
-      background: #ffe5cc;
-   }
-
-   tbody tr.odd_data td.extralight a:active
-   {
-      background: #ffe5cc;
-   }
-
+   tbody tr.odd_data td.extralight,
+   tbody tr.odd_data td.extralight a:link,
+   tbody tr.odd_data td.extralight a:active,
    tbody tr.odd_data td.extralight a:visited
    {
       background: #ffe5cc;
    }
 
-   tbody tr.odd_data td.extralight1
-   {
-      background: #d9deea;
-   }
-
-   tbody tr.odd_data td.extralight1 a:link
-   {
-      background: #d9deea;
-   }
-
-   tbody tr.odd_data td.extralight1 a:active
-   {
-      background: #d9deea;
-   }
-
+   tbody tr.odd_data td.extralight1,
+   tbody tr.odd_data td.extralight1 a:link,
+   tbody tr.odd_data td.extralight1 a:active,
    tbody tr.odd_data td.extralight1 a:visited
    {
       background: #d9deea;
@@ -1620,337 +1514,133 @@ table table th
       background: #eee;
    }
 
-   tbody tr.lowlight td
-   {
-      color: gray;
-   }
-
-   tbody tr.lowlight td a:link
-   {
-      color: gray;
-   }
-
-   tbody tr.lowlight td a:active
-   {
-      color: gray;
-   }
-
+   tbody tr.lowlight td,
+   tbody tr.lowlight td a:link,
+   tbody tr.lowlight td a:active,
    tbody tr.lowlight td a:visited
    {
       color: gray;
    }
 
-   tbody tr.lowlight td.extralight
-   {
-      background: #ffe5cc;
-   }
-
-   tbody tr.lowlight td.extralight a:link
-   {
-      background: #ffe5cc;
-   }
-
-   tbody tr.lowlight td.extralight a:active
-   {
-      background: #ffe5cc;
-   }
-
+   tbody tr.lowlight td.extralight,
+   tbody tr.lowlight td.extralight a:link,
+   tbody tr.lowlight td.extralight a:active,
    tbody tr.lowlight td.extralight a:visited
    {
       background: #ffe5cc;
    }
 
-   tbody tr.lowlight td.extralight1
-   {
-      background: #d9deea;
-   }
-
-   tbody tr.lowlight td.extralight1 a:link
-   {
-      background: #d9deea;
-   }
-
-   tbody tr.lowlight td.extralight1 a:active
-   {
-      background: #d9deea;
-   }
-
+   tbody tr.lowlight td.extralight1,
+   tbody tr.lowlight td.extralight1 a:link,
+   tbody tr.lowlight td.extralight1 a:active,
    tbody tr.lowlight td.extralight1 a:visited
    {
       background: #d9deea;
    }
 
-   tbody tr.odd_lowlight td
-   {
-      color: gray;
-      background: #eee;
-   }
-
-   tbody tr.odd_lowlight td a:link
-   {
-      color: gray;
-      background: #eee;
-   }
-
-   tbody tr.odd_lowlight td a:active
-   {
-      color: gray;
-      background: #eee;
-   }
-
+   tbody tr.odd_lowlight td,
+   tbody tr.odd_lowlight td a:link,
+   tbody tr.odd_lowlight td a:active,
    tbody tr.odd_lowlight td a:visited
    {
       color: gray;
       background: #eee;
    }
 
-   tbody tr.odd_lowlight td.extralight
-   {
-      background: #efd5bc;
-   }
-
-   tbody tr.odd_lowlight td.extralight a:link
-   {
-      background: #efd5bc;
-   }
-
-   tbody tr.odd_lowlight td.extralight a:active
-   {
-      background: #efd5bc;
-   }
-
+   tbody tr.odd_lowlight td.extralight,
+   tbody tr.odd_lowlight td.extralight a:link,
+   tbody tr.odd_lowlight td.extralight a:active,
    tbody tr.odd_lowlight td.extralight a:visited
    {
       background: #efd5bc;
    }
 
-   tbody tr.odd_lowlight td.extralight1
-   {
-      background: #c9ceda;
-   }
-
-   tbody tr.odd_lowlight td.extralight1 a:link
-   {
-      background: #c9ceda;
-   }
-
-   tbody tr.odd_lowlight td.extralight1 a:active
-   {
-      background: #c9ceda;
-   }
-
+   tbody tr.odd_lowlight td.extralight1,
+   tbody tr.odd_lowlight td.extralight1 a:link,
+   tbody tr.odd_lowlight td.extralight1 a:active,
    tbody tr.odd_lowlight td.extralight1 a:visited
    {
       background: #c9ceda;
    }
 
-   tbody tr.lowlight1 td
-   {
-      color: #066;
-   }
-
-   tbody tr.lowlight1 td a:link
-   {
-      color: #066;
-   }
-
-   tbody tr.lowlight1 td a:active
-   {
-      color: #066;
-   }
-
+   tbody tr.lowlight1 td,
+   tbody tr.lowlight1 td a:link,
+   tbody tr.lowlight1 td a:active,
    tbody tr.lowlight1 td a:visited
    {
       color: #066;
    }
 
-   tbody tr.odd_lowlight1 td
-   {
-      color: #066;
-      background: #eee;
-   }
-
-   tbody tr.odd_lowlight1 td a:link
-   {
-      color: #066;
-      background: #eee;
-   }
-
-   tbody tr.odd_lowlight1 td a:active
-   {
-      color: #066;
-      background: #eee;
-   }
-
+   tbody tr.odd_lowlight1 td,
+   tbody tr.odd_lowlight1 td a:link,
+   tbody tr.odd_lowlight1 td a:active,
    tbody tr.odd_lowlight1 td a:visited
    {
       color: #066;
       background: #eee;
    }
 
-   tbody tr.highlight td
-   {
-      color: #f70;
-   }
-
-   tbody tr.highlight td a:link
-   {
-      color: #f70;
-   }
-
-   tbody tr.highlight td a:active
-   {
-      color: #f70;
-   }
-
+   tbody tr.highlight td,
+   tbody tr.highlight td a:link,
+   tbody tr.highlight td a:active,
    tbody tr.highlight td a:visited
    {
       color: #f70;
    }
 
-   tbody tr.odd_highlight td
-   {
-      color: #f70;
-      background: #eee;
-   }
-
-   tbody tr.odd_highlight td a:link
-   {
-      color: #f70;
-      background: #eee;
-   }
-
-   tbody tr.odd_highlight td a:active
-   {
-      color: #f70;
-      background: #eee;
-   }
-
+   tbody tr.odd_highlight td,
+   tbody tr.odd_highlight td a:link,
+   tbody tr.odd_highlight td a:active,
    tbody tr.odd_highlight td a:visited
    {
       color: #f70;
       background: #eee;
    }
 
-   tbody tr.highlight1 td
-   {
-      color: blue;
-   }
-
-   tbody tr.highlight1 td a:link
-   {
-      color: blue;
-   }
-
-   tbody tr.highlight1 td a:active
-   {
-      color: blue;
-   }
-
+   tbody tr.highlight1 td,
+   tbody tr.highlight1 td a:link,
+   tbody tr.highlight1 td a:active,
    tbody tr.highlight1 td a:visited
    {
       color: blue;
    }
 
-   tbody tr.odd_highlight1 td
-   {
-      color: blue;
-      background: #eee;
-   }
-
-   tbody tr.odd_highlight1 td a:link
-   {
-      color: blue;
-      background: #eee;
-   }
-
-   tbody tr.odd_highlight1 td a:active
-   {
-      color: blue;
-      background: #eee;
-   }
-
+   tbody tr.odd_highlight1 td,
+   tbody tr.odd_highlight1 td a:link,
+   tbody tr.odd_highlight1 td a:active,
    tbody tr.odd_highlight1 td a:visited
    {
       color: blue;
       background: #eee;
    }
 
-   tbody tr.extralight td
-   {
-      background: #ffe5cc;
-   }
-
-   tbody tr.extralight td a:link
-   {
-      background: #ffe5cc;
-   }
-
-   tbody tr.extralight td a:active
-   {
-      background: #ffe5cc;
-   }
-
+   tbody tr.extralight td,
+   tbody tr.extralight td a:link,
+   tbody tr.extralight td a:active,
    tbody tr.extralight td a:visited
    {
       background: #ffe5cc;
    }
 
-   tbody tr.odd_extralight td
-   {
-      background: #efd5bc;
-   }
-
-   tbody tr.odd_extralight td a:link
-   {
-      background: #efd5bc;
-   }
-
-   tbody tr.odd_extralight td a:active
-   {
-      background: #efd5bc;
-   }
-
+   tbody tr.odd_extralight td,
+   tbody tr.odd_extralight td a:link,
+   tbody tr.odd_extralight td a:active,
    tbody tr.odd_extralight td a:visited
    {
       background: #efd5bc;
    }
 
-   tbody tr.extralight1 td
-   {
-      background: #d9deea;
-   }
-
-   tbody tr.extralight1 td a:link
-   {
-      background: #d9deea;
-   }
-
-   tbody tr.extralight1 td a:active
-   {
-      background: #d9deea;
-   }
-
+   tbody tr.extralight1 td,
+   tbody tr.extralight1 td a:link,
+   tbody tr.extralight1 td a:active,
    tbody tr.extralight1 td a:visited
    {
       background: #d9deea;
    }
 
-   tbody tr.odd_extralight1 td
-   {
-      background: #c9ceda;
-   }
-
-   tbody tr.odd_extralight1 td a:link
-   {
-      background: #c9ceda;
-   }
-
-   tbody tr.odd_extralight1 td a:active
-   {
-      background: #c9ceda;
-   }
-
+   tbody tr.odd_extralight1 td,
+   tbody tr.odd_extralight1 td a:link,
+   tbody tr.odd_extralight1 td a:active,
    tbody tr.odd_extralight1 td a:visited
    {
       background: #c9ceda;
