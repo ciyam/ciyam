@@ -33,11 +33,6 @@
 #ifdef SSL_SUPPORT
 #  include <openssl/aes.h>
 #  include <openssl/ssl.h>
-// KLUDGE: Suppress the "function now deprecated" warning as it is being incorrectly issued for
-// the "sgetn" I/O function (an issue at least with the VS Express 2005 version of VC8).
-#  ifdef _MSC_VER
-#     pragma warning (disable: 4996)
-#  endif
 #endif
 
 using namespace std;
@@ -53,7 +48,6 @@ const size_t c_work_buffer_pos_mask = 0x7ffff00;
 
 const size_t c_password_rounds_multiplier = 3;
 
-const char* const c_stream_cipher_bd_shift = "bd";
 const char* const c_stream_cipher_chacha20 = "cc";
 const char* const c_stream_cipher_dbl_hash = "dh";
 
@@ -61,9 +55,9 @@ const char* const c_stream_cipher_dbl_hash = "dh";
 
 stream_cipher stream_cipher_value( const string& str )
 {
-   stream_cipher cipher = e_stream_cipher_bd_shift;
+   stream_cipher cipher = e_stream_cipher_unknown;
 
-   if( !str.empty( ) && ( str != c_stream_cipher_bd_shift ) )
+   if( !str.empty( ) )
    {
       if( str == c_stream_cipher_chacha20 )
          cipher = e_stream_cipher_chacha20;
@@ -82,10 +76,6 @@ string stream_cipher_string( stream_cipher cipher )
 
    switch( cipher )
    {
-      case e_stream_cipher_bd_shift:
-      retval = c_stream_cipher_bd_shift;
-      break;
-
       case e_stream_cipher_chacha20:
       retval = c_stream_cipher_chacha20;
       break;
@@ -99,75 +89,6 @@ string stream_cipher_string( stream_cipher cipher )
    }
 
    return retval;
-}
-
-// NOTE: This algorithm is an XOR approach for encrypting a stream in place
-// and is very quick. It prevents the key used from being easily discovered
-// by constantly modifying a copy of it and by doing this in a manner which
-// also prevents its length being discovered through frequency analysis (by
-// changing the traversal direction of the constantly changing key pad when
-// a byte modulus hits a specific value).
-void bd_crypt_stream( iostream& io, const char* p_key, size_t key_length )
-{
-   unsigned char key[ c_max_key_size ];
-   unsigned char buf[ c_file_buf_size ];
-
-   memset( key, '\0', c_max_key_size );
-
-   io.seekg( 0, ios::end );
-
-   size_t length = ( size_t )io.tellg( );
-
-   io.seekg( 0, ios::beg );
-
-   key_length = min( key_length, c_max_key_size );
-
-   memcpy( key, p_key, key_length );
-
-   unsigned char datkey = 0;
-
-   for( size_t i = 0; i < key_length; i++ )
-      datkey += key[ i ];
-
-   size_t buflen = c_file_buf_size;
-
-   for( size_t pos = 0; pos < length; pos += buflen )
-   {
-      if( length - pos < c_file_buf_size )
-         buflen = length - pos;
-
-      int dir = 1;
-      int key_offset = 0;
-
-      io.seekg( pos, ios::beg );
-      io.read( ( char* )buf, buflen );
-
-      for( size_t offset = 0; offset < buflen; offset++ )
-      {
-         buf[ offset ] ^= datkey;
-
-         datkey += ( key[ key_offset ] % 131 );
-
-         key[ key_offset ] ^= datkey;
-
-         key_offset += dir;
-
-         if( datkey % 31 == 0 )
-            dir *= -1;
-
-         if( key_offset >= ( int )key_length )
-            key_offset = 0;
-
-         if( key_offset < 0 )
-            key_offset = ( int )key_length - 1;
-      }
-
-      io.seekg( pos, ios::beg );
-      io.write( ( char* )buf, buflen );
-   }
-
-   memset( buf, '\0', c_file_buf_size );
-   memset( key, '\0', c_max_key_size );
 }
 
 // NOTE: Uses the "chacha20" stream cipher (with zero values for both the
@@ -217,11 +138,12 @@ void cc_crypt_stream( iostream& io, const char* p_key, size_t key_length )
    memset( key_buf, '\0', sizeof( key_buf ) );
 }
 
-// NOTE: This stream cipher uses two SHA512 "hash chains" each being first
-// initialised with the key and then updated with a different constant for
-// each chain. Encryption is simple XOR with both digests which are simply
-// updated with the previous digest after using every byte of the digests.
-void db_crypt_stream( iostream& io, const char* p_key, size_t key_length )
+// NOTE: This cipher uses two SHA512 hash values of the provided key where
+// each is being prefixed differently to produce two pseudo random digests
+// that are then each updated using the current chunk number. Although not
+// actually a stream cipher this could be easily modified to specify which
+// chunk to start from in to support a starting offset.
+void dh_crypt_stream( iostream& io, const char* p_key, size_t key_length )
 {
    unsigned char buf[ c_file_buf_size ];
 
@@ -234,14 +156,23 @@ void db_crypt_stream( iostream& io, const char* p_key, size_t key_length )
 
    io.seekg( 0, ios::beg );
 
-   sha512 hash1( ( const unsigned char* )p_key, key_length );
-   sha512 hash2( ( const unsigned char* )p_key, key_length );
+   size_t chunk = 0;
 
-   // NOTE: Update the two hash chains with different values
-   // (after being initialised with the key) so XORing works
-   // using a pseudo random stream of byte values.
-   hash1.update( ( const unsigned char* )"123", 3 );
-   hash2.update( ( const unsigned char* )"xyz", 3 );
+   string key1( key_length + 1, '\0' );
+   string key2( key_length + 1, '\0' );
+
+   // NOTE: Prefix the key with two different characters then
+   // will hash and update each with the current chunk number
+   // so that an XOR pad is the combination of these two hash
+   // digest streams.
+   key1[ 0 ] = 'A';
+   key2[ 0 ] = 'B';
+
+   memcpy( &key1[ 1 ], p_key, key_length );
+   memcpy( &key2[ 1 ], p_key, key_length );
+
+   sha512 hash1( key1 );
+   sha512 hash2( key2 );
 
    size_t buflen = c_file_buf_size;
 
@@ -261,11 +192,17 @@ void db_crypt_stream( iostream& io, const char* p_key, size_t key_length )
 
          if( ( offset % c_sha512_digest_size ) == 0 )
          {
-            hash1.copy_digest_to_buffer( buf1 );
-            hash2.copy_digest_to_buffer( buf2 );
+            sha512 next_hash1;
+            sha512 next_hash2;
 
-            hash1.update( buf1, c_sha512_digest_size );
-            hash2.update( buf2, c_sha512_digest_size );
+            memcpy( &next_hash1, &hash1, sizeof( sha512 ) );
+            memcpy( &next_hash2, &hash2, sizeof( sha512 ) );
+
+            next_hash1.update( to_string( chunk ) );
+            next_hash2.update( to_string( chunk++ ) );
+
+            next_hash1.copy_digest_to_buffer( buf1 );
+            next_hash2.copy_digest_to_buffer( buf2 );
          }
 
          ch ^= buf1[ offset % c_sha512_digest_size ];
@@ -277,6 +214,9 @@ void db_crypt_stream( iostream& io, const char* p_key, size_t key_length )
       io.seekg( pos, ios::beg );
       io.write( ( char* )buf, buflen );
    }
+
+   clear_key( key1 );
+   clear_key( key2 );
 
    memset( buf, '\0', c_file_buf_size );
 
@@ -354,6 +294,7 @@ void aes_crypt( string& o, const string& s, const char* p_key, size_t key_length
    }
 
    int tlen = 0;
+
    if( op == e_crypt_op_encrypt )
       EVP_EncryptFinal_ex( p_ctx, p_output + output_offset, &tlen );
    else
@@ -384,9 +325,11 @@ string get_totp( const string& base32_encoded_secret, int freq )
    string message( ( const char* )&challenge[ 0 ], 8 );
 
    uint8_t hash[ 20 ];
+
    hmac_sha1( secret, message, hash );
 
    int offset = hash[ 19 ] & 0xf;
+
    unsigned int truncated_hash = 0;
 
    for( int i = 0; i < 4; ++i )
@@ -399,6 +342,7 @@ string get_totp( const string& base32_encoded_secret, int freq )
    truncated_hash %= 1000000;
 
    totp = to_string( truncated_hash );
+
    while( totp.length( ) < 6 )
       totp = '0' + totp;
 
@@ -426,12 +370,11 @@ void data_decrypt( string& s, const string& dat, const string& key, bool use_ssl
    // NOTE: For compatability with older 128 bit AES encrypted
    // passwords the 256 bit ones are prefixed with an asterisk
    // or a hash (the asterisk prefixed ones use an MD5 hash of
-   // the key rather than the key itself and so are considered
-   // to be less secure).
+   // the key rather than the key itself).
    bool use_256 = false;
    bool use_MD5 = false;
 
-   if( dat[ pos ] == '*' || dat[ pos ] == '#' )
+   if( ( dat[ pos ] == '*' ) || ( dat[ pos ] == '#' ) )
    {
       ++pos;
       use_256 = true;
@@ -441,7 +384,7 @@ void data_decrypt( string& s, const string& dat, const string& key, bool use_ssl
    }
    else
    {
-      if( !salt.empty( ) && ( salt[ 0 ] == '*' || salt[ 0 ] == '#' ) )
+      if( !salt.empty( ) && ( ( salt[ 0 ] == '*' ) || ( salt[ 0 ] == '#' ) ) )
       {
          use_256 = true;
 
@@ -466,6 +409,7 @@ void data_decrypt( string& s, const string& dat, const string& key, bool use_ssl
 #endif
 
    string salted_key;
+
    salted_key.reserve( ( c_sha256_digest_size * 2 ) + key.length( ) );
 
    salted_key += key;
@@ -519,6 +463,7 @@ void data_decrypt( string& s, const string& dat, const string& key, bool use_ssl
 
    // NOTE: Remove any trailing padding from encryption.
    pos = s.find( '\0' );
+
    if( pos != string::npos )
       s.resize( pos );
 }
@@ -554,10 +499,12 @@ void data_encrypt( string& s, const string& dat, const string& key, bool use_ssl
    ss.seekp( 0 );
 
    string salt;
+
    if( add_salt )
       salt += uuid( ).as_string( ) + ':';
 
    string salted_key;
+
    salted_key.reserve( ( c_sha256_digest_size * 2 ) + key.length( ) );
 
    salted_key += key;
@@ -570,6 +517,7 @@ void data_encrypt( string& s, const string& dat, const string& key, bool use_ssl
       for( size_t i = 0; i < c_password_hash_rounds * c_password_rounds_multiplier; i++ )
       {
          string tmp;
+
          tmp.reserve( salted_key.length( ) + key.length( ) );
 
          tmp += salted_key;

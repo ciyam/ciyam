@@ -15,7 +15,7 @@ enum quote_style
 
 enum stream_cipher
 {
-   e_stream_cipher_bd_shift,
+   e_stream_cipher_unknown,
    e_stream_cipher_chacha20,
    e_stream_cipher_dbl_hash,
 };

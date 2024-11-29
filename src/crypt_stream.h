@@ -18,14 +18,7 @@
 
 stream_cipher stream_cipher_value( const std::string& str );
 
-std::string stream_cipher_string( stream_cipher cipher = e_stream_cipher_bd_shift );
-
-void bd_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
-
-inline void bd_crypt_stream( std::iostream& io, const std::string& key )
-{
-   bd_crypt_stream( io, key.c_str( ), key.length( ) );
-}
+std::string stream_cipher_string( stream_cipher cipher = e_stream_cipher_chacha20 );
 
 void cc_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
 
@@ -34,33 +27,29 @@ inline void cc_crypt_stream( std::iostream& io, const std::string& key )
    cc_crypt_stream( io, key.c_str( ), key.length( ) );
 }
 
-void db_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
+void dh_crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
 
-inline void db_crypt_stream( std::iostream& io, const std::string& key )
+inline void dh_crypt_stream( std::iostream& io, const std::string& key )
 {
-   db_crypt_stream( io, key.c_str( ), key.length( ) );
+   dh_crypt_stream( io, key.c_str( ), key.length( ) );
 }
 
 inline void crypt_stream( std::iostream& io, const char* p_key,
- size_t key_length, stream_cipher cipher = e_stream_cipher_bd_shift )
+ size_t key_length, stream_cipher cipher = e_stream_cipher_chacha20 )
 {
-   if( cipher == e_stream_cipher_bd_shift )
-      bd_crypt_stream( io, p_key, key_length );
-   else if( cipher == e_stream_cipher_chacha20 )
+   if( cipher == e_stream_cipher_chacha20 )
       cc_crypt_stream( io, p_key, key_length );
    else
-      db_crypt_stream( io, p_key, key_length );
+      dh_crypt_stream( io, p_key, key_length );
 }
 
 inline void crypt_stream( std::iostream& io,
- const std::string& key, stream_cipher cipher = e_stream_cipher_bd_shift )
+ const std::string& key, stream_cipher cipher = e_stream_cipher_chacha20 )
 {
-   if( cipher == e_stream_cipher_bd_shift )
-      bd_crypt_stream( io, key.c_str( ), key.length( ) );
-   else if( cipher == e_stream_cipher_chacha20 )
+   if( cipher == e_stream_cipher_chacha20 )
       cc_crypt_stream( io, key.c_str( ), key.length( ) );
    else
-      db_crypt_stream( io, key.c_str( ), key.length( ) );
+      dh_crypt_stream( io, key.c_str( ), key.length( ) );
 }
 
 #  ifdef SSL_SUPPORT

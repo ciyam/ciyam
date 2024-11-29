@@ -39,7 +39,7 @@ const int c_buffer_size = 1024;
 
 const size_t c_num_hrounds = 1000000;
 
-const char* const c_title = "crypt v0.1l";
+const char* const c_title = "crypt v0.1m";
 
 void create_checksum_test_file( fstream& fs, const string& test_file_name )
 {
@@ -171,9 +171,13 @@ int main( int argc, char* argv[ ] )
       string file_name( argv[ first_arg ] );
 
       if( use_chacha20 && use_dbl_hash )
-         throw runtime_error( "Can choose either the -cc or -dh option but not both." );
+         throw runtime_error( "Can choose either the \"-cc\" or \"-dh\" option but not both." );
 
-      stream_cipher cipher = e_stream_cipher_bd_shift;
+      stream_cipher cipher = e_stream_cipher_unknown;
+
+      // NOTE: If unspecified defaults to "chacha20".
+      if( !use_chacha20 && !use_dbl_hash )
+         use_chacha20 = true;
 
       if( use_chacha20 )
          cipher = e_stream_cipher_chacha20;

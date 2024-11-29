@@ -236,7 +236,7 @@ void check_version( int16_t version )
 
 stream_cipher determine_stream_cipher( int16_t version )
 {
-   stream_cipher cipher = e_stream_cipher_bd_shift;
+   stream_cipher cipher = e_stream_cipher_unknown;
 
    switch( version & c_stream_cipher_mask )
    {
@@ -2311,7 +2311,7 @@ struct ods::impl
     is_restoring( false ),
     force_padding( false ),
     using_tranlog( false ),
-    cipher_type( e_stream_cipher_bd_shift ),
+    cipher_type( e_stream_cipher_unknown ),
     trans_level( 0 ),
     tranlog_offset( 0 ),
     read_from_trans( false ),

@@ -2365,7 +2365,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             else if( blobs_only_repo )
                target = e_crypt_target_blobs_only_repo;
 
-            stream_cipher cipher_value = e_stream_cipher_bd_shift;
+            stream_cipher cipher_value = e_stream_cipher_chacha20;
 
             if( !cipher.empty( ) )
                cipher_value = stream_cipher_value( cipher );

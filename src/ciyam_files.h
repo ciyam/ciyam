@@ -150,7 +150,7 @@ void CIYAM_BASE_DECL_SPEC crypt_file( const std::string& repository,
  const std::string& tag_or_hash, const std::string& password, bool recurse = false,
  crypt_target target = e_crypt_target_all, progress* p_progress = 0, date_time* p_dtm = 0,
  size_t* p_total = 0, crypt_operation operation = e_crypt_operation_reverse,
- std::set< std::string >* p_files_processed = 0, stream_cipher cipher = e_stream_cipher_bd_shift );
+ std::set< std::string >* p_files_processed = 0, stream_cipher cipher = e_stream_cipher_chacha20 );
 
 void CIYAM_BASE_DECL_SPEC fetch_file( const std::string& hash,
  tcp_socket& socket, progress* p_sock_progress = 0, unsigned char* p_file_type = 0 );

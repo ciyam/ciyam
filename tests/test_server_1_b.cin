@@ -305,13 +305,11 @@ file_crypt -recrypt test abc
 file_crypt test abc
 file_info -content test
 file_crypt -encrypt -cipher=cc test abc
-file_crypt -decrypt -cipher=bd test abc
 file_crypt -decrypt -cipher=xx test abc
 file_crypt -decrypt -cipher=dh test abc
 file_crypt -decrypt -cipher=cc test abc
 file_info -content test
 file_crypt -encrypt -cipher=dh test abc
-file_crypt -decrypt -cipher=bd test abc
 file_crypt -decrypt -cipher=cc test abc
 file_crypt -decrypt -cipher=dh test abc
 file_info -content test

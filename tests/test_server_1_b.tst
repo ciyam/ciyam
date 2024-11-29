@@ -626,8 +626,6 @@ e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 ~test.jpg.00000
 096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 ~test.jpg.000005
 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 ~test.jpg.000006
 file_crypt -encrypt -cipher=cc test abc
-file_crypt -decrypt -cipher=bd test abc
-Error: Invalid cipher/password to decrypt file 'test'.
 file_crypt -decrypt -cipher=xx test abc
 Error: unknown stream cipher 'xx'
 file_crypt -decrypt -cipher=dh test abc
@@ -643,8 +641,6 @@ e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 ~test.jpg.00000
 096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 ~test.jpg.000005
 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 ~test.jpg.000006
 file_crypt -encrypt -cipher=dh test abc
-file_crypt -decrypt -cipher=bd test abc
-Error: Invalid cipher/password to decrypt file 'test'.
 file_crypt -decrypt -cipher=cc test abc
 Error: Invalid cipher/password to decrypt file 'test'.
 file_crypt -decrypt -cipher=dh test abc
