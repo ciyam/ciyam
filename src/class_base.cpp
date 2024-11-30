@@ -4095,12 +4095,12 @@ string decrypt( const string& s )
    if( s.length( ) < 20 )
       return s;
    else
-      return decrypt_data( s, false, false, true );
+      return decrypt_data( s, false );
 }
 
 string encrypt( const string& s )
 {
-   return encrypt_data( s, false, false, true );
+   return encrypt_data( s, false, false );
 }
 
 string decrypt( const string& pw, const string& s )

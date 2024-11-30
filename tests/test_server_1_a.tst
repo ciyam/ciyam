@@ -3,8 +3,8 @@ version
 1MB
 session_list -min
 1* session_list <none> 127.0.0.1 0:0 0:0 2
-encrypt -no_ssl -no_salt for_testing_password
-/qwORQEnmDGzzrPS7Hutk4N+Cs0=
+encrypt -no_ssl -no_salt -pwd_and_data "pwd test_data_to_encrypt"
+WHC7HAap9vD4fzBv7wSoama3S5o=
 X
 X.
 .X

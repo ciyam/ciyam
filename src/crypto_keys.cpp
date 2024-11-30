@@ -771,7 +771,7 @@ void private_key::decrypt_message( string& s,
          buf[ i ] ^= buf2[ i ];
    }
 
-   data_decrypt( s, base64, hex_encode( buf, c_num_secret_bytes ), true );
+   data_decrypt( s, base64, hex_encode( buf, c_num_secret_bytes ) );
 }
 
 void private_key::encrypt_message( string& s,

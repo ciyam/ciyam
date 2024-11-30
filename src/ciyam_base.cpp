@@ -6761,7 +6761,7 @@ void verify_active_external_service( const string& ext_key )
 }
 
 void decrypt_data( string& s, const string& data,
- bool no_ssl, bool empty_key, bool use_sid_only, bool harden_key, bool is_pwd_and_data )
+ bool empty_key, bool harden_key, bool is_pwd_and_data )
 {
    string key;
    string str( data );
@@ -6802,7 +6802,7 @@ void decrypt_data( string& s, const string& data,
    if( harden_key )
       harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
 
-   data_decrypt( s, str, key, !no_ssl );
+   data_decrypt( s, str, key );
 
    clear_key( key );
    clear_key( str );
@@ -6812,6 +6812,7 @@ void encrypt_data( string& s, const string& data,
  bool no_ssl, bool empty_key, bool use_sid_only, bool harden_key, bool is_pwd_and_data )
 {
    string key;
+
    string str( data );
 
    key.reserve( c_key_reserve_size );
@@ -6879,7 +6880,7 @@ void encrypt_data( string& s, const string& data,
    if( harden_key )
       harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
 
-   data_encrypt( s, str, key, !no_ssl, !empty_key );
+   data_encrypt( s, str, key, !no_ssl, ( !empty_key && !use_sid_only ) );
 
    clear_key( key );
    clear_key( str );

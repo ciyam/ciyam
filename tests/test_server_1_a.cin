@@ -1,7 +1,7 @@
 version
 #$MAX_FILE_SIZE
 session_list -min
-encrypt -no_ssl -no_salt for_testing_password
+encrypt -no_ssl -no_salt -pwd_and_data "pwd test_data_to_encrypt"
 a=X
 b=Y
 c=Z

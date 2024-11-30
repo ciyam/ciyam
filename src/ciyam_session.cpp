@@ -6728,8 +6728,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_utils_decrypt )
       {
-         bool no_ssl = has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_no_ssl );
-         bool no_salt = has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_no_salt );
          bool harden_key = has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_harden_key );
          bool pwd_and_data = has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_pwd_and_data );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_data ) );
@@ -6743,7 +6741,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          scoped_clear_key clear_data( data );
 
-         decrypt_data( response, data, no_ssl, no_salt, false, harden_key, pwd_and_data );
+         decrypt_data( response, data, false, harden_key, pwd_and_data );
 
          clear_response = true;
 
@@ -6782,7 +6780,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          scoped_clear_key clear_data( data );
 
-         encrypt_data( response, data, no_ssl, no_salt, false, harden_key, pwd_and_data );
+         encrypt_data( response, data, no_ssl, false, no_salt, harden_key, pwd_and_data );
       }
       else if( command == c_cmd_ciyam_session_utils_entropy )
       {

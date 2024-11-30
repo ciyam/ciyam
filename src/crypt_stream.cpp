@@ -21,7 +21,6 @@
 
 #include "crypt_stream.h"
 
-#include "md5.h"
 #include "sha1.h"
 #include "base32.h"
 #include "base64.h"
@@ -225,7 +224,7 @@ void dh_crypt_stream( iostream& io, const char* p_key, size_t key_length )
 }
 
 #ifdef SSL_SUPPORT
-void aes_crypt( string& o, const string& s, const char* p_key, size_t key_length, crypt_op op, bool use_256 )
+void aes_crypt( string& o, const string& s, const char* p_key, size_t key_length, crypt_op op )
 {
    o.resize( s.length( ) + AES_BLOCK_SIZE );
 
@@ -235,37 +234,25 @@ void aes_crypt( string& o, const string& s, const char* p_key, size_t key_length
    unsigned char* p_ivec;
 
    unsigned char buffer[ 64 ];
-   auto_ptr< char > ap_digest;
 
-   if( !use_256 )
-   {
-      // NOTE: Use an MD5 hash of the key as ckey and ivec must be 16 bytes each.
-      ap_digest.reset( MD5( ( unsigned char* )p_key ).hex_digest( ) );
+   // NOTE: Use SHA256 hashes of the key as ckey and ivec must be 32 bytes each.
+   sha256 hash( p_key );
+   hash.copy_digest_to_buffer( buffer );
 
-      p_ckey = ( unsigned char* )ap_digest.get( );
-      p_ivec = ( unsigned char* )ap_digest.get( ) + 16;
-   }
-   else
-   {
-      // NOTE: Use SHA256 hashes of the key as ckey and ivec must be 32 bytes each.
-      sha256 hash( p_key );
-      hash.copy_digest_to_buffer( buffer );
+   hash.update( buffer, 32 );
+   hash.copy_digest_to_buffer( buffer + 32 );
 
-      hash.update( buffer, 32 );
-      hash.copy_digest_to_buffer( buffer + 32 );
-
-      p_ckey = buffer;
-      p_ivec = buffer + 32;
-   }
+   p_ckey = buffer;
+   p_ivec = buffer + 32;
 
    EVP_CIPHER_CTX* p_ctx = EVP_CIPHER_CTX_new( );
 
    EVP_CIPHER_CTX_init( p_ctx );
 
    if( op == e_crypt_op_encrypt )
-      EVP_EncryptInit_ex( p_ctx, use_256 ? EVP_aes_256_cbc( ) : EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
+      EVP_EncryptInit_ex( p_ctx, EVP_aes_256_cbc( ), 0, p_ckey, p_ivec );
    else
-      EVP_DecryptInit_ex( p_ctx, use_256 ? EVP_aes_256_cbc( ) : EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
+      EVP_DecryptInit_ex( p_ctx, EVP_aes_256_cbc( ), 0, p_ckey, p_ivec );
 
    int num = 0;
 
@@ -354,59 +341,47 @@ string get_totp_secret( const string& user_unique, const string& system_unique )
    return base32::encode( sha256( user_unique + system_unique ).get_digest_as_string( ).substr( 0, 20 ) );
 }
 
-void data_decrypt( string& s, const string& dat, const string& key, bool use_ssl )
+void data_decrypt( string& s, const string& dat, const string& key )
 {
    if( dat.empty( ) )
       return;
 
    string salt;
+
+#ifdef SSL_SUPPORT
+   bool use_ssl = true;
+#else
+   bool use_ssl = false;
+#endif
+
    string::size_type pos = dat.find( ':' );
 
    if( pos == string::npos )
+   {
       pos = 0;
+
+      if( dat[ 0 ] == '#' )
+         ++pos;
+      else
+         use_ssl = false;
+   }
    else
+   {
       salt = dat.substr( 0, ++pos );
 
-   // NOTE: For compatability with older 128 bit AES encrypted
-   // passwords the 256 bit ones are prefixed with an asterisk
-   // or a hash (the asterisk prefixed ones use an MD5 hash of
-   // the key rather than the key itself).
-   bool use_256 = false;
-   bool use_MD5 = false;
-
-   if( ( dat[ pos ] == '*' ) || ( dat[ pos ] == '#' ) )
-   {
-      ++pos;
-      use_256 = true;
-
-      if( dat[ pos ] == '*' )
-         use_MD5 = true;
-   }
-   else
-   {
-      if( !salt.empty( ) && ( ( salt[ 0 ] == '*' ) || ( salt[ 0 ] == '#' ) ) )
+      if( salt[ 0 ] == '#' )
       {
-         use_256 = true;
-
-         if( salt[ 0 ] == '*' )
-            use_MD5 = true;
-
          salt.erase( 0, 1 );
-      }
-   }
 
-   // NOTE: Legacy encryption is less secure (but assuming that
-   // existing encrypted information has been re-encrypted then
-   // this should not be an issue).
-   if( !use_256 )
-      use_MD5 = true;
+         if( !use_ssl )
+            throw runtime_error( "unable to decrypt SSL encrypted password without SSL support" );
+      }
+      else
+         use_ssl = false;
+   }
 
    stringstream ss( base64::decode( dat.substr( pos ) ) );
    ss.seekp( 0 );
-
-#ifndef SSL_SUPPORT
-   use_ssl = false;
-#endif
 
    string salted_key;
 
@@ -422,41 +397,30 @@ void data_decrypt( string& s, const string& dat, const string& key, bool use_ssl
       for( size_t i = 0; i < c_password_hash_rounds * c_password_rounds_multiplier; i++ )
       {
          string tmp;
+
          tmp.reserve( salted_key.length( ) + key.length( ) );
 
          tmp += salted_key;
          tmp += key;
 
          hash.update( tmp );
+
          hash.get_digest_as_string( salted_key );
 
          clear_key( tmp );
       }
    }
 
-   auto_ptr< char > ap_digest;
-
-   if( use_MD5 )
-      ap_digest.reset( MD5( ( unsigned char* )salted_key.c_str( ) ).hex_digest( ) );
-
    if( !use_ssl )
    {
-      if( use_MD5 )
-         crypt_stream( ss, ap_digest.get( ), 32 );
-      else
-         crypt_stream( ss, salted_key.c_str( ), salted_key.length( ) );
+      crypt_stream( ss, salted_key.c_str( ), salted_key.length( ) );
 
       s = ss.str( );
    }
 
 #ifdef SSL_SUPPORT
    if( use_ssl )
-   {
-      if( use_MD5 )
-         aes_crypt( s, ss.str( ), ap_digest.get( ), 32, e_crypt_op_decrypt, use_256 );
-      else
-         aes_crypt( s, ss.str( ), salted_key.c_str( ), salted_key.length( ), e_crypt_op_decrypt, use_256 );
-   }
+      aes_crypt( s, ss.str( ), salted_key.c_str( ), salted_key.length( ), e_crypt_op_decrypt );
 #endif
 
    clear_key( salted_key );
@@ -481,7 +445,7 @@ void data_encrypt( string& s, const string& dat, const string& key, bool use_ssl
 
    // NOTE: If the password is less than 20 characters then append a '\0' followed
    // by as many random characters as needed so that the length of the password is
-   // disguised from non-technical user observation.
+   // disguised from casual observation.
    if( !use_ssl )
    {
       char c( '\0' );
@@ -496,6 +460,7 @@ void data_encrypt( string& s, const string& dat, const string& key, bool use_ssl
    size_t len = s.length( );
 
    stringstream ss( s );
+
    ss.seekp( 0 );
 
    string salt;
@@ -524,6 +489,7 @@ void data_encrypt( string& s, const string& dat, const string& key, bool use_ssl
          tmp += key;
 
          hash.update( tmp );
+
          hash.get_digest_as_string( salted_key );
 
          clear_key( tmp );
@@ -544,6 +510,7 @@ void data_encrypt( string& s, const string& dat, const string& key, bool use_ssl
       aes_crypt( tmp, ss.str( ), salted_key.c_str( ), salted_key.length( ), e_crypt_op_encrypt );
 
       s = '#' + salt + base64::encode( tmp );
+
       clear_key( tmp );
    }
 #endif
