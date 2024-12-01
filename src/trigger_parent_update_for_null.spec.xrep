@@ -19,6 +19,9 @@
 `{`$i`}      get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_oscfield`}( ) );
 
 `{`$i`}      get_obj( ).set_variable( "@!" + to_string( get_obj( ).get_field_num( "`{`$arg_field`}" ) ), c_true_value );
+`}`{`!`@eq`(`$arg_o2scfield`,`'`'`)
+`{`$i`}      set_session_variable( get_special_var_name(
+`{`$i`}       e_special_var_trigger_variable ), get_obj( ).`{`$arg_spfield`}( ).`{`$arg_o2scfield`}( ) );
 `}`{`$i`}   }
 `{`!`@eq`(`$arg_create_only`,`'`'`)\
    }

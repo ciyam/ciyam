@@ -218,6 +218,7 @@ const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_skip_persistance = "@skip_persistance";
 const char* const c_special_variable_skip_submit_file = "@skip_submit_file";
 const char* const c_special_variable_trace_session_id = "@trace_session_id";
+const char* const c_special_variable_trigger_variable = "@trigger_variable";
 const char* const c_special_variable_autoscript_reload = "@autoscript_reload";
 const char* const c_special_variable_blockchain_height = "@blockchain_height";
 const char* const c_special_variable_blockchain_is_hub = "@blockchain_is_hub";
@@ -496,6 +497,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_skip_persistance );
       g_special_variable_names.push_back( c_special_variable_skip_submit_file );
       g_special_variable_names.push_back( c_special_variable_trace_session_id );
+      g_special_variable_names.push_back( c_special_variable_trigger_variable );
       g_special_variable_names.push_back( c_special_variable_autoscript_reload );
       g_special_variable_names.push_back( c_special_variable_blockchain_height );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_hub );

@@ -181,6 +181,7 @@ enum special_var
    e_special_var_skip_persistance,
    e_special_var_skip_submit_file,
    e_special_var_trace_session_id,
+   e_special_var_trigger_variable,
    e_special_var_autoscript_reload,
    e_special_var_blockchain_height,
    e_special_var_blockchain_is_hub,
