@@ -1802,6 +1802,7 @@ bool output_view_form( ostream& os, const string& act,
                bool is_empty( cell_data.empty( ) );
 
                udate ud;
+
                if( !is_empty )
                   ud = udate( cell_data );
 
@@ -1809,7 +1810,7 @@ bool output_view_form( ostream& os, const string& act,
                // a "default" value if it is either blank or equal to the default "udate" value. The
                // default will be displayed as an empty date unless the "defcurrent" extra has been
                // provided (then it will default to the current date according to the user's timezone).
-               if( !was_invalid && ud == udate( ) )
+               if( !was_invalid && ( ud == udate( ) ) )
                {
                   is_empty = true;
                   cell_data.erase( );
