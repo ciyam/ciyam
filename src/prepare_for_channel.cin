@@ -41,7 +41,7 @@ MODULE=%LINES:2%
 ;
 BLOG_INFO_FILE=@files::blog_information.$MODULE.vars.lst
 ;
-<channel_link_information.$MODULE.vars.lst
+<channel_data_information.$MODULE.vars.lst
 ;
 @ifdef $BLOG_INFO_FILE
 <blog_information.$MODULE.vars.lst

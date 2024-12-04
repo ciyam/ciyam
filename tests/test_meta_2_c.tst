@@ -5,7 +5,7 @@ User,User,M001C101
 Peer_Node,Peer_Nodes,M001C102
 Peer_Node_Item,Peer_Node_Items,M001C103
 Peer_Node_User,Peer_Node_User,M001C104
-Peer_Node_Link,Peer_Node_Links,M001C105
+Peer_Node_Data,Peer_Node_Data,M001C105
 Contact,Contacts,M001C106
 Core_Peer,Core_Peers,M001C107
 pf 100 107100 "107110 " 107101,107110 -min
