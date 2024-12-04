@@ -41,6 +41,8 @@ MODULE=%LINES:2%
 ;
 BLOG_INFO_FILE=@files::blog_information.$MODULE.vars.lst
 ;
+<channel_link_information.$MODULE.vars.lst
+;
 @ifdef $BLOG_INFO_FILE
 <blog_information.$MODULE.vars.lst
 ;
@@ -53,7 +55,7 @@ FORUM_INFO_FILE=@files::forum_information.$MODULE.vars.lst
 <forum_information.$MODULE.vars.lst
 ;
 .perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.forum_info.csv\
- -export=!$FLD_FORUM_IDENTITY:$FLD_IDENTITY,$FLD_HANDLE:$FLD_NAME,$FLD_HANDLE -q=$FLD_FORUM_POSTS=1..999999999
+ -export=!$FLD_FORUM_IDENTITY:$FLD_IDENTITY,$FLD_HANDLE:$FLD_NAME,$FLD_HANDLE:$FLD_DESCRIPTION -q=$FLD_FORUM_POSTS=1..999999999
 @endif
 ;
 .storage_channel_documents -prepare_for_submit $IDENTITY
