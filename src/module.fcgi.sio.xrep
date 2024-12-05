@@ -18,7 +18,8 @@
  <sys_info>`{`$specification_sys_info_cid`}:`{`$specification_sys_info_name`},`{`$specification_sys_info_vendor`},\
 `{`$specification_sys_info_actions`},`{`$specification_sys_info_message`},`{`$specification_sys_info_identity`}`}
  <user_info>`{`(`?`$specification_user_info_id`)`{`$specification_user_info_cid`},`{`$specification_user_info_class`},\
-`{`$specification_user_info_uid`},`{`$specification_user_info_pwd`}`{`(`?`$specification_user_info_hash`),`{`$specification_user_info_hash`}`}\
+`{`$specification_user_info_uid`}`{`(`?`$specification_user_info_handle`)+`{`$specification_user_info_handle`}`}\
+,`{`$specification_user_info_pwd`}`{`(`?`$specification_user_info_hash`),`{`$specification_user_info_hash`}`}\
 `{`(`?`$specification_user_info_name`),`{`$specification_user_info_name`}`}`{`(`?`$specification_user_info_email`);`{`$specification_user_info_email`}`}\
 `{`(`?`$specification_user_info_crypt_key`):`{`$specification_user_info_crypt_key`}`}`{`(`?`$specification_user_info_read_only`)!`{`$specification_user_info_read_only`}`}\
 `{`(`?`$specification_user_info_change_pwd_tm`)@`{`$specification_user_info_change_pwd_tm`}`}

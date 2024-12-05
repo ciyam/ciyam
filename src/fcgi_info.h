@@ -358,6 +358,7 @@ struct module_info
    std::string user_info_view_id;
 
    std::string user_uid_field_id;
+   std::string user_hdl_field_id;
    std::string user_pwd_field_id;
    std::string user_hash_field_id;
    std::string user_name_field_id;
@@ -533,6 +534,7 @@ struct session_info
    std::string user_other;
    std::string user_extra1;
    std::string user_extra2;
+   std::string user_handle;
    std::string user_parent;
    std::string user_module;
    std::string user_slevel;

@@ -669,6 +669,14 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          info.user_uid_field_id = str.substr( 0, pos );
          str.erase( 0, pos + 1 );
 
+         pos = info.user_uid_field_id.find( '+' );
+
+         if( pos != string::npos )
+         {
+            info.user_hdl_field_id = info.user_uid_field_id.substr( pos + 1 );
+            info.user_uid_field_id.erase( pos );
+         }
+
          pos = str.find( ',' );
 
          info.user_pwd_field_id = str.substr( 0, pos );

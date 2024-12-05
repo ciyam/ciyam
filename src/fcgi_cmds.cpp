@@ -2092,6 +2092,9 @@ bool fetch_user_record(
    string field_list( mod_info.user_uid_field_id );
    field_list += "," + mod_info.user_pwd_field_id;
 
+   if( !mod_info.user_hdl_field_id.empty( ) )
+      field_list += "," + mod_info.user_hdl_field_id;
+
    if( !mod_info.user_hash_field_id.empty( ) )
       field_list += "," + mod_info.user_hash_field_id;
 
@@ -2218,6 +2221,9 @@ bool fetch_user_record(
    }
 
    size_t offset = 2;
+
+   if( !mod_info.user_hdl_field_id.empty( ) )
+      sess_info.user_handle = user_data[ offset++ ];
 
    if( !mod_info.user_hash_field_id.empty( ) )
    {
