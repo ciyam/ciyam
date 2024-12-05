@@ -1576,8 +1576,11 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                else
                   extra_content << p_session_info->user_name;
 
-               if( !p_session_info->user_handle.empty( ) )
-                  extra_content << " (" << p_session_info->user_handle << ")";
+               if( !p_session_info->is_admin_user && !p_session_info->user_handle.empty( ) )
+               {
+                  if( p_session_info->user_handle != p_session_info->user_name )
+                     extra_content << " (" << p_session_info->user_handle << ")";
+               }
 
                if( has_user_link )
                   extra_content << "</a>";
