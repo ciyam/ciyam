@@ -85,7 +85,7 @@ FILES_AREA_DIR=$OUTPUT
 .file_archive -add $FILES_AREA_DIR/$IDENTITY $BACKUP_SIZE $IDENTITY
 .file_archive -add $FILES_AREA_DIR/$REVERSED $SHARED_SIZE $REVERSED
 ;
-#Created listeners and global peerchain entry for identity '$IDENTITY' (and '$REVERSED').
+#Created listeners and global peerchain entry for identity '$IDENTITY' (plus '$REVERSED').
 @endif
 @endif
 .storage_term

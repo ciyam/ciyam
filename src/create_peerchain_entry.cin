@@ -152,7 +152,7 @@ SHARED_SIZE=10GB
 @ifdef $IS_ONLY
 #Created listener, global peerchain entry and file archive for identity '$IDENTITY'.
 @else
-#Created listeners, global peerchain entry and file archives for identity '$IDENTITY' (and '$REVERSED').
+#Created listeners, global peerchain entry and file archives for identity '$IDENTITY' (plus '$REVERSED').
 @endif
 @endif
 @endif
