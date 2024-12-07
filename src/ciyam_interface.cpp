@@ -1882,7 +1882,7 @@ void request_handler::process_request( )
                          c_admin_user_key, pwd_field_value_pairs, *p_session_info, &error_message ) )
                         {
                            if( !error_message.empty( ) )
-                              throw error_message;
+                              throw runtime_error( error_message );
                            else
                               throw runtime_error( "unexpected server error occurred trying to update 'admin' password" );
                         }

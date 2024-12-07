@@ -758,18 +758,20 @@ bool output_view_form( ostream& os, const string& act,
           && ( !is_admin_edit || sess_info.is_admin_user )
           && ( !is_owner_edit || owner.empty( ) || is_record_owner ) )
          {
-            // NOTE: Unowned records (marked as "owner edit") cannot be edited, however,
+            // NOTE: Unowned records (marked as "owner_edit") cannot be edited, however,
             // record specific actions will still appear (unless the record is changing
             // or is currently unactionable). If "admin_owner_edit" is used then "edit"
             // will only be allowed for owned records unless user is "admin". Also when
             // the view has been identified as the "user_info" view then unless user is
-            // "admin" or the user key matches the current user prevent editing.
+            // "admin" or the user key matches the current user prevent editing (unless
+            // it is the "admin" user which is never allowed to be edited by the UI).
             if( !( source.state & c_state_uneditable )
              && !( source.state & c_state_is_changing )
              && !( source.state & c_state_unactionable )
              && ( !is_owner_edit || is_record_owner )
              && ( !is_admin_owner_edit || sess_info.is_admin_user || is_record_owner )
-             && ( sess_info.is_admin_user || mod_info.user_info_view_id != source.vici->second->id || data == sess_info.user_key ) )
+             && ( ( data != c_admin ) || ( mod_info.user_info_view_id != source.vici->second->id ) )
+             && ( sess_info.is_admin_user || ( mod_info.user_info_view_id != source.vici->second->id ) || ( data == sess_info.user_key ) ) )
             {
                had_any = true;
                enter_action = "edit";

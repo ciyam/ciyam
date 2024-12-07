@@ -245,9 +245,13 @@ bool perform_update( const string& module, const string& class_id,
    if( sess_info.p_socket->write_line( cmd ) > 0 )
    {
       string response;
-      if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 || response != c_response_okay )
+
+      int rc = sess_info.p_socket->read_line( response, c_initial_response_timeout );
+
+      if( ( rc <= 0 ) || ( response != c_response_okay ) )
       {
          okay = false;
+
          if( p_error_message )
             *p_error_message = response;
       }
@@ -273,9 +277,13 @@ bool perform_update( const string& module,
    if( sess_info.p_socket->write_line( cmd ) > 0 )
    {
       string response;
-      if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 || response != c_response_okay )
+
+      int rc = sess_info.p_socket->read_line( response, c_initial_response_timeout );
+
+      if( ( rc <= 0 ) || ( response != c_response_okay ) )
       {
          okay = false;
+
          if( !response.empty( ) )
             error = response;
          else
