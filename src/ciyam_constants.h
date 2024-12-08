@@ -93,7 +93,7 @@ const char* const c_repository_info_suffix = ".info";
 
 const char* const c_two_spaces = "  ";
 
-const char* const c_prepare = "prepare";
+const char* const c_backup = "backup";
 const char* const c_restore = "restore";
 
 const char* const c_files_ext = ".files";

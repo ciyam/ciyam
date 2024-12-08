@@ -298,7 +298,7 @@
      </test_step>
      <test_step/>
       <name>g
-      <exec>copy test.jpg ~temp.jpg
+      <exec>$cp test.jpg ~temp.jpg
       <input>false
       <output>none
      </test_step>
@@ -316,7 +316,7 @@
      </test_step>
      <test_step/>
       <name>j
-      <exec>copy test.png ~temp.png
+      <exec>$cp test.png ~temp.png
       <input>false
       <output>none
      </test_step>

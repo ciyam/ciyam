@@ -6284,9 +6284,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_system_log_tail )
       {
          string lines( get_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_lines ) );
+         bool is_backup = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_backup );
          bool is_script = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_script );
          bool is_server = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_server );
-         bool is_prepare = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_prepare );
          bool is_restore = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_restore );
          string app_directory( get_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_app_directory ) );
 
@@ -6303,22 +6303,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             log_file_name += ( is_script ? c_ciyam_script : c_ciyam_server );
          else
          {
-            if( is_prepare || is_restore || app_directory.empty( ) )
+            if( is_backup || is_restore || app_directory.empty( ) )
                log_file_name += c_meta_app_directory;
             else
                log_file_name += app_directory;
 
             log_file_name += '/';
 
-            if( is_prepare || is_restore )
-               log_file_name += ( is_prepare ? c_prepare : c_restore );
+            if( is_backup || is_restore )
+               log_file_name += ( is_backup ? c_backup : c_restore );
             else
                log_file_name += c_ciyam_interface;
          }
 
          log_file_name += c_log_file_ext;
 
-         if( is_prepare || is_restore )
+         if( is_backup || is_restore )
             log_file_name += c_sav_file_ext;
 
          deque< string > log_lines;
