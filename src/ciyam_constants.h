@@ -93,6 +93,9 @@ const char* const c_repository_info_suffix = ".info";
 
 const char* const c_two_spaces = "  ";
 
+const char* const c_prepare = "prepare";
+const char* const c_restore = "restore";
+
 const char* const c_files_ext = ".files";
 
 const char* const c_csv_file_ext = ".csv";
@@ -102,6 +105,8 @@ const char* const c_sav_file_ext = ".sav";
 
 const char* const c_ciyam_script = "ciyam_script";
 const char* const c_ciyam_server = "ciyam_server";
+
+const char* const c_ciyam_interface = "ciyam_interface";
 
 const char* const c_ciyam_dummy_date = "20211202";
 
@@ -117,6 +122,8 @@ const char* const c_variables_branch = "Variables";
 const char* const c_web_files_branch = "Web_Files";
 
 const char* const c_meta_model_name = "Meta";
+
+const char* const c_meta_app_directory = "meta";
 
 const char* const c_meta_class_name_class = "Class";
 const char* const c_meta_class_name_model = "Model";

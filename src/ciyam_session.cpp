@@ -3026,7 +3026,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          mclass = get_class_id_for_id_or_name( module, mclass );
 
          // NOTE: For usage with "getmeta/getmetap" script.
-         if( ( module == "Meta" ) && ( fields == "@all" ) )
+         if( ( module == c_meta_model_name ) && ( fields == "@all" ) )
             fields = get_meta_class_field_list( mclass );
 
          string parent_key;
@@ -5158,7 +5158,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_backup_name ) );
          bool truncate_log = has_parm_val( parameters, c_cmd_ciyam_session_storage_backup_truncate );
 
-         bool is_meta = ( name == "Meta" );
+         bool is_meta = ( name == c_meta_model_name );
 
          int truncation_count = 0;
          string sav_db_file_names;
@@ -5412,7 +5412,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             ap_regex.reset( new regex( stop_regex ) );
          }
 
-         bool is_meta = ( name == "Meta" );
+         bool is_meta = ( name == c_meta_model_name );
 
          string db_file_names( ods_file_names( name, ' ' ) );
 
@@ -6283,30 +6283,53 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_system_log_tail )
       {
+         string lines( get_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_lines ) );
          bool is_script = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_script );
-         string num_lines( get_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_lines ) );
+         bool is_server = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_server );
+         bool is_prepare = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_prepare );
+         bool is_restore = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_restore );
+         string app_directory( get_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_app_directory ) );
 
          unsigned int num = c_cmd_ciyam_session_system_log_tail_lines_default;
 
-         if( !num_lines.empty( ) )
-            num = atoi( num_lines.c_str( ) );
+         if( !lines.empty( ) )
+            num = atoi( lines.c_str( ) );
 
-         string log_file_name( get_files_area_dir( ) );
+         string log_file_name( ( !is_script && !is_server ) ? get_web_root( ) : get_files_area_dir( ) );
 
          log_file_name += '/';
-         log_file_name += ( is_script ? c_ciyam_script : c_ciyam_server );
+
+         if( is_script || is_server )
+            log_file_name += ( is_script ? c_ciyam_script : c_ciyam_server );
+         else
+         {
+            if( is_prepare || is_restore || app_directory.empty( ) )
+               log_file_name += c_meta_app_directory;
+            else
+               log_file_name += app_directory;
+
+            log_file_name += '/';
+
+            if( is_prepare || is_restore )
+               log_file_name += ( is_prepare ? c_prepare : c_restore );
+            else
+               log_file_name += c_ciyam_interface;
+         }
 
          log_file_name += c_log_file_ext;
 
-         deque< string > lines;
+         if( is_prepare || is_restore )
+            log_file_name += c_sav_file_ext;
 
-         buffer_file_tail( log_file_name, lines, num );
+         deque< string > log_lines;
 
-         for( size_t i = 0; i < lines.size( ); i++ )
+         buffer_file_tail( log_file_name, log_lines, num );
+
+         for( size_t i = 0; i < log_lines.size( ); i++ )
          {
             if( i > 0 )
                response += '\n';
-            response += lines[ i ];
+            response += log_lines[ i ];
          }
       }
       else if( command == c_cmd_ciyam_session_system_notifier )
