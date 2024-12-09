@@ -6401,6 +6401,8 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
       // NOTE: Unless a system variable "@use_insecure_peer_protocol" is
       // found will check for a session (or if not exists then a system)
       // variable named "@secret_hash" used to secure the peer protocol.
+      // If a session variable is found and its value is prefixed with a
+      // '@' character then it's assumed to be a system variable name.
       if( !has_raw_system_variable(
        get_special_var_name( e_special_var_use_insecure_peer_protocol ) ) )
       {
@@ -6408,6 +6410,8 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
          if( secret_hash.empty( ) )
             secret_hash = get_raw_system_variable( get_special_var_name( e_special_var_secret_hash ) );
+         else if( secret_hash[ 0 ] == '@' )
+            secret_hash = get_raw_system_variable( secret_hash );
       }
 
       if( !blockchain.empty( ) && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )

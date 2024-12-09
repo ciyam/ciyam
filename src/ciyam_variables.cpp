@@ -39,6 +39,8 @@ namespace
 const int c_max_lock_attempts = 20;
 const int c_lock_attempt_sleep_time = 200;
 
+const size_t c_secret_truncate_length = 5;
+
 const char c_persist_variable_prefix = '>';
 const char c_restore_variable_prefix = '<';
 
@@ -316,11 +318,33 @@ inline string quote_if_contains_white_space( const string& name )
    return retval;
 }
 
+string g_secret_hash_prefix;
+
+// NOTE: System variable names that begin with "@secret_hash_" will have their values
+// truncated to the first five characters with an ellipsis appended when they are not
+// retrieved internally (i.e. via the "system_variable" protocol command). Whilst not
+// a foolproof method to prevent discovery this should prevent simple access to these
+// from either an application protocol script or the FCGI UI.
+void truncate_value_for_secret_hash_prefixed_name( const string& name, string& value )
+{
+   if( name.find( g_secret_hash_prefix ) == 0 )
+   {
+      if( value.length( ) > c_secret_truncate_length )
+      {
+         value.erase( c_secret_truncate_length );
+
+         value += c_ellipsis;
+      }
+   }
+}
+
 vector< string > g_special_variable_names;
 
 void init_special_variable_names( )
 {
    guard g( g_mutex );
+
+   g_secret_hash_prefix = string( c_special_variable_secret_hash ) + "_";
 
    // NOTE: These must be aligned with the enum in "ciyam_common.h".
    if( g_special_variable_names.empty( ) )
@@ -664,7 +688,7 @@ system_variable_lock::~system_variable_lock( )
    set_system_variable( name, "" );
 }
 
-string get_raw_system_variable( const string& name )
+string get_raw_system_variable( const string& name, bool is_internal )
 {
    guard g( g_mutex );
 
@@ -732,7 +756,7 @@ string get_raw_system_variable( const string& name )
 
          string expr( sys_var_prefix );
 
-         if( var_name.empty( ) || var_name == "*" )
+         if( var_name.empty( ) || ( var_name == "*" ) )
             expr += "*";
          else
             expr = var_name;
@@ -758,10 +782,13 @@ string get_raw_system_variable( const string& name )
                   if( g_variables.count( next ) )
                      next_value = g_variables[ next ];
 
-                  if( output_all_persistent_variables || value != next_value )
+                  if( output_all_persistent_variables || ( value != next_value ) )
                   {
                      if( !retval.empty( ) )
                         retval += "\n";
+
+                     if( !is_internal )
+                        truncate_value_for_secret_hash_prefixed_name( next, value );
 
                      retval += quote_if_contains_white_space( next ) + ' ' + value;
                   }
@@ -803,7 +830,13 @@ string get_raw_system_variable( const string& name )
             if( !retval.empty( ) )
                retval += "\n";
 
-            retval += quote_if_contains_white_space( ci->first ) + ' ' + ci->second;
+            string next( ci->first );
+            string value( ci->second );
+
+            if( !is_internal )
+               truncate_value_for_secret_hash_prefixed_name( next, value );
+
+            retval += quote_if_contains_white_space( next ) + ' ' + value;
          }
       }
 
@@ -849,7 +882,12 @@ string get_raw_system_variable( const string& name )
          }
       }
       else if( g_variables.count( var_name ) )
+      {
          retval = g_variables[ var_name ];
+
+         if( !is_internal )
+            truncate_value_for_secret_hash_prefixed_name( var_name, retval );
+      }
       else if( name == get_special_var_name( e_special_var_none ) )
          retval = " ";
       else if( var_name == c_special_variable_files_area_dir )
@@ -861,12 +899,17 @@ string get_raw_system_variable( const string& name )
 
 struct raw_system_variable_getter : variable_getter
 {
-   string get_value( const string& name ) const { return get_raw_system_variable( name ); }
+   raw_system_variable_getter( bool is_internal ) : is_internal( is_internal ) { }
+
+   string get_value( const string& name ) const { return get_raw_system_variable( name, is_internal ); }
+
+   bool is_internal;
 };
 
-string get_system_variable( const string& name_or_expr )
+string get_system_variable( const string& name_or_expr, bool is_internal )
 {
-   raw_system_variable_getter raw_getter;
+   raw_system_variable_getter raw_getter( is_internal );
+
    variable_expression expr( name_or_expr, raw_getter );
 
    return expr.get_value( );

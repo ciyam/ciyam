@@ -57,7 +57,9 @@ HOST_PORT=%NEXT_LINE:6%
 ;
 @ifndef $SKIP_CONNECTS
 .system_variable @secret_hash_$SUBMIT_IDENTITY
-.session_variable @secret_hash $OUTPUT
+@ifdef $OUTPUT
+.session_variable @secret_hash @secret_hash_$SUBMIT_IDENTITY
+@endif
 .peer_connect $RECEIVE_IDENTITY:$SUBMIT_IDENTITY $HOST_NAME-$HOST_PORT -user
 @ifdef $ERROR
 ERROR=

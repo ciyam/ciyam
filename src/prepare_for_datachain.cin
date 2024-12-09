@@ -72,9 +72,8 @@ HASH_ID=$OUTPUT
 ;
 ; NOTE: Use the channel's secret hash for a secure peer connection.
 .system_variable @secret_hash_$HASH_ID
-SECRET_HASH=$OUTPUT
-@ifdef $SECRET_HASH
-.session_variable @secret_hash $SECRET_HASH
+@ifdef $OUTPUT
+.session_variable @secret_hash @secret_hash_$HASH_ID
 @endif
 .peer_connect $IDENTITY $HOST_NAME-$HOST_PORT -data
 @ifdef $ERROR

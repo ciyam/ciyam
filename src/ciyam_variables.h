@@ -34,8 +34,8 @@ struct CIYAM_BASE_DECL_SPEC system_variable_lock
    std::string name;
 };
 
-std::string CIYAM_BASE_DECL_SPEC get_raw_system_variable( const std::string& name );
-std::string CIYAM_BASE_DECL_SPEC get_system_variable( const std::string& name_or_expr );
+std::string CIYAM_BASE_DECL_SPEC get_raw_system_variable( const std::string& name, bool is_internal = true );
+std::string CIYAM_BASE_DECL_SPEC get_system_variable( const std::string& name_or_expr, bool is_internal = true );
 
 bool CIYAM_BASE_DECL_SPEC has_raw_system_variable( const std::string& name );
 bool CIYAM_BASE_DECL_SPEC has_system_variable( const std::string& name_or_expr );

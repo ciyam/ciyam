@@ -85,9 +85,8 @@ HOST_PORT=%LINES:3%
 ;
 ; NOTE: Use the channel's secret hash for a secure peer connection.
 .system_variable @secret_hash_$HASH_ID
-SECRET_HASH=$OUTPUT
-@ifdef $SECRET_HASH
-.session_variable @secret_hash $SECRET_HASH
+@ifdef $OUTPUT
+.session_variable @secret_hash @secret_hash_$HASH_ID
 @endif
 ;
 .peer_connect $NEXT_CHAIN $HOST_NAME-$HOST_PORT -data

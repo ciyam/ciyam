@@ -205,7 +205,7 @@ void check_not_possible_protocol_response( const string& value )
 {
    string response( c_response_okay );
 
-   if( !value.empty( ) && value[ 0 ] == response[ 0 ] )
+   if( !value.empty( ) && ( value[ 0 ] == response[ 0 ] ) )
       throw runtime_error( "invalid value '" + value + "' (could be confused with a protocol response)" );
 }
 
@@ -6525,7 +6525,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
          else
          {
-            response = get_system_variable( name_or_expr );
+            response = get_system_variable( name_or_expr, false );
+
             check_not_possible_protocol_response( response );
          }
       }

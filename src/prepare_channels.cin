@@ -66,7 +66,9 @@ APP_LOG_INFO_FILE=@files::$NEXT_IDENT.log
 <prepare_for_channel.cin $STORAGE $NEXT_IDENT
 ;
 .system_variable @secret_hash_$SUBMIT_IDENTITY
-.session_variable @secret_hash $OUTPUT
+@ifdef $OUTPUT
+.session_variable @secret_hash @secret_hash_$SUBMIT_IDENTITY
+@endif
 .peer_connect $SUBMIT_IDENTITY:$RECEIVE_IDENTITY $HOST_NAME-$HOST_PORT -user
 @ifdef $ERROR
 ERROR=
