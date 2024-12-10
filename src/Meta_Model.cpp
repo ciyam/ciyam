@@ -416,6 +416,8 @@ string get_enum_string_model_type( bool val )
 // [<start anonymous>]
 //nyi
 
+const char* const c_parent_extra_null = "@null";
+
 const char* const c_admin_password = "@admin_password";
 const char* const c_admin_user_hash = "@admin_user_hash";
 
@@ -5228,7 +5230,10 @@ void Meta_Model::impl::impl_Generate( )
                      }
 
                      string pextras( get_obj( ).child_List( ).child_List_Field( ).Restriction_Spec( ).Restrict_Values( ) );
+
                      bool is_restricted( !pextras.empty( ) );
+
+                     bool parent_mandatory = is_mandatory;
 
                      if( p_field->Encrypted( ) )
                      {
@@ -5310,6 +5315,18 @@ void Meta_Model::impl::impl_Generate( )
 
                         string select_key_exclusions( get_obj( ).child_List( ).child_List_Field( ).Select_Key_Exclusions( ) );
 
+                        // NOTE: If select key exclusions value starts with "@null" then the parent will be treated as being
+                        // mandatory (with this then being removed from the key exclusions value).
+                        if( select_key_exclusions.find( c_parent_extra_null ) == 0 )
+                        {
+                           parent_mandatory = true;
+
+                           select_key_exclusions.erase( 0, strlen( c_parent_extra_null ) );
+
+                           if( !select_key_exclusions.empty( ) && ( select_key_exclusions[ 0 ] == ' ' ) )
+                              select_key_exclusions.erase( 0, 1 );
+                        }
+
                         if( !select_key_exclusions.empty( ) )
                         {
                            string str( "-" );
@@ -5333,7 +5350,8 @@ void Meta_Model::impl::impl_Generate( )
 
                      parent_column_extras.push_back( pextras );
                      parent_column_dextras.push_back( dextras );
-                     parent_column_other_info.push_back( is_mandatory );
+
+                     parent_column_other_info.push_back( parent_mandatory );
 
                      string operations;
 
