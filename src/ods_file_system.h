@@ -349,7 +349,7 @@ struct temporary_set_folder
 
 struct temporary_force_write
 {
-   temporary_force_write( ods_file_system& ofs, bool force_write = true );
+   temporary_force_write( ods_file_system& ofs );
    ~temporary_force_write( );
 
    ods_file_system& ofs;

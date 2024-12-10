@@ -514,7 +514,6 @@ struct ods_file_system::impl
     bt( o ),
     force_write( false ),
     skip_hidden( true ),
-    force_write_count( 0 ),
     skip_hidden_count( 0 ),
     for_regression_tests( false ),
     next_transaction_id( 0 )
@@ -526,7 +525,6 @@ struct ods_file_system::impl
    bool force_write;
    bool skip_hidden;
 
-   size_t force_write_count;
    size_t skip_hidden_count;
 
    bool for_regression_tests;
@@ -1033,7 +1031,8 @@ void ods_file_system::add_file( const string& name,
                // NOTE: If the source was "*" or is a zero length file then in order not
                // to waste space on a second object the special zero OID is instead used
                // as an empty file content indicator.
-               if( is_empty_file || ( file_exists( file_name ) && !file_size( file_name ) ) )
+               if( is_empty_file
+                || ( file_exists( file_name ) && !file_size( file_name, 0, 1 ) ) )
                   tmp_item.o_file.set_id( 0 );
                else
                   tmp_item.get_file( new storable_file_extra( file_name, 0, p_progress ) ).store( );
@@ -1673,6 +1672,7 @@ void ods_file_system::remove_file( const string& name, ostream* p_os, progress* 
    }
 
    auto_ptr< ods::transaction > ap_ods_tx;
+
    if( !o.is_in_transaction( ) )
       ap_ods_tx.reset( new ods::transaction( o ) );
 
@@ -1718,6 +1718,7 @@ void ods_file_system::replace_file( const string& name,
    btree_type::item_type tmp_item;
 
    auto_ptr< ods::transaction > ap_ods_tx;
+
    if( !o.is_in_transaction( ) )
       ap_ods_tx.reset( new ods::transaction( o ) );
 
@@ -1777,7 +1778,8 @@ void ods_file_system::replace_file( const string& name,
          // NOTE: If the source was "*" or is a zero length file then in order not
          // to waste space on a second object the special zero OID is instead used
          // as an empty file content indicator.
-         if( file_name == "*" || ( file_exists( file_name ) && !file_size( file_name ) ) )
+         if( ( file_name == "*" )
+          || ( file_exists( file_name ) && !file_size( file_name, 0, 1 ) ) )
          {
             if( id.get_num( ) )
             {
@@ -2076,6 +2078,7 @@ void ods_file_system::add_folder( const string& name, ostream* p_os, string* p_p
       btree_type::item_type tmp_item;
 
       auto_ptr< ods::transaction > ap_ods_tx;
+
       if( !o.is_in_transaction( ) )
          ap_ods_tx.reset( new ods::transaction( o ) );
 
@@ -2284,6 +2287,7 @@ void ods_file_system::move_folder( const string& name, const string& destination
    btree_type::item_type tmp_item;
 
    auto_ptr< ods::transaction > ap_ods_tx;
+
    if( !o.is_in_transaction( ) )
       ap_ods_tx.reset( new ods::transaction( o ) );
 
@@ -2410,6 +2414,7 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
    }
 
    auto_ptr< ods::transaction > ap_ods_tx;
+
    if( !o.is_in_transaction( ) )
       ap_ods_tx.reset( new ods::transaction( o ) );
 
@@ -2497,6 +2502,7 @@ void ods_file_system::replace_folder( const string& name, ostream* p_os, string*
    btree_type::item_type tmp_item;
 
    auto_ptr< ods::transaction > ap_ods_tx;
+
    if( !o.is_in_transaction( ) )
       ap_ods_tx.reset( new ods::transaction( o ) );
 
@@ -3835,18 +3841,16 @@ bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_n
    return okay;
 }
 
-temporary_force_write::temporary_force_write( ods_file_system& ofs, bool force_write )
+temporary_force_write::temporary_force_write( ods_file_system& ofs )
  :
  ofs( ofs ),
  old_force_write( ofs.p_impl->force_write )
 {
-   ++ofs.p_impl->force_write_count;
-   ofs.p_impl->force_write = force_write;
+   ofs.p_impl->force_write = true;
 }
 
 temporary_force_write::~temporary_force_write( )
 {
-   --ofs.p_impl->force_write_count;
    ofs.p_impl->force_write = old_force_write;
 }
 

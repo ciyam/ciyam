@@ -426,6 +426,7 @@ int vmem_used( )
    ifstream inpf( "/proc/self/status" );
 
    string next;
+
    while( getline( inpf, next ) )
    {
       string::size_type pos = next.find( "VmSize:" );
@@ -722,6 +723,26 @@ int64_t file_size( const char* p_name, unsigned char* p_hdr, size_t hdr_size )
          throw runtime_error( "unable to stat '" + to_string( p_name ) + "'" );
 
       retval = statbuf.st_size;
+
+      // NOTE: If "p_hdr" is null but "hdr_size" is non-zero
+      // and the stat.st_size is zero will try performing an
+      // open and fsync before repeating the stat command.
+      if( !retval && hdr_size )
+      {
+         int fd = _open( p_name, O_RDONLY );
+
+         if( fd <= 0 )
+            throw runtime_error( "unable to open file '" + string( p_name ) + "' for input in file_size" );
+
+         fsync( fd );
+
+         _close( fd );
+
+         if( stat( p_name, &statbuf ) < 0 )
+            throw runtime_error( "unable to stat '" + to_string( p_name ) + "'" );
+
+         retval = statbuf.st_size;
+      }
    }
 #endif
 
@@ -754,7 +775,9 @@ string file_user( const char* p_name )
 string file_group( const char* p_name )
 {
    string str;
+
    struct stat statbuf;
+
    int rc = stat( p_name, &statbuf );
 
    if( rc != 0 )
@@ -775,7 +798,9 @@ string file_group( const char* p_name )
 string file_perms( const char* p_name )
 {
    string str;
+
    struct stat statbuf;
+
    int rc = stat( p_name, &statbuf );
 
    if( rc != 0 )
