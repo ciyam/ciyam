@@ -39,7 +39,7 @@ namespace
 const int c_max_lock_attempts = 20;
 const int c_lock_attempt_sleep_time = 200;
 
-const size_t c_secret_truncate_length = 5;
+const size_t c_secret_truncate_length = 9;
 
 const char c_persist_variable_prefix = '>';
 const char c_restore_variable_prefix = '<';

@@ -10,7 +10,7 @@
       string value( get_system_variable( `{`@eq`(`$arg_session`,`'true`'`)get_session_variable( `}\
 "`{`$arg_variable`}"`{`@eq`(`$arg_session`,`'true`'`) )`}`{`!`@eq`(`$arg_ofield`,`'`'`)\
  + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
-`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`} ) );
+`{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`}`{`@eq`(`$arg_not_internal`,`'true`'`), false`} ) );
 `,`@eq`(`$arg_session`,`'true`'`)\
       string value( get_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
  + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
