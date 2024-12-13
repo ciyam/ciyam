@@ -1113,6 +1113,10 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_system=$specification_\\0_system arg_suffix=$specification_\\0_suffix arg_check_null=$specification_\\0_check_null\
  arg_session=$specification_\\0_session`}\
 `,\
+`@eq`(`'\\1`'`,`'for_skip_restore`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
+`{`#for_skip_restore.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
+ arg_id=$specification_\\0_id arg_procedure=$specification_\\0_procedure`}\
+`,\
 `@eq`(`'\\1`'`,`'for_tag`'`)`&`@eq`(`'\$`'`,`$specification_\\0_tag_proc`)
 `{`#for_tag.spec.xrep section=tag_procedure module_name=$module_name class_name=$class_name\
  arg_id=$specification_\\0_id arg_tag=$specification_\\0_tag arg_modifier=$specification_\\0_modifier\

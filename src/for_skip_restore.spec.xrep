@@ -1,0 +1,6 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_skip_restore)] `{`$arg_id`}
+   if( storage_locked_for_admin( ) )
+      return;
+   // [(finish for_skip_restore)] `{`$arg_id`}
+`}
