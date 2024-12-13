@@ -2925,9 +2925,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   extra_content << "<tr>\n";
                }
 
-               int n = 0, x = 0;
+               int n = 0, x = 0, last = 0;
 
-               bool is_first = true;
+               map< int, bool > children_okay;
 
                set< string > children_not_permitted;
 
@@ -2981,11 +2981,31 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                    && !child_lists[ i->second ].lici->second->extras.count( c_list_type_extra_allow_anonymous ) )
                      is_okay = false;
 
-                  if( !is_okay )
-                  {
+                  children_okay[ x - 1 ] = is_okay;
+
+                  if( is_okay )
+                     last = ++n;
+                  else
                      children_not_permitted.insert( i->first );
+               }
+
+               // NOTE: If the selected tab child has become invalid
+               // due to parent state then will just select the last
+               // accessible tab found.
+               if( vtabc_num > last )
+                  vtabc_num = last;
+
+               x = 0;
+               n = 0;
+
+               bool is_first = true;
+
+               for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
+               {
+                  ++x;
+
+                  if( !children_okay[ x - 1 ] )
                      continue;
-                  }
 
                   string name( get_display_name( mod_info.get_string( child_lists[ i->second ].name ) ) );
 
