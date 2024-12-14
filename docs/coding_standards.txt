@@ -11,7 +11,7 @@ git pre-commit trigger. Any 3rd party header files that are added to the reposit
 Format
 ------
 
-- 3 space indenting, no tabs
+- 3 space indenting with no tab characters to be used
 - leading or trailing underscores in generated code only
 - no CAPITAL letters and underscores for identifiers (e.g. my_class)
 - use CAPITAL letters and underscores only for macros (e.g. #define MY_MACRO)
@@ -115,27 +115,27 @@ export_data( outs, module, all_field_data[ i ].class_id,
  all_class_ids, excludes, tests, includes, exported_records, exported_children,
  next_pass, will_be_exported, partial_export, rounds, current_round, future_rounds, ts, total );
 
-Lines continuation is encouraged for readability and lines should usually not exceed 135 characters in length
-(in generated code lines of up to 200 characters are acceptable).
+Line continuation is encouraged for readability with each line having a maximum of 135 characters (except for
+generated code where lines of up to 200 characters are acceptable).
 
-try, to, keep,
-code, aligned, 
-as is possible
+try keeping,
+code aligned,
+where possible
 
 please,
-do, not, get, wider, and,
-shorter
+do not have one very wide line followed by a very
+short one
 
 a,
 slope,
 in, this, 
 direction, 
-is, acceptable
+is no problem
 
-but, it, is, not, 
-very desirable,
-to, slope, 
-in this,
+but it is less,
+desirable,
+to slope,
+this,
 way
 
 Comments
@@ -240,6 +240,19 @@ class class_name
 */
 };
 
+Precedence
+----------
+
+Although the following are operationally identical to reduce possible confusion the latter (using parenthesis
+for explicit precedence) should always be used.
+
+if( !value.empty( ) && value != c_true_value )
+
+==>
+
+if( !value.empty( ) && ( value != c_true_value ) )
+
+
 Constructors
 ------------
 
@@ -249,7 +262,7 @@ class_name::class_name( int x, int y )
  y( y )
 {
    // NOTE: Use this->x if needs changing after initialization.
-   if( x > 100 && y < 100 )
+   if( ( x > 100 ) && ( y < 100 ) )
       this->x *= 10;
 }
 
