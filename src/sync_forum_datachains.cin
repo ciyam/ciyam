@@ -26,7 +26,7 @@ MODULES=$OUTPUT
 MODULES=@repstr: /\n:$MODULES
 MODULE=%MODULES:2%
 ;
-<channel_information.$MODULE.vars.lst
+<$MODULE.channel_information.vars.lst
 ;
 .storage_web_root -expand
 STORAGE_WEB_DIR=$OUTPUT

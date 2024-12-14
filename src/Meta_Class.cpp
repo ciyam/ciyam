@@ -2470,6 +2470,7 @@ void Meta_Class::impl::impl_Generate( )
    string extra_lst_file_name( get_obj( ).Model( ).Name( ) + "_" + get_obj( ).Name( ) + ".extra.lst" );
 
    set< string > old_extras;
+
    if( exists_file( extra_lst_file_name ) )
       read_file_lines( extra_lst_file_name, old_extras );
 
@@ -3643,6 +3644,7 @@ void Meta_Class::impl::impl_Generate( )
             string specification_name( get_obj( ).child_Specification( ).Name( ) );
 
             string::size_type spos = specification_name.find( ' ' );
+
             if( spos != string::npos )
                specification_name.erase( spos );
 
@@ -3654,10 +3656,10 @@ void Meta_Class::impl::impl_Generate( )
             bool is_gen_script_object = false;
             bool is_gen_script_object_only = false;
 
-            if( specification_object == "gen_script"
-             || specification_object == "gen_ext_script"
-             || specification_object == "field_from_script"
-             || specification_object == "gen_script_vars_list" )
+            if( ( specification_object == "gen_script" )
+             || ( specification_object == "gen_ext_script" )
+             || ( specification_object == "field_from_script" )
+             || ( specification_object == "gen_script_vars_list" ) )
             {
                gen_xrep = "./xrep ";
 
@@ -3672,13 +3674,14 @@ void Meta_Class::impl::impl_Generate( )
                   is_gen_script_object_only = true;
 
                if( specification_object == "gen_script_vars_list" )
-                  gen_extra = '.' + get_obj( ).Model( ).Name( ) + ".vars.lst";
+                  gen_extra = ".vars.lst";
             }
 
             if( !is_gen_script_object_only )
             {
                if( !all_specifications.empty( ) )
                   all_specifications += " \\\n";
+
                all_specifications += specification_name + ',' + specification_object;
 
                if( !all_specification_types.empty( ) )
@@ -3701,13 +3704,16 @@ void Meta_Class::impl::impl_Generate( )
             while( true )
             {
                pos = vars.find( '\n' );
+
                string next( vars.substr( 0, pos ) );
 
                string::size_type npos = next.find( '=' );
+
                if( npos == string::npos )
                   throw runtime_error( "unexpected format for specification vars '" + get_obj( ).child_Specification( ).Vars( ) + "'" );
 
                string next_value( next.substr( npos + 1 ) );
+
                if( next_value == "{nyi}" )
                   next_value.erase( );
 
@@ -3729,6 +3735,9 @@ void Meta_Class::impl::impl_Generate( )
                vars.erase( 0, pos + 1 );
             }
 
+            if( specification_object == "gen_script_vars_list" )
+               gen_script = get_obj( ).Model( ).Name( ) + '.' + gen_script;
+
             if( is_gen_script_object )
             {
                gen_xrep += " >" + gen_script + gen_extra;
@@ -3739,6 +3748,7 @@ void Meta_Class::impl::impl_Generate( )
                exec_system( gen_xrep );
 
                ofstream outl( extra_lst_file_name.c_str( ), ios::out | ios::app );
+
                if( !outl )
                   throw runtime_error( "unexpected error opening '" + extra_lst_file_name + "' for output" );
 
@@ -3754,6 +3764,7 @@ void Meta_Class::impl::impl_Generate( )
                   if( csv_name != gen_script )
                   {
                      outl << csv_name << '\n';
+
                      if( old_extras.count( csv_name ) )
                         old_extras.erase( csv_name );
                   }
@@ -3763,12 +3774,14 @@ void Meta_Class::impl::impl_Generate( )
                   if( log_name != gen_script )
                   {
                      outl << log_name << '\n';
+
                      if( old_extras.count( log_name ) )
                         old_extras.erase( log_name );
                   }
                }
 
                outl.flush( );
+
                if( !outl.good( ) )
                   throw runtime_error( "output stream extra lst is bad" );
             }
@@ -3798,6 +3811,7 @@ void Meta_Class::impl::impl_Generate( )
       string cleanup_filename( get_obj( ).Model( ).Name( ) + ".cleanup.sh" );
 
       ofstream outc( cleanup_filename.c_str( ), ios::out | ios::app );
+
       if( outc )
       {
          for( set< string >::iterator i = old_extras.begin( ); i != old_extras.end( ); ++i )
@@ -3806,6 +3820,7 @@ void Meta_Class::impl::impl_Generate( )
    }
 
    outf.flush( );
+
    if( !outf.good( ) )
       throw runtime_error( "generate output stream is bad" );
    // [<finish Generate_impl>]

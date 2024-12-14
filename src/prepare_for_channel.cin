@@ -34,25 +34,25 @@ HEIGHT=@$OUTPUT+1
 LINES=@repstr: /\n:$OUTPUT
 MODULE=%LINES:2%
 ;
-<channel_user_information.$MODULE.vars.lst
+<$MODULE.channel_user_information.vars.lst
 ;
 .perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.user_info.csv\
  -f=$FLD_PEER_NODE=$IDENTITY,$FLD_LOCAL=1,$FLD_NAME -export=@key,$FLD_ACTIVE,$FLD_NAME
 ;
-BLOG_INFO_FILE=@files::blog_information.$MODULE.vars.lst
+BLOG_INFO_FILE=@files::$MODULE.blog_information.vars.lst
 ;
-<channel_data_information.$MODULE.vars.lst
+<$MODULE.channel_data_information.vars.lst
 ;
 @ifdef $BLOG_INFO_FILE
-<blog_information.$MODULE.vars.lst
+<$MODULE.blog_information.vars.lst
 ;
 .perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.blog_info.csv -export=$FLD_IDENTITY,$FLD_NAME,$FLD_DESCRIPTION
 @endif
 ;
-FORUM_INFO_FILE=@files::forum_information.$MODULE.vars.lst
+FORUM_INFO_FILE=@files::$MODULE.forum_information.vars.lst
 ;
 @ifdef $FORUM_INFO_FILE
-<forum_information.$MODULE.vars.lst
+<$MODULE.forum_information.vars.lst
 ;
 .perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.forum_info.csv\
  -export=!$FLD_FORUM_IDENTITY:$FLD_IDENTITY,$FLD_HANDLE:$FLD_NAME,$FLD_HANDLE:$FLD_DESCRIPTION -q=$FLD_FORUM_POSTS=1..999999999

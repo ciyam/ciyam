@@ -44,7 +44,7 @@ MODULES=$OUTPUT
 MODULES=@repstr: /\n:$MODULES
 MODULE=%MODULES:2%
 ;
-<channel_information.$MODULE.vars.lst
+<$MODULE.channel_information.vars.lst
 ;
 .pf $MODULE $CLASS_NAME $IDENTITY $FLD_SHARED_SECRET -min
 .session_variable @encrypted_password $OUTPUT

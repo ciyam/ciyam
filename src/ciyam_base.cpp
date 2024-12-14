@@ -6972,7 +6972,7 @@ int exec_system( const string& cmd, bool async, bool delay )
    string check_script_error(
     get_raw_session_variable( get_special_var_name( e_special_var_check_script_error ) ) );
 
-   if( check_script_error == c_true || check_script_error == c_true_value )
+   if( ( check_script_error == c_true ) || ( check_script_error == c_true_value ) )
    {
       set_session_variable( get_special_var_name( e_special_var_check_script_error ), "" );
 
@@ -6982,7 +6982,7 @@ int exec_system( const string& cmd, bool async, bool delay )
 
          set_system_variable( gtp_session->async_or_delayed_temp_file, "" );
 
-         if( !value.empty( ) && value != c_true_value )
+         if( !value.empty( ) && ( value != c_true_value ) )
          {
             // NOTE: If the error starts with '@' then assume that it is actually
             // intended to be an execute "return" message rather than an error.

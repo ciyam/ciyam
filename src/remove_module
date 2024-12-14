@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: remove_module [[-rdbms]] [module name]
+ echo "Usage: remove_module [[-rdbms]] [module name]"
 else
  mod_name=$1
  is_rdbms=
@@ -82,23 +82,6 @@ else
     echo ""
     echo \*\*\* Module has been removed \(it should now be safe to delete all applicable \'$mod_name\*\' files\).
    fi
-
-   if [ -f blog_information.$mod_name.vars.lst ]; then
-    rm blog_information.$mod_name.vars.lst
-   fi
-   if [ -f forum_information.$mod_name.vars.lst ]; then
-    rm forum_information.$mod_name.vars.lst
-   fi
-   if [ -f channel_information.$mod_name.vars.lst ]; then
-    rm channel_information.$mod_name.vars.lst
-   fi
-   if [ -f channel_link_information.$mod_name.vars.lst ]; then
-    rm channel_link_information.$mod_name.vars.lst
-   fi
-   if [ -f channel_user_information.$mod_name.vars.lst ]; then
-    rm channel_user_information.$mod_name.vars.lst
-   fi
-
   fi
  fi
 fi
