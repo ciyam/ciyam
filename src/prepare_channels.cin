@@ -91,12 +91,6 @@ SKIPPED=1
 @:DONE
 @endif
 ;
-; NOTE: Only remove 'ui_peer_submit' if nothing was skipped.
-@ifndef $SKIPPED
-APP_DIR=@lower:$STORAGE
-~rm -f $WEBDIR/$APP_DIR/ui_peer_submit
-@endif
-;
 .session_variable @deque complete
 ;
 @endif
