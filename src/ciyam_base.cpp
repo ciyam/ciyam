@@ -11775,9 +11775,11 @@ bool get_uid_data( const string& uid, size_t& level, string& gids )
 
 void set_uid_data( const string& uid, const string& level, const string& group_keys )
 {
+   guard g( g_uid_mutex );
+
    string gids( convert_group_keys_to_numbers( group_keys ) );
 
-   guard g( g_uid_mutex );
+   ods::transaction tx( *ods::instance( ) );
 
    ods_file_system ofs( *ods::instance( ) );
 
@@ -11791,9 +11793,21 @@ void set_uid_data( const string& uid, const string& level, const string& group_k
    if( level.length( ) )
       level_value = 10 - level.length( );
 
+   string level_suffix;
+
+   // NOTE: If the access level has changed need to remove
+   // the current record (as level is appended to the uid).
+   if( ofs.has_file( uid + '.', true, &level_suffix ) )
+   {
+      if( level_suffix != to_string( level_value ) )
+         ofs.remove_file( uid + '.' + level_suffix );
+   }
+
    string file_name( uid + '.' + to_string( level_value ) );
 
    ofs.store_as_text_file( file_name, gids );
+
+   tx.commit( );
 }
 
 size_t get_next_handle( )
