@@ -19,6 +19,8 @@ ERROR=
 STORAGE=$1
 IDENTITY=$2
 ;
+APP_DIR=@lower:$STORAGE
+;
 .peer_channel_height -minimal $IDENTITY
 @ifdef $OUTPUT
 ;
@@ -69,6 +71,16 @@ ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 <block_tree_relegate.cin $BLOCKCHAIN $BLOCKCHAIN.tree
 @endif
 .storage_term
+@endif
+;
+SUBMIT_MASK=ui_TARGET_submit
+;
+SUBMIT_FILE=@repstr:TARGET/$IDENTITY:$SUBMIT_MASK
+;
+WEB_SUBMIT_FILE=@files:$WEBDIR/$APP_DIR:$SUBMIT_FILE
+;
+@ifdef $WEB_SUBMIT_FILE
+~rm $WEBDIR/$APP_DIR/$SUBMIT_FILE
 @endif
 ;
 .system_variable @preparing_$IDENTITY ""
