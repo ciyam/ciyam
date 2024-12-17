@@ -3400,8 +3400,18 @@ bool has_web_file( const string& file_name )
    return file_exists( file_path );
 }
 
-void touch_web_file( const string& file_name, bool only_if_exists )
+void touch_web_file( const char* p_file_name, bool only_if_exists )
 {
+   string file_name;
+
+   if( p_file_name )
+      file_name = *p_file_name;
+   else
+      file_name = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+
+   if( file_name.empty( ) )
+      throw runtime_error( "unexpected missing file name in touch_web_file" );
+
    string file_path( storage_web_root( true ) );
 
    file_path += '/' + file_name;
