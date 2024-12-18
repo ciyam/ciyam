@@ -1566,6 +1566,7 @@ bool populate_list_info( list_source& list,
    // NOTE: A "user child" list needs to constrain the parent field as just another
    // fixed field as the "user" context is needed as the parent context for the fetch.
    string fixed_parent_field, fixed_parent_keyval;
+
    if( !view_pfield.empty( ) && list.type == c_list_type_user_child )
    {
       fixed_parent_field = view_pfield;
@@ -1755,6 +1756,7 @@ bool populate_list_info( list_source& list,
    string perms;
 
    map< string, string >::const_iterator i;
+
    for( i = sess_info.user_perms.begin( ); i != sess_info.user_perms.end( ); ++i )
    {
       if( !perms.empty( ) )

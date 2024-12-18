@@ -2563,7 +2563,7 @@ bool fetch_instance_from_db( class_base& instance,
             string skip_after_fetch_var(
              instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
-            if( skip_after_fetch_var == c_true || skip_after_fetch_var == c_true_value )
+            if( ( skip_after_fetch_var == c_true ) || ( skip_after_fetch_var == c_true_value ) )
                ; // i.e. do nothing
             else
                instance_accessor.perform_after_fetch( is_minimal_fetch );
@@ -14236,6 +14236,7 @@ void instance_prepare_execute( size_t handle,
           instance, get_special_var_name( e_special_var_skip_after_fetch ), c_true_value ) );
 
       instance.perform_fetch( key );
+
       instance_accessor.set_ver_exp( ver_info );
    }
 }
@@ -15719,6 +15720,7 @@ void perform_instance_fetch( class_base& instance,
          string keys( key_info );
 
          string::size_type pos = keys.find( ' ' );
+
          if( pos != string::npos )
             keys.erase( 0, pos + 1 );
 

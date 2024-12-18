@@ -2107,7 +2107,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             {
                bool can_output = true;
 
-               if( p_session_info->is_admin_user || ( using_anonymous
+               if( p_session_info->is_admin_user
+                || i->second.row_data.empty( ) || ( using_anonymous
                 && !i->second.lici->second->extras.count( c_list_type_extra_allow_anonymous ) ) )
                   can_output = false;
 
@@ -2787,13 +2788,15 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             {
                bool can_output = true;
 
-               if( p_session_info->is_admin_user || ( using_anonymous
+               if( p_session_info->is_admin_user
+                || i->second.row_data.empty( ) || ( using_anonymous
                 && !i->second.lici->second->extras.count( c_list_type_extra_allow_anonymous ) ) )
                   can_output = false;
 
                if( can_output )
                {
                   string header;
+
                   if( !i->second.name.empty( ) )
                      header = get_view_or_list_header( qlink, i->second.name, mod_info, *p_session_info );
 
