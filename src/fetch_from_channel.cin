@@ -176,7 +176,7 @@ MODULE=%LINES:2%
 ;
 <$MODULE.channel_data_information.vars.lst
 DATA_CLASS_NAME=$CLASS_NAME
-DATA_FLD_DATA_TYPE=$FLD_DATA_TYPE
+DATA_FLD_TYPE=$FLD_TYPE
 DATA_FLD_PEER_NODE=$FLD_PEER_NODE
 ;
 <$MODULE.channel_user_information.vars.lst
@@ -191,7 +191,7 @@ BLOG_INFO_FILE=@files::$IN_REVERSE.blog_info.csv
 @ifdef $BLOG_INFO_FILE
 .session_variable @key_suffix $IDENTITY
 .session_variable @key_prefix_is_first 1
-.perform_bulk_ops admin @now $MODULE $DATA_CLASS_NAME $IN_REVERSE.blog_info.csv -f=$DATA_FLD_PEER_NODE=$IDENTITY,$DATA_FLD_DATA_TYPE=0
+.perform_bulk_ops admin @now $MODULE $DATA_CLASS_NAME $IN_REVERSE.blog_info.csv -f=$DATA_FLD_PEER_NODE=$IDENTITY,$DATA_FLD_TYPE=0
 ~rm $IN_REVERSE.blog_info.csv
 ~rm $IN_REVERSE.blog_info.log
 @endif
@@ -200,7 +200,7 @@ FORUM_INFO_FILE=@files::$IN_REVERSE.forum_info.csv
 @ifdef $FORUM_INFO_FILE
 .session_variable @key_suffix $IDENTITY
 .session_variable @key_prefix_is_first 1
-.perform_bulk_ops admin @now $MODULE $DATA_CLASS_NAME $IN_REVERSE.forum_info.csv -f=$DATA_FLD_PEER_NODE=$IDENTITY,$DATA_FLD_DATA_TYPE=1
+.perform_bulk_ops admin @now $MODULE $DATA_CLASS_NAME $IN_REVERSE.forum_info.csv -f=$DATA_FLD_PEER_NODE=$IDENTITY,$DATA_FLD_TYPE=1
 ~rm $IN_REVERSE.forum_info.csv
 ~rm $IN_REVERSE.forum_info.log
 @endif
