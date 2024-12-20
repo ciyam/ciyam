@@ -226,5 +226,16 @@ class sio_graph
    void destroy_nodes( section_node* p_node );
 };
 
+enum json_format
+{
+   e_json_format_multi,
+   e_json_format_single,
+   e_json_format_compressed
+};
+
+void convert_sio_to_json( const sio_graph& sio, std::ostream& outs, json_format format = e_json_format_multi );
+
+void convert_json_to_sio( const std::string& json, std::ostream& outs );
+
 #endif
 
