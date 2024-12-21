@@ -5169,6 +5169,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          bool has_ltf = false;
          bool has_dead_keys = false;
+         bool has_demo_keys = false;
 
          string log_name( name + ".log" );
          string sql_name( name + ".sql" );
@@ -5179,10 +5180,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string sav_sql_name( sql_name + ".sav" );
 
          string ltf_name( name + ".ltf" );
-         string keys_name( name + ".dead_keys.lst" );
-
          string sav_ltf_name( ltf_name + ".sav" );
-         string sav_keys_name( keys_name + ".sav" );
+
+         string dead_keys_name( name + c_dead_keys_suffix );
+         string sav_dead_keys_name( dead_keys_name + ".sav" );
+
+         string demo_keys_name( name + c_demo_keys_suffix );
+         string sav_demo_keys_name( demo_keys_name + ".sav" );
 
          string autoscript_name( "autoscript.sio" );
          string manuscript_name( "manuscript.sio" );
@@ -5215,48 +5219,75 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( exists_file( ltf_name ) )
             {
                ifstream ltff( ltf_name.c_str( ), ios::in | ios::binary );
+
                if( !ltff )
                   throw runtime_error( "unable to open '" + ltf_name + "' for input" );
 
                ofstream sav_ltff( sav_ltf_name.c_str( ), ios::out | ios::binary );
+
                if( !sav_ltff )
                   throw runtime_error( "unable to open '" + sav_ltf_name + "' for output" );
 
                copy_stream( ltff, sav_ltff );
+
                has_ltf = true;
             }
 
-            if( exists_file( keys_name ) )
+            if( exists_file( dead_keys_name ) )
             {
-               ifstream keysf( keys_name.c_str( ), ios::in | ios::binary );
-               if( !keysf )
-                  throw runtime_error( "unable to open '" + keys_name + "' for input" );
+               ifstream keysf( dead_keys_name.c_str( ), ios::in | ios::binary );
 
-               ofstream sav_keysf( sav_keys_name.c_str( ), ios::out | ios::binary );
+               if( !keysf )
+                  throw runtime_error( "unable to open '" + dead_keys_name + "' for input" );
+
+               ofstream sav_keysf( sav_dead_keys_name.c_str( ), ios::out | ios::binary );
+
                if( !sav_keysf )
-                  throw runtime_error( "unable to open '" + sav_keys_name + "' for output" );
+                  throw runtime_error( "unable to open '" + sav_dead_keys_name + "' for output" );
 
                copy_stream( keysf, sav_keysf );
+
                has_dead_keys = true;
+            }
+
+            if( exists_file( demo_keys_name ) )
+            {
+               ifstream keysf( demo_keys_name.c_str( ), ios::in | ios::binary );
+
+               if( !keysf )
+                  throw runtime_error( "unable to open '" + demo_keys_name + "' for input" );
+
+               ofstream sav_keysf( sav_demo_keys_name.c_str( ), ios::out | ios::binary );
+
+               if( !sav_keysf )
+                  throw runtime_error( "unable to open '" + sav_demo_keys_name + "' for output" );
+
+               copy_stream( keysf, sav_keysf );
+
+               has_demo_keys = true;
             }
 
             if( is_meta )
             {
                ifstream ascf( autoscript_name.c_str( ), ios::in | ios::binary );
+
                if( !ascf )
                   throw runtime_error( "unable to open '" + autoscript_name + "' for input" );
 
                ofstream sav_ascf( sav_autoscript_name.c_str( ), ios::out | ios::binary );
+
                if( !sav_ascf )
                   throw runtime_error( "unable to open '" + sav_autoscript_name + "' for output" );
 
                copy_stream( ascf, sav_ascf );
 
                ifstream mscf( manuscript_name.c_str( ), ios::in | ios::binary );
+
                if( !mscf )
                   throw runtime_error( "unable to open '" + manuscript_name + "' for input" );
 
                ofstream sav_mscf( sav_manuscript_name.c_str( ), ios::out | ios::binary );
+
                if( !sav_mscf )
                   throw runtime_error( "unable to open '" + sav_manuscript_name + "' for output" );
 
@@ -5288,7 +5319,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             file_names += " " + sav_ltf_name;
 
          if( has_dead_keys )
-            file_names += " " + sav_keys_name;
+            file_names += " " + sav_dead_keys_name;
+
+         if( has_demo_keys )
+            file_names += " " + sav_demo_keys_name;
 
          string module_list( name + ".modules.lst" );
 
@@ -5360,7 +5394,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             remove_file( sav_ltf_name );
 
          if( has_dead_keys )
-            remove_file( sav_keys_name );
+            remove_file( sav_dead_keys_name );
+
+         if( has_demo_keys )
+            remove_file( sav_demo_keys_name );
 
          if( is_meta )
          {
@@ -5422,7 +5459,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string backup_sql_name( name + ".backup.sql" );
 
          string ltf_name( name + ".ltf" );
-         string keys_name( name + ".dead_keys.lst" );
+         string dead_keys_name( name + c_dead_keys_suffix );
+
+         // KLUDGE: Demo key files are actually created per module so tying this
+         // file to the storage name is actually incorrect but currently working
+         // provided that the storage name matches its (one and only) module.
+         string demo_keys_name( name + c_demo_keys_suffix );
 
          string sav_db_file_names( ods_backup_file_names( name, ".sav", ' ' ) );
 
@@ -5430,7 +5472,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string sav_log_name( log_name + ".sav" );
 
          string sav_ltf_name( ltf_name + ".sav" );
-         string sav_keys_name( keys_name + ".sav" );
+
+         string sav_dead_keys_name( dead_keys_name + ".sav" );
+         string sav_demo_keys_name( demo_keys_name + ".sav" );
 
          string autoscript_name( "autoscript.sio" );
          string manuscript_name( "manuscript.sio" );
@@ -5465,7 +5509,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             file_names += " " + sav_log_name;
 
             file_names += " " + sav_ltf_name;
-            file_names += " " + sav_keys_name;
+            file_names += " " + sav_dead_keys_name;
+            file_names += " " + sav_demo_keys_name;
 
             file_names += " " + backup_sql_name;
             file_names += " " + module_list_name;
@@ -5517,8 +5562,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( exists_file( sav_ltf_name ) )
                copy_file( sav_ltf_name, ltf_name );
 
-            if( exists_file( sav_keys_name ) )
-               copy_file( sav_keys_name, keys_name );
+            if( exists_file( sav_dead_keys_name ) )
+               copy_file( sav_dead_keys_name, dead_keys_name );
+
+            if( exists_file( sav_demo_keys_name ) )
+               copy_file( sav_demo_keys_name, demo_keys_name );
          }
 
          ofstream new_logf;
@@ -5562,6 +5610,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                is_new = true;
 
                new_logf.open( new_log_name.c_str( ), ios::out );
+
                if( !new_logf )
                   throw runtime_error( "unable to open log file '" + new_log_name + "' for output." );
             }
@@ -5864,8 +5913,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( exists_file( sav_ltf_name ) )
                   remove_file( sav_ltf_name );
 
-               if( exists_file( sav_keys_name ) )
-                  remove_file( sav_keys_name );
+               if( exists_file( sav_dead_keys_name ) )
+                  remove_file( sav_dead_keys_name );
+
+               if( exists_file( sav_demo_keys_name ) )
+                  remove_file( sav_demo_keys_name );
 
                remove_file( backup_sql_name );
             }
@@ -6289,6 +6341,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool is_server = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_server );
          bool is_restore = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_restore );
          string app_directory( get_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_app_directory ) );
+
+         possibly_expected_error = true;
 
          unsigned int num = c_cmd_ciyam_session_system_log_tail_lines_default;
 

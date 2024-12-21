@@ -2218,27 +2218,33 @@ void Meta_Application::impl::impl_Generate( )
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Skip_DB_Upgrade )
       {
          outs << "if [ -f make.dtm ]; then\n";
+
          if( !get_obj( ).Keep_Existing_Data( ) )
          {
             outs << " if [ -f " << get_obj( ).Name( ) << ".log ]; then\n";
             outs << "  rm " << get_obj( ).Name( ) << ".log\n";
             outs << " fi\n";
-            outs << " if [ -f " << get_obj( ).Name( ) << ".dead_keys.lst ]; then\n";
-            outs << "  rm " << get_obj( ).Name( ) << ".dead_keys.lst\n";
+            outs << " if [ -f " << get_obj( ).Name( ) << c_dead_keys_suffix << " ]; then\n";
+            outs << "  rm " << get_obj( ).Name( ) << c_dead_keys_suffix << "\n";
             outs << " fi\n";
          }
+
          outs << " if [ ! -f " << get_obj( ).Name( ) << ".log ]; then\n";
          outs << "  cp app.log " << get_obj( ).Name( ) << ".log\n";
          outs << " fi\n";
+
          outs << " if [ -f autoscript.sio.new ]; then\n";
          outs << "  ./update autoscript.sio autoscript.sio.new >>" << generate_log_file << "\n";
          outs << " fi\n";
+
          outs << " if [ -f manuscript.sio.new ]; then\n";
          outs << "  ./update manuscript.sio manuscript.sio.new >>" << generate_log_file << "\n";
          outs << " fi\n";
+
          outs << " ./ciyam_client " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".generate.4.cin\n";
 
          outs << " ./ciyam_client -echo " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".upgrade.cin >>" << generate_log_file << "\n";
+
          outs << "fi\n";
       }
 

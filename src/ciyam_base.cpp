@@ -240,8 +240,6 @@ const char* const c_uid_unknown = "<unknown>";
 const char* const c_meta_storage_name = "Meta";
 const char* const c_ciyam_storage_name = "ciyam";
 
-const char* const c_dead_keys_ext = ".dead_keys.lst";
-
 const char* const c_default_pem_password = "password";
 
 const char* const c_script_dummy_filename = "*script*";
@@ -2197,7 +2195,7 @@ void perform_storage_op( storage_op op,
             ap_handler->get_root( ).log_id.ceiling = ap_handler->get_root( ).log_id.next_id;
          }
 
-         string dead_keys_file( ap_handler->get_name( ) + c_dead_keys_ext );
+         string dead_keys_file( ap_handler->get_name( ) + c_dead_keys_suffix );
 
          if( exists_file( dead_keys_file ) )
          {
@@ -11138,7 +11136,7 @@ void storage_add_dead_key( const string& cid, const string& key )
 
    string dead_key( cid + ':' + key );
 
-   string dead_keys_file( gtp_session->p_storage_handler->get_name( ) + c_dead_keys_ext );
+   string dead_keys_file( gtp_session->p_storage_handler->get_name( ) + c_dead_keys_suffix );
 
    ofstream outf( dead_keys_file.c_str( ), ios::out | ios::app );
    if( !outf )

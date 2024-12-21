@@ -66,8 +66,8 @@ else
     if [ -f $mod_name.acyclic.lst ]; then
      rm $mod_name.acyclic.lst
     fi
-    if [ -f $mod_name.demo_keys.txt ]; then
-     rm $mod_name.demo_keys.txt
+    if [ -f $mod_name.demo_keys.lst ]; then
+     rm $mod_name.demo_keys.lst
     fi
     if [ -f $mod_name.make.vars.xrep ]; then
      rm $mod_name.make.vars.xrep
