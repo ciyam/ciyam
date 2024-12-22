@@ -3623,18 +3623,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         new_lines.push_back( next_line );
                      else
                      {
-                        string::size_type pos = next_line.find( identity + ':' );
+                        string next( next_line );
+
+                        string::size_type pos = next.find( identity + ':' );
 
                         if( pos == 0 )
                         {
-                           next_line.erase( 0, identity.size( ) + 1 );
+                           next.erase( 0, identity.size( ) + 1 );
 
-                           pos = next_line.find( '=' );
+                           pos = next.find( '=' );
 
-                           if( class_name == next_line.substr( 0, pos ) )
+                           if( class_name == next.substr( 0, pos ) )
                            {
                               used_demo_key = true;
-                              new_key = next_line.substr( pos + 1 );
+                              new_key = next.substr( pos + 1 );
                            }
                         }
 
