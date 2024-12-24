@@ -1247,6 +1247,7 @@ bool output_view_form( ostream& os, const string& act,
    // NOTE: Determine whether fields should be displayed differently according
    // to class scoped modifiers and the current instance state.
    string class_display_effect;
+
    if( !view_extras.count( c_view_type_extra_print_no_highlight ) )
    {
       for( size_t j = 0; j < ARRAY_SIZE( state_modifiers ); j++ )
@@ -1349,19 +1350,21 @@ bool output_view_form( ostream& os, const string& act,
       // values need to be sent to the server when the POST occurs (so their rows instead will be
       // given an invisible style).
       if( !is_in_edit && !is_printable
-       && source.field_tab_ids[ i ] && source.field_tab_ids[ i ] != vtab_num )
+       && source.field_tab_ids[ i ] && ( source.field_tab_ids[ i ] != vtab_num ) )
          continue;
 
       // NOTE: As above for show more/less fields.
-      if( !is_in_edit && skip_tab_num == source.field_tab_ids[ i ] )
+      if( !is_in_edit && ( skip_tab_num == source.field_tab_ids[ i ] ) )
          continue;
 
       // NOTE: If the field belongs to a tab which the user does not have access to
       // then this field must be skipped (otherwise URL tampering could allow these
       // fields to appear as 'vtab' is not part of the URL checksum).
-      if( ( source.field_tab_ids[ i ] != 0 && vtab_num == source.field_tab_ids[ i ] ) )
+      if( ( ( source.field_tab_ids[ i ] != 0 )
+       && ( vtab_num == source.field_tab_ids[ i ] ) ) )
       {
          map< string, string > extra_data;
+
          if( !source.tab_extras[ vtab_num - 1 ].empty( ) )
             parse_field_extra( source.tab_extras[ vtab_num - 1 ], extra_data );
 
@@ -1522,7 +1525,7 @@ bool output_view_form( ostream& os, const string& act,
             continue;
       }
 
-      if( !is_new_record && source_field_id == c_key_field )
+      if( !is_new_record && ( source_field_id == c_key_field ) )
          cell_data = data;
       else if( source_field_id == pfield )
          cell_data = extra;
@@ -1571,6 +1574,7 @@ bool output_view_form( ostream& os, const string& act,
       }
 
       string td_extra;
+
       if( !extra_data.count( c_field_extra_full_width )
        || ( !is_in_edit
        && ( source.file_fields.count( source_value_id )
@@ -1672,6 +1676,7 @@ bool output_view_form( ostream& os, const string& act,
          has_value = true;
 
       bool is_always_editable = false;
+
       if( !is_printable && !is_protected_field
        && ( !is_in_edit || !extra_data.count( c_view_field_extra_view_only ) )
        && !( source.state & c_state_is_changing ) && extra_data.count( c_view_field_extra_always_editable ) )
