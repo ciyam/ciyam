@@ -20,11 +20,17 @@ STORAGE_LOG_FILE=@files::$CIYAM_STORAGE.log
 .storage_init -admin $CIYAM_STORAGE
 ;
 @ifndef $ERROR
+;
+@ifndef $CIYAM_SKIP_EXPORT_DATA
+;
 @ifdef $CIYAM_OUTPUT_COMMANDS
 storage_export_data
 @else
 .storage_export_data
 @endif
+;
+@endif
+;
 .storage_term
 @endif
 @endif

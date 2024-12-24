@@ -2194,6 +2194,10 @@ void Meta_Application::impl::impl_Generate( )
 
       outupg << "CIYAM_STORAGE=" << get_obj( ).Name( ) << "\n";
       outupg << "CIYAM_OUTPUT_COMMANDS=1\n";
+
+      if( !keep_data )
+         outupg << "CIYAM_SKIP_EXPORT_DATA=1\n";
+
       outupg << "<restore.cin\n";
 
       outupg << "#Finished DB Rebuild...\n";
