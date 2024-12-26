@@ -117,6 +117,7 @@ create_blockchain_*_application.cin
 !for_clone_peer.spec.xrep
 !for_run_script.spec.xrep
 !for_each_record.spec.xrep
+!for_unique_keys.spec.xrep
 !for_clone_script.spec.xrep
 !for_set_variable.spec.xrep
 !for_skip_restore.spec.xrep

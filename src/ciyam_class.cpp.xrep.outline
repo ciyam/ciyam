@@ -1127,6 +1127,12 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `{`#for_tag.spec.xrep section=untag_procedure module_name=$module_name class_name=$class_name\
  arg_id=$specification_\\0_id arg_untag_key=$specification_\\0_untag_key arg_tags=$specification_\\0_tags`}\
 `,\
+`@eq`(`'\\1`'`,`'for_unique_keys`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
+`{`#for_unique_keys.spec.xrep section=procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name\
+ arg_id=$specification_\\0_id arg_field=$specification_\\0_field arg_ofield=$specification_\\0_ofield\
+ arg_o2field=$specification_\\0_o2field arg_spclass=$specification_\\0_spclass arg_spfield=$specification_\\0_spfield\
+ arg_scfield=$specification_\\0_scfield`}\
+`,\
 `@eq`(`'\\1`'`,`'for_update_clone`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_update_clone.spec.xrep section=procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name\
  arg_id=$specification_\\0_id arg_field=$specification_\\0_field arg_sfield=$specification_\\0_sfield\

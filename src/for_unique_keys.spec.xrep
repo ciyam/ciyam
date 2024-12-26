@@ -1,0 +1,73 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_unique_keys)] `{`$arg_id`}
+   // NOTE: Empty code block for scope purposes.
+   {
+      set< string > used_keys;
+
+      vector< string > unique_keys;
+`{`!`@eq`(`$arg_o2field`,`'`'`)\
+
+      if( !is_null( get_obj( ).`{`$arg_o2field`}( ) ) )
+         split_string( get_obj( ).`{`$arg_o2field`}( ), used_keys );
+`}
+      if( !is_null( get_obj( ).`{`$arg_ofield`}( ) ) )
+      {
+         vector< string > keys;
+
+         split_string( get_obj( ).`{`$arg_ofield`}( ), keys );
+
+`{`!`@eq`(`$arg_scfield`,`'`'`)\
+         class_pointer< `{`$module_name`}_`{`$arg_spclass`} > cp_source( e_create_instance );
+
+`}\
+         for( size_t i = 0; i < keys.size( ); i++ )
+         {
+            string next( keys[ i ] );
+`{`@eq`(`$arg_scfield`,`'`'`)\
+
+            if( !used_keys.count( next ) )
+            {
+               used_keys.insert( next );
+               unique_keys.push_back( next );
+            }
+`,
+            cp_source->begin_review( next );
+
+            string nested_keys( cp_source->`{`$arg_scfield`}( ) );
+
+            if( nested_keys.empty( ) )
+            {
+               if( !used_keys.count( next ) )
+               {
+                  used_keys.insert( next );
+                  unique_keys.push_back( next );
+               }
+            }
+            else
+            {
+               vector< string > all_nested_keys;
+
+               split_string( nested_keys, all_nested_keys );
+
+               for( size_t j = 0; j < all_nested_keys.size( ); j++ )
+               {
+                  string next_nested( all_nested_keys[ j ] );
+
+                  if( !used_keys.count( next_nested ) )
+                  {
+                     used_keys.insert( next_nested );
+                     unique_keys.push_back( next_nested );
+                  }
+               }
+            }
+
+            cp_source->finish_review( );
+`}\
+         }
+      }
+
+      if( !unique_keys.empty( ) )
+         get_obj( ).`{`$arg_field`}( join_string( unique_keys ) );
+   }
+   // [(finish for_unique_keys)] `{`$arg_id`}
+`}
