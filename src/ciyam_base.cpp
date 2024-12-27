@@ -266,6 +266,8 @@ string g_sid;
 
 #include "sid.enc"
 
+string g_identity_suffix;
+
 struct instance_info
 {
    instance_info( class_base* p_class_base, dynamic_library* p_dynamic_library )
@@ -399,8 +401,7 @@ struct session
       if( p_blockchain )
          blockchain = *p_blockchain;
 
-      identity_suffix = get_raw_system_variable(
-       get_special_var_name( e_special_var_blockchain_backup_identity ) );
+      identity_suffix = g_identity_suffix;
 
       last_cmd = string( c_str_none );
 
@@ -4721,6 +4722,7 @@ void read_script_info( )
          sio_reader reader( inpf );
 
          string name;
+
          while( reader.has_started_section( c_section_script ) )
          {
             script_info info;
@@ -5700,7 +5702,7 @@ void init_globals( const char* p_sid, int* p_use_udp )
        get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
       if( !blockchain_backup_identity.empty( ) )
-         identity = blockchain_backup_identity;
+         identity = g_identity_suffix = blockchain_backup_identity;
       else if( !g_sid.empty( ) && !g_encrypted_identity )
          identity = get_identity( ).substr( 0, c_identity_length );
 
@@ -5719,8 +5721,11 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       // NOTE: This "get_tz_info" call is performed to verify that the server timezone is valid.
       float offset = 0.0;
+
       string tz_name( get_timezone( ) );
+
       date_time now( date_time::standard( ) );
+
       get_tz_info( now, tz_name, offset );
 
       read_strings( "ciyam_strings.txt", g_strings, "c_str_" );
@@ -6096,7 +6101,10 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             {
                string identity( get_identity( ) );
 
-               set_system_variable( get_special_var_name( e_special_var_system_identity ), identity.substr( 0, 9 ) );
+               g_identity_suffix = identity;
+
+               set_system_variable( get_special_var_name(
+                e_special_var_system_identity ), identity.substr( 0, c_bc_identity_length ) );
             }
          }
       }
@@ -7468,6 +7476,7 @@ void init_session(
              p_ip_addr, p_blockchain, is_support_session, add_pubkey_variable );
 
             gtp_session = g_sessions[ i ];
+
             ods::instance( 0, true );
 
             break;
