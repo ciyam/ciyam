@@ -413,10 +413,11 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       {
          // NOTE: In the case where an edit occurs via an action a field assignment may
          // be required via use of the field/extra query string variables.
-         if( act == c_act_edit && !is_new_record && !field.empty( ) )
+         if( ( act == c_act_edit ) && !is_new_record && !field.empty( ) )
          {
             if( !set_field_values.empty( ) )
                set_field_values += ",";
+
             set_field_values += field + "=" + extra;
          }
 
@@ -433,7 +434,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                set_field_values += "=" + escaped( escaped( user_field_info[ userfetch ], "," ), ",\"", c_nul, "rn\r\n" );
 
                // NOTE: Set an instance variable so the application server can identify the trigger field.
-               if( is_new_record || act == c_act_edit )
+               if( is_new_record || ( act == c_act_edit ) )
                   set_field_values += ",@trigger=" + userfetch;
             }
          }

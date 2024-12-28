@@ -623,7 +623,7 @@ void setup_view_fields( view_source& view,
          view.self_relationships.insert( field_id );
    }
 
-   if( key_field_index >= 0 && !key_field_display_name.empty( ) )
+   if( ( key_field_index >= 0 ) && !key_field_display_name.empty( ) )
    {
       view.display_names[ key_field_index ] = key_field_display_name;
       view.edit_display_names[ key_field_index ] = key_field_display_name;
@@ -649,19 +649,19 @@ bool output_view_form( ostream& os, const string& act,
 
    bool is_new_record = false;
 
-   if( !data.empty( ) && data[ 0 ] == ' ' )
+   if( !data.empty( ) && ( data[ 0 ] == ' ' ) )
       is_new_record = true;
 
    bool is_in_edit = false;
 
-   if( act == c_act_edit || ( is_new_record && ( act.empty( ) || act == c_act_undo ) ) )
+   if( ( act == c_act_edit ) || ( is_new_record && ( act.empty( ) || ( act == c_act_undo ) ) ) )
       is_in_edit = true;
 
    bool is_user_class_view = ( mod_info.user_class_id == source.cid );
 
-   bool is_editable( !is_in_edit );
+   bool is_editable = !is_in_edit;
 
-   string cont_act = is_in_edit ? c_act_cont : c_act_view;
+   string cont_act = ( is_in_edit ? c_act_cont : c_act_view );
 
    const map< string, string >& view_extras( source.vici->second->extras );
 
@@ -732,10 +732,10 @@ bool output_view_form( ostream& os, const string& act,
    {
       // NOTE: A form is used for the view even if not editing (for send always fields), provided
       // that the view does not contain any file attachments (as these require a form). Therefore
-      // send always fields will not work if the view has file attachments.
+      // send always fields will not work if the view has file attachments (unless "uneditable").
       // FUTURE: If file upload forms are placed in a seperate "iframe" then this limitation can
       // be removed.
-      if( is_in_edit || !source.has_file_attachments )
+      if( is_in_edit || !source.has_file_attachments || ( source.state & c_state_uneditable ) )
          os << "<form name=\"" << source.id << "\" id=\"" << source.id << "\">\n";
 
       if( is_ui_prototype( ) )
@@ -805,6 +805,7 @@ bool output_view_form( ostream& os, const string& act,
             if( !source.actions_extra.empty( ) )
             {
                map< string, string > extra_data;
+
                parse_field_extra( source.actions_extra, extra_data );
 
                if( !sess_info.is_admin_user
@@ -963,6 +964,7 @@ bool output_view_form( ostream& os, const string& act,
          if( use_url_checksum )
          {
             checksum_values.erase( );
+
             if( is_new_record )
                checksum_values += string( c_act_edit );
 
@@ -973,6 +975,7 @@ bool output_view_form( ostream& os, const string& act,
          }
 
          os << "dyn_load( null, 'act=" << c_act_undo << "', false );";
+
          if( use_url_checksum )
             os << " query_update( '" << c_param_chksum << "', query_value( '" << c_param_ochksum << "' ), true ); ";
 
@@ -2477,7 +2480,7 @@ bool output_view_form( ostream& os, const string& act,
             // user then if a file has yet to be attached this will be allowed, as it logically follows
             // that if a user can create a record they should also be able to attach a file to it.
             if( is_no_edit && ( !cell_data.empty( ) || source.create_user_key_field.empty( )
-             || source.fk_field_values.find( source.create_user_key_field )->second != sess_info.user_key ) )
+             || ( source.fk_field_values.find( source.create_user_key_field )->second != sess_info.user_key ) ) )
                can_attach_or_remove_file = false;
 
             bool has_attached_file_link = false;
@@ -2591,6 +2594,7 @@ bool output_view_form( ostream& os, const string& act,
                      }
 
                      string image_src( tmp_link_path );
+
                      if( embed_images )
                      {
                         string buffer( buffer_file( file_name ) );
@@ -2826,6 +2830,7 @@ bool output_view_form( ostream& os, const string& act,
                      string source_value_id( source.value_ids[ j ] );
 
                      map< string, string > extra_data;
+
                      if( !source.vici->second->fields[ j ].extra.empty( ) )
                         parse_field_extra( source.vici->second->fields[ j ].extra, extra_data );
 
@@ -3156,6 +3161,7 @@ bool output_view_form( ostream& os, const string& act,
                   dt += ( seconds )sess_info.gmt_offset;
 
                string time_precision;
+
                if( extra_data.count( c_field_extra_time_precision ) )
                   time_precision = extra_data[ c_field_extra_time_precision ];
 
@@ -3285,6 +3291,7 @@ bool output_view_form( ostream& os, const string& act,
 
                   // NOTE: Remove parent version information as its not really relevant for foreign key selection.
                   size_t pos = key.find( ' ' );
+
                   if( pos != string::npos )
                      key.erase( pos );
 
@@ -3295,6 +3302,7 @@ bool output_view_form( ostream& os, const string& act,
                      display = key;
 
                   cell_data = display;
+
                   break;
                }
             }
@@ -3334,6 +3342,7 @@ bool output_view_form( ostream& os, const string& act,
       if( !finished_head && view_extras.count( c_view_type_extra_use_first_row_as_header ) )
       {
          os << "</thead>\n";
+
          finished_head = true;
 
          os << "<tbody>\n";
@@ -3352,7 +3361,7 @@ bool output_view_form( ostream& os, const string& act,
    if( is_ui_prototype( ) )
       os << "</div>\n";
 
-   if( is_in_edit || !source.has_file_attachments )
+   if( is_in_edit || !source.has_file_attachments || ( source.state & c_state_uneditable ) )
       os << "</form>\n";
 
    if( extra_fields.empty( ) )
