@@ -415,7 +415,7 @@ string get_cookie_value( const string& session_id,
       cookie = "session=" + session_id + ",keep=";
 
       if( user_id == c_anon_user_key )
-         cookie += "; Expires=Thu, 01-Jan-1970 00:00:01 UTC; path=/";
+         cookie += "; SameSite=None; Secure; Expires=Thu, 01-Jan-1970 00:00:01 UTC; path=/";
    }
    else
    {
@@ -441,7 +441,8 @@ string get_cookie_value( const string& session_id,
          dt += ( days )get_storage_info( ).login_days;
       }
 
-      cookie += "; Expires=" + dt.weekday_name( true ) + ", " + to_string( ( int )dt.get_day( ) ) + "-" + dt.month_name( true )
+      cookie += "; SameSite=None; Secure; Expires="
+       + dt.weekday_name( true ) + ", " + to_string( ( int )dt.get_day( ) ) + "-" + dt.month_name( true )
        + "-" + to_string( dt.get_year( ) ) + " " + dt.get_time( ).as_string( e_time_format_hhmmss, true ) + " UTC; path=/";
    }
 
@@ -1797,7 +1798,7 @@ void output_actions( ostream& os,
             os << " query_update( '" << c_param_chksum << "', old_checksum, true );";
 
          if( go_back )
-            os << " if( !had_act_error ) go_back( " << to_string( back_count ) << " );";
+            os << " sessionStorage.setItem( 'auto_back', '" << to_string( back_count ) << "' );";
       }
       else
       {
