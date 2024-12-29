@@ -2744,6 +2744,7 @@ void request_handler::process_request( )
                      ident = listvar;
 
                   lici = mod_info.list_info.find( ident );
+
                   if( lici == mod_info.list_info.end( ) )
                      throw runtime_error( "Unknown list id '" + ident + "'." );
 
@@ -2753,6 +2754,7 @@ void request_handler::process_request( )
                   list.lici = lici;
 
                   pkey.erase( );
+
                   if( ( lici->second )->type == c_list_type_group )
                      pkey = p_session_info->user_group;
                   else if( ( lici->second )->type == c_list_type_user || ( lici->second )->type == c_list_type_user_child )
@@ -2785,6 +2787,7 @@ void request_handler::process_request( )
                         if( error_message.empty( ) )
                         {
                            view_source non_edit_view;
+
                            non_edit_view.vici = view.vici;
 
                            setup_view_fields( non_edit_view, *vici->second,
@@ -2805,11 +2808,12 @@ void request_handler::process_request( )
                   }
                   else if( act == c_act_cont )
                      act = c_act_edit;
-                  else if( act == c_act_del || act == c_act_rdel || act == c_act_link || act == c_act_exec )
+                  else if( ( act == c_act_del ) || ( act == c_act_rdel ) || ( act == c_act_link ) || ( act == c_act_exec ) )
                   {
                      if( act == c_act_exec )
                      {
                         set< string > fields;
+
                         split( fieldlist, fields );
 
                         for( size_t i = 0; i < view.user_force_fields.size( ); i++ )
@@ -2818,10 +2822,12 @@ void request_handler::process_request( )
                            {
                               if( !fieldlist.empty( ) )
                                  fieldlist += ",";
+
                               fieldlist += view.user_force_fields[ i ];
 
                               if( !fieldlist.empty( ) )
                                  extra += ",";
+
                               extra += escaped( user_field_info[ view.user_force_fields[ i ] ], "," );
                            }
                         }
@@ -2838,10 +2844,11 @@ void request_handler::process_request( )
 
                         // NOTE: If the output from an "exec" is in the form "{xxx}" then it used assumed that
                         // the "xxx" is the key of another same class record which becomes the current record.
-                        if( !is_in_edit && act == c_act_exec && error_message.size( ) > 2
+                        if( !is_in_edit && ( act == c_act_exec ) && error_message.size( ) > 2
                          && error_message[ 0 ] == '{' && error_message[ error_message.size( ) - 1 ] == '}' )
                         {
                            string s( error_message.substr( 1, error_message.size( ) - 2 ) );
+
                            error_message.erase( );
 
                            // NOTE: The "key" returned can actually instead be a specialised instruction.
