@@ -1,11 +1,11 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!doctype html>
 
 <html>
 <head>
 <title>CIYAM Docs - Documentation Index</title>
 
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<meta name="copyright" content="Copyright 2012-`{`$y`} CIYAM Developers"/>
+<meta charset="UTF-8" />
+<meta name="copyright" content="Copyright 2012-`{`$y`} CIYAM Developers" />
 
 <link rel="stylesheet" href="document.css" type="text/css"/>
 </head>
