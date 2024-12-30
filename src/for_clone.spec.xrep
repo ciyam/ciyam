@@ -21,6 +21,7 @@
 `{`$i`}   cp_key_source->perform_fetch( key_source_info );
 `}`{`!`@eq`(`$arg_spfield`,`'`'`)`&`@eq`(`$arg_use_proc_arg_for_source`,`'`'`)
 `{`$i`}   get_obj( ).`{`$arg_spfield`}( ).op_update( );
+
 `{`$i`}   int next_copy_num = get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( );
 
 `{`$i`}   string key_info( construct_key_from_int( get_obj( ).get_key( ) + "`{`$suffix`}"\
@@ -29,6 +30,7 @@ cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`}, next_copy_num ) );
 `{`$i`}   key_info += " " + get_obj( ).get_key( );
 
 `{`$i`}   get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( next_copy_num + 1 );
+
 `{`$i`}   get_obj( ).`{`$arg_spfield`}( ).op_apply( );
 `,
 `{`@eq`(`$arg_key_from_update_value`,`'true`'`)\
@@ -47,16 +49,18 @@ cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).g
 `{`$i`}   class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
 
 `{`$i`}   cp_source->op_create( key_info );
-`{`!`@eq`(`$arg_tfield`,`'`'`)\
-`{`$i`}   cp_source->`{`$arg_tfield`}( "" );
-`}\
+
 `{`$i`}   cp_source->`{`$arg_field`}( `{`$arg_value`} );
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+`{`$i`}   cp_source->`{`$arg_tfield`}( string( ) );
+`}\
 `{`!`@eq`(`$arg_spfield`,`'`'`)`&`@eq`(`$arg_use_proc_arg_for_source`,`'true`'`)\
 `{`$i`}   cp_source->`{`$arg_spfield`}( cp_key_source->get_key( ) );
 `}\
 `{`!`@eq`(`$arg_sfield`,`'`'`)`&`@eq`(`$arg_clone_only`,`'true`'`)\
 `{`$i`}   cp_source->`{`$arg_sfield`}( get_obj( ).`{`$arg_svalue`}( ) );
 `}\
+
 `{`$i`}   cp_source->op_apply( );
 `,\
 `{`$i`}   temporary_session_variable tmp_session_key_info( get_special_var_name( e_special_var_key_info ), key_info );
