@@ -202,8 +202,8 @@ get a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 
 After this the encrypted file content exists in the file system and the file repository contains an entry for
 tying the original content hash to the locally encrypted content. If using an "interactive test session" then
-the hash of the encrypted file will be b69633ac1a84748404fafb10bcf60560232e8bcd8fda4f0570b9f904b696f2a5 which
-in base64 format is "tpYzrBqEdIQE+vsQvPYFYCMui82P2k8FcLn5BLaW8qU=".
+the hash of the encrypted file will be 70cadad8c11c3322a57a75731e950d6549b35cd2cc92132d23b18dd532a8ea2d which
+in base64 format is "cMra2MEcMyKlenVzHpUNZUmzXNLMkhMtI7GN1TKo6i0=".
 
 So let's assume the peer that initially stored the repository file ("test.jpg") no longer possesses a copy of
 that file but does know the original file hash and the password for the master private key. In order to fetch
@@ -220,11 +220,11 @@ the encrypted content) and the "target hash" (being the hash of the originally p
  ./ciyam_client -quiet 11111
 chk hello
 chk a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
-~cat 08a3a00aa1a55dce8c42ec576e667b7af43f9d2cdaa01c8c1055b46acded1eac
-~rm 08a3a00aa1a55dce8c42ec576e667b7af43f9d2cdaa01c8c1055b46acded1eac
+~cat 66f9053b8013bc537e4ab3c6a07dec09e4c0320efa219c2f3866348f66b70355
+~rm 66f9053b8013bc537e4ab3c6a07dec09e4c0320efa219c2f3866348f66b70355
 put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
-get b69633ac1a84748404fafb10bcf60560232e8bcd8fda4f0570b9f904b696f2a5
-~rm b69633ac1a84748404fafb10bcf60560232e8bcd8fda4f0570b9f904b696f2a5
+get 70cadad8c11c3322a57a75731e950d6549b35cd2cc92132d23b18dd532a8ea2d
+~rm 70cadad8c11c3322a57a75731e950d6549b35cd2cc92132d23b18dd532a8ea2d
 ~rm cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 bye
 
@@ -238,22 +238,22 @@ put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 
 > chk a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 (not found)
-put 08a3a00aa1a55dce8c42ec576e667b7af43f9d2cdaa01c8c1055b46acded1eac
+put 66f9053b8013bc537e4ab3c6a07dec09e4c0320efa219c2f3866348f66b70355
 
-> ~cat 08a3a00aa1a55dce8c42ec576e667b7af43f9d2cdaa01c8c1055b46acded1eac
+> ~cat 66f9053b8013bc537e4ab3c6a07dec09e4c0320efa219c2f3866348f66b70355
 md:raw
 pk:Aj4XW1jZbIENUUW8Q0dWWoEPoWliHngyNgvZDe+Eyu9o
-sh:tpYzrBqEdIQE+vsQvPYFYCMui82P2k8FcLn5BLaW8qU=
+sh:cMra2MEcMyKlenVzHpUNZUmzXNLMkhMtI7GN1TKo6i0=
 th:pascJuUlP7cxa1Hn9AaHGDcU4NaDA0lU4ej8Z7ykJ1M=
-> ~rm 08a3a00aa1a55dce8c42ec576e667b7af43f9d2cdaa01c8c1055b46acded1eac
+> ~rm 66f9053b8013bc537e4ab3c6a07dec09e4c0320efa219c2f3866348f66b70355
 
 > put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 get cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 
-> get b69633ac1a84748404fafb10bcf60560232e8bcd8fda4f0570b9f904b696f2a5
+> get 70cadad8c11c3322a57a75731e950d6549b35cd2cc92132d23b18dd532a8ea2d
 msg utf8:test
 
-> ~rm b69633ac1a84748404fafb10bcf60560232e8bcd8fda4f0570b9f904b696f2a5
+> ~rm 70cadad8c11c3322a57a75731e950d6549b35cd2cc92132d23b18dd532a8ea2d
 
 > ~rm cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 
@@ -265,12 +265,12 @@ A final standard protocol session can now decrypt and extract the original file 
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
  ./ciyam_client -quiet
-file_tag b69633ac1a84748404fafb10bcf60560232e8bcd8fda4f0570b9f904b696f2a5\
+file_tag 70cadad8c11c3322a57a75731e950d6549b35cd2cc92132d23b18dd532a8ea2d\
  @a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
-file_tag b69633ac1a84748404fafb10bcf60560232e8bcd8fda4f0570b9f904b696f2a5\
+file_tag 70cadad8c11c3322a57a75731e950d6549b35cd2cc92132d23b18dd532a8ea2d\
  ~023e175b58d96c810d5145bc4347565a810fa169621e7832360bd90def84caef68
 peer_persist_file -dh=a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753\
- b69633ac1a84748404fafb10bcf60560232e8bcd8fda4f0570b9f904b696f2a5 dummy
+ 70cadad8c11c3322a57a75731e950d6549b35cd2cc92132d23b18dd532a8ea2d dummy
 file_get a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 xxx.jpg
 ~diff xxx.jpg test.jpg
 ~rm xxx.jpg
@@ -278,21 +278,21 @@ file_kill a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 file_kill 52326e48bde0bf6bb78fe965728c8679a5594e42d9cb0f95b9df41b391903282
 storage_init Meta
 pd admin @now Meta Global_Repository_Entry\
- .pascJuUlP7cxa1Hn9AaHGDcU4NaDA0lU4ej8Z7ykJ1M.tpYzrBqEdIQE-vsQvPYFYCMui82P2k8FcLn5BLaW8qU
+ .pascJuUlP7cxa1Hn9AaHGDcU4NaDA0lU4ej8Z7ykJ1M.cMra2MEcMyKlenVzHpUNZUmzXNLMkhMtI7GN1TKo6i0
 quit
 
 #-----------------------------------------------------------------------------------------------------------#
 # Output from the above should be as follows:                                                               #
 #-----------------------------------------------------------------------------------------------------------#
 
-> file_tag b69633ac1a84748404fafb10bcf60560232e8bcd8fda4f0570b9f904b696f2a5\
+> file_tag 70cadad8c11c3322a57a75731e950d6549b35cd2cc92132d23b18dd532a8ea2d\
  @a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 
-> file_tag b69633ac1a84748404fafb10bcf60560232e8bcd8fda4f0570b9f904b696f2a5\
+> file_tag 70cadad8c11c3322a57a75731e950d6549b35cd2cc92132d23b18dd532a8ea2d\
  ~023e175b58d96c810d5145bc4347565a810fa169621e7832360bd90def84caef68
 
 > peer_persist_file -dh=a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753\
- b69633ac1a84748404fafb10bcf60560232e8bcd8fda4f0570b9f904b696f2a5 dummy
+ 70cadad8c11c3322a57a75731e950d6549b35cd2cc92132d23b18dd532a8ea2d dummy
 
 > file_get a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 xxx.jpg
 
@@ -307,6 +307,6 @@ quit
 > storage_init Meta
 
 > pd admin @now Meta Global_Repository_Entry\
- .pascJuUlP7cxa1Hn9AaHGDcU4NaDA0lU4ej8Z7ykJ1M.tpYzrBqEdIQE-vsQvPYFYCMui82P2k8FcLn5BLaW8qU
+ .pascJuUlP7cxa1Hn9AaHGDcU4NaDA0lU4ej8Z7ykJ1M.cMra2MEcMyKlenVzHpUNZUmzXNLMkhMtI7GN1TKo6i0
 
 > quit
