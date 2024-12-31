@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2024 CIYAM Developers
+// Copyright (c) 2012-2025 CIYAM Developers
 
 #include <memory>
 #include <string>

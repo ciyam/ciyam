@@ -26,7 +26,7 @@
 
 <div style="visibility: visible;" id="footer">
 <p>
-<div class="footer-icon"><a target="_blank" href="//ciyam.org/"><img src="logo-gryscl-128.png" /></a></div>
+<div class="footer-icon"><img src="logo-gryscl-128.png" /></div>
 &copy; 2012-`{`$y`} CIYAM Developers
 </p>
 </div>
