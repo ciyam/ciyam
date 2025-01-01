@@ -9,7 +9,7 @@ GENERATE_HUB_BLOCK_FILE=.generate_hub_block
 if [ -f "$GENERATE_HUB_BLOCK_FILE" ]; then
  rm "$GENERATE_HUB_BLOCK_FILE"
 
- PEER_HUB_HEIGHT=`./system_variable get @blockchain_peer_hub_height`
+ PEER_HUB_HEIGHT=$(./system_variable get @blockchain_peer_hub_height)
 
  if [ ! "$PEER_HUB_HEIGHT" = "" ]; then
   ./generate_next_block -hub

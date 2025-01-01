@@ -28,9 +28,9 @@ IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 
 if mountpoint -q $SHARED_PATH; then
  if [ ! -f $IMPORTED_TIME_FILE ]; then
-  NEW_CHANGE=`find $SHARED_PATH -path lost+found -prune -o -name "*" -type f -print | head -n 1`
+  NEW_CHANGE=$(find $SHARED_PATH -path lost+found -prune -o -name "*" -type f -print | head -n 1)
  else
-  NEW_CHANGE=`find $SHARED_PATH -path lost+found -prune -o -newermm $IMPORTED_TIME_FILE -name "*" -type d -print | head -n 1`
+  NEW_CHANGE=$(find $SHARED_PATH -path lost+found -prune -o -newermm $IMPORTED_TIME_FILE -name "*" -type d -print | head -n 1)
  fi
 
  if [ ! "$NEW_CHANGE" = "" ]; then

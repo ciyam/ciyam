@@ -10,7 +10,7 @@ else
  MYSQL=
 
  if [ "$GROUP" = "" ]; then
-  GROUP=`id -gn`
+  GROUP=$(id -gn)
  fi
 
  if [ -f /usr/bin/mysql ]; then

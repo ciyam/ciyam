@@ -21,7 +21,7 @@ else
   shift 1
   if [ ! "$3" == "" ]; then
    IFS=$'\n'
-   spec_args=(`< $3`)
+   spec_args=($(< $3))
   fi
  else
   shift 2

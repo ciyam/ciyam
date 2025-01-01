@@ -8,7 +8,7 @@
 DATEYEAR=""
 
 if [ "$DATEYEAR" == "" ]; then
- DATEYEAR=`date +%Y`
+ DATEYEAR=$(date +%Y)
 fi
 
 for f in *.package.bun.gz
@@ -20,7 +20,7 @@ do
  cat "~update_package_copyright_year" | xargs -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
  cat "~update_package_copyright_year" | xargs -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\)-\([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
 
- FILES=`cat "~update_package_copyright_year" | tr '\n' ' '`
+ FILES=$(cat "~update_package_copyright_year" | tr '\n' ' ')
 
  ./bundle -q $f $FILES
 

@@ -152,7 +152,7 @@ all:\
 `]`}
 
 dtm:
-	@echo ``date`` > make.dtm
+	@echo $$(date) > make.dtm
 
 list:
 	@echo "`{`[`$libs`,lib_\$.a`+,`]`},`{`[`$dyn_libs`,\$.so`+,`]`},`{`[`$executables`,\$`+,`]`}" | tr ',' '\n' > make.lst
