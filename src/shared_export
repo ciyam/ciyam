@@ -21,13 +21,21 @@ if [ "$CIYAM_USER_PATH" = "" ]; then
  CIYAM_USER_PATH=$USER_PATH
 fi
 
-SHARED_PATH=$CIYAM_USER_PATH/shared
+SHARED_PATH=$(./system_variable get @shared_files)
+
+# NOTE: It is expected that the "@shared_files" system
+# variable should be present but if it's not then will
+# default to "$CIYAM_USER_PATH/shared" instead.
+if [ "$SHARED_PATH" = "" ]; then
+ SHARED_PATH=$CIYAM_USER_PATH/shared
+fi
+
 SHARED_IMAGE=$CIYAM_USER_PATH/$IMAGE_NAME
 
 IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 
-IDENTITY=`./system_variable get @export_needed`
-PEERCHAIN=`./system_variable get @exporting_for_identity`
+IDENTITY=$(./system_variable get @export_needed)
+PEERCHAIN=$(./system_variable get @exporting_for_identity)
 
 SHARED_DETAILS=$PEERCHAIN.txt
 
@@ -74,10 +82,10 @@ export CIYAM_FILE_NAME_ONLY=1
 export CIYAM_STREAM_CIPHER=cc
 export ENCRYPTED_PASSWORD=@shared_secret
 
-export CIYAM_ARCHIVE_PATH=`./ciyam_command file_archives -path_only $IDENTITY`
+export CIYAM_ARCHIVE_PATH=$(./ciyam_command file_archives -path_only $IDENTITY)
 
-BLOCK_TREE=`./block_tree_hash $IDENTITY`
-SHARED_LIST=`./tree_list $BLOCK_TREE 0 Shared | tail -n 1`
+BLOCK_TREE=$(./block_tree_hash $IDENTITY)
+SHARED_LIST=$(./tree_list $BLOCK_TREE 0 Shared | tail -n 1)
 
 ./export_files $SHARED_LIST $CIYAM_USER_PATH >>$SHARED_DETAILS
 
@@ -88,7 +96,7 @@ sudo mount $SHARED_IMAGE $SHARED_PATH
 sudo chown -R $USER:$GROUP $SHARED_PATH
 sudo chmod -R o-rx $SHARED_PATH
 
-echo `date +%s` > $IMPORTED_TIME_FILE
+echo $(date +%s) > $IMPORTED_TIME_FILE
 
 echo "Finished export..." >>$SHARED_DETAILS
 date >>$SHARED_DETAILS

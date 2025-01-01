@@ -17,12 +17,20 @@ if [ "$CIYAM_USER_PATH" = "" ]; then
  CIYAM_USER_PATH=$USER_PATH
 fi
 
-SHARED_PATH=$CIYAM_USER_PATH/shared
+SHARED_PATH=$(./system_variable get @shared_files)
+
+# NOTE: It is expected that the "@shared_files" system
+# variable should be present but if it's not then will
+# default to "$CIYAM_USER_PATH/shared" instead.
+if [ "$SHARED_PATH" = "" ]; then
+ SHARED_PATH=$CIYAM_USER_PATH/shared
+fi
+
 SHARED_IMAGE=$CIYAM_USER_PATH/$IMAGE_NAME
 
 IMPORTED_TIME_FILE=$SHARED_PATH/$IMPORTED_TIME
 
-SHARED_DETAILS=`./system_variable get @importing_for_identity`.txt
+SHARED_DETAILS=$(./system_variable get @importing_for_identity).txt
 
 if [ -d $SHARED_PATH ]; then
  if mountpoint -q $SHARED_PATH; then
@@ -65,5 +73,5 @@ date >>$SHARED_DETAILS
 
 if [ -f $SHARED_IMAGE ]; then
  sudo mount $SHARED_IMAGE $SHARED_PATH
- echo `date +%s` > $IMPORTED_TIME_FILE
+ echo $(date +%s) > $IMPORTED_TIME_FILE
 fi
