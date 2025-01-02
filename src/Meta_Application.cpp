@@ -3684,7 +3684,7 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
       string script( create_script + " "
        + get_obj( ).Name( ) + " " + get_sql_password( ) + " >" + tmp_filename + " 2>&1" );
 
-      exec_system( script, false );
+      exec_system( script );
 
       if( exists_file( tmp_filename ) )
       {
@@ -3716,9 +3716,11 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
       class_pointer< Meta_Application > cp_clone( e_create_instance );
 
       cp_clone->perform_fetch( get_obj( ).get_clone_key( ) );
+
       if( cp_clone->child_Module( ).iterate_forwards( ) )
       {
          int n = 0;
+
          do
          {
             get_obj( ).child_Module( ).op_create( construct_key_from_int( get_obj( ).get_key( ), ++n ) );
@@ -3774,9 +3776,11 @@ void Meta_Application::impl::after_store( bool is_create, bool is_internal )
       if( get_obj( ).Workgroup( ).child_Model( ).iterate_forwards( ) )
       {
          int child_num = 0;
+
          do
          {
             bool add_module = false;
+
             if( get_obj( ).Module_Prefix( ).empty( ) )
             {
                if( get_obj( ).Name( ) == get_obj( ).Workgroup( ).child_Model( ).Name( ) )
@@ -3785,6 +3789,7 @@ void Meta_Application::impl::after_store( bool is_create, bool is_internal )
             else
             {
                string::size_type pos = get_obj( ).Workgroup( ).child_Model( ).Name( ).find( get_obj( ).Module_Prefix( ) );
+
                if( pos == 0 )
                   add_module = true;
             }
@@ -3792,8 +3797,10 @@ void Meta_Application::impl::after_store( bool is_create, bool is_internal )
             if( add_module )
             {
                get_obj( ).child_Module( ).op_create( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
+
                get_obj( ).child_Module( ).Application( get_obj( ).get_key( ) );
                get_obj( ).child_Module( ).Model( get_obj( ).Workgroup( ).child_Model( ).get_key( ) );
+
                get_obj( ).child_Module( ).op_apply( );
 
                if( get_obj( ).Module_Prefix( ).empty( ) )
