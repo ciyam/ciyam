@@ -4880,8 +4880,8 @@ ods::bulk_read::bulk_read( ods& o, progress* p_progress, bool allow_thread_demot
             THROW_ODS_ERROR( "invalid attempt to obtain bulk read lock (needs allow_thread_demotion)" );
       }
 
-      if( *o.p_impl->rp_bulk_mode == impl::e_bulk_mode_read
-       && *o.p_impl->rp_bulk_read_thread_id != current_thread_id( ) )
+      if( ( *o.p_impl->rp_bulk_mode == impl::e_bulk_mode_read )
+       && ( *o.p_impl->rp_bulk_read_thread_id != current_thread_id( ) ) )
          continue;
 
       impl::bulk_mode old_bulk_mode( ( impl::bulk_mode )*o.p_impl->rp_bulk_mode );
@@ -4949,8 +4949,8 @@ ods::bulk_write::bulk_write( ods& o, progress* p_progress, bool allow_thread_pro
             THROW_ODS_ERROR( "invalid attempt to obtain bulk write lock (needs allow_thread_promotion)" );
       }
 
-      if( *o.p_impl->rp_bulk_mode == impl::e_bulk_mode_write
-       && *o.p_impl->rp_bulk_write_thread_id != current_thread_id( ) )
+      if( ( *o.p_impl->rp_bulk_mode == impl::e_bulk_mode_write )
+       && ( *o.p_impl->rp_bulk_write_thread_id != current_thread_id( ) ) )
          continue;
 
       impl::bulk_mode old_bulk_mode( ( impl::bulk_mode )*o.p_impl->rp_bulk_mode );
@@ -5225,6 +5225,11 @@ bool ods::bulk_operation_none_or_write( )
 
       if( !*p_impl->rp_bulk_level || ( *p_impl->rp_bulk_mode == impl::e_bulk_mode_write ) )
          break;
+
+      // NOTE: If read locked by current thread then skip any further attempts.
+      if( ( *p_impl->rp_bulk_mode == impl::e_bulk_mode_read )
+       && ( *p_impl->rp_bulk_read_thread_id == current_thread_id( ) ) )
+         return false;
    }
 
    return ( i != c_bulk_write_max_attempts );
