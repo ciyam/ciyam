@@ -678,6 +678,10 @@ std::string CIYAM_BASE_DECL_SPEC storage_module_directory( );
 std::string CIYAM_BASE_DECL_SPEC storage_web_root( bool expand, bool check_is_linked = false );
 void CIYAM_BASE_DECL_SPEC storage_web_root( const std::string& new_root );
 
+void CIYAM_BASE_DECL_SPEC storage_bulk_start( bool is_write = false );
+
+void CIYAM_BASE_DECL_SPEC storage_bulk_finish( );
+
 void CIYAM_BASE_DECL_SPEC storage_lock_all_tables( );
 void CIYAM_BASE_DECL_SPEC storage_unlock_all_tables( );
 

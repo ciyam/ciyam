@@ -1,5 +1,17 @@
 storage_init ciyam
 session_variable @dump_minimal 1
+storage_bulk_start read
+storage_bulk_start read
+Error: storage is already bulk locked for read by this session
+storage_bulk_start write
+Error: storage is already bulk locked for read by this session
+storage_bulk_finish
+storage_bulk_start write
+storage_bulk_start write
+Error: storage is already bulk locked for write by this session
+storage_bulk_start read
+Error: storage is already bulk locked for write by this session
+storage_bulk_finish
 storage_lock_create view test
 1
 storage_lock_create view test

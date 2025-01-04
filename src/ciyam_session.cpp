@@ -5166,7 +5166,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string sav_db_file_names;
 
          init_storage( name, "", handler, true );
+
          backup_storage( handler, ( truncate_log ? &truncation_count : 0 ), &sav_db_file_names );
+
          term_storage( handler );
 
          bool has_ltf = false;
@@ -5332,8 +5334,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          // NOTE: Although the initial data lists and .csv files are backed up they
          // can only be restored manually (because if these files were missing then
-         // the application should be regenerated to recreate them).
+         // the application should be regenerated in order to recreate them).
          vector< string > modules;
+
          buffer_file_lines( module_list, modules );
 
          for( size_t i = 0; i < modules.size( ); i++ )
@@ -5369,20 +5372,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          ostringstream osstr;
+
          osstr << setw( 3 ) << setfill( '0' ) << truncation_count;
 
          if( exists_file( name + ".backup.bun.gz" ) )
             remove_file( name + ".backup.bun.gz" );
 
-#ifdef _WIN32
-         string bundle( "bundle" );
-#else
-         string bundle( "./bundle" );
-#endif
-         exec_system( bundle + " -q " + name + ".backup.bun.gz " + file_names );
+         exec_system( "./bundle -q " + name + ".backup.bun.gz " + file_names );
 
          if( truncate_log )
-            exec_system( bundle + " -q " + name + "." + osstr.str( ) + ".bun.gz "
+            exec_system( "./bundle -q " + name + "." + osstr.str( ) + ".bun.gz "
              + name + ".log." + osstr.str( ) + " " + name + ".tlg." + osstr.str( ) );
 
          remove_files( sav_db_file_names, ' ' );
@@ -5528,13 +5527,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                file_names += " " + sav_server_db_file_names;
             }
 
-#ifdef _WIN32
-            string unbundle( "unbundle" );
-#else
-            string unbundle( "./unbundle" );
-#endif
-
-            exec_system( unbundle + " -o -qw " + name + ".backup.bun.gz " + file_names );
+            exec_system( "./unbundle -o -qw " + name + ".backup.bun.gz " + file_names );
 
             // NOTE: The ".init.lst" and ".csv" files are omitted (as they should have been
             // generated) and are only included in the backup itself for debugging purposes.
@@ -5973,6 +5966,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          slice_storage_log( handler, name, module_list );
       }
+      else if( command == c_cmd_ciyam_session_storage_bulk_start )
+      {
+         bool is_write = has_parm_val( parameters, c_cmd_ciyam_session_storage_bulk_start_write );
+
+         storage_bulk_start( is_write );
+      }
       else if( command == c_cmd_ciyam_session_storage_dump_cache )
       {
          dump_storage_cache( osstr );
@@ -6002,6 +6001,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          splice_storage_log( handler, name, module_list );
       }
+      else if( command == c_cmd_ciyam_session_storage_bulk_finish )
+         storage_bulk_finish( );
       else if( command == c_cmd_ciyam_session_storage_lock_create )
       {
          string type( get_parm_val( parameters, c_cmd_ciyam_session_storage_lock_create_type ) );

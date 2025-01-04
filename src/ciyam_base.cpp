@@ -525,6 +525,9 @@ struct session
    deque< string > file_hashes_to_get;
    deque< string > file_hashes_to_put;
 
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
    set< string > tx_key_info;
    stack< ods::transaction* > transactions;
 
@@ -10444,8 +10447,12 @@ void term_storage( command_handler& cmd_handler )
 
    if( ods::instance( ) )
    {
+      gtp_session->ap_bulk_read.reset( );
+
       while( !gtp_session->transactions.empty( ) )
          transaction_rollback( );
+
+      gtp_session->ap_bulk_write.reset( );
 
       if( gtp_session->p_storage_handler->get_ref_count( ) == 1 )
       {
@@ -11228,6 +11235,38 @@ void storage_web_root( const string& new_root )
 
       gtp_session->transaction_log_command = ";web_root ==> " + new_root;
       append_transaction_log_command( *gtp_session->p_storage_handler );
+   }
+}
+
+void storage_bulk_start( bool is_write )
+{
+   if( gtp_session )
+   {
+      if( !gtp_session->p_storage_handler->get_ods( ) )
+         throw runtime_error( "no storage is currently linked" );
+
+      if( gtp_session->ap_bulk_read.get( ) )
+         throw runtime_error( "storage is already bulk locked for read by this session" );
+
+      if( gtp_session->ap_bulk_write.get( ) )
+         throw runtime_error( "storage is already bulk locked for write by this session" );
+
+      if( !is_write )
+         gtp_session->ap_bulk_read.reset( new ods::bulk_read( *ods::instance( ) ) );
+      else
+         gtp_session->ap_bulk_write.reset( new ods::bulk_write( *ods::instance( ) ) );
+   }
+}
+
+void storage_bulk_finish( )
+{
+   if( gtp_session )
+   {
+      if( !gtp_session->p_storage_handler->get_ods( ) )
+         throw runtime_error( "no storage is currently linked" );
+
+      gtp_session->ap_bulk_read.reset( );
+      gtp_session->ap_bulk_write.reset( );
    }
 }
 
