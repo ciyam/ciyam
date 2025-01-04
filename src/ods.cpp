@@ -3576,7 +3576,7 @@ void ods::destroy( const oid& id )
 
    DEBUG_LOG( "ods::destroy( )" );
 
-   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+   if( !bulk_operation_none_or_write( ) )
       THROW_ODS_ERROR( "cannot destroy when database is bulk locked for dumping or reading" );
 
    ods_index_entry index_entry;
@@ -5212,6 +5212,24 @@ void ods::bulk_operation_finish( )
    DEBUG_LOG( "ods::bulk_operation_finish( )" );
 }
 
+bool ods::bulk_operation_none_or_write( )
+{
+   int i;
+
+   for( i = 0; i < c_bulk_write_max_attempts; i++ )
+   {
+      if( i > 0 )
+         msleep( c_bulk_write_attempt_sleep_time );
+
+      guard lock_impl( *p_impl->rp_impl_lock );
+
+      if( !*p_impl->rp_bulk_level || ( *p_impl->rp_bulk_mode == impl::e_bulk_mode_write ) )
+         break;
+   }
+
+   return ( i != c_bulk_write_max_attempts );
+}
+
 void ods::transaction_start( const char* p_label )
 {
    guard lock_write( write_lock );
@@ -5311,13 +5329,14 @@ void ods::transaction_commit( )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
-   guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
       THROW_ODS_ERROR( "database instance in bad state" );
 
-   if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
+   if( !bulk_operation_none_or_write( ) )
       THROW_ODS_ERROR( "cannot commit transaction when bulk locked for dumping or reading" );
+
+   guard lock_impl( *p_impl->rp_impl_lock );
 
    int64_t size = p_impl->p_trans_buffer->levels.top( ).size;
    int64_t op_count = p_impl->p_trans_buffer->levels.top( ).op_count;
@@ -5582,13 +5601,14 @@ void ods::transaction_rollback( )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
-   guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
       THROW_ODS_ERROR( "database instance in bad state" );
 
-   if( *p_impl->rp_bulk_level && ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_write ) )
+   if( !bulk_operation_none_or_write( ) )
       THROW_ODS_ERROR( "cannot rollback transaction when bulk locked for dumping or reading" );
+
+   guard lock_impl( *p_impl->rp_impl_lock );
 
    int64_t size = p_impl->p_trans_buffer->levels.top( ).size;
 

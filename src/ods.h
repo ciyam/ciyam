@@ -771,6 +771,8 @@ class ODS_DECL_SPEC ods
    void bulk_operation_pause( );
    void bulk_operation_finish( );
 
+   bool bulk_operation_none_or_write( );
+
    void transaction_start( const char* p_label = 0 );
    void transaction_commit( );
    void transaction_rollback( );
