@@ -10538,7 +10538,7 @@ void storage_comment( const string& comment )
 
       // NOTE: During a "restore" the comment does not need to be logged unless it follows or is a part of
       // the initial data records (such comments prior are appended by the "storage restore" code itself).
-      if( use_init_tx_id || !storage_locked_for_admin( ) || identity.next_id >= c_tx_id_initial )
+      if( use_init_tx_id || !storage_locked_for_admin( ) || ( identity.next_id >= c_tx_id_initial ) )
       {
          if( use_init_tx_id || identity.next_id == c_tx_id_initial )
             append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, c_tx_id_initial );
@@ -10554,7 +10554,7 @@ void storage_comment( const string& comment )
 
          if( comment.find( label_comment ) == 0 )
          {
-            if( storage_locked_for_admin( ) && identity.next_id + 1 >= c_tx_id_standard )
+            if( storage_locked_for_admin( ) && ( identity.next_id + 1 >= c_tx_id_standard ) )
                gtp_session->sql_undo_statements.push_back( "#" + comment );
             else
             {
@@ -13499,7 +13499,9 @@ string exec_bulk_ops( const string& module,
             if( !in_trans )
             {
                in_trans = true;
+
                transaction_start( );
+
                transaction_id = next_transaction_id( );
             }
 
