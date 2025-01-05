@@ -5241,15 +5241,17 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( hash == hello_hash )
             response = hello_hash;
 
-         bool is_new_sig = false;
+         bool is_new_sig_or_blk = false;
 
          string new_sig_tag( blockchain + '.' + to_string( blockchain_height ) + c_sig_suffix );
+         string new_blk_tag( blockchain + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
 
          // NOTE: If a new block was just created the signature can appear before the new block
          // height has been discovered so will simply report as "not found" in order to provide
-         // time for this to occur (in "issue_cmd_for_peer").
-         if( tag_or_hash == new_sig_tag )
-            is_new_sig = true;
+         // time for this to occur (in "issue_cmd_for_peer"). Also will return "not found" when
+         // the block after the current block height is requested (even if it is present).
+         if( ( tag_or_hash == new_blk_tag ) || ( tag_or_hash == new_sig_tag ) )
+            is_new_sig_or_blk = true;
          else if( has_tag( tag_or_hash ) )
             hash = tag_file_hash( tag_or_hash );
 
@@ -5269,7 +5271,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( tag_or_hash.find( c_key_suffix ) != string::npos )
             throw runtime_error( "invalid suspicious tag '" + tag_or_hash + "'" );
 
-         bool has = ( is_dummy || is_new_sig ) ? false : has_file( hash, false );
+         bool has = ( is_dummy || is_new_sig_or_blk ) ? false : has_file( hash, false );
          bool was_initial_state = ( socket_handler.state( ) == e_peer_state_responder );
 
          size_t height_from_tag = 0;
