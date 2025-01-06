@@ -73,6 +73,8 @@ const char c_read_input_prefix = '<';
 const char c_write_output_prefix = '>';
 const char c_quiet_command_prefix = '.';
 const char c_output_command_usage = '?';
+const char c_forget_command_prefix = '-';
+const char c_ignore_command_prefix = '+';
 const char c_prompted_input_prefix = '&';
 const char c_system_command_prefix = '~';
 const char c_history_command_prefix = '!';
@@ -2414,6 +2416,7 @@ console_command_handler::console_command_handler( )
  max_history_lines( c_max_history ),
  description_offset( 0 ),
  num_custom_startup_options( 0 ),
+ ignore_prior( false ),
  is_reading_input( false ),
  is_skipping_to_label( false ),
  is_executing_commands( false ),
@@ -2595,8 +2598,6 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
          clear_key( str_for_history );
       }
-      else
-         last_command = str_for_history;
 
       string::size_type pos = str.find( ' ' );
       string::size_type apos = string::npos;
@@ -3262,8 +3263,11 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
-                     if( isatty( STDIN_FILENO ) )
+                     if( isatty( STDIN_FILENO ) && ( ignore_prior || ( str != prior_command ) ) )
+                     {
+                        prior_command = str;
                         add_history( str.c_str( ) );
+                     }
 #  endif
 #endif
                   }
@@ -3395,6 +3399,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                else
                {
                   p_impl->output_file.open( str.c_str( ) + file_name_offset, output_flags );
+
                   if( !p_impl->output_file )
                      throw runtime_error( "unable to open file '" + str.substr( file_name_offset ) + "' for output" );
 
@@ -3408,12 +3413,16 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
                if( add_to_history && isatty( STDIN_FILENO ) )
-                  add_history( str.c_str( ) );
+               {
+                  if( ignore_prior || ( str != prior_command ) )
+                     add_history( str.c_str( ) );
+               }
 #  endif
 #endif
                if( !skip_command_usage )
                {
                   string wildcard_match_expr;
+
                   if( pos != string::npos )
                      wildcard_match_expr = str.substr( pos + 1 );
 
@@ -3484,12 +3493,15 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         }
 
                         ofstream outf( str.c_str( ) + file_name_offset, output_flags );
+
                         if( !outf )
                            throw runtime_error( "unable to open file '" + str.substr( file_name_offset ) + "' for output" );
 
                         if( !command_history.empty( ) )
+                        {
                            for( deque< string >::size_type i = 0; i < command_history.size( ); i++ )
                               outf << command_history[ i ] << '\n';
+                        }
                      }
                      else
                      {
@@ -3862,6 +3874,24 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                str.erase( );
             }
+            else if( str[ 0 ] == c_forget_command_prefix )
+            {
+               str.erase( 0, 1 );
+               str_for_history.erase( );
+
+               if( str.empty( ) )
+                  ignore_prior = false;
+            }
+            else if( str[ 0 ] == c_ignore_command_prefix )
+            {
+               str.erase( 0, 1 );
+               str_for_history = str;
+
+               if( str.empty( ) )
+                  ignore_prior = true;
+               else
+                  prior_command.erase( );
+            }
             else if( str[ 0 ] == c_message_command_prefix )
             {
                if( str.size( ) > 1 )
@@ -3902,14 +3932,22 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
             if( !is_reading_input && isatty( STDIN_FILENO ) )
-               add_history( str_for_history.c_str( ) );
+            {
+               if( !ignore_prior && ( str_for_history == prior_command ) )
+                  str_for_history.erase( );
+               else
+                  add_history( str_for_history.c_str( ) );
+            }
 #  endif
 #endif
-            if( max_history_lines )
+            if( max_history_lines && !str_for_history.empty( ) )
             {
                command_history.push_back( str_for_history );
                history_line_number.push_back( line_number );
             }
+
+            if( !ignore_prior && !is_reading_input && !str_for_history.empty( ) )
+               prior_command = str_for_history;
          }
       }
 
@@ -3949,20 +3987,31 @@ void console_command_handler::handle_special_command( const string& cmd_and_args
        cmd_and_args.substr( 1 ), p_impl->fissile_data, p_impl->last_fissile_line,
        p_impl->last_fissile_output, p_impl->fissile_values, p_impl->use_special_fissile_character );
 
+      bool skip_repeated = false;
+
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
       if( !is_reading_input && isatty( STDIN_FILENO ) )
-         add_history( cmd_and_args.c_str( ) );
+      {
+         if( !ignore_prior
+          && ( !command_history.empty( ) && ( cmd_and_args == command_history.back( ) ) ) )
+            skip_repeated = true;
+         else
+            add_history( cmd_and_args.c_str( ) );
+      }
 #  endif
 #endif
 
-      command_history.push_back( cmd_and_args );
-      history_line_number.push_back( line_number );
-
-      if( command_history.size( ) > max_history_lines )
+      if( !skip_repeated )
       {
-         command_history.pop_front( );
-         history_line_number.pop_front( );
+         command_history.push_back( cmd_and_args );
+         history_line_number.push_back( line_number );
+
+         if( command_history.size( ) > max_history_lines )
+         {
+            command_history.pop_front( );
+            history_line_number.pop_front( );
+         }
       }
    }
 }

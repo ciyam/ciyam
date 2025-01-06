@@ -64,6 +64,7 @@ class console_command_handler : public command_handler
 
    size_t description_offset;
 
+   bool ignore_prior;
    bool is_reading_input;
    bool is_skipping_to_label;
    bool is_executing_commands;
@@ -83,7 +84,7 @@ class console_command_handler : public command_handler
 
    std::string label;
 
-   std::string last_command;
+   std::string prior_command;
    std::string prompt_prefix;
 
    std::deque< size_t > history_line_number;

@@ -75,18 +75,24 @@ for usage only by "ciyam_client").
 Prefixes are a single character (surround by single quotes here) as follows:
 
 '@' - conditional command prefix (covered in the next section)
-'#' - echo whatever characters that follow
-';' - ignore whatever characters that follow (i.e. a comment)
+'#' - echo whatever characters that follow (after environment variable replacements)
+';' - ignore whatever characters that follow (i.e. this is simply used for comments)
 '.' - use this as a prefix for any normal command to suppress command output (OUTPUT var is still assigned)
 ' ' - use this as a prefix for any normal command in order to not have the command line recorded in history
-'<' - use this prefix followed by a file name and optional arguments for executing an input script
+'-' - use on its own to not record the command line if identical to the prior one (else is the same as ' ')
+'+' - use on its own to record repeated lines in the command line history (or as a prefix just the current)
+'<' - use this prefix followed by a file name (with optionally any arguments) for executing an input script
 '>' - use this prefix followed by a file name to redirect command output to that file (use no name to stop)
 '~' - use this prefix to execute what follows as a "system" command (such as an external script or program)
-'*' - use this prefix for executing a FISSILE command (an interpreted functional programming language)
+'*' - use this prefix for executing a FISSILE command (being a functional programming interpreted language)
 
 It should be noted that the '<' prefix can be doubled up (i.e. "<<") in order to place every script line read
 into history and the '>' prefix can be doubled up (i.e. ">>") in order to append command output to an already
 existing output file (rather than truncating any such existing output file).
+
+It should also be noted that '-' and '+' are intended for usage in an interactive console session in order to
+enable the session to behave as though it was input being read in from a script (where repeated commands will
+normally be kept in the history in order to correctly behave in loops).
 
 The following prefixes are designed for use with interactive scripts:
 
