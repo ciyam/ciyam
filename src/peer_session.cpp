@@ -129,7 +129,8 @@ const size_t c_support_timeout = 10000;
 
 const size_t c_num_hash_rounds = 1000000;
 
-const size_t c_num_check_disconnected = 8;
+const size_t c_num_check_disconnected = 10;
+const size_t c_num_check_pending_waits = 50;
 
 const size_t c_peer_protocol_not_found_rcvd_gap = 3;
 const size_t c_peer_protocol_not_found_sent_gap = 2;
@@ -6724,6 +6725,9 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
             throw runtime_error( error );
          }
 
+         if( !is_data && !is_user )
+            set_system_variable( '~' + unprefixed_blockchain, "" );
+
          pid.erase( pos );
       }
 
@@ -7969,12 +7973,62 @@ void peer_session_starter::on_start( )
          start_peer_session( peerchain_externals[ i ] );
       }
 
+      size_t num_waits = 0;
+
       while( true )
       {
          if( g_server_shutdown || has_max_peers( ) )
             break;
 
          string entries( get_system_variable( get_special_var_name( e_special_var_queue_peers ) ) );
+
+         if( entries.empty( ) && ( ++num_waits >= c_num_check_pending_waits ) )
+         {
+            num_waits = 0;
+
+            string pending_vars( get_system_variable( get_special_var_name( e_special_var_pending ) + "_*" ) );
+
+            if( !pending_vars.empty( ) )
+            {
+               vector< string > all_pending_vars;
+
+               split( pending_vars, all_pending_vars, '\n' );
+
+               for( size_t i = 0; i < all_pending_vars.size( ); i++ )
+               {
+                  string next_pending( all_pending_vars[ i ] );
+
+                  string::size_type pos = next_pending.find( ' ' );
+
+                  if( pos != string::npos )
+                  {
+                     next_pending.erase( pos );
+
+                     pos = next_pending.rfind( '_' );
+
+                     if( pos != string::npos )
+                     {
+                        string identity( next_pending.substr( pos + 1 ) );
+
+                        set_variable_checker check_not_has(
+                         e_variable_check_type_no_session_has, identity );
+
+                        set_variable_checker check_not_has_either(
+                         e_variable_check_type_not_has_other_system, '~' + identity, &check_not_has );
+
+                        if( set_system_variable(
+                         get_special_var_name( e_special_var_none ), identity, check_not_has_either ) )
+                        {
+                           if( !entries.empty( ) )
+                              entries += ',';
+
+                           entries += identity;
+                        }
+                     }
+                  }
+               }
+            }
+         }
 
          if( entries.empty( ) )
             msleep( c_wait_sleep_time );
@@ -8112,6 +8166,9 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    // NOTE: This will be cleared by the peer session after it has started
    // (or cleared below if 'p_local_main' is returned as a null pointer).
    set_system_variable( identity, c_true_value );
+
+   set_system_variable( get_special_var_name(
+    e_special_var_pending ) + '_' + identity, c_true_value );
 
    other_session_extras other_extras( num_for_support );
 

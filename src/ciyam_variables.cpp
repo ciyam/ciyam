@@ -1212,7 +1212,8 @@ bool set_system_variable( const string& name,
    if( !checker.can_set( ) )
       return false;
 
-   set_system_variable( name, value, is_init, p_progress );
+   if( name != c_special_variable_none )
+      set_system_variable( name, value, is_init, p_progress );
 
    return true;
 }
