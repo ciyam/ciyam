@@ -836,6 +836,43 @@ void parse_peer_mapped_info( const string& peer_mapped_info, string& local_hash,
    }
 }
 
+void remove_from_hub_queue_if_present( const string& identity )
+{
+   guard g( g_mutex );
+
+   string identities;
+
+   while( true )
+   {
+      string next_identity( get_system_variable( get_special_var_name( e_special_var_queue_hub_users ) ) );
+
+      if( next_identity.empty( ) )
+         break;
+
+      if( next_identity == identity )
+         continue;
+
+      if( !identities.empty( ) )
+         identities += ',';
+
+      identities += next_identity;
+   }
+
+   if( !identities.empty( ) )
+   {
+      vector< string > all_identities;
+
+      split( identities, all_identities );
+
+      for( size_t i = 0; i < all_identities.size( ); i++ )
+      {
+         string next_identity( all_identities[ i ] );
+
+         set_system_variable( get_special_var_name( e_special_var_queue_hub_users ), next_identity );
+      }
+   }
+}
+
 bool terminate_peer_session( bool is_for_support, const string& identity )
 {
    if( !is_for_support && !identity.empty( ) )
@@ -844,6 +881,8 @@ bool terminate_peer_session( bool is_for_support, const string& identity )
 
       while( has_any_matching_session( true ) )
          msleep( c_wait_sleep_time );
+
+      remove_from_hub_queue_if_present( identity );
 
       string peer_map_key( get_raw_session_variable(
        get_special_var_name( e_special_var_peer_map_key ) ) );
@@ -5058,15 +5097,16 @@ void socket_command_handler::preprocess_command_and_args( string& str, const str
    {
       TRACE_LOG( TRACE_COMMANDS, cmd_and_args );
 
-      if( str[ 0 ] == '?' || str.find( "help" ) == 0 )
+      if( ( str[ 0 ] == '?' ) || ( str.find( "help" ) == 0 ) )
       {
          if( !had_usage )
          {
             had_usage = true;
 
+            string wildcard_match_expr;
+
             string::size_type pos = str.find( ' ' );
 
-            string wildcard_match_expr;
             if( pos != string::npos )
                wildcard_match_expr = str.substr( pos + 1 );
 
@@ -7211,7 +7251,14 @@ void peer_session::on_start( )
          identity = unprefixed_blockchain;
 
          if( !is_for_support )
+         {
             set_session_variable( identity, c_true_value );
+
+            set_system_variable( c_error_message_prefix + identity, "" );
+
+            if( !paired_identity.empty( ) )
+               set_system_variable( c_error_message_prefix + paired_identity, "" );
+         }
 
          if( must_clear_system_variable )
             set_system_variable( paired_identity.empty( ) ? identity : paired_identity, "" );
