@@ -265,13 +265,16 @@ bool socket_base::set_blocking( )
 {
 #ifdef _WIN32
    unsigned long val = 0;
+
    return ::ioctlsocket( socket, FIONBIO, &val ) != SOCKET_ERROR;
 #else
    long val;
+
    if( val = ::fcntl( socket, F_GETFL, 0 ) < 0 )
       return false;
 
    val &= ~O_NONBLOCK;
+
    return ::fcntl( socket, F_SETFL, val ) >= 0;
 #endif
 }
@@ -280,13 +283,16 @@ bool socket_base::set_non_blocking( )
 {
 #ifdef _WIN32
    unsigned long val = 1;
+
    return ::ioctlsocket( socket, FIONBIO, &val ) != SOCKET_ERROR;
 #else
    long val;
+
    if( val = ::fcntl( socket, F_GETFL, 0 ) < 0 )
       return false;
 
    val |= O_NONBLOCK;
+
    return ::fcntl( socket, F_SETFL, val ) >= 0;
 #endif
 }
@@ -298,57 +304,66 @@ bool socket_base::set_no_linger( )
 #else
    struct linger val;
 #endif
+
    val.l_onoff = 1;
    val.l_linger = 0;
+
    return set_option( SOL_SOCKET, SO_LINGER, ( const char* )&val, sizeof( val ) );
 }
 
 bool socket_base::set_reuse_addr( )
 {
    int val = 1;
+
    return set_option( SOL_SOCKET, SO_REUSEADDR, ( const char* )&val, sizeof( val ) );
 }
 
 bool socket_base::has_input( size_t timeout ) const
 {
-   bool okay;
+   bool okay = false;
 
-   fd_set rfds;
-   struct timeval tv;
+   if( socket != INVALID_SOCKET )
+   {
+      fd_set rfds;
+      struct timeval tv;
 
-   tv.tv_sec = timeout / 1000;
-   tv.tv_usec = ( timeout % 1000 ) * 1000;
+      tv.tv_sec = timeout / 1000;
+      tv.tv_usec = ( timeout % 1000 ) * 1000;
 
-   FD_ZERO( &rfds );
-   FD_SET( socket, &rfds );
+      FD_ZERO( &rfds );
+      FD_SET( socket, &rfds );
 
-   // NOTE: This function will indicate success even if the "select" return code has
-   // an error as it is expected that the error will occur during the receive itself.
-   okay = ::select( socket + 1, &rfds, 0, 0, &tv ) != 0;
+      // NOTE: This function will indicate success even if the "select" return code has
+      // an error as it is expected that the error will occur during the receive itself.
+      okay = ::select( socket + 1, &rfds, 0, 0, &tv ) != 0;
 
-   FD_CLR( socket, &rfds );
+      FD_CLR( socket, &rfds );
+   }
 
    return okay;
 }
 
 bool socket_base::can_output( size_t timeout ) const
 {
-   bool okay;
+   bool okay = false;
 
-   fd_set wfds;
-   struct timeval tv;
+   if( socket != INVALID_SOCKET )
+   {
+      fd_set wfds;
+      struct timeval tv;
 
-   tv.tv_sec = timeout / 1000;
-   tv.tv_usec = ( timeout % 1000 ) * 1000;
+      tv.tv_sec = timeout / 1000;
+      tv.tv_usec = ( timeout % 1000 ) * 1000;
 
-   FD_ZERO( &wfds );
-   FD_SET( socket, &wfds );
+      FD_ZERO( &wfds );
+      FD_SET( socket, &wfds );
 
-   // NOTE: This function will indicate success even if the "select" return code has
-   // an error as it is expected that the error will occur during the send operation.
-   okay = ::select( socket + 1, 0, &wfds, 0, &tv ) != 0;
+      // NOTE: This function will indicate success even if the "select" return code has
+      // an error as it is expected that the error will occur during the send operation.
+      okay = ::select( socket + 1, 0, &wfds, 0, &tv ) != 0;
 
-   FD_CLR( socket, &wfds );
+      FD_CLR( socket, &wfds );
+   }
 
    return okay;
 }
@@ -506,12 +521,14 @@ bool tcp_socket::get_delay( )
 bool tcp_socket::set_delay( )
 {
    int val = 0;
+
    return set_option( IPPROTO_TCP, TCP_NODELAY, ( const char* )&val, sizeof( val ) );
 }
 
 bool tcp_socket::set_no_delay( )
 {
    int val = 1;
+
    return set_option( IPPROTO_TCP, TCP_NODELAY, ( const char* )&val, sizeof( val ) );
 }
 
@@ -553,6 +570,7 @@ int tcp_socket::read_line( char* p_data, size_t timeout, int max_chars, progress
             blank_line = true;
 
          ++num_read_lines;
+
          break;
       }
 
@@ -604,6 +622,7 @@ int tcp_socket::write_line( const string& str, size_t timeout, progress* p_progr
    }
 
    string s;
+
    const char* p_data( 0 );
 
    if( len == 0 || ( truncate && len == 1 ) || ( terminated && len == 2 ) )
