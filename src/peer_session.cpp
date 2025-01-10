@@ -1573,6 +1573,19 @@ void check_for_missing_other_sessions( const date_time& now )
       }
    }
 
+   string session_id_owner( get_raw_session_variable(
+    get_special_var_name( e_special_var_session_id_owner ) ) );
+
+   if( !session_id_owner.empty( ) )
+   {
+      if( !has_session_variable( get_special_var_name( e_special_var_session_id ), &session_id_owner ) )
+      {
+         condemn_this_session( );
+
+         throw runtime_error( "peer session has been condemned due to missing owning session" );
+      }
+   }
+
    if( has_raw_session_variable( get_special_var_name( e_special_var_peer_is_dependent ) )
     && has_raw_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ) )
    {
@@ -6401,6 +6414,9 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
    if( !is_responder )
    {
+      if( is_hub )
+         session_id_owner = get_raw_session_variable( get_special_var_name( e_special_var_session_id_owner ) );
+
       // NOTE: Unless a system variable "@use_insecure_peer_protocol" is
       // found will check for a session (or if not exists then a system)
       // variable named "@secret_hash" used to secure the peer protocol.
@@ -6725,6 +6741,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
             throw runtime_error( error );
          }
 
+         // NOTE: Prevent potential immediate killing of a reconnected session via UI.
          if( !is_data && !is_user )
             set_system_variable( '~' + unprefixed_blockchain, "" );
 
@@ -7079,6 +7096,9 @@ void peer_session::on_start( )
          set_session_progress_message( progress_message );
       }
 
+      if( is_hub )
+         set_session_variable( get_special_var_name( e_special_var_session_id_owner ), session_id_owner );
+
       if( is_data )
          set_session_variable( get_special_var_name( e_special_var_blockchain_data ), c_true_value );
 
@@ -7329,6 +7349,10 @@ void peer_session::on_start( )
 
             temporary_session_variable tmp_secret_hash(
              get_special_var_name( e_special_var_secret_hash ), secret_hash );
+
+            temporary_session_variable tmp_session_id_owner(
+             get_special_var_name( e_special_var_session_id_owner ),
+             get_raw_session_variable( get_special_var_name( e_special_var_session_id ) ) );
 
             create_peer_initiator( hub_blockchain, host_and_port,
              false, 0, false, false, false, e_peerchain_type_hub, true );
@@ -7815,7 +7839,7 @@ peer_session* create_peer_initiator( const string& blockchain,
 
    peer_session* p_main_session = 0;
 
-   if( ip_addr == c_null_ip_addr || ip_addr == c_null_ip_addr_for_ipv6 )
+   if( ( ip_addr == c_null_ip_addr ) || ( ip_addr == c_null_ip_addr_for_ipv6 ) )
    {
       // FUTURE: This message should be handled as a server string message.
       string error( "Unable to determine address for domain name '" + host + "'." );

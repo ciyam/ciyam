@@ -332,6 +332,8 @@ bool g_encrypted_identity;
 
 string g_storage_name_lock;
 
+set< string > g_read_only_var_names;
+
 inline string empty_or_value( const string& empty, const string& value )
 {
    return value.empty( ) ? empty : value;
@@ -5657,6 +5659,13 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       read_server_configuration( );
 
+      // NOTE: Remember special read only variable names for later checks.
+      g_read_only_var_names.insert( get_special_var_name( e_special_var_slot ) );
+      g_read_only_var_names.insert( get_special_var_name( e_special_var_uuid ) );
+      g_read_only_var_names.insert( get_special_var_name( e_special_var_pubkey ) );
+      g_read_only_var_names.insert( get_special_var_name( e_special_var_ip_addr ) );
+      g_read_only_var_names.insert( get_special_var_name( e_special_var_session_id ) );
+
       if( p_use_udp )
          *p_use_udp = g_use_udp;
 
@@ -8970,6 +8979,7 @@ string get_raw_session_variable( const string& name, size_t sess_id )
       else if( gtp_session->variables.count( name ) )
       {
          found = true;
+
          retval = gtp_session->variables[ name ];
       }
       else if( name.find_first_of( "?*" ) != string::npos )
@@ -8977,17 +8987,20 @@ string get_raw_session_variable( const string& name, size_t sess_id )
          found = true;
 
          map< string, string >::const_iterator ci;
+
          for( ci = gtp_session->variables.begin( ); ci != gtp_session->variables.end( ); ++ci )
          {
             if( wildcard_match( name, ci->first ) )
             {
                if( !retval.empty( ) )
                   retval += "\n";
+
                retval += ci->first + ' ' + ci->second;
             }
          }
 
          map< string, deque< string > >::const_iterator dci;
+
          for( dci = gtp_session->deque_variables.begin( ); dci != gtp_session->deque_variables.end( ); ++dci )
          {
             if( wildcard_match( name, dci->first ) )
@@ -9003,6 +9016,7 @@ string get_raw_session_variable( const string& name, size_t sess_id )
          }
 
          map< string, map< string, string > >::const_iterator mci;
+
          for( mci = gtp_session->mapped_variables.begin( ); mci != gtp_session->mapped_variables.end( ); ++mci )
          {
             if( wildcard_match( name, mci->first ) )
@@ -9025,6 +9039,7 @@ string get_raw_session_variable( const string& name, size_t sess_id )
             if( !gtp_session->last_set_item.empty( ) )
             {
                retval = gtp_session->last_set_item;
+
                gtp_session->last_set_item.erase( );
             }
             else
@@ -9034,6 +9049,7 @@ string get_raw_session_variable( const string& name, size_t sess_id )
                {
                   if( !retval.empty( ) )
                      retval += '\n';
+
                   retval += *ci;
                }
             }
@@ -9048,6 +9064,7 @@ string get_raw_session_variable( const string& name, size_t sess_id )
             if( !gtp_session->last_deque_item.empty( ) )
             {
                retval = gtp_session->last_deque_item;
+
                gtp_session->last_deque_item.erase( );
             }
             else
@@ -9057,6 +9074,7 @@ string get_raw_session_variable( const string& name, size_t sess_id )
                {
                   if( !retval.empty( ) )
                      retval += '\n';
+
                   retval += *ci;
                }
             }
@@ -9779,12 +9797,18 @@ void set_session_variable( const string& name, const string& value,
          if( val.empty( ) )
          {
             if( gtp_session->variables.count( name ) )
-               gtp_session->variables.erase( name );
+            {
+               if( !g_read_only_var_names.count( name ) )
+                  gtp_session->variables.erase( name );
+            }
          }
          else
          {
             if( gtp_session->variables.count( name ) )
-               gtp_session->variables[ name ] = val;
+            {
+               if( !g_read_only_var_names.count( name ) )
+                  gtp_session->variables[ name ] = val;
+            }
             else
                gtp_session->variables.insert( make_pair( name, val ) );
          }
@@ -9808,13 +9832,18 @@ bool set_session_variable( const string& name, const string& value, const string
       else if( current == gtp_session->variables[ name ] )
       {
          retval = true;
-         gtp_session->variables.erase( name );
+
+         if( !g_read_only_var_names.count( name ) )
+            gtp_session->variables.erase( name );
       }
 
       if( retval && !value.empty( ) )
       {
          if( gtp_session->variables.count( name ) )
-            gtp_session->variables[ name ] = value;
+         {
+            if( !g_read_only_var_names.count( name ) )
+               gtp_session->variables[ name ] = value;
+         }
          else
             gtp_session->variables.insert( make_pair( name, value ) );
       }
@@ -9833,6 +9862,9 @@ void set_session_variable_for_matching_blockchains( const string& name,
 
    string own_ip_addr( gtp_session->ip_addr );
    string own_blockchain( gtp_session->blockchain );
+
+   if( g_read_only_var_names.count( name ) )
+      throw runtime_error( "invalid 'set_session_variable_for_matching_blockchains' with read-only variable '" + name + "'" );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -9987,7 +10019,18 @@ void restore_session_variables( const map< string, string >& variables )
    guard g( g_session_mutex );
 
    if( gtp_session )
+   {
+      map< string, string > read_only_pairs;
+
+      for( set< string >::const_iterator ci = g_read_only_var_names.begin( ); ci != g_read_only_var_names.end( ); ++ci )
+         read_only_pairs[ *ci ] = gtp_session->variables[ *ci ];
+
       gtp_session->variables = variables;
+
+      // NOTE: Enusres that special "read only" variables are not able to be changed through using this function.
+      for( map< string, string >::const_iterator ci = read_only_pairs.begin( ); ci != read_only_pairs.end( ); ++ci )
+         gtp_session->variables[ ci->first ] = ci->second;
+   }
 }
 
 temporary_identity_suffix::temporary_identity_suffix( const string& temporary_suffix )

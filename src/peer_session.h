@@ -109,6 +109,8 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 
    std::string session_secret;
 
+   std::string session_id_owner;
+
 #  ifdef SSL_SUPPORT
    std::auto_ptr< ssl_socket > ap_socket;
 #  else

@@ -177,6 +177,7 @@ enum special_var
    e_special_var_progress_message,
    e_special_var_progress_seconds,
    e_special_var_protocol_handler,
+   e_special_var_session_id_owner,
    e_special_var_skip_after_fetch,
    e_special_var_skip_persistance,
    e_special_var_skip_submit_file,
