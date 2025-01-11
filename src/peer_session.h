@@ -65,6 +65,8 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 
    void on_start( );
 
+   void process_greeting( );
+
    void set_num_for_support( size_t new_num ) { num_for_support = new_num; }
 
    void set_backup_identity( const std::string& identity ) { backup_identity = identity; }

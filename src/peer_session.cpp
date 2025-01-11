@@ -167,6 +167,8 @@ enum public_key_scale
 
 size_t g_num_peers = 0;
 
+bool g_starting_externals = false;
+
 bool has_max_peers( )
 {
    guard g( g_mutex );
@@ -6555,6 +6557,8 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
       }
 
       this->ap_socket->write_line( pid, c_initial_timeout, p_sock_progress );
+
+      process_greeting( );
    }
    else
    {
@@ -6890,160 +6894,6 @@ void peer_session::on_start( )
 
          ap_socket->write_line( string( c_protocol_version )
           + ':' + extra + '\n' + string( c_response_okay ), c_initial_timeout, p_sock_progress );
-      }
-      else
-      {
-         string greeting;
-
-         if( ap_socket->read_line( greeting, c_initial_timeout, c_max_greeting_size, p_sock_progress ) <= 0 )
-         {
-            string error;
-
-            // FUTURE: These messages should be handled as a server string messages.
-            if( ap_socket->had_timeout( ) )
-               error = "Timeout occurred trying to connect to peer.";
-            else
-               error = "Peer has unexpectedly terminated this connection.";
-
-            if( !identity.empty( ) )
-               set_system_variable( c_error_message_prefix + identity, error );
-
-            if( !unprefixed_blockchain.empty( ) )
-            {
-               set_system_variable( unprefixed_blockchain, "" );
-               set_system_variable( c_error_message_prefix + unprefixed_blockchain, error );
-            }
-
-            ap_socket->close( );
-            throw runtime_error( error );
-         }
-
-         if( greeting.find( c_response_error_prefix ) == 0 )
-         {
-            ap_socket->close( );
-
-            greeting.erase( 0, strlen( c_response_error_prefix ) );
-
-            if( !identity.empty( ) )
-               set_system_variable( c_error_message_prefix + identity, greeting );
-
-            if( !unprefixed_blockchain.empty( ) )
-               set_system_variable( c_error_message_prefix + unprefixed_blockchain, greeting );
-
-            throw runtime_error( greeting );
-         }
-
-         version_info ver_info;
-
-         if( get_version_info( greeting, ver_info ) != string( c_response_okay ) )
-         {
-            ap_socket->close( );
-
-            if( !identity.empty( ) )
-               set_system_variable( c_error_message_prefix + identity, greeting );
-
-            if( !unprefixed_blockchain.empty( ) )
-               set_system_variable( c_error_message_prefix + unprefixed_blockchain, greeting );
-
-            throw runtime_error( greeting );
-         }
-
-         if( !check_version_info( ver_info, c_protocol_major_version, c_protocol_minor_version ) )
-         {
-            ap_socket->close( );
-
-            // FUTURE: This message should be handled as a server string message.
-            string error( "Incompatible protocol version "
-             + ver_info.ver + " (was expecting " + string( c_protocol_version ) + ")." );
-
-            if( !identity.empty( ) )
-               set_system_variable( c_error_message_prefix + identity, error );
-
-            if( !unprefixed_blockchain.empty( ) )
-               set_system_variable( c_error_message_prefix + unprefixed_blockchain, error );
-
-            throw runtime_error( error );
-         }
-
-         if( !ver_info.extra.empty( ) )
-         {
-            if( !secret_hash.empty( ) )
-            {
-               stringstream ss( base64::decode( ver_info.extra ) );
-
-               crypt_stream( ss, secret_hash, e_stream_cipher_chacha20 );
-
-               ver_info.extra = ss.str( );
-            }
-
-            string::size_type pos = ver_info.extra.rfind( ']' );
-
-            if( pos != string::npos )
-               ver_info.extra.erase( pos );
-
-            pos = ver_info.extra.find( '!' );
-
-            if( pos != string::npos )
-            {
-               ver_info.extra.erase( pos );
-
-               other_is_owner = true;
-
-               if( is_owner )
-                  both_are_owners = true;
-            }
-
-            pos = ver_info.extra.find( '%' );
-
-            if( pos != string::npos )
-            {
-#ifdef SSL_SUPPORT
-               public_ext = ver_info.extra.substr( pos + 1 );
-
-               if( !secret_hash.empty( ) )
-               {
-                  public_key pub_key( public_ext );
-                  private_key priv_key( secret_key );
-
-                  priv_key.construct_shared( session_secret, pub_key );
-
-                  sha256 hash( secret_hash + session_secret );
-
-                  session_secret = hash.get_digest_as_string( );
-               }
-#endif
-               ver_info.extra.erase( pos );
-            }
-
-            pos = ver_info.extra.find( '&' );
-
-            if( pos != string::npos )
-            {
-               hub_identity = ver_info.extra.substr( pos + 1 );
-               ver_info.extra.erase( pos );
-            }
-
-            pos = ver_info.extra.find( '[' );
-
-            if( pos != string::npos )
-               ver_info.extra.erase( 0, pos + 1 );
-
-            if( unformat_bytes( ver_info.extra ) != get_files_area_item_max_size( ) )
-            {
-               ap_socket->close( );
-
-               // FUTURE: This message should be handled as a server string message.
-               string error( "Unexpected files area item size mismatch." );
-
-               if( !identity.empty( ) )
-                  set_system_variable( c_error_message_prefix + identity, error );
-
-               if( !unprefixed_blockchain.empty( ) )
-                  set_system_variable( c_error_message_prefix + unprefixed_blockchain, error );
-
-               throw runtime_error( error );
-            }
-         }
       }
 
       // NOTE: Wait a little while before calling 'init_session' for a hub session so that
@@ -7471,6 +7321,136 @@ void peer_session::on_start( )
    }
 
    delete this;
+}
+
+void peer_session::process_greeting( )
+{
+   progress* p_sock_progress = 0;
+   trace_progress sock_progress( TRACE_SOCK_OPS );
+
+#ifdef DEBUG_PEER_HANDSHAKE
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_sock_progress = &sock_progress;
+#endif
+
+   string greeting;
+
+   if( ap_socket->read_line( greeting, c_initial_timeout, c_max_greeting_size, p_sock_progress ) <= 0 )
+   {
+      string error;
+
+      // FUTURE: These messages should be handled as a server string messages.
+      if( ap_socket->had_timeout( ) )
+         error = "Timeout occurred trying to connect to peer.";
+      else
+         error = "Peer has unexpectedly terminated this connection.";
+
+      ap_socket->close( );
+      throw runtime_error( error );
+   }
+
+   if( greeting.find( c_response_error_prefix ) == 0 )
+   {
+      ap_socket->close( );
+
+      greeting.erase( 0, strlen( c_response_error_prefix ) );
+
+      throw runtime_error( greeting );
+   }
+
+   version_info ver_info;
+
+   if( get_version_info( greeting, ver_info ) != string( c_response_okay ) )
+   {
+      ap_socket->close( );
+
+      throw runtime_error( greeting );
+   }
+
+   if( !check_version_info( ver_info, c_protocol_major_version, c_protocol_minor_version ) )
+   {
+      ap_socket->close( );
+
+      // FUTURE: This message should be handled as a server string message.
+      string error( "Incompatible protocol version "
+       + ver_info.ver + " (was expecting " + string( c_protocol_version ) + ")." );
+
+      throw runtime_error( error );
+   }
+
+   if( !ver_info.extra.empty( ) )
+   {
+      if( !secret_hash.empty( ) )
+      {
+         stringstream ss( base64::decode( ver_info.extra ) );
+
+         crypt_stream( ss, secret_hash, e_stream_cipher_chacha20 );
+
+         ver_info.extra = ss.str( );
+      }
+
+      string::size_type pos = ver_info.extra.rfind( ']' );
+
+      if( pos != string::npos )
+         ver_info.extra.erase( pos );
+
+      pos = ver_info.extra.find( '!' );
+
+      if( pos != string::npos )
+      {
+         ver_info.extra.erase( pos );
+
+         other_is_owner = true;
+
+         if( is_owner )
+            both_are_owners = true;
+      }
+
+      pos = ver_info.extra.find( '%' );
+
+      if( pos != string::npos )
+      {
+#ifdef SSL_SUPPORT
+         public_ext = ver_info.extra.substr( pos + 1 );
+
+         if( !secret_hash.empty( ) )
+         {
+            public_key pub_key( public_ext );
+            private_key priv_key( secret_key );
+
+            priv_key.construct_shared( session_secret, pub_key );
+
+            sha256 hash( secret_hash + session_secret );
+
+            session_secret = hash.get_digest_as_string( );
+         }
+#endif
+         ver_info.extra.erase( pos );
+      }
+
+      pos = ver_info.extra.find( '&' );
+
+      if( pos != string::npos )
+      {
+         hub_identity = ver_info.extra.substr( pos + 1 );
+         ver_info.extra.erase( pos );
+      }
+
+      pos = ver_info.extra.find( '[' );
+
+      if( pos != string::npos )
+         ver_info.extra.erase( 0, pos + 1 );
+
+      if( unformat_bytes( ver_info.extra ) != get_files_area_item_max_size( ) )
+      {
+         ap_socket->close( );
+
+         // FUTURE: This message should be handled as a server string message.
+         string error( "Unexpected files area item size mismatch." );
+
+         throw runtime_error( error );
+      }
+   }
 }
 
 void peer_session::increment_session_count( )
@@ -7971,9 +7951,22 @@ peer_session* create_peer_initiator( const string& blockchain,
             if( !has_main_session && ( num_for_support || will_have_support ) )
                has_support_sessions = true;
 
-            peer_session* p_session = construct_session( dtm, false, ap_socket,
-             ip_addr + '=' + session_blockchain + ':' + to_string( port ), has_main_session,
-             extra, p_identity, chain_type, has_support_sessions, has_set_system_variable );
+            peer_session* p_session = 0;
+
+            try
+            {
+               p_session = construct_session( dtm, false, ap_socket,
+                ip_addr + '=' + session_blockchain + ':' + to_string( port ), has_main_session,
+                extra, p_identity, chain_type, has_support_sessions, has_set_system_variable );
+            }
+            catch( exception& x )
+            {
+               set_system_variable( c_error_message_prefix + identity, x.what( ) );
+            }
+            catch( ... )
+            {
+               set_system_variable( c_error_message_prefix + identity, "unexpected error constructing session" );
+            }
 
             if( !p_session )
                break;
@@ -7983,6 +7976,10 @@ peer_session* create_peer_initiator( const string& blockchain,
                {
                   has_main_session = true;
                   p_main_session = p_session;
+
+                  // NOTE: If okay when initially starting externals then will later automatically try reconnecting.
+                  if( !is_secondary && g_starting_externals )
+                     set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, c_true_value );
                }
 
                if( p_other_session_extras )
@@ -8030,18 +8027,23 @@ void peer_session_starter::on_start( )
 {
    try
    {
+      msleep( c_start_sleep_time );
+
       vector< string > peerchain_externals;
 
       get_peerchain_externals( peerchain_externals );
 
-      msleep( c_start_sleep_time );
-
-      for( size_t i = 0; i < peerchain_externals.size( ); i++ )
+      if( !peerchain_externals.empty( ) )
       {
-         if( g_server_shutdown || has_max_peers( ) )
-            break;
+         restorable< bool > starting_externals( g_starting_externals, true );
 
-         start_peer_session( peerchain_externals[ i ] );
+         for( size_t i = 0; i < peerchain_externals.size( ); i++ )
+         {
+            if( g_server_shutdown || has_max_peers( ) )
+               break;
+
+            start_peer_session( peerchain_externals[ i ] );
+         }
       }
 
       size_t num_waits = 0;
@@ -8237,8 +8239,6 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    // NOTE: This will be cleared by the peer session after it has started
    // (or cleared below if 'p_local_main' is returned as a null pointer).
    set_system_variable( identity, c_true_value );
-
-   set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, c_true_value );
 
    other_session_extras other_extras( num_for_support );
 
