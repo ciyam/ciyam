@@ -8057,7 +8057,7 @@ void peer_session_starter::on_start( )
          {
             num_waits = 0;
 
-            string pending_vars( get_system_variable( get_special_var_name( e_special_var_pending ) + "_*" ) );
+            string pending_vars( get_system_variable( get_special_var_name( e_special_var_auto ) + "_*" ) );
 
             if( !pending_vars.empty( ) )
             {
@@ -8238,8 +8238,7 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    // (or cleared below if 'p_local_main' is returned as a null pointer).
    set_system_variable( identity, c_true_value );
 
-   set_system_variable( get_special_var_name(
-    e_special_var_pending ) + '_' + identity, c_true_value );
+   set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, c_true_value );
 
    other_session_extras other_extras( num_for_support );
 

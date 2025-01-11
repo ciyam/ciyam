@@ -62,6 +62,7 @@ const char* const c_special_variable_sid = "@sid";
 const char* const c_special_variable_arg1 = "@arg1";
 const char* const c_special_variable_arg2 = "@arg2";
 const char* const c_special_variable_arg3 = "@arg3";
+const char* const c_special_variable_auto = "@auto";
 const char* const c_special_variable_cube = "@cube";
 const char* const c_special_variable_gids = "@gids";
 const char* const c_special_variable_hash = "@hash";
@@ -364,6 +365,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_arg1 );
       g_special_variable_names.push_back( c_special_variable_arg2 );
       g_special_variable_names.push_back( c_special_variable_arg3 );
+      g_special_variable_names.push_back( c_special_variable_auto );
       g_special_variable_names.push_back( c_special_variable_cube );
       g_special_variable_names.push_back( c_special_variable_gids );
       g_special_variable_names.push_back( c_special_variable_hash );

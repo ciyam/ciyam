@@ -1,7 +1,11 @@
 `{`@eq`(`'get_state`'`,`$section`)\
    // [(start protect_not_equal)] `{`$arg_id`}
 `{`$value`=`$arg_value`}`{`@eq`(`$arg_value`,`'"@null"`'`)`$value`=`'""`'`}\
-   if( `{`@eq`(`$arg_admin_always`,`'true`'`)!is_admin_uid( ) && `}`{`@eq`(`$arg_scripts_always`,`'true`'`)!is_auto_uid( ) && `}check_not_equal( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ), `{`$value`} ) )`{`!`@eq`(`$arg_label`,`'`'`) // i.e. `{`$arg_label`}`}\
+   if( `{`@eq`(`$arg_scripts_always`,`'true`'`)!is_auto_uid( )
+    && `}`{`@eq`(`$arg_admin_always`,`'true`'`)!is_admin_uid( )
+    && `}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
+    && `}check_not_equal( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ), `{`$value`} ) )`{`!`@eq`(`$arg_label`,`'`'`) // i.e. `{`$arg_label`}`}\
 `{`@eq`(`$arg_scope`,`'edit`'`)
       state |= ( c_state_uneditable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`} );\
 `,`@eq`(`$arg_scope`,`'delete`'`)
@@ -25,6 +29,13 @@
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
       names.insert( "`{`$arg_pfield`}" );\
+`}`{`!`@eq`(`$arg_tfield`,`'`'`)
+
+   dependents.insert( "`{`$arg_tfield`}" );
+
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+      names.insert( "`{`$arg_tfield`}" );\
 `}
    // [(finish protect_not_equal)] `{`$arg_id`}
 `}

@@ -23,6 +23,7 @@ enum special_var
    e_special_var_arg1,
    e_special_var_arg2,
    e_special_var_arg3,
+   e_special_var_auto,
    e_special_var_cube,
    e_special_var_gids,
    e_special_var_hash,

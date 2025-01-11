@@ -1,25 +1,33 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_set_variable)] `{`$arg_id`}
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$arg_modifier`,`'`'`)`$i`=`'   `'`}\
 `{`@eq`(`$arg_system`,`'true`'`)\
 `{`@eq`(`$arg_check_null`,`'`'`)\
-   set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)
-    + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
+`{`!`@eq`(`$i`,`'`'`)\
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`) && `}`}\
+`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )`} )
+`}`{`$i`}   set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
 `{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`},\
  `{`@eq`(`$arg_fistexttype`,`'0`'`)to_string( `}get_obj( ).`{`$arg_field`}( )`{`@eq`(`$arg_fistexttype`,`'0`'`) )`} );
 `,\
-   if( !set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)
-    + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
+    && `}!set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
 `{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`},\
  `{`@eq`(`$arg_fistexttype`,`'0`'`)to_string( `}get_obj( ).`{`$arg_field`}( )`{`@eq`(`$arg_fistexttype`,`'0`'`) )`}, string( "" ) ) )
       return;
 `}`,`@eq`(`$arg_session`,`'true`'`)\
-   set_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)
-    + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
+`{`!`@eq`(`$i`,`'`'`)\
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`) && `}`}\
+`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )`} )
+`}`{`$i`}   set_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
 `{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`},\
  `{`@eq`(`$arg_fistexttype`,`'0`'`)to_string( `}get_obj( ).`{`$arg_field`}( )`{`@eq`(`$arg_fistexttype`,`'0`'`) )`} );
 `,\
-   get_obj( ).set_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)
-    + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
+`{`!`@eq`(`$i`,`'`'`)\
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`) && `}`}\
+`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )`} )
+`}`{`$i`}   get_obj( ).set_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
 `{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`},\
  `{`@eq`(`$arg_fistexttype`,`'0`'`)to_string( `}get_obj( ).`{`$arg_field`}( )`{`@eq`(`$arg_fistexttype`,`'0`'`) )`} );
 `}\
