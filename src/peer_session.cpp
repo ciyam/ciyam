@@ -122,6 +122,7 @@ const size_t c_key_pair_separator_pos = 44;
 const size_t c_wait_sleep_time = 250;
 const size_t c_start_sleep_time = 2500;
 const size_t c_finish_sleep_time = 1000;
+const size_t c_support_sleep_time = 1000;
 
 const size_t c_connect_timeout = 15000;
 const size_t c_initial_timeout = 10000;
@@ -1652,8 +1653,9 @@ void check_for_missing_other_sessions( const date_time& now )
    {
       size_t num_supporters = get_num_sessions_for_blockchain( identity, true, true );
 
-      // NOTE: Create replacements for missing support sessions (only create
-      // one support session at a time to avoid creating more than required).
+      // NOTE: Create support sessions if required (only creates the one
+      // support session at a time and waits before doing so in order to
+      // prevent accidentally creating too many due to starting delays).
       if( num_for_support > num_supporters )
       {
          string host_and_port( get_raw_session_variable( get_special_var_name( e_special_var_ip_addr ) ) );
@@ -1679,7 +1681,11 @@ void check_for_missing_other_sessions( const date_time& now )
             ap_temp_secret_hash.reset( new temporary_session_variable( secret_hash_name, secret_hash ) );
 
          if( chain_type != e_peerchain_type_any )
+         {
+            msleep( c_support_sleep_time );
+
             create_peer_initiator( blockchain, host_and_port, false, 1, false, true, true, chain_type );
+         }
       }
    }
 }
@@ -6898,11 +6904,6 @@ void peer_session::on_start( )
           + ':' + extra + '\n' + string( c_response_okay ), c_initial_timeout, p_sock_progress );
       }
 
-      // NOTE: Wait a little while before calling 'init_session' for a hub session so that
-      // its session id will (in typical situations) be greater than the support sessions.
-      if( is_hub )
-         msleep( 250 );
-
       init_session( cmd_handler, true, &ip_addr,
        &unprefixed_blockchain, from_string< int >( port ), is_for_support, false );
 
@@ -7821,11 +7822,6 @@ peer_session* create_peer_initiator( const string& blockchain,
       throw runtime_error( "cannot create " + to_string( num_for_support )
        + " sessions for support (max is " + to_string( c_max_num_for_support ) + ")" );
 
-   other_session_extras other_extras( num_for_support );
-
-   if( !p_other_session_extras )
-      p_other_session_extras = &other_extras;
-
    int port = 0;
    string host( c_local_host );
 
@@ -7955,11 +7951,13 @@ peer_session* create_peer_initiator( const string& blockchain,
             }
             catch( exception& x )
             {
-               set_system_variable( c_error_message_prefix + identity, x.what( ) );
+               if( !has_main_session )
+                  set_system_variable( c_error_message_prefix + identity, x.what( ) );
             }
             catch( ... )
             {
-               set_system_variable( c_error_message_prefix + identity, "unexpected error constructing session" );
+               if( !has_main_session )
+                  set_system_variable( c_error_message_prefix + identity, "unexpected error constructing session" );
             }
 
             if( !p_session )
@@ -8245,27 +8243,11 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    if( !p_local_main )
       set_system_variable( identity, "" );
    else if( peer_type >= 0 )
-   {
       peer_session* p_hosted_main = create_peer_initiator( blockchain, info,
        false, zero_or_dummy, false, true, false, chain_type, false, p_extra_value, &other_extras );
 
-      if( p_hosted_main )
-      {
-         // NOTE: If the two main sessions were successfully created then
-         // will now create the requested support sessions for them both.
-         if( num_for_support )
-         {
-            create_peer_initiator( blockchain, info, false,
-             num_for_support, false, false, true, chain_type, false, p_extra_value );
-
-            create_peer_initiator( blockchain, info, false,
-             num_for_support, false, true, true, chain_type, false, p_extra_value );
-         }
-      }
-   }
-
    // NOTE: If peer type is user or combined then will also create reversed identity sessions.
-   if( create_reversed )
+   if( p_local_main && create_reversed )
    {
       string reversed( identity );
       reverse( reversed.begin( ), reversed.end( ) );
@@ -8278,22 +8260,8 @@ void peer_session_starter::start_peer_session( const string& peer_info )
        false, zero_or_dummy, false, false, false, reversed_chain_type, false, p_extra_value, &other_extras );
 
       if( p_local_shared && ( peer_type >= 0 ) )
-      {
          peer_session* p_hosted_shared = create_peer_initiator( reversed_chain, info,
           false, zero_or_dummy, false, true, false, reversed_chain_type, false, p_extra_value, &other_extras );
-
-         if( p_hosted_shared )
-         {
-            if( num_for_support )
-            {
-               create_peer_initiator( reversed_chain, info, false,
-                num_for_support, false, false, true, reversed_chain_type, false, p_extra_value );
-
-               create_peer_initiator( reversed_chain, info, false,
-                num_for_support, false, true, true, reversed_chain_type, false, p_extra_value );
-            }
-         }
-      }
    }
 }
 
