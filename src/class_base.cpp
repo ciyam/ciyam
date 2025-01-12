@@ -6677,6 +6677,8 @@ void disuse_peerchain( const string& identity, bool no_delay )
 
       set_system_variable( '@' + to_string( port ), '~' + identities );
 
+      set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, "" );
+
       if( !no_delay )
          msleep( c_peer_sleep_time );
    }
@@ -6720,8 +6722,6 @@ void disconnect_peerchain( const string& identity, bool no_delay )
 
    if( set_system_variable( '~' + identity, c_true_value, check_not_has ) )
    {
-      set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, "" );
-
       if( !no_delay )
          msleep( c_peer_sleep_time * 2 );
    }
