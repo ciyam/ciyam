@@ -9901,7 +9901,7 @@ bool has_any_session_variable( const string& name )
    {
       if( g_sessions[ i ]
        && ( ( g_sessions[ i ]->variables.count( name ) )
-       || ( g_sessions[ i ]->variables.count( name ) ) ) )
+       || ( g_sessions[ i ]->deque_variables.count( name ) ) ) )
          return true;
    }
 
