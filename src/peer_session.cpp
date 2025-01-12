@@ -121,11 +121,13 @@ const size_t c_key_pair_separator_pos = 44;
 
 const size_t c_wait_sleep_time = 250;
 const size_t c_start_sleep_time = 2500;
+const size_t c_finish_sleep_time = 1000;
 
 const size_t c_connect_timeout = 15000;
 const size_t c_initial_timeout = 10000;
-const size_t c_request_timeout = 30000;
-const size_t c_support_timeout = 10000;
+
+const size_t c_request_timeout = 35000;
+const size_t c_support_timeout = 15000;
 
 const size_t c_num_hash_rounds = 1000000;
 
@@ -6778,7 +6780,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          if( !has_data && !has_user && !blockchains.count( blockchain ) )
          {
             // FUTURE: This message should be handled as a server string message.
-            string error( "Unsupported peerchain identity '" + unprefixed_blockchain + "'." );
+            string error( "Peerchain identity '" + unprefixed_blockchain + "' is not available." );
 
             this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_initial_timeout );
 
@@ -7307,17 +7309,9 @@ void peer_session::on_start( )
    if( has_terminated && !is_for_support )
    {
       // NOTE: Wait before clearing the system variable (for the FCGI UI).
-      msleep( c_start_sleep_time );
+      msleep( c_finish_sleep_time );
 
-      if( paired_identity.empty( ) )
-         set_system_variable( '~' + identity, "" );
-      else
-      {
-         set_variable_checker check_no_other_session(
-          e_variable_check_type_no_session_has, paired_identity );
-
-         set_system_variable( '~' + paired_identity, "", check_no_other_session );
-      }
+      set_system_variable( '~' + identity, "" );
    }
 
    delete this;
