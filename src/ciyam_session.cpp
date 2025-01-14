@@ -6761,7 +6761,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string utc_time( get_parm_val( parameters, c_cmd_ciyam_session_utc_to_unix_time_utc_time ) );
 
-         date_time utc( utc_time );
+         date_time utc;
+
+         if( utc_time != c_dtm_now )
+            utc = date_time( utc_time );
+         else
+            utc = date_time::standard( );
 
          response = to_string( unix_time( utc ) );
       }
