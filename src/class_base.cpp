@@ -4355,6 +4355,26 @@ numeric datetime_to_unix( const date_time& dtm )
    return unix_time( dtm, 0, true );
 }
 
+string seconds_from_now( const string& unix_time_str, bool append_secs_char )
+{
+   int64_t secs = 0;
+
+   if( !unix_time_str.empty( ) && ( unix_time_str != c_true_value ) )
+   {
+      int64_t now = unix_time( );
+
+      int64_t then = from_string< int64_t >( unix_time_str );
+
+      if( now > then )
+         secs = ( now - then );
+      else
+         secs = ( then - now );
+   }
+
+   // FUTURE: A module string should be used for the 'append_secs_char'.
+   return to_string( secs ) + ( !append_secs_char ? "" : "s" );
+}
+
 string formatted_int( int n, const string& mask )
 {
    return format_numeric( n, mask );
@@ -6707,6 +6727,10 @@ void connect_peerchain( const string& connect_info, bool no_delay )
    if( set_system_variable( get_special_var_name(
     e_special_var_queue_peers ), connect_info, check_not_has_either ) )
    {
+      // NOTE: If has "@auto_<identity>" then set it to "1" (in order to reset reconnect attempts).
+      if( has_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity ) )
+         set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, c_true_value );
+
       if( !no_delay )
          msleep( c_peer_sleep_time * ( is_peer_node ? 2 : 5 ) );
    }

@@ -1429,6 +1429,9 @@ std::string CIYAM_BASE_DECL_SPEC unix_to_datetime( const numeric& unix_time );
 
 numeric CIYAM_BASE_DECL_SPEC datetime_to_unix( const date_time& dtm );
 
+std::string CIYAM_BASE_DECL_SPEC seconds_from_now(
+ const std::string& unix_time_str, bool append_secs_char = true );
+
 std::string CIYAM_BASE_DECL_SPEC formatted_int( int n, const std::string& mask );
 std::string CIYAM_BASE_DECL_SPEC formatted_numeric( const numeric& n, const std::string& mask );
 
