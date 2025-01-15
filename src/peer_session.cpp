@@ -99,8 +99,12 @@ const size_t c_checksum_length = 8;
 const size_t c_dummy_num_for_support = 999;
 const size_t c_default_progress_seconds = 2;
 
+const int c_attempt_seconds = 10;
+
 const int c_accept_timeout = 250;
 const int c_max_line_length = 500;
+
+const int c_last_decimal_digit = 10;
 
 const int c_max_num_for_support = 11;
 
@@ -133,7 +137,7 @@ const size_t c_support_timeout = 15000;
 const size_t c_num_hash_rounds = 1000000;
 
 const size_t c_num_check_disconnected = 10;
-const size_t c_num_check_pending_waits = 50;
+const size_t c_num_check_reconnect_waits = 10;
 
 const size_t c_peer_protocol_not_found_rcvd_gap = 3;
 const size_t c_peer_protocol_not_found_sent_gap = 2;
@@ -7969,8 +7973,9 @@ peer_session* create_peer_initiator( const string& blockchain,
                   has_main_session = true;
                   p_main_session = p_session;
 
-                  // NOTE: If okay when initially starting externals then will later automatically try reconnecting.
-                  if( !is_secondary && g_starting_externals )
+                  // NOTE: If okay when initially started then will later automatically try reconnecting.
+                  if( is_paired && !is_secondary
+                   && ( !p_other_session_extras || p_other_session_extras->backup_identity.empty( ) ) )
                      set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, c_true_value );
                }
 
@@ -7999,6 +8004,45 @@ peer_session* create_peer_initiator( const string& blockchain,
                break;
             }
          }
+      }
+   }
+
+   if( !is_secondary && !has_main_session )
+   {
+      string auto_unix( get_raw_system_variable(
+       get_special_var_name( e_special_var_auto ) + '_' + identity ) );
+
+      if( g_starting_externals )
+      {
+         if( auto_unix.empty( ) )
+            auto_unix = c_true_value;
+      }
+
+      if( !auto_unix.empty( ) )
+      {
+         size_t unix_now = unix_time( date_time::standard( ) );
+         size_t unix_time = from_string< size_t >( auto_unix );
+
+         // NOTE: The last digit is used as a connection "attempt"
+         // number. The delay before the next attempt increases by
+         // "c_attempt_seconds".
+         size_t attempt = ( unix_time % c_last_decimal_digit );
+
+         unix_now -= ( unix_now % c_last_decimal_digit );
+
+         unix_time -= attempt;
+
+         size_t next = ( attempt + 1 );
+
+         // NOTE: Always wait the same amount after 9 attempts.
+         if( !attempt || ( next == 9 ) )
+         {
+            next = 0;
+            attempt = 10;
+         }
+
+         set_system_variable( get_special_var_name( e_special_var_auto ) + '_'
+          + identity, to_string( unix_now + ( attempt * c_attempt_seconds ) + next ) );
       }
    }
 
@@ -8047,17 +8091,19 @@ void peer_session_starter::on_start( )
 
          string entries( get_system_variable( get_special_var_name( e_special_var_queue_peers ) ) );
 
-         if( entries.empty( ) && ( ++num_waits >= c_num_check_pending_waits ) )
+         if( entries.empty( ) && ( ++num_waits >= c_num_check_reconnect_waits ) )
          {
             num_waits = 0;
 
-            string pending_vars( get_system_variable( get_special_var_name( e_special_var_auto ) + "_*" ) );
+            string pending_vars( get_raw_system_variable( get_special_var_name( e_special_var_auto ) + "_*" ) );
 
             if( !pending_vars.empty( ) )
             {
                vector< string > all_pending_vars;
 
                split( pending_vars, all_pending_vars, '\n' );
+
+               size_t unix_now = unix_time( date_time::standard( ) );
 
                for( size_t i = 0; i < all_pending_vars.size( ); i++ )
                {
@@ -8067,6 +8113,8 @@ void peer_session_starter::on_start( )
 
                   if( pos != string::npos )
                   {
+                     size_t unix_when = from_string< size_t >( next_pending.substr( pos + 1 ) );
+
                      next_pending.erase( pos );
 
                      pos = next_pending.rfind( '_' );
@@ -8084,10 +8132,13 @@ void peer_session_starter::on_start( )
                         if( set_system_variable(
                          get_special_var_name( e_special_var_none ), identity, check_not_has_either ) )
                         {
-                           if( !entries.empty( ) )
-                              entries += ',';
+                           if( ( unix_now >= unix_when ) && has_registered_listener_id( identity ) )
+                           {
+                              if( !entries.empty( ) )
+                                 entries += ',';
 
-                           entries += identity;
+                              entries += identity;
+                           }
                         }
                      }
                   }

@@ -1,0 +1,17 @@
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
+   // [(start transient_field_to_enum_item_label)] `{`$arg_id`}
+   get_obj( ).`{`$arg_field`}( get_enum_string_`{`$arg_enum`}( get_obj( ).`{`$arg_sfield`}( ) ) );
+   // [(finish transient_field_to_enum_item_label)] `{`$arg_id`}
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_field_to_enum_item_label)] `{`$arg_id`}
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_sfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+         names.insert( "`{`$arg_sfield`}" );
+   }
+   // [(finish transient_field_to_enum_item_label)] `{`$arg_id`}
+`}
