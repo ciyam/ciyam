@@ -693,6 +693,8 @@ ods CIYAM_BASE_DECL_SPEC& system_ods_instance( );
 
 ods_file_system CIYAM_BASE_DECL_SPEC& system_ods_file_system( );
 
+void CIYAM_BASE_DECL_SPEC export_repository_entries( );
+
 class CIYAM_BASE_DECL_SPEC system_ods_bulk_read
 {
    public:

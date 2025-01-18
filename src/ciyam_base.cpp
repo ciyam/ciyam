@@ -1922,6 +1922,20 @@ void init_system_ods( bool* p_restored = 0 )
    if( !gap_ofs->has_folder( c_system_repository_folder ) )
       gap_ofs->add_folder( c_system_repository_folder );
 
+   if( num_system_backup_files )
+   {
+      if( dir_exists( c_system_repository_folder ) )
+      {
+         gap_ofs->set_folder( c_system_repository_folder );
+
+         import_objects( *gap_ofs, c_system_repository_folder );
+
+         gap_ofs->set_folder( ".." );
+
+         delete_directory_files( c_system_repository_folder, true );
+      }
+   }
+
    if( ap_tx.get( ) )
       ap_tx->commit( );
 
@@ -6193,6 +6207,8 @@ string get_web_root( )
 
 bool get_is_accepted_ip_addr( const string& ip_addr )
 {
+   guard g( g_mutex );
+
    if( has_raw_system_variable(
     get_special_var_name( e_special_var_disallow_connections ) ) )
       return false;
@@ -6204,6 +6220,10 @@ bool get_is_accepted_ip_addr( const string& ip_addr )
 bool get_is_accepted_peer_ip_addr( const string& ip_addr )
 {
    guard g( g_mutex );
+
+   if( has_raw_system_variable(
+    get_special_var_name( e_special_var_disallow_connections ) ) )
+      return false;
 
    return ( g_rejected_peer_ip_addrs.empty( ) || g_rejected_peer_ip_addrs.count( ip_addr ) == 0 )
     && ( g_accepted_peer_ip_addrs.empty( ) || ( g_accepted_peer_ip_addrs.count( ip_addr ) > 0 ) );
@@ -11390,6 +11410,18 @@ ods& system_ods_instance( )
 ods_file_system& system_ods_file_system( )
 {
    return *gap_ofs;
+}
+
+void export_repository_entries( )
+{
+   system_ods_fs_guard ods_fs_guard;
+
+   ods::bulk_read bulk_read( *gap_ods );
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   gap_ofs->set_root_folder( c_system_repository_folder );
+
+   export_objects( *gap_ofs, c_system_repository_folder );
 }
 
 struct system_ods_bulk_read::impl
