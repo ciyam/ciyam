@@ -571,7 +571,7 @@ Error,M001C108F117
 Export_In_Progress,M001C108F118
 Export_Needed,M001C108F119
 Exporting_For_Chain_Id,M001C108F120
-Host_And_Port,M001C108F121
+Host_And_Port_Info,M001C108F121
 Core_Peer_Lot,M001C108F122
 Initial_Backup_Hash,M001C108F123
 Initial_Hub_Hash,M001C108F124
