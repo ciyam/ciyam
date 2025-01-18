@@ -6684,6 +6684,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( response.find( own_tz + ' ' ) != string::npos )
             replace( response, own_tz + ' ', "*" + own_tz + ' ' );
       }
+      else if( command == c_cmd_ciyam_session_system_export_repo )
+      {
+         // NOTE: To make sure the console client doesn't time out issue a progress message.
+         handler.output_progress( "(exporting repository entries)" );
+
+         export_repository_entries( );
+      }
       else if( command == c_cmd_ciyam_session_system_trace_flags )
       {
          vector< string > trace_flag_names;
