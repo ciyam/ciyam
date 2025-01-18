@@ -1650,10 +1650,13 @@ void check_for_missing_other_sessions( const date_time& now )
       }
    }
 
+   bool disallowed = has_raw_system_variable(
+    get_special_var_name( e_special_var_disallow_connections ) );
+
    size_t num_for_support = from_string< size_t >(
     get_raw_session_variable( get_special_var_name( e_special_var_blockchain_num_for_support ) ) );
 
-   if( num_for_support && !g_server_shutdown && !is_condemned_session( ) )
+   if( !disallowed && num_for_support && !g_server_shutdown && !is_condemned_session( ) )
    {
       size_t num_supporters = get_num_sessions_for_blockchain( identity, true, true );
 
@@ -6009,6 +6012,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       }
    }
 
+   // NOTE: If backup is being prepared then condemn session.
+   if( has_raw_system_variable(
+    get_special_var_name( e_special_var_prepare_system ) ) )
+      condemn_this_session( );
+
    // NOTE: It is possible that a support session had been started for
    // a main session which had finished before the support session had
    // been initialised (thus was not condemned by the main session) so
@@ -7457,6 +7465,7 @@ void peer_session::increment_session_count( )
    guard g( g_mutex );
 
    ++g_num_peers;
+
    ciyam_session::increment_session_count( );
 }
 
@@ -7465,6 +7474,7 @@ void peer_session::decrement_session_count( )
    guard g( g_mutex );
 
    --g_num_peers;
+
    ciyam_session::decrement_session_count( );
 }
 
@@ -7563,6 +7573,7 @@ void peer_listener::on_start( )
                      {
                         if( !unprefixed_blockchains.empty( ) )
                            unprefixed_blockchains += ',';
+
                         unprefixed_blockchains += *i;
                      }
 
@@ -8091,7 +8102,16 @@ void peer_session_starter::on_start( )
 
          string entries( get_system_variable( get_special_var_name( e_special_var_queue_peers ) ) );
 
-         if( entries.empty( ) && ( ++num_waits >= c_num_check_reconnect_waits ) )
+         bool allowed = true;
+
+         if( has_raw_system_variable( get_special_var_name( e_special_var_disallow_connections ) ) )
+         {
+            allowed = false;
+
+            entries.erase( );
+         }
+
+         if( allowed && entries.empty( ) && ( ++num_waits >= c_num_check_reconnect_waits ) )
          {
             num_waits = 0;
 
