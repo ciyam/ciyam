@@ -6127,10 +6127,10 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             {
                string identity( get_identity( ) );
 
-               g_identity_suffix = identity;
+               g_identity_suffix = identity.substr( 0, c_bc_identity_length );
 
                set_system_variable( get_special_var_name(
-                e_special_var_system_identity ), identity.substr( 0, c_bc_identity_length ) );
+                e_special_var_system_identity ), g_identity_suffix );
             }
          }
       }
@@ -6167,6 +6167,9 @@ void set_identity( const string& info, const char* p_encrypted_sid )
    if( run_init_script )
    {
       run_script( "init_ciyam", false );
+
+      g_identity_suffix = get_raw_system_variable(
+       get_special_var_name( e_special_var_system_identity ) );
 
       check_if_is_known_demo_identity( );
    }
