@@ -2861,8 +2861,32 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             // any error here (so that deleting via a view action can be supported).
             if( back.empty( ) )
             {
-               extra_content << "<p align=\"center\" class=\"error\">"
-                << GDS( c_display_error ) << ": " << GDS( c_display_record_not_found ) << ".</p>\n";
+               bool missing_datachain = false;
+
+               // NOTE: For blockchain applications 'special' is being used to hold
+               // the datachain identity in a record link (so the missing datachain
+               // message can appear rather than missing record error message).
+               if( !special.empty( ) && !get_storage_info( ).blockchain.empty( ) )
+               {
+                  string expected( c_bc_prefix + special + c_zenith_suffix );
+
+                  string response;
+
+                  // NOTE: It is expected that a zenith tag should always exist.
+                  simple_command( *p_session_info, "file_tags " + expected + "*", &response, true );
+
+                  if( response != expected )
+                     missing_datachain = true;
+               }
+
+               if( !missing_datachain )
+                  extra_content << "<p align=\"center\" class=\"error\">"
+                   << GDS( c_display_error ) << ": " << GDS( c_display_record_not_found ) << ".</p>\n";
+               else
+                  extra_content << "<p align=\"center\">"
+                   << string_message( GDS( c_display_datachain_not_found ),
+                   make_pair( c_display_datachain_not_found_parm_identity, special ) ) << "</p>\n";
+
             }
          }
          else if( view.type == c_view_type_none

@@ -1099,6 +1099,7 @@ void setup_directories( )
    map< string, set< string > > module_file_class_ids;
 
    module_index_const_iterator mici;
+
    for( mici = sinfo.modules_index.begin( ); mici != sinfo.modules_index.end( ); ++mici )
    {
       const module_info& mod_info( *mici->second );
@@ -1125,6 +1126,7 @@ void setup_directories( )
    }
 
    map< string, set< string > >::iterator i;
+
    for( i = module_file_class_ids.begin( ); i != module_file_class_ids.end( ); ++i )
    {
       mici = sinfo.modules_index.find( i->first );
@@ -1187,6 +1189,7 @@ bool has_permission( const string& perm, const session_info& sess_info )
    if( !perm.empty( ) )
    {
       bool negate = false;
+
       if( perm[ 0 ] == '!' )
          negate = true;
 
@@ -1230,6 +1233,7 @@ bool replace_action_parms( string& id, string& action,
    id = action.substr( spos );
 
    string::size_type pos = id.find( '+' );
+
    if( pos != string::npos )
       id.erase( pos );
 
@@ -1238,12 +1242,15 @@ bool replace_action_parms( string& id, string& action,
    if( pos != string::npos )
    {
       string parameters( action.substr( pos + 1 ) );
+
       action.erase( pos );
 
       vector< string > parms;
+
       split( parameters, parms, '+' );
 
       string str;
+
       for( size_t j = 0; j < parms.size( ); j++ )
       {
          if( j > 0 )
@@ -1314,6 +1321,7 @@ string remove_links( const string& s )
    string rc, str( s );
 
    string::size_type lpos;
+
    while( ( lpos = str.find( '{' ) ) != string::npos )
    {
       if( lpos != 0 )
@@ -1322,14 +1330,17 @@ string remove_links( const string& s )
       str.erase( 0, lpos );
 
       string::size_type rpos = str.find( '}' );
+
       if( rpos == string::npos )
          throw runtime_error( "unexpected manual link format in '" + s + "'" );
 
       string::size_type npos = str.find( ':' );
+
       if( npos == string::npos || npos > rpos )
          throw runtime_error( "unexpected manual link format in '" + s + "'" );
 
       rc += str.substr( npos + 1, rpos - npos - 1 );
+
       str.erase( 0, rpos + 1 );
    }
 
@@ -1373,16 +1384,17 @@ void replace_links_and_output( const string& s,
 
       string::size_type npos = cell_data.find( ':' );
 
-      if( npos == string::npos || ( npos > rpos ) )
+      if( ( npos == string::npos ) || ( npos > rpos ) )
          throw runtime_error( "unexpected manual link format in '" + cell_data + "'" );
 
       string next( cell_data.substr( 1, rpos - 1 ) );
+
       cell_data.erase( 0, rpos + 1 );
 
       string next_key( next.substr( 0, npos - 1 ) );
 
       // NOTE: A generic "@key" can optionally be replaced by the record key (is
-      // otherwise change to a "dummy" value so that it can be noticed in a URL).
+      // otherwise changed to be "dummy" so that it is easily noticed in a URL).
       if( next_key == c_key_field )
       {
          if( p_key )
@@ -1392,6 +1404,7 @@ void replace_links_and_output( const string& s,
       }
 
       string vid( id );
+
       string::size_type cpos = next_key.find( '$' );
 
       if( cpos != string::npos )
@@ -1412,12 +1425,14 @@ void replace_links_and_output( const string& s,
       if( dtpos != string::npos )
       {
          string date_time_str( next_key.substr( dtpos + 1 ) );
+
          next_key.erase( dtpos );
 
          // NOTE: If is expected that the application server will have adjusted
          // to a local timezone if the user has one specified, but if they have
          // not specified one then adjust according to their GMT offset.
          date_time dt( date_time_str );
+
          if( sess_info.tz_name.empty( ) )
             dt += ( seconds )sess_info.gmt_offset;
 
@@ -1428,9 +1443,11 @@ void replace_links_and_output( const string& s,
          else
          {
             string formatted = format_date_time( dt, display.substr( 0, dtpos ).c_str( ) );
+
             display.erase( 0, dtpos + 1 );
 
             dtpos = display.find( '@' );
+
             if( dtpos != string::npos )
             {
                display.erase( dtpos, 1 );
@@ -1444,6 +1461,20 @@ void replace_links_and_output( const string& s,
       if( output_hrefs && !next_key.empty( ) )
       {
          is_href = true;
+
+         string special;
+
+         string::size_type pos = next_key.find( '.' );
+
+         // NOTE: The special parameter is optionally used to identify
+         // a datachain (useful for record links which are invalid but
+         // perhaps only due to a missing datachain).
+         if( pos != string::npos )
+         {
+            special = next_key.substr( pos + 1 );
+            next_key.erase( pos );
+         }
+
          os << "<a href=\"" << get_module_page_name( module_ref )
           << "?cmd=" << c_cmd_view << "&data=" << next_key << "&ident=";
 
@@ -1451,6 +1482,9 @@ void replace_links_and_output( const string& s,
 
          if( !user_select_key.empty( ) )
             os << "&" << c_param_uselect << "=" << user_select_key;
+
+         if( !special.empty( ) )
+            os << "&special=" << special;
 
          if( !using_session_cookie )
             os << "&session=" << session_id;
