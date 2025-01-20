@@ -84,12 +84,6 @@ PEER_PORT=$OUTPUT
 @else
 @ifdef $PEERCHAIN_HUB
 PEER_PORT=0
-@else
-@ifdef $IS_ONLY
-.peer_listen $PEER_PORT $IDENTITY
-@else
-.peer_listen $PEER_PORT $IDENTITY,$REVERSED
-@endif
 @endif
 .storage_init Meta
 ;
@@ -150,9 +144,9 @@ SHARED_SIZE=10GB
 #Created global peerchain entry for identity '$IDENTITY'.
 @else
 @ifdef $IS_ONLY
-#Created listener, global peerchain entry and file archive for identity '$IDENTITY'.
+#Created global peerchain entry and file archive for identity '$IDENTITY'.
 @else
-#Created listeners, global peerchain entry and file archives for identity '$IDENTITY' (plus '$REVERSED').
+#Created global peerchain entry and file archives for identity '$IDENTITY' (plus '$REVERSED').
 @endif
 @endif
 @endif

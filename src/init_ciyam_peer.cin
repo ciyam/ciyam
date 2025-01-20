@@ -37,7 +37,7 @@ PEER_HUB=$OUTPUT
 .pc sys @now Meta Global_Peerchain_Entry $PEER_HUB "Auto_Start=1,Description=Home Hub,Peer_Type=-2,Local_Port=$PEER_PORT"
 ;
 @ifndef $ERROR
-#Created listeners and global peerchain entries for identities '$PEER_HUB' and '$BACKUP' (plus '$SHARED').
+#Created global peerchain entries for identities '$PEER_HUB' and '$BACKUP' (plus '$SHARED').
 @endif
 .storage_term
 @endif

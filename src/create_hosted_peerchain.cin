@@ -65,7 +65,7 @@ OBFUSCATED_IDENTITY=@substr:0,9:$OUTPUT
 @endif
 ;
 @ifdef $PEER_HUB
-#Created listener and global peerchain entry for identity '$IDENTITY'.
+#Created global peerchain entry for identity '$IDENTITY'.
 @else
 ;
 @ifdef $DEMO
@@ -85,7 +85,7 @@ FILES_AREA_DIR=$OUTPUT
 .file_archive -add $FILES_AREA_DIR/$IDENTITY $BACKUP_SIZE $IDENTITY
 .file_archive -add $FILES_AREA_DIR/$REVERSED $SHARED_SIZE $REVERSED
 ;
-#Created listeners and global peerchain entry for identity '$IDENTITY' (plus '$REVERSED').
+#Created global peerchain entry for identity '$IDENTITY' (plus '$REVERSED').
 @endif
 @endif
 .storage_term
