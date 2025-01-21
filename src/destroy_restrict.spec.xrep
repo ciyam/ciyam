@@ -1,6 +1,8 @@
 `{`$1`}`{`@eq`(`'can_destroy`'`,`$section`)`\
-`{`$value`=`$arg_value`}`\
-`{`@eq`(`$arg_sfistexttype`,`'1`'`)`|`@eq`(`$arg_scfistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}`\
+`{`$value`=`$arg_value`}`{`$is_text`=`'`'`}`\
+`{`@eq`(`$arg_pfield`,`'`'`)`&`@eq`(`$arg_sfistexttype`,`'1`'`)`$is_text`=`'true`'`}`\
+`{`!`@eq`(`$arg_pfield`,`'`'`)`&`@eq`(`$arg_scfistexttype`,`'1`'`)`$is_text`=`'true`'`}`\
+`{`@eq`(`$is_text`,`'true`'`)`$value`=`'"`{`$arg_value`}"`'`}`\
    // [(start destroy_restrict)] `{`$arg_id`}
    if( `{`@eq`(`$arg_allow_internal`,`'true`'`)!is_internal && ( `}`\
 get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( ) == `{`$value`}`{`@eq`(`$arg_allow_internal`,`'true`'`) )`} )
