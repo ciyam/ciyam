@@ -161,6 +161,11 @@
   <arguments>fetch_from_channel.cin @storage @identity
  </script>
  <script/>
+  <name>remove_unsubmitted
+  <filename>*script*
+  <arguments>remove_unsubmitted.cin @storage
+ </script>
+ <script/>
   <name>tree_insert_branch
   <filename>*script*
   <arguments>tree_insert_branch.cin @tree @trunk @branch

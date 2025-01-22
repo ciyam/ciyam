@@ -3852,6 +3852,10 @@ void Meta_Application::impl::for_destroy( bool is_internal )
 
       string app_dir( get_web_root( ) + "/" + lower( get_obj( ).Name( ) ) );
 
+      set_session_variable( get_special_var_name( e_special_var_storage ), get_obj( ).Name( ) );
+
+      run_script( "remove_unsubmitted", false );
+
       if( exists_file( app_dir + "/fcgi.sio" ) )
       {
          string remove_script( "./remove_fcgi" );

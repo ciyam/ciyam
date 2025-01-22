@@ -1,0 +1,62 @@
+; Copyright (c) 2025 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#NOTE: This script requires the name of an existing application.
+@else
+;
+APP_DIR=@lower:$1
+;
+@ifndef $WEBDIR
+#Error: Unexpected missing WEBDIR environment variable.
+@else
+;
+WEB_APP_PATH=$WEBDIR/$APP_DIR
+;
+.session_variable @deque commence
+;
+ALL_LOG_FILES=@files::*.log
+;
+.session_variable @deque "~$ALL_LOG_FILES"
+;
+@:LOG_FILE_LOOP
+;
+@label NEXT_LOG_FILE
+;
+.session_variable @deque front
+;
+@ifndef $OUTPUT
+@label FINISHED_LOG_FILES
+@endif
+;
+NEXT_LOG_FILE=$OUTPUT
+;
+@skip
+;
+@:NEXT_LOG_FILE
+;
+IDENTITY=@repstr:.log/:$NEXT_LOG_FILE
+;
+.regex "^[a-f0-9]{9}$$" $IDENTITY
+;
+@ifdef $OUTPUT
+;
+SUBMIT_FILE=@files:$WEB_APP_PATH:ui_%IDENTITY%_submit
+;
+@ifdef $SUBMIT_FILE
+~rm $NEXT_LOG_FILE
+@endif
+;
+@endif
+;
+.session_variable @deque pop_front
+;
+!!@:LOG_FILE_LOOP
+;
+@:FINISHED_LOG_FILES
+;
+@endif
+;
+@endif
