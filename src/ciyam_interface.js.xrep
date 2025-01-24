@@ -168,6 +168,9 @@ function refresh( back )
 
 function replace_with_scroll_info( history )
 {
+   if( xmlReq != null )
+      return;
+
    if( qsContext.length > 0 )
       insert_scroll_info( );
 
@@ -273,6 +276,7 @@ function insert_scroll_info( )
    var qvars = qsContext.split( '&' );
 
    qsContext = '';
+
    determine_scroll_info( );
 
    var sx = 'scrollx';
@@ -301,6 +305,7 @@ function insert_scroll_info( )
 
       if( qsContext != '' )
          qsContext += '&';
+
       qsContext += qvars[ i ];
    }
 
@@ -308,6 +313,7 @@ function insert_scroll_info( )
    {
       if( qsContext != '' )
          qsContext += '&';
+
       qsContext += 'scrollx=' + scrollLeft;
    }
 
@@ -315,6 +321,7 @@ function insert_scroll_info( )
    {
       if( qsContext != '' )
          qsContext += '&';
+
       qsContext += 'scrolly=' + scrollTop;
    }
 }
@@ -331,7 +338,7 @@ function check_for_new_window_height( )
    // KLUDGE: This value should be determined according to the footer height;
    currentWindowHeight -= 165;
 
-   if( isFirst || windowHeight != currentWindowHeight )
+   if( isFirst || ( windowHeight != currentWindowHeight ) )
    {
       isFirst = false;
       windowHeight = currentWindowHeight;
@@ -348,6 +355,7 @@ function check_for_new_window_height( )
 function utf8_encode( string )
 {
    string = string.replace( /\r\n/g, "\n" );
+
    var utftext = "";
   
    for( var n = 0, k = string.length; n < k; n++ )
@@ -408,11 +416,13 @@ function utf8_decode( utftext )
 function string_to_bytes( str )
 {
    var ch, st, re = [ ];
+
    for( var i = 0; i < str.length; i++ )
    {
 
       ch = str.charCodeAt( i )
       st = [ ];
+
       do
       {
          st.push( ch & 0xFF );
@@ -435,6 +445,7 @@ function load( )
    if( can_write_to_session_storage( ) )
    {
       sessionStorage.setItem( 'app', '`{`@lower`(`$storage_name`)`}' );
+
       if( !isDynamicLoad && sessionStorage.getItem( 'old_content' ) != null )
          document.getElementById( 'content' ).innerHTML = sessionStorage.getItem( 'old_content' );
    }
@@ -512,6 +523,7 @@ function load2( )
    for( i = 0; i < all_cookies.length; i++ )
    {
       var next_cookie = all_cookies[ i ].split( '=' );
+
       if( trim( next_cookie[ 0 ] ) == 'session' )
       {
          has_session = true;
@@ -537,6 +549,7 @@ function load2( )
    for( var i = 0; i < qvars.length; i++ )
    {
       var uhash = 'userhash=';
+
       if( qvars[ i ].indexOf( uhash ) == 0 )
       {
          is_login = true;
@@ -546,6 +559,7 @@ function load2( )
       }
 
       var uname = 'username=';
+
       if( qvars[ i ].indexOf( uname ) == 0 )
       {
          is_login = true;
@@ -555,6 +569,7 @@ function load2( )
       }
 
       var pname = 'persistent=true';
+
       if( qvars[ i ].indexOf( pname ) == 0 )
       {
          persistent = 'true';
@@ -564,10 +579,12 @@ function load2( )
       }
 
       var sname = 'session=';
+
       if( qvars[ i ].indexOf( sname ) == 0 )
       {
          non_cookie = true;
          has_session = true;
+
          session_id = qvars[ i ].substring( sname.length );;
       }
    }
@@ -579,6 +596,7 @@ function load2( )
    }
 
    var full_context = module;
+
    if( qsContext != '' )
    {
       if( full_context != '' )
@@ -587,6 +605,7 @@ function load2( )
    }
 
    var dummy = 'dummy=';
+
    if( encryptPosts )
    {
       var num_random = 10 + Math.floor( Math.random( ) * 6 );
@@ -642,7 +661,7 @@ function load2( )
       var post_data = '';
       var key = localStorage.getItem( 'skey' );
 
-      if( !is_login && has_session && loggedIn && key != null && encryptPosts )
+      if( !is_login && has_session && loggedIn && ( key != null ) && encryptPosts )
       {
          var prefix = 'prefix=';
 
@@ -675,6 +694,7 @@ function load2( )
    load_content_timer_id = setTimeout( load_timeout, load_content_seconds * 1000 );
 
    reqDone = false;
+
    if( useLoadProgress )
       show_load_progress( loadProgressDelay );
 }
@@ -705,6 +725,8 @@ function load_timeout( )
    reqDone = true;
    xmlReq.abort( );
 
+   xmlReq = null;
+
    if( load_form != null )
       enable_form( load_form );
 
@@ -722,6 +744,7 @@ function fade_in( n )
       document.body.style.opacity = n / 100;
 
       n += pageFadeRate;
+
       window.setTimeout( 'fade_in( ' + n + ' )', pageFadeTimer );
    }
    else
@@ -737,6 +760,7 @@ function fade_out( n )
       document.body.style.opacity = n / 100;
 
       n -= pageFadeRate;
+
       window.setTimeout( 'fade_out( ' + n + ' )', pageFadeTimer );
    }
    else
@@ -764,6 +788,7 @@ function after_force( )
       setTimeout( "focus_on_first_text( )", 50 );
 
    isFirst = true;
+
    check_for_new_window_height( );
 }
 
@@ -787,8 +812,13 @@ function force_update( )
 function process( )
 {
    reqDone = true;
+
    if( xmlReq.readyState != 4 )
+   {
+      xmlReq = null;
+
       return;
+   }
 
    if( load_form != null )
       enable_form( load_form );
@@ -801,11 +831,15 @@ function process( )
 
    if( xmlReq.responseText == null || xmlReq.responseText.length == 0 )
    {
+      xmlReq = null;
       alert( displayTimeout );
+
       return;
    }
 
    var response = xmlReq.responseText.substring( 2 );
+
+   xmlReq = null;
 
    var base64test = /[^A-Za-z0-9\+\/\=]/g;
    base64test.exec( response ); // KLUDGE: Need to investigate javascript reg exps more to get rid of this.
@@ -863,7 +897,7 @@ function process( )
 
 function dyn_load( f, extra, clearContext )
 {
-   if( f == null || validate( f ) )
+   if( ( f == null ) || validate( f ) )
    {
       if( clearContext )
         qsContext = ''
@@ -1020,6 +1054,7 @@ function remove_table_row_error( tbl, row )
 
    var row_num = 0;
    var data_row_num = 0;
+
    for( row_num = 0; row_num < tbl.rows.length; row_num++ )
    {
       // NOTE: It would make sense to use a special attribute for the error status, however,
