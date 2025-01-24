@@ -1823,6 +1823,12 @@ void output_actions( ostream& os,
             os << "&app=" << key_and_version << "&cls=" << class_id
              << "&extra=' + get_all_field_values( document." << src.id << " ) + '";
 
+         // NOTE: Although the "auto_back" sessionStorage item is what is necessary to actually go
+         // back this URL query item is still being used in order for the "record not found" error
+         // for the view to be omitted (providing a cleaner UI for a Delete action in the view).
+         if( go_back )
+            os << "&back=" << c_true;
+
          if( !listarg.empty( ) )
             os << "&listarg=" << listarg;
 

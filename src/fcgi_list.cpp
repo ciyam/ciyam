@@ -1822,7 +1822,7 @@ void output_list_form( ostream& os,
 
                   if( pos != string::npos )
                   {
-                     if( !( sess_info.is_admin_user && list_type == c_list_type_admin )
+                     if( !( sess_info.is_admin_user && ( list_type == c_list_type_admin ) )
                       && !has_permission( next_action.substr( pos + 1 ), sess_info ) )
                         continue;
 
