@@ -8,8 +8,8 @@ if [ "$USER" = "`{`$user`}" ]; then
  is_ssh_user=1
 fi
 
-if [ -f ".ciyam_ssh_users" ]; then
- user_check=$(grep -w "$USER" .ciyam_ssh_users)
+if [ -f "/home/`{`$user`}/.ciyam_ssh_users" ]; then
+ user_check=$(grep -w "$USER" "/home/`{`$user`}/.ciyam_ssh_users")
 
  if [ "$USER" = "$user_check" ]; then
   is_ssh_user=1
