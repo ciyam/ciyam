@@ -1,16 +1,38 @@
 #!/bin/bash
 
-if [ ! "$USER" = "`{`$user`}" ]; then
+is_admin=
+is_ssh_user=
+
+if [ "$USER" = "`{`$user`}" ]; then
+ is_admin=1
+ is_ssh_user=1
+fi
+
+if [ -f ".ciyam_ssh_users" ]; then
+ user_check=$(grep -w "$USER" .ciyam_ssh_users)
+
+ if [ "$USER" = "$user_check" ]; then
+  is_ssh_user=1
+ fi
+fi
+
+if [ ! "$is_ssh_user" = "1" ]; then
  echo $$ > /home/$USER/current_pid
  echo $USER >> /home/`{`$user`}/ciyam_logins
 fi
 
 if [ "$SSH_ORIGINAL_COMMAND" = "" ]; then
- if [ "$USER" = "`{`$user`}" ]; then
+ if [ "$is_ssh_user" = "1" ]; then
   echo ""
-  echo "Welcome to CIYAM administration."
+  if [ "$is_admin" = "1" ]; then
+   echo "Welcome to CIYAM administration."
+  else
+   echo "Welcome to CIYAM hosted session."
+  fi
   echo ""
   exec /bin/bash -il
+ else
+  echo "Login not permitted (not a known CIYAM user)."
  fi
 else
  exec /bin/bash -c "$SSH_ORIGINAL_COMMAND"
