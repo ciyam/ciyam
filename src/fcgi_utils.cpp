@@ -1936,6 +1936,7 @@ void determine_fixed_query_info( string& fixed_fields,
    if( !fixed_parent_field.empty( ) )
    {
       ++num_fixed_key_values;
+
       fixed_fields = fixed_parent_field;
       fixed_key_values = fixed_parent_keyval;
    }
@@ -1955,10 +1956,12 @@ void determine_fixed_query_info( string& fixed_fields,
          string suffix( ( list.lici->second )->parents[ i ].operations[ c_operation_select ] );
 
          string::size_type pos = suffix.find( '!' );
+
          if( pos != string::npos )
             suffix.erase( 0, pos + 1 );
 
          string name( list.id );
+
          name += c_prnt_suffix;
          name += ( '0' + i );
 
@@ -1968,21 +1971,25 @@ void determine_fixed_query_info( string& fixed_fields,
 
             if( num_fixed_key_values > 1 )
                fixed_fields += ",";
+
             fixed_fields += ( list.lici->second )->parents[ i ].field;
 
             // NOTE: For optional selects "~" is being used to indicate null.
             string key_value( list_selections.find( name )->second );
+
             if( key_value == "~" )
                key_value.erase( );
 
             if( num_fixed_key_values > 1 )
                fixed_key_values += ",";
+
             fixed_key_values += key_value + suffix;
          }
       }
       else if( ( list.lici->second )->parents[ i ].operations.count( c_operation_checked ) )
       {
          string name( list.id );
+
          name += c_prnt_suffix;
          name += ( '0' + i );
 
@@ -2007,6 +2014,7 @@ void determine_fixed_query_info( string& fixed_fields,
 
          bool is_opt = false;
          bool is_applicable = true;
+
          if( !value.empty( ) && value[ 0 ] == '?' )
          {
             is_opt = true;
@@ -2032,6 +2040,7 @@ void determine_fixed_query_info( string& fixed_fields,
             else
             {
                string::size_type pos = value.find( '=' );
+
                if( pos != string::npos && value.substr( 0, pos ) == c_extkey )
                   value = get_extkey( value.substr( pos + 1 ).c_str( ) );
             }
@@ -2043,10 +2052,12 @@ void determine_fixed_query_info( string& fixed_fields,
 
             if( num_fixed_key_values > 1 )
                fixed_fields += ",";
+
             fixed_fields += ( list.lici->second )->parents[ i ].field;
 
             if( num_fixed_key_values > 1 )
                fixed_key_values += ",";
+
             fixed_key_values += value;
          }
       }
@@ -2074,6 +2085,7 @@ void determine_fixed_query_info( string& fixed_fields,
             continue;
 
          string name( list.id );
+
          name += c_rest_suffix;
          name += ( '0' + i );
 
@@ -2083,6 +2095,7 @@ void determine_fixed_query_info( string& fixed_fields,
 
             if( num_fixed_key_values > 1 )
                fixed_fields += ",";
+
             fixed_fields += ( list.lici->second )->restricts[ i ].field;
 
             if( num_fixed_key_values > 1 )
@@ -2097,6 +2110,7 @@ void determine_fixed_query_info( string& fixed_fields,
 
          bool is_opt = false;
          bool is_applicable = true;
+
          if( !value.empty( ) && value[ 0 ] == '?' )
          {
             is_opt = true;
@@ -2157,10 +2171,12 @@ void determine_fixed_query_info( string& fixed_fields,
        || ( list.lici->second )->restricts[ i ].operations.count( c_operation_runchecked ) )
       {
          string name( list.id );
+
          name += c_rest_suffix;
          name += ( '0' + i );
 
          bool unchecked = false;
+
          if( ( list.lici->second )->restricts[ i ].operations.count( c_operation_unchecked )
           || ( list.lici->second )->restricts[ i ].operations.count( c_operation_runchecked ) )
             unchecked = true;
@@ -2179,6 +2195,7 @@ void determine_fixed_query_info( string& fixed_fields,
           || ( list_selections.count( name ) && list_selections.find( name )->second == c_true ) )
          {
             string value;
+
             if( !unchecked )
             {
                if( !reverse_checked )
@@ -2208,6 +2225,7 @@ void determine_fixed_query_info( string& fixed_fields,
 
                if( num_fixed_key_values > 1 )
                   fixed_fields += ",";
+
                fixed_fields += ( list.lici->second )->restricts[ i ].field;
 
                if( num_fixed_key_values > 1 )

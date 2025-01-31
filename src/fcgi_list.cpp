@@ -1923,8 +1923,13 @@ void output_list_form( ostream& os,
 
                   string restrict_fields, restrict_values;
 
-                  determine_fixed_query_info( restrict_fields, restrict_values,
-                   num_fixed_key_values, is_reverse, source, source.pfield, parent_key, list_selections, sess_info );
+                  // NOTE: Although not otherwise used is including "set_field_values"
+                  // to ensure no exceptions are thrown due to transient restrictions.
+                  string set_field_values;
+
+                  determine_fixed_query_info( restrict_fields,
+                   restrict_values, num_fixed_key_values, is_reverse, source,
+                   source.pfield, parent_key, list_selections, sess_info, &set_field_values );
 
                   bool no_log = false;
                   bool not_changing = false;
