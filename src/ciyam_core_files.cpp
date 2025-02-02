@@ -73,6 +73,7 @@ void verify_block( const string& content, bool check_dependents )
 
    uint64_t block_height = 0;
    uint64_t unix_time_value = 0;
+   uint64_t last_unix_time_value = 0;
 
    string header( lines[ 0 ] );
 
@@ -385,6 +386,30 @@ void verify_block( const string& content, bool check_dependents )
                   throw runtime_error( "incorrect last block hash '" + last_block_hash + "'" );
 
                found_last = true;
+
+               if( block_height > 1 )
+               {
+                  string last_block_info( extract_file( last_block_hash, "" ) );
+
+                  vector< string > last_block_lines;
+
+                  split( last_block_info, last_block_lines, '\n', c_esc, false );
+
+                  string last_block_final_attribute( last_block_lines[ last_block_lines.size( ) - 1 ] );
+
+                  // NOTE: If the last block ended with a "c_ciyam_dummy_unix_time" unix time attribute then this
+                  // block will be considered as invalid (as no further block can be permitted after this point).
+                  string dummy_unix_time_attribute( c_file_type_core_block_detail_unix_block_time_value_prefix );
+
+                  dummy_unix_time_attribute += string( c_ciyam_dummy_unix_time );
+
+                  if( last_block_final_attribute == dummy_unix_time_attribute )
+                     throw runtime_error( "invalid attempt to extend blockchain after final '"
+                      + blockchain_identity + "' block at height " + to_string( block_height - 1 ) );
+
+                  last_unix_time_value = from_string< uint64_t >(
+                   last_block_final_attribute.substr( strlen( c_file_type_core_block_detail_unix_block_time_value_prefix ) ) );
+               }
             }
 
             if( last_block_hashes.size( ) > 1 )
@@ -466,6 +491,13 @@ void verify_block( const string& content, bool check_dependents )
             next_attribute.erase( 0, len );
 
             unix_time_value = from_string< uint64_t >( next_attribute );
+
+            if( unix_time_value < last_unix_time_value )
+               throw runtime_error( "unexpected unix time value less than prior '"
+                + blockchain_identity + "' value at height " + to_string( block_height - 1 ) );
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_unix_time ), next_attribute );
          }
          else
             throw runtime_error( "unexpected extraneous block attribute '" + next_attribute + "'" );

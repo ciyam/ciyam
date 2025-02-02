@@ -252,6 +252,7 @@ const char* const c_special_variable_peer_identity_alias = "@peer_identity_alias
 const char* const c_special_variable_repo_crypt_password = "@repo_crypt_password";
 const char* const c_special_variable_skip_parent_updates = "@skip_parent_updates";
 const char* const c_special_variable_blockchain_hind_hash = "@blockchain_hind_hash";
+const char* const c_special_variable_blockchain_unix_time = "@blockchain_unix_time";
 const char* const c_special_variable_disallow_connections = "@disallow_connections";
 const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_ratios";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
@@ -555,6 +556,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_repo_crypt_password );
       g_special_variable_names.push_back( c_special_variable_skip_parent_updates );
       g_special_variable_names.push_back( c_special_variable_blockchain_hind_hash );
+      g_special_variable_names.push_back( c_special_variable_blockchain_unix_time );
       g_special_variable_names.push_back( c_special_variable_disallow_connections );
       g_special_variable_names.push_back( c_special_variable_ods_cache_hit_ratios );
       g_special_variable_names.push_back( c_special_variable_secondary_validation );

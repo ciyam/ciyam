@@ -111,6 +111,8 @@ const char* const c_ciyam_interface = "ciyam_interface";
 
 const char* const c_ciyam_dummy_date = "20211202";
 
+const char* const c_ciyam_dummy_unix_time = "9999999999";
+
 const char* const c_ui_class_marker = "CLASS";
 const char* const c_ui_group_marker = "GROUP";
 const char* const c_ui_class_changing = "ui_CLASS_changing";

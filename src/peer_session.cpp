@@ -1250,7 +1250,7 @@ void process_core_file( const string& hash, const string& blockchain )
 
    // NOTE: A core file will return three parts in the form of: <type> <hash> <core_type>
    // (as non-core files don't have a "core type" only two parts will be found for them).
-   if( info_parts.size( ) == 3 && get_hash_tags( hash.substr( 0, pos ) ).empty( ) )
+   if( ( info_parts.size( ) == 3 ) && get_hash_tags( hash.substr( 0, pos ) ).empty( ) )
    {
       string core_type( info_parts[ 2 ] );
 
@@ -2157,7 +2157,7 @@ bool has_all_list_items(
 
             if( elapsed >= c_default_progress_seconds )
             {
-               string progress;
+               string progress, ext_progress;
 
                if( touch_all_lists )
                {
@@ -2189,7 +2189,7 @@ bool has_all_list_items(
 
                   system_identity_progress_message( extra_identity );
 
-                  progress = ".";
+                  ext_progress = ".";
                }
                else
                {
@@ -2199,42 +2199,48 @@ bool has_all_list_items(
                   if( is_fetching )
                      progress = "Polling at";
                   else
+                  {
                      progress = "Mapping for";
+                     ext_progress = "Mapping at";
+                  }
 
-                  progress += " height " + to_string( next_height );
+                  string progress_append( " height " + to_string( next_height ) );
 
                   if( !blockchain_height_other.empty( ) )
                   {
                      size_t other_height = from_string< size_t >( blockchain_height_other );
 
                      if( next_height < other_height )
-                        progress += '/' + blockchain_height_other;
+                        progress_append += '/' + blockchain_height_other;
                   }
 
-                  progress += c_percentage_separator;
+                  progress_append += c_percentage_separator;
 
                   string count( to_string( *p_total_processed ) );
 
                   set_session_variable( progress_count_name, count );
                   set_session_variable( progress_total_name, num_tree_items );
 
-                  progress += get_raw_session_variable( progress_value_name );
+                  progress_append += get_raw_session_variable( progress_value_name );
 
-                  progress += c_ellipsis;
+                  progress_append += c_ellipsis;
+
+                  progress += progress_append;
+                  ext_progress += progress_append;
 
                   set_session_progress_message( progress );
 
                   system_identity_progress_message( extra_identity );
 
                   if( is_fetching )
-                     progress = ".";
+                     ext_progress = ".";
 
                   check_for_missing_other_sessions( now );
                }
 
                *p_dtm = now;
 
-               p_progress->output_progress( progress );
+               p_progress->output_progress( ext_progress );
             }
          }
 
