@@ -262,6 +262,8 @@ inline void set_files_area_dir( const std::string& files_area_dir )
    set_files_area_dir( files_area_dir.c_str( ) );
 }
 
+size_t CIYAM_BASE_DECL_SPEC get_notifier_ignore_secs( );
+
 size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_num( );
 size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_size( );
 

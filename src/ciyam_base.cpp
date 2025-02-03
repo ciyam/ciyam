@@ -204,6 +204,7 @@ const char* const c_attribute_max_attached_data = "max_attached_data";
 const char* const c_attribute_ods_use_encrypted = "ods_use_encrypted";
 const char* const c_attribute_ods_use_sync_write = "ods_use_sync_write";
 const char* const c_attribute_max_storage_handlers = "max_storage_handlers";
+const char* const c_attribute_notifier_ignore_secs = "notifier_ignore_secs";
 const char* const c_attribute_files_area_item_max_num = "files_area_item_max_num";
 const char* const c_attribute_files_area_item_max_size = "files_area_item_max_size";
 const char* const c_attribute_num_recv_stream_sessions = "num_recv_stream_sessions";
@@ -1508,6 +1509,8 @@ const size_t c_min_storage_handlers_limit = 1;
 const size_t c_max_sessions_default = 100;
 const size_t c_max_storage_handlers_default = 10;
 
+const size_t c_notifier_ignore_secs_default = 2;
+
 const size_t c_num_recv_stream_sessions_default = 10;
 const size_t c_num_send_stream_sessions_default = 1;
 
@@ -1522,6 +1525,8 @@ int g_stream_sock = 0;
 
 size_t g_max_sessions = c_max_sessions_default;
 size_t g_max_storage_handlers = c_max_storage_handlers_default + 1; // i.e. extra for <none>
+
+size_t g_notifier_ignore_secs = c_notifier_ignore_secs_default;
 
 string g_files_area_dir;
 string g_files_area_dir_default;
@@ -4950,6 +4955,9 @@ void read_server_configuration( )
          throw runtime_error( "max. storage handlers value " + to_string( g_max_storage_handlers )
           + " is greater than max. storage handlers limit " + to_string( c_max_storage_handlers_limit ) );
 
+      g_notifier_ignore_secs = atoi( reader.read_opt_attribute(
+       c_attribute_notifier_ignore_secs, to_string( c_notifier_ignore_secs_default ) ).c_str( ) );
+
       // NOTE: Use "unformat_bytes" here as well so 10K (instead of 10000) can be used in the config file.
       g_files_area_item_max_num = ( size_t )unformat_bytes( reader.read_opt_attribute(
        c_attribute_files_area_item_max_num, to_string( c_files_area_item_max_num_default ) ).c_str( ) );
@@ -6644,6 +6652,11 @@ void set_files_area_dir( const char* p_files_area_dir )
 
    if( was_first )
       set_system_variable( get_special_var_name( e_special_var_files_area_dir ), g_files_area_dir, true );
+}
+
+size_t get_notifier_ignore_secs( )
+{
+   return g_notifier_ignore_secs;
 }
 
 size_t get_files_area_item_max_num( )

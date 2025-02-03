@@ -12,6 +12,7 @@
 #  endif
 
 #  include "macros.h"
+#  include "ptypes.h"
 #  include "threads.h"
 
 #  ifdef CIYAM_BASE_IMPL
@@ -35,6 +36,10 @@ class CIYAM_BASE_DECL_SPEC ciyam_notifier : public thread
    private:
    size_t unique;
    bool has_existing;
+
+   uint64_t unix_watch;
+
+   size_t num_ignore_secs;
 
    std::string watch_root;
    std::string initial_selections;

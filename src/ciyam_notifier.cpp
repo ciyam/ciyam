@@ -114,6 +114,10 @@ ciyam_notifier::ciyam_notifier( const string& watch_root,
       has_existing = true;
       paths_and_time_stamps = *p_paths_and_time_stamps;
    }
+
+   unix_watch = unix_time( );
+
+   num_ignore_secs = get_notifier_ignore_secs( );
 }
 
 ciyam_notifier::~ciyam_notifier( )
@@ -395,6 +399,9 @@ void ciyam_notifier::on_start( )
             map< string, string > cookie_id_unique_values;
             map< string, string > cookie_id_original_names;
 
+            if( !all_events.empty( ) )
+               TRACE_LOG( TRACE_NOTIFIER, "found #" + to_string( all_events.size( ) ) + " events" );
+
             for( size_t i = 0; i < all_events.size( ); i++ )
             {
                string extra, value, old_value, tagged_extra, unique_value;
@@ -419,7 +426,26 @@ void ciyam_notifier::on_start( )
                         string file_name( next_event.substr( 1, pos - 1 ) );
 
                         if( file_name.find( watch_root_name ) == 0 )
+                        {
                            file_name.erase( 0, watch_root_name.length( ) );
+
+                           if( num_ignore_secs )
+                           {
+                              uint64_t now = unix_time( );
+
+                              // NOTE: If the current unix time is not at least
+                              // 'X' seconds after the last "close_nowrite" for
+                              // the watch root then simply ignore the file (as
+                              // it might just be included in an initial scan).
+                              if( file_name.empty( ) )
+                                 unix_watch = now;
+                              else if( now <= ( unix_watch + num_ignore_secs ) )
+                              {
+                                 file_name.erase( );
+                                 TRACE_LOG( TRACE_NOTIFIER, "(ignoring possible initial scan)" );
+                              }
+                           }
+                        }
 
                         if( !file_name.empty( ) && ( file_name[ file_name.length( ) - 1 ] != '/' ) )
                         {
