@@ -801,7 +801,9 @@ size_t file_transfer( const string& name, tcp_socket& s,
    size_t total_size = 0;
 
    bool not_base64 = false;
+
    bool has_file_name = !name.empty( );
+
    bool max_size_exceeded = false;
 
    if( !max_size )
@@ -871,6 +873,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
          total_size = file_size( name );
 
          inpf.open( name.c_str( ), ios::binary );
+
          if( !inpf )
             throw runtime_error( "file '" + name + "' could not be opened for input" );
 
@@ -884,7 +887,6 @@ size_t file_transfer( const string& name, tcp_socket& s,
       auto_ptr< char > ap_buf1( new char[ max_line_size ] );
       auto_ptr< char > ap_buf2( new char[ max_line_size ] );
 
-      string next;
       bool is_first = true;
 
       if( has_prefix_char )
@@ -892,7 +894,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
 
       size_t total_encoded = base64::encode_size( total_size );
 
-      string size_info( to_string( total_size ) + ':' );
+      string next, size_info( to_string( total_size ) + ':' );
 
       if( total_encoded < max_line_size )
          max_line_size = total_encoded;
@@ -907,6 +909,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
       if( ( total_size + size_info.size( ) ) <= c_append_to_size_info )
       {
          size_info += c_app_suffix;
+
          append_content_to_size_info = true;
 
          if( !p_istream )
@@ -958,6 +961,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
                break;
 
             string extra;
+
             string::size_type pos = next.find( ':' );
 
             if( pos != string::npos && next.find( ack_message_str ) == 0 )
@@ -1008,6 +1012,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
          }
 
          size_t count = max_unencoded;
+
          size_t offset = 0;
 
          if( is_first && has_prefix_char )
@@ -1077,6 +1082,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
       }
 
       size_t written = 0;
+
       bool is_first = true;
 
       string next, decoded;
@@ -1148,6 +1154,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
                {
                   not_base64 = true;
                   unexpected_data = next;
+
                   break;
                }
 
@@ -1329,6 +1336,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
       {
          if( unexpected_data.empty( ) )
             unexpected_data = "unexpected empty data";
+
          throw runtime_error( unexpected_data );
       }
       else

@@ -247,6 +247,22 @@ string uuid::as_string( ) const
    return str;
 }
 
+uint32_t crc32( unsigned char* p_data, uint64_t len )
+{
+   uint32_t crc = 0xFFFFFFFF;
+
+   while( len-- )
+   {
+      crc ^= *p_data++;
+
+      for( int k = 0; k < 8; k++ )
+         //CRC-32C polynomial 0x1EDC6F41 in reversed bit order.
+         crc = crc & 1 ? ( crc >> 1 ) ^ 0x82f63b78 : crc >> 1;
+   }
+
+   return ~crc;
+}
+
 string soundex( const char* p_str, bool skip_prefix_specials )
 {
    string retval;

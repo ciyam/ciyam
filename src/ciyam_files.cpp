@@ -67,6 +67,8 @@ const size_t c_max_repo_lock_attempts = 10;
 
 unsigned int c_repo_lock_attempt_msleep = 1000;
 
+const char c_crc32_separator = '#';
+
 const char c_prefix_wildcard_separator = ':';
 
 const char* const c_time_stamp_tag_prefix = "ts.";
@@ -94,6 +96,13 @@ const char* const c_attribute_master_public_key = "master_public_key";
 trace_mutex g_mutex;
 
 string g_empty_string;
+
+string hex_crc32( const string& s )
+{
+   uint32_t crc = crc32( s );
+
+   return hex_encode( ( const unsigned char* )&crc, sizeof( uint32_t ) );
+}
 
 class file_hash_info
 {
@@ -522,10 +531,22 @@ void remove_file_padding( const string& hash, const string& extra_header, string
 
    size_t padding = 0;
 
-   string::size_type pos = extra_header_info.find( '-' );
+   string::size_type pos = extra_header_info.find( c_crc32_separator );
 
    if( pos == string::npos )
-      throw runtime_error( "invalid extra file transfer header" );
+      throw runtime_error( "invalid extra file transfer header (missing checksum)" );
+
+   string chksum( hex_crc32( file_data ) );
+
+   if( chksum != extra_header_info.substr( pos + 1 ) )
+      throw runtime_error( "invalid extra file transfer header (incorrect checksum)" );
+
+   extra_header_info.erase( pos );
+
+   pos = extra_header_info.find( '-' );
+
+   if( pos == string::npos )
+      throw runtime_error( "invalid extra file transfer header (missing separator)" );
 
    size_t total = from_string< size_t >( extra_header_info.substr( 0, pos ) );
 
@@ -3830,16 +3851,18 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
             if( padding == c_file_transfer_max_line_size )
                padding = 0;
 
+            if( padding )
+               content += random_characters( padding );
+
             extra_header = to_comparable_string( total_size, false, 8 ) + '-' + to_comparable_string( padding, false, 8 );
+
+            extra_header += c_crc32_separator + hex_crc32( content );
 
             stringstream ss( extra_header );
 
             crypt_stream( ss, hash, e_stream_cipher_chacha20 );
 
             extra_header = base64::encode( ss.str( ) );
-
-            if( padding )
-               content += random_characters( padding );
          }
 
          stringstream ss( content );
@@ -3955,7 +3978,9 @@ bool store_file( const string& hash,
 
          string extra_header( ft_extra.extra_header );
 
-         if( !extra_header.empty( ) )
+         if( extra_header.empty( ) )
+            throw runtime_error( "unexpected missing extra header" );
+         else
             remove_file_padding( hash, extra_header, temporary, total_bytes );
 
          file_buffer.copy_from_string( temporary, 0, false );
