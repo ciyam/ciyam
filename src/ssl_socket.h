@@ -40,6 +40,8 @@ class ssl_socket : public tcp_socket
 
    bool is_secure( ) const { return secure; }
 
+   bool is_tls_handshake( );
+
    int recv( unsigned char* buf, int buflen, size_t timeout = 0 );
    int send( const unsigned char* buf, int buflen, size_t timeout = 0 );
 

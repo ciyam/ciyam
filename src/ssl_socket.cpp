@@ -30,11 +30,14 @@ namespace
 {
 
 SSL_CTX* p_ctx = 0;
+
 const char* p_pass = 0;
 
 #ifdef __GNUG__
 void sigpipe_handle( int x ) { }
 #endif
+
+unsigned char g_tls_prefix[ ] = { 0x16, 0x03 };
 
 int password_cb( char* buf, int num, int rwflag, void* userdata )
 {
@@ -260,6 +263,23 @@ void ssl_socket::ssl_connect( )
 #ifdef DEBUG
    print_cert_info( p_ssl );
 #endif
+}
+
+bool ssl_socket::is_tls_handshake( )
+{
+   bool retval = false;
+
+   unsigned char buf[ 2 ];
+
+   if( peek( buf, sizeof( buf ) ) == sizeof( buf ) )
+   {
+      // NOTE: Will assume a TLS handshake should occur if
+      // the first two bytes match what would be expected.
+      if( memcmp( buf, g_tls_prefix, sizeof( buf ) ) == 0 )
+         retval = true;
+   }
+
+   return retval;
 }
 
 int ssl_socket::recv( unsigned char* buf, int buflen, size_t timeout )
