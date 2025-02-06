@@ -368,7 +368,26 @@ bool socket_base::can_output( size_t timeout ) const
    return okay;
 }
 
-int socket_base::recv( unsigned char* buf, int buflen, size_t timeout )
+int socket_base::peek( unsigned char* p_buf, int buflen, size_t timeout )
+{
+   bool okay = true;
+
+   timed_out = false;
+
+   int n = 0;
+
+   if( timeout )
+      okay = has_input( timeout );
+
+   if( !okay )
+      timed_out = true;
+   else
+      n = ::recv( socket, ( char* )p_buf, buflen, MSG_PEEK );
+
+   return n;
+}
+
+int socket_base::recv( unsigned char* p_buf, int buflen, size_t timeout )
 {
    bool okay = true;
 
@@ -382,12 +401,12 @@ int socket_base::recv( unsigned char* buf, int buflen, size_t timeout )
    if( !okay )
       timed_out = true;
    else
-      n = ::recv( socket, ( char* )buf, buflen, 0 );
+      n = ::recv( socket, ( char* )p_buf, buflen, 0 );
 
    return n;
 }
 
-int socket_base::send( const unsigned char* buf, int buflen, size_t timeout )
+int socket_base::send( const unsigned char* p_buf, int buflen, size_t timeout )
 {
    bool okay = true;
 
@@ -401,19 +420,19 @@ int socket_base::send( const unsigned char* buf, int buflen, size_t timeout )
    if( !okay )
       timed_out = true;
    else
-      n = ::send( socket, ( const char* )buf, buflen, 0 );
+      n = ::send( socket, ( const char* )p_buf, buflen, 0 );
 
    return n;
 }
 
-int socket_base::recv_n( unsigned char* buf, int buflen, size_t timeout, progress* p_progress )
+int socket_base::recv_n( unsigned char* p_buf, int buflen, size_t timeout, progress* p_progress )
 {
    int n;
    int rcvd = 0;
 
    while( rcvd != buflen )
    {
-      n = recv( buf + rcvd, buflen - rcvd, timeout );
+      n = recv( p_buf + rcvd, buflen - rcvd, timeout );
 
       if( n <= 0 )
          break;
@@ -428,20 +447,20 @@ int socket_base::recv_n( unsigned char* buf, int buflen, size_t timeout, progres
       if( rcvd > c_max_progress_output_bytes )
          suffix = "...[" + format_bytes( rcvd ) + ']';
 
-      p_progress->output_progress( ">R> " + string( ( const char* )buf, min( rcvd, c_max_progress_output_bytes ) ) + suffix );
+      p_progress->output_progress( ">R> " + string( ( const char* )p_buf, min( rcvd, c_max_progress_output_bytes ) ) + suffix );
    }
 
    return rcvd;
 }
 
-int socket_base::send_n( const unsigned char* buf, int buflen, size_t timeout, progress* p_progress )
+int socket_base::send_n( const unsigned char* p_buf, int buflen, size_t timeout, progress* p_progress )
 {
    int n;
    int sent = 0;
 
    while( sent != buflen )
    {
-      n = send( buf + sent, buflen - sent, timeout );
+      n = send( p_buf + sent, buflen - sent, timeout );
 
       if( n <= 0 )
          break;
@@ -460,7 +479,7 @@ int socket_base::send_n( const unsigned char* buf, int buflen, size_t timeout, p
       if( sent > c_max_progress_output_bytes )
          suffix = "...[" + format_bytes( sent ) + ']';
 
-      p_progress->output_progress( write_string + string( ( const char* )buf, min( sent, c_max_progress_output_bytes ) ) + suffix );
+      p_progress->output_progress( write_string + string( ( const char* )p_buf, min( sent, c_max_progress_output_bytes ) ) + suffix );
    }
 
    return sent;

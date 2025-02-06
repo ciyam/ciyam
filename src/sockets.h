@@ -86,8 +86,10 @@ class socket_base
    bool has_input( size_t timeout = 0 ) const;
    bool can_output( size_t timeout = 0 ) const;
 
-   virtual int recv( unsigned char* buf, int buflen, size_t timeout = 0 );
-   virtual int send( const unsigned char* buf, int buflen, size_t timeout = 0 );
+   int peek( unsigned char* p_buf, int buflen, size_t timeout = 0 );
+
+   virtual int recv( unsigned char* p_buf, int buflen, size_t timeout = 0 );
+   virtual int send( const unsigned char* p_buf, int buflen, size_t timeout = 0 );
 
    int recv_n( unsigned char* buf, int buflen, size_t timeout = 0, progress* p_progress = 0 );
    int send_n( const unsigned char* buf, int buflen, size_t timeout = 0, progress* p_progress = 0 );
