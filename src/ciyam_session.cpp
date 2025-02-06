@@ -7054,6 +7054,11 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
    if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
 
+#ifdef SSL_SUPPORT
+   if( this->ap_socket->is_tls_handshake( ) )
+      this->ap_socket->ssl_accept( );
+#endif
+
    string pid;
    ap_socket->read_line( pid, c_request_timeout );
 
@@ -7091,6 +7096,11 @@ ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket, const string& i
 
    if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
+
+#ifdef SSL_SUPPORT
+   if( this->ap_socket->is_tls_handshake( ) )
+      this->ap_socket->ssl_accept( );
+#endif
 
    string pid;
    this->ap_socket->read_line( pid, c_request_timeout );

@@ -1744,6 +1744,11 @@ int main( int argc, char* argv[ ] )
             if( !no_udp && ( local_udp || !is_default ) && usocket.open( ) )
                usocket.set_reuse_addr( );
 
+#ifdef SSL_SUPPORT
+            if( g_use_tls )
+               socket.ssl_connect( );
+#endif
+
             if( socket.write_line( to_string( g_pid ) + c_key_exchange_suffix, c_pid_timeout ) <= 0 )
             {
                string error;
@@ -1853,9 +1858,6 @@ int main( int argc, char* argv[ ] )
             socket.write_line( slot_and_pubkey, c_pubkey_timeout );
 
             console_command_processor processor( cmd_handler );
-
-            if( g_use_tls )
-               processor.execute_command( ".tls" );
 
             if( g_rpc_password.empty( ) )
                g_rpc_password = get_environment_variable( c_env_var_rpc_password );
