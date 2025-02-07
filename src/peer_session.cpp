@@ -6477,8 +6477,11 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
    else if( chain_type == e_peerchain_type_user )
       is_user = true;
 
-   if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
+   if( ( ip_addr == c_local_ip_addr ) || ( ip_addr == c_local_ip_addr_for_ipv6 ) )
       is_local = true;
+
+   bool use_insecure = has_raw_system_variable(
+    get_special_var_name( e_special_var_use_insecure_peer_protocol ) );
 
    if( !is_responder )
    {
@@ -6490,8 +6493,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
       // variable named "@secret_hash" used to secure the peer protocol.
       // If a session variable is found and its value is prefixed with a
       // '@' character then it's assumed to be a system variable name.
-      if( !has_raw_system_variable(
-       get_special_var_name( e_special_var_use_insecure_peer_protocol ) ) )
+      if( !use_insecure )
       {
          secret_hash = get_raw_session_variable( get_special_var_name( e_special_var_secret_hash ) );
 
@@ -6579,6 +6581,10 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
             pid = prefix + ':' + unix_in_hex + '-'
              + hash.get_digest_as_string( ).substr( 0, 9 ) + '=' + base64::encode( ss.str( ) );
+
+#ifdef SSL_SUPPORT
+            this->ap_socket->ssl_connect( );
+#endif
          }
       }
 
@@ -6590,11 +6596,21 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
    {
       pid.erase( );
 
+#ifdef SSL_SUPPORT
+      if( this->ap_socket->is_tls_handshake( ) )
+         this->ap_socket->ssl_accept( );
+#endif
+
       this->ap_socket->read_line( pid, c_initial_timeout, c_max_greeting_size, p_sock_progress );
 
       string::size_type pos = pid.find( '=' );
 
-      if( pos != string::npos )
+      if( pos == string::npos )
+      {
+         if( !is_local && !use_insecure )
+            throw runtime_error( "invalid peer handshake" );
+      }
+      else
       {
          string encrypted_data( pid.substr( pos + 1 ) );
 
