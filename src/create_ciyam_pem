@@ -7,7 +7,7 @@
 if [ -f ciyam.pem ]; then
  echo "Found existing 'ciyam.pem' (remove if wanting to re-create it)."
 else
- openssl req -quiet -batch -new -newkey rsa:4096 -nodes -keyout ciyam.key -out ciyam.csr > ~create_ciyam_pem 2>&1
+ openssl req -batch -new -newkey rsa:4096 -nodes -keyout ciyam.key -out ciyam.csr > ~create_ciyam_pem 2>&1
 
  if [ -f ciyam.key ] && [ -f ciyam.csr ]; then
   openssl x509 -req -sha256 -days 3650 -in ciyam.csr -signkey ciyam.key -out ciyam.crt > ~create_ciyam_pem 2>&1
