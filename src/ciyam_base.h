@@ -453,7 +453,6 @@ void CIYAM_BASE_DECL_SPEC session_skip_is_constained( bool skip_fk_fetches );
 bool CIYAM_BASE_DECL_SPEC get_script_reconfig( );
 
 std::string CIYAM_BASE_DECL_SPEC get_gpg_password( );
-std::string CIYAM_BASE_DECL_SPEC get_pem_password( );
 std::string CIYAM_BASE_DECL_SPEC get_rpc_password( );
 std::string CIYAM_BASE_DECL_SPEC get_sql_password( );
 

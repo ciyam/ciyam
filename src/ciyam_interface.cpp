@@ -3383,8 +3383,12 @@ int main( int argc, char* argv[ ] )
       LOG_TRACE( "[started at: " + date_time::local( ).as_string( true, false ) + "]" );
 
 #ifdef SSL_SUPPORT
-      if( file_exists( "ciyam_interface.pem" ) )
-         init_ssl( "ciyam_interface.pem", "password" );
+      if( file_exists( c_ciyam_pem ) )
+#  ifndef USE_MULTIPLE_REQUEST_HANDLERS
+         init_ssl( c_ciyam_pem );
+#  else
+         init_ssl( c_ciyam_pem, 0, 0, true );
+#  endif
 #endif
 
       DEBUG_TRACE( "cwd = " + get_cwd( ) );

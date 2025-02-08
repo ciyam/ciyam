@@ -62,13 +62,13 @@ else
   {
    cp fcgi.sio $WEBDIR/$2
   }
+  [ -f $WEBDIR/$2/ciyam.pem ] ||
+  {
+   cp ciyam.pem $WEBDIR/$2
+  }
   [ -f $WEBDIR/$2/upload.fcgi ] ||
   {
    cp upload $WEBDIR/$2/upload.fcgi
-  }
-  [ -f $WEBDIR/$2/ciyam_interface.pem ] ||
-  {
-   cp ciyam_client.pem $WEBDIR/$2/ciyam_interface.pem
   }
   [ -f $WEBDIR/$2/ciyam_interface.fcgi ] ||
   {

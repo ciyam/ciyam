@@ -174,5 +174,6 @@ ciyam_server.sio
 *.backup.bun.gz
 *.backup_files.bun.gz
 
-# Ignore service.
+# Ignore PEM and service.
+ciyam.pem
 ciyamd.service

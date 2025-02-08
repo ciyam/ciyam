@@ -241,8 +241,6 @@ const char* const c_uid_unknown = "<unknown>";
 const char* const c_meta_storage_name = "Meta";
 const char* const c_ciyam_storage_name = "ciyam";
 
-const char* const c_default_pem_password = "password";
-
 const char* const c_script_dummy_filename = "*script*";
 
 const char* const c_default_protocol_handler = "file://";
@@ -5777,14 +5775,10 @@ void init_globals( const char* p_sid, int* p_use_udp )
       g_storage_handler_index.insert( make_pair( c_default_storage_name, 0 ) );
 
 #ifdef SSL_SUPPORT
-      if( file_exists( "ciyam_server.pem" ) )
+      if( file_exists( c_ciyam_pem ) )
       {
-         string password( c_default_pem_password );
+         init_ssl( c_ciyam_pem, 0, 0, true );
 
-         if( !g_pem_password.empty( ) )
-            password = get_pem_password( );
-
-         init_ssl( "ciyam_server.pem", password.c_str( ), 0, true );
          g_using_ssl = true;
       }
 #endif
@@ -8388,14 +8382,6 @@ string get_gpg_password( )
       return g_gpg_password;
    else
       return decrypt_data( g_gpg_password );
-}
-
-string get_pem_password( )
-{
-   if( g_pem_password.length( ) < c_minimum_encrypted_password_size )
-      return g_pem_password;
-   else
-      return decrypt_data( g_pem_password );
 }
 
 string get_rpc_password( )

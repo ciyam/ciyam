@@ -104,6 +104,8 @@ const char* const c_log_file_ext = ".log";
 const char* const c_old_file_ext = ".old";
 const char* const c_sav_file_ext = ".sav";
 
+const char* const c_ciyam_pem = "ciyam.pem";
+
 const char* const c_ciyam_script = "ciyam_script";
 const char* const c_ciyam_server = "ciyam_server";
 

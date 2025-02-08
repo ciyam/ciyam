@@ -1637,8 +1637,8 @@ int main( int argc, char* argv[ ] )
 #endif   
 
 #ifdef SSL_SUPPORT
-   if( file_exists( "ciyam_client.pem" ) )
-      init_ssl( "ciyam_client.pem", "password" );
+   if( file_exists( c_ciyam_pem ) )
+      init_ssl( c_ciyam_pem );
 #endif
 
 #ifdef SSL_SUPPORT

@@ -1,0 +1,28 @@
+#!/bin/bash
+# Copyright (c) 2025 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ -f ciyam.pem ]; then
+ echo "Found existing 'ciyam.pem' (remove if wanting to re-create it)."
+else
+ openssl req -quiet -batch -new -newkey rsa:4096 -nodes -keyout ciyam.key -out ciyam.csr > ~create_ciyam_pem 2>&1
+
+ if [ -f ciyam.key ] && [ -f ciyam.csr ]; then
+  openssl x509 -req -sha256 -days 3650 -in ciyam.csr -signkey ciyam.key -out ciyam.crt > ~create_ciyam_pem 2>&1
+
+  if [ -f ciyam.crt ]; then
+   cat ciyam.key ciyam.crt > ciyam.pem
+   chmod o-r ciyam.pem
+   rm ciyam.crt ciyam.csr ciyam.key
+  else
+   cat ~create_ciyam_pem
+  fi
+ else
+  cat ~create_ciyam_pem
+ fi
+
+ rm -f ~create_ciyam_pem
+
+fi
