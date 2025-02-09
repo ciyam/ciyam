@@ -47,6 +47,7 @@ class CIYAM_BASE_DECL_SPEC ciyam_session : public thread
 
    private:
    bool is_local;
+   bool using_tls;
    bool pid_is_self;
    bool needs_key_exchange;
 

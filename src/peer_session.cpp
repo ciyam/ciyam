@@ -5942,6 +5942,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             throw runtime_error( "SSL has not been initialised" );
 
          socket.ssl_accept( );
+
+         session_is_using_tls( );
 #else
          throw runtime_error( "SSL support not available" );
 #endif
@@ -6427,6 +6429,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
  is_user( false ),
  is_local( false ),
  is_owner( false ),
+ using_tls( false ),
  ip_addr( addr_info ),
  time_val( time_val ),
  num_for_support( 0 ),
@@ -6584,6 +6587,8 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
 #ifdef SSL_SUPPORT
             this->ap_socket->ssl_connect( );
+
+            using_tls = true;
 #endif
          }
       }
@@ -6598,7 +6603,11 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
 #ifdef SSL_SUPPORT
       if( this->ap_socket->is_tls_handshake( ) )
+      {
          this->ap_socket->ssl_accept( );
+
+         using_tls = true;
+      }
 #endif
 
       this->ap_socket->read_line( pid, c_initial_timeout, c_max_greeting_size, p_sock_progress );
@@ -6940,6 +6949,9 @@ void peer_session::on_start( )
 
       init_session( cmd_handler, true, &ip_addr,
        &unprefixed_blockchain, from_string< int >( port ), is_for_support, false );
+
+      if( using_tls )
+         session_is_using_tls( );
 
       bool has_session_secret = false;
 

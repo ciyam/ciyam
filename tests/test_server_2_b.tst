@@ -45,7 +45,7 @@ session_variable test_var "Found"
 object_execute 4 "Test_Proc_2 \"Is Soon\""
 Two Test App Name Is Soon Found
 session_list -min
-18* session_list <none> 127.0.0.1 5:5 0:0 28
+18* session_list <none> 127.0.0.1 5:5 0:0 =28
 object_list
 1 Meta User
 2 Meta Workgroup

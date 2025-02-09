@@ -5113,6 +5113,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_starttls )
       {
+         possibly_expected_error = true;
+
 #ifdef SSL_SUPPORT
          if( socket.is_secure( ) )
             throw runtime_error( "TLS is already active" );
@@ -5121,6 +5123,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             throw runtime_error( "SSL has not been initialised" );
 
          socket.ssl_accept( );
+
+         session_is_using_tls( );
 #else
          throw runtime_error( "SSL support not available" );
 #endif
@@ -7042,6 +7046,7 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
 #endif
  :
  is_local( false ),
+ using_tls( false ),
  pid_is_self( false ),
  needs_key_exchange( false ),
  ip_addr( ip_addr )
@@ -7056,7 +7061,11 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
 
 #ifdef SSL_SUPPORT
    if( this->ap_socket->is_tls_handshake( ) )
+   {
       this->ap_socket->ssl_accept( );
+
+      using_tls = true;
+   }
 #endif
 
    string pid;
@@ -7086,6 +7095,7 @@ ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket, const string& i
 #endif
  :
  is_local( false ),
+ using_tls( false ),
  pid_is_self( false ),
  needs_key_exchange( false ),
  ip_addr( ip_addr ),
@@ -7099,7 +7109,11 @@ ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket, const string& i
 
 #ifdef SSL_SUPPORT
    if( this->ap_socket->is_tls_handshake( ) )
+   {
       this->ap_socket->ssl_accept( );
+
+      using_tls = true;
+   }
 #endif
 
    string pid;
@@ -7141,6 +7155,9 @@ void ciyam_session::on_start( )
        + '\n' + string( c_response_okay ), c_request_timeout );
 
       init_session( cmd_handler, false, &ip_addr );
+
+      if( using_tls )
+         session_is_using_tls( );
 
       if( needs_key_exchange )
       {

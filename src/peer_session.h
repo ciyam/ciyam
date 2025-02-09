@@ -82,6 +82,8 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    bool is_local;
    bool is_owner;
 
+   bool using_tls;
+
    bool is_responder;
    bool is_for_support;
 

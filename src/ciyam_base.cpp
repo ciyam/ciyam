@@ -371,6 +371,7 @@ struct session
     cache_count( 0 ),
     next_handle( 0 ),
     p_tx_helper( 0 ),
+    using_tls( false ),
     is_captured( false ),
     running_script( false ),
     skip_fk_fetches( false ),
@@ -463,6 +464,7 @@ struct session
 
    int64_t sync_time;
 
+   bool using_tls;
    bool is_captured;
    bool running_script;
 
@@ -511,10 +513,12 @@ struct session
    vector< string > peerchain_log_commands;
 
    string last_set_item;
+
    set< string > set_items;
    deque< set< string > > kept_set_items;
 
    string last_deque_item;
+
    deque< string > deque_items;
    deque< deque< string > > kept_deque_items;
 
@@ -530,6 +534,7 @@ struct session
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
    set< string > tx_key_info;
+
    stack< ods::transaction* > transactions;
 
    vector< string > sql_undo_statements;
@@ -540,6 +545,7 @@ struct session
    vector< string > async_or_delayed_system_commands;
 
    set< size_t > release_sessions;
+
    map< size_t, date_time > condemned_sessions;
 
    map< size_t, string > udp_recv_file_chunks;
@@ -5680,6 +5686,7 @@ void init_globals( const char* p_sid, int* p_use_udp )
       read_server_configuration( );
 
       // NOTE: Remember special read only variable names for later checks.
+      g_read_only_var_names.insert( get_special_var_name( e_special_var_tls ) );
       g_read_only_var_names.insert( get_special_var_name( e_special_var_slot ) );
       g_read_only_var_names.insert( get_special_var_name( e_special_var_uuid ) );
       g_read_only_var_names.insert( get_special_var_name( e_special_var_pubkey ) );
@@ -7682,6 +7689,12 @@ string session_ip_addr( size_t slot )
    return retval;
 }
 
+void session_is_using_tls( )
+{
+   if( gtp_session )
+      gtp_session->using_tls = true;
+}
+
 size_t first_other_session_id( const string& var_name, const string& value )
 {
    guard g( g_session_mutex );
@@ -7837,7 +7850,7 @@ void list_all_sessions( ostream& os, bool inc_dtms, bool include_progress )
             // a key). This format is not expected to be found for ops that are stored in the
             // transaction log (as only keys are stored in the log) but makes it a bit easier
             // for an administrator to identify "who is logged in" when it's used for some of
-            // the more common non-logged operations such as "fetch".
+            // the more common non-logged operations such as "perform_fetch".
             string::size_type pos = uid.find( ':' );
 
             if( pos != string::npos )
@@ -7856,7 +7869,14 @@ void list_all_sessions( ostream& os, bool inc_dtms, bool include_progress )
          else
             ss << ' ' << g_sessions[ i ]->peer_files_downloaded << ':' << g_sessions[ i ]->peer_bytes_downloaded;
 
-         ss << ' ' << g_sessions[ i ]->session_commands_executed;
+         ss << ' ';
+
+         if( !g_sessions[ i ]->using_tls )
+            ss << '=';
+         else
+            ss << '#';
+
+         ss << g_sessions[ i ]->session_commands_executed;
 
          if( g_sessions[ i ]->is_captured )
             ss << '*';
@@ -8908,6 +8928,14 @@ string get_raw_session_variable( const string& name, size_t sess_id )
       string progress_clear_name( get_special_var_name( e_special_var_progress_clear ) );
       string progress_value_name( get_special_var_name( e_special_var_progress_value ) );
 
+      if( gtp_session->using_tls )
+      {
+         string tls_name( get_special_var_name( e_special_var_tls ) );
+
+         if( !gtp_session->variables.count( tls_name ) )
+            gtp_session->variables.insert( make_pair( tls_name, c_true_value ) );
+      }
+
       if( name == progress_clear_name )
       {
          string progress_count_name( get_special_var_name( e_special_var_progress_count ) );
@@ -9116,7 +9144,7 @@ string get_raw_session_variable( const string& name, size_t sess_id )
       }
    }
 
-   if( gtp_session && !name.empty( ) && name[ 0 ] == '@' )
+   if( gtp_session && !name.empty( ) && ( name[ 0 ] == '@' ) )
    {
       string temporary_special_name( name + c_temporary_special_variable_suffix );
 
@@ -9813,24 +9841,20 @@ void set_session_variable( const string& name, const string& value,
 
          get_raw_session_variable( get_special_var_name( e_special_var_progress_clear ) );
       }
+      else if( g_read_only_var_names.count( name ) )
+         skip_standard_variable = true;
 
       if( !skip_standard_variable )
       {
          if( val.empty( ) )
          {
             if( gtp_session->variables.count( name ) )
-            {
-               if( !g_read_only_var_names.count( name ) )
-                  gtp_session->variables.erase( name );
-            }
+               gtp_session->variables.erase( name );
          }
          else
          {
             if( gtp_session->variables.count( name ) )
-            {
-               if( !g_read_only_var_names.count( name ) )
-                  gtp_session->variables[ name ] = val;
-            }
+               gtp_session->variables[ name ] = val;
             else
                gtp_session->variables.insert( make_pair( name, val ) );
          }

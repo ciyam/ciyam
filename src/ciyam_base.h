@@ -372,6 +372,8 @@ std::string CIYAM_BASE_DECL_SPEC session_ip_addr( );
 
 std::string CIYAM_BASE_DECL_SPEC session_ip_addr( size_t slot );
 
+void CIYAM_BASE_DECL_SPEC session_is_using_tls( );
+
 size_t CIYAM_BASE_DECL_SPEC first_other_session_id( const std::string& var_name, const std::string& value );
 
 bool CIYAM_BASE_DECL_SPEC has_session_with_ip_addr( const std::string& ip_addr, const std::string& blockchain );
