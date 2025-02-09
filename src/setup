@@ -64,7 +64,7 @@ else
   }
   [ -f $WEBDIR/$2/ciyam.pem ] ||
   {
-   cp ciyam.pem $WEBDIR/$2
+   ln -s $PWD/ciyam.pem $WEBDIR/$2
   }
   [ -f $WEBDIR/$2/upload.fcgi ] ||
   {
