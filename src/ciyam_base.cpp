@@ -5782,6 +5782,14 @@ void init_globals( const char* p_sid, int* p_use_udp )
       g_storage_handler_index.insert( make_pair( c_default_storage_name, 0 ) );
 
 #ifdef SSL_SUPPORT
+      if( !file_exists( c_ciyam_pem ) )
+      {
+         string cmd( "./create_ciyam_pem" );
+
+         int rc = system( cmd.c_str( ) );
+         ( void )rc;
+      }
+
       if( file_exists( c_ciyam_pem ) )
       {
          init_ssl( c_ciyam_pem, 0, 0, true );
@@ -6153,7 +6161,6 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
       if( p_encrypted_sid && !file_exists( c_server_sid_file ) )
       {
-#ifndef _WIN32
          string user( get_environment_variable( c_env_var_ciyam_user ) );
 
          if( !user.empty( ) )
@@ -6165,7 +6172,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             int rc = system( cmd.c_str( ) );
             ( void )rc;
          }
-#endif
+
          write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
 
          if( get_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
@@ -10790,32 +10797,8 @@ void storage_process_rewind( const string& label, map< string, string >& file_in
 
    if( file_exists( new_log_name ) )
    {
-#ifdef _WIN32
-      // NOTE: Due to file locking inheritence in Win32 if this function is called from a script
-      // then it may not be possible to delete or rename the application log file so instead the
-      // file is truncated then the new content copied.
-      ofstream outf( log_name.c_str( ), ios::out | ios::trunc );
-      if( !outf )
-         throw runtime_error( "unable to open '" + log_name + "' for output" );
-
-      ifstream inpf( new_log_name.c_str( ) );
-
-      string next;
-      while( getline( inpf, next ) )
-         outf << next << '\n';
-
-      outf.flush( );
-      if( !outf.good( ) )
-         throw runtime_error( "*** unexpected error occurred writing to application log ***" );
-
-      inpf.close( );
-      outf.close( );
-
-      remove_file( new_log_name );
-#else
       remove_file( log_name );
       rename_file( new_log_name, log_name );
-#endif
    }
 }
 
