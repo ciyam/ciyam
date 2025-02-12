@@ -6308,6 +6308,7 @@ void Meta_Specification_Type::impl::after_store( bool is_create, bool is_interna
 bool Meta_Specification_Type::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
+
    bool retval = is_internal || !( state & c_state_undeletable );
 
    // [<start can_destroy>]

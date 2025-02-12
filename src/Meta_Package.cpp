@@ -2224,7 +2224,7 @@ void Meta_Package::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_changed_fk)] 600851
 
    // [(start default_from_key)] 600856
-   if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && get_obj( ).Key( ) == g_default_Key ) )
+   if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && ( get_obj( ).Key( ) == g_default_Key ) ) )
       get_obj( ).Key( get_obj( ).get_key( ) );
    // [(finish default_from_key)] 600856
 
@@ -2697,6 +2697,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
 bool Meta_Package::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
+
    bool retval = is_internal || !( state & c_state_undeletable );
 
    // [<start can_destroy>]

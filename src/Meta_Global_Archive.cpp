@@ -1126,6 +1126,7 @@ void Meta_Global_Archive::impl::after_store( bool is_create, bool is_internal )
 bool Meta_Global_Archive::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
+
    bool retval = is_internal || !( state & c_state_undeletable );
 
    // [<start can_destroy>]

@@ -1189,7 +1189,7 @@ void Meta_Enum_Item::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_from_key)] 600019
-   if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && get_obj( ).Order( ) == g_default_Order ) )
+   if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && ( get_obj( ).Order( ) == g_default_Order ) ) )
       get_obj( ).Order( get_obj( ).get_key( ) );
    // [(finish default_from_key)] 600019
 
@@ -1245,6 +1245,7 @@ void Meta_Enum_Item::impl::after_store( bool is_create, bool is_internal )
 bool Meta_Enum_Item::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
+
    bool retval = is_internal || !( state & c_state_undeletable );
 
    // [<start can_destroy>]

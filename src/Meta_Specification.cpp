@@ -7833,7 +7833,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600167
 
    // [(start default_from_key)] 600168
-   if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && get_obj( ).Order( ) == g_default_Order ) )
+   if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && ( get_obj( ).Order( ) == g_default_Order ) ) )
       get_obj( ).Order( get_obj( ).get_key( ) );
    // [(finish default_from_key)] 600168
 
@@ -8564,6 +8564,7 @@ void Meta_Specification::impl::after_store( bool is_create, bool is_internal )
 bool Meta_Specification::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
+
    bool retval = is_internal || !( state & c_state_undeletable );
 
    // [(start destroy_restrict)] 600180
