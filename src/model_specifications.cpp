@@ -9759,8 +9759,10 @@ void state_protect_specification::add_specification_data( model& /*m*/, specific
    spec_data.data_pairs.push_back( make_pair( c_data_spec_value, protect_value ) );
    spec_data.data_pairs.push_back( make_pair( c_data_spec_scope, protect_scope ) );
    spec_data.data_pairs.push_back( make_pair( c_data_changing, is_changing ? c_true : "" ) );
-   spec_data.data_pairs.push_back( make_pair( c_data_pfield, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_label, "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_pfield, "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_tfield, "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_modifier, "" ) );
    spec_data.data_pairs.push_back( make_pair( "admin_always", "" ) );
    spec_data.data_pairs.push_back( make_pair( "scripts_always", "" ) );
 }

@@ -1369,7 +1369,7 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield\
  arg_op=$specification_\0_op arg_vname=$specification_\0_vname arg_otfield=$specification_\0_otfield`}\
 `,\
-`@eq`(`'\1`'`,`'protect_equal`'`)
+`@eq`(`'\1`'`,`'protect_equal`'`)`{`;NOTE: If changing then also need to change 'state_protect' below.`}
 `{`#protect_equal.spec.xrep section=get_state\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield\
  arg_label=$specification_\0_label arg_value=$specification_\0_value arg_modifier=$specification_\0_modifier\
@@ -1404,8 +1404,9 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `,\
 `@eq`(`'\1`'`,`'state_protect`'`)`{`;NOTE: This can be removed when modeller.exe is no longer used.`}
 `{`#$specification_\0_spec_file section=get_state name=\0\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_label=$specification_\0_label\
- arg_value=$specification_\0_spec_value arg_scope=$specification_\0_spec_scope arg_changing=$specification_\0_changing\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield\
+ arg_label=$specification_\0_label arg_value=$specification_\0_spec_value arg_modifier=$specification_\0_modifier\
+ arg_tfield=$specification_\0_tfield arg_scope=$specification_\0_spec_scope arg_changing=$specification_\0_changing\
  arg_admin_always=$specification_\0_admin_always arg_scripts_always=$specification_\0_scripts_always`}\
 `,\
 `@eq`(`'\1`'`,`'unactionable_field_value`'`)
@@ -4897,7 +4898,7 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `{`#permit_user_ignore_uneditable.spec.xrep section=get_always_required_field_names class_name=$class_name\
  arg_id=$specification_\0_id arg_tpfield=$specification_\0_tpfield`}\
 `,\
-`@eq`(`'\1`'`,`'protect_equal`'`)
+`@eq`(`'\1`'`,`'protect_equal`'`)`{`;NOTE: If changing then also need to change 'state_protect' below.`}
 `{`#protect_equal.spec.xrep section=get_always_required_field_names\
  arg_id=$specification_\0_id arg_field=$specification_\0_field\
  arg_pfield=$specification_\0_pfield arg_tfield=$specification_\0_tfield`}\
@@ -4921,7 +4922,8 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `,\
 `@eq`(`'\1`'`,`'state_protect`'`)`{`;NOTE: This can be removed when modeller.exe is no longer used.`}
 `{`#$specification_\0_spec_file section=get_always_required_field_names name=\0\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield`}\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field\
+ arg_pfield=$specification_\0_pfield arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'total_child_field_in_parent`'`)
 `{`#total_child_field_in_parent.spec.xrep section=get_always_required_field_names class_name=$class_name\
