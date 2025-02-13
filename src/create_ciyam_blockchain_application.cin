@@ -461,18 +461,35 @@ CAN_CHANGE_DEFAULT_GROUP_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Submit_Blogs "" @key -min
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Submit_Own_Blogs "" @key -min
 @ifndef $OUTPUT
-ERROR=Unable to locate Field 'Can_Submit_Blogs' for Class 'User'.
+ERROR=Unable to locate Field 'Can_Submit_Own_Blogs' for Class 'User'.
 @endif
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
 ;
-CAN_SUBMIT_BLOGS_KEY=$OUTPUT
+CAN_SUBMIT_OWN_BLOGS_KEY=$OUTPUT
 ;
-.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_SUBMIT_BLOGS_KEY% 130101=1
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_SUBMIT_OWN_BLOGS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Submit_Other_Blogs "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Can_Submit_Other_Blogs' for Class 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+CAN_SUBMIT_OTHER_BLOGS_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_SUBMIT_OTHER_BLOGS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
@@ -592,18 +609,35 @@ CAN_LOCK_OWN_TOPICS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Submit_Forum_Posts "" @key -min
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Submit_Own_Posts "" @key -min
 @ifndef $OUTPUT
-ERROR=Unable to locate Field 'Can_Submit_Forum_Posts' for Class 'User'.
+ERROR=Unable to locate Field 'Can_Submit_Own_Posts' for Class 'User'.
 @endif
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
 ;
-CAN_SUBMIT_FORUM_POSTS_KEY=$OUTPUT
+CAN_SUBMIT_OWN_POSTS_KEY=$OUTPUT
 ;
-.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_SUBMIT_FORUM_POSTS_KEY% 130101=1
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_SUBMIT_OWN_POSTS_KEY% 130101=1
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Submit_Other_Posts "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Can_Submit_Other_Posts' for Class 'User'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+CAN_SUBMIT_OTHER_POSTS_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_SUBMIT_OTHER_POSTS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
