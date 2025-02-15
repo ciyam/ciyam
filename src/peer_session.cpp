@@ -99,6 +99,8 @@ const size_t c_checksum_length = 8;
 const size_t c_dummy_num_for_support = 999;
 const size_t c_default_progress_seconds = 2;
 
+const int64_t c_max_seconds_difference = 60;
+
 const int c_attempt_seconds = 10;
 
 const int c_accept_timeout = 250;
@@ -6445,425 +6447,458 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
    if( !( *this->ap_socket ) )
       throw runtime_error( "unexpected invalid socket in peer_session::peer_session" );
 
-   if( p_identity )
-      identity = string( p_identity );
-
-   string::size_type pos = addr_info.find( '=' );
-
-   if( pos != string::npos )
+   try
    {
-      blockchain = addr_info.substr( pos + 1 );
-      ip_addr.erase( pos );
-   }
+      if( p_identity )
+         identity = string( p_identity );
 
-   pos = blockchain.find( ':' );
+      string::size_type pos = addr_info.find( '=' );
 
-   if( pos != string::npos )
-   {
-      port = blockchain.substr( pos + 1 );
-      blockchain.erase( pos );
-   }
-
-   if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) )
-      throw runtime_error( "invalid blockchain tag prefix '" + blockchain + "'" );
-
-   string unprefixed_blockchain( blockchain );
-   replace( unprefixed_blockchain, c_bc_prefix, "" );
-
-   if( port.empty( ) && blockchain.empty( ) )
-      port = get_test_peer_port( );
-
-   if( chain_type == e_peerchain_type_hub )
-      is_hub = true;
-   else if( chain_type == e_peerchain_type_data )
-      is_data = true;
-   else if( chain_type == e_peerchain_type_user )
-      is_user = true;
-
-   if( ( ip_addr == c_local_ip_addr ) || ( ip_addr == c_local_ip_addr_for_ipv6 ) )
-      is_local = true;
-
-   bool use_insecure = has_raw_system_variable(
-    get_special_var_name( e_special_var_use_insecure_peer_protocol ) );
-
-   if( !is_responder )
-   {
-      if( is_hub )
-         session_id_owner = get_raw_session_variable( get_special_var_name( e_special_var_session_id_owner ) );
-
-      // NOTE: Unless a system variable "@use_insecure_peer_protocol" is
-      // found will check for a session (or if not exists then a system)
-      // variable named "@secret_hash" used to secure the peer protocol.
-      // If a session variable is found and its value is prefixed with a
-      // '@' character then it's assumed to be a system variable name.
-      if( !use_insecure )
+      if( pos != string::npos )
       {
-         secret_hash = get_raw_session_variable( get_special_var_name( e_special_var_secret_hash ) );
-
-         if( secret_hash.empty( ) )
-            secret_hash = get_raw_system_variable( get_special_var_name( e_special_var_secret_hash ) );
-         else if( secret_hash[ 0 ] == '@' )
-            secret_hash = get_raw_system_variable( secret_hash );
+         blockchain = addr_info.substr( pos + 1 );
+         ip_addr.erase( pos );
       }
 
-      if( !blockchain.empty( ) && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
-         is_owner = true;
-   }
+      pos = blockchain.find( ':' );
 
-   progress* p_sock_progress = 0;
-   trace_progress sock_progress( TRACE_SOCK_OPS );
+      if( pos != string::npos )
+      {
+         port = blockchain.substr( pos + 1 );
+         blockchain.erase( pos );
+      }
+
+      if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) )
+         throw runtime_error( "invalid blockchain tag prefix '" + blockchain + "'" );
+
+      string unprefixed_blockchain( blockchain );
+      replace( unprefixed_blockchain, c_bc_prefix, "" );
+
+      if( port.empty( ) && blockchain.empty( ) )
+         port = get_test_peer_port( );
+
+      if( chain_type == e_peerchain_type_hub )
+         is_hub = true;
+      else if( chain_type == e_peerchain_type_data )
+         is_data = true;
+      else if( chain_type == e_peerchain_type_user )
+         is_user = true;
+
+      if( ( ip_addr == c_local_ip_addr ) || ( ip_addr == c_local_ip_addr_for_ipv6 ) )
+         is_local = true;
+
+      bool use_insecure = has_raw_system_variable(
+       get_special_var_name( e_special_var_use_insecure_peer_protocol ) );
+
+      if( !is_responder )
+      {
+         if( is_hub )
+            session_id_owner = get_raw_session_variable( get_special_var_name( e_special_var_session_id_owner ) );
+
+         // NOTE: Unless a system variable "@use_insecure_peer_protocol" is
+         // found will check for a session (or if not exists then a system)
+         // variable named "@secret_hash" used to secure the peer protocol.
+         // If a session variable is found and its value is prefixed with a
+         // '@' character then it's assumed to be a system variable name.
+         if( !use_insecure )
+         {
+            secret_hash = get_raw_session_variable( get_special_var_name( e_special_var_secret_hash ) );
+
+            if( secret_hash.empty( ) )
+               secret_hash = get_raw_system_variable( get_special_var_name( e_special_var_secret_hash ) );
+            else if( secret_hash[ 0 ] == '@' )
+               secret_hash = get_raw_system_variable( secret_hash );
+         }
+
+         if( !blockchain.empty( ) && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
+            is_owner = true;
+      }
+
+      progress* p_sock_progress = 0;
+      trace_progress sock_progress( TRACE_SOCK_OPS );
 
 #ifdef DEBUG_PEER_HANDSHAKE
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
-      p_sock_progress = &sock_progress;
+      if( get_trace_flags( ) & TRACE_SOCK_OPS )
+         p_sock_progress = &sock_progress;
 #endif
 
-   this->ap_socket->set_no_delay( );
+      this->ap_socket->set_no_delay( );
 
-   // NOTE: A dummy PID is being written/read here so that the standard general
-   // purpose client can be used to connect as a peer (for interactive testing).
-   string pid( c_dummy_peer_tag );
+      // NOTE: A dummy PID is being written/read here so that the standard general
+      // purpose client can be used to connect as a peer (for interactive testing).
+      string pid( c_dummy_peer_tag );
 
-   bool needs_initiator = false;
+      bool needs_initiator = false;
 
-   if( !is_responder )
-   {
-      if( is_for_support )
-         pid = string( c_dummy_support_tag );
-
-      if( !blockchain.empty( ) )
+      if( !is_responder )
       {
-         pid += ':' + unprefixed_blockchain;
+         if( is_for_support )
+            pid = string( c_dummy_support_tag );
 
-         pid += '#' + to_string( ( size_t )chain_type );
-
-         if( !identity.empty( ) && ( extra != e_peer_extra_none ) )
+         if( !blockchain.empty( ) )
          {
-            pid += '@' + identity;
+            pid += ':' + unprefixed_blockchain;
 
-            if( !is_owner && ( chain_type == e_peerchain_type_backup ) )
+            pid += '#' + to_string( ( size_t )chain_type );
+
+            if( !identity.empty( ) && ( extra != e_peer_extra_none ) )
             {
-               string hub_identity( get_hub_identity( unprefixed_blockchain ) );
+               pid += '@' + identity;
 
-               if( !hub_identity.empty( ) )
-                  pid += '&' + hub_identity;
-            }
-         }
-
-#ifdef SSL_SUPPORT
-         private_key priv_key;
-
-         priv_key.get_secret( secret_key );
-         public_loc = priv_key.get_public( );
-
-         pid += '%' + public_loc;
-#endif
-
-         if( has_support_sessions )
-            pid += '+';
-
-         if( is_owner && !is_for_support )
-            pid += '!';
-
-         if( !secret_hash.empty( ) )
-         {
-            ostringstream osstr;
-            osstr << hex << setw( 9 ) << setfill( '0' ) << unix_time( );
-
-            string unix_in_hex( osstr.str( ) );
-
-            sha256 hash( unix_in_hex + secret_hash );
-
-            string::size_type pos = pid.find( ':' );
-
-            string prefix( pid.substr( 0, pos ) );
-
-            stringstream ss( pid.substr( pos + 1 ) );
-
-            crypt_stream( ss, secret_hash, e_stream_cipher_chacha20 );
-
-            pid = prefix + ':' + unix_in_hex + '-'
-             + hash.get_digest_as_string( ).substr( 0, 9 ) + '=' + base64::encode( ss.str( ) );
-
-#ifdef SSL_SUPPORT
-            this->ap_socket->ssl_connect( );
-
-            using_tls = true;
-#endif
-         }
-      }
-
-      this->ap_socket->write_line( pid, c_initial_timeout, p_sock_progress );
-
-      process_greeting( );
-   }
-   else
-   {
-      pid.erase( );
-
-#ifdef SSL_SUPPORT
-      if( this->ap_socket->is_tls_handshake( ) )
-      {
-         this->ap_socket->ssl_accept( );
-
-         using_tls = true;
-      }
-#endif
-
-      this->ap_socket->read_line( pid, c_initial_timeout, c_max_greeting_size, p_sock_progress );
-
-      string::size_type pos = pid.find( '=' );
-
-      if( pos == string::npos )
-      {
-         if( !is_local && !use_insecure )
-            throw runtime_error( "invalid peer handshake" );
-      }
-      else
-      {
-         string encrypted_data( pid.substr( pos + 1 ) );
-
-         pid.erase( pos );
-
-         pos = pid.find( ':' );
-
-         if( pos == string::npos )
-            throw runtime_error( "invalid peer handshake" );
-         else
-         {
-            string prefix( pid.substr( 0, pos + 1 ) );
-
-            pid.erase( 0, pos + 1 );
-
-            pos = pid.find( '-' );
-
-            if( pos == string::npos )
-               throw runtime_error( "invalid peer handshake" );
-            else
-            {
-               string unix_in_hex( pid.substr( 0, pos ) );
-               string hash_prefix( pid.substr( pos + 1 ) );
-
-               string hash_secret_lines( get_raw_system_variable(
-                get_special_var_name( e_special_var_secret_hash ) + "_*" ) );
-
-               if( !hash_secret_lines.empty( ) )
+               if( !is_owner && ( chain_type == e_peerchain_type_backup ) )
                {
-                  vector< string > all_lines;
+                  string hub_identity( get_hub_identity( unprefixed_blockchain ) );
 
-                  split( hash_secret_lines, all_lines, '\n' );
-
-                  for( size_t i = 0; i < all_lines.size( ); i++ )
-                  {
-                     string next_line( all_lines[ i ] );
-
-                     pos = next_line.find( ' ' );
-
-                     if( pos != string::npos )
-                     {
-                        string next_hash( next_line.substr( pos + 1 ) );
-
-                        sha256 hash( unix_in_hex + next_hash );
-
-                        if( hash_prefix == hash.get_digest_as_string( ).substr( 0, 9 ) )
-                        {
-                           secret_hash = next_hash;
-                           break;
-                        }
-                     }
-                  }
-
-                  if( !secret_hash.empty( ) )
-                  {
-                     stringstream ss( base64::decode( encrypted_data ) );
-
-                     crypt_stream( ss, secret_hash, e_stream_cipher_chacha20 );
-
-                     pid = prefix + ss.str( );
-                  }
+                  if( !hub_identity.empty( ) )
+                     pid += '&' + hub_identity;
                }
             }
-         }
 
-         if( secret_hash.empty( ) )
-            throw runtime_error( "invalid peer handshake" );
-      }
-
-      pos = pid.find( c_key_exchange_suffix );
-
-      if( pos != string::npos )
-      {
-         pid.erase( pos );
-         needs_key_exchange = true;
-      }
-
-      pos = pid.find( '!' );
-
-      if( pos != string::npos )
-      {
-         pid.erase( pos );
-         other_is_owner = true;
-      }
-
-      pos = pid.find( '+' );
-
-      if( pos != string::npos )
-      {
-         pid.erase( pos );
-         this->has_support_sessions = true;
-      }
-
-      pos = pid.find( ':' );
-
-      if( pos != string::npos )
-      {
-         set< string > blockchains;
-         split( blockchain, blockchains );
-
-         string peer_info( pid.substr( pos + 1 ) );
-
-         if( peer_info.find( c_bc_prefix ) == 0 )
-            blockchain = peer_info;
-         else
-            blockchain = string( c_bc_prefix ) + peer_info;
-
-         string::size_type spos = blockchain.find( '%' );
-
-         if( spos != string::npos )
-         {
 #ifdef SSL_SUPPORT
             private_key priv_key;
 
             priv_key.get_secret( secret_key );
             public_loc = priv_key.get_public( );
 
-            public_ext = blockchain.substr( spos + 1 );
+            pid += '%' + public_loc;
+#endif
+
+            if( has_support_sessions )
+               pid += '+';
+
+            if( is_owner && !is_for_support )
+               pid += '!';
 
             if( !secret_hash.empty( ) )
             {
-               public_key pub_key( public_ext );
+               ostringstream osstr;
 
-               priv_key.construct_shared( session_secret, pub_key );
+               osstr << hex << setw( 9 ) << setfill( '0' ) << unix_time( );
 
-               sha256 hash( secret_hash + session_secret );
+               string unix_in_hex( osstr.str( ) );
 
-               session_secret = hash.get_digest_as_string( );
-            }
+               sha256 hash( unix_in_hex + secret_hash );
+
+               string::size_type pos = pid.find( ':' );
+
+               string prefix( pid.substr( 0, pos ) );
+
+               stringstream ss( pid.substr( pos + 1 ) );
+
+               crypt_stream( ss, secret_hash, e_stream_cipher_chacha20 );
+
+               pid = prefix + ':' + unix_in_hex + '-'
+                + hash.get_digest_as_string( ).substr( 0, 9 ) + '=' + base64::encode( ss.str( ) );
+
+#ifdef SSL_SUPPORT
+               this->ap_socket->ssl_connect( );
+
+               using_tls = true;
 #endif
-            blockchain.erase( spos );
-         }
-
-         spos = blockchain.find( '&' );
-
-         if( spos != string::npos )
-         {
-            hub_identity = blockchain.substr( spos + 1 );
-
-            blockchain.erase( spos );
-         }
-
-         spos = blockchain.find( '@' );
-
-         if( spos != string::npos )
-         {
-            identity = blockchain.substr( spos + 1 );
-
-            blockchain.erase( spos );
-         }
-
-         spos = blockchain.find( '#' );
-
-         if( spos != string::npos )
-         {
-            chain_type = ( peerchain_type )atoi( blockchain.substr( spos + 1 ).c_str( ) );
-
-            blockchain.erase( spos );
-
-            if( chain_type != e_peerchain_type_any )
-            {
-               string error;
-               check_blockchain_type( blockchain, chain_type, &error );
-
-               if( !error.empty( ) )
-               {
-                  this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_initial_timeout );
-
-                  throw runtime_error( error );
-               }
-
-               if( chain_type == e_peerchain_type_hub )
-                  is_hub = true;
-               else if( chain_type == e_peerchain_type_data )
-                  is_data = true;
-               else if( chain_type == e_peerchain_type_user )
-                  is_user = true;
             }
          }
 
-         string unprefixed_blockchain( replaced( blockchain, c_bc_prefix, "" ) );
+         this->ap_socket->write_line( pid, c_initial_timeout, p_sock_progress );
 
-         bool has_data = false;
-         bool has_user = false;
+         process_greeting( );
+      }
+      else
+      {
+         // FUTURE: This message should be handled as a server string message.
+         string invalid_handshake( "Invalid peer handshake." );
 
-         if( is_data )
+         pid.erase( );
+
+#ifdef SSL_SUPPORT
+         if( this->ap_socket->is_tls_handshake( ) )
          {
-            string data_zenith_tag( blockchain + c_zenith_suffix );
+            this->ap_socket->ssl_accept( );
 
-            if( has_tag( data_zenith_tag ) || has_file_archive( unprefixed_blockchain ) )
-               has_data = true;
+            using_tls = true;
          }
-         else if( is_user )
+#endif
+
+         this->ap_socket->read_line( pid, c_initial_timeout, c_max_greeting_size, p_sock_progress );
+
+         string::size_type pos = pid.find( '=' );
+
+         if( pos == string::npos )
          {
-            string forwards_tag( blockchain + c_zenith_suffix );
-
-            string reversed( unprefixed_blockchain );
-            reverse( reversed.begin( ), reversed.end( ) );
-
-            string reversed_tag( c_bc_prefix + reversed + c_zenith_suffix );
-
-            if( has_tag( forwards_tag ) || has_tag( reversed_tag )
-             || has_file_archive( unprefixed_blockchain ) || has_file_archive( reversed ) )
-               has_user = true;
+            if( !is_local && !use_insecure )
+               throw runtime_error( invalid_handshake );
          }
-
-         if( !has_data && !has_user && !blockchains.count( blockchain ) )
+         else
          {
-            // FUTURE: This message should be handled as a server string message.
-            string error( "Peerchain identity '" + unprefixed_blockchain + "' is not available." );
+            string encrypted_data( pid.substr( pos + 1 ) );
 
-            this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_initial_timeout );
+            pid.erase( pos );
 
-            throw runtime_error( error );
+            pos = pid.find( ':' );
+
+            if( pos == string::npos )
+               throw runtime_error( invalid_handshake );
+            else
+            {
+               string prefix( pid.substr( 0, pos + 1 ) );
+
+               pid.erase( 0, pos + 1 );
+
+               pos = pid.find( '-' );
+
+               if( pos == string::npos )
+                  throw runtime_error( invalid_handshake );
+               else
+               {
+                  string unix_in_hex( pid.substr( 0, pos ) );
+                  string hash_prefix( pid.substr( pos + 1 ) );
+
+                  istringstream isstr( unix_in_hex );
+
+                  uint64_t peer_unix_time;
+                  isstr >> hex >> peer_unix_time;
+
+                  uint64_t difference = unix_time( ) - peer_unix_time;
+
+                  if( difference < 0 )
+                     difference *= -1;
+
+                  // NOTE: Will not accept a unix time that is much older or newer
+                  // than the current value (in order to try and ensure that peers
+                  // have a reasonably accurate clock).
+                  if( difference > c_max_seconds_difference )
+                     // FUTURE: This message should be handled as a server string message.
+                     throw runtime_error( "Invalid time difference (check system clocks)." );
+
+                  string hash_secret_lines( get_raw_system_variable(
+                   get_special_var_name( e_special_var_secret_hash ) + "_*" ) );
+
+                  if( !hash_secret_lines.empty( ) )
+                  {
+                     vector< string > all_lines;
+
+                     split( hash_secret_lines, all_lines, '\n' );
+
+                     for( size_t i = 0; i < all_lines.size( ); i++ )
+                     {
+                        string next_line( all_lines[ i ] );
+
+                        pos = next_line.find( ' ' );
+
+                        if( pos != string::npos )
+                        {
+                           string next_hash( next_line.substr( pos + 1 ) );
+
+                           sha256 hash( unix_in_hex + next_hash );
+
+                           if( hash_prefix == hash.get_digest_as_string( ).substr( 0, 9 ) )
+                           {
+                              secret_hash = next_hash;
+                              break;
+                           }
+                        }
+                     }
+
+                     if( !secret_hash.empty( ) )
+                     {
+                        stringstream ss( base64::decode( encrypted_data ) );
+
+                        crypt_stream( ss, secret_hash, e_stream_cipher_chacha20 );
+
+                        pid = prefix + ss.str( );
+                     }
+                  }
+               }
+            }
+
+            if( secret_hash.empty( ) )
+               throw runtime_error( invalid_handshake );
          }
 
-         // NOTE: Prevent potential immediate killing of a reconnected session via UI.
-         if( !is_data && !is_user )
-            set_system_variable( '~' + unprefixed_blockchain, "" );
+         pos = pid.find( c_key_exchange_suffix );
 
-         pid.erase( pos );
+         if( pos != string::npos )
+         {
+            pid.erase( pos );
+            needs_key_exchange = true;
+         }
+
+         pos = pid.find( '!' );
+
+         if( pos != string::npos )
+         {
+            pid.erase( pos );
+            other_is_owner = true;
+         }
+
+         pos = pid.find( '+' );
+
+         if( pos != string::npos )
+         {
+            pid.erase( pos );
+            this->has_support_sessions = true;
+         }
+
+         pos = pid.find( ':' );
+
+         if( pos != string::npos )
+         {
+            set< string > blockchains;
+            split( blockchain, blockchains );
+
+            string peer_info( pid.substr( pos + 1 ) );
+
+            if( peer_info.find( c_bc_prefix ) == 0 )
+               blockchain = peer_info;
+            else
+               blockchain = string( c_bc_prefix ) + peer_info;
+
+            string::size_type spos = blockchain.find( '%' );
+
+            if( spos != string::npos )
+            {
+#ifdef SSL_SUPPORT
+               private_key priv_key;
+
+               priv_key.get_secret( secret_key );
+               public_loc = priv_key.get_public( );
+
+               public_ext = blockchain.substr( spos + 1 );
+
+               if( !secret_hash.empty( ) )
+               {
+                  public_key pub_key( public_ext );
+
+                  priv_key.construct_shared( session_secret, pub_key );
+
+                  sha256 hash( secret_hash + session_secret );
+
+                  session_secret = hash.get_digest_as_string( );
+               }
+#endif
+               blockchain.erase( spos );
+            }
+
+            spos = blockchain.find( '&' );
+
+            if( spos != string::npos )
+            {
+               hub_identity = blockchain.substr( spos + 1 );
+
+               blockchain.erase( spos );
+            }
+
+            spos = blockchain.find( '@' );
+
+            if( spos != string::npos )
+            {
+               identity = blockchain.substr( spos + 1 );
+
+               blockchain.erase( spos );
+            }
+
+            spos = blockchain.find( '#' );
+
+            if( spos != string::npos )
+            {
+               chain_type = ( peerchain_type )atoi( blockchain.substr( spos + 1 ).c_str( ) );
+
+               blockchain.erase( spos );
+
+               if( chain_type != e_peerchain_type_any )
+               {
+                  string error;
+                  check_blockchain_type( blockchain, chain_type, &error );
+
+                  if( !error.empty( ) )
+                  {
+                     this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_initial_timeout );
+
+                     throw runtime_error( error );
+                  }
+
+                  if( chain_type == e_peerchain_type_hub )
+                     is_hub = true;
+                  else if( chain_type == e_peerchain_type_data )
+                     is_data = true;
+                  else if( chain_type == e_peerchain_type_user )
+                     is_user = true;
+               }
+            }
+
+            string unprefixed_blockchain( replaced( blockchain, c_bc_prefix, "" ) );
+
+            bool has_data = false;
+            bool has_user = false;
+
+            if( is_data )
+            {
+               string data_zenith_tag( blockchain + c_zenith_suffix );
+
+               if( has_tag( data_zenith_tag ) || has_file_archive( unprefixed_blockchain ) )
+                  has_data = true;
+            }
+            else if( is_user )
+            {
+               string forwards_tag( blockchain + c_zenith_suffix );
+
+               string reversed( unprefixed_blockchain );
+               reverse( reversed.begin( ), reversed.end( ) );
+
+               string reversed_tag( c_bc_prefix + reversed + c_zenith_suffix );
+
+               if( has_tag( forwards_tag ) || has_tag( reversed_tag )
+                || has_file_archive( unprefixed_blockchain ) || has_file_archive( reversed ) )
+                  has_user = true;
+            }
+
+            if( !has_data && !has_user && !blockchains.count( blockchain ) )
+            {
+               // FUTURE: This message should be handled as a server string message.
+               string error( "Peerchain identity '" + unprefixed_blockchain + "' is not available." );
+
+               throw runtime_error( error );
+            }
+
+            // NOTE: Prevent potential immediate killing of a reconnected session via UI.
+            if( !is_data && !is_user )
+               set_system_variable( '~' + unprefixed_blockchain, "" );
+
+            pid.erase( pos );
+         }
+
+         if( !blockchain.empty( )
+          && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
+            is_owner = true;
+
+         if( is_owner && other_is_owner )
+            both_are_owners = true;
+
+         if( pid == string( c_dummy_support_tag ) )
+            this->is_for_support = true;
+         else if( pid == string( c_dummy_peer_tag ) )
+            this->is_for_support = false;
+         else if( blockchain.empty( ) )
+            this->is_for_support = false;
+         else
+            throw runtime_error( "unexpected peer handshake" );
       }
 
-      if( !blockchain.empty( )
-       && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
-         is_owner = true;
-
-      if( is_owner && other_is_owner )
-         both_are_owners = true;
-
-      if( pid == string( c_dummy_support_tag ) )
-         this->is_for_support = true;
-      else if( pid == string( c_dummy_peer_tag ) )
-         this->is_for_support = false;
-      else if( blockchain.empty( ) )
-         this->is_for_support = false;
-      else
-         throw runtime_error( "unexpected peer handshake" );
+      // NOTE: This check is necessary because listener created sessions set "is_for_support" true but
+      //  whether it is actually a support session is only knowable after the first line has been read.
+      if( !this->is_for_support && has_session_with_ip_addr( ip_addr, blockchain ) )
+         throw runtime_error( "cannot create a non-support peer when has an existing non-support peer session" );
    }
+   catch( exception& x )
+   {
+      if( *this->ap_socket )
+         this->ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
 
-   // NOTE: This check is necessary because listener created sessions set "is_for_support" true but
-   //  whether it is actually a support session is only knowable after the first line has been read.
-   if( !this->is_for_support && has_session_with_ip_addr( ip_addr, blockchain ) )
-      throw runtime_error( "cannot create a non-support peer when has an existing non-support peer session" );
+      throw;
+   }
+   catch( ... )
+   {
+      throw;
+   }
 
    increment_session_count( );
 }
