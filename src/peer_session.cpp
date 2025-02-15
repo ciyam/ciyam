@@ -6654,10 +6654,10 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
                   istringstream isstr( unix_in_hex );
 
-                  uint64_t peer_unix_time;
+                  int64_t peer_unix_time;
                   isstr >> hex >> peer_unix_time;
 
-                  uint64_t difference = unix_time( ) - peer_unix_time;
+                  int64_t difference = unix_time( ) - peer_unix_time;
 
                   if( difference < 0 )
                      difference *= -1;
