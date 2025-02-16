@@ -339,7 +339,10 @@ void storage_channel_document_restore( const string& identity_path )
 
       ods_file_system ofs( storage_ods_instance( ) );
 
-      ods::bulk_read bulk_read( storage_ods_instance( ) );
+      auto_ptr< ods::bulk_read > ap_bulk_read;
+
+      if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
+         ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
 
       ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -516,7 +519,10 @@ void storage_channel_list( ostream& os )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_read bulk_read( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -536,7 +542,10 @@ void storage_channel_create( const char* p_identity, const char* p_channel_infor
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -599,7 +608,10 @@ void storage_channel_destroy( const char* p_identity )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -636,7 +648,10 @@ void storage_channel_update( const char* p_identity, const char* p_channel_infor
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -698,7 +713,10 @@ string storage_channel_documents( const string& identity, bool height, bool fetc
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_read bulk_read( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -761,7 +779,10 @@ void storage_channel_documents_open( const char* p_identity )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_read bulk_read( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -897,7 +918,10 @@ void storage_channel_documents_close( const char* p_identity )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -1322,7 +1346,10 @@ string storage_channel_documents_update( const string& identity, bool submitted 
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -1633,7 +1660,10 @@ string storage_channel_documents_prepare( const string& identity )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -1835,7 +1865,10 @@ void storage_channel_documents_cancel_pending( const char* p_identity )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -1893,7 +1926,10 @@ void storage_channel_documents_reject_waiting( const char* p_identity, const cha
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -2007,7 +2043,10 @@ void storage_channel_documents_reject_reviewing( const char* p_identity, const c
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -2127,7 +2166,10 @@ void storage_channel_documents_approve_waiting( const char* p_identity, const ch
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -2247,7 +2289,10 @@ void storage_channel_documents_approve_reviewing( const char* p_identity, const 
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -2343,7 +2388,10 @@ string storage_channel_documents_specific(
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_read bulk_read( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -2450,7 +2498,10 @@ void list_datachains( ostream& os )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_read bulk_read( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_datachains );
 
@@ -2463,7 +2514,10 @@ void list_datachains( vector< string >& datachains )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_read bulk_read( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_datachains );
 
@@ -2476,7 +2530,10 @@ bool has_datachain( const string& identity )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_read bulk_read( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_datachains );
 
@@ -2494,7 +2551,10 @@ string get_datachain_info( const string& identity, size_t* p_data_type, size_t* 
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_read bulk_read( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_datachains );
 
@@ -2532,7 +2592,10 @@ void create_datachain_info( const string& identity, size_t data_type )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_channels );
 
@@ -2574,7 +2637,10 @@ void remove_datachain_info( const string& identity )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_datachains );
 
@@ -2594,7 +2660,10 @@ void set_datachain_height( const string& identity, size_t new_height )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    ofs.set_root_folder( c_storable_folder_name_datachains );
 
@@ -2626,7 +2695,10 @@ bool is_linked_to_datachain( const string& channel, const string& identity )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_read bulk_read( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
 
    vector< string > folders;
 
@@ -2660,7 +2732,10 @@ void link_channel_to_datachain( const string& channel, const string& identity )
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    vector< string > folders;
 
@@ -2721,7 +2796,10 @@ void unlink_channel_from_datachain( const string& channel, const string& identit
 
    ods_file_system ofs( storage_ods_instance( ) );
 
-   ods::bulk_write bulk_write( storage_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+
+   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
 
    vector< string > folders;
 
