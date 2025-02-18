@@ -268,10 +268,10 @@ File System Statistics
 The "file_stats" command can be used to see a summary of the file system usage:
 
 > file_stats
-[3/100000]152 B/100.0 GB:5 tag(s)
+[4/100000]153 B/100.0 GB:5 tag(s)
 
-The response says that 3 out of 100,000 possible files are currently being stored in the files area and these
-files are using 152 bytes of the maximum possible capacity of 100 GB being used with a total of 5 file tags.
+The response says that 4 out of 100,000 possible files are currently being stored in the files area and these
+files are using 153 bytes of the maximum possible capacity of 100 GB being used with a total of 5 file tags.
 
 There are two settings in "ciyam_server.sio" configuration file that are relevant to the file system and they
 are as follows (uncomment and change then restart "ciyam_server" for the new settings to take effect):

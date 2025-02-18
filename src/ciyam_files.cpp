@@ -422,6 +422,30 @@ string construct_file_name_from_hash(
    return file_name;
 }
 
+string create_empty_file( )
+{
+   guard g( g_mutex );
+
+   string data( c_file_type_str_blob );
+
+   string hash( sha256( data ).get_digest_as_string( ) );
+
+   string file_name( construct_file_name_from_hash( hash, true ) );
+
+   if( !file_exists( file_name ) )
+   {
+      if( g_total_files >= get_files_area_item_max_num( ) )
+         throw runtime_error( "unexpected maximum files would be exceeded for 'create_empty_file'" );
+
+      ++g_total_bytes;
+      ++g_total_files;
+
+      write_file( file_name, data );
+   }
+
+   return hash;
+}
+
 void validate_list( const string& data, bool* p_rc = 0,
  bool allow_missing_items = false, bool* p_has_encrypted_blobs = 0 )
 {
@@ -1210,6 +1234,9 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
 
       } while( dfsi.has_next( ) );
    }
+
+   if( !g_total_files )
+      tag_file( c_false_value, create_empty_file( ), true );
 }
 
 void term_files_area( )
@@ -1770,7 +1797,12 @@ string file_type_info( const string& tag_or_hash,
    string data( buffer_file( file_name, max_to_buffer, &file_size ) );
    
    if( data.empty( ) )
-      throw runtime_error( "unexpected empty file '" + use_tag_or_hash + "'" );
+   {
+      if( hash == c_ciyam_empty_file_hash )
+         data = string( c_file_type_str_blob );
+      else
+         throw runtime_error( "unexpected empty file '" + use_tag_or_hash + "'" );
+   }
 
    unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
 
@@ -1778,10 +1810,10 @@ string file_type_info( const string& tag_or_hash,
    bool is_encrypted = ( data[ 0 ] & c_file_type_val_encrypted );
    bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
 
-   if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
+   if( ( file_type != c_file_type_val_blob ) && ( file_type != c_file_type_val_list ) )
       throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' found in file_info" );
 
-   if( !is_encrypted && max_to_buffer == 1 && file_type == c_file_type_val_list )
+   if( !is_encrypted && ( max_to_buffer == 1 ) && ( file_type == c_file_type_val_list ) )
    {
       data = buffer_file( file_name );
 
@@ -1791,7 +1823,7 @@ string file_type_info( const string& tag_or_hash,
          set_session_variable( buffered_var_name, increment_special );
    }
 
-   if( !is_encrypted && !is_compressed && ( file_type == c_file_type_val_list
+   if( !is_encrypted && !is_compressed && ( ( file_type == c_file_type_val_list )
     || ( ( depth != c_depth_to_omit_blob_content ) && ( expansion != e_file_expansion_recursive_hashes ) ) ) )
    {
       sha256 test_hash( data );
@@ -1903,7 +1935,9 @@ string file_type_info( const string& tag_or_hash,
                {
                   string blob_info( final_data.substr( 1 ) );
 
-                  if( is_valid_utf8( blob_info ) )
+                  if( blob_info.empty( ) )
+                     retval += " [n/a]\n";
+                  else if( is_valid_utf8( blob_info ) )
                   {
                      retval += " [utf8]";
                      retval += "\n" + utf8_replace( blob_info, "\r", "" );
@@ -2805,8 +2839,13 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
 
    string::size_type pos = name.find_first_of( "*?" );
 
+   string empty_file_tag( c_false_value );
+
    if( pos == string::npos )
    {
+      if( name == empty_file_tag )
+         throw runtime_error( "invalid attempt to remove the empty file tag" );
+
       if( name.find( c_time_stamp_tag_prefix ) != 0 )
          file_remove( get_files_area_dir( ) + '/' + name );
 
@@ -2817,6 +2856,7 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
 
          // NOTE: Need to also remove the matching entry in the hash tags multimap.
          multimap< file_hash_info, string >::iterator i;
+
          for( i = g_hash_tags.lower_bound( hash_info ); i != g_hash_tags.end( ); ++i )
          {
             if( i->first != hash_info )
@@ -2844,6 +2884,7 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
       map< string, file_hash_info >::iterator i = g_tag_hashes.lower_bound( prefix );
 
       vector< string > matching_tag_names;
+
       for( ; i != g_tag_hashes.end( ); ++i )
       {
          if( wildcard_match( name, i->first ) )
@@ -2854,7 +2895,12 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
       }
 
       for( size_t i = 0; i < matching_tag_names.size( ); i++ )
-         tag_del( matching_tag_names[ i ], unlink, auto_tag_with_time );
+      {
+         string next_tag_name( matching_tag_names[ i ] );
+
+         if( next_tag_name != empty_file_tag )
+            tag_del( next_tag_name, unlink, auto_tag_with_time );
+      }
    }
 }
 
@@ -3787,6 +3833,9 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
 
       string content( buffer_file( file_name ) );
 
+      if( hash == c_ciyam_empty_file_hash )
+         content = string( c_file_type_str_blob );
+
       unsigned char file_type = ( content[ 0 ] & c_file_type_val_mask );
       unsigned char file_extra = ( content[ 0 ] & c_file_type_val_extra_mask );
 
@@ -3928,7 +3977,7 @@ bool store_file( const string& hash,
    bool file_extra_is_core = false;
    bool list_has_encrypted_blobs = false;
 
-   if( !max_bytes || max_bytes > get_files_area_item_max_size( ) )
+   if( !max_bytes || ( max_bytes > get_files_area_item_max_size( ) ) )
       max_bytes = get_files_area_item_max_size( );
 
    if( !p_file_data )
@@ -4310,6 +4359,10 @@ bool store_file( const string& hash,
 void delete_file( const string& hash, bool even_if_tagged, bool ignore_not_found )
 {
    guard g( g_mutex );
+
+   if( hash == c_ciyam_empty_file_hash )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Deleting the empty file is not allowed." );
 
    string tags( get_hash_tags( hash ) );
    string file_name( construct_file_name_from_hash( hash ) );

@@ -358,7 +358,6 @@ three
 3	#three
 docs
 src
-src/haru
 tests
 [test*.jpg]
 test.jpg

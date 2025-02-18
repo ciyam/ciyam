@@ -531,7 +531,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                if( !file_exists( put_source_file ) )
                   put_file_error = "File '" + put_source_file + "' not found.";
-               else if( chunk_size && chunk == 0 )
+               else if( chunk_size && ( chunk == 0 ) )
                {
                   size_t name_length_for_calc = file_name.length( ) - file_strip_prefix.length( );
 
@@ -775,7 +775,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                else if( str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "put" )
                   was_get_or_put = true;
 
-               if( str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "file_get" )
+               if( ( str.substr( 0, pos ) == "get" ) || ( str.substr( 0, pos ) == "file_get" ) )
                {
                   string filename( !get_dest_file.empty( ) ? get_dest_file : str.substr( pos + 1 ) );
 
@@ -1080,7 +1080,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   if( delete_after_transfer )
                      file_remove( filename );
                }
-               else if( str.substr( 0, pos ) == "put" || str.substr( 0, pos ) == "file_put" )
+               else if( ( str.substr( 0, pos ) == "put" ) || ( str.substr( 0, pos ) == "file_put" ) )
                {
                   string filename( !put_source_file.empty( ) ? put_source_file : str.substr( pos + 1 ) );
 
@@ -1351,7 +1351,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      socket.read_line( response );
                   }
 
-                  if( was_get_or_put || response != string( c_response_okay ) )
+                  if( was_get_or_put || ( response != string( c_response_okay ) ) )
                   {
                      string::size_type pos = response.find( ' ' );
 

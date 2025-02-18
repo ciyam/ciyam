@@ -820,10 +820,10 @@ size_t file_transfer( const string& name, tcp_socket& s,
    size_t total_size = 0;
 
    bool not_base64 = false;
+   bool max_size_exceeded = false;
+   bool received_empty_file = false;
 
    bool has_file_name = !name.empty( );
-
-   bool max_size_exceeded = false;
 
    if( !max_size )
       throw runtime_error( "invalid zero max_size in file_transfer" );
@@ -882,7 +882,9 @@ size_t file_transfer( const string& name, tcp_socket& s,
 
       istream* p_istream = 0;
 
-      if( buffer_size )
+      bool has_prefix_char = ( p_ft_extra && p_ft_extra->p_prefix_char && *p_ft_extra->p_prefix_char );
+
+      if( buffer_size || ( name.empty( ) && has_prefix_char ) )
          total_size = buffer_size;
       else
       {
@@ -898,8 +900,6 @@ size_t file_transfer( const string& name, tcp_socket& s,
 
          p_istream = &inpf;
       }
-
-      bool has_prefix_char = ( p_ft_extra && p_ft_extra->p_prefix_char && *p_ft_extra->p_prefix_char );
 
       size_t max_unencoded = base64::decode_size( max_line_size, true );
 
@@ -942,18 +942,24 @@ size_t file_transfer( const string& name, tcp_socket& s,
          if( has_prefix_char )
             ++offset;
 
-         string data( total_size - offset, '\0' );
+         string content;
 
-         if( !p_istream->read( &data[ 0 ], total_size - offset ) )
-            throw runtime_error( "unexpected failure to read data for size info append in file transfer" );
+         if( total_size > offset )
+         {
+            string data( total_size - offset, '\0' );
 
-         string content( base64::encode( has_prefix_char ? data : data.substr( 1 ) ) );
+            if( !p_istream->read( &data[ 0 ], total_size - offset ) )
+               throw runtime_error( "unexpected failure to read data for size info append in file transfer" );
+
+            content = base64::encode( has_prefix_char ? data : data.substr( 1 ) );
+
+            if( !has_prefix_char )
+               size_info += hex_encode( ( unsigned char* )&data[ 0 ], 1 );
+         }
 
          // NOTE: Prefix the base64 encoded content with the file type and extra in hex.
          if( has_prefix_char )
             size_info += hex_encode( p_ft_extra->p_prefix_char, 1 );
-         else
-            size_info += hex_encode( ( unsigned char* )&data[ 0 ], 1 );
 
          size_info += content;
       }
@@ -1149,7 +1155,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
             {
                string content( next.substr( apos + 1 ) );
 
-               if( content.size( ) < 6 )
+               if( content.size( ) < 2 )
                   throw runtime_error( "unexpected invalid content in file transfer" );
 
                next.erase( apos );
@@ -1169,7 +1175,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
 
                content.erase( 0, 2 );
 
-               if( !base64::valid_characters( content ) )
+               if( !content.empty( ) && !base64::valid_characters( content ) )
                {
                   not_base64 = true;
                   unexpected_data = next;
@@ -1177,33 +1183,34 @@ size_t file_transfer( const string& name, tcp_socket& s,
                   break;
                }
 
-               if( content.empty( ) )
-                  throw runtime_error( "unexpected empty content in file transfer" );
+               string data;
+
+               if( !p_ft_extra || !p_ft_extra->p_prefix_char )
+                  data += type_and_extra;
                else
-               {
-                  string data;
+                  *p_ft_extra->p_prefix_char = type_and_extra[ 0 ];
 
-                  if( !p_ft_extra || !p_ft_extra->p_prefix_char )
-                     data += type_and_extra;
-                  else
-                     *p_ft_extra->p_prefix_char = type_and_extra[ 0 ];
-
+               if( !content.empty( ) )
                   data += base64::decode( content );
 
-                  if( p_buffer )
-                     memcpy( p_buffer, &data[ 0 ], data.length( ) );
+               if( p_buffer )
+                  memcpy( p_buffer, &data[ 0 ], data.length( ) );
 
-                  if( has_file_name && !outf.write( &data[ 0 ], data.length( ) ) )
-                     throw runtime_error( "unexpected error writing to file '" + name + "'" );
+               if( has_file_name && !data.empty( ) && !outf.write( &data[ 0 ], data.length( ) ) )
+                  throw runtime_error( "unexpected error writing to file '" + name + "'" );
 
-                  if( has_file_name )
-                     outf.close( );
+               if( has_file_name )
+               {
+                  outf.close( );
 
-                  total_size = from_string< int64_t >( next.substr( 0, pos ) );
-
-                  if( total_size > max_size )
-                     throw runtime_error( "total_size " + to_string( total_size ) + " exceeds max_size " + to_string( max_size ) );
+                  if( data.empty( ) )
+                     received_empty_file = true;
                }
+
+               total_size = from_string< int64_t >( next.substr( 0, pos ) );
+
+               if( total_size > max_size )
+                  throw runtime_error( "total_size " + to_string( total_size ) + " exceeds max_size " + to_string( max_size ) );
 
                break;
             }
@@ -1298,6 +1305,7 @@ size_t file_transfer( const string& name, tcp_socket& s,
          {
             not_base64 = true;
             unexpected_data = next;
+
             break;
          }
 
@@ -1347,7 +1355,9 @@ size_t file_transfer( const string& name, tcp_socket& s,
          outf.close( );
    }
 
-   if( not_base64 || max_size_exceeded )
+   if( received_empty_file )
+      file_touch( name, 0, true );
+   else if( not_base64 || max_size_exceeded )
    {
       file_remove( name.c_str( ) );
 

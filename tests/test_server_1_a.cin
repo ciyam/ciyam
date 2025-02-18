@@ -327,7 +327,7 @@ X=@repstr:\:/\/:$X
 ;
 <test_console.cin
 ;
-PATHS=@paths:..:^.git*,^src/tmp*,^src/files*
+PATHS=@paths:..:^.git*,^src/tmp*,^src/haru*,^src/files*
 #$PATHS
 ;
 #[test*.jpg]
