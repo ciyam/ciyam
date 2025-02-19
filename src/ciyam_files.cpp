@@ -1094,7 +1094,8 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
    if( !files_area_dir.empty( ) && files_area_dir[ 0 ] != '/' )
       files_area_dir = cwd + '/' + files_area_dir;
 
-   bool rc = true;
+   size_t max_num = get_files_area_item_max_num( );
+   size_t max_size = get_files_area_item_max_size( );
 
    if( !dir_exists( files_area_dir ) )
       create_directories( files_area_dir + "/" );
@@ -1107,9 +1108,6 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
       fs_iterator dfsi( files_area_dir, &df );
 
       bool is_first = true;
-
-      size_t max_num = get_files_area_item_max_num( );
-      size_t max_size = get_files_area_item_max_size( );
 
       int64_t secs_diff = local_secs_diff( );
 
@@ -1235,7 +1233,9 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
       } while( dfsi.has_next( ) );
    }
 
-   if( !g_total_files )
+   // NOTE: Create the special "empty" file if it does not already
+   // exist (and the files area has enough room for another file).
+   if( !has_tag( c_false_value ) && ( g_total_files < max_num ) )
       tag_file( c_false_value, create_empty_file( ), true );
 }
 
