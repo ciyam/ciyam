@@ -264,7 +264,6 @@ file_put 1K*~test.jpg test
 file_stats
 system_variable @files_area_dir test1
 file_stats
-file_info -content 0
 system_variable @files_area_dir ""
 file_stats
 ~rm test1/ciyam_server.dat
@@ -272,11 +271,6 @@ file_stats
 ~rm test1/ciyam_server.idx
 ~rm test1/ciyam_server.log
 ~rm test1/ciyam_server.tlg
-;NOTE: Explicitly remove the empty file.
-~rm test1/0
-~rm test1/4b/f5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a
-#~rmdir test1/4b
-~rmdir test1/4b
 file_info -recurse -d=999 test
 file_info -total_blobs test
 file_info -total_items test

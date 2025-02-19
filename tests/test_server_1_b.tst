@@ -532,16 +532,13 @@ file_get test *~test.jpg
 file_kill -p=test
 file_put 1K*~test.jpg test
 file_stats
-[9/100000]7.0 kB/100.0 GB:9 tag(s)
+[8/100000]7.0 kB/100.0 GB:8 tag(s)
 system_variable @files_area_dir test1
 file_stats
-[1/100000]1 B/100.0 GB:1 tag(s)
-file_info -content 0
-[blob] 4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a (1 B) [n/a]
+[0/100000]0 B/100.0 GB:0 tag(s)
 system_variable @files_area_dir ""
 file_stats
-[9/100000]7.0 kB/100.0 GB:9 tag(s)
-~rmdir test1/4b
+[8/100000]7.0 kB/100.0 GB:8 tag(s)
 file_info -recurse -d=999 test
 [list] cabb71470df889b67d18bf7eaf562e2519168d7235d3aa1ed9a126ec3299e6dc (309 B)
 ~test.jpg.000000
@@ -807,7 +804,7 @@ ts.20170313080001
 ts.20170313080002
  [blob] b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 (5.3 kB)
 file_stats
-[4/100000]12.0 kB/100.0 GB:4 tag(s)
+[3/100000]12.0 kB/100.0 GB:3 tag(s)
 file_kill -p=ts*
 file_archive -destroy test1
 file_archive -destroy test2
@@ -840,7 +837,7 @@ file_relegate -n=2
 2ccdb4c72e6c263e1dc3e5c6617bad479d267546ced55f88d6b6e4527d2e8da8 test1
 90a1a46903f42ddf0386a9c12fd67a6c109285bb8b3117ee83ed222fd0040ad3 test1
 file_stats
-[2/100000]142 B/100.0 GB:2 tag(s)
+[1/100000]141 B/100.0 GB:1 tag(s)
 file_archives
 test1 [okay      ] (29 B/10.5 MB) test1
 session_variable @blockchain_archive_path test1
@@ -854,7 +851,7 @@ test
  [blob] 90a1a46903f42ddf0386a9c12fd67a6c109285bb8b3117ee83ed222fd0040ad3 (16 B) [utf8]
 This is a test.
 file_stats
-[2/100000]142 B/100.0 GB:2 tag(s)
+[1/100000]141 B/100.0 GB:1 tag(s)
 file_kill -recurse root
 file_archive -destroy test1
 file_archives
@@ -973,13 +970,12 @@ efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f test2.jpg
 file_kill -recurse test.3
 file_tag -unlink test.1,test.2
 file_tags
-0
 file_put 10*test.jpg test
 file_stats
-[743/100000]38.1 kB/100.0 GB:743 tag(s)
+[742/100000]38.1 kB/100.0 GB:742 tag(s)
 file_kill -recurse test
 file_stats
-[1/100000]1 B/100.0 GB:1 tag(s)
+[0/100000]0 B/100.0 GB:0 tag(s)
 file_raw -text blob hello hello
 cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 file_raw -text blob goodbye goodbye
@@ -1149,7 +1145,7 @@ file_info -total_encrypted xxx
 0
 file_kill -recurse xxx
 file_stats
-[1/100000]1 B/100.0 GB:1 tag(s)
+[0/100000]0 B/100.0 GB:0 tag(s)
 file_raw -text blob aaa aaa
 eea991ff5a78687de5f72eb04ca41d874f25041b3375fcbba3ade8419134e2fa
 file_raw -text blob bbb bbb
@@ -1233,7 +1229,6 @@ eea991ff5a78687de5f72eb04ca41d874f25041b3375fcbba3ade8419134e2fa aaa
 82c63533c98e0a4fc3e2ac610841c79cfb3c7cc7e357656b8e6bf2c3af7c1d6d ccc
 7623bf435855f90d41755d83e5fc61c4ad4f95da4d2d665ebfd0c50c92779515 eee
 file_tags
-0
 aaa
 bbb
 ccc
@@ -1251,7 +1246,6 @@ list8
 list9
 file_kill -p=list? -x=list1,list3,list5
 file_tags
-0
 aaa
 bbb
 ccc
@@ -1262,7 +1256,6 @@ list3
 list5
 file_kill -p=l*
 file_tags
-0
 aaa
 bbb
 ccc
@@ -1270,11 +1263,10 @@ ddd
 eee
 file_kill -p=??? -x=ccc
 file_tags
-0
 ccc
 file_kill ccc
 file_stats
-[1/100000]1 B/100.0 GB:1 tag(s)
+[0/100000]0 B/100.0 GB:0 tag(s)
 file_put 1K*mnemonics.txt x0
 file_info -content x0
 [list] 52650ffdb011dd2795929ef6a5708d9bae24954f08314759adb609b7e3fa8ac8 (585 B)
@@ -1344,7 +1336,7 @@ file_info -content x5
 5004fbebea5d0279ffa57ea0e419d3fc4975170238b11abb79f4e4b3cf7d9fbe mnemonics.txt.000001
 file_kill -recurse x5
 file_stats
-[1/100000]1 B/100.0 GB:1 tag(s)
+[0/100000]0 B/100.0 GB:0 tag(s)
 file_raw blob "test" xxx
 938725ef2c126a889e25313269edf12e6efa48d6d11c1bdb3b78110146004858
 file_raw blob "test" yyy
@@ -1360,4 +1352,4 @@ xxx
 yyy
 file_kill $HASH
 file_stats
-[1/100000]1 B/100.0 GB:1 tag(s)
+[0/100000]0 B/100.0 GB:0 tag(s)

@@ -198,8 +198,6 @@ const char* const c_files_directory = "files";
 
 const char* const c_application_script_prefix = "app_script:";
 
-const char* const c_ciyam_empty_file_hash = "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a";
-
 const size_t c_peer_sleep_time = 500; // i.e. 0.5 secs
 
 const size_t c_file_transfer_line_timeout = 20000; // i.e. 20 secs

@@ -422,30 +422,6 @@ string construct_file_name_from_hash(
    return file_name;
 }
 
-string create_empty_file( )
-{
-   guard g( g_mutex );
-
-   string data( c_file_type_str_blob );
-
-   string hash( sha256( data ).get_digest_as_string( ) );
-
-   string file_name( construct_file_name_from_hash( hash, true ) );
-
-   if( !file_exists( file_name ) )
-   {
-      if( g_total_files >= get_files_area_item_max_num( ) )
-         throw runtime_error( "unexpected maximum files would be exceeded for 'create_empty_file'" );
-
-      ++g_total_bytes;
-      ++g_total_files;
-
-      write_file( file_name, data );
-   }
-
-   return hash;
-}
-
 void validate_list( const string& data, bool* p_rc = 0,
  bool allow_missing_items = false, bool* p_has_encrypted_blobs = 0 )
 {
@@ -1232,11 +1208,6 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
 
       } while( dfsi.has_next( ) );
    }
-
-   // NOTE: Create the special "empty" file if it does not already
-   // exist (and the files area has enough room for another file).
-   if( !has_tag( c_false_value ) && ( g_total_files < max_num ) )
-      tag_file( c_false_value, create_empty_file( ), true );
 }
 
 void term_files_area( )
@@ -1796,14 +1767,6 @@ string file_type_info( const string& tag_or_hash,
 
    string data( buffer_file( file_name, max_to_buffer, &file_size ) );
    
-   if( data.empty( ) )
-   {
-      if( hash == c_ciyam_empty_file_hash )
-         data = string( c_file_type_str_blob );
-      else
-         throw runtime_error( "unexpected empty file '" + use_tag_or_hash + "'" );
-   }
-
    unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
 
    bool is_core = ( data[ 0 ] & c_file_type_val_extra_core );
@@ -2839,13 +2802,8 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
 
    string::size_type pos = name.find_first_of( "*?" );
 
-   string empty_file_tag( c_false_value );
-
    if( pos == string::npos )
    {
-      if( name == empty_file_tag )
-         throw runtime_error( "invalid attempt to remove the empty file tag" );
-
       if( name.find( c_time_stamp_tag_prefix ) != 0 )
          file_remove( get_files_area_dir( ) + '/' + name );
 
@@ -2895,12 +2853,7 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
       }
 
       for( size_t i = 0; i < matching_tag_names.size( ); i++ )
-      {
-         string next_tag_name( matching_tag_names[ i ] );
-
-         if( next_tag_name != empty_file_tag )
-            tag_del( next_tag_name, unlink, auto_tag_with_time );
-      }
+         tag_del( matching_tag_names[ i ], unlink, auto_tag_with_time );
    }
 }
 
@@ -3833,9 +3786,6 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_sock_progre
 
       string content( buffer_file( file_name ) );
 
-      if( hash == c_ciyam_empty_file_hash )
-         content = string( c_file_type_str_blob );
-
       unsigned char file_type = ( content[ 0 ] & c_file_type_val_mask );
       unsigned char file_extra = ( content[ 0 ] & c_file_type_val_extra_mask );
 
@@ -4359,10 +4309,6 @@ bool store_file( const string& hash,
 void delete_file( const string& hash, bool even_if_tagged, bool ignore_not_found )
 {
    guard g( g_mutex );
-
-   if( hash == c_ciyam_empty_file_hash )
-      // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "Deleting the empty file is not allowed." );
 
    string tags( get_hash_tags( hash ) );
    string file_name( construct_file_name_from_hash( hash ) );
