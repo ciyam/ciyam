@@ -5,45 +5,23 @@ The makefile is generated from makefile.sio.xrep and so should never be changed 
 want to keep any changes that are made). So when adding/removing/renaming project files (excepting files that
 belong to or are handled by the Meta application) changes need to be made manually to makefile.sio.xrep.
 
-Once makefile.sio.xrep has been changed run the batch/script genmake to construct the actual makefile.
+Once makefile.sio.xrep has been changed run ./genmake to reconstruct the actual makefile.
 
-Generating the Makefile with genmake
+Generating the makefile with genmake
 ------------------------------------
 
-The genmake batch/script constructs a compiler specific makefile with the use of xrep and xvars.
+The genmake bash script constructs the makefile with the use of xrep and xvars.
 
 The xrep tool takes makefile.sio.xrep in order to generate makefile.sio which is in turn used as input by the
 xvars tool in order to create makefile.vars.xrep.
 
-Finally the xrep tool is used again with a compiler specific makefile template (e.g. makefile.xrep for GCC or
-makefile.mvc.xrep for MVC) and the previously created makefile.vars.xrep to generate the makefile that can be
-actually passed to make (or nmake).
-
-Dependency handling with MVC
-----------------------------
-
-The make tool (nmake) that comes with MVC does not automatically handle header file dependencies so to handle
-them a couple of extra tools (geninc and gendeps) are used.
-
-One .inc file is created for each target and this file is included via makefile.mvc by nmake (if NO_INC_FILES
-is defined then dependencies are skipped). Each .inc file then includes a .dep file for every .cpp file which
-belongs to the target. Each .dep file will contain the files "include" dependencies.
-
-The .dep file is created by the tool gendeps which picks out the #include's (quoted "local" filenames are the
-only dependencies considered so changes made to compiler or 3rd party headers will require a complete rebuild
-to be performed).
-
-As the .inc and .dep file creation occurs during the make process itself (to ensure they are kept up to date)
-a bootstrap issue exists when performing a clean build or when manually adding new targets or files. This has
-been handled in make.bat which constructs gendeps by calling cl directly (so it will be available to generate
-dependencies for every file being compiled) and then making "touch_incs" (to ensure an empty .inc file exists
-for each target if no generated .inc file is present so the nmake includes for them don't fail).
+Finally the xrep tool is used again with a specific makefile template (e.g. makefile.xrep for GCC) along with
+the previously created makefile.vars.xrep to generate the project makefile.
 
 Minimal make files for make system tools
 ----------------------------------------
 
 As the tools xrep and xvars are required in order to construct the makefile a bootstrap problem arises in the
 situation when a new repository clone is created and ./config is run for the very first time. To resolve this
-issue a minimal "tools" make (e.g. makefile.tools for GCC and makefile.mvc.tools for MVC) needs to be kept in
-the repository that will be used to build these tools.
-
+issue a minimal "tools" make (e.g. makefile.tools for GCC) exists in the repository and will be used to build
+these tools.

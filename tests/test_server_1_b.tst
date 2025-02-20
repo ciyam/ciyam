@@ -498,6 +498,12 @@ system_variable *test1/xxx*
 test1/xxx/ [000000]none
 test1/xxx/111 [000001]deleted
 notifier -finish test1
+~touch test1/xxx/0
+file_put test1/xxx/0 0
+file_info -content 0
+[blob] 4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a (1 B) [n/a]
+file_get 0 test1/xxx/1
+file_kill 0
 ~rmdir test1/xxx
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test

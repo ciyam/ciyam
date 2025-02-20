@@ -268,16 +268,20 @@ File System Statistics
 The "file_stats" command can be used to see a summary of the file system usage:
 
 > file_stats
-[4/100000]153 B/100.0 GB:5 tag(s)
+[3/100000]152 B/100.0 GB:4 tag(s)
 
-The response says that 4 out of 100,000 possible files are currently being stored in the files area and these
-files are using 153 bytes of the maximum possible capacity of 100 GB being used with a total of 5 file tags.
+The response says that 3 out of 100,000 possible files are currently being stored in the files area and these
+files are using 152 bytes of the maximum possible capacity of 100 GB being used with a total of 4 file tags.
 
 There are two settings in "ciyam_server.sio" configuration file that are relevant to the file system and they
 are as follows (uncomment and change then restart "ciyam_server" for the new settings to take effect):
 
 # <files_area_item_max_num>100K
 # <files_area_item_max_size>1M
+
+Although it might be useful to increase the maximum number of files permitted (assuming available disk space)
+it should be noted that changing the maximum file size should only be for testing purposes as this value will
+need to be identical between all peer connections.
 
 It is not recommended to do any changes to the "files" subdirectory directly but if this has occurred then it
 is possible to re-synchronise the application server with the following command:
