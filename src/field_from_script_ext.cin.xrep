@@ -7,13 +7,9 @@
 ; <script/>
 ;  <name>`{`$model`}_`{`$class`}_`{`$field`}
 ;  <filename>*script*
-;  <arguments>`{`$model`}_`{`$class`}_`{`$field`}.cin @storage @uid @module @class @key @fields_and_values @blockchain
+;  <arguments>`{`$model`}_`{`$class`}_`{`$field`}.cin @storage @uid @module @class @key @fields_and_values
 ; </script>
 .storage_init %1
 `{`!`@eq`(`$comment`,`'`'`)#`{`$comment`}`}
-@ifdef %7
-.session_variable @blockchain %7
-.session_variable @skip_blockchain_lock 1
-@endif
 .pu %2 @now %3 %4 %5 "%6"
 .quit
