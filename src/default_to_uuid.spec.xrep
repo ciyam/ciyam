@@ -1,6 +1,6 @@
 `{`@eq`(`'to_store`'`,`$section`)\
    // [(start default_to_uuid)] `{`$arg_id`}
-   if( ( is_init_uid( ) || get_obj( ).get_key( ).empty( ) )
+   if( is_create
     && ( get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} ) )
    {
       string value( is_init_uid( ) ? hash_sha1( get_obj( ).get_key( ) ).substr( 0, 32 ) : get_uuid( ) );
