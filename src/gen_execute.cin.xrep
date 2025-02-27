@@ -8,7 +8,7 @@
 ; <script/>
 ;  <name>`{`$model`}_`{`$class`}_`{`$procedure`}
 ;  <filename>*script*
-;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage @uid @module @class @key `{`!`@eq`(`$no_trans`,`'`'`)-`}`{`$procedure_id`} @blockchain
+;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage @uid @module @class @key `{`!`@eq`(`$no_trans`,`'`'`)-`}`{`$procedure_id`}
 ; </script>\
 `,\
 ; NOTE: The following needs to be included in 'autoscript.sio':
@@ -25,9 +25,5 @@
 `}
 .storage_init %1
 `{`!`@eq`(`$comment`,`'`'`)#`{`$comment`}`}
-@ifdef %7
-.session_variable @blockchain %7
-.session_variable @skip_blockchain_lock 1
-@endif
 .pe %2 @now %3 %4 "-v=" "%5" %6
 .quit
