@@ -539,9 +539,9 @@ struct session
 
    vector< string > sql_undo_statements;
 
-   string async_or_delayed_temp_file;
+   string script_temp_args_file;
 
-   vector< string > async_or_delayed_temp_files;
+   vector< string > async_or_delayed_args_files;
    vector< string > async_or_delayed_system_commands;
 
    set< size_t > release_sessions;
@@ -7019,8 +7019,8 @@ int exec_system( const string& cmd, bool async, bool delay )
       {
          gtp_session->async_or_delayed_system_commands.push_back( async ? async_cmd : exec_cmd );
 
-         if( !gtp_session->async_or_delayed_temp_file.empty( ) )
-            gtp_session->async_or_delayed_temp_files.push_back( gtp_session->async_or_delayed_temp_file );
+         if( !gtp_session->script_temp_args_file.empty( ) )
+            gtp_session->async_or_delayed_args_files.push_back( gtp_session->script_temp_args_file );
 
          return rc;
       }
@@ -7030,29 +7030,29 @@ int exec_system( const string& cmd, bool async, bool delay )
 
    rc = system( async ? async_cmd.c_str( ) : exec_cmd.c_str( ) );
 
-   // NOTE: If the script had an error and the caller should throw this as an error then do so.
+   string error_message;
+
+   if( gtp_session && !gtp_session->script_temp_args_file.empty( ) )
+   {
+      error_message = get_raw_system_variable( gtp_session->script_temp_args_file );
+
+      set_system_variable( gtp_session->script_temp_args_file, "" );
+   }
+
+   // NOTE: If the script had an error and the caller should throw an exception then do so.
    string check_script_error(
     get_raw_session_variable( get_special_var_name( e_special_var_check_script_error ) ) );
 
    if( ( check_script_error == c_true ) || ( check_script_error == c_true_value ) )
    {
-      set_session_variable( get_special_var_name( e_special_var_check_script_error ), "" );
-
-      if( gtp_session && !gtp_session->async_or_delayed_temp_file.empty( ) )
+      if( !error_message.empty( ) && ( error_message != c_true_value ) )
       {
-         string value( get_raw_system_variable( gtp_session->async_or_delayed_temp_file ) );
-
-         set_system_variable( gtp_session->async_or_delayed_temp_file, "" );
-
-         if( !value.empty( ) && ( value != c_true_value ) )
-         {
-            // NOTE: If the error starts with '@' then assume that it is actually
-            // intended to be an execute "return" message rather than an error.
-            if( value[ 0 ] == '@' )
-               set_session_variable( get_special_var_name( e_special_var_return ), value.substr( 1 ) );
-            else
-               throw runtime_error( value );
-         }
+         // NOTE: If the error starts with '@' then assume that it is actually
+         // intended to be an execute "return" message rather than an error.
+         if( error_message[ 0 ] == '@' )
+            set_session_variable( get_special_var_name( e_special_var_return ), error_message.substr( 1 ) );
+         else
+            throw runtime_error( error_message );
       }
    }
 
@@ -7103,7 +7103,8 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
       if( gtp_session )
       {
-         gtp_session->async_or_delayed_temp_file.erase( );
+         gtp_session->script_temp_args_file.erase( );
+
          ap_running_script.reset( new restorable< bool >( gtp_session->running_script, true ) );
       }
 
@@ -7134,7 +7135,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
          if( gtp_session )
          {
-            gtp_session->async_or_delayed_temp_file = args_file;
+            gtp_session->script_temp_args_file = args_file;
 
             string check_script_error(
              get_raw_session_variable( get_special_var_name( e_special_var_check_script_error ) ) );
@@ -14612,9 +14613,9 @@ void transaction_commit( )
       string check_script_error(
        get_raw_session_variable( get_special_var_name( e_special_var_check_script_error ) ) );
 
-      for( size_t i = 0; i < gtp_session->async_or_delayed_temp_files.size( ); i++ )
+      for( size_t i = 0; i < gtp_session->async_or_delayed_args_files.size( ); i++ )
       {
-         string next( gtp_session->async_or_delayed_temp_files[ i ] );
+         string next( gtp_session->async_or_delayed_args_files[ i ] );
 
          if( script_error.empty( )
           && ( check_script_error == c_true || check_script_error == c_true_value ) )
@@ -14628,7 +14629,7 @@ void transaction_commit( )
          set_system_variable( next, "" );
       }
 
-      gtp_session->async_or_delayed_temp_files.clear( );
+      gtp_session->async_or_delayed_args_files.clear( );
       gtp_session->async_or_delayed_system_commands.clear( );
 
       set_session_variable( get_special_var_name( e_special_var_check_script_error ), "" );
@@ -14675,9 +14676,9 @@ void transaction_rollback( )
 
          gtp_session->p_storage_handler->release_locks_for_rollback( gtp_session );
 
-         for( size_t i = 0; i < gtp_session->async_or_delayed_temp_files.size( ); i++ )
+         for( size_t i = 0; i < gtp_session->async_or_delayed_args_files.size( ); i++ )
          {
-            string next( gtp_session->async_or_delayed_temp_files[ i ] );
+            string next( gtp_session->async_or_delayed_args_files[ i ] );
 
             if( file_exists( next ) )
                file_remove( next );
@@ -14685,7 +14686,7 @@ void transaction_rollback( )
             set_system_variable( next, "" );
          }
 
-         gtp_session->async_or_delayed_temp_files.clear( );
+         gtp_session->async_or_delayed_args_files.clear( );
          gtp_session->async_or_delayed_system_commands.clear( );
 
          set_session_variable( get_special_var_name( e_special_var_check_script_error ), "" );
