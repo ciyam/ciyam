@@ -1,0 +1,41 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_run_child_script)] `{`$arg_id`}
+`{`$i`=`'`'`}`{`$any`=`'`'`}\
+`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_modifier`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`$any`=`'true`'`}\
+`{`@eq`(`$any`,`'true`'`)`$i`=`'   `'`}\
+`{`@eq`(`$any`,`'true`'`)\
+   if( `{`@eq`(`$arg_skip_restore`,`'true`'`)!storage_locked_for_admin( )\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$arg_modifier`,`'`'`)
+    && `}`}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && `}`}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )`} )
+   {
+`}\
+`{`!`@eq`(`$arg_gen_key`,`'`'`)\
+`{`$i`}   get_obj( ).child_`{`$arg_child`}( ).set_key( gen_key( ) );
+
+`}\
+`{`$i`}   get_obj( ).child_`{`$arg_child`}( ).`{`$arg_child_field`}( get_obj( ).get_key( ) );
+`{`!`@eq`(`$arg_child_ofield`,`'`'`)
+`{`$i`}   get_obj( ).child_`{`$arg_child`}( ).`{`$arg_child_ofield`}( get_module_string(
+`{`$i`}    "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) );
+`}`{`!`@eq`(`$arg_check_script`,`'`'`)
+`{`$i`}   temporary_session_variable tmp_session_check_script_error(
+`{`$i`}    get_special_var_name( e_special_var_check_script_error ), c_true_value );
+`}`{`!`@eq`(`$arg_child_oprocedure`,`'`'`)
+`{`$i`}   get_obj( ).child_`{`$arg_child`}( ).`{`$arg_child_oprocedure`}( );
+`}
+`{`$i`}   temporary_session_variable tmp_session_key_var(
+`{`$i`}    get_special_var_name( e_special_var_key ), get_obj( ).child_`{`$arg_child`}( ).get_key( ) );
+
+`{`$i`}   temporary_session_variable tmp_session_class_var(
+`{`$i`}    get_special_var_name( e_special_var_class ), get_obj( ).child_`{`$arg_child`}( ).get_class_id( ) );
+
+`{`$i`}   temporary_session_variable tmp_session_errors_only(
+`{`$i`}    get_special_var_name( e_special_var_errors_only ), c_true_value );
+
+`{`$i`}   run_script( "`{`$module_name`}_`{`$arg_cclass`}_`{`$arg_child_procedure`}", false );
+`{`@eq`(`$any`,`'true`'`)\
+   }
+`}\
+   // [(finish for_run_child_script)] `{`$arg_id`}
+`}
