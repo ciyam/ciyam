@@ -1,14 +1,24 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_call_parent_proc)] `{`$arg_id`}
-`{`$both`=`'`'`}`{`$either`=`'`'`}\
+`{`$any`=`'`'`}`{`$both`=`'`'`}`{`$either`=`'`'`}\
 `{`!`@eq`(`$arg_skip_restore`,`'`'`)`&`!`@eq`(`$arg_sfield`,`'`'`)`$both`=`'true`'`}\
 `{`!`@eq`(`$arg_skip_restore`,`'`'`)`&`!`@eq`(`$arg_peer_data_created`,`'`'`)`$both`=`'true`'`}\
 `{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_peer_data_created`,`'`'`)`$either`=`'true`'`}\
-`{`$i`=`'`'`}`{`$j`=`'`'`}`{`!`@eq`(`$either`,`'`'`)`{`$i`=`'   `'`}\
-   if( `{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )`{`!`@eq`(`$arg_peer_data_created`,`'`'`)
-    && `}`}`{`!`@eq`(`$arg_peer_data_created`,`'`'`)!get_raw_session_variable(
-    get_special_var_name( e_special_var_peer_data_created ) ).empty( )`} )
-`}`{`@eq`(`$arg_peer_data_created`,`'true`'`)`|`@eq`(`$arg_not_null`,`'true`'`)`|`@eq`(`$both`,`'true`'`)\
+`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_peer_data_created`,`'`'`)\
+`|`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$arg_modifier`,`'`'`)`$any`=`'true`'`}\
+`{`$i`=`'`'`}`{`$j`=`'`'`}`{`!`@eq`(`$any`,`'`'`)`{`$i`=`'   `'`}\
+`{`@eq`(`$arg_skip_restore`,`'`'`)\
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`}\
+`{`!`@eq`(`$arg_modifier`,`'`'`)`{`!`@eq`(`$arg_tfield`,`'`'`)
+    && `}( state & c_modifier_`{`$arg_modifier`} )`}`{`!`@eq`(`$arg_peer_data_created`,`'`'`)\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$arg_modifier`,`'`'`)
+    && `}!get_raw_session_variable( get_special_var_name( e_special_var_peer_data_created ) ).empty( )`} )
+`,\
+   if( !storage_locked_for_admin( )`{`!`@eq`(`$arg_tfield`,`'`'`)
+    && get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && ( state & c_modifier_`{`$arg_modifier`} )`}`{`!`@eq`(`$arg_peer_data_created`,`'`'`)
+    && !get_raw_session_variable( get_special_var_name( e_special_var_peer_data_created ) ).empty( )`} )
+`}`}`{`@eq`(`$arg_peer_data_created`,`'true`'`)`|`@eq`(`$arg_not_null`,`'true`'`)`|`@eq`(`$both`,`'true`'`)\
    {
 `}`{`@eq`(`$arg_peer_data_created`,`'true`'`)\
 `{`$i`}   set_session_variable( get_special_var_name( e_special_var_peer_data_created ), "" );
