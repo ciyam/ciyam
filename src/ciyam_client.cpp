@@ -78,6 +78,20 @@ const char* const c_cmd_args_file_name = "name";
 const char* const c_cmd_rpc_unlock = "rpc_unlock";
 const char* const c_cmd_rpc_unlock_password = "password";
 
+const char* const c_session_cmd_bye = "bye";
+const char* const c_session_cmd_chk = "chk";
+const char* const c_session_cmd_get = "get";
+const char* const c_session_cmd_put = "put";
+const char* const c_session_cmd_tls = "tls";
+const char* const c_session_cmd_quit = "quit";
+const char* const c_session_cmd_file_get = "file_get";
+const char* const c_session_cmd_file_put = "file_put";
+const char* const c_session_cmd_starttls = "starttls";
+const char* const c_session_cmd_system_variable = "system_variable";
+const char* const c_session_cmd_session_variable = "session_variable";
+const char* const c_session_cmd_session_terminate = "session_terminate";
+const char* const c_session_cmd_session_rpc_unlock = "session_rpc_unlock";
+
 const char* const c_env_var_pid = "PID";
 const char* const c_env_var_port = "PORT";
 const char* const c_env_var_slot = "SLOT";
@@ -145,6 +159,7 @@ string application_title( app_info_request request )
 int g_pid = get_pid( );
 
 bool g_use_tls = false;
+bool g_had_quit = false;
 
 size_t g_seconds = 1;
 
@@ -153,6 +168,8 @@ size_t g_max_file_size = c_files_area_item_max_size_default;
 string g_exec_cmd;
 string g_args_file;
 string g_rpc_password;
+
+string g_quiet_cmd_prefix( " ." );
 
 #ifdef SSL_SUPPORT
 auto_ptr< private_key > gap_priv_key;
@@ -370,28 +387,33 @@ void ciyam_console_command_handler::preprocess_command_and_args(
          if( str.substr( 0, pos ) == "msg" )
             was_msg = true;
 
-         if( str.substr( 0, pos ) == "chk"
-          || str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "put"
-          || str.substr( 0, pos ) == "file_get" || str.substr( 0, pos ) == "file_put" )
+         if( ( str.substr( 0, pos ) == c_session_cmd_chk )
+          || ( str.substr( 0, pos ) == c_session_cmd_get )
+          || ( str.substr( 0, pos ) == c_session_cmd_put )
+          || ( str.substr( 0, pos ) == c_session_cmd_file_get )
+          || ( str.substr( 0, pos ) == c_session_cmd_file_put ) )
          {
             string data( str.substr( pos + 1 ) );
+
             string extra;
 
-            if( str.substr( 0, pos ) == "chk" )
+            if( str.substr( 0, pos ) == c_session_cmd_chk )
             {
                was_chk = true;
+
                if( data.find( ' ' ) != string::npos )
                   was_chk_token = true;
             }
 
-            if( str.substr( 0, pos ) == "get"
-             || str.substr( 0, pos ) == "file_get" || str.substr( 0, pos ) == "file_put" )
+            if( ( str.substr( 0, pos ) == c_session_cmd_get )
+             || ( str.substr( 0, pos ) == c_session_cmd_file_get )
+             || ( str.substr( 0, pos ) == c_session_cmd_file_put ) )
             {
                string::size_type spos = data.find( ' ' );
 
                if( spos != string::npos )
                {
-                  if( str.substr( 0, pos ) == "file_put" )
+                  if( str.substr( 0, pos ) == c_session_cmd_file_put )
                      extra = data.substr( spos );
                   else
                      get_dest_file = data.substr( spos + 1 );
@@ -422,7 +444,8 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                was_chk_tag = false;
             }
 
-            if( str.substr( 0, pos ) == "put" || str.substr( 0, pos ) == "file_put" )
+            if( ( str.substr( 0, pos ) == c_session_cmd_put )
+             || ( str.substr( 0, pos ) == c_session_cmd_file_put ) )
             {
                str.erase( pos + 1 );
 
@@ -651,7 +674,8 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                      // NOTE: Ensure that the additional command will neither be
                      // included in console history nor sent to standard output.
-                     additional_commands.push_back( " .file_put " + file_name );
+                     additional_commands.push_back( g_quiet_cmd_prefix
+                      + string( c_session_cmd_file_put ) + " " + file_name );
                   }
                }
                else if( !file_name.empty( ) )
@@ -696,7 +720,8 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                      // NOTE: Ensure that the additional command will neither be
                      // included in console history nor sent to standard output.
-                     additional_commands.push_back( " .file_put " + file_name + file_extra );
+                     additional_commands.push_back( g_quiet_cmd_prefix
+                      + string( c_session_cmd_file_put ) + " " + file_name + file_extra );
                   }
                }
 
@@ -733,6 +758,25 @@ void ciyam_console_command_handler::preprocess_command_and_args(
             }
          }
 
+         if( !g_had_quit && ( str == c_session_cmd_quit ) )
+         {
+            g_had_quit = true;
+
+            if( !g_args_file.empty( ) )
+            {
+               string error( get_environment_variable( c_env_var_error ) );
+
+               if( !error.empty( ) )
+               {
+                  str = string( c_session_cmd_system_variable )
+                   + " " + g_args_file + " \"" + error + "\"";
+
+                  additional_commands.push_back( g_quiet_cmd_prefix + c_session_cmd_quit );
+               }
+            }
+
+         }
+
 #ifdef DEBUG
          cout << "sending command: " << str << endl;
 #endif
@@ -750,10 +794,13 @@ void ciyam_console_command_handler::preprocess_command_and_args(
          }
 
 #ifdef SSL_SUPPORT
-         if( ( str == "tls" || str == "starttls" ) && !socket.is_secure( ) )
+         if( !socket.is_secure( )
+          && ( ( str == c_session_cmd_tls ) || str == c_session_cmd_starttls ) )
             socket.ssl_connect( );
 #endif
-         if( str == "bye" || str == "quit" || str == "session_terminate" )
+         if( ( str == c_session_cmd_bye )
+          || ( str == c_session_cmd_quit )
+          || ( str == c_session_cmd_session_terminate ) )
          {
             clear_key( str );
 
@@ -772,10 +819,12 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                if( str.substr( 0, pos ) == "wait" )
                   was_wait = true;
-               else if( str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "put" )
+               else if( ( str.substr( 0, pos ) == c_session_cmd_get )
+                || ( str.substr( 0, pos ) == c_session_cmd_put ) )
                   was_get_or_put = true;
 
-               if( ( str.substr( 0, pos ) == "get" ) || ( str.substr( 0, pos ) == "file_get" ) )
+               if( ( str.substr( 0, pos ) == c_session_cmd_get )
+                || ( str.substr( 0, pos ) == c_session_cmd_file_get ) )
                {
                   string filename( !get_dest_file.empty( ) ? get_dest_file : str.substr( pos + 1 ) );
 
@@ -1080,7 +1129,8 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   if( delete_after_transfer )
                      file_remove( filename );
                }
-               else if( ( str.substr( 0, pos ) == "put" ) || ( str.substr( 0, pos ) == "file_put" ) )
+               else if( ( str.substr( 0, pos ) == c_session_cmd_put )
+                || ( str.substr( 0, pos ) == c_session_cmd_file_put ) )
                {
                   string filename( !put_source_file.empty( ) ? put_source_file : str.substr( pos + 1 ) );
 
@@ -1363,12 +1413,12 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                      ft_extra_info ft_extra( c_file_transfer_initial_timeout,
                       c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
 
-                     if( response.substr( 0, pos ) == "get" )
+                     if( response.substr( 0, pos ) == c_session_cmd_get )
                      {
                         file_transfer( response.substr( pos + 1 ),
                          socket, e_ft_direction_send, g_max_file_size, c_response_okay_more, &ft_extra );
                      }
-                     else if( response.substr( 0, pos ) == "put" )
+                     else if( response.substr( 0, pos ) == c_session_cmd_put )
                      {
                         file_transfer( response.substr( pos + 1 ),
                          socket, e_ft_direction_recv, g_max_file_size, c_response_okay_more, &ft_extra );
@@ -1382,10 +1432,12 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                             e_ft_direction_send, g_max_file_size, c_response_okay_more, &ft_extra );
                         }
                      }
-                     else if( response.substr( 0, pos ) == "chk" )
+                     else if( response.substr( 0, pos ) == c_session_cmd_chk )
                      {
                         response.erase( 0, pos + 1 );
+
                         pos = response.find( ' ' );
+
                         if( pos == string::npos )
                            throw runtime_error( "unexpected chk args '" + response + "'" );
 
@@ -1457,6 +1509,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   size_t start = 0;
 
                   bool is_error = false;
+
                   size_t err_prefix_length( strlen( c_response_error_prefix ) );
 
                   if( response.length( ) > err_prefix_length
@@ -1467,6 +1520,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   }
 
                   bool is_message = false;
+
                   size_t msg_prefix_length( strlen( c_response_message_prefix ) );
 
                   if( response.length( ) > msg_prefix_length
@@ -1764,6 +1818,7 @@ int main( int argc, char* argv[ ] )
             }
 
             string greeting;
+
             if( socket.read_line( greeting, c_greeting_timeout ) <= 0 )
             {
                string error;
@@ -1779,6 +1834,7 @@ int main( int argc, char* argv[ ] )
             }
 
             version_info ver_info;
+
             if( get_version_info( greeting, ver_info ) != string( c_response_okay ) )
             {
                socket.close( );
@@ -1866,12 +1922,15 @@ int main( int argc, char* argv[ ] )
                if( g_rpc_password == "?" )
                   g_rpc_password = get_password( "RPC Password: " );
 
-               processor.execute_command( ".session_rpc_unlock \"" + g_rpc_password + "\"" );
+               processor.execute_command( g_quiet_cmd_prefix
+                + string( c_session_cmd_session_rpc_unlock ) + " \"" + g_rpc_password + "\"" );
+
                clear_key( g_rpc_password );
             }
 
             if( !g_args_file.empty( ) )
-               processor.execute_command( ".session_variable @args_file \"" + g_args_file + "\"" );
+               processor.execute_command( g_quiet_cmd_prefix
+                + string( c_session_cmd_session_variable ) + " @args_file \"" + g_args_file + "\"" );
 
             if( g_exec_cmd.empty( ) )
                processor.process_commands( );
