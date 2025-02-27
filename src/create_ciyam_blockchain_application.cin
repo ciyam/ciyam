@@ -236,6 +236,22 @@ BLOG_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
+.pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_package_message_package "" @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Blog package option 'message_package'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+BLOG_OPTION_KEY=$OUTPUT
+.pu $CIYAM_UID @now 100 137100 $BLOG_OPTION_KEY "302830=$MESSAGE_PACKAGE_KEY"
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
 .pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_bool_use_permissions "" @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'use_permissions'.
