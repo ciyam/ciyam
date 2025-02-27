@@ -49,9 +49,10 @@ get_session_variable( "`{`$arg_session_var`}" ), `}`}get_obj( ).`{`$arg_fvalue`}
 `}`{`!`@eq`(`$arg_arg3`,`'`'`)
       temporary_session_variable tmp_session_arg3_var(
        get_special_var_name( e_special_var_arg3 ), to_string( get_obj( ).`{`$arg_arg3`}( ) ) );
-`}`{`!`@eq`(`$arg_field`,`'`'`)
+`}`{`!`@eq`(`$arg_field`,`'`'`)`|`!`@eq`(`$arg_all_flds_and_vals`,`'`'`)
       temporary_session_variable tmp_session_fields_and_values_var(
-       get_special_var_name( e_special_var_fields_and_values ), get_obj( ).`{`$arg_field`}( ) );
+       get_special_var_name( e_special_var_fields_and_values ),\
+ get_obj( ).`{`@eq`(`$arg_all_flds_and_vals`,`'`'`)`{`$arg_field`}`,get_fields_and_values`}( ) );
 `}`{`@eq`(`$arg_logging_errors`,`'true`'`)
       temporary_session_variable tmp_session_errors_only(
        get_special_var_name( e_special_var_errors_only ), "1" );
