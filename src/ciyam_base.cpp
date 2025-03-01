@@ -12857,7 +12857,7 @@ string get_field_values( size_t handle,
 
       for( size_t n = 0; n < num_inserts; n++ )
       {
-         if( !field_values.empty( ) || ( i > 0 && !p_omit_matching ) )
+         if( !field_values.empty( ) || ( ( i > 0 ) && !p_omit_matching ) )
             field_values += ',';
 
          multimap< size_t, string >::const_iterator ci = p_inserts->find( i );
@@ -12940,9 +12940,9 @@ string get_field_values( size_t handle,
       if( p_raw_values )
          p_raw_values->push_back( next_value );
 
-      if( !p_omit_matching || ( *p_omit_matching )[ i ] != next_value )
+      if( !p_omit_matching || ( ( *p_omit_matching )[ i ] != next_value ) )
       {
-         if( !field_values.empty( ) || ( i > 0 && !p_omit_matching ) )
+         if( !field_values.empty( ) || ( ( i > 0 ) && !p_omit_matching ) )
             field_values += ',';
 
          if( !next_value.empty( ) && ( field != c_key_field ) )
