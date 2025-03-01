@@ -1442,7 +1442,24 @@ void request_handler::process_request( )
                {
                   ip_address address( c_default_ciyam_host, c_default_ciyam_port );
 
-                  if( p_session_info->p_socket->connect( address, c_connect_timeout ) )
+                  bool has_connected = p_session_info->p_socket->connect( address, c_connect_timeout );
+
+                  // NOTE: Will pause and then attempt to connect once again before reporting that
+                  // the application server is unavailable (this is because the first connect will
+                  // sometimes fail after a system restore due to the new server socket acceptor).
+                  if( !has_connected )
+                  {
+                     p_session_info->p_socket->close( );
+
+                     msleep( 2500 );
+
+                     if( p_session_info->p_socket->open( ) )
+                        has_connected = p_session_info->p_socket->connect( address, c_connect_timeout );
+                  }
+
+                  if( !has_connected )
+                     throw runtime_error( GDS( c_display_application_server_unavailable ) );
+                  else
                   {
                      p_session_info->p_socket->set_no_delay( );
 
@@ -1899,8 +1916,6 @@ void request_handler::process_request( )
                      if( was_unlock )
                         display_error = false;
                   }
-                  else
-                     throw runtime_error( GDS( c_display_application_server_unavailable ) );
                }
                else
                   throw runtime_error( "unable to open socket" );
