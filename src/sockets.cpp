@@ -209,26 +209,33 @@ bool socket_base::connect( const ip_address& addr, size_t timeout )
       {
          ::connect( socket, ( const sockaddr* )&addr, sizeof( sockaddr ) );
 
-         fd_set fdset;
-         struct timeval tv;
+         struct sockaddr_in peeraddr;
+         socklen_t peeraddrlen;
 
-         tv.tv_sec = timeout / 1000;
-         tv.tv_usec = ( timeout % 1000 ) * 1000;
-         
-         FD_ZERO( &fdset );
-         FD_SET( socket, &fdset );
-
-         if( ::select( socket + 1, 0, &fdset, 0, &tv ) == 1 )
+         // NOTE: The "getpeername" call is used to detect connection when non-blocking.
+         if( ::getpeername( socket, ( struct sockaddr* )&peeraddr, &peeraddrlen ) == 0 )
          {
-            int so_error = 1;
-            socklen_t len = sizeof( so_error );
+            fd_set fdset;
+            struct timeval tv;
 
-            ::getsockopt( socket, SOL_SOCKET, SO_ERROR, ( char* )&so_error, &len );
+            tv.tv_sec = timeout / 1000;
+            tv.tv_usec = ( timeout % 1000 ) * 1000;
 
-            if( !so_error )
+            FD_ZERO( &fdset );
+            FD_SET( socket, &fdset );
+
+            if( ::select( socket + 1, 0, &fdset, 0, &tv ) == 1 )
             {
-               set_blocking( );
-               connected = true;
+               int so_error = 1;
+               socklen_t len = sizeof( so_error );
+
+               ::getsockopt( socket, SOL_SOCKET, SO_ERROR, ( char* )&so_error, &len );
+
+               if( !so_error )
+               {
+                  set_blocking( );
+                  connected = true;
+               }
             }
          }
       }
