@@ -3306,7 +3306,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                prepare_object_instance( handle, context, true );
 
                string output( "[" + instance_key_info( handle, context ) + "]" );
-               string field_output( get_field_values( handle, context, field_list, tz_name, true ) );
+               string field_output( get_field_values( handle, context, field_list, tz_name, true, false, 0, &field_inserts ) );
 
                if( !field_output.empty( ) )
                   output += " " + field_output;
