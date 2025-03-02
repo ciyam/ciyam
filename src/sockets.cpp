@@ -212,19 +212,19 @@ bool socket_base::connect( const ip_address& addr, size_t timeout )
          struct sockaddr_in peeraddr;
          socklen_t peeraddrlen;
 
-         // NOTE: The "getpeername" call is used to detect connection when non-blocking.
-         if( ::getpeername( socket, ( struct sockaddr* )&peeraddr, &peeraddrlen ) == 0 )
+         fd_set fdset;
+         struct timeval tv;
+
+         tv.tv_sec = timeout / 1000;
+         tv.tv_usec = ( timeout % 1000 ) * 1000;
+
+         FD_ZERO( &fdset );
+         FD_SET( socket, &fdset );
+
+         if( ::select( socket + 1, 0, &fdset, 0, &tv ) == 1 )
          {
-            fd_set fdset;
-            struct timeval tv;
-
-            tv.tv_sec = timeout / 1000;
-            tv.tv_usec = ( timeout % 1000 ) * 1000;
-
-            FD_ZERO( &fdset );
-            FD_SET( socket, &fdset );
-
-            if( ::select( socket + 1, 0, &fdset, 0, &tv ) == 1 )
+            // NOTE: The "getpeername" call is used to detect connection when non-blocking.
+            if( ::getpeername( socket, ( struct sockaddr* )&peeraddr, &peeraddrlen ) == 0 )
             {
                int so_error = 1;
                socklen_t len = sizeof( so_error );
