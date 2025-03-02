@@ -38,9 +38,6 @@
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"
 #  include "crypto_keys.h"
-#  ifdef _WIN32
-#     include <openssl/applink.c>
-#  endif
 #endif
 #include "command_parser.h"
 #include "console_commands.h"
@@ -128,11 +125,7 @@ const size_t c_send_datagram_timeout = 50; // i.e. 1/20 sec
 const size_t c_udp_packet_buffer_size = 1500;
 const size_t c_udp_file_bytes_per_packet = 1000;
 
-#ifdef _WIN32
-const size_t c_max_length_for_output_env_var = 1000;
-#else
 const size_t c_max_length_for_output_env_var = 100000;
-#endif
 
 string application_title( app_info_request request )
 {
@@ -1686,10 +1679,6 @@ int main( int argc, char* argv[ ] )
 {
    int rc = 0;
 
-#ifdef _WIN32
-   winsock_init wsi;
-#endif   
-
 #ifdef SSL_SUPPORT
    if( file_exists( c_ciyam_pem ) )
       init_ssl( c_ciyam_pem );
@@ -1756,16 +1745,14 @@ int main( int argc, char* argv[ ] )
          if( string( cmd_handler.get_host( ) ) == c_default_ciyam_host )
             is_default = true;
 
-#ifdef _WIN32
-         if( socket.connect( address, is_default ? 2000 : c_connect_timeout ) )
-#else
-         // NOTE: If the server was started asynchronously in a script
-         // immediately prior to the client then sleep for one half of
-         // a second and retry (and again after another one and a half
-         // seconds). After each connection failure a new socket needs
-         // to be used (hence the repeated "close" and "open" calls).
-         bool okay = socket.connect( address );
+         bool okay = socket.connect( address, c_connect_timeout );
 
+         // NOTE: If the server was started asynchronously in a script
+         // immediately prior to the client then can sleep for a while
+         // and then try again. After connection failures a new socket
+         // needs to be used (hence the "close" and "open" calls). For
+         // local connects no actual timeout is required (so the retry
+         // connects do not use a timeout).
          if( !okay && is_default )
          {
             socket.close( );
@@ -1789,7 +1776,6 @@ int main( int argc, char* argv[ ] )
          }
 
          if( okay )
-#endif
          {
 #ifdef USE_NO_DELAY
             if( !socket.set_no_delay( ) )
@@ -1806,6 +1792,7 @@ int main( int argc, char* argv[ ] )
             if( socket.write_line( to_string( g_pid ) + c_key_exchange_suffix, c_pid_timeout ) <= 0 )
             {
                string error;
+
                if( socket.had_timeout( ) )
                   error = "timeout occurred trying to connect to server";
                else
@@ -1822,6 +1809,7 @@ int main( int argc, char* argv[ ] )
             if( socket.read_line( greeting, c_greeting_timeout ) <= 0 )
             {
                string error;
+
                if( socket.had_timeout( ) )
                   error = "timeout occurred trying to connect to server";
                else
@@ -1840,7 +1828,15 @@ int main( int argc, char* argv[ ] )
                socket.close( );
                usocket.close( );
 
-               throw runtime_error( greeting );
+               size_t start = 0;
+
+               size_t err_prefix_length( strlen( c_response_error_prefix ) );
+
+               if( greeting.length( ) > err_prefix_length
+                && greeting.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) )
+                  start = err_prefix_length;
+
+               throw runtime_error( greeting.substr( start ) );
             }
 
             if( !check_version_info( ver_info, c_protocol_major_version, c_protocol_minor_version ) )
