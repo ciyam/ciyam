@@ -17,22 +17,7 @@
 #  include <iomanip>
 #  include <iostream>
 #  include <stdexcept>
-#  ifdef _WIN32
-#     ifndef STRICT
-#        define STRICT // Needed for "windows.h" by various Borland headers.
-#     endif
-#     define NOMINMAX
-#     define _WINSOCKAPI_
-#     include <windows.h>
-#  else
-#     include <pthread.h>
-#  endif
-#  ifdef __BORLANDC__
-#     include <dir.h>
-#  endif
-#  ifdef _MSC_VER
-#     include <direct.h>
-#  endif
+#  include <pthread.h>
 #  ifdef __GNUG__
 #     include <unistd.h>
 #     include <sys/stat.h>
@@ -55,99 +40,12 @@
 
 using namespace std;
 
-#ifdef _WIN32
-VOID WINAPI ServiceMain( DWORD argc, LPTSTR* argv );
-VOID WINAPI ServiceCtrlHandler( DWORD dwControl );
-
-SERVICE_STATUS ServiceStatus;
-SERVICE_STATUS_HANDLE ServiceStatusHandle;
-
-int main( int argc, char* argv[ ] );
-#else
 sigset_t sig_set;
-#endif
 
 size_t g_active_sessions = 0;
 size_t g_active_listeners = 0;
 
 volatile sig_atomic_t g_server_shutdown = 0;
-
-#ifdef _WIN32
-LPSTR lpServiceName = "CIYAM Server";
-
-VOID WINAPI ServiceMain( DWORD argc, LPTSTR* argv )
-{
-   ServiceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
-   ServiceStatus.dwCurrentState = SERVICE_START_PENDING;
-   ServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
-   ServiceStatus.dwWin32ExitCode = 0;
-   ServiceStatus.dwServiceSpecificExitCode = 0;
-   ServiceStatus.dwCheckPoint = 0;
-   ServiceStatus.dwWaitHint = 0;
-
-   ServiceStatusHandle = RegisterServiceCtrlHandler( lpServiceName, ServiceCtrlHandler );
-
-   if( ServiceStatusHandle == ( SERVICE_STATUS_HANDLE )0 )
-   {
-      // FUTURE: Need to log failure.
-      return;
-   }
-
-   ServiceStatus.dwCurrentState = SERVICE_RUNNING;
-   ServiceStatus.dwCheckPoint = 0;
-   ServiceStatus.dwWaitHint = 0;
-
-   if( SetServiceStatus( ServiceStatusHandle, &ServiceStatus ) )
-   {
-      // NOTE: Change the current directory to where the executable itself is.
-      char szPath[ MAX_PATH ];
-      GetModuleFileName( GetModuleHandle( 0 ), szPath, MAX_PATH );
-
-      string path( szPath );
-      string::size_type pos = path.find_last_of( "\\" );
-      if( pos != string::npos )
-         set_cwd( path.substr( 0, pos ) );
-
-      main( argc, argv );
-   }
-   else
-      ; // FUTURE: Need to log failure.
-
-   ServiceStatus.dwCurrentState = SERVICE_STOPPED;
-   if( !SetServiceStatus( ServiceStatusHandle, &ServiceStatus ) )
-      ; // FUTURE: Need to log failure.
-}
-
-VOID WINAPI ServiceCtrlHandler( DWORD dwControl )
-{
-   switch( dwControl )
-   {
-      case SERVICE_CONTROL_PAUSE:
-      ServiceStatus.dwCurrentState = SERVICE_PAUSED;
-      break;
- 
-      case SERVICE_CONTROL_CONTINUE:
-      ServiceStatus.dwCurrentState = SERVICE_RUNNING;
-      break;
- 
-      case SERVICE_CONTROL_STOP:
-      ServiceStatus.dwWin32ExitCode = 0;
-      ServiceStatus.dwCurrentState = SERVICE_STOP_PENDING;
-      ServiceStatus.dwCheckPoint = 0;
-      ServiceStatus.dwWaitHint = 0;
-      ++g_server_shutdown;
-      break;
-
-      case SERVICE_CONTROL_INTERROGATE:
-      break;
-   }
- 
-   if( !SetServiceStatus( ServiceStatusHandle, &ServiceStatus ) )
-      ; // FUTURE: Need to log error.
-}
-
-SERVICE_TABLE_ENTRY DispatchTable[ ] = { { lpServiceName, ServiceMain }, { 0, 0 } };
-#endif
 
 namespace
 {
@@ -156,24 +54,6 @@ bool g_start_autoscript = true;
 bool g_start_peer_sessions = true;
 bool g_start_udp_stream_sessions = true;
 
-#ifdef _WIN32
-BOOL CtrlHandler( DWORD fdwCtrlType )
-{ 
-   switch( fdwCtrlType )
-   {
-      case CTRL_C_EVENT:
-      case CTRL_CLOSE_EVENT:
-      case CTRL_BREAK_EVENT:
-      case CTRL_LOGOFF_EVENT:
-      case CTRL_SHUTDOWN_EVENT:
-      ++g_server_shutdown;
-      return TRUE;
-
-      default:
-      return FALSE;
-   }
-}
-#else
 void* signal_handler( void* id )
 {
    int sig;
@@ -183,7 +63,6 @@ void* signal_handler( void* id )
 
    return id;
 }
-#endif
 
 const char* const c_app_title = "ciyam_server";
 const char* const c_app_version = "0.1";
@@ -208,12 +87,6 @@ const char* const c_cmd_no_streams = "no_streams";
 
 const char* const c_cmd_test_peer_port = "test_peer_port";
 const char* const c_cmd_test_peer_port_port = "port";
-
-#ifdef _WIN32
-const char* const c_cmd_svcins = "svcins";
-const char* const c_cmd_svcrem = "svcrem";
-const char* const c_cmd_svcrun = "svcrun";
-#endif
 
 bool g_is_quiet = false;
 bool g_had_exiting_command = false;
@@ -243,13 +116,8 @@ const char* const c_server_cmd_file = "ciyam_server.cmd";
 const char* const c_update_signal_file = "ciyam_base.update";
 const char* const c_shutdown_signal_file = "ciyam_server.stop";
 
-#ifndef _WIN32
 const char* const c_ciyam_base_lib = "ciyam_base.so";
-#else
-const char* const c_ciyam_base_lib = "ciyam_base.dll";
-#endif
 
-#ifndef __BORLANDC__
 const char* const c_trace_flags_func_name = "trace_flags";
 const char* const c_init_globals_func_name = "init_globals";
 const char* const c_term_globals_func_name = "term_globals";
@@ -267,26 +135,6 @@ const char* const c_init_peer_sessions_func_name = "init_peer_sessions";
 const char* const c_check_timezone_info_func_name = "check_timezone_info";
 const char* const c_is_accepted_ip_addr_func_name = "is_accepted_ip_addr";
 const char* const c_unregister_listener_func_name = "unregister_listener";
-#else
-const char* const c_trace_flags_func_name = "_trace_flags";
-const char* const c_init_globals_func_name = "_init_globals";
-const char* const c_term_globals_func_name = "_term_globals";
-const char* const c_server_command_func_name = "_server_command";
-const char* const c_test_peer_port_func_name = "_test_peer_port";
-const char* const c_set_server_port_func_name = "_set_server_port";
-const char* const c_init_auto_script_func_name = "_init_auto_script";
-const char* const c_init_udp_streams_func_name = "_init_udp_streams";
-const char* const c_log_trace_string_func_name = "_log_trace_string";
-const char* const c_register_listener_func_name = "_register_listener";
-const char* const c_set_stream_socket_func_name = "_set_stream_socket";
-const char* const c_init_ciyam_session_func_name = "_init_ciyam_session";
-const char* const c_set_files_area_dir_func_name = "_set_files_area_dir";
-const char* const c_set_test_peer_port_func_name = "_set_test_peer_port";
-const char* const c_init_peer_sessions_func_name = "_init_peer_sessions";
-const char* const c_check_timezone_info_func_name = "_check_timezone_info";
-const char* const c_is_accepted_ip_addr_func_name = "_is_accepted_ip_addr";
-const char* const c_unregister_listener_func_name = "_unregister_listener";
-#endif
 
 string application_title( app_info_request request )
 {
@@ -386,61 +234,6 @@ class ciyam_server_startup_functor : public command_functor
 
          g_test_peer_port = atoi( port.c_str( ) );
       }
-#ifdef _WIN32
-      else if( command == c_cmd_svcins )
-      {
-         char szPath[ MAX_PATH ];
-         g_had_exiting_command = true;
-
-         SC_HANDLE scmHandle = OpenSCManager( 0, 0, SC_MANAGER_ALL_ACCESS );
-         if( scmHandle )
-         {
-            GetModuleFileName( GetModuleHandle( 0 ), szPath, MAX_PATH );
-
-            string binary_path( string( szPath ) + " -svcrun" );
-
-            SC_HANDLE scHandle = CreateService( scmHandle, lpServiceName, lpServiceName, SERVICE_ALL_ACCESS,
-             SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, binary_path.c_str( ), 0, 0, 0, 0, 0 );
-
-            if( !scHandle )
-               cerr << "error: unable to install service (already installed?)" << endl;
-            else
-               cout << "'" << lpServiceName << "' service has now been installed" << endl;
-
-            CloseServiceHandle( scHandle );
-            CloseServiceHandle( scmHandle );
-         }
-         else
-            cerr << "error: unable to access service control manager" << endl;
-      }
-      else if( command == c_cmd_svcrem )
-      {
-         g_had_exiting_command = true;
-
-         SC_HANDLE scmHandle = OpenSCManager( 0, 0, SC_MANAGER_ALL_ACCESS );
-         if( scmHandle )
-         {
-            SC_HANDLE scHandle = OpenService( scmHandle, lpServiceName, SERVICE_ALL_ACCESS );
-            if( scHandle )
-            {
-               DeleteService( scHandle );
-               if( !g_is_quiet )
-                  cout << "'" << lpServiceName << "' service has now been removed" << endl;
-            }
-            else
-               cerr << "error: unable to remove service (not present?)" << endl;
-         }
-         else
-            cerr << "error: unable to access service control manager" << endl;
-      }
-      else if( command == c_cmd_svcrun )
-      {
-         if( !StartServiceCtrlDispatcher( DispatchTable ) )
-            cerr << "error: unable to start service" << endl; // FUTURE: This message should be logged.
-
-         g_had_exiting_command = true;
-      }
-#endif
 #ifdef __GNUG__
       else if( command == c_cmd_daemon )
          g_is_daemon = true;
@@ -488,17 +281,6 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_test_peer_port, 5,
           "<val//port>", "port number for interactive peer testing", new ciyam_server_startup_functor( cmd_handler ) );
 
-#ifdef _WIN32
-         cmd_handler.add_command( c_cmd_svcins, 6,
-          "", "install Win32 service", new ciyam_server_startup_functor( cmd_handler ) );
-
-         cmd_handler.add_command( c_cmd_svcrem, 6,
-          "", "remove Win32 service", new ciyam_server_startup_functor( cmd_handler ) );
-
-         cmd_handler.add_command( c_cmd_svcrun, 6,
-          "", "start as Win32 service", new ciyam_server_startup_functor( cmd_handler ) );
-#endif
-
 #ifdef __GNUG__
          cmd_handler.add_command( c_cmd_daemon, 6,
           "", "run server as a daemon", new ciyam_server_startup_functor( cmd_handler ) );
@@ -510,11 +292,6 @@ int main( int argc, char* argv[ ] )
       if( g_had_exiting_command )
          return 0;
 
-#ifdef _WIN32
-      winsock_init wsi;
-      if( !SetConsoleCtrlHandler( ( PHANDLER_ROUTINE )CtrlHandler, TRUE ) )
-         throw runtime_error( "unable to register CtrlHandler" );
-#else
       umask( STANDARD_UMASK );
 
       if( g_is_daemon )
@@ -535,7 +312,7 @@ int main( int argc, char* argv[ ] )
          // close( STDERR_FILENO );
       }
 
-      // NOTE: For a non-windows multi-threaded application need to create a thread to wait on the signal.
+      // NOTE: For a multi-threaded application need to create a thread to wait on the signal.
       pthread_t tid;
 
       sigemptyset( &sig_set );
@@ -545,7 +322,6 @@ int main( int argc, char* argv[ ] )
       pthread_sigmask( SIG_BLOCK, &sig_set, 0 );
 
       pthread_create( &tid, 0, signal_handler, ( void* )1 );
-#endif
 
       srand( time( 0 ) );
 
@@ -860,11 +636,7 @@ int main( int argc, char* argv[ ] )
          if( !is_update )
             break;
 
-#ifndef _WIN32
          ( *fp_log_trace_string_func )( TRACE_ANYTHING, "*** reloading ciyam_base.so library ***" );
-#else
-         ( *fp_log_trace_string_func )( TRACE_ANYTHING, "*** reloading ciyam_base.dll library ***" );
-#endif
 
          // NOTE: Force the dynamic library to be unloaded.
          ap_dynamic_library.reset( 0 );
