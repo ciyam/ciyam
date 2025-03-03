@@ -1786,6 +1786,10 @@ void output_actions( ostream& os,
       os << "<input id=\"" << next_id << "\" name=\"" << next_id
        << "\" type=\"button\" class=\"button\" value=\"" << escape_markup( next_label ) << "\" onclick=\"";
 
+      // NOTE: Prevent any further actions from being executed whilst is busy loading
+      // and hide "auto progress" (if it is currently being displayed).
+      os << "if( !load_in_progress( ) ) { hide_auto_progress( ); ";
+
       if( needs_confirmation )
       {
          // KLUDGE: If not executed before the "confirm" then can end up doing nothing.
@@ -1883,6 +1887,8 @@ void output_actions( ostream& os,
 
       if( needs_confirmation )
          os << " }";
+
+      os << " }";
 
       os << "\" style=\"cursor:pointer\">";
    }

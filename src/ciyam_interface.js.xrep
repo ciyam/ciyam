@@ -203,7 +203,6 @@ function auto_refresh( )
       if( useAutoProgress && !hasShownAutoProgress )
       {
          show_auto_progress( );
-         hasShownAutoProgress = true;
 
          hide_not_changing( document.getElementById( "list" ) );
       }
@@ -699,14 +698,35 @@ function load2( )
       show_load_progress( loadProgressDelay );
 }
 
+function hide_auto_progress( )
+{
+   if( hasShownAutoProgress )
+   {
+      auto_refresh_seconds = 0;
+      hasShownAutoProgress = false;
+
+      $( "auto_progress" ).className = "invisible";
+   }
+}
+
 function show_auto_progress( )
 {
+   hasShownAutoProgress = true;
+
    $( "auto_progress" ).className = "visible";
+}
+
+function load_in_progress( )
+{
+   return sessionStorage.getItem( 'loading' ) != null;
 }
 
 function hide_load_progress( )
 {
    $( "load_progress" ).className = "invisible";
+
+   if( can_write_to_session_storage( ) )
+      sessionStorage.removeItem( 'loading' );
 }
 
 function show_load_progress( n )
@@ -714,7 +734,12 @@ function show_load_progress( n )
    if( reqDone == false )
    {
       if( n == 0 )
+      {
          $( "load_progress" ).className = "visible";
+
+         if( can_write_to_session_storage( ) )
+            sessionStorage.setItem( 'loading', 'true' );
+      }
       else
          window.setTimeout( 'show_load_progress( ' + ( n - 1 ) + ' )', 25 );
    }
