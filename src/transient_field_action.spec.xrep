@@ -186,6 +186,9 @@ get_perms( ).count( "`{`$arg_permission_id`}" )`{`!`@eq`(`$arg_altfield`,`'`'`) 
 `{`@eq`(`$arg_default`,`'true`'`)\
       actions += '>';
 `}\
+`{`!`@eq`(`$arg_even_when_changing`,`'true`'`)\
+      actions += ':';
+`}\
 `{`@eq`(`$arg_no_log`,`'true`'`)\
       actions += '_';
 `}\

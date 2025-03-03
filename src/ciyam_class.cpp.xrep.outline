@@ -2022,7 +2022,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_no_log=$specification_\0_no_log arg_no_trans=$specification_\0_no_trans\
  arg_log_as_update=$specification_\0_log_as_update arg_not_sess_var=$specification_\0_not_sess_var\
  arg_ofield=$specification_\0_ofield arg_vfield=$specification_\0_vfield\
- arg_arg1=$specification_\0_arg1 arg_arg2=$specification_\0_arg2`}\
+ arg_arg1=$specification_\0_arg1 arg_arg2=$specification_\0_arg2 arg_even_when_changing=$specification_\0_even_when_changing`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)`&`@eq`(`$specification_\0_finalise_fetch`,`'`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\
