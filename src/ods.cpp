@@ -5439,8 +5439,8 @@ void ods::transaction_commit( )
 
             read_index_entry( index_entry, op.data.id.get_num( ) );
 
-            if( index_entry.trans_flag != ods_index_entry::e_trans_none
-             && index_entry.trans_flag != ods_index_entry::e_trans_free_list )
+            if( ( index_entry.trans_flag != ods_index_entry::e_trans_none )
+             && ( index_entry.trans_flag != ods_index_entry::e_trans_free_list ) )
             {
                if( index_entry.lock_flag == ods_index_entry::e_lock_none )
                {
@@ -6125,9 +6125,9 @@ void ods::rollback_dead_transactions( progress* p_progress )
 
       read_index_entry( index_entry, i );
 
-      if( index_entry.lock_flag == ods_index_entry::e_lock_none
-       && index_entry.trans_flag != ods_index_entry::e_trans_none
-       && index_entry.trans_flag != ods_index_entry::e_trans_free_list )
+      if( ( index_entry.lock_flag == ods_index_entry::e_lock_none )
+       && ( index_entry.trans_flag != ods_index_entry::e_trans_none )
+       && ( index_entry.trans_flag != ods_index_entry::e_trans_free_list ) )
       {
          if( index_entry.data.size == 0 )
          {
@@ -7070,10 +7070,10 @@ ods& operator <<( ods& o, storable_base& s )
          {
             if( index_entry.lock_flag == ods_index_entry::e_lock_none )
             {
-               if( index_entry.trans_flag == ods_index_entry::e_trans_none
+               if( ( index_entry.trans_flag == ods_index_entry::e_trans_none )
                 || ( o.p_impl->trans_level
-                && index_entry.data.tran_id == o.p_impl->p_trans_buffer->tran_id
-                && index_entry.trans_flag != ods_index_entry::e_trans_delete ) )
+                && ( index_entry.data.tran_id == o.p_impl->p_trans_buffer->tran_id )
+                && ( index_entry.trans_flag != ods_index_entry::e_trans_delete ) ) )
                {
                   can_write = true;
                   p_total_to_increment = &*o.p_impl->rp_session_update_total;
@@ -7140,7 +7140,7 @@ ods& operator <<( ods& o, storable_base& s )
                 o.p_impl->p_trans_buffer->levels.top( ).op_offset
                 + o.p_impl->p_trans_buffer->levels.top( ).op_count + 1;
 
-               if( !is_new_object && old_index_entry.data.tran_id == o.p_impl->p_trans_buffer->tran_id )
+               if( !is_new_object && ( old_index_entry.data.tran_id == o.p_impl->p_trans_buffer->tran_id ) )
                   skip_log_entry = true;
 
                index_entry.trans_flag = ods_index_entry::e_trans_change;
