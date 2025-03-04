@@ -408,18 +408,22 @@ void read_skip_fields( const string& module_id, const string& skip_field_info, m
       for( size_t i = 0; i < skip_field_items.size( ); i++ )
       {
          string::size_type pos = skip_field_items[ i ].find( ':' );
+
          if( pos == string::npos )
             throw runtime_error( "invalid skip_field_info item format '" + skip_field_items[ i ] + "'" );
 
          string sclass( skip_field_items[ i ].substr( 0, pos ) );
 
          string xinfo( "for skip_field_info '" + skip_field_items[ i ] + "'" );
+
          sclass = resolve_class_id( module_id, sclass, xinfo );
 
          string sfield( skip_field_items[ i ].substr( pos + 1 ) );
+
          string svalue;
 
          pos = sfield.find( '=' );
+
          if( pos != string::npos )
          {
             svalue = sfield.substr( pos + 1 );
@@ -455,19 +459,21 @@ void create_new_package_file( const string& module_id, const string& filename,
    while( reader.has_started_section( c_section_class ) )
    {
       string comment;
+
       while( reader.has_read_comment( comment ) )
          writer.write_comment( comment );
 
       writer.start_section( c_section_class );
 
       string mclass( reader.read_attribute( c_attribute_name ) );
+
       writer.write_attribute( c_attribute_name, mclass );
 
       string field_list( reader.read_attribute( c_attribute_fields ) );
 
       bool forced_field_list = false;
 
-      if( !field_list.empty( ) && field_list[ 0 ] == '!' )
+      if( !field_list.empty( ) && ( field_list[ 0 ] == '!' ) )
       {
          forced_field_list = true;
          field_list.erase( 0, 1 );
@@ -527,6 +533,7 @@ void create_new_package_file( const string& module_id, const string& filename,
             writer.write_comment( comment );
 
          string next_record;
+
          while( reader.has_read_attribute( c_attribute_record, next_record ) )
          {
             string unescaped_crs_and_lfs;
@@ -553,10 +560,10 @@ void create_new_package_file( const string& module_id, const string& filename,
 
                string key_value( output_values );
 
-               if( !key_value.empty( ) && key_value[ 0 ] == '!' )
+               if( !key_value.empty( ) && ( key_value[ 0 ] == '!' ) )
                   key_value.erase( 0, 1 );
 
-               if( !key_value.empty( ) && key_value[ 0 ] == '@' )
+               if( !key_value.empty( ) && ( key_value[ 0 ] == '@' ) )
                {
                   string::size_type pos = key_value.find( '_' );
 
@@ -656,11 +663,13 @@ string get_meta_class_field_list( const string& mclass )
     + "_" + string( c_meta_class_name_class ) + ".skips.lst" );
 
    map< string, map< string, string > > skip_fields;
+
    read_skip_fields( module_id, skip_field_info, skip_fields );
 
    size_t handle = create_object_instance( module_id, mclass, 0, false );
 
    string field_list( "@key" );
+
    vector< string > field_names;
 
    get_all_field_names( handle, "", field_names, false );
@@ -706,13 +715,16 @@ void export_package( const string& module, const string& mclass,
    string class_id( get_class_id_for_id_or_name( module_id, mclass ) );
 
    map< string, map< string, string > > skip_fields;
+
    read_skip_fields( module_id, skip_field_info, skip_fields );
 
    ofstream outf( filename.c_str( ) );
+
    if( !outf )
       throw runtime_error( "unable to open file '" + filename + "' for output in export_package" );
 
    map< string, map< string, string > > tests;
+
    if( !test_info.empty( ) )
    {
       vector< string > test_items;
@@ -736,6 +748,7 @@ void export_package( const string& module, const string& mclass,
       for( size_t i = 0; i < test_items.size( ); i++ )
       {
          string::size_type pos = test_items[ i ].find( ':' );
+
          if( pos == string::npos )
             throw runtime_error( "invalid test_info item format '" + test_items[ i ] + "'" );
 
@@ -743,9 +756,11 @@ void export_package( const string& module, const string& mclass,
          string cfield = test_items[ i ].substr( pos + 1 );
 
          string xinfo( "for test_info '" + test_items[ i ] + "'" );
+
          pclass = resolve_class_id( module_id, pclass, xinfo );
 
          string test_expr;
+
          if( cfield != "*" )
          {
             string::size_type cpos = cfield.find( "!=" );
@@ -763,6 +778,7 @@ void export_package( const string& module, const string& mclass,
             if( cfield != c_key_field )
             {
                string xinfo( "for test_info '" + test_items[ i ] + "'" );
+
                cfield = resolve_field_id( module_id, pclass, cfield, xinfo );
             }
          }
@@ -772,6 +788,7 @@ void export_package( const string& module, const string& mclass,
    }
 
    map< string, set< string > > excludes;
+
    if( !exclude_info.empty( ) )
    {
       vector< string > exclude_items;
@@ -790,6 +807,7 @@ void export_package( const string& module, const string& mclass,
       for( size_t i = 0; i < exclude_items.size( ); i++ )
       {
          string::size_type pos = exclude_items[ i ].find( ':' );
+
          if( pos == string::npos )
             throw runtime_error( "invalid exclude_info item format '" + exclude_items[ i ] + "'" );
 
@@ -797,10 +815,13 @@ void export_package( const string& module, const string& mclass,
          string cclass = exclude_items[ i ].substr( pos + 1 );
 
          string xinfo( "for exclude_info '" + exclude_items[ i ] + "'" );
+
          pclass = resolve_class_id( module_id, pclass, xinfo );
 
          string field_info;
+
          pos = cclass.find_first_of( "#;" );
+
          if( pos != string::npos )
          {
             field_info = cclass.substr( pos );
@@ -814,6 +835,7 @@ void export_package( const string& module, const string& mclass,
             if( !field_info.empty( ) && field_info[ 0 ] == '#' )
             {
                pos = field_info.find( ';' );
+
                resolve_field_id( module_id, cclass,
                 field_info.substr( 1, pos == string::npos ? pos : pos - 1 ), xinfo );
             }
@@ -843,18 +865,22 @@ void export_package( const string& module, const string& mclass,
       for( size_t i = 0; i < include_items.size( ); i++ )
       {
          string::size_type pos = include_items[ i ].find( '#' );
+
          if( pos != string::npos )
          {
             string pclass = include_items[ i ].substr( 0, pos );
 
             string xinfo( "for include_info '" + include_items[ i ] + "'" );
+
             pclass = resolve_class_id( module_id, pclass, xinfo );
 
             rounds[ pclass ] = atoi( include_items[ i ].substr( pos + 1 ).c_str( ) );
+
             continue;
          }
 
          pos = include_items[ i ].find( ':' );
+
          if( pos == string::npos )
             throw runtime_error( "invalid include_info item format '" + include_items[ i ] + "'" );
 
@@ -862,6 +888,7 @@ void export_package( const string& module, const string& mclass,
          string cfield = include_items[ i ].substr( pos + 1 );
 
          string xinfo( "for include_info '" + include_items[ i ] + "'" );
+
          pclass = resolve_class_id( module_id, pclass, xinfo );
 
          cfield = resolve_field_id( module_id, pclass, cfield, xinfo );
@@ -871,11 +898,13 @@ void export_package( const string& module, const string& mclass,
    }
 
    int current_round = 0;
+
    map< int, deque< pair< string, string > > > future_rounds;
 
    string module_name( loaded_module_name( module ) );
 
    vector< string > classes;
+
    buffer_file_lines( module_name + ".acyclic.lst", classes );
 
    for( size_t i = 0; i < classes.size( ); i++ )
@@ -900,6 +929,7 @@ void export_package( const string& module, const string& mclass,
    // require a record to be output twice (the first time with one or more optional fk
    // links set to blank).
    size_t total = 0;
+
    time_t ts( time( 0 ) );
 
    while( true )
@@ -928,9 +958,11 @@ void export_package( const string& module, const string& mclass,
 
    if( !exported_records.empty( ) )
       outf << " </class>\n";
+
    outf << "</sio>\n";
 
    outf.flush( );
+
    if( !outf.good( ) )
       throw runtime_error( "unexpected bad stream for '" + filename + "' in export_package" );
 }
@@ -944,9 +976,11 @@ void import_package( const string& module,
    bool using_verbose_logging = get_storage_using_verbose_logging( );
 
    map< string, map< string, string > > skip_fields;
+
    read_skip_fields( module_id, skip_field_info, skip_fields );
 
    ifstream inpf( filename.c_str( ) );
+
    if( !inpf )
       throw runtime_error( "unable to open file '" + filename + "' for input in import_package" );
 
@@ -956,9 +990,10 @@ void import_package( const string& module,
    sio_reader reader( inpf );
 
    string log_lines;
-
    string map_file_name;
+
    bool has_key_list_file = false;
+
    map< string, string > search_replaces_map;
    vector< pair< string, string > > search_replaces;
 
@@ -978,13 +1013,14 @@ void import_package( const string& module,
 
       for( size_t i = 0; i < replace_items.size( ); i++ )
       {
-         if( replace_items[ i ].empty( ) || replace_items[ i ][ 0 ] == ';' )
+         if( replace_items[ i ].empty( ) || ( replace_items[ i ][ 0 ] == ';' ) )
             continue;
 
          // NOTE: If the replace info starts with an asterisk then search/replacing
          // will be performed for the search string itself (this can be useful when
          // compound keys that contain other package keys need to be optional).
          bool do_replaces_for_find_string = false;
+
          if( replace_items[ i ][ 0 ] == '*' )
          {
             do_replaces_for_find_string = true;
@@ -992,13 +1028,14 @@ void import_package( const string& module,
          }
 
          string::size_type pos = replace_items[ i ].find( '=' );
+
          if( pos == string::npos )
             throw runtime_error( "invalid replace_info item format '" + replace_items[ i ] + "'" );
 
          string find_string( replace_items[ i ].substr( 0, pos ) );
          string replace_with( replace_items[ i ].substr( pos + 1 ) );
 
-         if( replace_with[ 0 ] == '?' || replace_with[ 0 ] == '!' )
+         if( ( replace_with[ 0 ] == '?' ) || ( replace_with[ 0 ] == '!' ) )
          {
             // NOTE: Conditional search replacement is available in two ways:
             //
@@ -1007,6 +1044,7 @@ void import_package( const string& module,
             //
             // The <check> value is expected to be the key for an already existing search/replacement pair.
             pos = replace_with.find( "=" );
+
             if( pos == string::npos )
                throw runtime_error( "invalid replace_info item format '" + replace_items[ i ] + "'" );
 
@@ -1073,6 +1111,7 @@ void import_package( const string& module,
    time_t ts( time( 0 ) );
 
    transaction_start( );
+
    size_t transaction_id = next_transaction_id( ) + 1;
 
    set< string > keys_updating;
@@ -1090,7 +1129,7 @@ void import_package( const string& module,
 
          bool ignore_skips = false;
 
-         if( !field_list.empty( ) && field_list[ 0 ] == '!' )
+         if( !field_list.empty( ) && ( field_list[ 0 ] == '!' ) )
          {
             ignore_skips = true;
             field_list.erase( 0, 1 );
@@ -1099,6 +1138,7 @@ void import_package( const string& module,
          mclass = get_class_id_for_id_or_name( module_id, mclass );
 
          size_t handle = create_object_instance( module_id, mclass, 0, false );
+
          try
          {
             vector< string > fields;
@@ -1106,12 +1146,14 @@ void import_package( const string& module,
 
             // NOTE: Check that field names have not been repeated (apart from "ignore").
             vector< string > sorted_fields( fields.begin( ), fields.end( ) );
+
             sort( sorted_fields.begin( ), sorted_fields.end( ) );
 
             string last_field;
+
             for( size_t i = 0; i < sorted_fields.size( ); i++ )
             {
-               if( last_field != c_ignore_field && sorted_fields[ i ] == last_field )
+               if( ( last_field != c_ignore_field ) && ( sorted_fields[ i ] == last_field ) )
                   throw runtime_error( "field name '" + last_field + "' was repeated" );
 
                last_field = sorted_fields[ i ];
@@ -1120,6 +1162,7 @@ void import_package( const string& module,
             set_any_field_names_to_ids( handle, "", fields );
 
             map< string, string > foreign_field_and_class_ids;
+
             if( !key_prefix.empty( ) )
                get_foreign_field_and_class_ids( handle, "", foreign_field_and_class_ids );
 
@@ -1130,11 +1173,13 @@ void import_package( const string& module,
                base_class_info.push_back( make_pair( mclass, mclass ) );
 
             string next_record;
+
             while( reader.has_read_attribute( c_attribute_record, next_record ) )
             {
                if( time( 0 ) - ts >= 10 )
                {
                   ts = time( 0 );
+
                   // FUTURE: This message should be handled as a server string message.
                   get_session_command_handler( ).output_progress( "Processed "
                    + to_string( reader.get_last_line_num( ) ) + " lines..." );
@@ -1174,7 +1219,8 @@ void import_package( const string& module,
 
                   bool skip_op = false;
 
-                  if( field_values[ 0 ].empty( ) || field_values[ 0 ] == "!" || field_values[ 0 ] == "~" )
+                  if( field_values[ 0 ].empty( )
+                   || ( field_values[ 0 ] == "!" ) || ( field_values[ 0 ] == "~" ) )
                   {
                      skip_op = true;
                      field_values[ 0 ].erase( );
@@ -1201,14 +1247,15 @@ void import_package( const string& module,
 
                   // NOTE: Allow packages being imported with the "new_only" option to
                   // still update specific records by prefixing their keys with a '!'.
-                  if( !next_key.empty( ) && next_key[ 0 ] == '!' )
+                  if( !next_key.empty( ) && ( next_key[ 0 ] == '!' ) )
                   {
                      next_key.erase( 0, 1 );
                      keys_updating.insert( next_key );
                   }
 
                   bool is_remove_op = false;
-                  if( !next_key.empty( ) && next_key[ 0 ] == '~' )
+
+                  if( !next_key.empty( ) && ( next_key[ 0 ] == '~' ) )
                   {
                      next_key.erase( 0, 1 );
 
@@ -1223,9 +1270,10 @@ void import_package( const string& module,
                   // NOTE: Allow a key field to be specified in the following manner: @3_20101010101010101010
                   // where the text between the @ and _ (in the case "3") is used to replace the equal number
                   // of leading characters in the key (so the final key will become 30101010101010101010).
-                  if( !next_key.empty( ) && next_key[ 0 ] == '@' )
+                  if( !next_key.empty( ) && ( next_key[ 0 ] == '@' ) )
                   {
                      string::size_type pos = next_key.find( '_' );
+
                      if( pos == string::npos )
                         throw runtime_error( "unexpected key format '" + next_key
                          + "' processing line #" + to_string( reader.get_last_line_num( ) ) );
@@ -1278,6 +1326,7 @@ void import_package( const string& module,
                         instance_fetch( handle, "", key_value, &rc );
 
                      bool is_update = false;
+
                      if( rc != e_instance_fetch_rc_okay )
                      {
                         next_log_line = c_cmd_create;
@@ -1295,7 +1344,7 @@ void import_package( const string& module,
 
                      string class_id_to_log( mclass );
 
-                     if( !using_verbose_logging && class_id_to_log.find( module_id ) == 0 )
+                     if( !using_verbose_logging && ( class_id_to_log.find( module_id ) == 0 ) )
                         class_id_to_log.erase( 0, module_id.length( ) );
 
                      next_log_line += " " + uid + " " + dtm + " "
@@ -1324,7 +1373,7 @@ void import_package( const string& module,
                            }
                         }
 
-                        if( skip_field || fields[ i ] == c_ignore_field )
+                        if( skip_field || ( fields[ i ] == c_ignore_field ) )
                            continue;
 
                         if( foreign_field_and_class_ids.count( fields[ i ] )
@@ -1344,7 +1393,9 @@ void import_package( const string& module,
                         if( using_verbose_logging || value != field_values[ i ] )
                         {
                            string method_name_and_args( "set " );
+
                            method_name_and_args += fields[ i ] + " ";
+
                            method_name_and_args += "\"" + escaped( unescaped( field_values[ i ], "rn\r\n" ), "\"" ) + "\"";
 
                            if( !log_field_value_pairs.empty( ) )
@@ -1371,6 +1422,7 @@ void import_package( const string& module,
 
                      if( !log_lines.empty( ) )
                         log_lines += "\n";
+
                      log_lines += next_log_line;
 
                      op_instance_apply( handle, "", false );
@@ -1379,7 +1431,7 @@ void import_package( const string& module,
                      {
                         keys_created.insert( make_pair( key_value, mclass ) );
 
-                        if( original_key != key_value && search_replaces_used.count( original_key ) )
+                        if( ( original_key != key_value ) && search_replaces_used.count( original_key ) )
                            map_appends.push_back( search_replaces_used[ original_key ] + "=" + key_value );
                      }
                   }
@@ -1389,6 +1441,7 @@ void import_package( const string& module,
                      prefixed_class_keys[ mclass ].insert( next_key );
 
                      vector< pair< string, string > > base_class_info;
+
                      get_base_class_info( handle, "", base_class_info );
 
                      for( size_t i = 0; i < base_class_info.size( ); i++ )
@@ -1398,6 +1451,7 @@ void import_package( const string& module,
             }
 
             reader.finish_section( c_section_class );
+
             destroy_object_instance( handle );
          }
          catch( ... )

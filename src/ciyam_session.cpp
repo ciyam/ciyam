@@ -3116,9 +3116,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !map_file.empty( ) )
          {
             string path( storage_web_root( true ) );
+
             path += "/" + map_file;
 
             ifstream inpf( path.c_str( ) );
+
             if( !inpf )
                throw runtime_error( "unable to open file '" + path + "' for input in perform_fetch" );
 
@@ -3130,6 +3132,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   continue;
 
                string::size_type pos = next.find( '=' );
+
                if( pos == string::npos )
                   continue;
 
@@ -3148,10 +3151,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                // not guarantee that a package record can be restored to the exact format
                // appearing in the package file.
                if( data.length( ) > 3
-                && ( data.substr( 0, 4 ) == "opt_" || data.substr( 0, 4 ) == "loc_" ) )
+                && ( ( data.substr( 0, 4 ) == "opt_" ) || ( data.substr( 0, 4 ) == "loc_" ) ) )
                {
                   pos = data.find( "_class" );
-                  if( pos == string::npos || ( pos + strlen( "_class" ) != data.length( ) ) )
+
+                  if( ( pos == string::npos ) || ( pos + strlen( "_class" ) != data.length( ) ) )
                      continue;
                }
 
