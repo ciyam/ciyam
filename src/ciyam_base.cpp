@@ -12827,6 +12827,7 @@ string get_field_values( size_t handle,
    for( size_t i = 0; i < field_list.size( ); i++ )
    {
       string next_field( field_list[ i ] );
+
       size_t pos = next_field.find_last_of( "." );
 
       string field, field_context;
@@ -12845,6 +12846,7 @@ string get_field_values( size_t handle,
       {
          if( !context.empty( ) )
             context += ".";
+
          context += field_context;
       }
 
@@ -12924,7 +12926,16 @@ string get_field_values( size_t handle,
             while( true )
             {
                string::size_type pos = next_value.find( ci->first );
+
                if( pos == string::npos )
+                  break;
+
+               // NOTE: Ignore replacements that are key "variations".
+               if( ( ci->second.find( ci->first ) == 0 )
+                && ( ci->second.length( ) == ( ci->first.length( ) + 2 ) )
+                && ( ci->second[ ci->second.length( ) - 2 ] == '_' )
+                && ( ci->second[ ci->second.length( ) - 1 ] >= 'a' )
+                && ( ci->second[ ci->second.length( ) - 1 ] <= 'z' ) )
                   break;
 
                next_value.replace( pos, ci->first.length( ), ci->second );
