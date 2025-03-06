@@ -71,6 +71,8 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 
    void set_backup_identity( const std::string& identity ) { backup_identity = identity; }
 
+   void set_is_combined_backup( bool new_val ) { is_combined_backup = new_val; }
+
    static void increment_session_count( );
    static void decrement_session_count( );
 
@@ -89,6 +91,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 
    bool other_is_owner;
    bool both_are_owners;
+   bool is_combined_backup;
    bool needs_key_exchange;
    bool has_support_sessions;
    bool must_clear_system_variable;
@@ -145,6 +148,35 @@ class CIYAM_BASE_DECL_SPEC peer_session_starter : public thread
    void on_start( );
 
    void start_peer_session( const std::string& peer_info );
+};
+
+struct other_session_extras
+{
+   other_session_extras( size_t num = 0, const std::string* p_backup_identity = 0 )
+   {
+      num_for_support = num;
+
+      if( p_backup_identity )
+         backup_identity = *p_backup_identity;
+
+      is_combined_backup = false;
+   }
+
+   void set_extras( peer_session& s )
+   {
+      if( num_for_support )
+         s.set_num_for_support( num_for_support );
+
+      if( !backup_identity.empty( ) )
+         s.set_backup_identity( backup_identity );
+
+      s.set_is_combined_backup( is_combined_backup );
+   }
+
+   size_t num_for_support;
+   std::string backup_identity;
+
+   bool is_combined_backup;
 };
 
 class mutex;

@@ -263,6 +263,7 @@ const char* const c_special_variable_keep_user_peers_alive = "@keep_user_peers_a
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
 const char* const c_special_variable_blockchain_is_checking = "@blockchain_is_checking";
+const char* const c_special_variable_blockchain_is_combined = "@blockchain_is_combined";
 const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
 const char* const c_special_variable_peer_limited_arguments = "@peer_limited_arguments";
 const char* const c_special_variable_single_string_response = "@single_string_response";
@@ -286,6 +287,7 @@ const char* const c_special_variable_blockchain_tree_root_hash = "@blockchain_tr
 const char* const c_special_variable_blockchain_backup_identity = "@blockchain_backup_identity";
 const char* const c_special_variable_blockchain_block_file_hash = "@blockchain_block_file_hash";
 const char* const c_special_variable_blockchain_both_are_owners = "@blockchain_both_are_owners";
+const char* const c_special_variable_blockchain_found_secondary = "@blockchain_found_secondary";
 const char* const c_special_variable_blockchain_num_for_support = "@blockchain_num_for_support";
 const char* const c_special_variable_blockchain_peer_hub_height = "@blockchain_peer_hub_height";
 const char* const c_special_variable_blockchain_shared_identity = "@blockchain_shared_identity";
@@ -568,6 +570,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_package_install_extra );
       g_special_variable_names.push_back( c_special_variable_peer_is_synchronising );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_checking );
+      g_special_variable_names.push_back( c_special_variable_blockchain_is_combined );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_fetching );
       g_special_variable_names.push_back( c_special_variable_peer_limited_arguments );
       g_special_variable_names.push_back( c_special_variable_single_string_response );
@@ -591,6 +594,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_backup_identity );
       g_special_variable_names.push_back( c_special_variable_blockchain_block_file_hash );
       g_special_variable_names.push_back( c_special_variable_blockchain_both_are_owners );
+      g_special_variable_names.push_back( c_special_variable_blockchain_found_secondary );
       g_special_variable_names.push_back( c_special_variable_blockchain_num_for_support );
       g_special_variable_names.push_back( c_special_variable_blockchain_peer_hub_height );
       g_special_variable_names.push_back( c_special_variable_blockchain_shared_identity );

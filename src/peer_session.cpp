@@ -110,6 +110,12 @@ const int c_last_decimal_digit = 10;
 
 const int c_max_num_for_support = 11;
 
+const int c_peer_type_hub = -2;
+const int c_peer_type_user = -1;
+const int c_peer_type_combined = 0;
+const int c_peer_type_backup_only = 2;
+const int c_peer_type_shared_only = 3;
+
 const size_t c_min_msg_length = 85;
 
 const size_t c_max_pubkey_size = 256;
@@ -221,7 +227,7 @@ string get_hub_identity( const string& own_identity )
    string hub_identity_var_name( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) );
    string backup_identity_var_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
 
-   if( own_identity != get_system_variable( backup_identity_var_name ) )
+   if( own_identity != get_raw_system_variable( backup_identity_var_name ) )
    {
       string extra( get_identity_variable_extra( backup_identity_var_name, own_identity ) );
 
@@ -236,7 +242,7 @@ string get_hub_identity( const string& own_identity )
       }
    }
 
-   return get_system_variable( hub_identity_var_name );
+   return get_raw_system_variable( hub_identity_var_name );
 }
 
 string get_own_identity( bool is_shared, const string* p_extra )
@@ -244,7 +250,7 @@ string get_own_identity( bool is_shared, const string* p_extra )
    string own_identity;
 
    if( !p_extra )
-      own_identity = get_system_variable( get_special_var_name(
+      own_identity = get_raw_system_variable( get_special_var_name(
        ( !is_shared ) ? e_special_var_blockchain_backup_identity : e_special_var_blockchain_shared_identity ) );
    else
       own_identity = get_extra_identity_variable( get_special_var_name(
@@ -679,13 +685,13 @@ void system_identity_progress_message( const string& identity )
 void output_sync_progress_message( const string& identity,
  size_t blockchain_height, size_t blockchain_height_other = 0, bool setting_new_zenith = false )
 {
-   string backup_identity( get_system_variable(
+   string backup_identity( get_raw_system_variable(
     get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
 
-   string shared_identity( get_system_variable(
+   string shared_identity( get_raw_system_variable(
     get_special_var_name( e_special_var_blockchain_shared_identity ) ) );
 
-   string peer_hub_identity( get_system_variable(
+   string peer_hub_identity( get_raw_system_variable(
     get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
 
    string progress_message;
@@ -711,7 +717,7 @@ void output_sync_progress_message( const string& identity,
       else
          blockchain_height_name = get_special_var_name( e_special_var_blockchain_peer_hub_height );
 
-      if( get_system_variable( blockchain_height_name ) != current_height )
+      if( get_raw_system_variable( blockchain_height_name ) != current_height )
          set_system_variable( ">" + blockchain_height_name, current_height );
    }
 
@@ -866,7 +872,8 @@ void remove_from_hub_queue_if_present( const string& identity )
 
    while( true )
    {
-      string next_identity( get_system_variable( get_special_var_name( e_special_var_queue_hub_users ) ) );
+      string next_identity( get_raw_system_variable(
+       get_special_var_name( e_special_var_queue_hub_users ) ) );
 
       if( next_identity.empty( ) )
          break;
@@ -1201,7 +1208,7 @@ void check_shared_for_support_session( const string& blockchain )
 
 void set_hub_system_variable_if_required( const string& identity, const string& hub_identity )
 {
-   if( get_system_variable( "@" + identity ).empty( ) )
+   if( get_raw_system_variable( "@" + identity ).empty( ) )
    {
       string hub_genesis_tag( c_bc_prefix + hub_identity + string( ".0" ) + c_blk_suffix );
       string hub_genesis_hash;
@@ -1222,7 +1229,8 @@ void process_queued_hub_using_peerchains( const string& hub_identity )
 
    while( true )
    {
-      string next_identity( get_system_variable( get_special_var_name( e_special_var_queue_hub_users ) ) );
+      string next_identity( get_raw_system_variable(
+       get_special_var_name( e_special_var_queue_hub_users ) ) );
 
       if( next_identity.empty( ) )
          break;
@@ -1606,6 +1614,8 @@ void check_for_missing_other_sessions( const date_time& now )
    string paired_identity(
     get_raw_session_variable( get_special_var_name( e_special_var_paired_identity ) ) );
 
+   string condemned_message_prefix( "peer session has been condemned due to " );
+
    if( !paired_identity.empty( ) && !has_raw_system_variable( paired_identity ) )
    {
       string time_value( get_raw_session_variable(
@@ -1621,14 +1631,17 @@ void check_for_missing_other_sessions( const date_time& now )
             {
                condemn_this_session( );
 
-               throw runtime_error( "peer session has been condemned due to missing paired session" );
+               throw runtime_error( condemned_message_prefix
+                + "missing paired session '" + paired_identity + "'" );
             }
 
-            if( !backup_identity.empty( ) && num_have_session_variable( backup_identity, true ) < 2 )
+            if( !backup_identity.empty( )
+             && num_have_session_variable( backup_identity, true ) < 2 )
             {
                condemn_this_session( );
 
-               throw runtime_error( "peer session has been condemned due to missing backup session" );
+               throw runtime_error( condemned_message_prefix
+                + "missing backup session '" + backup_identity + "'" );
             }
          }
       }
@@ -1639,11 +1652,12 @@ void check_for_missing_other_sessions( const date_time& now )
 
    if( !session_id_owner.empty( ) )
    {
-      if( !has_session_variable( get_special_var_name( e_special_var_session_id ), &session_id_owner ) )
+      if( !has_session_variable(
+       get_special_var_name( e_special_var_session_id ), &session_id_owner ) )
       {
          condemn_this_session( );
 
-         throw runtime_error( "peer session has been condemned due to missing owning session" );
+         throw runtime_error( condemned_message_prefix + "missing owning session" );
       }
    }
 
@@ -1659,7 +1673,7 @@ void check_for_missing_other_sessions( const date_time& now )
       {
          condemn_this_session( );
 
-         throw runtime_error( "peer session has been condemned due to missing any hub using sessions" );
+         throw runtime_error( condemned_message_prefix + "missing any hub using sessions" );
       }
    }
 
@@ -1668,6 +1682,64 @@ void check_for_missing_other_sessions( const date_time& now )
 
    size_t num_for_support = from_string< size_t >(
     get_raw_session_variable( get_special_var_name( e_special_var_blockchain_num_for_support ) ) );
+
+   if( !disallowed && !g_server_shutdown && !is_condemned_session( )
+    && has_session_variable( get_special_var_name( e_special_var_blockchain_is_owner ) )
+    && has_session_variable( get_special_var_name( e_special_var_blockchain_is_combined ) ) )
+   {
+      string reversed( paired_identity );
+      reverse( reversed.begin( ), reversed.end( ) );
+
+      string blockchain_found_secondary_name(
+       get_special_var_name( e_special_var_blockchain_found_secondary ) );
+
+      // NOTE: Will only attempt to restart a combined secondary peer session
+      // (and its paired session) if it had been found here first (this check
+      // is then repeated after each restart).
+      if( !has_session_variable( blockchain_found_secondary_name ) )
+      {
+         if( get_num_sessions_for_blockchain( reversed, true, true ) )
+            set_session_variable( blockchain_found_secondary_name, c_true_value );
+      }
+      else if( !get_num_sessions_for_blockchain( reversed, true, true ) )
+      {
+         set_session_variable( blockchain_found_secondary_name, "" ); // (see NOTE above)
+
+         string host_and_port( get_raw_session_variable( get_special_var_name( e_special_var_ip_addr ) ) );
+
+         host_and_port += '-' + get_raw_session_variable( get_special_var_name( e_special_var_port ) );
+
+         string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
+
+         // NOTE: If possible will ensure that the peer session is being secured.
+         string secret_hash( get_raw_system_variable( secret_hash_name + '_' + paired_identity ) );
+
+         auto_ptr< temporary_session_variable > ap_temp_secret_hash;
+
+         if( !secret_hash.empty( ) )
+            ap_temp_secret_hash.reset( new temporary_session_variable( secret_hash_name, secret_hash ) );
+
+         string reversed_chain( c_bc_prefix + reversed );
+
+         other_session_extras other_extras( num_for_support );
+
+         other_extras.backup_identity = paired_identity;
+
+         size_t zero_or_dummy = ( !num_for_support ? 0 : c_dummy_num_for_support );
+
+         string extra( get_identity_variable_extra(
+          get_special_var_name( e_special_var_blockchain_backup_identity ), identity ) );
+
+         msleep( c_support_sleep_time );
+
+         peer_session* p_local_shared = create_peer_initiator( reversed_chain, host_and_port,
+          false, zero_or_dummy, false, false, false, e_peerchain_type_shared, false, &extra, &other_extras );
+
+         if( p_local_shared )
+            peer_session* p_hosted_shared = create_peer_initiator( reversed_chain, host_and_port,
+             false, zero_or_dummy, false, true, false, e_peerchain_type_shared, false, &extra, &other_extras );
+      }
+   }
 
    if( !disallowed && num_for_support && !g_server_shutdown && !is_condemned_session( ) )
    {
@@ -4160,7 +4232,7 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
          if( g_server_shutdown )
             throw runtime_error( "application server is being shutdown" );
 
-         if( !paired_identity.empty( ) && get_system_variable( paired_identity ).empty( ) )
+         if( !paired_identity.empty( ) && get_raw_system_variable( paired_identity ).empty( ) )
          {
             bool is_only_session = false;
             bool is_missing_backup = false;
@@ -4174,10 +4246,10 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
                   is_missing_backup = true;
             }
 
-            bool is_disconnecting = !get_system_variable( '~' + identity ).empty( );
+            bool is_disconnecting = !get_raw_system_variable( '~' + identity ).empty( );
 
             if( !is_disconnecting )
-               is_disconnecting = !get_system_variable( '~' + paired_identity ).empty( );
+               is_disconnecting = !get_raw_system_variable( '~' + paired_identity ).empty( );
 
             if( is_only_session || is_missing_backup || is_disconnecting )
             {
@@ -5652,7 +5724,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         num_items_found = 0;
                      else
                      {
-                        bool is_peerchain_hub = !get_system_variable(
+                        bool is_peerchain_hub = !get_raw_system_variable(
                          get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ).empty( );
 
                         bool has_all_tree_items = false;
@@ -6064,7 +6136,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
       if( paired_identity.empty( ) )
       {
-         bool is_disconnecting = !get_system_variable( '~' + identity ).empty( );
+         bool is_disconnecting = !get_raw_system_variable( '~' + identity ).empty( );
 
          if( is_disconnecting )
          {
@@ -6081,7 +6153,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             }
          }
       }
-      else if( get_system_variable( paired_identity ).empty( ) )
+      else if( get_raw_system_variable( paired_identity ).empty( ) )
       {
          bool is_only_session = false;
          bool is_missing_backup = false;
@@ -6090,17 +6162,17 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          {
             is_only_session = ( num_have_session_variable( paired_identity, true ) < 2 );
 
-            if( !is_only_session && !backup_identity.empty( ) 
+            if( !is_only_session && !backup_identity.empty( )
              && ( num_have_session_variable( backup_identity, true ) < 2 ) )
                is_missing_backup = true;
          }
 
-         bool is_disconnecting = !get_system_variable( '~' + identity ).empty( );
+         bool is_disconnecting = !get_raw_system_variable( '~' + identity ).empty( );
 
          if( !is_disconnecting )
-            is_disconnecting = !get_system_variable( '~' + paired_identity ).empty( );
+            is_disconnecting = !get_raw_system_variable( '~' + paired_identity ).empty( );
 
-         bool had_connect_error = !get_system_variable( c_error_message_prefix + paired_identity ).empty( );
+         bool had_connect_error = !get_raw_system_variable( c_error_message_prefix + paired_identity ).empty( );
 
          if( is_only_session || is_missing_backup || is_disconnecting || had_connect_error )
          {
@@ -6453,6 +6525,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
  is_for_support( is_for_support ),
  other_is_owner( false ),
  both_are_owners( false ),
+ is_combined_backup( false ),
  needs_key_exchange( false ),
  has_support_sessions( has_support_sessions ),
  must_clear_system_variable( must_clear_system_variable )
@@ -7078,7 +7151,7 @@ void peer_session::on_start( )
             set_session_variable( get_special_var_name( e_special_var_peer_is_dependent ), c_true_value );
 
          string progress_message(
-          get_system_variable( c_progress_output_prefix + unprefixed_blockchain ) );
+          get_raw_system_variable( c_progress_output_prefix + unprefixed_blockchain ) );
 
          set_session_progress_message( progress_message );
       }
@@ -7120,6 +7193,9 @@ void peer_session::on_start( )
 
          if( !is_responder && num_for_support )
             set_session_variable( get_special_var_name( e_special_var_blockchain_num_for_support ), to_string( num_for_support ) );
+
+         if( !is_responder && is_combined_backup )
+            set_session_variable( get_special_var_name( e_special_var_blockchain_is_combined ), c_true_value );
 
          set_session_variable( get_special_var_name( e_special_var_blockchain_time_value ), to_string( time_value ) );
          set_session_variable( get_special_var_name( e_special_var_progress_seconds ), to_string( c_default_progress_seconds ) );
@@ -7300,7 +7376,7 @@ void peer_session::on_start( )
       // NOTE: If a hub identity has been provided then connect to it (unless already connected).
       if( okay && !is_responder && !is_for_support && !hub_identity.empty( ) )
       {
-         string hub_genesis_hash( get_system_variable( "@" + identity ) );
+         string hub_genesis_hash( get_raw_system_variable( "@" + identity ) );
 
          // NOTE: If a hub identity genesis block is already known then verify the identity.
          if( !hub_genesis_hash.empty( ) )
@@ -7596,7 +7672,7 @@ void peer_listener::on_start( )
 
             while( s && !g_server_shutdown )
             {
-               string identity_changes( get_system_variable( '@' + to_string( port ) ) );
+               string identity_changes( get_raw_system_variable( '@' + to_string( port ) ) );
 
                // NOTE; Uses the system variable "@<port>" in order to insert or remove blockchains from the listener.
                if( !identity_changes.empty( ) )
@@ -7681,7 +7757,7 @@ void peer_listener::on_start( )
                      {
                         string next_identity( all_identities[ i ] );
 
-                        if( !get_system_variable( '~' + next_identity ).empty( ) )
+                        if( !get_raw_system_variable( '~' + next_identity ).empty( ) )
                         {
                            set_variable_checker check_no_other_session(
                             e_variable_check_type_no_session_has, next_identity );
@@ -7813,7 +7889,7 @@ string peer_channel_height( const string& identity, bool minimal, bool reversed,
 {
    string extra, retval;
 
-   string channel_identity( get_system_variable( "$" + identity + "_" + c_identity_suffix ) );
+   string channel_identity( get_raw_system_variable( "$" + identity + "_" + c_identity_suffix ) );
 
    if( !channel_identity.empty( ) )
    {
@@ -7862,29 +7938,6 @@ void create_peer_listener( int port, const string& blockchains )
       p_peer_listener->start( );
    }
 }
-
-struct other_session_extras
-{
-   other_session_extras( size_t num = 0, const string* p_backup_identity = 0 )
-   {
-      num_for_support = num;
-
-      if( p_backup_identity )
-         backup_identity = *p_backup_identity;
-   }
-
-   void set_extras( peer_session& s )
-   {
-      if( num_for_support )
-         s.set_num_for_support( num_for_support );
-
-      if( !backup_identity.empty( ) )
-         s.set_backup_identity( backup_identity );
-   }
-
-   size_t num_for_support;
-   string backup_identity;
-};
 
 peer_session* create_peer_initiator( const string& blockchain,
  const string& host_and_or_port, bool force, size_t num_for_support,
@@ -8183,7 +8236,8 @@ void peer_session_starter::on_start( )
          if( g_server_shutdown || has_max_peers( ) )
             break;
 
-         string entries( get_system_variable( get_special_var_name( e_special_var_queue_peers ) ) );
+         string entries( get_raw_system_variable(
+          get_special_var_name( e_special_var_queue_peers ) ) );
 
          bool allowed = true;
 
@@ -8316,19 +8370,20 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    string info( peer_info );
 
    string::size_type pos = info.rfind( ':' );
+
    if( pos == string::npos )
       throw runtime_error( "unexpected peer_info '" + peer_info + "'" );
 
    int peer_type = from_string< int >( info.substr( pos + 1 ) );
 
-   bool create_reversed = ( ( peer_type == -1 ) || ( peer_type == 0 ) );
+   bool create_reversed = ( ( peer_type == c_peer_type_user ) || ( peer_type == c_peer_type_combined ) );
 
    peerchain_type chain_type = e_peerchain_type_backup;
    peerchain_type reversed_chain_type = e_peerchain_type_shared;
 
-   if( peer_type == -1 )
+   if( peer_type == c_peer_type_user )
       chain_type = reversed_chain_type = e_peerchain_type_user;
-   else if( peer_type == 3 )
+   else if( peer_type == c_peer_type_shared_only )
       chain_type = e_peerchain_type_shared;
 
    info.erase( pos );
@@ -8341,6 +8396,7 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    size_t num_for_support = 0;
 
    string blockchain( c_bc_prefix + info.substr( 0, pos ) );
+
    info.erase( 0, pos + 1 );
 
    pos = blockchain.find( '+' );
@@ -8388,6 +8444,9 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    other_session_extras other_extras( num_for_support );
 
+   if( chain_type == e_peerchain_type_backup )
+      other_extras.is_combined_backup = ( peer_type == c_peer_type_combined );
+
    size_t zero_or_dummy = ( !num_for_support ? 0 : c_dummy_num_for_support );
 
    // NOTE: First create main sessions for both the local and hosted blockchains.
@@ -8396,7 +8455,7 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    if( !p_local_main )
       set_system_variable( identity, "" );
-   else if( peer_type >= 0 )
+   else if( peer_type >= c_peer_type_combined )
       peer_session* p_hosted_main = create_peer_initiator( blockchain, info,
        false, zero_or_dummy, false, true, false, chain_type, false, p_extra_value, &other_extras );
 
@@ -8409,11 +8468,12 @@ void peer_session_starter::start_peer_session( const string& peer_info )
       string reversed_chain( c_bc_prefix + reversed );
 
       other_extras.backup_identity = identity;
+      other_extras.is_combined_backup = false;
 
       peer_session* p_local_shared = create_peer_initiator( reversed_chain + paired_suffix, info,
        false, zero_or_dummy, false, false, false, reversed_chain_type, false, p_extra_value, &other_extras );
 
-      if( p_local_shared && ( peer_type >= 0 ) )
+      if( p_local_shared && ( peer_type >= c_peer_type_combined ) )
          peer_session* p_hosted_shared = create_peer_initiator( reversed_chain, info,
           false, zero_or_dummy, false, true, false, reversed_chain_type, false, p_extra_value, &other_extras );
    }
