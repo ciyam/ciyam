@@ -99,7 +99,8 @@ iec_byte_scale convert_bytes_to_iec_scaled_size( int64_t num_bytes, double& scal
       scaled_size = round( scaled_size, round_to_decimals );
 
    // NOTE: Due to rounding a second call might be necessary (to reduce 1000.0 to 1.0).
-   if( ( round_to_decimals < 0 ) || ( bs == e_iec_byte_scale_tebi ) || ( scaled_size < c_kibibytes ) )
+   if( ( round_to_decimals < 0 )
+    || ( bs == e_iec_byte_scale_tebi ) || ( scaled_size < c_kibibytes ) )
       return bs;
    else
       return convert_bytes_to_iec_scaled_size( scaled_size * divisor, scaled_size, round_to_decimals );
@@ -108,6 +109,7 @@ iec_byte_scale convert_bytes_to_iec_scaled_size( int64_t num_bytes, double& scal
 metric_byte_scale convert_bytes_to_metric_scaled_size( int64_t num_bytes, double& scaled_size, int round_to_decimals = -1 )
 {
    metric_byte_scale bs = e_metric_byte_scale_none;
+
    double divisor = 1.0, unscaled_size( num_bytes );
 
    if( num_bytes >= c_terabytes )
@@ -137,7 +139,8 @@ metric_byte_scale convert_bytes_to_metric_scaled_size( int64_t num_bytes, double
       scaled_size = round( scaled_size, round_to_decimals );
 
    // NOTE: Due to rounding a second call might be necessary (to reduce 1000.0 to 1.0).
-   if( round_to_decimals < 0 || bs == e_metric_byte_scale_tera || scaled_size < c_kilobytes )
+   if( ( round_to_decimals < 0 )
+    || ( bs == e_metric_byte_scale_tera ) || ( scaled_size < c_kilobytes ) )
       return bs;
    else
       return convert_bytes_to_metric_scaled_size( scaled_size * divisor, scaled_size, round_to_decimals );
@@ -146,18 +149,19 @@ metric_byte_scale convert_bytes_to_metric_scaled_size( int64_t num_bytes, double
 const bool convert( const double& d, int64_t& i64 )
 {
    // NOTE: This is the double representation of the maximum acceptable value for double to int64 conversion.
-   static int64_t iMax = INT64_C( 0x43DFFFFFFFFFFFFF );
+   static int64_t imax = INT64_C( 0x43DFFFFFFFFFFFFF );
 
-   static const double dMax = *reinterpret_cast< double* >( &iMax );
-   static const double dMin = -dMax;
+   static const double dmax = *reinterpret_cast< double* >( &imax );
+   static const double dmin = -dmax;
 
    static const bool is_IEEE754 = numeric_limits< double >::is_specialized && numeric_limits< double >::is_iec559;
 
-   if( !is_IEEE754 || d > dMax || d < dMin )
+   if( !is_IEEE754 || ( d > dmax ) || ( d < dmin ) )
       return false;
    else
    {
       i64 = int64_t( d );
+
       return true;
    }
 }
@@ -175,9 +179,10 @@ string format_int( int64_t i, char separator, unsigned int grouping )
 
    bool is_negative = false;
 
-   if( !str.empty( ) && str[ 0 ] == '-' )
+   if( !str.empty( ) && ( str[ 0 ] == '-' ) )
    {
       is_negative = true;
+
       str.erase( 0, 1 );
    }
 
@@ -185,7 +190,7 @@ string format_int( int64_t i, char separator, unsigned int grouping )
 
    for( size_t i = 0; i < str.size( ); i++ )
    {
-      if( i && i % grouping == 0 )
+      if( i && ( i % grouping == 0 ) )
          retval += separator;
 
       retval += str[ i ];
@@ -250,16 +255,18 @@ int64_t unformat_bytes( const string& size_string, int64_t default_val, bool use
 
    if( !str.empty( ) )
    {
-      if( str[ str.size( ) - 1 ] == 'B' || str[ str.size( ) - 1 ] == 'b' )
+      if( ( str[ str.size( ) - 1 ] == 'B' )
+       || ( str[ str.size( ) - 1 ] == 'b' ) )
          str.erase( str.size( ) - 1 );
 
       if( str.size( ) < 1 )
          throw runtime_error( "invalid size string '" + size_string + "'" );
 
       iec_byte_scale is( e_iec_byte_scale_none );
+
       metric_byte_scale ms( e_metric_byte_scale_none );
 
-      if( use_iec_always || str[ str.size( ) - 1 ] == 'i' )
+      if( use_iec_always || ( str[ str.size( ) - 1 ] == 'i' ) )
       {
          if( str[ str.size( ) - 1 ] == 'i' )
          {
@@ -318,27 +325,29 @@ int64_t unformat_bytes( const string& size_string, int64_t default_val, bool use
          }
       }
 
-      if( is != e_iec_byte_scale_none || ms != e_metric_byte_scale_none )
+      if( ( is != e_iec_byte_scale_none )
+       || ( ms != e_metric_byte_scale_none ) )
          str.erase( str.size( ) - 1 );
 
-      if( str.size( ) && str[ str.size( ) - 1 ] == ' ' )
+      if( str.size( ) && ( str[ str.size( ) - 1 ] == ' ' ) )
          str.erase( str.size( ) - 1 );
 
       if( str.size( ) < 1 )
          throw runtime_error( "invalid size string '" + size_string + "'" );
 
       double divisor = 0.1l;
+
       bool had_point = false;
 
       for( size_t i = 0; i < str.size( ); i++ )
       {
-         if( !had_point && str[ i ] == '.' )
+         if( !had_point && ( str[ i ] == '.' ) )
          {
             had_point = true;
             continue;
          }
 
-         if( str[ i ] < '0' || str[ i ] > '9' )
+         if( ( str[ i ] < '0' ) || ( str[ i ] > '9' ) )
             throw runtime_error( "invalid size string '" + size_string + "'" );
 
          double next = ( double )( ( int )( str[ i ] - '0' ) );
@@ -408,39 +417,48 @@ int64_t unformat_bytes( const string& size_string, int64_t default_val, bool use
 string format_duration( int value, bool include_seconds )
 {
    string str;
+
    if( value >= seconds_per_day( ) )
    {
       int days = value / ( int )seconds_per_day( );
+
       str = to_string( days ) + "d";
+
       value -= days * ( int )seconds_per_day( );
    }
 
    if( value >= 3600 )
    {
       int hours = value / 3600;
+
       if( !str.empty( ) )
          str += " ";
+
       str += to_string( hours ) + "h";
-      value -= hours * 3600;
+
+      value -= ( hours * 3600 );
    }
 
-   if( value >= 60 || ( !include_seconds && str.empty( ) ) )
+   if( ( value >= 60 ) || ( !include_seconds && str.empty( ) ) )
    {
       int minutes = value / 60;
+
       if( !str.empty( ) )
          str += " ";
+
       str += to_string( minutes ) + "m";
 
       if( !include_seconds )
          value = 0;
       else
-         value -= minutes * 60;
+         value -= ( minutes * 60 );
    }
 
-   if( str.empty( ) || value > 0 )
+   if( str.empty( ) || ( value > 0 ) )
    {
       if( !str.empty( ) )
          str += " ";
+
       str += to_string( value ) + "s";
    }
 
@@ -466,10 +484,12 @@ int unformat_duration( const string& value )
       for( int i = 0; i < parts.size( ); i++ )
       {
          string next_part( parts[ i ] );
+
          if( next_part.size( ) < 2 )
             throw runtime_error( "invalid duration '" + value + "'" );
 
          bool okay = true;
+
          switch( next_part[ next_part.size( ) - 1 ] )
          {
             case 'w':

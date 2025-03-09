@@ -35,14 +35,15 @@ using namespace std;
 
 namespace
 {
-
-// It should be noted that the Gregorian calendar was not officially adopted by Britain and its colonies
-// (which included America) until Thursday 14th September 1752 (which followed Wednesday 2 September 1752
-// in the Julian calendar) as is observed when using Linux and issuing the command "cal 9 1752".
+// NOTE: Changing the Gregorian calendar start date used here is not recommended.
 //
-// The original starting date of the Gregorian calendar (i.e. in Italy) was on Friday 15th October 1582
-// (which followed Thursday 4th October 1582 in the Julian calendar), however, there were not many other
-// countries that adopted the Gregorian calendar at this time.
+// It should be noted that the Gregorian calendar was not officially adopted by Britain and its colonies
+// (including "America") until Thursday 14th September 1752 (which followed Wednesday 2nd September 1752
+// in the Julian calendar) as is observed using Linux by issuing the command "cal 9 1752".
+//
+// The original start of the Gregorian calendar (i.e. in Italy) was actually on Friday 15th October 1582
+// (following Thursday 4th October 1582 in the Julian calendar), however, only a few other countries had
+// adopted the Gregorian calendar then.
 
 //#define USE_ORIGINAL_GREGORIAN_START_DATE
 
@@ -74,7 +75,7 @@ const millisecond c_milliseconds_per_day = 86400000ul;
 
 const day days_for_month[ 12 ] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-// NOTE: If changed requires a number of other changes (including the Chinese new year table).
+// NOTE: If changed would require a number of other changes (including the Chinese new year table).
 const year c_calendar_start_point = 1600;
 
 #ifdef USE_ORIGINAL_GREGORIAN_START_DATE
@@ -116,6 +117,7 @@ const int c_epoch = 1985;
 const double c_epsilon_g = 279.611371; // Solar ecliptic long at epoch.
 const double c_rho_g = 282.680403; // Solar ecliptic long of perigee at epoch.
 const double c_eccentricity = 0.01671542; // Solar orbit eccentricity.
+
 const double c_lzero = 18.251907; // Lunar mean long at epoch.
 const double c_pzero = 192.917585; // Lunar mean long of perigee at epoch.
 const double c_nzero = 55.204723; // Lunar mean long of node at epoch.
@@ -167,6 +169,7 @@ enum element
 struct celestial_stem
 {
    const char* p_str;
+
    element elem;
 }
 celestial_stems[ ] =
@@ -204,10 +207,13 @@ terrestial_branches[ ] =
    { "hai", "pig" }
 };
 
+// NOTE: Chinese new year is being taken from this table rather than being determined.
+//
 // Chinese new year month and days with month being the first digit (i.e. 1 is January
 // and 2 is Feb) and day of month following (1 = first day of month). This array holds
 // all Chinese new year month and days from 1600 to 3799. Chinese new year will always
 // fall on the second New Moon after the Winter Solstice.
+
 unsigned char chinese_new_years_month_and_day[ ] =
 {
 
@@ -431,9 +437,10 @@ double adjust_360( double deg )
    return deg;
 }
 
-// This algorithm is taken from the Almanac for Computers 1990 which was published by
-// the Nautical Almanac Office at the United States Naval Observatory in Washington DC
-// and should be accurate to around +-2 minutes.
+// NOTE: This algorithm was taken from the Almanac for Computers 1990 which was published
+// by the Nautical Almanac Office at the United States Naval Observatory in Washington DC
+// (and should be accurate to around +-2 minutes).
+
 bool determine_sun_rise_or_set( year yr, month mh, day dy,
  hour& hr, minute& mn, bool sunrise, int tzadjust, double latitude, double longitude, double zenith )
 {
@@ -443,7 +450,7 @@ bool determine_sun_rise_or_set( year yr, month mh, day dy,
    int N3 = 1 + ( yr - 4 * yr / 4 + 2 ) / 3;
    int N = N1 - ( N2 * N3 ) + dy - 30;
 
-   // Convert the longitude to an hour value and calculate an approximate time...
+   // NOTE: Convert the longitude to an hour value and calculate an approximate time.
    double t, lngHour = longitude / 15.0;
 
    if( sunrise )
@@ -451,7 +458,7 @@ bool determine_sun_rise_or_set( year yr, month mh, day dy,
    else
       t = N + ( ( 18.0 - lngHour ) / 24.0 );
 
-   // Calculate the Sun's mean anomaly...
+   // NOTE: Calculate the Sun's mean anomaly.
    double M = ( 0.9856 * t ) - 3.289;
 
    // Calculate the Sun's true longitude...
@@ -462,7 +469,7 @@ bool determine_sun_rise_or_set( year yr, month mh, day dy,
    else if( L >= 360.0 )
       L -= 360.0;
 
-   // Calculate the Sun's right ascension...
+   // NOTE: Calculate the Sun's right ascension.
    double RA = rad2deg( atan( 0.91764 * tan( deg2rad( L ) ) ) );
 
    if( RA < 0.0 )
@@ -470,43 +477,43 @@ bool determine_sun_rise_or_set( year yr, month mh, day dy,
    else if( RA >= 360.0 )
       RA -= 360.0;
 
-   // The RA value needs to be in the same quadrant as L...
+   // NOTE: The RA value needs to be in the same quadrant as L.
    double Lquadrant = ( floor( L / 90.0 ) ) * 90.0;
    double RAquadrant = ( floor( RA / 90.0 ) ) * 90.0;
 
    RA = RA + ( Lquadrant - RAquadrant );
 
-   // Convert the RA value to hours...
+   // NOTE: Convert the RA value to hours.
    RA = RA / 15.0;
 
-   // Calculate the Sun's declination...
+   // NOTE: Calculate the Sun's declination.
    double sinDec = 0.39782 * sin( deg2rad( L ) );
    double cosDec = cos( asin( sinDec ) );
 
-   // Calculate the Sun's local hour angle...
+   // NOTE: Calculate the Sun's local hour angle.
    double cosH = ( cos( deg2rad( zenith ) )
     - ( sinDec * sin( deg2rad( latitude ) ) ) ) / ( cosDec * cos( deg2rad( latitude ) ) );
 
-   // Finish calculating H and convert into hours...
+   // NOTE: Finish calculating H and convert into hours.
    double H;
    if( sunrise )
    {
       if( cosH > 1.0 )
-         return false; // i.e. no sunrise...
+         return false; // i.e. no sunrise
 
       H = 360 - rad2deg( acos( cosH ) );
    }
    else
    {
       if( cosH < -1.0 )
-         return false; // i.e. no sunset...
+         return false; // i.e. no sunset
 
       H = rad2deg( acos( cosH ) );
    }
 
    H = H / 15;
 
-   // Calculate local mean time of rising/setting...
+   // NOTE: Calculate local mean time of rising/setting.
    double T = H + RA - ( 0.06571 * t ) - 6.622;
 
    // Adjust back to UTC...
@@ -517,7 +524,7 @@ bool determine_sun_rise_or_set( year yr, month mh, day dy,
    else if( UT >= 24.0 )
       UT -= 24.0;
 
-   // Convert UT value to local time zone of latitude/longitude...
+   // NOTE: Convert UT value to local time zone of latitude/longitude.
    double localT = UT + tzadjust;
 
    if( localT < 0.0 )
@@ -531,7 +538,8 @@ bool determine_sun_rise_or_set( year yr, month mh, day dy,
    return true;
 }
 
-// Based on routines from "Practical Astronomy with Your Calculator" by Duffett-Smith.
+// NOTE: Based on routines from "Practical Astronomy with Your Calculator" by Duffett-Smith.
+
 double calculate_moon_phase( double days )
 {
    double N, Msol, Ec, LambdaSol, l, Mm, Ev, Ac, A3, Mmprime, A4, lprime, V, ldprime, D;
@@ -585,6 +593,7 @@ inline void daynum_to_calendar( daynum dn, year& yr, month& mo, day& dy )
    if( dn <= c_days_in_first_two_months )
    {
       yr = c_calendar_start_point;
+
       if( dn <= 30 )
       {
          mo = e_month_january;
@@ -601,6 +610,7 @@ inline void daynum_to_calendar( daynum dn, year& yr, month& mo, day& dy )
       unsigned int i;
 
       i = ( 4 * ( dn - c_days_in_first_two_months ) ) - 1;
+
       dn = ( 4 * ( ( i % 146097 ) / 4 ) ) + 3;
 
       yr = ( year )( 100 * ( i / 146097 ) ) + ( dn / 1461 );
@@ -608,6 +618,7 @@ inline void daynum_to_calendar( daynum dn, year& yr, month& mo, day& dy )
       i = ( 5 * ( ( ( dn % 1461 ) + 4 ) / 4 ) ) - 3;
 
       mo = ( month )( i / 153 );
+
       dy = ( ( i % 153 ) + 5 ) / 5;
 
       if( mo < 10 )
@@ -678,7 +689,9 @@ inline bool is_date_gregorian( year yr, month mo, day dy )
 inline void chinese_new_year_month_and_day( year yr, month& mo, day& dy )
 {
    int i = chinese_new_years_month_and_day[ yr - c_calendar_start_point ];
+
    mo = ( month )( i / 100 );
+
    dy = ( day )( i - ( mo * 100 ) );
 }
 
@@ -691,10 +704,11 @@ inline day day_in_year_for_easter_sunday( year yr )
    int so = int( ( 5 * yr ) / 4 ) - ksj - 10;
    int epakte = ( 11 * gz + 20 + korr - ksj ) % 30;
 
-   if( ( epakte == 25 && gz > 11 ) || epakte == 24 )
+   if( ( epakte == 24 ) || ( ( epakte == 25 ) && ( gz > 11 ) ) )
       ++epakte;
 
    int n = 44 - epakte;
+
    if( n < 21 )
       n += 30;
 
@@ -709,8 +723,8 @@ julian calendar_to_julian( year yr, month mo, day dy, hour hr, minute mn, second
    julian jdt;
    int y, m, a, b;
 
-   // If the date is in January or February, it is considered to instead be the 13th or 14th month of the
-   // preceding year.
+   // NOTE: If the date is in January or February, it is considered
+   // to instead be the 13th or 14th month of the preceding year.
    if( mo < e_month_march )
    {
       y = yr - 1;
@@ -722,9 +736,9 @@ julian calendar_to_julian( year yr, month mo, day dy, hour hr, minute mn, second
       m = mo;
    }
 
-   // If the date is in the Gregorian calendar, compute a correction factor to take account of the fact that
-   // century years aren't leap years unless they are divisible by 400 (if the date is in the Julian calendar
-   // then there is no correction).
+   // NOTE: If the date is in the Gregorian calendar, compute a correction factor to take
+   // account of the fact that century years are not leap years unless they are divisible
+   // by 400 (if the date is in the Julian calendar then there is no correction).
    if( is_date_gregorian( yr, mo, dy ) )
    {
       a = y / 100;
@@ -744,6 +758,7 @@ void julian_to_calendar( julian jdt,
 {
    double d;
    double F;
+
    int A, B, C, D, E, Z;
 
    d = jdt + 0.5;
@@ -759,6 +774,7 @@ void julian_to_calendar( julian jdt,
    }
 
    B = A + 1524;
+
    C = int( ( B - 122.1 ) / 365.25 );
    D = int( 365.25 * C );
    E = int( ( B - D ) / 30.6001 );
@@ -777,7 +793,7 @@ void julian_to_calendar( julian jdt,
 
    dy = int( d );
 
-   // Round the remainder to the nearest millisecond...
+   // NOTE: Round the remainder to the nearest millisecond.
    millisecond m = ( millisecond )( ( ( d - dy ) * c_milliseconds_per_day ) + 0.5 );
 
    millisecond_to_components( m, hr, mn, sc, te, hd, th );
@@ -804,6 +820,7 @@ string chinese_calendar_year_name( year yr, bool as_english_animal_name )
             str += ' ';
             str += string( terrestial_branches[ terrestial_branch ].p_str );
          }
+
          break;
       }
 
@@ -851,9 +868,11 @@ mtime::mtime( const std::string& s )
 
       hour hr;
       minute mn;
+
       second sc( 0 );
 
       size_t mn_off, sc_off;
+
       if( isdigit( s[ 2 ] ) )
          mn_off = 2, sc_off = 4;
       else
@@ -865,10 +884,11 @@ mtime::mtime( const std::string& s )
       hr = ( hour )( ( ( s[ 0 ] - '0' ) * 10 ) + ( s[ 1 ] - '0' ) );
       mn = ( minute )( ( ( s[ mn_off ] - '0' ) * 10 ) + ( s[ mn_off + 1 ] - '0' ) );
 
-      if( sc_off == 6 && s.length( ) > 5 && s.length( ) < 8 )
-         throw runtime_error( "invalid format for mtime (given '" + s + "' but expecting 'hhmm[ss[t[h[t]]]]' or 'hh:mm[:ss[.t[h[t]]]]')" );
+      if( ( sc_off == 6 ) && ( s.length( ) > 5 ) && ( s.length( ) < 8 ) )
+         throw runtime_error( "invalid format for mtime (given '"
+          + s + "' but expecting 'hhmm[ss[t[h[t]]]]' or 'hh:mm[:ss[.t[h[t]]]]')" );
 
-      if( sc_off && s.length( ) > sc_off + 1 )
+      if( sc_off && ( s.length( ) > sc_off + 1 ) )
          sc = ( second )( ( ( s[ sc_off ] - '0' ) * 10 ) + ( s[ sc_off + 1 ] - '0' ) );
 
       tenth te( 0 );
@@ -1069,6 +1089,7 @@ mtime& mtime::operator +=( milliseconds m )
    milliseconds nms( ms );
 
    nms += m;
+
    if( nms < ms || nms > ( milliseconds )c_max_millisecond )
       throw runtime_error( "time out of range" );
 
@@ -1085,6 +1106,7 @@ mtime& mtime::operator -=( milliseconds m )
    milliseconds nms( ms );
 
    nms -= m;
+
    if( nms > ms )
       throw runtime_error( "time out of range" );
 
@@ -1102,6 +1124,7 @@ minute mtime::get_minute( ) const
 {
    hour hr;
    minute mn;
+
    millisecond m( ms );
 
    hr = ( hour )( m / c_milliseconds_per_hour );
@@ -1117,6 +1140,7 @@ second mtime::get_second( ) const
    hour hr;
    minute mn;
    second sc;
+
    millisecond m( ms );
 
    hr = ( hour )( m / c_milliseconds_per_hour );
@@ -1167,14 +1191,17 @@ string mtime::as_string( bool use_separators, bool include_milliseconds ) const
    char hhmmssmmm[ ] = "hhmmssmmm";
 
    hour hr( get_hour( ) );
+
    hhmmssmmm[ 0 ] = '0' + ( hr / 10 );
    hhmmssmmm[ 1 ] = '0' + ( hr % 10 );
 
    minute mn( get_minute( ) );
+
    hhmmssmmm[ 2 ] = '0' + ( mn / 10 );
    hhmmssmmm[ 3 ] = '0' + ( mn % 10 );
 
    second sc( get_second( ) );
+
    hhmmssmmm[ 4 ] = '0' + ( sc / 10 );
    hhmmssmmm[ 5 ] = '0' + ( sc % 10 );
 
@@ -1183,6 +1210,7 @@ string mtime::as_string( bool use_separators, bool include_milliseconds ) const
    else
    {
       millisecond ms( get_millisecond( ) );
+
       hhmmssmmm[ 6 ] = '0' + ( ms / 100 );
       hhmmssmmm[ 7 ] = '0' + ( ( ms % 100 ) / 10 );
       hhmmssmmm[ 8 ] = '0' + ( ms % 10 );
@@ -1193,6 +1221,7 @@ string mtime::as_string( bool use_separators, bool include_milliseconds ) const
    else
    {
       string str( hhmmssmmm );
+
       str.insert( 2, 1, ':' );
       str.insert( 5, 1, ':' );
 
@@ -1324,18 +1353,21 @@ ostream& operator <<( ostream& os, const mtime& src )
    buf[ 11 ] = '0' + th;
 
    os << buf;
+
    return os;
 }
 
 read_stream& operator >>( read_stream& rs, mtime& dest )
 {
    rs >> dest.ms;
+
    return rs;
 }
 
 write_stream& operator <<( write_stream& ws, const mtime& src )
 {
    ws << src.ms;
+
    return ws;
 }
 
@@ -1353,7 +1385,7 @@ udate::udate( daynum dn )
 
 udate::udate( julian jdt )
 {
-   if( jdt < c_min_year_julian || jdt > c_max_year_julian )
+   if( ( jdt < c_min_year_julian ) || ( jdt > c_max_year_julian ) )
       throw runtime_error( "date out of range" );
 
    dn = ( daynum )( jdt - c_min_year_julian + 0.5 );
@@ -1376,7 +1408,7 @@ udate::udate( const std::string& s )
       *this = udate::standard( );
    else
    {
-      if( s.length( ) != 8 && s.length( ) != 10 )
+      if( ( s.length( ) != 8 ) && ( s.length( ) != 10 ) )
          throw runtime_error( "invalid format for udate (given '" + s + "' but expecting 'yyyymmdd' or 'yyyy-mm-dd')" );
 
       year yr;
@@ -1384,6 +1416,7 @@ udate::udate( const std::string& s )
       day dy;
 
       yr = 0;
+
       for( size_t i = 0; i < 4; i++ )
       {
          yr = yr * 10;
@@ -1391,6 +1424,7 @@ udate::udate( const std::string& s )
       }
 
       size_t mo_off, dy_off;
+
       if( s.length( ) == 8 )
          mo_off = 4, dy_off = 6;
       else
@@ -1438,9 +1472,11 @@ udate::udate( year yr, month mo, weekday wd, occurrence occ )
       case e_occurrence_fourth:
       {
          int num = ( int )occ;
+
          while( true )
          {
             weekday w = ( weekday )*this;
+
             if( w == wd )
                --num;
 
@@ -1458,14 +1494,18 @@ udate::udate( year yr, month mo, weekday wd, occurrence occ )
       case e_occurrence_fourth_last:
       {
          days d = days_for_month[ ymd.mo - 1 ];
+
          if( ymd.mo == e_month_february && leap_year( ymd.yr ) )
             ++d;
 
          ymd.dy = d;
+
          int num = ( ( int )occ - ( int )e_occurrence_last ) + 1;
+
          while( true )
          {
             weekday w = ( weekday )*this;
+
             if( w == wd )
                --num;
 
@@ -1497,9 +1537,11 @@ udate::udate( year yr, month mo, day_type dt, occurrence occ )
       case e_occurrence_fourth:
       {
          int num = ( int )occ;
+
          while( true )
          {
             weekday w = ( weekday )*this;
+
             switch( dt )
             {
                case e_day_type_day:
@@ -1507,12 +1549,12 @@ udate::udate( year yr, month mo, day_type dt, occurrence occ )
                break;
 
                case e_day_type_weekday:
-               if( w != e_weekday_saturday && w != e_weekday_sunday )
+               if( ( w != e_weekday_saturday ) && ( w != e_weekday_sunday ) )
                   --num;
                break;
 
                case e_day_type_weekendday:
-               if( w == e_weekday_saturday || w == e_weekday_sunday )
+               if( ( w == e_weekday_saturday ) || ( w == e_weekday_sunday ) )
                   --num;
                break;
             }
@@ -1531,16 +1573,20 @@ udate::udate( year yr, month mo, day_type dt, occurrence occ )
       case e_occurrence_fourth_last:
       {
          days d = days_for_month[ ymd.mo - 1 ];
-         if( ymd.mo == e_month_february && leap_year( ymd.yr ) )
+
+         if( ( ymd.mo == e_month_february ) && leap_year( ymd.yr ) )
             ++d;
 
          ymd.dy = d;
+
          int num = ( ( int )occ - ( int )e_occurrence_last ) + 1;
 
          while( true )
          {
             bool done = false;
+
             weekday w = ( weekday )*this;
+
             switch( dt )
             {
                case e_day_type_day:
@@ -1548,12 +1594,12 @@ udate::udate( year yr, month mo, day_type dt, occurrence occ )
                break;
 
                case e_day_type_weekday:
-               if( w != e_weekday_saturday && w != e_weekday_sunday )
+               if( ( w != e_weekday_saturday ) && ( w != e_weekday_sunday ) )
                   --num;
                break;
 
                case e_day_type_weekendday:
-               if( w == e_weekday_saturday || w == e_weekday_sunday )
+               if( ( w == e_weekday_saturday ) || ( w == e_weekday_sunday ) )
                   --num;
                break;
             }
@@ -1587,9 +1633,11 @@ udate::udate( year yr, month mo, day dy, day_type dt, occurrence occ )
       case e_occurrence_fourth:
       {
          int num = ( int )occ;
+
          while( true )
          {
             weekday w = ( weekday )*this;
+
             switch( dt )
             {
                case e_day_type_day:
@@ -1597,12 +1645,12 @@ udate::udate( year yr, month mo, day dy, day_type dt, occurrence occ )
                break;
 
                case e_day_type_weekday:
-               if( w != e_weekday_saturday && w != e_weekday_sunday )
+               if( ( w != e_weekday_saturday ) && ( w != e_weekday_sunday ) )
                   --num;
                break;
 
                case e_day_type_weekendday:
-               if( w == e_weekday_saturday || w == e_weekday_sunday )
+               if( ( w == e_weekday_saturday ) || ( w == e_weekday_sunday ) )
                   --num;
                break;
             }
@@ -1622,10 +1670,12 @@ udate::udate( year yr, month mo, day dy, day_type dt, occurrence occ )
       case e_occurrence_fourth_last:
       {
          int num = ( ( int )occ - ( int )e_occurrence_last ) + 1;
+
          while( true )
          {
             bool done = false;
             weekday w = ( weekday )*this;
+
             switch( dt )
             {
                case e_day_type_day:
@@ -1633,12 +1683,12 @@ udate::udate( year yr, month mo, day dy, day_type dt, occurrence occ )
                break;
 
                case e_day_type_weekday:
-               if( w != e_weekday_saturday && w != e_weekday_sunday )
+               if( ( w != e_weekday_saturday ) && ( w != e_weekday_sunday ) )
                   --num;
                break;
 
                case e_day_type_weekendday:
-               if( w == e_weekday_saturday || w == e_weekday_sunday )
+               if( ( w == e_weekday_saturday ) || ( w == e_weekday_sunday ) )
                   --num;
                break;
             }
@@ -1658,7 +1708,7 @@ udate::udate( year yr, day_of_significance dos )
 {
    dn = 0;
 
-   if( yr < c_min_year || yr > c_max_year )
+   if( ( yr < c_min_year ) || ( yr > c_max_year ) )
       throw runtime_error( "date out of range" );
 
    ymd.yr = yr;
@@ -1727,6 +1777,7 @@ udate& udate::operator ++( )
    if( dn & c_day_number_in_use )
    {
       daynum n( dn & ~c_day_number_in_use );
+
       if( n == c_max_day_number )
          throw runtime_error( "date out of range" );
 
@@ -1734,16 +1785,19 @@ udate& udate::operator ++( )
    }
    else
    {
-      if( ymd.yr == c_max_year && ymd.mo == c_max_month && ymd.dy == c_max_day )
+      if( ( ymd.yr == c_max_year )
+       && ( ymd.mo == c_max_month ) && ( ymd.dy == c_max_day ) )
          throw runtime_error( "date out of range" );
 
       day max_day = days_for_month[ ymd.mo - 1 ];
-      if( ymd.mo == e_month_february && leap_year( ymd.yr ) )
+
+      if( ( ymd.mo == e_month_february ) && leap_year( ymd.yr ) )
          ++max_day;
 
       if( ymd.dy == max_day )
       {
          ymd.dy = 1;
+
          if( ymd.mo < e_month_december )
             ymd.mo = ( month )( ymd.mo + 1 );
          else
@@ -1772,6 +1826,7 @@ udate& udate::operator --( )
    if( dn & c_day_number_in_use )
    {
       daynum n( dn & ~c_day_number_in_use );
+
       if( n == c_min_day_number )
          throw runtime_error( "date out of range" );
 
@@ -1779,7 +1834,8 @@ udate& udate::operator --( )
    }
    else
    {
-      if( ymd.yr == c_min_year && ymd.mo == c_min_month && ymd.dy == c_min_day )
+      if( ( ymd.yr == c_min_year )
+       && ( ymd.mo == c_min_month ) && ( ymd.dy == c_min_day ) )
          throw runtime_error( "date out of range" );
 
       if( ymd.dy > 1 )
@@ -1795,7 +1851,8 @@ udate& udate::operator --( )
          }
 
          day max_day = days_for_month[ ymd.mo - 1 ];
-         if( ymd.mo == e_month_february && leap_year( ymd.yr ) )
+
+         if( ( ymd.mo == e_month_february ) && leap_year( ymd.yr ) )
             ++max_day;
 
          ymd.dy = max_day;
@@ -1827,12 +1884,13 @@ udate& udate::operator +=( years y )
       dn &= ~c_day_number_in_use;
    }
 
-   if( ymd.yr + y.y > c_max_year )
+   if( ( ymd.yr + y.y ) > c_max_year )
       throw runtime_error( "date out of range" );
 
    ymd.yr += y.y;
 
-   if( ymd.dy == 29 && ymd.mo == e_month_february && !leap_year( ymd.yr ) )
+   if( ( ymd.dy == 29 )
+    && ( ymd.mo == e_month_february ) && !leap_year( ymd.yr ) )
       --ymd.dy;
 
    return *this;
@@ -1852,12 +1910,13 @@ udate& udate::operator -=( years y )
       dn &= ~c_day_number_in_use;
    }
 
-   if( ymd.yr - y.y < c_min_year )
+   if( ( ymd.yr - y.y ) < c_min_year )
       throw runtime_error( "date out of range" );
 
    ymd.yr -= y.y;
 
-   if( ymd.dy == 29 && ymd.mo == e_month_february && !leap_year( ymd.yr ) )
+   if( ( ymd.dy == 29 )
+    && ( ymd.mo == e_month_february ) && !leap_year( ymd.yr ) )
       --ymd.dy;
 
    return *this;
@@ -1878,9 +1937,11 @@ udate& udate::operator +=( months m )
    }
 
    int yr = m.m / 12;
+
    m.m -= ( yr * 12 );
 
    int mo = ymd.mo - 1 + m.m;
+
    if( mo > 11 )
    {
       ++yr;
@@ -1894,6 +1955,7 @@ udate& udate::operator +=( months m )
    ymd.mo = ( month )( mo + 1 );
 
    days d = days_for_month[ ymd.mo - 1 ];
+
    if( ymd.mo == e_month_february && leap_year( ymd.yr ) )
       ++d;
 
@@ -1921,6 +1983,7 @@ udate& udate::operator -=( months m )
    m.m -= ( yr * 12 );
 
    int mo = ymd.mo - 1 - m.m;
+
    if( mo < 0 )
    {
       ++yr;
@@ -1934,7 +1997,8 @@ udate& udate::operator -=( months m )
    ymd.mo = ( month )( mo + 1 );
 
    days d = days_for_month[ ymd.mo - 1 ];
-   if( ymd.mo == e_month_february && leap_year( ymd.yr ) )
+
+   if( ( ymd.mo == e_month_february ) && leap_year( ymd.yr ) )
       ++d;
 
    if( ymd.dy > d )
@@ -1956,9 +2020,10 @@ udate& udate::operator +=( days d )
       n = calendar_to_daynum( ymd.yr, ymd.mo, ymd.dy );
 
    daynum on = n;
+
    n += d;
 
-   if( n < on || n > c_max_day_number )
+   if( ( n < on ) || ( n > c_max_day_number ) )
       throw runtime_error( "date out of range" );
 
    dn = n | c_day_number_in_use;
@@ -1979,9 +2044,10 @@ udate& udate::operator -=( days d )
       n = calendar_to_daynum( ymd.yr, ymd.mo, ymd.dy );
 
    daynum on = n;
+
    n -= d;
 
-   if( n < c_min_day_number || n > on )
+   if( n < c_min_day_number || ( n > on ) )
       throw runtime_error( "date out of range" );
 
    dn = n | c_day_number_in_use;
@@ -2071,16 +2137,19 @@ string udate::as_string( bool use_separators ) const
    char yyyymmdd[ ] = "yyyymmdd";
 
    year yr( get_year( ) );
+
    yyyymmdd[ 0 ] = '0' + ( yr / 1000 );
    yyyymmdd[ 1 ] = '0' + ( ( yr % 1000 ) / 100 );
    yyyymmdd[ 2 ] = '0' + ( ( yr % 100 ) / 10 );
    yyyymmdd[ 3 ] = '0' + ( yr % 10 );
 
    month mo( get_month( ) );
+
    yyyymmdd[ 4 ] = '0' + ( mo / 10 );
    yyyymmdd[ 5 ] = '0' + ( mo % 10 );
 
    day dy( get_day( ) );
+
    yyyymmdd[ 6 ] = '0' + ( dy / 10 );
    yyyymmdd[ 7 ] = '0' + ( dy % 10 );
 
@@ -2089,6 +2158,7 @@ string udate::as_string( bool use_separators ) const
    else
    {
       string str( yyyymmdd );
+
       str.insert( 4, 1, '-' );
       str.insert( 7, 1, '-' );
 
@@ -2143,6 +2213,7 @@ days udate::get_day_of_year( ) const
       daynum_to_calendar( dn & ~c_day_number_in_use, yr, mo, dy );
 
    days d = 0;
+
    for( int i = 0; i < 11; i++ )
    {
       if( mo == ( month )( i + 1 ) )
@@ -2150,7 +2221,7 @@ days udate::get_day_of_year( ) const
 
       d += days_for_month[ i ];
 
-      if( i == 1 && leap_year( yr ) )
+      if( ( i == 1 ) && leap_year( yr ) )
          ++d;
    }
 
@@ -2162,6 +2233,7 @@ days udate::get_day_of_year( ) const
 string udate::month_name( bool short_name ) const
 {
    month m( get_month( ) );
+
    string full_name( month_full_names[ ( int )m - 1 ].p_str );
 
    return short_name ? full_name.substr( 0, 3 ) : full_name;
@@ -2170,6 +2242,7 @@ string udate::month_name( bool short_name ) const
 std::string udate::weekday_name( bool short_name ) const
 {
    weekday w( ( weekday )*this );
+
    string full_name( weekday_full_names[ ( int )w - 1 ].p_str );
 
    return short_name ? full_name.substr( 0, 3 ) : full_name;
@@ -2206,6 +2279,7 @@ bool udate::is_leap_year( ) const
 bool udate::is_weekend_day( ) const
 {
    weekday wd = ( weekday )*this;
+
    return ( wd == e_weekday_saturday ) || ( wd == e_weekday_sunday );
 }
 
@@ -2243,7 +2317,8 @@ days udate::days_in_month( ) const
       daynum_to_calendar( dn & ~c_day_number_in_use, yr, mo, dy );
 
    days d = days_for_month[ mo - 1 ];
-   if( mo == e_month_february && leap_year( yr ) )
+
+   if( ( mo == e_month_february ) && leap_year( yr ) )
       ++d;
 
    return d;
@@ -2252,21 +2327,23 @@ days udate::days_in_month( ) const
 void udate::validate( ) const
 {
    bool okay = true;
+
    if( !( dn & c_day_number_in_use ) )
    {
-      if( ymd.yr < c_min_year || ymd.yr > c_max_year )
+      if( ( ymd.yr < c_min_year ) || ( ymd.yr > c_max_year ) )
          okay = false;
       else
       {
-         if( ymd.mo < e_month_january || ymd.mo > e_month_december )
+         if( ( ymd.mo < e_month_january ) || ( ymd.mo > e_month_december ) )
             okay = false;
          else
          {
             day max_day = days_for_month[ ymd.mo - 1 ];
-            if( ymd.mo == 2 && leap_year( ymd.yr ) )
+
+            if( ( ymd.mo == 2 ) && leap_year( ymd.yr ) )
                ++max_day;
 
-            if( ymd.dy < 1 || ymd.dy > max_day )
+            if( ( ymd.dy < 1 ) || ( ymd.dy > max_day ) )
                okay = false;
          }
       }
@@ -2288,6 +2365,7 @@ void udate::convert_to_daynum( )
    if( !( dn & c_day_number_in_use ) )
    {
       dn = calendar_to_daynum( ymd.yr, ymd.mo, ymd.dy );
+
       dn |= c_day_number_in_use;
    }
 }
@@ -2297,6 +2375,7 @@ void udate::convert_to_calendar( )
    if( dn & c_day_number_in_use )
    {
       daynum_to_calendar( dn & ~c_day_number_in_use, ymd.yr, ymd.mo, ymd.dy );
+
       dn &= ~c_day_number_in_use;
    }
 }
@@ -2306,6 +2385,7 @@ void udate::print( ostream& os ) const
    if( dn & c_day_number_in_use )
    {
       daynum d( dn & ~c_day_number_in_use );
+
       os << d;
    }
    else
@@ -2371,12 +2451,14 @@ year udate::maximum_year( )
 bool operator <( const udate& lhs, const udate& rhs )
 {
    daynum ldn;
+
    if( lhs.dn & c_day_number_in_use )
       ldn = lhs.dn & ~c_day_number_in_use;
    else
       ldn = calendar_to_daynum( lhs.ymd.yr, lhs.ymd.mo, lhs.ymd.dy );
 
    daynum rdn;
+
    if( rhs.dn & c_day_number_in_use )
       rdn = rhs.dn & ~c_day_number_in_use;
    else
@@ -2388,12 +2470,14 @@ bool operator <( const udate& lhs, const udate& rhs )
 bool operator <=( const udate& lhs, const udate& rhs )
 {
    daynum ldn;
+
    if( lhs.dn & c_day_number_in_use )
       ldn = lhs.dn & ~c_day_number_in_use;
    else
       ldn = calendar_to_daynum( lhs.ymd.yr, lhs.ymd.mo, lhs.ymd.dy );
 
    daynum rdn;
+
    if( rhs.dn & c_day_number_in_use )
       rdn = rhs.dn & ~c_day_number_in_use;
    else
@@ -2405,12 +2489,14 @@ bool operator <=( const udate& lhs, const udate& rhs )
 bool operator >( const udate& lhs, const udate& rhs )
 {
    daynum ldn;
+
    if( lhs.dn & c_day_number_in_use )
       ldn = lhs.dn & ~c_day_number_in_use;
    else
       ldn = calendar_to_daynum( lhs.ymd.yr, lhs.ymd.mo, lhs.ymd.dy );
 
    daynum rdn;
+
    if( rhs.dn & c_day_number_in_use )
       rdn = rhs.dn & ~c_day_number_in_use;
    else
@@ -2422,12 +2508,14 @@ bool operator >( const udate& lhs, const udate& rhs )
 bool operator >=( const udate& lhs, const udate& rhs )
 {
    daynum ldn;
+
    if( lhs.dn & c_day_number_in_use )
       ldn = lhs.dn & ~c_day_number_in_use;
    else
       ldn = calendar_to_daynum( lhs.ymd.yr, lhs.ymd.mo, lhs.ymd.dy );
 
    daynum rdn;
+
    if( rhs.dn & c_day_number_in_use )
       rdn = rhs.dn & ~c_day_number_in_use;
    else
@@ -2446,17 +2534,19 @@ bool operator ==( const udate& lhs, const udate& rhs )
       if( lhs_is_daynum )
          return lhs.dn == rhs.dn;
       else
-         return lhs.ymd.yr == rhs.ymd.yr && lhs.ymd.mo == rhs.ymd.mo && lhs.ymd.dy == rhs.ymd.dy;
+         return ( lhs.ymd.yr == rhs.ymd.yr ) && ( lhs.ymd.mo == rhs.ymd.mo ) && ( lhs.ymd.dy == rhs.ymd.dy );
    }
    else
    {
       daynum ldn;
+
       if( lhs.dn & c_day_number_in_use )
          ldn = lhs.dn & ~c_day_number_in_use;
       else
          ldn = calendar_to_daynum( lhs.ymd.yr, lhs.ymd.mo, lhs.ymd.dy );
 
       daynum rdn;
+
       if( rhs.dn & c_day_number_in_use )
          rdn = rhs.dn & ~c_day_number_in_use;
       else
@@ -2503,6 +2593,7 @@ read_stream& operator >>( read_stream& rs, udate& dest )
 write_stream& operator <<( write_stream& ws, const udate& src )
 {
    daynum dn( src.dn );
+
    if( !( dn & c_day_number_in_use ) )
       dn = calendar_to_daynum( src.ymd.yr, src.ymd.mo, src.ymd.dy ) | c_day_number_in_use;
 
@@ -2565,13 +2656,15 @@ date_time::date_time( const string& s )
    }
    else
    {
-      if( s.length( ) != 8 && s.length( ) != 10 && ( s.length( ) < 12 || s.length( ) > 23 ) )
+      if( ( s.length( ) != 8 ) && ( s.length( ) != 10 )
+       && ( ( s.length( ) < 12 ) || ( s.length( ) > 23 ) ) )
          throw runtime_error( "invalid format for date_time (given '"
           + s + "' but expecting 'yyyymmdd[hhmm[ss[t[h[t]]]]]' or 'yyyy-mm-dd[ hh:mm[:ss[.t[h[t]]]]]')" );
 
       if( isdigit( s[ 4 ] ) )
       {
          ud = udate( s.substr( 0, 8 ) );
+
          if( s.length( ) > 8 )
             mt = mtime( s.substr( 8 ) );
       }
@@ -2793,18 +2886,21 @@ date_time& date_time::operator =( const date_time& src )
 {
    ud = src.ud;
    mt = src.mt;
+
    return *this;
 }
 
 date_time& date_time::operator =( const string& s )
 {
    *this = date_time( s );
+
    return *this;
 }
 
 date_time& date_time::operator ++( )
 {
    ++ud;
+
    return *this;
 }
 
@@ -2813,12 +2909,14 @@ date_time date_time::operator ++( int )
    date_time dt( *this );
 
    ++*this;
+
    return dt;
 }
 
 date_time& date_time::operator --( )
 {
    --ud;
+
    return *this;
 }
 
@@ -2827,42 +2925,49 @@ date_time date_time::operator --( int )
    date_time dt( *this );
 
    --*this;
+
    return dt;
 }
 
 date_time& date_time::operator +=( years y )
 {
    ud += y;
+
    return *this;
 }
 
 date_time& date_time::operator -=( years y )
 {
    ud -= y;
+
    return *this;
 }
 
 date_time& date_time::operator +=( months m )
 {
    ud += m;
+
    return *this;
 }
 
 date_time& date_time::operator -=( months m )
 {
    ud -= m;
+
    return *this;
 }
 
 date_time& date_time::operator +=( days d )
 {
    ud += d;
+
    return *this;
 }
 
 date_time& date_time::operator -=( days d )
 {
    ud -= d;
+
    return *this;
 }
 
@@ -2889,18 +2994,22 @@ date_time& date_time::operator -=( minutes m )
 date_time& date_time::operator +=( seconds s )
 {
    days d = ( days )( ( s / c_seconds_per_day ) + 0.5 );
+
    s -= ( d * c_seconds_per_day );
 
    operator +=( d );
+
    return operator +=( milliseconds( s * 1000 + 0.5 ) );
 }
 
 date_time& date_time::operator -=( seconds s )
 {
    days d = ( days )( ( s / c_seconds_per_day ) + 0.5 );
+
    s -= ( d * c_seconds_per_day );
 
    operator -=( d );
+
    return operator -=( milliseconds( s * 1000 + 0.5 ) );
 }
 
@@ -2910,6 +3019,7 @@ date_time& date_time::operator +=( milliseconds m )
       return operator -=( m * -1 );
 
    milliseconds ms( ( milliseconds )mt );
+
    ms += m;
 
    if( ms > ( milliseconds )c_max_millisecond )
@@ -2933,6 +3043,7 @@ date_time& date_time::operator -=( milliseconds m )
 
    milliseconds ms( ( milliseconds )mt );
    milliseconds oms( ms );
+
    ms -= m;
 
    if( ms < 0 )
@@ -2977,6 +3088,7 @@ date_time::operator julian( ) const
    hour hr;
    minute mn;
    seconds secs;
+
    millisecond_to_components( ( milliseconds )mt, hr, mn, secs );
 
    j = calendar_to_julian( yr, mo, dy, hr, mn, secs );
@@ -2986,17 +3098,20 @@ date_time::operator julian( ) const
 
 string date_time::as_string( time_format tf, bool use_separators ) const
 {
-   return ud.as_string( use_separators ) + ( use_separators ? " " : "" ) + mt.as_string( tf, use_separators );
+   return ud.as_string( use_separators )
+    + ( use_separators ? " " : "" ) + mt.as_string( tf, use_separators );
 }
 
 string date_time::as_string( bool use_separators, bool include_milliseconds ) const
 {
-   return ud.as_string( use_separators ) + ( use_separators ? " " : "" ) + mt.as_string( use_separators, include_milliseconds );
+   return ud.as_string( use_separators )
+    + ( use_separators ? " " : "" ) + mt.as_string( use_separators, include_milliseconds );
 }
 
 double date_time::moon_phase( ) const
 {
    date_time dte( c_epoch, e_month_january, 1 );
+
    seconds s = *this - dte;
 
    return calculate_moon_phase( s / c_seconds_per_day );
@@ -3005,6 +3120,7 @@ double date_time::moon_phase( ) const
 string date_time::moon_phase_description( ) const
 {
    string str;
+
    double mp = moon_phase( );
 
    if( int( mp + 0.5 ) == 100 )
@@ -3016,6 +3132,7 @@ string date_time::moon_phase_description( ) const
       date_time dt( *this );
 
       ++dt;
+
       double mpn = dt.moon_phase( );
 
       if( mpn > mp )
@@ -3028,6 +3145,7 @@ string date_time::moon_phase_description( ) const
       date_time dt( *this );
 
       ++dt;
+
       double mpn = dt.moon_phase( );
 
       if( mpn > mp )
@@ -3041,9 +3159,12 @@ string date_time::moon_phase_description( ) const
          str += "crescent ";
 
       int pc = ( int )( mp + 0.5 );
+
       if( pc >= 10 )
          str += ( '0' + pc / 10 );
+
       str += ( '0' + pc % 10 );
+
       str += "% of full";
    }
 
@@ -3140,18 +3261,21 @@ seconds operator -( const date_time& lhs, const date_time& rhs )
 ostream& operator <<( ostream& os, const date_time& src )
 {
    os << src.ud << ' ' << src.mt;
+
    return os;
 }
 
 read_stream& operator >>( read_stream& rs, date_time& dest )
 {
    rs >> dest.ud >> dest.mt;
+
    return rs;
 }
 
 write_stream& operator <<( write_stream& ws, const date_time& src )
 {
    ws << src.ud << src.mt;
+
    return ws;
 }
 
@@ -3193,6 +3317,7 @@ days days_in_year( year yr )
 days days_in_month( year yr, month mh )
 {
    days d = days_for_month[ mh - 1 ];
+
    if( mh == e_month_february && leap_year( yr ) )
       ++d;
 
@@ -3308,19 +3433,24 @@ string format_udate( const udate& ud, const string& mask )
 {
    string s( mask );
 
-   // Mask examples:
+   // NOTE: Some mask examples:
+   //
    // d m yy
    // dd/mm/yy
    // yyyy-mm-dd
+
    string::size_type pos = s.find( "yyyy" );
+
    if( pos != string::npos )
       s.replace( pos, 4, to_string( ud.get_year( ) ) );
    else
    {
       pos = s.find( "yy" );
+
       if( pos != string::npos )
       {
          int y = ud.get_year( ) % 100;
+
          string yy( to_string( y ) );
 
          if( y < 10 )
@@ -3331,9 +3461,11 @@ string format_udate( const udate& ud, const string& mask )
    }
 
    pos = s.find( "mm" );
+
    if( pos != string::npos )
    {
       int m = ud.get_month( );
+
       string mm( to_string( m ) );
 
       if( m < 10 )
@@ -3344,6 +3476,7 @@ string format_udate( const udate& ud, const string& mask )
    else
    {
       pos = s.find( "m" );
+
       if( pos != string::npos )
       {
          s.erase( pos, 1 );
@@ -3352,9 +3485,11 @@ string format_udate( const udate& ud, const string& mask )
    }
 
    pos = s.find( "dd" );
+
    if( pos != string::npos )
    {
       int d = ud.get_day( );
+
       string dd( to_string( d ) );
 
       if( d < 10 )
@@ -3365,6 +3500,7 @@ string format_udate( const udate& ud, const string& mask )
    else
    {
       pos = s.find( "d" );
+
       if( pos != string::npos )
       {
          s.erase( pos, 1 );
@@ -3379,17 +3515,21 @@ string format_mtime( const mtime& mt, const string& mask )
 {
    string s( lower( mask ) );
 
-   // Mask examples:
+   // NOTE: Some mask examples:
+   //
    // hh:mm:ss.tht
    // h:mm:ss AM
    // h:m:s.t
+
    bool upper = false;
+
    if( s != mask )
       upper = true;
 
    bool is_pm = false;
 
    string::size_type am_pm_pos = s.find( "am" );
+
    if( am_pm_pos == string::npos )
       am_pm_pos = s.find( "pm" );
 
@@ -3404,9 +3544,11 @@ string format_mtime( const mtime& mt, const string& mask )
    }
 
    string::size_type pos = s.find( "hh" );
+
    if( pos != string::npos )
    {
       string hh( to_string( h ) );
+
       if( h < 10 )
          hh = '0' + hh;
 
@@ -3415,6 +3557,7 @@ string format_mtime( const mtime& mt, const string& mask )
    else
    {
       pos = s.find( "h" );
+
       if( pos != string::npos )
       {
          s.erase( pos, 1 );
@@ -3425,9 +3568,11 @@ string format_mtime( const mtime& mt, const string& mask )
    int m = mt.get_minute( );
 
    pos = s.find( "mm" );
+
    if( pos != string::npos )
    {
       string mm( to_string( m ) );
+
       if( m < 10 )
          mm = '0' + mm;
 
@@ -3447,9 +3592,11 @@ string format_mtime( const mtime& mt, const string& mask )
    int sec = mt.get_second( );
 
    pos = s.find( "ss" );
+
    if( pos != string::npos )
    {
       string ss( to_string( sec ) );
+
       if( sec < 10 )
          ss = '0' + ss;
 
@@ -3469,6 +3616,7 @@ string format_mtime( const mtime& mt, const string& mask )
    int milli = mt.get_millisecond( );
 
    pos = s.find( "tht" );
+
    if( pos != string::npos )
    {
       string tht( to_string( milli ) );
@@ -3490,6 +3638,7 @@ string format_mtime( const mtime& mt, const string& mask )
          int hundredths = milli / 10;
 
          string th( to_string( hundredths ) );
+
          if( hundredths < 10 )
             th = '0' + th;
 
@@ -3510,6 +3659,7 @@ string format_mtime( const mtime& mt, const string& mask )
 
    // NOTE: Need to find the AM/PM pos again as the string size may have changed.
    am_pm_pos = s.find( "am" );
+
    if( am_pm_pos == string::npos )
       am_pm_pos = s.find( "pm" );
 
