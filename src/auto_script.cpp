@@ -16,6 +16,7 @@
 #  include <vector>
 #  include <string>
 #  include <fstream>
+#  include <iomanip>
 #  include <iostream>
 #  include <stdexcept>
 #endif
@@ -89,6 +90,7 @@ struct script_info
    mtime finish_time;
 
    int cycle_seconds;
+   int cycle_num_years;
 
    udate start_date;
    udate finish_date;
@@ -172,15 +174,26 @@ void read_script_info( )
             }
 
             string cycle( reader.read_attribute( c_attribute_cycle ) );
-            if( !cycle.empty( ) && cycle[ cycle.size( ) - 1 ] == '*' )
+
+            if( !cycle.empty( ) && ( cycle[ cycle.size( ) - 1 ] == '*' ) )
             {
                info.allow_late_exec = true;
                cycle.erase( cycle.size( ) - 1 );
             }
 
-            info.cycle_seconds = unformat_duration( cycle );
+            if( !cycle.empty( ) && ( cycle[ cycle.size( ) - 1 ] == 'y' ) )
+            {
+               info.cycle_seconds = 0;
+               info.cycle_num_years = from_string< int >( cycle.substr( 0, cycle.length( ) - 1 ) );
+            }
+            else
+            {
+               info.cycle_seconds = unformat_duration( cycle );
+               info.cycle_num_years = 0;
+            }
 
             info.start_date = udate::local( );
+
             string s( reader.read_opt_attribute( c_attribute_start ) );
 
             if( !s.empty( ) )
@@ -192,6 +205,7 @@ void read_script_info( )
                info.finish_date = udate( s );
 
             string exclude( reader.read_opt_attribute( c_attribute_exclude ) );
+
             if( !exclude.empty( ) )
             {
                string val = lower( exclude );
@@ -351,15 +365,73 @@ bool scripts_file_has_changed( )
 
 }
 
-void output_schedule( ostream& os )
+void output_schedule( ostream& os, bool from_now )
 {
    guard g( g_mutex );
 
    for( script_schedule_const_iterator ssci = g_script_schedule.begin( ); ssci != g_script_schedule.end( ); ++ssci )
    {
-      os << ( ssci->first ).as_string( true, false ) << ' ' << g_scripts[ ssci->second ].name;
+      if( !from_now )
+         os << ( ssci->first ).as_string( true, false );
+      else
+      {
+         date_time now( date_time::local( ) );
+
+         // NOTE: Format in terms of the duration in years, days,
+         // hours (and seconds if less than one minute) from now.
+         int num_years = 0;
+
+         int64_t difference = seconds_between( now, ssci->first );
+
+         if( difference < 0 )
+            difference = 0;
+         else
+         {
+            years one_year( 1 );
+
+            date_time next_year( now );
+
+            while( true )
+            {
+               date_time last_year( next_year );
+
+               next_year += one_year;
+
+               int year_seconds = seconds_between( last_year, next_year );
+
+               if( difference < year_seconds )
+                  break;
+               else
+               {
+                  ++num_years;
+
+                  difference -= year_seconds;
+               }
+            }
+         }
+
+         bool include_seconds = ( difference < 60 );
+
+         string extra;
+
+         if( num_years )
+         {
+            // NOTE: As the output is width limited will just show "??"
+            // rather than the actual number of years from now if value
+            // is > 9 (which would likely indicate a schedule mistake).
+            if( num_years > 9 )
+               extra += "?? ";
+            else
+               extra += to_string( num_years ) + "y ";
+         }
+
+         os << "[ " << setw( 15 ) << ( extra + format_duration( difference, include_seconds ) ) << " ]";
+      }
+
+      os << ' ' << g_scripts[ ssci->second ].name;
 
       string filename( g_scripts[ ssci->second ].filename );
+
       bool is_script = ( filename == c_script_dummy_filename );
 
       bool is_locked = false;
@@ -565,12 +637,13 @@ void autoscript_session::on_start( )
                if( !lock_filename.empty( ) && !can_create_script_lock_file( lock_filename ) )
                   okay = false;
 
+               int cycle_seconds = g_scripts[ j->second ].cycle_seconds;
+               int cycle_num_years = g_scripts[ j->second ].cycle_num_years;
+
                if( okay && !is_excluded( g_scripts[ j->second ], now )
                 && ( g_scripts[ j->second ].allow_late_exec || ( now - next <= 1.0 ) ) )
                {
                   string arguments( process_script_args( g_scripts[ j->second ].arguments, true ) );
-
-                  int cycle_seconds = g_scripts[ j->second ].cycle_seconds;
 
                   if( !tsfilename.empty( ) )
                      g_scripts[ j->second ].last_mod = mod_time;
@@ -591,7 +664,7 @@ void autoscript_session::on_start( )
                      script_args += " \"" + get_files_area_dir( ) + "\"";
 
                      // NOTE: Skip logging for any scripts that cycle too frequently.
-                     if( cycle_seconds >= c_min_cycle_seconds_for_logging )
+                     if( cycle_num_years || ( cycle_seconds >= c_min_cycle_seconds_for_logging ) )
                         script_args += " " + name;
 
                      cmd_and_args = "./script " + script_args;
@@ -632,7 +705,10 @@ void autoscript_session::on_start( )
                      break;
                   }
 
-                  next += ( seconds )g_scripts[ j->second ].cycle_seconds;
+                  if( cycle_seconds )
+                     next += ( seconds )cycle_seconds;
+                  else
+                     next += ( years )cycle_num_years;
                }
 
                if( g_scripts[ j->second ].finish_date != udate( )

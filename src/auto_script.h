@@ -20,7 +20,7 @@
 #     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
-void CIYAM_BASE_DECL_SPEC output_schedule( std::ostream& os );
+void CIYAM_BASE_DECL_SPEC output_schedule( std::ostream& os, bool from_now = false );
 
 class CIYAM_BASE_DECL_SPEC autoscript_session : public thread
 {

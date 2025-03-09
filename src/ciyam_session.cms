@@ -124,7 +124,7 @@ system_log_tail|log_tail "view the tail of one of the system/application log fil
 system_notifier|notifier "starts/finishes/suspends/unsuspends a system file/directory notifier" <opt/-start/start>|<opt/-finish/finish>|<opt/-suspend/suspend>|<opt/-unsuspend/unsuspend><val//file_or_directory>
 system_passtotp|passtotp "retrieve a TOTP system password" <val//secret>
 system_password|password "retrieve an encrypted system password" <val//name>
-system_schedule|schedule "display system autoscript schedule" [<opt/-reload/reload>]
+system_schedule|schedule "display system autoscript schedule" [<opt/-reload/reload>][<opt/-from_now/from_now>]
 system_sendmail|sendmail "send a simple test system email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_name>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
 system_variable "get/set a system variable" <val//name_or_expr>[<oval//new_value>][<oval//check_value>]
 system_checkmail|checkmail "check for incoming email or process system email script calls" [<opt/-script/create_script>|<list//headers>]

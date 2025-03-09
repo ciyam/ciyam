@@ -6523,6 +6523,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_system_schedule )
       {
          bool reload = has_parm_val( parameters, c_cmd_ciyam_session_system_schedule_reload );
+         bool from_now = has_parm_val( parameters, c_cmd_ciyam_session_system_schedule_from_now );
 
          if( reload )
          {
@@ -6532,7 +6533,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             msleep( c_auto_script_msleep * 2 );
          }
 
-         output_schedule( osstr );
+         output_schedule( osstr, from_now );
 
          if( has_session_variable( get_special_var_name( e_special_var_single_string_response ) ) )
             response = osstr.str( );
