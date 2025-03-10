@@ -1,0 +1,103 @@
+; Copyright (c) 2025 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+; NOTE: Each line of "ciyam_dns_info" (if present) will contain one domain name prefix
+; with its matching record identity separated by a space. So assuming that your domain
+; name is "sample.net" with subdomains "test1.sample.net" and "test2.sample.net" (that
+; have already been created) the "ciyam_dns_info" file would look like the following:
+;
+; [ciyam_dns_info]
+; test1 12345678
+; test2 87654321
+;
+; This script uses "curl" with "user credentials" and JSON formatted data and has been
+; tested with the "name.com" API (other services will likely require alterations). Two
+; other files need to have been created in order to issue the API update and these are
+; "ciyam_api_base" and "ciyam_api_cred" which should look like the following:
+;
+; [ciyam_api_base]
+; https://api.name.com/v4/domains/sample.net/records
+;
+; [ciyam_api_cred]
+; user_name:065d4d8f3b5adb4a08841eae3c80f4217ebb6709
+;
+; IMPORTANT: The "ciyam_api_cred" file contains an account "user_name" and API "token"
+; and should have the file permission 600 (-rw-------) to ensure that this file cannot
+; be viewed by other system users (recommended also for "ciyam_dns_info").
+;
+DNS_INFO_FILE=@files::ciyam_dns_info
+;
+@ifneq "$DNS_INFO_FILE" ""
+;
+LINES=@file:$DNS_INFO_FILE
+;
+@label NEXT
+;
+@:LOOP
+;
+LINE=%LINES:1%
+;
+@ifeq "$LINE" ""
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+;
+NAME_AND_IDENTITY=@repstr: /\n:$LINE
+;
+NAME=%NAME_AND_IDENTITY:1%
+IDENTITY=%NAME_AND_IDENTITY:2%
+;
+OLD_IP=
+;
+FILE=@files::ciyam.$NAME.ip
+@ifneq "$FILE" ""
+OLD_IP=@file:ciyam.$NAME.ip
+@endif
+;
+NEW_IP=
+;
+FILE=@files::ciyam.$NAME.txt.log
+@ifneq "$FILE" ""
+NEW_IP=@file:~tail -n 1 ciyam.$NAME.txt.log
+@endif
+;
+@ifneq "$NEW_IP" ""
+@ifneq "$NEW_IP" "0"
+@ifneq "$OLD_IP" "$NEW_IP"
+~echo -n "$NEW_IP" > ciyam.$NAME.ip
+;
+TYPE=A
+NEW_IPV4=@repstr:\::$NEW_IP
+;
+; NOTE: If the IP address contains any colons then assumes IPv6.
+@ifneq "$NEW_IP" "$NEW_IPV4"
+TYPE=AAAA
+@endif
+;
+API_BASE=@file:ciyam_api_base
+@ifndef $ERROR
+API_CREDENTIALS=@file:ciyam_api_cred
+@ifndef $ERROR
+~curl -s -u $~API_CREDENTIALS $~API_BASE/$~IDENTITY -X PUT -H 'Content-Type: application/json' --data '{"host":"$NAME","type":"$TYPE","answer":"$NEW_IP","ttl":300}'
+@endif
+@endif
+;
+@endif
+>ciyam.$NAME.txt.log
+#$NEW_IP
+>
+@endif
+@endif
+;
+LINES=%LINES:-1%
+;
+!!@:LOOP
+;
+@:END_LOOP
+;
+@endif

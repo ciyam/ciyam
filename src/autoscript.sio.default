@@ -30,6 +30,13 @@
 #  <cycle>5s
 #  <filename>process_ciyam_logins
 # </script>
+# <script/>
+#  <name>*ciyam_dns_ip_updates
+#  <time>00:05
+#  <cycle>1h
+#  <filename>*script*
+#  <arguments>ciyam_dns_ip_updates.cin
+# </script>
 ### [<start generated>]
 ### [<finish generated>]
 </sio>
