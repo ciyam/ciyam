@@ -168,6 +168,7 @@ enum special_var
    e_special_var_ciyam_list_hash,
    e_special_var_cmd_delay_after,
    e_special_var_force_db_create,
+   e_special_var_log_all_scripts,
    e_special_var_notifier_events,
    e_special_var_paired_identity,
    e_special_var_queue_hub_users,

@@ -207,6 +207,7 @@ const char* const c_special_variable_blockchain_user = "@blockchain_user";
 const char* const c_special_variable_ciyam_list_hash = "@ciyam_list_hash";
 const char* const c_special_variable_cmd_delay_after = "@cmd_delay_after";
 const char* const c_special_variable_force_db_create = "@force_db_create";
+const char* const c_special_variable_log_all_scripts = "@log_all_scripts";
 const char* const c_special_variable_notifier_events = "@notifier_events";
 const char* const c_special_variable_paired_identity = "@paired_identity";
 const char* const c_special_variable_queue_hub_users = "@queue_hub_users";
@@ -514,6 +515,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_ciyam_list_hash );
       g_special_variable_names.push_back( c_special_variable_cmd_delay_after );
       g_special_variable_names.push_back( c_special_variable_force_db_create );
+      g_special_variable_names.push_back( c_special_variable_log_all_scripts );
       g_special_variable_names.push_back( c_special_variable_notifier_events );
       g_special_variable_names.push_back( c_special_variable_paired_identity );
       g_special_variable_names.push_back( c_special_variable_queue_hub_users );

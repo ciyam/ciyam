@@ -7154,27 +7154,33 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
              && ( check_script_error != c_false ) && ( check_script_error != c_false_value ) )
             {
                set_system_variable( args_file, c_true_value );
-               set_session_variable( get_special_var_name( e_special_var_check_script_error ), c_true_value );
+
+               set_session_variable( get_special_var_name(
+                e_special_var_check_script_error ), c_true_value );
             }
          }
 
          string script_args( args_file );
 
-         // NOTE: If the "no_logging" argument is set true then make sure that "script" execution
-         // won't be logged (even in the case of an error). For synchronous scripts an error will
-         // be handled (per the special variables set above) as though it had happened within the
-         // caller's session but if the script is intended to be asynchronously executed (even if
-         // it ends up being finally called synchronously) this will result in no record (without
-         // using specific tracing flags) of the script's execution or errors (so it would not be
-         // generally advisable to use it in this manner).
-         if( no_logging )
-            script_args = "-do_not_log " + script_args;
-         else
+         if( !has_raw_system_variable( get_special_var_name( e_special_var_log_all_scripts ) ) )
          {
-            string errors_only( get_raw_session_variable( get_special_var_name( e_special_var_errors_only ) ) );
+            // NOTE: If the "no_logging" argument is set true then make sure that "script" execution
+            // won't be logged (even in the case of an error). For synchronous scripts an error will
+            // be handled (per the special variables set above) as though it had happened within the
+            // caller's session but if the script is intended to be asynchronously executed (even if
+            // it ends up being finally called synchronously) this will result in no record (without
+            // using specific tracing flags) of the script's execution or errors (so it would not be
+            // generally advisable to use it in this manner).
+            if( no_logging )
+               script_args = "-do_not_log " + script_args;
+            else
+            {
+               string errors_only( get_raw_session_variable(
+                get_special_var_name( e_special_var_errors_only ) ) );
 
-            if( errors_only == c_true || errors_only == c_true_value )
-               script_args = "-log_on_error " + script_args;
+               if( ( errors_only == c_true ) || ( errors_only == c_true_value ) )
+                  script_args = "-log_on_error " + script_args;
+            }
          }
 
          // NOTE: If making any change to "script_args" then it likely will also need
