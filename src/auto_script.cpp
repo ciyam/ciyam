@@ -47,6 +47,11 @@ namespace
 
 const size_t c_max_tolerance = 60;
 
+const char* const c_logging_never = "never";
+const char* const c_logging_always = "always";
+const char* const c_logging_errors = "errors";
+const char* const c_logging_standard = "standard";
+
 const char* const c_script_dummy_filename = "*script*";
 
 const char* const c_section_script = "script";
@@ -57,11 +62,13 @@ const char* const c_attribute_cycle = "cycle";
 const char* const c_attribute_start = "start";
 const char* const c_attribute_finish = "finish";
 const char* const c_attribute_exclude = "exclude";
+const char* const c_attribute_logging = "logging";
 const char* const c_attribute_filename = "filename";
 const char* const c_attribute_arguments = "arguments";
 const char* const c_attribute_time_stamp = "time_stamp";
 
-const int c_min_cycle_seconds_for_logging = 3600;
+const int c_min_cycle_seconds_for_logging = 300;
+const int c_min_cycle_seconds_for_errors_only = 3600;
 
 // NOTE: This figure always allows an event that recurs every second to be rescheduled.
 const size_t c_max_reschedule_attempts = 86400;
@@ -80,9 +87,25 @@ enum exclude_type
    e_exclude_type_weekends
 };
 
+enum logging_type
+{
+   e_logging_type_never,
+   e_logging_type_always,
+   e_logging_type_errors,
+   e_logging_type_standard
+};
+
 struct script_info
 {
-   script_info( ) : last_mod( 0 ), exclude( e_exclude_type_none ), allow_late_exec( false ), check_lock_only( false ) { }
+   script_info( )
+    :
+    last_mod( 0 ),
+    allow_late_exec( false ),
+    check_lock_only( false ),
+    exclude( e_exclude_type_none ),
+    logging( e_logging_type_standard )
+   {
+   }
 
    string name;
 
@@ -104,6 +127,8 @@ struct script_info
    string lock_filename;
 
    exclude_type exclude;
+
+   logging_type logging;
 
    bool allow_late_exec;
    bool check_lock_only;
@@ -231,6 +256,19 @@ void read_script_info( )
                else
                   throw runtime_error( "invalid exclude value '" + exclude + "'" );
             }
+
+            string logging( reader.read_opt_attribute( c_attribute_logging, c_logging_standard ) );
+
+            if( logging == c_logging_never )
+               info.logging = e_logging_type_never;
+            else if( logging == c_logging_always )
+               info.logging = e_logging_type_always;
+            else if( logging == c_logging_errors )
+               info.logging = e_logging_type_errors;
+            else if( logging == c_logging_standard )
+               info.logging = e_logging_type_standard;
+            else
+               throw runtime_error( "invalid logging value '" + logging + "'" );
 
             info.filename = reader.read_attribute( c_attribute_filename );
             info.arguments = reader.read_opt_attribute( c_attribute_arguments );
@@ -478,6 +516,7 @@ void autoscript_session::on_start( )
       TRACE_LOG( TRACE_SESSIONS,
        "started autoscript session (tid = " + to_string( current_thread_id( ) ) + ")" );
 
+      string log_all_scripts_name( get_special_var_name( e_special_var_log_all_scripts ) );
       string autoscript_reload_name( get_special_var_name( e_special_var_autoscript_reload ) );
 
       date_time dtm( date_time::local( ) );
@@ -663,11 +702,37 @@ void autoscript_session::on_start( )
 
                      script_args += " \"" + get_files_area_dir( ) + "\"";
 
-                     // NOTE: Skip logging for any scripts that cycle too frequently.
-                     if( cycle_num_years || ( cycle_seconds >= c_min_cycle_seconds_for_logging ) )
-                        script_args += " " + name;
+                     script_args += " " + name;
 
-                     cmd_and_args = "./script " + script_args;
+                     logging_type logging = g_scripts[ j->second ].logging;
+
+                     if( has_raw_system_variable( log_all_scripts_name ) )
+                        logging = e_logging_type_always;
+                     else
+                     {
+                        // NOTE: Will skip logging (or just log errors) for scripts that cycle frequently
+                        // (unless the logging type was not set to "standard").
+                        if( ( logging == e_logging_type_standard )
+                         && ( !cycle_num_years && ( cycle_seconds < c_min_cycle_seconds_for_errors_only ) ) )
+                        {
+                           if( cycle_seconds < c_min_cycle_seconds_for_logging )
+                              logging = e_logging_type_never;
+                           else
+                              logging = e_logging_type_errors;
+                        }
+                     }
+\
+                     string log_arg;
+
+                     if( logging == e_logging_type_never )
+                        log_arg = "-do_not_log";
+                     else if( logging == e_logging_type_errors )
+                        log_arg = "-log_on_error";
+
+                     if( !log_arg.empty( ) )
+                        log_arg += ' ';
+
+                     cmd_and_args = "./script " + log_arg + script_args;
                   }
                   else
                   {
