@@ -93,7 +93,7 @@ iec_byte_scale convert_bytes_to_iec_scaled_size( int64_t num_bytes, double& scal
       divisor = c_kibibytes;
    }
 
-   scaled_size = unscaled_size / divisor;
+   scaled_size = ( unscaled_size / divisor );
 
    if( round_to_decimals >= 0 )
       scaled_size = round( scaled_size, round_to_decimals );
@@ -133,7 +133,7 @@ metric_byte_scale convert_bytes_to_metric_scaled_size( int64_t num_bytes, double
       divisor = c_kilobytes;
    }
 
-   scaled_size = unscaled_size / divisor;
+   scaled_size = ( unscaled_size / divisor );
 
    if( round_to_decimals >= 0 )
       scaled_size = round( scaled_size, round_to_decimals );
@@ -420,38 +420,44 @@ string format_duration( int value, bool include_seconds )
 
    if( value >= seconds_per_day( ) )
    {
-      int days = value / ( int )seconds_per_day( );
+      int days = ( value / ( int )seconds_per_day( ) );
+
+      value -= ( days * ( int )seconds_per_day( ) );
 
       str = to_string( days ) + "d";
-
-      value -= days * ( int )seconds_per_day( );
    }
 
    if( value >= 3600 )
    {
-      int hours = value / 3600;
+      int hours = ( value / 3600 );
 
       if( !str.empty( ) )
          str += " ";
 
-      str += to_string( hours ) + "h";
-
       value -= ( hours * 3600 );
+
+      str += to_string( hours ) + "h";
    }
 
    if( ( value >= 60 ) || ( !include_seconds && str.empty( ) ) )
    {
-      int minutes = value / 60;
+      int minutes = ( value / 60 );
 
       if( !str.empty( ) )
          str += " ";
 
-      str += to_string( minutes ) + "m";
+      value -= ( minutes * 60 );
 
+      // NOTE: If not including seconds will round minutes up.
       if( !include_seconds )
+      {
+         if( value )
+            ++minutes;
+
          value = 0;
-      else
-         value -= ( minutes * 60 );
+      }
+
+      str += to_string( minutes ) + "m";
    }
 
    if( str.empty( ) || ( value > 0 ) )
