@@ -56,6 +56,7 @@ HOST_NAME=%NEXT_LINE:5%
 HOST_PORT=%NEXT_LINE:6%
 ;
 @ifndef $SKIP_CONNECTS
+@ifneq "$HOST_NAME" "ciyam.peer"
 .system_variable @secret_hash_$SUBMIT_IDENTITY
 @ifdef $OUTPUT
 .session_variable @secret_hash @secret_hash_$SUBMIT_IDENTITY
@@ -65,6 +66,7 @@ HOST_PORT=%NEXT_LINE:6%
 ERROR=
 @else
 .wait 250
+@endif
 @endif
 @endif
 ;

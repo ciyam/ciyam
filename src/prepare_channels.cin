@@ -10,8 +10,6 @@ ERROR=
 ;
 STORAGE=$1
 ;
-SKIPPED=
-;
 .storage_init $STORAGE
 @ifndef $ERROR
 .session_variable @deque commence
@@ -69,19 +67,18 @@ APP_LOG_INFO_FILE=@files::$NEXT_IDENT.log
 @ifdef $OUTPUT
 .session_variable @secret_hash @secret_hash_$SUBMIT_IDENTITY
 @endif
+;
+@ifneq "$HOST_NAME" "ciyam.peer"
 .peer_connect $SUBMIT_IDENTITY:$RECEIVE_IDENTITY $HOST_NAME-$HOST_PORT -user
-@ifdef $ERROR
-ERROR=
-SKIPPED=1
-@endif
 @endif
 ;
-@else
-SKIPPED=1
+@ifdef $ERROR
+ERROR=
+@endif
+;
+@endif
 @endif
 .system_variable @opening_$NEXT_IDENT ""
-@else
-SKIPPED=1
 @endif
 ;
 .session_variable @deque pop_front
