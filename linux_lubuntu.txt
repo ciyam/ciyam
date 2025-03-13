@@ -17,9 +17,13 @@ Port Forwarding to access the VM from its Host
 ----------------------------------------------
 (Network -> Advanced -> Port Forwarding)
 CIYAM    TCP   127.0.0.1   12021    10.0.2.15   12021
-HTTP     TCP   127.0.0.1   8888     10.0.2.15   80
+HTTP     TCP   127.0.0.1   8008     10.0.2.15   80
 SSH      TCP   127.0.0.1   2222     10.0.2.15   22
-SYNC     TCP   127.0.0.1   13031    10.0.2.15   13031
+SYNC     TCP   127.0.0.1   22022    10.0.2.15   22000
+
+It should be noted the "localhost" port numbers (other than CIYAM) have been set to
+values that are different to the standard ones and can be changed if they are being
+used already (although examples below are assuming the values chosen above).
 
 Starting OS Installation
 ------------------------
@@ -313,7 +317,7 @@ To ensure that the Meta application will operate correctly:
 ./install_test_fcgi
 
 From the host OS use a browser with the following URL:
-http://localhost:8888/test_fcgi.html
+http://localhost:8008/test_fcgi.html
 
 After clicking on the "Perform Post Request" button the following should be output:
 
@@ -409,21 +413,13 @@ Installing Syncthing User Service
 
 sudo apt-get install syncthing
 
-sudo systemctl enable syncthing@admin.service
+sudo systemctl enable syncthing@admin
 
-sudo systemctl start syncthing@admin.service
-sudo systemctl status syncthing@admin.service
+sudo systemctl start syncthing@admin
+sudo systemctl status syncthing@admin
 
 In the host OS start a tunnel to access the Syncthing UI:
-ssh -L8384:127.0.0.1:8384 -p 2222 admin@localhost
+ssh -L 9394:127.0.0.1:8384 -p 2222 admin@localhost
 
-Configure the listener from host OS using the following URL:
-http://localhost:8384
-
-Actions -> Settings/Connections
-Sync Protocol Listen Addresses
-tcp://:13031
-
-systemctl restart syncthing@admin.service
-
-systemctl status syncthing@admin.service
+Configure Syncthing from host OS using the following URL:
+http://localhost:9394
