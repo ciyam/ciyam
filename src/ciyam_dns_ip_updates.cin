@@ -84,9 +84,10 @@ API_BASE=@file:ciyam_api_base
 @ifndef $ERROR
 API_CREDENTIALS=@file:ciyam_api_cred
 @ifndef $ERROR
-~curl -s -u $~API_CREDENTIALS $~API_BASE/$~IDENTITY -X PUT -H 'Content-Type: application/json' --data '{"host":"$NAME","type":"$TYPE","answer":"$NEW_IP","ttl":300}' >ciyam_dns_ip_updates.tmp
-RESPONSE=@file:ciyam_dns_ip_updates.tmp
-~rm -f ciyam_dns_ip_updates.tmp
+RESPONSE=@file:~curl -s -u $~API_CREDENTIALS $~API_BASE/$~IDENTITY -X PUT -H 'Content-Type: application/json' --data '{"host":"$NAME","type":"$TYPE","answer":"$NEW_IP","ttl":300}'
+;
+; NOTE: Only check the first line if more than one was returned.
+RESPONSE=%RESPONSE:1%
 ;
 CHECK_OKAY=@repstr:$ERROR_FOUND:$RESPONSE
 ;
