@@ -1,7 +1,8 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_function)] `{`$arg_id`}
-`{`$i`=`'`'`}`{`@eq`(`$arg_skip_restore`,`'true`'`)`{`$i`=`'   `'`}\
-   if( !storage_locked_for_admin( ) )
+`{`$i`=`'`'`}`{`@eq`(`$arg_skip_restore`,`'true`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`{`$i`=`'   `'`}\
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_skip_restore`,`'true`'`)
+    && `}`}`{`@eq`(`$arg_skip_restore`,`'true`'`)!storage_locked_for_admin( )`} )
 `}\
 `{`$i`}   `{`!`@eq`(`$arg_procedure_arg`,`'`'`)`{`$arg_procedure_arg`} = `}`{`$arg_func_name`}\
 ( `{`@eq`(`$arg_fisfk`,`'1`'`)to_string( `}`{`!`@eq`(`$arg_field`,`'`'`)get_obj( ).`{`$arg_field`}( )`{`@eq`(`$arg_fisfk`,`'1`'`) )`} `});
