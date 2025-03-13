@@ -141,6 +141,8 @@ const char* const c_ver_field_name = "Ver_";
 
 const char* const c_script_arg_opt = "opt";
 
+const char* const c_dummy_host_name = "ciyam.peer";
+
 const char* const c_server_log_file = "ciyam_server.log";
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
@@ -6497,6 +6499,9 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
       string num_helpers( ap_sio_reader->read_attribute( c_peerchain_attribute_num_helpers ) );
       string peer_type( ap_sio_reader->read_attribute( c_peerchain_attribute_peer_type ) );
       string shared_secret( ap_sio_reader->read_attribute( c_peerchain_attribute_shared_secret ) );
+
+      if( auto_start_only && ( host_name == c_dummy_host_name ) )
+         continue;
 
       if( ( host_name != string( c_local_host ) )
        && ( !auto_start_only || ( auto_start == c_true_value ) ) )
