@@ -7,7 +7,7 @@
 <sio/>
 # <script/>
 #  <name>hub_check
-#  <time>00:00:00
+#  <time>00:00:01
 #  <cycle>5s
 #  <filename>hub_check:~hub
 # </script>
@@ -20,22 +20,22 @@
 # </script>
 # <script/>
 #  <name>shared_check
-#  <time>00:00:04
+#  <time>00:00:03
 #  <cycle>5s
 #  <filename>shared_check:?~shared
 # </script>
 # <script/>
 #  <name>process_ciyam_logins
-#  <time>00:00:06
+#  <time>00:00:04
 #  <cycle>5s
 #  <filename>process_ciyam_logins
 # </script>
 # <script/>
-#  <name>*ciyam_dns_ip_updates
-#  <time>00:05
-#  <cycle>1h
+#  <name>*ciyam_ddns_ip_updates
+#  <time>00:00:30
+#  <cycle>1m
 #  <filename>*script*
-#  <arguments>ciyam_dns_ip_updates.cin
+#  <arguments>ciyam_ddns_ip_updates.cin
 # </script>
 ### [<start generated>]
 ### [<finish generated>]

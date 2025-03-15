@@ -1,0 +1,149 @@
+; Copyright (c) 2025 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+; NOTE: Each line of "ciyam_ddns_info" (if exists) will contain one domain name prefix
+; with its matching record identity (or token where applicable) followed by a DDNS API
+; domain and then (if required) the domain name suffix and credentials separating each
+; value with a space.
+;
+; [ciyam_ddns_info]
+; test 065d4d8f3b5adb4a08841eae3c80f4217ebb freemyip.com
+; test 87654321 api.name.com sample.net user_name:065d4d8f3b5adb4a08841eae3c80f4217ebb
+;
+; IMPORTANT: As "ciyam_ddns_info" file contains information that is sensitive (such as
+; account names and tokens) it should be given the file permissions "600 (-rw-------)"
+; to ensure that this file is not able to be viewed by other system users.
+;
+; If a file with the name "ciyam.<name>.ip.log" is found then it is assumed to contain
+; the current IP address (in its last line) otherwise the server's own IP address will
+; be obtained via the GET_IP_ADDR service.
+;
+GET_IP_ADDR=icanhazip.com
+;GET_IP_ADDR=ipecho.net/plain
+;GET_IP_ADDR=api.ipify.org?format=text
+;
+DDNS_INFO_FILE=@files::ciyam_ddns_info
+;
+@ifneq "$DDNS_INFO_FILE" ""
+;
+LINES=@file:$DDNS_INFO_FILE
+;
+@label NEXT
+;
+@:LOOP
+;
+LINE=%LINES:1%
+;
+@ifeq "$LINE" ""
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+;
+NAME_AND_INFO=@repstr: /\n:$LINE
+;
+NAME=%NAME_AND_INFO:1%
+IDENTITY=%NAME_AND_INFO:2%
+API_DOMAIN=%NAME_AND_INFO:3%
+NAME_DOMAIN=%NAME_AND_INFO:4%
+CREDENTIALS=%NAME_AND_INFO:5%
+;
+OLD_IP=
+;
+FILE=@files::ciyam.$NAME.ip
+;
+@ifneq "$FILE" ""
+OLD_IP=@file:ciyam.$NAME.ip
+@endif
+;
+NEW_IP=
+;
+FILE=@files::ciyam.$NAME.ip.log
+;
+USING_LOG=
+;
+@ifeq "$FILE" ""
+NEW_IP=@file:~curl -s https://$GET_IP_ADDR
+@else
+USING_LOG=1
+NEW_IP=@file:~tail -n 1 ciyam.$NAME.ip.log
+@endif
+;
+@ifneq "$NEW_IP" ""
+@ifneq "$NEW_IP" "0"
+@ifneq "$OLD_IP" "$NEW_IP"
+;
+~echo -n "$NEW_IP" > ciyam.$NAME.ip
+;
+TYPE=A
+NEW_IPV4=@repstr:\::$NEW_IP
+;
+; NOTE: If the IP address contains any colons then assume that it is IPv6.
+@ifneq "$NEW_IP" "$NEW_IPV4"
+TYPE=AAAA
+@endif
+;
+@ifeq "$NAME_DOMAIN" ""
+;
+; NOTE: Minimal APIs where the domain name is the same as the API (such as "freemyip.com").
+;
+@ifeq "$API_DOMAIN" "freemyip.com"
+RESPONSE=@file:~curl -s "https://$API_DOMAIN/update?token=$~IDENTITY&domain=$NAME.$API_DOMAIN&myip=$NEW_IP&verbose=yes"
+;
+CHECK_OKAY=OK
+;
+; NOTE: The first line is expected to be just OK or ERROR with the second line containing further details.
+@ifneq "%RESPONSE:1%" "$CHECK_OKAY"
+ERROR=%RESPONSE:2%
+@endif
+;
+@else
+ERROR=Unsupported minimal API type '$API_DOMAIN'.
+@endif
+;
+@else
+;
+; NOTE: More complex APIs that need user credentials and support multiple domains (such as "api.name.com").
+;
+@ifeq "$API_DOMAIN" "api.name.com"
+RESPONSE=@file:~curl -s -u $~CREDENTIALS https://$API_DOMAIN/v4/domains/$NAME_DOMAIN/records/$~IDENTITY \
+-X PUT -H 'Content-Type: application/json' --data '{"host":"$NAME","type":"$TYPE","answer":"$NEW_IP","ttl":300}'
+;
+; NOTE: The first line of the response will contain "message" if there has been an error.
+CHECK_OKAY=@repstr:\"message\":%RESPONSE:1%
+;
+@ifneq '$CHECK_OKAY' '%RESPONSE:1%'
+ERROR=$RESPONSE
+@endif
+;
+@else
+ERROR=Unsupported credentials API type '$API_DOMAIN'.
+@endif
+;
+@endif
+;
+@ifdef $ERROR
+#$ERROR
+@endif
+;
+@endif
+;
+@ifdef $USING_LOG
+>ciyam.$NAME.ip.log
+#$NEW_IP
+>
+@endif
+@endif
+@endif
+;
+LINES=%LINES:-1%
+;
+!!@:LOOP
+;
+@:END_LOOP
+;
+@endif
