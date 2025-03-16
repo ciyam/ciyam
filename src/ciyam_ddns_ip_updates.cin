@@ -111,7 +111,7 @@ ERROR=Unsupported minimal API type '$API_DOMAIN'.
 ;
 @ifeq "$API_DOMAIN" "api.name.com"
 RESPONSE=@file:~curl -s -u $~CREDENTIALS https://$API_DOMAIN/v4/domains/$NAME_DOMAIN/records/$~IDENTITY \
--X PUT -H 'Content-Type: application/json' --data '{"host":"$NAME","type":"$TYPE","answer":"$NEW_IP","ttl":300}'
+-X PUT -H 'Content-Type: application/json' --data '{"host":"$NAME","type":"$TYPE","answer":"$NEW_IP","ttl":60}'
 ;
 ; NOTE: The first line of the response will contain "message" if there has been an error.
 CHECK_OKAY=@repstr:\"message\":%RESPONSE:1%
