@@ -23,7 +23,6 @@ calendar
 check_source
 ciyam_client
 ciyam_interface
-ciyam_lock_file
 ciyam_server
 construct
 crypt
@@ -36,7 +35,6 @@ modeller
 ods_dump
 ods_fsed
 test
-test_blockchain
 test_btree
 test_cache
 test_crypto_keys
@@ -168,6 +166,7 @@ Meta.modules.lst
 # Ignore ciyam config files.
 modules.lst
 packages.lst
+ciyam_ddns_info
 ciyam_server.sid
 ciyam_server.sio
 
