@@ -403,3 +403,17 @@ ssh -L 9394:127.0.0.1:8384 -p 2222 admin@localhost
 
 Configure Syncthing from host OS using the following URL:
 http://localhost:9394
+
+********************* FOR NON-VM MACHINES *******************
+
+Setting up an automatically renewed Let's Encrypt certificate
+-------------------------------------------------------------
+
+sudo zypper -n install python3-certbot
+sudo zypper -n install python3-certbot-apache
+
+sudo certbot --noninteractive --register-unsafely-without-email --agree-tos --apache -d ***domain.name***
+
+sudo systemctl daemon-reload
+sudo systemctl status certbot
+sudo systemctl list-timers --all
