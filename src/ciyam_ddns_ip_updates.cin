@@ -65,12 +65,25 @@ NEW_IP=
 FILE=@files::ciyam.$NAME.ip.log
 ;
 USING_LOG=
+TRUNCATE_LOG=
 ;
 @ifeq "$FILE" ""
 NEW_IP=@file:~curl -s https://$GET_IP_ADDR
 @else
+;
 USING_LOG=1
-NEW_IP=@file:~tail -n 1 ciyam.$NAME.ip.log
+;
+LOG_TAIL=@file:~tail -n 2 ciyam.$NAME.ip.log
+;
+NEW_IP=%LOG_TAIL:2%
+;
+; NOTE: Only truncate a log if it has more than one line.
+@ifneq "$NEW_IP" ""
+TRUNCATE_LOG=1
+@else
+NEW_IP=%LOG_TAIL:1%
+@endif
+;
 @endif
 ;
 @ifneq "$NEW_IP" ""
@@ -133,9 +146,11 @@ ERROR=Unsupported credentials API type '$API_DOMAIN'.
 @endif
 ;
 @ifdef $USING_LOG
+@ifdef $TRUNCATE_LOG
 >ciyam.$NAME.ip.log
 #$NEW_IP
 >
+@endif
 @endif
 @endif
 @endif
