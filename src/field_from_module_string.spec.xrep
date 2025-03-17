@@ -5,12 +5,13 @@
    // [(finish field_from_module_string)] `{`$arg_id`}
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
+`{`$new_or_tfield`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`$new_or_tfield`=`'1`'`}`{`!`@eq`(`$arg_new_only`,`'`'`)`$new_or_tfield`=`'1`'`}\
+`{`$i`=`'`'`}`{`@eq`(`$new_or_tfield`,`'1`'`)`$i`=`'   `'`}\
    // [(start field_from_module_string)] `{`$arg_id`}
-`{`@eq`(`$arg_tfield`,`'`'`)\
-   get_obj( ).`{`$arg_field`}( get_module_string( "`{`$arg_id`}_string" ) );
-`,\
-   if( get_obj( ).`{`$arg_tfield`}( ) )
-      get_obj( ).`{`$arg_field`}( get_module_string( "`{`$arg_id`}_string" ) );
+`{`@eq`(`$new_or_tfield`,`'1`'`)\
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_new_only`,`'`'`)
+    && `}`}`{`!`@eq`(`$arg_new_only`,`'`'`)get_obj( ).get_key( ).empty( )`} )
 `}\
+`{`$i`}   get_obj( ).`{`$arg_field`}( get_module_string( "`{`$arg_id`}_string" ) );
    // [(finish field_from_module_string)] `{`$arg_id`}
 `}

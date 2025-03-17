@@ -2340,7 +2340,8 @@ void `{`$full_class_name`}::impl::post_init( )
 `,\
 `@eq`(`'\1`'`,`'field_from_module_string`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#field_from_module_string.spec.xrep section=post_init class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}
+ arg_id=$specification_\0_id arg_field=$specification_\0_field\
+ arg_tfield=$specification_\0_tfield arg_new_only=`}
 `,\
 `@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#field_from_op.spec.xrep section=post_init class_name=$class_name module_name=$module_name\
@@ -2675,7 +2676,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'field_from_module_string`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#field_from_module_string.spec.xrep section=to_or_for_store class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field\
+ arg_tfield=$specification_\0_tfield arg_new_only=$specification_\0_new_only`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)\
 `&`@eq`(`$specification_\0_post_init`,`'`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)`&`@eq`(`$specification_\0_ftransient`,`'`'`)
@@ -3046,7 +3048,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'field_from_module_string`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_module_string.spec.xrep section=to_or_for_store class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field\
+ arg_tfield=$specification_\0_tfield arg_new_only=`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_op.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
