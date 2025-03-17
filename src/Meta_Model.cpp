@@ -3261,6 +3261,7 @@ void Meta_Model::impl::impl_Generate( )
                      {
                         if( !extras.empty( ) )
                            extras += '+';
+
                         extras += "full_width";
                      }
 
@@ -3268,6 +3269,7 @@ void Meta_Model::impl::impl_Generate( )
                      {
                         if( !extras.empty( ) )
                            extras += '+';
+
                         extras += "full_height";
                      }
 
@@ -3275,6 +3277,7 @@ void Meta_Model::impl::impl_Generate( )
                      {
                         if( !extras.empty( ) )
                            extras += '+';
+
                         extras += "ignore_links";
                      }
 
@@ -3309,6 +3312,7 @@ void Meta_Model::impl::impl_Generate( )
                      {
                         if( !extras.empty( ) )
                            extras += '+';
+
                         extras += "no_anon";
                      }
 
@@ -3316,6 +3320,7 @@ void Meta_Model::impl::impl_Generate( )
                      {
                         if( !extras.empty( ) )
                            extras += '+';
+
                         extras += "show";
                      }
 
@@ -3338,6 +3343,29 @@ void Meta_Model::impl::impl_Generate( )
                         if( !extras.empty( ) )
                            extras += '+';
                         extras += other_extras;
+                     }
+
+                     Meta_Field check_spec_field;
+
+                     check_spec_field.perform_fetch( p_field->get_key( ) );
+
+                     // FUTURE: Perhaps should try to avoid unnecessary iteration of field child specifications.
+                     if( check_spec_field.child_Specification( ).iterate_forwards( ) )
+                     {
+                        do
+                        {
+                           if( check_spec_field.child_Specification( ).Specification_Type( ) == "field_from_module_string_placeholder" )
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+
+                              extras += "default_placeholder";
+
+                              check_spec_field.child_Specification( ).iterate_stop( );
+
+                              break;
+                           }
+                        } while( check_spec_field.child_Specification( ).iterate_next( ) );
                      }
 
                      field_extras.push_back( extras );
@@ -7719,6 +7747,7 @@ void Meta_Model::impl::after_store( bool is_create, bool is_internal )
       vector< pair< string, string > > single_types;
 
       class_pointer< Meta_Package_Type > cp_type( e_create_instance );
+
       if( cp_type->iterate_forwards( ) )
       {
          do

@@ -1679,15 +1679,16 @@ bool output_view_form( ostream& os, const string& act,
          has_value = true;
 
       bool is_always_editable = false;
+      bool cell_data_is_placeholder = false;
 
       if( !is_printable && !is_protected_field
        && ( !is_in_edit || !extra_data.count( c_view_field_extra_view_only ) )
        && !( source.state & c_state_is_changing ) && extra_data.count( c_view_field_extra_always_editable ) )
          is_always_editable = true;
 
-      // NOTE: The primary key and the parent folder of a "root" folder cannot be edited and record
-      // editing below a parent does not allow the parent field value itself to be changed. Also any
-      // "special fields" will require specialised editing (if editable) rather than standard handling.
+      // NOTE: The primary key and parent folder of a "root" folder may not be edited and record
+      // editing below a parent does not allow the parent field value itself to be changed. Also
+      // any "special fields" will require specialised editing (if editable).
       if( !is_special_field && ( is_new_record
        || is_always_editable || ( is_in_edit && source_field_id != c_key_field ) )
        && ( source.root_folder.empty( )
@@ -1703,11 +1704,18 @@ bool output_view_form( ostream& os, const string& act,
 
          // NOTE: If a foreign key display value is encrypted then decrypt it.
          set< string > parent_extras;
+
          if( !source.vici->second->fields[ i ].pextra.empty( ) )
             split( source.vici->second->fields[ i ].pextra, parent_extras, '+' );
 
          if( !cell_data.empty( ) && parent_extras.count( c_parent_extra_decrypt ) )
             cell_data = data_decrypt( cell_data, sid );
+
+         // NOTE: If a new record involves a trigger event then the placeholder will
+         // be erased (as effectively a "blank" value has been provided).
+         if( is_new_record && !has_value && !has_new_value
+          && !cell_data.empty( ) && extra_data.count( c_field_extra_default_placeholder ) )
+            cell_data_is_placeholder = true;
 
          if( !field_list.empty( ) )
             field_list += ',';
@@ -1717,6 +1725,7 @@ bool output_view_form( ostream& os, const string& act,
          if( !source.parent_lists.count( source_field_id ) )
          {
             string cls( "textinput" );
+
             string type( "text" );
             string name( "field_" + source_field_id );
 
@@ -1761,6 +1770,7 @@ bool output_view_form( ostream& os, const string& act,
                   if( !has_value )
                   {
                      string mask( c_default_int_mask );
+
                      if( extra_data.count( c_field_extra_mask ) )
                         mask = extra_data[ c_field_extra_mask ];
 
@@ -1794,6 +1804,7 @@ bool output_view_form( ostream& os, const string& act,
                   if( !has_value )
                   {
                      string mask( c_default_numeric_mask );
+
                      if( extra_data.count( c_field_extra_mask ) )
                         mask = extra_data[ c_field_extra_mask ];
 
@@ -1833,6 +1844,7 @@ bool output_view_form( ostream& os, const string& act,
                }
 
                string date_precision;
+
                if( extra_data.count( c_field_extra_date_precision ) )
                   date_precision = extra_data[ c_field_extra_date_precision ];
 
@@ -1870,6 +1882,7 @@ bool output_view_form( ostream& os, const string& act,
                }
 
                string time_precision;
+
                if( extra_data.count( c_field_extra_time_precision ) )
                   time_precision = extra_data[ c_field_extra_time_precision ];
 
@@ -1881,6 +1894,7 @@ bool output_view_form( ostream& os, const string& act,
 
                if( !is_empty )
                   cell_data = format_time( mt, time_precision.c_str( ) );
+
             }
             else if( source.datetime_fields.count( source_value_id ) )
             {
@@ -1918,6 +1932,7 @@ bool output_view_form( ostream& os, const string& act,
                }
 
                string time_precision;
+
                if( extra_data.count( c_field_extra_time_precision ) )
                   time_precision = extra_data[ c_field_extra_time_precision ];
 
@@ -1976,6 +1991,16 @@ bool output_view_form( ostream& os, const string& act,
                }
             }
 
+            if( cell_data_is_placeholder )
+            {
+               if( !extra.empty( ) )
+                  extra += " ";
+
+               extra += "placeholder=\"" + cell_data + "\"";
+
+               cell_data.erase( );
+            }
+
             os << "<input class=\"" << cls << class_extra << "\" type=\""
              << type << "\" " << extra << "name=\"" << name << "\" id=\"" << name
              << "\" maxlength=\"" << max_length << "\" value=\"" << escape_markup( unescaped( cell_data ) );
@@ -1984,6 +2009,7 @@ bool output_view_form( ostream& os, const string& act,
                os << "\" nofocus=\"" << c_true;
 
             string on_keyup;
+
             if( source.upper_fields.count( source_value_id ) )
                on_keyup = "this.value = this.value.toUpperCase( ); ";
 
