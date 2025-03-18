@@ -54,10 +54,16 @@ CREDENTIALS=%NAME_AND_INFO:5%
 ;
 OLD_IP=
 ;
-FILE=@files::$NAME.$API_DOMAIN.ip
+@ifndef $NAME_DOMAIN
+IP_FILE_NAME=$NAME.$API_DOMAIN.ip
+@else
+IP_FILE_NAME=$NAME.$NAME_DOMAIN.ip
+@endif
+;
+FILE=@files::$IP_FILE_NAME
 ;
 @ifneq "$FILE" ""
-OLD_IP=@file:$NAME.$API_DOMAIN.ip
+OLD_IP=@file:$IP_FILE_NAME
 @endif
 ;
 NEW_IP=
@@ -90,7 +96,7 @@ NEW_IP=%LOG_TAIL:1%
 @ifneq "$NEW_IP" "0"
 @ifneq "$OLD_IP" "$NEW_IP"
 ;
-~echo -n "$NEW_IP" > $NAME.$API_DOMAIN.ip
+~echo -n "$NEW_IP" > $IP_FILE_NAME
 ;
 TYPE=A
 NEW_IPV4=@repstr:\::$NEW_IP
