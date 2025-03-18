@@ -118,6 +118,10 @@ Apache2 configuration for FCGI support
 sudo vi /etc/apache2/apache2.conf
 [/etc/apache2/apache2.conf]
 ...
+#ServerRoot "/etc/apache2
+*** add the following line after the above line  ***
+ServerName localhost
+...
 <Directory /var/www/>
    Options Indexes FollowSymLinks
 *** change the above line and add the second line ***
@@ -426,6 +430,11 @@ http://localhost:9394
 
 ********************* FOR NON-VM MACHINES *******************
 
+sudo apt update
+sudo apt upgrade
+
+sudo hostnamectl set-hostname ***domain.name*** --static
+
 Setting up an automatically renewed Let's Encrypt certificate
 -------------------------------------------------------------
 
@@ -437,3 +446,103 @@ sudo certbot --noninteractive --register-unsafely-without-email --agree-tos --ap
 sudo systemctl daemon-reload
 sudo systemctl status certbot
 sudo systemctl list-timers --all
+
+Installing and configuring Matrix-Synapse with PostgreSQL
+---------------------------------------------------------
+
+sudo apt install -y lsb-release wget apt-transport-https
+sudo wget -O /usr/share/keyrings/matrix-org-archive-keyring.gpg https://packages.matrix.org/debian/matrix-org-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/matrix-org-archive-keyring.gpg] https://packages.matrix.org/debian/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/matrix-org.list
+
+sudo apt install matrix-synapse-py3
+(if prompted provide ***domain.name***)
+
+sudo apt install postgresql
+
+(will need to type in a passowrd twice)
+sudo -u postgres bash
+createuser --pwprompt synapse_user
+createdb --encoding=UTF8 --locale=C --template=template0 --owner=synapse_user synapse
+exit
+
+sudo vi /etc/matrix-synapse/homeserver.yaml
+...
+database:
+  name: psycopg2
+  args:
+    host: localhost
+    user: synapse_user
+    password: <password>
+    database: synapse
+    cp_min: 5
+    cp_max: 10
+    cp_reconnect: true
+...
+suppress_key_server_warning: true
+retention:
+ enabled: true
+ default_policy:
+  min_lifetime: 1d
+  max_lifetime: 3d
+...
+
+sudo vi /usr/lib/systemd/system/matrix-synapse.service
+[Unit]
+...
+Requires=postgresql.service
+After=postgresql.service
+...
+
+sudo systemctl daemon-reload
+
+sudo systemctl restart matrix-synapse
+sudo systemctl status matrix-synapse
+
+Configure Reverse Proxy for Apache2 Web Server
+----------------------------------------------
+
+sudo vi /etc/apache2/sites-available/000-default-le-ssl.conf
+...
+<VirtualHost *:443>
+...
+Include /etc/letsencrypt/options-ssl-apache.conf
+...
+(add the following)
+    RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}
+    AllowEncodedSlashes NoDecode
+    ProxyPreserveHost on
+    ProxyPass /_matrix http://127.0.0.1:8008/_matrix nocanon
+    ProxyPassReverse /_matrix http://127.0.0.1:8008/_matrix
+    ProxyPass /_synapse/client http://127.0.0.1:8008/_synapse/client nocanon
+    ProxyPassReverse /_synapse/client http://127.0.0.1:8008/_synapse/client
+...
+</VirtualHost>
+
+<VirtualHost *:8448>
+    SSLEngine on
+    ServerName ***domain.name***
+
+(copy these from above)
+SSLCertificateFile /etc/letsencrypt/live/mgp.ciyam.org/fullchain.pem
+SSLCertificateKeyFile /etc/letsencrypt/live/mgp.ciyam.org/privkey.pem
+
+    RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}
+    AllowEncodedSlashes NoDecode
+    ProxyPass /_matrix http://127.0.0.1:8008/_matrix nocanon
+    ProxyPassReverse /_matrix http://127.0.0.1:8008/_matrix
+</VirtualHost>
+...
+
+sudo a2enmod proxy
+sudo a2enmod headers
+sudo a2enmod proxy_html
+sudo a2enmod proxy_http
+
+sudo apachectl configtest
+
+sudo systemctl restart apache2
+sudo systemctl status apache2
+
+curl https://***domain.name***/_matrix/client/versions
+curl https://***domain.name***/_matrix/federation/v1/version
+

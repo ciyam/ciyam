@@ -54,10 +54,10 @@ CREDENTIALS=%NAME_AND_INFO:5%
 ;
 OLD_IP=
 ;
-FILE=@files::ciyam.$NAME.ip
+FILE=@files::$NAME.$API_DOMAIN.ip
 ;
 @ifneq "$FILE" ""
-OLD_IP=@file:ciyam.$NAME.ip
+OLD_IP=@file:$NAME.$API_DOMAIN.ip
 @endif
 ;
 NEW_IP=
@@ -90,7 +90,7 @@ NEW_IP=%LOG_TAIL:1%
 @ifneq "$NEW_IP" "0"
 @ifneq "$OLD_IP" "$NEW_IP"
 ;
-~echo -n "$NEW_IP" > ciyam.$NAME.ip
+~echo -n "$NEW_IP" > $NAME.$API_DOMAIN.ip
 ;
 TYPE=A
 NEW_IPV4=@repstr:\::$NEW_IP
