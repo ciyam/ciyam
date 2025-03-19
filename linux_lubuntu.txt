@@ -116,7 +116,7 @@ Apache2 configuration for FCGI support
 --------------------------------------
 
 sudo vi /etc/apache2/apache2.conf
-[/etc/apache2/apache2.conf]
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
 #ServerRoot "/etc/apache2
 *** add the following line after the above line  ***
@@ -145,18 +145,18 @@ ServerName localhost
    DefaultMinClassProcessCount   1
 </IfModule>
 ...
-[/etc/apache2/apache2.conf]
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo systemctl start mysql
 sudo systemctl restart apache2
 
 sudo vi /etc/ssh/sshd_config
-[/etc/ssh/sshd_config]
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
 *** uncomment out the following line ***
 PasswordAuthentication yes
 ...
-[/etc/ssh/sshd_config]
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo systemctl start ssh
 
@@ -223,8 +223,11 @@ sudo fallocate -l 10M backup.img
 sudo mkfs.ext4 backup.img
 
 sudo vi /etc/fstab
-(append the following line)
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+*** append the following line ***
 /home/admin/backup.img  /home/admin/backup ext4 loop 0 0
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo mkdir backup
 sudo mount backup.img backup
@@ -244,8 +247,11 @@ sudo fallocate -l 10M opened.img
 sudo mkfs.ext4 opened.img
 
 sudo vi /etc/fstab
-(append the following line)
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+*** append the following line ***
 /home/admin/opened.img  /home/admin/opened ext4 loop 0 0
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo mkdir opened
 sudo mount opened.img opened
@@ -265,8 +271,11 @@ sudo fallocate -l 10M shared.img
 sudo mkfs.ext4 shared.img
 
 sudo vi /etc/fstab
-(append the following line)
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+*** append the following line ***
 /home/admin/shared.img  /home/admin/shared ext4 loop 0 0
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo mkdir shared
 sudo mount shared.img shared
@@ -311,16 +320,16 @@ To ensure that the Meta application will operate correctly:
 
 ./create_db ciyam .
 ./init Meta ciyam
-
 ./test -t=../tests Meta_tests.sio
-
 ./drop_db ciyam .
+
 ./create_db Meta .
 ./init Meta Meta
 
 ./install_test_fcgi
 
 From the host OS use a browser with the following URL:
+
 http://localhost:8008/test_fcgi.html
 
 After clicking on the "Perform Post Request" button the following should be output:
@@ -358,15 +367,16 @@ sudo vi /etc/systemd/system/ciyamd.service
 (ensure that the "Environment" values matches the exported values above)
 
 Make necessary changes (for VMs) to the "ciyam_server.sio" configuration file:
+
 vi ciyam_server.sio
-[ciyam_server.sio]
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
  <default_storage>Home
 ...
  <protocol_handler>sftp://@user@localhost:2222
  <ods_use_sync_write>false
 ...
-[ciyam_server.sio]
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo systemctl daemon-reload
 sudo systemctl enable ciyamd
@@ -378,7 +388,7 @@ Adding extra package types to Meta
 ----------------------------------
 
 vi packages.lst
-[packages.lst]
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
 Blog
 ...
@@ -386,7 +396,7 @@ Forum
 ...
 Message
 ...
-[packages.lst]
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 ./unbundle Blog.package
 mv package.info Blog.package.info
@@ -406,11 +416,11 @@ Adding 'ciyam.test' host (optional)
 -----------------------------------
 
 sudo vi /etc/hosts
-[/etc/hosts]
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
 10.0.2.2   ciyam.test
 ...
-[/etc/hosts]
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 Installing Syncthing User Service
 ---------------------------------
@@ -428,12 +438,20 @@ ssh -L 9394:127.0.0.1:8384 -p 2222 admin@localhost
 Configure Syncthing from host OS using the following URL:
 http://localhost:9394
 
-********************* FOR NON-VM MACHINES *******************
+******************************** FOR NON-VM MACHINES ******************************
 
 sudo apt update
 sudo apt upgrade
 
-sudo hostnamectl set-hostname ***domain.name*** --static
+(determine the current external IP address)
+hostname -i
+***external_ip_address***
+
+(determine the current internal IP address which needs to be static)
+hostname -I | cut -d' ' -f1
+***internal_ip_address***
+
+sudo hostnamectl set-hostname ***domain_name*** --static
 
 Setting up an automatically renewed Let's Encrypt certificate
 -------------------------------------------------------------
@@ -441,7 +459,7 @@ Setting up an automatically renewed Let's Encrypt certificate
 sudo apt-get install python3-certbot
 sudo apt-get install python3-certbot-apache
 
-sudo certbot --noninteractive --register-unsafely-without-email --agree-tos --apache -d ***domain.name***
+sudo certbot --noninteractive --register-unsafely-without-email --agree-tos --apache -d ***domain_name***
 
 sudo systemctl daemon-reload
 sudo systemctl status certbot
@@ -454,30 +472,36 @@ sudo apt install -y lsb-release wget apt-transport-https
 sudo wget -O /usr/share/keyrings/matrix-org-archive-keyring.gpg https://packages.matrix.org/debian/matrix-org-archive-keyring.gpg
 echo "deb [signed-by=/usr/share/keyrings/matrix-org-archive-keyring.gpg] https://packages.matrix.org/debian/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/matrix-org.list
 
-sudo apt install matrix-synapse-py3
-(if prompted provide ***domain.name***)
+sudo apt install matrix-synapse-py3 -y
+sudo apt install postgresql -y
 
-sudo apt install postgresql
+NOTE: Will need to type in a password twice when creating the "synapse_user".
 
-(will need to type in a passowrd twice)
+The following is a simple way to create a random 32 character length password:
+
+head -c 32 /dev/random | sha256sum | cut -c -32
+***synapse_password***
+
 sudo -u postgres bash
 createuser --pwprompt synapse_user
 createdb --encoding=UTF8 --locale=C --template=template0 --owner=synapse_user synapse
 exit
 
 sudo vi /etc/matrix-synapse/homeserver.yaml
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
 database:
   name: psycopg2
   args:
     host: localhost
     user: synapse_user
-    password: <password>
+    password: ***synapse_password***
     database: synapse
     cp_min: 5
     cp_max: 10
     cp_reconnect: true
 ...
+registration_shared_secret: "***synapse_password***"
 suppress_key_server_warning: true
 retention:
  enabled: true
@@ -485,13 +509,16 @@ retention:
   min_lifetime: 1d
   max_lifetime: 3d
 ...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo vi /usr/lib/systemd/system/matrix-synapse.service
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 [Unit]
 ...
 Requires=postgresql.service
 After=postgresql.service
 ...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo systemctl daemon-reload
 
@@ -502,6 +529,7 @@ Configure Reverse Proxy for Apache2 Web Server
 ----------------------------------------------
 
 sudo vi /etc/apache2/sites-available/000-default-le-ssl.conf
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
 <VirtualHost *:443>
 ...
@@ -513,6 +541,9 @@ Include /etc/letsencrypt/options-ssl-apache.conf
     ProxyPreserveHost on
     ProxyPass /_matrix http://127.0.0.1:8008/_matrix nocanon
     ProxyPassReverse /_matrix http://127.0.0.1:8008/_matrix
+# NOTE: Uncomment out the following if allowing external adminstration.
+#    ProxyPass /_synapse/admin http://127.0.0.1:8008/_synapse/admin nocanon
+#    ProxyPassReverse /_synapse/admin http://127.0.0.1:8008/_synapse/admin
     ProxyPass /_synapse/client http://127.0.0.1:8008/_synapse/client nocanon
     ProxyPassReverse /_synapse/client http://127.0.0.1:8008/_synapse/client
 ...
@@ -520,7 +551,7 @@ Include /etc/letsencrypt/options-ssl-apache.conf
 
 <VirtualHost *:8448>
     SSLEngine on
-    ServerName ***domain.name***
+    ServerName ***domain_name***
 
 (copy these from above)
 SSLCertificateFile /etc/letsencrypt/live/mgp.ciyam.org/fullchain.pem
@@ -532,6 +563,18 @@ SSLCertificateKeyFile /etc/letsencrypt/live/mgp.ciyam.org/privkey.pem
     ProxyPassReverse /_matrix http://127.0.0.1:8008/_matrix
 </VirtualHost>
 ...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+NOTE: To support server federation use the following:
+
+mkdir -p /var/www/html/.well-known/matrix
+
+vi /var/www/html/.well-known/matrix/server
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+{
+    "m.server": "***domain_name***:443"
+}
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo a2enmod proxy
 sudo a2enmod headers
@@ -543,6 +586,115 @@ sudo apachectl configtest
 sudo systemctl restart apache2
 sudo systemctl status apache2
 
-curl https://***domain.name***/_matrix/client/versions
-curl https://***domain.name***/_matrix/federation/v1/version
+curl https://***domain_name***/_matrix/client/versions
+curl https://***domain_name***/_matrix/federation/v1/version
 
+Install and Configure a TURN server for use with Matrix-Synapse
+---------------------------------------------------------------
+
+sudo apt install coturn -y
+
+head -c 32 /dev/random | sha256sum | cut -c -32
+***coturn_password***
+
+sudo vi /etc/turnserver.conf
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+listening-ip=***internal_ip_address***
+...
+external-ip=***external_ip_address***
+...
+use-auth-secret
+...
+static-auth-secret=***coturn_password***
+...
+realm=***domain_name***
+...
+cert=/etc/coturn/certs/***domain_name***.cert
+...
+pkey=/etc/coturn/certs/***domain_name***.key
+..
+no-cli
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo mkdir -p /etc/coturn/certs
+sudo chown -R turnserver:turnserver /etc/coturn/
+sudo chmod -R 700 /etc/coturn/
+
+sudo vi /etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#!/bin/bash
+
+set -e
+
+for domain in $RENEWED_DOMAINS; do
+ case $domain in
+ ***domain_name***)
+  daemon_cert_root=/etc/coturn/certs
+
+  # Make sure the certificate and private key files are
+  # not world readable (even just for an instant) while
+  # they are being copied.
+  umask 077
+
+  cp "$RENEWED_LINEAGE/fullchain.pem" "$daemon_cert_root/$domain.cert"
+  cp "$RENEWED_LINEAGE/privkey.pem" "$daemon_cert_root/$domain.key"
+
+  # Apply file ownership and permissions for the coturn daemon.
+  chown turnserver "$daemon_cert_root/$domain.cert" "$daemon_cert_root/$domain.key"
+  chmod 400 "$daemon_cert_root/$domain.cert" "$daemon_cert_root/$domain.key"
+
+  systemctl restart coturn >/dev/null
+  ;;
+ esac
+done
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo chmod 700 /etc/letsencrypt/renewal-hooks/deploy/coturn-certbot-deploy.sh
+
+sudo certbot renew --force-renewal
+
+sudo systemctl restart coturn
+sudo systemctl status coturn
+
+NOTE: If the external IP is not static then will need to add an update "cron" script.
+
+vi coturn-external-ip
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#!/bin/bash
+
+current_external_ip_config=$(sudo cat /etc/turnserver.conf | grep "^external-ip" | cut -d'=' -f2)
+current_external_ip=$(dig +short ***domain_name***)
+
+if [[ -n "$current_external_ip" ]] && [[ $current_external_ip_config != $current_external_ip ]]; then
+ sudo sed -i "/^external-ip=/ c external-ip=$current_external_ip" /etc/turnserver.conf
+ sudo systemctl restart coturn
+fi
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Reconfigure Matrix-Synapse to be able to use the Coturn server
+--------------------------------------------------------------
+
+sudo vi /etc/matrix-synapse/homeserver.yaml
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+turn_uris:
+  - "turn:***domain_name***:3478?transport=udp"
+  - "turn:***domain_name***:3478?transport=tcp"
+# Due to issues with LetsEncrypt certs these two may need to be omitted.
+#  - "turns:***domain_name***:5349?transport=udp"
+#  - "turns:***domain_name***:5349?transport=tcp"
+turn_shared_secret: "***coturn_password***"
+turn_user_lifetime: "1h"
+turn_allow_guests: true
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo systemctl restart matrix-synapse
+sudo systemctl status matrix-synapse
+
+Creating new user and admin user for Matrix-Synapse
+---------------------------------------------------
+
+sudo register_new_matrix_user -u ***user*** -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
+
+sudo register_new_matrix_user -u ***admin*** -a -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
