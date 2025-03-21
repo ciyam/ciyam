@@ -48,7 +48,7 @@ LINK = $(CPP)
 uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
 
 # Compiler options
-CPP_OPTS = $(CIYAM_CPP_OPTS) -fPIC -fno-gnu-unique -ftemplate-depth-30 -felide-constructors -O3 -MMD -D__STDC_CONSTANT_MACROS -I/usr/local/ssl/include -Wno-deprecated-declarations
+CPP_OPTS = $(CIYAM_CPP_OPTS) -fPIC -fno-gnu-unique -ftemplate-depth-50 -felide-constructors -O3 -MMD -D__STDC_CONSTANT_MACROS -I/usr/local/ssl/include -Wno-deprecated-declarations
 
 # Implicit rules (and override for simple builtins)
 %: %.o
