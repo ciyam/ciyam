@@ -82,7 +82,7 @@ sudo a2enmod fcgid
 sudo vi /etc/apache2/default-server.conf
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
-#ServerRoot "/etc/apache2
+#ServerRoot "/etc/apache2"
 *** add the following line after the above line  ***
 ServerName localhost
 ...
@@ -576,13 +576,14 @@ curl https://***domain_name***/_matrix/federation/v1/version
 
 Install and Configure a TURN server for use with Matrix-Synapse
 ---------------------------------------------------------------
+NOTE: Not reqwuired if only using Element-Call for audio/video.
 
 sudo zypper -n install coturn
 
 head -c 32 /dev/random | sha256sum | cut -c -32
 ***coturn_password***
 
-sudo vi /etc/turnserver.conf
+sudo vi /etc/coturn/turnserver.conf
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
 listening-ip=***internal_ip_address***
@@ -601,6 +602,8 @@ pkey=/etc/coturn/certs/***domain_name***.key
 ..
 no-cli
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo firewall-cmd --reload
 
 sudo mkdir -p /etc/coturn/certs
 sudo chown -R turnserver:turnserver /etc/coturn/
@@ -677,9 +680,108 @@ turn_allow_guests: true
 sudo systemctl restart matrix-synapse
 sudo systemctl status matrix-synapse
 
-Creating new user and admin user for Matrix-Synapse
----------------------------------------------------
+Install and Configure the Ntfy service for use with Apache2 and Matrix-Synapse
+------------------------------------------------------------------------------
 
-sudo register_new_matrix_user -u ***user*** -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
+wget https://github.com/binwiederhier/ntfy/releases/download/v2.11.0/ntfy_2.11.0_linux_amd64.tar.gz
+tar zxvf ntfy_2.11.0_linux_amd64.tar.gz
+sudo cp -a ntfy_2.11.0_linux_amd64/ntfy /usr/local/bin/ntfy
+sudo mkdir /etc/ntfy && sudo cp ntfy_2.11.0_linux_amd64/{client,server}/*.yml /etc/ntfy
 
-sudo register_new_matrix_user -u ***admin*** -a -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
+sudo groupadd ntfy
+sudo useradd -g ntfy ntfy
+
+sudo mkdir /var/cache/ntfy
+sudo chown ntfy:ntfy /var/cache/ntfy
+
+sudo touch /var/log/ntfy.log
+sudo chown ntfy:ntfy /var/log/ntfy.log
+
+sudo chown -R ntfy:ntfy /var/etc/ntfy
+
+sudo vi /etc/systemd/system/ntfy.service
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+[Unit]
+Description=ntfy server
+After=network.target
+
+[Service]
+User=ntfy
+Group=ntfy
+ExecStart=/usr/local/bin/ntfy serve --no-log-dates
+ExecReload=/bin/kill --signal HUP $MAINPID
+Restart=on-failure
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+LimitNOFILE=10000
+
+[Install]
+WantedBy=multi-user.target
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo systemctl daemon-reload
+sudo systemctl enable ntfy
+
+sudo vi /etc/ntfy/server.yml
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+base-url: "https://ntfy.***domain_name***"
+...
+listen-http: ":2586"
+...
+cache-file: "/var/cache/ntfy/cache.db"
+cache-duration: "24h"
+...
+behind-proxy: true
+...
+attachment-cache-dir: "/var/cache/ntfy/attachments"
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo systemctl start ntfy
+sudo systemctl status ntfy
+
+sudo vi /etc/apache2/sites-available/000-default-le-ssl.conf
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+<VirtualHost *:443>
+    SSLEngine on
+    ServerName ntfy.***domain_name***
+
+    ProxyPass / http://127.0.0.1:2586/ upgrade=websocket
+    ProxyPassReverse / http://127.0.0.1:2586/
+
+    SetEnv proxy-nokeepalive 1
+    SetEnv proxy-sendchunked 1
+
+    # Higher than the max message size of 4096 bytes
+    LimitRequestBody 102400
+
+    SSLCertificateFile /etc/letsencrypt/live/***domain_name***-0001/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/***domain_name***-0001/privkey.pem
+</VirtualHost>
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo systemctl restart apache2
+sudo systemctl status apache2
+
+curl -d "test..." https://ntfy.***domain_name***/test
+
+curl https://ntfy.***domain_name***/_matrix/push/v1/notify
+
+sudo vi /etc/matrix-synapse/homeserver.yaml
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+push:
+  enabled: true
+  include_content: false
+  group_unread_count_by_room: false
+ip_range_whitelist:
+   - '***internal_ip_address***'
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo systemctl restart matrix-synapse
+sudo systemctl status matrix-synapse
+
+Creating new users and admin users for Matrix-Synapse
+-----------------------------------------------------
+
+sudo register_new_matrix_user -u ***user_name*** -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
+
+sudo register_new_matrix_user -u ***admin_name*** -a -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008

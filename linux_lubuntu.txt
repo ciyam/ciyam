@@ -118,7 +118,7 @@ Apache2 configuration for FCGI support
 sudo vi /etc/apache2/apache2.conf
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
-#ServerRoot "/etc/apache2
+#ServerRoot "/etc/apache2"
 *** add the following line after the above line  ***
 ServerName localhost
 ...
@@ -361,9 +361,9 @@ vi autoscript.sio
 (uncomment out the various "check" scripts)
 
 (if no ciyamd.service exists then ./init_service)
-sudo cp ciyamd.service /etc/systemd/system
+sudo cp ciyamd.service /usr/lib/systemd/system
 
-sudo vi /etc/systemd/system/ciyamd.service
+sudo vi /usr/lib/systemd/system/ciyamd.service
 (ensure that the "Environment" values matches the exported values above)
 
 Make necessary changes (for VMs) to the "ciyam_server.sio" configuration file:
@@ -459,7 +459,8 @@ Setting up an automatically renewed Let's Encrypt certificate
 sudo apt-get install python3-certbot
 sudo apt-get install python3-certbot-apache
 
-sudo certbot --noninteractive --register-unsafely-without-email --agree-tos --apache -d ***domain_name***
+sudo certbot --noninteractive --register-unsafely-without-email --agree-tos --apache -d ***domain_name***,www.***domain_name***
+NOTE: Also append ",ntfy.***domain.name***" if wanting to use the "ntfy" service for self-hosted Element-X notifications.
 
 sudo systemctl daemon-reload
 sudo systemctl status certbot
@@ -591,6 +592,7 @@ curl https://***domain_name***/_matrix/federation/v1/version
 
 Install and Configure a TURN server for use with Matrix-Synapse
 ---------------------------------------------------------------
+NOTE: Not reqwuired if only using Element-Call for audio/video.
 
 sudo apt install coturn -y
 
@@ -616,6 +618,9 @@ pkey=/etc/coturn/certs/***domain_name***.key
 ..
 no-cli
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo ufw allow 3478
+sudo ufw allow 5349
 
 sudo mkdir -p /etc/coturn/certs
 sudo chown -R turnserver:turnserver /etc/coturn/
@@ -692,9 +697,78 @@ turn_allow_guests: true
 sudo systemctl restart matrix-synapse
 sudo systemctl status matrix-synapse
 
-Creating new user and admin user for Matrix-Synapse
----------------------------------------------------
+Install and Configure the Ntfy service for use with Apache2 and Matrix-Synapse
+------------------------------------------------------------------------------
 
-sudo register_new_matrix_user -u ***user*** -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://archive.heckel.io/apt/pubkey.txt | sudo gpg --dearmor -o /etc/apt/keyrings/archive.heckel.io.gpg
+sudo apt install apt-transport-https
+sudo sh -c "echo 'deb [arch=amd64 signed-by=/etc/apt/keyrings/archive.heckel.io.gpg] https://archive.heckel.io/apt debian main' > /etc/apt/sources.list.d/archive.heckel.io.list"
+sudo apt update
+sudo apt install ntfy
+sudo systemctl enable ntfy
 
-sudo register_new_matrix_user -u ***admin*** -a -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
+sudo vi /etc/ntfy/server.yml
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+base-url: "https://ntfy.***domain_name***"
+...
+listen-http: ":2586"
+...
+cache-file: "/var/cache/ntfy/cache.db"
+cache-duration: "24h"
+...
+behind-proxy: true
+...
+attachment-cache-dir: "/var/cache/ntfy/attachments"
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo systemctl start ntfy
+sudo systemctl status ntfy
+
+sudo vi /etc/apache2/sites-available/000-default-le-ssl.conf
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+<VirtualHost *:443>
+    SSLEngine on
+    ServerName ntfy.***domain_name***
+
+    ProxyPass / http://127.0.0.1:2586/ upgrade=websocket
+    ProxyPassReverse / http://127.0.0.1:2586/
+
+    SetEnv proxy-nokeepalive 1
+    SetEnv proxy-sendchunked 1
+
+    # Higher than the max message size of 4096 bytes
+    LimitRequestBody 102400
+
+    SSLCertificateFile /etc/letsencrypt/live/***domain_name***-0001/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/***domain_name***-0001/privkey.pem
+</VirtualHost>
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo systemctl restart apache2
+sudo systemctl status apache2
+
+curl -d "test..." https://ntfy.***domain_name***/test
+
+curl https://ntfy.***domain_name***/_matrix/push/v1/notify
+
+sudo vi /etc/matrix-synapse/homeserver.yaml
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+push:
+  enabled: true
+  include_content: false
+  group_unread_count_by_room: false
+ip_range_whitelist:
+   - '***internal_ip_address***'
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo systemctl restart matrix-synapse
+sudo systemctl status matrix-synapse
+
+Creating new users and admin users for Matrix-Synapse
+-----------------------------------------------------
+
+sudo register_new_matrix_user -u ***user_name*** -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
+
+sudo register_new_matrix_user -u ***admin_name*** -a -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
