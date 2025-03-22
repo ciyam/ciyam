@@ -99,7 +99,7 @@ const int c_confidential_directory_perms = S_IRWXU;
 const int c_default_directory_perms = c_standard_directory_perms;
 #endif
 
-const char* const p_soundex_map_values = "01230120022455012623010202";
+const char c_soundex_map_values[ ] = "01230120022455012623010202";
 
 const char* const c_env_var_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
@@ -276,6 +276,8 @@ string soundex( const char* p_str, bool skip_prefix_specials )
       if( ( ch < 'A' ) || ( ch > 'Z' ) )
          ch = '?';
 
+      char last_ch = ch;
+
       retval += ch;
 
       while( true )
@@ -285,10 +287,15 @@ string soundex( const char* p_str, bool skip_prefix_specials )
          if( ch == 0 )
             break;
 
+         if( ch == last_ch )
+            continue;
+
+         last_ch = ch;
+
          // NOTE: If requested will change the prefix
          // character for simple cases like "Knowing"
          // (from a 'K' to an 'N').
-         if( skip_prefix_specials && ( offset == 1 ) )
+         if( ( offset == 1 ) && skip_prefix_specials )
          {
             bool replace = false;
 
@@ -322,13 +329,10 @@ string soundex( const char* p_str, bool skip_prefix_specials )
 
          if( ( ch >= 'A' ) && ( ch <= 'Z' ) )
          {
-            char mapped = p_soundex_map_values[ ch - 65 ];
+            char mapped = c_soundex_map_values[ ch - 65 ];
 
             if( mapped != '0' )
-            {
-               if( mapped != retval[ offset - 1 ] )
-                  retval += mapped;
-            }
+               retval += mapped;
 
             if( retval.length( ) > 3 )
                break;
