@@ -1,15 +1,16 @@
 Linux OpenSUSE Specific Instructions
 ====================================
 
-https://get.opensuse.org/tumbleweed
+https://get.opensuse.org/leap/15.6/
 (download the ISO image to use as the VM's install CD/DVD)
 
-NOTE: When creating ensure that the Type is Linux and Version is openSUSE (64 bit).
-
-Create a New machine in VirtualBox with 4096 MB of memory and create a virtual disk
-that is at least 510 GB in size. After create click on the Settings button and from
-General set the Shared Clipboard to bidirectional and then in System uncheck Floppy
-so it is not part of the Boot Order. Next in Storage -> Devices -> Controller: SATA
+Create a new New machine in VirtualBox typing its Name and then using the ISO Image
+Image drop list to select "Other..." then locate the ISO image that was downloaded.
+Click on Hardware to select a "Base Memory" size of 4096 MB then click on Hard Disk
+and in "Create a Virtual Hard Disk" select a size no less than 510 GB. Click Finish
+but before starting up this new VM first click on the Settings button and then from
+General -> Advanced select the Shared Clipboard as bidirectional and then in System
+remove Floppy from the Boot Order. Lastly in Storage -> Devices -> Controller: SATA
 check the "Use Host I/O Cache" option (for a huge difference to DB performance).
 
 Port Forwarding to access the VM from its Host
@@ -18,7 +19,6 @@ Port Forwarding to access the VM from its Host
 CIYAM    TCP   127.0.0.1   12021    10.0.2.15   12021
 HTTP     TCP   127.0.0.1   8008     10.0.2.15   80
 SSH      TCP   127.0.0.1   2222     10.0.2.15   22
-SYNC     TCP   127.0.0.1   22022    10.0.2.15   22000
 
 It should be noted the "localhost" port numbers (other than CIYAM) have been set to
 values that are different to the standard ones and can be changed if they are being
@@ -27,13 +27,13 @@ used already (although examples below are assuming the values chosen above).
 Starting OS Installation
 ------------------------
 
-Click the green arrow Start in VirutalBox and after selecting the downloaded ".iso"
-click on the Start button then wait (or hit Enter) and finally click on the Install
-button.
+Click the green arrow Start in VirutalBox then choose Installation from the initial
+menu selecting Global/UTC for the location/timezone.
 
 The Xfce GUI is recommended (due to being smaller but having decent functionality).
 
-Create the user "admin" when installing (with an initial password as just "linux").
+Create a user "admin" when installing (with an initial password being "linux") then
+uncheck the "Automatic Login" option and finish installation.
 
 Install Guest Additions (normally automatic)
 --------------------------------------------
@@ -57,7 +57,8 @@ echo "set fo-=ro" >>.vimrc
 
 Updgrade to latest version (should reboot immediately after this):
 
-sudo zypper dup
+sudo zypper refresh
+sudo zypper update
 
 sudo reboot
 
@@ -82,9 +83,9 @@ sudo a2enmod fcgid
 sudo vi /etc/apache2/default-server.conf
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
-#ServerRoot "/etc/apache2"
-*** add the following line after the above line  ***
 ServerName localhost
+*** add the above line before the line below ***
+DocumentRoot "/srv/www/htdocs"
 ...
 <Directory "/srv/www/htdocs">
 ...
@@ -140,7 +141,7 @@ sudo firewall-cmd --state
 sudo firewall-cmd --get-default-zone
 sudo firewall-cmd --list-all
 
-sudo vi /usr/etc/ssh/sshd_config
+sudo vi /etc/ssh/sshd_config
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
 *** uncomment out the following line ***
@@ -220,7 +221,6 @@ sudo vi /etc/fstab
 
 sudo mkdir backup
 sudo mount backup.img backup
-(ignore hint about modified fstab)
 
 sudo mkdir backup/.ciyam
 sudo mkdir backup/.system
@@ -244,7 +244,6 @@ sudo vi /etc/fstab
 
 sudo mkdir opened
 sudo mount opened.img opened
-(ignore hint about modified fstab)
 
 sudo mkdir opened/.system
 sudo mv opened/lost+found opened/.system
@@ -268,7 +267,6 @@ sudo vi /etc/fstab
 
 sudo mkdir shared
 sudo mount shared.img shared
-(ignore hint about modified fstab)
 
 sudo mkdir shared/.system
 sudo mv shared/lost+found shared/.system
@@ -294,7 +292,7 @@ To compile all targets and run all basic regression tests:
 
 ./xrep @sshd_config_app.xrep user=$USER
 (append output of this to the following)
-sudo vi /usr/etc/ssh/sshd_config
+sudo vi /etc/ssh/sshd_config
 
 ./xrep @ciyam_sftp.sh.xrep user=$USER > /home/$USER/ciyam_sftp.sh
 chmod a+x /home/$USER/ciyam_sftp.sh
@@ -347,7 +345,7 @@ NOTE: Do this *only after* the CIYAM application server has been built and the
 Meta DB has been created.
 
 vi autoscript.sio
-(uncomment out the various "check" scripts)
+(uncomment out all standard scripts)
 
 (if no ciyamd.service exists then ./init_service)
 sudo cp ciyamd.service /etc/systemd/system
@@ -380,7 +378,6 @@ vi packages.lst
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
 Blog
-...
 Forum
 ...
 Message
@@ -411,6 +408,18 @@ sudo vi /etc/hosts
 ...
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+******************************** FOR NON-VM MACHINES ******************************
+
+(determine the current external IP address)
+hostname -i
+***external_ip_address***
+
+(determine the current internal IP address which needs to be static)
+hostname -I | cut -d' ' -f1
+***internal_ip_address***
+
+sudo hostnamectl set-hostname ***domain_name*** --static
+
 Installing Syncthing User Service
 ---------------------------------
 
@@ -426,21 +435,6 @@ ssh -L 9394:127.0.0.1:8384 -p 2222 admin@localhost
 
 Configure Syncthing from host OS using the following URL:
 http://localhost:9394
-
-******************************** FOR NON-VM MACHINES ******************************
-
-zypper refresh
-zypper update
-
-(determine the current external IP address)
-hostname -i
-***external_ip_address***
-
-(determine the current internal IP address which needs to be static)
-hostname -I | cut -d' ' -f1
-***internal_ip_address***
-
-sudo hostnamectl set-hostname ***domain_name*** --static
 
 Setting up an automatically renewed Let's Encrypt certificate
 -------------------------------------------------------------
@@ -734,6 +728,8 @@ cache-duration: "24h"
 behind-proxy: true
 ...
 attachment-cache-dir: "/var/cache/ntfy/attachments"
+...
+manager-interval: "1h"
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo systemctl start ntfy

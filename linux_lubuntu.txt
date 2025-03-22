@@ -1,16 +1,19 @@
 Linux Lubuntu Specific Instructions
 ===================================
 
-https://cdimage.ubuntu.com/lubuntu/releases/24.04/release/
+https://cdimage.ubuntu.com/lubuntu/releases/noble/release/
 (download the ISO image to use as the VM's install CD/DVD)
 
 Creating VirtualBox Machine
 ---------------------------
 
-Create a New machine in VirtualBox with 4096 MB of memory and create a virtual disk
-that is at least 510 GB in size. After create click on the Settings button and from
-General set the Shared Clipboard to bidirectional and then in System uncheck Floppy
-so it is not part of the Boot Order. Next in Storage -> Devices -> Controller: SATA
+Create a new New machine in VirtualBox typing its Name and then using the ISO Image
+Image drop list to select "Other..." then locate the ISO image that was downloaded.
+Click on Hardware to select a "Base Memory" size of 4096 MB then click on Hard Disk
+and in "Create a Virtual Hard Disk" select a size no less than 510 GB. Click Finish
+but before starting up this new VM first click on the Settings button and then from
+General -> Advanced select the Shared Clipboard as bidirectional and then in System
+remove Floppy from the Boot Order. Lastly in Storage -> Devices -> Controller: SATA
 check the "Use Host I/O Cache" option (for a huge difference to DB performance).
 
 Port Forwarding to access the VM from its Host
@@ -19,7 +22,6 @@ Port Forwarding to access the VM from its Host
 CIYAM    TCP   127.0.0.1   12021    10.0.2.15   12021
 HTTP     TCP   127.0.0.1   8008     10.0.2.15   80
 SSH      TCP   127.0.0.1   2222     10.0.2.15   22
-SYNC     TCP   127.0.0.1   22022    10.0.2.15   22000
 
 It should be noted the "localhost" port numbers (other than CIYAM) have been set to
 values that are different to the standard ones and can be changed if they are being
@@ -28,9 +30,8 @@ used already (although examples below are assuming the values chosen above).
 Starting OS Installation
 ------------------------
 
-Click the green arrow Start in VirutalBox and after selecting the downloaded ".iso"
-click on the Start button then wait (or hit Enter) and finally click on the Install
-Lubuntu button.
+Click the green arrow Start in VirutalBox and then hit enter (or just wait a while)
+at the initial text menu and then click the "Install Lubuntu" button in the GUI.
 
 The language selection should next be performed and then the Region and Locale need
 to be chosen (if wanting to approximate "UTC" then select "Atlantic/Reykjavik" then
@@ -51,6 +52,9 @@ sudo reboot
 
 Use sudo without a password
 ---------------------------
+
+sudo update-alternatives --config editor
+(use this to select the default editor)
 
 sudo visudo
 (add the following line at the bottom of the file)
@@ -88,25 +92,28 @@ Install all required packages for CIYAM Software Manufacturing
 --------------------------------------------------------------
 
 sudo apt install git -y
-
 sudo apt install qrencode -y
+(these should already be installed)
+
 sudo apt install libpng-dev -y
 sudo apt install libhpdf-dev -y
 
 sudo apt-get install make -y
 sudo apt-get install build-essential -y
-sudo apt-get install libreadline-dev -y
-sudo apt-get install libmysqlclient-dev -y
 
 sudo apt install apache2 libapache2-mod-fcgid -y
 sudo apt install mariadb-server libmariadb-dev -y
+
+sudo apt-get install libreadline-dev -y
+sudo apt-get install libmysqlclient-dev -y
 
 Next install and start/restart required services and extras
 -----------------------------------------------------------
 
 sudo apt install xclip
-
 sudo apt install openssh-server -y
+
+sudo apt autoremove
 
 sudo systemctl enable ssh
 sudo systemctl enable mysql
@@ -165,7 +172,6 @@ sudo systemctl enable ufw
 sudo ufw allow ssh
 sudo ufw allow http
 sudo ufw allow 12021
-sudo ufw allow 13031
 
 git clone https://github.com/ciyam/fcgi.git
 
@@ -358,7 +364,7 @@ NOTE: Do this *only after* the CIYAM application server has been built and the
 Meta DB has been created.
 
 vi autoscript.sio
-(uncomment out the various "check" scripts)
+(uncomment out all standard scripts)
 
 (if no ciyamd.service exists then ./init_service)
 sudo cp ciyamd.service /usr/lib/systemd/system
@@ -391,7 +397,6 @@ vi packages.lst
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
 Blog
-...
 Forum
 ...
 Message
@@ -422,6 +427,18 @@ sudo vi /etc/hosts
 ...
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+******************************** FOR NON-VM MACHINES ******************************
+
+(determine the current external IP address)
+hostname -i
+***external_ip_address***
+
+(determine the current internal IP address which needs to be static)
+hostname -I | cut -d' ' -f1
+***internal_ip_address***
+
+sudo hostnamectl set-hostname ***domain_name*** --static
+
 Installing Syncthing User Service
 ---------------------------------
 
@@ -437,21 +454,6 @@ ssh -L 9394:127.0.0.1:8384 -p 2222 admin@localhost
 
 Configure Syncthing from host OS using the following URL:
 http://localhost:9394
-
-******************************** FOR NON-VM MACHINES ******************************
-
-sudo apt update
-sudo apt upgrade
-
-(determine the current external IP address)
-hostname -i
-***external_ip_address***
-
-(determine the current internal IP address which needs to be static)
-hostname -I | cut -d' ' -f1
-***internal_ip_address***
-
-sudo hostnamectl set-hostname ***domain_name*** --static
 
 Setting up an automatically renewed Let's Encrypt certificate
 -------------------------------------------------------------
@@ -721,6 +723,8 @@ cache-duration: "24h"
 behind-proxy: true
 ...
 attachment-cache-dir: "/var/cache/ntfy/attachments"
+...
+manager-interval: "1h"
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo systemctl start ntfy
