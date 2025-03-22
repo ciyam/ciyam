@@ -17,7 +17,7 @@ Port Forwarding to access the VM from its Host
 ----------------------------------------------
 (Network -> Advanced -> Port Forwarding)
 CIYAM    TCP   127.0.0.1   12021    10.0.2.15   12021
-HTTP     TCP   127.0.0.1   8008     10.0.2.15   80
+HTTP     TCP   127.0.0.1   8888     10.0.2.15   80
 SSH      TCP   127.0.0.1   2222     10.0.2.15   22
 
 It should be noted the "localhost" port numbers (other than CIYAM) have been set to
@@ -317,7 +317,7 @@ To ensure that the Meta application will operate correctly:
 
 From the host OS use a browser with the following URL:
 
-http://localhost:8008/test_fcgi.html
+http://localhost:8888/test_fcgi.html
 
 After clicking on the "Perform Post Request" button the following should be output:
 
