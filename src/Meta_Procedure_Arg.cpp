@@ -348,48 +348,56 @@ void Meta_Procedure_Arg_command_functor::operator ( )( const string& command, co
       string field_name( get_parm_val( parameters, c_cmd_Meta_Procedure_Arg_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      if( !handled && ( ( field_name == c_field_id_Internal ) || ( field_name == c_field_name_Internal ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Procedure_Arg->Internal( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Procedure_Arg->Name( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      if( !handled && ( ( field_name == c_field_id_Order ) || ( field_name == c_field_name_Order ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Procedure_Arg->Order( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      if( !handled && ( ( field_name == c_field_id_Primitive ) || ( field_name == c_field_name_Primitive ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Procedure_Arg->Primitive( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Procedure || field_name == c_field_name_Procedure )
+      if( !handled && ( ( field_name == c_field_id_Procedure ) || ( field_name == c_field_name_Procedure ) ) )
       {
          handled = true;
+
          string_getter< Meta_Procedure >( cmd_handler.p_Meta_Procedure_Arg->Procedure( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Source_Procedure_Arg || field_name == c_field_name_Source_Procedure_Arg )
+      if( !handled && ( ( field_name == c_field_id_Source_Procedure_Arg ) || ( field_name == c_field_name_Source_Procedure_Arg ) ) )
       {
          handled = true;
+
          string_getter< Meta_Procedure_Arg >( cmd_handler.p_Meta_Procedure_Arg->Source_Procedure_Arg( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      if( !handled && ( ( field_name == c_field_id_Type ) || ( field_name == c_field_name_Type ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Procedure_Arg->Type( ), cmd_handler.retval );
       }
 
@@ -402,54 +410,62 @@ void Meta_Procedure_Arg_command_functor::operator ( )( const string& command, co
       string field_value( get_parm_val( parameters, c_cmd_Meta_Procedure_Arg_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      if( !handled && ( ( field_name == c_field_id_Internal ) || ( field_name == c_field_name_Internal ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Procedure_Arg, bool >(
           *cmd_handler.p_Meta_Procedure_Arg, &Meta_Procedure_Arg::Internal, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Procedure_Arg, string >(
           *cmd_handler.p_Meta_Procedure_Arg, &Meta_Procedure_Arg::Name, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      if( !handled && ( ( field_name == c_field_id_Order ) || ( field_name == c_field_name_Order ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Procedure_Arg, string >(
           *cmd_handler.p_Meta_Procedure_Arg, &Meta_Procedure_Arg::Order, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      if( !handled && ( ( field_name == c_field_id_Primitive ) || ( field_name == c_field_name_Primitive ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Procedure_Arg, int >(
           *cmd_handler.p_Meta_Procedure_Arg, &Meta_Procedure_Arg::Primitive, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Procedure || field_name == c_field_name_Procedure )
+      if( !handled && ( ( field_name == c_field_id_Procedure ) || ( field_name == c_field_name_Procedure ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Procedure_Arg, Meta_Procedure >(
           *cmd_handler.p_Meta_Procedure_Arg, &Meta_Procedure_Arg::Procedure, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Source_Procedure_Arg || field_name == c_field_name_Source_Procedure_Arg )
+      if( !handled && ( ( field_name == c_field_id_Source_Procedure_Arg ) || ( field_name == c_field_name_Source_Procedure_Arg ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Procedure_Arg, Meta_Procedure_Arg >(
           *cmd_handler.p_Meta_Procedure_Arg, &Meta_Procedure_Arg::Source_Procedure_Arg, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      if( !handled && ( ( field_name == c_field_id_Type ) || ( field_name == c_field_name_Type ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Procedure_Arg, int >(
           *cmd_handler.p_Meta_Procedure_Arg, &Meta_Procedure_Arg::Type, field_value );
       }
@@ -468,9 +484,9 @@ void Meta_Procedure_Arg_command_functor::operator ( )( const string& command, co
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Procedure || field_name == c_field_name_Procedure )
+      else if( ( field_name == c_field_id_Procedure ) || ( field_name == c_field_name_Procedure ) )
          cmd_handler.retval = cmd_handler.p_Meta_Procedure_Arg->Procedure( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Source_Procedure_Arg || field_name == c_field_name_Source_Procedure_Arg )
+      else if( ( field_name == c_field_id_Source_Procedure_Arg ) || ( field_name == c_field_name_Source_Procedure_Arg ) )
          cmd_handler.retval = cmd_handler.p_Meta_Procedure_Arg->Source_Procedure_Arg( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -479,17 +495,21 @@ void Meta_Procedure_Arg_command_functor::operator ( )( const string& command, co
    {
       string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Procedure_Arg_Move_Down_Restrict_Fields ) );
       string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Procedure_Arg_Move_Down_Restrict_Values ) );
+
       cmd_handler.p_Meta_Procedure_Arg->Move_Down( Restrict_Fields, Restrict_Values );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Procedure_Arg_Move_Up )
    {
       string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Procedure_Arg_Move_Up_Restrict_Fields ) );
       string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Procedure_Arg_Move_Up_Restrict_Values ) );
+
       cmd_handler.p_Meta_Procedure_Arg->Move_Up( Restrict_Fields, Restrict_Values );
 
       cmd_handler.retval.erase( );
+
    }
 }
 
@@ -1092,9 +1112,9 @@ void Meta_Procedure_Arg::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Procedure || field == c_field_name_Procedure )
+   else if( ( field == c_field_id_Procedure ) || ( field == c_field_name_Procedure ) )
       impl_Procedure( "" );
-   else if( field == c_field_id_Source_Procedure_Arg || field == c_field_name_Source_Procedure_Arg )
+   else if( ( field == c_field_id_Source_Procedure_Arg ) || ( field == c_field_name_Source_Procedure_Arg ) )
       impl_Source_Procedure_Arg( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1104,9 +1124,9 @@ void Meta_Procedure_Arg::impl::set_foreign_key_value( const string& field, const
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Procedure || field == c_field_name_Procedure )
+   else if( ( field == c_field_id_Procedure ) || ( field == c_field_name_Procedure ) )
       v_Procedure = value;
-   else if( field == c_field_id_Source_Procedure_Arg || field == c_field_name_Source_Procedure_Arg )
+   else if( ( field == c_field_id_Source_Procedure_Arg ) || ( field == c_field_name_Source_Procedure_Arg ) )
       v_Source_Procedure_Arg = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1116,9 +1136,9 @@ const string& Meta_Procedure_Arg::impl::get_foreign_key_value( const string& fie
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Procedure || field == c_field_name_Procedure )
+   else if( ( field == c_field_id_Procedure ) || ( field == c_field_name_Procedure ) )
       return v_Procedure;
-   else if( field == c_field_id_Source_Procedure_Arg || field == c_field_name_Source_Procedure_Arg )
+   else if( ( field == c_field_id_Source_Procedure_Arg ) || ( field == c_field_name_Source_Procedure_Arg ) )
       return v_Source_Procedure_Arg;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1381,7 +1401,7 @@ bool Meta_Procedure_Arg::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -1447,6 +1467,7 @@ void Meta_Procedure_Arg::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -1969,37 +1990,37 @@ string Meta_Procedure_Arg::get_field_uom_symbol( const string& id_or_name ) cons
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   if( ( id_or_name == c_field_id_Internal ) || ( id_or_name == c_field_name_Internal ) )
    {
       name = string( c_field_display_name_Internal );
       get_module_string( c_field_display_name_Internal, &next );
    }
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
    {
       name = string( c_field_display_name_Name );
       get_module_string( c_field_display_name_Name, &next );
    }
-   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
+   if( ( id_or_name == c_field_id_Order ) || ( id_or_name == c_field_name_Order ) )
    {
       name = string( c_field_display_name_Order );
       get_module_string( c_field_display_name_Order, &next );
    }
-   else if( id_or_name == c_field_id_Primitive || id_or_name == c_field_name_Primitive )
+   if( ( id_or_name == c_field_id_Primitive ) || ( id_or_name == c_field_name_Primitive ) )
    {
       name = string( c_field_display_name_Primitive );
       get_module_string( c_field_display_name_Primitive, &next );
    }
-   else if( id_or_name == c_field_id_Procedure || id_or_name == c_field_name_Procedure )
+   if( ( id_or_name == c_field_id_Procedure ) || ( id_or_name == c_field_name_Procedure ) )
    {
       name = string( c_field_display_name_Procedure );
       get_module_string( c_field_display_name_Procedure, &next );
    }
-   else if( id_or_name == c_field_id_Source_Procedure_Arg || id_or_name == c_field_name_Source_Procedure_Arg )
+   if( ( id_or_name == c_field_id_Source_Procedure_Arg ) || ( id_or_name == c_field_name_Source_Procedure_Arg ) )
    {
       name = string( c_field_display_name_Source_Procedure_Arg );
       get_module_string( c_field_display_name_Source_Procedure_Arg, &next );
    }
-   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   if( ( id_or_name == c_field_id_Type ) || ( id_or_name == c_field_name_Type ) )
    {
       name = string( c_field_display_name_Type );
       get_module_string( c_field_display_name_Type, &next );
@@ -2019,19 +2040,19 @@ string Meta_Procedure_Arg::get_field_display_name( const string& id_or_name ) co
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   if( ( id_or_name == c_field_id_Internal ) || ( id_or_name == c_field_name_Internal ) )
       display_name = get_module_string( c_field_display_name_Internal );
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
+   if( ( id_or_name == c_field_id_Order ) || ( id_or_name == c_field_name_Order ) )
       display_name = get_module_string( c_field_display_name_Order );
-   else if( id_or_name == c_field_id_Primitive || id_or_name == c_field_name_Primitive )
+   if( ( id_or_name == c_field_id_Primitive ) || ( id_or_name == c_field_name_Primitive ) )
       display_name = get_module_string( c_field_display_name_Primitive );
-   else if( id_or_name == c_field_id_Procedure || id_or_name == c_field_name_Procedure )
+   if( ( id_or_name == c_field_id_Procedure ) || ( id_or_name == c_field_name_Procedure ) )
       display_name = get_module_string( c_field_display_name_Procedure );
-   else if( id_or_name == c_field_id_Source_Procedure_Arg || id_or_name == c_field_name_Source_Procedure_Arg )
+   if( ( id_or_name == c_field_id_Source_Procedure_Arg ) || ( id_or_name == c_field_name_Source_Procedure_Arg ) )
       display_name = get_module_string( c_field_display_name_Source_Procedure_Arg );
-   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   if( ( id_or_name == c_field_id_Type ) || ( id_or_name == c_field_name_Type ) )
       display_name = get_module_string( c_field_display_name_Type );
 
    return display_name;
@@ -2139,7 +2160,8 @@ class_base* Meta_Procedure_Arg::get_next_foreign_key_child(
    if( child_num >= 4 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+      if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
          --ealci;
 
       p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -2223,6 +2245,7 @@ string Meta_Procedure_Arg::get_module_name( ) const
 string Meta_Procedure_Arg::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "procedure_arg";
 
    return get_module_string( key );
@@ -2289,17 +2312,17 @@ class_base& Meta_Procedure_Arg::get_or_create_graph_child( const string& context
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_301477" || sub_context == "child_Specification_Procedure_Arg_2" )
+   else if( ( sub_context == "_301477" ) || ( sub_context == "child_Specification_Procedure_Arg_2" ) )
       p_class_base = &child_Specification_Procedure_Arg_2( );
-   else if( sub_context == "_301478" || sub_context == "child_Specification_Procedure_Arg_3" )
+   else if( ( sub_context == "_301478" ) || ( sub_context == "child_Specification_Procedure_Arg_3" ) )
       p_class_base = &child_Specification_Procedure_Arg_3( );
-   else if( sub_context == "_301210" || sub_context == "child_Procedure_Arg_Source" )
+   else if( ( sub_context == "_301210" ) || ( sub_context == "child_Procedure_Arg_Source" ) )
       p_class_base = &child_Procedure_Arg_Source( );
-   else if( sub_context == "_301498" || sub_context == "child_Specification" )
+   else if( ( sub_context == "_301498" ) || ( sub_context == "child_Specification" ) )
       p_class_base = &child_Specification( );
-   else if( sub_context == c_field_id_Procedure || sub_context == c_field_name_Procedure )
+   else if( ( sub_context == c_field_id_Procedure ) || ( sub_context == c_field_name_Procedure ) )
       p_class_base = &Procedure( );
-   else if( sub_context == c_field_id_Source_Procedure_Arg || sub_context == c_field_name_Source_Procedure_Arg )
+   else if( ( sub_context == c_field_id_Source_Procedure_Arg ) || ( sub_context == c_field_name_Source_Procedure_Arg ) )
       p_class_base = &Source_Procedure_Arg( );
 
    if( !p_class_base )
@@ -2325,7 +2348,7 @@ void Meta_Procedure_Arg::get_sql_column_names(
    names.push_back( "C_Source_Procedure_Arg" );
    names.push_back( "C_Type" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2343,7 +2366,7 @@ void Meta_Procedure_Arg::get_sql_column_values(
    values.push_back( sql_quote( to_string( Source_Procedure_Arg( ) ) ) );
    values.push_back( to_string( Type( ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2465,7 +2488,7 @@ void Meta_Procedure_Arg::static_get_foreign_key_info( foreign_key_info_container
 
 int Meta_Procedure_Arg::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

@@ -254,30 +254,35 @@ void Meta_Application_Script_command_functor::operator ( )( const string& comman
       string field_name( get_parm_val( parameters, c_cmd_Meta_Application_Script_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Application_Script->Name( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Other_Package_Types || field_name == c_field_name_Other_Package_Types )
+      if( !handled && ( ( field_name == c_field_id_Other_Package_Types ) || ( field_name == c_field_name_Other_Package_Types ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Application_Script->Other_Package_Types( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Package_Type || field_name == c_field_name_Package_Type )
+      if( !handled && ( ( field_name == c_field_id_Package_Type ) || ( field_name == c_field_name_Package_Type ) ) )
       {
          handled = true;
+
          string_getter< Meta_Package_Type >( cmd_handler.p_Meta_Application_Script->Package_Type( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Script_Name || field_name == c_field_name_Script_Name )
+      if( !handled && ( ( field_name == c_field_id_Script_Name ) || ( field_name == c_field_name_Script_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Application_Script->Script_Name( ), cmd_handler.retval );
       }
 
@@ -290,33 +295,38 @@ void Meta_Application_Script_command_functor::operator ( )( const string& comman
       string field_value( get_parm_val( parameters, c_cmd_Meta_Application_Script_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application_Script, string >(
           *cmd_handler.p_Meta_Application_Script, &Meta_Application_Script::Name, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Other_Package_Types || field_name == c_field_name_Other_Package_Types )
+      if( !handled && ( ( field_name == c_field_id_Other_Package_Types ) || ( field_name == c_field_name_Other_Package_Types ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application_Script, string >(
           *cmd_handler.p_Meta_Application_Script, &Meta_Application_Script::Other_Package_Types, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Package_Type || field_name == c_field_name_Package_Type )
+      if( !handled && ( ( field_name == c_field_id_Package_Type ) || ( field_name == c_field_name_Package_Type ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application_Script, Meta_Package_Type >(
           *cmd_handler.p_Meta_Application_Script, &Meta_Application_Script::Package_Type, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Script_Name || field_name == c_field_name_Script_Name )
+      if( !handled && ( ( field_name == c_field_id_Script_Name ) || ( field_name == c_field_name_Script_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application_Script, string >(
           *cmd_handler.p_Meta_Application_Script, &Meta_Application_Script::Script_Name, field_value );
       }
@@ -335,7 +345,7 @@ void Meta_Application_Script_command_functor::operator ( )( const string& comman
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Package_Type || field_name == c_field_name_Package_Type )
+      else if( ( field_name == c_field_id_Package_Type ) || ( field_name == c_field_name_Package_Type ) )
          cmd_handler.retval = cmd_handler.p_Meta_Application_Script->Package_Type( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -628,7 +638,7 @@ void Meta_Application_Script::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Package_Type || field == c_field_name_Package_Type )
+   else if( ( field == c_field_id_Package_Type ) || ( field == c_field_name_Package_Type ) )
       impl_Package_Type( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -638,7 +648,7 @@ void Meta_Application_Script::impl::set_foreign_key_value( const string& field, 
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Package_Type || field == c_field_name_Package_Type )
+   else if( ( field == c_field_id_Package_Type ) || ( field == c_field_name_Package_Type ) )
       v_Package_Type = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -648,7 +658,7 @@ const string& Meta_Application_Script::impl::get_foreign_key_value( const string
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Package_Type || field == c_field_name_Package_Type )
+   else if( ( field == c_field_id_Package_Type ) || ( field == c_field_name_Package_Type ) )
       return v_Package_Type;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -865,7 +875,7 @@ bool Meta_Application_Script::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -931,6 +941,7 @@ void Meta_Application_Script::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -1318,22 +1329,22 @@ string Meta_Application_Script::get_field_uom_symbol( const string& id_or_name )
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
    {
       name = string( c_field_display_name_Name );
       get_module_string( c_field_display_name_Name, &next );
    }
-   else if( id_or_name == c_field_id_Other_Package_Types || id_or_name == c_field_name_Other_Package_Types )
+   if( ( id_or_name == c_field_id_Other_Package_Types ) || ( id_or_name == c_field_name_Other_Package_Types ) )
    {
       name = string( c_field_display_name_Other_Package_Types );
       get_module_string( c_field_display_name_Other_Package_Types, &next );
    }
-   else if( id_or_name == c_field_id_Package_Type || id_or_name == c_field_name_Package_Type )
+   if( ( id_or_name == c_field_id_Package_Type ) || ( id_or_name == c_field_name_Package_Type ) )
    {
       name = string( c_field_display_name_Package_Type );
       get_module_string( c_field_display_name_Package_Type, &next );
    }
-   else if( id_or_name == c_field_id_Script_Name || id_or_name == c_field_name_Script_Name )
+   if( ( id_or_name == c_field_id_Script_Name ) || ( id_or_name == c_field_name_Script_Name ) )
    {
       name = string( c_field_display_name_Script_Name );
       get_module_string( c_field_display_name_Script_Name, &next );
@@ -1353,13 +1364,13 @@ string Meta_Application_Script::get_field_display_name( const string& id_or_name
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id_or_name == c_field_id_Other_Package_Types || id_or_name == c_field_name_Other_Package_Types )
+   if( ( id_or_name == c_field_id_Other_Package_Types ) || ( id_or_name == c_field_name_Other_Package_Types ) )
       display_name = get_module_string( c_field_display_name_Other_Package_Types );
-   else if( id_or_name == c_field_id_Package_Type || id_or_name == c_field_name_Package_Type )
+   if( ( id_or_name == c_field_id_Package_Type ) || ( id_or_name == c_field_name_Package_Type ) )
       display_name = get_module_string( c_field_display_name_Package_Type );
-   else if( id_or_name == c_field_id_Script_Name || id_or_name == c_field_name_Script_Name )
+   if( ( id_or_name == c_field_id_Script_Name ) || ( id_or_name == c_field_name_Script_Name ) )
       display_name = get_module_string( c_field_display_name_Script_Name );
 
    return display_name;
@@ -1450,7 +1461,8 @@ class_base* Meta_Application_Script::get_next_foreign_key_child(
    if( child_num >= 1 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+      if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
          --ealci;
 
       p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -1510,6 +1522,7 @@ string Meta_Application_Script::get_module_name( ) const
 string Meta_Application_Script::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "application_script";
 
    return get_module_string( key );
@@ -1572,9 +1585,9 @@ class_base& Meta_Application_Script::get_or_create_graph_child( const string& co
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_302225" || sub_context == "child_Application_Creation_Script" )
+   else if( ( sub_context == "_302225" ) || ( sub_context == "child_Application_Creation_Script" ) )
       p_class_base = &child_Application_Creation_Script( );
-   else if( sub_context == c_field_id_Package_Type || sub_context == c_field_name_Package_Type )
+   else if( ( sub_context == c_field_id_Package_Type ) || ( sub_context == c_field_name_Package_Type ) )
       p_class_base = &Package_Type( );
 
    if( !p_class_base )
@@ -1597,7 +1610,7 @@ void Meta_Application_Script::get_sql_column_names(
    names.push_back( "C_Package_Type" );
    names.push_back( "C_Script_Name" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -1612,7 +1625,7 @@ void Meta_Application_Script::get_sql_column_values(
    values.push_back( sql_quote( to_string( Package_Type( ) ) ) );
    values.push_back( sql_quote( to_string( Script_Name( ) ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -1706,7 +1719,7 @@ void Meta_Application_Script::static_get_foreign_key_info( foreign_key_info_cont
 
 int Meta_Application_Script::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

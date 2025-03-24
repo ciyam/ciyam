@@ -928,318 +928,371 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
       string field_name( get_parm_val( parameters, c_cmd_Meta_List_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+      if( !handled && ( ( field_name == c_field_id_Access_Parent_Modifier ) || ( field_name == c_field_name_Access_Parent_Modifier ) ) )
       {
          handled = true;
+
          string_getter< Meta_Modifier >( cmd_handler.p_Meta_List->Access_Parent_Modifier( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      if( !handled && ( ( field_name == c_field_id_Access_Permission ) || ( field_name == c_field_name_Access_Permission ) ) )
       {
          handled = true;
+
          string_getter< Meta_Permission >( cmd_handler.p_Meta_List->Access_Permission( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      if( !handled && ( ( field_name == c_field_id_Access_Restriction ) || ( field_name == c_field_name_Access_Restriction ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_List->Access_Restriction( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      if( !handled && ( ( field_name == c_field_id_Allow_Anonymous_Access ) || ( field_name == c_field_name_Allow_Anonymous_Access ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Allow_Anonymous_Access( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Allow_Quick_Link || field_name == c_field_name_Allow_Quick_Link )
+      if( !handled && ( ( field_name == c_field_id_Allow_Quick_Link ) || ( field_name == c_field_name_Allow_Quick_Link ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Allow_Quick_Link( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Allow_Text_Search || field_name == c_field_name_Allow_Text_Search )
+      if( !handled && ( ( field_name == c_field_id_Allow_Text_Search ) || ( field_name == c_field_name_Allow_Text_Search ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Allow_Text_Search( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      if( !handled && ( ( field_name == c_field_id_Class ) || ( field_name == c_field_name_Class ) ) )
       {
          handled = true;
+
          string_getter< Meta_Class >( cmd_handler.p_Meta_List->Class( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Create_Only_If_Default_Other || field_name == c_field_name_Create_Only_If_Default_Other )
+      if( !handled && ( ( field_name == c_field_id_Create_Only_If_Default_Other ) || ( field_name == c_field_name_Create_Only_If_Default_Other ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Create_Only_If_Default_Other( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Create_Parent_Modifier || field_name == c_field_name_Create_Parent_Modifier )
+      if( !handled && ( ( field_name == c_field_id_Create_Parent_Modifier ) || ( field_name == c_field_name_Create_Parent_Modifier ) ) )
       {
          handled = true;
+
          string_getter< Meta_Modifier >( cmd_handler.p_Meta_List->Create_Parent_Modifier( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Create_Permission || field_name == c_field_name_Create_Permission )
+      if( !handled && ( ( field_name == c_field_id_Create_Permission ) || ( field_name == c_field_name_Create_Permission ) ) )
       {
          handled = true;
+
          string_getter< Meta_Permission >( cmd_handler.p_Meta_List->Create_Permission( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Create_Restriction || field_name == c_field_name_Create_Restriction )
+      if( !handled && ( ( field_name == c_field_id_Create_Restriction ) || ( field_name == c_field_name_Create_Restriction ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_List->Create_Restriction( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Delete_Direction || field_name == c_field_name_Delete_Direction )
+      if( !handled && ( ( field_name == c_field_id_Delete_Direction ) || ( field_name == c_field_name_Delete_Direction ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_List->Delete_Direction( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Destroy_Only_If_Default_Other || field_name == c_field_name_Destroy_Only_If_Default_Other )
+      if( !handled && ( ( field_name == c_field_id_Destroy_Only_If_Default_Other ) || ( field_name == c_field_name_Destroy_Only_If_Default_Other ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Destroy_Only_If_Default_Other( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Destroy_Parent_Modifier || field_name == c_field_name_Destroy_Parent_Modifier )
+      if( !handled && ( ( field_name == c_field_id_Destroy_Parent_Modifier ) || ( field_name == c_field_name_Destroy_Parent_Modifier ) ) )
       {
          handled = true;
+
          string_getter< Meta_Modifier >( cmd_handler.p_Meta_List->Destroy_Parent_Modifier( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Destroy_Permission || field_name == c_field_name_Destroy_Permission )
+      if( !handled && ( ( field_name == c_field_id_Destroy_Permission ) || ( field_name == c_field_name_Destroy_Permission ) ) )
       {
          handled = true;
+
          string_getter< Meta_Permission >( cmd_handler.p_Meta_List->Destroy_Permission( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Destroy_Restriction || field_name == c_field_name_Destroy_Restriction )
+      if( !handled && ( ( field_name == c_field_id_Destroy_Restriction ) || ( field_name == c_field_name_Destroy_Restriction ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_List->Destroy_Restriction( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Direction || field_name == c_field_name_Direction )
+      if( !handled && ( ( field_name == c_field_id_Direction ) || ( field_name == c_field_name_Direction ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_List->Direction( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Display_Only_If_Default_Other || field_name == c_field_name_Display_Only_If_Default_Other )
+      if( !handled && ( ( field_name == c_field_id_Display_Only_If_Default_Other ) || ( field_name == c_field_name_Display_Only_If_Default_Other ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Display_Only_If_Default_Other( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Display_Row_Limit || field_name == c_field_name_Display_Row_Limit )
+      if( !handled && ( ( field_name == c_field_id_Display_Row_Limit ) || ( field_name == c_field_name_Display_Row_Limit ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_List->Display_Row_Limit( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Display_Security_Level || field_name == c_field_name_Display_Security_Level )
+      if( !handled && ( ( field_name == c_field_id_Display_Security_Level ) || ( field_name == c_field_name_Display_Security_Level ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Display_Security_Level( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Display_Sub_Totals || field_name == c_field_name_Display_Sub_Totals )
+      if( !handled && ( ( field_name == c_field_id_Display_Sub_Totals ) || ( field_name == c_field_name_Display_Sub_Totals ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Display_Sub_Totals( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Display_Totals || field_name == c_field_name_Display_Totals )
+      if( !handled && ( ( field_name == c_field_id_Display_Totals ) || ( field_name == c_field_name_Display_Totals ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Display_Totals( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_File_Links_Always_As_Single || field_name == c_field_name_File_Links_Always_As_Single )
+      if( !handled && ( ( field_name == c_field_id_File_Links_Always_As_Single ) || ( field_name == c_field_name_File_Links_Always_As_Single ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->File_Links_Always_As_Single( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      if( !handled && ( ( field_name == c_field_id_Id ) || ( field_name == c_field_name_Id ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_List->Id( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Ignore_Implicit_Ordering || field_name == c_field_name_Ignore_Implicit_Ordering )
+      if( !handled && ( ( field_name == c_field_id_Ignore_Implicit_Ordering ) || ( field_name == c_field_name_Ignore_Implicit_Ordering ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Ignore_Implicit_Ordering( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Ignore_State_For_Display || field_name == c_field_name_Ignore_State_For_Display )
+      if( !handled && ( ( field_name == c_field_id_Ignore_State_For_Display ) || ( field_name == c_field_name_Ignore_State_For_Display ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Ignore_State_For_Display( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Ignore_Unactionable_Records || field_name == c_field_name_Ignore_Unactionable_Records )
+      if( !handled && ( ( field_name == c_field_id_Ignore_Unactionable_Records ) || ( field_name == c_field_name_Ignore_Unactionable_Records ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Ignore_Unactionable_Records( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Ignore_Uneditable_Parent || field_name == c_field_name_Ignore_Uneditable_Parent )
+      if( !handled && ( ( field_name == c_field_id_Ignore_Uneditable_Parent ) || ( field_name == c_field_name_Ignore_Uneditable_Parent ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Ignore_Uneditable_Parent( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Ignore_Username_Filter || field_name == c_field_name_Ignore_Username_Filter )
+      if( !handled && ( ( field_name == c_field_id_Ignore_Username_Filter ) || ( field_name == c_field_name_Ignore_Username_Filter ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Ignore_Username_Filter( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+      if( !handled && ( ( field_name == c_field_id_Is_Admin ) || ( field_name == c_field_name_Is_Admin ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Is_Admin( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
+      if( !handled && ( ( field_name == c_field_id_Is_Child ) || ( field_name == c_field_name_Is_Child ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Is_Child( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
+      if( !handled && ( ( field_name == c_field_id_Is_Home ) || ( field_name == c_field_name_Is_Home ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Is_Home( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+      if( !handled && ( ( field_name == c_field_id_Is_Not_Anonymous ) || ( field_name == c_field_name_Is_Not_Anonymous ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Is_Not_Anonymous( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Is_Variation || field_name == c_field_name_Is_Variation )
+      if( !handled && ( ( field_name == c_field_id_Is_Variation ) || ( field_name == c_field_name_Is_Variation ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Is_Variation( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Limit_Scroll_And_New || field_name == c_field_name_Limit_Scroll_And_New )
+      if( !handled && ( ( field_name == c_field_id_Limit_Scroll_And_New ) || ( field_name == c_field_name_Limit_Scroll_And_New ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Limit_Scroll_And_New( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      if( !handled && ( ( field_name == c_field_id_Model ) || ( field_name == c_field_name_Model ) ) )
       {
          handled = true;
+
          string_getter< Meta_Model >( cmd_handler.p_Meta_List->Model( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Multiline_Truncate_For_Print || field_name == c_field_name_Multiline_Truncate_For_Print )
+      if( !handled && ( ( field_name == c_field_id_Multiline_Truncate_For_Print ) || ( field_name == c_field_name_Multiline_Truncate_For_Print ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Multiline_Truncate_For_Print( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_List->Name( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Number_Multiple_Pages || field_name == c_field_name_Number_Multiple_Pages )
+      if( !handled && ( ( field_name == c_field_id_Number_Multiple_Pages ) || ( field_name == c_field_name_Number_Multiple_Pages ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Number_Multiple_Pages( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_PDF_Font_Type || field_name == c_field_name_PDF_Font_Type )
+      if( !handled && ( ( field_name == c_field_id_PDF_Font_Type ) || ( field_name == c_field_name_PDF_Font_Type ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_List->PDF_Font_Type( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_PDF_List_Type || field_name == c_field_name_PDF_List_Type )
+      if( !handled && ( ( field_name == c_field_id_PDF_List_Type ) || ( field_name == c_field_name_PDF_List_Type ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_List->PDF_List_Type( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      if( !handled && ( ( field_name == c_field_id_Parent_Class ) || ( field_name == c_field_name_Parent_Class ) ) )
       {
          handled = true;
+
          string_getter< Meta_Class >( cmd_handler.p_Meta_List->Parent_Class( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Parent_Field || field_name == c_field_name_Parent_Field )
+      if( !handled && ( ( field_name == c_field_id_Parent_Field ) || ( field_name == c_field_name_Parent_Field ) ) )
       {
          handled = true;
+
          string_getter< Meta_Field >( cmd_handler.p_Meta_List->Parent_Field( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Print_Restriction || field_name == c_field_name_Print_Restriction )
+      if( !handled && ( ( field_name == c_field_id_Print_Restriction ) || ( field_name == c_field_name_Print_Restriction ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_List->Print_Restriction( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Print_Without_Highlight || field_name == c_field_name_Print_Without_Highlight )
+      if( !handled && ( ( field_name == c_field_id_Print_Without_Highlight ) || ( field_name == c_field_name_Print_Without_Highlight ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Print_Without_Highlight( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Search_Option_Limit || field_name == c_field_name_Search_Option_Limit )
+      if( !handled && ( ( field_name == c_field_id_Search_Option_Limit ) || ( field_name == c_field_name_Search_Option_Limit ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_List->Search_Option_Limit( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Sort_Rows_In_UI || field_name == c_field_name_Sort_Rows_In_UI )
+      if( !handled && ( ( field_name == c_field_id_Sort_Rows_In_UI ) || ( field_name == c_field_name_Sort_Rows_In_UI ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List->Sort_Rows_In_UI( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Style || field_name == c_field_name_Style )
+      if( !handled && ( ( field_name == c_field_id_Style ) || ( field_name == c_field_name_Style ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_List->Style( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Text_Match_Highlight || field_name == c_field_name_Text_Match_Highlight )
+      if( !handled && ( ( field_name == c_field_id_Text_Match_Highlight ) || ( field_name == c_field_name_Text_Match_Highlight ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_List->Text_Match_Highlight( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Title || field_name == c_field_name_Title )
+      if( !handled && ( ( field_name == c_field_id_Title ) || ( field_name == c_field_name_Title ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_List->Title( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      if( !handled && ( ( field_name == c_field_id_Type ) || ( field_name == c_field_name_Type ) ) )
       {
          handled = true;
+
          string_getter< Meta_List_Type >( cmd_handler.p_Meta_List->Type( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Variation_Name || field_name == c_field_name_Variation_Name )
+      if( !handled && ( ( field_name == c_field_id_Variation_Name ) || ( field_name == c_field_name_Variation_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_List->Variation_Name( ), cmd_handler.retval );
       }
 
@@ -1252,369 +1305,422 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
       string field_value( get_parm_val( parameters, c_cmd_Meta_List_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+      if( !handled && ( ( field_name == c_field_id_Access_Parent_Modifier ) || ( field_name == c_field_name_Access_Parent_Modifier ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, Meta_Modifier >(
           *cmd_handler.p_Meta_List, &Meta_List::Access_Parent_Modifier, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      if( !handled && ( ( field_name == c_field_id_Access_Permission ) || ( field_name == c_field_name_Access_Permission ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, Meta_Permission >(
           *cmd_handler.p_Meta_List, &Meta_List::Access_Permission, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      if( !handled && ( ( field_name == c_field_id_Access_Restriction ) || ( field_name == c_field_name_Access_Restriction ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Access_Restriction, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      if( !handled && ( ( field_name == c_field_id_Allow_Anonymous_Access ) || ( field_name == c_field_name_Allow_Anonymous_Access ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Allow_Anonymous_Access, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Allow_Quick_Link || field_name == c_field_name_Allow_Quick_Link )
+      if( !handled && ( ( field_name == c_field_id_Allow_Quick_Link ) || ( field_name == c_field_name_Allow_Quick_Link ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Allow_Quick_Link, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Allow_Text_Search || field_name == c_field_name_Allow_Text_Search )
+      if( !handled && ( ( field_name == c_field_id_Allow_Text_Search ) || ( field_name == c_field_name_Allow_Text_Search ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Allow_Text_Search, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      if( !handled && ( ( field_name == c_field_id_Class ) || ( field_name == c_field_name_Class ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, Meta_Class >(
           *cmd_handler.p_Meta_List, &Meta_List::Class, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Create_Only_If_Default_Other || field_name == c_field_name_Create_Only_If_Default_Other )
+      if( !handled && ( ( field_name == c_field_id_Create_Only_If_Default_Other ) || ( field_name == c_field_name_Create_Only_If_Default_Other ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Create_Only_If_Default_Other, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Create_Parent_Modifier || field_name == c_field_name_Create_Parent_Modifier )
+      if( !handled && ( ( field_name == c_field_id_Create_Parent_Modifier ) || ( field_name == c_field_name_Create_Parent_Modifier ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, Meta_Modifier >(
           *cmd_handler.p_Meta_List, &Meta_List::Create_Parent_Modifier, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Create_Permission || field_name == c_field_name_Create_Permission )
+      if( !handled && ( ( field_name == c_field_id_Create_Permission ) || ( field_name == c_field_name_Create_Permission ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, Meta_Permission >(
           *cmd_handler.p_Meta_List, &Meta_List::Create_Permission, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Create_Restriction || field_name == c_field_name_Create_Restriction )
+      if( !handled && ( ( field_name == c_field_id_Create_Restriction ) || ( field_name == c_field_name_Create_Restriction ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Create_Restriction, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Delete_Direction || field_name == c_field_name_Delete_Direction )
+      if( !handled && ( ( field_name == c_field_id_Delete_Direction ) || ( field_name == c_field_name_Delete_Direction ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Delete_Direction, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Destroy_Only_If_Default_Other || field_name == c_field_name_Destroy_Only_If_Default_Other )
+      if( !handled && ( ( field_name == c_field_id_Destroy_Only_If_Default_Other ) || ( field_name == c_field_name_Destroy_Only_If_Default_Other ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Destroy_Only_If_Default_Other, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Destroy_Parent_Modifier || field_name == c_field_name_Destroy_Parent_Modifier )
+      if( !handled && ( ( field_name == c_field_id_Destroy_Parent_Modifier ) || ( field_name == c_field_name_Destroy_Parent_Modifier ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, Meta_Modifier >(
           *cmd_handler.p_Meta_List, &Meta_List::Destroy_Parent_Modifier, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Destroy_Permission || field_name == c_field_name_Destroy_Permission )
+      if( !handled && ( ( field_name == c_field_id_Destroy_Permission ) || ( field_name == c_field_name_Destroy_Permission ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, Meta_Permission >(
           *cmd_handler.p_Meta_List, &Meta_List::Destroy_Permission, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Destroy_Restriction || field_name == c_field_name_Destroy_Restriction )
+      if( !handled && ( ( field_name == c_field_id_Destroy_Restriction ) || ( field_name == c_field_name_Destroy_Restriction ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Destroy_Restriction, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Direction || field_name == c_field_name_Direction )
+      if( !handled && ( ( field_name == c_field_id_Direction ) || ( field_name == c_field_name_Direction ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Direction, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Display_Only_If_Default_Other || field_name == c_field_name_Display_Only_If_Default_Other )
+      if( !handled && ( ( field_name == c_field_id_Display_Only_If_Default_Other ) || ( field_name == c_field_name_Display_Only_If_Default_Other ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Display_Only_If_Default_Other, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Display_Row_Limit || field_name == c_field_name_Display_Row_Limit )
+      if( !handled && ( ( field_name == c_field_id_Display_Row_Limit ) || ( field_name == c_field_name_Display_Row_Limit ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Display_Row_Limit, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Display_Security_Level || field_name == c_field_name_Display_Security_Level )
+      if( !handled && ( ( field_name == c_field_id_Display_Security_Level ) || ( field_name == c_field_name_Display_Security_Level ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Display_Security_Level, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Display_Sub_Totals || field_name == c_field_name_Display_Sub_Totals )
+      if( !handled && ( ( field_name == c_field_id_Display_Sub_Totals ) || ( field_name == c_field_name_Display_Sub_Totals ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Display_Sub_Totals, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Display_Totals || field_name == c_field_name_Display_Totals )
+      if( !handled && ( ( field_name == c_field_id_Display_Totals ) || ( field_name == c_field_name_Display_Totals ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Display_Totals, field_value );
       }
 
-      if( !handled && field_name == c_field_id_File_Links_Always_As_Single || field_name == c_field_name_File_Links_Always_As_Single )
+      if( !handled && ( ( field_name == c_field_id_File_Links_Always_As_Single ) || ( field_name == c_field_name_File_Links_Always_As_Single ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::File_Links_Always_As_Single, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      if( !handled && ( ( field_name == c_field_id_Id ) || ( field_name == c_field_name_Id ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, string >(
           *cmd_handler.p_Meta_List, &Meta_List::Id, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Ignore_Implicit_Ordering || field_name == c_field_name_Ignore_Implicit_Ordering )
+      if( !handled && ( ( field_name == c_field_id_Ignore_Implicit_Ordering ) || ( field_name == c_field_name_Ignore_Implicit_Ordering ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Ignore_Implicit_Ordering, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Ignore_State_For_Display || field_name == c_field_name_Ignore_State_For_Display )
+      if( !handled && ( ( field_name == c_field_id_Ignore_State_For_Display ) || ( field_name == c_field_name_Ignore_State_For_Display ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Ignore_State_For_Display, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Ignore_Unactionable_Records || field_name == c_field_name_Ignore_Unactionable_Records )
+      if( !handled && ( ( field_name == c_field_id_Ignore_Unactionable_Records ) || ( field_name == c_field_name_Ignore_Unactionable_Records ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Ignore_Unactionable_Records, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Ignore_Uneditable_Parent || field_name == c_field_name_Ignore_Uneditable_Parent )
+      if( !handled && ( ( field_name == c_field_id_Ignore_Uneditable_Parent ) || ( field_name == c_field_name_Ignore_Uneditable_Parent ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Ignore_Uneditable_Parent, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Ignore_Username_Filter || field_name == c_field_name_Ignore_Username_Filter )
+      if( !handled && ( ( field_name == c_field_id_Ignore_Username_Filter ) || ( field_name == c_field_name_Ignore_Username_Filter ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Ignore_Username_Filter, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+      if( !handled && ( ( field_name == c_field_id_Is_Admin ) || ( field_name == c_field_name_Is_Admin ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Is_Admin, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
+      if( !handled && ( ( field_name == c_field_id_Is_Child ) || ( field_name == c_field_name_Is_Child ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Is_Child, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
+      if( !handled && ( ( field_name == c_field_id_Is_Home ) || ( field_name == c_field_name_Is_Home ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Is_Home, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+      if( !handled && ( ( field_name == c_field_id_Is_Not_Anonymous ) || ( field_name == c_field_name_Is_Not_Anonymous ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Is_Not_Anonymous, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Is_Variation || field_name == c_field_name_Is_Variation )
+      if( !handled && ( ( field_name == c_field_id_Is_Variation ) || ( field_name == c_field_name_Is_Variation ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Is_Variation, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Limit_Scroll_And_New || field_name == c_field_name_Limit_Scroll_And_New )
+      if( !handled && ( ( field_name == c_field_id_Limit_Scroll_And_New ) || ( field_name == c_field_name_Limit_Scroll_And_New ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Limit_Scroll_And_New, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      if( !handled && ( ( field_name == c_field_id_Model ) || ( field_name == c_field_name_Model ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, Meta_Model >(
           *cmd_handler.p_Meta_List, &Meta_List::Model, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Multiline_Truncate_For_Print || field_name == c_field_name_Multiline_Truncate_For_Print )
+      if( !handled && ( ( field_name == c_field_id_Multiline_Truncate_For_Print ) || ( field_name == c_field_name_Multiline_Truncate_For_Print ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Multiline_Truncate_For_Print, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, string >(
           *cmd_handler.p_Meta_List, &Meta_List::Name, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Number_Multiple_Pages || field_name == c_field_name_Number_Multiple_Pages )
+      if( !handled && ( ( field_name == c_field_id_Number_Multiple_Pages ) || ( field_name == c_field_name_Number_Multiple_Pages ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Number_Multiple_Pages, field_value );
       }
 
-      if( !handled && field_name == c_field_id_PDF_Font_Type || field_name == c_field_name_PDF_Font_Type )
+      if( !handled && ( ( field_name == c_field_id_PDF_Font_Type ) || ( field_name == c_field_name_PDF_Font_Type ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::PDF_Font_Type, field_value );
       }
 
-      if( !handled && field_name == c_field_id_PDF_List_Type || field_name == c_field_name_PDF_List_Type )
+      if( !handled && ( ( field_name == c_field_id_PDF_List_Type ) || ( field_name == c_field_name_PDF_List_Type ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::PDF_List_Type, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      if( !handled && ( ( field_name == c_field_id_Parent_Class ) || ( field_name == c_field_name_Parent_Class ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, Meta_Class >(
           *cmd_handler.p_Meta_List, &Meta_List::Parent_Class, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Parent_Field || field_name == c_field_name_Parent_Field )
+      if( !handled && ( ( field_name == c_field_id_Parent_Field ) || ( field_name == c_field_name_Parent_Field ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, Meta_Field >(
           *cmd_handler.p_Meta_List, &Meta_List::Parent_Field, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Print_Restriction || field_name == c_field_name_Print_Restriction )
+      if( !handled && ( ( field_name == c_field_id_Print_Restriction ) || ( field_name == c_field_name_Print_Restriction ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Print_Restriction, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Print_Without_Highlight || field_name == c_field_name_Print_Without_Highlight )
+      if( !handled && ( ( field_name == c_field_id_Print_Without_Highlight ) || ( field_name == c_field_name_Print_Without_Highlight ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Print_Without_Highlight, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Search_Option_Limit || field_name == c_field_name_Search_Option_Limit )
+      if( !handled && ( ( field_name == c_field_id_Search_Option_Limit ) || ( field_name == c_field_name_Search_Option_Limit ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Search_Option_Limit, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Sort_Rows_In_UI || field_name == c_field_name_Sort_Rows_In_UI )
+      if( !handled && ( ( field_name == c_field_id_Sort_Rows_In_UI ) || ( field_name == c_field_name_Sort_Rows_In_UI ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Sort_Rows_In_UI, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Style || field_name == c_field_name_Style )
+      if( !handled && ( ( field_name == c_field_id_Style ) || ( field_name == c_field_name_Style ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Style, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Text_Match_Highlight || field_name == c_field_name_Text_Match_Highlight )
+      if( !handled && ( ( field_name == c_field_id_Text_Match_Highlight ) || ( field_name == c_field_name_Text_Match_Highlight ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Text_Match_Highlight, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Title || field_name == c_field_name_Title )
+      if( !handled && ( ( field_name == c_field_id_Title ) || ( field_name == c_field_name_Title ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, string >(
           *cmd_handler.p_Meta_List, &Meta_List::Title, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      if( !handled && ( ( field_name == c_field_id_Type ) || ( field_name == c_field_name_Type ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, Meta_List_Type >(
           *cmd_handler.p_Meta_List, &Meta_List::Type, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Variation_Name || field_name == c_field_name_Variation_Name )
+      if( !handled && ( ( field_name == c_field_id_Variation_Name ) || ( field_name == c_field_name_Variation_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List, string >(
           *cmd_handler.p_Meta_List, &Meta_List::Variation_Name, field_value );
       }
@@ -1633,27 +1739,27 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+      else if( ( field_name == c_field_id_Access_Parent_Modifier ) || ( field_name == c_field_name_Access_Parent_Modifier ) )
          cmd_handler.retval = cmd_handler.p_Meta_List->Access_Parent_Modifier( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      else if( ( field_name == c_field_id_Access_Permission ) || ( field_name == c_field_name_Access_Permission ) )
          cmd_handler.retval = cmd_handler.p_Meta_List->Access_Permission( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+      else if( ( field_name == c_field_id_Class ) || ( field_name == c_field_name_Class ) )
          cmd_handler.retval = cmd_handler.p_Meta_List->Class( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Create_Parent_Modifier || field_name == c_field_name_Create_Parent_Modifier )
+      else if( ( field_name == c_field_id_Create_Parent_Modifier ) || ( field_name == c_field_name_Create_Parent_Modifier ) )
          cmd_handler.retval = cmd_handler.p_Meta_List->Create_Parent_Modifier( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Create_Permission || field_name == c_field_name_Create_Permission )
+      else if( ( field_name == c_field_id_Create_Permission ) || ( field_name == c_field_name_Create_Permission ) )
          cmd_handler.retval = cmd_handler.p_Meta_List->Create_Permission( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Destroy_Parent_Modifier || field_name == c_field_name_Destroy_Parent_Modifier )
+      else if( ( field_name == c_field_id_Destroy_Parent_Modifier ) || ( field_name == c_field_name_Destroy_Parent_Modifier ) )
          cmd_handler.retval = cmd_handler.p_Meta_List->Destroy_Parent_Modifier( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Destroy_Permission || field_name == c_field_name_Destroy_Permission )
+      else if( ( field_name == c_field_id_Destroy_Permission ) || ( field_name == c_field_name_Destroy_Permission ) )
          cmd_handler.retval = cmd_handler.p_Meta_List->Destroy_Permission( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
+      else if( ( field_name == c_field_id_Model ) || ( field_name == c_field_name_Model ) )
          cmd_handler.retval = cmd_handler.p_Meta_List->Model( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      else if( ( field_name == c_field_id_Parent_Class ) || ( field_name == c_field_name_Parent_Class ) )
          cmd_handler.retval = cmd_handler.p_Meta_List->Parent_Class( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Parent_Field || field_name == c_field_name_Parent_Field )
+      else if( ( field_name == c_field_id_Parent_Field ) || ( field_name == c_field_name_Parent_Field ) )
          cmd_handler.retval = cmd_handler.p_Meta_List->Parent_Field( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Type || field_name == c_field_name_Type )
+      else if( ( field_name == c_field_id_Type ) || ( field_name == c_field_name_Type ) )
          cmd_handler.retval = cmd_handler.p_Meta_List->Type( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -1661,9 +1767,11 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
    else if( command == c_cmd_Meta_List_Generate_PDF_List )
    {
       int Variation_Num( get_parm_val_from_string< int >( parameters, c_cmd_Meta_List_Generate_PDF_List_Variation_Num ) );
+
       cmd_handler.p_Meta_List->Generate_PDF_List( Variation_Num );
 
       cmd_handler.retval.erase( );
+
    }
 }
 
@@ -4374,27 +4482,27 @@ void Meta_List::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Access_Parent_Modifier || field == c_field_name_Access_Parent_Modifier )
+   else if( ( field == c_field_id_Access_Parent_Modifier ) || ( field == c_field_name_Access_Parent_Modifier ) )
       impl_Access_Parent_Modifier( "" );
-   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+   else if( ( field == c_field_id_Access_Permission ) || ( field == c_field_name_Access_Permission ) )
       impl_Access_Permission( "" );
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( ( field == c_field_id_Class ) || ( field == c_field_name_Class ) )
       impl_Class( "" );
-   else if( field == c_field_id_Create_Parent_Modifier || field == c_field_name_Create_Parent_Modifier )
+   else if( ( field == c_field_id_Create_Parent_Modifier ) || ( field == c_field_name_Create_Parent_Modifier ) )
       impl_Create_Parent_Modifier( "" );
-   else if( field == c_field_id_Create_Permission || field == c_field_name_Create_Permission )
+   else if( ( field == c_field_id_Create_Permission ) || ( field == c_field_name_Create_Permission ) )
       impl_Create_Permission( "" );
-   else if( field == c_field_id_Destroy_Parent_Modifier || field == c_field_name_Destroy_Parent_Modifier )
+   else if( ( field == c_field_id_Destroy_Parent_Modifier ) || ( field == c_field_name_Destroy_Parent_Modifier ) )
       impl_Destroy_Parent_Modifier( "" );
-   else if( field == c_field_id_Destroy_Permission || field == c_field_name_Destroy_Permission )
+   else if( ( field == c_field_id_Destroy_Permission ) || ( field == c_field_name_Destroy_Permission ) )
       impl_Destroy_Permission( "" );
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( ( field == c_field_id_Model ) || ( field == c_field_name_Model ) )
       impl_Model( "" );
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( ( field == c_field_id_Parent_Class ) || ( field == c_field_name_Parent_Class ) )
       impl_Parent_Class( "" );
-   else if( field == c_field_id_Parent_Field || field == c_field_name_Parent_Field )
+   else if( ( field == c_field_id_Parent_Field ) || ( field == c_field_name_Parent_Field ) )
       impl_Parent_Field( "" );
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( ( field == c_field_id_Type ) || ( field == c_field_name_Type ) )
       impl_Type( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -4404,27 +4512,27 @@ void Meta_List::impl::set_foreign_key_value( const string& field, const string& 
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Access_Parent_Modifier || field == c_field_name_Access_Parent_Modifier )
+   else if( ( field == c_field_id_Access_Parent_Modifier ) || ( field == c_field_name_Access_Parent_Modifier ) )
       v_Access_Parent_Modifier = value;
-   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+   else if( ( field == c_field_id_Access_Permission ) || ( field == c_field_name_Access_Permission ) )
       v_Access_Permission = value;
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( ( field == c_field_id_Class ) || ( field == c_field_name_Class ) )
       v_Class = value;
-   else if( field == c_field_id_Create_Parent_Modifier || field == c_field_name_Create_Parent_Modifier )
+   else if( ( field == c_field_id_Create_Parent_Modifier ) || ( field == c_field_name_Create_Parent_Modifier ) )
       v_Create_Parent_Modifier = value;
-   else if( field == c_field_id_Create_Permission || field == c_field_name_Create_Permission )
+   else if( ( field == c_field_id_Create_Permission ) || ( field == c_field_name_Create_Permission ) )
       v_Create_Permission = value;
-   else if( field == c_field_id_Destroy_Parent_Modifier || field == c_field_name_Destroy_Parent_Modifier )
+   else if( ( field == c_field_id_Destroy_Parent_Modifier ) || ( field == c_field_name_Destroy_Parent_Modifier ) )
       v_Destroy_Parent_Modifier = value;
-   else if( field == c_field_id_Destroy_Permission || field == c_field_name_Destroy_Permission )
+   else if( ( field == c_field_id_Destroy_Permission ) || ( field == c_field_name_Destroy_Permission ) )
       v_Destroy_Permission = value;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( ( field == c_field_id_Model ) || ( field == c_field_name_Model ) )
       v_Model = value;
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( ( field == c_field_id_Parent_Class ) || ( field == c_field_name_Parent_Class ) )
       v_Parent_Class = value;
-   else if( field == c_field_id_Parent_Field || field == c_field_name_Parent_Field )
+   else if( ( field == c_field_id_Parent_Field ) || ( field == c_field_name_Parent_Field ) )
       v_Parent_Field = value;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( ( field == c_field_id_Type ) || ( field == c_field_name_Type ) )
       v_Type = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -4434,27 +4542,27 @@ const string& Meta_List::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Access_Parent_Modifier || field == c_field_name_Access_Parent_Modifier )
+   else if( ( field == c_field_id_Access_Parent_Modifier ) || ( field == c_field_name_Access_Parent_Modifier ) )
       return v_Access_Parent_Modifier;
-   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+   else if( ( field == c_field_id_Access_Permission ) || ( field == c_field_name_Access_Permission ) )
       return v_Access_Permission;
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( ( field == c_field_id_Class ) || ( field == c_field_name_Class ) )
       return v_Class;
-   else if( field == c_field_id_Create_Parent_Modifier || field == c_field_name_Create_Parent_Modifier )
+   else if( ( field == c_field_id_Create_Parent_Modifier ) || ( field == c_field_name_Create_Parent_Modifier ) )
       return v_Create_Parent_Modifier;
-   else if( field == c_field_id_Create_Permission || field == c_field_name_Create_Permission )
+   else if( ( field == c_field_id_Create_Permission ) || ( field == c_field_name_Create_Permission ) )
       return v_Create_Permission;
-   else if( field == c_field_id_Destroy_Parent_Modifier || field == c_field_name_Destroy_Parent_Modifier )
+   else if( ( field == c_field_id_Destroy_Parent_Modifier ) || ( field == c_field_name_Destroy_Parent_Modifier ) )
       return v_Destroy_Parent_Modifier;
-   else if( field == c_field_id_Destroy_Permission || field == c_field_name_Destroy_Permission )
+   else if( ( field == c_field_id_Destroy_Permission ) || ( field == c_field_name_Destroy_Permission ) )
       return v_Destroy_Permission;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( ( field == c_field_id_Model ) || ( field == c_field_name_Model ) )
       return v_Model;
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( ( field == c_field_id_Parent_Class ) || ( field == c_field_name_Parent_Class ) )
       return v_Parent_Class;
-   else if( field == c_field_id_Parent_Field || field == c_field_name_Parent_Field )
+   else if( ( field == c_field_id_Parent_Field ) || ( field == c_field_name_Parent_Field ) )
       return v_Parent_Field;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( ( field == c_field_id_Type ) || ( field == c_field_name_Type ) )
       return v_Type;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -5004,7 +5112,7 @@ bool Meta_List::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -5070,6 +5178,7 @@ void Meta_List::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -6972,262 +7081,262 @@ string Meta_List::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Access_Parent_Modifier || id_or_name == c_field_name_Access_Parent_Modifier )
+   if( ( id_or_name == c_field_id_Access_Parent_Modifier ) || ( id_or_name == c_field_name_Access_Parent_Modifier ) )
    {
       name = string( c_field_display_name_Access_Parent_Modifier );
       get_module_string( c_field_display_name_Access_Parent_Modifier, &next );
    }
-   else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
+   if( ( id_or_name == c_field_id_Access_Permission ) || ( id_or_name == c_field_name_Access_Permission ) )
    {
       name = string( c_field_display_name_Access_Permission );
       get_module_string( c_field_display_name_Access_Permission, &next );
    }
-   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+   if( ( id_or_name == c_field_id_Access_Restriction ) || ( id_or_name == c_field_name_Access_Restriction ) )
    {
       name = string( c_field_display_name_Access_Restriction );
       get_module_string( c_field_display_name_Access_Restriction, &next );
    }
-   else if( id_or_name == c_field_id_Allow_Anonymous_Access || id_or_name == c_field_name_Allow_Anonymous_Access )
+   if( ( id_or_name == c_field_id_Allow_Anonymous_Access ) || ( id_or_name == c_field_name_Allow_Anonymous_Access ) )
    {
       name = string( c_field_display_name_Allow_Anonymous_Access );
       get_module_string( c_field_display_name_Allow_Anonymous_Access, &next );
    }
-   else if( id_or_name == c_field_id_Allow_Quick_Link || id_or_name == c_field_name_Allow_Quick_Link )
+   if( ( id_or_name == c_field_id_Allow_Quick_Link ) || ( id_or_name == c_field_name_Allow_Quick_Link ) )
    {
       name = string( c_field_display_name_Allow_Quick_Link );
       get_module_string( c_field_display_name_Allow_Quick_Link, &next );
    }
-   else if( id_or_name == c_field_id_Allow_Text_Search || id_or_name == c_field_name_Allow_Text_Search )
+   if( ( id_or_name == c_field_id_Allow_Text_Search ) || ( id_or_name == c_field_name_Allow_Text_Search ) )
    {
       name = string( c_field_display_name_Allow_Text_Search );
       get_module_string( c_field_display_name_Allow_Text_Search, &next );
    }
-   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
+   if( ( id_or_name == c_field_id_Class ) || ( id_or_name == c_field_name_Class ) )
    {
       name = string( c_field_display_name_Class );
       get_module_string( c_field_display_name_Class, &next );
    }
-   else if( id_or_name == c_field_id_Create_Only_If_Default_Other || id_or_name == c_field_name_Create_Only_If_Default_Other )
+   if( ( id_or_name == c_field_id_Create_Only_If_Default_Other ) || ( id_or_name == c_field_name_Create_Only_If_Default_Other ) )
    {
       name = string( c_field_display_name_Create_Only_If_Default_Other );
       get_module_string( c_field_display_name_Create_Only_If_Default_Other, &next );
    }
-   else if( id_or_name == c_field_id_Create_Parent_Modifier || id_or_name == c_field_name_Create_Parent_Modifier )
+   if( ( id_or_name == c_field_id_Create_Parent_Modifier ) || ( id_or_name == c_field_name_Create_Parent_Modifier ) )
    {
       name = string( c_field_display_name_Create_Parent_Modifier );
       get_module_string( c_field_display_name_Create_Parent_Modifier, &next );
    }
-   else if( id_or_name == c_field_id_Create_Permission || id_or_name == c_field_name_Create_Permission )
+   if( ( id_or_name == c_field_id_Create_Permission ) || ( id_or_name == c_field_name_Create_Permission ) )
    {
       name = string( c_field_display_name_Create_Permission );
       get_module_string( c_field_display_name_Create_Permission, &next );
    }
-   else if( id_or_name == c_field_id_Create_Restriction || id_or_name == c_field_name_Create_Restriction )
+   if( ( id_or_name == c_field_id_Create_Restriction ) || ( id_or_name == c_field_name_Create_Restriction ) )
    {
       name = string( c_field_display_name_Create_Restriction );
       get_module_string( c_field_display_name_Create_Restriction, &next );
    }
-   else if( id_or_name == c_field_id_Delete_Direction || id_or_name == c_field_name_Delete_Direction )
+   if( ( id_or_name == c_field_id_Delete_Direction ) || ( id_or_name == c_field_name_Delete_Direction ) )
    {
       name = string( c_field_display_name_Delete_Direction );
       get_module_string( c_field_display_name_Delete_Direction, &next );
    }
-   else if( id_or_name == c_field_id_Destroy_Only_If_Default_Other || id_or_name == c_field_name_Destroy_Only_If_Default_Other )
+   if( ( id_or_name == c_field_id_Destroy_Only_If_Default_Other ) || ( id_or_name == c_field_name_Destroy_Only_If_Default_Other ) )
    {
       name = string( c_field_display_name_Destroy_Only_If_Default_Other );
       get_module_string( c_field_display_name_Destroy_Only_If_Default_Other, &next );
    }
-   else if( id_or_name == c_field_id_Destroy_Parent_Modifier || id_or_name == c_field_name_Destroy_Parent_Modifier )
+   if( ( id_or_name == c_field_id_Destroy_Parent_Modifier ) || ( id_or_name == c_field_name_Destroy_Parent_Modifier ) )
    {
       name = string( c_field_display_name_Destroy_Parent_Modifier );
       get_module_string( c_field_display_name_Destroy_Parent_Modifier, &next );
    }
-   else if( id_or_name == c_field_id_Destroy_Permission || id_or_name == c_field_name_Destroy_Permission )
+   if( ( id_or_name == c_field_id_Destroy_Permission ) || ( id_or_name == c_field_name_Destroy_Permission ) )
    {
       name = string( c_field_display_name_Destroy_Permission );
       get_module_string( c_field_display_name_Destroy_Permission, &next );
    }
-   else if( id_or_name == c_field_id_Destroy_Restriction || id_or_name == c_field_name_Destroy_Restriction )
+   if( ( id_or_name == c_field_id_Destroy_Restriction ) || ( id_or_name == c_field_name_Destroy_Restriction ) )
    {
       name = string( c_field_display_name_Destroy_Restriction );
       get_module_string( c_field_display_name_Destroy_Restriction, &next );
    }
-   else if( id_or_name == c_field_id_Direction || id_or_name == c_field_name_Direction )
+   if( ( id_or_name == c_field_id_Direction ) || ( id_or_name == c_field_name_Direction ) )
    {
       name = string( c_field_display_name_Direction );
       get_module_string( c_field_display_name_Direction, &next );
    }
-   else if( id_or_name == c_field_id_Display_Only_If_Default_Other || id_or_name == c_field_name_Display_Only_If_Default_Other )
+   if( ( id_or_name == c_field_id_Display_Only_If_Default_Other ) || ( id_or_name == c_field_name_Display_Only_If_Default_Other ) )
    {
       name = string( c_field_display_name_Display_Only_If_Default_Other );
       get_module_string( c_field_display_name_Display_Only_If_Default_Other, &next );
    }
-   else if( id_or_name == c_field_id_Display_Row_Limit || id_or_name == c_field_name_Display_Row_Limit )
+   if( ( id_or_name == c_field_id_Display_Row_Limit ) || ( id_or_name == c_field_name_Display_Row_Limit ) )
    {
       name = string( c_field_display_name_Display_Row_Limit );
       get_module_string( c_field_display_name_Display_Row_Limit, &next );
    }
-   else if( id_or_name == c_field_id_Display_Security_Level || id_or_name == c_field_name_Display_Security_Level )
+   if( ( id_or_name == c_field_id_Display_Security_Level ) || ( id_or_name == c_field_name_Display_Security_Level ) )
    {
       name = string( c_field_display_name_Display_Security_Level );
       get_module_string( c_field_display_name_Display_Security_Level, &next );
    }
-   else if( id_or_name == c_field_id_Display_Sub_Totals || id_or_name == c_field_name_Display_Sub_Totals )
+   if( ( id_or_name == c_field_id_Display_Sub_Totals ) || ( id_or_name == c_field_name_Display_Sub_Totals ) )
    {
       name = string( c_field_display_name_Display_Sub_Totals );
       get_module_string( c_field_display_name_Display_Sub_Totals, &next );
    }
-   else if( id_or_name == c_field_id_Display_Totals || id_or_name == c_field_name_Display_Totals )
+   if( ( id_or_name == c_field_id_Display_Totals ) || ( id_or_name == c_field_name_Display_Totals ) )
    {
       name = string( c_field_display_name_Display_Totals );
       get_module_string( c_field_display_name_Display_Totals, &next );
    }
-   else if( id_or_name == c_field_id_File_Links_Always_As_Single || id_or_name == c_field_name_File_Links_Always_As_Single )
+   if( ( id_or_name == c_field_id_File_Links_Always_As_Single ) || ( id_or_name == c_field_name_File_Links_Always_As_Single ) )
    {
       name = string( c_field_display_name_File_Links_Always_As_Single );
       get_module_string( c_field_display_name_File_Links_Always_As_Single, &next );
    }
-   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   if( ( id_or_name == c_field_id_Id ) || ( id_or_name == c_field_name_Id ) )
    {
       name = string( c_field_display_name_Id );
       get_module_string( c_field_display_name_Id, &next );
    }
-   else if( id_or_name == c_field_id_Ignore_Implicit_Ordering || id_or_name == c_field_name_Ignore_Implicit_Ordering )
+   if( ( id_or_name == c_field_id_Ignore_Implicit_Ordering ) || ( id_or_name == c_field_name_Ignore_Implicit_Ordering ) )
    {
       name = string( c_field_display_name_Ignore_Implicit_Ordering );
       get_module_string( c_field_display_name_Ignore_Implicit_Ordering, &next );
    }
-   else if( id_or_name == c_field_id_Ignore_State_For_Display || id_or_name == c_field_name_Ignore_State_For_Display )
+   if( ( id_or_name == c_field_id_Ignore_State_For_Display ) || ( id_or_name == c_field_name_Ignore_State_For_Display ) )
    {
       name = string( c_field_display_name_Ignore_State_For_Display );
       get_module_string( c_field_display_name_Ignore_State_For_Display, &next );
    }
-   else if( id_or_name == c_field_id_Ignore_Unactionable_Records || id_or_name == c_field_name_Ignore_Unactionable_Records )
+   if( ( id_or_name == c_field_id_Ignore_Unactionable_Records ) || ( id_or_name == c_field_name_Ignore_Unactionable_Records ) )
    {
       name = string( c_field_display_name_Ignore_Unactionable_Records );
       get_module_string( c_field_display_name_Ignore_Unactionable_Records, &next );
    }
-   else if( id_or_name == c_field_id_Ignore_Uneditable_Parent || id_or_name == c_field_name_Ignore_Uneditable_Parent )
+   if( ( id_or_name == c_field_id_Ignore_Uneditable_Parent ) || ( id_or_name == c_field_name_Ignore_Uneditable_Parent ) )
    {
       name = string( c_field_display_name_Ignore_Uneditable_Parent );
       get_module_string( c_field_display_name_Ignore_Uneditable_Parent, &next );
    }
-   else if( id_or_name == c_field_id_Ignore_Username_Filter || id_or_name == c_field_name_Ignore_Username_Filter )
+   if( ( id_or_name == c_field_id_Ignore_Username_Filter ) || ( id_or_name == c_field_name_Ignore_Username_Filter ) )
    {
       name = string( c_field_display_name_Ignore_Username_Filter );
       get_module_string( c_field_display_name_Ignore_Username_Filter, &next );
    }
-   else if( id_or_name == c_field_id_Is_Admin || id_or_name == c_field_name_Is_Admin )
+   if( ( id_or_name == c_field_id_Is_Admin ) || ( id_or_name == c_field_name_Is_Admin ) )
    {
       name = string( c_field_display_name_Is_Admin );
       get_module_string( c_field_display_name_Is_Admin, &next );
    }
-   else if( id_or_name == c_field_id_Is_Child || id_or_name == c_field_name_Is_Child )
+   if( ( id_or_name == c_field_id_Is_Child ) || ( id_or_name == c_field_name_Is_Child ) )
    {
       name = string( c_field_display_name_Is_Child );
       get_module_string( c_field_display_name_Is_Child, &next );
    }
-   else if( id_or_name == c_field_id_Is_Home || id_or_name == c_field_name_Is_Home )
+   if( ( id_or_name == c_field_id_Is_Home ) || ( id_or_name == c_field_name_Is_Home ) )
    {
       name = string( c_field_display_name_Is_Home );
       get_module_string( c_field_display_name_Is_Home, &next );
    }
-   else if( id_or_name == c_field_id_Is_Not_Anonymous || id_or_name == c_field_name_Is_Not_Anonymous )
+   if( ( id_or_name == c_field_id_Is_Not_Anonymous ) || ( id_or_name == c_field_name_Is_Not_Anonymous ) )
    {
       name = string( c_field_display_name_Is_Not_Anonymous );
       get_module_string( c_field_display_name_Is_Not_Anonymous, &next );
    }
-   else if( id_or_name == c_field_id_Is_Variation || id_or_name == c_field_name_Is_Variation )
+   if( ( id_or_name == c_field_id_Is_Variation ) || ( id_or_name == c_field_name_Is_Variation ) )
    {
       name = string( c_field_display_name_Is_Variation );
       get_module_string( c_field_display_name_Is_Variation, &next );
    }
-   else if( id_or_name == c_field_id_Limit_Scroll_And_New || id_or_name == c_field_name_Limit_Scroll_And_New )
+   if( ( id_or_name == c_field_id_Limit_Scroll_And_New ) || ( id_or_name == c_field_name_Limit_Scroll_And_New ) )
    {
       name = string( c_field_display_name_Limit_Scroll_And_New );
       get_module_string( c_field_display_name_Limit_Scroll_And_New, &next );
    }
-   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
+   if( ( id_or_name == c_field_id_Model ) || ( id_or_name == c_field_name_Model ) )
    {
       name = string( c_field_display_name_Model );
       get_module_string( c_field_display_name_Model, &next );
    }
-   else if( id_or_name == c_field_id_Multiline_Truncate_For_Print || id_or_name == c_field_name_Multiline_Truncate_For_Print )
+   if( ( id_or_name == c_field_id_Multiline_Truncate_For_Print ) || ( id_or_name == c_field_name_Multiline_Truncate_For_Print ) )
    {
       name = string( c_field_display_name_Multiline_Truncate_For_Print );
       get_module_string( c_field_display_name_Multiline_Truncate_For_Print, &next );
    }
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
    {
       name = string( c_field_display_name_Name );
       get_module_string( c_field_display_name_Name, &next );
    }
-   else if( id_or_name == c_field_id_Number_Multiple_Pages || id_or_name == c_field_name_Number_Multiple_Pages )
+   if( ( id_or_name == c_field_id_Number_Multiple_Pages ) || ( id_or_name == c_field_name_Number_Multiple_Pages ) )
    {
       name = string( c_field_display_name_Number_Multiple_Pages );
       get_module_string( c_field_display_name_Number_Multiple_Pages, &next );
    }
-   else if( id_or_name == c_field_id_PDF_Font_Type || id_or_name == c_field_name_PDF_Font_Type )
+   if( ( id_or_name == c_field_id_PDF_Font_Type ) || ( id_or_name == c_field_name_PDF_Font_Type ) )
    {
       name = string( c_field_display_name_PDF_Font_Type );
       get_module_string( c_field_display_name_PDF_Font_Type, &next );
    }
-   else if( id_or_name == c_field_id_PDF_List_Type || id_or_name == c_field_name_PDF_List_Type )
+   if( ( id_or_name == c_field_id_PDF_List_Type ) || ( id_or_name == c_field_name_PDF_List_Type ) )
    {
       name = string( c_field_display_name_PDF_List_Type );
       get_module_string( c_field_display_name_PDF_List_Type, &next );
    }
-   else if( id_or_name == c_field_id_Parent_Class || id_or_name == c_field_name_Parent_Class )
+   if( ( id_or_name == c_field_id_Parent_Class ) || ( id_or_name == c_field_name_Parent_Class ) )
    {
       name = string( c_field_display_name_Parent_Class );
       get_module_string( c_field_display_name_Parent_Class, &next );
    }
-   else if( id_or_name == c_field_id_Parent_Field || id_or_name == c_field_name_Parent_Field )
+   if( ( id_or_name == c_field_id_Parent_Field ) || ( id_or_name == c_field_name_Parent_Field ) )
    {
       name = string( c_field_display_name_Parent_Field );
       get_module_string( c_field_display_name_Parent_Field, &next );
    }
-   else if( id_or_name == c_field_id_Print_Restriction || id_or_name == c_field_name_Print_Restriction )
+   if( ( id_or_name == c_field_id_Print_Restriction ) || ( id_or_name == c_field_name_Print_Restriction ) )
    {
       name = string( c_field_display_name_Print_Restriction );
       get_module_string( c_field_display_name_Print_Restriction, &next );
    }
-   else if( id_or_name == c_field_id_Print_Without_Highlight || id_or_name == c_field_name_Print_Without_Highlight )
+   if( ( id_or_name == c_field_id_Print_Without_Highlight ) || ( id_or_name == c_field_name_Print_Without_Highlight ) )
    {
       name = string( c_field_display_name_Print_Without_Highlight );
       get_module_string( c_field_display_name_Print_Without_Highlight, &next );
    }
-   else if( id_or_name == c_field_id_Search_Option_Limit || id_or_name == c_field_name_Search_Option_Limit )
+   if( ( id_or_name == c_field_id_Search_Option_Limit ) || ( id_or_name == c_field_name_Search_Option_Limit ) )
    {
       name = string( c_field_display_name_Search_Option_Limit );
       get_module_string( c_field_display_name_Search_Option_Limit, &next );
    }
-   else if( id_or_name == c_field_id_Sort_Rows_In_UI || id_or_name == c_field_name_Sort_Rows_In_UI )
+   if( ( id_or_name == c_field_id_Sort_Rows_In_UI ) || ( id_or_name == c_field_name_Sort_Rows_In_UI ) )
    {
       name = string( c_field_display_name_Sort_Rows_In_UI );
       get_module_string( c_field_display_name_Sort_Rows_In_UI, &next );
    }
-   else if( id_or_name == c_field_id_Style || id_or_name == c_field_name_Style )
+   if( ( id_or_name == c_field_id_Style ) || ( id_or_name == c_field_name_Style ) )
    {
       name = string( c_field_display_name_Style );
       get_module_string( c_field_display_name_Style, &next );
    }
-   else if( id_or_name == c_field_id_Text_Match_Highlight || id_or_name == c_field_name_Text_Match_Highlight )
+   if( ( id_or_name == c_field_id_Text_Match_Highlight ) || ( id_or_name == c_field_name_Text_Match_Highlight ) )
    {
       name = string( c_field_display_name_Text_Match_Highlight );
       get_module_string( c_field_display_name_Text_Match_Highlight, &next );
    }
-   else if( id_or_name == c_field_id_Title || id_or_name == c_field_name_Title )
+   if( ( id_or_name == c_field_id_Title ) || ( id_or_name == c_field_name_Title ) )
    {
       name = string( c_field_display_name_Title );
       get_module_string( c_field_display_name_Title, &next );
    }
-   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   if( ( id_or_name == c_field_id_Type ) || ( id_or_name == c_field_name_Type ) )
    {
       name = string( c_field_display_name_Type );
       get_module_string( c_field_display_name_Type, &next );
    }
-   else if( id_or_name == c_field_id_Variation_Name || id_or_name == c_field_name_Variation_Name )
+   if( ( id_or_name == c_field_id_Variation_Name ) || ( id_or_name == c_field_name_Variation_Name ) )
    {
       name = string( c_field_display_name_Variation_Name );
       get_module_string( c_field_display_name_Variation_Name, &next );
@@ -7247,109 +7356,109 @@ string Meta_List::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Access_Parent_Modifier || id_or_name == c_field_name_Access_Parent_Modifier )
+   if( ( id_or_name == c_field_id_Access_Parent_Modifier ) || ( id_or_name == c_field_name_Access_Parent_Modifier ) )
       display_name = get_module_string( c_field_display_name_Access_Parent_Modifier );
-   else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
+   if( ( id_or_name == c_field_id_Access_Permission ) || ( id_or_name == c_field_name_Access_Permission ) )
       display_name = get_module_string( c_field_display_name_Access_Permission );
-   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+   if( ( id_or_name == c_field_id_Access_Restriction ) || ( id_or_name == c_field_name_Access_Restriction ) )
       display_name = get_module_string( c_field_display_name_Access_Restriction );
-   else if( id_or_name == c_field_id_Allow_Anonymous_Access || id_or_name == c_field_name_Allow_Anonymous_Access )
+   if( ( id_or_name == c_field_id_Allow_Anonymous_Access ) || ( id_or_name == c_field_name_Allow_Anonymous_Access ) )
       display_name = get_module_string( c_field_display_name_Allow_Anonymous_Access );
-   else if( id_or_name == c_field_id_Allow_Quick_Link || id_or_name == c_field_name_Allow_Quick_Link )
+   if( ( id_or_name == c_field_id_Allow_Quick_Link ) || ( id_or_name == c_field_name_Allow_Quick_Link ) )
       display_name = get_module_string( c_field_display_name_Allow_Quick_Link );
-   else if( id_or_name == c_field_id_Allow_Text_Search || id_or_name == c_field_name_Allow_Text_Search )
+   if( ( id_or_name == c_field_id_Allow_Text_Search ) || ( id_or_name == c_field_name_Allow_Text_Search ) )
       display_name = get_module_string( c_field_display_name_Allow_Text_Search );
-   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
+   if( ( id_or_name == c_field_id_Class ) || ( id_or_name == c_field_name_Class ) )
       display_name = get_module_string( c_field_display_name_Class );
-   else if( id_or_name == c_field_id_Create_Only_If_Default_Other || id_or_name == c_field_name_Create_Only_If_Default_Other )
+   if( ( id_or_name == c_field_id_Create_Only_If_Default_Other ) || ( id_or_name == c_field_name_Create_Only_If_Default_Other ) )
       display_name = get_module_string( c_field_display_name_Create_Only_If_Default_Other );
-   else if( id_or_name == c_field_id_Create_Parent_Modifier || id_or_name == c_field_name_Create_Parent_Modifier )
+   if( ( id_or_name == c_field_id_Create_Parent_Modifier ) || ( id_or_name == c_field_name_Create_Parent_Modifier ) )
       display_name = get_module_string( c_field_display_name_Create_Parent_Modifier );
-   else if( id_or_name == c_field_id_Create_Permission || id_or_name == c_field_name_Create_Permission )
+   if( ( id_or_name == c_field_id_Create_Permission ) || ( id_or_name == c_field_name_Create_Permission ) )
       display_name = get_module_string( c_field_display_name_Create_Permission );
-   else if( id_or_name == c_field_id_Create_Restriction || id_or_name == c_field_name_Create_Restriction )
+   if( ( id_or_name == c_field_id_Create_Restriction ) || ( id_or_name == c_field_name_Create_Restriction ) )
       display_name = get_module_string( c_field_display_name_Create_Restriction );
-   else if( id_or_name == c_field_id_Delete_Direction || id_or_name == c_field_name_Delete_Direction )
+   if( ( id_or_name == c_field_id_Delete_Direction ) || ( id_or_name == c_field_name_Delete_Direction ) )
       display_name = get_module_string( c_field_display_name_Delete_Direction );
-   else if( id_or_name == c_field_id_Destroy_Only_If_Default_Other || id_or_name == c_field_name_Destroy_Only_If_Default_Other )
+   if( ( id_or_name == c_field_id_Destroy_Only_If_Default_Other ) || ( id_or_name == c_field_name_Destroy_Only_If_Default_Other ) )
       display_name = get_module_string( c_field_display_name_Destroy_Only_If_Default_Other );
-   else if( id_or_name == c_field_id_Destroy_Parent_Modifier || id_or_name == c_field_name_Destroy_Parent_Modifier )
+   if( ( id_or_name == c_field_id_Destroy_Parent_Modifier ) || ( id_or_name == c_field_name_Destroy_Parent_Modifier ) )
       display_name = get_module_string( c_field_display_name_Destroy_Parent_Modifier );
-   else if( id_or_name == c_field_id_Destroy_Permission || id_or_name == c_field_name_Destroy_Permission )
+   if( ( id_or_name == c_field_id_Destroy_Permission ) || ( id_or_name == c_field_name_Destroy_Permission ) )
       display_name = get_module_string( c_field_display_name_Destroy_Permission );
-   else if( id_or_name == c_field_id_Destroy_Restriction || id_or_name == c_field_name_Destroy_Restriction )
+   if( ( id_or_name == c_field_id_Destroy_Restriction ) || ( id_or_name == c_field_name_Destroy_Restriction ) )
       display_name = get_module_string( c_field_display_name_Destroy_Restriction );
-   else if( id_or_name == c_field_id_Direction || id_or_name == c_field_name_Direction )
+   if( ( id_or_name == c_field_id_Direction ) || ( id_or_name == c_field_name_Direction ) )
       display_name = get_module_string( c_field_display_name_Direction );
-   else if( id_or_name == c_field_id_Display_Only_If_Default_Other || id_or_name == c_field_name_Display_Only_If_Default_Other )
+   if( ( id_or_name == c_field_id_Display_Only_If_Default_Other ) || ( id_or_name == c_field_name_Display_Only_If_Default_Other ) )
       display_name = get_module_string( c_field_display_name_Display_Only_If_Default_Other );
-   else if( id_or_name == c_field_id_Display_Row_Limit || id_or_name == c_field_name_Display_Row_Limit )
+   if( ( id_or_name == c_field_id_Display_Row_Limit ) || ( id_or_name == c_field_name_Display_Row_Limit ) )
       display_name = get_module_string( c_field_display_name_Display_Row_Limit );
-   else if( id_or_name == c_field_id_Display_Security_Level || id_or_name == c_field_name_Display_Security_Level )
+   if( ( id_or_name == c_field_id_Display_Security_Level ) || ( id_or_name == c_field_name_Display_Security_Level ) )
       display_name = get_module_string( c_field_display_name_Display_Security_Level );
-   else if( id_or_name == c_field_id_Display_Sub_Totals || id_or_name == c_field_name_Display_Sub_Totals )
+   if( ( id_or_name == c_field_id_Display_Sub_Totals ) || ( id_or_name == c_field_name_Display_Sub_Totals ) )
       display_name = get_module_string( c_field_display_name_Display_Sub_Totals );
-   else if( id_or_name == c_field_id_Display_Totals || id_or_name == c_field_name_Display_Totals )
+   if( ( id_or_name == c_field_id_Display_Totals ) || ( id_or_name == c_field_name_Display_Totals ) )
       display_name = get_module_string( c_field_display_name_Display_Totals );
-   else if( id_or_name == c_field_id_File_Links_Always_As_Single || id_or_name == c_field_name_File_Links_Always_As_Single )
+   if( ( id_or_name == c_field_id_File_Links_Always_As_Single ) || ( id_or_name == c_field_name_File_Links_Always_As_Single ) )
       display_name = get_module_string( c_field_display_name_File_Links_Always_As_Single );
-   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   if( ( id_or_name == c_field_id_Id ) || ( id_or_name == c_field_name_Id ) )
       display_name = get_module_string( c_field_display_name_Id );
-   else if( id_or_name == c_field_id_Ignore_Implicit_Ordering || id_or_name == c_field_name_Ignore_Implicit_Ordering )
+   if( ( id_or_name == c_field_id_Ignore_Implicit_Ordering ) || ( id_or_name == c_field_name_Ignore_Implicit_Ordering ) )
       display_name = get_module_string( c_field_display_name_Ignore_Implicit_Ordering );
-   else if( id_or_name == c_field_id_Ignore_State_For_Display || id_or_name == c_field_name_Ignore_State_For_Display )
+   if( ( id_or_name == c_field_id_Ignore_State_For_Display ) || ( id_or_name == c_field_name_Ignore_State_For_Display ) )
       display_name = get_module_string( c_field_display_name_Ignore_State_For_Display );
-   else if( id_or_name == c_field_id_Ignore_Unactionable_Records || id_or_name == c_field_name_Ignore_Unactionable_Records )
+   if( ( id_or_name == c_field_id_Ignore_Unactionable_Records ) || ( id_or_name == c_field_name_Ignore_Unactionable_Records ) )
       display_name = get_module_string( c_field_display_name_Ignore_Unactionable_Records );
-   else if( id_or_name == c_field_id_Ignore_Uneditable_Parent || id_or_name == c_field_name_Ignore_Uneditable_Parent )
+   if( ( id_or_name == c_field_id_Ignore_Uneditable_Parent ) || ( id_or_name == c_field_name_Ignore_Uneditable_Parent ) )
       display_name = get_module_string( c_field_display_name_Ignore_Uneditable_Parent );
-   else if( id_or_name == c_field_id_Ignore_Username_Filter || id_or_name == c_field_name_Ignore_Username_Filter )
+   if( ( id_or_name == c_field_id_Ignore_Username_Filter ) || ( id_or_name == c_field_name_Ignore_Username_Filter ) )
       display_name = get_module_string( c_field_display_name_Ignore_Username_Filter );
-   else if( id_or_name == c_field_id_Is_Admin || id_or_name == c_field_name_Is_Admin )
+   if( ( id_or_name == c_field_id_Is_Admin ) || ( id_or_name == c_field_name_Is_Admin ) )
       display_name = get_module_string( c_field_display_name_Is_Admin );
-   else if( id_or_name == c_field_id_Is_Child || id_or_name == c_field_name_Is_Child )
+   if( ( id_or_name == c_field_id_Is_Child ) || ( id_or_name == c_field_name_Is_Child ) )
       display_name = get_module_string( c_field_display_name_Is_Child );
-   else if( id_or_name == c_field_id_Is_Home || id_or_name == c_field_name_Is_Home )
+   if( ( id_or_name == c_field_id_Is_Home ) || ( id_or_name == c_field_name_Is_Home ) )
       display_name = get_module_string( c_field_display_name_Is_Home );
-   else if( id_or_name == c_field_id_Is_Not_Anonymous || id_or_name == c_field_name_Is_Not_Anonymous )
+   if( ( id_or_name == c_field_id_Is_Not_Anonymous ) || ( id_or_name == c_field_name_Is_Not_Anonymous ) )
       display_name = get_module_string( c_field_display_name_Is_Not_Anonymous );
-   else if( id_or_name == c_field_id_Is_Variation || id_or_name == c_field_name_Is_Variation )
+   if( ( id_or_name == c_field_id_Is_Variation ) || ( id_or_name == c_field_name_Is_Variation ) )
       display_name = get_module_string( c_field_display_name_Is_Variation );
-   else if( id_or_name == c_field_id_Limit_Scroll_And_New || id_or_name == c_field_name_Limit_Scroll_And_New )
+   if( ( id_or_name == c_field_id_Limit_Scroll_And_New ) || ( id_or_name == c_field_name_Limit_Scroll_And_New ) )
       display_name = get_module_string( c_field_display_name_Limit_Scroll_And_New );
-   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
+   if( ( id_or_name == c_field_id_Model ) || ( id_or_name == c_field_name_Model ) )
       display_name = get_module_string( c_field_display_name_Model );
-   else if( id_or_name == c_field_id_Multiline_Truncate_For_Print || id_or_name == c_field_name_Multiline_Truncate_For_Print )
+   if( ( id_or_name == c_field_id_Multiline_Truncate_For_Print ) || ( id_or_name == c_field_name_Multiline_Truncate_For_Print ) )
       display_name = get_module_string( c_field_display_name_Multiline_Truncate_For_Print );
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id_or_name == c_field_id_Number_Multiple_Pages || id_or_name == c_field_name_Number_Multiple_Pages )
+   if( ( id_or_name == c_field_id_Number_Multiple_Pages ) || ( id_or_name == c_field_name_Number_Multiple_Pages ) )
       display_name = get_module_string( c_field_display_name_Number_Multiple_Pages );
-   else if( id_or_name == c_field_id_PDF_Font_Type || id_or_name == c_field_name_PDF_Font_Type )
+   if( ( id_or_name == c_field_id_PDF_Font_Type ) || ( id_or_name == c_field_name_PDF_Font_Type ) )
       display_name = get_module_string( c_field_display_name_PDF_Font_Type );
-   else if( id_or_name == c_field_id_PDF_List_Type || id_or_name == c_field_name_PDF_List_Type )
+   if( ( id_or_name == c_field_id_PDF_List_Type ) || ( id_or_name == c_field_name_PDF_List_Type ) )
       display_name = get_module_string( c_field_display_name_PDF_List_Type );
-   else if( id_or_name == c_field_id_Parent_Class || id_or_name == c_field_name_Parent_Class )
+   if( ( id_or_name == c_field_id_Parent_Class ) || ( id_or_name == c_field_name_Parent_Class ) )
       display_name = get_module_string( c_field_display_name_Parent_Class );
-   else if( id_or_name == c_field_id_Parent_Field || id_or_name == c_field_name_Parent_Field )
+   if( ( id_or_name == c_field_id_Parent_Field ) || ( id_or_name == c_field_name_Parent_Field ) )
       display_name = get_module_string( c_field_display_name_Parent_Field );
-   else if( id_or_name == c_field_id_Print_Restriction || id_or_name == c_field_name_Print_Restriction )
+   if( ( id_or_name == c_field_id_Print_Restriction ) || ( id_or_name == c_field_name_Print_Restriction ) )
       display_name = get_module_string( c_field_display_name_Print_Restriction );
-   else if( id_or_name == c_field_id_Print_Without_Highlight || id_or_name == c_field_name_Print_Without_Highlight )
+   if( ( id_or_name == c_field_id_Print_Without_Highlight ) || ( id_or_name == c_field_name_Print_Without_Highlight ) )
       display_name = get_module_string( c_field_display_name_Print_Without_Highlight );
-   else if( id_or_name == c_field_id_Search_Option_Limit || id_or_name == c_field_name_Search_Option_Limit )
+   if( ( id_or_name == c_field_id_Search_Option_Limit ) || ( id_or_name == c_field_name_Search_Option_Limit ) )
       display_name = get_module_string( c_field_display_name_Search_Option_Limit );
-   else if( id_or_name == c_field_id_Sort_Rows_In_UI || id_or_name == c_field_name_Sort_Rows_In_UI )
+   if( ( id_or_name == c_field_id_Sort_Rows_In_UI ) || ( id_or_name == c_field_name_Sort_Rows_In_UI ) )
       display_name = get_module_string( c_field_display_name_Sort_Rows_In_UI );
-   else if( id_or_name == c_field_id_Style || id_or_name == c_field_name_Style )
+   if( ( id_or_name == c_field_id_Style ) || ( id_or_name == c_field_name_Style ) )
       display_name = get_module_string( c_field_display_name_Style );
-   else if( id_or_name == c_field_id_Text_Match_Highlight || id_or_name == c_field_name_Text_Match_Highlight )
+   if( ( id_or_name == c_field_id_Text_Match_Highlight ) || ( id_or_name == c_field_name_Text_Match_Highlight ) )
       display_name = get_module_string( c_field_display_name_Text_Match_Highlight );
-   else if( id_or_name == c_field_id_Title || id_or_name == c_field_name_Title )
+   if( ( id_or_name == c_field_id_Title ) || ( id_or_name == c_field_name_Title ) )
       display_name = get_module_string( c_field_display_name_Title );
-   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   if( ( id_or_name == c_field_id_Type ) || ( id_or_name == c_field_name_Type ) )
       display_name = get_module_string( c_field_display_name_Type );
-   else if( id_or_name == c_field_id_Variation_Name || id_or_name == c_field_name_Variation_Name )
+   if( ( id_or_name == c_field_id_Variation_Name ) || ( id_or_name == c_field_name_Variation_Name ) )
       display_name = get_module_string( c_field_display_name_Variation_Name );
 
    return display_name;
@@ -7510,7 +7619,8 @@ class_base* Meta_List::get_next_foreign_key_child(
    if( child_num >= 3 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+      if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
          --ealci;
 
       p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -7586,6 +7696,7 @@ string Meta_List::get_module_name( ) const
 string Meta_List::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "list";
 
    return get_module_string( key );
@@ -7650,33 +7761,33 @@ class_base& Meta_List::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_300632" || sub_context == "child_Class_Created" )
+   else if( ( sub_context == "_300632" ) || ( sub_context == "child_Class_Created" ) )
       p_class_base = &child_Class_Created( );
-   else if( sub_context == "_302100" || sub_context == "child_List_Field" )
+   else if( ( sub_context == "_302100" ) || ( sub_context == "child_List_Field" ) )
       p_class_base = &child_List_Field( );
-   else if( sub_context == "_302831" || sub_context == "child_Package_Option" )
+   else if( ( sub_context == "_302831" ) || ( sub_context == "child_Package_Option" ) )
       p_class_base = &child_Package_Option( );
-   else if( sub_context == c_field_id_Access_Parent_Modifier || sub_context == c_field_name_Access_Parent_Modifier )
+   else if( ( sub_context == c_field_id_Access_Parent_Modifier ) || ( sub_context == c_field_name_Access_Parent_Modifier ) )
       p_class_base = &Access_Parent_Modifier( );
-   else if( sub_context == c_field_id_Access_Permission || sub_context == c_field_name_Access_Permission )
+   else if( ( sub_context == c_field_id_Access_Permission ) || ( sub_context == c_field_name_Access_Permission ) )
       p_class_base = &Access_Permission( );
-   else if( sub_context == c_field_id_Class || sub_context == c_field_name_Class )
+   else if( ( sub_context == c_field_id_Class ) || ( sub_context == c_field_name_Class ) )
       p_class_base = &Class( );
-   else if( sub_context == c_field_id_Create_Parent_Modifier || sub_context == c_field_name_Create_Parent_Modifier )
+   else if( ( sub_context == c_field_id_Create_Parent_Modifier ) || ( sub_context == c_field_name_Create_Parent_Modifier ) )
       p_class_base = &Create_Parent_Modifier( );
-   else if( sub_context == c_field_id_Create_Permission || sub_context == c_field_name_Create_Permission )
+   else if( ( sub_context == c_field_id_Create_Permission ) || ( sub_context == c_field_name_Create_Permission ) )
       p_class_base = &Create_Permission( );
-   else if( sub_context == c_field_id_Destroy_Parent_Modifier || sub_context == c_field_name_Destroy_Parent_Modifier )
+   else if( ( sub_context == c_field_id_Destroy_Parent_Modifier ) || ( sub_context == c_field_name_Destroy_Parent_Modifier ) )
       p_class_base = &Destroy_Parent_Modifier( );
-   else if( sub_context == c_field_id_Destroy_Permission || sub_context == c_field_name_Destroy_Permission )
+   else if( ( sub_context == c_field_id_Destroy_Permission ) || ( sub_context == c_field_name_Destroy_Permission ) )
       p_class_base = &Destroy_Permission( );
-   else if( sub_context == c_field_id_Model || sub_context == c_field_name_Model )
+   else if( ( sub_context == c_field_id_Model ) || ( sub_context == c_field_name_Model ) )
       p_class_base = &Model( );
-   else if( sub_context == c_field_id_Parent_Class || sub_context == c_field_name_Parent_Class )
+   else if( ( sub_context == c_field_id_Parent_Class ) || ( sub_context == c_field_name_Parent_Class ) )
       p_class_base = &Parent_Class( );
-   else if( sub_context == c_field_id_Parent_Field || sub_context == c_field_name_Parent_Field )
+   else if( ( sub_context == c_field_id_Parent_Field ) || ( sub_context == c_field_name_Parent_Field ) )
       p_class_base = &Parent_Field( );
-   else if( sub_context == c_field_id_Type || sub_context == c_field_name_Type )
+   else if( ( sub_context == c_field_id_Type ) || ( sub_context == c_field_name_Type ) )
       p_class_base = &Type( );
 
    if( !p_class_base )
@@ -7746,7 +7857,7 @@ void Meta_List::get_sql_column_names(
    names.push_back( "C_Type" );
    names.push_back( "C_Variation_Name" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -7808,7 +7919,7 @@ void Meta_List::get_sql_column_values(
    values.push_back( sql_quote( to_string( Type( ) ) ) );
    values.push_back( sql_quote( to_string( Variation_Name( ) ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -8174,7 +8285,7 @@ void Meta_List::static_get_foreign_key_info( foreign_key_info_container& foreign
 
 int Meta_List::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

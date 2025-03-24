@@ -134,6 +134,10 @@
 `{`?`$all_procedures`[`$all_procedures`,`{`?`$\$_all_args`$\$_all_non_inputs`=`'`'`}`]`}
 `{`?`$all_procedures`[`$all_procedures`,`{`?`$\$_all_outputs`[`$\$_all_outputs`%,`,`{`$\$_all_non_inputs`=`$\$_all_non_inputs`+`'\\0`'`}`]`}`]`}
 `{`}
+`{`?`$all_procedures`[`$all_procedures`,`{`(`?`$\$_all_args`)`{`$\$_more_args`=`'`'`}`{`$\$_many_args`=`'`'`}`}`]`}
+`{`?`$all_procedures`[`$all_procedures`,`{`?`$\$_all_args`[`$\$_all_args`,\
+`{`@eq`(`'\\#`'`,`'5`'`)`$\$_more_args`=`'1`'`}`{`@eq`(`'\\#`'`,`'9`'`)`$\$_many_args`=`'1`'`}`]`}`]`}
+`{`}
 `{`$all_includes_specifications`=`'`'`}
 `{`$all_to_store_specifications`=`'`'`}
 `{`$all_validate_specifications`=`'`'`}
@@ -623,13 +627,15 @@ void `{`$full_class_name`}_command_functor::operator ( )( const string& command,
       string field_name( get_parm_val( parameters, c_cmd_`{`$full_class_name`}_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
 `{`?`$all_fields`[`$all_fields`%,`,\
-      if( !handled && field_name == c_field_id_\0 || field_name == c_field_name_\0 )
+      if( !handled && ( ( field_name == c_field_id_\0 ) || ( field_name == c_field_name_\0 ) ) )
       {
          handled = true;
+
          string_getter< \1 >( cmd_handler.p_`{`$full_class_name`}->\0( ), cmd_handler.retval );
       }
 `+\n`]`}
@@ -646,13 +652,15 @@ void `{`$full_class_name`}_command_functor::operator ( )( const string& command,
       string field_value( get_parm_val( parameters, c_cmd_`{`$full_class_name`}_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
 `{`?`$all_fields`[`$all_fields`%,`,\
-      if( !handled && field_name == c_field_id_\0 || field_name == c_field_name_\0 )
+      if( !handled && ( ( field_name == c_field_id_\0 ) || ( field_name == c_field_name_\0 ) ) )
       {
          handled = true;
+
          func_string_setter< `{`$full_class_name`}, \1 >(
           *cmd_handler.p_`{`$full_class_name`}, &`{`$full_class_name`}::\0, field_value );
       }
@@ -676,15 +684,17 @@ void `{`$full_class_name`}_command_functor::operator ( )( const string& command,
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
 `{`?`$commandable_fields`[`$commandable_fields`%,`,\
-      else if( field_name == c_field_id_\0 || field_name == c_field_name_\0 )
+      else if( ( field_name == c_field_id_\0 ) || ( field_name == c_field_name_\0 ) )
       {
          \1 \0( cmd_handler.p_`{`$full_class_name`}->\0( ) );
+
          execute_command( \0, cmd_and_args, cmd_handler.retval );
+
          cmd_handler.p_`{`$full_class_name`}->\0( \0 );
       }\
 `+\n`]`}
 `{`[`$parent_fields`,\
-      else if( field_name == c_field_id_\$ || field_name == c_field_name_\$ )
+      else if( ( field_name == c_field_id_\$ ) || ( field_name == c_field_name_\$ ) )
          cmd_handler.retval = cmd_handler.p_`{`$full_class_name`}->\$( ).execute( cmd_and_args );\
 `+\n`]`}
       else
@@ -697,16 +707,19 @@ void `{`$full_class_name`}_command_functor::operator ( )( const string& command,
 `{`?`$all_procedures`[`$all_procedures`,\
    else if( command == c_cmd_`{`$full_class_name`}_\$ )
    {
-`{`?`$\$_all_inputs`[`$\$_all_inputs`%,`,\
+`{`$had_any_args`=`'`'`}`{`?`$\$_all_inputs`[`$\$_all_inputs`%,`,`{`$had_any_args`=`'1`'`}\
       \\1 \\0( get_parm_val_from_string< \\1 >( parameters, c_cmd_`{`$full_class_name`}_\$_\\0 ) );
 `]`}\
-`{`?`$\$_all_outputs`[`$\$_all_outputs`%,`,\
+`{`?`$\$_all_outputs`[`$\$_all_outputs`%,`,`{`$had_any_args`=`'1`'`}\
       \\1 \\0;
 `]`}\
+`{`@eq`(`$had_any_args`,`'1`'`)
+`}\
       cmd_handler.p_`{`$full_class_name`}->\$(`{`?`$\$_all_args`[`$\$_all_args`%,`' `'\\0`+, `]`} );
 
       cmd_handler.retval.erase( );
-`{`?`$\$_all_outputs`[`$\$_all_outputs`%,`,\
+`{`(`?`$\$_all_outputs`)
+`}`{`?`$\$_all_outputs`[`$\$_all_outputs`%,`,\
       append_value( cmd_handler.retval, \\0 );
 `+\\n`]`}\
    }\
@@ -800,11 +813,13 @@ struct \$::impl : public \$_command_handler
    }
 `]`}
 `{`?`$all_procedures`[`$all_procedures`,\
-   void impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`' `'\
-`{`@in`(`'\\0`'`,`$\$_all_simple_inputs`)\\1 \\0`}\
+   void impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`'`'\
+`{`@eq`(`'\\#`'`,`'1`'`)`&`@eq`(`$\$_more_args`,`'1`'`)
+    `,`@eq`(`'\\#`'`,`'5`'`)`&`@eq`(`$\$_many_args`,`'1`'`)
+    `, `}`{`@in`(`'\\0`'`,`$\$_all_simple_inputs`)\\1 \\0`}\
 `{`@in`(`'\\0`'`,`$\$_all_complex_inputs`)const \\1& \\0`}\
 `{`@in`(`'\\0`'`,`$\$_all_non_inputs`)\\1& \\0`}\
-`+, `] `});
+`+,`]`} );
 `+\n`]`}
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
@@ -885,7 +900,9 @@ struct \$::impl : public \$_command_handler
 
 `{`?`$all_procedures`[`$all_procedures`,\
 void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
-`{`@in`(`'\\0`'`,`$\$_all_simple_inputs`) \\1 \\0`}\
+`{`@eq`(`'\\#`'`,`'1`'`)`&`@eq`(`$\$_more_args`,`'1`'`)
+`,`@eq`(`'\\#`'`,`'5`'`)`&`@eq`(`$\$_many_args`,`'1`'`)
+`,`}`{`@in`(`'\\0`'`,`$\$_all_simple_inputs`) \\1 \\0`}\
 `{`@in`(`'\\0`'`,`$\$_all_complex_inputs`) const \\1& \\0`}\
 `{`@in`(`'\\0`'`,`$\$_all_non_inputs`) \\1& \\0`}\
 `+,`] `})
@@ -1460,7 +1477,7 @@ void `{`$full_class_name`}::impl::clear_foreign_key( const string& field )
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
 `{`[`$parent_fields`,\
-   else if( field == c_field_id_\$ || field == c_field_name_\$ )
+   else if( ( field == c_field_id_\$ ) || ( field == c_field_name_\$ ) )
       impl_\$( "" );\
 `+\n`]`}
 `{`(`?`$parent_class`)\
@@ -1477,7 +1494,7 @@ void `{`$full_class_name`}::impl::set_foreign_key_value( const string& field, co
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
 `{`[`$parent_fields`,\
-   else if( field == c_field_id_\$ || field == c_field_name_\$ )
+   else if( ( field == c_field_id_\$ ) || ( field == c_field_name_\$ ) )
       v_\$ = value;\
 `+\n`]`}
 `{`(`?`$parent_class`)\
@@ -1494,7 +1511,7 @@ const string& `{`$full_class_name`}::impl::get_foreign_key_value( const string& 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
 `{`[`$parent_fields`,\
-   else if( field == c_field_id_\0 || field == c_field_name_\0 )
+   else if( ( field == c_field_id_\0 ) || ( field == c_field_name_\0 ) )
       return v_\0;\
 `+\n`]`}
 `{`(`?`$parent_class`)\
@@ -3510,7 +3527,7 @@ bool `{`$full_class_name`}::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 `{`?`$all_can_destroy_specifications`[`$all_can_destroy_specifications`%,`,`{`@eq`(`'\1`'`,`'destroy_restrict`'`)
 `{`#destroy_restrict.spec.xrep section=can_destroy\
  arg_id=$specification_\0_id arg_sfield=$specification_\0_field arg_pfield=$specification_\0_pfield\
@@ -3693,6 +3710,7 @@ void `{`$full_class_name`}::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -3786,12 +3804,14 @@ const \1& `{`$full_class_name`}::\0( ) const
 }`+\n\n`]
 `}
 `{`?`$all_procedures`[`$all_procedures`,\
-void `{`$full_class_name`}::\$( \
+void `{`$full_class_name`}::\$(\
 `{`?`$\$_all_args`&`!`@eq`(`$\$_all_args`,`'`'`)`[`$\$_all_args`%,`,\
-`{`@in`(`'\\0`'`,`$\$_all_simple_inputs`)\\1 \\0`}\
+`{`@eq`(`'\\#`'`,`'1`'`)`&`@eq`(`$\$_more_args`,`'1`'`)
+`,`@eq`(`'\\#`'`,`'5`'`)`&`@eq`(`$\$_many_args`,`'1`'`)
+`,`} `{`@in`(`'\\0`'`,`$\$_all_simple_inputs`)\\1 \\0`}\
 `{`@in`(`'\\0`'`,`$\$_all_complex_inputs`)const \\1& \\0`}\
 `{`@in`(`'\\0`'`,`$\$_all_non_inputs`)\\1& \\0`}\
-`+, `] `})
+`+,`]`} )
 {
    p_impl->impl_\$( `{`?`$\$_all_args`&`!`@eq`(`$\$_all_args`,`'`'`)`[`$\$_all_args`%,`,\\0`+, `] `});
 }`+\n\n`]
@@ -4180,8 +4200,8 @@ string& `{`$full_class_name`}::get_owner_field_name( ) const
 bool `{`$full_class_name`}::is_file_field( const string& id_or_name ) const
 {
 `{`(`?`$parent_class`)\
-   return parent_class_type::is_file_field( id_or_name )
-    || g_file_field_ids.count( id_or_name ) || g_file_field_names.count( id_or_name );\
+   return ( parent_class_type::is_file_field( id_or_name )
+    || g_file_field_ids.count( id_or_name ) || g_file_field_names.count( id_or_name ) );\
 `,\
    return g_file_field_ids.count( id_or_name ) || g_file_field_names.count( id_or_name );\
 `}
@@ -4211,8 +4231,8 @@ string `{`$full_class_name`}::get_field_uom_symbol( const string& id_or_name ) c
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-`{`?`$all_fields`[`$all_fields`%,`,`{`;KLUDGE: Compiler limits (for VC++) require the block depth to be <= 100`}\
-   `{`!`@eq`(`'\#`'`,`'100`'`)`&`!`@eq`(`'\#`'`,`'200`'`)`&`!`@eq`(`'\#`'`,`'300`'`)else `}if( id_or_name == c_field_id_\0 || id_or_name == c_field_name_\0 )
+`{`?`$all_fields`[`$all_fields`%,`,\
+   if( ( id_or_name == c_field_id_\0 ) || ( id_or_name == c_field_name_\0 ) )
    {
       name = string( c_field_display_name_\0 );
       get_module_string( c_field_display_name_\0, &next );
@@ -4239,8 +4259,8 @@ string `{`$full_class_name`}::get_field_display_name( const string& id_or_name )
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-`{`?`$all_fields`[`$all_fields`%,`,`{`;KLUDGE: Compiler limits (for VC++) require the block depth to be <= 100`}\
-   `{`!`@eq`(`'\#`'`,`'100`'`)`&`!`@eq`(`'\#`'`,`'200`'`)`&`!`@eq`(`'\#`'`,`'300`'`)else `}if( id_or_name == c_field_id_\0 || id_or_name == c_field_name_\0 )
+`{`?`$all_fields`[`$all_fields`%,`,\
+   if( ( id_or_name == c_field_id_\0 ) || ( id_or_name == c_field_name_\0 ) )
       display_name = get_module_string( c_field_display_name_\0 );\
 `+\n`]`}
 
@@ -4375,10 +4395,11 @@ class_base* `{`$full_class_name`}::get_next_foreign_key_child(
       p_class_base = `{`$parent_class`}::get_next_foreign_key_child( child_num, next_child_field, op );
    else
    {
-      if( child_num >= num_parent_children + `{`@count`(`$child_info`)`} )
+      if( child_num >= ( num_parent_children + `{`@count`(`$child_info`)`} ) )
       {
          external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-         if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+         if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
             --ealci;
 
          p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -4403,7 +4424,8 @@ class_base* `{`$full_class_name`}::get_next_foreign_key_child(
    if( child_num >= `{`@count`(`$child_info`)`} )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+      if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
          --ealci;
 
       p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -4490,6 +4512,7 @@ const string& `{`$full_class_name`}::get_fixed_key( ) const
 string `{`$full_class_name`}::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "`{`@lower`(`$class_name`)`}";
 
    return get_module_string( key );
@@ -4571,10 +4594,10 @@ class_base& `{`$full_class_name`}::get_or_create_graph_child( const string& cont
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
 `{`?`$child_info`[`$child_info`%,`,\
-   else if( sub_context == "_\3" || sub_context == "\0" )
+   else if( ( sub_context == "_\3" ) || ( sub_context == "\0" ) )
       p_class_base = &\0( );
 `]`}`{`[`$parent_fields`,\
-   else if( sub_context == c_field_id_\$ || sub_context == c_field_name_\$ )
+   else if( ( sub_context == c_field_id_\$ ) || ( sub_context == c_field_name_\$ ) )
       p_class_base = &\$( );
 `]`}`{`(`?`$parent_class`)\
    else
@@ -4606,7 +4629,7 @@ void `{`$full_class_name`}::get_sql_column_names(
    names.push_back( "C_\\0" );\
 `+\n`]`}
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;\
 `}
 }
@@ -4631,7 +4654,7 @@ void `{`$full_class_name`}::get_sql_column_values(
    values.push_back( sql_quote( to_string( \\0( ) ) ) );\
 `}`+\n`]`}
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;\
 `}
 }
@@ -5079,7 +5102,7 @@ void `{`$full_class_name`}::static_get_foreign_key_info( foreign_key_info_contai
 int `{`$full_class_name`}::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
 `{`!`(`?`$parent_class`)\
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;\
@@ -5091,7 +5114,7 @@ int `{`$full_class_name`}::static_get_num_fields( bool* p_done, const string* p_
 
    num_fields += c_num_fields;
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return num_fields;\

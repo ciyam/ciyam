@@ -256,24 +256,28 @@ void Meta_Initial_Record_Value_command_functor::operator ( )( const string& comm
       string field_name( get_parm_val( parameters, c_cmd_Meta_Initial_Record_Value_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Field || field_name == c_field_name_Field )
+      if( !handled && ( ( field_name == c_field_id_Field ) || ( field_name == c_field_name_Field ) ) )
       {
          handled = true;
+
          string_getter< Meta_Field >( cmd_handler.p_Meta_Initial_Record_Value->Field( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Initial_Record || field_name == c_field_name_Initial_Record )
+      if( !handled && ( ( field_name == c_field_id_Initial_Record ) || ( field_name == c_field_name_Initial_Record ) ) )
       {
          handled = true;
+
          string_getter< Meta_Initial_Record >( cmd_handler.p_Meta_Initial_Record_Value->Initial_Record( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Value || field_name == c_field_name_Value )
+      if( !handled && ( ( field_name == c_field_id_Value ) || ( field_name == c_field_name_Value ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Initial_Record_Value->Value( ), cmd_handler.retval );
       }
 
@@ -286,26 +290,30 @@ void Meta_Initial_Record_Value_command_functor::operator ( )( const string& comm
       string field_value( get_parm_val( parameters, c_cmd_Meta_Initial_Record_Value_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Field || field_name == c_field_name_Field )
+      if( !handled && ( ( field_name == c_field_id_Field ) || ( field_name == c_field_name_Field ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Initial_Record_Value, Meta_Field >(
           *cmd_handler.p_Meta_Initial_Record_Value, &Meta_Initial_Record_Value::Field, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Initial_Record || field_name == c_field_name_Initial_Record )
+      if( !handled && ( ( field_name == c_field_id_Initial_Record ) || ( field_name == c_field_name_Initial_Record ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Initial_Record_Value, Meta_Initial_Record >(
           *cmd_handler.p_Meta_Initial_Record_Value, &Meta_Initial_Record_Value::Initial_Record, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Value || field_name == c_field_name_Value )
+      if( !handled && ( ( field_name == c_field_id_Value ) || ( field_name == c_field_name_Value ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Initial_Record_Value, string >(
           *cmd_handler.p_Meta_Initial_Record_Value, &Meta_Initial_Record_Value::Value, field_value );
       }
@@ -324,9 +332,9 @@ void Meta_Initial_Record_Value_command_functor::operator ( )( const string& comm
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Field || field_name == c_field_name_Field )
+      else if( ( field_name == c_field_id_Field ) || ( field_name == c_field_name_Field ) )
          cmd_handler.retval = cmd_handler.p_Meta_Initial_Record_Value->Field( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Initial_Record || field_name == c_field_name_Initial_Record )
+      else if( ( field_name == c_field_id_Initial_Record ) || ( field_name == c_field_name_Initial_Record ) )
          cmd_handler.retval = cmd_handler.p_Meta_Initial_Record_Value->Initial_Record( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -604,9 +612,9 @@ void Meta_Initial_Record_Value::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Field || field == c_field_name_Field )
+   else if( ( field == c_field_id_Field ) || ( field == c_field_name_Field ) )
       impl_Field( "" );
-   else if( field == c_field_id_Initial_Record || field == c_field_name_Initial_Record )
+   else if( ( field == c_field_id_Initial_Record ) || ( field == c_field_name_Initial_Record ) )
       impl_Initial_Record( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -616,9 +624,9 @@ void Meta_Initial_Record_Value::impl::set_foreign_key_value( const string& field
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Field || field == c_field_name_Field )
+   else if( ( field == c_field_id_Field ) || ( field == c_field_name_Field ) )
       v_Field = value;
-   else if( field == c_field_id_Initial_Record || field == c_field_name_Initial_Record )
+   else if( ( field == c_field_id_Initial_Record ) || ( field == c_field_name_Initial_Record ) )
       v_Initial_Record = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -628,9 +636,9 @@ const string& Meta_Initial_Record_Value::impl::get_foreign_key_value( const stri
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Field || field == c_field_name_Field )
+   else if( ( field == c_field_id_Field ) || ( field == c_field_name_Field ) )
       return v_Field;
-   else if( field == c_field_id_Initial_Record || field == c_field_name_Initial_Record )
+   else if( ( field == c_field_id_Initial_Record ) || ( field == c_field_name_Initial_Record ) )
       return v_Initial_Record;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -816,7 +824,7 @@ bool Meta_Initial_Record_Value::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -882,6 +890,7 @@ void Meta_Initial_Record_Value::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -1234,17 +1243,17 @@ string Meta_Initial_Record_Value::get_field_uom_symbol( const string& id_or_name
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Field || id_or_name == c_field_name_Field )
+   if( ( id_or_name == c_field_id_Field ) || ( id_or_name == c_field_name_Field ) )
    {
       name = string( c_field_display_name_Field );
       get_module_string( c_field_display_name_Field, &next );
    }
-   else if( id_or_name == c_field_id_Initial_Record || id_or_name == c_field_name_Initial_Record )
+   if( ( id_or_name == c_field_id_Initial_Record ) || ( id_or_name == c_field_name_Initial_Record ) )
    {
       name = string( c_field_display_name_Initial_Record );
       get_module_string( c_field_display_name_Initial_Record, &next );
    }
-   else if( id_or_name == c_field_id_Value || id_or_name == c_field_name_Value )
+   if( ( id_or_name == c_field_id_Value ) || ( id_or_name == c_field_name_Value ) )
    {
       name = string( c_field_display_name_Value );
       get_module_string( c_field_display_name_Value, &next );
@@ -1264,11 +1273,11 @@ string Meta_Initial_Record_Value::get_field_display_name( const string& id_or_na
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Field || id_or_name == c_field_name_Field )
+   if( ( id_or_name == c_field_id_Field ) || ( id_or_name == c_field_name_Field ) )
       display_name = get_module_string( c_field_display_name_Field );
-   else if( id_or_name == c_field_id_Initial_Record || id_or_name == c_field_name_Initial_Record )
+   if( ( id_or_name == c_field_id_Initial_Record ) || ( id_or_name == c_field_name_Initial_Record ) )
       display_name = get_module_string( c_field_display_name_Initial_Record );
-   else if( id_or_name == c_field_id_Value || id_or_name == c_field_name_Value )
+   if( ( id_or_name == c_field_id_Value ) || ( id_or_name == c_field_name_Value ) )
       display_name = get_module_string( c_field_display_name_Value );
 
    return display_name;
@@ -1408,6 +1417,7 @@ string Meta_Initial_Record_Value::get_module_name( ) const
 string Meta_Initial_Record_Value::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "initial_record_value";
 
    return get_module_string( key );
@@ -1470,9 +1480,9 @@ class_base& Meta_Initial_Record_Value::get_or_create_graph_child( const string& 
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == c_field_id_Field || sub_context == c_field_name_Field )
+   else if( ( sub_context == c_field_id_Field ) || ( sub_context == c_field_name_Field ) )
       p_class_base = &Field( );
-   else if( sub_context == c_field_id_Initial_Record || sub_context == c_field_name_Initial_Record )
+   else if( ( sub_context == c_field_id_Initial_Record ) || ( sub_context == c_field_name_Initial_Record ) )
       p_class_base = &Initial_Record( );
 
    if( !p_class_base )
@@ -1494,7 +1504,7 @@ void Meta_Initial_Record_Value::get_sql_column_names(
    names.push_back( "C_Initial_Record" );
    names.push_back( "C_Value" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -1508,7 +1518,7 @@ void Meta_Initial_Record_Value::get_sql_column_values(
    values.push_back( sql_quote( to_string( Initial_Record( ) ) ) );
    values.push_back( sql_quote( to_string( Value( ) ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -1604,7 +1614,7 @@ void Meta_Initial_Record_Value::static_get_foreign_key_info( foreign_key_info_co
 
 int Meta_Initial_Record_Value::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

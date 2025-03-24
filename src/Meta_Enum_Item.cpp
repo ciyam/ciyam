@@ -273,42 +273,49 @@ void Meta_Enum_Item_command_functor::operator ( )( const string& command, const 
       string field_name( get_parm_val( parameters, c_cmd_Meta_Enum_Item_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+      if( !handled && ( ( field_name == c_field_id_Enum ) || ( field_name == c_field_name_Enum ) ) )
       {
          handled = true;
+
          string_getter< Meta_Enum >( cmd_handler.p_Meta_Enum_Item->Enum( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Filter || field_name == c_field_name_Filter )
+      if( !handled && ( ( field_name == c_field_id_Filter ) || ( field_name == c_field_name_Filter ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Enum_Item->Filter( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      if( !handled && ( ( field_name == c_field_id_Internal ) || ( field_name == c_field_name_Internal ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Enum_Item->Internal( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Label || field_name == c_field_name_Label )
+      if( !handled && ( ( field_name == c_field_id_Label ) || ( field_name == c_field_name_Label ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Enum_Item->Label( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      if( !handled && ( ( field_name == c_field_id_Order ) || ( field_name == c_field_name_Order ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Enum_Item->Order( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Value || field_name == c_field_name_Value )
+      if( !handled && ( ( field_name == c_field_id_Value ) || ( field_name == c_field_name_Value ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Enum_Item->Value( ), cmd_handler.retval );
       }
 
@@ -321,47 +328,54 @@ void Meta_Enum_Item_command_functor::operator ( )( const string& command, const 
       string field_value( get_parm_val( parameters, c_cmd_Meta_Enum_Item_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+      if( !handled && ( ( field_name == c_field_id_Enum ) || ( field_name == c_field_name_Enum ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Enum_Item, Meta_Enum >(
           *cmd_handler.p_Meta_Enum_Item, &Meta_Enum_Item::Enum, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Filter || field_name == c_field_name_Filter )
+      if( !handled && ( ( field_name == c_field_id_Filter ) || ( field_name == c_field_name_Filter ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Enum_Item, string >(
           *cmd_handler.p_Meta_Enum_Item, &Meta_Enum_Item::Filter, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      if( !handled && ( ( field_name == c_field_id_Internal ) || ( field_name == c_field_name_Internal ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Enum_Item, bool >(
           *cmd_handler.p_Meta_Enum_Item, &Meta_Enum_Item::Internal, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Label || field_name == c_field_name_Label )
+      if( !handled && ( ( field_name == c_field_id_Label ) || ( field_name == c_field_name_Label ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Enum_Item, string >(
           *cmd_handler.p_Meta_Enum_Item, &Meta_Enum_Item::Label, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      if( !handled && ( ( field_name == c_field_id_Order ) || ( field_name == c_field_name_Order ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Enum_Item, string >(
           *cmd_handler.p_Meta_Enum_Item, &Meta_Enum_Item::Order, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Value || field_name == c_field_name_Value )
+      if( !handled && ( ( field_name == c_field_id_Value ) || ( field_name == c_field_name_Value ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Enum_Item, string >(
           *cmd_handler.p_Meta_Enum_Item, &Meta_Enum_Item::Value, field_value );
       }
@@ -380,7 +394,7 @@ void Meta_Enum_Item_command_functor::operator ( )( const string& command, const 
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+      else if( ( field_name == c_field_id_Enum ) || ( field_name == c_field_name_Enum ) )
          cmd_handler.retval = cmd_handler.p_Meta_Enum_Item->Enum( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -389,17 +403,21 @@ void Meta_Enum_Item_command_functor::operator ( )( const string& command, const 
    {
       string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Enum_Item_Move_Down_Restrict_Fields ) );
       string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Enum_Item_Move_Down_Restrict_Values ) );
+
       cmd_handler.p_Meta_Enum_Item->Move_Down( Restrict_Fields, Restrict_Values );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Enum_Item_Move_Up )
    {
       string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Enum_Item_Move_Up_Restrict_Fields ) );
       string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Enum_Item_Move_Up_Restrict_Values ) );
+
       cmd_handler.p_Meta_Enum_Item->Move_Up( Restrict_Fields, Restrict_Values );
 
       cmd_handler.retval.erase( );
+
    }
 }
 
@@ -976,7 +994,7 @@ void Meta_Enum_Item::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Enum || field == c_field_name_Enum )
+   else if( ( field == c_field_id_Enum ) || ( field == c_field_name_Enum ) )
       impl_Enum( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -986,7 +1004,7 @@ void Meta_Enum_Item::impl::set_foreign_key_value( const string& field, const str
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Enum || field == c_field_name_Enum )
+   else if( ( field == c_field_id_Enum ) || ( field == c_field_name_Enum ) )
       v_Enum = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -996,7 +1014,7 @@ const string& Meta_Enum_Item::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Enum || field == c_field_name_Enum )
+   else if( ( field == c_field_id_Enum ) || ( field == c_field_name_Enum ) )
       return v_Enum;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1246,7 +1264,7 @@ bool Meta_Enum_Item::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -1312,6 +1330,7 @@ void Meta_Enum_Item::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -1809,32 +1828,32 @@ string Meta_Enum_Item::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Enum || id_or_name == c_field_name_Enum )
+   if( ( id_or_name == c_field_id_Enum ) || ( id_or_name == c_field_name_Enum ) )
    {
       name = string( c_field_display_name_Enum );
       get_module_string( c_field_display_name_Enum, &next );
    }
-   else if( id_or_name == c_field_id_Filter || id_or_name == c_field_name_Filter )
+   if( ( id_or_name == c_field_id_Filter ) || ( id_or_name == c_field_name_Filter ) )
    {
       name = string( c_field_display_name_Filter );
       get_module_string( c_field_display_name_Filter, &next );
    }
-   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   if( ( id_or_name == c_field_id_Internal ) || ( id_or_name == c_field_name_Internal ) )
    {
       name = string( c_field_display_name_Internal );
       get_module_string( c_field_display_name_Internal, &next );
    }
-   else if( id_or_name == c_field_id_Label || id_or_name == c_field_name_Label )
+   if( ( id_or_name == c_field_id_Label ) || ( id_or_name == c_field_name_Label ) )
    {
       name = string( c_field_display_name_Label );
       get_module_string( c_field_display_name_Label, &next );
    }
-   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
+   if( ( id_or_name == c_field_id_Order ) || ( id_or_name == c_field_name_Order ) )
    {
       name = string( c_field_display_name_Order );
       get_module_string( c_field_display_name_Order, &next );
    }
-   else if( id_or_name == c_field_id_Value || id_or_name == c_field_name_Value )
+   if( ( id_or_name == c_field_id_Value ) || ( id_or_name == c_field_name_Value ) )
    {
       name = string( c_field_display_name_Value );
       get_module_string( c_field_display_name_Value, &next );
@@ -1854,17 +1873,17 @@ string Meta_Enum_Item::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Enum || id_or_name == c_field_name_Enum )
+   if( ( id_or_name == c_field_id_Enum ) || ( id_or_name == c_field_name_Enum ) )
       display_name = get_module_string( c_field_display_name_Enum );
-   else if( id_or_name == c_field_id_Filter || id_or_name == c_field_name_Filter )
+   if( ( id_or_name == c_field_id_Filter ) || ( id_or_name == c_field_name_Filter ) )
       display_name = get_module_string( c_field_display_name_Filter );
-   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   if( ( id_or_name == c_field_id_Internal ) || ( id_or_name == c_field_name_Internal ) )
       display_name = get_module_string( c_field_display_name_Internal );
-   else if( id_or_name == c_field_id_Label || id_or_name == c_field_name_Label )
+   if( ( id_or_name == c_field_id_Label ) || ( id_or_name == c_field_name_Label ) )
       display_name = get_module_string( c_field_display_name_Label );
-   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
+   if( ( id_or_name == c_field_id_Order ) || ( id_or_name == c_field_name_Order ) )
       display_name = get_module_string( c_field_display_name_Order );
-   else if( id_or_name == c_field_id_Value || id_or_name == c_field_name_Value )
+   if( ( id_or_name == c_field_id_Value ) || ( id_or_name == c_field_name_Value ) )
       display_name = get_module_string( c_field_display_name_Value );
 
    return display_name;
@@ -1955,7 +1974,8 @@ class_base* Meta_Enum_Item::get_next_foreign_key_child(
    if( child_num >= 5 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+      if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
          --ealci;
 
       p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -2047,6 +2067,7 @@ string Meta_Enum_Item::get_module_name( ) const
 string Meta_Enum_Item::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "enum_item";
 
    return get_module_string( key );
@@ -2113,17 +2134,17 @@ class_base& Meta_Enum_Item::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_301471" || sub_context == "child_Specification_Enum_Item_2" )
+   else if( ( sub_context == "_301471" ) || ( sub_context == "child_Specification_Enum_Item_2" ) )
       p_class_base = &child_Specification_Enum_Item_2( );
-   else if( sub_context == "_301472" || sub_context == "child_Specification_Enum_Item_3" )
+   else if( ( sub_context == "_301472" ) || ( sub_context == "child_Specification_Enum_Item_3" ) )
       p_class_base = &child_Specification_Enum_Item_3( );
-   else if( sub_context == "_301473" || sub_context == "child_Specification_Enum_Item_4" )
+   else if( ( sub_context == "_301473" ) || ( sub_context == "child_Specification_Enum_Item_4" ) )
       p_class_base = &child_Specification_Enum_Item_4( );
-   else if( sub_context == "_301474" || sub_context == "child_Specification_Enum_Item_5" )
+   else if( ( sub_context == "_301474" ) || ( sub_context == "child_Specification_Enum_Item_5" ) )
       p_class_base = &child_Specification_Enum_Item_5( );
-   else if( sub_context == "_301470" || sub_context == "child_Specification" )
+   else if( ( sub_context == "_301470" ) || ( sub_context == "child_Specification" ) )
       p_class_base = &child_Specification( );
-   else if( sub_context == c_field_id_Enum || sub_context == c_field_name_Enum )
+   else if( ( sub_context == c_field_id_Enum ) || ( sub_context == c_field_name_Enum ) )
       p_class_base = &Enum( );
 
    if( !p_class_base )
@@ -2148,7 +2169,7 @@ void Meta_Enum_Item::get_sql_column_names(
    names.push_back( "C_Order" );
    names.push_back( "C_Value" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2165,7 +2186,7 @@ void Meta_Enum_Item::get_sql_column_values(
    values.push_back( sql_quote( to_string( Order( ) ) ) );
    values.push_back( sql_quote( to_string( Value( ) ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2285,7 +2306,7 @@ void Meta_Enum_Item::static_get_foreign_key_info( foreign_key_info_container& fo
 
 int Meta_Enum_Item::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

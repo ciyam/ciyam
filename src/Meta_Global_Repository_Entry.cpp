@@ -258,30 +258,35 @@ void Meta_Global_Repository_Entry_command_functor::operator ( )( const string& c
       string field_name( get_parm_val( parameters, c_cmd_Meta_Global_Repository_Entry_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_File_Hash || field_name == c_field_name_File_Hash )
+      if( !handled && ( ( field_name == c_field_id_File_Hash ) || ( field_name == c_field_name_File_Hash ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Repository_Entry->File_Hash( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Local_Hash || field_name == c_field_name_Local_Hash )
+      if( !handled && ( ( field_name == c_field_id_Local_Hash ) || ( field_name == c_field_name_Local_Hash ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Repository_Entry->Local_Hash( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Local_Public_Key || field_name == c_field_name_Local_Public_Key )
+      if( !handled && ( ( field_name == c_field_id_Local_Public_Key ) || ( field_name == c_field_name_Local_Public_Key ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Repository_Entry->Local_Public_Key( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Master_Public_Key || field_name == c_field_name_Master_Public_Key )
+      if( !handled && ( ( field_name == c_field_id_Master_Public_Key ) || ( field_name == c_field_name_Master_Public_Key ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Repository_Entry->Master_Public_Key( ), cmd_handler.retval );
       }
 
@@ -294,33 +299,38 @@ void Meta_Global_Repository_Entry_command_functor::operator ( )( const string& c
       string field_value( get_parm_val( parameters, c_cmd_Meta_Global_Repository_Entry_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_File_Hash || field_name == c_field_name_File_Hash )
+      if( !handled && ( ( field_name == c_field_id_File_Hash ) || ( field_name == c_field_name_File_Hash ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Repository_Entry, string >(
           *cmd_handler.p_Meta_Global_Repository_Entry, &Meta_Global_Repository_Entry::File_Hash, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Local_Hash || field_name == c_field_name_Local_Hash )
+      if( !handled && ( ( field_name == c_field_id_Local_Hash ) || ( field_name == c_field_name_Local_Hash ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Repository_Entry, string >(
           *cmd_handler.p_Meta_Global_Repository_Entry, &Meta_Global_Repository_Entry::Local_Hash, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Local_Public_Key || field_name == c_field_name_Local_Public_Key )
+      if( !handled && ( ( field_name == c_field_id_Local_Public_Key ) || ( field_name == c_field_name_Local_Public_Key ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Repository_Entry, string >(
           *cmd_handler.p_Meta_Global_Repository_Entry, &Meta_Global_Repository_Entry::Local_Public_Key, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Master_Public_Key || field_name == c_field_name_Master_Public_Key )
+      if( !handled && ( ( field_name == c_field_id_Master_Public_Key ) || ( field_name == c_field_name_Master_Public_Key ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Repository_Entry, string >(
           *cmd_handler.p_Meta_Global_Repository_Entry, &Meta_Global_Repository_Entry::Master_Public_Key, field_value );
       }
@@ -817,7 +827,7 @@ bool Meta_Global_Repository_Entry::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -893,6 +903,7 @@ void Meta_Global_Repository_Entry::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -1265,22 +1276,22 @@ string Meta_Global_Repository_Entry::get_field_uom_symbol( const string& id_or_n
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_File_Hash || id_or_name == c_field_name_File_Hash )
+   if( ( id_or_name == c_field_id_File_Hash ) || ( id_or_name == c_field_name_File_Hash ) )
    {
       name = string( c_field_display_name_File_Hash );
       get_module_string( c_field_display_name_File_Hash, &next );
    }
-   else if( id_or_name == c_field_id_Local_Hash || id_or_name == c_field_name_Local_Hash )
+   if( ( id_or_name == c_field_id_Local_Hash ) || ( id_or_name == c_field_name_Local_Hash ) )
    {
       name = string( c_field_display_name_Local_Hash );
       get_module_string( c_field_display_name_Local_Hash, &next );
    }
-   else if( id_or_name == c_field_id_Local_Public_Key || id_or_name == c_field_name_Local_Public_Key )
+   if( ( id_or_name == c_field_id_Local_Public_Key ) || ( id_or_name == c_field_name_Local_Public_Key ) )
    {
       name = string( c_field_display_name_Local_Public_Key );
       get_module_string( c_field_display_name_Local_Public_Key, &next );
    }
-   else if( id_or_name == c_field_id_Master_Public_Key || id_or_name == c_field_name_Master_Public_Key )
+   if( ( id_or_name == c_field_id_Master_Public_Key ) || ( id_or_name == c_field_name_Master_Public_Key ) )
    {
       name = string( c_field_display_name_Master_Public_Key );
       get_module_string( c_field_display_name_Master_Public_Key, &next );
@@ -1300,13 +1311,13 @@ string Meta_Global_Repository_Entry::get_field_display_name( const string& id_or
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_File_Hash || id_or_name == c_field_name_File_Hash )
+   if( ( id_or_name == c_field_id_File_Hash ) || ( id_or_name == c_field_name_File_Hash ) )
       display_name = get_module_string( c_field_display_name_File_Hash );
-   else if( id_or_name == c_field_id_Local_Hash || id_or_name == c_field_name_Local_Hash )
+   if( ( id_or_name == c_field_id_Local_Hash ) || ( id_or_name == c_field_name_Local_Hash ) )
       display_name = get_module_string( c_field_display_name_Local_Hash );
-   else if( id_or_name == c_field_id_Local_Public_Key || id_or_name == c_field_name_Local_Public_Key )
+   if( ( id_or_name == c_field_id_Local_Public_Key ) || ( id_or_name == c_field_name_Local_Public_Key ) )
       display_name = get_module_string( c_field_display_name_Local_Public_Key );
-   else if( id_or_name == c_field_id_Master_Public_Key || id_or_name == c_field_name_Master_Public_Key )
+   if( ( id_or_name == c_field_id_Master_Public_Key ) || ( id_or_name == c_field_name_Master_Public_Key ) )
       display_name = get_module_string( c_field_display_name_Master_Public_Key );
 
    return display_name;
@@ -1422,6 +1433,7 @@ string Meta_Global_Repository_Entry::get_module_name( ) const
 string Meta_Global_Repository_Entry::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "global_repository_entry";
 
    return get_module_string( key );
@@ -1594,7 +1606,7 @@ void Meta_Global_Repository_Entry::static_get_foreign_key_info( foreign_key_info
 
 int Meta_Global_Repository_Entry::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

@@ -275,30 +275,35 @@ void Meta_Modifier_command_functor::operator ( )( const string& command, const p
       string field_name( get_parm_val( parameters, c_cmd_Meta_Modifier_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      if( !handled && ( ( field_name == c_field_id_Class ) || ( field_name == c_field_name_Class ) ) )
       {
          handled = true;
+
          string_getter< Meta_Class >( cmd_handler.p_Meta_Modifier->Class( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      if( !handled && ( ( field_name == c_field_id_Internal ) || ( field_name == c_field_name_Internal ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Modifier->Internal( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Modifier->Name( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Source_Modifier || field_name == c_field_name_Source_Modifier )
+      if( !handled && ( ( field_name == c_field_id_Source_Modifier ) || ( field_name == c_field_name_Source_Modifier ) ) )
       {
          handled = true;
+
          string_getter< Meta_Modifier >( cmd_handler.p_Meta_Modifier->Source_Modifier( ), cmd_handler.retval );
       }
 
@@ -311,33 +316,38 @@ void Meta_Modifier_command_functor::operator ( )( const string& command, const p
       string field_value( get_parm_val( parameters, c_cmd_Meta_Modifier_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      if( !handled && ( ( field_name == c_field_id_Class ) || ( field_name == c_field_name_Class ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Modifier, Meta_Class >(
           *cmd_handler.p_Meta_Modifier, &Meta_Modifier::Class, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      if( !handled && ( ( field_name == c_field_id_Internal ) || ( field_name == c_field_name_Internal ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Modifier, bool >(
           *cmd_handler.p_Meta_Modifier, &Meta_Modifier::Internal, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Modifier, string >(
           *cmd_handler.p_Meta_Modifier, &Meta_Modifier::Name, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Source_Modifier || field_name == c_field_name_Source_Modifier )
+      if( !handled && ( ( field_name == c_field_id_Source_Modifier ) || ( field_name == c_field_name_Source_Modifier ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Modifier, Meta_Modifier >(
           *cmd_handler.p_Meta_Modifier, &Meta_Modifier::Source_Modifier, field_value );
       }
@@ -356,9 +366,9 @@ void Meta_Modifier_command_functor::operator ( )( const string& command, const p
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+      else if( ( field_name == c_field_id_Class ) || ( field_name == c_field_name_Class ) )
          cmd_handler.retval = cmd_handler.p_Meta_Modifier->Class( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Source_Modifier || field_name == c_field_name_Source_Modifier )
+      else if( ( field_name == c_field_id_Source_Modifier ) || ( field_name == c_field_name_Source_Modifier ) )
          cmd_handler.retval = cmd_handler.p_Meta_Modifier->Source_Modifier( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -900,9 +910,9 @@ void Meta_Modifier::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( ( field == c_field_id_Class ) || ( field == c_field_name_Class ) )
       impl_Class( "" );
-   else if( field == c_field_id_Source_Modifier || field == c_field_name_Source_Modifier )
+   else if( ( field == c_field_id_Source_Modifier ) || ( field == c_field_name_Source_Modifier ) )
       impl_Source_Modifier( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -912,9 +922,9 @@ void Meta_Modifier::impl::set_foreign_key_value( const string& field, const stri
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( ( field == c_field_id_Class ) || ( field == c_field_name_Class ) )
       v_Class = value;
-   else if( field == c_field_id_Source_Modifier || field == c_field_name_Source_Modifier )
+   else if( ( field == c_field_id_Source_Modifier ) || ( field == c_field_name_Source_Modifier ) )
       v_Source_Modifier = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -924,9 +934,9 @@ const string& Meta_Modifier::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( ( field == c_field_id_Class ) || ( field == c_field_name_Class ) )
       return v_Class;
-   else if( field == c_field_id_Source_Modifier || field == c_field_name_Source_Modifier )
+   else if( ( field == c_field_id_Source_Modifier ) || ( field == c_field_name_Source_Modifier ) )
       return v_Source_Modifier;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1239,7 +1249,7 @@ bool Meta_Modifier::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -1305,6 +1315,7 @@ void Meta_Modifier::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -1787,22 +1798,22 @@ string Meta_Modifier::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
+   if( ( id_or_name == c_field_id_Class ) || ( id_or_name == c_field_name_Class ) )
    {
       name = string( c_field_display_name_Class );
       get_module_string( c_field_display_name_Class, &next );
    }
-   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   if( ( id_or_name == c_field_id_Internal ) || ( id_or_name == c_field_name_Internal ) )
    {
       name = string( c_field_display_name_Internal );
       get_module_string( c_field_display_name_Internal, &next );
    }
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
    {
       name = string( c_field_display_name_Name );
       get_module_string( c_field_display_name_Name, &next );
    }
-   else if( id_or_name == c_field_id_Source_Modifier || id_or_name == c_field_name_Source_Modifier )
+   if( ( id_or_name == c_field_id_Source_Modifier ) || ( id_or_name == c_field_name_Source_Modifier ) )
    {
       name = string( c_field_display_name_Source_Modifier );
       get_module_string( c_field_display_name_Source_Modifier, &next );
@@ -1822,13 +1833,13 @@ string Meta_Modifier::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
+   if( ( id_or_name == c_field_id_Class ) || ( id_or_name == c_field_name_Class ) )
       display_name = get_module_string( c_field_display_name_Class );
-   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   if( ( id_or_name == c_field_id_Internal ) || ( id_or_name == c_field_name_Internal ) )
       display_name = get_module_string( c_field_display_name_Internal );
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id_or_name == c_field_id_Source_Modifier || id_or_name == c_field_name_Source_Modifier )
+   if( ( id_or_name == c_field_id_Source_Modifier ) || ( id_or_name == c_field_name_Source_Modifier ) )
       display_name = get_module_string( c_field_display_name_Source_Modifier );
 
    return display_name;
@@ -1956,7 +1967,8 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
    if( child_num >= 10 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+      if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
          --ealci;
 
       p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -2088,6 +2100,7 @@ string Meta_Modifier::get_module_name( ) const
 string Meta_Modifier::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "modifier";
 
    return get_module_string( key );
@@ -2150,29 +2163,29 @@ class_base& Meta_Modifier::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_302199" || sub_context == "child_List_Field_Access_Parent" )
+   else if( ( sub_context == "_302199" ) || ( sub_context == "child_List_Field_Access_Parent" ) )
       p_class_base = &child_List_Field_Access_Parent( );
-   else if( sub_context == "_301998" || sub_context == "child_List_Access_Parent" )
+   else if( ( sub_context == "_301998" ) || ( sub_context == "child_List_Access_Parent" ) )
       p_class_base = &child_List_Access_Parent( );
-   else if( sub_context == "_301998a" || sub_context == "child_List_Create_Parent" )
+   else if( ( sub_context == "_301998a" ) || ( sub_context == "child_List_Create_Parent" ) )
       p_class_base = &child_List_Create_Parent( );
-   else if( sub_context == "_301998b" || sub_context == "child_List_Destroy_Parent" )
+   else if( ( sub_context == "_301998b" ) || ( sub_context == "child_List_Destroy_Parent" ) )
       p_class_base = &child_List_Destroy_Parent( );
-   else if( sub_context == "_301442" || sub_context == "child_Specification_Other_Modifier_2" )
+   else if( ( sub_context == "_301442" ) || ( sub_context == "child_Specification_Other_Modifier_2" ) )
       p_class_base = &child_Specification_Other_Modifier_2( );
-   else if( sub_context == "_301441" || sub_context == "child_Specification_Other" )
+   else if( ( sub_context == "_301441" ) || ( sub_context == "child_Specification_Other" ) )
       p_class_base = &child_Specification_Other( );
-   else if( sub_context == "_300910" || sub_context == "child_Modifier_Source" )
+   else if( ( sub_context == "_300910" ) || ( sub_context == "child_Modifier_Source" ) )
       p_class_base = &child_Modifier_Source( );
-   else if( sub_context == "_301000" || sub_context == "child_Modifier_Affect" )
+   else if( ( sub_context == "_301000" ) || ( sub_context == "child_Modifier_Affect" ) )
       p_class_base = &child_Modifier_Affect( );
-   else if( sub_context == "_302832" || sub_context == "child_Package_Option" )
+   else if( ( sub_context == "_302832" ) || ( sub_context == "child_Package_Option" ) )
       p_class_base = &child_Package_Option( );
-   else if( sub_context == "_301440" || sub_context == "child_Specification" )
+   else if( ( sub_context == "_301440" ) || ( sub_context == "child_Specification" ) )
       p_class_base = &child_Specification( );
-   else if( sub_context == c_field_id_Class || sub_context == c_field_name_Class )
+   else if( ( sub_context == c_field_id_Class ) || ( sub_context == c_field_name_Class ) )
       p_class_base = &Class( );
-   else if( sub_context == c_field_id_Source_Modifier || sub_context == c_field_name_Source_Modifier )
+   else if( ( sub_context == c_field_id_Source_Modifier ) || ( sub_context == c_field_name_Source_Modifier ) )
       p_class_base = &Source_Modifier( );
 
    if( !p_class_base )
@@ -2195,7 +2208,7 @@ void Meta_Modifier::get_sql_column_names(
    names.push_back( "C_Name" );
    names.push_back( "C_Source_Modifier" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2210,7 +2223,7 @@ void Meta_Modifier::get_sql_column_values(
    values.push_back( sql_quote( to_string( Name( ) ) ) );
    values.push_back( sql_quote( to_string( Source_Modifier( ) ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2321,7 +2334,7 @@ void Meta_Modifier::static_get_foreign_key_info( foreign_key_info_container& for
 
 int Meta_Modifier::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

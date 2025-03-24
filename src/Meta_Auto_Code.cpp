@@ -236,24 +236,28 @@ void Meta_Auto_Code_command_functor::operator ( )( const string& command, const 
       string field_name( get_parm_val( parameters, c_cmd_Meta_Auto_Code_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Exhausted || field_name == c_field_name_Exhausted )
+      if( !handled && ( ( field_name == c_field_id_Exhausted ) || ( field_name == c_field_name_Exhausted ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Auto_Code->Exhausted( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Mask || field_name == c_field_name_Mask )
+      if( !handled && ( ( field_name == c_field_id_Mask ) || ( field_name == c_field_name_Mask ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Auto_Code->Mask( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Next || field_name == c_field_name_Next )
+      if( !handled && ( ( field_name == c_field_id_Next ) || ( field_name == c_field_name_Next ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Auto_Code->Next( ), cmd_handler.retval );
       }
 
@@ -266,26 +270,30 @@ void Meta_Auto_Code_command_functor::operator ( )( const string& command, const 
       string field_value( get_parm_val( parameters, c_cmd_Meta_Auto_Code_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Exhausted || field_name == c_field_name_Exhausted )
+      if( !handled && ( ( field_name == c_field_id_Exhausted ) || ( field_name == c_field_name_Exhausted ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Auto_Code, bool >(
           *cmd_handler.p_Meta_Auto_Code, &Meta_Auto_Code::Exhausted, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Mask || field_name == c_field_name_Mask )
+      if( !handled && ( ( field_name == c_field_id_Mask ) || ( field_name == c_field_name_Mask ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Auto_Code, string >(
           *cmd_handler.p_Meta_Auto_Code, &Meta_Auto_Code::Mask, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Next || field_name == c_field_name_Next )
+      if( !handled && ( ( field_name == c_field_id_Next ) || ( field_name == c_field_name_Next ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Auto_Code, string >(
           *cmd_handler.p_Meta_Auto_Code, &Meta_Auto_Code::Next, field_value );
       }
@@ -310,9 +318,11 @@ void Meta_Auto_Code_command_functor::operator ( )( const string& command, const 
    else if( command == c_cmd_Meta_Auto_Code_Increment )
    {
       string Next_Value;
+
       cmd_handler.p_Meta_Auto_Code->Increment( Next_Value );
 
       cmd_handler.retval.erase( );
+
       append_value( cmd_handler.retval, Next_Value );
    }
 }
@@ -859,7 +869,7 @@ bool Meta_Auto_Code::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -925,6 +935,7 @@ void Meta_Auto_Code::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -1272,17 +1283,17 @@ string Meta_Auto_Code::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Exhausted || id_or_name == c_field_name_Exhausted )
+   if( ( id_or_name == c_field_id_Exhausted ) || ( id_or_name == c_field_name_Exhausted ) )
    {
       name = string( c_field_display_name_Exhausted );
       get_module_string( c_field_display_name_Exhausted, &next );
    }
-   else if( id_or_name == c_field_id_Mask || id_or_name == c_field_name_Mask )
+   if( ( id_or_name == c_field_id_Mask ) || ( id_or_name == c_field_name_Mask ) )
    {
       name = string( c_field_display_name_Mask );
       get_module_string( c_field_display_name_Mask, &next );
    }
-   else if( id_or_name == c_field_id_Next || id_or_name == c_field_name_Next )
+   if( ( id_or_name == c_field_id_Next ) || ( id_or_name == c_field_name_Next ) )
    {
       name = string( c_field_display_name_Next );
       get_module_string( c_field_display_name_Next, &next );
@@ -1302,11 +1313,11 @@ string Meta_Auto_Code::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Exhausted || id_or_name == c_field_name_Exhausted )
+   if( ( id_or_name == c_field_id_Exhausted ) || ( id_or_name == c_field_name_Exhausted ) )
       display_name = get_module_string( c_field_display_name_Exhausted );
-   else if( id_or_name == c_field_id_Mask || id_or_name == c_field_name_Mask )
+   if( ( id_or_name == c_field_id_Mask ) || ( id_or_name == c_field_name_Mask ) )
       display_name = get_module_string( c_field_display_name_Mask );
-   else if( id_or_name == c_field_id_Next || id_or_name == c_field_name_Next )
+   if( ( id_or_name == c_field_id_Next ) || ( id_or_name == c_field_name_Next ) )
       display_name = get_module_string( c_field_display_name_Next );
 
    return display_name;
@@ -1422,6 +1433,7 @@ string Meta_Auto_Code::get_module_name( ) const
 string Meta_Auto_Code::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "auto_code";
 
    return get_module_string( key );
@@ -1506,7 +1518,7 @@ void Meta_Auto_Code::get_sql_column_names(
    names.push_back( "C_Mask" );
    names.push_back( "C_Next" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -1520,7 +1532,7 @@ void Meta_Auto_Code::get_sql_column_values(
    values.push_back( sql_quote( to_string( Mask( ) ) ) );
    values.push_back( sql_quote( to_string( Next( ) ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -1611,7 +1623,7 @@ void Meta_Auto_Code::static_get_foreign_key_info( foreign_key_info_container& fo
 
 int Meta_Auto_Code::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

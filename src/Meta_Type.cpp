@@ -663,132 +663,154 @@ void Meta_Type_command_functor::operator ( )( const string& command, const param
       string field_name( get_parm_val( parameters, c_cmd_Meta_Type_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Auto_Round || field_name == c_field_name_Auto_Round )
+      if( !handled && ( ( field_name == c_field_id_Auto_Round ) || ( field_name == c_field_name_Auto_Round ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Type->Auto_Round( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Date_Precision || field_name == c_field_name_Date_Precision )
+      if( !handled && ( ( field_name == c_field_id_Date_Precision ) || ( field_name == c_field_name_Date_Precision ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Type->Date_Precision( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Default_UOM || field_name == c_field_name_Default_UOM )
+      if( !handled && ( ( field_name == c_field_id_Default_UOM ) || ( field_name == c_field_name_Default_UOM ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Type->Default_UOM( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Fraction_Limit || field_name == c_field_name_Fraction_Limit )
+      if( !handled && ( ( field_name == c_field_id_Fraction_Limit ) || ( field_name == c_field_name_Fraction_Limit ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Type->Fraction_Limit( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      if( !handled && ( ( field_name == c_field_id_Id ) || ( field_name == c_field_name_Id ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Type->Id( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Int_Type || field_name == c_field_name_Int_Type )
+      if( !handled && ( ( field_name == c_field_id_Int_Type ) || ( field_name == c_field_name_Int_Type ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Type->Int_Type( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      if( !handled && ( ( field_name == c_field_id_Internal ) || ( field_name == c_field_name_Internal ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Type->Internal( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Max_Size || field_name == c_field_name_Max_Size )
+      if( !handled && ( ( field_name == c_field_id_Max_Size ) || ( field_name == c_field_name_Max_Size ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Type->Max_Size( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Max_Value || field_name == c_field_name_Max_Value )
+      if( !handled && ( ( field_name == c_field_id_Max_Value ) || ( field_name == c_field_name_Max_Value ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Type->Max_Value( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Min_Value || field_name == c_field_name_Min_Value )
+      if( !handled && ( ( field_name == c_field_id_Min_Value ) || ( field_name == c_field_name_Min_Value ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Type->Min_Value( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Type->Name( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Numeric_Decimals || field_name == c_field_name_Numeric_Decimals )
+      if( !handled && ( ( field_name == c_field_id_Numeric_Decimals ) || ( field_name == c_field_name_Numeric_Decimals ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Type->Numeric_Decimals( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Numeric_Digits || field_name == c_field_name_Numeric_Digits )
+      if( !handled && ( ( field_name == c_field_id_Numeric_Digits ) || ( field_name == c_field_name_Numeric_Digits ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Type->Numeric_Digits( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Numeric_Type || field_name == c_field_name_Numeric_Type )
+      if( !handled && ( ( field_name == c_field_id_Numeric_Type ) || ( field_name == c_field_name_Numeric_Type ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Type->Numeric_Type( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      if( !handled && ( ( field_name == c_field_id_Primitive ) || ( field_name == c_field_name_Primitive ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Type->Primitive( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Rounding_Method || field_name == c_field_name_Rounding_Method )
+      if( !handled && ( ( field_name == c_field_id_Rounding_Method ) || ( field_name == c_field_name_Rounding_Method ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Type->Rounding_Method( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Show_Plus_Sign || field_name == c_field_name_Show_Plus_Sign )
+      if( !handled && ( ( field_name == c_field_id_Show_Plus_Sign ) || ( field_name == c_field_name_Show_Plus_Sign ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Type->Show_Plus_Sign( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_String_Domain || field_name == c_field_name_String_Domain )
+      if( !handled && ( ( field_name == c_field_id_String_Domain ) || ( field_name == c_field_name_String_Domain ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Type->String_Domain( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Time_Precision || field_name == c_field_name_Time_Precision )
+      if( !handled && ( ( field_name == c_field_id_Time_Precision ) || ( field_name == c_field_name_Time_Precision ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Type->Time_Precision( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      if( !handled && ( ( field_name == c_field_id_Workgroup ) || ( field_name == c_field_name_Workgroup ) ) )
       {
          handled = true;
+
          string_getter< Meta_Workgroup >( cmd_handler.p_Meta_Type->Workgroup( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Zero_Padding || field_name == c_field_name_Zero_Padding )
+      if( !handled && ( ( field_name == c_field_id_Zero_Padding ) || ( field_name == c_field_name_Zero_Padding ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Type->Zero_Padding( ), cmd_handler.retval );
       }
 
@@ -801,152 +823,174 @@ void Meta_Type_command_functor::operator ( )( const string& command, const param
       string field_value( get_parm_val( parameters, c_cmd_Meta_Type_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Auto_Round || field_name == c_field_name_Auto_Round )
+      if( !handled && ( ( field_name == c_field_id_Auto_Round ) || ( field_name == c_field_name_Auto_Round ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, bool >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Auto_Round, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Date_Precision || field_name == c_field_name_Date_Precision )
+      if( !handled && ( ( field_name == c_field_id_Date_Precision ) || ( field_name == c_field_name_Date_Precision ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Date_Precision, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Default_UOM || field_name == c_field_name_Default_UOM )
+      if( !handled && ( ( field_name == c_field_id_Default_UOM ) || ( field_name == c_field_name_Default_UOM ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Default_UOM, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Fraction_Limit || field_name == c_field_name_Fraction_Limit )
+      if( !handled && ( ( field_name == c_field_id_Fraction_Limit ) || ( field_name == c_field_name_Fraction_Limit ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Fraction_Limit, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      if( !handled && ( ( field_name == c_field_id_Id ) || ( field_name == c_field_name_Id ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, string >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Id, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Int_Type || field_name == c_field_name_Int_Type )
+      if( !handled && ( ( field_name == c_field_id_Int_Type ) || ( field_name == c_field_name_Int_Type ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Int_Type, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      if( !handled && ( ( field_name == c_field_id_Internal ) || ( field_name == c_field_name_Internal ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, bool >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Internal, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Max_Size || field_name == c_field_name_Max_Size )
+      if( !handled && ( ( field_name == c_field_id_Max_Size ) || ( field_name == c_field_name_Max_Size ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Max_Size, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Max_Value || field_name == c_field_name_Max_Value )
+      if( !handled && ( ( field_name == c_field_id_Max_Value ) || ( field_name == c_field_name_Max_Value ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, string >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Max_Value, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Min_Value || field_name == c_field_name_Min_Value )
+      if( !handled && ( ( field_name == c_field_id_Min_Value ) || ( field_name == c_field_name_Min_Value ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, string >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Min_Value, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, string >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Name, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Numeric_Decimals || field_name == c_field_name_Numeric_Decimals )
+      if( !handled && ( ( field_name == c_field_id_Numeric_Decimals ) || ( field_name == c_field_name_Numeric_Decimals ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Numeric_Decimals, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Numeric_Digits || field_name == c_field_name_Numeric_Digits )
+      if( !handled && ( ( field_name == c_field_id_Numeric_Digits ) || ( field_name == c_field_name_Numeric_Digits ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Numeric_Digits, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Numeric_Type || field_name == c_field_name_Numeric_Type )
+      if( !handled && ( ( field_name == c_field_id_Numeric_Type ) || ( field_name == c_field_name_Numeric_Type ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Numeric_Type, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      if( !handled && ( ( field_name == c_field_id_Primitive ) || ( field_name == c_field_name_Primitive ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Primitive, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Rounding_Method || field_name == c_field_name_Rounding_Method )
+      if( !handled && ( ( field_name == c_field_id_Rounding_Method ) || ( field_name == c_field_name_Rounding_Method ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Rounding_Method, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Show_Plus_Sign || field_name == c_field_name_Show_Plus_Sign )
+      if( !handled && ( ( field_name == c_field_id_Show_Plus_Sign ) || ( field_name == c_field_name_Show_Plus_Sign ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, bool >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Show_Plus_Sign, field_value );
       }
 
-      if( !handled && field_name == c_field_id_String_Domain || field_name == c_field_name_String_Domain )
+      if( !handled && ( ( field_name == c_field_id_String_Domain ) || ( field_name == c_field_name_String_Domain ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::String_Domain, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Time_Precision || field_name == c_field_name_Time_Precision )
+      if( !handled && ( ( field_name == c_field_id_Time_Precision ) || ( field_name == c_field_name_Time_Precision ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Time_Precision, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      if( !handled && ( ( field_name == c_field_id_Workgroup ) || ( field_name == c_field_name_Workgroup ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, Meta_Workgroup >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Workgroup, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Zero_Padding || field_name == c_field_name_Zero_Padding )
+      if( !handled && ( ( field_name == c_field_id_Zero_Padding ) || ( field_name == c_field_name_Zero_Padding ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Zero_Padding, field_value );
       }
@@ -965,7 +1009,7 @@ void Meta_Type_command_functor::operator ( )( const string& command, const param
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      else if( ( field_name == c_field_id_Workgroup ) || ( field_name == c_field_name_Workgroup ) )
          cmd_handler.retval = cmd_handler.p_Meta_Type->Workgroup( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -1681,7 +1725,7 @@ void Meta_Type::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       impl_Workgroup( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1691,7 +1735,7 @@ void Meta_Type::impl::set_foreign_key_value( const string& field, const string& 
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       v_Workgroup = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1701,7 +1745,7 @@ const string& Meta_Type::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       return v_Workgroup;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -2213,7 +2257,7 @@ bool Meta_Type::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -2279,6 +2323,7 @@ void Meta_Type::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -3176,107 +3221,107 @@ string Meta_Type::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Auto_Round || id_or_name == c_field_name_Auto_Round )
+   if( ( id_or_name == c_field_id_Auto_Round ) || ( id_or_name == c_field_name_Auto_Round ) )
    {
       name = string( c_field_display_name_Auto_Round );
       get_module_string( c_field_display_name_Auto_Round, &next );
    }
-   else if( id_or_name == c_field_id_Date_Precision || id_or_name == c_field_name_Date_Precision )
+   if( ( id_or_name == c_field_id_Date_Precision ) || ( id_or_name == c_field_name_Date_Precision ) )
    {
       name = string( c_field_display_name_Date_Precision );
       get_module_string( c_field_display_name_Date_Precision, &next );
    }
-   else if( id_or_name == c_field_id_Default_UOM || id_or_name == c_field_name_Default_UOM )
+   if( ( id_or_name == c_field_id_Default_UOM ) || ( id_or_name == c_field_name_Default_UOM ) )
    {
       name = string( c_field_display_name_Default_UOM );
       get_module_string( c_field_display_name_Default_UOM, &next );
    }
-   else if( id_or_name == c_field_id_Fraction_Limit || id_or_name == c_field_name_Fraction_Limit )
+   if( ( id_or_name == c_field_id_Fraction_Limit ) || ( id_or_name == c_field_name_Fraction_Limit ) )
    {
       name = string( c_field_display_name_Fraction_Limit );
       get_module_string( c_field_display_name_Fraction_Limit, &next );
    }
-   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   if( ( id_or_name == c_field_id_Id ) || ( id_or_name == c_field_name_Id ) )
    {
       name = string( c_field_display_name_Id );
       get_module_string( c_field_display_name_Id, &next );
    }
-   else if( id_or_name == c_field_id_Int_Type || id_or_name == c_field_name_Int_Type )
+   if( ( id_or_name == c_field_id_Int_Type ) || ( id_or_name == c_field_name_Int_Type ) )
    {
       name = string( c_field_display_name_Int_Type );
       get_module_string( c_field_display_name_Int_Type, &next );
    }
-   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   if( ( id_or_name == c_field_id_Internal ) || ( id_or_name == c_field_name_Internal ) )
    {
       name = string( c_field_display_name_Internal );
       get_module_string( c_field_display_name_Internal, &next );
    }
-   else if( id_or_name == c_field_id_Max_Size || id_or_name == c_field_name_Max_Size )
+   if( ( id_or_name == c_field_id_Max_Size ) || ( id_or_name == c_field_name_Max_Size ) )
    {
       name = string( c_field_display_name_Max_Size );
       get_module_string( c_field_display_name_Max_Size, &next );
    }
-   else if( id_or_name == c_field_id_Max_Value || id_or_name == c_field_name_Max_Value )
+   if( ( id_or_name == c_field_id_Max_Value ) || ( id_or_name == c_field_name_Max_Value ) )
    {
       name = string( c_field_display_name_Max_Value );
       get_module_string( c_field_display_name_Max_Value, &next );
    }
-   else if( id_or_name == c_field_id_Min_Value || id_or_name == c_field_name_Min_Value )
+   if( ( id_or_name == c_field_id_Min_Value ) || ( id_or_name == c_field_name_Min_Value ) )
    {
       name = string( c_field_display_name_Min_Value );
       get_module_string( c_field_display_name_Min_Value, &next );
    }
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
    {
       name = string( c_field_display_name_Name );
       get_module_string( c_field_display_name_Name, &next );
    }
-   else if( id_or_name == c_field_id_Numeric_Decimals || id_or_name == c_field_name_Numeric_Decimals )
+   if( ( id_or_name == c_field_id_Numeric_Decimals ) || ( id_or_name == c_field_name_Numeric_Decimals ) )
    {
       name = string( c_field_display_name_Numeric_Decimals );
       get_module_string( c_field_display_name_Numeric_Decimals, &next );
    }
-   else if( id_or_name == c_field_id_Numeric_Digits || id_or_name == c_field_name_Numeric_Digits )
+   if( ( id_or_name == c_field_id_Numeric_Digits ) || ( id_or_name == c_field_name_Numeric_Digits ) )
    {
       name = string( c_field_display_name_Numeric_Digits );
       get_module_string( c_field_display_name_Numeric_Digits, &next );
    }
-   else if( id_or_name == c_field_id_Numeric_Type || id_or_name == c_field_name_Numeric_Type )
+   if( ( id_or_name == c_field_id_Numeric_Type ) || ( id_or_name == c_field_name_Numeric_Type ) )
    {
       name = string( c_field_display_name_Numeric_Type );
       get_module_string( c_field_display_name_Numeric_Type, &next );
    }
-   else if( id_or_name == c_field_id_Primitive || id_or_name == c_field_name_Primitive )
+   if( ( id_or_name == c_field_id_Primitive ) || ( id_or_name == c_field_name_Primitive ) )
    {
       name = string( c_field_display_name_Primitive );
       get_module_string( c_field_display_name_Primitive, &next );
    }
-   else if( id_or_name == c_field_id_Rounding_Method || id_or_name == c_field_name_Rounding_Method )
+   if( ( id_or_name == c_field_id_Rounding_Method ) || ( id_or_name == c_field_name_Rounding_Method ) )
    {
       name = string( c_field_display_name_Rounding_Method );
       get_module_string( c_field_display_name_Rounding_Method, &next );
    }
-   else if( id_or_name == c_field_id_Show_Plus_Sign || id_or_name == c_field_name_Show_Plus_Sign )
+   if( ( id_or_name == c_field_id_Show_Plus_Sign ) || ( id_or_name == c_field_name_Show_Plus_Sign ) )
    {
       name = string( c_field_display_name_Show_Plus_Sign );
       get_module_string( c_field_display_name_Show_Plus_Sign, &next );
    }
-   else if( id_or_name == c_field_id_String_Domain || id_or_name == c_field_name_String_Domain )
+   if( ( id_or_name == c_field_id_String_Domain ) || ( id_or_name == c_field_name_String_Domain ) )
    {
       name = string( c_field_display_name_String_Domain );
       get_module_string( c_field_display_name_String_Domain, &next );
    }
-   else if( id_or_name == c_field_id_Time_Precision || id_or_name == c_field_name_Time_Precision )
+   if( ( id_or_name == c_field_id_Time_Precision ) || ( id_or_name == c_field_name_Time_Precision ) )
    {
       name = string( c_field_display_name_Time_Precision );
       get_module_string( c_field_display_name_Time_Precision, &next );
    }
-   else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
+   if( ( id_or_name == c_field_id_Workgroup ) || ( id_or_name == c_field_name_Workgroup ) )
    {
       name = string( c_field_display_name_Workgroup );
       get_module_string( c_field_display_name_Workgroup, &next );
    }
-   else if( id_or_name == c_field_id_Zero_Padding || id_or_name == c_field_name_Zero_Padding )
+   if( ( id_or_name == c_field_id_Zero_Padding ) || ( id_or_name == c_field_name_Zero_Padding ) )
    {
       name = string( c_field_display_name_Zero_Padding );
       get_module_string( c_field_display_name_Zero_Padding, &next );
@@ -3296,47 +3341,47 @@ string Meta_Type::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Auto_Round || id_or_name == c_field_name_Auto_Round )
+   if( ( id_or_name == c_field_id_Auto_Round ) || ( id_or_name == c_field_name_Auto_Round ) )
       display_name = get_module_string( c_field_display_name_Auto_Round );
-   else if( id_or_name == c_field_id_Date_Precision || id_or_name == c_field_name_Date_Precision )
+   if( ( id_or_name == c_field_id_Date_Precision ) || ( id_or_name == c_field_name_Date_Precision ) )
       display_name = get_module_string( c_field_display_name_Date_Precision );
-   else if( id_or_name == c_field_id_Default_UOM || id_or_name == c_field_name_Default_UOM )
+   if( ( id_or_name == c_field_id_Default_UOM ) || ( id_or_name == c_field_name_Default_UOM ) )
       display_name = get_module_string( c_field_display_name_Default_UOM );
-   else if( id_or_name == c_field_id_Fraction_Limit || id_or_name == c_field_name_Fraction_Limit )
+   if( ( id_or_name == c_field_id_Fraction_Limit ) || ( id_or_name == c_field_name_Fraction_Limit ) )
       display_name = get_module_string( c_field_display_name_Fraction_Limit );
-   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   if( ( id_or_name == c_field_id_Id ) || ( id_or_name == c_field_name_Id ) )
       display_name = get_module_string( c_field_display_name_Id );
-   else if( id_or_name == c_field_id_Int_Type || id_or_name == c_field_name_Int_Type )
+   if( ( id_or_name == c_field_id_Int_Type ) || ( id_or_name == c_field_name_Int_Type ) )
       display_name = get_module_string( c_field_display_name_Int_Type );
-   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   if( ( id_or_name == c_field_id_Internal ) || ( id_or_name == c_field_name_Internal ) )
       display_name = get_module_string( c_field_display_name_Internal );
-   else if( id_or_name == c_field_id_Max_Size || id_or_name == c_field_name_Max_Size )
+   if( ( id_or_name == c_field_id_Max_Size ) || ( id_or_name == c_field_name_Max_Size ) )
       display_name = get_module_string( c_field_display_name_Max_Size );
-   else if( id_or_name == c_field_id_Max_Value || id_or_name == c_field_name_Max_Value )
+   if( ( id_or_name == c_field_id_Max_Value ) || ( id_or_name == c_field_name_Max_Value ) )
       display_name = get_module_string( c_field_display_name_Max_Value );
-   else if( id_or_name == c_field_id_Min_Value || id_or_name == c_field_name_Min_Value )
+   if( ( id_or_name == c_field_id_Min_Value ) || ( id_or_name == c_field_name_Min_Value ) )
       display_name = get_module_string( c_field_display_name_Min_Value );
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id_or_name == c_field_id_Numeric_Decimals || id_or_name == c_field_name_Numeric_Decimals )
+   if( ( id_or_name == c_field_id_Numeric_Decimals ) || ( id_or_name == c_field_name_Numeric_Decimals ) )
       display_name = get_module_string( c_field_display_name_Numeric_Decimals );
-   else if( id_or_name == c_field_id_Numeric_Digits || id_or_name == c_field_name_Numeric_Digits )
+   if( ( id_or_name == c_field_id_Numeric_Digits ) || ( id_or_name == c_field_name_Numeric_Digits ) )
       display_name = get_module_string( c_field_display_name_Numeric_Digits );
-   else if( id_or_name == c_field_id_Numeric_Type || id_or_name == c_field_name_Numeric_Type )
+   if( ( id_or_name == c_field_id_Numeric_Type ) || ( id_or_name == c_field_name_Numeric_Type ) )
       display_name = get_module_string( c_field_display_name_Numeric_Type );
-   else if( id_or_name == c_field_id_Primitive || id_or_name == c_field_name_Primitive )
+   if( ( id_or_name == c_field_id_Primitive ) || ( id_or_name == c_field_name_Primitive ) )
       display_name = get_module_string( c_field_display_name_Primitive );
-   else if( id_or_name == c_field_id_Rounding_Method || id_or_name == c_field_name_Rounding_Method )
+   if( ( id_or_name == c_field_id_Rounding_Method ) || ( id_or_name == c_field_name_Rounding_Method ) )
       display_name = get_module_string( c_field_display_name_Rounding_Method );
-   else if( id_or_name == c_field_id_Show_Plus_Sign || id_or_name == c_field_name_Show_Plus_Sign )
+   if( ( id_or_name == c_field_id_Show_Plus_Sign ) || ( id_or_name == c_field_name_Show_Plus_Sign ) )
       display_name = get_module_string( c_field_display_name_Show_Plus_Sign );
-   else if( id_or_name == c_field_id_String_Domain || id_or_name == c_field_name_String_Domain )
+   if( ( id_or_name == c_field_id_String_Domain ) || ( id_or_name == c_field_name_String_Domain ) )
       display_name = get_module_string( c_field_display_name_String_Domain );
-   else if( id_or_name == c_field_id_Time_Precision || id_or_name == c_field_name_Time_Precision )
+   if( ( id_or_name == c_field_id_Time_Precision ) || ( id_or_name == c_field_name_Time_Precision ) )
       display_name = get_module_string( c_field_display_name_Time_Precision );
-   else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
+   if( ( id_or_name == c_field_id_Workgroup ) || ( id_or_name == c_field_name_Workgroup ) )
       display_name = get_module_string( c_field_display_name_Workgroup );
-   else if( id_or_name == c_field_id_Zero_Padding || id_or_name == c_field_name_Zero_Padding )
+   if( ( id_or_name == c_field_id_Zero_Padding ) || ( id_or_name == c_field_name_Zero_Padding ) )
       display_name = get_module_string( c_field_display_name_Zero_Padding );
 
    return display_name;
@@ -3427,7 +3472,8 @@ class_base* Meta_Type::get_next_foreign_key_child(
    if( child_num >= 1 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+      if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
          --ealci;
 
       p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -3487,6 +3533,7 @@ string Meta_Type::get_module_name( ) const
 string Meta_Type::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "type";
 
    return get_module_string( key );
@@ -3549,9 +3596,9 @@ class_base& Meta_Type::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_300710" || sub_context == "child_Field" )
+   else if( ( sub_context == "_300710" ) || ( sub_context == "child_Field" ) )
       p_class_base = &child_Field( );
-   else if( sub_context == c_field_id_Workgroup || sub_context == c_field_name_Workgroup )
+   else if( ( sub_context == c_field_id_Workgroup ) || ( sub_context == c_field_name_Workgroup ) )
       p_class_base = &Workgroup( );
 
    if( !p_class_base )
@@ -3591,7 +3638,7 @@ void Meta_Type::get_sql_column_names(
    names.push_back( "C_Workgroup" );
    names.push_back( "C_Zero_Padding" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -3623,7 +3670,7 @@ void Meta_Type::get_sql_column_values(
    values.push_back( sql_quote( to_string( Workgroup( ) ) ) );
    values.push_back( to_string( Zero_Padding( ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -3830,7 +3877,7 @@ void Meta_Type::static_get_foreign_key_info( foreign_key_info_container& foreign
 
 int Meta_Type::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

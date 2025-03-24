@@ -258,24 +258,28 @@ void Meta_Permission_command_functor::operator ( )( const string& command, const
       string field_name( get_parm_val( parameters, c_cmd_Meta_Permission_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      if( !handled && ( ( field_name == c_field_id_Id ) || ( field_name == c_field_name_Id ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Permission->Id( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Permission->Name( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      if( !handled && ( ( field_name == c_field_id_Workgroup ) || ( field_name == c_field_name_Workgroup ) ) )
       {
          handled = true;
+
          string_getter< Meta_Workgroup >( cmd_handler.p_Meta_Permission->Workgroup( ), cmd_handler.retval );
       }
 
@@ -288,26 +292,30 @@ void Meta_Permission_command_functor::operator ( )( const string& command, const
       string field_value( get_parm_val( parameters, c_cmd_Meta_Permission_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      if( !handled && ( ( field_name == c_field_id_Id ) || ( field_name == c_field_name_Id ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Permission, string >(
           *cmd_handler.p_Meta_Permission, &Meta_Permission::Id, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Permission, string >(
           *cmd_handler.p_Meta_Permission, &Meta_Permission::Name, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      if( !handled && ( ( field_name == c_field_id_Workgroup ) || ( field_name == c_field_name_Workgroup ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Permission, Meta_Workgroup >(
           *cmd_handler.p_Meta_Permission, &Meta_Permission::Workgroup, field_value );
       }
@@ -326,7 +334,7 @@ void Meta_Permission_command_functor::operator ( )( const string& command, const
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      else if( ( field_name == c_field_id_Workgroup ) || ( field_name == c_field_name_Workgroup ) )
          cmd_handler.retval = cmd_handler.p_Meta_Permission->Workgroup( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -1105,7 +1113,7 @@ void Meta_Permission::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       impl_Workgroup( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1115,7 +1123,7 @@ void Meta_Permission::impl::set_foreign_key_value( const string& field, const st
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       v_Workgroup = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1125,7 +1133,7 @@ const string& Meta_Permission::impl::get_foreign_key_value( const string& field 
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       return v_Workgroup;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1399,7 +1407,7 @@ bool Meta_Permission::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -1465,6 +1473,7 @@ void Meta_Permission::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -2042,17 +2051,17 @@ string Meta_Permission::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   if( ( id_or_name == c_field_id_Id ) || ( id_or_name == c_field_name_Id ) )
    {
       name = string( c_field_display_name_Id );
       get_module_string( c_field_display_name_Id, &next );
    }
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
    {
       name = string( c_field_display_name_Name );
       get_module_string( c_field_display_name_Name, &next );
    }
-   else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
+   if( ( id_or_name == c_field_id_Workgroup ) || ( id_or_name == c_field_name_Workgroup ) )
    {
       name = string( c_field_display_name_Workgroup );
       get_module_string( c_field_display_name_Workgroup, &next );
@@ -2072,11 +2081,11 @@ string Meta_Permission::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   if( ( id_or_name == c_field_id_Id ) || ( id_or_name == c_field_name_Id ) )
       display_name = get_module_string( c_field_display_name_Id );
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
+   if( ( id_or_name == c_field_id_Workgroup ) || ( id_or_name == c_field_name_Workgroup ) )
       display_name = get_module_string( c_field_display_name_Workgroup );
 
    return display_name;
@@ -2212,7 +2221,8 @@ class_base* Meta_Permission::get_next_foreign_key_child(
    if( child_num >= 23 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+      if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
          --ealci;
 
       p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -2448,6 +2458,7 @@ string Meta_Permission::get_module_name( ) const
 string Meta_Permission::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "permission";
 
    return get_module_string( key );
@@ -2510,53 +2521,53 @@ class_base& Meta_Permission::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_300633" || sub_context == "child_Class_Access" )
+   else if( ( sub_context == "_300633" ) || ( sub_context == "child_Class_Access" ) )
       p_class_base = &child_Class_Access( );
-   else if( sub_context == "_300750" || sub_context == "child_Field_Access" )
+   else if( ( sub_context == "_300750" ) || ( sub_context == "child_Field_Access" ) )
       p_class_base = &child_Field_Access( );
-   else if( sub_context == "_302130" || sub_context == "child_List_Field_Access" )
+   else if( ( sub_context == "_302130" ) || ( sub_context == "child_List_Field_Access" ) )
       p_class_base = &child_List_Field_Access( );
-   else if( sub_context == "_301993" || sub_context == "child_List_Access" )
+   else if( ( sub_context == "_301993" ) || ( sub_context == "child_List_Access" ) )
       p_class_base = &child_List_Access( );
-   else if( sub_context == "_301120" || sub_context == "child_Procedure_Access" )
+   else if( ( sub_context == "_301120" ) || ( sub_context == "child_Procedure_Access" ) )
       p_class_base = &child_Procedure_Access( );
-   else if( sub_context == "_301330c" || sub_context == "child_Relationship_Access" )
+   else if( ( sub_context == "_301330c" ) || ( sub_context == "child_Relationship_Access" ) )
       p_class_base = &child_Relationship_Access( );
-   else if( sub_context == "_301920" || sub_context == "child_View_Field_Access" )
+   else if( ( sub_context == "_301920" ) || ( sub_context == "child_View_Field_Access" ) )
       p_class_base = &child_View_Field_Access( );
-   else if( sub_context == "_301825" || sub_context == "child_View_Access" )
+   else if( ( sub_context == "_301825" ) || ( sub_context == "child_View_Access" ) )
       p_class_base = &child_View_Access( );
-   else if( sub_context == "_300634" || sub_context == "child_Class_Change" )
+   else if( ( sub_context == "_300634" ) || ( sub_context == "child_Class_Change" ) )
       p_class_base = &child_Class_Change( );
-   else if( sub_context == "_300760" || sub_context == "child_Field_Change" )
+   else if( ( sub_context == "_300760" ) || ( sub_context == "child_Field_Change" ) )
       p_class_base = &child_Field_Change( );
-   else if( sub_context == "_301330d" || sub_context == "child_Relationship_Change" )
+   else if( ( sub_context == "_301330d" ) || ( sub_context == "child_Relationship_Change" ) )
       p_class_base = &child_Relationship_Change( );
-   else if( sub_context == "_301930" || sub_context == "child_View_Field_Change" )
+   else if( ( sub_context == "_301930" ) || ( sub_context == "child_View_Field_Change" ) )
       p_class_base = &child_View_Field_Change( );
-   else if( sub_context == "_301830" || sub_context == "child_View_Change" )
+   else if( ( sub_context == "_301830" ) || ( sub_context == "child_View_Change" ) )
       p_class_base = &child_View_Change( );
-   else if( sub_context == "_300635" || sub_context == "child_Class_Create" )
+   else if( ( sub_context == "_300635" ) || ( sub_context == "child_Class_Create" ) )
       p_class_base = &child_Class_Create( );
-   else if( sub_context == "_301994" || sub_context == "child_List_Create" )
+   else if( ( sub_context == "_301994" ) || ( sub_context == "child_List_Create" ) )
       p_class_base = &child_List_Create( );
-   else if( sub_context == "_300636" || sub_context == "child_Class_Destroy" )
+   else if( ( sub_context == "_300636" ) || ( sub_context == "child_Class_Destroy" ) )
       p_class_base = &child_Class_Destroy( );
-   else if( sub_context == "_301995" || sub_context == "child_List_Destroy" )
+   else if( ( sub_context == "_301995" ) || ( sub_context == "child_List_Destroy" ) )
       p_class_base = &child_List_Destroy( );
-   else if( sub_context == "_302135" || sub_context == "child_List_Field_Link" )
+   else if( ( sub_context == "_302135" ) || ( sub_context == "child_List_Field_Link" ) )
       p_class_base = &child_List_Field_Link( );
-   else if( sub_context == "_301915" || sub_context == "child_View_Field_Link" )
+   else if( ( sub_context == "_301915" ) || ( sub_context == "child_View_Field_Link" ) )
       p_class_base = &child_View_Field_Link( );
-   else if( sub_context == "_301332" || sub_context == "child_Specification_Other_Permission_2" )
+   else if( ( sub_context == "_301332" ) || ( sub_context == "child_Specification_Other_Permission_2" ) )
       p_class_base = &child_Specification_Other_Permission_2( );
-   else if( sub_context == "_301331" || sub_context == "child_Specification_Other" )
+   else if( ( sub_context == "_301331" ) || ( sub_context == "child_Specification_Other" ) )
       p_class_base = &child_Specification_Other( );
-   else if( sub_context == "_301600" || sub_context == "child_Model" )
+   else if( ( sub_context == "_301600" ) || ( sub_context == "child_Model" ) )
       p_class_base = &child_Model( );
-   else if( sub_context == "_301499" || sub_context == "child_Specification" )
+   else if( ( sub_context == "_301499" ) || ( sub_context == "child_Specification" ) )
       p_class_base = &child_Specification( );
-   else if( sub_context == c_field_id_Workgroup || sub_context == c_field_name_Workgroup )
+   else if( ( sub_context == c_field_id_Workgroup ) || ( sub_context == c_field_name_Workgroup ) )
       p_class_base = &Workgroup( );
 
    if( !p_class_base )
@@ -2578,7 +2589,7 @@ void Meta_Permission::get_sql_column_names(
    names.push_back( "C_Name" );
    names.push_back( "C_Workgroup" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2592,7 +2603,7 @@ void Meta_Permission::get_sql_column_values(
    values.push_back( sql_quote( to_string( Name( ) ) ) );
    values.push_back( sql_quote( to_string( Workgroup( ) ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2687,7 +2698,7 @@ void Meta_Permission::static_get_foreign_key_info( foreign_key_info_container& f
 
 int Meta_Permission::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

@@ -297,48 +297,56 @@ void Meta_Workgroup_command_functor::operator ( )( const string& command, const 
       string field_name( get_parm_val( parameters, c_cmd_Meta_Workgroup_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      if( !handled && ( ( field_name == c_field_id_Id ) || ( field_name == c_field_name_Id ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Workgroup->Id( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Workgroup->Name( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Next_Enum_Id || field_name == c_field_name_Next_Enum_Id )
+      if( !handled && ( ( field_name == c_field_id_Next_Enum_Id ) || ( field_name == c_field_name_Next_Enum_Id ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Workgroup->Next_Enum_Id( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Next_Model_Id || field_name == c_field_name_Next_Model_Id )
+      if( !handled && ( ( field_name == c_field_id_Next_Model_Id ) || ( field_name == c_field_name_Next_Model_Id ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Workgroup->Next_Model_Id( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Next_Permission_Id || field_name == c_field_name_Next_Permission_Id )
+      if( !handled && ( ( field_name == c_field_id_Next_Permission_Id ) || ( field_name == c_field_name_Next_Permission_Id ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Workgroup->Next_Permission_Id( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Next_Type_Id || field_name == c_field_name_Next_Type_Id )
+      if( !handled && ( ( field_name == c_field_id_Next_Type_Id ) || ( field_name == c_field_name_Next_Type_Id ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Workgroup->Next_Type_Id( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Standard_Package || field_name == c_field_name_Standard_Package )
+      if( !handled && ( ( field_name == c_field_id_Standard_Package ) || ( field_name == c_field_name_Standard_Package ) ) )
       {
          handled = true;
+
          string_getter< Meta_Package >( cmd_handler.p_Meta_Workgroup->Standard_Package( ), cmd_handler.retval );
       }
 
@@ -351,54 +359,62 @@ void Meta_Workgroup_command_functor::operator ( )( const string& command, const 
       string field_value( get_parm_val( parameters, c_cmd_Meta_Workgroup_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      if( !handled && ( ( field_name == c_field_id_Id ) || ( field_name == c_field_name_Id ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Workgroup, string >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Id, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Workgroup, string >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Name, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Next_Enum_Id || field_name == c_field_name_Next_Enum_Id )
+      if( !handled && ( ( field_name == c_field_id_Next_Enum_Id ) || ( field_name == c_field_name_Next_Enum_Id ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Workgroup, string >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Next_Enum_Id, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Next_Model_Id || field_name == c_field_name_Next_Model_Id )
+      if( !handled && ( ( field_name == c_field_id_Next_Model_Id ) || ( field_name == c_field_name_Next_Model_Id ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Workgroup, string >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Next_Model_Id, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Next_Permission_Id || field_name == c_field_name_Next_Permission_Id )
+      if( !handled && ( ( field_name == c_field_id_Next_Permission_Id ) || ( field_name == c_field_name_Next_Permission_Id ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Workgroup, string >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Next_Permission_Id, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Next_Type_Id || field_name == c_field_name_Next_Type_Id )
+      if( !handled && ( ( field_name == c_field_id_Next_Type_Id ) || ( field_name == c_field_name_Next_Type_Id ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Workgroup, string >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Next_Type_Id, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Standard_Package || field_name == c_field_name_Standard_Package )
+      if( !handled && ( ( field_name == c_field_id_Standard_Package ) || ( field_name == c_field_name_Standard_Package ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Workgroup, Meta_Package >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Standard_Package, field_value );
       }
@@ -417,7 +433,7 @@ void Meta_Workgroup_command_functor::operator ( )( const string& command, const 
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Standard_Package || field_name == c_field_name_Standard_Package )
+      else if( ( field_name == c_field_id_Standard_Package ) || ( field_name == c_field_name_Standard_Package ) )
          cmd_handler.retval = cmd_handler.p_Meta_Workgroup->Standard_Package( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -427,12 +443,14 @@ void Meta_Workgroup_command_functor::operator ( )( const string& command, const 
       cmd_handler.p_Meta_Workgroup->Destroy_Apps_And_Models( );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Workgroup_Get_Acyclic_Package_Type_List )
    {
       cmd_handler.p_Meta_Workgroup->Get_Acyclic_Package_Type_List( );
 
       cmd_handler.retval.erase( );
+
    }
 }
 
@@ -1007,7 +1025,7 @@ void Meta_Workgroup::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Standard_Package || field == c_field_name_Standard_Package )
+   else if( ( field == c_field_id_Standard_Package ) || ( field == c_field_name_Standard_Package ) )
       impl_Standard_Package( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1017,7 +1035,7 @@ void Meta_Workgroup::impl::set_foreign_key_value( const string& field, const str
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Standard_Package || field == c_field_name_Standard_Package )
+   else if( ( field == c_field_id_Standard_Package ) || ( field == c_field_name_Standard_Package ) )
       v_Standard_Package = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1027,7 +1045,7 @@ const string& Meta_Workgroup::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Standard_Package || field == c_field_name_Standard_Package )
+   else if( ( field == c_field_id_Standard_Package ) || ( field == c_field_name_Standard_Package ) )
       return v_Standard_Package;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1369,7 +1387,7 @@ bool Meta_Workgroup::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -1435,6 +1453,7 @@ void Meta_Workgroup::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -1972,37 +1991,37 @@ string Meta_Workgroup::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   if( ( id_or_name == c_field_id_Id ) || ( id_or_name == c_field_name_Id ) )
    {
       name = string( c_field_display_name_Id );
       get_module_string( c_field_display_name_Id, &next );
    }
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
    {
       name = string( c_field_display_name_Name );
       get_module_string( c_field_display_name_Name, &next );
    }
-   else if( id_or_name == c_field_id_Next_Enum_Id || id_or_name == c_field_name_Next_Enum_Id )
+   if( ( id_or_name == c_field_id_Next_Enum_Id ) || ( id_or_name == c_field_name_Next_Enum_Id ) )
    {
       name = string( c_field_display_name_Next_Enum_Id );
       get_module_string( c_field_display_name_Next_Enum_Id, &next );
    }
-   else if( id_or_name == c_field_id_Next_Model_Id || id_or_name == c_field_name_Next_Model_Id )
+   if( ( id_or_name == c_field_id_Next_Model_Id ) || ( id_or_name == c_field_name_Next_Model_Id ) )
    {
       name = string( c_field_display_name_Next_Model_Id );
       get_module_string( c_field_display_name_Next_Model_Id, &next );
    }
-   else if( id_or_name == c_field_id_Next_Permission_Id || id_or_name == c_field_name_Next_Permission_Id )
+   if( ( id_or_name == c_field_id_Next_Permission_Id ) || ( id_or_name == c_field_name_Next_Permission_Id ) )
    {
       name = string( c_field_display_name_Next_Permission_Id );
       get_module_string( c_field_display_name_Next_Permission_Id, &next );
    }
-   else if( id_or_name == c_field_id_Next_Type_Id || id_or_name == c_field_name_Next_Type_Id )
+   if( ( id_or_name == c_field_id_Next_Type_Id ) || ( id_or_name == c_field_name_Next_Type_Id ) )
    {
       name = string( c_field_display_name_Next_Type_Id );
       get_module_string( c_field_display_name_Next_Type_Id, &next );
    }
-   else if( id_or_name == c_field_id_Standard_Package || id_or_name == c_field_name_Standard_Package )
+   if( ( id_or_name == c_field_id_Standard_Package ) || ( id_or_name == c_field_name_Standard_Package ) )
    {
       name = string( c_field_display_name_Standard_Package );
       get_module_string( c_field_display_name_Standard_Package, &next );
@@ -2022,19 +2041,19 @@ string Meta_Workgroup::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   if( ( id_or_name == c_field_id_Id ) || ( id_or_name == c_field_name_Id ) )
       display_name = get_module_string( c_field_display_name_Id );
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id_or_name == c_field_id_Next_Enum_Id || id_or_name == c_field_name_Next_Enum_Id )
+   if( ( id_or_name == c_field_id_Next_Enum_Id ) || ( id_or_name == c_field_name_Next_Enum_Id ) )
       display_name = get_module_string( c_field_display_name_Next_Enum_Id );
-   else if( id_or_name == c_field_id_Next_Model_Id || id_or_name == c_field_name_Next_Model_Id )
+   if( ( id_or_name == c_field_id_Next_Model_Id ) || ( id_or_name == c_field_name_Next_Model_Id ) )
       display_name = get_module_string( c_field_display_name_Next_Model_Id );
-   else if( id_or_name == c_field_id_Next_Permission_Id || id_or_name == c_field_name_Next_Permission_Id )
+   if( ( id_or_name == c_field_id_Next_Permission_Id ) || ( id_or_name == c_field_name_Next_Permission_Id ) )
       display_name = get_module_string( c_field_display_name_Next_Permission_Id );
-   else if( id_or_name == c_field_id_Next_Type_Id || id_or_name == c_field_name_Next_Type_Id )
+   if( ( id_or_name == c_field_id_Next_Type_Id ) || ( id_or_name == c_field_name_Next_Type_Id ) )
       display_name = get_module_string( c_field_display_name_Next_Type_Id );
-   else if( id_or_name == c_field_id_Standard_Package || id_or_name == c_field_name_Standard_Package )
+   if( ( id_or_name == c_field_id_Standard_Package ) || ( id_or_name == c_field_name_Standard_Package ) )
       display_name = get_module_string( c_field_display_name_Standard_Package );
 
    return display_name;
@@ -2150,7 +2169,8 @@ class_base* Meta_Workgroup::get_next_foreign_key_child(
    if( child_num >= 6 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+      if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
          --ealci;
 
       p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -2250,6 +2270,7 @@ string Meta_Workgroup::get_module_name( ) const
 string Meta_Workgroup::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "workgroup";
 
    return get_module_string( key );
@@ -2316,19 +2337,19 @@ class_base& Meta_Workgroup::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_302220" || sub_context == "child_Application" )
+   else if( ( sub_context == "_302220" ) || ( sub_context == "child_Application" ) )
       p_class_base = &child_Application( );
-   else if( sub_context == "_300300" || sub_context == "child_Enum" )
+   else if( ( sub_context == "_300300" ) || ( sub_context == "child_Enum" ) )
       p_class_base = &child_Enum( );
-   else if( sub_context == "_300500" || sub_context == "child_Model" )
+   else if( ( sub_context == "_300500" ) || ( sub_context == "child_Model" ) )
       p_class_base = &child_Model( );
-   else if( sub_context == "_301500" || sub_context == "child_Permission" )
+   else if( ( sub_context == "_301500" ) || ( sub_context == "child_Permission" ) )
       p_class_base = &child_Permission( );
-   else if( sub_context == "_300200" || sub_context == "child_Type" )
+   else if( ( sub_context == "_300200" ) || ( sub_context == "child_Type" ) )
       p_class_base = &child_Type( );
-   else if( sub_context == "_300100" || sub_context == "child_User" )
+   else if( ( sub_context == "_300100" ) || ( sub_context == "child_User" ) )
       p_class_base = &child_User( );
-   else if( sub_context == c_field_id_Standard_Package || sub_context == c_field_name_Standard_Package )
+   else if( ( sub_context == c_field_id_Standard_Package ) || ( sub_context == c_field_name_Standard_Package ) )
       p_class_base = &Standard_Package( );
 
    if( !p_class_base )
@@ -2354,7 +2375,7 @@ void Meta_Workgroup::get_sql_column_names(
    names.push_back( "C_Next_Type_Id" );
    names.push_back( "C_Standard_Package" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2372,7 +2393,7 @@ void Meta_Workgroup::get_sql_column_values(
    values.push_back( sql_quote( to_string( Next_Type_Id( ) ) ) );
    values.push_back( sql_quote( to_string( Standard_Package( ) ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2469,7 +2490,7 @@ void Meta_Workgroup::static_get_foreign_key_info( foreign_key_info_container& fo
 
 int Meta_Workgroup::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

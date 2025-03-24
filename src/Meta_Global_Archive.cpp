@@ -320,54 +320,63 @@ void Meta_Global_Archive_command_functor::operator ( )( const string& command, c
       string field_name( get_parm_val( parameters, c_cmd_Meta_Global_Archive_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      if( !handled && ( ( field_name == c_field_id_Actions ) || ( field_name == c_field_name_Actions ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Archive->Actions( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Archive->Name( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Path || field_name == c_field_name_Path )
+      if( !handled && ( ( field_name == c_field_id_Path ) || ( field_name == c_field_name_Path ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Archive->Path( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Size_Avail || field_name == c_field_name_Size_Avail )
+      if( !handled && ( ( field_name == c_field_id_Size_Avail ) || ( field_name == c_field_name_Size_Avail ) ) )
       {
          handled = true;
+
          string_getter< numeric >( cmd_handler.p_Meta_Global_Archive->Size_Avail( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Size_Limit || field_name == c_field_name_Size_Limit )
+      if( !handled && ( ( field_name == c_field_id_Size_Limit ) || ( field_name == c_field_name_Size_Limit ) ) )
       {
          handled = true;
+
          string_getter< numeric >( cmd_handler.p_Meta_Global_Archive->Size_Limit( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Standard_Size_Limit || field_name == c_field_name_Standard_Size_Limit )
+      if( !handled && ( ( field_name == c_field_id_Standard_Size_Limit ) || ( field_name == c_field_name_Standard_Size_Limit ) ) )
       {
          handled = true;
+
          string_getter< numeric >( cmd_handler.p_Meta_Global_Archive->Standard_Size_Limit( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Status_Info || field_name == c_field_name_Status_Info )
+      if( !handled && ( ( field_name == c_field_id_Status_Info ) || ( field_name == c_field_name_Status_Info ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Archive->Status_Info( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Use_Custom_Size || field_name == c_field_name_Use_Custom_Size )
+      if( !handled && ( ( field_name == c_field_id_Use_Custom_Size ) || ( field_name == c_field_name_Use_Custom_Size ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Global_Archive->Use_Custom_Size( ), cmd_handler.retval );
       }
 
@@ -380,61 +389,70 @@ void Meta_Global_Archive_command_functor::operator ( )( const string& command, c
       string field_value( get_parm_val( parameters, c_cmd_Meta_Global_Archive_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      if( !handled && ( ( field_name == c_field_id_Actions ) || ( field_name == c_field_name_Actions ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Archive, string >(
           *cmd_handler.p_Meta_Global_Archive, &Meta_Global_Archive::Actions, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Archive, string >(
           *cmd_handler.p_Meta_Global_Archive, &Meta_Global_Archive::Name, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Path || field_name == c_field_name_Path )
+      if( !handled && ( ( field_name == c_field_id_Path ) || ( field_name == c_field_name_Path ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Archive, string >(
           *cmd_handler.p_Meta_Global_Archive, &Meta_Global_Archive::Path, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Size_Avail || field_name == c_field_name_Size_Avail )
+      if( !handled && ( ( field_name == c_field_id_Size_Avail ) || ( field_name == c_field_name_Size_Avail ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Archive, numeric >(
           *cmd_handler.p_Meta_Global_Archive, &Meta_Global_Archive::Size_Avail, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Size_Limit || field_name == c_field_name_Size_Limit )
+      if( !handled && ( ( field_name == c_field_id_Size_Limit ) || ( field_name == c_field_name_Size_Limit ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Archive, numeric >(
           *cmd_handler.p_Meta_Global_Archive, &Meta_Global_Archive::Size_Limit, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Standard_Size_Limit || field_name == c_field_name_Standard_Size_Limit )
+      if( !handled && ( ( field_name == c_field_id_Standard_Size_Limit ) || ( field_name == c_field_name_Standard_Size_Limit ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Archive, numeric >(
           *cmd_handler.p_Meta_Global_Archive, &Meta_Global_Archive::Standard_Size_Limit, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Status_Info || field_name == c_field_name_Status_Info )
+      if( !handled && ( ( field_name == c_field_id_Status_Info ) || ( field_name == c_field_name_Status_Info ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Archive, string >(
           *cmd_handler.p_Meta_Global_Archive, &Meta_Global_Archive::Status_Info, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Use_Custom_Size || field_name == c_field_name_Use_Custom_Size )
+      if( !handled && ( ( field_name == c_field_id_Use_Custom_Size ) || ( field_name == c_field_name_Use_Custom_Size ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Archive, bool >(
           *cmd_handler.p_Meta_Global_Archive, &Meta_Global_Archive::Use_Custom_Size, field_value );
       }
@@ -453,22 +471,28 @@ void Meta_Global_Archive_command_functor::operator ( )( const string& command, c
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Size_Avail || field_name == c_field_name_Size_Avail )
+      else if( ( field_name == c_field_id_Size_Avail ) || ( field_name == c_field_name_Size_Avail ) )
       {
          numeric Size_Avail( cmd_handler.p_Meta_Global_Archive->Size_Avail( ) );
+
          execute_command( Size_Avail, cmd_and_args, cmd_handler.retval );
+
          cmd_handler.p_Meta_Global_Archive->Size_Avail( Size_Avail );
       }
-      else if( field_name == c_field_id_Size_Limit || field_name == c_field_name_Size_Limit )
+      else if( ( field_name == c_field_id_Size_Limit ) || ( field_name == c_field_name_Size_Limit ) )
       {
          numeric Size_Limit( cmd_handler.p_Meta_Global_Archive->Size_Limit( ) );
+
          execute_command( Size_Limit, cmd_and_args, cmd_handler.retval );
+
          cmd_handler.p_Meta_Global_Archive->Size_Limit( Size_Limit );
       }
-      else if( field_name == c_field_id_Standard_Size_Limit || field_name == c_field_name_Standard_Size_Limit )
+      else if( ( field_name == c_field_id_Standard_Size_Limit ) || ( field_name == c_field_name_Standard_Size_Limit ) )
       {
          numeric Standard_Size_Limit( cmd_handler.p_Meta_Global_Archive->Standard_Size_Limit( ) );
+
          execute_command( Standard_Size_Limit, cmd_and_args, cmd_handler.retval );
+
          cmd_handler.p_Meta_Global_Archive->Standard_Size_Limit( Standard_Size_Limit );
       }
       else
@@ -479,12 +503,14 @@ void Meta_Global_Archive_command_functor::operator ( )( const string& command, c
       cmd_handler.p_Meta_Global_Archive->Repair_Archive( );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Global_Archive_Status_Update )
    {
       cmd_handler.p_Meta_Global_Archive->Status_Update( );
 
       cmd_handler.retval.erase( );
+
    }
 }
 
@@ -1127,7 +1153,7 @@ bool Meta_Global_Archive::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -1200,6 +1226,7 @@ void Meta_Global_Archive::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -1702,42 +1729,42 @@ string Meta_Global_Archive::get_field_uom_symbol( const string& id_or_name ) con
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
+   if( ( id_or_name == c_field_id_Actions ) || ( id_or_name == c_field_name_Actions ) )
    {
       name = string( c_field_display_name_Actions );
       get_module_string( c_field_display_name_Actions, &next );
    }
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
    {
       name = string( c_field_display_name_Name );
       get_module_string( c_field_display_name_Name, &next );
    }
-   else if( id_or_name == c_field_id_Path || id_or_name == c_field_name_Path )
+   if( ( id_or_name == c_field_id_Path ) || ( id_or_name == c_field_name_Path ) )
    {
       name = string( c_field_display_name_Path );
       get_module_string( c_field_display_name_Path, &next );
    }
-   else if( id_or_name == c_field_id_Size_Avail || id_or_name == c_field_name_Size_Avail )
+   if( ( id_or_name == c_field_id_Size_Avail ) || ( id_or_name == c_field_name_Size_Avail ) )
    {
       name = string( c_field_display_name_Size_Avail );
       get_module_string( c_field_display_name_Size_Avail, &next );
    }
-   else if( id_or_name == c_field_id_Size_Limit || id_or_name == c_field_name_Size_Limit )
+   if( ( id_or_name == c_field_id_Size_Limit ) || ( id_or_name == c_field_name_Size_Limit ) )
    {
       name = string( c_field_display_name_Size_Limit );
       get_module_string( c_field_display_name_Size_Limit, &next );
    }
-   else if( id_or_name == c_field_id_Standard_Size_Limit || id_or_name == c_field_name_Standard_Size_Limit )
+   if( ( id_or_name == c_field_id_Standard_Size_Limit ) || ( id_or_name == c_field_name_Standard_Size_Limit ) )
    {
       name = string( c_field_display_name_Standard_Size_Limit );
       get_module_string( c_field_display_name_Standard_Size_Limit, &next );
    }
-   else if( id_or_name == c_field_id_Status_Info || id_or_name == c_field_name_Status_Info )
+   if( ( id_or_name == c_field_id_Status_Info ) || ( id_or_name == c_field_name_Status_Info ) )
    {
       name = string( c_field_display_name_Status_Info );
       get_module_string( c_field_display_name_Status_Info, &next );
    }
-   else if( id_or_name == c_field_id_Use_Custom_Size || id_or_name == c_field_name_Use_Custom_Size )
+   if( ( id_or_name == c_field_id_Use_Custom_Size ) || ( id_or_name == c_field_name_Use_Custom_Size ) )
    {
       name = string( c_field_display_name_Use_Custom_Size );
       get_module_string( c_field_display_name_Use_Custom_Size, &next );
@@ -1757,21 +1784,21 @@ string Meta_Global_Archive::get_field_display_name( const string& id_or_name ) c
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
+   if( ( id_or_name == c_field_id_Actions ) || ( id_or_name == c_field_name_Actions ) )
       display_name = get_module_string( c_field_display_name_Actions );
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id_or_name == c_field_id_Path || id_or_name == c_field_name_Path )
+   if( ( id_or_name == c_field_id_Path ) || ( id_or_name == c_field_name_Path ) )
       display_name = get_module_string( c_field_display_name_Path );
-   else if( id_or_name == c_field_id_Size_Avail || id_or_name == c_field_name_Size_Avail )
+   if( ( id_or_name == c_field_id_Size_Avail ) || ( id_or_name == c_field_name_Size_Avail ) )
       display_name = get_module_string( c_field_display_name_Size_Avail );
-   else if( id_or_name == c_field_id_Size_Limit || id_or_name == c_field_name_Size_Limit )
+   if( ( id_or_name == c_field_id_Size_Limit ) || ( id_or_name == c_field_name_Size_Limit ) )
       display_name = get_module_string( c_field_display_name_Size_Limit );
-   else if( id_or_name == c_field_id_Standard_Size_Limit || id_or_name == c_field_name_Standard_Size_Limit )
+   if( ( id_or_name == c_field_id_Standard_Size_Limit ) || ( id_or_name == c_field_name_Standard_Size_Limit ) )
       display_name = get_module_string( c_field_display_name_Standard_Size_Limit );
-   else if( id_or_name == c_field_id_Status_Info || id_or_name == c_field_name_Status_Info )
+   if( ( id_or_name == c_field_id_Status_Info ) || ( id_or_name == c_field_name_Status_Info ) )
       display_name = get_module_string( c_field_display_name_Status_Info );
-   else if( id_or_name == c_field_id_Use_Custom_Size || id_or_name == c_field_name_Use_Custom_Size )
+   if( ( id_or_name == c_field_id_Use_Custom_Size ) || ( id_or_name == c_field_name_Use_Custom_Size ) )
       display_name = get_module_string( c_field_display_name_Use_Custom_Size );
 
    return display_name;
@@ -1887,6 +1914,7 @@ string Meta_Global_Archive::get_module_name( ) const
 string Meta_Global_Archive::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "global_archive";
 
    return get_module_string( key );
@@ -2067,7 +2095,7 @@ void Meta_Global_Archive::static_get_foreign_key_info( foreign_key_info_containe
 
 int Meta_Global_Archive::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

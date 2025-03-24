@@ -316,66 +316,77 @@ void Meta_Index_command_functor::operator ( )( const string& command, const para
       string field_name( get_parm_val( parameters, c_cmd_Meta_Index_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      if( !handled && ( ( field_name == c_field_id_Class ) || ( field_name == c_field_name_Class ) ) )
       {
          handled = true;
+
          string_getter< Meta_Class >( cmd_handler.p_Meta_Index->Class( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Field_1 || field_name == c_field_name_Field_1 )
+      if( !handled && ( ( field_name == c_field_id_Field_1 ) || ( field_name == c_field_name_Field_1 ) ) )
       {
          handled = true;
+
          string_getter< Meta_Field >( cmd_handler.p_Meta_Index->Field_1( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Field_2 || field_name == c_field_name_Field_2 )
+      if( !handled && ( ( field_name == c_field_id_Field_2 ) || ( field_name == c_field_name_Field_2 ) ) )
       {
          handled = true;
+
          string_getter< Meta_Field >( cmd_handler.p_Meta_Index->Field_2( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Field_3 || field_name == c_field_name_Field_3 )
+      if( !handled && ( ( field_name == c_field_id_Field_3 ) || ( field_name == c_field_name_Field_3 ) ) )
       {
          handled = true;
+
          string_getter< Meta_Field >( cmd_handler.p_Meta_Index->Field_3( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Field_4 || field_name == c_field_name_Field_4 )
+      if( !handled && ( ( field_name == c_field_id_Field_4 ) || ( field_name == c_field_name_Field_4 ) ) )
       {
          handled = true;
+
          string_getter< Meta_Field >( cmd_handler.p_Meta_Index->Field_4( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Field_5 || field_name == c_field_name_Field_5 )
+      if( !handled && ( ( field_name == c_field_id_Field_5 ) || ( field_name == c_field_name_Field_5 ) ) )
       {
          handled = true;
+
          string_getter< Meta_Field >( cmd_handler.p_Meta_Index->Field_5( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      if( !handled && ( ( field_name == c_field_id_Internal ) || ( field_name == c_field_name_Internal ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Index->Internal( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      if( !handled && ( ( field_name == c_field_id_Order ) || ( field_name == c_field_name_Order ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Index->Order( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Source_Index || field_name == c_field_name_Source_Index )
+      if( !handled && ( ( field_name == c_field_id_Source_Index ) || ( field_name == c_field_name_Source_Index ) ) )
       {
          handled = true;
+
          string_getter< Meta_Index >( cmd_handler.p_Meta_Index->Source_Index( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Unique || field_name == c_field_name_Unique )
+      if( !handled && ( ( field_name == c_field_id_Unique ) || ( field_name == c_field_name_Unique ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Index->Unique( ), cmd_handler.retval );
       }
 
@@ -388,75 +399,86 @@ void Meta_Index_command_functor::operator ( )( const string& command, const para
       string field_value( get_parm_val( parameters, c_cmd_Meta_Index_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      if( !handled && ( ( field_name == c_field_id_Class ) || ( field_name == c_field_name_Class ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Index, Meta_Class >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Class, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Field_1 || field_name == c_field_name_Field_1 )
+      if( !handled && ( ( field_name == c_field_id_Field_1 ) || ( field_name == c_field_name_Field_1 ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Index, Meta_Field >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Field_1, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Field_2 || field_name == c_field_name_Field_2 )
+      if( !handled && ( ( field_name == c_field_id_Field_2 ) || ( field_name == c_field_name_Field_2 ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Index, Meta_Field >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Field_2, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Field_3 || field_name == c_field_name_Field_3 )
+      if( !handled && ( ( field_name == c_field_id_Field_3 ) || ( field_name == c_field_name_Field_3 ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Index, Meta_Field >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Field_3, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Field_4 || field_name == c_field_name_Field_4 )
+      if( !handled && ( ( field_name == c_field_id_Field_4 ) || ( field_name == c_field_name_Field_4 ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Index, Meta_Field >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Field_4, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Field_5 || field_name == c_field_name_Field_5 )
+      if( !handled && ( ( field_name == c_field_id_Field_5 ) || ( field_name == c_field_name_Field_5 ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Index, Meta_Field >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Field_5, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      if( !handled && ( ( field_name == c_field_id_Internal ) || ( field_name == c_field_name_Internal ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Index, bool >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Internal, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      if( !handled && ( ( field_name == c_field_id_Order ) || ( field_name == c_field_name_Order ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Index, string >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Order, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Source_Index || field_name == c_field_name_Source_Index )
+      if( !handled && ( ( field_name == c_field_id_Source_Index ) || ( field_name == c_field_name_Source_Index ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Index, Meta_Index >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Source_Index, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Unique || field_name == c_field_name_Unique )
+      if( !handled && ( ( field_name == c_field_id_Unique ) || ( field_name == c_field_name_Unique ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Index, bool >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Unique, field_value );
       }
@@ -475,19 +497,19 @@ void Meta_Index_command_functor::operator ( )( const string& command, const para
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+      else if( ( field_name == c_field_id_Class ) || ( field_name == c_field_name_Class ) )
          cmd_handler.retval = cmd_handler.p_Meta_Index->Class( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Field_1 || field_name == c_field_name_Field_1 )
+      else if( ( field_name == c_field_id_Field_1 ) || ( field_name == c_field_name_Field_1 ) )
          cmd_handler.retval = cmd_handler.p_Meta_Index->Field_1( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Field_2 || field_name == c_field_name_Field_2 )
+      else if( ( field_name == c_field_id_Field_2 ) || ( field_name == c_field_name_Field_2 ) )
          cmd_handler.retval = cmd_handler.p_Meta_Index->Field_2( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Field_3 || field_name == c_field_name_Field_3 )
+      else if( ( field_name == c_field_id_Field_3 ) || ( field_name == c_field_name_Field_3 ) )
          cmd_handler.retval = cmd_handler.p_Meta_Index->Field_3( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Field_4 || field_name == c_field_name_Field_4 )
+      else if( ( field_name == c_field_id_Field_4 ) || ( field_name == c_field_name_Field_4 ) )
          cmd_handler.retval = cmd_handler.p_Meta_Index->Field_4( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Field_5 || field_name == c_field_name_Field_5 )
+      else if( ( field_name == c_field_id_Field_5 ) || ( field_name == c_field_name_Field_5 ) )
          cmd_handler.retval = cmd_handler.p_Meta_Index->Field_5( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Source_Index || field_name == c_field_name_Source_Index )
+      else if( ( field_name == c_field_id_Source_Index ) || ( field_name == c_field_name_Source_Index ) )
          cmd_handler.retval = cmd_handler.p_Meta_Index->Source_Index( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -496,17 +518,21 @@ void Meta_Index_command_functor::operator ( )( const string& command, const para
    {
       string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Index_Move_Down_Restrict_Fields ) );
       string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Index_Move_Down_Restrict_Values ) );
+
       cmd_handler.p_Meta_Index->Move_Down( Restrict_Fields, Restrict_Values );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Index_Move_Up )
    {
       string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Index_Move_Up_Restrict_Fields ) );
       string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Index_Move_Up_Restrict_Values ) );
+
       cmd_handler.p_Meta_Index->Move_Up( Restrict_Fields, Restrict_Values );
 
       cmd_handler.retval.erase( );
+
    }
 }
 
@@ -1245,19 +1271,19 @@ void Meta_Index::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( ( field == c_field_id_Class ) || ( field == c_field_name_Class ) )
       impl_Class( "" );
-   else if( field == c_field_id_Field_1 || field == c_field_name_Field_1 )
+   else if( ( field == c_field_id_Field_1 ) || ( field == c_field_name_Field_1 ) )
       impl_Field_1( "" );
-   else if( field == c_field_id_Field_2 || field == c_field_name_Field_2 )
+   else if( ( field == c_field_id_Field_2 ) || ( field == c_field_name_Field_2 ) )
       impl_Field_2( "" );
-   else if( field == c_field_id_Field_3 || field == c_field_name_Field_3 )
+   else if( ( field == c_field_id_Field_3 ) || ( field == c_field_name_Field_3 ) )
       impl_Field_3( "" );
-   else if( field == c_field_id_Field_4 || field == c_field_name_Field_4 )
+   else if( ( field == c_field_id_Field_4 ) || ( field == c_field_name_Field_4 ) )
       impl_Field_4( "" );
-   else if( field == c_field_id_Field_5 || field == c_field_name_Field_5 )
+   else if( ( field == c_field_id_Field_5 ) || ( field == c_field_name_Field_5 ) )
       impl_Field_5( "" );
-   else if( field == c_field_id_Source_Index || field == c_field_name_Source_Index )
+   else if( ( field == c_field_id_Source_Index ) || ( field == c_field_name_Source_Index ) )
       impl_Source_Index( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1267,19 +1293,19 @@ void Meta_Index::impl::set_foreign_key_value( const string& field, const string&
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( ( field == c_field_id_Class ) || ( field == c_field_name_Class ) )
       v_Class = value;
-   else if( field == c_field_id_Field_1 || field == c_field_name_Field_1 )
+   else if( ( field == c_field_id_Field_1 ) || ( field == c_field_name_Field_1 ) )
       v_Field_1 = value;
-   else if( field == c_field_id_Field_2 || field == c_field_name_Field_2 )
+   else if( ( field == c_field_id_Field_2 ) || ( field == c_field_name_Field_2 ) )
       v_Field_2 = value;
-   else if( field == c_field_id_Field_3 || field == c_field_name_Field_3 )
+   else if( ( field == c_field_id_Field_3 ) || ( field == c_field_name_Field_3 ) )
       v_Field_3 = value;
-   else if( field == c_field_id_Field_4 || field == c_field_name_Field_4 )
+   else if( ( field == c_field_id_Field_4 ) || ( field == c_field_name_Field_4 ) )
       v_Field_4 = value;
-   else if( field == c_field_id_Field_5 || field == c_field_name_Field_5 )
+   else if( ( field == c_field_id_Field_5 ) || ( field == c_field_name_Field_5 ) )
       v_Field_5 = value;
-   else if( field == c_field_id_Source_Index || field == c_field_name_Source_Index )
+   else if( ( field == c_field_id_Source_Index ) || ( field == c_field_name_Source_Index ) )
       v_Source_Index = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1289,19 +1315,19 @@ const string& Meta_Index::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( ( field == c_field_id_Class ) || ( field == c_field_name_Class ) )
       return v_Class;
-   else if( field == c_field_id_Field_1 || field == c_field_name_Field_1 )
+   else if( ( field == c_field_id_Field_1 ) || ( field == c_field_name_Field_1 ) )
       return v_Field_1;
-   else if( field == c_field_id_Field_2 || field == c_field_name_Field_2 )
+   else if( ( field == c_field_id_Field_2 ) || ( field == c_field_name_Field_2 ) )
       return v_Field_2;
-   else if( field == c_field_id_Field_3 || field == c_field_name_Field_3 )
+   else if( ( field == c_field_id_Field_3 ) || ( field == c_field_name_Field_3 ) )
       return v_Field_3;
-   else if( field == c_field_id_Field_4 || field == c_field_name_Field_4 )
+   else if( ( field == c_field_id_Field_4 ) || ( field == c_field_name_Field_4 ) )
       return v_Field_4;
-   else if( field == c_field_id_Field_5 || field == c_field_name_Field_5 )
+   else if( ( field == c_field_id_Field_5 ) || ( field == c_field_name_Field_5 ) )
       return v_Field_5;
-   else if( field == c_field_id_Source_Index || field == c_field_name_Source_Index )
+   else if( ( field == c_field_id_Source_Index ) || ( field == c_field_name_Source_Index ) )
       return v_Source_Index;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1664,7 +1690,7 @@ bool Meta_Index::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -1730,6 +1756,7 @@ void Meta_Index::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -2337,52 +2364,52 @@ string Meta_Index::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
+   if( ( id_or_name == c_field_id_Class ) || ( id_or_name == c_field_name_Class ) )
    {
       name = string( c_field_display_name_Class );
       get_module_string( c_field_display_name_Class, &next );
    }
-   else if( id_or_name == c_field_id_Field_1 || id_or_name == c_field_name_Field_1 )
+   if( ( id_or_name == c_field_id_Field_1 ) || ( id_or_name == c_field_name_Field_1 ) )
    {
       name = string( c_field_display_name_Field_1 );
       get_module_string( c_field_display_name_Field_1, &next );
    }
-   else if( id_or_name == c_field_id_Field_2 || id_or_name == c_field_name_Field_2 )
+   if( ( id_or_name == c_field_id_Field_2 ) || ( id_or_name == c_field_name_Field_2 ) )
    {
       name = string( c_field_display_name_Field_2 );
       get_module_string( c_field_display_name_Field_2, &next );
    }
-   else if( id_or_name == c_field_id_Field_3 || id_or_name == c_field_name_Field_3 )
+   if( ( id_or_name == c_field_id_Field_3 ) || ( id_or_name == c_field_name_Field_3 ) )
    {
       name = string( c_field_display_name_Field_3 );
       get_module_string( c_field_display_name_Field_3, &next );
    }
-   else if( id_or_name == c_field_id_Field_4 || id_or_name == c_field_name_Field_4 )
+   if( ( id_or_name == c_field_id_Field_4 ) || ( id_or_name == c_field_name_Field_4 ) )
    {
       name = string( c_field_display_name_Field_4 );
       get_module_string( c_field_display_name_Field_4, &next );
    }
-   else if( id_or_name == c_field_id_Field_5 || id_or_name == c_field_name_Field_5 )
+   if( ( id_or_name == c_field_id_Field_5 ) || ( id_or_name == c_field_name_Field_5 ) )
    {
       name = string( c_field_display_name_Field_5 );
       get_module_string( c_field_display_name_Field_5, &next );
    }
-   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   if( ( id_or_name == c_field_id_Internal ) || ( id_or_name == c_field_name_Internal ) )
    {
       name = string( c_field_display_name_Internal );
       get_module_string( c_field_display_name_Internal, &next );
    }
-   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
+   if( ( id_or_name == c_field_id_Order ) || ( id_or_name == c_field_name_Order ) )
    {
       name = string( c_field_display_name_Order );
       get_module_string( c_field_display_name_Order, &next );
    }
-   else if( id_or_name == c_field_id_Source_Index || id_or_name == c_field_name_Source_Index )
+   if( ( id_or_name == c_field_id_Source_Index ) || ( id_or_name == c_field_name_Source_Index ) )
    {
       name = string( c_field_display_name_Source_Index );
       get_module_string( c_field_display_name_Source_Index, &next );
    }
-   else if( id_or_name == c_field_id_Unique || id_or_name == c_field_name_Unique )
+   if( ( id_or_name == c_field_id_Unique ) || ( id_or_name == c_field_name_Unique ) )
    {
       name = string( c_field_display_name_Unique );
       get_module_string( c_field_display_name_Unique, &next );
@@ -2402,25 +2429,25 @@ string Meta_Index::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
+   if( ( id_or_name == c_field_id_Class ) || ( id_or_name == c_field_name_Class ) )
       display_name = get_module_string( c_field_display_name_Class );
-   else if( id_or_name == c_field_id_Field_1 || id_or_name == c_field_name_Field_1 )
+   if( ( id_or_name == c_field_id_Field_1 ) || ( id_or_name == c_field_name_Field_1 ) )
       display_name = get_module_string( c_field_display_name_Field_1 );
-   else if( id_or_name == c_field_id_Field_2 || id_or_name == c_field_name_Field_2 )
+   if( ( id_or_name == c_field_id_Field_2 ) || ( id_or_name == c_field_name_Field_2 ) )
       display_name = get_module_string( c_field_display_name_Field_2 );
-   else if( id_or_name == c_field_id_Field_3 || id_or_name == c_field_name_Field_3 )
+   if( ( id_or_name == c_field_id_Field_3 ) || ( id_or_name == c_field_name_Field_3 ) )
       display_name = get_module_string( c_field_display_name_Field_3 );
-   else if( id_or_name == c_field_id_Field_4 || id_or_name == c_field_name_Field_4 )
+   if( ( id_or_name == c_field_id_Field_4 ) || ( id_or_name == c_field_name_Field_4 ) )
       display_name = get_module_string( c_field_display_name_Field_4 );
-   else if( id_or_name == c_field_id_Field_5 || id_or_name == c_field_name_Field_5 )
+   if( ( id_or_name == c_field_id_Field_5 ) || ( id_or_name == c_field_name_Field_5 ) )
       display_name = get_module_string( c_field_display_name_Field_5 );
-   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   if( ( id_or_name == c_field_id_Internal ) || ( id_or_name == c_field_name_Internal ) )
       display_name = get_module_string( c_field_display_name_Internal );
-   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
+   if( ( id_or_name == c_field_id_Order ) || ( id_or_name == c_field_name_Order ) )
       display_name = get_module_string( c_field_display_name_Order );
-   else if( id_or_name == c_field_id_Source_Index || id_or_name == c_field_name_Source_Index )
+   if( ( id_or_name == c_field_id_Source_Index ) || ( id_or_name == c_field_name_Source_Index ) )
       display_name = get_module_string( c_field_display_name_Source_Index );
-   else if( id_or_name == c_field_id_Unique || id_or_name == c_field_name_Unique )
+   if( ( id_or_name == c_field_id_Unique ) || ( id_or_name == c_field_name_Unique ) )
       display_name = get_module_string( c_field_display_name_Unique );
 
    return display_name;
@@ -2535,7 +2562,8 @@ class_base* Meta_Index::get_next_foreign_key_child(
    if( child_num >= 1 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+      if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
          --ealci;
 
       p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -2595,6 +2623,7 @@ string Meta_Index::get_module_name( ) const
 string Meta_Index::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "index";
 
    return get_module_string( key );
@@ -2661,21 +2690,21 @@ class_base& Meta_Index::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_300820" || sub_context == "child_Index_Source" )
+   else if( ( sub_context == "_300820" ) || ( sub_context == "child_Index_Source" ) )
       p_class_base = &child_Index_Source( );
-   else if( sub_context == c_field_id_Class || sub_context == c_field_name_Class )
+   else if( ( sub_context == c_field_id_Class ) || ( sub_context == c_field_name_Class ) )
       p_class_base = &Class( );
-   else if( sub_context == c_field_id_Field_1 || sub_context == c_field_name_Field_1 )
+   else if( ( sub_context == c_field_id_Field_1 ) || ( sub_context == c_field_name_Field_1 ) )
       p_class_base = &Field_1( );
-   else if( sub_context == c_field_id_Field_2 || sub_context == c_field_name_Field_2 )
+   else if( ( sub_context == c_field_id_Field_2 ) || ( sub_context == c_field_name_Field_2 ) )
       p_class_base = &Field_2( );
-   else if( sub_context == c_field_id_Field_3 || sub_context == c_field_name_Field_3 )
+   else if( ( sub_context == c_field_id_Field_3 ) || ( sub_context == c_field_name_Field_3 ) )
       p_class_base = &Field_3( );
-   else if( sub_context == c_field_id_Field_4 || sub_context == c_field_name_Field_4 )
+   else if( ( sub_context == c_field_id_Field_4 ) || ( sub_context == c_field_name_Field_4 ) )
       p_class_base = &Field_4( );
-   else if( sub_context == c_field_id_Field_5 || sub_context == c_field_name_Field_5 )
+   else if( ( sub_context == c_field_id_Field_5 ) || ( sub_context == c_field_name_Field_5 ) )
       p_class_base = &Field_5( );
-   else if( sub_context == c_field_id_Source_Index || sub_context == c_field_name_Source_Index )
+   else if( ( sub_context == c_field_id_Source_Index ) || ( sub_context == c_field_name_Source_Index ) )
       p_class_base = &Source_Index( );
 
    if( !p_class_base )
@@ -2704,7 +2733,7 @@ void Meta_Index::get_sql_column_names(
    names.push_back( "C_Source_Index" );
    names.push_back( "C_Unique" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2725,7 +2754,7 @@ void Meta_Index::get_sql_column_values(
    values.push_back( sql_quote( to_string( Source_Index( ) ) ) );
    values.push_back( to_string( Unique( ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2855,7 +2884,7 @@ void Meta_Index::static_get_foreign_key_info( foreign_key_info_container& foreig
 
 int Meta_Index::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

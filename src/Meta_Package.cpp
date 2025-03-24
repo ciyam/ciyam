@@ -356,72 +356,84 @@ void Meta_Package_command_functor::operator ( )( const string& command, const pa
       string field_name( get_parm_val( parameters, c_cmd_Meta_Package_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      if( !handled && ( ( field_name == c_field_id_Actions ) || ( field_name == c_field_name_Actions ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Package->Actions( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Install_Details || field_name == c_field_name_Install_Details )
+      if( !handled && ( ( field_name == c_field_id_Install_Details ) || ( field_name == c_field_name_Install_Details ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Package->Install_Details( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Installed || field_name == c_field_name_Installed )
+      if( !handled && ( ( field_name == c_field_id_Installed ) || ( field_name == c_field_name_Installed ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Package->Installed( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Installed_Order || field_name == c_field_name_Installed_Order )
+      if( !handled && ( ( field_name == c_field_id_Installed_Order ) || ( field_name == c_field_name_Installed_Order ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Package->Installed_Order( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Key || field_name == c_field_name_Key )
+      if( !handled && ( ( field_name == c_field_id_Key ) || ( field_name == c_field_name_Key ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Package->Key( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      if( !handled && ( ( field_name == c_field_id_Model ) || ( field_name == c_field_name_Model ) ) )
       {
          handled = true;
+
          string_getter< Meta_Model >( cmd_handler.p_Meta_Package->Model( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Package->Name( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Package_Type || field_name == c_field_name_Package_Type )
+      if( !handled && ( ( field_name == c_field_id_Package_Type ) || ( field_name == c_field_name_Package_Type ) ) )
       {
          handled = true;
+
          string_getter< Meta_Package_Type >( cmd_handler.p_Meta_Package->Package_Type( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Plural || field_name == c_field_name_Plural )
+      if( !handled && ( ( field_name == c_field_id_Plural ) || ( field_name == c_field_name_Plural ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Package->Plural( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Type_Name || field_name == c_field_name_Type_Name )
+      if( !handled && ( ( field_name == c_field_id_Type_Name ) || ( field_name == c_field_name_Type_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Package->Type_Name( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Usage_Count || field_name == c_field_name_Usage_Count )
+      if( !handled && ( ( field_name == c_field_id_Usage_Count ) || ( field_name == c_field_name_Usage_Count ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Package->Usage_Count( ), cmd_handler.retval );
       }
 
@@ -434,82 +446,94 @@ void Meta_Package_command_functor::operator ( )( const string& command, const pa
       string field_value( get_parm_val( parameters, c_cmd_Meta_Package_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      if( !handled && ( ( field_name == c_field_id_Actions ) || ( field_name == c_field_name_Actions ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Package, string >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Actions, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Install_Details || field_name == c_field_name_Install_Details )
+      if( !handled && ( ( field_name == c_field_id_Install_Details ) || ( field_name == c_field_name_Install_Details ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Package, string >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Install_Details, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Installed || field_name == c_field_name_Installed )
+      if( !handled && ( ( field_name == c_field_id_Installed ) || ( field_name == c_field_name_Installed ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Package, bool >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Installed, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Installed_Order || field_name == c_field_name_Installed_Order )
+      if( !handled && ( ( field_name == c_field_id_Installed_Order ) || ( field_name == c_field_name_Installed_Order ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Package, string >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Installed_Order, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Key || field_name == c_field_name_Key )
+      if( !handled && ( ( field_name == c_field_id_Key ) || ( field_name == c_field_name_Key ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Package, string >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Key, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      if( !handled && ( ( field_name == c_field_id_Model ) || ( field_name == c_field_name_Model ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Package, Meta_Model >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Model, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Package, string >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Name, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Package_Type || field_name == c_field_name_Package_Type )
+      if( !handled && ( ( field_name == c_field_id_Package_Type ) || ( field_name == c_field_name_Package_Type ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Package, Meta_Package_Type >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Package_Type, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Plural || field_name == c_field_name_Plural )
+      if( !handled && ( ( field_name == c_field_id_Plural ) || ( field_name == c_field_name_Plural ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Package, string >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Plural, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Type_Name || field_name == c_field_name_Type_Name )
+      if( !handled && ( ( field_name == c_field_id_Type_Name ) || ( field_name == c_field_name_Type_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Package, string >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Type_Name, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Usage_Count || field_name == c_field_name_Usage_Count )
+      if( !handled && ( ( field_name == c_field_id_Usage_Count ) || ( field_name == c_field_name_Usage_Count ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Package, int >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Usage_Count, field_value );
       }
@@ -528,9 +552,9 @@ void Meta_Package_command_functor::operator ( )( const string& command, const pa
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
+      else if( ( field_name == c_field_id_Model ) || ( field_name == c_field_name_Model ) )
          cmd_handler.retval = cmd_handler.p_Meta_Package->Model( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Package_Type || field_name == c_field_name_Package_Type )
+      else if( ( field_name == c_field_id_Package_Type ) || ( field_name == c_field_name_Package_Type ) )
          cmd_handler.retval = cmd_handler.p_Meta_Package->Package_Type( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -540,30 +564,35 @@ void Meta_Package_command_functor::operator ( )( const string& command, const pa
       cmd_handler.p_Meta_Package->Cancel_Remove( );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Package_Check_Install )
    {
       cmd_handler.p_Meta_Package->Check_Install( );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Package_Complete_Remove )
    {
       cmd_handler.p_Meta_Package->Complete_Remove( );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Package_Install )
    {
       cmd_handler.p_Meta_Package->Install( );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Package_Remove )
    {
       cmd_handler.p_Meta_Package->Remove( );
 
       cmd_handler.retval.erase( );
+
    }
 }
 
@@ -1978,9 +2007,9 @@ void Meta_Package::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( ( field == c_field_id_Model ) || ( field == c_field_name_Model ) )
       impl_Model( "" );
-   else if( field == c_field_id_Package_Type || field == c_field_name_Package_Type )
+   else if( ( field == c_field_id_Package_Type ) || ( field == c_field_name_Package_Type ) )
       impl_Package_Type( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1990,9 +2019,9 @@ void Meta_Package::impl::set_foreign_key_value( const string& field, const strin
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( ( field == c_field_id_Model ) || ( field == c_field_name_Model ) )
       v_Model = value;
-   else if( field == c_field_id_Package_Type || field == c_field_name_Package_Type )
+   else if( ( field == c_field_id_Package_Type ) || ( field == c_field_name_Package_Type ) )
       v_Package_Type = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -2002,9 +2031,9 @@ const string& Meta_Package::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( ( field == c_field_id_Model ) || ( field == c_field_name_Model ) )
       return v_Model;
-   else if( field == c_field_id_Package_Type || field == c_field_name_Package_Type )
+   else if( ( field == c_field_id_Package_Type ) || ( field == c_field_name_Package_Type ) )
       return v_Package_Type;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -2698,7 +2727,7 @@ bool Meta_Package::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -2781,6 +2810,7 @@ void Meta_Package::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -3428,57 +3458,57 @@ string Meta_Package::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
+   if( ( id_or_name == c_field_id_Actions ) || ( id_or_name == c_field_name_Actions ) )
    {
       name = string( c_field_display_name_Actions );
       get_module_string( c_field_display_name_Actions, &next );
    }
-   else if( id_or_name == c_field_id_Install_Details || id_or_name == c_field_name_Install_Details )
+   if( ( id_or_name == c_field_id_Install_Details ) || ( id_or_name == c_field_name_Install_Details ) )
    {
       name = string( c_field_display_name_Install_Details );
       get_module_string( c_field_display_name_Install_Details, &next );
    }
-   else if( id_or_name == c_field_id_Installed || id_or_name == c_field_name_Installed )
+   if( ( id_or_name == c_field_id_Installed ) || ( id_or_name == c_field_name_Installed ) )
    {
       name = string( c_field_display_name_Installed );
       get_module_string( c_field_display_name_Installed, &next );
    }
-   else if( id_or_name == c_field_id_Installed_Order || id_or_name == c_field_name_Installed_Order )
+   if( ( id_or_name == c_field_id_Installed_Order ) || ( id_or_name == c_field_name_Installed_Order ) )
    {
       name = string( c_field_display_name_Installed_Order );
       get_module_string( c_field_display_name_Installed_Order, &next );
    }
-   else if( id_or_name == c_field_id_Key || id_or_name == c_field_name_Key )
+   if( ( id_or_name == c_field_id_Key ) || ( id_or_name == c_field_name_Key ) )
    {
       name = string( c_field_display_name_Key );
       get_module_string( c_field_display_name_Key, &next );
    }
-   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
+   if( ( id_or_name == c_field_id_Model ) || ( id_or_name == c_field_name_Model ) )
    {
       name = string( c_field_display_name_Model );
       get_module_string( c_field_display_name_Model, &next );
    }
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
    {
       name = string( c_field_display_name_Name );
       get_module_string( c_field_display_name_Name, &next );
    }
-   else if( id_or_name == c_field_id_Package_Type || id_or_name == c_field_name_Package_Type )
+   if( ( id_or_name == c_field_id_Package_Type ) || ( id_or_name == c_field_name_Package_Type ) )
    {
       name = string( c_field_display_name_Package_Type );
       get_module_string( c_field_display_name_Package_Type, &next );
    }
-   else if( id_or_name == c_field_id_Plural || id_or_name == c_field_name_Plural )
+   if( ( id_or_name == c_field_id_Plural ) || ( id_or_name == c_field_name_Plural ) )
    {
       name = string( c_field_display_name_Plural );
       get_module_string( c_field_display_name_Plural, &next );
    }
-   else if( id_or_name == c_field_id_Type_Name || id_or_name == c_field_name_Type_Name )
+   if( ( id_or_name == c_field_id_Type_Name ) || ( id_or_name == c_field_name_Type_Name ) )
    {
       name = string( c_field_display_name_Type_Name );
       get_module_string( c_field_display_name_Type_Name, &next );
    }
-   else if( id_or_name == c_field_id_Usage_Count || id_or_name == c_field_name_Usage_Count )
+   if( ( id_or_name == c_field_id_Usage_Count ) || ( id_or_name == c_field_name_Usage_Count ) )
    {
       name = string( c_field_display_name_Usage_Count );
       get_module_string( c_field_display_name_Usage_Count, &next );
@@ -3498,27 +3528,27 @@ string Meta_Package::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
+   if( ( id_or_name == c_field_id_Actions ) || ( id_or_name == c_field_name_Actions ) )
       display_name = get_module_string( c_field_display_name_Actions );
-   else if( id_or_name == c_field_id_Install_Details || id_or_name == c_field_name_Install_Details )
+   if( ( id_or_name == c_field_id_Install_Details ) || ( id_or_name == c_field_name_Install_Details ) )
       display_name = get_module_string( c_field_display_name_Install_Details );
-   else if( id_or_name == c_field_id_Installed || id_or_name == c_field_name_Installed )
+   if( ( id_or_name == c_field_id_Installed ) || ( id_or_name == c_field_name_Installed ) )
       display_name = get_module_string( c_field_display_name_Installed );
-   else if( id_or_name == c_field_id_Installed_Order || id_or_name == c_field_name_Installed_Order )
+   if( ( id_or_name == c_field_id_Installed_Order ) || ( id_or_name == c_field_name_Installed_Order ) )
       display_name = get_module_string( c_field_display_name_Installed_Order );
-   else if( id_or_name == c_field_id_Key || id_or_name == c_field_name_Key )
+   if( ( id_or_name == c_field_id_Key ) || ( id_or_name == c_field_name_Key ) )
       display_name = get_module_string( c_field_display_name_Key );
-   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
+   if( ( id_or_name == c_field_id_Model ) || ( id_or_name == c_field_name_Model ) )
       display_name = get_module_string( c_field_display_name_Model );
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id_or_name == c_field_id_Package_Type || id_or_name == c_field_name_Package_Type )
+   if( ( id_or_name == c_field_id_Package_Type ) || ( id_or_name == c_field_name_Package_Type ) )
       display_name = get_module_string( c_field_display_name_Package_Type );
-   else if( id_or_name == c_field_id_Plural || id_or_name == c_field_name_Plural )
+   if( ( id_or_name == c_field_id_Plural ) || ( id_or_name == c_field_name_Plural ) )
       display_name = get_module_string( c_field_display_name_Plural );
-   else if( id_or_name == c_field_id_Type_Name || id_or_name == c_field_name_Type_Name )
+   if( ( id_or_name == c_field_id_Type_Name ) || ( id_or_name == c_field_name_Type_Name ) )
       display_name = get_module_string( c_field_display_name_Type_Name );
-   else if( id_or_name == c_field_id_Usage_Count || id_or_name == c_field_name_Usage_Count )
+   if( ( id_or_name == c_field_id_Usage_Count ) || ( id_or_name == c_field_name_Usage_Count ) )
       display_name = get_module_string( c_field_display_name_Usage_Count );
 
    return display_name;
@@ -3626,7 +3656,8 @@ class_base* Meta_Package::get_next_foreign_key_child(
    if( child_num >= 3 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+      if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
          --ealci;
 
       p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -3702,6 +3733,7 @@ string Meta_Package::get_module_name( ) const
 string Meta_Package::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "package";
 
    return get_module_string( key );
@@ -3774,15 +3806,15 @@ class_base& Meta_Package::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_302830" || sub_context == "child_Package_Option_Other" )
+   else if( ( sub_context == "_302830" ) || ( sub_context == "child_Package_Option_Other" ) )
       p_class_base = &child_Package_Option_Other( );
-   else if( sub_context == "_302835" || sub_context == "child_Workgroup_Standard" )
+   else if( ( sub_context == "_302835" ) || ( sub_context == "child_Workgroup_Standard" ) )
       p_class_base = &child_Workgroup_Standard( );
-   else if( sub_context == "_302820" || sub_context == "child_Package_Option" )
+   else if( ( sub_context == "_302820" ) || ( sub_context == "child_Package_Option" ) )
       p_class_base = &child_Package_Option( );
-   else if( sub_context == c_field_id_Model || sub_context == c_field_name_Model )
+   else if( ( sub_context == c_field_id_Model ) || ( sub_context == c_field_name_Model ) )
       p_class_base = &Model( );
-   else if( sub_context == c_field_id_Package_Type || sub_context == c_field_name_Package_Type )
+   else if( ( sub_context == c_field_id_Package_Type ) || ( sub_context == c_field_name_Package_Type ) )
       p_class_base = &Package_Type( );
 
    if( !p_class_base )
@@ -3810,7 +3842,7 @@ void Meta_Package::get_sql_column_names(
    names.push_back( "C_Plural" );
    names.push_back( "C_Usage_Count" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -3830,7 +3862,7 @@ void Meta_Package::get_sql_column_values(
    values.push_back( sql_quote( to_string( Plural( ) ) ) );
    values.push_back( to_string( Usage_Count( ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -3973,7 +4005,7 @@ void Meta_Package::static_get_foreign_key_info( foreign_key_info_container& fore
 
 int Meta_Package::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

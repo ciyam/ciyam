@@ -276,48 +276,56 @@ void Meta_List_Type_command_functor::operator ( )( const string& command, const 
       string field_name( get_parm_val( parameters, c_cmd_Meta_List_Type_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Dummy_0 || field_name == c_field_name_Dummy_0 )
+      if( !handled && ( ( field_name == c_field_id_Dummy_0 ) || ( field_name == c_field_name_Dummy_0 ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Dummy_0( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+      if( !handled && ( ( field_name == c_field_id_Is_Admin ) || ( field_name == c_field_name_Is_Admin ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Is_Admin( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
+      if( !handled && ( ( field_name == c_field_id_Is_Child ) || ( field_name == c_field_name_Is_Child ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Is_Child( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
+      if( !handled && ( ( field_name == c_field_id_Is_Home ) || ( field_name == c_field_name_Is_Home ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Is_Home( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+      if( !handled && ( ( field_name == c_field_id_Is_Not_Anonymous ) || ( field_name == c_field_name_Is_Not_Anonymous ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Is_Not_Anonymous( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_List_Name || field_name == c_field_name_List_Name )
+      if( !handled && ( ( field_name == c_field_id_List_Name ) || ( field_name == c_field_name_List_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_List_Type->List_Name( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_List_Type->Name( ), cmd_handler.retval );
       }
 
@@ -330,54 +338,62 @@ void Meta_List_Type_command_functor::operator ( )( const string& command, const 
       string field_value( get_parm_val( parameters, c_cmd_Meta_List_Type_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Dummy_0 || field_name == c_field_name_Dummy_0 )
+      if( !handled && ( ( field_name == c_field_id_Dummy_0 ) || ( field_name == c_field_name_Dummy_0 ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Dummy_0, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+      if( !handled && ( ( field_name == c_field_id_Is_Admin ) || ( field_name == c_field_name_Is_Admin ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Is_Admin, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
+      if( !handled && ( ( field_name == c_field_id_Is_Child ) || ( field_name == c_field_name_Is_Child ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Is_Child, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
+      if( !handled && ( ( field_name == c_field_id_Is_Home ) || ( field_name == c_field_name_Is_Home ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Is_Home, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+      if( !handled && ( ( field_name == c_field_id_Is_Not_Anonymous ) || ( field_name == c_field_name_Is_Not_Anonymous ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Is_Not_Anonymous, field_value );
       }
 
-      if( !handled && field_name == c_field_id_List_Name || field_name == c_field_name_List_Name )
+      if( !handled && ( ( field_name == c_field_id_List_Name ) || ( field_name == c_field_name_List_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List_Type, string >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::List_Name, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_List_Type, string >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Name, field_value );
       }
@@ -928,7 +944,7 @@ bool Meta_List_Type::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -994,6 +1010,7 @@ void Meta_List_Type::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -1466,37 +1483,37 @@ string Meta_List_Type::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Dummy_0 || id_or_name == c_field_name_Dummy_0 )
+   if( ( id_or_name == c_field_id_Dummy_0 ) || ( id_or_name == c_field_name_Dummy_0 ) )
    {
       name = string( c_field_display_name_Dummy_0 );
       get_module_string( c_field_display_name_Dummy_0, &next );
    }
-   else if( id_or_name == c_field_id_Is_Admin || id_or_name == c_field_name_Is_Admin )
+   if( ( id_or_name == c_field_id_Is_Admin ) || ( id_or_name == c_field_name_Is_Admin ) )
    {
       name = string( c_field_display_name_Is_Admin );
       get_module_string( c_field_display_name_Is_Admin, &next );
    }
-   else if( id_or_name == c_field_id_Is_Child || id_or_name == c_field_name_Is_Child )
+   if( ( id_or_name == c_field_id_Is_Child ) || ( id_or_name == c_field_name_Is_Child ) )
    {
       name = string( c_field_display_name_Is_Child );
       get_module_string( c_field_display_name_Is_Child, &next );
    }
-   else if( id_or_name == c_field_id_Is_Home || id_or_name == c_field_name_Is_Home )
+   if( ( id_or_name == c_field_id_Is_Home ) || ( id_or_name == c_field_name_Is_Home ) )
    {
       name = string( c_field_display_name_Is_Home );
       get_module_string( c_field_display_name_Is_Home, &next );
    }
-   else if( id_or_name == c_field_id_Is_Not_Anonymous || id_or_name == c_field_name_Is_Not_Anonymous )
+   if( ( id_or_name == c_field_id_Is_Not_Anonymous ) || ( id_or_name == c_field_name_Is_Not_Anonymous ) )
    {
       name = string( c_field_display_name_Is_Not_Anonymous );
       get_module_string( c_field_display_name_Is_Not_Anonymous, &next );
    }
-   else if( id_or_name == c_field_id_List_Name || id_or_name == c_field_name_List_Name )
+   if( ( id_or_name == c_field_id_List_Name ) || ( id_or_name == c_field_name_List_Name ) )
    {
       name = string( c_field_display_name_List_Name );
       get_module_string( c_field_display_name_List_Name, &next );
    }
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
    {
       name = string( c_field_display_name_Name );
       get_module_string( c_field_display_name_Name, &next );
@@ -1516,19 +1533,19 @@ string Meta_List_Type::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Dummy_0 || id_or_name == c_field_name_Dummy_0 )
+   if( ( id_or_name == c_field_id_Dummy_0 ) || ( id_or_name == c_field_name_Dummy_0 ) )
       display_name = get_module_string( c_field_display_name_Dummy_0 );
-   else if( id_or_name == c_field_id_Is_Admin || id_or_name == c_field_name_Is_Admin )
+   if( ( id_or_name == c_field_id_Is_Admin ) || ( id_or_name == c_field_name_Is_Admin ) )
       display_name = get_module_string( c_field_display_name_Is_Admin );
-   else if( id_or_name == c_field_id_Is_Child || id_or_name == c_field_name_Is_Child )
+   if( ( id_or_name == c_field_id_Is_Child ) || ( id_or_name == c_field_name_Is_Child ) )
       display_name = get_module_string( c_field_display_name_Is_Child );
-   else if( id_or_name == c_field_id_Is_Home || id_or_name == c_field_name_Is_Home )
+   if( ( id_or_name == c_field_id_Is_Home ) || ( id_or_name == c_field_name_Is_Home ) )
       display_name = get_module_string( c_field_display_name_Is_Home );
-   else if( id_or_name == c_field_id_Is_Not_Anonymous || id_or_name == c_field_name_Is_Not_Anonymous )
+   if( ( id_or_name == c_field_id_Is_Not_Anonymous ) || ( id_or_name == c_field_name_Is_Not_Anonymous ) )
       display_name = get_module_string( c_field_display_name_Is_Not_Anonymous );
-   else if( id_or_name == c_field_id_List_Name || id_or_name == c_field_name_List_Name )
+   if( ( id_or_name == c_field_id_List_Name ) || ( id_or_name == c_field_name_List_Name ) )
       display_name = get_module_string( c_field_display_name_List_Name );
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
       display_name = get_module_string( c_field_display_name_Name );
 
    return display_name;
@@ -1607,7 +1624,8 @@ class_base* Meta_List_Type::get_next_foreign_key_child(
    if( child_num >= 1 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+      if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
          --ealci;
 
       p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -1667,6 +1685,7 @@ string Meta_List_Type::get_module_name( ) const
 string Meta_List_Type::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "list_type";
 
    return get_module_string( key );
@@ -1729,7 +1748,7 @@ class_base& Meta_List_Type::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_301991" || sub_context == "child_List_Type" )
+   else if( ( sub_context == "_301991" ) || ( sub_context == "child_List_Type" ) )
       p_class_base = &child_List_Type( );
 
    if( !p_class_base )
@@ -1754,7 +1773,7 @@ void Meta_List_Type::get_sql_column_names(
    names.push_back( "C_List_Name" );
    names.push_back( "C_Name" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -1771,7 +1790,7 @@ void Meta_List_Type::get_sql_column_values(
    values.push_back( sql_quote( to_string( List_Name( ) ) ) );
    values.push_back( sql_quote( to_string( Name( ) ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -1866,7 +1885,7 @@ void Meta_List_Type::static_get_foreign_key_info( foreign_key_info_container& fo
 
 int Meta_List_Type::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

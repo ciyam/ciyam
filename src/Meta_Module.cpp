@@ -257,24 +257,28 @@ void Meta_Module_command_functor::operator ( )( const string& command, const par
       string field_name( get_parm_val( parameters, c_cmd_Meta_Module_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Application || field_name == c_field_name_Application )
+      if( !handled && ( ( field_name == c_field_id_Application ) || ( field_name == c_field_name_Application ) ) )
       {
          handled = true;
+
          string_getter< Meta_Application >( cmd_handler.p_Meta_Module->Application( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      if( !handled && ( ( field_name == c_field_id_Model ) || ( field_name == c_field_name_Model ) ) )
       {
          handled = true;
+
          string_getter< Meta_Model >( cmd_handler.p_Meta_Module->Model( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      if( !handled && ( ( field_name == c_field_id_Order ) || ( field_name == c_field_name_Order ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Module->Order( ), cmd_handler.retval );
       }
 
@@ -287,26 +291,30 @@ void Meta_Module_command_functor::operator ( )( const string& command, const par
       string field_value( get_parm_val( parameters, c_cmd_Meta_Module_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Application || field_name == c_field_name_Application )
+      if( !handled && ( ( field_name == c_field_id_Application ) || ( field_name == c_field_name_Application ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Module, Meta_Application >(
           *cmd_handler.p_Meta_Module, &Meta_Module::Application, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      if( !handled && ( ( field_name == c_field_id_Model ) || ( field_name == c_field_name_Model ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Module, Meta_Model >(
           *cmd_handler.p_Meta_Module, &Meta_Module::Model, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      if( !handled && ( ( field_name == c_field_id_Order ) || ( field_name == c_field_name_Order ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Module, string >(
           *cmd_handler.p_Meta_Module, &Meta_Module::Order, field_value );
       }
@@ -325,9 +333,9 @@ void Meta_Module_command_functor::operator ( )( const string& command, const par
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Application || field_name == c_field_name_Application )
+      else if( ( field_name == c_field_id_Application ) || ( field_name == c_field_name_Application ) )
          cmd_handler.retval = cmd_handler.p_Meta_Module->Application( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
+      else if( ( field_name == c_field_id_Model ) || ( field_name == c_field_name_Model ) )
          cmd_handler.retval = cmd_handler.p_Meta_Module->Model( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -336,17 +344,21 @@ void Meta_Module_command_functor::operator ( )( const string& command, const par
    {
       string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Module_Move_Down_Restrict_Fields ) );
       string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Module_Move_Down_Restrict_Values ) );
+
       cmd_handler.p_Meta_Module->Move_Down( Restrict_Fields, Restrict_Values );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Module_Move_Up )
    {
       string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Module_Move_Up_Restrict_Fields ) );
       string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Module_Move_Up_Restrict_Values ) );
+
       cmd_handler.p_Meta_Module->Move_Up( Restrict_Fields, Restrict_Values );
 
       cmd_handler.retval.erase( );
+
    }
 }
 
@@ -763,9 +775,9 @@ void Meta_Module::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Application || field == c_field_name_Application )
+   else if( ( field == c_field_id_Application ) || ( field == c_field_name_Application ) )
       impl_Application( "" );
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( ( field == c_field_id_Model ) || ( field == c_field_name_Model ) )
       impl_Model( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -775,9 +787,9 @@ void Meta_Module::impl::set_foreign_key_value( const string& field, const string
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Application || field == c_field_name_Application )
+   else if( ( field == c_field_id_Application ) || ( field == c_field_name_Application ) )
       v_Application = value;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( ( field == c_field_id_Model ) || ( field == c_field_name_Model ) )
       v_Model = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -787,9 +799,9 @@ const string& Meta_Module::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Application || field == c_field_name_Application )
+   else if( ( field == c_field_id_Application ) || ( field == c_field_name_Application ) )
       return v_Application;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( ( field == c_field_id_Model ) || ( field == c_field_name_Model ) )
       return v_Model;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -978,7 +990,7 @@ bool Meta_Module::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -1044,6 +1056,7 @@ void Meta_Module::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -1406,17 +1419,17 @@ string Meta_Module::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Application || id_or_name == c_field_name_Application )
+   if( ( id_or_name == c_field_id_Application ) || ( id_or_name == c_field_name_Application ) )
    {
       name = string( c_field_display_name_Application );
       get_module_string( c_field_display_name_Application, &next );
    }
-   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
+   if( ( id_or_name == c_field_id_Model ) || ( id_or_name == c_field_name_Model ) )
    {
       name = string( c_field_display_name_Model );
       get_module_string( c_field_display_name_Model, &next );
    }
-   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
+   if( ( id_or_name == c_field_id_Order ) || ( id_or_name == c_field_name_Order ) )
    {
       name = string( c_field_display_name_Order );
       get_module_string( c_field_display_name_Order, &next );
@@ -1436,11 +1449,11 @@ string Meta_Module::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Application || id_or_name == c_field_name_Application )
+   if( ( id_or_name == c_field_id_Application ) || ( id_or_name == c_field_name_Application ) )
       display_name = get_module_string( c_field_display_name_Application );
-   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
+   if( ( id_or_name == c_field_id_Model ) || ( id_or_name == c_field_name_Model ) )
       display_name = get_module_string( c_field_display_name_Model );
-   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
+   if( ( id_or_name == c_field_id_Order ) || ( id_or_name == c_field_name_Order ) )
       display_name = get_module_string( c_field_display_name_Order );
 
    return display_name;
@@ -1580,6 +1593,7 @@ string Meta_Module::get_module_name( ) const
 string Meta_Module::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "module";
 
    return get_module_string( key );
@@ -1646,9 +1660,9 @@ class_base& Meta_Module::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == c_field_id_Application || sub_context == c_field_name_Application )
+   else if( ( sub_context == c_field_id_Application ) || ( sub_context == c_field_name_Application ) )
       p_class_base = &Application( );
-   else if( sub_context == c_field_id_Model || sub_context == c_field_name_Model )
+   else if( ( sub_context == c_field_id_Model ) || ( sub_context == c_field_name_Model ) )
       p_class_base = &Model( );
 
    if( !p_class_base )
@@ -1670,7 +1684,7 @@ void Meta_Module::get_sql_column_names(
    names.push_back( "C_Model" );
    names.push_back( "C_Order" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -1684,7 +1698,7 @@ void Meta_Module::get_sql_column_values(
    values.push_back( sql_quote( to_string( Model( ) ) ) );
    values.push_back( sql_quote( to_string( Order( ) ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -1786,7 +1800,7 @@ void Meta_Module::static_get_foreign_key_info( foreign_key_info_container& forei
 
 int Meta_Module::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

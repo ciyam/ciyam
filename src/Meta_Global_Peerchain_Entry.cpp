@@ -414,84 +414,98 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
       string field_name( get_parm_val( parameters, c_cmd_Meta_Global_Peerchain_Entry_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      if( !handled && ( ( field_name == c_field_id_Actions ) || ( field_name == c_field_name_Actions ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Actions( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Auto_Start || field_name == c_field_name_Auto_Start )
+      if( !handled && ( ( field_name == c_field_id_Auto_Start ) || ( field_name == c_field_name_Auto_Start ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Global_Peerchain_Entry->Auto_Start( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Chain_Id || field_name == c_field_name_Chain_Id )
+      if( !handled && ( ( field_name == c_field_id_Chain_Id ) || ( field_name == c_field_name_Chain_Id ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Chain_Id( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Description || field_name == c_field_name_Description )
+      if( !handled && ( ( field_name == c_field_id_Description ) || ( field_name == c_field_name_Description ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Description( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Extra_Value || field_name == c_field_name_Extra_Value )
+      if( !handled && ( ( field_name == c_field_id_Extra_Value ) || ( field_name == c_field_name_Extra_Value ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Extra_Value( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Host_Name || field_name == c_field_name_Host_Name )
+      if( !handled && ( ( field_name == c_field_id_Host_Name ) || ( field_name == c_field_name_Host_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Host_Name( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Host_Port || field_name == c_field_name_Host_Port )
+      if( !handled && ( ( field_name == c_field_id_Host_Port ) || ( field_name == c_field_name_Host_Port ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Global_Peerchain_Entry->Host_Port( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Local_Port || field_name == c_field_name_Local_Port )
+      if( !handled && ( ( field_name == c_field_id_Local_Port ) || ( field_name == c_field_name_Local_Port ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Global_Peerchain_Entry->Local_Port( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Num_Helpers || field_name == c_field_name_Num_Helpers )
+      if( !handled && ( ( field_name == c_field_id_Num_Helpers ) || ( field_name == c_field_name_Num_Helpers ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Global_Peerchain_Entry->Num_Helpers( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Peer_Type || field_name == c_field_name_Peer_Type )
+      if( !handled && ( ( field_name == c_field_id_Peer_Type ) || ( field_name == c_field_name_Peer_Type ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Global_Peerchain_Entry->Peer_Type( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Port_Numbers || field_name == c_field_name_Port_Numbers )
+      if( !handled && ( ( field_name == c_field_id_Port_Numbers ) || ( field_name == c_field_name_Port_Numbers ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Port_Numbers( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Shared_Secret || field_name == c_field_name_Shared_Secret )
+      if( !handled && ( ( field_name == c_field_id_Shared_Secret ) || ( field_name == c_field_name_Shared_Secret ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Shared_Secret( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Status || field_name == c_field_name_Status )
+      if( !handled && ( ( field_name == c_field_id_Status ) || ( field_name == c_field_name_Status ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Global_Peerchain_Entry->Status( ), cmd_handler.retval );
       }
 
@@ -504,96 +518,110 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
       string field_value( get_parm_val( parameters, c_cmd_Meta_Global_Peerchain_Entry_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      if( !handled && ( ( field_name == c_field_id_Actions ) || ( field_name == c_field_name_Actions ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Peerchain_Entry, string >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Actions, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Auto_Start || field_name == c_field_name_Auto_Start )
+      if( !handled && ( ( field_name == c_field_id_Auto_Start ) || ( field_name == c_field_name_Auto_Start ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Peerchain_Entry, bool >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Auto_Start, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Chain_Id || field_name == c_field_name_Chain_Id )
+      if( !handled && ( ( field_name == c_field_id_Chain_Id ) || ( field_name == c_field_name_Chain_Id ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Peerchain_Entry, string >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Chain_Id, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Description || field_name == c_field_name_Description )
+      if( !handled && ( ( field_name == c_field_id_Description ) || ( field_name == c_field_name_Description ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Peerchain_Entry, string >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Description, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Extra_Value || field_name == c_field_name_Extra_Value )
+      if( !handled && ( ( field_name == c_field_id_Extra_Value ) || ( field_name == c_field_name_Extra_Value ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Peerchain_Entry, string >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Extra_Value, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Host_Name || field_name == c_field_name_Host_Name )
+      if( !handled && ( ( field_name == c_field_id_Host_Name ) || ( field_name == c_field_name_Host_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Peerchain_Entry, string >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Host_Name, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Host_Port || field_name == c_field_name_Host_Port )
+      if( !handled && ( ( field_name == c_field_id_Host_Port ) || ( field_name == c_field_name_Host_Port ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Peerchain_Entry, int >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Host_Port, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Local_Port || field_name == c_field_name_Local_Port )
+      if( !handled && ( ( field_name == c_field_id_Local_Port ) || ( field_name == c_field_name_Local_Port ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Peerchain_Entry, int >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Local_Port, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Num_Helpers || field_name == c_field_name_Num_Helpers )
+      if( !handled && ( ( field_name == c_field_id_Num_Helpers ) || ( field_name == c_field_name_Num_Helpers ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Peerchain_Entry, int >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Num_Helpers, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Peer_Type || field_name == c_field_name_Peer_Type )
+      if( !handled && ( ( field_name == c_field_id_Peer_Type ) || ( field_name == c_field_name_Peer_Type ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Peerchain_Entry, int >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Peer_Type, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Port_Numbers || field_name == c_field_name_Port_Numbers )
+      if( !handled && ( ( field_name == c_field_id_Port_Numbers ) || ( field_name == c_field_name_Port_Numbers ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Peerchain_Entry, string >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Port_Numbers, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Shared_Secret || field_name == c_field_name_Shared_Secret )
+      if( !handled && ( ( field_name == c_field_id_Shared_Secret ) || ( field_name == c_field_name_Shared_Secret ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Peerchain_Entry, string >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Shared_Secret, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Status || field_name == c_field_name_Status )
+      if( !handled && ( ( field_name == c_field_id_Status ) || ( field_name == c_field_name_Status ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Global_Peerchain_Entry, int >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Status, field_value );
       }
@@ -620,24 +648,28 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
       cmd_handler.p_Meta_Global_Peerchain_Entry->Connect( );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Global_Peerchain_Entry_Disconnect )
    {
       cmd_handler.p_Meta_Global_Peerchain_Entry->Disconnect( );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Global_Peerchain_Entry_Finish )
    {
       cmd_handler.p_Meta_Global_Peerchain_Entry->Finish( );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Global_Peerchain_Entry_Start )
    {
       cmd_handler.p_Meta_Global_Peerchain_Entry->Start( );
 
       cmd_handler.retval.erase( );
+
    }
 }
 
@@ -1540,7 +1572,7 @@ bool Meta_Global_Peerchain_Entry::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -1648,6 +1680,7 @@ void Meta_Global_Peerchain_Entry::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -2310,67 +2343,67 @@ string Meta_Global_Peerchain_Entry::get_field_uom_symbol( const string& id_or_na
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
+   if( ( id_or_name == c_field_id_Actions ) || ( id_or_name == c_field_name_Actions ) )
    {
       name = string( c_field_display_name_Actions );
       get_module_string( c_field_display_name_Actions, &next );
    }
-   else if( id_or_name == c_field_id_Auto_Start || id_or_name == c_field_name_Auto_Start )
+   if( ( id_or_name == c_field_id_Auto_Start ) || ( id_or_name == c_field_name_Auto_Start ) )
    {
       name = string( c_field_display_name_Auto_Start );
       get_module_string( c_field_display_name_Auto_Start, &next );
    }
-   else if( id_or_name == c_field_id_Chain_Id || id_or_name == c_field_name_Chain_Id )
+   if( ( id_or_name == c_field_id_Chain_Id ) || ( id_or_name == c_field_name_Chain_Id ) )
    {
       name = string( c_field_display_name_Chain_Id );
       get_module_string( c_field_display_name_Chain_Id, &next );
    }
-   else if( id_or_name == c_field_id_Description || id_or_name == c_field_name_Description )
+   if( ( id_or_name == c_field_id_Description ) || ( id_or_name == c_field_name_Description ) )
    {
       name = string( c_field_display_name_Description );
       get_module_string( c_field_display_name_Description, &next );
    }
-   else if( id_or_name == c_field_id_Extra_Value || id_or_name == c_field_name_Extra_Value )
+   if( ( id_or_name == c_field_id_Extra_Value ) || ( id_or_name == c_field_name_Extra_Value ) )
    {
       name = string( c_field_display_name_Extra_Value );
       get_module_string( c_field_display_name_Extra_Value, &next );
    }
-   else if( id_or_name == c_field_id_Host_Name || id_or_name == c_field_name_Host_Name )
+   if( ( id_or_name == c_field_id_Host_Name ) || ( id_or_name == c_field_name_Host_Name ) )
    {
       name = string( c_field_display_name_Host_Name );
       get_module_string( c_field_display_name_Host_Name, &next );
    }
-   else if( id_or_name == c_field_id_Host_Port || id_or_name == c_field_name_Host_Port )
+   if( ( id_or_name == c_field_id_Host_Port ) || ( id_or_name == c_field_name_Host_Port ) )
    {
       name = string( c_field_display_name_Host_Port );
       get_module_string( c_field_display_name_Host_Port, &next );
    }
-   else if( id_or_name == c_field_id_Local_Port || id_or_name == c_field_name_Local_Port )
+   if( ( id_or_name == c_field_id_Local_Port ) || ( id_or_name == c_field_name_Local_Port ) )
    {
       name = string( c_field_display_name_Local_Port );
       get_module_string( c_field_display_name_Local_Port, &next );
    }
-   else if( id_or_name == c_field_id_Num_Helpers || id_or_name == c_field_name_Num_Helpers )
+   if( ( id_or_name == c_field_id_Num_Helpers ) || ( id_or_name == c_field_name_Num_Helpers ) )
    {
       name = string( c_field_display_name_Num_Helpers );
       get_module_string( c_field_display_name_Num_Helpers, &next );
    }
-   else if( id_or_name == c_field_id_Peer_Type || id_or_name == c_field_name_Peer_Type )
+   if( ( id_or_name == c_field_id_Peer_Type ) || ( id_or_name == c_field_name_Peer_Type ) )
    {
       name = string( c_field_display_name_Peer_Type );
       get_module_string( c_field_display_name_Peer_Type, &next );
    }
-   else if( id_or_name == c_field_id_Port_Numbers || id_or_name == c_field_name_Port_Numbers )
+   if( ( id_or_name == c_field_id_Port_Numbers ) || ( id_or_name == c_field_name_Port_Numbers ) )
    {
       name = string( c_field_display_name_Port_Numbers );
       get_module_string( c_field_display_name_Port_Numbers, &next );
    }
-   else if( id_or_name == c_field_id_Shared_Secret || id_or_name == c_field_name_Shared_Secret )
+   if( ( id_or_name == c_field_id_Shared_Secret ) || ( id_or_name == c_field_name_Shared_Secret ) )
    {
       name = string( c_field_display_name_Shared_Secret );
       get_module_string( c_field_display_name_Shared_Secret, &next );
    }
-   else if( id_or_name == c_field_id_Status || id_or_name == c_field_name_Status )
+   if( ( id_or_name == c_field_id_Status ) || ( id_or_name == c_field_name_Status ) )
    {
       name = string( c_field_display_name_Status );
       get_module_string( c_field_display_name_Status, &next );
@@ -2390,31 +2423,31 @@ string Meta_Global_Peerchain_Entry::get_field_display_name( const string& id_or_
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
+   if( ( id_or_name == c_field_id_Actions ) || ( id_or_name == c_field_name_Actions ) )
       display_name = get_module_string( c_field_display_name_Actions );
-   else if( id_or_name == c_field_id_Auto_Start || id_or_name == c_field_name_Auto_Start )
+   if( ( id_or_name == c_field_id_Auto_Start ) || ( id_or_name == c_field_name_Auto_Start ) )
       display_name = get_module_string( c_field_display_name_Auto_Start );
-   else if( id_or_name == c_field_id_Chain_Id || id_or_name == c_field_name_Chain_Id )
+   if( ( id_or_name == c_field_id_Chain_Id ) || ( id_or_name == c_field_name_Chain_Id ) )
       display_name = get_module_string( c_field_display_name_Chain_Id );
-   else if( id_or_name == c_field_id_Description || id_or_name == c_field_name_Description )
+   if( ( id_or_name == c_field_id_Description ) || ( id_or_name == c_field_name_Description ) )
       display_name = get_module_string( c_field_display_name_Description );
-   else if( id_or_name == c_field_id_Extra_Value || id_or_name == c_field_name_Extra_Value )
+   if( ( id_or_name == c_field_id_Extra_Value ) || ( id_or_name == c_field_name_Extra_Value ) )
       display_name = get_module_string( c_field_display_name_Extra_Value );
-   else if( id_or_name == c_field_id_Host_Name || id_or_name == c_field_name_Host_Name )
+   if( ( id_or_name == c_field_id_Host_Name ) || ( id_or_name == c_field_name_Host_Name ) )
       display_name = get_module_string( c_field_display_name_Host_Name );
-   else if( id_or_name == c_field_id_Host_Port || id_or_name == c_field_name_Host_Port )
+   if( ( id_or_name == c_field_id_Host_Port ) || ( id_or_name == c_field_name_Host_Port ) )
       display_name = get_module_string( c_field_display_name_Host_Port );
-   else if( id_or_name == c_field_id_Local_Port || id_or_name == c_field_name_Local_Port )
+   if( ( id_or_name == c_field_id_Local_Port ) || ( id_or_name == c_field_name_Local_Port ) )
       display_name = get_module_string( c_field_display_name_Local_Port );
-   else if( id_or_name == c_field_id_Num_Helpers || id_or_name == c_field_name_Num_Helpers )
+   if( ( id_or_name == c_field_id_Num_Helpers ) || ( id_or_name == c_field_name_Num_Helpers ) )
       display_name = get_module_string( c_field_display_name_Num_Helpers );
-   else if( id_or_name == c_field_id_Peer_Type || id_or_name == c_field_name_Peer_Type )
+   if( ( id_or_name == c_field_id_Peer_Type ) || ( id_or_name == c_field_name_Peer_Type ) )
       display_name = get_module_string( c_field_display_name_Peer_Type );
-   else if( id_or_name == c_field_id_Port_Numbers || id_or_name == c_field_name_Port_Numbers )
+   if( ( id_or_name == c_field_id_Port_Numbers ) || ( id_or_name == c_field_name_Port_Numbers ) )
       display_name = get_module_string( c_field_display_name_Port_Numbers );
-   else if( id_or_name == c_field_id_Shared_Secret || id_or_name == c_field_name_Shared_Secret )
+   if( ( id_or_name == c_field_id_Shared_Secret ) || ( id_or_name == c_field_name_Shared_Secret ) )
       display_name = get_module_string( c_field_display_name_Shared_Secret );
-   else if( id_or_name == c_field_id_Status || id_or_name == c_field_name_Status )
+   if( ( id_or_name == c_field_id_Status ) || ( id_or_name == c_field_name_Status ) )
       display_name = get_module_string( c_field_display_name_Status );
 
    return display_name;
@@ -2530,6 +2563,7 @@ string Meta_Global_Peerchain_Entry::get_module_name( ) const
 string Meta_Global_Peerchain_Entry::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "global_peerchain_entry";
 
    return get_module_string( key );
@@ -2807,7 +2841,7 @@ void Meta_Global_Peerchain_Entry::static_get_foreign_key_info( foreign_key_info_
 
 int Meta_Global_Peerchain_Entry::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

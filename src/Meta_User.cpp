@@ -328,66 +328,77 @@ void Meta_User_command_functor::operator ( )( const string& command, const param
       string field_name( get_parm_val( parameters, c_cmd_Meta_User_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Active || field_name == c_field_name_Active )
+      if( !handled && ( ( field_name == c_field_id_Active ) || ( field_name == c_field_name_Active ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_User->Active( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Description || field_name == c_field_name_Description )
+      if( !handled && ( ( field_name == c_field_id_Description ) || ( field_name == c_field_name_Description ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_User->Description( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Email || field_name == c_field_name_Email )
+      if( !handled && ( ( field_name == c_field_id_Email ) || ( field_name == c_field_name_Email ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_User->Email( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_New_Password || field_name == c_field_name_New_Password )
+      if( !handled && ( ( field_name == c_field_id_New_Password ) || ( field_name == c_field_name_New_Password ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_User->New_Password( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Password || field_name == c_field_name_Password )
+      if( !handled && ( ( field_name == c_field_id_Password ) || ( field_name == c_field_name_Password ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_User->Password( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Password_Hash || field_name == c_field_name_Password_Hash )
+      if( !handled && ( ( field_name == c_field_id_Password_Hash ) || ( field_name == c_field_name_Password_Hash ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_User->Password_Hash( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Permissions || field_name == c_field_name_Permissions )
+      if( !handled && ( ( field_name == c_field_id_Permissions ) || ( field_name == c_field_name_Permissions ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_User->Permissions( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_User_Hash || field_name == c_field_name_User_Hash )
+      if( !handled && ( ( field_name == c_field_id_User_Hash ) || ( field_name == c_field_name_User_Hash ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_User->User_Hash( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Username || field_name == c_field_name_Username )
+      if( !handled && ( ( field_name == c_field_id_Username ) || ( field_name == c_field_name_Username ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_User->Username( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      if( !handled && ( ( field_name == c_field_id_Workgroup ) || ( field_name == c_field_name_Workgroup ) ) )
       {
          handled = true;
+
          string_getter< Meta_Workgroup >( cmd_handler.p_Meta_User->Workgroup( ), cmd_handler.retval );
       }
 
@@ -400,75 +411,86 @@ void Meta_User_command_functor::operator ( )( const string& command, const param
       string field_value( get_parm_val( parameters, c_cmd_Meta_User_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Active || field_name == c_field_name_Active )
+      if( !handled && ( ( field_name == c_field_id_Active ) || ( field_name == c_field_name_Active ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_User, bool >(
           *cmd_handler.p_Meta_User, &Meta_User::Active, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Description || field_name == c_field_name_Description )
+      if( !handled && ( ( field_name == c_field_id_Description ) || ( field_name == c_field_name_Description ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::Description, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Email || field_name == c_field_name_Email )
+      if( !handled && ( ( field_name == c_field_id_Email ) || ( field_name == c_field_name_Email ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::Email, field_value );
       }
 
-      if( !handled && field_name == c_field_id_New_Password || field_name == c_field_name_New_Password )
+      if( !handled && ( ( field_name == c_field_id_New_Password ) || ( field_name == c_field_name_New_Password ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::New_Password, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Password || field_name == c_field_name_Password )
+      if( !handled && ( ( field_name == c_field_id_Password ) || ( field_name == c_field_name_Password ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::Password, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Password_Hash || field_name == c_field_name_Password_Hash )
+      if( !handled && ( ( field_name == c_field_id_Password_Hash ) || ( field_name == c_field_name_Password_Hash ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::Password_Hash, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Permissions || field_name == c_field_name_Permissions )
+      if( !handled && ( ( field_name == c_field_id_Permissions ) || ( field_name == c_field_name_Permissions ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::Permissions, field_value );
       }
 
-      if( !handled && field_name == c_field_id_User_Hash || field_name == c_field_name_User_Hash )
+      if( !handled && ( ( field_name == c_field_id_User_Hash ) || ( field_name == c_field_name_User_Hash ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::User_Hash, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Username || field_name == c_field_name_Username )
+      if( !handled && ( ( field_name == c_field_id_Username ) || ( field_name == c_field_name_Username ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::Username, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      if( !handled && ( ( field_name == c_field_id_Workgroup ) || ( field_name == c_field_name_Workgroup ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_User, Meta_Workgroup >(
           *cmd_handler.p_Meta_User, &Meta_User::Workgroup, field_value );
       }
@@ -487,7 +509,7 @@ void Meta_User_command_functor::operator ( )( const string& command, const param
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      else if( ( field_name == c_field_id_Workgroup ) || ( field_name == c_field_name_Workgroup ) )
          cmd_handler.retval = cmd_handler.p_Meta_User->Workgroup( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -876,7 +898,7 @@ void Meta_User::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       impl_Workgroup( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -886,7 +908,7 @@ void Meta_User::impl::set_foreign_key_value( const string& field, const string& 
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       v_Workgroup = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -896,7 +918,7 @@ const string& Meta_User::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       return v_Workgroup;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -1142,7 +1164,7 @@ bool Meta_User::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -1208,6 +1230,7 @@ void Meta_User::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -1765,52 +1788,52 @@ string Meta_User::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Active || id_or_name == c_field_name_Active )
+   if( ( id_or_name == c_field_id_Active ) || ( id_or_name == c_field_name_Active ) )
    {
       name = string( c_field_display_name_Active );
       get_module_string( c_field_display_name_Active, &next );
    }
-   else if( id_or_name == c_field_id_Description || id_or_name == c_field_name_Description )
+   if( ( id_or_name == c_field_id_Description ) || ( id_or_name == c_field_name_Description ) )
    {
       name = string( c_field_display_name_Description );
       get_module_string( c_field_display_name_Description, &next );
    }
-   else if( id_or_name == c_field_id_Email || id_or_name == c_field_name_Email )
+   if( ( id_or_name == c_field_id_Email ) || ( id_or_name == c_field_name_Email ) )
    {
       name = string( c_field_display_name_Email );
       get_module_string( c_field_display_name_Email, &next );
    }
-   else if( id_or_name == c_field_id_New_Password || id_or_name == c_field_name_New_Password )
+   if( ( id_or_name == c_field_id_New_Password ) || ( id_or_name == c_field_name_New_Password ) )
    {
       name = string( c_field_display_name_New_Password );
       get_module_string( c_field_display_name_New_Password, &next );
    }
-   else if( id_or_name == c_field_id_Password || id_or_name == c_field_name_Password )
+   if( ( id_or_name == c_field_id_Password ) || ( id_or_name == c_field_name_Password ) )
    {
       name = string( c_field_display_name_Password );
       get_module_string( c_field_display_name_Password, &next );
    }
-   else if( id_or_name == c_field_id_Password_Hash || id_or_name == c_field_name_Password_Hash )
+   if( ( id_or_name == c_field_id_Password_Hash ) || ( id_or_name == c_field_name_Password_Hash ) )
    {
       name = string( c_field_display_name_Password_Hash );
       get_module_string( c_field_display_name_Password_Hash, &next );
    }
-   else if( id_or_name == c_field_id_Permissions || id_or_name == c_field_name_Permissions )
+   if( ( id_or_name == c_field_id_Permissions ) || ( id_or_name == c_field_name_Permissions ) )
    {
       name = string( c_field_display_name_Permissions );
       get_module_string( c_field_display_name_Permissions, &next );
    }
-   else if( id_or_name == c_field_id_User_Hash || id_or_name == c_field_name_User_Hash )
+   if( ( id_or_name == c_field_id_User_Hash ) || ( id_or_name == c_field_name_User_Hash ) )
    {
       name = string( c_field_display_name_User_Hash );
       get_module_string( c_field_display_name_User_Hash, &next );
    }
-   else if( id_or_name == c_field_id_Username || id_or_name == c_field_name_Username )
+   if( ( id_or_name == c_field_id_Username ) || ( id_or_name == c_field_name_Username ) )
    {
       name = string( c_field_display_name_Username );
       get_module_string( c_field_display_name_Username, &next );
    }
-   else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
+   if( ( id_or_name == c_field_id_Workgroup ) || ( id_or_name == c_field_name_Workgroup ) )
    {
       name = string( c_field_display_name_Workgroup );
       get_module_string( c_field_display_name_Workgroup, &next );
@@ -1830,25 +1853,25 @@ string Meta_User::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Active || id_or_name == c_field_name_Active )
+   if( ( id_or_name == c_field_id_Active ) || ( id_or_name == c_field_name_Active ) )
       display_name = get_module_string( c_field_display_name_Active );
-   else if( id_or_name == c_field_id_Description || id_or_name == c_field_name_Description )
+   if( ( id_or_name == c_field_id_Description ) || ( id_or_name == c_field_name_Description ) )
       display_name = get_module_string( c_field_display_name_Description );
-   else if( id_or_name == c_field_id_Email || id_or_name == c_field_name_Email )
+   if( ( id_or_name == c_field_id_Email ) || ( id_or_name == c_field_name_Email ) )
       display_name = get_module_string( c_field_display_name_Email );
-   else if( id_or_name == c_field_id_New_Password || id_or_name == c_field_name_New_Password )
+   if( ( id_or_name == c_field_id_New_Password ) || ( id_or_name == c_field_name_New_Password ) )
       display_name = get_module_string( c_field_display_name_New_Password );
-   else if( id_or_name == c_field_id_Password || id_or_name == c_field_name_Password )
+   if( ( id_or_name == c_field_id_Password ) || ( id_or_name == c_field_name_Password ) )
       display_name = get_module_string( c_field_display_name_Password );
-   else if( id_or_name == c_field_id_Password_Hash || id_or_name == c_field_name_Password_Hash )
+   if( ( id_or_name == c_field_id_Password_Hash ) || ( id_or_name == c_field_name_Password_Hash ) )
       display_name = get_module_string( c_field_display_name_Password_Hash );
-   else if( id_or_name == c_field_id_Permissions || id_or_name == c_field_name_Permissions )
+   if( ( id_or_name == c_field_id_Permissions ) || ( id_or_name == c_field_name_Permissions ) )
       display_name = get_module_string( c_field_display_name_Permissions );
-   else if( id_or_name == c_field_id_User_Hash || id_or_name == c_field_name_User_Hash )
+   if( ( id_or_name == c_field_id_User_Hash ) || ( id_or_name == c_field_name_User_Hash ) )
       display_name = get_module_string( c_field_display_name_User_Hash );
-   else if( id_or_name == c_field_id_Username || id_or_name == c_field_name_Username )
+   if( ( id_or_name == c_field_id_Username ) || ( id_or_name == c_field_name_Username ) )
       display_name = get_module_string( c_field_display_name_Username );
-   else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
+   if( ( id_or_name == c_field_id_Workgroup ) || ( id_or_name == c_field_name_Workgroup ) )
       display_name = get_module_string( c_field_display_name_Workgroup );
 
    return display_name;
@@ -1976,6 +1999,7 @@ string Meta_User::get_module_name( ) const
 string Meta_User::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "user";
 
    return get_module_string( key );
@@ -2038,7 +2062,7 @@ class_base& Meta_User::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == c_field_id_Workgroup || sub_context == c_field_name_Workgroup )
+   else if( ( sub_context == c_field_id_Workgroup ) || ( sub_context == c_field_name_Workgroup ) )
       p_class_base = &Workgroup( );
 
    if( !p_class_base )
@@ -2065,7 +2089,7 @@ void Meta_User::get_sql_column_names(
    names.push_back( "C_Username" );
    names.push_back( "C_Workgroup" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2084,7 +2108,7 @@ void Meta_User::get_sql_column_values(
    values.push_back( sql_quote( to_string( Username( ) ) ) );
    values.push_back( sql_quote( to_string( Workgroup( ) ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -2184,7 +2208,7 @@ void Meta_User::static_get_foreign_key_info( foreign_key_info_container& foreign
 
 int Meta_User::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;

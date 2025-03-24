@@ -842,246 +842,287 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
       string field_name( get_parm_val( parameters, c_cmd_Meta_Application_get_field_name ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
-      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      if( !handled && ( ( field_name == c_field_id_Actions ) || ( field_name == c_field_name_Actions ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Application->Actions( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Add_Modules_Automatically || field_name == c_field_name_Add_Modules_Automatically )
+      if( !handled && ( ( field_name == c_field_id_Add_Modules_Automatically ) || ( field_name == c_field_name_Add_Modules_Automatically ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Add_Modules_Automatically( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Allow_Duplicate_Logins || field_name == c_field_name_Allow_Duplicate_Logins )
+      if( !handled && ( ( field_name == c_field_id_Allow_Duplicate_Logins ) || ( field_name == c_field_name_Allow_Duplicate_Logins ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Allow_Duplicate_Logins( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Allow_Module_Switching || field_name == c_field_name_Allow_Module_Switching )
+      if( !handled && ( ( field_name == c_field_id_Allow_Module_Switching ) || ( field_name == c_field_name_Allow_Module_Switching ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Allow_Module_Switching( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Auto_Login_Days || field_name == c_field_name_Auto_Login_Days )
+      if( !handled && ( ( field_name == c_field_id_Auto_Login_Days ) || ( field_name == c_field_name_Auto_Login_Days ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Application->Auto_Login_Days( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Blockchain_Id || field_name == c_field_name_Blockchain_Id )
+      if( !handled && ( ( field_name == c_field_id_Blockchain_Id ) || ( field_name == c_field_name_Blockchain_Id ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Application->Blockchain_Id( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Create_Database || field_name == c_field_name_Create_Database )
+      if( !handled && ( ( field_name == c_field_id_Create_Database ) || ( field_name == c_field_name_Create_Database ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Create_Database( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Created_Database || field_name == c_field_name_Created_Database )
+      if( !handled && ( ( field_name == c_field_id_Created_Database ) || ( field_name == c_field_name_Created_Database ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Created_Database( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Creation_Script || field_name == c_field_name_Creation_Script )
+      if( !handled && ( ( field_name == c_field_id_Creation_Script ) || ( field_name == c_field_name_Creation_Script ) ) )
       {
          handled = true;
+
          string_getter< Meta_Application_Script >( cmd_handler.p_Meta_Application->Creation_Script( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Default_Image_Height || field_name == c_field_name_Default_Image_Height )
+      if( !handled && ( ( field_name == c_field_id_Default_Image_Height ) || ( field_name == c_field_name_Default_Image_Height ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Image_Height( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Default_Image_Width || field_name == c_field_name_Default_Image_Width )
+      if( !handled && ( ( field_name == c_field_id_Default_Image_Width ) || ( field_name == c_field_name_Default_Image_Width ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Image_Width( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Default_List_Print_Row_Limit || field_name == c_field_name_Default_List_Print_Row_Limit )
+      if( !handled && ( ( field_name == c_field_id_Default_List_Print_Row_Limit ) || ( field_name == c_field_name_Default_List_Print_Row_Limit ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Application->Default_List_Print_Row_Limit( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Default_List_Row_Limit || field_name == c_field_name_Default_List_Row_Limit )
+      if( !handled && ( ( field_name == c_field_id_Default_List_Row_Limit ) || ( field_name == c_field_name_Default_List_Row_Limit ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Application->Default_List_Row_Limit( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Default_Max_Attached_File_Size || field_name == c_field_name_Default_Max_Attached_File_Size )
+      if( !handled && ( ( field_name == c_field_id_Default_Max_Attached_File_Size ) || ( field_name == c_field_name_Default_Max_Attached_File_Size ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Max_Attached_File_Size( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Default_Multiline_Max_Rows || field_name == c_field_name_Default_Multiline_Max_Rows )
+      if( !handled && ( ( field_name == c_field_id_Default_Multiline_Max_Rows ) || ( field_name == c_field_name_Default_Multiline_Max_Rows ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Multiline_Max_Rows( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Default_Multiline_Min_Rows || field_name == c_field_name_Default_Multiline_Min_Rows )
+      if( !handled && ( ( field_name == c_field_id_Default_Multiline_Min_Rows ) || ( field_name == c_field_name_Default_Multiline_Min_Rows ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Multiline_Min_Rows( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Default_Multiline_Text_Limit || field_name == c_field_name_Default_Multiline_Text_Limit )
+      if( !handled && ( ( field_name == c_field_id_Default_Multiline_Text_Limit ) || ( field_name == c_field_name_Default_Multiline_Text_Limit ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Multiline_Text_Limit( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Default_Multiline_Text_Trunc || field_name == c_field_name_Default_Multiline_Text_Trunc )
+      if( !handled && ( ( field_name == c_field_id_Default_Multiline_Text_Trunc ) || ( field_name == c_field_name_Default_Multiline_Text_Trunc ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Multiline_Text_Trunc( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Encrypt_Dynamic_Content || field_name == c_field_name_Encrypt_Dynamic_Content )
+      if( !handled && ( ( field_name == c_field_id_Encrypt_Dynamic_Content ) || ( field_name == c_field_name_Encrypt_Dynamic_Content ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Encrypt_Dynamic_Content( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Generate_Details || field_name == c_field_name_Generate_Details )
+      if( !handled && ( ( field_name == c_field_id_Generate_Details ) || ( field_name == c_field_name_Generate_Details ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Application->Generate_Details( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Generate_Status || field_name == c_field_name_Generate_Status )
+      if( !handled && ( ( field_name == c_field_id_Generate_Status ) || ( field_name == c_field_name_Generate_Status ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Application->Generate_Status( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Generate_Type || field_name == c_field_name_Generate_Type )
+      if( !handled && ( ( field_name == c_field_id_Generate_Type ) || ( field_name == c_field_name_Generate_Type ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Application->Generate_Type( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Installing_Script || field_name == c_field_name_Installing_Script )
+      if( !handled && ( ( field_name == c_field_id_Installing_Script ) || ( field_name == c_field_name_Installing_Script ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Installing_Script( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Keep_Existing_Data || field_name == c_field_name_Keep_Existing_Data )
+      if( !handled && ( ( field_name == c_field_id_Keep_Existing_Data ) || ( field_name == c_field_name_Keep_Existing_Data ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Keep_Existing_Data( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Module_Prefix || field_name == c_field_name_Module_Prefix )
+      if( !handled && ( ( field_name == c_field_id_Module_Prefix ) || ( field_name == c_field_name_Module_Prefix ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Application->Module_Prefix( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Application->Name( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Print_Lists_With_Check_Boxes || field_name == c_field_name_Print_Lists_With_Check_Boxes )
+      if( !handled && ( ( field_name == c_field_id_Print_Lists_With_Check_Boxes ) || ( field_name == c_field_name_Print_Lists_With_Check_Boxes ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Print_Lists_With_Check_Boxes( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Print_Lists_With_Row_Numbers || field_name == c_field_name_Print_Lists_With_Row_Numbers )
+      if( !handled && ( ( field_name == c_field_id_Print_Lists_With_Row_Numbers ) || ( field_name == c_field_name_Print_Lists_With_Row_Numbers ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Print_Lists_With_Row_Numbers( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Registration_Key || field_name == c_field_name_Registration_Key )
+      if( !handled && ( ( field_name == c_field_id_Registration_Key ) || ( field_name == c_field_name_Registration_Key ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Application->Registration_Key( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Show_Inaccessible_Modules || field_name == c_field_name_Show_Inaccessible_Modules )
+      if( !handled && ( ( field_name == c_field_id_Show_Inaccessible_Modules ) || ( field_name == c_field_name_Show_Inaccessible_Modules ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Show_Inaccessible_Modules( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      if( !handled && ( ( field_name == c_field_id_Type ) || ( field_name == c_field_name_Type ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Type( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Use_Check_Boxes_for_Bools || field_name == c_field_name_Use_Check_Boxes_for_Bools )
+      if( !handled && ( ( field_name == c_field_id_Use_Check_Boxes_for_Bools ) || ( field_name == c_field_name_Use_Check_Boxes_for_Bools ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_Check_Boxes_for_Bools( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Use_Embedded_Images || field_name == c_field_name_Use_Embedded_Images )
+      if( !handled && ( ( field_name == c_field_id_Use_Embedded_Images ) || ( field_name == c_field_name_Use_Embedded_Images ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_Embedded_Images( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Use_Script || field_name == c_field_name_Use_Script )
+      if( !handled && ( ( field_name == c_field_id_Use_Script ) || ( field_name == c_field_name_Use_Script ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_Script( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Use_TLS_Sessions || field_name == c_field_name_Use_TLS_Sessions )
+      if( !handled && ( ( field_name == c_field_id_Use_TLS_Sessions ) || ( field_name == c_field_name_Use_TLS_Sessions ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_TLS_Sessions( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Use_URL_Checksum || field_name == c_field_name_Use_URL_Checksum )
+      if( !handled && ( ( field_name == c_field_id_Use_URL_Checksum ) || ( field_name == c_field_name_Use_URL_Checksum ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_URL_Checksum( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Use_Vertical_Menu || field_name == c_field_name_Use_Vertical_Menu )
+      if( !handled && ( ( field_name == c_field_id_Use_Vertical_Menu ) || ( field_name == c_field_name_Use_Vertical_Menu ) ) )
       {
          handled = true;
+
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_Vertical_Menu( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Version || field_name == c_field_name_Version )
+      if( !handled && ( ( field_name == c_field_id_Version ) || ( field_name == c_field_name_Version ) ) )
       {
          handled = true;
+
          string_getter< string >( cmd_handler.p_Meta_Application->Version( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      if( !handled && ( ( field_name == c_field_id_Workgroup ) || ( field_name == c_field_name_Workgroup ) ) )
       {
          handled = true;
+
          string_getter< Meta_Workgroup >( cmd_handler.p_Meta_Application->Workgroup( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Year_Created || field_name == c_field_name_Year_Created )
+      if( !handled && ( ( field_name == c_field_id_Year_Created ) || ( field_name == c_field_name_Year_Created ) ) )
       {
          handled = true;
+
          string_getter< int >( cmd_handler.p_Meta_Application->Year_Created( ), cmd_handler.retval );
       }
 
@@ -1094,285 +1135,326 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
       string field_value( get_parm_val( parameters, c_cmd_Meta_Application_set_field_value ) );
 
       bool handled = false;
+
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
-      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      if( !handled && ( ( field_name == c_field_id_Actions ) || ( field_name == c_field_name_Actions ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Actions, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Add_Modules_Automatically || field_name == c_field_name_Add_Modules_Automatically )
+      if( !handled && ( ( field_name == c_field_id_Add_Modules_Automatically ) || ( field_name == c_field_name_Add_Modules_Automatically ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Add_Modules_Automatically, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Allow_Duplicate_Logins || field_name == c_field_name_Allow_Duplicate_Logins )
+      if( !handled && ( ( field_name == c_field_id_Allow_Duplicate_Logins ) || ( field_name == c_field_name_Allow_Duplicate_Logins ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Allow_Duplicate_Logins, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Allow_Module_Switching || field_name == c_field_name_Allow_Module_Switching )
+      if( !handled && ( ( field_name == c_field_id_Allow_Module_Switching ) || ( field_name == c_field_name_Allow_Module_Switching ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Allow_Module_Switching, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Auto_Login_Days || field_name == c_field_name_Auto_Login_Days )
+      if( !handled && ( ( field_name == c_field_id_Auto_Login_Days ) || ( field_name == c_field_name_Auto_Login_Days ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Auto_Login_Days, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Blockchain_Id || field_name == c_field_name_Blockchain_Id )
+      if( !handled && ( ( field_name == c_field_id_Blockchain_Id ) || ( field_name == c_field_name_Blockchain_Id ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Blockchain_Id, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Create_Database || field_name == c_field_name_Create_Database )
+      if( !handled && ( ( field_name == c_field_id_Create_Database ) || ( field_name == c_field_name_Create_Database ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Create_Database, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Created_Database || field_name == c_field_name_Created_Database )
+      if( !handled && ( ( field_name == c_field_id_Created_Database ) || ( field_name == c_field_name_Created_Database ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Created_Database, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Creation_Script || field_name == c_field_name_Creation_Script )
+      if( !handled && ( ( field_name == c_field_id_Creation_Script ) || ( field_name == c_field_name_Creation_Script ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, Meta_Application_Script >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Creation_Script, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Default_Image_Height || field_name == c_field_name_Default_Image_Height )
+      if( !handled && ( ( field_name == c_field_id_Default_Image_Height ) || ( field_name == c_field_name_Default_Image_Height ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Image_Height, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Default_Image_Width || field_name == c_field_name_Default_Image_Width )
+      if( !handled && ( ( field_name == c_field_id_Default_Image_Width ) || ( field_name == c_field_name_Default_Image_Width ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Image_Width, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Default_List_Print_Row_Limit || field_name == c_field_name_Default_List_Print_Row_Limit )
+      if( !handled && ( ( field_name == c_field_id_Default_List_Print_Row_Limit ) || ( field_name == c_field_name_Default_List_Print_Row_Limit ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_List_Print_Row_Limit, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Default_List_Row_Limit || field_name == c_field_name_Default_List_Row_Limit )
+      if( !handled && ( ( field_name == c_field_id_Default_List_Row_Limit ) || ( field_name == c_field_name_Default_List_Row_Limit ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_List_Row_Limit, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Default_Max_Attached_File_Size || field_name == c_field_name_Default_Max_Attached_File_Size )
+      if( !handled && ( ( field_name == c_field_id_Default_Max_Attached_File_Size ) || ( field_name == c_field_name_Default_Max_Attached_File_Size ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Max_Attached_File_Size, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Default_Multiline_Max_Rows || field_name == c_field_name_Default_Multiline_Max_Rows )
+      if( !handled && ( ( field_name == c_field_id_Default_Multiline_Max_Rows ) || ( field_name == c_field_name_Default_Multiline_Max_Rows ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Multiline_Max_Rows, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Default_Multiline_Min_Rows || field_name == c_field_name_Default_Multiline_Min_Rows )
+      if( !handled && ( ( field_name == c_field_id_Default_Multiline_Min_Rows ) || ( field_name == c_field_name_Default_Multiline_Min_Rows ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Multiline_Min_Rows, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Default_Multiline_Text_Limit || field_name == c_field_name_Default_Multiline_Text_Limit )
+      if( !handled && ( ( field_name == c_field_id_Default_Multiline_Text_Limit ) || ( field_name == c_field_name_Default_Multiline_Text_Limit ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Multiline_Text_Limit, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Default_Multiline_Text_Trunc || field_name == c_field_name_Default_Multiline_Text_Trunc )
+      if( !handled && ( ( field_name == c_field_id_Default_Multiline_Text_Trunc ) || ( field_name == c_field_name_Default_Multiline_Text_Trunc ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Multiline_Text_Trunc, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Encrypt_Dynamic_Content || field_name == c_field_name_Encrypt_Dynamic_Content )
+      if( !handled && ( ( field_name == c_field_id_Encrypt_Dynamic_Content ) || ( field_name == c_field_name_Encrypt_Dynamic_Content ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Encrypt_Dynamic_Content, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Generate_Details || field_name == c_field_name_Generate_Details )
+      if( !handled && ( ( field_name == c_field_id_Generate_Details ) || ( field_name == c_field_name_Generate_Details ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Generate_Details, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Generate_Status || field_name == c_field_name_Generate_Status )
+      if( !handled && ( ( field_name == c_field_id_Generate_Status ) || ( field_name == c_field_name_Generate_Status ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Generate_Status, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Generate_Type || field_name == c_field_name_Generate_Type )
+      if( !handled && ( ( field_name == c_field_id_Generate_Type ) || ( field_name == c_field_name_Generate_Type ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Generate_Type, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Installing_Script || field_name == c_field_name_Installing_Script )
+      if( !handled && ( ( field_name == c_field_id_Installing_Script ) || ( field_name == c_field_name_Installing_Script ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Installing_Script, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Keep_Existing_Data || field_name == c_field_name_Keep_Existing_Data )
+      if( !handled && ( ( field_name == c_field_id_Keep_Existing_Data ) || ( field_name == c_field_name_Keep_Existing_Data ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Keep_Existing_Data, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Module_Prefix || field_name == c_field_name_Module_Prefix )
+      if( !handled && ( ( field_name == c_field_id_Module_Prefix ) || ( field_name == c_field_name_Module_Prefix ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Module_Prefix, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      if( !handled && ( ( field_name == c_field_id_Name ) || ( field_name == c_field_name_Name ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Name, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Print_Lists_With_Check_Boxes || field_name == c_field_name_Print_Lists_With_Check_Boxes )
+      if( !handled && ( ( field_name == c_field_id_Print_Lists_With_Check_Boxes ) || ( field_name == c_field_name_Print_Lists_With_Check_Boxes ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Print_Lists_With_Check_Boxes, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Print_Lists_With_Row_Numbers || field_name == c_field_name_Print_Lists_With_Row_Numbers )
+      if( !handled && ( ( field_name == c_field_id_Print_Lists_With_Row_Numbers ) || ( field_name == c_field_name_Print_Lists_With_Row_Numbers ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Print_Lists_With_Row_Numbers, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Registration_Key || field_name == c_field_name_Registration_Key )
+      if( !handled && ( ( field_name == c_field_id_Registration_Key ) || ( field_name == c_field_name_Registration_Key ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Registration_Key, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Show_Inaccessible_Modules || field_name == c_field_name_Show_Inaccessible_Modules )
+      if( !handled && ( ( field_name == c_field_id_Show_Inaccessible_Modules ) || ( field_name == c_field_name_Show_Inaccessible_Modules ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Show_Inaccessible_Modules, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      if( !handled && ( ( field_name == c_field_id_Type ) || ( field_name == c_field_name_Type ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Type, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Use_Check_Boxes_for_Bools || field_name == c_field_name_Use_Check_Boxes_for_Bools )
+      if( !handled && ( ( field_name == c_field_id_Use_Check_Boxes_for_Bools ) || ( field_name == c_field_name_Use_Check_Boxes_for_Bools ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_Check_Boxes_for_Bools, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Use_Embedded_Images || field_name == c_field_name_Use_Embedded_Images )
+      if( !handled && ( ( field_name == c_field_id_Use_Embedded_Images ) || ( field_name == c_field_name_Use_Embedded_Images ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_Embedded_Images, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Use_Script || field_name == c_field_name_Use_Script )
+      if( !handled && ( ( field_name == c_field_id_Use_Script ) || ( field_name == c_field_name_Use_Script ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_Script, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Use_TLS_Sessions || field_name == c_field_name_Use_TLS_Sessions )
+      if( !handled && ( ( field_name == c_field_id_Use_TLS_Sessions ) || ( field_name == c_field_name_Use_TLS_Sessions ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_TLS_Sessions, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Use_URL_Checksum || field_name == c_field_name_Use_URL_Checksum )
+      if( !handled && ( ( field_name == c_field_id_Use_URL_Checksum ) || ( field_name == c_field_name_Use_URL_Checksum ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_URL_Checksum, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Use_Vertical_Menu || field_name == c_field_name_Use_Vertical_Menu )
+      if( !handled && ( ( field_name == c_field_id_Use_Vertical_Menu ) || ( field_name == c_field_name_Use_Vertical_Menu ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_Vertical_Menu, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Version || field_name == c_field_name_Version )
+      if( !handled && ( ( field_name == c_field_id_Version ) || ( field_name == c_field_name_Version ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Version, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      if( !handled && ( ( field_name == c_field_id_Workgroup ) || ( field_name == c_field_name_Workgroup ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, Meta_Workgroup >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Workgroup, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Year_Created || field_name == c_field_name_Year_Created )
+      if( !handled && ( ( field_name == c_field_id_Year_Created ) || ( field_name == c_field_name_Year_Created ) ) )
       {
          handled = true;
+
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Year_Created, field_value );
       }
@@ -1391,9 +1473,9 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Creation_Script || field_name == c_field_name_Creation_Script )
+      else if( ( field_name == c_field_id_Creation_Script ) || ( field_name == c_field_name_Creation_Script ) )
          cmd_handler.retval = cmd_handler.p_Meta_Application->Creation_Script( ).execute( cmd_and_args );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      else if( ( field_name == c_field_id_Workgroup ) || ( field_name == c_field_name_Workgroup ) )
          cmd_handler.retval = cmd_handler.p_Meta_Application->Workgroup( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -1403,40 +1485,48 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
       cmd_handler.p_Meta_Application->Generate( );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Application_Generate_File_Links )
    {
       cmd_handler.p_Meta_Application->Generate_File_Links( );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Application_Generate_Modules )
    {
       cmd_handler.p_Meta_Application->Generate_Modules( );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Application_Generate_Upgrade_DDL )
    {
       cmd_handler.p_Meta_Application->Generate_Upgrade_DDL( );
 
       cmd_handler.retval.erase( );
+
    }
    else if( command == c_cmd_Meta_Application_Test_Proc_1 )
    {
       string Output;
+
       cmd_handler.p_Meta_Application->Test_Proc_1( Output );
 
       cmd_handler.retval.erase( );
+
       append_value( cmd_handler.retval, Output );
    }
    else if( command == c_cmd_Meta_Application_Test_Proc_2 )
    {
       string Input( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Application_Test_Proc_2_Input ) );
       string Output;
+
       cmd_handler.p_Meta_Application->Test_Proc_2( Input, Output );
 
       cmd_handler.retval.erase( );
+
       append_value( cmd_handler.retval, Output );
    }
 }
@@ -3258,9 +3348,9 @@ void Meta_Application::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Creation_Script || field == c_field_name_Creation_Script )
+   else if( ( field == c_field_id_Creation_Script ) || ( field == c_field_name_Creation_Script ) )
       impl_Creation_Script( "" );
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       impl_Workgroup( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -3270,9 +3360,9 @@ void Meta_Application::impl::set_foreign_key_value( const string& field, const s
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
-   else if( field == c_field_id_Creation_Script || field == c_field_name_Creation_Script )
+   else if( ( field == c_field_id_Creation_Script ) || ( field == c_field_name_Creation_Script ) )
       v_Creation_Script = value;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       v_Workgroup = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -3282,9 +3372,9 @@ const string& Meta_Application::impl::get_foreign_key_value( const string& field
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
-   else if( field == c_field_id_Creation_Script || field == c_field_name_Creation_Script )
+   else if( ( field == c_field_id_Creation_Script ) || ( field == c_field_name_Creation_Script ) )
       return v_Creation_Script;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( ( field == c_field_id_Workgroup ) || ( field == c_field_name_Workgroup ) )
       return v_Workgroup;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
@@ -3817,7 +3907,7 @@ bool Meta_Application::impl::can_destroy( bool is_internal )
 {
    uint64_t state = p_obj->get_state( );
 
-   bool retval = is_internal || !( state & c_state_undeletable );
+   bool retval = ( is_internal || !( state & c_state_undeletable ) );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -3916,6 +4006,7 @@ void Meta_Application::impl::get_required_transients( ) const
    while( num_required )
    {
       p_obj->get_required_field_names( required_transients, true, &dependents );
+
       if( required_transients.size( ) == num_required )
          break;
 
@@ -5418,202 +5509,202 @@ string Meta_Application::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
+   if( ( id_or_name == c_field_id_Actions ) || ( id_or_name == c_field_name_Actions ) )
    {
       name = string( c_field_display_name_Actions );
       get_module_string( c_field_display_name_Actions, &next );
    }
-   else if( id_or_name == c_field_id_Add_Modules_Automatically || id_or_name == c_field_name_Add_Modules_Automatically )
+   if( ( id_or_name == c_field_id_Add_Modules_Automatically ) || ( id_or_name == c_field_name_Add_Modules_Automatically ) )
    {
       name = string( c_field_display_name_Add_Modules_Automatically );
       get_module_string( c_field_display_name_Add_Modules_Automatically, &next );
    }
-   else if( id_or_name == c_field_id_Allow_Duplicate_Logins || id_or_name == c_field_name_Allow_Duplicate_Logins )
+   if( ( id_or_name == c_field_id_Allow_Duplicate_Logins ) || ( id_or_name == c_field_name_Allow_Duplicate_Logins ) )
    {
       name = string( c_field_display_name_Allow_Duplicate_Logins );
       get_module_string( c_field_display_name_Allow_Duplicate_Logins, &next );
    }
-   else if( id_or_name == c_field_id_Allow_Module_Switching || id_or_name == c_field_name_Allow_Module_Switching )
+   if( ( id_or_name == c_field_id_Allow_Module_Switching ) || ( id_or_name == c_field_name_Allow_Module_Switching ) )
    {
       name = string( c_field_display_name_Allow_Module_Switching );
       get_module_string( c_field_display_name_Allow_Module_Switching, &next );
    }
-   else if( id_or_name == c_field_id_Auto_Login_Days || id_or_name == c_field_name_Auto_Login_Days )
+   if( ( id_or_name == c_field_id_Auto_Login_Days ) || ( id_or_name == c_field_name_Auto_Login_Days ) )
    {
       name = string( c_field_display_name_Auto_Login_Days );
       get_module_string( c_field_display_name_Auto_Login_Days, &next );
    }
-   else if( id_or_name == c_field_id_Blockchain_Id || id_or_name == c_field_name_Blockchain_Id )
+   if( ( id_or_name == c_field_id_Blockchain_Id ) || ( id_or_name == c_field_name_Blockchain_Id ) )
    {
       name = string( c_field_display_name_Blockchain_Id );
       get_module_string( c_field_display_name_Blockchain_Id, &next );
    }
-   else if( id_or_name == c_field_id_Create_Database || id_or_name == c_field_name_Create_Database )
+   if( ( id_or_name == c_field_id_Create_Database ) || ( id_or_name == c_field_name_Create_Database ) )
    {
       name = string( c_field_display_name_Create_Database );
       get_module_string( c_field_display_name_Create_Database, &next );
    }
-   else if( id_or_name == c_field_id_Created_Database || id_or_name == c_field_name_Created_Database )
+   if( ( id_or_name == c_field_id_Created_Database ) || ( id_or_name == c_field_name_Created_Database ) )
    {
       name = string( c_field_display_name_Created_Database );
       get_module_string( c_field_display_name_Created_Database, &next );
    }
-   else if( id_or_name == c_field_id_Creation_Script || id_or_name == c_field_name_Creation_Script )
+   if( ( id_or_name == c_field_id_Creation_Script ) || ( id_or_name == c_field_name_Creation_Script ) )
    {
       name = string( c_field_display_name_Creation_Script );
       get_module_string( c_field_display_name_Creation_Script, &next );
    }
-   else if( id_or_name == c_field_id_Default_Image_Height || id_or_name == c_field_name_Default_Image_Height )
+   if( ( id_or_name == c_field_id_Default_Image_Height ) || ( id_or_name == c_field_name_Default_Image_Height ) )
    {
       name = string( c_field_display_name_Default_Image_Height );
       get_module_string( c_field_display_name_Default_Image_Height, &next );
    }
-   else if( id_or_name == c_field_id_Default_Image_Width || id_or_name == c_field_name_Default_Image_Width )
+   if( ( id_or_name == c_field_id_Default_Image_Width ) || ( id_or_name == c_field_name_Default_Image_Width ) )
    {
       name = string( c_field_display_name_Default_Image_Width );
       get_module_string( c_field_display_name_Default_Image_Width, &next );
    }
-   else if( id_or_name == c_field_id_Default_List_Print_Row_Limit || id_or_name == c_field_name_Default_List_Print_Row_Limit )
+   if( ( id_or_name == c_field_id_Default_List_Print_Row_Limit ) || ( id_or_name == c_field_name_Default_List_Print_Row_Limit ) )
    {
       name = string( c_field_display_name_Default_List_Print_Row_Limit );
       get_module_string( c_field_display_name_Default_List_Print_Row_Limit, &next );
    }
-   else if( id_or_name == c_field_id_Default_List_Row_Limit || id_or_name == c_field_name_Default_List_Row_Limit )
+   if( ( id_or_name == c_field_id_Default_List_Row_Limit ) || ( id_or_name == c_field_name_Default_List_Row_Limit ) )
    {
       name = string( c_field_display_name_Default_List_Row_Limit );
       get_module_string( c_field_display_name_Default_List_Row_Limit, &next );
    }
-   else if( id_or_name == c_field_id_Default_Max_Attached_File_Size || id_or_name == c_field_name_Default_Max_Attached_File_Size )
+   if( ( id_or_name == c_field_id_Default_Max_Attached_File_Size ) || ( id_or_name == c_field_name_Default_Max_Attached_File_Size ) )
    {
       name = string( c_field_display_name_Default_Max_Attached_File_Size );
       get_module_string( c_field_display_name_Default_Max_Attached_File_Size, &next );
    }
-   else if( id_or_name == c_field_id_Default_Multiline_Max_Rows || id_or_name == c_field_name_Default_Multiline_Max_Rows )
+   if( ( id_or_name == c_field_id_Default_Multiline_Max_Rows ) || ( id_or_name == c_field_name_Default_Multiline_Max_Rows ) )
    {
       name = string( c_field_display_name_Default_Multiline_Max_Rows );
       get_module_string( c_field_display_name_Default_Multiline_Max_Rows, &next );
    }
-   else if( id_or_name == c_field_id_Default_Multiline_Min_Rows || id_or_name == c_field_name_Default_Multiline_Min_Rows )
+   if( ( id_or_name == c_field_id_Default_Multiline_Min_Rows ) || ( id_or_name == c_field_name_Default_Multiline_Min_Rows ) )
    {
       name = string( c_field_display_name_Default_Multiline_Min_Rows );
       get_module_string( c_field_display_name_Default_Multiline_Min_Rows, &next );
    }
-   else if( id_or_name == c_field_id_Default_Multiline_Text_Limit || id_or_name == c_field_name_Default_Multiline_Text_Limit )
+   if( ( id_or_name == c_field_id_Default_Multiline_Text_Limit ) || ( id_or_name == c_field_name_Default_Multiline_Text_Limit ) )
    {
       name = string( c_field_display_name_Default_Multiline_Text_Limit );
       get_module_string( c_field_display_name_Default_Multiline_Text_Limit, &next );
    }
-   else if( id_or_name == c_field_id_Default_Multiline_Text_Trunc || id_or_name == c_field_name_Default_Multiline_Text_Trunc )
+   if( ( id_or_name == c_field_id_Default_Multiline_Text_Trunc ) || ( id_or_name == c_field_name_Default_Multiline_Text_Trunc ) )
    {
       name = string( c_field_display_name_Default_Multiline_Text_Trunc );
       get_module_string( c_field_display_name_Default_Multiline_Text_Trunc, &next );
    }
-   else if( id_or_name == c_field_id_Encrypt_Dynamic_Content || id_or_name == c_field_name_Encrypt_Dynamic_Content )
+   if( ( id_or_name == c_field_id_Encrypt_Dynamic_Content ) || ( id_or_name == c_field_name_Encrypt_Dynamic_Content ) )
    {
       name = string( c_field_display_name_Encrypt_Dynamic_Content );
       get_module_string( c_field_display_name_Encrypt_Dynamic_Content, &next );
    }
-   else if( id_or_name == c_field_id_Generate_Details || id_or_name == c_field_name_Generate_Details )
+   if( ( id_or_name == c_field_id_Generate_Details ) || ( id_or_name == c_field_name_Generate_Details ) )
    {
       name = string( c_field_display_name_Generate_Details );
       get_module_string( c_field_display_name_Generate_Details, &next );
    }
-   else if( id_or_name == c_field_id_Generate_Status || id_or_name == c_field_name_Generate_Status )
+   if( ( id_or_name == c_field_id_Generate_Status ) || ( id_or_name == c_field_name_Generate_Status ) )
    {
       name = string( c_field_display_name_Generate_Status );
       get_module_string( c_field_display_name_Generate_Status, &next );
    }
-   else if( id_or_name == c_field_id_Generate_Type || id_or_name == c_field_name_Generate_Type )
+   if( ( id_or_name == c_field_id_Generate_Type ) || ( id_or_name == c_field_name_Generate_Type ) )
    {
       name = string( c_field_display_name_Generate_Type );
       get_module_string( c_field_display_name_Generate_Type, &next );
    }
-   else if( id_or_name == c_field_id_Installing_Script || id_or_name == c_field_name_Installing_Script )
+   if( ( id_or_name == c_field_id_Installing_Script ) || ( id_or_name == c_field_name_Installing_Script ) )
    {
       name = string( c_field_display_name_Installing_Script );
       get_module_string( c_field_display_name_Installing_Script, &next );
    }
-   else if( id_or_name == c_field_id_Keep_Existing_Data || id_or_name == c_field_name_Keep_Existing_Data )
+   if( ( id_or_name == c_field_id_Keep_Existing_Data ) || ( id_or_name == c_field_name_Keep_Existing_Data ) )
    {
       name = string( c_field_display_name_Keep_Existing_Data );
       get_module_string( c_field_display_name_Keep_Existing_Data, &next );
    }
-   else if( id_or_name == c_field_id_Module_Prefix || id_or_name == c_field_name_Module_Prefix )
+   if( ( id_or_name == c_field_id_Module_Prefix ) || ( id_or_name == c_field_name_Module_Prefix ) )
    {
       name = string( c_field_display_name_Module_Prefix );
       get_module_string( c_field_display_name_Module_Prefix, &next );
    }
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
    {
       name = string( c_field_display_name_Name );
       get_module_string( c_field_display_name_Name, &next );
    }
-   else if( id_or_name == c_field_id_Print_Lists_With_Check_Boxes || id_or_name == c_field_name_Print_Lists_With_Check_Boxes )
+   if( ( id_or_name == c_field_id_Print_Lists_With_Check_Boxes ) || ( id_or_name == c_field_name_Print_Lists_With_Check_Boxes ) )
    {
       name = string( c_field_display_name_Print_Lists_With_Check_Boxes );
       get_module_string( c_field_display_name_Print_Lists_With_Check_Boxes, &next );
    }
-   else if( id_or_name == c_field_id_Print_Lists_With_Row_Numbers || id_or_name == c_field_name_Print_Lists_With_Row_Numbers )
+   if( ( id_or_name == c_field_id_Print_Lists_With_Row_Numbers ) || ( id_or_name == c_field_name_Print_Lists_With_Row_Numbers ) )
    {
       name = string( c_field_display_name_Print_Lists_With_Row_Numbers );
       get_module_string( c_field_display_name_Print_Lists_With_Row_Numbers, &next );
    }
-   else if( id_or_name == c_field_id_Registration_Key || id_or_name == c_field_name_Registration_Key )
+   if( ( id_or_name == c_field_id_Registration_Key ) || ( id_or_name == c_field_name_Registration_Key ) )
    {
       name = string( c_field_display_name_Registration_Key );
       get_module_string( c_field_display_name_Registration_Key, &next );
    }
-   else if( id_or_name == c_field_id_Show_Inaccessible_Modules || id_or_name == c_field_name_Show_Inaccessible_Modules )
+   if( ( id_or_name == c_field_id_Show_Inaccessible_Modules ) || ( id_or_name == c_field_name_Show_Inaccessible_Modules ) )
    {
       name = string( c_field_display_name_Show_Inaccessible_Modules );
       get_module_string( c_field_display_name_Show_Inaccessible_Modules, &next );
    }
-   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   if( ( id_or_name == c_field_id_Type ) || ( id_or_name == c_field_name_Type ) )
    {
       name = string( c_field_display_name_Type );
       get_module_string( c_field_display_name_Type, &next );
    }
-   else if( id_or_name == c_field_id_Use_Check_Boxes_for_Bools || id_or_name == c_field_name_Use_Check_Boxes_for_Bools )
+   if( ( id_or_name == c_field_id_Use_Check_Boxes_for_Bools ) || ( id_or_name == c_field_name_Use_Check_Boxes_for_Bools ) )
    {
       name = string( c_field_display_name_Use_Check_Boxes_for_Bools );
       get_module_string( c_field_display_name_Use_Check_Boxes_for_Bools, &next );
    }
-   else if( id_or_name == c_field_id_Use_Embedded_Images || id_or_name == c_field_name_Use_Embedded_Images )
+   if( ( id_or_name == c_field_id_Use_Embedded_Images ) || ( id_or_name == c_field_name_Use_Embedded_Images ) )
    {
       name = string( c_field_display_name_Use_Embedded_Images );
       get_module_string( c_field_display_name_Use_Embedded_Images, &next );
    }
-   else if( id_or_name == c_field_id_Use_Script || id_or_name == c_field_name_Use_Script )
+   if( ( id_or_name == c_field_id_Use_Script ) || ( id_or_name == c_field_name_Use_Script ) )
    {
       name = string( c_field_display_name_Use_Script );
       get_module_string( c_field_display_name_Use_Script, &next );
    }
-   else if( id_or_name == c_field_id_Use_TLS_Sessions || id_or_name == c_field_name_Use_TLS_Sessions )
+   if( ( id_or_name == c_field_id_Use_TLS_Sessions ) || ( id_or_name == c_field_name_Use_TLS_Sessions ) )
    {
       name = string( c_field_display_name_Use_TLS_Sessions );
       get_module_string( c_field_display_name_Use_TLS_Sessions, &next );
    }
-   else if( id_or_name == c_field_id_Use_URL_Checksum || id_or_name == c_field_name_Use_URL_Checksum )
+   if( ( id_or_name == c_field_id_Use_URL_Checksum ) || ( id_or_name == c_field_name_Use_URL_Checksum ) )
    {
       name = string( c_field_display_name_Use_URL_Checksum );
       get_module_string( c_field_display_name_Use_URL_Checksum, &next );
    }
-   else if( id_or_name == c_field_id_Use_Vertical_Menu || id_or_name == c_field_name_Use_Vertical_Menu )
+   if( ( id_or_name == c_field_id_Use_Vertical_Menu ) || ( id_or_name == c_field_name_Use_Vertical_Menu ) )
    {
       name = string( c_field_display_name_Use_Vertical_Menu );
       get_module_string( c_field_display_name_Use_Vertical_Menu, &next );
    }
-   else if( id_or_name == c_field_id_Version || id_or_name == c_field_name_Version )
+   if( ( id_or_name == c_field_id_Version ) || ( id_or_name == c_field_name_Version ) )
    {
       name = string( c_field_display_name_Version );
       get_module_string( c_field_display_name_Version, &next );
    }
-   else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
+   if( ( id_or_name == c_field_id_Workgroup ) || ( id_or_name == c_field_name_Workgroup ) )
    {
       name = string( c_field_display_name_Workgroup );
       get_module_string( c_field_display_name_Workgroup, &next );
    }
-   else if( id_or_name == c_field_id_Year_Created || id_or_name == c_field_name_Year_Created )
+   if( ( id_or_name == c_field_id_Year_Created ) || ( id_or_name == c_field_name_Year_Created ) )
    {
       name = string( c_field_display_name_Year_Created );
       get_module_string( c_field_display_name_Year_Created, &next );
@@ -5633,85 +5724,85 @@ string Meta_Application::get_field_display_name( const string& id_or_name ) cons
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
+   if( ( id_or_name == c_field_id_Actions ) || ( id_or_name == c_field_name_Actions ) )
       display_name = get_module_string( c_field_display_name_Actions );
-   else if( id_or_name == c_field_id_Add_Modules_Automatically || id_or_name == c_field_name_Add_Modules_Automatically )
+   if( ( id_or_name == c_field_id_Add_Modules_Automatically ) || ( id_or_name == c_field_name_Add_Modules_Automatically ) )
       display_name = get_module_string( c_field_display_name_Add_Modules_Automatically );
-   else if( id_or_name == c_field_id_Allow_Duplicate_Logins || id_or_name == c_field_name_Allow_Duplicate_Logins )
+   if( ( id_or_name == c_field_id_Allow_Duplicate_Logins ) || ( id_or_name == c_field_name_Allow_Duplicate_Logins ) )
       display_name = get_module_string( c_field_display_name_Allow_Duplicate_Logins );
-   else if( id_or_name == c_field_id_Allow_Module_Switching || id_or_name == c_field_name_Allow_Module_Switching )
+   if( ( id_or_name == c_field_id_Allow_Module_Switching ) || ( id_or_name == c_field_name_Allow_Module_Switching ) )
       display_name = get_module_string( c_field_display_name_Allow_Module_Switching );
-   else if( id_or_name == c_field_id_Auto_Login_Days || id_or_name == c_field_name_Auto_Login_Days )
+   if( ( id_or_name == c_field_id_Auto_Login_Days ) || ( id_or_name == c_field_name_Auto_Login_Days ) )
       display_name = get_module_string( c_field_display_name_Auto_Login_Days );
-   else if( id_or_name == c_field_id_Blockchain_Id || id_or_name == c_field_name_Blockchain_Id )
+   if( ( id_or_name == c_field_id_Blockchain_Id ) || ( id_or_name == c_field_name_Blockchain_Id ) )
       display_name = get_module_string( c_field_display_name_Blockchain_Id );
-   else if( id_or_name == c_field_id_Create_Database || id_or_name == c_field_name_Create_Database )
+   if( ( id_or_name == c_field_id_Create_Database ) || ( id_or_name == c_field_name_Create_Database ) )
       display_name = get_module_string( c_field_display_name_Create_Database );
-   else if( id_or_name == c_field_id_Created_Database || id_or_name == c_field_name_Created_Database )
+   if( ( id_or_name == c_field_id_Created_Database ) || ( id_or_name == c_field_name_Created_Database ) )
       display_name = get_module_string( c_field_display_name_Created_Database );
-   else if( id_or_name == c_field_id_Creation_Script || id_or_name == c_field_name_Creation_Script )
+   if( ( id_or_name == c_field_id_Creation_Script ) || ( id_or_name == c_field_name_Creation_Script ) )
       display_name = get_module_string( c_field_display_name_Creation_Script );
-   else if( id_or_name == c_field_id_Default_Image_Height || id_or_name == c_field_name_Default_Image_Height )
+   if( ( id_or_name == c_field_id_Default_Image_Height ) || ( id_or_name == c_field_name_Default_Image_Height ) )
       display_name = get_module_string( c_field_display_name_Default_Image_Height );
-   else if( id_or_name == c_field_id_Default_Image_Width || id_or_name == c_field_name_Default_Image_Width )
+   if( ( id_or_name == c_field_id_Default_Image_Width ) || ( id_or_name == c_field_name_Default_Image_Width ) )
       display_name = get_module_string( c_field_display_name_Default_Image_Width );
-   else if( id_or_name == c_field_id_Default_List_Print_Row_Limit || id_or_name == c_field_name_Default_List_Print_Row_Limit )
+   if( ( id_or_name == c_field_id_Default_List_Print_Row_Limit ) || ( id_or_name == c_field_name_Default_List_Print_Row_Limit ) )
       display_name = get_module_string( c_field_display_name_Default_List_Print_Row_Limit );
-   else if( id_or_name == c_field_id_Default_List_Row_Limit || id_or_name == c_field_name_Default_List_Row_Limit )
+   if( ( id_or_name == c_field_id_Default_List_Row_Limit ) || ( id_or_name == c_field_name_Default_List_Row_Limit ) )
       display_name = get_module_string( c_field_display_name_Default_List_Row_Limit );
-   else if( id_or_name == c_field_id_Default_Max_Attached_File_Size || id_or_name == c_field_name_Default_Max_Attached_File_Size )
+   if( ( id_or_name == c_field_id_Default_Max_Attached_File_Size ) || ( id_or_name == c_field_name_Default_Max_Attached_File_Size ) )
       display_name = get_module_string( c_field_display_name_Default_Max_Attached_File_Size );
-   else if( id_or_name == c_field_id_Default_Multiline_Max_Rows || id_or_name == c_field_name_Default_Multiline_Max_Rows )
+   if( ( id_or_name == c_field_id_Default_Multiline_Max_Rows ) || ( id_or_name == c_field_name_Default_Multiline_Max_Rows ) )
       display_name = get_module_string( c_field_display_name_Default_Multiline_Max_Rows );
-   else if( id_or_name == c_field_id_Default_Multiline_Min_Rows || id_or_name == c_field_name_Default_Multiline_Min_Rows )
+   if( ( id_or_name == c_field_id_Default_Multiline_Min_Rows ) || ( id_or_name == c_field_name_Default_Multiline_Min_Rows ) )
       display_name = get_module_string( c_field_display_name_Default_Multiline_Min_Rows );
-   else if( id_or_name == c_field_id_Default_Multiline_Text_Limit || id_or_name == c_field_name_Default_Multiline_Text_Limit )
+   if( ( id_or_name == c_field_id_Default_Multiline_Text_Limit ) || ( id_or_name == c_field_name_Default_Multiline_Text_Limit ) )
       display_name = get_module_string( c_field_display_name_Default_Multiline_Text_Limit );
-   else if( id_or_name == c_field_id_Default_Multiline_Text_Trunc || id_or_name == c_field_name_Default_Multiline_Text_Trunc )
+   if( ( id_or_name == c_field_id_Default_Multiline_Text_Trunc ) || ( id_or_name == c_field_name_Default_Multiline_Text_Trunc ) )
       display_name = get_module_string( c_field_display_name_Default_Multiline_Text_Trunc );
-   else if( id_or_name == c_field_id_Encrypt_Dynamic_Content || id_or_name == c_field_name_Encrypt_Dynamic_Content )
+   if( ( id_or_name == c_field_id_Encrypt_Dynamic_Content ) || ( id_or_name == c_field_name_Encrypt_Dynamic_Content ) )
       display_name = get_module_string( c_field_display_name_Encrypt_Dynamic_Content );
-   else if( id_or_name == c_field_id_Generate_Details || id_or_name == c_field_name_Generate_Details )
+   if( ( id_or_name == c_field_id_Generate_Details ) || ( id_or_name == c_field_name_Generate_Details ) )
       display_name = get_module_string( c_field_display_name_Generate_Details );
-   else if( id_or_name == c_field_id_Generate_Status || id_or_name == c_field_name_Generate_Status )
+   if( ( id_or_name == c_field_id_Generate_Status ) || ( id_or_name == c_field_name_Generate_Status ) )
       display_name = get_module_string( c_field_display_name_Generate_Status );
-   else if( id_or_name == c_field_id_Generate_Type || id_or_name == c_field_name_Generate_Type )
+   if( ( id_or_name == c_field_id_Generate_Type ) || ( id_or_name == c_field_name_Generate_Type ) )
       display_name = get_module_string( c_field_display_name_Generate_Type );
-   else if( id_or_name == c_field_id_Installing_Script || id_or_name == c_field_name_Installing_Script )
+   if( ( id_or_name == c_field_id_Installing_Script ) || ( id_or_name == c_field_name_Installing_Script ) )
       display_name = get_module_string( c_field_display_name_Installing_Script );
-   else if( id_or_name == c_field_id_Keep_Existing_Data || id_or_name == c_field_name_Keep_Existing_Data )
+   if( ( id_or_name == c_field_id_Keep_Existing_Data ) || ( id_or_name == c_field_name_Keep_Existing_Data ) )
       display_name = get_module_string( c_field_display_name_Keep_Existing_Data );
-   else if( id_or_name == c_field_id_Module_Prefix || id_or_name == c_field_name_Module_Prefix )
+   if( ( id_or_name == c_field_id_Module_Prefix ) || ( id_or_name == c_field_name_Module_Prefix ) )
       display_name = get_module_string( c_field_display_name_Module_Prefix );
-   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   if( ( id_or_name == c_field_id_Name ) || ( id_or_name == c_field_name_Name ) )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id_or_name == c_field_id_Print_Lists_With_Check_Boxes || id_or_name == c_field_name_Print_Lists_With_Check_Boxes )
+   if( ( id_or_name == c_field_id_Print_Lists_With_Check_Boxes ) || ( id_or_name == c_field_name_Print_Lists_With_Check_Boxes ) )
       display_name = get_module_string( c_field_display_name_Print_Lists_With_Check_Boxes );
-   else if( id_or_name == c_field_id_Print_Lists_With_Row_Numbers || id_or_name == c_field_name_Print_Lists_With_Row_Numbers )
+   if( ( id_or_name == c_field_id_Print_Lists_With_Row_Numbers ) || ( id_or_name == c_field_name_Print_Lists_With_Row_Numbers ) )
       display_name = get_module_string( c_field_display_name_Print_Lists_With_Row_Numbers );
-   else if( id_or_name == c_field_id_Registration_Key || id_or_name == c_field_name_Registration_Key )
+   if( ( id_or_name == c_field_id_Registration_Key ) || ( id_or_name == c_field_name_Registration_Key ) )
       display_name = get_module_string( c_field_display_name_Registration_Key );
-   else if( id_or_name == c_field_id_Show_Inaccessible_Modules || id_or_name == c_field_name_Show_Inaccessible_Modules )
+   if( ( id_or_name == c_field_id_Show_Inaccessible_Modules ) || ( id_or_name == c_field_name_Show_Inaccessible_Modules ) )
       display_name = get_module_string( c_field_display_name_Show_Inaccessible_Modules );
-   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   if( ( id_or_name == c_field_id_Type ) || ( id_or_name == c_field_name_Type ) )
       display_name = get_module_string( c_field_display_name_Type );
-   else if( id_or_name == c_field_id_Use_Check_Boxes_for_Bools || id_or_name == c_field_name_Use_Check_Boxes_for_Bools )
+   if( ( id_or_name == c_field_id_Use_Check_Boxes_for_Bools ) || ( id_or_name == c_field_name_Use_Check_Boxes_for_Bools ) )
       display_name = get_module_string( c_field_display_name_Use_Check_Boxes_for_Bools );
-   else if( id_or_name == c_field_id_Use_Embedded_Images || id_or_name == c_field_name_Use_Embedded_Images )
+   if( ( id_or_name == c_field_id_Use_Embedded_Images ) || ( id_or_name == c_field_name_Use_Embedded_Images ) )
       display_name = get_module_string( c_field_display_name_Use_Embedded_Images );
-   else if( id_or_name == c_field_id_Use_Script || id_or_name == c_field_name_Use_Script )
+   if( ( id_or_name == c_field_id_Use_Script ) || ( id_or_name == c_field_name_Use_Script ) )
       display_name = get_module_string( c_field_display_name_Use_Script );
-   else if( id_or_name == c_field_id_Use_TLS_Sessions || id_or_name == c_field_name_Use_TLS_Sessions )
+   if( ( id_or_name == c_field_id_Use_TLS_Sessions ) || ( id_or_name == c_field_name_Use_TLS_Sessions ) )
       display_name = get_module_string( c_field_display_name_Use_TLS_Sessions );
-   else if( id_or_name == c_field_id_Use_URL_Checksum || id_or_name == c_field_name_Use_URL_Checksum )
+   if( ( id_or_name == c_field_id_Use_URL_Checksum ) || ( id_or_name == c_field_name_Use_URL_Checksum ) )
       display_name = get_module_string( c_field_display_name_Use_URL_Checksum );
-   else if( id_or_name == c_field_id_Use_Vertical_Menu || id_or_name == c_field_name_Use_Vertical_Menu )
+   if( ( id_or_name == c_field_id_Use_Vertical_Menu ) || ( id_or_name == c_field_name_Use_Vertical_Menu ) )
       display_name = get_module_string( c_field_display_name_Use_Vertical_Menu );
-   else if( id_or_name == c_field_id_Version || id_or_name == c_field_name_Version )
+   if( ( id_or_name == c_field_id_Version ) || ( id_or_name == c_field_name_Version ) )
       display_name = get_module_string( c_field_display_name_Version );
-   else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
+   if( ( id_or_name == c_field_id_Workgroup ) || ( id_or_name == c_field_name_Workgroup ) )
       display_name = get_module_string( c_field_display_name_Workgroup );
-   else if( id_or_name == c_field_id_Year_Created || id_or_name == c_field_name_Year_Created )
+   if( ( id_or_name == c_field_id_Year_Created ) || ( id_or_name == c_field_name_Year_Created ) )
       display_name = get_module_string( c_field_display_name_Year_Created );
 
    return display_name;
@@ -5814,7 +5905,8 @@ class_base* Meta_Application::get_next_foreign_key_child(
    if( child_num >= 1 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
-      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+
+      if( ( ealci == g_external_aliases_lookup.end( ) ) || ( ealci->first > child_num ) )
          --ealci;
 
       p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
@@ -5874,6 +5966,7 @@ string Meta_Application::get_module_name( ) const
 string Meta_Application::get_display_name( bool plural ) const
 {
    string key( plural ? "plural_" : "class_" );
+
    key += "application";
 
    return get_module_string( key );
@@ -5948,11 +6041,11 @@ class_base& Meta_Application::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_302210" || sub_context == "child_Module" )
+   else if( ( sub_context == "_302210" ) || ( sub_context == "child_Module" ) )
       p_class_base = &child_Module( );
-   else if( sub_context == c_field_id_Creation_Script || sub_context == c_field_name_Creation_Script )
+   else if( ( sub_context == c_field_id_Creation_Script ) || ( sub_context == c_field_name_Creation_Script ) )
       p_class_base = &Creation_Script( );
-   else if( sub_context == c_field_id_Workgroup || sub_context == c_field_name_Workgroup )
+   else if( ( sub_context == c_field_id_Workgroup ) || ( sub_context == c_field_name_Workgroup ) )
       p_class_base = &Workgroup( );
 
    if( !p_class_base )
@@ -6006,7 +6099,7 @@ void Meta_Application::get_sql_column_names(
    names.push_back( "C_Workgroup" );
    names.push_back( "C_Year_Created" );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -6052,7 +6145,7 @@ void Meta_Application::get_sql_column_values(
    values.push_back( sql_quote( to_string( Workgroup( ) ) ) );
    values.push_back( to_string( Year_Created( ) ) );
 
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 }
 
@@ -6239,7 +6332,7 @@ void Meta_Application::static_get_foreign_key_info( foreign_key_info_container& 
 
 int Meta_Application::static_get_num_fields( bool* p_done, const string* p_class_name )
 {
-   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+   if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
 
    return c_num_fields;
