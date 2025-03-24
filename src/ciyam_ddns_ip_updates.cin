@@ -6,11 +6,13 @@
 ; NOTE: Each line of "ciyam_ddns_info" (if exists) will contain one domain name prefix
 ; with its matching record identity (or token where applicable) followed by a DDNS API
 ; domain and then (if required) the domain name suffix and credentials separating each
-; value with a space.
+; value with a space. A final optional name source can be used to create an alias that
+; is tied to the IP address of its source (such as 'tst1' being tied to 'test' below).
 ;
 ; [ciyam_ddns_info]
-; test 065d4d8f3b5adb4a08841eae3c80f4217ebb freemyip.com
-; test 87654321 api.name.com sample.net user_name:065d4d8f3b5adb4a08841eae3c80f4217ebb
+; test 065d4d8f3b5adb4a08841eae3c80f42 freemyip.com
+; test 87654321 api.name.com sample.net user_name:065d4d8f3b5adb4a08841eae3c80f42
+; tst1 87654321 api.name.com sample.net user_name:065d4d8f3b5adb4a08841eae3c80f42 test
 ;
 ; IMPORTANT: As "ciyam_ddns_info" file contains information that is sensitive (such as
 ; account names and tokens) it should be given the file permissions "600 (-rw-------)"
@@ -19,6 +21,10 @@
 ; If a file with the name "ciyam.<name>.ip.log" is found then it is assumed to contain
 ; the current IP address (in its last line) otherwise the server's own IP address will
 ; be obtained via the GET_IP_ADDR service.
+;
+; NOTE: To ensure correct file access and permissions and prevent the accidental usage
+; of the server's own IP address use "touch ciyam.<name>.ip.log" before adding any new
+; name that will be using this.
 ;
 GET_IP_ADDR=icanhazip.com
 ;GET_IP_ADDR=ipecho.net/plain
@@ -51,6 +57,7 @@ IDENTITY=%NAME_AND_INFO:2%
 API_DOMAIN=%NAME_AND_INFO:3%
 NAME_DOMAIN=%NAME_AND_INFO:4%
 CREDENTIALS=%NAME_AND_INFO:5%
+ALIAS_FOR_NAME=%NAME_AND_INFO:6%
 ;
 OLD_IP=
 ;
@@ -63,23 +70,39 @@ IP_FILE_NAME=$NAME.$NAME_DOMAIN.ip
 FILE=@files::$IP_FILE_NAME
 ;
 @ifneq "$FILE" ""
-OLD_IP=@file:$IP_FILE_NAME
+OLD_IP=@file:$FILE
 @endif
 ;
 NEW_IP=
 ;
+@ifndef $ALIAS_FOR_NAME
 FILE=@files::ciyam.$NAME.ip.log
+@else
+FILE=@files::$ALIAS_FOR_NAME.$NAME_DOMAIN.ip
+;
+@ifdef $FILE
+NEW_IP=@file:$FILE
+FILE=
+@endif
+;
+@endif
 ;
 USING_LOG=
 TRUNCATE_LOG=
 ;
 @ifeq "$FILE" ""
+;
+; NOTE: Either NEW_IP exists (due to being an alias)
+; or it will now obtain the server's own IP address.
+@ifndef $ALIAS_FOR_NAME
 NEW_IP=@file:~curl -s https://$GET_IP_ADDR
+@endif
+;
 @else
 ;
 USING_LOG=1
 ;
-LOG_TAIL=@file:~tail -n 2 ciyam.$NAME.ip.log
+LOG_TAIL=@file:~tail -n 2 $FILE
 ;
 NEW_IP=%LOG_TAIL:2%
 ;
@@ -129,8 +152,8 @@ ERROR=Unsupported minimal API type '$API_DOMAIN'.
 ; NOTE: More complex APIs that need user credentials and support multiple domains (such as "api.name.com").
 ;
 @ifeq "$API_DOMAIN" "api.name.com"
-RESPONSE=@file:~curl -s -u $~CREDENTIALS https://$API_DOMAIN/v4/domains/$NAME_DOMAIN/records/$~IDENTITY \
--X PUT -H 'Content-Type: application/json' --data '{"host":"$NAME","type":"$TYPE","answer":"$NEW_IP","ttl":60}'
+RESPONSE=@file:~curl -s -u $~CREDENTIALS https://$API_DOMAIN/v4/domains/$NAME_DOMAIN/records/$~IDENTITY\
+ -X PUT -H 'Content-Type: application/json' --data '{"host":"$NAME","type":"$TYPE","answer":"$NEW_IP","ttl":60}'
 ;
 ; NOTE: The first line of the response will contain "message" if there has been an error.
 CHECK_OKAY=@repstr:\"message\":%RESPONSE:1%
