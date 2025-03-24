@@ -50,7 +50,7 @@ There must always be a space either side of an operator with the following excep
   : in member access ( e.g. private: )
   [ when accessing or declaring an array ( e.g. arr[ i ]; )
   < when opening a template parameter list ( e.g. ref_count_ptr< T >; )
-  > when closeing an include ( e.g. #include <iostream> )
+  > when closing an include ( e.g. #include <iostream> )
 
   No space after
   --------------
@@ -110,13 +110,14 @@ Continuation
 ------------
 
 // NOTE: Line continuations indent by one space only (i.e. don't indent further for nesting).
+
 export_data( outs, module, all_field_data[ i ].class_id,
  all_field_data[ i ].value, last_class_id, output_fk_children, handler,
  all_class_ids, excludes, tests, includes, exported_records, exported_children,
  next_pass, will_be_exported, partial_export, rounds, current_round, future_rounds, ts, total );
 
-Line continuation is encouraged for readability with each line having a maximum of 135 characters (except for
-generated code where lines of up to 200 characters are acceptable).
+Line continuation is encouraged for readability with each line having a maximum of 160 characters
+(except for generated code where lines of up to 250 characters are acceptable).
 
 try keeping,
 code aligned,
