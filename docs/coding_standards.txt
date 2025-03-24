@@ -161,6 +161,8 @@ Apart from special cases in generated code comments should start with a "comment
 
 // FUTURE: A suggested performance or functionality improvement to be looked into later.
 
+// IMPORTANT: Something that is of more critical importance (such as data integrity implications).
+
 // i.e. 10 seconds (clarification about a constant value or similar)
 
 The following special comment is available if needed to prevent a check_source error for initialisation:
