@@ -2,8 +2,11 @@
    // [(start for_send_email_notification)] `{`$arg_id`}
    try
    {
-      if( !get_obj( ).`{`$arg_tfield`}( )
-       && !get_obj( ).`{`$arg_spfield`}( ).`{`$arg_email_address`}( ).empty( )
+      string user_key( get_obj( ).`{`$arg_spfield`}( ) );
+      string user_email( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_email_address`}( ) );
+
+      if( !user_email.empty( )
+       && !get_obj( ).`{`$arg_tfield`}( )
 `{`!`@eq`(`$arg_email_wanted`,`'`'`)\
        && get_obj( ).`{`$arg_spfield`}( ).`{`$arg_email_wanted`}( )
 `}\
@@ -20,12 +23,14 @@
             string subject( get_module_string( "`{`$arg_id`}_subject" ) );
             string message( get_module_string( "`{`$arg_id`}_message" ) );
 
-            subject = search_replace( subject, "@subject", get_obj( ).`{`$arg_field`}( ) );
+            string original_subject( get_obj( ).`{`$arg_field`}( ) );
+
+            subject = search_replace( subject, "@subject", original_subject );
 
 `{`!`@eq`(`$arg_o2field`,`'`'`)\
             message = search_replace( message, "@from", get_obj( ).`{`$arg_o2field`}( )`{`!`@eq`(`$arg_o2cfield`,`'`'`).`{`$arg_o2cfield`}( )`} );
 `}\
-            message = search_replace( message, "@subject", get_obj( ).`{`$arg_field`}( ) );
+            message = search_replace( message, "@subject", original_subject );
             message = search_replace( message, "@no_reply", get_module_string( c_str_no_reply_email_text ) );
             message = search_replace( message, "@content", get_obj( ).`{`$arg_sfield`}( ) );
 
@@ -34,9 +39,13 @@
             {
 `}\
 `{`$i`}            get_obj( ).op_update( );
+
 `{`$i`}            try
 `{`$i`}            {
-`{`$i`}               send_email_message( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_email_address`}( ), subject, message, "" );
+`{`$i`}               if( is_ntfy_email( user_email ) )
+`{`$i`}                  send_ntfy_message( user_key, original_subject );
+`{`$i`}               else
+`{`$i`}                  send_email_message( user_email, subject, message, "" );
 
 `{`$i`}               get_obj( ).`{`$arg_tfield`}( true );
 `{`$i`}               get_obj( ).op_apply( );
@@ -62,7 +71,10 @@
 
                try
                {
-                  send_email_message( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_email_address`}( ), subject, text_message, temp_file );
+                  if( is_ntfy_email( user_email ) )
+                     send_ntfy_message( user_key, original_subject );
+                  else
+                     send_email_message( user_email, subject, text_message, temp_file );
 
                   get_obj( ).`{`$arg_tfield`}( true );
                   get_obj( ).op_apply( );

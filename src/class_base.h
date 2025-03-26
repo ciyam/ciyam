@@ -1583,6 +1583,12 @@ void CIYAM_BASE_DECL_SPEC remove_class_map( const std::string& class_id, const s
 std::string CIYAM_BASE_DECL_SPEC get_class_map_value(
  const std::string& class_id, const std::string& map_id, const std::string& key );
 
+bool CIYAM_BASE_DECL_SPEC is_ntfy_email( const std::string& recipient );
+
+std::string CIYAM_BASE_DECL_SPEC ntfy_topic( const std::string& unique );
+
+void CIYAM_BASE_DECL_SPEC send_ntfy_message( const std::string& topic, const std::string& message );
+
 struct user_account
 {
    std::string sender;

@@ -20,9 +20,6 @@
 #  include <fstream>
 #  include <iomanip>
 #  include <iostream>
-#  ifdef _WIN32
-#     include <ctime>
-#  endif
 #  ifdef __GNUG__
 #     include <unistd.h>
 #     include <sys/stat.h>
@@ -42,6 +39,7 @@
 #include "smtp.h"
 #include "sha1.h"
 #include "regex.h"
+#include "base32.h"
 #include "base64.h"
 #include "config.h"
 #include "format.h"
@@ -83,13 +81,20 @@ namespace
 const string g_empty_fixed_key;
 
 const int c_max_graph_depth = 50;
+
 const int c_max_email_text_line = 8192;
 
 const size_t c_reserve_for_secret = 200;
 
 const size_t c_num_hash_rounds = 1000000;
 
+const size_t c_num_ntfy_topic_chars = 14;
+
 const size_t c_cascade_progress_seconds = 10;
+
+const char* const c_ntfy_dummy_user = "ntfy";
+const char* const c_ntfy_message_prefix = "[CIYAM]";
+const char* const c_ntfy_normal_reponse = "\"id\"";
 
 const char* const c_unique_item_set_suffix = "_uis";
 
@@ -380,11 +385,7 @@ string decode_text( const string& encoding, const string& charset, const string&
          char* p_buf = buffer;
          const char* p_src = next_line.c_str( );
 
-#  ifdef _WIN32
-         size_t rc = iconv( cd, &p_src, &isize, &p_buf, &avail );
-#  else
          size_t rc = iconv( cd, ( char** )&p_src, &isize, &p_buf, &avail );
-#  endif
 
          if( rc < 0 )
          {
@@ -509,11 +510,10 @@ string expanded_script_name( const string& script_name )
 {
    string s( script_name );
 
-#ifndef _WIN32
    string::size_type pos = script_name.find( '/' );
+
    if( pos == string::npos )
       s = "./" + s;
-#endif
 
    return s;
 }
@@ -3480,9 +3480,6 @@ string get_directory_for_file_name( const string& file_name )
 
 void add_user( const string* p_user_id )
 {
-#ifdef _WIN32
-   ( void )p_user_id;
-#else
    string user( get_environment_variable( c_env_var_ciyam_user ) );
 
    string user_id;
@@ -3502,7 +3499,6 @@ void add_user( const string* p_user_id )
       if( system( cmd.c_str( ) ) != 0 )
          throw runtime_error( "unexpected system failure for add_user" );
    }
-#endif
 }
 
 string generate_password( const string& user_id, bool include_prefix )
@@ -4042,6 +4038,7 @@ string check_with_regex( const string& r, const string& s, bool* p_rc )
       *p_rc = true;
 
    vector< string > refs;
+
    if( expr.search( s, 0, &refs ) == string::npos )
    {
       if( !s.empty( ) )
@@ -5075,6 +5072,65 @@ string get_class_map_value( const string& class_id, const string& map_id, const 
       retval = g_class_maps[ map_name ].second[ key ];
 
    return retval;
+}
+
+bool is_ntfy_email( const string& recipient )
+{
+   return ( recipient.find( c_ntfy_dummy_user ) == 0 );
+}
+
+string ntfy_topic( const string& unique )
+{
+   string retval;
+
+   sha256 hash( unique );
+
+   retval = hash.get_digest_as_string( );
+
+   keep_first_or_final_num_chars( retval, c_num_ntfy_topic_chars );
+
+   return base32::encode( hex_decode( retval ) );
+}
+
+void send_ntfy_message( const string& topic, const string& message )
+{
+   string ntfy_server( get_ntfy_server( ) );
+
+   if( !ntfy_server.empty( ) )
+   {
+      string topic_seed( topic );
+
+      if( topic_seed.empty( ) )
+         topic_seed = get_raw_system_variable( get_special_var_name( e_special_var_system_identity ) );
+
+      string tmp_file_name( "~" + uuid( ).as_string( ) );
+
+      string prefix( c_ntfy_message_prefix );
+
+      string cmd( "curl -s -d "
+       + escaped_shell_arg( prefix + " " + message )
+       + " https://" + ntfy_server + "/" + ntfy_topic( topic_seed ) );
+
+      cmd += " >" + tmp_file_name + " 2>&1";
+
+      TRACE_LOG( TRACE_SESSIONS, cmd );
+
+      int rc = system( cmd.c_str( ) );
+
+      ( void )rc;
+
+      if( file_exists( tmp_file_name ) )
+      {
+         string response;
+
+         buffer_file( response, tmp_file_name );
+
+         if( !response.empty( ) && ( response.find( c_ntfy_normal_reponse ) == string::npos ) )
+            TRACE_LOG( TRACE_ANYTHING, response );
+
+         file_remove( tmp_file_name );
+      }
+   }
 }
 
 void send_email_message(
@@ -7216,11 +7272,7 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
          cmd += "listunspent 1";
       else
       {
-#ifdef _WIN32
-         cmd += "listunspent 1 999999999 [";
-#else
          cmd += "listunspent 1 999999999 \"[";
-#endif
 
          for( size_t i = 0; i < addresses.size( ); i++ )
          {
@@ -7230,11 +7282,7 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
             cmd += "\\\"" + addresses[ i ] + "\\\"";
          }
 
-#ifdef _WIN32
-         cmd += "]";
-#else
          cmd += "]\"";
-#endif
       }
 
       cmd += " >" + file_name + " 2>&1";
