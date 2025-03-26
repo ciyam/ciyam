@@ -207,6 +207,8 @@ std::string CIYAM_BASE_DECL_SPEC get_checksum( const std::string& data );
 std::string CIYAM_BASE_DECL_SPEC get_timezone( );
 std::string CIYAM_BASE_DECL_SPEC get_web_root( );
 
+std::string CIYAM_BASE_DECL_SPEC get_ntfy_server( );
+
 bool CIYAM_BASE_DECL_SPEC get_is_accepted_ip_addr( const std::string& ip_addr );
 bool CIYAM_BASE_DECL_SPEC get_is_accepted_peer_ip_addr( const std::string& ip_addr );
 

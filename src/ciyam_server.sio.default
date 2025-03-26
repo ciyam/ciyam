@@ -12,6 +12,7 @@
 # <max_peers>100
  <set_trace>10000
 # <use_https>false
+# <ntfy_server>name.org
 # <max_sessions>100
 # <gpg_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <rpc_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==

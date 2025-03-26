@@ -188,6 +188,7 @@ const char* const c_attribute_arguments = "arguments";
 const char* const c_attribute_max_peers = "max_peers";
 const char* const c_attribute_set_trace = "set_trace";
 const char* const c_attribute_use_https = "use_https";
+const char* const c_attribute_ntfy_server = "ntfy_server";
 const char* const c_attribute_gpg_password = "gpg_password";
 const char* const c_attribute_max_sessions = "max_sessions";
 const char* const c_attribute_pem_password = "pem_password";
@@ -1551,9 +1552,12 @@ auto_ptr< ods_file_system > gap_ofs;
 
 string g_domain;
 string g_timezone;
+
 string g_web_root;
 
 string g_set_trace;
+
+string g_ntfy_server;
 
 bool g_use_udp = false;
 bool g_use_https = false;
@@ -4881,6 +4885,8 @@ void read_server_configuration( )
 
       g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, c_false ) ) == c_true );
 
+      g_ntfy_server = reader.read_opt_attribute( c_attribute_ntfy_server );
+
       g_max_sessions = atoi( reader.read_opt_attribute(
        c_attribute_max_sessions, to_string( c_max_sessions_default ) ).c_str( ) );
 
@@ -6224,6 +6230,11 @@ string get_timezone( )
 string get_web_root( )
 {
    return g_web_root;
+}
+
+string get_ntfy_server( )
+{
+   return g_ntfy_server;
 }
 
 bool get_is_accepted_ip_addr( const string& ip_addr )
