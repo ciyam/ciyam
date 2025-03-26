@@ -776,3 +776,13 @@ Creating new users and admin users for Matrix-Synapse
 sudo register_new_matrix_user -u ***user_name*** -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
 
 sudo register_new_matrix_user -u ***admin_name*** -a -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
+
+Upgrading to a new version of Lubuntu OS
+----------------------------------------
+
+sudo apt update
+sudo apt full-upgrade
+
+sudo reboot
+
+sudo do-release-upgrade
