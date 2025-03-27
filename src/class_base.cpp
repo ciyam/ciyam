@@ -88,6 +88,7 @@ const size_t c_reserve_for_secret = 200;
 
 const size_t c_num_hash_rounds = 1000000;
 
+const size_t c_ntfy_extra_rounds = 99999;
 const size_t c_num_ntfy_topic_chars = 14;
 
 const size_t c_cascade_progress_seconds = 10;
@@ -5076,40 +5077,77 @@ string get_class_map_value( const string& class_id, const string& map_id, const 
 
 bool is_ntfy_email( const string& recipient )
 {
-   return ( recipient.find( c_ntfy_dummy_user ) == 0 );
+   string::size_type pos = recipient.find( '@' );
+
+   string name( recipient.substr( 0, pos ) );
+
+   return ( name == c_ntfy_dummy_user );
 }
 
-string ntfy_topic( const string& unique )
+string ntfy_topic( const string& user_key )
 {
    string retval;
 
-   sha256 hash( unique );
+   string identity( get_raw_system_variable(
+    get_special_var_name( e_special_var_system_identity ) ) );
+
+   string topic_seed( user_key );
+
+   bool harden = false;
+
+   // NOTE: If the 'user_key' value does not contain
+   // the identity (such as an empty string or known
+   // special keys such as 'admin') then will append
+   // the system identity (so that each installation
+   // has its own unique topic values).
+   if( topic_seed.find( identity ) == string::npos )
+   {
+      harden = true;
+      topic_seed += identity;
+   }
+
+   sha256 hash( topic_seed );
 
    retval = hash.get_digest_as_string( );
+
+   // NOTE: For an empty or special key will harden the
+   // topic seed with numerous rounds (to prevent using
+   // a non-trivial brute force approach of determining
+   // the seed value). All normal user keys are created
+   // with both a time stamp prefix and identity suffix
+   // so are not being hardened.
+   if( harden )
+   {
+      for( size_t i = 0; i < c_ntfy_extra_rounds; i++ )
+      {
+         hash.update( retval + identity );
+         hash.get_digest_as_string( retval );
+      }
+   }
 
    keep_first_or_final_num_chars( retval, c_num_ntfy_topic_chars );
 
    return base32::encode( hex_decode( retval ) );
 }
 
-void send_ntfy_message( const string& topic, const string& message )
+void send_ntfy_message( const string& user_key, const string& message, bool throw_on_error )
 {
    string ntfy_server( get_ntfy_server( ) );
 
-   if( !ntfy_server.empty( ) )
+   if( ntfy_server.empty( ) )
    {
-      string topic_seed( topic );
-
-      if( topic_seed.empty( ) )
-         topic_seed = get_raw_system_variable( get_special_var_name( e_special_var_system_identity ) );
-
+      if( throw_on_error )
+         throw runtime_error( "missing 'ntfy_server' information" );
+   }
+   else
+   {
       string tmp_file_name( "~" + uuid( ).as_string( ) );
 
       string prefix( c_ntfy_message_prefix );
 
       string cmd( "curl -s -d "
        + escaped_shell_arg( prefix + " " + message )
-       + " https://" + ntfy_server + "/" + ntfy_topic( topic_seed ) );
+       + " https://" + ntfy_server + "/" + ntfy_topic( user_key ) );
 
       cmd += " >" + tmp_file_name + " 2>&1";
 
@@ -5125,10 +5163,15 @@ void send_ntfy_message( const string& topic, const string& message )
 
          buffer_file( response, tmp_file_name );
 
-         if( !response.empty( ) && ( response.find( c_ntfy_normal_reponse ) == string::npos ) )
-            TRACE_LOG( TRACE_ANYTHING, response );
-
          file_remove( tmp_file_name );
+
+         if( !response.empty( ) && ( response.find( c_ntfy_normal_reponse ) == string::npos ) )
+         {
+            if( throw_on_error )
+               throw runtime_error( response );
+
+            TRACE_LOG( TRACE_ANYTHING, response );
+         }
       }
    }
 }

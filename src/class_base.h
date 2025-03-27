@@ -1585,9 +1585,10 @@ std::string CIYAM_BASE_DECL_SPEC get_class_map_value(
 
 bool CIYAM_BASE_DECL_SPEC is_ntfy_email( const std::string& recipient );
 
-std::string CIYAM_BASE_DECL_SPEC ntfy_topic( const std::string& unique );
+std::string CIYAM_BASE_DECL_SPEC ntfy_topic( const std::string& user_key );
 
-void CIYAM_BASE_DECL_SPEC send_ntfy_message( const std::string& topic, const std::string& message );
+void CIYAM_BASE_DECL_SPEC send_ntfy_message(
+ const std::string& user_key, const std::string& message, bool throw_on_error = false );
 
 struct user_account
 {
