@@ -148,6 +148,7 @@ ciyam.hdr
 ciyam.idx
 ciyam.sql
 ciyam.tlg
+ciyam.modules.lst
 
 # Ignore ods_fsed storage files.
 ods_fsed.dat

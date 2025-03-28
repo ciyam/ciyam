@@ -16,6 +16,7 @@ else
   rm -f ciyam_server.sid ciyam_server.sid.sav $WEBDIR/meta/identity.txt $WEBDIR/meta/encrypted.txt
 
   ./config
+  sudo systemctl daemon-reload
   sudo systemctl start ciyamd
 
   sleep 0.5
