@@ -696,7 +696,7 @@ int64_t storage_channel_submitted_height( const string& identity )
    return from_string< int64_t >( peer_channel_height( identity, true, false ) );
 }
 
-string storage_channel_documents( const string& identity, bool height, bool fetched )
+string storage_channel_documents( const string& identity, bool get_height, bool for_fetched )
 {
    guard g( g_mutex );
 
@@ -726,7 +726,7 @@ string storage_channel_documents( const string& identity, bool height, bool fetc
    {
       ofs.set_folder( identity );
 
-      if( !height )
+      if( !get_height )
       {
          stringstream ss;
 
@@ -750,7 +750,7 @@ string storage_channel_documents( const string& identity, bool height, bool fetc
       {
          int64_t height = 0;
 
-         string height_file_name( fetched ? c_channel_fetched : c_channel_submitted );
+         string height_file_name( for_fetched ? c_channel_fetched : c_channel_submitted );
 
          string height_file_path( c_channel_folder_ciyam );
          height_file_path += '/' + height_file_name;

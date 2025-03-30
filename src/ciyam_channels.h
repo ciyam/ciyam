@@ -56,7 +56,7 @@ void CIYAM_BASE_DECL_SPEC storage_channel_destroy( const char* p_identity = 0 );
 void CIYAM_BASE_DECL_SPEC storage_channel_update( const char* p_identity = 0, const char* p_channel_information = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC storage_channel_documents(
- const std::string& identity, bool height = false, bool fetched = false );
+ const std::string& identity, bool get_height = false, bool for_fetched = false );
 
 void CIYAM_BASE_DECL_SPEC storage_channel_documents_open( const char* p_identity = 0 );
 void CIYAM_BASE_DECL_SPEC storage_channel_documents_close( const char* p_identity = 0 );
