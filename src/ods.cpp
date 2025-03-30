@@ -2439,13 +2439,14 @@ void ods::impl::force_write_header_file_info( bool for_close )
 {
    // NOTE: The file will be marked as corrupt unless "has_changed" is set true.
    temp_set_value< bool > temp_has_changed( *rp_has_changed, true );
+
    write_header_file_info( for_close );
 }
 
 bool ods::impl::found_instance_currently_reading( int64_t num )
 {
    for( vector< ods* >::iterator iter = rp_instances->begin( ); iter != rp_instances->end( ); ++iter )
-      if( *iter && ( *iter )->current_read_object_num == num )
+      if( *iter && ( ( *iter )->current_read_object_num == num ) )
          return true;
 
    return false;
@@ -2454,7 +2455,7 @@ bool ods::impl::found_instance_currently_reading( int64_t num )
 bool ods::impl::found_instance_currently_writing( int64_t num )
 {
    for( vector< ods* >::iterator iter = rp_instances->begin( ); iter != rp_instances->end( ); ++iter )
-      if( *iter && ( *iter )->current_write_object_num == num )
+      if( *iter && ( ( *iter )->current_write_object_num == num ) )
          return true;
 
    return false;
@@ -6794,7 +6795,7 @@ ods& operator >>( ods& o, storable_base& s )
    if( s.id.get_num( ) < 0 )
       THROW_ODS_ERROR( "unexpected null object id at " STRINGIZE( __LINE__ ) );
 
-   if( *o.p_impl->rp_bulk_level && *o.p_impl->rp_bulk_mode < ods::impl::e_bulk_mode_read )
+   if( *o.p_impl->rp_bulk_level && ( *o.p_impl->rp_bulk_mode < ods::impl::e_bulk_mode_read ) )
       THROW_ODS_ERROR( "cannot read when bulk locked for dumping" );
 
    temp_set_value< bool > tmp_in_read( o.is_in_read, true );
@@ -6814,6 +6815,7 @@ ods& operator >>( ods& o, storable_base& s )
 
    bool can_read = false;
    bool has_locked = false;
+   bool was_locked = false;
 
    int attempts = c_review_max_attempts;
 
@@ -6829,10 +6831,10 @@ ods& operator >>( ods& o, storable_base& s )
          if( !*o.p_impl->rp_bulk_level )
             ap_file_scope.reset( new ods::file_scope( o ) );
 
-         if( s.id.get_num( ) >= o.p_impl->rp_header_info->total_entries )
-            can_read = false;
-         else
+         if( s.id.get_num( ) < o.p_impl->rp_header_info->total_entries )
             can_read = true;
+         else
+            can_read = false;
 
          if( can_read )
          {
@@ -6840,6 +6842,7 @@ ods& operator >>( ods& o, storable_base& s )
                THROW_ODS_ERROR( "cannot read object currently being written" );
 
             o.read_index_entry( index_entry, s.id.get_num( ) );
+
             o.bytes_stored = index_entry.data.size;
 
             if( index_entry.lock_flag != ods_index_entry::e_lock_none )
@@ -6851,7 +6854,10 @@ ods& operator >>( ods& o, storable_base& s )
                 || ( index_entry.data.tran_id == o.p_impl->p_trans_buffer->tran_id ) )
                {
                   if( !o.p_impl->rp_ods_index_cache_buffer->lock_entry( s.id.get_num( ), false ) )
+                  {
                      can_read = false;
+                     was_locked = true;
+                  }
                   else
                      has_locked = true;
                }
@@ -6897,6 +6903,7 @@ ods& operator >>( ods& o, storable_base& s )
             }
 
             ++( *o.p_impl->rp_session_review_total );
+
             o.current_read_object_num = s.id.get_num( );
 
             break;
@@ -6908,7 +6915,12 @@ ods& operator >>( ods& o, storable_base& s )
    }
 
    if( !can_read )
-      THROW_ODS_ERROR( "cannot read (max. attempts exceeded)" );
+   {
+      if( !was_locked )
+         THROW_ODS_ERROR( "cannot read object (max. attempts exceeded)" );
+      else
+         THROW_ODS_ERROR( "cannot read from buffer (max. attempts exceeded)" );
+   }
 
    // NOTE: If within a transaction then reading data that has been committed by another transaction
    // that commenced after this one is prevented (this is needed to make transactions serializable).
@@ -7019,6 +7031,7 @@ ods& operator <<( ods& o, storable_base& s )
                THROW_ODS_ERROR( "cannot write object currently being written" );
 
             o.read_index_entry( index_entry, s.id.get_num( ) );
+
             old_tran_id = index_entry.data.tran_id;
 
             old_index_entry = index_entry;
@@ -7094,18 +7107,21 @@ ods& operator <<( ods& o, storable_base& s )
             if( p_total_to_increment == &*o.p_impl->rp_session_create_total )
             {
                DEBUG_LOG( "(create index entry)" );
+
                flags |= c_log_entry_item_op_create;
                ++o.p_impl->rp_header_info->total_entries;
             }
             else if( p_total_to_increment == &*o.p_impl->rp_session_revive_total )
             {
                DEBUG_LOG( "(revive index entry)" );
+
                flags |= c_log_entry_item_op_create;
                o.p_impl->rp_header_info->index_free_list = old_data_pos;
             }
             else
             {
                DEBUG_LOG( "(update index entry)" );
+
                flags |= c_log_entry_item_op_update;
             }
 
@@ -7202,6 +7218,7 @@ ods& operator <<( ods& o, storable_base& s )
             }
 
             o.current_write_object_num = s.id.get_num( );
+
             break;
          }
       }

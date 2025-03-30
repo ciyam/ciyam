@@ -234,10 +234,12 @@ void check_instance_op_permission( const string& module,
    if( !is_field_perm )
       perm = instance_get_variable( handle, "", get_special_var_name( e_special_var_permission ) );
 
-   if( !permission_info.empty( ) && ( permission_info != string( c_anyone ) || !perm.empty( ) ) )
+   if( !permission_info.empty( ) && ( !perm.empty( ) || ( permission_info != string( c_anyone ) ) ) )
    {
       string permission;
+
       string::size_type pos = permission_info.find( "=!" );
+
       if( pos != string::npos )
       {
          permission = permission_info.substr( pos + 2 );
@@ -249,10 +251,12 @@ void check_instance_op_permission( const string& module,
          permission = perm;
 
       bool okay = false;
-      if( uid == c_admin && ( permission_info == c_admin_only || permission_info == c_admin_owner ) )
+
+      if( ( uid == c_admin )
+       && ( ( permission_info == c_admin_only ) || ( permission_info == c_admin_owner ) ) )
          okay = true;
 
-      if( !okay && ( permission_info == c_owner_only || permission_info == c_admin_owner ) )
+      if( !okay && ( ( permission_info == c_owner_only ) || ( permission_info == c_admin_owner ) ) )
       {
          string owner( get_instance_owner( handle, "" ) );
 
@@ -337,16 +341,19 @@ void append_datachain_as_variable_if_found( size_t handle, string& field_values_
 
 string get_shortened_field_id( const string& module, const string& mclass, const string& field_id )
 {
-   // KLUDGE: If the module starts with a number assume it is Meta (which doesn't support field shortening).
-   if( !module.empty( ) && module[ 0 ] >= '0' && module[ 0 ] <= '9' )
+   // NOTE: If the module starts with a number then is assuming that it is Meta
+   // (which does not allow field shortening).
+   if( !module.empty( ) && ( module[ 0 ] >= '0' ) && ( module[ 0 ] <= '9' ) )
       return field_id;
 
    string::size_type pos = field_id.find( mclass );
+
    if( pos != string::npos )
       pos += mclass.length( );
    else
    {
       pos = field_id.find( module );
+
       if( pos != string::npos )
          pos += module.length( );
    }
@@ -758,7 +765,7 @@ void add_pdf_variables( size_t handle,
          // NOTE: As currently FK's are repeated (without the child in order to ensure
          // that the parent field value is retrieved) it can only be assumed that more
          // than one child for the same parent is being used if the count is > 2.
-         if( !field_context.empty( ) && all_contexts[ field_context ] > 2 )
+         if( !field_context.empty( ) && ( all_contexts[ field_context ] > 2 ) )
             value += " " + get_field_display_name( handle, context, field );
 
          pdf_variables.insert( make_pair( name, value ) );
@@ -1862,7 +1869,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             {
                string list_data;
 
-               if( !data.empty( ) && data[ 0 ] == ',' )
+               if( !data.empty( ) && ( data[ 0 ] == ',' ) )
                   data.erase( 0, 1 );
 
                vector< string > items;
@@ -1896,7 +1903,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
          else if( is_core )
          {
-            if( !data.empty( ) && data[ 0 ] == '@' )
+            if( !data.empty( ) && ( data[ 0 ] == '@' ) )
                data = buffer_file_lines( data.substr( 1 ) );
 
             if( is_blob )
@@ -1985,7 +1992,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string pat_or_tag( get_parm_val( parameters, c_cmd_ciyam_session_file_hash_pat_or_tag ) );
 
          // NOTE: Use !<prefix> to find the first matching full hash.
-         if( !pat_or_tag.empty( ) && pat_or_tag[ 0 ] == '!' )
+         if( !pat_or_tag.empty( ) && ( pat_or_tag[ 0 ] == '!' ) )
             response = get_hash( pat_or_tag.substr( 1 ) );
          else
          {
@@ -2108,7 +2115,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             bool output_total_blob_size = false;
 
-            if( !prefix.empty( ) && prefix[ 0 ] == '?' )
+            if( !prefix.empty( ) && ( prefix[ 0 ] == '?' ) )
             {
                prefix.erase( 0, 1 );
                output_total_blob_size = true;
@@ -2201,7 +2208,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
          else
          {
-            if( !pat_or_hash.empty( ) && pat_or_hash.find_first_of( "?*" ) == string::npos )
+            if( !pat_or_hash.empty( ) && ( pat_or_hash.find_first_of( "?*" ) == string::npos ) )
                response = get_hash_tags( pat_or_hash );
             else
             {
@@ -3063,7 +3070,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          for( size_t i = 0; i < field_list.size( ); i++ )
          {
-            if( !field_list[ i ].empty( ) && field_list[ i ][ 0 ] == '@' )
+            if( !field_list[ i ].empty( ) && ( field_list[ i ][ 0 ] == '@' ) )
             {
                field_inserts.insert( make_pair( non_inserts, field_list[ i ] ) );
                field_list.erase( field_list.begin( ) + i );
@@ -3071,7 +3078,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             else
             {
-               if( !field_list[ i ].empty( ) && field_list[ i ][ 0 ] == '!' )
+               if( !field_list[ i ].empty( ) && ( field_list[ i ][ 0 ] == '!' ) )
                {
                   field_list[ i ].erase( 0, 1 );
 
@@ -3196,7 +3203,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
          {
             // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
-            if( !i->first.empty( ) && i->first[ 0 ] == '@' )
+            if( !i->first.empty( ) && ( i->first[ 0 ] == '@' ) )
                instance_set_variable( handle, context, i->first, i->second );
             else
             {
@@ -3265,7 +3272,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             // NOTE: If a space is provided as the key then fetch the default record values or if the
             // first character of the key is a space then clone a default record from another.
-            if( !key_info.empty( ) && key_info[ 0 ] == ' ' )
+            if( !key_info.empty( ) && ( key_info[ 0 ] == ' ' ) )
             {
                if( create_pdf )
                   throw runtime_error( "pdf generation is not permitted for default values usage" );
@@ -3295,7 +3302,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
-                  if( !i->first.empty( ) && i->first[ 0 ] != '@' )
+                  if( !i->first.empty( ) && ( i->first[ 0 ] != '@' ) )
                   {
                      string method_name_and_args( "set " );
 
@@ -3400,7 +3407,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
                      {
                         // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
-                        if( !i->first.empty( ) && i->first[ 0 ] != '@' )
+                        if( !i->first.empty( ) && ( i->first[ 0 ] != '@' ) )
                         {
                            string method_name_and_args( "set " );
 
@@ -3798,7 +3805,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
-                  if( !i->first.empty( ) && i->first[ 0 ] != '@' )
+                  if( !i->first.empty( ) && ( i->first[ 0 ] != '@' ) )
                   {
                      bool is_encrypted = false;
                      bool is_transient = false;
@@ -4116,7 +4123,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
-                  if( !i->first.empty( ) && i->first[ 0 ] != '@' )
+                  if( !i->first.empty( ) && ( i->first[ 0 ] != '@' ) )
                   {
                      bool is_encrypted = false;
                      bool is_transient = false;
@@ -4323,7 +4330,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
-                  if( !i->first.empty( ) && i->first[ 0 ] == '@' )
+                  if( !i->first.empty( ) && ( i->first[ 0 ] == '@' ) )
                      instance_set_variable( handle, "", i->first, i->second );
                }
 
@@ -4346,7 +4353,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
                   {
                      // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
-                     if( !i->first.empty( ) && i->first[ 0 ] != '@' )
+                     if( !i->first.empty( ) && ( i->first[ 0 ] != '@' ) )
                      {
                         string method_name_and_args( "set " );
 
@@ -4414,7 +4421,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          // NOTE: If a method id/name is prefixed by an underbar then this command is deemed to be
          // a "non-transactional" command and will not be logged (nor will a be transaction used).
-         if( !method.empty( ) && method[ 0 ] == '_' )
+         if( !method.empty( ) && ( method[ 0 ] == '_' ) )
          {
             log_transaction = false;
             skip_transaction = true;
@@ -4425,7 +4432,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             // NOTE: If method id/name is prefixed by a minus sign then the command will still be
             // logged but a transaction will not be issued whilst handling the command here.
-            if( !method.empty( ) && method[ 0 ] == '-' )
+            if( !method.empty( ) && ( method[ 0 ] == '-' ) )
             {
                skip_transaction = true;
                method.erase( 0, 1 );
@@ -4434,7 +4441,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             // NOTE: If method id/name is prefixed by a forward slash then the command will not be
             // logged as an execute but as though an update command had been issued instead. It is
             // not valid to attempt to use this with multiple key values.
-            if( !method.empty( ) && method[ 0 ] == '/' )
+            if( !method.empty( ) && ( method[ 0 ] == '/' ) )
             {
                if( skip_transaction )
                   throw runtime_error( "invalid attempt to use log_as_update with skip_transaction in perform_execute" );
@@ -4547,7 +4554,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
             {
                // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
-               if( !i->first.empty( ) && i->first[ 0 ] == '@' )
+               if( !i->first.empty( ) && ( i->first[ 0 ] == '@' ) )
                   instance_set_variable( handle, "", i->first, i->second );
                else
                   has_any_set_flds = true;
@@ -4631,7 +4638,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   for( map< string, string >::iterator j = set_value_items.begin( ), end = set_value_items.end( ); j != end; ++j )
                   {
                      // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
-                     if( !j->first.empty( ) && j->first[ 0 ] != '@' )
+                     if( !j->first.empty( ) && ( j->first[ 0 ] != '@' ) )
                      {
                         bool is_encrypted = false;
                         bool is_transient = false;
@@ -4758,8 +4765,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // these are found in the initial return string then change them to just LF's.
                   for( size_t j = 0; j < next_response.size( ); j++ )
                   {
-                     if( j < next_response.size( ) - 1
-                      && next_response[ j ] == '\r' && next_response[ j + 1 ] == '\n' )
+                     if( j < ( next_response.size( ) - 1 )
+                      && ( next_response[ j ] == '\r' ) && ( next_response[ j + 1 ] == '\n' ) )
                      {
                         ++i;
                         return_response += '\n';
@@ -4769,7 +4776,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   }
 
                   ++num_responses;
-                  if( return_response.empty( ) && i < all_keys.size( ) - 1 )
+
+                  if( return_response.empty( ) && ( i < all_keys.size( ) - 1 ) )
                      return_response = c_response_okay_more;
 
                   if( !socket_handler.is_restoring( ) && !return_response.empty( ) )
@@ -6313,7 +6321,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             // NOTE: If using the 'init_identity' application protocol script then
             // the entropy can follow the password after a separator which will be
             // either one (or if the password itself contains spaces) two spaces.
-            if( !encrypted.empty( ) && info.size( ) >= 32 )
+            if( !encrypted.empty( ) && ( info.size( ) >= 32 ) )
             {
                string::size_type pos = info.find( c_two_spaces );
 
@@ -6496,7 +6504,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // whose name is prefixed by "passtotp.". To identify that the secret has been thus stored use a '*' as
          // the first character of "secret" followed by the suffix of the "passtotp.*" variable (so for the name
          // "passtotp.test" you would use a secret "*test".
-         if( !secret.empty( ) && secret[ 0 ] == '*' )
+         if( !secret.empty( ) && ( secret[ 0 ] == '*' ) )
             decrypt_data( secret, get_system_variable( string( c_passtotp_prefix ) + secret.substr( 1 ) ) );
 
          response = get_totp( secret );
@@ -6562,7 +6570,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !image_names.empty( ) )
             split( image_names, all_image_names );
 
-         if( !message.empty( ) && message[ 0 ] == '@' )
+         if( !message.empty( ) && ( message[ 0 ] == '@' ) )
          {
             if( exists_file( message.substr( 1 ) ) )
                message = buffer_file( message.substr( 1 ) );
@@ -6641,7 +6649,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          bool async = true;
 
-         if( !script_name.empty( ) && script_name[ 0 ] == '!' )
+         if( !script_name.empty( ) && ( script_name[ 0 ] == '!' ) )
          {
             async = false;
             script_name.erase( 0, 1 );
