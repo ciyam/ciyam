@@ -304,12 +304,14 @@ bool perform_action( const string& module_name,
    bool okay = true;
 
    vector< string > code_and_versions;
+
    if( !app.empty( ) )
       split( app, code_and_versions );
 
    const module_info& mod_info( *get_storage_info( ).modules_index.find( module_name )->second );
 
    string view_id;
+
    if( mod_info.view_cids.count( class_id ) )
       view_id = mod_info.view_cids.find( class_id )->second;
 
@@ -347,7 +349,7 @@ bool perform_action( const string& module_name,
    string current_dtm( dt.as_string( ) );
 
    // NOTE: If a view is found for the class and it contains a "modified" date/time field then this field will be updated.
-   if( !view_id.empty( ) && act == c_act_link )
+   if( !view_id.empty( ) && ( act == c_act_link ) )
    {
       for( size_t i = 0; i < mod_info.view_info.find( view_id )->second->fields.size( ); i++ )
       {
@@ -356,6 +358,7 @@ bool perform_action( const string& module_name,
          if( fld.field != c_key_field )
          {
             set< string > extras;
+
             if( !fld.extra.empty( ) )
                split( fld.extra, extras, '+' );
 
@@ -365,6 +368,7 @@ bool perform_action( const string& module_name,
                fields_and_values += fld.field;
                fields_and_values += '=';
                fields_and_values += "U" + current_dtm;
+
                break;
             }
          }
@@ -376,7 +380,7 @@ bool perform_action( const string& module_name,
    string exec_info( exec );
 
    // NOTE: If the method name has been prefixed with a '!' then it will be executed without version information.
-   if( !exec_info.empty( ) && exec_info[ 0 ] == '!' )
+   if( !exec_info.empty( ) && ( exec_info[ 0 ] == '!' ) )
    {
       is_versioned = false;
       exec_info.erase( 0, 1 );
@@ -384,13 +388,13 @@ bool perform_action( const string& module_name,
 
    // NOTE: If the method name has (also) been prefixed with a '^' then instance execution order will be reversed.
    bool is_reversed = false;
-   if( !exec_info.empty( ) && exec_info[ 0 ] == '^' )
+   if( !exec_info.empty( ) && ( exec_info[ 0 ] == '^' ) )
    {
       is_reversed = true;
       exec_info.erase( 0, 1 );
    }
 
-   if( is_reversed || act == c_act_rdel )
+   if( is_reversed || ( act == c_act_rdel ) )
       reverse( code_and_versions.begin( ), code_and_versions.end( ) );
 
    string key_list;
@@ -413,6 +417,7 @@ bool perform_action( const string& module_name,
             string next_ver;
 
             string::size_type pos = next_key.find( ' ' );
+
             if( pos != string::npos )
             {
                next_ver = next_key.substr( pos + 2 ); // NOTE: Skip the '=' prefix.
@@ -421,12 +426,14 @@ bool perform_action( const string& module_name,
 
             if( !key_list.empty( ) )
                key_list += ',';
+
             key_list += next_key;
 
             if( is_versioned )
             {
                if( !ver_list.empty( ) )
                   ver_list += ',';
+
                ver_list += next_ver;
             }
          }
@@ -439,7 +446,7 @@ bool perform_action( const string& module_name,
 
       if( act == c_act_link )
          act_cmd = c_cmd_update;
-      else if( act == c_act_del || act == c_act_rdel )
+      else if( ( act == c_act_del ) || ( act == c_act_rdel ) )
          act_cmd = c_cmd_destroy;
       else if( act == c_act_exec )
          act_cmd = c_cmd_execute;
@@ -529,7 +536,7 @@ bool perform_action( const string& module_name,
    {
       string output, response;
 
-      while( response.empty( ) || response[ 0 ] != '(' )
+      while( response.empty( ) || ( response[ 0 ] != '(' ) )
       {
          if( !response.empty( ) )
             timeout = c_subsequent_response_timeout;

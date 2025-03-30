@@ -1036,16 +1036,19 @@ string exec_args( const string& input )
    string args;
 
    string::size_type pos = input.find( ':' );
+
    args += input.substr( 0, pos );
 
    if( pos != string::npos )
    {
       args += " \"";
+
       string next( input.substr( pos + 1 ) );
 
       while( true )
       {
          pos = next.find( ';' );
+
          string next_arg( next.substr( 0, pos ) );
 
          if( next_arg == "~" )
@@ -1057,6 +1060,7 @@ string exec_args( const string& input )
             break;
 
          args += " ";
+
          next.erase( 0, pos + 1 );
       }
 
@@ -1251,15 +1255,19 @@ bool replace_action_parms( string& id, string& action,
 
       string str;
 
+      bool ignore = false;
+
       for( size_t j = 0; j < parms.size( ); j++ )
       {
-         if( j > 0 )
+         if( ( j > 0 ) && !ignore )
             str += ';';
 
          string next( parms[ j ] );
 
          if( next == c_action_parm_no_log )
          {
+            ignore = true;
+
             if( p_no_log )
                *p_no_log = true;
 
@@ -1271,6 +1279,8 @@ bool replace_action_parms( string& id, string& action,
             next = restrict_values;
          else if( next == c_action_parm_not_changing )
          {
+            ignore = true;
+
             if( p_not_changing )
                *p_not_changing = true;
 
@@ -1282,6 +1292,8 @@ bool replace_action_parms( string& id, string& action,
 
             if( pos != string::npos )
             {
+               ignore = true;
+
                string file_name( next.substr( strlen( c_action_parm_file_existence ) ) );
 
                bool exists = true;
@@ -1302,6 +1314,8 @@ bool replace_action_parms( string& id, string& action,
                continue;
             }
          }
+
+         ignore = false;
 
          if( next.empty( ) )
             next = "~";
