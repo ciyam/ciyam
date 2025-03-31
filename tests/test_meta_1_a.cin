@@ -93,6 +93,35 @@ storage_dump_locks
 storage_lock_modify 2 view
 storage_dump_locks
 storage_lock_remove 2
+storage_variable >test1 aaa
+storage_variable test2 bbb
+storage_variable >test3 ccc
+storage_variable test4 ddd
+storage_variable >test5 eee
+storage_variable >
+storage_variable <
+storage_variable test1 xxx
+storage_variable >
+storage_variable <
+storage_variable test3 yyy
+storage_variable >
+storage_variable <
+storage_variable test5 zzz
+storage_variable >
+storage_variable <
+storage_variable >test?
+storage_variable >
+storage_variable <
+storage_variable *
+storage_variable test1 aaa
+storage_variable test3 ccc
+storage_variable test5 eee
+storage_variable *
+storage_variable <
+storage_variable >test?
+storage_variable >
+storage_variable <
+storage_variable *
 session_variable @attached_file_path .
 object_create 100 100100
 object_op_update 1 guest

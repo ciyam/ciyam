@@ -92,6 +92,7 @@ storage_backup "create a storage backup" [<opt/-trunc/truncate>]<val//name>
 storage_create "link to a newly created storage" [<opt/-admin/admin>][<val/-directory=/directory>]<val//name>
 storage_comment "append a comment to the storage log" <val//text>
 storage_restore "perform storage restore" [<val/-trace=/trace_info>][<val/-stop_regex=/stop_regex>|<val/-stop_at_tx=/stop_at_tx>][<opt/-rebuild/rebuild>|<opt/-partial/partial>][<opt/-quicker/quicker>][<val/-directory=/directory>]<val//name>
+storage_variable "get/set a storage variable" <val//name>[<oval//new_value>]
 storage_web_root "get/set web root path of currently linked storage" [<opt/-expand/expand>][<oval//new_root>]
 storage_log_slice "slice a storage log into individual module logs" <val//name>[<list//modules>]
 storage_bulk_start "obtain bulk storage lock" <opt/read/read>|<opt/write/write>

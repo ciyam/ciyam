@@ -558,6 +558,8 @@ struct session
    object_instance_registry_container instance_registry;
 };
 
+static TLS( session )* gtp_session;
+
 struct op_lock
 {
    enum lock_type
@@ -769,11 +771,13 @@ struct storage_root
 void storage_root::store_as_text_files( ods_file_system& ofs )
 {
    string prefix( ( type == e_storage_type_peerchain ) ? "@" : "" );
+
    ofs.store_as_text_file( c_storable_file_name_id, prefix + identity );
 
    if( group_identity_old != group_identity_new )
    {
       group_identity_old = group_identity_new;
+
       ofs.store_as_text_file( c_storable_file_name_num_gid, group_identity_new );
    }
 
@@ -789,7 +793,7 @@ void storage_root::fetch_from_text_files( ods_file_system& ofs )
 {
    ofs.fetch_from_text_file( c_storable_file_name_id, identity );
 
-   if( identity.empty( ) || identity[ 0 ] != '@' )
+   if( identity.empty( ) || ( identity[ 0 ] != '@' ) )
       type = e_storage_type_standard;
    else
    {
@@ -800,6 +804,7 @@ void storage_root::fetch_from_text_files( ods_file_system& ofs )
    if( ofs.has_file( c_storable_file_name_num_gid ) )
    {
       ofs.fetch_from_text_file( c_storable_file_name_num_gid, group_identity_new );
+
       group_identity_old = group_identity_new;
    }
 
@@ -867,6 +872,9 @@ class storage_handler
    bool get_is_locked_for_admin( ) const { return is_locked_for_admin; }
    void set_is_locked_for_admin( bool lock_for_admin = true ) { is_locked_for_admin = lock_for_admin; }
 
+   string get_variable( const string& var_name );
+   void set_variable( const string& var_name, const string& new_value );
+
    void dump_cache( ostream& os ) const;
    void dump_locks( ostream& os ) const;
 
@@ -909,6 +917,7 @@ class storage_handler
 
    ods* p_ods;
    size_t ref_count;
+
    ods::bulk_write* p_bulk_write;
 
    ofstream log_file;
@@ -924,12 +933,16 @@ class storage_handler
    mutable mutex lock_mutex;
    mutable mutex cache_mutex;
 
+   mutable mutex variable_mutex;
+
    lock_container locks;
    lock_index_container lock_index;
 
    set< size_t > lock_duplicates;
 
    set< string > dead_keys;
+
+   map< string, string > variables;
 
    time_info_container key_for_time;
    map< string, time_t > time_for_key;
@@ -942,8 +955,282 @@ class storage_handler
    storage_handler& operator ==( const storage_handler& );
 };
 
+string storage_handler::get_variable( const string& var_name )
+{
+   guard g( variable_mutex );
+
+   string retval;
+
+   string name( var_name );
+
+   bool persist = false;
+   bool restore = false;
+
+   if( !name.empty( ) )
+   {
+      if( name[ 0 ] == c_persist_variable_prefix )
+         persist = true;
+      else if( name[ 0 ] == c_restore_variable_prefix )
+         restore = true;
+
+      if( persist || restore )
+         name.erase( 0, 1 );
+   }
+
+   // NOTE: If either the persist or restore prefix was provided
+   // with nothing else then will either output all of the names
+   // and values of persistent variables (if was persist prefix)
+   // or all that would be restored (if was the restore prefix).
+   // If a name or wildcard expression was provided then applies
+   // only to current matching persistent variables. If the name
+   // does not contain any wildcards and was persist prefixed if
+   // the variable exists (in memory) then it will be persisted.
+   if( persist || restore )
+   {
+      if( !gtp_session )
+         throw runtime_error( "unexpected missing session in storage_handler::get_variable" );
+
+      if( !ods::instance( ) )
+         throw runtime_error( "no ODS DB exists for this session in storage_handler::get_variable" );
+
+      if( persist )
+      {
+         if( gtp_session->ap_bulk_read.get( ) )
+            throw runtime_error( "storage is bulk locked for read by this session" );
+
+         auto_ptr< ods::bulk_write > ap_bulk_write;
+
+         if( !gtp_session->ap_bulk_write.get( ) )
+            ap_bulk_write.reset( new ods::bulk_write( *ods::instance( ) ) );
+
+         ods_file_system ofs( *ods::instance( ) );
+
+         if( ofs.has_folder( c_storable_folder_name_variables ) )
+         {
+            ofs.set_folder( c_storable_folder_name_variables );
+
+            string expr;
+
+            if( name.empty( ) || ( name == "*" ) )
+               expr += "*";
+            else
+               expr = name;
+
+            vector< string > variable_files;
+
+            ofs.list_files( expr, variable_files );
+
+            if( variable_files.empty( ) && ( name.find_first_of( "?*" ) == string::npos ) )
+            {
+               if( variables.count( name ) )
+               {
+                  retval = variables[ name ];
+
+                  ofs.store_as_text_file( name, retval );
+               }
+            }
+            else
+            {
+               for( size_t i = 0; i < variable_files.size( ); i++ )
+               {
+                  string next( variable_files[ i ] );
+
+                  string value;
+
+                  ofs.fetch_from_text_file( next, value );
+
+                  bool output = false;
+
+                  if( name.empty( ) )
+                     output = true;
+                  else
+                  {
+                     if( !variables.count( next ) )
+                        ofs.remove_file( next );
+                     else
+                     {
+                        if( value != variables[ next ] )
+                        {
+                           output = true;
+                           value = variables[ next ];
+
+                           ofs.store_as_text_file( next, value );
+                        }
+                     }
+                  }
+
+                  if( output )
+                  {
+                     if( !retval.empty( ) )
+                        retval += '\n';
+
+                     retval += next + ' ' + value;
+                  }
+               }
+            }
+         }
+      }
+      else
+      {
+         auto_ptr< ods::bulk_read > ap_bulk_read;
+
+         if( !gtp_session->ap_bulk_read.get( )
+          && !gtp_session->ap_bulk_write.get( ) )
+            ap_bulk_read.reset( new ods::bulk_read( *ods::instance( ) ) );
+
+         ods_file_system ofs( *ods::instance( ) );
+
+         if( ofs.has_folder( c_storable_folder_name_variables ) )
+         {
+            ofs.set_folder( c_storable_folder_name_variables );
+
+            string expr;
+
+            if( name.empty( ) || ( name == "*" ) )
+               expr += "*";
+            else
+               expr = name;
+
+            vector< string > variable_files;
+
+            ofs.list_files( expr, variable_files );
+
+            for( size_t i = 0; i < variable_files.size( ); i++ )
+            {
+               string next( variable_files[ i ] );
+
+               string value, current;
+
+               bool output = false;
+
+               ofs.fetch_from_text_file( next, value );
+
+               if( !name.empty( ) )
+               {
+                  if( !variables.count( next )
+                   || ( variables[ next ] != value ) )
+                  {
+                     output = true;
+                     variables[ next ] = value;
+                  }
+               }
+               else
+               {
+                  if( variables.count( next ) )
+                     current = variables[ next ];
+
+                  if( value != current )
+                     output = true;
+               }
+
+               if( output )
+               {
+                  if( !retval.empty( ) )
+                     retval += '\n';
+
+                  retval += next + ' ' + value;
+               }
+            }
+         }
+      }
+   }
+
+   if( !persist && !restore )
+   {
+      if( name.find_first_of( "?*" ) == string::npos )
+      {
+         if( variables.count( name ) )
+            retval = variables[ name ];
+      }
+      else
+      {
+         map< string, string >::const_iterator ci;
+
+         for( ci = variables.begin( ); ci != variables.end( ); ++ci )
+         {
+            if( wildcard_match( name, ci->first ) )
+            {
+               if( !retval.empty( ) )
+                  retval += '\n';
+
+               retval += ci->first + ' ' + ci->second;
+            }
+         }
+      }
+   }
+
+   return retval;
+}
+
+void storage_handler::set_variable( const string& var_name, const string& new_value )
+{
+   guard g( variable_mutex );
+
+   string name( var_name );
+
+   bool persist = false;
+
+   if( !name.empty( ) && ( name[ 0 ] == c_persist_variable_prefix ) )
+   {
+      persist = true;
+      name.erase( 0, 1 );
+   }
+
+   if( name.find_first_of( c_invalid_name_chars ) != string::npos )
+      throw runtime_error( "invalid storage variable name '" + name + "'" );
+
+   if( !name.empty( ) )
+   {
+      if( !new_value.empty( ) )
+         variables[ name ] = new_value;
+      else
+      {
+         if( variables.count( name ) )
+            variables.erase( name );
+      }
+
+      if( persist )
+      {
+         if( !gtp_session )
+            throw runtime_error( "unexpected missing session in storage_handler::set_variable" );
+
+          if( !ods::instance( ) )
+            throw runtime_error( "no ODS DB exists for this session in storage_handler::set_variable" );
+
+        if( gtp_session->ap_bulk_read.get( ) )
+            throw runtime_error( "storage is bulk locked for read by this session" );
+
+         auto_ptr< ods::bulk_write > ap_bulk_write;
+
+         if( !gtp_session->ap_bulk_write.get( ) )
+            ap_bulk_write.reset( new ods::bulk_write( *ods::instance( ) ) );
+
+         ods_file_system ofs( *ods::instance( ) );
+
+         if( !new_value.empty( )
+          && !ofs.has_folder( c_storable_folder_name_variables ) )
+            ofs.add_folder( c_storable_folder_name_variables );
+
+         if( ofs.has_folder( c_storable_folder_name_variables ) )
+         {
+            ofs.set_folder( c_storable_folder_name_variables );
+
+            if( new_value.empty( ) )
+            {
+               if( ofs.has_file( name ) )
+                  ofs.remove_file( name );
+            }
+            else
+               ofs.store_as_text_file( name, new_value );
+         }
+      }
+   }
+}
+
 void storage_handler::dump_cache( ostream& os ) const
 {
+   guard g( cache_mutex );
+
    os << "date_time_accessed  key (class_id:instance)                                          ver.rev\n";
    os << "------------------- ---------------------------------------------------------------- -------\n";
 
@@ -969,6 +1256,8 @@ void storage_handler::dump_cache( ostream& os ) const
 
 void storage_handler::dump_locks( ostream& os ) const
 {
+   guard g( lock_mutex );
+
    lock_index_const_iterator lici;
 
    bool minimal_output = !get_raw_session_variable(
@@ -2009,8 +2298,6 @@ session_container g_sessions;
 
 map< size_t, date_time > g_condemned_sessions;
 
-static TLS( session )* gtp_session;
-
 typedef vector< storage_handler* > storage_handler_container;
 
 typedef map< string, size_t > storage_handler_index_container;
@@ -2196,6 +2483,8 @@ void perform_storage_op( storage_op op,
                   ofs.add_folder( c_storable_folder_name_datachains );
             }
 
+            ofs.add_folder( c_storable_folder_name_variables );
+
             ap_handler->get_root( ).store_as_text_files( ofs );
 
             tx.commit( );
@@ -2224,6 +2513,26 @@ void perform_storage_op( storage_op op,
                   next.erase( 0, pos + 1 );
 
                ap_handler->get_root( ).module_list.push_back( next );
+            }
+
+            ofs.set_folder( ".." );
+
+            if( ofs.has_folder( c_storable_folder_name_variables ) )
+            {
+               ofs.set_folder( c_storable_folder_name_variables );
+
+               // NOTE: Restore all persistent storage variable values.
+               vector< string > variable_files;
+
+               ofs.list_files( variable_files );
+
+               for( size_t i = 0; i < variable_files.size( ); i++ )
+               {
+                  string value;
+                  ofs.fetch_from_text_file( variable_files[ i ], value );
+
+                  ap_handler->set_variable( variable_files[ i ], value );
+               }
             }
 
             // NOTE: Force an identity write to occur when the first transaction is logged.
@@ -11294,6 +11603,34 @@ void storage_identity( const string& new_identity )
 string storage_module_directory( )
 {
    return gtp_session->p_storage_handler->get_root( ).module_directory;
+}
+
+struct raw_storage_variable_getter : variable_getter
+{
+   string get_value( const string& name ) const { return get_raw_storage_variable( name ); }
+};
+
+bool has_storage_variable( const string& name_or_expr )
+{
+   return !get_storage_variable( name_or_expr ).empty( );
+}
+
+string get_storage_variable( const string& name_or_expr )
+{
+   raw_storage_variable_getter raw_getter;
+   variable_expression expr( name_or_expr, raw_getter );
+
+   return expr.get_value( );
+}
+
+string get_raw_storage_variable( const string& var_name )
+{
+   return gtp_session->p_storage_handler->get_variable( var_name );
+}
+
+void set_storage_variable( const string& var_name, const string& new_value )
+{
+   gtp_session->p_storage_handler->set_variable( var_name, new_value );
 }
 
 string storage_web_root( bool expand, bool check_is_linked )

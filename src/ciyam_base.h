@@ -680,6 +680,13 @@ void CIYAM_BASE_DECL_SPEC storage_identity( const std::string& new_identity );
 std::string CIYAM_BASE_DECL_SPEC storage_blockchain( );
 std::string CIYAM_BASE_DECL_SPEC storage_module_directory( );
 
+bool CIYAM_BASE_DECL_SPEC has_storage_variable( const std::string& name_or_expr );
+
+std::string CIYAM_BASE_DECL_SPEC get_storage_variable( const std::string& name_or_expr );
+std::string CIYAM_BASE_DECL_SPEC get_raw_storage_variable( const std::string& var_name );
+
+void CIYAM_BASE_DECL_SPEC set_storage_variable( const std::string& var_name, const std::string& new_value );
+
 std::string CIYAM_BASE_DECL_SPEC storage_web_root( bool expand, bool check_is_linked = false );
 void CIYAM_BASE_DECL_SPEC storage_web_root( const std::string& new_root );
 

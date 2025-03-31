@@ -24,6 +24,9 @@ const size_t c_key_rounds_multiplier = 30;
 
 const size_t c_auto_script_msleep = 1000; // i.e. 1 sec
 
+const char c_persist_variable_prefix = '>';
+const char c_restore_variable_prefix = '<';
+
 const char* const c_none = "none";
 const char* const c_okay = "okay";
 
@@ -126,6 +129,8 @@ const char* const c_test_shared_identity = "121d3373e";
 const char* const c_variables_branch = "Variables";
 const char* const c_web_files_branch = "Web_Files";
 
+const char* const c_invalid_name_chars = "<>\"|&\\";
+
 const char* const c_meta_model_name = "Meta";
 
 const char* const c_meta_app_directory = "meta";
@@ -173,6 +178,7 @@ const char* const c_storable_folder_name_modules = "modules";
 const char* const c_storable_folder_name_channels = "channels";
 const char* const c_storable_folder_name_gid_data = "gid_data";
 const char* const c_storable_folder_name_uid_data = "uid_data";
+const char* const c_storable_folder_name_variables = "variables";
 const char* const c_storable_folder_name_datachains = "datachains";
 
 const char* const c_special_regex_for_domain_name = "@domain_name";

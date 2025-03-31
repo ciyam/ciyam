@@ -236,6 +236,83 @@ handle key (class_id:instance)                       type
 ------ --------------------------------------------- ----------
 2      test:                                         view      
 storage_lock_remove 2
+storage_variable >test1 aaa
+storage_variable test2 bbb
+storage_variable >test3 ccc
+storage_variable test4 ddd
+storage_variable >test5 eee
+storage_variable >
+test1 aaa
+test3 ccc
+test5 eee
+storage_variable <
+storage_variable test1 xxx
+storage_variable >
+test1 aaa
+test3 ccc
+test5 eee
+storage_variable <
+test1 aaa
+storage_variable test3 yyy
+storage_variable >
+test1 aaa
+test3 ccc
+test5 eee
+storage_variable <
+test1 aaa
+test3 ccc
+storage_variable test5 zzz
+storage_variable >
+test1 aaa
+test3 ccc
+test5 eee
+storage_variable <
+test1 aaa
+test3 ccc
+test5 eee
+storage_variable >test?
+test1 xxx
+test3 yyy
+test5 zzz
+storage_variable >
+test1 xxx
+test3 yyy
+test5 zzz
+storage_variable <
+storage_variable *
+test1 xxx
+test2 bbb
+test3 yyy
+test4 ddd
+test5 zzz
+storage_variable test1 aaa
+storage_variable test3 ccc
+storage_variable test5 eee
+storage_variable *
+test1 aaa
+test2 bbb
+test3 ccc
+test4 ddd
+test5 eee
+storage_variable <
+test1 xxx
+test3 yyy
+test5 zzz
+storage_variable >test?
+test1 aaa
+test3 ccc
+test5 eee
+storage_variable >
+test1 aaa
+test3 ccc
+test5 eee
+storage_variable <
+storage_variable *
+test1 aaa
+test2 bbb
+test3 ccc
+test4 ddd
+test5 eee
 session_variable @attached_file_path .
 object_create 100 100100
 1

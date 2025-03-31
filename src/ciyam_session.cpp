@@ -5961,6 +5961,23 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             throw;
          }
       }
+      else if( command == c_cmd_ciyam_session_storage_variable )
+      {
+         string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_variable_name ) );
+         bool has_new_val = has_parm_val( parameters, c_cmd_ciyam_session_storage_variable_new_value );
+         string new_value( get_parm_val( parameters, c_cmd_ciyam_session_storage_variable_new_value ) );
+
+         possibly_expected_error = true;
+
+         if( has_new_val )
+         {
+            check_not_possible_protocol_response( new_value );
+
+            set_storage_variable( name, new_value );
+         }
+         else
+            response = get_storage_variable( name );
+      }
       else if( command == c_cmd_ciyam_session_storage_web_root )
       {
          bool expand = has_parm_val( parameters, c_cmd_ciyam_session_storage_web_root_expand );

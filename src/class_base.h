@@ -790,6 +790,7 @@ struct variable_expression
       if( pos != std::string::npos )
       {
          binary_type = expr[ pos ];
+
          is_binary_expression = is_logical_expression = true;
 
          var1 = expr.substr( 0, pos );
@@ -798,7 +799,7 @@ struct variable_expression
       else
          var1 = expr;
 
-      if( !var1.empty( ) && ( var1[ 0 ] == '!' || var1[ 0 ] == '?' ) )
+      if( !var1.empty( ) && ( ( var1[ 0 ] == '!' ) || ( var1[ 0 ] == '?' ) ) )
       {
          if( var1[ 0 ] == '!' )
             invert_1 = true;
@@ -807,7 +808,7 @@ struct variable_expression
          is_logical_expression = true;
       }
 
-      if( !var2.empty( ) && ( var2[ 0 ] == '!' || var2[ 0 ] == '?' ) )
+      if( !var2.empty( ) && ( ( var2[ 0 ] == '!' ) || ( var2[ 0 ] == '?' ) ) )
       {
          if( var2[ 0 ] == '!' )
             invert_2 = true;
@@ -840,16 +841,16 @@ struct variable_expression
          if( binary_type == '&' )
          {
             if( invert_2 )
-               result = result && getter.get_value( var2 ).empty( );
+               result = ( result && getter.get_value( var2 ).empty( ) );
             else
-               result = result && !getter.get_value( var2 ).empty( );
+               result = ( result && !getter.get_value( var2 ).empty( ) );
          }
          else
          {
             if( invert_2 )
-               result = result || getter.get_value( var2 ).empty( );
+               result = ( result || getter.get_value( var2 ).empty( ) );
             else
-               result = result || !getter.get_value( var2 ).empty( );
+               result = ( result || !getter.get_value( var2 ).empty( ) );
          }
 
          return ( result ? "1" : "" );
