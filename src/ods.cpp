@@ -6799,6 +6799,7 @@ ods& operator >>( ods& o, storable_base& s )
       THROW_ODS_ERROR( "cannot read when bulk locked for dumping" );
 
    temp_set_value< bool > tmp_in_read( o.is_in_read, true );
+
    finalise_value< int64_t > finalise_reading_object( o.current_read_object_num, -1 );
 
    int64_t trans_read_pos = -1;
@@ -6836,6 +6837,8 @@ ods& operator >>( ods& o, storable_base& s )
          else
             can_read = false;
 
+         was_locked = false;
+
          if( can_read )
          {
             if( o.p_impl->found_instance_currently_writing( s.id.get_num( ) ) )
@@ -6849,20 +6852,13 @@ ods& operator >>( ods& o, storable_base& s )
                can_read = false;
             else
             {
-               if( !o.p_impl->trans_level
-                || ( index_entry.trans_flag == ods_index_entry::e_trans_none )
-                || ( index_entry.data.tran_id == o.p_impl->p_trans_buffer->tran_id ) )
+               if( !o.p_impl->rp_ods_index_cache_buffer->lock_entry( s.id.get_num( ), false ) )
                {
-                  if( !o.p_impl->rp_ods_index_cache_buffer->lock_entry( s.id.get_num( ), false ) )
-                  {
-                     can_read = false;
-                     was_locked = true;
-                  }
-                  else
-                     has_locked = true;
+                  can_read = false;
+                  was_locked = true;
                }
                else
-                  can_read = false;
+                  has_locked = true;
             }
          }
 
@@ -6884,7 +6880,7 @@ ods& operator >>( ods& o, storable_base& s )
                   memset( o.trans_read_buffer.data, '\0', c_trans_bytes_per_item );
             }
 
-            if( index_entry.trans_flag == ods_index_entry::e_trans_none
+            if( ( index_entry.trans_flag == ods_index_entry::e_trans_none )
              || ( index_entry.data.tran_id != o.p_impl->p_trans_buffer->tran_id ) )
             {
                o.p_impl->read_from_trans = false;
@@ -6922,16 +6918,6 @@ ods& operator >>( ods& o, storable_base& s )
          THROW_ODS_ERROR( "cannot read from buffer (max. attempts exceeded)" );
    }
 
-   // NOTE: If within a transaction then reading data that has been committed by another transaction
-   // that commenced after this one is prevented (this is needed to make transactions serializable).
-   if( o.p_impl->trans_level && ( index_entry.data.tran_id > o.p_impl->p_trans_buffer->tran_id ) )
-   {
-      if( has_locked )
-         o.p_impl->rp_ods_index_cache_buffer->unlock_entry( s.id.get_num( ), false );
-
-      THROW_ODS_ERROR( "unable to read due to interim transaction write" );
-   }
-
    if( o.p_impl->read_from_trans )
       o.set_read_trans_data_pos( trans_read_pos );
    else
@@ -6940,6 +6926,7 @@ ods& operator >>( ods& o, storable_base& s )
    s.last_tran_id = index_entry.data.tran_id;
 
    ods::ods_stream ods_stream( o );
+
    s.get_instance( ods_stream );
 
    if( has_locked )
@@ -6978,6 +6965,7 @@ ods& operator <<( ods& o, storable_base& s )
       THROW_ODS_ERROR( "attempt to perform write when database was opened for read only access" );
 
    temp_set_value< bool > tmp_in_write( o.is_in_write, true );
+
    finalise_value< int64_t > finalise_writing_object( o.current_write_object_num, -1 );
 
    int64_t old_tran_id = -1;
@@ -7255,7 +7243,9 @@ ods& operator <<( ods& o, storable_base& s )
       DEBUG_LOG( osstr.str( ) );
 #endif
       restorable< bool > force_padding( o.p_impl->force_padding, true );
+
       byte_skip bs( o.bytes_reserved - o.bytes_used );
+
       ods_stream << bs;
    }
 
