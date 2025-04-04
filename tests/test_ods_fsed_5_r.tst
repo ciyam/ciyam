@@ -7,7 +7,7 @@ Total Entries = 3
 Tranlog Offset = 56
 Transaction Id = 2
 Index Free List = n/a
-Total Size of Data = 1569
+Total Size of Data = 1605
 Data Transformation Id = 1
 Index Transformation Id = 1
 
@@ -15,7 +15,7 @@ Index Transformation Id = 1
 num: 0000000000000000          pos: 0000000000000000          len: 0000000000000100
 txn: 0000000000000001          txo: 0000000000000000               flags: lk=0 tx=0
 
-num: 0000000000000001          pos: 0000000000000500          len: 0000000000000121
+num: 0000000000000001          pos: 0000000000000500          len: 0000000000000145
 txn: 0000000000000001          txo: 0000000000000000               flags: lk=0 tx=0
 
 num: 0000000000000002          pos: 0000000000000100          len: 0000000000000400
@@ -29,7 +29,7 @@ version = 1.1 (encrypted)
 sequence = 1
 val_hash = 2177926815
 entry_offs = 56
-append_offs = 1788
+append_offs = 1824
 
 ** Transaction Log Info for: all
 tx_id = 1 (offs = 56)
@@ -64,7 +64,7 @@ index_entry_id = 0
 
 flags = 16 (store) offs = 425
 data_pos = 1280
-data_size = 289
+data_size = 325
 index_entry_id = 1
 0000000000000000  67 4a 8e 9b c0 6b 64 b6 8c 3a 8b 04 1c f4 a0 32  gJ...kd..:.....2
 0000000000000010  29 b9 2c 19 83 7d 04 78 4b a2 17 e3 2e 99 bb 29  ).,..}.xK......)
@@ -84,9 +84,11 @@ index_entry_id = 1
 00000000000000f0  c1 2c 35 fe 78 71 37 8b c3 32 2f e3 8f a7 44 47  .,5.xq7..2/...DG
 0000000000000100  34 50 a3 cd f4 04 8c 84 b4 fb 1c f1 dd 3b 2a ef  4P...........;*.
 0000000000000110  1b d8 aa da 31 16 27 9e 21 5e 73 fc bb b2 ce bc  ....1.'.!^s.....
-0000000000000120  47                                               G
+0000000000000120  47 3f 0c 31 f8 1e 0e 9b d7 0c 18 39 0d c3 fe 1c  G?.1.......9....
+0000000000000130  34 99 8a 4b 0b 54 f4 f5 f5 3e 3e 41 18 6e df d7  4..K.T...>>A.n..
+0000000000000140  54 70 d0 bc 04                                   Tp...
 
-flags = 16 (store) offs = 739
+flags = 16 (store) offs = 775
 data_pos = 256
 data_size = 1024
 index_entry_id = 2

@@ -4,22 +4,22 @@ Num Logs = 1
 Num Trans = 0
 Num Writers = 0
 Total Entries = 10
-Tranlog Offset = 15877
+Tranlog Offset = 15913
 Transaction Id = 8
 Index Free List = n/a
-Total Size of Data = 13708
+Total Size of Data = 13744
 Data Transformation Id = 7
 Index Transformation Id = 33
 
 ** Entry Info for: 0-7
-num: 0000000000000000          pos: 00000000000001d3          len: 0000000000000058
+num: 0000000000000000          pos: 00000000000001f7          len: 0000000000000058
 txn: 0000000000000007          txo: 0000000000000000               flags: lk=0 tx=0
-00000000000001d3  67 60 fc 1b d9 97 f3 22 15 4d 4b 6f 1c 3c b0 0f  g`.....".MKo.<..
-00000000000001e3  2b c9 0b ee a7 b2 6d e0 00 01 e3 01 12 38 9f 4b  +.....m......8.K
-00000000000001f3  fb 7c 5b 67 99 b1 f5 41 ea 6f 5e a8 b4 7a e4 d2  .|[g...A.o^..z..
-0000000000000203  dd 4b 4a 02 58 d8 76 4d 63 07 e9 57 62 16 42 7c  .KJ.X.vMc..Wb.B|
-0000000000000213  51 35 cf 61 91 90 e1 95 da 1f 9a 68 49 b4 1e 2e  Q5.a.......hI...
-0000000000000223  a8 70 59 94 63 8b 6b 84                          .pY.c.k.
+00000000000001f7  4b b3 63 08 ec 6f 5e a8 b4 7a e4 d2 ac 24 25 76  K.c..o^..z...$%v
+0000000000000207  a7 27 89 b2 98 f8 16 a8 65 16 42 7c 54 35 cf 61  .'......e.B|T5.a
+0000000000000217  90 90 e1 95 dc 1f 9a 68 4b b4 1e 2e a0 70 59 94  .......hK....pY.
+0000000000000227  60 8b 6b 84 be a0 8b e6 38 02 e4 d6 f5 0f 30 83  `.k.....8.....0.
+0000000000000237  e2 8a 08 40 17 ab 8d b9 4b bb 74 44 03 46 38 29  ...@....K.tD.F8)
+0000000000000247  06 d0 71 f5 80 f4 e9 6e                          ..q....n
 
 num: 0000000000000001          pos: 0000000000000036          len: 000000000000001b
 txn: 0000000000000004          txo: 0000000000000000               flags: lk=0 tx=0
@@ -52,7 +52,7 @@ txn: 0000000000000007          txo: 0000000000000000               flags: lk=0 t
 0000000000000097  f1 30 a9 dc dd e9 94 8d cc 13 ba 66 67 0b a2 dc  .0.........fg...
 00000000000000a7  4e e4 82 b9 16 bb 74 15 0f c4 86                 N.....t....
 
-num: 0000000000000007          pos: 00000000000000b2          len: 0000000000000121
+num: 0000000000000007          pos: 00000000000000b2          len: 0000000000000145
 txn: 0000000000000007          txo: 0000000000000000               flags: lk=0 tx=0
 00000000000000b2  54 fc 81 8d f6 79 ec 52 42 d9 c9 92 60 35 18 20  T....y.RB...`5. 
 00000000000000c2  d1 f1 a0 b5 31 b4 3b d7 99 29 8e c3 f3 fd ba 65  ....1.;..).....e
@@ -72,7 +72,9 @@ txn: 0000000000000007          txo: 0000000000000000               flags: lk=0 t
 00000000000001a2  de fb f3 4f d1 17 84 5d 20 e8 a2 db d6 1e 49 8c  ...O...] .....I.
 00000000000001b2  83 b4 9b 7e 11 62 e3 c3 d6 5d 1c d6 8f 19 fc 9c  ...~.b...]......
 00000000000001c2  30 2e b4 c3 f4 21 49 d2 db cb e4 e7 b0 64 03 13  0....!I......d..
-00000000000001d2  10                                               .
+00000000000001d2  10 d5 19 0a 76 a8 fe ac 4e 7a 2a 14 0c 01 3d b1  ....v...Nz*...=.
+00000000000001e2  1e b7 42 9d 7e 36 3e f2 22 67 26 85 60 7e 4b fa  ..B.~6>."g&.`~K.
+00000000000001f2  2b dd 1c 26 6d                                   +..&m
 
 ** Freelist Info
 No freelist entries.
@@ -81,8 +83,8 @@ No freelist entries.
 version = 1.1 (encrypted)
 sequence = 1
 val_hash = 2177926815
-entry_offs = 15877
-append_offs = 29879
+entry_offs = 15913
+append_offs = 29951
 
 ** Transaction Log Info for: 0-7
 tx_id = 1 (offs = 56)
@@ -286,7 +288,7 @@ index_entry_id = 4
 tx_id = 5 (offs = 1612)
 commit_offs = 1839
 commit_items = 3
-next_entry_offs = 2326
+next_entry_offs = 2362
 prior_entry_offs = 1071
 total_data_bytes = 207
 data_transform_id = 4
@@ -331,7 +333,7 @@ index_entry_id = 6
 
 flags = 16 (store) offs = 2012
 data_pos = 330
-data_size = 289
+data_size = 325
 index_entry_id = 7
 0000000000000000  d9 cc 95 20 c6 26 69 90 9d d9 0f ef 1c a0 ea 7b  ... .&i........{
 0000000000000010  fa 9c d4 61 4b ce e2 48 63 43 07 22 d3 cd ea bd  ...aK..HcC."....
@@ -351,18 +353,20 @@ index_entry_id = 7
 00000000000000f0  1f 61 ca e1 d9 70 db 53 22 62 2a 4b 4c 6e f7 11  .a...p.S"b*KLn..
 0000000000000100  88 8a 94 92 0e 85 b1 39 97 ab 95 ec a2 90 5b 11  .......9......[.
 0000000000000110  3e 71 31 14 21 01 24 76 7e 59 b6 d5 70 7e 01 8c  >q1.!.$v~Y..p~..
-0000000000000120  e0                                               .
+0000000000000120  e0 12 38 ca 44 01 7d 72 07 f9 4b 40 e4 3a 17 08  ..8.D.}r..K@.:..
+0000000000000130  3a ab 89 59 e4 28 ad a9 dc 8c f6 f0 6e bb a8 f1  :..Y.(......n...
+0000000000000140  ef 03 a5 41 27                                   ...A'
 
-tx_id = 6 (offs = 2326)
-commit_offs = 2561
+tx_id = 6 (offs = 2362)
+commit_offs = 2597
 commit_items = 3
-next_entry_offs = 15877
+next_entry_offs = 15913
 prior_entry_offs = 1612
-total_data_bytes = 619
+total_data_bytes = 655
 data_transform_id = 5
 index_transform_id = 22
 
-flags = 2 (update) offs = 2448
+flags = 2 (update) offs = 2484
 tx_oid = 5
 data_pos = 207
 data_size = 80
@@ -373,27 +377,27 @@ index_entry_id = 0
 0000000000000030  22 63 62 06 61 5f ff 3b 39 a9 5c 7c 6d 12 c4 50  "cb.a_.;9.\|m..P
 0000000000000040  78 20 a3 5e 80 8a d3 54 87 28 db 99 75 dd 49 8e  x .^...T.(..u.I.
 
-flags = 16 (store) offs = 2561
-data_pos = 619
+flags = 16 (store) offs = 2597
+data_pos = 655
 data_size = 88
 index_entry_id = 0
-0000000000000000  a0 41 3c 29 70 14 2d 6b 96 2c 1f 87 27 16 09 2b  .A<)p.-k.,..'..+
-0000000000000010  37 02 cf 74 b9 21 36 1e eb d1 96 0f d7 db 94 8f  7..t.!6.........
-0000000000000020  25 c5 3c 2d c4 07 56 2e 4f 73 dc 50 31 a9 a5 43  %.<-..V.Os.P1..C
-0000000000000030  8b 1c e0 55 07 ad 59 2d 8d 50 cb 80 ba 23 8b f5  ...U..Y-.P...#..
-0000000000000040  24 c5 80 b6 03 22 ae 7f af 51 2c 30 f8 00 14 01  $...."...Q,0....
-0000000000000050  59 8f 73 28 ca ed 66 9e                          Y.s(..f.
+0000000000000000  16 05 c0 67 49 73 dc 50 31 a9 a5 43 fa 73 8f 21  ...gIs.P1..C.s.!
+0000000000000010  f8 52 a6 d2 76 af 34 7f bd 23 8b f5 21 c5 80 b6  .R..v.4..#..!...
+0000000000000020  02 22 ae 7f a9 51 2c 30 fa 00 14 01 51 8f 73 28  ."...Q,0....Q.s(
+0000000000000030  c9 ed 66 9e b5 0f 27 a0 76 65 a3 90 51 e9 d2 e1  ..f...'.ve..Q...
+0000000000000040  c2 94 a9 d0 68 20 80 d7 df 1d 10 e5 41 4e 86 87  ....h ......AN..
+0000000000000050  ed 97 f3 00 af 23 b2 c8                          .....#..
 
-tx_id = 7 (offs = 15877)
-commit_offs = 15965
+tx_id = 7 (offs = 15913)
+commit_offs = 16001
 commit_items = 7
 next_entry_offs = 0
-prior_entry_offs = 2326
-total_data_bytes = 13860
+prior_entry_offs = 2362
+total_data_bytes = 13896
 data_transform_id = 6
 index_transform_id = 26
 
-flags = 32 (store) offs = 15965
+flags = 32 (store) offs = 16001
 tx_oid = 4
 data_pos = 81
 data_opos = 153
@@ -402,7 +406,7 @@ index_entry_id = 5
 0000000000000000  c5 f2 b9 8c f2 ec b9 7f ab 04 02 f4 5d 23 b1 1b  ............]#..
 0000000000000010  7d 46 e9 bb 74 15 0f c4 86 34 87                 }F..t....4.
 
-flags = 32 (store) offs = 16033
+flags = 32 (store) offs = 16069
 tx_oid = 4
 data_pos = 108
 data_opos = 180
@@ -411,7 +415,7 @@ index_entry_id = 4
 0000000000000000  e2 a9 86 16 9e 26 22 e4 cd d1 35 fb d7 ee 1f 6e  .....&"...5....n
 0000000000000010  78 2a b3 be 5b ac f9 0d fe b3 9c                 x*..[......
 
-flags = 32 (store) offs = 16101
+flags = 32 (store) offs = 16137
 tx_oid = 5
 data_pos = 135
 data_opos = 287
@@ -421,11 +425,11 @@ index_entry_id = 6
 0000000000000010  0e e5 e1 3b 4d 82 3f ee b3 18 81 14 aa da 69 e5  ...;M.?.......i.
 0000000000000020  89 62 40 62 21 d9 94 c5 28 80 ba                 .b@b!...(..
 
-flags = 32 (store) offs = 16185
+flags = 32 (store) offs = 16221
 tx_oid = 5
 data_pos = 178
 data_opos = 330
-data_size = 289
+data_size = 325
 index_entry_id = 7
 0000000000000000  d9 cc 95 20 c6 26 69 90 9d d9 0f ef 1c a0 ea 7b  ... .&i........{
 0000000000000010  fa 9c d4 61 4b ce e2 48 63 43 07 22 d3 cd ea bd  ...aK..HcC."....
@@ -445,17 +449,19 @@ index_entry_id = 7
 00000000000000f0  1f 61 ca e1 d9 70 db 53 22 62 2a 4b 4c 6e f7 11  .a...p.S"b*KLn..
 0000000000000100  88 8a 94 92 0e 85 b1 39 97 ab 95 ec a2 90 5b 11  .......9......[.
 0000000000000110  3e 71 31 14 21 01 24 76 7e 59 b6 d5 70 7e 01 8c  >q1.!.$v~Y..p~..
-0000000000000120  e0                                               .
+0000000000000120  e0 12 38 ca 44 01 7d 72 07 f9 4b 40 e4 3a 17 08  ..8.D.}r..K@.:..
+0000000000000130  3a ab 89 59 e4 28 ad a9 dc 8c f6 f0 6e bb a8 f1  :..Y.(......n...
+0000000000000140  ef 03 a5 41 27                                   ...A'
 
-flags = 32 (store) offs = 16515
+flags = 32 (store) offs = 16587
 tx_oid = 6
-data_pos = 467
-data_opos = 619
+data_pos = 503
+data_opos = 655
 data_size = 88
 index_entry_id = 0
-0000000000000000  a0 41 3c 29 70 14 2d 6b 96 2c 1f 87 27 16 09 2b  .A<)p.-k.,..'..+
-0000000000000010  37 02 cf 74 b9 21 36 1e eb d1 96 0f d7 db 94 8f  7..t.!6.........
-0000000000000020  25 c5 3c 2d c4 07 56 2e 4f 73 dc 50 31 a9 a5 43  %.<-..V.Os.P1..C
-0000000000000030  8b 1c e0 55 07 ad 59 2d 8d 50 cb 80 ba 23 8b f5  ...U..Y-.P...#..
-0000000000000040  24 c5 80 b6 03 22 ae 7f af 51 2c 30 f8 00 14 01  $...."...Q,0....
-0000000000000050  59 8f 73 28 ca ed 66 9e                          Y.s(..f.
+0000000000000000  16 05 c0 67 49 73 dc 50 31 a9 a5 43 fa 73 8f 21  ...gIs.P1..C.s.!
+0000000000000010  f8 52 a6 d2 76 af 34 7f bd 23 8b f5 21 c5 80 b6  .R..v.4..#..!...
+0000000000000020  02 22 ae 7f a9 51 2c 30 fa 00 14 01 51 8f 73 28  ."...Q,0....Q.s(
+0000000000000030  c9 ed 66 9e b5 0f 27 a0 76 65 a3 90 51 e9 d2 e1  ..f...'.ve..Q...
+0000000000000040  c2 94 a9 d0 68 20 80 d7 df 1d 10 e5 41 4e 86 87  ....h ......AN..
+0000000000000050  ed 97 f3 00 af 23 b2 c8                          .....#..

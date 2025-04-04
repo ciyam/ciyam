@@ -9,3 +9,4 @@
 `{`$new_rounds`=`'12345`'`}
 `{`$use_salt_val`=`'false`'`}
 `{`$ui_script_version`=`'1`'`}
+`{`$ui_log_connections`=`'false`'`}

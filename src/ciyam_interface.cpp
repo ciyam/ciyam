@@ -1442,19 +1442,41 @@ void request_handler::process_request( )
                {
                   ip_address address( c_default_ciyam_host, c_default_ciyam_port );
 
+#ifdef FCGI_UI_LOG_CONNECTIONS
+                  LOG_TRACE( "(connecting for " + raddr + ")" );
+#endif
+
                   bool has_connected = p_session_info->p_socket->connect( address, c_connect_timeout );
 
                   // NOTE: Will pause and then attempt to connect once again before reporting that
                   // the application server is unavailable (this is because the first connect will
                   // sometimes fail after a system restore due to the new server socket acceptor).
+                  // To prevent unnecessary delays initially only waits for 25ms but if this isn't
+                  // sufficient will then wait another 2.5s before retrying again.
                   if( !has_connected )
                   {
                      p_session_info->p_socket->close( );
 
-                     msleep( 2500 );
+                     msleep( 25 );
+
+                     DEBUG_TRACE( "[re-opening socket]" );
 
                      if( p_session_info->p_socket->open( ) )
+                     {
                         has_connected = p_session_info->p_socket->connect( address, c_connect_timeout );
+
+                        if( !has_connected )
+                        {
+                           p_session_info->p_socket->close( );
+
+                           msleep( 2500 );
+
+                           DEBUG_TRACE( "[re-opening socket again]" );
+
+                           if( p_session_info->p_socket->open( ) )
+                              has_connected = p_session_info->p_socket->connect( address, c_connect_timeout );
+                        }
+                     }
                   }
 
                   if( !has_connected )

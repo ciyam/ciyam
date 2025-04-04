@@ -7,7 +7,7 @@ Total Entries = 3
 Tranlog Offset = 530
 Transaction Id = 5
 Index Free List = n/a
-Total Size of Data = 1569
+Total Size of Data = 1605
 Data Transformation Id = 3
 Index Transformation Id = 9
 
@@ -15,7 +15,7 @@ Index Transformation Id = 9
 num: 0000000000000000          pos: 0000000000000000          len: 0000000000000100
 txn: 0000000000000004          txo: 0000000000000000               flags: lk=0 tx=0
 
-num: 0000000000000001          pos: 0000000000000500          len: 0000000000000121
+num: 0000000000000001          pos: 0000000000000500          len: 0000000000000145
 txn: 0000000000000003          txo: 0000000000000000               flags: lk=0 tx=0
 
 num: 0000000000000002          pos: 0000000000000100          len: 0000000000000400
@@ -37,7 +37,7 @@ commit_offs = 1490
 commit_items = 2
 next_entry_offs = 0
 prior_entry_offs = 0
-total_data_bytes = 1569
+total_data_bytes = 1605
 data_transform_id = 2
 index_transform_id = 6
 

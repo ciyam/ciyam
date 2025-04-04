@@ -1,13 +1,13 @@
 aaa
 bbb
 ccc
-config.info.default (289 B)
+config.info.default (325 B)
 mnemonics.txt (13.1 kB)
 begin transaction (level = 1)
 aaa
 bbb
 ccc
-config.info.default (289 B)
+config.info.default (325 B)
 mnemonics.txt (13.1 kB)
 ddd
 eee
@@ -16,19 +16,19 @@ rollback transaction (level = 1)
 aaa
 bbb
 ccc
-config.info.default (289 B)
+config.info.default (325 B)
 mnemonics.txt (13.1 kB)
 aaa
 bbb
 ccc
-config.info.default (289 B)
+config.info.default (325 B)
 mnemonics.txt (13.1 kB)
 begin transaction (level = 1)
 commit transaction (level = 1)
 aaa
 bbb
 ccc
-config.info.default (289 B)
+config.info.default (325 B)
 mnemonics.txt (13.1 kB)
 ddd
 eee
@@ -36,7 +36,7 @@ fff
 aaa
 bbb
 ccc
-config.info.default (289 B)
+config.info.default (325 B)
 mnemonics.txt (13.1 kB)
 ddd
 eee

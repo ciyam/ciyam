@@ -8,7 +8,7 @@ Total Entries = 4
 Tranlog Offset = 0
 Transaction Id = 7
 Index Free List = 3
-Total Size of Data = 1569
+Total Size of Data = 1605
 Data Transformation Id = 6
 Index Transformation Id = 20
 
@@ -99,7 +99,7 @@ txn: 0000000000000006          txo: 0000000000000000               flags: lk=0 t
 00000000000004e0  b5 5a 1b 99 e9 3b 2b 78 4a c1 cb 62 d0 e0 f4 22  .Z...;+xJ..b..."
 00000000000004f0  d3 58 3e 14 76 a7 96 2c c5 8f 83 a6 02 c0 9b 80  .X>.v..,........
 
-num: 0000000000000002          pos: 0000000000000500          len: 0000000000000121
+num: 0000000000000002          pos: 0000000000000500          len: 0000000000000145
 txn: 0000000000000004          txo: 0000000000000000               flags: lk=0 tx=0
 0000000000000500  67 4a 8e 9b c0 6b 64 b6 8c 3a 8b 04 1c f4 a0 32  gJ...kd..:.....2
 0000000000000510  29 b9 2c 19 83 7d 04 78 4b a2 17 e3 2e 99 bb 29  ).,..}.xK......)
@@ -119,7 +119,9 @@ txn: 0000000000000004          txo: 0000000000000000               flags: lk=0 t
 00000000000005f0  c1 2c 35 fe 78 71 37 8b c3 32 2f e3 8f a7 44 47  .,5.xq7..2/...DG
 0000000000000600  34 50 a3 cd f4 04 8c 84 b4 fb 1c f1 dd 3b 2a ef  4P...........;*.
 0000000000000610  1b d8 aa da 31 16 27 9e 21 5e 73 fc bb b2 ce bc  ....1.'.!^s.....
-0000000000000620  47                                               G
+0000000000000620  47 3f 0c 31 f8 1e 0e 9b d7 0c 18 39 0d c3 fe 1c  G?.1.......9....
+0000000000000630  34 99 8a 4b 0b 54 f4 f5 f5 3e 3e 41 18 6e df d7  4..K.T...>>A.n..
+0000000000000640  54 70 d0 bc 04                                   Tp...
 
 ** Freelist Info
 First freelist entry = 3

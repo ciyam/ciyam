@@ -16,6 +16,8 @@
 `{`!`(`?`$use_iconv`)`|`@eq`(`$use_iconv`,`'0`'`)`|`@eq`(`$use_iconv`,`'false`'`)//`}#  define ICONV_SUPPORT
 `{`!`(`?`$use_rdline`)`|`@eq`(`$use_rdline`,`'0`'`)`|`@eq`(`$use_rdline`,`'false`'`)//`}#  define RDLINE_SUPPORT
 
+`{`!`(`?`$ui_log_connections`)`|`@eq`(`$ui_log_connections`,`'0`'`)`|`@eq`(`$ui_log_connections`,`'false`'`)//`}#  define FCGI_UI_LOG_CONNECTIONS
+
 const int c_default_ciyam_port = `{`$port`};
 const int c_default_ciyam_peer_port = `{`$pport`};
 
