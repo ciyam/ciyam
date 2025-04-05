@@ -53,6 +53,9 @@ sudo reboot
 Use sudo without a password
 ---------------------------
 
+chsh
+(use this to select a preferred shell)
+
 sudo update-alternatives --config editor
 (use this to select the default editor)
 
@@ -92,8 +95,10 @@ Install all required packages for CIYAM Software Manufacturing
 --------------------------------------------------------------
 
 sudo apt install git -y
+(this should already be installed)
+
 sudo apt install qrencode -y
-(these should already be installed)
+(this is likely to already be installed)
 
 sudo apt install libpng-dev -y
 sudo apt install libhpdf-dev -y
@@ -171,6 +176,7 @@ sudo systemctl enable ufw
 
 sudo ufw allow ssh
 sudo ufw allow http
+sudo ufw allow https
 sudo ufw allow 12021
 
 git clone https://github.com/ciyam/fcgi.git
