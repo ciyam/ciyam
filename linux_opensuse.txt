@@ -568,7 +568,7 @@ sudo systemctl status apache2
 curl https://***domain_name***/_matrix/client/versions
 curl https://***domain_name***/_matrix/federation/v1/version
 
-Install and Configure a TURN server for use with Matrix-Synapse
+Install and configure a TURN server for use with Matrix-Synapse
 ---------------------------------------------------------------
 NOTE: Not reqwuired if only using Element-Call for audio/video.
 
@@ -674,7 +674,7 @@ turn_allow_guests: true
 sudo systemctl restart matrix-synapse
 sudo systemctl status matrix-synapse
 
-Install and Configure the Ntfy service for use with Apache2 and Matrix-Synapse
+Install and configure the Ntfy service for use with Apache2 and Matrix-Synapse
 ------------------------------------------------------------------------------
 
 wget https://github.com/binwiederhier/ntfy/releases/download/v2.11.0/ntfy_2.11.0_linux_amd64.tar.gz
