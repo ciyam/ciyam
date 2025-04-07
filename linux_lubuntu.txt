@@ -468,7 +468,7 @@ sudo apt-get install python3-certbot
 sudo apt-get install python3-certbot-apache
 
 sudo certbot --noninteractive --register-unsafely-without-email --agree-tos --apache -d ***domain_name***,www.***domain_name***
-NOTE: Also append ",ntfy.***domain.name***" if wanting to use the "ntfy" service for self-hosted Element-X notifications.
+NOTE: Also append ",ntfy.***domain_name***" if wanting to use the "ntfy" service for self-hosted Element-X notifications.
 
 sudo systemctl daemon-reload
 sudo systemctl status certbot
@@ -563,8 +563,8 @@ Include /etc/letsencrypt/options-ssl-apache.conf
     ServerName ***domain_name***
 
 (copy these from above)
-SSLCertificateFile /etc/letsencrypt/live/***domain.name***/fullchain.pem
-SSLCertificateKeyFile /etc/letsencrypt/live/***domain.name***/privkey.pem
+SSLCertificateFile /etc/letsencrypt/live/***domain_name***/fullchain.pem
+SSLCertificateKeyFile /etc/letsencrypt/live/***domain_name***/privkey.pem
 
     RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}
     AllowEncodedSlashes NoDecode
@@ -788,7 +788,7 @@ Install and configure email services with Postfix and Dovecot
 
 sudo apt install postfix
 (select "Internet Site")
-(type ***domain.name***)
+(type ***domain_name***)
 
 sudo dpkg-reconfigure postfix
 (use defaults but enter "admin" as the alternative to root)
@@ -809,16 +809,17 @@ sudo postconf -e 'broken_sasl_auth_clients = yes'
 sudo postconf -e 'smtpd_sasl_auth_enable = yes'
 sudo postconf -e 'smtpd_recipient_restrictions = permit_sasl_authenticated,permit_mynetworks,reject_unauth_destination'
 
-sudo postconf -e 'smtpd_tls_cert_file = /etc/letsencrypt/live/***domain.name***/fullchain.pem'
-sudo postconf -e 'smtpd_tls_key_file = /etc/letsencrypt/live/***domain.name***/privkey.pem'
+sudo postconf -e 'smtpd_tls_cert_file = /etc/letsencrypt/live/***domain_name***/fullchain.pem'
+sudo postconf -e 'smtpd_tls_key_file = /etc/letsencrypt/live/***domain_name***/privkey.pem'
 
-NOTE: If the domain name is not just "domain.name" but "subdomain.domain.name" then
-set "mydomain" to the same as "myhostname" in order to send to "name@domain.name".
+NOTE: If the ***domain_name*** in use contains three parts (e.g. "home.server.net")
+then will need to set "mydomain" to "myhostname" to send email to "user@server.net"
+(if it's a different host otherwise such addresses are treated as virtual aliases).
 
 sudo vi /etc/postfix/main.cf
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
-mydomain = ***domain.name***
+mydomain = ***domain_name***
 ...
 mydestination = $myhostname, $mydomain, localhost.$mydomain, , localhost
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -828,8 +829,8 @@ sudo postconf -e 'virtual_alias_maps = hash:/etc/postfix/virtual'
 
 sudo vi /etc/postfix/virtual
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-root@***domain.name*** admin
-postmaster@***domain.name*** admin
+root@***domain_name*** admin
+postmaster@***domain_name*** admin
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo postmap /etc/postfix/virtual
@@ -872,8 +873,8 @@ sudo vi /etc/dovecot/conf.d/10-ssl.conf
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ssl = required
 ...
-ssl_cert = </etc/letsencrypt/live/***domain.name***/fullchain.pem
-ssl_key = </etc/letsencrypt/live//***domain.name***/privkey.pem
+ssl_cert = </etc/letsencrypt/live/***domain_name***/fullchain.pem
+ssl_key = </etc/letsencrypt/live//***domain_name***/privkey.pem
 ...
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
