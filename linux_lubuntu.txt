@@ -563,8 +563,8 @@ Include /etc/letsencrypt/options-ssl-apache.conf
     ServerName ***domain_name***
 
 (copy these from above)
-SSLCertificateFile /etc/letsencrypt/live/mgp.ciyam.org/fullchain.pem
-SSLCertificateKeyFile /etc/letsencrypt/live/mgp.ciyam.org/privkey.pem
+SSLCertificateFile /etc/letsencrypt/live/***domain.name***/fullchain.pem
+SSLCertificateKeyFile /etc/letsencrypt/live/***domain.name***/privkey.pem
 
     RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}
     AllowEncodedSlashes NoDecode
@@ -828,8 +828,8 @@ sudo postconf -e 'virtual_alias_maps = hash:/etc/postfix/virtual'
 
 sudo vi /etc/postfix/virtual
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-root@test.ciyam.org admin
-postmaster@test.ciyam.org admin
+root@***domain.name*** admin
+postmaster@***domain.name*** admin
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo postmap /etc/postfix/virtual
