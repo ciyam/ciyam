@@ -598,7 +598,7 @@ sudo systemctl status apache2
 curl https://***domain_name***/_matrix/client/versions
 curl https://***domain_name***/_matrix/federation/v1/version
 
-Install and Configure a TURN server for use with Matrix-Synapse
+Install and configure a TURN server for use with Matrix-Synapse
 ---------------------------------------------------------------
 NOTE: Not reqwuired if only using Element-Call for audio/video.
 
@@ -705,7 +705,7 @@ turn_allow_guests: true
 sudo systemctl restart matrix-synapse
 sudo systemctl status matrix-synapse
 
-Install and Configure the Ntfy service for use with Apache2 and Matrix-Synapse
+Install and configure the Ntfy service for use with Apache2 and Matrix-Synapse
 ------------------------------------------------------------------------------
 
 sudo mkdir -p /etc/apt/keyrings
@@ -782,6 +782,124 @@ Creating new users and admin users for Matrix-Synapse
 sudo register_new_matrix_user -u ***user_name*** -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
 
 sudo register_new_matrix_user -u ***admin_name*** -a -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
+
+Install and configure email services with Postfix and Dovecot
+-------------------------------------------------------------
+
+sudo apt install postfix
+(select "Internet Site")
+(type ***domain.name***)
+
+sudo dpkg-reconfigure postfix
+(use defaults but enter "admin" as the alternative to root)
+
+sudo vi /etc/aliases
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+root:              admin
+...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo newaliases
+
+sudo postconf -e 'smtpd_sasl_type = dovecot'
+sudo postconf -e 'smtpd_sasl_path = private/auth'
+sudo postconf -e 'smtpd_sasl_security_options = noanonymous'
+sudo postconf -e 'broken_sasl_auth_clients = yes'
+sudo postconf -e 'smtpd_sasl_auth_enable = yes'
+sudo postconf -e 'smtpd_recipient_restrictions = permit_sasl_authenticated,permit_mynetworks,reject_unauth_destination'
+
+sudo postconf -e 'smtpd_tls_cert_file = /etc/letsencrypt/live/***domain.name***/fullchain.pem'
+sudo postconf -e 'smtpd_tls_key_file = /etc/letsencrypt/live/***domain.name***/privkey.pem'
+
+NOTE: If the domain name is not just "domain.name" but "subdomain.domain.name" then
+set "mydomain" to the same as "myhostname" in order to send to "name@domain.name".
+
+sudo vi /etc/postfix/main.cf
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+mydomain = ***domain.name***
+...
+mydestination = $myhostname, $mydomain, localhost.$mydomain, , localhost
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo postconf -e 'virtual_alias_domains = $mydomain'
+sudo postconf -e 'virtual_alias_maps = hash:/etc/postfix/virtual'
+
+sudo vi /etc/postfix/virtual
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+root@test.ciyam.org admin
+postmaster@test.ciyam.org admin
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo postmap /etc/postfix/virtual
+
+sudo systemctl restart postfix
+
+sudo vi /etc/postfix/master.cf
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+smtps      inet  n       -       -       -       -       smtpd
+    -o syslog_name=postfix/smtps
+    -o smtpd_tls_wrappermode=yes
+    -o smtpd_sasl_auth_enable=yes
+    -o smtpd_client_restrictions=permit_sasl_authenticated,reject
+...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo apt install dovecot-common dovecot-imapd dovecot-pop3d
+
+sudo vi /etc/dovecot/conf.d/10-auth.conf
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+disable_plaintext_auth = yes
+...
+auth_username_format = %Ln
+...
+auth_mechanisms = plain login
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo vi /etc/dovecot/conf.d/10-master.conf
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+  unix_listener /var/spool/postfix/private/auth {
+    mode = 0666
+  }
+...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo vi /etc/dovecot/conf.d/10-ssl.conf
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+ssl = required
+...
+ssl_cert = </etc/letsencrypt/live/***domain.name***/fullchain.pem
+ssl_key = </etc/letsencrypt/live//***domain.name***/privkey.pem
+...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo dovecot -n
+(verify provided settings)
+
+sudo systemctl restart dovecot
+
+sudo doveadm -D auth test admin@localhost
+(verify that SASL should function correctly)
+
+sudo ufw allow 465
+sudo ufw allow 993
+sudo ufw allow 995
+
+(optional further settings for improved security)
+sudo postconf -e 'smtpd_helo_required = yes'
+sudo postconf -e 'smtpd_helo_restrictions = reject_non_fqdn_helo_hostname,reject_invalid_helo_hostname,reject_unknown_helo_hostname'
+sudo postconf -e 'disable_vrfy_command = yes'
+sudo postconf -e 'smtpd_delay_reject = yes'
+
+(optional for "mail" support)
+sudo apt install mailutils
+
+echo "This is a test." | mail -s Test root
+(with aliasing "admin" should receive this)
 
 Upgrading to a new version of Lubuntu OS
 ----------------------------------------
