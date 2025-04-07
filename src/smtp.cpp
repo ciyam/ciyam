@@ -99,10 +99,11 @@ namespace
 // C: EHLO username
 // (continue as per AUTH PLAIN/LOGIN)
 
-// NOTE: The standard SMTP port is 25. For SSL it is usually 465 and for TLS it usually 25 but can be 587.
+// NOTE: The standard SMTP port is 25. For TLS it is usually 465 and for STARTTLS it is 25 or 587.
 const int c_smtp_default_port = 25;
 
 const int c_smtp_prefix_length = 3;
+
 const char* const c_smtp_prefix_info = "220";
 const char* const c_smtp_prefix_auth = "235";
 const char* const c_smtp_prefix_okay = "250";
@@ -113,7 +114,7 @@ const char* c_response_multi_terminator = ".";
 
 const size_t c_initial_timeout = 5000;
 const size_t c_subsequent_timeout = 1500;
-const size_t c_final_response_timeout = 500;
+const size_t c_final_response_timeout = 50;
 
 const size_t c_max_chars_per_line = 510;
 
@@ -121,7 +122,7 @@ const unsigned char ipad = 0x36;
 const unsigned char opad = 0x5c;
 
 bool get_response( string& text, tcp_socket& socket,
- size_t timeout = c_initial_timeout, progress* p_progress = 0 )
+ size_t timeout, progress* p_progress, bool* p_had_timeout = 0 )
 {
    string response;
 
@@ -129,37 +130,46 @@ bool get_response( string& text, tcp_socket& socket,
       p_progress->output_progress( text );
 
    text.erase( );
+
    bool okay = true;
 
    while( true )
    {
       response.erase( );
+
       if( socket.read_line( response, timeout ) <= 0 )
       {
          if( text.empty( ) )
          {
             okay = false;
-            text = "unexpected timeout awaiting response";
+
+            if( p_had_timeout )
+            {
+               *p_had_timeout = true;
+
+               text = "unexpected timeout awaiting response";
+            }
          }
+
          break;
       }
 
-      timeout = c_subsequent_timeout;
-      if( response == c_response_multi_terminator )
+      if( !p_had_timeout || ( response == c_response_multi_terminator ) )
          break;
 
       if( !response.empty( ) )
       {
          if( !text.empty( ) )
             text += '\n';
+
          text += response;
 
          if( response.size( ) > c_smtp_prefix_length )
          {
             string prefix( response.substr( 0, c_smtp_prefix_length ) );
 
-            if( prefix != c_smtp_prefix_info && prefix != c_smtp_prefix_okay
-             && prefix != c_smtp_prefix_auth && prefix != c_smtp_prefix_user && prefix != c_smtp_prefix_data )
+            if( ( prefix != c_smtp_prefix_info ) && ( prefix != c_smtp_prefix_okay )
+             && ( prefix != c_smtp_prefix_auth ) && ( prefix != c_smtp_prefix_user ) && ( prefix != c_smtp_prefix_data ) )
                okay = false;
             // NOTE: If the prefix is followed by a "space" then no further lines are expected.
             else if( response[ c_smtp_prefix_length ] == ' ' )
@@ -168,6 +178,8 @@ bool get_response( string& text, tcp_socket& socket,
          else
             okay = false;
       }
+
+      timeout = c_subsequent_timeout;
    }
 
    if( p_progress && !text.empty( ) )
@@ -185,6 +197,7 @@ string escape_fullstops_if_required( const string& src )
    // a full stop are escaped by adding an extra full stop (these should be automatically removed by the
    // message receiver).
    bool is_start_of_line = true;
+
    for( size_t i = 0; i < src.length( ); i++ )
    {
       if( is_start_of_line && src[ i ] == '.' )
@@ -239,6 +252,7 @@ string determine_challenge_response( const string& challenge, const string& user
    string secret( password );
 
    string::size_type pos = nonce.find( ' ' );
+
    if( pos != string::npos )
       nonce = nonce.substr( pos + 1 );
 
@@ -263,20 +277,25 @@ string determine_challenge_response( const string& challenge, const string& user
    }
 
    MD5 md5_ipad;
+
    md5_ipad.update( ipad_buf, 64 );
    md5_ipad.update( ( unsigned char* )nonce.c_str( ), nonce.length( ) );
+
    md5_ipad.finalize( );
 
    auto_ptr< unsigned char > ap_idigest( md5_ipad.raw_digest( ) );
 
    MD5 md5_opad;
+
    md5_opad.update( opad_buf, 64 );
    md5_opad.update( ap_idigest.get( ), 16 );
+
    md5_opad.finalize( );
 
    auto_ptr< char > ap_odigest( md5_opad.hex_digest( ) );
 
    string response( user + " " );
+
    response += string( ap_odigest.get( ) );
 
    return base64::encode( response );
@@ -287,6 +306,7 @@ string transform_header_to_utf_8_if_required( const string& header )
    bool has_unicode = false;
 
    size_t start = 0;
+
    for( size_t i = 0; i < header.size( ); i++ )
    {
       if( start == 0 && header[ i ] == ':' )
@@ -310,13 +330,14 @@ void send_message( const string& host_and_port,
  const smtp_user_info& user_info, const vector< string >& recipients,
  const string& subject, const string* p_message = 0, const vector< string >* p_extra_headers = 0,
  const vector< string >* p_file_names = 0, const string* p_html = 0, const vector< string >* p_image_names = 0,
- const string* p_image_path_prefix = 0, progress* p_progress = 0 )
+ const string* p_image_path_prefix = 0, progress* p_progress = 0, bool* p_had_timeout = 0 )
 {
    int port = c_smtp_default_port;
 
    string host( host_and_port );
 
    string::size_type pos = host.find( ':' );
+
    if( pos != string::npos )
    {
       port = atoi( host.substr( pos + 1 ).c_str( ) );
@@ -335,6 +356,7 @@ void send_message( const string& host_and_port,
          string next_file( ( *p_file_names )[ i ] );
 
          string::size_type pos = next_file.find( '?' );
+
          if( pos != string::npos )
             next_file.erase( 0, pos + 1 );
 
@@ -347,7 +369,7 @@ void send_message( const string& host_and_port,
       if( p_progress )
          p_progress->output_progress( "total attached file data: " + to_string( num_bytes ) );
 
-      if( user_info.max_attachment_bytes && num_bytes > user_info.max_attachment_bytes )
+      if( user_info.max_attachment_bytes && ( num_bytes > user_info.max_attachment_bytes ) )
          throw runtime_error( "maximum allowed attached file data exceeded" );
    }
 
@@ -357,6 +379,7 @@ void send_message( const string& host_and_port,
    tcp_socket socket;
 #endif
    bool okay = socket.open( );
+
    if( okay )
    {
       ip_address address( host.c_str( ), port );
@@ -379,25 +402,27 @@ void send_message( const string& host_and_port,
          string str( "(connected now reading greeting)" );
 
          // NOTE: Read (and ignore) the connection message...
-         if( !get_response( str, socket, c_initial_timeout, p_progress ) )
+         if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
             throw runtime_error( str );
 
          if( user_info.auth_type == e_smtp_auth_type_none )
          {
             str = string( "HELO " );
             str += user_info.domain;
+
             socket.write_line( str );
 
-            if( !get_response( str, socket, c_initial_timeout, p_progress ) )
+            if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
                throw runtime_error( str );
          }
          else
          {
             str = string( "EHLO " );
             str += user_info.domain;
+
             socket.write_line( str );
 
-            if( !get_response( str, socket, c_initial_timeout, p_progress ) )
+            if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
                throw runtime_error( str );
 
 #ifdef SSL_SUPPORT
@@ -407,9 +432,10 @@ void send_message( const string& host_and_port,
             if( !user_info.use_ssl && user_info.use_tls )
             {
                str = "STARTTLS";
+
                socket.write_line( str );
 
-               if( !get_response( str, socket, c_initial_timeout, p_progress ) )
+               if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
                   throw runtime_error( str );
 
                // FUTURE: After a successful SSL connection the server certificate should
@@ -418,9 +444,10 @@ void send_message( const string& host_and_port,
 
                str = string( "EHLO " );
                str += user_info.domain;
+
                socket.write_line( str );
 
-               if( !get_response( str, socket, c_initial_timeout, p_progress ) )
+               if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
                   throw runtime_error( str );
             }
 #endif
@@ -429,6 +456,7 @@ void send_message( const string& host_and_port,
                str = string( "AUTH PLAIN " );
 
                string auth_str( user_info.username );
+
                auth_str += '\0';
                auth_str += user_info.username;
                auth_str += '\0';
@@ -448,7 +476,7 @@ void send_message( const string& host_and_port,
             // NOTE: Don't allow progress tracking to see the password.
             str.erase( );
 
-            if( !get_response( str, socket, c_initial_timeout, p_progress ) )
+            if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
                throw runtime_error( str );
 
             if( user_info.auth_type != e_smtp_auth_type_plain )
@@ -456,38 +484,43 @@ void send_message( const string& host_and_port,
                if( user_info.auth_type == e_smtp_auth_type_login )
                {
                   str = base64::encode( user_info.username );
+
                   socket.write_line( str );
 
-                  if( !get_response( str, socket, c_initial_timeout, p_progress ) )
+                  if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
                      throw runtime_error( str );
 
                   str = base64::encode( user_info.password );
+
                   socket.write_line( str );
 
                   // NOTE: Don't allow progress tracking to see the password.
                   str.erase( );
 
-                  if( !get_response( str, socket, c_initial_timeout, p_progress ) )
+                  if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
                      throw runtime_error( str );
                }
                else if( user_info.auth_type == e_smtp_auth_type_cram_md5 )
                {
                   str = determine_challenge_response( str, user_info.username, user_info.password );
+
                   socket.write_line( str );
 
                   // NOTE: Don't allow progress tracking to see the password.
                   str.erase( );
 
-                  if( !get_response( str, socket, c_initial_timeout, p_progress ) )
+                  if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
                      throw runtime_error( str );
                }
             }
          }
 
          str = string( "MAIL FROM:" );
+
          string from_header( "From: " );
 
          string::size_type pos = user_info.address.find( '<' );
+
          if( pos == string::npos )
             str += "<" + user_info.address + ">\r\n";
          else
@@ -497,13 +530,14 @@ void send_message( const string& host_and_port,
 
          from_header += user_info.address;
 
-         if( !get_response( str, socket, c_initial_timeout, p_progress ) )
+         if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
             throw runtime_error( str );
 
          string to_header, cc_header;
 
          bool is_to = true;
          bool is_cc = false;
+
          for( size_t i = 0; i < recipients.size( ); i++ )
          {
             // NOTE: A "blank" recipient is used to separate the "To" header from the "Cc" one (any
@@ -524,6 +558,7 @@ void send_message( const string& host_and_port,
             str = string( "RCPT TO:" );
 
             pos = recipients[ i ].find( '<' );
+
             if( pos == string::npos )
                str += "<" + recipients[ i ] + ">\r\n";
             else
@@ -531,7 +566,7 @@ void send_message( const string& host_and_port,
 
             socket.write_line( str );
 
-            if( !get_response( str, socket, c_initial_timeout, p_progress ) )
+            if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
                throw runtime_error( str );
 
             if( is_to )
@@ -555,12 +590,14 @@ void send_message( const string& host_and_port,
          }
 
          str = string( "DATA\r\n" );
+
          socket.write_line( str );
 
-         if( !get_response( str, socket, c_initial_timeout, p_progress ) )
+         if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
             throw runtime_error( str );
 
          string subject_header( "Subject: " );
+
          subject_header += subject;
 
          str = transform_header_to_utf_8_if_required( from_header );
@@ -584,6 +621,7 @@ void send_message( const string& host_and_port,
             dt = *user_info.p_dt;
 
          string date_header( "Date: " );
+
          date_header += dt.weekday_name( ).substr( 0, 3 );
          date_header += ", " + to_string( ( int )dt.get_day( ) ) + " " + dt.month_name( ).substr( 0, 3 );
          date_header += " " + to_string( dt.get_year( ) );
@@ -596,12 +634,14 @@ void send_message( const string& host_and_port,
 
          if( abs( user_info.utc_offset ) < 10 )
             date_header += "0";
+
          date_header += to_string( ( int )user_info.utc_offset );
 
          int minutes = ( int )( ( user_info.utc_offset - ( int )user_info.utc_offset ) * 60.0 );
 
          if( abs( minutes ) < 10 )
             date_header += "0";
+
          date_header += to_string( minutes );
 
          if( user_info.p_tz_abbr && !user_info.p_tz_abbr->empty( ) )
@@ -640,10 +680,12 @@ void send_message( const string& host_and_port,
          bool has_message = ( p_message && !p_message->empty( ) );
 
          const char* p_charset = 0;
+
          if( user_info.p_charset )
             p_charset = user_info.p_charset->c_str( );
 
          string extracted_message;
+
          if( has_html && !has_message )
          {
             extracted_message = extract_text_from_html( *p_html );
@@ -667,11 +709,13 @@ void send_message( const string& host_and_port,
                   else
                   {
                      ap_mime->get_child( ).create_child( "alternative" );
+
                      ap_mime->get_child( ).get_child( ).add_text( *p_message, p_charset );
                      ap_mime->get_child( ).get_child( ).add_html( *p_html, p_charset );
                   }
 
                   const char* p_path_prefix = 0;
+
                   if( p_image_path_prefix )
                      p_path_prefix = ( *p_image_path_prefix ).c_str( );
 
@@ -685,7 +729,9 @@ void send_message( const string& host_and_port,
                   else
                   {
                      ap_mime->create_child( "related" );
+
                      ap_mime->get_child( ).create_child( "alternative" );
+
                      ap_mime->get_child( ).get_child( ).add_text( *p_message, p_charset );
                      ap_mime->get_child( ).get_child( ).add_html( *p_html, p_charset );
                   }
@@ -709,20 +755,24 @@ void send_message( const string& host_and_port,
             string message_text( split_input_into_lines( *p_message, c_max_chars_per_line - 1 ) );
 
             str += string( "\r\n" );
+
             str += escape_fullstops_if_required( message_text );
+
             str += string( "\r\n" );
          }
 
          str += string( ".\r\n" );
+
          socket.write_line( str );
 
-         if( !get_response( str, socket, c_initial_timeout, p_progress ) )
+         if( !get_response( str, socket, c_initial_timeout, p_progress, p_had_timeout ) )
             throw runtime_error( str );
 
          str = "QUIT\r\n";
+
          socket.write_line( str );
 
-         // NOTE: Read (and ignore) the disconnection message...
+         // NOTE: Read (but ignore) any disconnection message...
          get_response( str, socket, c_final_response_timeout, p_progress );
       }
       else
@@ -760,9 +810,8 @@ void send_smtp_message( const string& host, const smtp_user_info& user_info,
 void send_smtp_message( const string& host, const smtp_user_info& user_info,
  const vector< string >& recipients, const string& subject, const string& message,
  const string& html, const vector< string >* p_extra_headers, const vector< string >* p_file_names,
- const vector< string >* p_image_names, const string* p_image_path_prefix, progress* p_progress )
+ const vector< string >* p_image_names, const string* p_image_path_prefix, progress* p_progress, bool* p_had_timeout )
 {
-   send_message( host, user_info, recipients, subject,
-    &message, p_extra_headers, p_file_names, &html, p_image_names, p_image_path_prefix, p_progress );
+   send_message( host, user_info, recipients, subject, &message,
+    p_extra_headers, p_file_names, &html, p_image_names, p_image_path_prefix, p_progress, p_had_timeout );
 }
-

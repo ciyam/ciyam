@@ -5242,6 +5242,7 @@ void send_email_message( const user_account& account,
       throw runtime_error( "missing SMTP account information" );
 
    string tz_name;
+
    float utc_offset = 0.0;
 
    date_time dt( date_time::standard( ) );
@@ -5262,6 +5263,7 @@ void send_email_message( const user_account& account,
     account.username, password, &dt, utc_offset, &tz_name, &charset );
 
    string security( get_smtp_security( ) );
+
    if( !security.empty( ) )
    {
       string auth_type;
@@ -5309,28 +5311,33 @@ void send_email_message( const user_account& account,
    user_info.max_attachment_bytes = get_smtp_max_attached_data( );
 
    string html;
+
    if( !html_source.empty( ) )
       html = buffer_file( html_source );
 
    progress* p_progress = 0;
+
    trace_progress progress( TRACE_MAIL_OPS );
 
    if( get_trace_flags( ) & TRACE_MAIL_OPS )
       p_progress = &progress;
 
    int attempt = 0;
+
    while( true )
    {
+      bool had_timeout = false;
+
       try
       {
          send_smtp_message( get_smtp_server( ), user_info, recipients, subject,
-          message, html, p_extra_headers, p_file_names, p_image_names, p_image_path_prefix, p_progress );
+          message, html, p_extra_headers, p_file_names, p_image_names, p_image_path_prefix, p_progress, &had_timeout );
 
          break;
       }
       catch( exception& x )
       {
-         if( ++attempt >= get_smtp_max_send_attempts( ) )
+         if( !had_timeout || ( ++attempt >= get_smtp_max_send_attempts( ) ) )
             throw;
       }
       catch( ... )
@@ -5374,10 +5381,12 @@ string check_email_headers( const vector< string >& headers, bool create_script_
    ap_mail_source->start_processing( );
 
    int num_messages = ap_mail_source->get_num_messages( );
+
    if( !create_script_output )
       osstr << "\nfound " << num_messages << ( num_messages == 1 ? " message\n" : " messages\n" ) << endl;
 
    bool has_any_scripts = false;
+
    for( int i = 0; i < num_messages; i++ )
    {
       if( i > 0 && !create_script_output )
@@ -5396,6 +5405,7 @@ string check_email_headers( const vector< string >& headers, bool create_script_
 
       string script_from;
       string script_name;
+
       for( size_t j = 0; j < email_headers.size( ); j++ )
       {
          if( create_script_output )
@@ -5405,6 +5415,7 @@ string check_email_headers( const vector< string >& headers, bool create_script_
             else if( lower( email_headers[ j ] ).find( "subject: " ) == 0 )
             {
                string::size_type pos = email_headers[ j ].find( c_email_subject_script_marker );
+
                if( pos != string::npos )
                {
                   script_name = email_headers[ j ].substr( pos + strlen( c_email_subject_script_marker ) );
@@ -5557,21 +5568,25 @@ string decode_email_header( const string& header )
    string encoding, charset;
 
    string::size_type pos = s.find( "=?" );
+
    if( pos != string::npos )
    {
       string::size_type epos = s.find( "?", pos + 2 );
+
       if( epos != string::npos )
       {
          charset = header.substr( pos + 2, epos - pos - 2 );
          s.erase( 0, epos + 1 );
 
          epos = s.find( "?" );
+
          if( epos != string::npos )
          {
             encoding = s.substr( 0, epos );
             s.erase( 0, epos + 1 );
 
             epos = s.find( "?=" );
+
             if( epos != string::npos )
                retval = decode_text( lower( encoding ), lower( charset ), s.substr( 0, epos ) );
          }
@@ -5597,6 +5612,7 @@ void parse_email_address( const string& address, string& name, string& email )
    bool finished = false;
    bool in_email = false;
    bool in_quotes = false;
+
    for( size_t i = 0; i < address.size( ); i++ )
    {
       char c = address[ i ];
@@ -5621,7 +5637,7 @@ void parse_email_address( const string& address, string& name, string& email )
          break;
    }
 
-   while( !name.empty( ) && name[ name.length( ) - 1 ] == ' ' )
+   while( !name.empty( ) && ( name[ name.length( ) - 1 ] == ' ' ) )
       name.erase( name.length( ) - 1 );
 
    if( email.empty( ) )
@@ -5633,6 +5649,7 @@ void save_attachment( const string& encoding, const string& data, const string& 
    if( encoding == "base64" )
    {
       ofstream outf( output_file.c_str( ), ios::out | ios::binary );
+
       if( !outf )
          throw runtime_error( "unable to open file '" + output_file + "' for output" );
 
@@ -5642,12 +5659,14 @@ void save_attachment( const string& encoding, const string& data, const string& 
       outf << base64::decode( raw_join( lines ) );
 
       outf.flush( );
+
       if( !outf.good( ) )
          throw runtime_error( "unexpected bad output stream" );
    }
-   else if( encoding == "7bit" || encoding == "8bit" || encoding == "quoted-printable" )
+   else if( ( encoding == "7bit" ) || ( encoding == "8bit" ) || ( encoding == "quoted-printable" ) )
    {
       ofstream outf( output_file.c_str( ) );
+
       if( !outf )
          throw runtime_error( "unable to open file '" + output_file + "' for output" );
 
@@ -5657,6 +5676,7 @@ void save_attachment( const string& encoding, const string& data, const string& 
          outf << decode_quoted_printable( data );
 
       outf.flush( );
+
       if( !outf.good( ) )
          throw runtime_error( "unexpected bad output stream" );
    }

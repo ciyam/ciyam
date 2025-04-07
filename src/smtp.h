@@ -128,9 +128,9 @@ void send_smtp_message( const std::string& host,
 
 void send_smtp_message( const std::string& host,
  const smtp_user_info& user_info, const std::vector< std::string >& recipients,
- const std::string& subject, const std::string& message, const std::string& html,
- const std::vector< std::string >* p_extra_headers, const std::vector< std::string >* p_file_names,
- const std::vector< std::string >* p_image_names, const std::string* p_image_path_prefix = 0, progress* p_progress = 0 );
+ const std::string& subject, const std::string& message,
+ const std::string& html, const std::vector< std::string >* p_extra_headers,
+ const std::vector< std::string >* p_file_names, const std::vector< std::string >* p_image_names,
+ const std::string* p_image_path_prefix = 0, progress* p_progress = 0, bool* p_had_timeout = 0 );
 
 #endif
-
