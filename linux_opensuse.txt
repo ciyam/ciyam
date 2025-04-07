@@ -750,8 +750,8 @@ sudo vi /etc/apache2/sites-available/000-default-le-ssl.conf
     # Higher than the max message size of 4096 bytes
     LimitRequestBody 102400
 
-    SSLCertificateFile /etc/letsencrypt/live/***domain_name***-0001/fullchain.pem
-    SSLCertificateKeyFile /etc/letsencrypt/live/***domain_name***-0001/privkey.pem
+    SSLCertificateFile /etc/letsencrypt/live/***domain_name***/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/***domain_name***/privkey.pem
 </VirtualHost>
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
