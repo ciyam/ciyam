@@ -128,8 +128,8 @@ owner of a file creates a repository storage request (which will be later used v
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -test_peer_port=11111 &
-sleep 2
- ./ciyam_client -quiet
+
+ ./ciyam_client -quiet -connect_retries=10
 file_put test.jpg
 peer_persist_file a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 dummy
 file_get a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753

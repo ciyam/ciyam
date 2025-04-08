@@ -30,16 +30,18 @@ cd ~/ciyam/src
  ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
 
- ./ciyam_client -quiet 13031
+ ./ciyam_client -quiet -connect_retries=10 13031
 file_archive -add bc.e3733d121/e3733d121 10MB e3733d121
 peer_listen 12021 e3733d121
+system_variable @secret_hash_forward a3711b6a6ee792d091e23e54d8eca5a5d1baed743f0ad829461eb1b9d74f249a
+system_variable @secret_hash_reverse fec71842b182e8e05e5f808fa1d34f13988e90f0154c05c8951040b1240d95ad
 ;trace 14900
 quit
 
 #-----------------------------------------------------------------------------------------------------------#
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
-./ciyam_client
+ ./ciyam_client -quiet
 <bc_gen.cin -backup de604cee0755a3d81944ea96aed12681
 USE_BACKUP_ARCHIVE=1
 CIYAM_STREAM_CIPHER=cc
@@ -67,8 +69,8 @@ REPO_CRYPT_PASSWORD=@sid
 <tree_insert_trunks.cin ciyam Backup,.Backup
 <bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 5
 <bc_gen_block.cin e3733d121 5
-peer_connect e3733d121 12021
 ;trace 14900
+peer_connect e3733d121 12021
 wait 500
 session_list
 wait 2000
@@ -221,12 +223,12 @@ exit
  ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
 
- ./ciyam_client -quiet 13031
+ ./ciyam_client -quiet -connect_retries=10 13031
 peer_listen 12021 e3733d121
 ;trace 14900
 quit
 
-./ciyam_client
+ ./ciyam_client
 ~mkdir files/e3733d121
 file_archive -add files/e3733d121 10MB e3733d121
 ;trace 14900
@@ -302,13 +304,13 @@ e3733d121 [okay      ] (196.0 kB/10.0 MB) files/e3733d121
 
  ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
 
- ./ciyam_client -quiet 13031
+ ./ciyam_client -quiet -connect_retries=10 13031
 file_archive -add bc.e3733d121/e3733d121 10MB e3733d121
 peer_listen 12021 e3733d121
 ;trace 14900
 quit
 
-./ciyam_client
+ ./ciyam_client
 ;trace 14900
 peer_connect e3733d121 12021
 wait 500
@@ -379,11 +381,11 @@ e3733d121 [okay      ] (196.0 kB/10.0 MB) bc.e3733d121/e3733d121
 #-----------------------------------------------------------------------------------------------------------#
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
-rm -r files/*
+ rm -r files/*
 
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
 
-./ciyam_client
+ ./ciyam_client -quiet -connect_retries=10
 <bc_gen.cin -backup de604cee0755a3d81944ea96aed12681
 ;trace 14900
 peer_connect e3733d121 12021
@@ -395,7 +397,6 @@ session_list
 session_kill 2
 file_tags
 file_stats
-file_archives
 quit
 
 #-----------------------------------------------------------------------------------------------------------#
@@ -629,7 +630,7 @@ d74a4c88ad8f3fc3295da8967ffa452ac2669d3cbf6dee738fadb180ddfd3751 (photo_5.jpg.00
 #-----------------------------------------------------------------------------------------------------------#
  ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
 
- ./ciyam_client -quiet 13031
+./ciyam_client 13031
 file_info -content bc.e3733d121.zenith
 ;
 ;file_kill bc.e3733d121.4.sig
@@ -697,7 +698,7 @@ vi bc.e3733d121/ciyam_server.log
 #-----------------------------------------------------------------------------------------------------------#
  ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
 
- ./ciyam_client 13031
+ ./ciyam_client -quiet -connect_retries=10 13031
 peer_listen 12021 e3733d121
 ;trace 14900
 quit
@@ -764,7 +765,7 @@ vi bc.e3733d121/ciyam_server.log
 #-----------------------------------------------------------------------------------------------------------#
  ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
 
- ./ciyam_client 13031
+ ./ciyam_client -quiet -connect_retries=10 13031
 peer_listen 12021 e3733d121
 ;trace 14900
 quit
