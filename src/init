@@ -28,7 +28,7 @@ else
   ./ciyam_server -quiet -no_auto -no_peers &
 
   sleep 2
-  ./ciyam_client -quiet -no_prompt < init.cin
+  ./ciyam_client -quiet -no_prompt -connect_retries=10 < init.cin
   touch ciyam_server.stop
  fi
 fi

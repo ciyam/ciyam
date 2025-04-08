@@ -75,6 +75,9 @@ const char* const c_cmd_args_file_name = "name";
 const char* const c_cmd_rpc_unlock = "rpc_unlock";
 const char* const c_cmd_rpc_unlock_password = "password";
 
+const char* const c_cmd_connect_retries = "connect_retries";
+const char* const c_cmd_connect_retries_max_attempts = "max_attempts";
+
 const char* const c_session_cmd_bye = "bye";
 const char* const c_session_cmd_chk = "chk";
 const char* const c_session_cmd_get = "get";
@@ -158,6 +161,8 @@ size_t g_seconds = 1;
 
 size_t g_max_file_size = c_files_area_item_max_size_default;
 
+size_t g_connect_retries = 0;
+
 string g_exec_cmd;
 string g_args_file;
 string g_rpc_password;
@@ -212,6 +217,8 @@ class ciyam_console_startup_functor : public command_functor
          g_args_file = get_parm_val( parameters, c_cmd_args_file_name );
       else if( command == c_cmd_rpc_unlock )
          g_rpc_password = get_parm_val( parameters, c_cmd_rpc_unlock_password );
+      else if( command == c_cmd_connect_retries )
+         g_connect_retries = from_string< size_t >( get_parm_val( parameters, c_cmd_connect_retries_max_attempts ) );
    }
 };
 
@@ -1717,6 +1724,9 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_rpc_unlock, 1,
           "<val//password>", "RPC access unlock password", new ciyam_console_startup_functor( cmd_handler ) );
 
+         cmd_handler.add_command( c_cmd_connect_retries, 2,
+          "<val//max_attempts>", "server connection retries", new ciyam_console_startup_functor( cmd_handler ) );
+
          processor.process_commands( );
       }
 
@@ -1747,32 +1757,21 @@ int main( int argc, char* argv[ ] )
 
          bool okay = socket.connect( address, c_connect_timeout );
 
-         // NOTE: If the server was started asynchronously in a script
-         // immediately prior to the client then can sleep for a while
-         // and then try again. After connection failures a new socket
-         // needs to be used (hence the "close" and "open" calls). For
-         // local connects no actual timeout is required (so the retry
-         // connects do not use a timeout).
-         if( !okay && is_default )
+         // NOTE: The "connect_retries" option can be useful where the
+         // application server is started (in the background) prior to
+         // starting "ciyam_client" - a small delay will occur between
+         // each attempt and after the connection failure a new socket
+         // needs to be used (hence the "close" and "open" calls).
+         while( !okay && g_connect_retries )
          {
+            --g_connect_retries;
+
             socket.close( );
 
-            msleep( 500 );
+            msleep( 250 );
 
             if( socket.open( ) )
-            {
-               okay = socket.connect( address );
-
-               if( !okay )
-               {
-                  socket.close( );
-
-                  msleep( 1500 );
-
-                  if( socket.open( ) )
-                     okay = socket.connect( address );
-               }
-            }
+               okay = socket.connect( address, c_connect_timeout );
          }
 
          if( okay )
