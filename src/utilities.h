@@ -328,6 +328,15 @@ inline void set_cwd( const std::string& path, bool* p_rc = 0 )
    set_cwd( path.c_str( ), p_rc );
 }
 
+struct temp_umask
+{
+   temp_umask( int um );
+
+   ~temp_umask( );
+
+   int oum;
+};
+
 enum dir_perms
 {
    e_dir_perms_default = 0,

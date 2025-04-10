@@ -509,6 +509,22 @@ void set_cwd( const char* p_name, bool* p_rc )
       *p_rc = true;
 }
 
+temp_umask::temp_umask( int um )
+{
+#ifdef _WIN32
+   ( void )um;
+#else
+   oum = umask( um );
+#endif
+}
+
+temp_umask::~temp_umask( )
+{
+#ifndef _WIN32
+   umask( oum );
+#endif
+}
+
 void create_dir( const char* p_name, bool* p_rc, dir_perms perms, int um )
 {
 #ifdef _WIN32

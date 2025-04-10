@@ -6381,13 +6381,32 @@ void set_identity( const string& info, const char* p_encrypted_sid )
       // NOTE: Encrypted identity passwords must be < 32 characters.
       if( info.length( ) >= 32 )
       {
-         set_sid( info );
+         sid = info;
 
          if( info.find( ':' ) != string::npos )
          {
             g_hardened_identity = false;
             g_encrypted_identity = true;
          }
+         else if( is_encrypted && p_encrypted_sid )
+         {
+            p_encrypted_sid = 0;
+
+            g_hardened_identity = false;
+            g_encrypted_identity = false;
+
+            temp_umask tum( 077 );
+
+            write_file( c_server_sid_file, ( unsigned char* )info.c_str( ), info.length( ) );
+
+            sha256 hash( sid );
+            hash.get_digest_as_string( sid );
+
+            if( get_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
+               run_init_script = true;
+         }
+
+         set_sid( sid );
       }
       else if( is_encrypted )
       {
@@ -6478,6 +6497,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
       if( p_encrypted_sid && !file_exists( c_server_sid_file ) )
       {
+         temp_umask tum( 077 );
+
          string user( get_environment_variable( c_env_var_ciyam_user ) );
 
          if( !user.empty( ) )
