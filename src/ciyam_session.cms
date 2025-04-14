@@ -1,7 +1,7 @@
 crypto_addr "output an address for a secret" <val//extkey>[<opt/-decrypt/decrypt>][<opt/-uncompressed/uncompressed>]<val//secret>
 crypto_hash "output hash digest for data or file content" [<opt/-512/sha512>][<opt/-hex/hex_decode>][<val/-x=0/extra_rounds>][<opt/-file/data_from_file>]<oval//data_or_filename>[<val/-s=/data_suffix_text>][<val/-u=/data_update_text>]
 crypto_keys "output an address and its corresponding key pair" [<opt/-b64/base64>][<val/-ext=/extkey>][<opt/-decrypt/decrypt>][<opt/-encrypt/encrypt>][<opt/-uncompressed/uncompressed>][<val//secret>][<val/-s=/suffix_text>]
-crypto_seed "output seed mnemonics or a hex seed value" [<val//mnemonics_or_hex_seed>]
+crypto_seed "output seed mnemonics or a hex seed value" [<val/-k=/pubkey>][<val//mnemonics_or_hex_seed>]
 crypto_sign "sign a message" <val//privkey>[<opt/-hex/hex_decode>]<val//message>
 crypto_chain "output a hash chain" <val//length>[<opt/-b64/base64>][<opt/-hind/hind_only>][<val//secret>]
 crypto_verify "verify a signed message" <val//pubkey>[<opt/-hex/hex_decode>]<val//message><val//signature>
@@ -120,7 +120,7 @@ system_trace|trace "get/set system trace flags" [<val//new_flags>]
 system_gen_key|gen_key "generate one or more key values" [<val/-num=/num_keys>]
 system_mutexes|mutexes "list system mutexes and their session lock ids"
 system_version|version "display protocol version"
-system_identity|identity "get/set system identity information" [<opt/-md5/md5>][<opt/-raw/raw>][<val/-k=/pubkey>][<val//info>][<val//encrypted>]
+system_identity|identity "get/set system identity information" [<opt/-raw/raw>][<val/-k=/pubkey>][<val//info>][<val//encrypted>]
 system_log_tail|log_tail "view the tail of one of the system/application log files" [<val/-n=10/lines>]<opt/backup>|<opt/script>|<opt/server>|<opt/restore>|{<opt/interface>[<val//app_directory>]}
 system_notifier|notifier "starts/finishes/suspends/unsuspends a system file/directory notifier" <opt/-start/start>|<opt/-finish/finish>|<opt/-suspend/suspend>|<opt/-unsuspend/unsuspend><val//file_or_directory>
 system_passtotp|passtotp "retrieve a TOTP system password" <val//secret>
