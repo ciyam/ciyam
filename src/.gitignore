@@ -65,7 +65,6 @@ xvars
 files
 
 # Ignore locally generated config.
-salt.h
 config.h
 config.info
 autoscript.sio
