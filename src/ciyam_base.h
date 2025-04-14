@@ -187,13 +187,14 @@ std::string CIYAM_BASE_DECL_SPEC get_app_url( const std::string& suffix );
 
 void CIYAM_BASE_DECL_SPEC get_identity(
  std::string& s, bool append_max_user_limit = false,
- bool use_raw_value = false, bool md5_version = false, const char* p_pubkey = 0 );
+ bool use_max_sid_entropy = false, const char* p_pubkey = 0 );
 
-inline std::string get_identity( bool append_max_user_limit = false,
- bool use_raw_value = false, bool md5_version = false, const char* p_pubkey = 0 )
+inline std::string get_identity(
+ bool append_max_user_limit = false,
+ bool use_max_sid_entropy = false, const char* p_pubkey = 0 )
 {
    std::string s;
-   get_identity( s, append_max_user_limit, use_raw_value, md5_version, p_pubkey );
+   get_identity( s, append_max_user_limit, use_max_sid_entropy, p_pubkey );
 
    return s;
 }

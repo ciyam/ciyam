@@ -36,7 +36,6 @@
 #include "ods.h"
 #include "sio.h"
 #include "cube.h"
-#include "salt.h"
 #include "sha1.h"
 #include "base64.h"
 #include "config.h"
@@ -2383,14 +2382,14 @@ void perform_storage_op( storage_op op,
       try
       {
          string sid;
+
          const char* p_password = 0;
 
          bool has_exported_objects = false;
          bool has_imported_channels = false;
          bool has_imported_datachains = false;
 
-         if( g_encrypted_identity
-          && ( name != c_meta_storage_name ) && ( name != c_ciyam_storage_name ) )
+         if( ( name != c_meta_storage_name ) && ( name != c_ciyam_storage_name ) )
          {
             if( dir_exists( name ) )
             {
@@ -5523,6 +5522,15 @@ string instance_op_name( class_base::op_type op )
    return retval;
 }
 
+// IMPORTANT: Modifications made to this function may
+// prevent the "admin" account from using the FCGI UI.
+void hash_sid_val( string& sid )
+{
+   sha256 hash( sid );
+
+   hash.get_digest_as_string( sid );
+}
+
 }
 
 uint64_t get_trace_flags( )
@@ -5983,17 +5991,8 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       g_sid.reserve( c_key_reserve_size );
 
-      if( !sid.empty( )
-       && ( sid.find( ':' ) == string::npos ) )
-      {
-         string salt( c_salt_value );
-
-         if( !salt.empty( ) )
-            sid.insert( 0, salt );
-
-         sha256 hash( sid );
-         hash.get_digest_as_string( sid );
-      }
+      if( !sid.empty( ) && ( sid.find( ':' ) == string::npos ) )
+         hash_sid_val( sid );
 
       set_sid( sid );
       clear_key( sid );
@@ -6277,8 +6276,8 @@ string get_app_url( const string& suffix )
    return url;
 }
 
-void get_identity( string& s, bool append_max_user_limit,
- bool use_raw_value, bool md5_version, const char* p_pubkey )
+void get_identity( string& s,
+ bool append_max_user_limit, bool use_max_sid_entropy, const char* p_pubkey )
 {
    guard g( g_mutex );
 
@@ -6291,7 +6290,7 @@ void get_identity( string& s, bool append_max_user_limit,
 
    if( !sid.empty( ) )
    {
-      if( !use_raw_value )
+      if( encrypted || !use_max_sid_entropy )
          sid_hash( s );
       else
       {
@@ -6312,12 +6311,6 @@ void get_identity( string& s, bool append_max_user_limit,
 
       if( p_pubkey )
          session_shared_encrypt( s, p_pubkey, s );
-   }
-
-   if( md5_version )
-   {
-      MD5 hash( ( unsigned char* )s.c_str( ) );
-      s = string( hash.hex_digest( ) ).substr( 12 );
    }
 
    if( append_max_user_limit )
@@ -6378,8 +6371,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
       if( sid.find( ':' ) != string::npos )
          is_encrypted = true;
 
-      // NOTE: Encrypted identity passwords must be < 32 characters.
-      if( info.length( ) >= 32 )
+      // NOTE: Checks for an encrypted identity.
+      if( info.length( ) >= c_encrypted_length )
       {
          sid = info;
 
@@ -6390,8 +6383,6 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          }
          else if( is_encrypted && p_encrypted_sid )
          {
-            p_encrypted_sid = 0;
-
             g_hardened_identity = false;
             g_encrypted_identity = false;
 
@@ -6399,11 +6390,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
             write_file( c_server_sid_file, ( unsigned char* )info.c_str( ), info.length( ) );
 
-            sha256 hash( sid );
-            hash.get_digest_as_string( sid );
-
-            if( get_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
-               run_init_script = true;
+            hash_sid_val( sid );
          }
 
          set_sid( sid );
@@ -6416,6 +6403,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          key.reserve( c_key_reserve_size );
 
          key = info;
+
          harden_key_with_hash_rounds( key, key, key, c_key_rounds_multiplier );
 
          data_decrypt( sid, sid, key );
@@ -6454,22 +6442,14 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
          if( are_hex_nibbles( sid ) )
          {
-            string salt( c_salt_value );
-
-            // NOTE: If a salt constant had been provided then prepend it now.
-            if( !salt.empty( ) )
-               sid.insert( 0, salt );
-
             // NOTE: Either now simply store the hash of the entropy or if any extra
             // entropy had been supplied then use this in order to harden the value.
             if( extra.empty( ) )
-            {
-               sha256 hash( sid );
-               hash.get_digest_as_string( sid );
-            }
+               hash_sid_val( sid );
             else
             {
                g_hardened_identity = true;
+
                harden_key_with_hash_rounds( sid, info, extra, c_key_rounds_multiplier );
             }
 
@@ -6482,8 +6462,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
                g_identity_suffix = identity.substr( 0, c_bc_identity_length );
 
-               set_system_variable( get_special_var_name(
-                e_special_var_system_identity ), g_identity_suffix );
+               set_system_variable( get_special_var_name( e_special_var_system_identity ), g_identity_suffix );
             }
          }
       }
@@ -6495,10 +6474,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
       clear_key( sid );
 
-      if( p_encrypted_sid && !file_exists( c_server_sid_file ) )
+      if( p_encrypted_sid && g_encrypted_identity )
       {
-         temp_umask tum( 077 );
-
          string user( get_environment_variable( c_env_var_ciyam_user ) );
 
          if( !user.empty( ) )
@@ -6511,6 +6488,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             ( void )rc;
          }
 
+         temp_umask tum( 077 );
+
          write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
 
          if( get_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
@@ -6522,8 +6501,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
    {
       run_script( "init_ciyam", false );
 
-      g_identity_suffix = get_raw_system_variable(
-       get_special_var_name( e_special_var_system_identity ) );
+      g_identity_suffix = get_raw_system_variable( get_special_var_name( e_special_var_system_identity ) );
 
       check_if_is_known_demo_identity( );
    }
