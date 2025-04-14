@@ -14,6 +14,7 @@ const size_t c_max_extras = 9;
 const size_t c_chunk_digits = 6;
 
 const size_t c_identity_length = 7;
+const size_t c_encrypted_length = 32;
 
 const size_t c_bc_identity_length = 9;
 

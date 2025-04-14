@@ -38,7 +38,7 @@ namespace
 #include "ciyam_constants.h"
 
 const int c_initial_response_timeout = 30000;
-const int c_subsequent_response_timeout = 15000;
+const int c_subsequent_response_timeout = 10000;
 
 const char* const c_order_reverse = "reverse";
 
@@ -174,6 +174,9 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
       {
          *p_response = response;
          DEBUG_TRACE( response );
+
+         if( response.find( c_response_error_prefix ) == 0 )
+            return false;
       }
       else
       {

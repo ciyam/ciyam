@@ -17,7 +17,6 @@
 
 #include "fcgi_process.h"
 
-#include "salt.h"
 #include "regex.h"
 #include "format.h"
 #include "sockets.h"

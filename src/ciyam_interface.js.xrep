@@ -1167,6 +1167,13 @@ function hash_password( salt, pwd, skip_id )
       retval = pwd;
    else
    {
+      // NOTE: Special case for the "admin" user is hashing any long password once.
+      if( salt == 'admin' )
+      {
+         if( pwd.length >= 32 )
+            pwd = hex_sha256( pwd ).toLowerCase( );
+      }
+
       retval = hash_value( serverId + pwd + salt, rounds ).toLowerCase( );
 
       if( !loggedIn && ( rounds == hashRounds ) && ( hashRounds != newHashRounds ) && can_write_to_session_storage( ) )

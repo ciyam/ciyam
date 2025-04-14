@@ -48,7 +48,6 @@
 
 #include "ciyam_interface.h"
 
-#include "salt.h"
 #include "sha1.h"
 #include "smtp.h"
 #include "regex.h"
@@ -187,6 +186,8 @@ const char* const c_ssl_sign_up_extra_details = "@@ssl_sign_up_extra_details";
 
 const char* const c_user_other_none = "~";
 
+const char* const c_reset_identity_password = "*******";
+
 // NOTE: When not using multiple request handlers a single socket is being used to access
 // the application server (in order to allow testing without possible concurrency issues).
 #ifndef USE_MULTIPLE_REQUEST_HANDLERS
@@ -219,7 +220,9 @@ string g_id_pwd;
 string g_bad_seed;
 string g_seed_error;
 
-int g_unlock_fails = 0;
+int g_unlock_attempts = 0;
+
+bool g_reset_identity = false;
 
 string g_login_html;
 string g_backup_html;
@@ -240,6 +243,8 @@ string g_login_password_html;
 string g_ciyam_interface_html;
 string g_login_persistent_html;
 string g_password_persistent_html;
+
+string g_restore_checksum;
 
 string g_display_login_info;
 string g_display_change_password;
@@ -300,6 +305,7 @@ void release_socket( tcp_socket* p_socket )
       if( g_sockets[ i ].second == p_socket )
       {
          g_sockets[ i ].first = false;
+
          break;
       }
    }
@@ -338,6 +344,7 @@ void disconnect_sockets( bool released_only )
       if( g_sockets[ i ].second && g_sockets[ i ].second->okay( ) )
       {
          g_sockets[ i ].second->close( );
+
          delete g_sockets[ i ].second;
       }
 
@@ -355,6 +362,7 @@ void remove_sockets( )
       if( g_sockets[ i ].second )
       {
          delete g_sockets[ i ].second;
+
          g_sockets[ i ].second = 0;
       }
    }
@@ -660,6 +668,40 @@ bool process_log_file( const string& module_name, const string& log_file_name,
    return has_output_form;
 }
 
+void reset_admin_password( session_info& sess_info,
+ const string& module_id, const module_info& mod_info, string& pwd, string& sid )
+{
+   string admin_pwd_hash( hash_password( g_id + pwd + c_admin_user_key ) );
+
+   string admin_user_hash( sha256( c_admin_user_key + admin_pwd_hash ).get_digest_as_string( ) );
+
+   string encrypted_pwd( data_encrypt( admin_pwd_hash, sid ) );
+
+   clear_key( pwd );
+   clear_key( sid );
+
+   file_remove( c_has_restored_file );
+
+   vector< pair< string, string > > pwd_field_value_pairs;
+
+   pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_pwd ) );
+   pwd_field_value_pairs.push_back( make_pair( mod_info.user_hash_field_id, admin_user_hash ) );
+
+   string error_message;
+
+   // NOTE: Temporarily assumes the "admin" user in order to update the password.
+   restorable< string > temp_user_key( sess_info.user_key, c_admin_user_key );
+
+   if( !perform_update( module_id, mod_info.user_class_id,
+    c_admin_user_key, pwd_field_value_pairs, sess_info, &error_message ) )
+   {
+      if( !error_message.empty( ) )
+         throw runtime_error( error_message );
+      else
+         throw runtime_error( "unexpected server error occurred trying to update 'admin' password" );
+   }
+}
+
 class timeout_handler : public thread
 {
    public:
@@ -940,9 +982,10 @@ void request_handler::process_request( )
       raddr = input_data[ c_http_param_raddr ];
       session_id = input_data[ c_param_session ];
 
+      string pwd_hash;
+
       // NOTE: If an existing session is present then obtain its
       // password hash for decrypting base64 data (if required).
-      string pwd_hash;
       if( !session_id.empty( ) && session_id != c_new_session )
       {
          p_session_info = get_session_info( session_id, false );
@@ -977,18 +1020,22 @@ void request_handler::process_request( )
          string decoded( base64::decode( base64_data ) );
 
          bool check_decoded = false;
+
          if( !pwd_hash.empty( ) )
          {
             check_decoded = true;
+
             crypt_decoded( pwd_hash, decoded );
          }
 
          if( check_decoded )
          {
             size_t pos = decoded.find( c_dummy_param_prefix );
+
             if( pos != string::npos )
             {
                has_decrypted = true;
+
                parse_input( ( char* )decoded.c_str( ), decoded.size( ), input_data, '&', true );
             }
          }
@@ -1044,6 +1091,9 @@ void request_handler::process_request( )
       bool is_prepare_backup = file_exists( c_prepare_backup_file );
       bool is_prepare_restore = file_exists( c_prepare_restore_file );
 
+      if( g_restore_checksum.length( ) && ( chksum != g_restore_checksum ) )
+         g_restore_checksum.erase( );
+
       if( is_prepare_backup || is_prepare_restore )
       {
          string prepare_html( g_prepare_html );
@@ -1066,6 +1116,8 @@ void request_handler::process_request( )
       }
       else if( file_exists( c_restore_log_file ) )
       {
+         g_restore_checksum = chksum;
+
          is_backup_or_restore = process_log_file( module_name, c_restore_log_file,
           GDS( c_display_restore_in_progress ), g_restore_html, c_restore_text, extra_content );
 
@@ -1089,6 +1141,7 @@ void request_handler::process_request( )
          throw runtime_error( GDS( c_display_module_name_missing_or_invalid ) );
 
       set< string > login_opts;
+
       if( !get_storage_info( ).login_opts.empty( ) )
          split( get_storage_info( ).login_opts, login_opts, '+' );
 
@@ -1098,20 +1151,20 @@ void request_handler::process_request( )
       module_id = mod_info.id;
 
       if( g_id.empty( ) && file_exists( c_id_file ) )
-         g_id = get_id_from_server_identity( buffer_file( c_id_file ).c_str( ) );
+         g_id = buffer_file( c_id_file );
 
       bool is_invalid_session = false;
 
-      if( !session_id.empty( ) && session_id != c_new_session && cmd != c_cmd_join && cmd != c_cmd_status )
+      if( !session_id.empty( ) && ( session_id != c_new_session ) && ( cmd != c_cmd_join ) && ( cmd != c_cmd_status ) )
       {
-         if( user.empty( ) || ( !user.empty( ) && hash == get_user_hash( user ) ) )
+         if( user.empty( ) || ( !user.empty( ) && ( hash == get_user_hash( user ) ) ) )
          {
             p_session_info = get_session_info( session_id, false );
 
             if( !p_session_info )
             {
-               if( cmd.empty( ) || cmd == c_cmd_home || cmd == c_cmd_quit || cmd == c_cmd_login
-                || ( cmd == c_cmd_password && !password.empty( ) ) || !username.empty( ) || !userhash.empty( ) )
+               if( cmd.empty( ) || ( cmd == c_cmd_home ) || ( cmd == c_cmd_quit ) || ( cmd == c_cmd_login )
+                || ( !password.empty( ) && ( cmd == c_cmd_password ) ) || !username.empty( ) || !userhash.empty( ) )
                {
                   if( cmd != c_cmd_password )
                      cmd = c_cmd_home;
@@ -1126,8 +1179,7 @@ void request_handler::process_request( )
                   session_id.erase( );
                   is_authorised = true;
                }
-               else if( !session_id.empty( )
-                && session_id != get_unique( g_id, raddr ) )
+               else if( !session_id.empty( ) && ( session_id != get_unique( g_id, raddr ) ) )
                {
                   if( user.empty( ) )
                      session_id.erase( );
@@ -1183,7 +1235,9 @@ void request_handler::process_request( )
          {
             display_error = false;
 
-            login_refresh = true;
+            force_refresh = false;
+            login_refresh = false;
+
             identity_failure = true;
 
             g_bad_seed = g_seed;
@@ -1211,7 +1265,7 @@ void request_handler::process_request( )
       else if( g_id.empty( ) )
          cmd = c_cmd_home;
 
-      if( cmd == c_cmd_password || cmd == c_cmd_credentials )
+      if( ( cmd == c_cmd_password ) || ( cmd == c_cmd_credentials ) )
       {
          cmd = c_cmd_home;
          is_sign_in = true;
@@ -1223,7 +1277,7 @@ void request_handler::process_request( )
          }
       }
 
-      if( using_anonymous || cmd == c_cmd_join || cmd == c_cmd_status )
+      if( using_anonymous || ( cmd == c_cmd_join ) || ( cmd == c_cmd_status ) )
       {
          temp_session = true;
          session_id = c_new_session;
@@ -1235,9 +1289,9 @@ void request_handler::process_request( )
       string activation_file;
 
       if( is_activation )
-         activation_file = data + chksum;
+         activation_file = ( data + chksum );
 
-      if( session_id.empty( ) || session_id == c_new_session )
+      if( session_id.empty( ) || ( session_id == c_new_session ) )
       {
          if( cmd == c_cmd_open )
          {
@@ -1277,9 +1331,6 @@ void request_handler::process_request( )
                }
                else
                {
-                  if( chksum != get_checksum( c_cmd_activate + user + data ) )
-                     throw runtime_error( GDS( c_display_invalid_url ) );
-
                   string activate_html( g_activate_html );
                   str_replace( activate_html, c_username, user );
 
@@ -1301,7 +1352,7 @@ void request_handler::process_request( )
             else if( !using_anonymous )
                cmd = c_cmd_home;
 
-            if( g_max_user_limit && get_num_sessions( ) >= g_max_user_limit )
+            if( g_max_user_limit && ( get_num_sessions( ) >= g_max_user_limit ) )
                throw runtime_error( GDS( c_display_max_concurrent_users_logged_in ) );
 
             p_session_info = new session_info( get_storage_info( ) );
@@ -1327,13 +1378,16 @@ void request_handler::process_request( )
             else
                session_id = p_session_info->session_id = uuid( ).as_string( );
 
-            if( !temp_session && cmd != c_cmd_open && ( is_authorised || persistent == c_true ) )
+            if( !temp_session && ( cmd != c_cmd_open )
+             && ( is_authorised || ( persistent == c_true ) ) )
             {
                string dtmoff( input_data[ c_param_dtmoff ] );
+
                if( !dtmoff.empty( ) )
                   p_session_info->dtm_offset = atoi( dtmoff.c_str( ) );
 
                string gmtoff( input_data[ c_param_gmtoff ] );
+
                if( !gmtoff.empty( ) )
                   p_session_info->gmt_offset = atoi( gmtoff.c_str( ) );
 
@@ -1350,7 +1404,7 @@ void request_handler::process_request( )
 
          if( p_session_info )
          {
-            if( cmd == c_cmd_open || cmd == c_cmd_activate )
+            if( ( cmd == c_cmd_open ) || ( cmd == c_cmd_activate ) )
                cmd = c_cmd_home;
 
             p_session_info->tm_last_request = time( 0 );
@@ -1429,6 +1483,11 @@ void request_handler::process_request( )
             // not allowing anonymous access) the user password will have been hashed with an "empty"
             // identity string (so the original string is being copied here for this very situation).
             string id_for_login( g_id );
+
+            // NOTE: If was attempting to reset the identity password
+            // then will need to repeat the initial socket connection.
+            if( g_reset_identity )
+               p_session_info->p_socket->close( );
 
             if( g_has_connected )
                connection_okay = true;
@@ -1581,6 +1640,8 @@ void request_handler::process_request( )
                      private_key priv_key;
 #endif
 
+                     string id_pwd( g_id_pwd );
+
                      if( g_seed.empty( ) )
                      {
 #ifdef SSL_SUPPORT
@@ -1593,6 +1654,7 @@ void request_handler::process_request( )
                      }
                      else
                      {
+
                         if( g_seed == c_unlock )
                         {
 #ifdef SSL_SUPPORT
@@ -1623,6 +1685,11 @@ void request_handler::process_request( )
                            string password( g_id_pwd );
                            string encrypted_seed( g_seed );
 
+                           bool skip_save_encrypted = false;
+
+                           if( password.length( ) >= c_encrypted_length )
+                              skip_save_encrypted = true;
+
                            harden_key_with_hash_rounds( password, password, password, c_key_rounds_multiplier );
 
                            data_encrypt( encrypted_seed, encrypted_seed, password );
@@ -1633,10 +1700,65 @@ void request_handler::process_request( )
                               throw runtime_error( "unable to set encrypted identity information" );
 
                            string::size_type pos = identity_info.find( '!' );
+
                            if( pos == string::npos )
                               throw runtime_error( "unexpected encrypted identity information '" + identity_info + "'" );
 
-                           string encrypted_identity( identity_info.substr( 0, pos ) );
+                           string current_identity( identity_info.substr( 0, pos ) );
+
+                           if( g_reset_identity )
+                           {
+                              string entropy;
+
+                              if( !simple_command( *p_session_info,
+                               "crypto_seed -k=" + priv_key.get_public( )
+                               + " " + priv_key.encrypt_message( pub_key, g_seed, 0, true ), &entropy ) )
+                              {
+                                 g_bad_seed = g_seed;
+                                 g_seed.erase( );
+
+                                 force_refresh = false;
+                                 login_refresh = false;
+
+                                 identity_failure = true;
+
+                                 if( entropy.find( c_response_error_prefix ) == 0 )
+                                 {
+                                    display_error = false;
+
+                                    g_seed_error = GDS( c_display_error ) + ": "
+                                     + entropy.substr( strlen( c_response_error_prefix ) );
+                                 }
+
+                                 throw runtime_error( "unable to determine seed entropy information" );
+                              }
+
+                              if( !entropy.empty( ) )
+                              {
+                                 sha256 hash( entropy );
+
+                                 string entropy_hash( sha1( hash.get_digest_as_string( ) ).get_digest_as_string( ) );
+
+                                 if( g_id == entropy_hash )
+                                    g_reset_identity = false;
+                                 else
+                                 {
+                                    g_bad_seed = g_seed;
+                                    g_seed.erase( );
+
+                                    display_error = false;
+
+                                    force_refresh = false;
+                                    login_refresh = false;
+
+                                    identity_failure = true;
+
+                                    g_seed_error = GDS( c_display_error ) + ": " + GDS( c_display_incorrect_mnemonics );
+
+                                    throw runtime_error( "incorrect mnemonics provided" );
+                                 }
+                              }
+                           }
 
 #ifdef SSL_SUPPORT
                            if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( ) + " "
@@ -1644,6 +1766,9 @@ void request_handler::process_request( )
                            {
                               g_bad_seed = g_seed;
                               g_seed.erase( );
+
+                              force_refresh = false;
+                              login_refresh = false;
 
                               identity_failure = true;
 
@@ -1664,6 +1789,9 @@ void request_handler::process_request( )
                               g_bad_seed = g_seed;
                               g_seed.erase( );
 
+                              force_refresh = false;
+                              login_refresh = false;
+
                               identity_failure = true;
 
                               if( identity_info.find( c_response_error_prefix ) == 0 )
@@ -1677,8 +1805,14 @@ void request_handler::process_request( )
                               throw runtime_error( "unable to set/update identity information" );
                            }
 #endif
-                           ofstream outf( eid_file_name.c_str( ) );
-                           outf << encrypted_identity;
+                           if( !skip_save_encrypted && !file_exists( eid_file_name ) )
+                           {
+                              ofstream outf( eid_file_name.c_str( ) );
+                              outf << current_identity;
+
+                              if( !using_anonymous )
+                                 login_refresh = true;
+                           }
                         }
                      }
 
@@ -1704,45 +1838,62 @@ void request_handler::process_request( )
 #endif
                      }
 
-                     if( !sid.empty( ) && matches_server_sid( sid ) )
+                     // NOTE: If a "sid" exists and matches what was expected (or "g_id"
+                     // is empty) then make sure the "identity.txt" file has been saved.
+                     if( !sid.empty( ) && ( g_id.empty( ) || matches_server_sid( sid ) ) )
                      {
-                        g_unlock_fails = 0;
+                        g_unlock_attempts = 0;
 
-                        if( file_exists( c_has_restored_file ) )
+                        if( g_id.empty( ) )
+                        {
+                           set_server_sid( sid );
+
+                           g_id = server_identity;
+
+                           if( !using_anonymous )
+                              login_refresh = true;
+                        }
+
+                        if( !g_seed.empty( ) )
+                        {
+                           g_seed.erase( );
+                           g_id_pwd.erase( );
+
                            has_set_identity = true;
+                        }
 
-                        g_id = get_id_from_server_identity( server_identity.c_str( ) );
-
-                        if( !file_exists( id_file_name.c_str( ) ) )
+                        if( !file_exists( id_file_name ) )
                         {
                            ofstream outf( id_file_name.c_str( ) );
                            outf << server_identity;
                         }
 
-                        if( !file_exists( id_file_name.c_str( ) ) )
+                        if( !file_exists( id_file_name ) )
                            throw runtime_error( "unable to create identity file (incorrect directory perms?)" );
                      }
                      else
                      {
                         if( was_unlock )
                         {
-                           if( ++g_unlock_fails >= 3 )
-                           {
-                              g_unlock_fails = 0;
+                           ++g_unlock_attempts;
 
-                              // NOTE: Only allow Meta to restore from seed.
-                              if( !is_meta_module )
-                                 msleep( 2500 );
-                              else
-                                 file_remove( eid_file_name.c_str( ) );
+                           // NOTE: Will allow resetting the identity password
+                           // after any failed unlock attempt iff the password
+                           // is a special value (the reset will still require
+                           // the original mnemonics to be provided).
+                           if( id_pwd == c_reset_identity_password )
+                           {
+                              g_unlock_attempts = 0;
+
+                              g_reset_identity = true;
+
+                              file_remove( eid_file_name );
                            }
                         }
 
                         string old_id( g_id );
 
-                        g_id = get_id_from_server_identity( server_identity.c_str( ) );
-
-                        string chk_id( get_id_from_server_identity( g_id.c_str( ) ) );
+                        g_id = server_identity;
 
                         string encrypted_identity;
 
@@ -1760,14 +1911,19 @@ void request_handler::process_request( )
 
                         // NOTE: If is the first time but the identity matches what had already
                         // been saved previously then do not output the "system identity" form.
-                        if( !g_seed.empty( ) || ( ( old_id == g_id ) || ( old_id == chk_id ) ) )
+                        if( !g_seed.empty( ) || ( g_id == old_id ) )
                         {
                            set_server_sid( sid );
+
+                           if( g_seed.empty( ) && file_exists( c_has_restored_file ) )
+                              has_set_identity = true;
 
                            if( !g_seed.empty( ) )
                            {
                               ofstream outf( id_file_name.c_str( ) );
                               outf << server_identity;
+
+                              login_refresh = true;
 
                               has_set_identity = true;
 
@@ -1775,13 +1931,11 @@ void request_handler::process_request( )
                               g_seed.erase( );
                            }
 
-                           if( !g_id.empty( ) && !file_exists( id_file_name.c_str( ) ) )
+                           if( !g_id.empty( ) && !file_exists( id_file_name ) )
                               throw runtime_error( "unable to create identity file (incorrect directory perms?)" );
 
                            if( was_unlock )
                               display_error = false;
-                           else if( old_id == chk_id )
-                              login_refresh = true;
                         }
                         else
                         {
@@ -1789,7 +1943,7 @@ void request_handler::process_request( )
 
                            if( !encrypted_identity.empty( ) )
                            {
-                              if( g_unlock_fails || ( server_identity == encrypted_identity ) )
+                              if( g_unlock_attempts || ( server_identity == encrypted_identity ) )
                                  needs_to_unlock = true;
                            }
 
@@ -1797,12 +1951,35 @@ void request_handler::process_request( )
                            {
                               string unlock_html( g_unlock_html );
 
+                              // NOTE: After three failed attempts
+                              // will sleep (to ensure brute force
+                              // cracking would be far too slow).
+                              if( g_unlock_attempts >= 3 )
+                              {
+                                 msleep( 2500 );
+
+                                 g_unlock_attempts = 0;
+                              }
+
                               output_form( module_name, extra_content,
                                unlock_html, "", false, GDS( c_display_system_unlock ) );
                            }
                            else if( is_meta_module || g_is_blockchain_application )
                            {
                               is_identity_form = true;
+
+                              string encrypted_seed( server_identity );
+
+                              // NOTE: Special case where either a page refresh
+                              // (or browser restart) occurs before the identiy
+                              // password has been updated.
+                              if( g_bad_seed.empty( )
+                               && ( encrypted_seed.find( ' ' ) == string::npos ) )
+                              {
+                                 encrypted_seed.erase( );
+
+                                 g_seed_error = GDS( c_display_original_mnemonics_required );
+                              }
 
                               string identity_html( g_identity_html );
 
@@ -1814,10 +1991,7 @@ void request_handler::process_request( )
 
                               str_replace( identity_html, c_identity_error, g_seed_error );
 
-                              // NOTE: Encrypt mnemonics using the "unique_id" value as the key.
-                              string encrypted_seed( server_identity );
-
-                              if( !g_bad_seed.empty( ) )
+                              if( g_reset_identity || !g_bad_seed.empty( ) )
                               {
                                  encrypted_seed = g_bad_seed;
 
@@ -1825,6 +1999,7 @@ void request_handler::process_request( )
                                  g_seed_error.erase( );
                               }
 
+                              // NOTE: Encrypt mnemonics using the "unique_id" value as the key.
                               crypt_decoded( unique_id, encrypted_seed, false );
 
                               str_replace( identity_html, c_identity_mnemonics, encrypted_seed );
@@ -1880,6 +2055,7 @@ void request_handler::process_request( )
                         }
 
                         module_index_iterator mii;
+
                         for( mii = get_storage_info( ).modules_index.begin( );
                          mii != get_storage_info( ).modules_index.end( ); ++mii )
                         {
@@ -1901,36 +2077,15 @@ void request_handler::process_request( )
 
                      if( has_set_identity )
                      {
-                        string admin_pwd_hash( hash_password( g_id + g_id_pwd + c_admin_user_key ) );
+                        if( sid == sha256( id_pwd ).get_digest_as_string( ) )
+                           id_pwd = sid;
 
-                        string admin_user_hash( sha256( c_admin_user_key + admin_pwd_hash ).get_digest_as_string( ) );
+                        reset_admin_password( *p_session_info, module_id, mod_info, id_pwd, sid );
 
-                        string encrypted_pwd( data_encrypt( admin_pwd_hash, sid ) );
-
-                        vector< pair< string, string > > pwd_field_value_pairs;
-
-                        pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_pwd ) );
-                        pwd_field_value_pairs.push_back( make_pair( mod_info.user_hash_field_id, admin_user_hash ) );
-
-                        string error_message;
-
-                        // NOTE: Temporarily assumes the "admin" user in order to update the password.
-                        restorable< string > temp_user_key( p_session_info->user_key, c_admin_user_key );
-
-                        if( !perform_update( module_id, mod_info.user_class_id,
-                         c_admin_user_key, pwd_field_value_pairs, *p_session_info, &error_message ) )
-                        {
-                           if( !error_message.empty( ) )
-                              throw runtime_error( error_message );
-                           else
-                              throw runtime_error( "unexpected server error occurred trying to update 'admin' password" );
-                        }
-
-                        file_remove( c_has_restored_file );
-
-                        clear_key( g_id_pwd );
-
+                        g_seed.erase( );
                         g_id_pwd.erase( );
+
+                        g_restore_checksum.erase( );
                      }
 
                      clear_key( sid );
@@ -1951,9 +2106,11 @@ void request_handler::process_request( )
                 mod_info, *p_session_info, true, true, username, userhash, password, unique_id ) )
                {
                   cmd = c_cmd_home;
+
                   was_openid = true;
                   temp_session = false;
                   using_anonymous = false;
+
                   p_session_info->user_id.erase( );
                }
             }
@@ -2070,6 +2227,7 @@ void request_handler::process_request( )
                         crypt_decoded( pwd_hash, decoded );
 
                         size_t pos = decoded.find( c_dummy_param_prefix );
+
                         if( pos != string::npos )
                            parse_input( ( char* )decoded.c_str( ), decoded.size( ), input_data, '&', true );
 
@@ -2303,6 +2461,7 @@ void request_handler::process_request( )
                   checksum_values = session_id + uselextra;
 
                   string user_other( p_session_info->user_other );
+
                   if( user_other.empty( ) )
                      user_other = c_user_other_none;
 
@@ -2350,9 +2509,27 @@ void request_handler::process_request( )
 
                string hash_values( p_session_info->hashval_prefix + findinfo + listsrch + other_values );
 
-               // NOTE: For list searches part of an SHA1 hash of the "findinfo" parameter is used to
-               // ensure the search data hasn't been changed via URL tampering.
-               if( !has_just_logged_in
+               bool ignore_checksum = false;
+
+               // NOTE: Special case where the admin password is the identity.
+               if( !chksum.empty( ) && ( chksum == g_restore_checksum ) )
+               {
+                  cmd = c_cmd_home;
+
+                  login_refresh = true;
+                  ignore_checksum = true;
+
+                  string sid;
+                  get_server_sid( sid );
+
+                  g_restore_checksum.erase( );
+
+                  reset_admin_password( *p_session_info, module_id, mod_info, sid, sid );
+               }
+
+               // NOTE: For list searches part of an SHA1 hash of the "findinfo" parameter
+               // is used to ensure the search data hasn't been changed via URL tampering.
+               if( !ignore_checksum && !has_just_logged_in
                 && ( ( !hashval.empty( ) && ( hashval != get_hash( hash_values ) ) )
                 || ( ( chksum != get_checksum( identity_values ) )
                 && ( chksum != get_checksum( *p_session_info, checksum_values ) ) ) ) )
@@ -2361,12 +2538,12 @@ void request_handler::process_request( )
                   for( map< string, string >::const_iterator ci = input_data.begin( ); ci != input_data.end( ); ++ci )
                      DEBUG_TRACE( "Input[ " + ci->first + " ] => " + ci->second );
 #endif
-                  // NOTE: If a session has just been created then assume the invalid URL was
-                  // actually due to an already "timed out" session.
-                  if( created_session && !using_anonymous )
-                     throw runtime_error( GDS( c_display_your_session_has_been_timed_out ) );
-                  else
+                  // NOTE: If a session has just been created then assumes that the
+                  // invalid URL was actually due to an already "timed out" session.
+                  if( using_anonymous || !created_session )
                      throw runtime_error( GDS( c_display_invalid_url ) );
+                  else
+                     throw runtime_error( GDS( c_display_your_session_has_been_timed_out ) );
                }
             }
 
@@ -3123,12 +3300,12 @@ void request_handler::process_request( )
       if( display_error )
          osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error ) << ": " << error << "</p>\n";
 
-      bool is_logged_in = false;
+      bool act_as_logged_in = false;
       bool has_output_extra = false;
 
       if( !created_session && p_session_info && p_session_info->logged_in )
       {
-         is_logged_in = true;
+         act_as_logged_in = true;
          has_output_extra = true;
 
          osstr << "<p class=\"text_with_back\">"
@@ -3142,7 +3319,7 @@ void request_handler::process_request( )
 
          if( force_refresh )
          {
-            is_logged_in = true;
+            act_as_logged_in = true;
             has_output_extra = true;
 
             osstr << "<p align=\"center\">"
@@ -3152,7 +3329,7 @@ void request_handler::process_request( )
          }
          else if( login_refresh )
          {
-            is_logged_in = true;
+            act_as_logged_in = true;
             has_output_extra = true;
 
             // NOTE: An automatic refresh will occur but output this
@@ -3165,7 +3342,9 @@ void request_handler::process_request( )
          }
          else if( identity_failure )
          {
-            is_logged_in = true;
+            login_refresh = true;
+
+            act_as_logged_in = true;
             has_output_extra = true;
 
             // NOTE: An automatic refresh will occur but output this
@@ -3177,7 +3356,7 @@ void request_handler::process_request( )
          }
       }
 
-      if( !is_logged_in && !using_anonymous )
+      if( !act_as_logged_in && !using_anonymous )
       {
          string login_html( !cookies_permitted || !get_storage_info( ).login_days
           || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
@@ -3216,7 +3395,7 @@ void request_handler::process_request( )
          extra_content << "</div>\n";
       }
 
-      if( is_logged_in )
+      if( act_as_logged_in )
       {
          extra_content << "<input type=\"hidden\" value=\"loggedIn = true;";
 
@@ -3453,7 +3632,7 @@ int main( int argc, char* argv[ ] )
       g_ciyam_interface_html = buffer_file( c_ciyam_interface_htms );
 
       if( file_exists( c_id_file ) )
-         g_id = get_id_from_server_identity( buffer_file( c_id_file ).c_str( ) );
+         g_id = buffer_file( c_id_file );
 
       str_replace( g_login_html, c_login, GDS( c_display_login ) );
       str_replace( g_login_html, c_password, GDS( c_display_password ) );
@@ -3557,14 +3736,8 @@ int main( int argc, char* argv[ ] )
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
          FCGX_Init( );
 
-         // KLUDGE: For some unknown reason when this FCGI interface is started automatically by Apache
-         // (under Windows) it can crash, however, with the delay here this problem seems to be avoided.
-         msleep( 500 );
-
-         // FUTURE: Currently Apache's "mod_fcgid" only supports single threaded FCGI servers and under
-         // Windows it is simply unable to get back a request that has been handled by any thread other
-         // than the main one. Thus rather than force single threaded compilation a check is being made
-         // to see if "mod_fastcgi" is in use before starting any other request handling threads.
+         // NOTE: Apache's "mod_fcgid" only supports single threaded FCGI servers so check
+         // if "mod_fastcgi" is in use before starting any other request handling threads.
 #  ifdef USE_MOD_FASTCGI_KLUDGE
          if( has_environment_variable( "_FCGI_MUTEX_" ) ) // i.e. this var is only found in mod_fastcgi
 #  endif
