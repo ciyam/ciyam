@@ -223,6 +223,7 @@ string g_seed_error;
 int g_unlock_attempts = 0;
 
 bool g_reset_identity = false;
+bool g_skip_admin_reset = false;
 
 string g_login_html;
 string g_backup_html;
@@ -636,6 +637,7 @@ bool process_log_file( const string& module_name, const string& log_file_name,
    if( lines.size( ) >= 3 && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
    {
       has_completed = true;
+
       file_rename( log_file_name, string( log_file_name ) + c_sav_file_ext );
 
       for( size_t i = 0; i < lines.size( ); i++ )
@@ -1972,22 +1974,30 @@ void request_handler::process_request( )
 
                               // NOTE: Special case where either a page refresh
                               // (or browser restart) occurs before the identiy
-                              // password has been updated.
+                              // password had been updated.
                               if( g_bad_seed.empty( )
                                && ( encrypted_seed.find( ' ' ) == string::npos ) )
                               {
                                  encrypted_seed.erase( );
 
-                                 g_seed_error = GDS( c_display_original_mnemonics_required );
+                                 g_reset_identity = true;
                               }
 
                               string identity_html( g_identity_html );
 
-                              str_replace( identity_html,
-                               c_identity_introduction_1, GDS( c_display_identity_introduction_1 ) );
+                              if( g_reset_identity )
+                                 str_replace( identity_html,
+                                  c_identity_introduction_1, GDS( c_display_reset_admin_password_1 ) );
+                              else
+                                 str_replace( identity_html,
+                                  c_identity_introduction_1, GDS( c_display_identity_introduction_1 ) );
 
-                              str_replace( identity_html,
-                               c_identity_introduction_2, GDS( c_display_identity_introduction_2 ) );
+                              if( g_reset_identity )
+                                 str_replace( identity_html,
+                                  c_identity_introduction_2, GDS( c_display_reset_admin_password_2 ) );
+                              else
+                                 str_replace( identity_html,
+                                  c_identity_introduction_2, GDS( c_display_identity_introduction_2 ) );
 
                               str_replace( identity_html, c_identity_error, g_seed_error );
 
@@ -2005,13 +2015,17 @@ void request_handler::process_request( )
                               str_replace( identity_html, c_identity_mnemonics, encrypted_seed );
 
                               str_replace( identity_html, c_mnemonics, GDS( c_display_mnemonics ) );
-                              str_replace( identity_html, c_confirm_identity, GDS( c_display_confirm_identity ) );
+
+                              if( g_reset_identity )
+                                 str_replace( identity_html, c_confirm_identity, GDS( c_display_reset_password ) );
+                              else
+                                 str_replace( identity_html, c_confirm_identity, GDS( c_display_confirm_identity ) );
 
                               str_replace( identity_html, c_password, GDS( c_display_password ) );
                               str_replace( identity_html, c_verify_password, GDS( c_display_verify_password ) );
 
                               output_form( module_name, extra_content,
-                               identity_html, "", false, GDS( c_display_confirm_identity ) );
+                               identity_html, "", false, g_reset_identity ? GDS( c_display_reset_password ) : GDS( c_display_confirm_identity ) );
                            }
                            else
                            {
@@ -2077,7 +2091,12 @@ void request_handler::process_request( )
 
                      if( has_set_identity )
                      {
-                        if( sid == sha256( id_pwd ).get_digest_as_string( ) )
+                        bool is_encrypted = !id_pwd.empty( );
+
+                        // NOTE: If was not encrypted (or has now become so) then is resetting the
+                        // "admin" password to the system identity hash (which then requires using
+                        // the system identity entropy as the login password).
+                        if( !is_encrypted || ( sid == sha256( id_pwd ).get_digest_as_string( ) ) )
                            id_pwd = sid;
 
                         reset_admin_password( *p_session_info, module_id, mod_info, id_pwd, sid );
@@ -2085,7 +2104,10 @@ void request_handler::process_request( )
                         g_seed.erase( );
                         g_id_pwd.erase( );
 
-                        g_restore_checksum.erase( );
+                        if( !is_encrypted )
+                           g_skip_admin_reset = true;
+                        else
+                           g_restore_checksum.erase( );
                      }
 
                      clear_key( sid );
@@ -2136,6 +2158,7 @@ void request_handler::process_request( )
                      key_info += " " + user;
 
                      bool login_okay = false;
+
                      pair< string, string > user_info;
 
                      if( !fetch_item_info( module_id, mod_info,
@@ -2524,7 +2547,10 @@ void request_handler::process_request( )
 
                   g_restore_checksum.erase( );
 
-                  reset_admin_password( *p_session_info, module_id, mod_info, sid, sid );
+                  if( g_skip_admin_reset )
+                     g_skip_admin_reset = false;
+                  else
+                     reset_admin_password( *p_session_info, module_id, mod_info, sid, sid );
                }
 
                // NOTE: For list searches part of an SHA1 hash of the "findinfo" parameter
