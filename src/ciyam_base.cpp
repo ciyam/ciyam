@@ -6391,6 +6391,9 @@ void set_identity( const string& info, const char* p_encrypted_sid )
             write_file( c_server_sid_file, ( unsigned char* )info.c_str( ), info.length( ) );
 
             hash_sid_val( sid );
+
+            if( get_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
+               run_init_script = true;
          }
 
          set_sid( sid );
