@@ -556,6 +556,10 @@ Include /etc/letsencrypt/options-ssl-apache.conf
     ProxyPass /_synapse/client http://127.0.0.1:8008/_synapse/client nocanon
     ProxyPassReverse /_synapse/client http://127.0.0.1:8008/_synapse/client
 ...
+    <Location "/.well-known/matrix/server">
+        Header set Access-Control-Allow-Origin "*"
+        Header set Content-Type "application/json"
+    </Location>
 </VirtualHost>
 
 <VirtualHost *:8448>
