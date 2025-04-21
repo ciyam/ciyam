@@ -487,6 +487,9 @@ retention:
  default_policy:
   min_lifetime: 1d
   max_lifetime: 3d
+media_retention:
+  local_media_lifetime: 3d
+  remote_media_lifetime: 1d
 ...
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -586,6 +589,9 @@ sudo vi /etc/coturn/turnserver.conf
 ...
 listening-ip=***internal_ip_address***
 ...
+min-port=50000
+max-port=59999
+...
 external-ip=***external_ip_address***
 ...
 use-auth-secret
@@ -601,7 +607,26 @@ pkey=/etc/coturn/certs/***domain_name***.key
 no-cli
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+sudo vi /usr/lib/firewalld/services/coturn.xml
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>TURN</short>
+  <description>TURN and STUN server ports for VoIP</description>
+  <port protocol="tcp" port="3478"/>
+  <port protocol="udp" port="3478"/>
+  <port protocol="tcp" port="5349"/>
+  <port protocol="udp" port="5349"/>
+  <port protocol="udp" port="50000-59999"/>
+</service>
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+NOTE: Use "yast" to add "coturn" to the public zone of the firewall.
+sudo yast
+
 sudo firewall-cmd --reload
+
+sudo firewall-cmd --list-all
 
 sudo mkdir -p /etc/coturn/certs
 sudo chown -R turnserver:turnserver /etc/coturn/
@@ -724,7 +749,7 @@ sudo vi /etc/ntfy/server.yml
 ...
 base-url: "https://ntfy.***domain_name***"
 ...
-listen-http: ":2586"
+listen-http: ":2588"
 ...
 cache-file: "/var/cache/ntfy/cache.db"
 cache-duration: "24h"
@@ -745,8 +770,8 @@ sudo vi /etc/apache2/sites-available/000-default-le-ssl.conf
     SSLEngine on
     ServerName ntfy.***domain_name***
 
-    ProxyPass / http://127.0.0.1:2586/ upgrade=websocket
-    ProxyPassReverse / http://127.0.0.1:2586/
+    ProxyPass / http://127.0.0.1:2588/ upgrade=websocket
+    ProxyPassReverse / http://127.0.0.1:2588/
 
     SetEnv proxy-nokeepalive 1
     SetEnv proxy-sendchunked 1
