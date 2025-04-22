@@ -41,6 +41,7 @@ PEER_PORT=$OUTPUT
 @ifndef $ERROR
 .storage_init Meta
 .pd admin @now Meta Global_Peerchain_Entry $IDENTITY
+.storage_term
 ;
 @ifndef $ERROR
 .system_variable @files_area_dir
