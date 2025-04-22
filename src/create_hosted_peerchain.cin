@@ -36,8 +36,8 @@ PEER_TYPE=-2
 DEMO=
 DEMO_IDENTITIES=@file:ciyam_demo_identities.lst
 ;
-DEMO_WITHOUT_IDENT=@repstr:$IDENT/:$DEMO_IDENTITIES
-@ifneq "$DEMO_IDENTITIES" "$DEMO_WITHOUT_IDENT"
+DEMO_WITHOUT_IDENTITY=@repstr:$IDENTITY/:$DEMO_IDENTITIES
+@ifneq "$DEMO_IDENTITIES" "$DEMO_WITHOUT_IDENTITY"
 DEMO=1
 @endif
 ;
@@ -52,8 +52,10 @@ PEER_PORT=$OUTPUT
 .peer_listen $PEER_PORT $IDENTITY,$REVERSED
 @endif
 ;
+@ifndef $ERROR
 .storage_init Meta
 .pc sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=1,Description=$DESCRIPTION,Peer_Type=$PEER_TYPE,Local_Port=$PEER_PORT"
+.storage_term
 ;
 @ifndef $ERROR
 @ifdef $SHARED_SECRET_HASH
@@ -88,6 +90,7 @@ FILES_AREA_DIR=$OUTPUT
 #Created global peerchain entry for identity '$IDENTITY' (plus '$REVERSED').
 @endif
 @endif
-.storage_term
 @endif
+@endif
+;
 @endif
