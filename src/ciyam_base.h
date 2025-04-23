@@ -236,7 +236,7 @@ std::string CIYAM_BASE_DECL_SPEC get_extra_identity_variable(
  const std::string& identity_variable_name, const std::string& extra );
 
 std::string get_identity_variable_extra(
- const std::string& identity_variable_name, const std::string& identity_value );
+ const std::string& identity_variable_name, const std::string& identity_value, bool force_extra_match = false );
 
 void CIYAM_BASE_DECL_SPEC identity_variable_name_prefix_and_suffix(
  const std::string& identity_variable_name, std::string& prefix, std::string& suffix );

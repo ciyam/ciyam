@@ -6681,9 +6681,9 @@ string get_extra_identity_variable( const string& identity_variable_name, const 
    return get_system_variable( variable_name_prefix + extra + variable_name_suffix );
 }
 
-string get_identity_variable_extra( const string& identity_variable_name, const string& identity_value )
+string get_identity_variable_extra( const string& identity_variable_name, const string& identity_value, bool force_extra_match )
 {
-   string extra, variable_name_prefix, variable_name_suffix;
+   string extra, closest, variable_name_prefix, variable_name_suffix;
 
    identity_variable_name_prefix_and_suffix( identity_variable_name, variable_name_prefix, variable_name_suffix );
 
@@ -6695,6 +6695,14 @@ string get_identity_variable_extra( const string& identity_variable_name, const 
       {
          extra = to_string( i );
          break;
+      }
+      else if( force_extra_match && !next_extra.empty( ) )
+      {
+         if( closest.empty( ) || ( identity_value > closest ) )
+         {
+            closest = next_extra;
+            extra = to_string( i );
+         }
       }
    }
 
