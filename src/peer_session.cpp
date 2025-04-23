@@ -222,14 +222,14 @@ string get_current_height_prefix( )
    return "Currently at height ";
 }
 
-string get_hub_identity( const string& own_identity )
+string get_hub_identity( const string& own_identity, bool force_extra_match = false )
 {
    string hub_identity_var_name( get_special_var_name( e_special_var_blockchain_peer_hub_identity ) );
    string backup_identity_var_name( get_special_var_name( e_special_var_blockchain_backup_identity ) );
 
    if( own_identity != get_raw_system_variable( backup_identity_var_name ) )
    {
-      string extra( get_identity_variable_extra( backup_identity_var_name, own_identity ) );
+      string extra( get_identity_variable_extra( backup_identity_var_name, own_identity, force_extra_match ) );
 
       if( !extra.empty( ) )
       {
@@ -7039,7 +7039,7 @@ void peer_session::on_start( )
 
          if( !is_owner && ( chain_type == e_peerchain_type_backup ) )
          {
-            string hub_identity( get_hub_identity( identity ) );
+            string hub_identity( get_hub_identity( identity, true ) );
 
             if( !hub_identity.empty( ) )
                extra += '&' + hub_identity;
