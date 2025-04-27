@@ -442,6 +442,10 @@ hostname -i
 hostname -I | cut -d' ' -f1
 ***internal_ip_address***
 
+With the following assuming that ***domain_name*** is "example.com" then
+***domain_prefix*** would be "example" and ***domain_suffix*** is "com".
+(while ***other_domain_name*** is being used as a sample virtual domain)
+
 sudo hostnamectl set-hostname ***domain_name*** --static
 
 Installing Syncthing User Service
@@ -807,7 +811,9 @@ sudo dpkg-reconfigure postfix
 sudo vi /etc/aliases
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
-root:              admin
+webmaster:        root
+postmaster:       root
+root:             admin
 ...
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -835,16 +841,26 @@ mydomain = ***domain_name***
 mydestination = $myhostname, $mydomain, localhost.$mydomain, , localhost
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-sudo postconf -e 'virtual_alias_domains = $mydomain'
-sudo postconf -e 'virtual_alias_maps = hash:/etc/postfix/virtual'
+sudo postconf -e 'virtual_alias_domains = ***other_domain_name***'
+sudo postconf -e 'virtual_alias_maps = hash:/etc/postfix/virtual, regexp:/etc/postfix/virtual-regexp'
 
 sudo vi /etc/postfix/virtual
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-root@***domain_name*** admin
-postmaster@***domain_name*** admin
+root@***other_domain_name*** admin
+webmaster@***other_domain_name*** admin
+postmaster@***other_domain_name*** admin
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo vi /etc/postfix/virtual-regexp
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+/.+\.mail@***other_domain_prefix***\.***other_domain_suffix***/ admin
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo postmap /etc/postfix/virtual
+sudo postmap /etc/postfix/virtual-regexp
+
+sudo postmap -q webmaster@***other_domain_name*** hash:/etc/postfix/virtual
+sudo postmap -q test.mail@***other_domain_name*** regexp:/etc/postfix/virtual-regexp
 
 sudo systemctl restart postfix
 
@@ -897,9 +913,10 @@ sudo systemctl restart dovecot
 sudo doveadm -D auth test admin@localhost
 (verify that SASL should function correctly)
 
-sudo ufw allow 465
-sudo ufw allow 993
-sudo ufw allow 995
+sudo ufw allow 25/tcp
+sudo ufw allow 465/tcp
+sudo ufw allow 993/tcp
+sudo ufw allow 995/tcp
 
 (optional further settings for improved security)
 sudo postconf -e 'smtpd_helo_required = yes'
@@ -934,16 +951,16 @@ Type: TXT
 Host: _dmarc[.***domain_name***]
 Answer: "v=DMARC1; p=reject; pct=100; rua=mailto:dmarc-reports@***domain_name***"
 
-and add the following virtual address mapping:
+and add the following alias:
 
-sudo vi /etc/postfix/virtual
+sudo vi /etc/aliases
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
-dmarc-reports@***domain.name*** admin
+dmarc-reports:    root
 ...
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-sudo postmap /etc/postfix/virtual
+sudo newaliases
 
 sudo postfix reload
 
@@ -1077,6 +1094,41 @@ sudo opendkim-testkey -d ***domain_name*** -s default -vvv
 (ignore "key not secure" and check that last line ends with "key OK")
 
 https://dnschecker.org/dkim-record-checker.php
+
+Install and configure Fail2Ban for Postfix SASL
+-----------------------------------------------
+
+sudo apt install fail2ban -y
+
+(to prevent WARNING when starting)
+sudo vi /etc/fail2ban/fail2ban.conf
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+allowipv6 = auto
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+
+sudo vi /etc/fail2ban/jail.local
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+bantime = 60m
+banfactor = 2
+...
+findtime = 60m
+...
+maxretry = 3
+...
+[postfix-sasl]
+enabled = true
+...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
+
+sudo fail2ban-client status
+sudo fail2ban-client status postfix-sasl
 
 Upgrading to a new version of Lubuntu OS
 ----------------------------------------
