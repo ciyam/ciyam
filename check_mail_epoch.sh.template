@@ -6,7 +6,7 @@
 
 home=/home/$USER
 
-cd $home
+cd ${DOLLAR}home
 
 last=$(mail -H | tail -n 1)
 
@@ -17,19 +17,19 @@ subject=${last:53}
 
 changed=0
 
-new_epoch=$(date -d "${when}" +"%s")
+new_epoch=$(date -d "${DOLLAR}when" +"%s")
 
 if [ -f .mail_epoch ]; then
  old_epoch=$(<.mail_epoch)
 
- if [ $(($new_epoch)) -gt $(($old_epoch)) ]; then
+ if [ $((${DOLLAR}new_epoch)) -gt $((${DOLLAR}old_epoch)) ]; then
   changed=1
-  ntfy pub --title="(@$USER) $from" up_$USER "$subject"
+  ntfy pub --title="(@$USER) ${DOLLAR}from" up_$USER "${DOLLAR}subject"
  fi
 else
  changed=1
 fi
 
-if [ "$changed" == "1" ]; then
- echo -n "$new_epoch" >.mail_epoch
+if [ "${DOLLAR}changed" == "1" ]; then
+ echo -n "${DOLLAR}new_epoch" >.mail_epoch
 fi

@@ -11,6 +11,10 @@ else
 
  output_file_name=$2
 
+ # NOTE: Use "${DOLLAR}name" in the template if wanting "$name"
+ # (rather than the enviroment variable "name") to be expanded.
+ export DOLLAR='$'
+
  if [ ! -f "$template_name" ]; then
    echo "Error: Template file '$template_name' was not found."
  else
