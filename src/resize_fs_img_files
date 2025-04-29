@@ -1,0 +1,48 @@
+#!/bin/bash
+# Copyright (c) 2025 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ "$1" = "" ]; then
+ echo "Usage: resize_fs_img_files [[-demo]] [user_id]"
+else
+ if [ "$1" = "-demo" ]; then
+  user_id=$2
+  backup_size=9536M
+  opened_size=953M
+  shared_size=953M
+ else
+  user_id=$1
+  backup_size=95367M
+  opened_size=953M
+  shared_size=9536M
+ fi
+
+ if [ ! -f "/home/$user_id/backup.img" ]; then
+  echo "Warning: '/home/$user_id/backup.img' was not found."
+ else
+  sudo umount "/home/$user_id/backup"
+  sudo truncate -s $backup_size "/home/$user_id/backup.img"
+  sudo mount "/home/$user_id/backup.img" "/home/$user_id/backup"
+  sudo resize2fs "/home/$user_id/backup.img"
+ fi
+
+ if [ ! -f "/home/$user_id/opened.img" ]; then
+  echo "Warning: '/home/$user_id/opened.img' was not found."
+ else
+  sudo umount "/home/$user_id/opened"
+  sudo truncate -s $opened_size "/home/$user_id/opened.img"
+  sudo mount "/home/$user_id/opened.img" "/home/$user_id/opened"
+  sudo resize2fs "/home/$user_id/opened.img"
+ fi
+
+ if [ ! -f "/home/$user_id/opened.img" ]; then
+  echo "Warning: '/home/$user_id/shared.img' was not found."
+ else
+  sudo umount "/home/$user_id/shared"
+  sudo truncate -s $shared_size "/home/$user_id/shared.img"
+  sudo mount "/home/$user_id/shared.img" "/home/$user_id/shared"
+  sudo resize2fs "/home/$user_id/shared.img"
+ fi
+fi

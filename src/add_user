@@ -14,6 +14,9 @@ else
 
   if [ "$password" = "password.info" ]; then
    password=$(<password.info)
+
+   # NOTE: Prevent easy password discovery via this file.
+   shred "password.info"
    echo -n "temporary_password_file_for_admin_only_access" >password.info
   fi
 
