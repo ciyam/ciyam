@@ -1,0 +1,35 @@
+#!/bin/bash
+# Copyright (c) 2025 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+home=/home/$USER
+
+cd $home
+
+last=$(mail -H | tail -n 1)
+
+from=$(echo ${last:7:19})
+
+when=${last:30:12}
+subject=${last:53}
+
+changed=0
+
+new_epoch=$(date -d "${when}" +"%s")
+
+if [ -f .mail_epoch ]; then
+ old_epoch=$(<.mail_epoch)
+
+ if [ $(($new_epoch)) -gt $(($old_epoch)) ]; then
+  changed=1
+  ntfy pub --title="(@$USER) $from" up_$USER "$subject"
+ fi
+else
+ changed=1
+fi
+
+if [ "$changed" == "1" ]; then
+ echo -n "$new_epoch" >.mail_epoch
+fi

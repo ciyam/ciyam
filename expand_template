@@ -1,0 +1,23 @@
+#!/bin/bash
+# Copyright (c) 2025 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ "$1" == "" ]; then
+ echo "Usage: expand_template [template_name] [[output_file_name]]"
+else
+ template_name=${1%.template}.template
+
+ output_file_name=$2
+
+ if [ ! -f "$template_name" ]; then
+   echo "Error: Template file '$template_name' was not found."
+ else
+  if [ "$output_file_name" == "" ]; then
+   envsubst < "$template_name"
+  else
+   envsubst < "$template_name" > "$output_file_name"
+  fi
+ fi
+fi
