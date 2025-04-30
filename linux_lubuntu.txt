@@ -233,12 +233,7 @@ Create backup staging area ext4 file system and automount entry
 sudo fallocate -l 10M backup.img
 sudo mkfs.ext4 backup.img
 
-sudo vi /etc/fstab
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-...
-*** append the following line ***
-/home/admin/backup.img  /home/admin/backup ext4 loop 0 0
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+sudo su -c "echo '/home/admin/backup.img  /home/admin/backup ext4 loop 0 0' >> /etc/fstab"
 
 sudo mkdir backup
 sudo mount backup.img backup
@@ -257,12 +252,7 @@ Create opened staging area ext4 file system and automount entry
 sudo fallocate -l 10M opened.img
 sudo mkfs.ext4 opened.img
 
-sudo vi /etc/fstab
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-...
-*** append the following line ***
-/home/admin/opened.img  /home/admin/opened ext4 loop 0 0
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+sudo su -c "echo '/home/admin/opened.img  /home/admin/opened ext4 loop 0 0' >> /etc/fstab"
 
 sudo mkdir opened
 sudo mount opened.img opened
@@ -281,12 +271,7 @@ Create shared staging area ext4 file system and automount entry
 sudo fallocate -l 10M shared.img
 sudo mkfs.ext4 shared.img
 
-sudo vi /etc/fstab
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-...
-*** append the following line ***
-/home/admin/shared.img  /home/admin/shared ext4 loop 0 0
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+sudo su -c "echo '/home/admin/shared.img  /home/admin/shared ext4 loop 0 0' >> /etc/fstab"
 
 sudo mkdir shared
 sudo mount shared.img shared
