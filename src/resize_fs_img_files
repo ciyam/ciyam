@@ -4,16 +4,23 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+demo=
+
+if [ "$1" = "-demo" ]; then
+ demo=1
+ shift
+fi
+
 if [ "$1" = "" ]; then
  echo "Usage: resize_fs_img_files [[-demo]] [user_id]"
 else
- if [ "$1" = "-demo" ]; then
-  user_id=$2
+  user_id=$1
+
+ if [ "$demo" = "1" ]; then
   backup_size=9536M
   opened_size=953M
   shared_size=953M
  else
-  user_id=$1
   backup_size=95367M
   opened_size=953M
   shared_size=9536M
