@@ -71,7 +71,7 @@ REPO_CRYPT_PASSWORD=@sid
 <bc_gen_block.cin e3733d121 5
 ;trace 14900
 peer_connect e3733d121 12021
-wait 500
+wait 1000
 session_list
 wait 2000
 session_list
@@ -176,11 +176,11 @@ e3733d121 [okay      ] (196.0 kB/10.0 MB) bc.e3733d121/e3733d121
 # Now shut down both server instances using 'fg' and 'ctrl-c'                                               #
 #-----------------------------------------------------------------------------------------------------------#
 
-> fg
+ fg
 ./ciyam_server -quiet -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers
 ^C
 
-> fg
+ fg
 ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031
 ^C
 
@@ -292,7 +292,7 @@ e3733d121 [okay      ] (196.0 kB/10.0 MB) files/e3733d121
 # Now shut down the '-files=bc.e3733d121' server instance using 'fg' and 'ctrl-c'                           #
 #-----------------------------------------------------------------------------------------------------------#
 
-> fg 1
+ fg 1
 ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031
 ^C
 
@@ -374,7 +374,7 @@ e3733d121 [okay      ] (196.0 kB/10.0 MB) bc.e3733d121/e3733d121
 # Now shut down the '-no_peers' server instance using 'fg' and 'ctrl-c'                                     #
 #-----------------------------------------------------------------------------------------------------------#
 
-> fg 2
+ fg 2
 ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers
 ^C
 
@@ -465,11 +465,11 @@ bc.e3733d121.zenith
 # Now shut down both server instances using 'fg' and 'ctrl-c'                                               #
 #-----------------------------------------------------------------------------------------------------------#
 
-> fg
+ fg
 ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers
 ^C
 
-> fg
+ fg
 ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031
 ^C
 
