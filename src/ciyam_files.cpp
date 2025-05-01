@@ -1391,8 +1391,8 @@ bool has_tag( const string& name, file_type type )
 
          unsigned char file_type = ( file_type_and_extra & c_file_type_val_mask );
 
-         if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
-            throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' found in has_tag" );
+         if( ( file_type != c_file_type_val_blob ) && ( file_type != c_file_type_val_list ) )
+            throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' found in 'has_tag' for " + file_name );
 
          if( ( type == e_file_type_blob && file_type != c_file_type_val_blob )
           || ( type == e_file_type_list && file_type != c_file_type_val_list ) )
@@ -1774,7 +1774,7 @@ string file_type_info( const string& tag_or_hash,
    bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
 
    if( ( file_type != c_file_type_val_blob ) && ( file_type != c_file_type_val_list ) )
-      throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' found in file_info" );
+      throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' found in 'file_info' for " + file_name );
 
    if( !is_encrypted && ( max_to_buffer == 1 ) && ( file_type == c_file_type_val_list ) )
    {
@@ -2216,7 +2216,7 @@ string create_raw_file( const string& data, bool compress,
    if( file_extra & c_file_type_val_extra_core )
       file_extra_is_core = true;
 
-   if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
+   if( ( file_type != c_file_type_val_blob ) && ( file_type != c_file_type_val_list ) )
       throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for raw file creation" );
 
    string final_data( data );
@@ -4003,8 +4003,8 @@ bool store_file( const string& hash,
          unsigned char file_type = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_mask );
          unsigned char file_extra = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_extra_mask );
 
-         if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
-            throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for store_file" );
+         if( ( file_type != c_file_type_val_blob ) && ( file_type != c_file_type_val_list ) )
+            throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' found in 'store_file' for " + file_name );
 
          if( file_extra & c_file_type_val_extra_core )
          {
