@@ -2129,23 +2129,51 @@ void parse_host_and_or_port( const string& host_and_or_port, string& host, int& 
 {
    if( !host_and_or_port.empty( ) )
    {
-      if( host_and_or_port.find( '.' ) == string::npos
-       && host_and_or_port.find( ':' ) == string::npos
-       && host_and_or_port[ 0 ] >= '0' && host_and_or_port[ 0 ] <= '9' )
-         port = atoi( host_and_or_port.c_str( ) );
+      // NOTE: Allow "[1000:2000:3000:4000::1]:<port>" or "[1000:2000:3000:4000::1]-<port>".
+      if( host_and_or_port[ 0 ] == '[' )
+      {
+         string::size_type pos = host_and_or_port.find( ']' );
+
+         if( pos == string::npos )
+            throw runtime_error( "invalid host_and_or_port '" + host_and_or_port + "'" );
+
+         host = host_and_or_port.substr( 1, pos - 2 );
+
+         string extra( host_and_or_port.substr( pos + 1 ) );
+
+         if( !extra.empty( ) )
+         {
+            if( ( extra[ 0 ] != ':' ) && ( extra[ 0 ] != '-' ) )
+               throw runtime_error( "invalid host_and_or_port '" + host_and_or_port + "'" );
+
+            extra.erase( 0, 1 );
+
+            if( !extra.empty( ) )
+               port = atoi( extra.c_str( ) );
+         }
+      }
       else
       {
-         host = host_and_or_port;
-         string::size_type pos = host.find( ':' );
-
-         // NOTE: If host is an IPV6 address then use '-' as the port separator.
-         if( pos == string::npos || host.find( ':', pos + 1 ) != string::npos )
-            pos = host.find( '-' );
-
-         if( pos != string::npos )
+         if( host_and_or_port.find( '.' ) == string::npos
+          && host_and_or_port.find( ':' ) == string::npos
+          && host_and_or_port[ 0 ] >= '0' && host_and_or_port[ 0 ] <= '9' )
+            port = atoi( host_and_or_port.c_str( ) );
+         else
          {
-            port = atoi( host.substr( pos + 1 ).c_str( ) );
-            host.erase( pos );
+            host = host_and_or_port;
+            string::size_type pos = host.find( ':' );
+
+            // NOTE: If no ':' is found or the host is an IPV6 address then will allow
+            // a '-' to instead be used as the port separator (as an alternative suffix
+            // format that works with either an IPv4 or IPv6 address).
+            if( pos == string::npos || ( host.find( ':', pos + 1 ) != string::npos ) )
+               pos = host.find( '-' );
+
+            if( pos != string::npos )
+            {
+               port = atoi( host.substr( pos + 1 ).c_str( ) );
+               host.erase( pos );
+            }
          }
       }
    }
