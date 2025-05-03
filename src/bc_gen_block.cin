@@ -359,8 +359,9 @@ u:$UTIME
 BLOCK_HASH=$OUTPUT
 ;
 .crypto_lamport -sign $UUID:$BLOCK_HASH
+;
+.file_kill -q bc.$IDENT.$LAST.key
 .file_put $UUID.sig bc.$IDENT.$LAST.sig
-.file_hash bc.$IDENT.$LAST.sig
 ;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
@@ -369,7 +370,6 @@ BLOCK_HASH=$OUTPUT
 ~rm $UUID.key $UUID.pub $UUID.sig
 ;
 @ifndef $ERROR
-.file_tag -unlink bc.$IDENT.$LAST.key
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
 ;
 ; NOTE: Create the block tag last to ensure that local peer sessions correctly identify a new block.

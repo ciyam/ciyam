@@ -5124,11 +5124,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       if( !peer_map_key.empty( ) )
          clear_all_peer_mapped_hashes( peer_map_key );
 
-      string genesis_key_tag( blockchain + ".0" + string( c_key_suffix ) );
-
-      if( has_tag( genesis_key_tag ) )
-         delete_file( tag_file_hash( genesis_key_tag ) );
-
       set_session_variable( blockchain_first_mapped_name, "" );
       set_session_variable( blockchain_block_processing_name, "" );
 
@@ -6596,7 +6591,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
                secret_hash = get_raw_system_variable( secret_hash );
          }
 
-         if( !blockchain.empty( ) && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
+         if( !blockchain.empty( ) && !list_file_tags( blockchain + c_master_suffix ).empty( ) )
             is_owner = true;
       }
 
@@ -6952,8 +6947,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
             pid.erase( pos );
          }
 
-         if( !blockchain.empty( )
-          && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
+         if( !blockchain.empty( ) && !list_file_tags( blockchain + c_master_suffix ).empty( ) )
             is_owner = true;
 
          if( is_owner && other_is_owner )

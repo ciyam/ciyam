@@ -49,6 +49,7 @@ REPO_CRYPT_PASSWORD=@sid
 <<import_files.cin . Backup : test.jpg
 .session_variable @repo_crypt_password ""
 <tree_insert_trunks.cin ciyam Backup,.Backup
+<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 0
 <bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 1
 <bc_gen_block.cin e3733d121 1
 <<import_files.cin . Backup : test?.jpg
@@ -102,7 +103,6 @@ bc.e3733d121.1.sig
 bc.e3733d121.2.blk
 bc.e3733d121.2.pub
 bc.e3733d121.2.sig
-bc.e3733d121.24.key
 bc.e3733d121.24.pub
 bc.e3733d121.3.blk
 bc.e3733d121.3.pub
@@ -113,13 +113,13 @@ bc.e3733d121.4.sig
 bc.e3733d121.5.blk
 bc.e3733d121.5.key
 bc.e3733d121.5.pub
-bc.e3733d121.9.key
 bc.e3733d121.9.pub
+bc.e3733d121.master
 bc.e3733d121.zenith
 ciyam
 
 > file_stats
-[59/100000]431.7 kB/100.0 GB:60 tag(s)
+[57/100000]396.7 kB/100.0 GB:59 tag(s)
 
 > file_info bc.e3733d121.zenith
 [core-blob] 2f81b61b72185ec053c8f5bfaa65c78ba2ac49f3cf28583701ab25c3f5870c7c (285 B) blk
@@ -413,22 +413,22 @@ bc.e3733d121.1.sig
 bc.e3733d121.2.blk
 bc.e3733d121.2.pub
 bc.e3733d121.2.sig
-bc.e3733d121.24.key
 bc.e3733d121.24.pub
 bc.e3733d121.3.blk
 bc.e3733d121.3.pub
 bc.e3733d121.3.sig
 bc.e3733d121.4.blk
-bc.e3733d121.4.key
 bc.e3733d121.4.pub
 bc.e3733d121.4.sig
 bc.e3733d121.5.blk
 bc.e3733d121.5.pub
 bc.e3733d121.9.pub
+bc.e3733d121.master
 bc.e3733d121.zenith
+ciyam
 
 > file_stats
-[58/100000]414.2 kB/100.0 GB:59 tag(s)
+[56/100000]379.2 kB/100.0 GB:58 tag(s)
 
 > quit
 

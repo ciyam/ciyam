@@ -14,17 +14,55 @@ ERROR=1
 @ifeq "$ERROR" "1"
 #Usage: bc_rewind.cin <ident> <height> [<seed>]
 @else
+;
 IDENT=$1
 HEIGHT=$2
 SEED=$3
 ;
-@ifndef $CONT
-#NOTE: This script does not take secondary (or tertiary) public keys into account
-#(which could cause blockchain operations to later fail when they are not found).
-##
-&Continue anyway? [CONT:yes=1!Yes|no=!No] (choose one)
+@ifeq "$IDENT" "e3733d121"
+TEST_CHAIN=1
 @endif
-@ifdef $CONT
+@ifeq "$IDENT" "121d3373e"
+TEST_CHAIN=1
+@endif
+;
+@ifdef $TEST_CHAIN
+MULTIPLE=5
+@else
+MULTIPLE=50
+@endif
+;
+SQUARED=@$MULTIPLE*$MULTIPLE
+;
+TARGET_HEIGHT=$HEIGHT
+;
+.file_core -header bc.$IDENT.zenith h
+CURRENT=$OUTPUT
+@ifndef $ERROR
+FIRST=@substr:0,1:$HEIGHT
+@ifeq "$FIRST" "-"
+TARGET_HEIGHT=@$CURRENT$HEIGHT
+@endif
+;
+FIRST=@substr:0,1:$TARGET_HEIGHT
+@ifeq "$FIRST" "-"
+ERROR=Invalid target height: $HEIGHT
+#$ERROR
+@else
+;
+HEIGHT=$TARGET_HEIGHT
+;
+NORMAL_MODULUS=@$HEIGHT#$MULTIPLE
+;
+SECONDARY_HEIGHT=@$HEIGHT+$MULTIPLE
+SECONDARY_HEIGHT=@$SECONDARY_HEIGHT-$NORMAL_MODULUS
+SECONDARY_HEIGHT=@$SECONDARY_HEIGHT-1
+;
+SQUARED_MODULUS=@$HEIGHT#$SQUARED
+;
+TERTIARY_HEIGHT=@$HEIGHT+$SQUARED
+TERTIARY_HEIGHT=@$TERTIARY_HEIGHT-$SQUARED_MODULUS
+TERTIARY_HEIGHT=@$TERTIARY_HEIGHT-1
 ;
 <bc_all_extras.cin
 ERROR=
@@ -109,10 +147,36 @@ BLK_HEIGHT=@$BLK_HEIGHT-1
 ;
 .file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.blk
 .file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.opl
-.file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.pub
 ;
 .file_kill -q bc.$NEXT_IDENT.$BLK_HEIGHT.sig
+;
+CHECK_HEIGHT=@$LAST_HEIGHT+1
+;
+MODULUS=@$CHECK_HEIGHT#$MULTIPLE
+;
+@ifneq "$MODULUS" "0"
 .file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.key
+.file_kill -q bc.$NEXT_IDENT.$LAST_HEIGHT.pub
+@else
+;
+SECONDARY=@$LAST_HEIGHT+$MULTIPLE
+;
+@ifneq "$SECONDARY" "$SECONDARY_HEIGHT"
+@ifneq "$SECONDARY" "$TERTIARY_HEIGHT"
+.file_kill -q bc.$NEXT_IDENT.$SECONDARY.key
+.file_kill -q bc.$NEXT_IDENT.$SECONDARY.pub
+@endif
+@endif
+;
+SMODULUS=@$CHECK_HEIGHT#$SQUARED
+;
+@ifeq "$SMODULUS" "0"
+TERTIARY=@$LAST_HEIGHT+$SQUARED
+.file_kill -q bc.$NEXT_IDENT.$TERTIARY.key
+.file_kill -q bc.$NEXT_IDENT.$TERTIARY.pub
+@endif
+;
+@endif
 ;
 !!@:BLK_LOOP
 ;
@@ -159,5 +223,6 @@ BACKUP_HEIGHT_FILE=@files:$BACKUP_PATH:.backup.height
 ;
 .session_variable @deque complete
 ;
+@endif
 @endif
 @endif

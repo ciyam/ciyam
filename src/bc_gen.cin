@@ -65,7 +65,7 @@ EXTRA_SUFFIX=_$EXTRA
 ;
 @ifdef $DATA
 DATA_KEY=$SEED
-SEED=@@sid:$DATA_KEY
+SEED=\@sid:$DATA_KEY
 @endif
 ;
 @ifndef $EXTRA
@@ -208,16 +208,9 @@ ENTROPY_HASH_TERTIARY=$OUTPUT
 .crypto_lamport secondary $ENTROPY_HASH_SECONDARY$EXTRA
 .crypto_lamport tertiary $ENTROPY_HASH_TERTIARY$EXTRA
 ;
-.file_put primary.key bc.$UUID.0.key
 .file_put primary.pub bc.$UUID.0.pub
-.file_put secondary.key bc.$UUID.$MULTIPLE.key
 .file_put secondary.pub bc.$UUID.$MULTIPLE.pub
-.file_put tertiary.key bc.$UUID.$SQUARED.key
 .file_put tertiary.pub bc.$UUID.$SQUARED.pub
-;
-.file_crypt -encrypt -cipher=cc bc.$UUID.0.key @sid
-.file_crypt -encrypt -cipher=cc bc.$UUID.$MULTIPLE.key @sid
-.file_crypt -encrypt -cipher=cc bc.$UUID.$SQUARED.key @sid
 ;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
@@ -233,20 +226,11 @@ PRIMARY_PUBKEY_HASH=$OUTPUT
 .encode $PRIMARY_PUBKEY_HASH
 PRIMARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
-.file_hash bc.$UUID.0.key
-PRIMARY_PRIVKEY_HASH=$OUTPUT
-;
 .file_hash bc.$UUID.$MULTIPLE.pub
 SECONDARY_PUBKEY_HASH=$OUTPUT
 ;
-.file_hash bc.$UUID.$MULTIPLE.key
-SECONDARY_PRIVKEY_HASH=$OUTPUT
-;
 .file_hash bc.$UUID.$SQUARED.pub
 TERTIARY_PUBKEY_HASH=$OUTPUT
-;
-.file_hash bc.$UUID.$SQUARED.key
-TERTIARY_PRIVKEY_HASH=$OUTPUT
 ;
 @ifndef $SHARED
 @ifndef $CHANNEL
@@ -288,14 +272,8 @@ IDENT=*!reverse?$OUTPUT
 .file_tag -remove bc.$UUID.0.pub
 .file_tag $PRIMARY_PUBKEY_HASH bc.$IDENT.0.pub
 ;
-.file_tag -remove bc.$UUID.0.key
-.file_tag $PRIMARY_PRIVKEY_HASH bc.$IDENT.0.key
-;
 .file_tag -remove bc.$UUID.$MULTIPLE.pub
 .file_tag $SECONDARY_PUBKEY_HASH bc.$IDENT.$MULTIPLE.pub
-;
-.file_tag -remove bc.$UUID.$MULTIPLE.key
-.file_tag $SECONDARY_PRIVKEY_HASH bc.$IDENT.$MULTIPLE.key
 ;
 .file_hash bc.$IDENT.$MULTIPLE.pub
 .encode $OUTPUT
@@ -303,9 +281,6 @@ SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
 .file_tag -remove bc.$UUID.$SQUARED.pub
 .file_tag $TERTIARY_PUBKEY_HASH bc.$IDENT.$SQUARED.pub
-;
-.file_tag -remove bc.$UUID.$SQUARED.key
-.file_tag $TERTIARY_PRIVKEY_HASH bc.$IDENT.$SQUARED.key
 ;
 .file_hash bc.$IDENT.$SQUARED.pub
 .encode $OUTPUT
@@ -336,8 +311,9 @@ p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC 
 ;
 BLOCK_HASH=$OUTPUT
 ;
-.file_hash -q bc.$IDENT.zenith
+.file_hash -q bc.$IDENT.master
 @ifndef "$OUTPUT"
+.file_tag $BLOCK_HASH bc.$IDENT.master
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
 @ifdef $DATA
 .system_variable >@blockchain_data_key_$IDENT $DATA_KEY
