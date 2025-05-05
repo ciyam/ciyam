@@ -20,6 +20,12 @@ IDENTITY=$1
 .file_repo_entries -remove_all $IDENTITY
 @endif
 ;
+IS_OWNER=
+.file_tags bc.$IDENTITY.master*
+@ifdef $OUTPUT
+IS_OWNER=1
+@endif
+;
 .file_tags bc.$IDENTITY.zenith*
 @ifdef $OUTPUT
 .file_hash bc.$IDENTITY.zenith
@@ -34,7 +40,11 @@ GENESIS_HASH=$OUTPUT
 .file_kill -q -p=bc.$IDENTITY.* -x=bc.$IDENTITY.0.key,bc.$IDENTITY.0.pub\
 ,bc.$IDENTITY.49.key,bc.$IDENTITY.49.pub,bc.$IDENTITY.2499.key,bc.$IDENTITY.2499.pub
 ;
+@ifndef $IS_OWNER
 .file_tag $GENESIS_HASH bc.$IDENTITY.0.blk,bc.$IDENTITY.zenith
+@else
+.file_tag $GENESIS_HASH bc.$IDENTITY.0.blk,bc.$IDENTITY.master,bc.$IDENTITY.zenith
+@endif
 ;
 .system_variable "#$IDENTITY" ""
 .system_variable "%%$IDENTITY" "Currently at height 0"
