@@ -15,12 +15,13 @@ ERROR=1
 @endif
 ;
 @ifeq "$ERROR" "1"
-#Usage: bc_gen_keys.cin <seed> <ident> <height>
+#Usage: bc_gen_keys.cin <seed> <ident> <height> [<extra>]
 @else
 ;
 SEED=$1
 IDENT=$2
 HEIGHT=$3
+EXTRA=$4
 TEST_CHAIN=
 ;
 .file_hash bc.$IDENT.0.blk
@@ -35,7 +36,11 @@ DATA=1
 @endif
 ;
 SHARED=
+@ifndef $EXTRA
 .system_variable @blockchain_shared_identity
+@else
+.system_variable @blockchain_shared_%EXTRA%_identity
+@endif
 @ifdef $OUTPUT
 @ifeq "$IDENT" "$OUTPUT"
 SHARED=1
@@ -43,7 +48,11 @@ SHARED=1
 @endif
 ;
 PEER_HUB=
+@ifndef $EXTRA
 .system_variable @blockchain_peer_hub_identity
+@else
+.system_variable @blockchain_peer_hub_%EXTRA%_identity
+@endif
 @ifdef $OUTPUT
 @ifeq "$IDENT" "$OUTPUT"
 PEER_HUB=1
@@ -56,7 +65,11 @@ CHANNEL=
 @ifndef $DATA
 @ifndef $SHARED
 @ifndef $PEER_HUB
+@ifndef $EXTRA
 .system_variable @blockchain_backup_identity
+@else
+.system_variable @blockchain_backup_%EXTRA%_identity
+@endif
 @ifndef $OUTPUT
 ERROR=No backup blockchain identity was found.
 #Error: $ERROR
@@ -103,7 +116,7 @@ MODULUS=@$NEXT_HEIGHT#$MULTIPLE
 @endif
 ENTROPY_HASH=$OUTPUT
 ;
-.crypto_lamport new_primary $ENTROPY_HASH
+.crypto_lamport new_primary $ENTROPY_HASH$EXTRA
 ;
 .file_kill -q bc.$IDENT.$HEIGHT.key
 .file_put new_primary.key bc.$IDENT.$HEIGHT.key
@@ -135,7 +148,7 @@ HEIGHT=@$HEIGHT+$MULTIPLE
 @endif
 ENTROPY_HASH=$OUTPUT
 ;
-.crypto_lamport new_primary $ENTROPY_HASH
+.crypto_lamport new_primary $ENTROPY_HASH$EXTRA
 ;
 @ifneq "$MODULUS" "0"
 .file_kill -q bc.$IDENT.$HEIGHT.key
@@ -175,7 +188,7 @@ HEIGHT=@$HEIGHT+$SQUARED
 @endif
 ENTROPY_HASH=$OUTPUT
 ;
-.crypto_lamport new_primary $ENTROPY_HASH
+.crypto_lamport new_primary $ENTROPY_HASH$EXTRA
 ;
 .file_kill -q bc.$IDENT.$HEIGHT.key
 ;
