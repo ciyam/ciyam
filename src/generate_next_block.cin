@@ -16,6 +16,7 @@ FIRST=1
 BACKUP=
 SHARED=
 PEER_HUB=
+EXTRA_VAL=
 ;
 HAS_NO_OPL=
 ;
@@ -89,6 +90,10 @@ UTIME=@unix:
 ;
 @:LOOP
 ;
+@ifdef $EXTRA_VAL
+EXTRA_VAL=@$EXTRA_VAL+1
+@endif
+;
 @ifneq "$IDENT_VAL" ""
 .file_core -header bc.$IDENT_VAL.zenith h
 @ifndef $ERROR
@@ -104,8 +109,20 @@ HAS_NO_OPL=1
 @endif
 ;
 @ifndef $HAS_NO_OPL
-<bc_gen_keys.cin $SEED_VALUE $IDENT_VAL $BLK_HEIGHT
-<bc_gen_keys.cin $SEED_VALUE $IDENT_VAL $NEW_HEIGHT
+;
+; NOTE: Will not regenerate keys for the
+; current height if the private key file
+; already exists (to allow changes to be
+; made to the key entropy for new blocks
+; with a signature still being supported
+; for keys generated prior to changing).
+;
+.file_tags bc.$IDENT_VAL.$BLK_HEIGHT.key*
+@ifndef $OUTPUT
+<bc_gen_keys.cin $SEED_VALUE $IDENT_VAL $BLK_HEIGHT $EXTRA_VAL
+@endif
+;
+<bc_gen_keys.cin $SEED_VALUE $IDENT_VAL $NEW_HEIGHT $EXTRA_VAL
 ;
 ; NOTE: The .key file for the new height
 ; is removed (as only the current height
@@ -140,9 +157,15 @@ IDENT_VAL=%LINES:2%
 @else
 @label END_LOOP
 @endif
+;
 @skip
 ;
 @:NEXT
+;
+@ifndef $EXTRA_VAL
+EXTRA_VAL=0
+@endif
+;
 .session_variable @deque pop_front
 !!@:LOOP
 ;
