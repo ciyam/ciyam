@@ -43,6 +43,7 @@
 extern "C"
 {
 #     include <readline/history.h>
+#     include <readline/readline.h>
 }
 #  endif
 #endif
@@ -2426,7 +2427,17 @@ console_command_handler::console_command_handler( )
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
    if( isatty( STDIN_FILENO ) )
+   {
       using_history( );
+
+      // NOTE: In order for multi-line pastes to be handled as though
+      // "enter" is pressed after each line need to switch this off.
+      char* p_input_rc = strdup( "set enable-bracketed-paste off" );
+
+      rl_parse_and_bind( p_input_rc );
+
+      free( p_input_rc );
+   }
 #  endif
 #endif
    add_option( c_prompt_prefix_option );
