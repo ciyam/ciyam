@@ -6454,6 +6454,18 @@ string crypto_lamport( const string& filename,
 
          string sig_hash( sig_lines[ i ] );
 
+         // NOTE: If the key file has been provided instead
+         // will simply use the first hash for each line so
+         // that a key pair can be verified (as a string of
+         // sixty four zeros).
+         if( sig_hash.length( ) == 89 )
+         {
+            string::size_type pos = sig_hash.find( ' ' );
+
+            if( pos == 44 )
+               sig_hash.erase( pos );
+         }
+
          unsigned char buf[ c_sha256_digest_size ];
          base64::decode( sig_hash, buf, c_sha256_digest_size );
 
