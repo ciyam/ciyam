@@ -27,6 +27,14 @@ TEST_CHAIN=
 .file_hash bc.$IDENT.0.blk
 @ifndef $ERROR
 ;
+HEIGHT_ONLY=
+FIRST=@substr:0,1:$HEIGHT
+;
+@ifeq "$FIRST" "-"
+HEIGHT_ONLY=1
+HEIGHT=@substr:1:$HEIGHT
+@endif
+;
 NEXT_HEIGHT=@$HEIGHT+1
 ;
 DATA=
@@ -98,7 +106,11 @@ MULTIPLE=5
 MULTIPLE=50
 @endif
 ;
+@ifdef $HEIGHT_ONLY
+MODULUS=0
+@else
 MODULUS=@$NEXT_HEIGHT#$MULTIPLE
+@endif
 ;
 @ifeq "$MODULUS" "0"
 @ifdef $CHANNEL
@@ -132,6 +144,8 @@ ENTROPY_HASH=$OUTPUT
 ;
 HEIGHT=@$HEIGHT+$MULTIPLE
 @endif
+;
+@ifndef $HEIGHT_ONLY
 ;
 @ifdef $CHANNEL
 .crypto_hash $SEED -s=$IDENT$HEIGHT
@@ -199,6 +213,8 @@ ENTROPY_HASH=$OUTPUT
 ~shred new_primary.key
 @endif
 ~rm new_primary.key new_primary.pub
+@endif
+;
 @endif
 ;
 @:END
