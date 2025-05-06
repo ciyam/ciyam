@@ -79,6 +79,11 @@ sudo apt update
 
 sudo reboot
 
+Support pasting of multiple lines where each line is a command
+--------------------------------------------------------------
+
+bind 'set enable-bracketed-paste off'
+
 To prevent unattended upgrades and stop annoying notifications
 --------------------------------------------------------------
 
