@@ -110,16 +110,16 @@ HAS_NO_OPL=1
 ;
 @ifndef $HAS_NO_OPL
 ;
-; NOTE: Will not regenerate keys for the
-; current height if the private key file
-; already exists (to allow changes to be
-; made to the key entropy for new blocks
-; with a signature still being supported
-; for keys generated prior to changing).
+; NOTE: Will not regenerate keys for the current height if the
+; private key file already exists (to allow changes to be made
+; to the key entropy being used for new blocks whilst ensuring
+; that signatures for any existing public keys can then easily
+; still be generated after such a change has been introduced).
 ;
 .file_tags bc.$IDENT_VAL.$BLK_HEIGHT.key*
 @ifndef $OUTPUT
-<bc_gen_keys.cin $SEED_VALUE $IDENT_VAL $BLK_HEIGHT $EXTRA_VAL
+; NOTE: Uses a negative height value to create just a key pair.
+<bc_gen_keys.cin $SEED_VALUE $IDENT_VAL -$BLK_HEIGHT $EXTRA_VAL
 @endif
 ;
 <bc_gen_keys.cin $SEED_VALUE $IDENT_VAL $NEW_HEIGHT $EXTRA_VAL
