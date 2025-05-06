@@ -2759,7 +2759,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                if( !str.empty( ) )
                {
-                  pos = str.find_first_of( "+-*/#=<>:" );
+                  // NOTE: There needs to have been at least
+                  // one character before a valid operator.
+                  pos = str.find_first_of( "+-*/#=<>:", 1 );
 
                   int64_t val = 0;
                   int64_t rval = 0;
