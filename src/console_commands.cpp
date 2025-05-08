@@ -66,6 +66,7 @@ const char* const c_startup_alt_help = "-help";
 const char* const c_retain_all = "*";
 
 const char* const c_env_var_error = "ERROR";
+const char* const c_env_var_output = "OUTPUT";
 const char* const c_env_var_std_fissile = "STD_FISSILE";
 
 const char* const c_default_value_prompt = "VALUE=";
@@ -3247,6 +3248,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                unescape( str, c_special_characters );
 
             if( ( assign_env_var_name != c_env_var_error )
+             && ( assign_env_var_name != c_env_var_output )
              && ( assign_env_var_name != c_env_var_std_fissile )
              && !variables_retaining.top( ).count( c_retain_all )
              && !variables_retaining.top( ).count( assign_env_var_name )
