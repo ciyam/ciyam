@@ -92,7 +92,7 @@ existing output file (rather than truncating any such existing output file).
 
 Environment variables that are set in an input script will be restored after it has been executed but if some
 environment variable values are intended to be obtained from the input script then they need to be listed via
-the "@retain" command.
+the "@retain" command (other than ERROR and OUTPUT which are never restored).
 
 @retain COMBINED,REVERSED
 <channel_identity.cin abc123def aaa121aaa
