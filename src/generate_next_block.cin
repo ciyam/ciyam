@@ -8,24 +8,24 @@
 @else
 ERROR=
 ;
-IDENT_VAL=$1
-SEED_VALUE=$2
-TREE_TAG_VAL=$3
+IDENT=$1
+;
+SEED=$2
+TREE=$3
 ;
 FIRST=1
 BACKUP=
 SHARED=
 PEER_HUB=
 EXTRA_VAL=
-;
 HAS_NO_OPL=
 ;
 .session_variable @deque commence
 ;
 @label NEXT
 ;
-@ifdef $TREE_TAG_VAL
-.file_hash $TREE_TAG_VAL
+@ifdef $TREE
+.file_hash $TREE
 @ifdef $ERROR
 @label END_LOOP
 @endif
@@ -34,11 +34,11 @@ HAS_NO_OPL=
 @skip
 ;
 @:NEXT
-@ifeq "$SEED_VALUE" "dummy"
-SEED_VALUE=
+@ifeq "$SEED" "dummy"
+SEED=
 @endif
 ;
-@ifeq "$IDENT_VAL" "-backup"
+@ifeq "$IDENT" "-backup"
 BACKUP=1
 @endif
 ;
@@ -48,7 +48,7 @@ BACKUP=1
 ;
 @ifdef $BACKUP
 .system_variable @blockchain_backup_identity
-IDENT_VAL=$OUTPUT
+IDENT=$OUTPUT
 .system_variable @blockchain_backup_?_identity
 @ifdef $OUTPUT
 .session_variable @deque "~$OUTPUT"
@@ -57,7 +57,7 @@ IDENT_VAL=$OUTPUT
 ;
 @ifeq "$1" "-shared"
 .system_variable @blockchain_shared_identity
-IDENT_VAL=$OUTPUT
+IDENT=$OUTPUT
 SHARED=1
 .system_variable @blockchain_shared_?_identity
 @ifdef $OUTPUT
@@ -67,7 +67,7 @@ SHARED=1
 ;
 @ifeq "$1" "-hub"
 .system_variable @blockchain_peer_hub_identity
-IDENT_VAL=$OUTPUT
+IDENT=$OUTPUT
 PEER_HUB=1
 .system_variable @blockchain_peer_hub_?_identity
 @ifdef $OUTPUT
@@ -75,14 +75,14 @@ PEER_HUB=1
 @endif
 @endif
 ;
-@ifeq "$SEED_VALUE" ""
-.system_variable @blockchain_data_key_$IDENT_VAL
+@ifeq "$SEED" ""
+.system_variable @blockchain_data_key_$IDENT
 @ifndef $OUTPUT
-SEED_VALUE=@sid
+SEED=@sid
 @else
 ; NOTE: Double escape is required as this variable
 ; is being passed to other scripts as an argument.
-SEED_VALUE=\\@sid:$OUTPUT
+SEED=\\@sid:$OUTPUT
 @endif
 @endif
 ;
@@ -94,15 +94,15 @@ UTIME=@unix:
 EXTRA_VAL=@$EXTRA_VAL+1
 @endif
 ;
-@ifneq "$IDENT_VAL" ""
-.file_core -header bc.$IDENT_VAL.zenith h
+@ifneq "$IDENT" ""
+.file_core -header bc.$IDENT.zenith h
 @ifndef $ERROR
 BLK_HEIGHT=$OUTPUT
 NEW_HEIGHT=@$BLK_HEIGHT+1
 ;
 @ifdef $PEER_HUB
-<bc_gen_put_list.cin $IDENT_VAL $NEW_HEIGHT
-.file_tags bc.$IDENT_VAL.$NEW_HEIGHT.opl*
+<bc_gen_put_list.cin $IDENT $NEW_HEIGHT
+.file_tags bc.$IDENT.$NEW_HEIGHT.opl*
 @ifndef $OUTPUT
 HAS_NO_OPL=1
 @endif
@@ -116,31 +116,31 @@ HAS_NO_OPL=1
 ; that signatures for any existing public keys can then easily
 ; still be generated after such a change has been introduced).
 ;
-.file_tags bc.$IDENT_VAL.$BLK_HEIGHT.key*
+.file_tags bc.$IDENT.$BLK_HEIGHT.key*
 @ifndef $OUTPUT
-; NOTE: Uses a negative height value to create just a key pair.
-<bc_gen_keys.cin $SEED_VALUE $IDENT_VAL -$BLK_HEIGHT $EXTRA_VAL
+; NOTE: Negative height value used to create just one key pair.
+<bc_gen_keys.cin $SEED $IDENT -$BLK_HEIGHT $EXTRA_VAL
 @endif
 ;
-<bc_gen_keys.cin $SEED_VALUE $IDENT_VAL $NEW_HEIGHT $EXTRA_VAL
+<bc_gen_keys.cin $SEED $IDENT $NEW_HEIGHT $EXTRA_VAL
 ;
 ; NOTE: The .key file for the new height
 ; is removed (as only the current height
 ; key is used for the block signature).
-.file_kill -q bc.$IDENT_VAL.$NEW_HEIGHT.key
+.file_kill -q bc.$IDENT.$NEW_HEIGHT.key
 ;
-<bc_gen_block.cin $IDENT_VAL $NEW_HEIGHT $TREE_TAG_VAL
+<bc_gen_block.cin $IDENT $NEW_HEIGHT $TREE
 ;
 @ifndef $ERROR
 ; FUTURE: This message should be handled as a server string.
-.system_variable %$IDENT_VAL "Currently at height $NEW_HEIGHT"
+.system_variable %$IDENT "Currently at height $NEW_HEIGHT"
 @endif
 ;
 @ifdef $FIRST
 FIRST=
 @ifndef $SHARED
 @ifndef $PEER_HUB
-.file_repo_entries -remove_obsolete $IDENT_VAL
+.file_repo_entries -remove_obsolete $IDENT
 @endif
 @endif
 @endif
@@ -153,7 +153,7 @@ FIRST=
 .session_variable @deque front
 @ifdef $OUTPUT
 LINES=@repstr: /\n:$OUTPUT
-IDENT_VAL=%LINES:2%
+IDENT=%LINES:2%
 @else
 @label END_LOOP
 @endif

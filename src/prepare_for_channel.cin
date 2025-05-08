@@ -36,6 +36,7 @@ HEIGHT=@$OUTPUT+1
 LINES=@repstr: /\n:$OUTPUT
 MODULE=%LINES:2%
 ;
+@retain *
 <$MODULE.channel_user_information.vars.lst
 ;
 .perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.user_info.csv\
@@ -43,9 +44,11 @@ MODULE=%LINES:2%
 ;
 BLOG_INFO_FILE=@files::$MODULE.blog_information.vars.lst
 ;
+@retain *
 <$MODULE.channel_data_information.vars.lst
 ;
 @ifdef $BLOG_INFO_FILE
+@retain *
 <$MODULE.blog_information.vars.lst
 ;
 .perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.blog_info.csv -export=$FLD_IDENTITY,$FLD_NAME,$FLD_DESCRIPTION
@@ -54,6 +57,7 @@ BLOG_INFO_FILE=@files::$MODULE.blog_information.vars.lst
 FORUM_INFO_FILE=@files::$MODULE.forum_information.vars.lst
 ;
 @ifdef $FORUM_INFO_FILE
+@retain *
 <$MODULE.forum_information.vars.lst
 ;
 .perform_bulk_ops admin @now $MODULE $CLASS_NAME $IDENTITY.forum_info.csv\

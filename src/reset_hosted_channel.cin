@@ -18,6 +18,7 @@ ERROR=1
 IDENT=$1
 OTHER=$2
 ;
+@retain COMBINED,REVERSED
 <channel_identity.cin $IDENT $OTHER
 ;
 #Resetting channel archives and blockchain files for $COMBINED and $REVERSED.

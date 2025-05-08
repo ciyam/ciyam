@@ -33,6 +33,7 @@ MODULES=$OUTPUT
 MODULES=@repstr: /\n:$MODULES
 MODULE=%MODULES:2%
 ;
+@retain *
 <$MODULE.channel_information.vars.lst
 ;
 <generate_next_block.cin $IDENTITY dummy $IDENTITY.tree

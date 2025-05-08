@@ -158,6 +158,7 @@ IDENT=$OUTPUT
 @:NEXT
 ;
 @ifdef $CHANNEL
+@retain COMBINED,REVERSED
 <channel_identity.cin $IDENT $OTHER
 IDENT=$COMBINED
 @endif

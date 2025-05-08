@@ -13,6 +13,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @else
 MODULE=$1
 ;
+@retain *
 <$MODULE.channel_information.vars.lst
 ;
 .session_variable @deque commence

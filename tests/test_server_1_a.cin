@@ -351,6 +351,29 @@ X=@repstr:\:/\/:$X
 ;
 <test_console.cin
 ;
+<channel_identity.cin abc123def aaa121aaa
+#IDENT: $IDENT
+#OTHER: $OTHER
+#COMBINED: $COMBINED
+#REVERSED: $REVERSED
+#STD_FISSILE: $STD_FISSILE
+;
+@retain COMBINED,REVERSED
+<channel_identity.cin abc123def aaa121aaa
+#IDENT: $IDENT
+#OTHER: $OTHER
+#COMBINED: $COMBINED
+#REVERSED: $REVERSED
+#STD_FISSILE: $STD_FISSILE
+;
+@retain *
+<channel_identity.cin abc123def aaa121aaa
+#IDENT: $IDENT
+#OTHER: $OTHER
+#COMBINED: $COMBINED
+#REVERSED: $REVERSED
+#STD_FISSILE: $STD_FISSILE
+;
 PATHS=@paths:..:^.git*,^src/tmp*,^src/haru*,^src/files*
 #$PATHS
 ;

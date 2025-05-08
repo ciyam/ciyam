@@ -20,6 +20,7 @@ OTHER=$2
 ;
 SHARED_SECRET_HASH=$3
 ;
+@retain COMBINED,REVERSED
 <channel_identity.cin $IDENT $OTHER
 ;
 DEMO=

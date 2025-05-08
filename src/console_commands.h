@@ -8,7 +8,10 @@
 #  define CONSOLE_COMMANDS_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <map>
+#     include <set>
 #     include <deque>
+#     include <stack>
 #     include <iosfwd>
 #     include <string>
 #     include <vector>
@@ -54,6 +57,8 @@ class console_command_handler : public command_handler
 
    size_t line_number;
 
+   size_t input_depth;
+
    size_t history_offset;
    size_t max_history_lines;
 
@@ -81,6 +86,9 @@ class console_command_handler : public command_handler
    std::vector< bool > dummy_conditions;
 
    std::vector< size_t > lines_for_conditions;
+
+   std::stack< std::set< std::string > > variables_retaining;
+   std::stack< std::map< std::string, std::string > > variables_prior_values;
 
    std::string label;
 
@@ -180,4 +188,3 @@ class startup_command_processor : public command_processor
 };
 
 #endif
-

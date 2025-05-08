@@ -12,7 +12,6 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <ctype.h>
 #  include <cstring>
-#  include <map>
 #  include <memory>
 #  include <fstream>
 #  include <sstream>
@@ -62,13 +61,14 @@ const size_t c_max_pwd_size = 128;
 const char c_startup_prefix = '-';
 
 const char* const c_help_command = "help";
-const char* const c_default_value_prompt = "VALUE=";
-
-#ifdef _WIN32
-const char* const c_startup_alt_help = "/?";
-#else
 const char* const c_startup_alt_help = "-help";
-#endif
+
+const char* const c_retain_all = "*";
+
+const char* const c_env_var_error = "ERROR";
+const char* const c_env_var_std_fissile = "STD_FISSILE";
+
+const char* const c_default_value_prompt = "VALUE=";
 
 const char c_read_input_prefix = '<';
 const char c_write_output_prefix = '>';
@@ -121,6 +121,7 @@ const char* const c_envcond_command_ifdef = "ifdef";
 const char* const c_envcond_command_ifneq = "ifneq";
 const char* const c_envcond_command_label = "label";
 const char* const c_envcond_command_ifndef = "ifndef";
+const char* const c_envcond_command_retain = "retain";
 
 const char* const c_cmd_echo = "echo";
 const char* const c_cmd_quiet = "quiet";
@@ -2411,6 +2412,7 @@ struct console_command_handler::impl
 console_command_handler::console_command_handler( )
  :
  line_number( 0 ),
+ input_depth( 0 ),
  p_std_err( &cerr ),
  p_std_out( &cout ),
  history_offset( 0 ),
@@ -2446,6 +2448,8 @@ console_command_handler::console_command_handler( )
       args.push_back( string( ) );
 
    p_impl = new impl;
+
+   variables_retaining.push( set< string >( ) );
 
    for( size_t i = 0; i < sizeof( g_default_fissile_pairs ) / sizeof( g_default_fissile_pairs[ 0 ] ); i++ )
       p_impl->fissile_values.insert( make_pair( g_default_fissile_pairs[ i ].p_key, g_default_fissile_pairs[ i ].p_data ) );
@@ -3242,6 +3246,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             else
                unescape( str, c_special_characters );
 
+            if( ( assign_env_var_name != c_env_var_error )
+             && ( assign_env_var_name != c_env_var_std_fissile )
+             && !variables_retaining.top( ).count( c_retain_all )
+             && !variables_retaining.top( ).count( assign_env_var_name )
+             && !variables_prior_values.empty( ) && !variables_prior_values.top( ).count( assign_env_var_name ) )
+               variables_prior_values.top( ).insert( make_pair( assign_env_var_name, get_environment_variable( assign_env_var_name ) ) );
+
             set_environment_variable( assign_env_var_name.c_str( ), str.c_str( ) );
 
             if( was_password )
@@ -3286,6 +3297,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   }
 
                   vector< string > new_args;
+
                   size_t num_new_args = setup_arguments( str.c_str( ) + file_name_offset, new_args );
 
                   if( num_new_args == 0 )
@@ -3298,6 +3310,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                      new_args.push_back( string( ) );
 
                   ifstream inpf( new_args[ 0 ].c_str( ) );
+
                   if( !inpf )
                      throw runtime_error( "unable to open file '" + new_args[ 0 ] + "' for input" );
 
@@ -3321,7 +3334,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   string next;
                   string next_command;
 
+                  ++input_depth;
+
                   bool is_first = true;
+
+                  variables_retaining.push( variables_retaining.top( ) );
+
+                  variables_prior_values.push( map< string, string >( ) );
 
                   while( getline( inpf, next ) )
                   {
@@ -3376,6 +3395,20 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                   if( !inpf.eof( ) )
                      throw runtime_error( "unexpected error occurred whilst reading '" + new_args[ 0 ] + "'" + error_context );
+
+                  map< string, string >::const_iterator ci;
+
+                  for( ci = variables_prior_values.top( ).begin( ); ci != variables_prior_values.top( ).end( ); ++ci )
+                     set_environment_variable( ci->first, ci->second );
+
+                  variables_retaining.pop( );
+                  variables_prior_values.pop( );
+
+                  if( !--input_depth )
+                  {
+                     variables_retaining.pop( );
+                     variables_retaining.push( set< string >( ) );
+                  }
                }
                catch( exception& x )
                {
@@ -3742,10 +3775,10 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   }
 
                   // NOTE: If currently within an inactive conditional section
-                  // then will ignore all 'skip', 'depth' and 'label' commands.
+                  // then ignore 'skip', 'vars', 'depth' and 'label' commands.
                   if( !conditions.empty( )
                    && ( !conditions.back( ) || !dummy_conditions.empty( ) )
-                   && ( ( token == c_envcond_command_skip )
+                   && ( ( token == c_envcond_command_skip ) || ( token == c_envcond_command_retain )
                    || ( token == c_envcond_command_depth ) || ( token == c_envcond_command_label ) ) )
                      token.erase( );
 
@@ -3880,6 +3913,27 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         label = symbol;
                      else
                         cout << label << '\n';
+                  }
+                  else if( token == c_envcond_command_retain )
+                  {
+                     if( symbol.empty( ) )
+                     {
+                        set< string >::const_iterator i;
+
+                        for( i = variables_retaining.top( ).begin( ); i != variables_retaining.top( ).end( ); ++i )
+                           cout << *i << endl;
+                     }
+                     else
+                     {
+                        split( symbol, variables_retaining.top( ) );
+
+                        // NOTE: If retaining all then remove any specifics.
+                        if( variables_retaining.top( ).count( c_retain_all ) )
+                        {
+                           variables_retaining.top( ).clear( );
+                           variables_retaining.top( ).insert( c_retain_all );
+                        }
+                     }
                   }
                   else
                      throw runtime_error( "invalid conditional expression '" + str + "'" + error_context );

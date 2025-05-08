@@ -23,6 +23,7 @@ SHARED=$OUTPUT
 .system_variable @blockchain_peer_hub_identity
 PEER_HUB=$OUTPUT
 ;
+@retain BACKUP_EXTRAS,SHARED_EXTRAS,PEER_HUB_EXTRAS
 <bc_all_extras.cin
 ;
 @ifndef $BACKUP_EXTRAS

@@ -62,7 +62,7 @@ will be assigned to the variable.
 > TEST=@file:~wc -l config.info.default
 
 > #$TEST
-11 config.info.default
+12 config.info.default
 
 Console Command Prefixes
 ------------------------
@@ -89,6 +89,17 @@ Prefixes are a single character (surround by single quotes here) as follows:
 It should be noted that the '<' prefix can be doubled up (i.e. "<<") in order to place every script line read
 into history and the '>' prefix can be doubled up (i.e. ">>") in order to append command output to an already
 existing output file (rather than truncating any such existing output file).
+
+Environment variables that are set in an input script will be restored after it has been executed but if some
+environment variable values are intended to be obtained from the input script then they need to be listed via
+the "@retain" command.
+
+@retain COMBINED,REVERSED
+<channel_identity.cin abc123def aaa121aaa
+
+Use just "@retain" to check which variables will be retained and use "@retain *" to retain all set variables.
+After the input script has been processed the "@retain" value is cleared (so it needs to be set prior to each
+relevant input script line).
 
 It should also be noted that '-' and '+' are intended for usage in an interactive console session in order to
 enable the session to behave as though it was input being read in from a script (where repeated commands will

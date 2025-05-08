@@ -15,7 +15,7 @@ ERROR=1
 @endif
 ;
 @ifeq "$ERROR" "1"
-#Usage: bc_gen_keys.cin <seed> <ident> <height> [<extra>]
+#Usage: bc_gen_keys.cin <seed> <ident> [-]<height> [<extra>]
 @else
 ;
 SEED=$1

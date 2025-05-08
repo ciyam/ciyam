@@ -174,11 +174,13 @@ BUNDLE_HASH=%OUTPUT:2%
 LINES=@repstr: /\n:$OUTPUT
 MODULE=%LINES:2%
 ;
+@retain *
 <$MODULE.channel_data_information.vars.lst
 DATA_CLASS_NAME=$CLASS_NAME
 DATA_FLD_TYPE=$FLD_TYPE
 DATA_FLD_PEER_NODE=$FLD_PEER_NODE
 ;
+@retain *
 <$MODULE.channel_user_information.vars.lst
 USER_CLASS_NAME=$CLASS_NAME
 USER_FLD_LOCAL=$FLD_LOCAL
