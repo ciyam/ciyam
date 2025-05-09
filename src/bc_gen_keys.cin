@@ -130,10 +130,7 @@ ENTROPY_HASH=$OUTPUT
 ;
 .crypto_lamport new_primary $ENTROPY_HASH$EXTRA
 ;
-.file_kill -q bc.$IDENT.$HEIGHT.key
 .file_put new_primary.key bc.$IDENT.$HEIGHT.key
-.file_crypt -encrypt -cipher=cc bc.$IDENT.$HEIGHT.key @sid
-;
 .file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
 ;
 .system_variable @os
@@ -165,9 +162,7 @@ ENTROPY_HASH=$OUTPUT
 .crypto_lamport new_primary $ENTROPY_HASH$EXTRA
 ;
 @ifneq "$MODULUS" "0"
-.file_kill -q bc.$IDENT.$HEIGHT.key
 .file_put new_primary.key bc.$IDENT.$HEIGHT.key
-.file_crypt -encrypt -cipher=cc bc.$IDENT.$HEIGHT.key @sid
 @endif
 ;
 .file_put new_primary.pub bc.$IDENT.$HEIGHT.pub

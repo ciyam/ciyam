@@ -93,6 +93,8 @@ const size_t c_num_ntfy_topic_chars = 14;
 
 const size_t c_cascade_progress_seconds = 10;
 
+const size_t c_lamport_key_size = ( 90 * 256 );
+
 const char* const c_ntfy_dummy_user = "ntfy";
 const char* const c_ntfy_message_prefix = "[CIYAM]";
 const char* const c_ntfy_normal_reponse = "\"id\"";
@@ -608,6 +610,40 @@ void get_crypto_info( const string& extra_info, crypto_info& info )
       info.acct_p2sh_fee = atof( acct_p2sh_fee.c_str( ) );
 }
 #endif
+
+void decrypt_lamport_key( const string& key_data, vector< string >& key_lines, bool treat_as_pubkey = false )
+{
+   stringstream ss( key_data );
+
+   // NOTE: The key data is decrypted using the system identity.
+   string secret;
+   secret.reserve( c_secret_reserve_size );
+
+   get_identity( secret, false, true );
+
+   crypt_stream( ss, secret, e_stream_cipher_chacha20 );
+
+   clear_key( secret );
+
+   vector< string > lines;
+
+   split( ss.str( ), lines, '\n' );
+
+   for( size_t i = 0; i < lines.size( ); i++ )
+   {
+      string next_line( lines[ i ] );
+
+      if( !next_line.empty( ) )
+      {
+         string::size_type pos = string::npos;
+
+         if( treat_as_pubkey )
+            pos = next_line.find( ' ' );
+
+         key_lines.push_back( next_line.substr( 0, pos ) );
+      }
+   }
+}
 
 }
 
@@ -6231,7 +6267,7 @@ string crypto_secret_for_sid( const string& suffix, const string& other_pubkey )
       valid = false;
    else if( other_hex_bytes[ 0 ] != '0' )
       valid = false;
-   else if( ( other_hex_bytes[ 1 ] < '2' ) || ( other_hex_bytes[ 1 ] > '3' ) )
+else if( ( other_hex_bytes[ 1 ] < '2' ) || ( other_hex_bytes[ 1 ] > '3' ) )
       valid = false;
    else if( !are_hex_nibbles( other_hex_bytes ) )
       valid = false;
@@ -6283,7 +6319,11 @@ string crypto_lamport( const string& filename,
       string key_file( filename + c_lamport_key_ext );
       string pub_file( filename + c_lamport_pub_ext );
 
-      ofstream outf_key( key_file.c_str( ) );
+      // NOTE: Preallocate the stream buffer size
+      // to prevent any key data being copied due
+      // to possible reallocations.
+      stringstream ss( string( c_lamport_key_size, '\0' ) );
+
       ofstream outf_pub( pub_file.c_str( ) );
 
       for( size_t i = 0; i < 256; i++ )
@@ -6297,7 +6337,7 @@ string crypto_lamport( const string& filename,
          string hash_a_b64( base64::encode( hex_decode( hash_a_hex ) ) );
          string hash_b_b64( base64::encode( hex_decode( hash_b_hex ) ) );
 
-         outf_key << hash_a_b64 << ' ' << hash_b_b64 << '\n';
+         ss << hash_a_b64 << ' ' << hash_b_b64 << '\n';
 
          unsigned char buf_a[ c_sha256_digest_size ];
          hash_a.copy_digest_to_buffer( buf_a );
@@ -6316,6 +6356,21 @@ string crypto_lamport( const string& filename,
 
          outf_pub << hash_a_b64 << ' ' << hash_b_b64 << '\n';
       }
+
+      // NOTE: The key data is encrypted using the system identity.
+      string secret;
+      secret.reserve( c_secret_reserve_size );
+
+      get_identity( secret, false, true );
+
+      ss.clear( );
+      ss.seekp( 0, std::ios_base::beg );
+
+      crypt_stream( ss, secret, e_stream_cipher_chacha20 );
+
+      clear_key( secret );
+
+      write_file( key_file, ss.str( ) );
    }
    else if( is_sign )
    {
@@ -6329,7 +6384,8 @@ string crypto_lamport( const string& filename,
       string src_file( filename.substr( 0, pos ) + c_lamport_src_ext );
 
       vector< string > key_pairs;
-      buffer_file_lines( key_file, key_pairs );
+
+      decrypt_lamport_key( buffer_file( key_file ), key_pairs );
 
       if( key_pairs.size( ) != 256 )
          throw runtime_error( "unexpected key pairs != 256" );
@@ -6418,14 +6474,22 @@ string crypto_lamport( const string& filename,
             throw runtime_error( "invalid signature hash '" + signature_hash + "'" );
 
          string pubkey_lines( extract_file( pubkey_hash, "", c_file_type_char_blob ) );
-         string signature_lines( extract_file( signature_hash, "", c_file_type_char_blob ) );
 
          split( pubkey_lines, pub_pairs, '\n' );
 
          if( pub_pairs.size( ) && !pub_pairs[ pub_pairs.size( ) - 1 ].length( ) )
             pub_pairs.pop_back( );
 
-         split( signature_lines, sig_lines, '\n' );
+         string signature_lines( extract_file( signature_hash, "", c_file_type_char_blob ) );
+
+         if( signature_lines.size( ) < pubkey_lines.size( ) )
+            split( signature_lines, sig_lines, '\n' );
+         else
+            // NOTE: If the key file has been provided instead
+            // will simply use the first hash for each line so
+            // that a key pair can be verified (as a string of
+            // sixty four zeros).
+            decrypt_lamport_key( signature_lines, sig_lines, true );
 
          if( sig_lines.size( ) && !sig_lines[ sig_lines.size( ) - 1 ].length( ) )
             sig_lines.pop_back( );
@@ -6453,18 +6517,6 @@ string crypto_lamport( const string& filename,
             throw runtime_error( "unexpected pub pair '" + next_pair + "'" );
 
          string sig_hash( sig_lines[ i ] );
-
-         // NOTE: If the key file has been provided instead
-         // will simply use the first hash for each line so
-         // that a key pair can be verified (as a string of
-         // sixty four zeros).
-         if( sig_hash.length( ) == 89 )
-         {
-            string::size_type pos = sig_hash.find( ' ' );
-
-            if( pos == 44 )
-               sig_hash.erase( pos );
-         }
 
          unsigned char buf[ c_sha256_digest_size ];
          base64::decode( sig_hash, buf, c_sha256_digest_size );

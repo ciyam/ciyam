@@ -236,7 +236,6 @@ PUB_KEY_HASH_ENC=$PUB_KEY_HASH_ENC,$OUTPUT
 .crypto_chain 1440 -b64 -hind $OUTPUT
 HIND_HASH_ENC=$OUTPUT
 ;
-.file_crypt -decrypt -cipher=cc bc.$IDENT.$LAST.key @sid
 @ifdef $ERROR
 @label END_INNER
 @endif
@@ -244,8 +243,6 @@ HIND_HASH_ENC=$OUTPUT
 ;
 @:NEXT
 .file_get bc.$IDENT.$LAST.key $UUID.key
-.file_crypt -encrypt -cipher=cc bc.$IDENT.$LAST.key @sid
-;
 .file_get bc.$IDENT.$LAST.pub $UUID.pub
 ;
 @ifndef $TREE

@@ -529,6 +529,21 @@ crypto_hash -x=9 hello -s=4
 62aa30bc3e176557d12fb53839a149397928af912a9477f07a8b5b2eb8353bcb
 crypto_hash -x=9 hello -s=5
 ade14a0f9610a7cea12f1b549679e96fb51f21d7a305c902eb3d142643607a19
+crypto_lamport xxx xxx
+crypto_lamport -sign xxx
+56163618a3e76d449835b7a58c378b8a530cea1c80457837dd97d61729656d8f
+crypto_lamport -verify xxx
+56163618a3e76d449835b7a58c378b8a530cea1c80457837dd97d61729656d8f
+file_put xxx.key xxx.key
+file_put xxx.pub xxx.pub
+file_put xxx.sig xxx.sig
+crypto_lamport -verify xxx.pub:xxx.sig
+56163618a3e76d449835b7a58c378b8a530cea1c80457837dd97d61729656d8f
+crypto_lamport -verify xxx.pub:xxx.key
+0000000000000000000000000000000000000000000000000000000000000000
+file_kill xxx.key
+file_kill xxx.pub
+file_kill xxx.sig
 regex "^[@]?[a-b][a-b]+$$" "@"
 regex "^[@]?[a-b][a-b]+$$" "a"
 regex "^[@]?[a-b][a-b]+$$" "@@"

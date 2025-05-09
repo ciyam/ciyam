@@ -213,12 +213,6 @@ ENTROPY_HASH_TERTIARY=$OUTPUT
 .file_put secondary.pub bc.$UUID.$MULTIPLE.pub
 .file_put tertiary.pub bc.$UUID.$SQUARED.pub
 ;
-.system_variable @os
-@ifeq "$OUTPUT" "Linux"
-~shred primary.key
-~shred secondary.key
-~shred tertiary.key
-@endif
 ~rm primary.key secondary.key tertiary.key primary.pub secondary.pub tertiary.pub
 ;
 .file_hash bc.$UUID.0.pub

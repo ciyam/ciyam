@@ -93,7 +93,6 @@ const size_t c_listen_wait_repeats = 20;
 
 const int c_pdf_default_limit = 10000;
 
-const size_t c_secret_reserve_size = 256;
 const size_t c_response_reserve_size = 1024;
 
 const size_t c_max_key_append_chars = 7;

@@ -21,6 +21,8 @@ const size_t c_bc_identity_length = 9;
 const size_t c_bc_scaling_value = 50;
 const size_t c_bc_scaling_demo_value = 5;
 
+const size_t c_secret_reserve_size = 256;
+
 const size_t c_key_rounds_multiplier = 30;
 
 const size_t c_auto_script_msleep = 1000; // i.e. 1 sec

@@ -468,6 +468,20 @@ crypto_hash -x=9 hello -s=3
 crypto_hash -x=9 hello -s=4
 crypto_hash -x=9 hello -s=5
 ;
+crypto_lamport xxx xxx
+~cp modules.lst.default xxx.src
+crypto_lamport -sign xxx
+crypto_lamport -verify xxx
+file_put xxx.key xxx.key
+file_put xxx.pub xxx.pub
+file_put xxx.sig xxx.sig
+crypto_lamport -verify xxx.pub:xxx.sig
+crypto_lamport -verify xxx.pub:xxx.key
+file_kill xxx.key
+file_kill xxx.pub
+file_kill xxx.sig
+~rm xxx.key xxx.pub xxx.sig xxx.src
+;
 regex "^[@]?[a-b][a-b]+$$" "@"
 regex "^[@]?[a-b][a-b]+$$" "a"
 regex "^[@]?[a-b][a-b]+$$" "@@"
