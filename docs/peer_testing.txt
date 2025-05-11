@@ -50,17 +50,17 @@ REPO_CRYPT_PASSWORD=@sid
 .session_variable @repo_crypt_password ""
 <tree_insert_trunks.cin ciyam Backup,.Backup
 <bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 0
-<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 1
+<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 -1
 <bc_gen_block.cin e3733d121 1
 <<import_files.cin . Backup : test?.jpg
 .session_variable @repo_crypt_password ""
 <tree_insert_trunks.cin ciyam Backup,.Backup
-<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 2
+<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 -2
 <bc_gen_block.cin e3733d121 2
 <<import_files.cin . Backup : test*.jpg
 .session_variable @repo_crypt_password ""
 <tree_insert_trunks.cin ciyam Backup,.Backup
-<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 3
+<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 -3
 <bc_gen_block.cin e3733d121 3
 .session_variable @repo_crypt_password ""
 <bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 4
@@ -68,7 +68,7 @@ REPO_CRYPT_PASSWORD=@sid
 <<import_files.cin . Backup : photo_?.jpg
 .session_variable @repo_crypt_password ""
 <tree_insert_trunks.cin ciyam Backup,.Backup
-<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 5
+<bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 -5
 <bc_gen_block.cin e3733d121 5
 ;trace 14900
 peer_connect e3733d121 12021
@@ -119,7 +119,7 @@ bc.e3733d121.zenith
 ciyam
 
 > file_stats
-[57/100000]396.7 kB/100.0 GB:59 tag(s)
+[57/100000]402.3 kB/100.0 GB:59 tag(s)
 
 > file_info bc.e3733d121.zenith
 [core-blob] 2f81b61b72185ec053c8f5bfaa65c78ba2ac49f3cf28583701ab25c3f5870c7c (285 B) blk
