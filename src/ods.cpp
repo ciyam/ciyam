@@ -23,31 +23,12 @@
 #  include <ctime>
 #  include <cerrno>
 #  include <cstdio>
-#  ifdef __BORLANDC__
-#     include <cio>
-#     include <cfcntl>
-#  endif
-#  ifdef _MSC_VER
-#     include <io.h>
-#     include <fcntl.h>
-#  endif
 #  ifdef __GNUG__
 #     include <fcntl.h>
 #     include <unistd.h>
 #     include <sys/time.h>
 #  endif
-#  ifdef _WIN32
-#     include <share.h>
-#     include <sys/locking.h>
-#  endif
 #  include <sys/stat.h>
-#  ifdef _WIN32
-#     ifndef STRICT
-#        define STRICT // Needed for "windows.h" by various Borland headers.
-#     endif
-#     define NOMINMAX
-#     include <windows.h>
-#  endif
 #endif
 
 #ifdef __GNUG__
@@ -56,14 +37,6 @@
 #  define _write ::write
 #  define _close close
 #  define _lseek lseek
-#endif
-
-#ifdef _WIN32
-#  define _lseek _lseeki64
-#endif
-
-#ifdef __BORLANDC__
-#  define _locking locking
 #endif
 
 #include "ods.h"
@@ -1153,11 +1126,6 @@ class header_file
    bool is_locked_for_exclusive( ) const { return is_exclusive; }
 
    private:
-#ifdef _WIN32
-   void acquire_offset( );
-   void release_offset( );
-#endif
-
    int handle;
    int offset;
 
@@ -1228,30 +1196,6 @@ header_file::header_file( const char* p_file_name, ods::write_mode w_mode, bool 
    }
 #endif
 
-#ifdef _WIN32
-   if( w_mode == ods::e_write_mode_none )
-      okay = true;
-   else
-   {
-      int sflags = SH_DENYNO;
-      if( is_exclusive )
-         sflags = SH_DENYRW;
-
-      lock_handle = _sopen( lock_file_name.c_str( ), O_BINARY | _O_RDWR | _O_CREAT, sflags, S_IREAD | S_IWRITE );
-
-      if( lock_handle > 0 )
-         okay = true;
-   }
-
-   if( okay )
-   {
-      handle = _sopen( p_file_name, O_BINARY | _O_RDWR | _O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
-
-      if( handle > 0 )
-         acquire_offset( );
-   }
-#endif
-
 #ifdef ODS_DEBUG
    ostringstream osstr;
    osstr << "handle = " << handle << ", offset = " << offset << ", lock_handle = " << lock_handle;
@@ -1268,10 +1212,6 @@ header_file::~header_file( )
 
       if( fcntl( lock_handle, F_SETLK, &file_lock ) != 0 )
          DEBUG_LOG( "unexpected fcntl failure occurred at " STRINGIZE( __LINE__ ) );
-#endif
-
-#ifdef _WIN32
-      release_offset( );
 #endif
 
 #ifndef ODS_DEBUG
@@ -1337,14 +1277,6 @@ bool header_file::lock( )
       if( fcntl( handle, F_SETLK, &header_lock ) == 0 )
          retval = true;
 #endif
-
-#ifdef _WIN32
-      if( _lseek( handle, 0, SEEK_SET ) != 0 )
-         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
-
-      if( _locking( handle, LK_NBLCK, 1 ) == 0 )
-         retval = true;
-#endif
    }
 
    return retval;
@@ -1360,52 +1292,8 @@ void header_file::unlock( )
       if( fcntl( handle, F_SETLK, &header_lock ) != 0 )
          THROW_ODS_ERROR( "unexpected fcntl at " STRINGIZE( __LINE__ ) " failed" );
 #endif
-
-#ifdef _WIN32
-      if( _lseek( handle, 0, SEEK_SET ) != 0 )
-         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
-
-      if( _locking( handle, LK_UNLCK, 1 ) != 0 )
-         THROW_ODS_ERROR( "unexpected _locking at " STRINGIZE( __LINE__ ) " failed" );
-#endif
    }
 }
-
-#ifdef _WIN32
-void header_file::acquire_offset( )
-{
-   for( size_t i = sizeof( header_info );
-    i < sizeof( header_info ) + sizeof( ods_index_entry::data_t ); i++ )
-   {
-      if( _lseek( handle, ( int64_t )i, SEEK_SET ) != ( int64_t )i )
-         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
-
-      if( _locking( handle, LK_NBLCK, 1 ) == 0 )
-      {
-         DEBUG_LOG( "acquired lock offset" );
-
-         offset = ( int )( i - sizeof( header_info ) );
-         break;
-      }
-   }
-}
-
-void header_file::release_offset( )
-{
-   if( handle > 0 && offset >= 0 )
-   {
-      DEBUG_LOG( "releasing lock offset" );
-
-      int64_t pos = offset + sizeof( header_info );
-      if( _lseek( handle, pos, SEEK_SET ) != pos )
-         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
-      if( _locking( handle, LK_UNLCK, 1 ) != 0 )
-         THROW_ODS_ERROR( "unexpected _locking at " STRINGIZE( __LINE__ ) " failed" );
-
-      offset = -1;
-   }
-}
-#endif
 
 struct ods_data_entry_buffer
 {
@@ -1516,14 +1404,6 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
          retval = true;
 #endif
 
-#ifdef _WIN32
-      if( _lseek( write_lock_handle, start, SEEK_SET ) != start )
-         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
-
-      if( _locking( write_lock_handle, LK_NBLCK, len ) == 0 )
-         retval = true;
-#endif
-
       return retval;
    }
 
@@ -1546,14 +1426,6 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
 
       if( fcntl( write_lock_handle, F_SETLK, &lock ) != 0 )
          THROW_ODS_ERROR( "unexpected fcntl at " STRINGIZE( __LINE__ ) " failed" );
-#endif
-
-#ifdef _WIN32
-      if( _lseek( write_lock_handle, start, SEEK_SET ) != start )
-         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
-
-      if( _locking( write_lock_handle, LK_UNLCK, len ) != 0 )
-         THROW_ODS_ERROR( "unexpected _locking at " STRINGIZE( __LINE__ ) " failed" );
 #endif
    }
 
@@ -1613,11 +1485,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
 
       if( len != sizeof( ods_data_entry_buffer ) )
       {
-#ifdef __BORLANDC__
-         if( eof( read_data_handle ) )
-#else
          if( _lseek( read_data_handle, 0, SEEK_CUR ) >= _lseek( read_data_handle, 0, SEEK_END ) )
-#endif
             memset( p_data + len, 0, sizeof( ods_data_entry_buffer ) - len );
          else
             THROW_ODS_ERROR( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
@@ -1797,21 +1665,6 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 
       return fcntl( lock_index_handle, F_SETLK, &lock ) == 0;
 #endif
-
-#ifdef _WIN32
-      size_t len = 1;
-      int64_t pos = entry_num * sizeof( ods_index_entry::data_t );
-
-      if( !is_write )
-         pos += lock_offset;
-      else
-         len = sizeof( ods_index_entry::data_t );
-
-      if( _lseek( lock_index_handle, pos, SEEK_SET ) != pos )
-         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
-
-      return _locking( lock_index_handle, LK_NBLCK, len ) == 0;
-#endif
    }
 
    void unlock_entry( int64_t entry_num, bool is_write )
@@ -1833,22 +1686,6 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 
       if( fcntl( lock_index_handle, F_SETLK, &lock ) != 0 )
          DEBUG_LOG( "unexpected fcntl failure occurred at " STRINGIZE( __LINE__ ) );
-#endif
-
-#ifdef _WIN32
-      size_t len = 1;
-      int64_t pos = entry_num * sizeof( ods_index_entry::data_t );
-
-      if( !is_write )
-         pos += lock_offset;
-      else
-         len = sizeof( ods_index_entry::data_t );
-
-      if( _lseek( lock_index_handle, pos, SEEK_SET ) != pos )
-         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
-
-      if( _locking( lock_index_handle, LK_UNLCK, len ) != 0 )
-         THROW_ODS_ERROR( "unexpected _locking at " STRINGIZE( __LINE__ ) " failed" );
 #endif
    }
 
@@ -1908,11 +1745,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 
       if( len != sizeof( ods_index_entry_buffer ) )
       {
-#ifdef __BORLANDC__
-         if( eof( read_index_handle ) )
-#else
          if( _lseek( read_index_handle, 0, SEEK_CUR ) >= _lseek( read_index_handle, 0, SEEK_END ) )
-#endif
             memset( p_data + len, 0, sizeof( ods_index_entry_buffer ) - len );
          else
             THROW_ODS_ERROR( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
@@ -2740,11 +2573,7 @@ ods::ods(
 
    p_impl->rp_header_info = new header_info;
 
-#ifndef _WIN32
    int64_t now = time( 0 );
-#else
-   int64_t now = _time64( 0 );
-#endif
 
    log_info tranlog_info;
 
@@ -2801,7 +2630,7 @@ ods::ods(
 
       // NOTE: File corruption can be determined if we have an exclusive write lock but
       // then find that one or more writers/transactions appear to be currently active.
-      if( w_mode == e_write_mode_exclusive
+      if( ( w_mode == e_write_mode_exclusive )
        && ( p_impl->rp_header_info->num_trans || p_impl->rp_header_info->num_writers ) )
          p_impl->is_corrupt = true;
 
@@ -2856,6 +2685,7 @@ ods::ods(
    }
 
    p_impl->rp_instances = new vector< ods* >( );
+
    p_impl->rp_instances->push_back( this );
 
    if( p_impl->is_new )
@@ -2927,6 +2757,7 @@ ods::~ods( )
       delete p_impl->p_ods_trans_data_cache_buffer;
 
       vector< ods* >::iterator iter;
+
       if( p_impl->rp_instances )
       {
          for( iter = p_impl->rp_instances->begin( ); iter != p_impl->rp_instances->end( ); ++iter )
@@ -3164,6 +2995,7 @@ void ods::rewind_transactions(
    log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
 
    log_info tranlog_info;
+
    tranlog_info.read( logf );
 
    bool is_encrypted = p_impl->is_encrypted;
@@ -3179,6 +3011,7 @@ void ods::rewind_transactions(
       set< int64_t > committed_transactions;
 
       int64_t last_tx_time = 0;
+
       int64_t first_entry_offset = 0;
       int64_t largest_commit_offs = 0;
 
@@ -3284,10 +3117,10 @@ void ods::rewind_transactions(
 
          while( true )
          {
-            --si;
-            logf.set_pos( *si );
+            logf.set_pos( *--si );
 
             log_entry tranlog_entry;
+
             tranlog_entry.read( logf );
 
             int64_t current_pos = logf.get_pos( );
@@ -3315,6 +3148,7 @@ void ods::rewind_transactions(
             while( true )
             {
                log_entry_item tranlog_item;
+
                tranlog_item.read( logf );
 
                bool skip_data = false;
@@ -3322,6 +3156,7 @@ void ods::rewind_transactions(
                if( committed_transactions.count( tx_id ) )
                {
                   ods_index_entry index_entry;
+
                   read_index_entry( index_entry, tranlog_item.index_entry_id );
 
                   bool write_entry = false;
@@ -3343,13 +3178,14 @@ void ods::rewind_transactions(
                            dpos = tranlog_item.data_opos;
 
                         int64_t chunk = c_buffer_chunk_size;
+
                         char buffer[ c_buffer_chunk_size ];
 
                         set_write_data_pos( dpos, is_encrypted, is_encrypted );
 
                         for( int64_t j = 0; j < tranlog_item.data_size; j += chunk )
                         {
-                           if( j + chunk > tranlog_item.data_size )
+                           if( ( j + chunk ) > tranlog_item.data_size )
                               chunk = tranlog_item.data_size - j;
 
                            logf.read( ( unsigned char* )buffer, chunk );
@@ -3358,6 +3194,7 @@ void ods::rewind_transactions(
                            if( p_progress )
                            {
                               date_time now( date_time::local( ) );
+
                               uint64_t elapsed = seconds_between( dtm, now );
 
                               if( elapsed >= p_progress->num_seconds )
@@ -3412,7 +3249,7 @@ void ods::rewind_transactions(
 
                int64_t current_pos = logf.get_pos( );
 
-               if( current_pos >= append_offset || entry_offsets.count( current_pos ) )
+               if( ( current_pos >= append_offset ) || entry_offsets.count( current_pos ) )
                   break;
             }
 
@@ -3427,6 +3264,7 @@ void ods::rewind_transactions(
             while( !freelist_additions.empty( ) )
             {
                ods_index_entry index_entry;
+
                read_index_entry( index_entry, freelist_additions.back( ).first );
 
                index_entry.data.pos = next_pos;
@@ -3452,6 +3290,7 @@ void ods::rewind_transactions(
                }
 
                next_pos = freelist_additions.back( ).first + 1;
+
                freelist_additions.pop_back( );
             }
 
@@ -3476,9 +3315,11 @@ void ods::rewind_transactions(
          }
 
          logf.set_pos( 0 );
+
          tranlog_info.write( logf );
 
          set_read_data_pos( -1 );
+
          data_and_index_write( true, is_encrypted );
 
          p_impl->rp_ods_data_cache_buffer->clear( );
@@ -3528,9 +3369,11 @@ int64_t ods::get_size( const oid& id )
       // NOTE: Start file lock section.
       {
          guard tmp_lock( *p_impl->rp_impl_lock );
+
          ods::header_file_lock header_file_lock( *this );
 
          auto_ptr< ods::file_scope > ap_file_scope;
+
          if( !*p_impl->rp_bulk_level )
             ap_file_scope.reset( new ods::file_scope( *this ) );
 
@@ -3591,9 +3434,11 @@ void ods::destroy( const oid& id )
       // NOTE: Start file lock section.
       {
          guard tmp_lock( *p_impl->rp_impl_lock );
+
          ods::header_file_lock header_file_lock( *this );
 
          auto_ptr< ods::file_scope > ap_file_scope;
+
          if( !*p_impl->rp_bulk_level )
             ap_file_scope.reset( new ods::file_scope( *this ) );
 
@@ -3609,9 +3454,9 @@ void ods::destroy( const oid& id )
 
             if( index_entry.lock_flag == ods_index_entry::e_lock_none )
             {
-               if( index_entry.trans_flag == ods_index_entry::e_trans_none
-                || ( p_impl->trans_level && index_entry.data.tran_id == tx_id
-                && index_entry.trans_flag != ods_index_entry::e_trans_delete ) )
+               if( ( index_entry.trans_flag == ods_index_entry::e_trans_none )
+                || ( p_impl->trans_level && ( index_entry.data.tran_id == tx_id )
+                && ( index_entry.trans_flag != ods_index_entry::e_trans_delete ) ) )
                {
                   bool skip_log_entry = false;
 
@@ -3653,7 +3498,7 @@ void ods::destroy( const oid& id )
                            p_impl->rp_header_info->tranlog_offset = p_impl->tranlog_offset;
                      }
 
-                     if( index_entry.data.pos + index_entry.data.size
+                     if( ( index_entry.data.pos + index_entry.data.size )
                       == p_impl->rp_header_info->total_size_of_data )
                         p_impl->rp_header_info->total_size_of_data -= index_entry.data.size;
 
@@ -3754,12 +3599,14 @@ string ods::backup_database( const char* p_ext, char sep )
    copy_stream( index_ifs, index_ofs );
 
    data_ofs.flush( );
+
    if( !data_ofs.good( ) )
       THROW_ODS_ERROR( "unexpected bad data output stream in database backup" );
 
    retval = backup_data_file_name;
 
    index_ofs.flush( );
+
    if( !index_ofs.good( ) )
       THROW_ODS_ERROR( "unexpected bad index output stream in database backup" );
 
@@ -3768,6 +3615,7 @@ string ods::backup_database( const char* p_ext, char sep )
    header_ofs.write( ( const char* )p_impl->rp_header_info.get( ), sizeof( header_info ) );
 
    header_ofs.flush( );
+
    if( !header_ofs.good( ) )
       THROW_ODS_ERROR( "unexpected bad header output stream in database backup" );
 
@@ -3788,6 +3636,7 @@ string ods::backup_database( const char* p_ext, char sep )
       copy_stream( tranlog_ifs, tranlog_ofs );
 
       tranlog_ofs.flush( );
+
       if( !tranlog_ofs.good( ) )
          THROW_ODS_ERROR( "unexpected bad tranlog output stream in database backup" );
 
@@ -3840,6 +3689,7 @@ void ods::move_free_data_to_end( progress* p_progress )
       if( p_progress )
       {
          date_time now( date_time::local( ) );
+
          uint64_t elapsed = seconds_between( dtm, now );
 
          if( elapsed >= p_progress->num_seconds )
@@ -3850,6 +3700,7 @@ void ods::move_free_data_to_end( progress* p_progress )
       }
 
       read_index_entry( index_entry, i );
+
       if( index_entry.lock_flag != ods_index_entry::e_lock_none )
          THROW_ODS_ERROR( "cannot move free data to end when one or more entries have been locked" );
 
@@ -3869,6 +3720,7 @@ void ods::move_free_data_to_end( progress* p_progress )
    }
 
    int64_t num_moved = 0;
+
    int64_t log_entry_offs = 0;
    int64_t old_append_offs = 0;
 
@@ -3908,6 +3760,7 @@ void ods::move_free_data_to_end( progress* p_progress )
             ++num_moved;
 
             int64_t chunk = c_buffer_chunk_size;
+
             char buffer[ c_buffer_chunk_size ];
 
             log_entry_item tranlog_item;
@@ -3925,15 +3778,17 @@ void ods::move_free_data_to_end( progress* p_progress )
 
             for( int64_t j = 0; j < next_size; j += chunk )
             {
-               if( j + chunk > next_size )
+               if( ( j + chunk ) > next_size )
                   chunk = next_size - j;
 
                read_data_bytes( buffer, chunk, is_encrypted );
+
                logf.write( ( unsigned char* )buffer, chunk );
 
                if( p_progress )
                {
                   date_time now( date_time::local( ) );
+
                   uint64_t elapsed = seconds_between( dtm, now );
 
                   if( elapsed >= p_progress->num_seconds )
@@ -3985,13 +3840,14 @@ void ods::move_free_data_to_end( progress* p_progress )
       if( next_pos != new_pos )
       {
          int64_t chunk = c_buffer_chunk_size;
+
          char buffer[ c_buffer_chunk_size ];
 
          set_write_data_pos( new_pos );
 
          for( int64_t j = 0; j < next_size; j += chunk )
          {
-            if( j + chunk > next_size )
+            if( ( j + chunk ) > next_size )
                chunk = next_size - j;
 
             read_data_bytes( buffer, chunk );
@@ -4035,12 +3891,14 @@ void ods::move_free_data_to_end( progress* p_progress )
       log_entry tranlog_entry;
 
       logf.set_pos( log_entry_offs );
+
       tranlog_entry.read( logf );
 
       tranlog_entry.commit_offs = old_append_offs;
       tranlog_entry.commit_items = num_moved;
 
       logf.set_pos( log_entry_offs );
+
       tranlog_entry.write( logf );
 
       p_impl->rp_header_info->tranlog_offset = log_entry_offs;
@@ -4109,11 +3967,7 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
    if( !file_rename( log_file_name, sequence_file_name ) )
       throw runtime_error( "unable to rename '" + log_file_name + "' to '" + sequence_file_name + "'" );
 
-#ifndef _WIN32
    int64_t dtm = time( 0 );
-#else
-   int64_t dtm = _time64( 0 );
-#endif
 
    // NOTE: Empty code block for scope purposes.
    {
@@ -4193,11 +4047,7 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
       {
          if( p_progress )
          {
-#ifndef _WIN32
             int64_t now = time( 0 );
-#else
-            int64_t now = _time64( 0 );
-#endif
 
             uint64_t elapsed = ( now - dtm );
 
@@ -4245,6 +4095,7 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
             set_read_data_pos( index_entry.data.pos, true, is_encrypted );
 
             int64_t chunk = c_buffer_chunk_size;
+
             char buffer[ c_buffer_chunk_size ];
 
             for( int64_t j = 0; j < index_entry.data.size; j += chunk )
@@ -4253,15 +4104,12 @@ void ods::truncate_log( const char* p_ext, bool reset, progress* p_progress )
                   chunk = index_entry.data.size - j;
 
                read_data_bytes( buffer, chunk, is_encrypted );
+
                logf.write( ( unsigned char* )buffer, chunk );
 
                if( p_progress )
                {
-#ifndef _WIN32
                   int64_t now = time( 0 );
-#else
-                  int64_t now = _time64( 0 );
-#endif
 
                   uint64_t elapsed = ( now - dtm );
 
@@ -4445,6 +4293,7 @@ void ods::dump_free_list( ostream& os )
 
       int64_t last = 0;
       int64_t next = p_impl->rp_header_info->index_free_list;
+
       os << "First freelist entry = " << ( p_impl->rp_header_info->index_free_list - 1 ) << '\n';
 
       os << "Iterating over freelist...";
@@ -4452,6 +4301,7 @@ void ods::dump_free_list( ostream& os )
       while( next )
       {
          ++count;
+
          read_index_entry( index_entry, next - 1 );
 
          last = next;
@@ -4520,6 +4370,7 @@ void ods::dump_instance_data( ostream& os, int64_t num, bool only_pos_and_size )
             os << hex;
 
             set_read_data_pos( index_entry.data.pos );
+
             for( int64_t i = 0; i < index_entry.data.size; i += chunk )
             {
                if( i + chunk > index_entry.data.size )
@@ -4606,7 +4457,7 @@ void ods::dump_transaction_log( ostream& os, bool omit_dtms,
 
             string first_tx_id( entries.substr( 0, pos ) );
 
-            if( is_from_end || first_tx_id == "0" )
+            if( is_from_end || ( first_tx_id == "0" ) )
             {
                int64_t num_from_end = from_string< int64_t >( first_tx_id ) + 1;
 
@@ -4657,6 +4508,7 @@ void ods::dump_transaction_log( ostream& os, bool omit_dtms,
          int64_t offs = fs.tellg( );
 
          log_entry tranlog_entry;
+
          tranlog_entry.read( fs );
 
          int64_t next_offs = tranlog_entry.next_entry_offs;
@@ -5117,11 +4969,12 @@ void ods::close_store( )
       // NOTE: If there are no transactions in progress and there are no other active writers
       // then if the "tranlog_offset" is greater than the value that is already stored in the
       // header it will now be updated.
-      if( p_impl->tranlog_offset > p_impl->rp_header_info->tranlog_offset
-       && p_impl->rp_header_info->num_trans == 0 && p_impl->rp_header_info->num_writers == 1 )
+      if( ( p_impl->tranlog_offset > p_impl->rp_header_info->tranlog_offset )
+       && ( p_impl->rp_header_info->num_trans == 0 ) && ( p_impl->rp_header_info->num_writers == 1 ) )
          p_impl->rp_header_info->tranlog_offset = p_impl->tranlog_offset;
 
       p_impl->write_header_file_info( true );
+
       *p_impl->rp_has_changed = false;
    }
 
@@ -5255,6 +5108,7 @@ void ods::transaction_start( const char* p_label )
          ods::header_file_lock header_file_lock( *this );
 
          auto_ptr< ods::file_scope > ap_file_scope;
+
          if( !*p_impl->rp_bulk_level )
             ap_file_scope.reset( new ods::file_scope( *this ) );
 
@@ -5647,7 +5501,7 @@ void ods::transaction_rollback( )
    if( !*p_impl->rp_bulk_level )
       ap_bulk_write.reset( new ods::bulk_write( *this ) );
 
-   if( p_impl->using_tranlog && p_impl->trans_level > 1 )
+   if( p_impl->using_tranlog && ( p_impl->trans_level > 1 ) )
    {
       unsigned char flags = ( c_log_entry_item_op_destroy | c_log_entry_item_type_nested_tx );
 
@@ -5679,12 +5533,12 @@ void ods::transaction_rollback( )
          {
             read_index_entry( index_entry, op.data.id.get_num( ) );
 
-            if( index_entry.trans_flag != ods_index_entry::e_trans_none
-             && index_entry.trans_flag != ods_index_entry::e_trans_free_list )
+            if( ( index_entry.trans_flag != ods_index_entry::e_trans_none )
+             && ( index_entry.trans_flag != ods_index_entry::e_trans_free_list ) )
             {
-               if( op.data.old_tran_op == 0 && op.data.old_tran_id == -1 )
+               if( ( op.data.old_tran_op == 0 ) && ( op.data.old_tran_id == -1 ) )
                {
-                  if( index_entry.data.pos + index_entry.data.size
+                  if( ( index_entry.data.pos + index_entry.data.size )
                    == p_impl->rp_header_info->total_size_of_data )
                      p_impl->rp_header_info->total_size_of_data -= index_entry.data.size;
 
@@ -5736,7 +5590,7 @@ void ods::transaction_rollback( )
    DEBUG_LOG( osstr.str( ) );
 #endif
 
-   unsigned num_from( p_impl->total_trans_op_count / c_trans_ops_per_item );
+   unsigned num_from = ( p_impl->total_trans_op_count / c_trans_ops_per_item );
 
    if( p_impl->total_trans_op_count % c_trans_ops_per_item )
       ++num_from;
@@ -5873,12 +5727,14 @@ void ods::data_and_index_write( bool flush, bool skip_encrypt )
 int64_t ods::log_append_offset( )
 {
    fstream fs;
+
    fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::binary );
 
    if( !fs )
       THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in log_append_offset" );
 
    log_info tranlog_info;
+
    tranlog_info.read( fs );
 
    fs.close( );
@@ -5891,13 +5747,10 @@ int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset, const ch
    log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
 
    log_info tranlog_info;
+
    tranlog_info.read( logf );
 
-#ifndef _WIN32
    int64_t tx_time = time( 0 );
-#else
-   int64_t tx_time = _time64( 0 );
-#endif
 
    log_entry tranlog_entry;
 
@@ -5934,6 +5787,7 @@ int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset, const ch
    tranlog_info.entry_time = tx_time;
 
    logf.set_pos( tranlog_info.append_offs );
+
    tranlog_entry.write( logf );
 
    if( tranlog_entry.prior_entry_offs )
@@ -5955,6 +5809,7 @@ int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset, const ch
       *p_append_offset = tranlog_info.append_offs;
 
    logf.set_pos( 0 );
+
    tranlog_info.write( logf );
 
    return tranlog_info.entry_offs;
@@ -5968,12 +5823,14 @@ void ods::log_entry_commit( int64_t entry_offset, int64_t commit_offs, int64_t c
    log_entry tranlog_entry;
 
    logf.set_pos( entry_offset );
+
    tranlog_entry.read( logf );
 
    tranlog_entry.commit_offs = commit_offs;
    tranlog_entry.commit_items = commit_items;
 
    logf.set_pos( entry_offset );
+
    tranlog_entry.write( logf );
 }
 
@@ -6010,6 +5867,7 @@ int64_t ods::append_log_entry_item( int64_t num,
    }
 
    logf.set_pos( tranlog_info.append_offs );
+
    tranlog_item.write( logf );
 
    bool is_encrypted = p_impl->is_encrypted;
@@ -6509,8 +6367,8 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                            had_any_data = true;
 
                            int64_t chunk = c_buffer_chunk_size;
-                           char buffer[ c_buffer_chunk_size ];
 
+                           char buffer[ c_buffer_chunk_size ];
                            char key_buffer[ c_buffer_chunk_size * 2 ];
 
                            int64_t crypt_dpos = tranlog_item.data_pos;
@@ -6579,7 +6437,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                               p_impl->rp_header_info->total_size_of_data = dpos + tranlog_item.data_size;
 
                            if( commit
-                            && ( p_impl->rp_header_info->total_size_of_data < dpos + tranlog_item.data_size ) )
+                            && ( p_impl->rp_header_info->total_size_of_data < ( dpos + tranlog_item.data_size ) ) )
                               p_impl->rp_header_info->total_size_of_data = dpos + tranlog_item.data_size;
                         }
 
@@ -6745,6 +6603,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
       {
          tranlog_info.entry_offs = last_entry_offs;
          tranlog_info.entry_time = last_entry_time;
+
          tranlog_info.append_offs = last_append_offs;
 
          log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
@@ -6753,6 +6612,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
          p_impl->rp_header_info->tranlog_offset = last_entry_offs;
          p_impl->rp_header_info->transaction_id = last_tx_id + 1;
+
          p_impl->rp_header_info->data_transform_id = last_data_transform_id;
          p_impl->rp_header_info->index_transform_id = last_index_transform_id;
       }
@@ -6815,6 +6675,7 @@ ods& operator >>( ods& o, storable_base& s )
    memset( o.p_impl->data_read_key_buffer.data, '\0', c_data_bytes_per_item );
 
    bool can_read = false;
+
    bool has_locked = false;
    bool was_locked = false;
 
@@ -7369,6 +7230,7 @@ void ods::write( const unsigned char* p_buf, int64_t len )
 #endif
 
    bytes_used += len;
+
    if( bytes_used <= bytes_reserved )
    {
       if( !p_impl->trans_level )
@@ -7400,7 +7262,7 @@ void ods::set_read_data_pos( int64_t pos, bool force_get, bool skip_decrypt )
       data_read_buffer_num = pos / c_data_bytes_per_item;
       data_read_buffer_offs = pos % c_data_bytes_per_item;
 
-      if( force_get || data_read_buffer_num != current_data_buffer_num )
+      if( force_get || ( data_read_buffer_num != current_data_buffer_num ) )
       {
          p_impl->data_read_buffer = p_impl->rp_ods_data_cache_buffer->get( data_read_buffer_num );
 
@@ -7903,6 +7765,7 @@ void ods::read_trans_data_bytes( char* p_dest, int64_t len )
 
          if( p_dest )
             p_dest += chunk;
+
          chunk = min( len, c_trans_bytes_per_item );
       }
       else
@@ -7951,6 +7814,7 @@ void ods::write_trans_data_bytes( const char* p_src, int64_t len )
 
          if( p_src )
             p_src += chunk;
+
          chunk = min( len, c_trans_bytes_per_item );
       }
       else
