@@ -97,7 +97,8 @@ the "@retain" command (other than ERROR and OUTPUT which are never restored).
 @retain COMBINED,REVERSED
 <channel_identity.cin abc123def aaa121aaa
 
-Use just "@retain" to check which variables will be retained and use "@retain *" to retain all set variables.
+From within the input script (i.e. channel_identity.cin) the command "@retain" will output the variable names
+that will be retained for the "caller" and use "@retain *" from the caller for all set values to be retained.
 After the input script has been processed the "@retain" value is cleared (so it needs to be set prior to each
 relevant input script line).
 

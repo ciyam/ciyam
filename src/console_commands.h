@@ -87,6 +87,8 @@ class console_command_handler : public command_handler
 
    std::vector< size_t > lines_for_conditions;
 
+   std::set< std::string > next_retaining;
+
    std::stack< std::set< std::string > > variables_retaining;
    std::stack< std::map< std::string, std::string > > variables_prior_values;
 

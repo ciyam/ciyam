@@ -2450,8 +2450,6 @@ console_command_handler::console_command_handler( )
 
    p_impl = new impl;
 
-   variables_retaining.push( set< string >( ) );
-
    for( size_t i = 0; i < sizeof( g_default_fissile_pairs ) / sizeof( g_default_fissile_pairs[ 0 ] ); i++ )
       p_impl->fissile_values.insert( make_pair( g_default_fissile_pairs[ i ].p_key, g_default_fissile_pairs[ i ].p_data ) );
 }
@@ -3247,7 +3245,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             else
                unescape( str, c_special_characters );
 
-            if( ( assign_env_var_name != c_env_var_error )
+            if( input_depth
+             && ( assign_env_var_name != c_env_var_error )
              && ( assign_env_var_name != c_env_var_output )
              && ( assign_env_var_name != c_env_var_std_fissile )
              && !variables_retaining.top( ).count( c_retain_all )
@@ -3340,9 +3339,14 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                   bool is_first = true;
 
-                  variables_retaining.push( variables_retaining.top( ) );
+                  variables_retaining.push( next_retaining );
 
                   variables_prior_values.push( map< string, string >( ) );
+
+                  // NOTE: When a script begins "next_retaining" is cleared
+                  // (so it will not accidentally pass on values to further
+                  // input scripts).
+                  next_retaining.clear( );
 
                   while( getline( inpf, next ) )
                   {
@@ -3378,6 +3382,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                   str.erase( );
 
+                  --input_depth;
+
                   if( !keep_added_history )
                   {
                      size_t offset = virtual_history_size;
@@ -3398,18 +3404,17 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   if( !inpf.eof( ) )
                      throw runtime_error( "unexpected error occurred whilst reading '" + new_args[ 0 ] + "'" + error_context );
 
-                  map< string, string >::const_iterator ci;
-
-                  for( ci = variables_prior_values.top( ).begin( ); ci != variables_prior_values.top( ).end( ); ++ci )
-                     set_environment_variable( ci->first, ci->second );
-
-                  variables_retaining.pop( );
-                  variables_prior_values.pop( );
-
-                  if( !--input_depth )
-                  {
+                  if( !variables_retaining.empty( ) )
                      variables_retaining.pop( );
-                     variables_retaining.push( set< string >( ) );
+
+                  if( !variables_prior_values.empty( ) )
+                  {
+                     map< string, string >::const_iterator ci;
+
+                     for( ci = variables_prior_values.top( ).begin( ); ci != variables_prior_values.top( ).end( ); ++ci )
+                        set_environment_variable( ci->first, ci->second );
+
+                     variables_prior_values.pop( );
                   }
                }
                catch( exception& x )
@@ -3920,20 +3925,23 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   {
                      if( symbol.empty( ) )
                      {
-                        set< string >::const_iterator i;
+                        if( !variables_retaining.empty( ) )
+                        {
+                           set< string >::const_iterator i;
 
-                        for( i = variables_retaining.top( ).begin( ); i != variables_retaining.top( ).end( ); ++i )
-                           cout << *i << endl;
+                           for( i = variables_retaining.top( ).begin( ); i != variables_retaining.top( ).end( ); ++i )
+                              cout << *i << endl;
+                        }
                      }
                      else
                      {
-                        split( symbol, variables_retaining.top( ) );
+                        split( symbol, next_retaining );
 
                         // NOTE: If retaining all then remove any specifics.
-                        if( variables_retaining.top( ).count( c_retain_all ) )
+                        if( next_retaining.count( c_retain_all ) )
                         {
-                           variables_retaining.top( ).clear( );
-                           variables_retaining.top( ).insert( c_retain_all );
+                           next_retaining.clear( );
+                           next_retaining.insert( c_retain_all );
                         }
                      }
                   }
