@@ -3549,6 +3549,8 @@ string generate_password( const string& user_id, bool include_prefix )
 
    if( !user.empty( ) )
    {
+      temp_umask tum( 077 );
+
       write_file( c_password_info_file, pwd );
 
       string cmd( "./set_password \"" + user_id + "\" password.info" );
