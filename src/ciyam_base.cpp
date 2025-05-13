@@ -6481,17 +6481,32 @@ void set_identity( const string& info, const char* p_encrypted_sid )
       {
          string user( get_environment_variable( c_env_var_ciyam_user ) );
 
+         temp_umask tum( 077 );
+
          if( !user.empty( ) )
          {
-            write_file( c_password_info_file, info );
+            string cmd;
 
-            string cmd( "./set_password " + extra + "\"" + user + "\" " + string( c_password_info_file ) );
+            // NOTE: The ".<usser>_password_protected" file name
+            // is also found in the "set_password" bash script.
+            if( file_exists( "." + user + "_password_protected" ) )
+            {
+               if( !file_exists( c_server_sid_file ) )
+                  cmd = "./resize_fs_img_files " + extra + "\"" + user + "\"";
+            }
+            else
+            {
+               write_file( c_password_info_file, info );
 
-            int rc = system( cmd.c_str( ) );
-            ( void )rc;
+               cmd = "./set_password " + extra + "\"" + user + "\" " + string( c_password_info_file );
+            }
+
+            if( !cmd.empty( ) )
+            {
+               int rc = system( cmd.c_str( ) );
+               ( void )rc;
+            }
          }
-
-         temp_umask tum( 077 );
 
          write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
 
