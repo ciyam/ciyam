@@ -19,6 +19,7 @@ TARGET=%SPLIT:2%
 .system_variable $$%TARGET%_identity
 @ifndef $OUTPUT
 #Creating channel for identity '$TARGET'.
+@retain IDENT
 <bc_gen.cin $1 @sid
 .system_variable >$$%TARGET%_identity $IDENT
 ;
