@@ -9394,7 +9394,9 @@ string get_raw_session_variable( const string& name, size_t sess_id )
       {
          found = true;
 
-         retval = gtp_session->variables[ name ];
+         // NOTE: Prevents access to "@shared_secret" value if is not the owning session.
+         if( !sess_id || ( name != get_special_var_name( e_special_var_shared_secret ) ) )
+            retval = gtp_session->variables[ name ];
       }
       else if( name.find_first_of( "?*" ) != string::npos )
       {
@@ -9406,10 +9408,14 @@ string get_raw_session_variable( const string& name, size_t sess_id )
          {
             if( wildcard_match( name, ci->first ) )
             {
-               if( !retval.empty( ) )
-                  retval += "\n";
+               // NOTE: Prevents access to "@shared_secret" value if is not the owning session.
+               if( !sess_id || ( ci->first != get_special_var_name( e_special_var_shared_secret ) ) )
+               {
+                  if( !retval.empty( ) )
+                     retval += "\n";
 
-               retval += ci->first + ' ' + ci->second;
+                  retval += ci->first + ' ' + ci->second;
+               }
             }
          }
 
