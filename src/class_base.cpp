@@ -4227,6 +4227,11 @@ string shared_secret( const string& identity_for_peer, const string& encrypted_i
    else
       secret.insert( 0, other_secret );
 
+   secret += get_raw_session_variable(
+    get_special_var_name( e_special_var_shared_secret ) );
+
+   set_session_variable( get_special_var_name( e_special_var_shared_secret ), "" );
+
    sha256 hash( secret );
    string digest( hash.get_digest_as_string( ) );
 
@@ -6257,6 +6262,11 @@ string crypto_secret_for_sid( const string& suffix, const string& other_pubkey )
    get_identity( secret, false, true );
 
    secret += suffix;
+
+   secret += get_raw_session_variable(
+    get_special_var_name( e_special_var_shared_secret ) );
+
+   set_session_variable( get_special_var_name( e_special_var_shared_secret ), "" );
 
    create_address_key_pair( "", pub_key, priv_key, secret );
 
