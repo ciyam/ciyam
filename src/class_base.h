@@ -1251,13 +1251,13 @@ std::string CIYAM_BASE_DECL_SPEC copy_class_file(
 inline void copy_field_or_file_and_field( class_base& dest, const std::string& dest_key,
  const std::string& dest_field_name, const class_base& src, const std::string& src_field_name, bool copy_only_if_missing = false )
 {
-   if( dest.is_file_field( dest_field_name ) )
+   if( !dest.is_file_field( dest_field_name ) )
+      dest.set_field_value( dest.get_field_num( dest_field_name ),
+       src.get_field_value( src.get_field_num( src_field_name ) ) );
+   else
       dest.set_field_value(
        dest.get_field_num( dest_field_name ), copy_class_file( src.get_field_value(
        src.get_field_num( src_field_name ) ), dest.get_class_id( ), dest_key, copy_only_if_missing ) );
-   else
-      dest.set_field_value( dest.get_field_num( dest_field_name ),
-       src.get_field_value( src.get_field_num( src_field_name ) ) );
 }
 
 void CIYAM_BASE_DECL_SPEC copy_class_files( const class_base& src, class_base& dest );
@@ -1275,6 +1275,13 @@ void CIYAM_BASE_DECL_SPEC touch_web_file( const char* p_file_name = 0, bool only
 inline void touch_web_file( const std::string& file_name, bool only_if_exists = false )
 {
    touch_web_file( file_name.c_str( ), only_if_exists );
+}
+
+void CIYAM_BASE_DECL_SPEC remove_web_file( const char* p_file_name = 0 );
+
+inline void remove_web_file( const std::string& file_name )
+{
+   remove_web_file( file_name.c_str( ) );
 }
 
 std::string CIYAM_BASE_DECL_SPEC get_attached_file_dir( );

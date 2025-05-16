@@ -609,6 +609,15 @@ void get_crypto_info( const string& extra_info, crypto_info& info )
    if( !acct_p2sh_fee.empty( ) )
       info.acct_p2sh_fee = atof( acct_p2sh_fee.c_str( ) );
 }
+
+void crypto_keys_for_suffixed_identity( const string& suffix, string& secret, string& pub_key, string& priv_key )
+{
+   get_identity( secret, false, true );
+
+   secret += suffix;
+
+   create_address_key_pair( "", pub_key, priv_key, secret );
+}
 #endif
 
 void decrypt_lamport_key( const string& key_data, vector< string >& key_lines, bool treat_as_pubkey = false )
@@ -3442,7 +3451,7 @@ void touch_web_file( const char* p_file_name, bool only_if_exists )
    string file_name;
 
    if( p_file_name )
-      file_name = *p_file_name;
+      file_name = string( p_file_name );
    else
       file_name = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
 
@@ -3454,6 +3463,25 @@ void touch_web_file( const char* p_file_name, bool only_if_exists )
    file_path += '/' + file_name;
 
    file_touch( file_path, 0, !only_if_exists );
+}
+
+void remove_web_file( const char* p_file_name )
+{
+   string file_name;
+
+   if( p_file_name )
+      file_name = string( p_file_name );
+   else
+      file_name = get_session_variable( get_special_var_name( e_special_var_arg1 ) );
+
+   if( file_name.empty( ) )
+      throw runtime_error( "unexpected missing file name in remove_web_file" );
+
+   string file_path( storage_web_root( true ) );
+
+   file_path += '/' + file_name;
+
+   file_remove( file_path );
 }
 
 string get_attached_file_dir( )
@@ -4227,10 +4255,23 @@ string shared_secret( const string& identity_for_peer, const string& encrypted_i
    else
       secret.insert( 0, other_secret );
 
-   secret += get_raw_session_variable(
-    get_special_var_name( e_special_var_shared_secret ) );
+   string shared_secret( get_raw_session_variable(
+    get_special_var_name( e_special_var_shared_secret ) ) );
 
-   set_session_variable( get_special_var_name( e_special_var_shared_secret ), "" );
+   if( !shared_secret.empty( ) )
+   {
+      // NOTE: It is expected that this value should
+      // have been encrypted but to allow for simple
+      // testing can skip this if no ':' is present.
+      if( shared_secret.find( ':' ) != string::npos )
+         decrypt_data( shared_secret, shared_secret );
+
+      secret += shared_secret;
+
+      clear_key( shared_secret );
+
+      set_session_variable( get_special_var_name( e_special_var_shared_secret ), "" );
+   }
 
    sha256 hash( secret );
    string digest( hash.get_digest_as_string( ) );
@@ -6236,11 +6277,7 @@ string crypto_pubkey_for_sid( const string& suffix, string* p_priv_key )
 #ifdef SSL_SUPPORT
    string secret, pub_key, priv_key;
 
-   get_identity( secret, false, true );
-
-   secret += suffix;
-
-   create_address_key_pair( "", pub_key, priv_key, secret );
+   crypto_keys_for_suffixed_identity( suffix, secret, pub_key, priv_key );
 
    if( p_priv_key )
       *p_priv_key = priv_key;
@@ -6259,18 +6296,10 @@ string crypto_secret_for_sid( const string& suffix, const string& other_pubkey )
 #ifdef SSL_SUPPORT
    string secret, pub_key, priv_key;
 
-   get_identity( secret, false, true );
-
-   secret += suffix;
-
-   secret += get_raw_session_variable(
-    get_special_var_name( e_special_var_shared_secret ) );
-
-   set_session_variable( get_special_var_name( e_special_var_shared_secret ), "" );
-
-   create_address_key_pair( "", pub_key, priv_key, secret );
+   crypto_keys_for_suffixed_identity( suffix, secret, pub_key, priv_key );
 
    string other_hex_bytes;
+
    decrypt_data( other_hex_bytes, other_pubkey );
 
    bool valid = true;
@@ -6279,7 +6308,7 @@ string crypto_secret_for_sid( const string& suffix, const string& other_pubkey )
       valid = false;
    else if( other_hex_bytes[ 0 ] != '0' )
       valid = false;
-else if( ( other_hex_bytes[ 1 ] < '2' ) || ( other_hex_bytes[ 1 ] > '3' ) )
+   else if( ( other_hex_bytes[ 1 ] < '2' ) || ( other_hex_bytes[ 1 ] > '3' ) )
       valid = false;
    else if( !are_hex_nibbles( other_hex_bytes ) )
       valid = false;
@@ -6294,6 +6323,28 @@ else if( ( other_hex_bytes[ 1 ] < '2' ) || ( other_hex_bytes[ 1 ] > '3' ) )
    clear_key( secret );
 
    own_key.construct_shared( secret, other_key );
+
+   string shared_secret( get_raw_session_variable(
+    get_special_var_name( e_special_var_shared_secret ) ) );
+
+   if( !shared_secret.empty( ) )
+   {
+      // NOTE: It is expected that this value should
+      // have been encrypted but to allow for simple
+      // testing can skip this if no ':' is present.
+      if( shared_secret.find( ':' ) != string::npos )
+         decrypt_data( shared_secret, shared_secret );
+
+      sha256 hash( shared_secret + secret );
+
+      clear_key( secret );
+
+      hash.get_digest_as_string( secret );
+
+      clear_key( shared_secret );
+
+      set_session_variable( get_special_var_name( e_special_var_shared_secret ), "" );
+   }
 
    encrypt_data( secret, secret );
    
