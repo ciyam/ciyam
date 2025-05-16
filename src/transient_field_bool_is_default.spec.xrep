@@ -1,19 +1,19 @@
 `{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_bool_is_default)] `{`$arg_id`}
-`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$i`=`'`'`}\
+`{`$p`=`'`'`}`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$i`=`'`'`}\
 `{`@eq`(`$arg_top_level`,`'true`'`)`{`$i`=`'   `'`}\
    if( !get_obj( ).get_graph_parent( ) )`}
 `{`$i`}   get_obj( ).`{`$arg_pfield`}( ).`{`$arg_sfield`}( ); // KLUDGE: To ensure a fetch has been forced for the FK.
 
-   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
-    && `}`{`@eq`(`$arg_top_level`,`'true`'`)!get_obj( ).get_graph_parent( )
-    && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
-    && `}`{`@eq`(`$arg_is_neq`,`'true`'`)!`}get_obj( ).`{`$arg_pfield`}( ).is_field_default( "`{`$arg_sfield`}" ) )
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)`{`$p`=`'1`'`}get_obj( ).`{`$arg_tfield`}( )
+    && `}`{`@eq`(`$arg_top_level`,`'true`'`)`{`$p`=`'1`'`}!get_obj( ).get_graph_parent( )
+    && `}`{`!`@eq`(`$arg_modifier`,`'`'`)`{`$p`=`'1`'`}( state & c_modifier_`{`$arg_modifier`} )
+    && `}`{`@eq`(`$p`,`'1`'`)( `}`{`@eq`(`$arg_is_neq`,`'true`'`)!`}get_obj( ).`{`$arg_pfield`}( ).is_field_default( "`{`$arg_sfield`}" )`{`@eq`(`$p`,`'1`'`) )`} )
 `,\
-   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
-    && `}`{`@eq`(`$arg_top_level`,`'true`'`)!get_obj( ).get_graph_parent( )
-    && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
-    && `}get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_is_neq`,`'`'`)==`,!=`} g_default_`{`$arg_sfield`} )
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)`{`$p`=`'1`'`}get_obj( ).`{`$arg_tfield`}( )
+    && `}`{`@eq`(`$arg_top_level`,`'true`'`)`{`$p`=`'1`'`}!get_obj( ).get_graph_parent( )
+    && `}`{`!`@eq`(`$arg_modifier`,`'`'`)`{`$p`=`'1`'`}( state & c_modifier_`{`$arg_modifier`} )
+    && `}`{`@eq`(`$p`,`'1`'`)( `}get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_is_neq`,`'`'`)==`,!=`} g_default_`{`$arg_sfield`}`{`@eq`(`$p`,`'1`'`) )`} )
 `}\
       get_obj( ).`{`$arg_field`}( true );
 `{`@eq`(`$arg_true_only`,`'`'`)\
