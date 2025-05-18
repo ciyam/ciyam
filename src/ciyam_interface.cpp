@@ -620,8 +620,9 @@ void crypt_decoded( const string& pwd_hash, string& decoded, bool decode = true 
    }
 }
 
-bool process_log_file( const string& module_name, const string& log_file_name,
- const string& title, const string& html, const string& text_to_replace, ostringstream& extra_content )
+bool process_log_file( const string& module_name,
+ const string& log_file_name, const string& title, const string& html,
+ const string& text_to_replace, ostringstream& extra_content, bool wait_if_no_error = false )
 {
    bool has_output_form = false;
 
@@ -650,6 +651,11 @@ bool process_log_file( const string& module_name, const string& log_file_name,
             break;
          }
       }
+
+      // NOTE: If completed and no error then if
+      // instructed will wait for a short while.
+      if( !has_any_error && wait_if_no_error )
+         msleep( 500 );
    }
 
    // NOTE: Unless not completed or an error was found don't display anything.
@@ -1121,7 +1127,7 @@ void request_handler::process_request( )
          g_restore_checksum = chksum;
 
          is_backup_or_restore = process_log_file( module_name, c_restore_log_file,
-          GDS( c_display_restore_in_progress ), g_restore_html, c_restore_text, extra_content );
+          GDS( c_display_restore_in_progress ), g_restore_html, c_restore_text, extra_content, true );
 
          if( !file_exists( c_restore_log_file ) )
             file_touch( c_has_restored_file, 0, true );
