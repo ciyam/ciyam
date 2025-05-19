@@ -3,7 +3,7 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-<std.fissile
+<ciyam.fissile
 ;
 ERROR=
 @ifeq "$1" ""

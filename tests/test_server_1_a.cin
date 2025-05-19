@@ -356,7 +356,7 @@ X=@repstr:\:/\/:$X
 #OTHER: $OTHER
 #COMBINED: $COMBINED
 #REVERSED: $REVERSED
-#STD_FISSILE: $STD_FISSILE
+#CIYAM_FISSILE: $CIYAM_FISSILE
 ;
 @retain COMBINED,REVERSED
 <channel_identity.cin abc123def aaa121aaa
@@ -364,7 +364,7 @@ X=@repstr:\:/\/:$X
 #OTHER: $OTHER
 #COMBINED: $COMBINED
 #REVERSED: $REVERSED
-#STD_FISSILE: $STD_FISSILE
+#CIYAM_FISSILE: $CIYAM_FISSILE
 ;
 @retain *
 <channel_identity.cin abc123def aaa121aaa
@@ -372,7 +372,7 @@ X=@repstr:\:/\/:$X
 #OTHER: $OTHER
 #COMBINED: $COMBINED
 #REVERSED: $REVERSED
-#STD_FISSILE: $STD_FISSILE
+#CIYAM_FISSILE: $CIYAM_FISSILE
 ;
 PATHS=@paths:..:^.git*,^src/tmp*,^src/haru*,^src/files*
 #$PATHS

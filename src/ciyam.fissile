@@ -5,8 +5,8 @@
 ;
 ; Various general purpose FISSILE functions (to be executed for use in CIYAM scripts).
 ;
-@ifndef $STD_FISSILE
-STD_FISSILE=1
+@ifndef $CIYAM_FISSILE
+CIYAM_FISSILE=1
 ;
 *@split.n.add.char=$<^z,^y
 *@split.n.add.sep=$?^z!!_@^z+$,

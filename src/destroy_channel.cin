@@ -7,7 +7,7 @@
 #Usage: destroy_channel.cin <identity>
 @else
 ;
-<std.fissile
+<ciyam.fissile
 ;
 IDENT=$1
 ;

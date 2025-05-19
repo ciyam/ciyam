@@ -67,7 +67,8 @@ const char* const c_retain_all = "*";
 
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
-const char* const c_env_var_std_fissile = "STD_FISSILE";
+
+const char* const c_env_var_ciyam_fissile = "CIYAM_FISSILE";
 
 const char* const c_default_value_prompt = "VALUE=";
 
@@ -3248,7 +3249,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             if( input_depth
              && ( assign_env_var_name != c_env_var_error )
              && ( assign_env_var_name != c_env_var_output )
-             && ( assign_env_var_name != c_env_var_std_fissile )
+             && ( assign_env_var_name != c_env_var_ciyam_fissile )
              && !variables_retaining.top( ).count( c_retain_all )
              && !variables_retaining.top( ).count( assign_env_var_name )
              && !variables_prior_values.empty( ) && !variables_prior_values.top( ).count( assign_env_var_name ) )
