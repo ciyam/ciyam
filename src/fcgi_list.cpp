@@ -81,6 +81,7 @@ void append_hash_values_query_update( ostream& os,
    }
 
    string name, other_values;
+
    for( int i = 0; i < 10; i++ )
    {
       name = c_list_prefix;
@@ -114,6 +115,7 @@ bool has_access( const string& extra, const session_info& sess_info, bool has_ow
    bool rc = true;
 
    map< string, string > extras;
+
    if( !extra.empty( ) )
       parse_field_extra( extra, extras );
 
@@ -181,9 +183,11 @@ void replace_with_search_matches_highlighted( string& cell_data,
          if( ch == '>' )
          {
             next_string += ch;
+
             parts.push_back( make_pair( in_tag, next_string ) );
 
             in_tag = false;
+
             next_string.erase( );
          }
          else if( ch == '<' )
@@ -192,6 +196,7 @@ void replace_with_search_matches_highlighted( string& cell_data,
                parts.push_back( make_pair( in_tag, next_string ) );
 
             in_tag = true;
+
             next_string = ch;
          }
          else
@@ -211,6 +216,7 @@ void replace_with_search_matches_highlighted( string& cell_data,
    for( size_t i = 0; i < num_parts; i++ )
    {
       bool next_is_tag = parts[ i ].first;
+
       string next_string( parts[ i ].second );
 
       if( next_is_tag )
@@ -298,12 +304,14 @@ void setup_list_fields( list_source& list,
       string field_id( fld.field );
 
       string value_id( field_id );
+
       if( !fld.pfield.empty( ) )
          value_id += "." + fld.pfield;
 
       if( field_id != c_key_field && field_id != c_row_field )
       {
          map< string, string > extra_data;
+
          if( !fld.extra.empty( ) )
             parse_field_extra( fld.extra, extra_data );
 
@@ -496,12 +504,14 @@ void setup_list_fields( list_source& list,
 
          if( fld.ftype == c_field_type_bool )
             list.bool_fields.insert( value_id );
-         else if( fld.ftype == c_field_type_date || fld.ftype == c_field_type_tdate || fld.ftype == c_field_type_udate )
+         else if( ( fld.ftype == c_field_type_date )
+          || ( fld.ftype == c_field_type_tdate ) || ( fld.ftype == c_field_type_udate ) )
             list.date_fields.insert( value_id );
-         else if( fld.ftype == c_field_type_time || fld.ftype == c_field_type_mtime || fld.ftype == c_field_type_ttime )
+         else if( ( fld.ftype == c_field_type_time )
+          || ( fld.ftype == c_field_type_mtime ) || ( fld.ftype == c_field_type_ttime ) )
             list.time_fields.insert( value_id );
-         else if( fld.ftype == c_field_type_datetime
-          || fld.ftype == c_field_type_tdatetime || fld.ftype == c_field_type_date_time )
+         else if( ( fld.ftype == c_field_type_datetime )
+          || ( fld.ftype == c_field_type_tdatetime ) || ( fld.ftype == c_field_type_date_time ) )
             list.datetime_fields.insert( value_id );
          else if( fld.ftype == c_field_type_int )
             list.int_fields.insert( value_id );
@@ -544,6 +554,7 @@ void setup_list_fields( list_source& list,
 
                if( !field_ids.empty( ) )
                   field_ids += ',';
+
                field_ids += ( list.lici->second )->fields[ i + j ].field;
             }
 
@@ -581,9 +592,9 @@ void setup_list_fields( list_source& list,
             list.force_center_fields.insert( value_id );
          else if( extra_data.count( c_field_extra_justify ) )
             list.force_justify_fields.insert( value_id );
-         else if( extra_data.count( c_field_extra_right )
-          || ( ( fld.ftype == c_field_type_int || fld.ftype == c_field_type_numeric )
-          && !extra_data.count( c_field_extra_enum ) ) )
+         else if( !extra_data.count( c_field_extra_enum )
+          && ( extra_data.count( c_field_extra_right )
+          || ( ( fld.ftype == c_field_type_int ) || ( fld.ftype == c_field_type_numeric ) ) ) )
             list.force_right_fields.insert( value_id );
 
          if( extra_data.count( c_field_extra_large ) )
@@ -596,7 +607,8 @@ void setup_list_fields( list_source& list,
             list.smaller_fields.insert( value_id );
 
          if( extra_data.count( c_list_field_extra_trunc ) )
-            list.notes_character_trunc.insert( make_pair( value_id, atoi( extra_data[ c_list_field_extra_trunc ].c_str( ) ) ) );
+            list.notes_character_trunc.insert(
+             make_pair( value_id, atoi( extra_data[ c_list_field_extra_trunc ].c_str( ) ) ) );
 
          if( extra_data.count( c_list_field_extra_omit_label ) )
             list.omit_label_fields.insert( value_id );
@@ -624,6 +636,7 @@ void setup_list_fields( list_source& list,
          if( is_printable && extra_data.count( c_field_extra_print_summary ) )
          {
             list.print_only_fields.insert( value_id );
+
             list.print_summary_fields.insert( value_id );
             list.print_summary_field_ids.push_back( field_id );
          }
@@ -631,6 +644,7 @@ void setup_list_fields( list_source& list,
          if( extra_data.count( c_field_extra_print_only_summary ) )
          {
             list.print_only_fields.insert( value_id );
+
             list.print_summary_fields.insert( value_id );
             list.print_summary_field_ids.push_back( field_id );
          }
@@ -643,7 +657,7 @@ void setup_list_fields( list_source& list,
       {
          string display_name( get_display_string( fld.name ) );
 
-         if( child_always || field_id_counts[ field_id ] > 0 )
+         if( child_always || ( field_id_counts[ field_id ] > 0 ) )
          {
             if( child_always || non_prefixed )
                display_name = get_display_string( fld.pfname );
@@ -718,7 +732,7 @@ void output_list_form( ostream& os,
     || ( is_admin_owner_new && !( has_owner_parent || sess_info.is_admin_user ) ) )
       allow_new_record = false;
 
-   bool has_owner_parent_or_is_user_list = ( has_owner_parent || list_type == c_list_type_user );
+   bool has_owner_parent_or_is_user_list = ( has_owner_parent || ( list_type == c_list_type_user ) );
 
    if( extras.count( c_list_type_extra_cpstate ) )
    {
@@ -906,7 +920,7 @@ void output_list_form( ostream& os,
             {
                if( j > 0 )
                {
-                  if( j == source.text_search_title_fields.size( ) - 1 )
+                  if( j == ( source.text_search_title_fields.size( ) - 1 ) )
                      text_search_title += GDS( c_display_or );
                   else
                      text_search_title += ", ";
@@ -993,6 +1007,7 @@ void output_list_form( ostream& os,
             }
 
             string suffix( ( source.lici->second )->parents[ i ].operations.find( op )->second );
+
             string::size_type pos = suffix.find( '!' );
 
             size_t next_search_opt_limit( search_opt_limit );
@@ -1087,6 +1102,7 @@ void output_list_form( ostream& os,
                      os << GDS( c_display_and );
 
                   os << c_dbl_nbsp;
+
                   any_display = GDS( c_display_choose );
                }
 
@@ -1231,6 +1247,7 @@ void output_list_form( ostream& os,
             string field_type( ( source.lici->second )->restricts[ i ].ftype );
 
             map< string, string > field_extras;
+
             if( !( source.lici->second )->restricts[ i ].extra.empty( ) )
                parse_field_extra( ( source.lici->second )->restricts[ i ].extra, field_extras );
 
@@ -1239,7 +1256,8 @@ void output_list_form( ostream& os,
             os << "<td class=\"list\">"
              << get_display_string( ( source.lici->second )->restricts[ i ].name ) << "</td>";
 
-            char opt;
+            char opt = '\0';
+
             if( !field_extras.count( c_field_extra_range ) )
             {
                if( !field_extras.count( c_field_extra_enum )
@@ -1285,6 +1303,7 @@ void output_list_form( ostream& os,
                   svname = opt + ( source.lici->second )->restricts[ i ].field;
 
                   string any_display( GDS( c_display_any ) );
+
                   if( opt != 'A' )
                   {
                      os << GDS( c_display_or );
@@ -1356,16 +1375,19 @@ void output_list_form( ostream& os,
                      ++opt_count;
 
                      os << "<option";
+
                      if( !value.empty( ) && k == value_offset )
                         os << " selected";
+
                      os << " value=\"" << info.values[ k ].first << "\">"
                       << get_display_string( info.values[ k ].second ) << c_dbl_nbsp << "</option>\n";
                   }
 
                   os << "</select>";
 
-                  if( opt_count <= 2 || ( opt_count == 3 && j == 1 ) || ( opt_count == 4 && j == 2 )
-                   || ( opt_count == 5 && j == 3 ) || ( opt_count == 6 && j == 4 ) || ( opt_count == 7 && j == 5 ) )
+                  if( ( opt_count <= 2 ) || ( ( opt_count == 3 ) && ( j == 1 ) )
+                   || ( ( opt_count == 4 ) && ( j == 2 ) ) || ( ( opt_count == 5 ) && ( j == 3 ) )
+                   || ( ( opt_count == 6 ) && ( j == 4 ) ) || ( ( opt_count == 7 ) && ( j == 5 ) ) )
                      break;
                }
             }
@@ -1458,7 +1480,8 @@ void output_list_form( ostream& os,
                         value = format_date( ud, date_precision.c_str( ) );
                      }
                   }
-                  else if( field_type == c_field_type_time || field_type == c_field_type_mtime || field_type == c_field_type_ttime )
+                  else if( ( field_type == c_field_type_time )
+                   || ( field_type == c_field_type_mtime ) || ( field_type == c_field_type_ttime ) )
                   {
                      input_size = 9;
                      max_length = 8;
@@ -1482,8 +1505,8 @@ void output_list_form( ostream& os,
                         value = format_time( mt, time_precision.c_str( ) );
                      }
                   }
-                  else if( field_type == c_field_type_datetime
-                   || field_type == c_field_type_tdatetime || field_type == c_field_type_date_time )
+                  else if( ( field_type == c_field_type_datetime )
+                   || ( field_type == c_field_type_tdatetime ) || ( field_type == c_field_type_date_time ) )
                   {
                      input_size = 21;
                      max_length = 19;
@@ -1555,8 +1578,8 @@ void output_list_form( ostream& os,
                   if( field_extras.count( c_field_extra_range )
                    && !field_extras.count( c_list_field_extra_exact_match ) )
                   {
-                     if( field_type == c_field_type_datetime
-                      || field_type == c_field_type_tdatetime || field_type == c_field_type_date_time )
+                     if( ( field_type == c_field_type_datetime )
+                      || ( field_type == c_field_type_tdatetime ) || ( field_type == c_field_type_date_time ) )
                         opt = 'U';
                      else
                         opt = 'O';
@@ -1568,40 +1591,45 @@ void output_list_form( ostream& os,
                      else
                         value.erase( );
 
-                     if( field_type == c_field_type_date || field_type == c_field_type_tdate || field_type == c_field_type_udate )
+                     if( ( field_type == c_field_type_date )
+                      || ( field_type == c_field_type_tdate ) || ( field_type == c_field_type_udate ) )
                      {
                         if( !value.empty( ) )
                         {
                            udate ud( value );
 
                            string date_precision;
+
                            if( field_extras.count( c_field_extra_date_precision ) )
                               date_precision = field_extras[ c_field_extra_date_precision ];
 
                            value = format_date( ud, date_precision.c_str( ) );
                         }
                      }
-                     else if( field_type == c_field_type_time || field_type == c_field_type_mtime || field_type == c_field_type_ttime )
+                     else if( ( field_type == c_field_type_time )
+                      || ( field_type == c_field_type_mtime ) || ( field_type == c_field_type_ttime ) )
                      {
                         if( !value.empty( ) )
                         {
                            mtime mt( value );
 
                            string time_precision;
+
                            if( field_extras.count( c_field_extra_time_precision ) )
                               time_precision = field_extras[ c_field_extra_time_precision ];
 
                            value = format_time( mt, time_precision.c_str( ) );
                         }
                      }
-                     else if( field_type == c_field_type_datetime
-                      || field_type == c_field_type_tdatetime || field_type == c_field_type_date_time )
+                     else if( ( field_type == c_field_type_datetime )
+                      || ( field_type == c_field_type_tdatetime ) || ( field_type == c_field_type_date_time ) )
                      {
                         if( !value.empty( ) )
                         {
                            date_time dt( value );
 
                            string time_precision;
+
                            if( field_extras.count( c_field_extra_time_precision ) )
                               time_precision = field_extras[ c_field_extra_time_precision ];
 
@@ -2881,7 +2909,7 @@ void output_list_form( ostream& os,
             os << " (" << symbol << ")";
       }
 
-      if( !is_printable && list_type != c_list_type_home )
+      if( !is_printable && ( list_type != c_list_type_home ) )
       {
          if( source.sort_fields.count( source.field_ids[ i ] ) )
          {
