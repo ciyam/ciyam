@@ -5789,14 +5789,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      transaction_commit( );
 
                   tline = line;
+
                   in_trans = false;
                   performed_init = true;
 
                   // NOTE: Set the special transaction id for initial data records.
                   set_transaction_id( c_tx_id_initial );
+
                   record_initialiser init( new_logf );
 
                   bool old_skip_fetches = session_skip_fk_fetches( );
+
                   session_skip_fk_fetches( true );
 
                   if( name == c_meta_model_name )
@@ -5822,6 +5825,33 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         if( !socket_handler.get_restore_error( ).empty( ) )
                            throw runtime_error( "unexpected error: " + socket_handler.get_restore_error( )
                             + "\nprocessing transaction log line #" + to_string( line ) + " with std ==> " + std_next );
+                     }
+
+                     // NOTE: Optional extra initial data records.
+                     if( file_exists( "Meta_init_extra.cin" ) )
+                     {
+                        ifstream extra_inpf( "Meta_init_extra.cin" );
+
+                        if( !extra_inpf )
+                           throw runtime_error( "unable to open Meta_init_extra.cin for input" );
+
+                        string extra_next;
+
+                        // FUTURE: This message should be handled as a server string message.
+                        handler.output_progress( "Restoring additional Meta records..." );
+
+                        while( getline( extra_inpf, extra_next ) )
+                        {
+                           if( extra_next.empty( ) )
+                              continue;
+
+                           if( extra_next[ 0 ] != ';' )
+                              handler.execute_command( extra_next );
+
+                           if( !socket_handler.get_restore_error( ).empty( ) )
+                              throw runtime_error( "unexpected error: " + socket_handler.get_restore_error( )
+                               + "\nprocessing transaction log line #" + to_string( line ) + " with extra ==> " + extra_next );
+                        }
                      }
                   }
                   else
