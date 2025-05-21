@@ -16,9 +16,10 @@ get_obj( ).`{`$arg_pfield`}( ).is_field_default( "`{`$arg_sfield`}" ) )`{`!`@eq`
 get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_is_neq`,`'`'`)==`,!=`} g_default_`{`$arg_sfield`} )`{`!`@eq`(`$arg_tfield`,`'`'`) )`}
 `}\
 `{`$i`}      get_obj( ).`{`$arg_field`}( true );
+`{`@eq`(`$arg_true_only`,`'`'`)\
 `{`$i`}   else
 `{`$i`}      get_obj( ).`{`$arg_field`}( false );
-`{`@eq`(`$arg_create_only`,`'true`'`)\
+`}`{`@eq`(`$arg_create_only`,`'true`'`)\
    }
 `}\
    // [(finish field_bool_is_default)] `{`$arg_id`}
