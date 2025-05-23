@@ -24,6 +24,7 @@ IS_OWNER=
 .file_tags bc.$IDENTITY.master*
 @ifdef $OUTPUT
 IS_OWNER=1
+.file_tag -remove bc.$IDENTITY.master
 @endif
 ;
 .file_tags bc.$IDENTITY.zenith*
