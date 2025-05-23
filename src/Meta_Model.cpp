@@ -6745,7 +6745,9 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
       if( !packages.empty( ) )
       {
          ofstream outf( script_filename.c_str( ) );
-         set_system_variable( "@" + model_key, "1" );
+
+         if( async )
+            set_system_variable( "@" + model_key, "1" );
 
          for( map< string, string >::iterator i = packages.end( ); ; --i )
          {
@@ -6754,7 +6756,7 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
                get_obj( ).child_Package( ).perform_fetch( i->second );
                get_obj( ).child_Package( ).set_variable( get_special_var_name( e_special_var_do_exec ), "0" );
 
-               if( async && i == packages.begin( ) )
+               if( async && ( i == packages.begin( ) ) )
                   get_obj( ).child_Package( ).set_variable( get_special_var_name( e_special_var_is_last ), "1" );
 
                get_obj( ).child_Package( ).Remove( );
@@ -6779,7 +6781,7 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
          if( async )
             capture_session( session_id( ) );
 
-         chmod( script_filename.c_str( ), 0777 );
+         chmod( script_filename.c_str( ), 0770 );
          exec_system( "./run_temp " + script_filename, async );
 
          if( !async )

@@ -1005,6 +1005,7 @@ void Meta_Package::impl::impl_Install( )
    // [<start Install_impl>]
 //nyi
    string std_package_key;
+
    if( !is_null( get_obj( ).Model( ).Workgroup( ).Standard_Package( ) ) )
       std_package_key = get_obj( ).Model( ).Workgroup( ).Standard_Package( ).get_key( );
 
@@ -1027,6 +1028,7 @@ void Meta_Package::impl::impl_Install( )
       string install_log( get_obj( ).get_key( ) + ".install.log" );
 
       ofstream outl( install_log.c_str( ) );
+
       if( !outl )
          throw runtime_error( "unable to open '" + install_log + "' for output" );
 
@@ -1190,6 +1192,7 @@ void Meta_Package::impl::impl_Install( )
       // NOTE: Empty code block for scope purposes.
       {
          ifstream inpf( keys_filename.c_str( ) );
+
          if( !inpf )
             throw runtime_error( "unable to open '" + keys_filename + "' for input" );
 
@@ -1206,9 +1209,11 @@ void Meta_Package::impl::impl_Install( )
          else for( size_t i = 0; i < dependency_keys.size( ); i++ )
          {
             vector< string > lines;
+
             string map_filename( get_obj( ).get_attached_file_path( dependency_keys[ i ] + ".map" ) );
 
             read_file_lines( map_filename, lines );
+
             for( size_t j = 0; j < lines.size( ); j++ )
                outf << lines[ j ] << '\n';
          }
@@ -1221,6 +1226,7 @@ void Meta_Package::impl::impl_Install( )
 
          map< string, string > extras;
          map< string, string > options;
+
          if( get_obj( ).child_Package_Option( ).iterate_forwards( ) )
          {
             do
@@ -1238,7 +1244,9 @@ void Meta_Package::impl::impl_Install( )
                    && !is_null( get_obj( ).child_Package_Option( ).Class( ) ) )
                   {
                      string name( get_obj( ).child_Package_Option( ).Id( ) );
+
                      string::size_type pos = name.rfind( "_class" );
+
                      if( pos == string::npos )
                         throw runtime_error( "unexpected class option id name '" + name + "'" );
 
@@ -1304,8 +1312,8 @@ void Meta_Package::impl::impl_Install( )
 
          string opt_prefix( "opt_" + lower( type_name ) + "_" );
 
-         // NOTE: The "extras" need to preceed the normal keys so they can be used in conditional
-         // expressions.
+         // NOTE: The "extras" need to preceed the normal keys so that they can be used in
+         // conditional expressions.
          for( map< string, string >::iterator i = extras.begin( ); i != extras.end( ); ++i )
             outf << i->first << '=' << i->second << '\n';
 
@@ -1320,9 +1328,11 @@ void Meta_Package::impl::impl_Install( )
             if( next.find( opt_prefix ) == 0 )
             {
                string::size_type pos = next.find( '=' );
+
                if( pos != string::npos )
                {
                   string opt_name( next.substr( 0, pos ) );
+
                   if( options.count( opt_name ) && !options_processed.count( opt_name ) )
                   {
                      next = opt_name + '=';
@@ -1386,6 +1396,7 @@ void Meta_Package::impl::impl_Install( )
       get_obj( ).op_apply( );
 
       string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
+
       set_system_variable( model_key, "Installing package '" + get_obj( ).Name( ) + "'..." ); // FUTURE: Should be a module string...
 
       // NOTE: If the thread that has spawned the child process is terminated (due
@@ -1395,7 +1406,7 @@ void Meta_Package::impl::impl_Install( )
       if( async )
          capture_session( session_id( ) );
 
-      chmod( script_filename.c_str( ), 0777 );
+      chmod( script_filename.c_str( ), 0770 );
       exec_system( "./run_temp " + script_filename, async );
    }
    // [<finish Install_impl>]
@@ -1425,10 +1436,7 @@ void Meta_Package::impl::impl_Remove( )
 
    if( get_obj( ).get_variable( get_special_var_name( e_special_var_is_last ) ) == "1"
     || get_obj( ).get_variable( get_special_var_name( e_special_var_is_last ) ) == "true" )
-   {
       is_last = true;
-      set_system_variable( "@" + model_key, "" );
-   }
 
    if( !std_package_key.empty( )
     && ( get_obj( ).get_key( ) != std_package_key ) && ( get_obj( ).Name( ) == "Standard" ) )
@@ -1460,6 +1468,9 @@ void Meta_Package::impl::impl_Remove( )
       outl << "Unlinked from existing Standard package..."; // FUTURE: Should be a module string...
 
       get_obj( ).op_apply( );
+
+      if( is_last )
+         set_system_variable( "@" + model_key, "" );
    }
    else if( !storage_locked_for_admin( ) )
    {
@@ -1482,11 +1493,13 @@ void Meta_Package::impl::impl_Remove( )
             if( cp_other->Installed( ) && ( cp_other->get_key( ) != get_obj( ).get_key( ) ) )
             {
                string deps( cp_other->Package_Type( ).Dependencies( ) );
+
                deps = search_replace( deps, "\n", "," );
 
                if( !deps.empty( ) )
                {
                   vector< string > dependencies;
+
                   split_string( deps, dependencies );
 
                   for( size_t i = 0; i < dependencies.size( ); i++ )
@@ -1548,6 +1561,7 @@ void Meta_Package::impl::impl_Remove( )
       if( exists_file( new_filename ) )
       {
          vector< string > lines;
+
          read_file_lines( new_filename, lines );
 
          map< string, vector< string > > class_keys;
@@ -1557,6 +1571,7 @@ void Meta_Package::impl::impl_Remove( )
             string next( lines[ i ] );
 
             string::size_type pos = next.find( ':' );
+
             if( pos == string::npos )
                throw runtime_error( "unexpected new key line '" + next + "'" );
 
@@ -1573,15 +1588,13 @@ void Meta_Package::impl::impl_Remove( )
             if( !outf )
                throw runtime_error( "unable to open file '" + commands_filename + "' for output" );
 
-            if( skip || !is_last )
-            {
-               outf << ".system_variable @" << model_key
-                << " \"" << get_system_variable( "@" + model_key ) << "\"" << '\n';
-            }
+            if( skip && is_last )
+               outf << ".system_variable @" << model_key << " \"\"\n";
 
             if( !skip )
             {
                outf << ".storage_init " << storage_name( ) << '\n';
+
                outf << "@ifndef %ERROR%\n";
                outf << ".storage_transaction_start\n";
                outf << "@endif\n";
@@ -1635,13 +1648,17 @@ void Meta_Package::impl::impl_Remove( )
                   for( int j = 0; j < class_keys[ next_cid ].size( ); j++ )
                   {
                      outf << "@ifndef %ERROR%\n";
+
                      outf << ".pd " << get_uid( ) << " @now "
                       << get_obj( ).get_module_id( ) << ' ' << next_cid << " -p -q " << class_keys[ next_cid ][ j ] << '\n';
+
                      outf << "@ifdef %ERROR%\n";
                      outf << "#(failed to delete " << ordered[ i ] << " record " << class_keys[ next_cid ][ j ] << ")\n";
                      outf << "@endif\n";
+
                      if( ++total % 50 == 0 )
                         outf << "#Processed " << total << " records...\n";
+
                      outf << "@endif\n";
                   }
 
@@ -1655,10 +1672,7 @@ void Meta_Package::impl::impl_Remove( )
                outf << "@endif\n";
 
                if( is_last )
-               {
-                  outf << ".system_variable @" << model_key
-                   << " \"" << get_system_variable( "@" + model_key ) << "\"" << '\n';
-               }
+                  outf << ".system_variable @" << model_key << " \"\"\n";
 
                outf << "@ifndef %ERROR%\n";
                outf << ".pe " << get_uid( ) << " @now " << get_obj( ).get_module_id( ) << " "
@@ -1713,11 +1727,11 @@ void Meta_Package::impl::impl_Remove( )
             // to the async request and will be released at the end of the script.
             capture_session( session_id( ) );
 
-            chmod( script_filename.c_str( ), 0777 );
+            chmod( script_filename.c_str( ), 0770 );
             exec_system( "./run_temp " + script_filename, true );
          }
          else
-            chmod( script_filename.c_str( ), 0777 );
+            chmod( script_filename.c_str( ), 0770 );
       }
       else
       {
