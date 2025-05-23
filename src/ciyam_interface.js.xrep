@@ -240,7 +240,7 @@ function reload_after_blur( remove )
    if( remove )
       window.onblur = window.onfocus = null;
    else
-      window.onblur = function( ){ window.onfocus = function( ){ replace_with_scroll_info( ) } };
+      window.onblur = function( ){ window.onfocus = function( ){ setTimeout( "replace_with_scroll_info( )", 250 ) } };
 }
 
 function determine_scroll_info( )
