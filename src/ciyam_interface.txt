@@ -170,6 +170,7 @@ sign_up_main_form_client_security_extra_details "(for a more anonymous account s
 sign_up_main_form_client_security_gpg_expert_tip "Know how to use GPG well and don't want to be sent email?<br/><br/>Create a GPG key for "anon@domain.any" and your GPG encrypted credentials will be displayed in this page instead."
 gpg_encrypted_email_should_have_already_been_sent "A GPG encrypted email should have already been sent to you."
 to_instead_see_your_gpg_encrypted_information_here "To instead see your GPG encrypted information here put the word "help" followed by a space before the User Id (i.e. "help {@id}")"
+reload "Reloading..."
 timeout "Timeout occurred."
 invalid_date "Invalid date."
 invalid_time "Invalid time."

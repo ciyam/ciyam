@@ -716,6 +716,7 @@ const char* const c_display_to_instead_see_your_gpg_encrypted_information_here =
 const char* const c_display_to_instead_see_your_gpg_encrypted_information_here_parm_id = "{@id}";
 
 // NOTE: The following strings are used by "ciyam_interface.js".
+const char* const c_display_reload = "Reloading...";
 const char* const c_display_timeout = "Timeout occurred.";
 const char* const c_display_invalid_date = "Invalid date.";
 const char* const c_display_invalid_time = "Invalid time.";

@@ -1324,6 +1324,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 #endif
 
    bool is_editable = false;
+   bool view_has_a_child_list = false;
    bool has_any_changing_records = false;
 
    if( !finished_session && !server_command.empty( ) )
@@ -2929,7 +2930,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             // FUTURE: For "printable" views it makes sense to be able to support child lists however
             // they should be identified differently (perhaps as "printchild") as the normal sublists
             // may not be applicable to the printed version.
-            if( !is_new_record && cmd != c_cmd_pview )
+            if( !is_new_record && ( cmd != c_cmd_pview ) )
             {
                extra_content << "<br/><br/>\n";
 
@@ -3127,6 +3128,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   if( ++n != vtabc_num )
                      continue;
 
+                  view_has_a_child_list = true;
+
                   output_list_form( extra_content, child_lists[ i->second ],
                    session_id, uselect, "", ( cmd == c_cmd_pview ), cookies_permitted,
                    true, ( act == c_act_edit ), list_selections, list_search_text, list_search_values,
@@ -3320,7 +3323,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          {
             // FUTURE: Perhaps a flag should determine whether or not to reload on focus after blur.
             if( cmd == c_cmd_view )
-               extra_content_func += "reload_after_blur( " + string( is_editable ? "true" : "false" ) + ");\n";
+               extra_content_func += "reload_after_blur( "
+                + string( is_editable ? "true" : "false" )
+                + ", " + string( view_has_a_child_list ? "true" : "false" ) + " );\n";
          }
       }
 
@@ -3365,6 +3370,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       if( cookies_permitted )
          extra_content_func += "document.cookie = '" + get_cookie_value( session_id,
           p_session_info->user_id, cmd == c_cmd_quit, p_session_info->dtm_offset ) + "';\n";
+
+      extra_content_func += "displayReload = '"
+       + replaced( GDS( c_display_reload ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
       extra_content_func += "displayTimeout = '"
        + replaced( GDS( c_display_timeout ), "\"", "\\x22", "'", "\\x27" ) + "';\n";

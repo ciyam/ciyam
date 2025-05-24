@@ -67,6 +67,7 @@ var scriptVersion = `{`$ui_script_version`};
 
 var validation_error = '';
 
+var displayReload = 'Reloading...';
 var displayTimeout = 'Timeout occurred.';
 var displayInvalidDate = 'Invalid date.';
 var displayInvalidTime = 'Invalid time.';
@@ -233,14 +234,14 @@ function warn_refresh( )
    }
 }
 
-function reload_after_blur( remove )
+function reload_after_blur( remove, show_alert )
 {
    window.disableResetPrompt;
    
    if( remove )
       window.onblur = window.onfocus = null;
    else
-      window.onblur = function( ){ window.onfocus = function( ){ setTimeout( "replace_with_scroll_info( )", 250 ) } };
+      window.onblur = function( ){ window.onfocus = function( ){ if( show_alert ) alert( displayReload ); replace_with_scroll_info( ) } };
 }
 
 function determine_scroll_info( )
