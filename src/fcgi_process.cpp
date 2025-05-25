@@ -3321,11 +3321,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          }
          else
          {
-            // FUTURE: Perhaps a flag should determine whether or not to reload on focus after blur.
-            if( cmd == c_cmd_view )
-               extra_content_func += "reload_after_blur( "
-                + string( is_editable ? "true" : "false" )
-                + ", " + string( view_has_a_child_list ? "true" : "false" ) + " );\n";
+            if( ( cmd == c_cmd_view )
+             && ( view.state & c_state_force_focus_refresh ) )
+               extra_content_func += "reload_after_refocus( );\n";
          }
       }
 
