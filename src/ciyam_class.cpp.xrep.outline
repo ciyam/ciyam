@@ -1356,7 +1356,7 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `{`#modifier_from_other_mods.spec.xrep section=get_state\
  arg_id=$specification_\0_id arg_op=$specification_\0_op arg_modifier=$specification_\0_modifier\
  arg_lmodifier=$specification_\0_lmodifier arg_rmodifier=$specification_\0_rmodifier\
- arg_tfield=$specification_\0_tfield`}\
+ arg_tfield=$specification_\0_tfield arg_ui_focus_refresh=$specification_\0_ui_focus_refresh`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_has_variable`'`)
 `{`#modifier_has_variable.spec.xrep section=get_state\
