@@ -1356,7 +1356,7 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `{`#modifier_from_other_mods.spec.xrep section=get_state\
  arg_id=$specification_\0_id arg_op=$specification_\0_op arg_modifier=$specification_\0_modifier\
  arg_lmodifier=$specification_\0_lmodifier arg_rmodifier=$specification_\0_rmodifier\
- arg_tfield=$specification_\0_tfield arg_ui_focus_refresh=$specification_\0_ui_focus_refresh`}\
+ arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_has_variable`'`)
 `{`#modifier_has_variable.spec.xrep section=get_state\
@@ -1414,6 +1414,10 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_label=$specification_\0_label arg_value=$specification_\0_value arg_modifier=$specification_\0_modifier\
  arg_tfield=$specification_\0_tfield arg_scope=$specification_\0_scope arg_changing=$specification_\0_changing\
  arg_admin_always=$specification_\0_admin_always arg_scripts_always=$specification_\0_scripts_always`}\
+`,\
+`@eq`(`'\1`'`,`'refresh_on_focus`'`)
+`{`#refresh_on_focus.spec.xrep section=get_state\
+ arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'restrict_protect`'`)
 `{`#restrict_protect.spec.xrep section=get_state\
@@ -4947,6 +4951,9 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `{`#protect_not_equal.spec.xrep section=get_always_required_field_names\
  arg_id=$specification_\0_id arg_field=$specification_\0_field\
  arg_pfield=$specification_\0_pfield arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'refresh_on_focus`'`)`&`!`@eq`(`'`'`,`$specification_\0_tfield`)
+`{`#refresh_on_focus.spec.xrep section=get_always_required_field_names arg_id=$specification_\0_id arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'restrict_protect`'`)
 `{`#restrict_protect.spec.xrep section=get_always_required_field_names\

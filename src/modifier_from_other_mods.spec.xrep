@@ -5,7 +5,7 @@
    // [(start modifier_from_other_mods)] `{`$arg_id`}
    if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
     && ( `}( state & c_modifier_`{`$arg_lmodifier`} ) `{`$op`} ( state & c_modifier_`{`$arg_rmodifier`} ) )`{`!`@eq`(`$arg_tfield`,`'`'`) )`}
-      state |= `{`@eq`(`$arg_ui_focus_refresh`,`'true`'`)( c_state_force_focus_refresh | `}c_modifier_`{`$arg_modifier`}`{`@eq`(`$arg_ui_focus_refresh`,`'true`'`) )`};
+      state |= c_modifier_`{`$arg_modifier`};
    // [(finish modifier_from_other_mods)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\

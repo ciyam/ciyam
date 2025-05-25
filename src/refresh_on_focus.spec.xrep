@@ -1,0 +1,16 @@
+`{`@eq`(`'get_state`'`,`$section`)\
+   // [(start refresh_on_focus)] `{`$arg_id`}
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && ( `}state & c_modifier_`{`$arg_modifier`}`{`!`@eq`(`$arg_tfield`,`'`'`) )`} )
+      state |= c_state_force_focus_refresh;
+   // [(finish refresh_on_focus)] `{`$arg_id`}
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start refresh_on_focus)] `{`$arg_id`}
+   dependents.insert( "`{`$arg_tfield`}" );
+
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+      names.insert( "`{`$arg_tfield`}" );
+   // [(finish refresh_on_focus)] `{`$arg_id`}
+`}
