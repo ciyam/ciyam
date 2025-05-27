@@ -655,7 +655,7 @@ bool process_log_file( const string& module_name,
       // NOTE: If completed and no error then if
       // instructed will wait for a short while.
       if( !has_any_error && wait_if_no_error )
-         msleep( 500 );
+         msleep( 250 );
    }
 
    // NOTE: Unless not completed or an error was found don't display anything.
@@ -1518,13 +1518,14 @@ void request_handler::process_request( )
                   // NOTE: Will pause and then attempt to connect once again before reporting that
                   // the application server is unavailable (this is because the first connect will
                   // sometimes fail after a system restore due to the new server socket acceptor).
-                  // To prevent unnecessary delays initially only waits for 25ms but if this isn't
-                  // sufficient will then wait another 2.5s before retrying again.
+                  // To prevent unnecessary delays initially only wait for 0.5s but if connect has
+                  // failed again will then wait for another 2.5s before a final retry (after that
+                  // the user can manually attemtp to reconnect).
                   if( !has_connected )
                   {
                      p_session_info->p_socket->close( );
 
-                     msleep( 25 );
+                     msleep( 500 );
 
                      DEBUG_TRACE( "[re-opening socket]" );
 
