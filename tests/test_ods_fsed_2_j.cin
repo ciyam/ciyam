@@ -8,4 +8,14 @@ file_remove ../zzz
 cd ..
 branch objects
 dump
+folder_add 111/222/333/.444
+cd 111/222/333/.444
+file_add xxx modules.lst.default
+cd /
+branch -f objects
+cd 111/222
+folder_remove -r 333
+cd /
+branch -f objects
+dump
 exit

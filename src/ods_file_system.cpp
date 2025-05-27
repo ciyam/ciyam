@@ -860,6 +860,7 @@ void ods_file_system::list_folders( const string& expr, ostream& os,
  bool full_path, pair< string, string >* p_range, bool inclusive, size_t limit, bool in_reverse_order )
 {
    string entity_expr( current_folder );
+
    bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
    expand_entity_expression( expr, had_wildcard, entity_expr, had_wildcard ? "\0" : c_folder_separator );
@@ -882,6 +883,7 @@ void ods_file_system::list_folders( const string& expr, ostream& os,
          entity_expr += "*";
 
       vector< pair< string, string > > search_replaces;
+
       search_replaces.push_back( make_pair( c_colon_separator, c_folder_separator ) );
 
       if( full_path )
@@ -933,6 +935,7 @@ void ods_file_system::branch_folders( const string& expr, ostream& os, branch_st
    entity_expr += expr;
 
    vector< pair< string, string > > search_replaces;
+
    search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
 
    string prefix_1( current_folder );
@@ -2426,10 +2429,12 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
       okay = false;
    else
    {
-      restorable< bool > skip_hidden( p_impl->skip_hidden, false );
+      temporary_include_hidden include_hidden( *this );
+
       restorable< string > tmp_current_folder( current_folder, tmp_folder );
 
       vector< string > child_folders;
+
       branch_folders( "", child_folders );
 
       if( !remove_branch && !child_folders.empty( ) )
@@ -2445,6 +2450,7 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
       else
       {
          vector< string > child_files;
+
          branch_files( "", child_files, e_branch_style_brief );
 
          if( !remove_branch && !child_files.empty( ) )
@@ -3860,13 +3866,15 @@ temporary_include_hidden::temporary_include_hidden( ods_file_system& ofs, bool i
  old_skip_hidden( ofs.p_impl->skip_hidden )
 {
    ++ofs.p_impl->skip_hidden_count;
+
    ofs.p_impl->skip_hidden = !include_hidden;
 }
 
 temporary_include_hidden::~temporary_include_hidden( )
 {
-   --ofs.p_impl->skip_hidden_count;
    ofs.p_impl->skip_hidden = old_skip_hidden;
+
+   --ofs.p_impl->skip_hidden_count;
 }
 
 void export_objects( ods_file_system& ofs, const string& directory,
