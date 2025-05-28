@@ -2028,7 +2028,7 @@ void request_handler::process_request( )
                               else
                                  str_replace( identity_html, c_confirm_identity, GDS( c_display_confirm_identity ) );
 
-                              str_replace( identity_html, c_password, GDS( c_display_password ) );
+                              str_replace( identity_html, c_new_password, GDS( c_display_new_password ) );
                               str_replace( identity_html, c_verify_password, GDS( c_display_verify_password ) );
 
                               output_form( module_name, extra_content,

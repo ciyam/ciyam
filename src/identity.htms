@@ -25,7 +25,7 @@
    </td>
 </tr>
 <tr>
-   <td align="right">@@password</td>
+   <td align="right">@@new_password</td>
    <td>
        <input class="loginfields" type="password" name="password" tabindex="2"
        id="password" size="25" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'"/>
