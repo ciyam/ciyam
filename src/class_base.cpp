@@ -4276,6 +4276,10 @@ string shared_secret( const string& identity_for_peer, const string& encrypted_i
    sha256 hash( secret );
    string digest( hash.get_digest_as_string( ) );
 
+   // NOTE: It is not expected that enough entropy
+   // will have been provided (even when including
+   // an extra "shared secret") so hash rounds are
+   // performed before encrypting a final digest.
    for( size_t i = 0; i < c_num_hash_rounds; i++ )
    {
       hash.update( digest + secret );
@@ -6335,11 +6339,19 @@ string crypto_secret_for_sid( const string& suffix, const string& other_pubkey )
       if( shared_secret.find( ':' ) != string::npos )
          decrypt_data( shared_secret, shared_secret );
 
-      sha256 hash( shared_secret + secret );
+      sha256 hash( secret + shared_secret );
 
-      clear_key( secret );
-
-      hash.get_digest_as_string( secret );
+      // NOTE: As the amount of entropy in the public
+      // keys should normally be sufficient hardening
+      // only takes place if an extra "shared secret"
+      // has been supplied (i.e. where there might be
+      // concerns about private keys being able to be
+      // derived from public keys in the future).
+      for( size_t i = 0; i < c_num_hash_rounds; i++ )
+      {
+         hash.update( secret );
+         hash.get_digest_as_string( secret );
+      }
 
       clear_key( shared_secret );
 
