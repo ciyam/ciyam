@@ -575,14 +575,18 @@ void crypt_decoded( const string& pwd_hash, string& decoded, bool decode = true 
    if( decode )
    {
       string s;
+
       for( size_t i = 0; i < decoded.size( ); i += 2 )
       {
          unsigned char ch = hex_nibble( decoded[ i ] );
+
          ch <<= 4;
+
          ch |= hex_nibble( decoded[ i + 1 ] );
 
          s += ch;
       }
+
       decoded = s;
    }
 
@@ -604,17 +608,21 @@ void crypt_decoded( const string& pwd_hash, string& decoded, bool decode = true 
    if( !decode )
    {
       string s;
+
       for( size_t i = 0; i < decoded.size( ); i++ )
       {
          unsigned char ch = decoded[ i ];
+
          s += ascii_digit( ( ch & 0xf0 ) >> 4 );
          s += ascii_digit( ch & 0x0f );
       }
+
       decoded = s;
    }
    else
    {
       string::size_type pos = decoded.find( '\0' );
+
       if( pos != string::npos )
          decoded.erase( pos );
    }
@@ -984,10 +992,12 @@ void request_handler::process_request( )
       parse_fcgi_input( p_in, input_data, '&' );
 
       string cmd( input_data[ c_param_cmd ] );
+
       string userhash( input_data[ c_param_userhash ] );
       string username( input_data[ c_param_username ] );
 
       raddr = input_data[ c_http_param_raddr ];
+
       session_id = input_data[ c_param_session ];
 
       string pwd_hash;
@@ -1011,11 +1021,9 @@ void request_handler::process_request( )
 
       // NOTE: It is expected that for any UI version change that the FCGI
       // server will have been restarted so don't bother with the check if
-      // the session is present. If wanting to change this then would need
-      // to make sure that the "ver" param is included for every call that
-      // can occur into here (which currently is not the case - as you can
-      // test by deleting a list item).
-      if( !p_session_info && atoi( ver.c_str( ) ) < c_ui_script_version )
+      // the session is present or if a "ver" param was not in the input.
+      if( !p_session_info && !ver.empty( )
+       && atoi( ver.c_str( ) ) < c_ui_script_version )
          throw runtime_error( GDS( c_display_client_script_out_of_date ) );
 
       bool has_decrypted = false;
