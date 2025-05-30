@@ -87,6 +87,9 @@ var displayPasswordVerificationIncorrect = 'Password verification incorrect.';
 
 var dataFieldList = '';
 
+var all_checkboxes = null;
+var previous_checked = null;
+
 var autoCompleteValues = [ ];
 
 var extra_fields = '';
@@ -1423,6 +1426,25 @@ function show_next_slide( )
    }
 }
 
+function handle_check( e )
+{
+   var in_between = false;
+
+   if( e.shiftKey && this.checked )
+   {
+      all_checkboxes.forEach( checkbox =>
+      {
+         if( ( checkbox === this ) || ( checkbox === previous_checked ) )
+            in_between = !in_between;
+
+         if( in_between )
+            checkbox.checked = true;
+      } );
+   }
+
+   previous_checked = this;
+}
+
 function focus_on_first_text( )
 {
    var done = false;
@@ -1480,6 +1502,10 @@ function focus_on_first_text( )
       if( done )
          break;
    }
+
+   all_checkboxes = document.querySelectorAll( 'input[ type = "checkbox" ]' );
+
+   all_checkboxes.forEach( checkbox => checkbox.addEventListener( 'click', handle_check ) );
 }
 
 function limit_text( limit_field, limit_count, limit_num )
