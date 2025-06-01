@@ -920,7 +920,7 @@ field_add -id=145105 Global_Peerchain_Entry Host_Port port mand -def=0
 field_add -id=145106 Global_Peerchain_Entry Local_Port port mand -def=0
 field_add -id=145107 Global_Peerchain_Entry Auto_Start bool mand -def=0
 field_add -id=145108 Global_Peerchain_Entry Status int mand -def=0 -e=peerchain_status -transient
-field_add -id=145109 Global_Peerchain_Entry Num_Helpers 0..99 mand -def=3
+field_add -id=145109 Global_Peerchain_Entry Num_Helpers 0..99 mand -def=5
 field_add -id=145110 Global_Peerchain_Entry Extra_Value str10 opt
 field_add -id=145111 Global_Peerchain_Entry Actions string opt -transient -x=actions
 field_add -id=145112 Global_Peerchain_Entry Port_Numbers string opt -transient

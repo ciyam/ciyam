@@ -5254,7 +5254,7 @@
       <name>Num_Helpers
       <type>1027
       <mandatory>true
-      <default_value>3
+      <default_value>5
       <indexes/>
       </indexes>
       <modifiers/>
