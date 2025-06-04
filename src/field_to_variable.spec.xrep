@@ -1,4 +1,4 @@
-`{`@eq`(`'to_or_for_store`'`,`$section`)\
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
    // [(start field_to_variable)] `{`$arg_id`}
 `{`!`@eq`(`$arg_create_only`,`'`'`)`|`!`@eq`(`$arg_update_only`,`'`'`)\
    if( `{`!`@eq`(`$arg_update_only`,`'`'`)!`}is_create )

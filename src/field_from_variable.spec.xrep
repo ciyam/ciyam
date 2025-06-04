@@ -4,7 +4,7 @@
       return true;
    // [(finish field_from_variable)] `{`$arg_id`}
 `}
-`{`@eq`(`'to_or_for_store`'`,`$section`)`\
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`\
    // [(start field_from_variable)] `{`$arg_id`}
 `{`$peer_not_or_only`=`'`'`}`{`@eq`(`$arg_not_peer`,`'true`'`)`$peer_not_or_only`=`'true`'`}`{`@eq`(`$arg_peer_only`,`'true`'`)`$peer_not_or_only`=`'true`'`}`\
 `{`$create_or_update`=`'`'`}`{`@eq`(`$arg_create_only`,`'true`'`)`$create_or_update`=`'true`'`}`{`@eq`(`$arg_update_only`,`'true`'`)`$create_or_update`=`'true`'`}`\
