@@ -984,6 +984,15 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_id=$specification_\\0_id arg_field=$specification_\\0_field arg_sfield=$specification_\\0_sfield arg_tfield=$specification_\\0_tfield\
  arg_op=$specification_\\0_op arg_update=$specification_\\0_update`}\
 `,\
+`@eq`(`'\\1`'`,`'field_from_variable`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
+`{`#field_from_variable.spec.xrep section=procedure class_name=$class_name module_name=$module_name\
+ arg_id=$specification_\\0_id arg_field=$specification_\\0_field arg_value=$specification_\\0_value\
+ arg_ofield=$specification_\\0_ofield arg_ofisfk=$specification_\\0_ofisfk arg_tfield=$specification_\\0_tfield\
+ arg_modifier=$specification_\\0_modifier arg_new_only=$specification_\\0_new_only\
+ arg_not_peer=$specification_\\0_not_peer arg_peer_only=$specification_\\0_peer_only\
+ arg_create_only=$specification_\\0_create_only arg_update_only=$specification_\\0_update_only\
+ arg_session=$specification_\\0_session arg_system=$specification_\\0_system`}\
+`,\
 `@eq`(`'\\1`'`,`'field_swap_fk`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#field_swap_fk.spec.xrep section=procedure class_name=$class_name module_name=$module_name\
  arg_id=$specification_\\0_id arg_fk_1=$specification_\\0_fk_1 arg_fk_2=$specification_\\0_fk_2 arg_ofield=$specification_\\0_ofield\
@@ -997,6 +1006,14 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_evalue=$specification_\\0_evalue arg_update=$specification_\\0_update arg_new_only=$specification_\\0_new_only\
  arg_create_only=$specification_\\0_create_only arg_update_only=$specification_\\0_update_only\
  arg_internal_only=$specification_\\0_internal_only arg_tfistexttype=$specification_\\0_tfistexttype`}\
+`,\
+`@eq`(`'\\1`'`,`'field_to_variable`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
+`{`#field_to_variable.spec.xrep section=procedure class_name=$class_name module_name=$module_name\
+ arg_id=$specification_\\0_id arg_variable=$specification_\\0_variable arg_field=$specification_\\0_field\
+ arg_fistexttype=$specification_\\0_fistexttype arg_ofield=$specification_\\0_ofield\
+ arg_ofisfk=$specification_\\0_ofisfk arg_modifier=$specification_\\0_modifier arg_tfield=$specification_\\0_tfield\
+ arg_create_only=$specification_\\0_create_only arg_update_only=$specification_\\0_update_only\
+ arg_session=$specification_\\0_session arg_system=$specification_\\0_system`}\
 `,\
 `@eq`(`'\\1`'`,`'for_auto_code`'`)`&`@eq`(`'\$`'`,`$specification_\\0_inc_proc`)
 `{`#for_auto_code.spec.xrep section=inc_procedure\
@@ -1114,7 +1131,9 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_modifier=$specification_\\0_modifier arg_tfield=$specification_\\0_tfield arg_child=$specification_\\0_child\
  arg_child_field=$specification_\\0_child_field arg_child_ofield=$specification_\\0_child_ofield\
  arg_child_procedure=$specification_\\0_child_procedure arg_child_oprocedure=$specification_\\0_child_oprocedure\
- arg_gen_key=$specification_\\0_gen_key arg_check_script=$specification_\\0_check_script arg_skip_restore=$specification_\\0_skip_restore`}\
+ arg_gen_key=$specification_\\0_gen_key arg_key_suffix=$specification_\\0_key_suffix\
+ arg_fields_and_values=$specification_\\0_fields_and_values arg_delay=$specification_\\0_delay\
+ arg_check_script=$specification_\\0_check_script arg_skip_restore=$specification_\\0_skip_restore`}\
 `,\
 `@eq`(`'\\1`'`,`'for_run_script`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_run_script.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
@@ -2016,7 +2035,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_edit_record=$specification_\0_edit_record arg_clone_record=$specification_\0_clone_record\
  arg_no_log=$specification_\0_no_log arg_no_trans=$specification_\0_no_trans\
  arg_log_as_update=$specification_\0_log_as_update arg_state=$specification_\0_state\
- arg_admin_never=$specification_\0_admin_never arg_even_when_changing=$specification_\0_even_when_changing`}\
+ arg_admin_never=$specification_\0_admin_never arg_even_when_changing=$specification_\0_even_when_changing\
+ arg_check_is_deletable=$specification_\0_check_is_deletable`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_action_create_from_fk`'`)
 `{`#transient_field_action_create_from_fk.spec.xrep section=after_fetch module_name=$module_name\
@@ -2758,7 +2778,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_spclass=$specification_\0_spclass arg_scfield=$specification_\0_scfield\
  arg_tvalue=$specification_\0_tvalue`}\
 `,\
-`@eq`(`'\1`'`,`'field_from_variable`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
+`@eq`(`'\1`'`,`'field_from_variable`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_from_variable.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_value=$specification_\0_value\
  arg_ofield=$specification_\0_ofield arg_ofisfk=$specification_\0_ofisfk arg_tfield=$specification_\0_tfield\
@@ -2798,7 +2818,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value arg_tvalue=$specification_\0_tvalue\
  arg_fistexttype=$specification_\0_fistexttype arg_tfistexttype=$specification_\0_tfistexttype`}\
 `,\
-`@eq`(`'\1`'`,`'field_to_variable`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
+`@eq`(`'\1`'`,`'field_to_variable`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_to_variable.spec.xrep section=to_or_for_store class_name=$class_name\
  arg_id=$specification_\0_id arg_variable=$specification_\0_variable arg_field=$specification_\0_field\
  arg_fistexttype=$specification_\0_fistexttype arg_ofield=$specification_\0_ofield\
@@ -3116,7 +3136,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_spclass=$specification_\0_spclass arg_scfield=$specification_\0_scfield\
  arg_tvalue=$specification_\0_tvalue`}\
 `,\
-`@eq`(`'\1`'`,`'field_from_variable`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`@eq`(`'\1`'`,`'field_from_variable`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_variable.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_value=$specification_\0_value\
  arg_ofield=$specification_\0_ofield arg_ofisfk=$specification_\0_ofisfk arg_tfield=$specification_\0_tfield\
@@ -3146,7 +3166,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value arg_tvalue=$specification_\0_tvalue\
  arg_fistexttype=$specification_\0_fistexttype arg_tfistexttype=$specification_\0_tfistexttype`}\
 `,\
-`@eq`(`'\1`'`,`'field_to_variable`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`@eq`(`'\1`'`,`'field_to_variable`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_to_variable.spec.xrep section=to_or_for_store class_name=$class_name\
  arg_id=$specification_\0_id arg_variable=$specification_\0_variable arg_field=$specification_\0_field\
  arg_fistexttype=$specification_\0_fistexttype arg_ofield=$specification_\0_ofield\
@@ -3629,7 +3649,8 @@ void `{`$full_class_name`}::impl::after_destroy( bool is_internal )
 `@eq`(`'\1`'`,`'trigger_peer`'`)`&`@eq`(`$specification_\0_destroy`,`'true`'`)
 `{`#trigger_peer.spec.xrep section=after_destroy class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
- arg_identity_suffix=$specification_\0_identity_suffix arg_submit_type=$specification_\0_submit_type`}\
+ arg_child=$specification_\0_child arg_identity_suffix=$specification_\0_identity_suffix\
+ arg_child_key_suffix=$specification_\0_child_key_suffix arg_submit_type=$specification_\0_submit_type`}\
 `,\
 `@eq`(`'\1`'`,`'update_parent`'`)`&`@eq`(`$specification_\0_destroy_also`,`'true`'`)
 `{`#update_parent.spec.xrep section=after_destroy class_name=$class_name module_name=$module_name\
