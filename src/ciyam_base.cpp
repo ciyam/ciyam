@@ -4614,7 +4614,8 @@ void append_undo_sql_statements( storage_handler& handler )
    }
 }
 
-string extract_mod_cls_and_key_from_command( const string& command, string* p_fields_and_values = 0 )
+string extract_mod_cls_and_key_from_command(
+ const string& command, string* p_fields_and_values = 0, string* p_command_dtm_value = 0 )
 {
    string retval;
 
@@ -4650,6 +4651,19 @@ string extract_mod_cls_and_key_from_command( const string& command, string* p_fi
 
    // NOTE: Finally reduce to: "<mod> <cls> <key>"
    retval = command.substr( pos + 1, npos );
+
+   if( p_command_dtm_value )
+   {
+      string::size_type dpos = pos;
+
+      while( dpos > 0 )
+      {
+         if( command[ --dpos ] == ' ' )
+            break;
+      }
+
+      *p_command_dtm_value = command.substr( dpos + 1, ( pos - dpos - 1 ) );
+   }
 
    return retval;
 }
@@ -4706,11 +4720,12 @@ void append_peerchain_log_commands( )
 
          string command( next_command.substr( 0, pos ) );
 
-         // NOTE: If a record is being updated then check whether it had previously been created in
-         // the identity log file and if so that this update does change one field value (including
-         // prior updates). If created and no change found then will not append the update command.
+         // NOTE: If a record is being updated then check whether it had already been created
+         // or updated in the identity log file and if so then will try to merge the changes.
          if( command == c_cmd_update )
          {
+            string original_dtm_value;
+
             string update_fields_and_values;
 
             string update_info( extract_mod_cls_and_key_from_command( next_command, &update_fields_and_values ) );
@@ -4719,6 +4734,14 @@ void append_peerchain_log_commands( )
             {
                bool had_created = false;
                bool has_changed_any_values = false;
+
+               size_t num_updates = 0;
+
+               size_t log_line_created = 0;
+               size_t log_line_updated = 0;
+
+               set< string > field_names;
+               map< int, string > ordered_fields;
 
                map< string, string > field_and_value_info;
 
@@ -4736,11 +4759,14 @@ void append_peerchain_log_commands( )
                      {
                         string create_fields_and_values;
 
-                        string create_info( extract_mod_cls_and_key_from_command( next_line, &create_fields_and_values ) );
+                        string create_info( extract_mod_cls_and_key_from_command(
+                         next_line, &create_fields_and_values, &original_dtm_value ) );
 
                         if( !create_fields_and_values.empty( ) && ( create_info == update_info ) )
                         {
                            had_created = true;
+
+                           log_line_created = i;
 
                            vector< string > field_and_value_pairs;
 
@@ -4758,18 +4784,30 @@ void append_peerchain_log_commands( )
                                  string value( next_field_and_value.substr( pos + 1 ) );
 
                                  field_and_value_info[ field ] = value;
+
+                                 if( !field_names.count( field ) )
+                                 {
+                                    field_names.insert( field );
+
+                                    ordered_fields[ field_names.size( ) ] = field;
+                                 }
                               }
                            }
                         }
                      }
-                     else if( had_created && ( command == c_cmd_update ) )
+                     else if( command == c_cmd_update )
                      {
                         string prior_update_fields_and_values;
 
-                        string prior_update_info( extract_mod_cls_and_key_from_command( next_line, &prior_update_fields_and_values ) );
+                        string prior_update_info( extract_mod_cls_and_key_from_command(
+                         next_line, &prior_update_fields_and_values, &original_dtm_value ) );
 
                         if( !prior_update_fields_and_values.empty( ) && ( prior_update_info == update_info ) )
                         {
+                           ++num_updates;
+
+                           log_line_updated = i;
+
                            vector< string > field_and_value_pairs;
 
                            raw_split( prior_update_fields_and_values, field_and_value_pairs );
@@ -4778,12 +4816,21 @@ void append_peerchain_log_commands( )
                            {
                               string next_field_and_value( field_and_value_pairs[ j ] );
 
+                              string::size_type pos = next_field_and_value.find( '=' );
+
                               if( pos != string::npos )
                               {
                                  string field( next_field_and_value.substr( 0, pos ) );
                                  string value( next_field_and_value.substr( pos + 1 ) );
 
                                  field_and_value_info[ field ] = value;
+
+                                 if( !field_names.count( field ) )
+                                 {
+                                    field_names.insert( field );
+
+                                    ordered_fields[ field_names.size( ) ] = field;
+                                 }
                               }
                            }
                         }
@@ -4809,13 +4856,77 @@ void append_peerchain_log_commands( )
                      if( field_and_value_info[ field ] != value )
                      {
                         has_changed_any_values = true;
-                        break;
+
+                        field_and_value_info[ field ] = value;
+
+                        if( !field_names.count( field ) )
+                        {
+                           field_names.insert( field );
+
+                           ordered_fields[ field_names.size( ) ] = field;
+                        }
                      }
                   }
                }
 
-               if( had_created && !has_changed_any_values )
-                  append_command = false;
+               if( had_created )
+               {
+                  if( !has_changed_any_values )
+                     append_command = false;
+                  else if( !num_updates )
+                  {
+                     // NOTE: If only found a create then will replace the log line so that
+                     // changed field values and/or new field value pairs are now included.
+                     append_command = false;
+
+                     string new_create_line( c_cmd_create );
+
+                     new_create_line += ' ' + string( c_peer ) + ' ' + original_dtm_value + ' ' + update_info + ' ';
+
+                     new_create_line += '"';
+
+                     for( map< int, string >::iterator i = ordered_fields.begin( ); i != ordered_fields.end( ); ++i )
+                     {
+                        if( i != ordered_fields.begin( ) )
+                           new_create_line += ',';
+
+                        new_create_line += ( i->second + '=' + field_and_value_info[ i->second ] );
+                     }
+
+                     new_create_line += '"';
+
+                     log_lines[ log_line_created ] = new_create_line;
+                  }
+               }
+               else if( num_updates )
+               {
+                  if( !has_changed_any_values )
+                     append_command = false;
+                  else if( num_updates == 1 )
+                  {
+                     // NOTE: If only the one update was found then will replace the log line so
+                     // that changed field values and/or new field value pairs are also included.
+                     append_command = false;
+
+                     string new_update_line( c_cmd_update );
+
+                     new_update_line += ' ' + string( c_peer ) + ' ' + original_dtm_value + ' ' + update_info + ' ';
+
+                     new_update_line += '"';
+
+                     for( map< int, string >::iterator i = ordered_fields.begin( ); i != ordered_fields.end( ); ++i )
+                     {
+                        if( i != ordered_fields.begin( ) )
+                           new_update_line += ',';
+
+                        new_update_line += ( i->second + '=' + field_and_value_info[ i->second ] );
+                     }
+
+                     new_update_line += '"';
+
+                     log_lines[ log_line_updated ] = new_update_line;
+                  }
+               }
             }
          }
 
