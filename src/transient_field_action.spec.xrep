@@ -11,30 +11,35 @@
    if( `{`@eq`(`$arg_admin_never`,`'true`'`)!`}is_admin_uid( )\
 `{`!`@eq`(`$arg_tfield`,`'`'`)
    && get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$arg_even_when_changing`,`'true`'`)
-   && !( state & c_state_is_changing )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+   && !( state & c_state_is_changing )`}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)
+   && !( state & c_state_undeletable )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
    && ( state & c_modifier_`{`$arg_modifier`} )`} )
 `,\
 `{`@eq`(`$arg_tfield`,`'`'`)\
    if( `{`@eq`(`$arg_admin_never`,`'true`'`)!`}is_admin_uid( )
     `{`$admin_op`} get_obj( ).`{`$arg_altfield`}( )`{`!`@eq`(`$arg_even_when_changing`,`'true`'`)
-    && !( state & c_state_is_changing )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && !( state & c_state_is_changing )`}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)
+    && !( state & c_state_undeletable )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
     && ( state & c_modifier_`{`$arg_modifier`} )`} )
 `,\
    if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_even_when_changing`,`'true`'`)
-    && !( state & c_state_is_changing )`}`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`}
+    && !( state & c_state_is_changing )`}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)
+    && !( state & c_state_undeletable )`}`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`}
     && ( `{`@eq`(`$arg_admin_never`,`'true`'`)!`}is_admin_uid( )
     `{`$admin_op`} get_obj( ).`{`$arg_altfield`}( ) ) )
 `}`}`,\
 `{`@eq`(`$arg_tfield`,`'`'`)\
    if( `{`!`@eq`(`$arg_even_when_changing`,`'true`'`)!( state & c_state_is_changing )
-    && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
+    && `}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)!( state & c_state_undeletable )
+    &&`}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
     && `}`{`@eq`(`$arg_admin_never`,`'true`'`)!`}is_admin_uid( )
     `{`$admin_op`}`{`!`@eq`(`$arg_altfield`,`'`'`) ( get_obj( ).`{`$arg_altfield`}( )
     ||`}\
  get_perms( ).count( "`{`$arg_permission_id`}" ) )`{`!`@eq`(`$arg_altfield`,`'`'`) )`} // i.e. `{`$arg_permission`}
 `,\
    if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_even_when_changing`,`'true`'`)
-    && !( state & c_state_is_changing )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && !( state & c_state_is_changing )`}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)
+    && !( state & c_state_undeletable )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
     && ( state & c_modifier_`{`$arg_modifier`} )`}
     && ( `{`@eq`(`$arg_admin_never`,`'true`'`)!`}is_admin_uid( )
     `{`$admin_op`}`{`!`@eq`(`$arg_altfield`,`'`'`) ( get_obj( ).`{`$arg_altfield`}( )
@@ -44,6 +49,7 @@
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_permission_id`,`'`'`)\
    if( `{`!`@eq`(`$arg_even_when_changing`,`'true`'`)!( state & c_state_is_changing )
+    && `}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)!( state & c_state_undeletable )
     && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
     && `}`{`@eq`(`$arg_admin_never`,`'true`'`)!`}is_admin_uid( )
     `{`$admin_op`} ( `{`!`@eq`(`$arg_state`,`'`'`)\
@@ -53,6 +59,7 @@
 `,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_state`,`'`'`) )`} ) )
 `,\
    if( `{`!`@eq`(`$arg_even_when_changing`,`'true`'`)!( state & c_state_is_changing )
+    && `}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)!( state & c_state_undeletable )
     && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
     && `}`{`@eq`(`$arg_admin_never`,`'true`'`)!`}is_admin_uid( )
     `{`$admin_op`}`{`!`@eq`(`$arg_altfield`,`'`'`) ( get_obj( ).`{`$arg_altfield`}( )
@@ -64,7 +71,8 @@
 `,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_state`,`'`'`) )`} ) )
 `}`,\
    if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_even_when_changing`,`'true`'`)
-    && !( state & c_state_is_changing )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && !( state & c_state_is_changing )`}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)
+    && !( state & c_state_undeletable )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
     && ( state & c_modifier_`{`$arg_modifier`} )`}
 `{`@eq`(`$arg_permission_id`,`'`'`)\
     && ( `{`@eq`(`$arg_admin_never`,`'true`'`)!`}is_admin_uid( )
@@ -88,18 +96,22 @@
 `{`@eq`(`$arg_altfield`,`'`'`)\
 `{`@eq`(`$arg_modifier`,`'`'`)\
 `{`!`@eq`(`$arg_even_when_changing`,`'true`'`)\
-   if( !( state & c_state_is_changing ) )
+   if( !( state & c_state_is_changing )`{`@eq`(`$arg_check_is_deletable`,`'true`'`)
+    && !( state & c_state_undeletable )`} )
 `,\
    // NOTE: Empty code block for scope purposes.
 `}`,\
    if( `{`!`@eq`(`$arg_even_when_changing`,`'true`'`)!( state & c_state_is_changing )
+    && `}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)!( state & c_state_undeletable )
     && `}( state & c_modifier_`{`$arg_modifier`} ) )
 `}`,\
    if( get_obj( ).`{`$arg_altfield`}( )`{`!`@eq`(`$arg_even_when_changing`,`'true`'`)
-    && !( state & c_state_is_changing )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && !( state & c_state_is_changing )`}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)
+    && !( state & c_state_undeletable )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
     && ( state & c_modifier_`{`$arg_modifier`} )`} )
 `}`,\
    if( `{`!`@eq`(`$arg_even_when_changing`,`'true`'`)!( state & c_state_is_changing )
+    && `}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)!( state & c_state_undeletable )
     && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
     && `}`{`!`@eq`(`$arg_altfield`,`'`'`)( get_obj( ).`{`$arg_altfield`}( )
     || `}\
@@ -108,23 +120,27 @@ get_perms( ).count( "`{`$arg_permission_id`}" )`{`!`@eq`(`$arg_altfield`,`'`'`) 
 `{`@eq`(`$arg_altfield`,`'`'`)\
    if( `{`!`@eq`(`$arg_permission_id`,`'`'`)get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
     && `}get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_even_when_changing`,`'true`'`)
-    && !( state & c_state_is_changing )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && !( state & c_state_is_changing )`}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)
+    && !( state & c_state_undeletable )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
     && ( state & c_modifier_`{`$arg_modifier`} )`} )
 `,\
 `{`@eq`(`$arg_permission_id`,`'`'`)\
    if( get_obj( ).`{`$arg_tfield`}( )
     && get_obj( ).`{`$arg_altfield`}( )`{`!`@eq`(`$arg_even_when_changing`,`'true`'`)
-    && !( state & c_state_is_changing )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && !( state & c_state_is_changing )`}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)
+    && !( state & c_state_undeletable )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
     && ( state & c_modifier_`{`$arg_modifier`} )`} )
 `,\
    if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_even_when_changing`,`'true`'`)
-    && !( state & c_state_is_changing )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && !( state & c_state_is_changing )`}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)
+    && !( state & c_state_undeletable )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
     && ( state & c_modifier_`{`$arg_modifier`} )`}
     && ( get_obj( ).`{`$arg_altfield`}( ) || get_perms( ).count( "`{`$arg_permission_id`}" ) ) ) // i.e. `{`$arg_permission`}
 `}`}`}`,\
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_altfield`,`'`'`)\
    if( `{`!`@eq`(`$arg_even_when_changing`,`'true`'`)!( state & c_state_is_changing )
+    && `}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)!( state & c_state_undeletable )
     && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
     && `}`{`!`@eq`(`$arg_state`,`'`'`)\
 ( !( state & c_state_un`{`$arg_state`} ) && `}`{`@eq`(`$arg_check_not_in_set`,`'`'`)( get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) )\
@@ -132,6 +148,7 @@ get_perms( ).count( "`{`$arg_permission_id`}" )`{`!`@eq`(`$arg_altfield`,`'`'`) 
 `,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_state`,`'`'`) )`} )
 `,\
    if( `{`!`@eq`(`$arg_even_when_changing`,`'true`'`)!( state & c_state_is_changing )
+    && `}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)!( state & c_state_undeletable )
     && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
     && `}( get_obj( ).`{`$arg_altfield`}( )
     || `{`!`@eq`(`$arg_state`,`'`'`)\
@@ -140,7 +157,8 @@ get_perms( ).count( "`{`$arg_permission_id`}" )`{`!`@eq`(`$arg_altfield`,`'`'`) 
 `{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_state`,`'`'`) )`} ) )
 `}`,\
    if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_even_when_changing`,`'true`'`)
-    && !( state & c_state_is_changing )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && !( state & c_state_is_changing )`}`{`@eq`(`$arg_check_is_deletable`,`'true`'`)
+    && !( state & c_state_undeletable )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
     && ( state & c_modifier_`{`$arg_modifier`} )`}
 `{`@eq`(`$arg_permission_id`,`'`'`)\
 `{`@eq`(`$arg_altfield`,`'`'`)\
