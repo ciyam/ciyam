@@ -11,8 +11,11 @@
    {
 `}\
 `{`!`@eq`(`$arg_gen_key`,`'`'`)\
+`{`@eq`(`$arg_key_suffix`,`'`'`)\
 `{`$i`}   get_obj( ).child_`{`$arg_child`}( ).set_key( gen_key( ) );
-
+`,\
+`{`$i`}   get_obj( ).child_`{`$arg_child`}( ).set_key( get_obj( ).get_key( ) + "`{`$arg_key_suffix`}" );
+`}
 `}\
 `{`$i`}   get_obj( ).child_`{`$arg_child`}( ).`{`$arg_child_field`}( get_obj( ).get_key( ) );
 `{`!`@eq`(`$arg_child_ofield`,`'`'`)
@@ -30,10 +33,14 @@
 `{`$i`}   temporary_session_variable tmp_session_class_var(
 `{`$i`}    get_special_var_name( e_special_var_class ), get_obj( ).child_`{`$arg_child`}( ).get_class_id( ) );
 
+`{`!`@eq`(`$arg_fields_and_values`,`'`'`)\
+`{`$i`}   temporary_session_variable tmp_session_fields_and_values_var(
+`{`$i`}    get_special_var_name( e_special_var_fields_and_values ), get_obj( ).child_`{`$arg_child`}( ).get_fields_and_values( ) );
+`}
 `{`$i`}   temporary_session_variable tmp_session_errors_only(
 `{`$i`}    get_special_var_name( e_special_var_errors_only ), c_true_value );
 
-`{`$i`}   run_script( "`{`$module_name`}_`{`$arg_cclass`}_`{`$arg_child_procedure`}", false );
+`{`$i`}   run_script( "`{`$module_name`}_`{`$arg_cclass`}_`{`$arg_child_procedure`}", false, `{`@eq`(`$arg_delay`,`'`'`)false`,true`} );
 `{`@eq`(`$any`,`'true`'`)\
    }
 `}\
