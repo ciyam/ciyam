@@ -4602,7 +4602,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_name( tz_name );
 
-               if( log_as_update && all_keys.size( ) != 1 )
+               if( log_as_update && ( all_keys.size( ) != 1 ) )
                   throw runtime_error( "perform_execute cannot log_as_update with multiple keys" );
 
                if( all_vers.size( ) && ( all_keys.size( ) != all_vers.size( ) ) )
@@ -4715,7 +4715,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      }
                   }
 
-                  if( i == 0 && log_transaction && !log_as_update )
+                  if( ( i == 0 ) && log_transaction && !log_as_update )
                   {
                      remove_uid_extra_from_log_command( next_command );
 
@@ -4741,7 +4741,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   string next_response( instance_execute( handle, "", next_key, method_and_args ) );
 
-                  if( i == 0 && log_transaction && log_as_update )
+                  if( ( i == 0 ) && log_transaction && log_as_update )
                   {
                      string fields_and_values( instance_get_fields_and_values( handle, "", next_key ) );
 
@@ -4823,7 +4823,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                else
                {
                   send_okay_response = false;
+
                   transaction_log_command( "" );
+
                   response = string( c_response_error_prefix ) + x.what( );
 
                   // NOTE: As the client is expecting a response for each key provided when an
@@ -4849,7 +4851,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                else
                {
                   send_okay_response = false;
+
                   transaction_log_command( "" );
+
                   response = string( c_response_error_prefix ) + c_unexpected_unknown_exception;
 
                   // NOTE: As the client is expecting a response for each key provided when an
@@ -5702,6 +5706,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   is_first = false;
 
                ++line;
+
                string::size_type pos = next.find( ']' );
 
                if( trace_flags && ( line >= trace_start ) )
