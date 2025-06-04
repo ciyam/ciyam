@@ -102,6 +102,11 @@
 
       cp_source->op_destroy( key );
 
+`{`!`@eq`(`$arg_child`,`'`'`)\
+      cp_source->child_`{`$arg_child`}( ).op_destroy( key + "`{`$arg_child_key_suffix`}" );
+      cp_source->child_`{`$arg_child`}( ).op_apply( );
+
+`}\
       cp_source->op_apply( );
    }
    // [(finish trigger_peer)] `{`$arg_id`}
