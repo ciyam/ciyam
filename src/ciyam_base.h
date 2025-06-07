@@ -31,6 +31,7 @@
 #  define GS( s ) get_string( STRINGIZE( s ) )
 
 class ods;
+class sql_db;
 class date_time;
 class class_base;
 class command_handler;
@@ -377,6 +378,8 @@ std::string CIYAM_BASE_DECL_SPEC session_ip_addr( size_t slot );
 
 void CIYAM_BASE_DECL_SPEC session_is_using_tls( );
 
+void CIYAM_BASE_DECL_SPEC session_inc_sql_count( );
+
 size_t CIYAM_BASE_DECL_SPEC first_other_session_id( const std::string& var_name, const std::string& value );
 
 bool CIYAM_BASE_DECL_SPEC has_session_with_ip_addr( const std::string& ip_addr, const std::string& blockchain );
@@ -655,6 +658,18 @@ void CIYAM_BASE_DECL_SPEC upgrade_storage( command_handler& cmd_handler );
 
 void CIYAM_BASE_DECL_SPEC term_storage( command_handler& cmd_handler );
 
+struct storage_scoped_lock_holder
+{
+   storage_scoped_lock_holder( size_t lock_handle );
+   ~storage_scoped_lock_holder( );
+
+   void release( );
+
+   private:
+   struct impl;
+   impl* p_impl;
+};
+
 void CIYAM_BASE_DECL_SPEC storage_admin_name_lock( const std::string& name );
 
 void CIYAM_BASE_DECL_SPEC storage_comment( const std::string& comment );
@@ -673,6 +688,8 @@ bool CIYAM_BASE_DECL_SPEC storage_is_dead_key(
 
 void CIYAM_BASE_DECL_SPEC storage_add_dead_key( const std::string& cid, const std::string& key );
 
+void CIYAM_BASE_DECL_SPEC check_storage( bool* p_rc = 0 );
+
 std::string CIYAM_BASE_DECL_SPEC storage_name( bool* p_is_standard = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC storage_identity( );
@@ -680,6 +697,8 @@ void CIYAM_BASE_DECL_SPEC storage_identity( const std::string& new_identity );
 
 std::string CIYAM_BASE_DECL_SPEC storage_blockchain( );
 std::string CIYAM_BASE_DECL_SPEC storage_module_directory( );
+
+bool CIYAM_BASE_DECL_SPEC storage_supports_sql_undo( );
 
 bool CIYAM_BASE_DECL_SPEC has_storage_variable( const std::string& name_or_expr );
 
@@ -770,6 +789,8 @@ bool CIYAM_BASE_DECL_SPEC is_uid_not_self_and_not_in_set( const std::string& key
 
 bool CIYAM_BASE_DECL_SPEC has_sec_level( const std::string& level );
 
+bool CIYAM_BASE_DECL_SPEC has_tx_key_info( const std::string& key_info );
+
 std::string CIYAM_BASE_DECL_SPEC get_grp( );
 void CIYAM_BASE_DECL_SPEC set_grp( const std::string& grp );
 
@@ -801,6 +822,12 @@ struct temporary_grp_and_uid
 std::string CIYAM_BASE_DECL_SPEC get_dtm( );
 void CIYAM_BASE_DECL_SPEC set_dtm( const std::string& dtm );
 
+std::string CIYAM_BASE_DECL_SPEC get_gid( );
+
+bool CIYAM_BASE_DECL_SPEC has_sql_db( );
+
+sql_db CIYAM_BASE_DECL_SPEC& get_sql_db( );
+
 void CIYAM_BASE_DECL_SPEC set_class( const std::string& mclass );
 void CIYAM_BASE_DECL_SPEC set_module( const std::string& module );
 
@@ -823,6 +850,10 @@ void CIYAM_BASE_DECL_SPEC session_shared_decrypt(
 void CIYAM_BASE_DECL_SPEC session_shared_encrypt(
  std::string& data, const std::string& pubkey, const std::string& message );
 
+void CIYAM_BASE_DECL_SPEC add_security_group( const std::string& group_key );
+
+int64_t CIYAM_BASE_DECL_SPEC group_security_value( const std::string& group_key_value );
+
 std::string CIYAM_BASE_DECL_SPEC convert_group_keys_to_numbers( const std::string& group_keys );
 
 bool CIYAM_BASE_DECL_SPEC get_uid_data( const std::string& uid, size_t& level, std::string& gids );
@@ -832,6 +863,8 @@ size_t CIYAM_BASE_DECL_SPEC get_next_handle( );
 
 void CIYAM_BASE_DECL_SPEC module_list( std::ostream& os );
 size_t CIYAM_BASE_DECL_SPEC module_count( );
+
+std::string CIYAM_BASE_DECL_SPEC module_identity( const std::string& module );
 
 void CIYAM_BASE_DECL_SPEC module_class_list( const std::string& module, std::ostream& os, const char* p_pat = 0 );
 void CIYAM_BASE_DECL_SPEC module_strings_list( const std::string& module, std::ostream& os );
@@ -938,24 +971,28 @@ void CIYAM_BASE_DECL_SPEC get_foreign_field_and_class_ids( size_t handle,
 void CIYAM_BASE_DECL_SPEC get_base_class_info( size_t handle,
  const std::string& context, std::vector< std::pair< std::string, std::string > >& base_class_info );
 
+bool CIYAM_BASE_DECL_SPEC has_locked_instance( const std::string& lock_class_id, const std::string& key );
+
+bool CIYAM_BASE_DECL_SPEC is_child_constrained( class_base& instance, std::string& constraining_class );
+
 size_t CIYAM_BASE_DECL_SPEC obtain_storage_lock(
  const std::string& type, const std::string& lock_class_id, const std::string& key, size_t num_attempts = 0 );
 
-size_t CIYAM_BASE_DECL_SPEC obtain_instance_lock( const std::string& type, class_base& instance, size_t num_attempts = 0 );
+bool CIYAM_BASE_DECL_SPEC obtain_cascade_locks( class_base& instance );
+
+size_t CIYAM_BASE_DECL_SPEC obtain_instance_lock(
+ const std::string& type, class_base& instance, size_t num_attempts = 0, std::string* p_key_value = 0 );
 
 size_t CIYAM_BASE_DECL_SPEC obtain_instance_fk_lock( const std::string& lock_class_id, const std::string& key, bool review_required );
 
 void CIYAM_BASE_DECL_SPEC release_obtained_lock( size_t lock_handle );
 
+void CIYAM_BASE_DECL_SPEC release_instance_locks( class_base& instance, bool force_removal = false );
+
 void CIYAM_BASE_DECL_SPEC transform_obtained_lock( size_t lock_handle, const std::string& type, size_t num_attempts = 0 );
 
 void CIYAM_BASE_DECL_SPEC dump_storage_cache( std::ostream& os );
 void CIYAM_BASE_DECL_SPEC dump_storage_locks( std::ostream& os );
-
-std::string CIYAM_BASE_DECL_SPEC exec_bulk_ops( const std::string& module,
- const std::string& uid, const std::string& dtm, const std::string& mclass,
- const std::string& filename, const std::string& export_fields, const std::string& tz_name, bool destroy_records,
- const std::string& search_text, const std::string& search_query, const std::string& fixed_field_values, command_handler& handler );
 
 std::string resolve_class_id( const std::string& module,
  const std::string& id_or_name, const std::string& exception_context );
@@ -1005,6 +1042,16 @@ enum permit_op_type_value
 class_base& get_class_base_from_handle_for_op( size_t handle,
  const std::string& context, permit_op_type_value permit = e_permit_op_type_value_none, bool use_dynamic_context = true );
 
+bool fetch_instance_from_db( class_base& instance,
+ const std::string& sql, bool sys_only_fields = false, bool is_minimal_fetch = false, bool allow_caching = false );
+
+bool fetch_instance_from_cache( class_base& instance, const std::string& key, bool sys_only_fields = false );
+
+void get_instance_sql_stmts( class_base& instance,
+ std::vector< std::string >& sql_stmts, std::vector< std::string >* p_sql_undo_stmts = 0 );
+
+void CIYAM_BASE_DECL_SPEC append_undo_sql_stmts( const std::vector< std::string >& sql_undo_stmts );
+
 std::string CIYAM_BASE_DECL_SPEC instance_class( size_t handle, const std::string& context );
 std::string CIYAM_BASE_DECL_SPEC instance_key_info( size_t handle, const std::string& context, bool key_only = false );
 
@@ -1027,6 +1074,8 @@ enum instance_check_rc
 
 void CIYAM_BASE_DECL_SPEC instance_check( class_base& instance, instance_check_rc* p_rc = 0 );
 
+void CIYAM_BASE_DECL_SPEC instance_tx_check( class_base& instance );
+
 bool CIYAM_BASE_DECL_SPEC is_change_locked( class_base& instance, bool include_cascades = false );
 bool CIYAM_BASE_DECL_SPEC is_destroy_locked( class_base& instance, bool include_cascades = false );
 
@@ -1039,12 +1088,6 @@ bool CIYAM_BASE_DECL_SPEC was_create_locked_by_own_session(
 bool CIYAM_BASE_DECL_SPEC is_update_locked_by_own_session( class_base& instance, const char* p_key = 0 );
 bool CIYAM_BASE_DECL_SPEC is_destroy_locked_by_own_session( class_base& instance, const char* p_key = 0 );
 bool CIYAM_BASE_DECL_SPEC is_update_or_destroy_locked_by_own_session( class_base& instance, const char* p_key = 0 );
-
-enum instance_fetch_rc
-{
-   e_instance_fetch_rc_okay,
-   e_instance_fetch_rc_not_found
-};
 
 void CIYAM_BASE_DECL_SPEC instance_fetch( size_t handle,
  const std::string& context, const std::string& key_info, instance_fetch_rc* p_rc = 0 );
@@ -1064,12 +1107,6 @@ std::string CIYAM_BASE_DECL_SPEC instance_get_fields_and_values(
 bool CIYAM_BASE_DECL_SPEC instance_has_changed( size_t handle, const std::string& context );
 
 bool CIYAM_BASE_DECL_SPEC instance_persistence_type_is_sql( size_t handle );
-
-enum iter_direction
-{
-   e_iter_direction_forwards,
-   e_iter_direction_backwards
-};
 
 bool CIYAM_BASE_DECL_SPEC instance_iterate( size_t handle,
  const std::string& context, const std::string& key_info, const std::string& fields,
@@ -1102,6 +1139,8 @@ void CIYAM_BASE_DECL_SPEC op_instance_cancel( size_t handle, const std::string& 
 
 void CIYAM_BASE_DECL_SPEC output_progress_message( const std::string& message );
 
+bool CIYAM_BASE_DECL_SPEC is_in_transaction( );
+
 void CIYAM_BASE_DECL_SPEC transaction_start( );
 void CIYAM_BASE_DECL_SPEC transaction_commit( );
 void CIYAM_BASE_DECL_SPEC transaction_rollback( );
@@ -1124,14 +1163,9 @@ std::string CIYAM_BASE_DECL_SPEC transaction_log_command( );
 void CIYAM_BASE_DECL_SPEC transaction_log_command(
  const std::string& log_command, transaction_commit_helper* p_tx_helper = 0, bool replace_current = false );
 
+void CIYAM_BASE_DECL_SPEC append_peerchain_log_command( const std::string& identity, const std::string& log_command );
+
 void CIYAM_BASE_DECL_SPEC append_transaction_log_command( const std::string& log_command );
-
-void CIYAM_BASE_DECL_SPEC append_peerchain_tx_log_command( const std::string& identity, const std::string& log_command );
-
-void CIYAM_BASE_DECL_SPEC insert_log_blobs_into_tree( const std::string& tree_tag, const std::string& log_blob_file_prefix );
-
-void CIYAM_BASE_DECL_SPEC append_transaction_log_lines_to_blob_files( const std::string& log_blog_file_prefix,
- const std::vector< std::string >& log_lines, bool is_restoring = false, bool remove_existing_blobs = false );
 
 class CIYAM_BASE_DECL_SPEC transaction
 {
@@ -1155,42 +1189,5 @@ struct CIYAM_BASE_DECL_SPEC record_initialiser
    record_initialiser( std::ofstream& log_file );
    ~record_initialiser( );
 };
-
-enum instance_op
-{
-   e_instance_op_none,
-   e_instance_op_review,
-   e_instance_op_create,
-   e_instance_op_update,
-   e_instance_op_destroy
-};
-
-enum instance_op_rc
-{
-   e_instance_op_rc_okay,
-   e_instance_op_rc_locked,
-   e_instance_op_rc_invalid,
-   e_instance_op_rc_not_found,
-   e_instance_op_rc_constrained,
-   e_instance_op_rc_child_locked,
-   e_instance_op_rc_already_exists
-};
-
-void CIYAM_BASE_DECL_SPEC begin_instance_op( instance_op op,
- class_base& instance, const std::string& key, bool internal_operation = true, instance_op_rc* p_rc = 0 );
-
-void CIYAM_BASE_DECL_SPEC finish_instance_op( class_base& instance, bool apply_changes,
- bool internal_operation = true, instance_op_rc* p_rc = 0, std::set< std::string >* p_fields_set = 0 );
-
-void CIYAM_BASE_DECL_SPEC perform_instance_fetch(
- class_base& instance, const std::string& key_info,
- instance_fetch_rc* p_rc = 0, bool only_sys_fields = false, bool do_not_use_cache = false );
-
-bool CIYAM_BASE_DECL_SPEC perform_instance_iterate( class_base& instance,
- const std::string& key_info, const std::string& fields, const std::string& text,
- const std::string& query, iter_direction direction, bool inclusive = true, int row_limit = 0,
- sql_optimisation optimisation = e_sql_optimisation_none, const std::set< std::string >* p_filters = 0 );
-
-bool CIYAM_BASE_DECL_SPEC perform_instance_iterate_next( class_base& instance );
 
 #endif

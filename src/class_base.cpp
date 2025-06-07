@@ -59,6 +59,7 @@
 #include "mail_source.h"
 #include "oid_pointer.h"
 #include "crypt_stream.h"
+#include "ciyam_base_ops.h"
 #include "ciyam_channels.h"
 #include "ciyam_variables.h"
 #include "module_management.h"

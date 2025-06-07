@@ -10,6 +10,8 @@ const int c_tx_id_module = 1;
 const int c_tx_id_initial = 2;
 const int c_tx_id_standard = 5;
 
+const int c_num_sys_field_names = 5;
+
 const size_t c_max_extras = 9;
 const size_t c_chunk_digits = 6;
 
@@ -135,7 +137,21 @@ const char* const c_web_files_branch = "Web_Files";
 
 const char* const c_invalid_name_chars = "<>\"|&\\";
 
+const char* const c_key_field_name = "Key_";
+const char* const c_rev_field_name = "Rev_";
+const char* const c_sec_field_name = "Sec_";
+const char* const c_typ_field_name = "Typ_";
+const char* const c_ver_field_name = "Ver_";
+
+const char* const c_create_lock_name = "create";
+const char* const c_review_lock_name = "review";
+const char* const c_update_lock_name = "update";
+const char* const c_destroy_lock_name = "destroy";
+
 const char* const c_meta_model_name = "Meta";
+
+const char* const c_meta_storage_name = "Meta";
+const char* const c_ciyam_storage_name = "ciyam";
 
 const char* const c_meta_app_directory = "meta";
 

@@ -55,6 +55,7 @@
 #include "crypt_stream.h"
 #include "peer_session.h"
 #include "ciyam_strings.h"
+#include "ciyam_base_ops.h"
 #include "ciyam_channels.h"
 #include "ciyam_notifier.h"
 #include "ciyam_packages.h"

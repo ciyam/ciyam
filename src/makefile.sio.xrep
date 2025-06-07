@@ -97,6 +97,7 @@
      <filename>ciyam_base_file_buffer.cpp
      <filename>ciyam_base_numeric.cpp
      <filename>ciyam_base_ods.cpp
+     <filename>ciyam_base_ops.cpp
      <filename>ciyam_channels.cpp
      <filename>ciyam_core_files.cpp
      <filename>ciyam_files.cpp

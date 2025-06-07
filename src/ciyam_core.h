@@ -78,6 +78,18 @@ enum perform_fetch_rc
    e_perform_fetch_rc_not_found
 };
 
+enum instance_fetch_rc
+{
+   e_instance_fetch_rc_okay,
+   e_instance_fetch_rc_not_found
+};
+
+enum iter_direction
+{
+   e_iter_direction_forwards,
+   e_iter_direction_backwards
+};
+
 enum sql_optimisation
 {
    e_sql_optimisation_none,
