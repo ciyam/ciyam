@@ -64,6 +64,10 @@ will be assigned to the variable.
 > #$TEST
 12 config.info.default
 
+It should be noted that when using the '~' character to either directly (or indirectly via "@file:~") execute
+a system command the environment variable SYSTEM_RETVAL will be assigned to the exit code (or exit status) of
+the system command (with the value 0 if the command was successful).
+
 Console Command Prefixes
 ------------------------
 
