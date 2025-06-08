@@ -6084,31 +6084,31 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string type( get_parm_val( parameters, c_cmd_ciyam_session_storage_lock_create_type ) );
          string class_id( get_parm_val( parameters, c_cmd_ciyam_session_storage_lock_create_class_id ) );
          string instance( get_parm_val( parameters, c_cmd_ciyam_session_storage_lock_create_instance ) );
-         string num_attempts( get_parm_val( parameters, c_cmd_ciyam_session_storage_lock_create_num_attempts ) );
+         string num_tries( get_parm_val( parameters, c_cmd_ciyam_session_storage_lock_create_num_tries ) );
 
          possibly_expected_error = true;
 
-         size_t num_attempts_val = c_cmd_ciyam_session_storage_lock_create_num_attempts_default;
+         size_t num_tries_val = c_cmd_ciyam_session_storage_lock_create_num_tries_default;
 
-         if( !num_attempts.empty( ) )
-            num_attempts_val = from_string< size_t >( num_attempts );
+         if( !num_tries.empty( ) )
+            num_tries_val = from_string< size_t >( num_tries );
 
-         response = to_string( obtain_storage_lock( type, class_id, instance, num_attempts_val ) );
+         response = to_string( obtain_storage_lock( type, class_id, instance, num_tries_val ) );
       }
       else if( command == c_cmd_ciyam_session_storage_lock_modify )
       {
          string handle( get_parm_val( parameters, c_cmd_ciyam_session_storage_lock_modify_handle ) );
          string new_type( get_parm_val( parameters, c_cmd_ciyam_session_storage_lock_modify_new_type ) );
-         string num_attempts( get_parm_val( parameters, c_cmd_ciyam_session_storage_lock_modify_num_attempts ) );
+         string num_tries( get_parm_val( parameters, c_cmd_ciyam_session_storage_lock_modify_num_tries ) );
 
          possibly_expected_error = true;
 
-         size_t num_attempts_val = c_cmd_ciyam_session_storage_lock_modify_num_attempts_default;
+         size_t num_tries_val = c_cmd_ciyam_session_storage_lock_modify_num_tries_default;
 
-         if( !num_attempts.empty( ) )
-            num_attempts_val = from_string< size_t >( num_attempts );
+         if( !num_tries.empty( ) )
+            num_tries_val = from_string< size_t >( num_tries );
 
-         transform_obtained_lock( from_string< size_t >( handle ), new_type, num_attempts_val );
+         transform_obtained_lock( from_string< size_t >( handle ), new_type, num_tries_val );
       }
       else if( command == c_cmd_ciyam_session_storage_lock_remove )
       {

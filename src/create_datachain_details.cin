@@ -26,7 +26,7 @@ DATA_TYPE=$3
 .storage_init $STORAGE
 @ifndef $ERROR
 ;
-.storage_lock_create -num=10 obtain @datachain
+.storage_lock_create -tries=10 obtain @datachain
 @ifndef $ERROR
 LOCK_HANDLE=$OUTPUT
 ;

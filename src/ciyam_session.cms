@@ -100,8 +100,8 @@ storage_dump_cache "dump storage cached records"
 storage_dump_locks "dump storage lock information"
 storage_log_splice "splice individual module logs into a master storage log" <val//name><list//modules>
 storage_bulk_finish "release bulk storage lock"
-storage_lock_create "create a storage lock" [<val/-num=1/num_attempts>]<val//type><val//class_id>[<val//instance>]
-storage_lock_modify "modify a storage lock" [<val/-num=1/num_attempts>]<val//handle><val//new_type>
+storage_lock_create "create a storage lock" [<val/-tries=1/num_tries>]<val//type><val//class_id>[<val//instance>]
+storage_lock_modify "modify a storage lock" [<val/-tries=1/num_tries>]<val//handle><val//new_type>
 storage_lock_remove "remove a storage lock" <val//handle>
 storage_cache_clear "clear the storage record cache"
 storage_cache_limit "get/set storage record cache limit" [<oval//new_limit>]
