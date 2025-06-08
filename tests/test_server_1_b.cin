@@ -43,6 +43,14 @@ file_kill -recurse root
 #~mkdir test1
 ~mkdir test1
 ~touch test1/xxx
+~touch test1/yyy
+TEST=@file:~./diff -q test1/xxx test1/yyy
+#$SYSTEM_RETVAL
+#$TEST
+~rm test1/yyy
+TEST=@file:~./diff -q test1/xxx test1/yyy
+#$SYSTEM_RETVAL
+#$TEST
 notifier -start test1/xxx
 system_variable *test1*
 #~touch test1/xxx

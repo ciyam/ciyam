@@ -144,6 +144,9 @@ file_tag -remove test0,test1
 file_tags test*
 file_kill -recurse root
 ~mkdir test1
+0
+1
+error: unable to open file 'test1/yyy' for input
 notifier -start test1/xxx
 system_variable *test1*
 @:test1/xxx [watching]

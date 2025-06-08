@@ -56,6 +56,8 @@ const int c_max_args = 10;
 const int c_max_history = 1000;
 const int c_max_usage_width = 84;
 
+const int c_bad_system_exit = 999;
+
 const size_t c_max_pwd_size = 128;
 
 const char c_startup_prefix = '-';
@@ -146,6 +148,18 @@ command_definition startup_command_definitions[ ] =
 
 const char* const c_command_prompt = "\n> ";
 const char* const c_message_press_any_key = "(press any key to continue)...";
+
+void system_command( const char* p_cmd )
+{
+   int rc = system( p_cmd );
+
+   if( WIFEXITED( rc ) )
+      rc = WEXITSTATUS( rc );
+   else
+      rc = c_bad_system_exit;
+
+   set_environment_variable( c_env_var_system_retval, to_string( rc ) );
+}
 
 void split_all_extras( const string& all_extras, vector< string >& includes, vector< string >& excludes )
 {
@@ -2830,14 +2844,14 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            {
                               string rhs( str.substr( pos + 1 ) );
 
-                              if( !rhs.empty( ) && rhs[ 0 ] == '~' )
+                              if( !rhs.empty( )
+                               && ( rhs[ 0 ] == c_system_command_prefix ) )
                               {
                                  string tmp_name( "~" + uuid( ).as_string( ) );
-                                 rhs += " 2>&1 >" + tmp_name;
 
-                                 int rc = system( rhs.substr( 1 ).c_str( ) );
+                                 rhs += " >" + tmp_name + " 2>&1";
 
-                                 ( void )rc;
+                                 system_command( rhs.c_str( ) + 1 );
 
                                  str = buffer_file_lines( tmp_name );
 
@@ -3490,11 +3504,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             }
             else if( str[ 0 ] == c_system_command_prefix )
             {
-               int rc = system( str.c_str( ) + 1 );
-
-               rc = WEXITSTATUS( rc );
-
-               set_environment_variable( c_env_var_system_retval, to_string( rc ) );
+               system_command( str.c_str( ) + 1 );
 
                str.erase( );
             }
