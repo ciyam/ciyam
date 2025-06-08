@@ -95,7 +95,12 @@ TRUNCATE_LOG=
 ; NOTE: Either NEW_IP exists (due to being an alias)
 ; or it will now obtain the server's own IP address.
 @ifndef $ALIAS_FOR_NAME
-NEW_IP=@file:~curl -s https://$GET_IP_ADDR
+NEW_IP=@file:~curl -sS https://$GET_IP_ADDR
+;
+@ifneq "$SYSTEM_RETVAL" "0"
+NEW_IP=
+@endif
+;
 @endif
 ;
 @else
@@ -104,7 +109,11 @@ USING_LOG=1
 ;
 LOG_TAIL=@file:~tail -n 2 $FILE
 ;
+@ifneq "$SYSTEM_RETVAL" "0"
+NEW_IP=
+@else
 NEW_IP=%LOG_TAIL:2%
+@endif
 ;
 ; NOTE: Only truncate a log if it has more than one line.
 @ifneq "$NEW_IP" ""
@@ -134,13 +143,19 @@ TYPE=AAAA
 ; NOTE: Minimal APIs where the domain name is the same as the API (such as "freemyip.com").
 ;
 @ifeq "$API_DOMAIN" "freemyip.com"
-RESPONSE=@file:~curl -s "https://$API_DOMAIN/update?token=$~IDENTITY&domain=$NAME.$API_DOMAIN&myip=$NEW_IP&verbose=yes"
+RESPONSE=@file:~curl -sS "https://$API_DOMAIN/update?token=$~IDENTITY&domain=$NAME.$API_DOMAIN&myip=$NEW_IP&verbose=yes"
+;
+@ifneq "$SYSTEM_RETVAL" "0"
+ERROR=$RESPONSE
+@else
 ;
 CHECK_OKAY=OK
 ;
 ; NOTE: The first line is expected to be just OK or ERROR with the second line containing further details.
 @ifneq "%RESPONSE:1%" "$CHECK_OKAY"
 ERROR=%RESPONSE:2%
+@endif
+;
 @endif
 ;
 @else
@@ -152,14 +167,20 @@ ERROR=Unsupported minimal API type '$API_DOMAIN'.
 ; NOTE: More complex APIs that need user credentials and support multiple domains (such as "api.name.com").
 ;
 @ifeq "$API_DOMAIN" "api.name.com"
-RESPONSE=@file:~curl -s -u $~CREDENTIALS https://$API_DOMAIN/v4/domains/$NAME_DOMAIN/records/$~IDENTITY\
+RESPONSE=@file:~curl -sS -u $~CREDENTIALS https://$API_DOMAIN/v4/domains/$NAME_DOMAIN/records/$~IDENTITY\
  -X PUT -H 'Content-Type: application/json' --data '{"host":"$NAME","type":"$TYPE","answer":"$NEW_IP","ttl":60}'
+;
+@ifneq "$SYSTEM_RETVAL" "0"
+ERROR=$RESPONSE
+@else
 ;
 ; NOTE: The first line of the response will contain "message" if there has been an error.
 CHECK_OKAY=@repstr:\"message\":%RESPONSE:1%
 ;
 @ifneq '$CHECK_OKAY' '%RESPONSE:1%'
 ERROR=$RESPONSE
+@endif
+;
 @endif
 ;
 @else
