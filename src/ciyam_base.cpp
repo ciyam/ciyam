@@ -872,6 +872,8 @@ class storage_handler
    void release_locks_for_commit( session* p_session );
    void release_locks_for_rollback( session* p_session );
 
+   void release_all_locks_for_session( session* p_session );
+
    set< string >& get_dead_keys( ) { return dead_keys; }
 
    time_info_container& get_key_for_time( ) { return key_for_time; }
@@ -1299,6 +1301,7 @@ bool storage_handler::obtain_lock( size_t& handle,
          // NOTE: Check existing locks of the same class for a conflicting lock
          // (and an empty lock instance is being treated as a class-wide lock).
          op_lock last_lock;
+
          bool lock_conflict = false;
 
          while( li != locks.end( ) )
@@ -1493,7 +1496,9 @@ void storage_handler::release_lock( size_t handle, bool force_removal )
    TRACE_LOG( TRACE_LOCK_OPS, "[release lock] handle = "
     + to_string( handle ) + ", force_removal = " + to_string( force_removal ) );
 
-   if( handle && lock_duplicates.find( handle ) == lock_duplicates.end( ) )
+   if( lock_duplicates.find( handle ) != lock_duplicates.end( ) )
+      lock_duplicates.erase( handle );
+   else
    {
       lock_index_iterator lii = lock_index.find( handle );
 
@@ -1607,7 +1612,7 @@ void storage_handler::release_locks_for_owner( class_base& owner, bool force_rem
 
       if( next_lock.p_root_class == &owner )
       {
-         if( !force_removal && next_lock.transaction_level > 0 )
+         if( !force_removal && ( next_lock.transaction_level > 0 ) )
          {
             next_lock.type = op_lock::e_lock_type_none;
             next_lock.p_root_class = 0;
@@ -1645,13 +1650,14 @@ void storage_handler::release_locks_for_commit( session* p_session )
    {
       op_lock& next_lock( lii->second->second );
 
-      if( next_lock.p_session == p_session
-       && next_lock.transaction_level >= p_ods->get_transaction_level( ) )
+      if( ( next_lock.p_session == p_session )
+       && ( next_lock.transaction_level >= p_ods->get_transaction_level( ) ) )
       {
          if( p_ods->get_transaction_level( ) > 1 )
          {
             next_lock.transaction_level = p_ods->get_transaction_level( ) - 1;
             next_lock.type = op_lock::e_lock_type_none;
+
             ++lii;
          }
          else
@@ -1659,6 +1665,7 @@ void storage_handler::release_locks_for_commit( session* p_session )
             locks.erase( lii->second );
 
             size_t id( lii->first );
+
             lock_index.erase( lii );
 
             lii = lock_index.lower_bound( id );
@@ -1667,8 +1674,6 @@ void storage_handler::release_locks_for_commit( session* p_session )
       else
          ++lii;
    }
-
-   lock_duplicates.clear( );
 
    IF_IS_TRACING( TRACE_LOCK_OPS )
    {
@@ -1693,9 +1698,9 @@ void storage_handler::release_locks_for_rollback( session* p_session )
    {
       op_lock& next_lock( lii->second->second );
 
-      if( next_lock.p_session == p_session
-       && next_lock.transaction_id == p_ods->get_transaction_id( )
-       && next_lock.transaction_level >= p_ods->get_transaction_level( ) )
+      if( ( next_lock.p_session == p_session )
+       && ( next_lock.transaction_id == p_ods->get_transaction_id( ) )
+       && ( next_lock.transaction_level >= p_ods->get_transaction_level( ) ) )
       {
          locks.erase( lii->second );
          lock_index.erase( lii++ );
@@ -1704,7 +1709,35 @@ void storage_handler::release_locks_for_rollback( session* p_session )
          ++lii;
    }
 
-   lock_duplicates.clear( );
+   IF_IS_TRACING( TRACE_LOCK_OPS )
+   {
+      ostringstream osstr;
+      dump_locks( osstr );
+
+      TRACE_LOG( TRACE_LOCK_OPS, "[dump_locks]\n" + osstr.str( ) );
+   }
+}
+
+void storage_handler::release_all_locks_for_session( session* p_session )
+{
+   guard g( lock_mutex );
+
+   TRACE_LOG( TRACE_LOCK_OPS, "[release all locks for session] p_session = " + to_string( p_session ) );
+
+   lock_index_iterator lii;
+
+   for( lii = lock_index.begin( ); lii != lock_index.end( ); )
+   {
+      op_lock& next_lock( lii->second->second );
+
+      if( next_lock.p_session == p_session )
+      {
+         locks.erase( lii->second );
+         lock_index.erase( lii++ );
+      }
+      else
+         ++lii;
+   }
 
    IF_IS_TRACING( TRACE_LOCK_OPS )
    {
@@ -1729,12 +1762,13 @@ void storage_handler::set_cache_limit( size_t new_limit )
    else
    {
       while( get_record_cache( ).size( )
-       && get_record_cache( ).size( ) > new_limit )
+       && ( get_record_cache( ).size( ) > new_limit ) )
       {
          string oldest_key_info = get_key_for_time( ).begin( )->second;
 
          get_record_cache( ).erase( oldest_key_info );
          get_time_for_key( ).erase( oldest_key_info );
+
          get_key_for_time( ).erase( get_key_for_time( ).begin( ) );
       }
    }
@@ -6379,6 +6413,9 @@ void term_session( )
          }
       }
 
+      if( gtp_session->p_storage_handler )
+         gtp_session->p_storage_handler->release_all_locks_for_session( gtp_session );
+
       for( size_t i = 0; i < g_max_sessions; i++ )
       {
          if( gtp_session == g_sessions[ i ] )
@@ -9342,6 +9379,8 @@ void term_storage( command_handler& cmd_handler )
          ofs.store_as_text_file( c_storable_file_name_log_id,
           gtp_session->p_storage_handler->get_root( ).log_id.next_id );
       }
+
+      gtp_session->p_storage_handler->release_all_locks_for_session( gtp_session );
 
       delete ods::instance( );
       ods::instance( 0, true );
