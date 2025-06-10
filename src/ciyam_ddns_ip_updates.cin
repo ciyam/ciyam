@@ -167,7 +167,7 @@ ERROR=Unsupported minimal API type '$API_DOMAIN'.
 ; NOTE: More complex APIs that need user credentials and support multiple domains (such as "api.name.com").
 ;
 @ifeq "$API_DOMAIN" "api.name.com"
-RESPONSE=@file:~curl -sS -u $~CREDENTIALS https://$API_DOMAIN/v4/domains/$NAME_DOMAIN/records/$~IDENTITY\
+RESPONSE=@file:~curl -sS -u $~CREDENTIALS https://$API_DOMAIN/core/v1/domains/$NAME_DOMAIN/records/$~IDENTITY\
  -X PUT -H 'Content-Type: application/json' --data '{"host":"$NAME","type":"$TYPE","answer":"$NEW_IP","ttl":60}'
 ;
 @ifneq "$SYSTEM_RETVAL" "0"
