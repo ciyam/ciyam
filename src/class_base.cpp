@@ -1867,7 +1867,11 @@ void class_base::destroy( )
          else
             next_op = e_cascade_op_destroy;
 
-         for( size_t i = 0; i < num_children; i++ )
+         // NOTE: Due to the way that Meta model relationships
+         // are ordered to prevent a number of possible issues
+         // (such as Class cascading Fields before Indexes) it
+         // is processing the foreign key children in reverse.
+         for( int i = ( num_children - 1 ); i >= 0; i-- )
          {
             p_class_base = get_next_foreign_key_child( i, next_child_field, next_op );
 
@@ -1877,8 +1881,8 @@ void class_base::destroy( )
                ap_tmp_cascading.reset( new class_cascade( *p_class_base ) );
 
             // FUTURE: The handling of cascades needs to be revisited at some stage to improve performance
-            // as currently iteration occurs three times (firstly to lock, secondly to test if constrained
-            // and thirdly for the actual deletions).
+            // as currently iteration occurs four times (firstly to lock, secondly to test if constrained,
+            // then in this function both thirdly for the deletes and fourthly for the unlinks).
             if( p_class_base
              && p_class_base->iterate_forwards( "", c_key_field, true, 0, e_sql_optimisation_unordered ) )
             {
