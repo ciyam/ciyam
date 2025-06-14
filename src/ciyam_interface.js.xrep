@@ -105,9 +105,15 @@ var warn_refresh_timer_id = 0;
 var load_content_seconds = 30;
 var load_content_timer_id = 0;
 
+var writeable_local_storage = false;
+var writeable_session_storage = false;
+
+var has_checked_local_storage = false;
+var has_checked_session_storage = false;
+
 function is_leap_year( year )
 {
-   return year % 4 == 0 && ( year % 100 != 0 || year % 400 == 0 );
+   return ( year % 4 == 0 ) && ( ( year % 100 != 0 ) || ( year % 400 == 0 ) );
 }
 
 function can_write_to_storage( use_local )
@@ -132,12 +138,26 @@ function can_write_to_storage( use_local )
 
 function can_write_to_local_storage( )
 {
-   return can_write_to_storage( true );
+   if( !has_checked_local_storage )
+   {
+      has_checked_local_storage = true;
+
+      writeable_local_storage = can_write_to_storage( true );
+   }
+
+   return writeable_local_storage;
 }
 
 function can_write_to_session_storage( )
 {
-   return can_write_to_storage( false );
+   if( !has_checked_session_storage )
+   {
+      has_checked_session_storage = true;
+
+      writeable_session_storage = can_write_to_storage( false );
+   }
+
+   return writeable_session_storage;
 }
 
 function clear_local_storage( )
@@ -446,7 +466,7 @@ function load( )
    {
       sessionStorage.setItem( 'app', '`{`@lower`(`$storage_name`)`}' );
 
-      if( !isDynamicLoad && sessionStorage.getItem( 'old_content' ) != null )
+      if( !isDynamicLoad && ( sessionStorage.getItem( 'old_content' ) != null ) )
          document.getElementById( 'content' ).innerHTML = sessionStorage.getItem( 'old_content' );
    }
    else if( source[ 0 ] != 'https' )
