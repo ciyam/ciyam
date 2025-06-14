@@ -124,6 +124,8 @@ const char* const c_str_parm_invalid_dom_for_yearly_field = "{@field}";
 const char* const c_str_invalid_duplicate_field_value = "{@field} must not contain duplicates.";
 const char* const c_str_parm_invalid_duplicate_field_value_field = "{@field}";
 const char* const c_str_parm_exceeded_maximum_limit = "{@limit}";
+const char* const c_str_currently_locked = "This {@class} is currently locked - retry again shortly.";
+const char* const c_str_parm_currently_locked_class = "{@class}";
 const char* const c_str_password_incorrect = "Password incorrect.";
 const char* const c_str_home_stats = "You currently have {@num} {@type}";
 const char* const c_str_parm_home_stats_num = "{@num}";
@@ -151,4 +153,3 @@ const char* const c_str_parm_unable_to_create_using_external_class = "{@class}";
 const char* const c_str_parm_unable_to_create_using_external_symbol = "{@symbol}";
 
 #endif
-

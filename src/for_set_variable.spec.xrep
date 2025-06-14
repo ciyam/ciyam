@@ -2,7 +2,7 @@
    // [(start for_set_variable)] `{`$arg_id`}
 `{`$i`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$arg_modifier`,`'`'`)`$i`=`'   `'`}\
 `{`@eq`(`$arg_system`,`'true`'`)\
-`{`@eq`(`$arg_check_null`,`'`'`)\
+`{`@eq`(`$arg_check_null`,`'`'`)`&`@eq`(`$arg_check_null_throw`,`'`'`)\
 `{`!`@eq`(`$i`,`'`'`)\
    if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`) && `}`}\
 `{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )`} )
@@ -15,8 +15,12 @@
     && `}!set_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
 `{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`},\
  `{`@eq`(`$arg_fistexttype`,`'0`'`)to_string( `}get_obj( ).`{`$arg_field`}( )`{`@eq`(`$arg_fistexttype`,`'0`'`) )`}, string( "" ) ) )
+`{`@eq`(`$arg_check_null_throw`,`'`'`)\
       return;
-`}`,`@eq`(`$arg_session`,`'true`'`)\
+`,\
+      throw runtime_error( get_string_message( GS( c_str_currently_locked ),
+       make_pair( c_str_parm_currently_locked_class, get_obj( ).get_display_name( ) ) ) );
+`}`}`,`@eq`(`$arg_session`,`'true`'`)\
 `{`!`@eq`(`$i`,`'`'`)\
    if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`) && `}`}\
 `{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )`} )

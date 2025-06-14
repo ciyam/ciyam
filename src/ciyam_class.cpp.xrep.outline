@@ -1158,7 +1158,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_modifier=$specification_\\0_modifier arg_tfield=$specification_\\0_tfield\
  arg_ofield=$specification_\\0_ofield arg_ofisfk=$specification_\\0_ofisfk arg_variable=$specification_\\0_variable\
  arg_system=$specification_\\0_system arg_suffix=$specification_\\0_suffix arg_check_null=$specification_\\0_check_null\
- arg_session=$specification_\\0_session`}\
+ arg_check_null_throw=$specification_\\0_check_null_throw arg_session=$specification_\\0_session`}\
 `,\
 `@eq`(`'\\1`'`,`'for_skip_restore`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_skip_restore.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
