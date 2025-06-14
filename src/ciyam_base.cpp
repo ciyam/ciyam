@@ -1238,13 +1238,13 @@ void storage_handler::dump_locks( ostream& os ) const
 
    if( minimal_output )
    {
-      os << "handle key (class_id:instance)                       type\n";
-      os << "------ --------------------------------------------- ----------\n";
+      os << "handle   key (class_id:instance)                          type\n";
+      os << "-------- ------------------------------------------------ ----------\n";
    }
    else
    {
-      os << "handle key (class_id:instance)                       type       tx_type    tran_id    tran_level p_session      p_class_base   p_root_class\n";
-      os << "------ --------------------------------------------- ---------- ---------- ---------- ---------- -------------- -------------- --------------\n";
+      os << "handle   key (class_id:instance)                          type       tx_type    tran_id    tran_level p_session      p_class_base   p_root_class\n";
+      os << "-------- ------------------------------------------------ ---------- ---------- ---------- ---------- -------------- -------------- --------------\n";
    }
 
    for( lici = lock_index.begin( ); lici != lock_index.end( ); ++lici )
@@ -1253,8 +1253,8 @@ void storage_handler::dump_locks( ostream& os ) const
 
       os.setf( ios::left );
 
-      os << setw( 6 ) << lici->first
-       << ' ' << setw( 45 ) << lici->second->first
+      os << setw( 8 ) << lici->first
+       << ' ' << setw( 48 ) << lici->second->first
        << ' ' << setw( 10 ) << op_lock::lock_type_name( next_lock.type );
 
       if( minimal_output )
@@ -5887,6 +5887,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
          // NOTE: Empty code block for scope purposes.
          {
             ofstream outf( args_file.c_str( ) );
+
             if( !outf )
                throw runtime_error( "unable to open '" + args_file + "' for output" );
 
@@ -5895,7 +5896,8 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
             if( !rpc_password.empty( ) )
                outf << ".session_rpc_unlock " << rpc_password << endl;
 
-            outf << "<<" << arguments << endl;
+            // NOTE: Underbar prefix is used in case arguments contain '$' characters.
+            outf << "_<<" << arguments << endl;
 
             outf.flush( );
 
@@ -6102,8 +6104,9 @@ string process_script_args( const string& raw_args, bool use_system_variables )
             }
          }
 
+         // NOTE: Use 'escape' to prevent any variable replacements.
          if( !next_arg.empty( ) )
-            next_arg = escaped_shell_arg( next_arg );
+            next_arg = escaped_shell_arg( escape( next_arg, "$" ) );
 
          if( !retval.empty( ) )
             retval += " ";
@@ -12917,15 +12920,28 @@ string instance_execute( size_t handle,
    return instance.execute( method_name_and_args );
 }
 
-string instance_get_fields_and_values( size_t handle, const string& context, const string& key )
+void instance_get_field_values( size_t handle, const string& context, vector< string >& field_values )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   size_t num_fields = instance.get_num_fields( );
+
+   for( size_t i = 0; i < num_fields; i++ )
+      field_values.push_back( instance.get_field_value( i ) );
+}
+
+string instance_get_fields_and_values( size_t handle,
+ const string& context, const vector< string >* p_initial_field_values )
 {
    class_base& instance( get_class_base_from_handle( handle, context ) );
    class_base_accessor instance_accessor( instance );
 
    bool using_verbose_logging = get_storage_using_verbose_logging( );
 
-   return instance.get_fields_and_values(
-    using_verbose_logging ? class_base::e_field_label_type_full_id : class_base::e_field_label_type_short_id );
+   class_base::field_label_type label_type = ( using_verbose_logging
+    ? class_base::e_field_label_type_full_id : class_base::e_field_label_type_short_id );
+
+   return instance.get_fields_and_values( label_type, class_base::e_field_include_type_modified, p_initial_field_values );
 }
 
 bool instance_has_changed( size_t handle, const string& context )

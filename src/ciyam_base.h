@@ -1101,8 +1101,11 @@ void CIYAM_BASE_DECL_SPEC instance_prepare_execute( size_t handle,
 std::string CIYAM_BASE_DECL_SPEC instance_execute( size_t handle,
  const std::string& context, const std::string& key, const std::string& method_name_and_args );
 
-std::string CIYAM_BASE_DECL_SPEC instance_get_fields_and_values(
- size_t handle, const std::string& context, const std::string& key );
+void CIYAM_BASE_DECL_SPEC instance_get_field_values( size_t handle,
+ const std::string& context, std::vector< std::string >& field_values );
+
+std::string CIYAM_BASE_DECL_SPEC instance_get_fields_and_values( size_t handle,
+ const std::string& context, const std::vector< std::string >* p_initial_field_values = 0 );
 
 bool CIYAM_BASE_DECL_SPEC instance_has_changed( size_t handle, const std::string& context );
 
