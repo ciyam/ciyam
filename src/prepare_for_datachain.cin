@@ -19,6 +19,9 @@ ERROR=
 STORAGE=$1
 IDENTITY=$2
 ;
+.system_variable @prepare_$IDENTITY 1 ""
+@ifeq $OUTPUT 1
+;
 DATA_LOG_FILE=@files::$IDENTITY.log
 @ifdef $DATA_LOG_FILE
 ;
@@ -95,6 +98,9 @@ ROWS=%ROWS:-1%
 @endif
 .storage_term
 ;
+@endif
+;
+.system_variable @prepare_$IDENTITY ""
 @endif
 ;
 @endif

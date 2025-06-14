@@ -21,6 +21,9 @@ ERROR=
 STORAGE=$1
 IDENTITY=$2
 ;
+.system_variable @fetch_$IDENTITY 1 ""
+@ifeq $OUTPUT 1
+;
 MODULE=
 HAS_BLOG_CLASS=
 ;
@@ -313,6 +316,9 @@ NESTED_DONE=1
 @endif
 @endif
 @endif
+@endif
+;
+.system_variable @fetch_$IDENTITY ""
 @endif
 ;
 @endif

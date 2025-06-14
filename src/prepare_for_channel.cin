@@ -26,7 +26,8 @@ APP_DIR=@lower:$STORAGE
 ;
 HEIGHT=@$OUTPUT+1
 ;
-.system_variable @preparing_$IDENTITY $HEIGHT
+.system_variable @prepare_$IDENTITY $HEIGHT ""
+@ifeq $OUTPUT 1
 ;
 .storage_init $STORAGE
 @ifdef $ERROR
@@ -87,7 +88,9 @@ WEB_SUBMIT_FILE=@files:$WEBDIR/$APP_DIR:$SUBMIT_FILE
 ~rm $WEBDIR/$APP_DIR/$SUBMIT_FILE
 @endif
 ;
-.system_variable @preparing_$IDENTITY ""
+.system_variable @prepare_$IDENTITY ""
+@endif
+;
 @endif
 ;
 .system_variable @opening_$IDENTITY ""

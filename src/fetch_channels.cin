@@ -10,6 +10,9 @@ ERROR=
 ;
 STORAGE=$1
 ;
+.system_variable @fetch_channels 1 ""
+@ifeq $OUTPUT 1
+;
 .session_variable @deque commence
 ;
 .system_variable @skip_fetch_connects
@@ -83,11 +86,17 @@ ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 @:DONE
 @endif
 ;
-.system_variable @fetch_channels ""
-.system_variable @skip_fetch_connects ""
-;
 @endif
 ;
 .session_variable @deque complete
+;
+.system_variable @fetch_channels ""
+;
+; NOTE: It is expected that both of these system
+; variables are assigned before script execution.
+.system_variable @fetching_channels ""
+.system_variable @skip_fetch_connects ""
+;
+@endif
 ;
 @endif
