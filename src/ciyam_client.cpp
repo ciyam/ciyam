@@ -771,10 +771,10 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                   str = string( c_session_cmd_system_variable )
                    + " " + g_args_file + " \"" + error + "\"";
 
+                  // NOTE: As "str" has been replaced will include an additional ".quit".
                   additional_commands.push_back( g_quiet_cmd_prefix + c_session_cmd_quit );
                }
             }
-
          }
 
 #ifdef DEBUG
