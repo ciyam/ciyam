@@ -19,6 +19,9 @@ ERROR=
 STORAGE=$1
 IDENTITY=$2
 ;
+.system_variable @prepare_forum_$IDENTITY 1 ""
+@ifeq $OUTPUT 1
+;
 APP_DIR=@lower:$STORAGE
 ;
 SUBMIT_MASK=ui_TARGET_submit
@@ -35,5 +38,17 @@ WEB_SUBMIT_FILE=@files:$WEBDIR/$APP_DIR:$SUBMIT_FILE
 @endif
 ;
 @endif
+;
+.system_variable @prepare_forum_$IDENTITY ""
+@else
+; FUTURE: This message should be handled as a server string.
+ERROR=Currently locked (please try again later).
+#$ERROR
+@endif
+;
+.system_variable @preparing_forum_$IDENTITY ""
+;
+; NOTE: An explicit quit is required for UI error handling.
+.quit
 ;
 @endif
