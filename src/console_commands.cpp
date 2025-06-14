@@ -298,13 +298,14 @@ void replace_input_arg_values( string& str, const vector< string >& args, char m
 
    while( pos != string::npos )
    {
-      if( str.size( ) > pos + 1 )
+      if( str.size( ) > ( pos + 1 ) )
       {
          if( str[ pos + 1 ] == marker )
             ++pos;
-         else if( str[ pos + 1 ] >= '0' && str[ pos + 1 ] <= '9' )
+         else if( ( str[ pos + 1 ] >= '0' ) && ( str[ pos + 1 ] <= '9' ) )
          {
             int argnum = str[ pos + 1 ] - '0';
+
             string argval( args[ argnum ] );
 
             // NOTE: If the argument has been quoted but the position at which it is being
@@ -320,10 +321,13 @@ void replace_input_arg_values( string& str, const vector< string >& args, char m
             // is a space then erase this space to ensure the correct command syntax.
             if( argval.empty( ) && str[ pos ] == ' ' )
                str.erase( pos, 1 );
+
+            pos += argval.length( );
          }
          else if( str[ pos + 1 ] == '*' )
          {
             string all;
+
             for( int i = 0; i < 10; i++ )
             {
                string argval( args[ i ] );
@@ -341,6 +345,8 @@ void replace_input_arg_values( string& str, const vector< string >& args, char m
 
             if( all.empty( ) && str[ pos ] == ' ' ) // see above NOTE
                str.erase( pos, 1 );
+
+            pos += all.length( );
          }
       }
 
@@ -2617,6 +2623,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
       }
 
       bool was_password = false;
+
       bool add_to_history = allow_history_addition;
 
       // NOTE: Any single space prefixed command will not be added to history.
@@ -2626,6 +2633,15 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          add_to_history = false;
 
          clear_key( str_for_history );
+      }
+
+      bool skip_replacements = false;
+
+      // NOTE: Any underbar prefixed command will skip the variable replacements.
+      if( !str.empty( ) && ( str[ 0 ] == '_' ) )
+      {
+         str.erase( 0, 1 );
+         skip_replacements = true;
       }
 
       string::size_type pos = str.find( ' ' );
@@ -2676,22 +2692,25 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             str.erase( 0, apos + 1 );
          }
 
-         // NOTE: First try the format %<name>% and %* or %0..9 then try $* or $0..9 and $<name> so
-         // console scripts can utilise either (or a combination) of these two environment variable
-         // styles. The %<name>% has to be replaced before trying %* and %0..9 otherwise the second
-         // % could confuse the replacement (if it is followed by a * or 0..9).
-         replace_quoted_environment_variables( str );
-         replace_input_arg_values( str, args, c_environment_variable_marker_2 );
+         if( !skip_replacements )
+         {
+            // NOTE: First try the format %<name>% and %* or %0..9 then try $* or $0..9 and $<name> so
+            // console scripts can utilise either (or a combination) of these two environment variable
+            // styles. The %<name>% has to be replaced before trying %* and %0..9 otherwise the second
+            // % could confuse the replacement (if it is followed by a * or 0..9).
+            replace_quoted_environment_variables( str );
+            replace_input_arg_values( str, args, c_environment_variable_marker_2 );
 
-         replace_input_arg_values( str, args, c_environment_variable_marker_1 );
-         replace_unquoted_environment_variables( str );
+            replace_input_arg_values( str, args, c_environment_variable_marker_1 );
+            replace_unquoted_environment_variables( str );
 
-         // NOTE: With either format doubled tokens (but not %LIKE%%THIS%) are replaced by a single.
-         string doubled_marker_1( 2, c_environment_variable_marker_1 );
-         replace( str, doubled_marker_1, string( 1, c_environment_variable_marker_1 ) );
+            // NOTE: With either format doubled tokens (but not %LIKE%%THIS%) are replaced by a single.
+            string doubled_marker_1( 2, c_environment_variable_marker_1 );
+            replace( str, doubled_marker_1, string( 1, c_environment_variable_marker_1 ) );
 
-         string doubled_marker_2( 2, c_environment_variable_marker_2 );
-         replace( str, doubled_marker_2, string( 1, c_environment_variable_marker_2 ) );
+            string doubled_marker_2( 2, c_environment_variable_marker_2 );
+            replace( str, doubled_marker_2, string( 1, c_environment_variable_marker_2 ) );
+         }
 
          // NOTE: For environment variable assignment VAR=@file:<fname> allows the variable to be set
          // to the file's content or even to the output of a system call using VAR=@file:~<cmd> (with
