@@ -673,6 +673,9 @@ session_variable @mapped_test:ghi
 <test_args.cin XXX "" ZZZ
 <test_args.cin "" "" ZZZ
 ;
+_#Test $0...
+_<test_args.cin $1 $2 $3
+;
 utc_to_local AEST "2013-10-05 15:00"
 utc_to_local AEST+ "2013-10-05 15:00"
 utc_from_local AEST "2013-10-06 01:00"

@@ -81,8 +81,9 @@ Prefixes are a single character (surround by single quotes here) as follows:
 '@' - conditional command prefix (covered in the next section)
 '#' - echo whatever characters that follow (after environment variable replacements)
 ';' - ignore whatever characters that follow (i.e. this is simply used for comments)
-'.' - use this as a prefix for any normal command to suppress command output (OUTPUT var is still assigned)
 ' ' - use this as a prefix for any normal command in order to not have the command line recorded in history
+'_' - use this as a prefix for any normal command in order prevent $ (or %) environment variable expansions
+'.' - use this as a prefix for any normal command to suppress command output (OUTPUT var is still assigned)
 '-' - use on its own to not record the command line if identical to the prior one (else is the same as ' ')
 '+' - use on its own to record repeated lines in the command line history (or as a prefix just the current)
 '<' - use this prefix followed by a file name (with optionally any arguments) for executing an input script
