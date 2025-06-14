@@ -397,10 +397,12 @@ void replace_field_values_to_log( string& next_command,
       if( pos != string::npos )
       {
          string::size_type rpos = next_command.rfind( '"' );
+
          if( rpos == string::npos )
             throw runtime_error( "invalid next_command: " + next_command );
 
          bool okay = false;
+
          string::size_type npos = next_command.find( '"', pos + 1 );
 
          // NOTE: The first pair of quotes might be around the key info so skip if that is the case.
@@ -4464,6 +4466,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool skip_execute = false;
 
          string ltf_key( c_log_transformation_scope_any_perform_op );
+
          ltf_key += " " + module + " " + string( c_log_transformation_op_skip_operation ) + " " + mclass;
 
          string ltf_uid_dtm_key( ltf_key + " " + uid + " " + dtm );
@@ -4501,6 +4504,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                string execute_args( args );
 
                string ltf_key( c_log_transformation_scope_execute_only );
+
                ltf_key += " " + module + " " + mclass
                 + " " + method_id + " " + string( c_log_transformation_op_map_first_arg_field_ids );
 
@@ -4513,11 +4517,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      string new_first_arg;
 
                      vector< string > field_ids;
+
                      split( execute_args.substr( 0, pos ), field_ids );
 
                      for( size_t i = 0; i < field_ids.size( ); i++ )
                      {
                         string ltf_key( c_log_transformation_scope_any_change );
+
                         ltf_key += " " + module + " " + mclass + " "
                          + string( c_log_transformation_op_map_field_id ) + " " + field_ids[ i ];
 
@@ -4539,6 +4545,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             else
             {
                string ltf_key( c_log_transformation_scope_execute_only );
+
                ltf_key += " " + module + " " + mclass
                 + " " + method_id + " " + string( c_log_transformation_op_no_args_append );
 
@@ -4558,6 +4565,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                log_transaction = false;
 
             bool has_any_set_flds = false;
+
             for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
             {
                // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
@@ -4610,6 +4618,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   throw runtime_error( "unexpected # keys ("
                    + to_string( all_keys.size( ) ) + ") not equal to # vers (" + to_string( all_vers.size( ) ) + ")" );
 
+               vector< string > initial_field_values;
+
                for( size_t i = 0; i < all_keys.size( ); i++ )
                {
                   string next_key( key_prefix + all_keys[ i ] );
@@ -4638,6 +4648,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   }
 
                   instance_prepare_execute( handle, "", next_key, next_ver, has_any_set_flds );
+
+                  if( log_as_update )
+                     instance_get_field_values( handle, "", initial_field_values );
 
                   if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                      check_instance_op_permission( module, handle, get_execute_procedure_info( handle, "", method_id ) );
@@ -4699,7 +4712,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         execute_object_command( handle, "", method_name_and_args );
 
-                        if( i == 0 && log_transaction && !using_verbose_logging )
+                        if( ( i == 0 ) && log_transaction && !using_verbose_logging )
                         {
                            // NOTE: If not using verbose logging then unchanged field values will be omitted.
                            if( value != j->second )
@@ -4744,12 +4757,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   if( ( i == 0 ) && log_transaction && log_as_update )
                   {
-                     string fields_and_values( instance_get_fields_and_values( handle, "", next_key ) );
+                     string fields_and_values( instance_get_fields_and_values( handle, "", &initial_field_values ) );
 
                      if( !fields_and_values.empty( ) )
                      {
-                        next_command = "pu " + uid + " " + dtm + " "
-                         + module + " " + mclass + " " + next_key + " =" + next_ver + " \"" + fields_and_values + "\"";
+                        next_command = "pu " + uid + " " + dtm + " " + module
+                         + " " + mclass + " " + next_key + " =" + next_ver + " \"" + fields_and_values + "\"";
+
+                        if( !using_verbose_logging )
+                           replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
 
                         remove_uid_extra_from_log_command( next_command );
 
@@ -4768,11 +4784,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   }
 
                   string return_response;
+
                   // NOTE: Cannot have CR/LF pairs in a response (as the client will get confused) so if
                   // these are found in the initial return string then change them to just LF's.
                   for( size_t j = 0; j < next_response.size( ); j++ )
                   {
-                     if( j < ( next_response.size( ) - 1 )
+                     if( ( j < ( next_response.size( ) - 1 ) )
                       && ( next_response[ j ] == '\r' ) && ( next_response[ j + 1 ] == '\n' ) )
                      {
                         ++i;
@@ -4794,6 +4811,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !is_first && !skip_transaction )
                {
                   skip_transaction = true;
+
                   transaction_commit( );
 
                   string sess_retval( get_raw_session_variable( get_special_var_name( e_special_var_return ) ) );
