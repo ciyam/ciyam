@@ -10,8 +10,8 @@
 ;  <filename>*script*
 ;  <arguments>`{`$model`}_`{`$class`}_`{`$gen_proc`}.cin @storage @module @uid @tz_abbr @key @file @title
 ; </script>
-.storage_init %1
-.perform_fetch %2 `{`$class`}:child_`{`$child`} -u=%3 -tz=%4`{`!`@eq`(`$xfilters`,`'true`'`) -f=*`}`{`!`@eq`(`$rfield`,`'`'`) "-q=`{`$rfield`}:`{`$rvalue`}\
-"`} -x=@print=1 "%5:`{`@eq`(`$rorder`,`'true`'`)`{`!`@eq`(`$rfield`,`'`'`)`{`$rfield`},`}`}`{`!`@eq`(`$sfield`,`'`'`)`{`$sfield`},`}`{`$ofield`} "\
- `{`$rfields`} -pdf `{`$model`}_`{`$cclass`}.`{`$list_ext`}.pdf.sio "%6" "%7"
+.storage_init $1
+.perform_fetch $2 `{`$class`}:child_`{`$child`} -u=$3 -tz=$4`{`!`@eq`(`$xfilters`,`'true`'`) -f=*`}`{`!`@eq`(`$rfield`,`'`'`) "-q=`{`$rfield`}:`{`$rvalue`}\
+"`} -x=@print=1 "$5:`{`@eq`(`$rorder`,`'true`'`)`{`!`@eq`(`$rfield`,`'`'`)`{`$rfield`},`}`}`{`!`@eq`(`$sfield`,`'`'`)`{`$sfield`},`}`{`$ofield`} "\
+ `{`$rfields`} -pdf `{`$model`}_`{`$cclass`}.`{`$list_ext`}.pdf.sio "$6" "$7"
 .quit

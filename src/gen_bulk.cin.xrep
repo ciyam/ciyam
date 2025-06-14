@@ -9,8 +9,8 @@
 ;  <filename>*script*
 ;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage @uid @module @class
 ; </script>
-.storage_init %1
+.storage_init $1
 .system_variable `{`$model`}_`{`$class`}_`{`$procedure`} @increment
-.perform_bulk_ops %2 @now %3 %4 `{`$model`}_`{`$class`}_`{`$procedure`}.csv
+.perform_bulk_ops $2 @now $3 $4 `{`$model`}_`{`$class`}_`{`$procedure`}.csv
 .system_variable `{`$model`}_`{`$class`}_`{`$procedure`} @decrement
 .quit

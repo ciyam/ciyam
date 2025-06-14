@@ -23,7 +23,7 @@
 ;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage auto `{`$model_id`} `{`$class_id`} @none `{`!`@eq`(`$no_trans`,`'`'`)-`}`{`$procedure_id`}
 ; </script>\
 `}
-.storage_init %1
+.storage_init $1
 `{`!`@eq`(`$comment`,`'`'`)#`{`$comment`}`}
-.pe %2 @now %3 %4 "-v=" "%5" %6
+.pe $2 @now $3 $4 "-v=" "$5" $6
 .quit
