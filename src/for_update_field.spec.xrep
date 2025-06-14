@@ -1,6 +1,6 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_update_field)] `{`$arg_id`}
-   // NOTE: Empty code block for scope purposes.
+   if( !get_obj( ).get_is_for_peer( ) )
    {
 `{`@eq`(`$arg_use_value_after`,`'`'`)\
       string field_value( to_string( get_obj( ).`{`$arg_sfield`}( ) ) );
