@@ -392,9 +392,17 @@ class CIYAM_BASE_DECL_SPEC class_base
       e_field_label_type_short_id
    };
 
+   enum field_include_type
+   {
+      e_field_include_type_normal,
+      e_field_include_type_modified,
+      e_field_include_type_exhaustive
+   };
+
    std::string get_fields_and_values(
     field_label_type label_type = e_field_label_type_full_id,
-    bool include_defaults = false, bool include_transients = false ) const;
+    field_include_type include_type = e_field_include_type_normal,
+    const std::vector< std::string >* p_initial_field_values = 0 ) const;
 
    virtual std::string get_field_value( int field ) const = 0;
    virtual void set_field_value( int field, const std::string& value ) = 0;

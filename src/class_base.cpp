@@ -1626,8 +1626,8 @@ string class_base::get_short_field_id( int field ) const
       return field_id.substr( pos );
 }
 
-string class_base::get_fields_and_values(
- field_label_type label_type, bool include_defaults, bool include_transients ) const
+string class_base::get_fields_and_values( field_label_type label_type,
+ field_include_type include_type, const vector< string >* p_initial_field_values ) const
 {
    string str;
 
@@ -1635,20 +1635,47 @@ string class_base::get_fields_and_values(
 
    int num_fields = get_num_fields( );
 
+   if( p_initial_field_values )
+   {
+      if( p_initial_field_values->size( ) != num_fields )
+         throw runtime_error( "initial field values vector size is "
+          + to_string( p_initial_field_values->size( ) ) + " but needs to be " + to_string( num_fields ) );
+   }
+
    string identity_suffix( get_system_variable( get_special_var_name( e_special_var_system_identity ) ) );
+
+   bool include_modified = ( include_type == e_field_include_type_modified );
+   bool include_everything = ( include_type == e_field_include_type_exhaustive );
 
    for( size_t i = 0; i < num_fields; i++ )
    {
+      bool include = ( include_everything ? true : ( !is_field_default( i ) && !is_field_transient( i ) ) );
+
+      // NOTE: Including modified restricts the fields for inclusion
+      // to only non-default and non-transient changed field values.
+      if( include && include_modified )
+      {
+         if( !p_initial_field_values )
+            include = has_field_changed( i );
+         else
+            include = ( get_field_value( i ) != ( *p_initial_field_values )[ i ] );
+      }
+
+      // NOTE: Will always include the graph parent if is not empty.
+      if( !graph_parent_fk_field.empty( ) && ( graph_parent_fk_field == get_field_id( i ) ) )
+         include = true;
+
       string force_field_num( "@" + to_string( i ) );
 
       // NOTE: A "force field" object variable is in the form "@n"
       // (where "n" is the field number) and if found will "force"
-      // the field to be included even if it is transient.
+      // the field to always be included.
       string force_field_value( get_variable( force_field_num ) );
 
-      if( ( ( include_defaults || !is_field_default( i ) )
-       && ( include_transients || !is_field_transient( i ) || !force_field_value.empty( ) ) )
-       || ( !graph_parent_fk_field.empty( ) && ( graph_parent_fk_field == get_field_id( i ) ) ) )
+      if( !force_field_value.empty( ) )
+         include = true;
+
+      if( include )
       {
          if( !had_first )
             had_first = true;
@@ -1945,6 +1972,7 @@ void class_base::cache_original_values( )
    original_values.clear( );
 
    int num_fields = get_num_fields( );
+
    for( size_t i = 0; i < num_fields; i++ )
       original_values.push_back( get_field_value( i ) );
 
