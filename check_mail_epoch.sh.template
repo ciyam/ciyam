@@ -8,13 +8,23 @@ home=/home/$USER
 
 cd ${DOLLAR}home
 
+mail-lock --retry 3
+if [ $? -ne 0 ]; then
+ exit
+fi
 last=$(mail -H | tail -n 1)
+mail-unlock
+
+if [ "${DOLLAR}last" == "" ]; then
+ exit
+fi
 
 from=$(echo ${last:7:19})
 
 when=${last:30:12}
 subject=${last:53}
 
+ignore=0
 changed=0
 
 new_epoch=$(date -d "${DOLLAR}when" +"%s")
@@ -24,7 +34,16 @@ if [ -f .mail_epoch ]; then
 
  if [ $((${DOLLAR}new_epoch)) -gt $((${DOLLAR}old_epoch)) ]; then
   changed=1
-  ntfy pub --title="(@$USER) ${DOLLAR}from" up_$USER "${DOLLAR}subject"
+
+  if [[ "${DOLLAR}from" == *"Mail System"* ]]; then
+   if [[ "${DOLLAR}subject" == *"FOLDER INTERNAL DATA"* ]]; then
+    ignore=1
+   fi
+  fi
+
+  if [ "${DOLLAR}ignore" == "0" ]; then
+   ntfy pub --title="(@$USER) ${DOLLAR}from" up_$USER "${DOLLAR}subject"
+  fi
  fi
 else
  changed=1

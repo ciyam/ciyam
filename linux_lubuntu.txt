@@ -1124,8 +1124,9 @@ Creating a Cron Job for new mail notifications using Ntfy
 ---------------------------------------------------------
 
 NOTE: The "mail" utility needs to be installed (if was skipped previously).
-
 sudo apt install mailutils -y
+
+sudo apt install lockfile-progs -y
 
 sudo wget -O /usr/bin/expand_template https://raw.githubusercontent.com/ciyam/ciyam/master/expand_template
 sudo wget -O /usr/bin/check_mail_epoch.sh.template https://raw.githubusercontent.com/ciyam/ciyam/master/check_mail_epoch.sh.template
