@@ -104,6 +104,7 @@ const uint64_t c_state_is_changing = UINT64_C( 0x04 );
 const uint64_t c_state_unactionable = UINT64_C( 0x08 );
 const uint64_t c_state_ignore_uneditable = UINT64_C( 0x10 );
 const uint64_t c_state_force_focus_refresh = UINT64_C( 0x20 );
+const uint64_t c_state_potentially_changing = UINT64_C( 0x40 );
 
 const uint64_t c_sys_state_flags = UINT64_C( 0x00000000000000ff );
 const uint64_t c_user_state_flags = UINT64_C( 0xffffffffffffff00 );

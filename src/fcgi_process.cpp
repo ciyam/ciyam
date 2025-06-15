@@ -75,7 +75,9 @@ const int c_auto_refresh_seconds_hello = 2;
 const int c_auto_refresh_seconds_local = 3;
 const int c_auto_refresh_seconds_remote = 5;
 
-const int c_warn_refresh_seconds = c_timeout_seconds / 2;
+const int c_slow_refresh_seconds = 7;
+
+const int c_warn_refresh_seconds = ( c_timeout_seconds / 2 );
 
 const char* const c_checked = "@@checked";
 const char* const c_app_name = "@@app_name";
@@ -207,6 +209,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
    string view_security_level_value;
 
    bool performed_file_attach_or_detach = false;
+   bool has_any_potentially_changing_records = false;
 
    string app_dir_name( lower( get_storage_info( ).storage_name ) );
 
@@ -217,6 +220,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
    for( int i = 0; i < 10; i++ )
    {
       string show_opt( c_show_prefix );
+
       show_opt += ( '0' + i );
 
       if( input_data.count( show_opt ) )
@@ -596,6 +600,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                if( !( state & c_state_is_changing ) && extra_data.count( c_view_field_extra_always_editable ) )
                   has_always_editable = true;
 
+               if( state & c_state_potentially_changing )
+                  has_any_potentially_changing_records = true;
+
                // NOTE: Encrypted fields that are < 20 characters are assumed to not have been encrypted.
                if( !ignore_encrypted
                 && item_value.length( ) >= 20
@@ -781,7 +788,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             // NOTE: Populate lists for user selection (only if editing an existing or creating a new
             // record or if the view contains one ore more "is_always_editable" fields).
             // FUTURE: If not editing or new then only fetch data for the "is_always_editable" fields.
-            if( cmd != c_cmd_pview && ( is_new_record || has_always_editable || act == c_act_edit ) )
+            if( ( cmd != c_cmd_pview )
+             && ( is_new_record || has_always_editable || ( act == c_act_edit ) ) )
             {
                if( !special.empty( ) )
                   specials.insert( special );
@@ -795,6 +803,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   string field_id( fld.field );
 
                   string value_id( field_id );
+
                   if( !fld.pfield.empty( ) )
                      value_id += "." + fld.pfield;
 
@@ -921,11 +930,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      // situations where the number of records is too unwieldy to hold in a drop list)
                      // then do not fetch the foreign key records.
                      string pfield( fld.pfield );
+
                      string::size_type pos = pfield.find( '+' );
+
                      if( pos != string::npos )
                         continue;
 
                      string parent_key;
+
                      if( !field.empty( ) )
                         parent_key = extra;
 
@@ -947,6 +959,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      }
 
                      previous_parents.insert( make_pair( info, field_id ) );
+
                      view.parent_lists.insert( make_pair( field_id, parent_row_data ) );
 
                      // NOTE: For mandatory fields where data has been found that are key/fkey
@@ -957,6 +970,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         string key( parent_row_data[ 0 ].first );
 
                         string::size_type pos = key.find( ' ' );
+
                         if( pos != string::npos )
                            key.erase( pos );
 
@@ -1031,6 +1045,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             if( !had_send_or_recv_error && !is_new_record && act != c_act_edit && cmd != c_cmd_pview )
             {
                int num = 0;
+
                map< string, list_info_const_iterator > children;
 
                // NOTE: First determine the order of child tabs according to name.
@@ -1307,11 +1322,34 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
        list_selections, list_search_text, list_search_values, list_page_info,
        listsort, "", ( cmd == c_cmd_plist ), 0, "", &specials, *p_session_info ) )
          had_send_or_recv_error = true;
+      else if( list.row_data.size( ) )
+      {
+         // FUTURE: For improved efficiency (and for child lists
+         // if is wanted) "has_any_potentially_changing_records"
+         // should be handled as "has_any_changing_records" is.
+         for( size_t i = 0; i < list.row_data.size( ); i++ )
+         {
+            uint64_t state = 0;
+
+            string type_info;
+            string key_and_version;
+
+            string key_ver_rev_state_and_type_info( list.row_data[ i ].first );
+
+            parse_key_ver_rev_state_and_type_info( key_ver_rev_state_and_type_info, key_and_version, state, type_info );
+
+            if( state & c_state_potentially_changing )
+            {
+               has_any_potentially_changing_records = true;
+               break;
+            }
+         }
+      }
 
       string link_name( get_view_or_list_header( qlink, olist.name, mod_info, *p_session_info, &list.name ) );
 
       // NOTE: If there is a PDF specification then generate the file (unless session is anonymous).
-      if( !using_anonymous && cmd == c_cmd_plist && !had_send_or_recv_error && !list.pdf_spec_name.empty( ) )
+      if( !using_anonymous && ( cmd == c_cmd_plist ) && !had_send_or_recv_error && !list.pdf_spec_name.empty( ) )
       {
          populate_list_info( list, list_selections, list_search_text, list_search_values,
           list_page_info, listsort, "", ( cmd == c_cmd_plist ), 0, "", &specials, *p_session_info,
@@ -1745,6 +1783,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   extra_content << " | ";
 
                string title( mci->get_string( "title" ) );
+
                string prefix( get_storage_info( ).module_prefix );
 
                // NOTE: Remove the module prefix (if present) and trailing version information.
@@ -3301,7 +3340,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
       if( !is_in_edit )
       {
-         if( has_any_changing_records )
+         if( has_any_changing_records || has_any_potentially_changing_records )
          {
             string seconds;
 
@@ -3312,14 +3351,19 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                is_blockchain_application = true;
 
             if( !is_blockchain_application
-             && p_session_info->ip_addr == string( c_local_ip_addr ) )
+             && ( p_session_info->ip_addr == string( c_local_ip_addr ) ) )
                seconds = to_string( c_auto_refresh_seconds_local );
             else
                seconds = to_string( c_auto_refresh_seconds_remote );
 
-            extra_content_func += "auto_refresh_seconds = " + seconds + ";\nauto_refresh( );\n";
+            if( !has_any_changing_records )
+               extra_content_func += "slow_refresh_seconds = "
+                + to_string( c_slow_refresh_seconds ) + ";\nslow_refresh( );\n";
+            else
+               extra_content_func += "auto_refresh_seconds = " + seconds + ";\nauto_refresh( );\n";
          }
-         else
+
+         if( !has_any_changing_records )
          {
             if( ( cmd == c_cmd_view )
              && ( view.state & c_state_force_focus_refresh ) )

@@ -97,13 +97,16 @@ var extra_values = '';
 
 var warn_refresh_func = '';
 
-var auto_refresh_seconds = 10;
-var warn_refresh_seconds = 900;
+var auto_refresh_seconds = 5;
+var slow_refresh_seconds = 7;
+var warn_refresh_seconds = 500;
 
 var warn_refresh_timer_id = 0;
 
 var load_content_seconds = 30;
 var load_content_timer_id = 0;
+
+var slow_auto_refresh_seconds = 3;
 
 var writeable_local_storage = false;
 var writeable_session_storage = false;
@@ -254,6 +257,22 @@ function warn_refresh( )
    {
       warn_refresh_seconds -= 1;
       warn_refresh_timer_id = setTimeout( "warn_refresh( )", 1000 );
+   }
+}
+
+function slow_refresh( )
+{
+   if( slow_refresh_seconds == 1 )
+   {
+      slow_refresh_seconds = 0;
+      auto_refresh_seconds = slow_auto_refresh_seconds;
+
+      auto_refresh( );
+   }
+   else if( slow_refresh_seconds > 0 )
+   {
+      slow_refresh_seconds -= 1;
+      slow_refresh_timer_id = setTimeout( "slow_refresh( )", 1000 );
    }
 }
 
@@ -962,6 +981,11 @@ function dyn_load( f, extra, clearContext )
       qsFurther = extra;
 
       isDynamicLoad = true;
+
+      auto_refresh_seconds = 0;
+      slow_refresh_seconds = 0;
+
+      hide_auto_progress( );
 
       load_form = f;
       load( );

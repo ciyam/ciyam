@@ -1467,6 +1467,7 @@ bool populate_list_info( list_source& list,
    }
 
    bool sort_manually = false;
+
    if( ( list.lici->second )->extras.count( c_list_type_extra_sort_no_limit ) )
       sort_manually = true;
 
@@ -1492,6 +1493,7 @@ bool populate_list_info( list_source& list,
             // NOTE: If an "skey" owner was changed then ignore any existing restrictions for
             // the "skey" users (as these values are not applicable to the new "skey" owner).
             bool found_special = false;
+
             for( set< string >::const_iterator ci = p_specials->begin( ); ci != p_specials->end( ); ++ci )
             {
                for( size_t i = 0; i < ( list.lici->second )->parents.size( ); i++ )
@@ -1520,6 +1522,7 @@ bool populate_list_info( list_source& list,
          if( svname[ 0 ] >= 'T' && svname[ 0 ] <= 'U' && !field_value.empty( ) )
          {
             date_time dt( field_value );
+
             field_value = format_date_time( dt );
          }
 
@@ -1560,6 +1563,7 @@ bool populate_list_info( list_source& list,
    if( !list_search_text.empty( ) )
    {
       string name( list.id );
+
       name += c_srch_suffix;
 
       if( list_search_text.count( name ) )
@@ -1595,6 +1599,7 @@ bool populate_list_info( list_source& list,
       {
          if( !set_field_values.empty( ) )
             set_field_values += ',';
+
          set_field_values += "@vextra1=" + p_view->vextra1_value;
       }
 
@@ -1602,6 +1607,7 @@ bool populate_list_info( list_source& list,
       {
          if( !set_field_values.empty( ) )
             set_field_values += ',';
+
          set_field_values += "@vextra2=" + p_view->vextra2_value;
       }
    }
@@ -1656,11 +1662,13 @@ bool populate_list_info( list_source& list,
       {
          if( i > 0 || !key_prefix.empty( ) )
             key_prefix += ",";
+
          key_prefix += list.print_summary_field_ids[ i ];
       }
 
       if( !key_prefix.empty( ) && !list.all_index_fields.empty( ) )
          key_prefix += ",";
+
       key_prefix += list.all_index_fields;
    }
 
@@ -1675,6 +1683,7 @@ bool populate_list_info( list_source& list,
    if( num_fixed_key_values )
    {
       key_prefix += '#';
+
       key_prefix += ( '0' + num_fixed_key_values );
 
       key_prefix += " " + fixed_key_values;
@@ -1688,6 +1697,7 @@ bool populate_list_info( list_source& list,
    if( p_view && !p_view->cid.empty( ) && list.type != c_list_type_user_child )
    {
       class_info = p_view->cid;
+
       class_info += ":_" + list.new_pfield;
 
       key_info = parent_key + ":" + key_info;
@@ -1705,10 +1715,12 @@ bool populate_list_info( list_source& list,
          key_info = sess_info.user_group + ":" + key_prefix;
 
       class_info = ( list.lici->second )->pclass;
+
       class_info += ":_" + ( list.lici->second )->pfield;
 
       if( !field_list.empty( ) )
          field_list += ",";
+
       field_list += ( list.lici->second )->pfield;
    }
    else if( list.type == c_list_type_user || list.type == c_list_type_nonuser || list.type == c_list_type_user_child )
@@ -1726,6 +1738,7 @@ bool populate_list_info( list_source& list,
 
          if( !field_list.empty( ) )
             field_list += ",";
+
          field_list += ( list.lici->second )->pfield;
       }
       else
@@ -1734,6 +1747,7 @@ bool populate_list_info( list_source& list,
 
          if( !field_list.empty( ) )
             field_list += ",";
+
          field_list += ( list.lici->second )->ufield;
       }
    }
@@ -1771,6 +1785,7 @@ bool populate_list_info( list_source& list,
    {
       if( !perms.empty( ) )
          perms += ",";
+
       perms += i->first;
    }
 
@@ -1796,21 +1811,25 @@ bool populate_list_info( list_source& list,
 
       // NOTE: If we have just processed a "next" but found no rows then instead process
       // as though it was a "prev" in order to make sure rows are displayed if possible.
-      if( !listinfo.empty( ) && listinfo[ 0 ] == 'N' && list.row_data.empty( ) )
+      if( !listinfo.empty( ) && ( listinfo[ 0 ] == 'N' ) && list.row_data.empty( ) )
       {
          prev = true;
          next = false;
+
          redo_fetch = true;
       }
 
       // NOTE: If we have just processed a "prev" but found only the limit or less rows
       // then instead process as though it were a "first" so that the possibly the full
       // limit number of rows and a "next" can be displayed.
-      if( was_prev && row_limit && list.row_data.size( ) <= ( size_t )row_limit )
+      if( was_prev && row_limit && ( list.row_data.size( ) <= ( size_t )row_limit ) )
       {
          prev = false;
+
          redo_fetch = true;
+
          list.row_data.clear( );
+
          key_info = old_key_info;
       }
 
@@ -1860,6 +1879,7 @@ bool populate_list_info( list_source& list,
                {
                   if( i > 0 )
                      list.prev_key_info += ",";
+
                   list.prev_key_info += escaped( escaped( columns[ index_field - 1 + i ], "," ) );
                }
 
@@ -1890,6 +1910,7 @@ bool populate_list_info( list_source& list,
                {
                   if( i > 0 )
                      list.next_key_info += ",";
+
                   list.next_key_info += escaped( escaped( columns[ index_field - 1 + i ], "," ) );
                }
 
@@ -1901,9 +1922,11 @@ bool populate_list_info( list_source& list,
          }
 
          bool has_ignore_encrypted_field = false;
+
          size_t ignore_encryped_field_column = 0;
 
          vector< size_t > encrypted_columns;
+
          for( size_t i = 0; i < list.value_ids.size( ); i++ )
          {
             if( list.encrypted_fields.count( list.value_ids[ i ] ) )
@@ -1921,15 +1944,17 @@ bool populate_list_info( list_source& list,
          if( !encrypted_columns.empty( ) )
          {
             string sid;
+
             get_server_sid( sid );
 
             for( size_t i = 0; i < list.row_data.size( ); i++ )
             {
                vector< string > columns;
+
                raw_split( list.row_data[ i ].second, columns );
 
                if( !has_ignore_encrypted_field
-                || columns[ ignore_encryped_field_column ] != string( c_true_value ) )
+                || ( columns[ ignore_encryped_field_column ] != string( c_true_value ) ) )
                {
                   for( size_t j = 0; j < encrypted_columns.size( ); j++ )
                   {
@@ -1959,6 +1984,7 @@ bool populate_list_info( list_source& list,
                   const enum_info& info( get_storage_info( ).enums.find( ( list.lici->second )->dfenum )->second );
 
                   data_container new_record_list;
+
                   for( size_t i = 0; i < info.values.size( ); i++ )
                   {
                      // NOTE: Enum values that start with a '-' are not included for user selection
@@ -2034,6 +2060,7 @@ bool populate_list_info( list_source& list,
                            throw runtime_error( "unexpected select special '" + special.substr( 1 ) + "' found" );
 
                         string svname( "A" );
+
                         svname += ( list.lici->second )->parents[ i ].field;
 
                         if( list_search_values.count( svname ) )
@@ -2047,6 +2074,7 @@ bool populate_list_info( list_source& list,
                         else
                         {
                            string sel_id( list.id );
+
                            sel_id += c_prnt_suffix;
                            sel_id += ( '0' + i );
 
