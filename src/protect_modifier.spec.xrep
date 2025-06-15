@@ -2,11 +2,14 @@
    // [(start protect_modifier)] `{`$arg_id`}
    if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( ) && ( `}state & c_modifier_`{`$arg_modifier`}`{`!`@eq`(`$arg_tfield`,`'`'`) )`} )
 `{`@eq`(`$arg_scope`,`'edit`'`)\
-      state |= ( c_state_uneditable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`}`{`@eq`(`$arg_unactionable`,`'true`'`) | c_state_unactionable`} );
+      state |= ( c_state_uneditable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`}\
+`{`@eq`(`$arg_unactionable`,`'true`'`) | c_state_unactionable`}`{`@eq`(`$arg_could_change`,`'true`'`) | c_state_potentially_changing`} );
 `,`@eq`(`$arg_scope`,`'delete`'`)\
-      state |= ( c_state_undeletable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`}`{`@eq`(`$arg_unactionable`,`'true`'`) | c_state_unactionable`} );
+      state |= ( c_state_undeletable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`}\
+`{`@eq`(`$arg_unactionable`,`'true`'`) | c_state_unactionable`}`{`@eq`(`$arg_could_change`,`'true`'`) | c_state_potentially_changing`} );
 `,\
-      state |= ( c_state_uneditable | c_state_undeletable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`}`{`@eq`(`$arg_unactionable`,`'true`'`) | c_state_unactionable`} );
+      state |= ( c_state_uneditable | c_state_undeletable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`}\
+`{`@eq`(`$arg_unactionable`,`'true`'`) | c_state_unactionable`}`{`@eq`(`$arg_could_change`,`'true`'`) | c_state_potentially_changing`} );
 `}\
    // [(finish protect_modifier)] `{`$arg_id`}
 `}

@@ -1420,18 +1420,22 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield\
  arg_label=$specification_\0_label arg_value=$specification_\0_value arg_modifier=$specification_\0_modifier\
  arg_tfield=$specification_\0_tfield arg_scope=$specification_\0_scope arg_changing=$specification_\0_changing\
- arg_admin_always=$specification_\0_admin_always arg_scripts_always=$specification_\0_scripts_always`}\
+ arg_could_change=$specification_\0_could_change arg_admin_always=$specification_\0_admin_always\
+ arg_scripts_always=$specification_\0_scripts_always`}\
 `,\
 `@eq`(`'\1`'`,`'protect_modifier`'`)
 `{`#protect_modifier.spec.xrep section=get_state\
- arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
- arg_scope=$specification_\0_scope arg_changing=$specification_\0_changing arg_unactionable=$specification_\0_unactionable`}\
+ arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier\
+ arg_tfield=$specification_\0_tfield arg_scope=$specification_\0_scope\
+ arg_changing=$specification_\0_changing arg_could_change=$specification_\0_could_change\
+ arg_unactionable=$specification_\0_unactionable`}\
 `,\
 `@eq`(`'\1`'`,`'protect_not_equal`'`)
 `{`#protect_not_equal.spec.xrep section=get_state\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield\
  arg_label=$specification_\0_label arg_value=$specification_\0_value arg_modifier=$specification_\0_modifier\
- arg_tfield=$specification_\0_tfield arg_scope=$specification_\0_scope arg_changing=$specification_\0_changing\
+ arg_tfield=$specification_\0_tfield arg_scope=$specification_\0_scope\
+ arg_changing=$specification_\0_changing arg_could_change=$specification_\0_could_change\
  arg_admin_always=$specification_\0_admin_always arg_scripts_always=$specification_\0_scripts_always`}\
 `,\
 `@eq`(`'\1`'`,`'refresh_on_focus`'`)
@@ -1442,7 +1446,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `{`#restrict_protect.spec.xrep section=get_state\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_tfield=$specification_\0_tfield\
  arg_permission=$specification_\0_permission arg_permission_id=$specification_\0_permission_id\
- arg_func=$specification_\0_func arg_scope=$specification_\0_scope arg_changing=$specification_\0_changing\
+ arg_func=$specification_\0_func arg_scope=$specification_\0_scope\
+ arg_changing=$specification_\0_changing arg_could_change=$specification_\0_could_change\
  arg_admin_always=$specification_\0_admin_always arg_no_ignore=$specification_\0_no_ignore\
  arg_unactionable=$specification_\0_unactionable`}\
 `,\
@@ -1457,7 +1462,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield\
  arg_label=$specification_\0_label arg_value=$specification_\0_spec_value arg_modifier=$specification_\0_modifier\
  arg_tfield=$specification_\0_tfield arg_scope=$specification_\0_spec_scope arg_changing=$specification_\0_changing\
- arg_admin_always=$specification_\0_admin_always arg_scripts_always=$specification_\0_scripts_always`}\
+ arg_could_change=$specification_\0_could_change arg_admin_always=$specification_\0_admin_always\
+ arg_scripts_always=$specification_\0_scripts_always`}\
 `,\
 `@eq`(`'\1`'`,`'unactionable_field_value`'`)
 `{`#unactionable_field_value.spec.xrep section=get_state\
