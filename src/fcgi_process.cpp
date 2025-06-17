@@ -1118,7 +1118,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                string new_file_info( relative_prefix + "/" + session_id );
 
-               if( act == c_act_remove || file_exists( new_file_info ) )
+               if( ( act == c_act_remove ) || file_exists( new_file_info ) )
                {
                   string new_file;
                   string new_source;
@@ -1141,8 +1141,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                   vector< pair< string, string > > field_value_pairs;
 
-                  // NOTE: It is expected that the file name in the "new_file_info" will be prefixed
-                  // by the file's path so this will now be removed for the attached file field value.
+                  // NOTE: It is expected that the file name in the "new_file_info" has been prefixed
+                  // with the file's path so this is now removed for the attached file field's value.
                   string new_file_name( new_file );
 
                   if( !new_file_name.empty( ) && new_file_name[ 0 ] == '>' )
@@ -1182,8 +1182,11 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                      field_value_pairs.push_back( make_pair( file_field_id, new_file_name ) );
 
+                     // NOTE: This needs to passed to "valid_file_name" to prevent UTF-8 characters from being stripped.
+                     bool has_utf8_chars = false;
+
                      if( !new_source.empty( ) && !view.filename_field.empty( ) )
-                        field_value_pairs.push_back( make_pair( view.filename_field, valid_file_name( new_source ) ) );
+                        field_value_pairs.push_back( make_pair( view.filename_field, valid_file_name( new_source, &has_utf8_chars ) ) );
 
                      // NOTE: If a "modified" date/time field exists then update this to the current
                      // date/time.
