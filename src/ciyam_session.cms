@@ -121,7 +121,7 @@ system_gen_key|gen_key "generate one or more key values" [<val/-num=/num_keys>]
 system_mutexes|mutexes "list system mutexes and their session lock ids"
 system_version|version "display protocol version"
 system_identity|identity "get/set system identity information" [<opt/-raw/raw>][<val/-k=/pubkey>][<val//info>][<val//encrypted>]
-system_log_tail|log_tail "view the tail of one of the system/application log files" [<val/-n=10/lines>]<opt/backup>|<opt/script>|<opt/server>|<opt/restore>|{<opt/interface>[<val//app_directory>]}
+system_log_tail|log_tail "view the tail of one of the system/application log files" [<val/-n=10/lines>]<opt/backup>|<opt/script>|<opt/server>|<opt/restore>|{<opt/interface>|<opt/application>[<val//application_name>]}
 system_notifier|notifier "starts/finishes/suspends/unsuspends a system file/directory notifier" <opt/-start/start>|<opt/-finish/finish>|<opt/-suspend/suspend>|<opt/-unsuspend/unsuspend><val//file_or_directory>
 system_passtotp|passtotp "retrieve a TOTP system password" <val//secret>
 system_password|password "retrieve an encrypted system password" <val//name>

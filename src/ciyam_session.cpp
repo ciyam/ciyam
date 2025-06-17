@@ -6436,7 +6436,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool is_script = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_script );
          bool is_server = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_server );
          bool is_restore = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_restore );
-         string app_directory( get_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_app_directory ) );
+         bool is_interface = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_interface );
+         bool is_application = has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_application );
+         string application_name( get_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_application_name ) );
 
          possibly_expected_error = true;
 
@@ -6445,18 +6447,31 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !lines.empty( ) )
             num = atoi( lines.c_str( ) );
 
-         string log_file_name( ( !is_script && !is_server ) ? get_web_root( ) : get_files_area_dir( ) );
+         string log_file_name;
 
-         log_file_name += '/';
+         if( is_script || is_server )
+            log_file_name = get_files_area_dir( );
+         else if( !is_application )
+            log_file_name = get_web_root( );
+
+         if( !log_file_name.empty( ) )
+            log_file_name += '/';
 
          if( is_script || is_server )
             log_file_name += ( is_script ? c_ciyam_script : c_ciyam_server );
+         else if( is_application )
+         {
+            if( !application_name.empty( ) )
+               log_file_name += application_name;
+            else
+               log_file_name += c_meta_model_name;
+         }
          else
          {
-            if( is_backup || is_restore || app_directory.empty( ) )
+            if( is_backup || is_restore || application_name.empty( ) )
                log_file_name += c_meta_app_directory;
             else
-               log_file_name += app_directory;
+               log_file_name += lower( application_name );
 
             log_file_name += '/';
 
