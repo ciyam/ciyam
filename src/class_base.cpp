@@ -158,6 +158,8 @@ const char* const c_attribute_finish_time = "finish_time";
 
 const char* const c_gpg_key_fingerprint_prefix = "Key fingerprint = ";
 
+const char* const c_crypto_checksum_zero_padded = "00000-00000-000000-000000-00000-00000";
+
 typedef map< string, size_t > foreign_key_lock_container;
 typedef foreign_key_lock_container::iterator foreign_key_lock_iterator;
 typedef foreign_key_lock_container::const_iterator foreign_key_lock_const_iterator;
@@ -5968,9 +5970,9 @@ string crypto_digest( const string& data,
    return retval;
 }
 
-string crypto_checksum( const string& hashes )
+string crypto_checksum( const string& hashes, bool use_zero_padding_always )
 {
-   string retval( "00000-00000-000000-000000-00000-00000" );
+   string retval( !use_zero_padding_always ? "" : c_crypto_checksum_zero_padded );
 
    if( !hashes.empty( ) )
    {
