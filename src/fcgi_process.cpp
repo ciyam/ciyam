@@ -2921,14 +2921,12 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      missing_datachain = true;
                }
 
-               if( !missing_datachain )
-                  extra_content << "<p align=\"center\" class=\"error\">"
-                   << GDS( c_display_error ) << ": " << GDS( c_display_record_not_found ) << ".</p>\n";
-               else
+               if( missing_datachain )
                   extra_content << "<p align=\"center\">"
                    << string_message( GDS( c_display_datachain_not_found ),
                    make_pair( c_display_datachain_not_found_parm_identity, special ) ) << "</p>\n";
-
+               else
+                  extra_content << "<p align=\"center\">" << GDS( c_display_record_not_found ) << "</p>\n";
             }
          }
          else if( view.type == c_view_type_none
