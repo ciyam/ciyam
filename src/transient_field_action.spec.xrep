@@ -194,6 +194,7 @@ get_perms( ).count( "`{`$arg_permission_id`}" )`{`!`@eq`(`$arg_altfield`,`'`'`) 
 
       if( !actions.empty( ) )
          actions += ',';
+
 `{`@eq`(`$arg_prompt`,`'true`'`)\
       actions += '?';
 `}\
