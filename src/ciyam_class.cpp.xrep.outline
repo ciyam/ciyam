@@ -1236,8 +1236,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_tfield=$specification_\\0_tfield arg_script=$specification_\\0_script arg_async=$specification_\\0_async\
  arg_delay=$specification_\\0_delay arg_logging_none=$specification_\\0_logging_none arg_logging_errors=$specification_\\0_logging_errors\
  arg_skip_restore=$specification_\\0_skip_restore arg_restore_script=$specification_\\0_restore_script\
- arg_has_key_already=$specification_\\0_has_key_already arg_func=$specification_\\0_func\
- arg_session_var=$specification_\\0_session_var arg_arg1= arg_arg2= arg_arg3= arg_create_only= arg_update_only=\
+ arg_has_key_already=$specification_\\0_has_key_already arg_func=$specification_\\0_func arg_session_var=$specification_\\0_session_var\
+ arg_arg1= arg_arg2= arg_arg3= arg_arg1_lock= arg_arg2_lock= arg_arg3_lock= arg_create_only= arg_update_only=\
  arg_src_is_for_func=$specification_\\0_src_is_for_func arg_sess_var_is_test=$specification_\\0_sess_var_is_test\
  arg_all_flds_and_vals=$specification_\\0_all_flds_and_vals arg_pre_func=$specification_\\0_pre_func arg_oproc_arg=`}\
 `,\
@@ -1245,6 +1245,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `{`#trigger_execute.spec.xrep section=procedure class_name=$class_name module_name=$module_name\
  arg_id=$specification_\\0_id arg_field= arg_fname= arg_fvalue= arg_sfield= arg_all_flds_and_vals=\
  arg_arg1=$specification_\\0_arg1 arg_arg2=$specification_\\0_arg2 arg_arg3=$specification_\\0_arg3\
+ arg_arg1_lock=$specification_\\0_arg1_lock arg_arg2_lock=$specification_\\0_arg2_lock arg_arg3_lock=$specification_\\0_arg3_lock\
  arg_modifier=$specification_\\0_modifier arg_tfield=$specification_\\0_tfield\
  arg_oprocedure=$specification_\\0_oprocedure arg_oproc_arg=$specification_\\0_oproc_arg\
  arg_script=$specification_\\0_script arg_async=$specification_\\0_async\
@@ -2691,8 +2692,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'field_from_clone_key`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_from_clone_key.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
- arg_tfield=$specification_\0_tfield arg_func=$specification_\0_func arg_prefix=$specification_\0_prefix\
- arg_new_only=$specification_\0_new_only`}\
+ arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield arg_func=$specification_\0_func\
+ arg_prefix=$specification_\0_prefix arg_new_only=$specification_\0_new_only`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_concatenation`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_from_concatenation.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -3068,8 +3069,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'field_from_clone_key`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_clone_key.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
- arg_tfield=$specification_\0_tfield arg_func=$specification_\0_func arg_prefix=$specification_\0_prefix\
- arg_new_only=$specification_\0_new_only`}\
+ arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield arg_func=$specification_\0_func\
+ arg_prefix=$specification_\0_prefix arg_new_only=$specification_\0_new_only`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_concatenation`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_concatenation.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -3284,8 +3285,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_tfield=$specification_\0_tfield arg_script=$specification_\0_script arg_async=$specification_\0_async\
  arg_delay=$specification_\0_delay arg_logging_none=$specification_\0_logging_none arg_logging_errors=$specification_\0_logging_errors\
  arg_skip_restore=$specification_\0_skip_restore arg_restore_script=$specification_\0_restore_script\
- arg_has_key_already=$specification_\0_has_key_already arg_func=$specification_\0_func\
- arg_session_var=$specification_\0_session_var arg_arg1= arg_arg2= arg_arg3= arg_create_only= arg_update_only=\
+ arg_has_key_already=$specification_\0_has_key_already arg_func=$specification_\0_func arg_session_var=$specification_\0_session_var\
+ arg_arg1= arg_arg2= arg_arg3= arg_arg1_lock= arg_arg2_lock= arg_arg3_lock= arg_create_only= arg_update_only=\
  arg_src_is_for_func=$specification_\0_src_is_for_func arg_sess_var_is_test=$specification_\0_sess_var_is_test\
  arg_all_flds_and_vals=$specification_\0_all_flds_and_vals arg_pre_func=$specification_\0_pre_func arg_oproc_arg=`}\
 `,\
@@ -3293,8 +3294,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `{`#trigger_execute.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field= arg_fname= arg_fvalue= arg_sfield= arg_all_flds_and_vals=\
  arg_arg1=$specification_\0_arg1 arg_arg2=$specification_\0_arg2 arg_arg3=$specification_\0_arg3\
- arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
- arg_script=$specification_\0_script arg_async=$specification_\0_async\
+ arg_arg1_lock=$specification_\0_arg1_lock arg_arg2_lock=$specification_\0_arg2_lock arg_arg3_lock=$specification_\0_arg3_lock\
+ arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_script=$specification_\0_script arg_async=$specification_\0_async\
  arg_delay=$specification_\0_delay arg_logging_none=$specification_\0_logging_none arg_logging_errors=$specification_\0_logging_errors\
  arg_skip_restore=$specification_\0_skip_restore arg_restore_script=$specification_\0_restore_script\
  arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only\
@@ -3462,8 +3463,8 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_tfield=$specification_\0_tfield arg_script=$specification_\0_script arg_async=$specification_\0_async\
  arg_delay=$specification_\0_delay arg_logging_none=$specification_\0_logging_none arg_logging_errors=$specification_\0_logging_errors\
  arg_skip_restore=$specification_\0_skip_restore arg_restore_script=$specification_\0_restore_script\
- arg_has_key_already=$specification_\0_has_key_already arg_func=$specification_\0_func\
- arg_session_var=$specification_\0_session_var arg_arg1= arg_arg2= arg_arg3= arg_create_only= arg_update_only=\
+ arg_has_key_already=$specification_\0_has_key_already arg_func=$specification_\0_func arg_session_var=$specification_\0_session_var\
+ arg_arg1= arg_arg2= arg_arg3= arg_arg1_lock= arg_arg2_lock= arg_arg3_lock= arg_create_only= arg_update_only=\
  arg_src_is_for_func=$specification_\0_src_is_for_func arg_sess_var_is_test=$specification_\0_sess_var_is_test\
  arg_all_flds_and_vals=$specification_\0_all_flds_and_vals arg_pre_func=$specification_\0_pre_func arg_oproc_arg=`}\
 `,\
@@ -3471,8 +3472,8 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `{`#trigger_execute.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field= arg_fname= arg_fvalue= arg_sfield= arg_all_flds_and_vals=\
  arg_arg1=$specification_\0_arg1 arg_arg2=$specification_\0_arg2 arg_arg3=$specification_\0_arg3\
- arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
- arg_script=$specification_\0_script arg_async=$specification_\0_async\
+ arg_arg1_lock=$specification_\0_arg1_lock arg_arg2_lock=$specification_\0_arg2_lock arg_arg3_lock=$specification_\0_arg3_lock\
+ arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_script=$specification_\0_script arg_async=$specification_\0_async\
  arg_delay=$specification_\0_delay arg_logging_none=$specification_\0_logging_none arg_logging_errors=$specification_\0_logging_errors\
  arg_skip_restore=$specification_\0_skip_restore arg_restore_script=$specification_\0_restore_script\
  arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only\

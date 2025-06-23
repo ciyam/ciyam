@@ -7,8 +7,11 @@
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
 `{`$prefix`=`$arg_prefix`}`{`@eq`(`$prefix`,`'@opt_fk`'`)`$prefix`=`'?`'`}\
    // [(start field_from_clone_key)] `{`$arg_id`}
-   if( !is_null( get_obj( ).get_clone_key( ) )`{`@eq`(`$arg_new_only`,`'true`'`) && get_obj( ).get_key( ).empty( )`}\
-`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`} )
+   if( !is_null( get_obj( ).get_clone_key( ) )`{`@eq`(`$arg_new_only`,`'true`'`)
+    && get_obj( ).get_key( ).empty( )`}`{`!`@eq`(`$arg_sfield`,`'`'`)
+    && get_obj( ).`{`$arg_sfield`}( )`}`{`!`@eq`(`$arg_tfield`,`'`'`)
+    && get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && ( state & c_modifier_`{`$arg_modifier`} )`} )
       get_obj( ).`{`$arg_field`}( `{`!`@eq`(`$prefix`,`'`'`)"`{`$prefix`}" + `}\
 `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}get_obj( ).get_clone_key( )`{`!`@eq`(`$arg_func`,`'`'`) )`} );
    // [(finish field_from_clone_key)] `{`$arg_id`}

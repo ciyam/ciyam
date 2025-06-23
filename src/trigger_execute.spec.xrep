@@ -61,6 +61,12 @@ get_session_variable( "`{`$arg_session_var`}" ), `}`}get_obj( ).`{`$arg_fvalue`}
 `{`!`@eq`(`$arg_restore_script`,`'`'`)
       if( storage_locked_for_admin( ) )
          script_name = string( "`{`$arg_restore_script`}" );
+`}`{`!`@eq`(`$arg_arg1_lock`,`'`'`)
+      system_variable_lock arg1_lock( "`{`$arg_arg1_lock`}" + to_string( get_obj( ).`{`$arg_arg1`}( ) ), get_obj( ).get_display_name( ) );
+`}`{`!`@eq`(`$arg_arg2_lock`,`'`'`)
+      system_variable_lock arg2_lock( "`{`$arg_arg2_lock`}" + to_string( get_obj( ).`{`$arg_arg2`}( ) ), get_obj( ).get_display_name( ) );
+`}`{`!`@eq`(`$arg_arg3_lock`,`'`'`)
+      system_variable_lock arg3_lock( "`{`$arg_arg3_lock`}" + to_string( get_obj( ).`{`$arg_arg3`}( ) ), get_obj( ).get_display_name( ) );
 `}\
 
       `{`!`@eq`(`$arg_pre_func`,`'`'`)`{`$arg_pre_func`}( ), `}run_script( script_name,\
