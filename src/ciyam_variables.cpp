@@ -34,10 +34,11 @@ extern size_t g_active_sessions;
 namespace
 {
 
+#include "module_strings.h"
 #include "ciyam_constants.h"
 
 const int c_max_lock_attempts = 20;
-const int c_lock_attempt_sleep_time = 200;
+const int c_lock_attempt_sleep_time = 100;
 
 const size_t c_secret_truncate_length = 9;
 
@@ -670,6 +671,18 @@ system_variable_lock::system_variable_lock( const string& name )
  :
  name( name )
 {
+   acquire_lock( name );
+}
+
+system_variable_lock::system_variable_lock( const string& name, const string& display )
+ :
+ name( name )
+{
+   acquire_lock( name, display.c_str( ) );
+}
+
+void system_variable_lock::acquire_lock( const string& name, const char* p_display_name_str )
+{
    bool acquired = false;
 
    for( size_t i = 0; i < c_max_lock_attempts; i++ )
@@ -678,7 +691,7 @@ system_variable_lock::system_variable_lock( const string& name )
       {
          guard g( g_mutex );
 
-         if( set_system_variable( name, "<locked>", string( "" ) ) )
+         if( set_system_variable( name, c_true_value, string( "" ) ) )
          {
             acquired = true;
             break;
@@ -689,7 +702,13 @@ system_variable_lock::system_variable_lock( const string& name )
    }
 
    if( !acquired )
-      throw runtime_error( "unable to acquire lock for system variable '" + name + "'" );
+   {
+      if( p_display_name_str )
+         throw runtime_error( get_string_message( GS( c_str_currently_locked ),
+          make_pair( c_str_parm_currently_locked_class, p_display_name_str ) ) );
+      else
+         throw runtime_error( "unable to acquire lock for system variable '" + name + "'" );
+   }
 }
 
 system_variable_lock::~system_variable_lock( )

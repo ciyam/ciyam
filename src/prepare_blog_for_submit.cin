@@ -46,8 +46,6 @@ ERROR=Currently locked (please try again later).
 #$ERROR
 @endif
 ;
-.system_variable @preparing_blog_$IDENTITY ""
-;
 ; NOTE: An explicit quit is required for UI error handling.
 .quit
 ;

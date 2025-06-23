@@ -26,12 +26,19 @@ struct progress;
 
 std::string CIYAM_BASE_DECL_SPEC get_special_var_name( special_var var );
 
-struct CIYAM_BASE_DECL_SPEC system_variable_lock
+class CIYAM_BASE_DECL_SPEC system_variable_lock
 {
+   public:
    system_variable_lock( const std::string& name );
+   system_variable_lock( const std::string& name, const std::string& display );
+
    ~system_variable_lock( );
 
+   private:
    std::string name;
+
+   protected:
+   void acquire_lock( const std::string& name, const char* p_display_name_str = 0 );
 };
 
 std::string CIYAM_BASE_DECL_SPEC get_raw_system_variable( const std::string& name, bool is_internal = true );
