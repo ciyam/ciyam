@@ -6118,10 +6118,13 @@ string process_script_args( const string& raw_args, bool use_system_variables )
       }
    }
 
-   // NOTE: Any "@argX" session variables are now cleared
-   // (so they are not accidentally used in another call).
-   for( size_t i = 1; i < 10; i++ )
-      set_session_variable( "@arg" + to_string( i ), "" );
+   if( !use_system_variables )
+   {
+      // NOTE: Any "@argX" session variables are now cleared
+      // (so they are not accidentally used in another call).
+      for( size_t i = 1; i < 10; i++ )
+         set_session_variable( "@arg" + to_string( i ), "" );
+   }
 
    return retval;
 }
