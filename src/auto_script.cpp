@@ -626,19 +626,19 @@ void autoscript_session::on_start( )
 
                string name( g_scripts[ j->second ].name );
 
-               // NOTE: Use !<name> for scripts to be run when locked.
-               if( okay && !name.empty( ) && name[ 0 ] == '!' )
+               // NOTE: Use *<name> for scripts to run even if locked.
+               if( okay && !name.empty( ) && name[ 0 ] == '*' )
                {
-                  okay = locked;
+                  okay = true;
                   special = true;
 
                   name.erase( 0, 1 );
                }
 
-               // NOTE: Use *<name> for scripts to be run whether locked or not.
-               if( okay && !name.empty( ) && name[ 0 ] == '*' )
+               // NOTE: Use !<name> for scripts to only run when locked.
+               if( okay && !name.empty( ) && name[ 0 ] == '!' )
                {
-                  okay = true;
+                  okay = locked;
                   special = true;
 
                   name.erase( 0, 1 );
@@ -665,6 +665,7 @@ void autoscript_session::on_start( )
                }
 
                string filename( g_scripts[ j->second ].filename );
+
                bool is_script = ( filename == c_script_dummy_filename );
 
                string lock_filename( g_scripts[ j->second ].lock_filename );
@@ -680,7 +681,7 @@ void autoscript_session::on_start( )
                int cycle_num_years = g_scripts[ j->second ].cycle_num_years;
 
                if( okay && !is_excluded( g_scripts[ j->second ], now )
-                && ( g_scripts[ j->second ].allow_late_exec || ( now - next <= 1.0 ) ) )
+                && ( g_scripts[ j->second ].allow_late_exec || ( ( now - next ) <= 1.0 ) ) )
                {
                   string arguments( process_script_args( g_scripts[ j->second ].arguments, true ) );
 
@@ -694,6 +695,7 @@ void autoscript_session::on_start( )
                      string script_args( "~" + uuid( ).as_string( ) );
 
                      ofstream outf( script_args.c_str( ) );
+
                      if( !outf )
                         throw runtime_error( "unable to open '" + script_args + "' for output" );
 
@@ -721,7 +723,7 @@ void autoscript_session::on_start( )
                               logging = e_logging_type_errors;
                         }
                      }
-\
+
                      string log_arg;
 
                      if( logging == e_logging_type_never )
