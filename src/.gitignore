@@ -1,22 +1,22 @@
 # If present ignore a 'tmp' file or directory.
 tmp
 
-# Ignore some typical prototype scripts or programs.
+# Ignore typical prototype scripts or programs.
 x
 x.cin
 x.cpp
+
+# Ignore IP address files.
+*.ip
 
 # Ignore dependency files.
 *.d
 *.dep
 *.inc
 
-# Ignore object files.
-*.o
-*.obj
-
-# Ignore libraries and executables.
+# Ignore object and target files.
 *.a
+*.o
 *.so
 bundle
 calendar
@@ -77,8 +77,6 @@ compile.sh
 make.dtm
 make.lst
 makefile
-makefile.bcb
-makefile.mvc
 makefile.sio
 makefile.vars.xrep
 
