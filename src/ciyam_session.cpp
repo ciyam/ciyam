@@ -1480,11 +1480,68 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
        && command != c_cmd_ciyam_session_session_terminate
        && command != c_cmd_ciyam_session_session_rpc_unlock )
       {
-         if( ( parameters.size( ) == 2 )
-          && ( ( command == c_cmd_ciyam_session_system_variable )
-          || ( command == c_cmd_ciyam_session_session_variable ) ) )
-            ;
+         bool okay = true;
+
+         if( ( command != c_cmd_ciyam_session_system_variable )
+          && ( command != c_cmd_ciyam_session_session_variable ) )
+            okay = false;
          else
+         {
+            // NOTE: When locked will allow the "@args_file" session variable
+            // or system variable named with the session variable's non-empty
+            // value to be set (required so that special application protocol
+            // scripts can be executed even if locked). All system or session
+            // variables can be viewed (as long as wildcards are not used) so
+            // that the "unlock_identity" script can be supported.
+            if( parameters.size( ) > 2 )
+            {
+               string args_file_name( get_special_var_name( e_special_var_args_file ) );
+
+               if( command == c_cmd_ciyam_session_system_variable )
+               {
+                  if( parameters.size( ) != 3 )
+                     okay = false;
+                  else
+                  {
+                     string args_file( get_raw_session_variable( args_file_name ) );
+
+                     if( args_file.empty( )
+                      || !has_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) )
+                        okay = false;
+                     else if( args_file
+                      != ( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) ) )
+                        okay = false;
+                  }
+               }
+               else
+               {
+                  if( parameters.size( ) != 3 )
+                     okay = false;
+                  else
+                  {
+                     if( !has_parm_val( parameters, c_cmd_ciyam_session_session_variable_name_or_expr ) )
+                        okay = false;
+                     else if( args_file_name
+                      != get_parm_val( parameters, c_cmd_ciyam_session_session_variable_name_or_expr ) )
+                        okay = false;
+                  }
+               }
+            }
+            else
+            {
+               string name_or_expr;
+
+               if( command == c_cmd_ciyam_session_system_variable )
+                  name_or_expr = get_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr );
+               else
+                  name_or_expr = get_parm_val( parameters, c_cmd_ciyam_session_session_variable_name_or_expr );
+
+               if( name_or_expr.find_first_of( "*?" ) != string::npos )
+                  okay = false;
+            }
+         }
+
+         if( !okay )
             // FUTURE: This message should be handled as a server string message.
             throw runtime_error( "Session RPC access denied." );
       }
@@ -3075,6 +3132,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string normal_fields;
 
          size_t non_inserts = 0;
+
          vector< summary_info > summaries;
 
          for( size_t i = 0; i < field_list.size( ); i++ )
@@ -3083,6 +3141,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             {
                field_inserts.insert( make_pair( non_inserts, field_list[ i ] ) );
                field_list.erase( field_list.begin( ) + i );
+
                --i;
             }
             else
@@ -3605,7 +3664,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             check_key_has_suffix( key, check_key_suffix );
 
          // NOTE: If no key was provided then will automatically generate a key.
-         if( key.empty( ) || key[ 0 ] == ' ' )
+         if( key.empty( ) || ( key[ 0 ] == ' ' ) )
          {
             auto_ptr< temporary_identity_suffix > ap_identity_suffix;
 
