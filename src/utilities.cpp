@@ -1580,14 +1580,25 @@ string& utf8_replace( string& utf8, const char* p_findstr, const char* p_replstr
    return utf8;
 }
 
-string& utf8_truncate( string& utf8, int trunc_limit, const char* p_overflow_suffix )
+string& utf8_truncate( string& utf8, int trunc_limit,
+ const char* p_overflow_suffix, bool limit_number_of_bytes )
 {
    if( !utf8.empty( ) )
    {
-      // NOTE: Truncation will occur on a space if possible and if any
-      // CR/LFs are found then truncates at the first such occurrence.
       int num_chars = 0;
+
       size_t pos = 0, tpos = 0;
+
+      if( limit_number_of_bytes && p_overflow_suffix )
+         trunc_limit -= strlen( p_overflow_suffix );
+
+      if( trunc_limit < 1 )
+         throw runtime_error( "unexpected trunc_limit < 1 in utf8_truncate" );
+
+      // NOTE: This is used to ensure that if limiting
+      // bytes any trailing UTF-8 character is removed
+      // cleanly.
+      size_t extra = 0;
 
       while( true )
       {
@@ -1601,60 +1612,105 @@ string& utf8_truncate( string& utf8, int trunc_limit, const char* p_overflow_suf
             ++pos;
             ++num_chars;
 
-            if( utf8[ pos ] == ' ' )
-               tpos = pos;
-            else if( utf8[ pos ] == '\r' || utf8[ pos ] == '\n' )
+            // NOTE: If not limiting the exact number of bytes then will instead
+            // will apply the truncation limit to UTF-8 characters and will also
+            // prefer to truncate from the last space within the limit or at the
+            // very first CR/LF that is found.
+            if( limit_number_of_bytes )
+               extra = 0;
+            else
             {
-               tpos = pos;
-               break;
+               if( utf8[ pos ] == ' ' )
+                  tpos = pos;
+               else if( ( utf8[ pos ] == '\r' ) || ( utf8[ pos ] == '\n' ) )
+               {
+                  tpos = pos;
+                  break;
+               }
             }
          }
          else if( c >= 192 && c <= 223 )
          {
             pos += 2;
-            ++num_chars;
+
+            if( !limit_number_of_bytes )
+               ++num_chars;
+            else
+            {
+               extra = 2;
+               num_chars += 2;
+            }
          }
          else if( c >= 224 && c <= 239 )
          {
             pos += 3;
-            ++num_chars;
+
+            if( !limit_number_of_bytes )
+               ++num_chars;
+            else
+            {
+               extra = 3;
+               num_chars += 3;
+            }
          }
          else if( c >= 240 && c <= 247 )
          {
             pos += 4;
-            ++num_chars;
+
+            if( !limit_number_of_bytes )
+               ++num_chars;
+            else
+            {
+               extra = 4;
+               num_chars += 4;
+            }
          }
          else if( c >= 248 && c <= 251 )
          {
             pos += 5;
-            ++num_chars;
+
+            if( !limit_number_of_bytes )
+               ++num_chars;
+            else
+            {
+               extra = 5;
+               num_chars += 5;
+            }
          }
          else if( c >= 252 && c <= 253 )
          {
             pos += 6;
-            ++num_chars;
+
+            if( !limit_number_of_bytes )
+               ++num_chars;
+            else
+            {
+               extra = 6;
+               num_chars += 6;
+            }
          }
          else
             throw runtime_error( "unexpected UTF-8 encoding found in: " + utf8 );
 
          // NOTE: If total number of characters found is less than the number
          // after which truncation should occur then clear the truncation pos.
-         if( pos >= utf8.size( ) && num_chars <= trunc_limit )
+         if( ( pos >= utf8.size( ) ) && ( num_chars <= trunc_limit ) )
             tpos = 0;
 
-         if( pos >= utf8.size( ) || num_chars > trunc_limit )
+         if( ( pos >= utf8.size( ) ) || ( num_chars > trunc_limit ) )
             break;
       }
 
       if( tpos == 0 )
-         tpos = pos;
+         tpos = ( pos - extra );
 
       if( tpos >= utf8.size( ) )
          tpos = 0;
 
-      if( tpos && tpos < utf8.size( ) )
+      if( tpos && ( tpos < utf8.size( ) ) )
       {
          utf8.erase( tpos );
+
          if( p_overflow_suffix )
             utf8 += p_overflow_suffix;
       }

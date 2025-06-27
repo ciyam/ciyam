@@ -875,7 +875,8 @@ bool is_valid_utf8( const std::string& utf8 );
 
 std::string& utf8_replace( std::string& utf8, const char* p_findstr, const char* p_replstr );
 
-std::string& utf8_truncate( std::string& utf8, int trunc_limit, const char* p_overflow_suffix = 0 );
+std::string& utf8_truncate( std::string& utf8, int trunc_limit,
+ const char* p_overflow_suffix = 0, bool limit_number_of_bytes = false );
 
 bool has_environment_variable( const char* p_env_var_name );
 
