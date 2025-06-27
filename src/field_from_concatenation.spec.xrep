@@ -28,7 +28,8 @@
 `+\n\n`]`}\
 `}
 
-      get_obj( ).`{`$arg_dfield`}( value );
+      get_obj( ).`{`$arg_dfield`}( `{`!`@eq`(`$arg_truncate_overflow`,`'`'`)truncate_overflow_with_ellipsis( `}value\
+`{`!`@eq`(`$arg_truncate_overflow`,`'`'`), g_`{`$arg_dfield`}_domain.max_size( ) )`} );
    }
    // [(finish field_from_concatenation)] `{`$arg_id`}
 `}

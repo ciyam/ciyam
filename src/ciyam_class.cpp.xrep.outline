@@ -2699,7 +2699,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `{`#field_from_concatenation.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield arg_tfield=$specification_\0_tfield\
  arg_field_list=$specification_\0_field_list arg_new_only=$specification_\0_new_only\
- arg_non_trigger=$specification_\0_non_trigger arg_separator=$specification_\0_separator`}\
+ arg_non_trigger=$specification_\0_non_trigger arg_separator=$specification_\0_separator\
+ arg_truncate_overflow=$specification_\0_truncate_overflow`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_from_dtm.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -3076,7 +3077,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `{`#field_from_concatenation.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield arg_tfield=$specification_\0_tfield\
  arg_field_list=$specification_\0_field_list arg_new_only=$specification_\0_new_only\
- arg_non_trigger=$specification_\0_non_trigger arg_separator=$specification_\0_separator`}\
+ arg_non_trigger=$specification_\0_non_trigger arg_separator=$specification_\0_separator\
+ arg_truncate_overflow=$specification_\0_truncate_overflow`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_dtm.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
