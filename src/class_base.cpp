@@ -3875,8 +3875,8 @@ string trim_whitespace_and_quotes( const string& s )
 {
    string str( trim( s ) );
 
-   if( str.length( ) >= 2
-    && str[ 0 ] == '"' && str[ str.length( ) - 1 ] == '"' )
+   if( ( str.length( ) >= 2 )
+    && ( str[ 0 ] == '"' ) && ( str[ str.length( ) - 1 ] == '"' ) )
    {
       str.erase( 0, 1 );
       str.erase( str.length( ) - 1 );
@@ -3888,7 +3888,13 @@ string trim_whitespace_and_quotes( const string& s )
 string truncate_string( const string& s, int max_length, const char* p_overflow_suffix )
 {
    string tmp( s );
-   return utf8_truncate( tmp, max_length, p_overflow_suffix );
+
+   return utf8_truncate( tmp, max_length, p_overflow_suffix, true );
+}
+
+string truncate_overflow_with_ellipsis( const string& s, int max_length )
+{
+   return truncate_string( s, max_length, c_ellipsis );
 }
 
 string join_string( const set< string >& c, char sep )

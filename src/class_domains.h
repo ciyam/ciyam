@@ -144,10 +144,6 @@ template< typename N, int64_t W1, int64_t F1, int64_t W2, int64_t F2 > struct do
    std::string error_message( const std::string& mask ) const;
 };
 
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option push -w-8008
-#     pragma option push -w-8066
-#  endif
 template< typename N, int64_t W1, int64_t F1, int64_t W2, int64_t F2 >
  bool domain_numeric_range< N, W1, F1, W2, F2 >::is_valid( const N& n, std::string& error ) const
 {
@@ -173,10 +169,6 @@ template< typename N, int64_t W1, int64_t F1, int64_t W2, int64_t F2 >
       return false;
    }
 }
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option pop
-#     pragma option pop
-#  endif
 
 template< typename N, int64_t W1, int64_t F1, int64_t W2, int64_t F2 >
  std::string domain_numeric_range< N, W1, F1, W2, F2 >::error_message( const std::string& mask ) const
@@ -270,6 +262,8 @@ template< int M > struct domain_string_max_size
          return false;
       }
    }
+
+   static int max_size( ) { return M; }
 
    std::string error_message( ) const;
 };
@@ -415,4 +409,3 @@ template< typename T,
 };
 
 #endif
-

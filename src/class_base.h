@@ -1346,6 +1346,8 @@ std::string CIYAM_BASE_DECL_SPEC trim_whitespace_and_quotes( const std::string& 
 
 std::string CIYAM_BASE_DECL_SPEC truncate_string( const std::string& s, int max_length, const char* p_overflow_suffix = 0 );
 
+std::string CIYAM_BASE_DECL_SPEC truncate_overflow_with_ellipsis( const std::string& s, int max_length );
+
 std::string CIYAM_BASE_DECL_SPEC join_string( const std::set< std::string >& c, char sep = ',' );
 std::string CIYAM_BASE_DECL_SPEC join_string( const std::deque< std::string >& c, char sep = ',' );
 std::string CIYAM_BASE_DECL_SPEC join_string( const std::vector< std::string >& c, char sep = ',' );
