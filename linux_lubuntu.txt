@@ -1109,6 +1109,10 @@ findtime = 60m
 ...
 maxretry = 3
 ...
+[sshd]
+...
+mode     = aggressive
+...
 [postfix-sasl]
 enabled = true
 ...
@@ -1118,12 +1122,13 @@ sudo systemctl enable fail2ban
 sudo systemctl start fail2ban
 
 sudo fail2ban-client status
+sudo fail2ban-client status sshd
 sudo fail2ban-client status postfix-sasl
 
 Creating a Cron Job for new mail notifications using Ntfy
 ---------------------------------------------------------
 
-NOTE: The "mail" utility needs to be installed (if was skipped previously).
+NOTE: The "mail" utility needs to be installed (if skipped previously).
 sudo apt install mailutils -y
 
 sudo apt install lockfile-progs -y
@@ -1152,15 +1157,18 @@ expand_template /usr/bin/check_mail_epoch.sh.template check_mail_epoch.sh
 
 chmod a+x check_mail_epoch.sh
 
-(run manually to check that no errors occur)
+(run manually to check that no error occurs)
 ./check_mail_epoch.sh
 
 crontab -e
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-* * * * * /home/***user_name***/check_mail_epoch.sh >/dev/null
+* * * * * /home/***user_name***/check_mail_epoch.sh >/dev/null 2>&1
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-On the mobile phone would subscribe to the ntfy topic: up_***user_name***
+NOTE: The "2>&1" stops Cron from automatically emailing when an error occurs during
+script execution (such as being unable to lock the user's mailbox to scan headers).
+
+On the mobile device would subscribe to the ntfy topic: up_***user_name***
 
 Upgrading to a new version of Lubuntu OS
 ----------------------------------------
