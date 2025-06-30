@@ -360,7 +360,7 @@ Peer_Node_Item,Peer_Node_Items,M001C103
 Peer_Node_User,Peer_Node_User,M001C104
 Peer_Node_Data,Peer_Node_Data,M001C105
 Contact,Contacts,M001C106
-Contact_Membership,Contact_Memberships,M001C107
+Contact_Group_Member,Contact_Group_Members,M001C107
 Core_Peer,Core_Peers,M001C108
 pf 100 107100 "107110 " 107101,107110 -min
 Name,M001C100F100
@@ -614,7 +614,7 @@ Has_Data_Key_Variable,M001C105F110
 Name,M001C105F111
 Owner_Key,M001C105F112
 Peer_Node_Not_Dummy,M001C105F113
-Group_Contact,M001C106F100
+Member,M001C106F100
 Peer_Node,M001C106F101
 Peer_Node_User,M001C106F102
 Local_User,M001C106F103
@@ -633,7 +633,7 @@ Member_Keys,M001C106F115
 Members,M001C106F116
 Group_Contact_Address,M001C106F117
 Group_Contact_Key,M001C106F118
-Membership_Keys,M001C106F119
+Group_Member_Keys,M001C106F119
 Name,M001C106F120
 Non_Group,M001C106F121
 Identity,M001C106F122
@@ -643,7 +643,7 @@ Peer_Node_Alias,M001C106F125
 Peer_Node_Identity,M001C106F126
 Peer_Node_User_Key,M001C106F127
 Contact,M001C107F100
-Parent,M001C107F101
+Group,M001C107F101
 Actions,M001C108F100
 Active,M001C108F101
 Auto_Reconnect,M001C108F102
