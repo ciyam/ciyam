@@ -499,6 +499,7 @@ const char* const c_view_field_extra_enum_filter = "enum_filter";
 const char* const c_view_field_extra_owning_user = "owning_user";
 const char* const c_view_field_extra_qr_scan_key = "qr_scan_key";
 const char* const c_view_field_extra_key_from_hash = "key_from_hash";
+const char* const c_view_field_extra_view_non_null = "view_non_null";
 const char* const c_view_field_extra_hpassword_salt = "hpassword_salt";
 const char* const c_view_field_extra_always_editable = "always_editable";
 const char* const c_view_field_extra_create_datetime = "create_datetime";

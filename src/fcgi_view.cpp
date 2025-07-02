@@ -163,18 +163,13 @@ void output_view_tabs( ostream& os, const view_source& source,
 bool is_not_accessible( bool is_in_edit, bool is_new_record,
  const map< string, string >& extra_data, const session_info& sess_info )
 {
-   return ( !is_in_edit
-    && has_perm_extra( c_view_field_extra_non_view, extra_data, sess_info ) )
-    || ( is_in_edit
-    && has_perm_extra( c_view_field_extra_view_only, extra_data, sess_info ) )
-    || ( !is_new_record
-    && has_perm_extra( c_view_field_extra_new_only, extra_data, sess_info ) )
-    || ( is_new_record
-    && has_perm_extra( c_view_field_extra_non_new, extra_data, sess_info ) )
-    || ( ( is_new_record || !is_in_edit )
-    && has_perm_extra( c_view_field_extra_edit_only, extra_data, sess_info ) )
-    || ( !sess_info.is_admin_user
-    && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) );
+   return ( !is_in_edit && has_perm_extra( c_view_field_extra_non_view, extra_data, sess_info ) )
+    || ( is_in_edit && has_perm_extra( c_view_field_extra_view_only, extra_data, sess_info ) )
+    || ( is_in_edit && has_perm_extra( c_view_field_extra_view_non_null, extra_data, sess_info ) )
+    || ( !is_new_record && has_perm_extra( c_view_field_extra_new_only, extra_data, sess_info ) )
+    || ( is_new_record && has_perm_extra( c_view_field_extra_non_new, extra_data, sess_info ) )
+    || ( ( is_new_record || !is_in_edit ) && has_perm_extra( c_view_field_extra_edit_only, extra_data, sess_info ) )
+    || ( !sess_info.is_admin_user && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) );
 }
 
 }
@@ -1292,6 +1287,7 @@ bool output_view_form( ostream& os, const string& act,
    for( size_t i = 0; i < source.field_ids.size( ); i++ )
    {
       string cell_data;
+
       string source_field_id( source.field_ids[ i ] );
       string source_value_id( source.value_ids[ i ] );
 
@@ -1535,6 +1531,9 @@ bool output_view_form( ostream& os, const string& act,
 
       if( source.field_values.count( source_value_id ) )
          cell_data = source.field_values.find( source_value_id )->second;
+
+      if( !is_in_edit && cell_data.empty( ) && extra_data.count( c_view_field_extra_view_non_null ) )
+         continue;
 
       string special_prefix, special_suffix;
 
