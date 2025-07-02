@@ -11065,6 +11065,7 @@ void module_load( const string& module_name,
       auto_ptr< guard > ap_guard( new guard( g_mutex ) );
 
       ods* p_ods( ods::instance( ) );
+
       storage_handler& handler( *gtp_session->p_storage_handler );
 
       if( find( handler.get_root( ).module_list.begin( ),
@@ -11085,19 +11086,23 @@ void module_load( const string& module_name,
             string temp_sql_file_name;
 
             vector< string > class_list;
+
             list_module_classes( module_name, class_list );
 
             map< string, string > class_ids_and_names;
+
             list_module_classes( module_name, class_ids_and_names, true );
 
             // NOTE: Create/append to a DDL file (which is the storage name with a ".sql" extension).
             string sql_file_name( handler.get_name( ) );
+
             sql_file_name += ".sql";
 
             temp_sql_file_name = "~" + sql_file_name;
 
             bool is_first = true;
-            bool file_existed( file_exists( sql_file_name ) );
+
+            bool file_existed = file_exists( sql_file_name );
 
             // NOTE: Empty code block for scope purposes.
             {
@@ -11123,6 +11128,7 @@ void module_load( const string& module_name,
                for( size_t i = 0; i < class_list.size( ); i++ )
                {
                   vector< string > columns;
+
                   string sql_columns( get_sql_columns_for_module_class( module_name, class_list[ i ] ) );
 
                   if( !sql_columns.empty( ) )
@@ -11144,6 +11150,7 @@ void module_load( const string& module_name,
                      {
                         if( j > 0 )
                            outf << ",\n";
+
                         outf << " " << columns[ j ];
                      }
 
@@ -11157,6 +11164,7 @@ void module_load( const string& module_name,
                      for( size_t j = 0; j < sql_indexes.size( ); j++ )
                      {
                         vector< string > index_columns;
+
                         split( sql_indexes[ j ], index_columns );
 
                         outf << "\nCREATE UNIQUE INDEX " << index_prefix << "_";
@@ -11176,6 +11184,7 @@ void module_load( const string& module_name,
                }
 
                outf << "\nCOMMIT;\n";
+
                outf.flush( );
 
                if( gtp_session->ap_db.get( ) )
@@ -11184,6 +11193,7 @@ void module_load( const string& module_name,
                   // thread lock is released whilst performing the DDL. As the storage has
                   // already been locked for administration this should be of no concern.
                   ap_guard.reset( );
+
                   try
                   {
                      exec_sql_from_file( *gtp_session->ap_db, temp_sql_file_name, &cmd_handler );
@@ -11214,6 +11224,7 @@ void module_load( const string& module_name,
                if( log_tx_comment )
                {
                   gtp_session->transaction_log_command = ";module ==> " + module_name;
+
                   append_transaction_log_command( handler, true, handler.get_root( ).module_list.size( ) );
                }
 
@@ -11424,10 +11435,12 @@ void list_object_instances( ostream& os )
 size_t create_object_instance( const string& module, const string& class_id, size_t handle, bool dynamic_enabled )
 {
    dynamic_library* p_dynamic_library = get_module_ptr( module );
+
    if( !p_dynamic_library )
       throw runtime_error( "unknown module '" + module + "'" );
 
    class_base* p_class_base = construct_object( module, class_id );
+
    if( !p_class_base )
       throw runtime_error( "unknown class id '" + class_id + "'" );
 
