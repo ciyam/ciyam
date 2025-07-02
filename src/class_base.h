@@ -1214,6 +1214,9 @@ std::string CIYAM_BASE_DECL_SPEC get_soundex( const std::string& str, bool skip_
 
 std::string CIYAM_BASE_DECL_SPEC get_notifier_files_viewed( const std::string& watch_root );
 
+std::string CIYAM_BASE_DECL_SPEC extract_viewed_file_list(
+ const std::string& file_list, const std::string& viewed_list, bool file_list_includes_sizes = true );
+
 std::string CIYAM_BASE_DECL_SPEC extract_unviewed_file_list(
  const std::string& file_list, const std::string& viewed_list, bool file_list_includes_sizes = true );
 
