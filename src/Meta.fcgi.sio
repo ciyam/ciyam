@@ -2103,6 +2103,10 @@
      <data>5
      <name>enum_view_field_access_scope_updating_only
     </value>
+    <value/>
+     <data>6
+     <name>enum_view_field_access_scope_viewing_non_null
+    </value>
    </values>
   </enum>
   <enum/>

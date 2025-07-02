@@ -2272,6 +2272,8 @@ void Meta_Model::impl::impl_Generate( )
                            extras = "view_only";
                         else if( get_obj( ).child_View( ).child_View_Field( ).Access_Scope( ) == 5 ) // i.e. updating_only
                            extras = "edit_only";
+                        else if( get_obj( ).child_View( ).child_View_Field( ).Access_Scope( ) == 6 ) // i.e. viewing_non_null
+                           extras = "view_non_null";
                         else
                            throw runtime_error( "unexpected access scope #"
                             + to_string( get_obj( ).child_View( ).child_View_Field( ).Access_Scope( ) ) + " in Model::Generate" );

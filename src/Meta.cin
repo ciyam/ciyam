@@ -52,7 +52,7 @@ user_defined_enum_add -id=655 view_access_restrict int 0=none,1=owner\\_only,2=a
 user_defined_enum_add -id=657 view_change_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
 user_defined_enum_add -id=658 view_pdf_view_type int 0=none,2=Standard_2_Column,99=Customised
 user_defined_enum_add -id=660 view_field_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
-user_defined_enum_add -id=661 view_field_access_scope int 0=all,1=create\\_only,2=post\\_create,3=editing\\_only,4=viewing\\_only,5=updating\\_only
+user_defined_enum_add -id=661 view_field_access_scope int 0=all,1=create\\_only,2=post\\_create,3=editing\\_only,4=viewing\\_only,5=updating\\_only,6=viewing\\_non_null
 user_defined_enum_add -id=662 view_field_change_scope int 0=all,1=create\\_only,2=update\\_only,3=always\\_editable
 user_defined_enum_add -id=663 view_field_link_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
 user_defined_enum_add -id=664 view_field_child_list_extra_option int 0=none,1=extra1,2=extra2

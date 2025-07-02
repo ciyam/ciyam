@@ -39792,7 +39792,7 @@
     <id>661
     <name>view_field_access_scope
     <type>int
-    <key_values>0=all,1=create\_only,2=post\_create,3=editing\_only,4=viewing\_only,5=updating\_only
+    <key_values>0=all,1=create\_only,2=post\_create,3=editing\_only,4=viewing\_only,5=updating\_only,6=viewing\_non_null
    </user_defined_enum>
    <user_defined_enum/>
     <id>662
