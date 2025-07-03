@@ -502,6 +502,7 @@ const char* const c_view_field_extra_key_from_hash = "key_from_hash";
 const char* const c_view_field_extra_view_non_null = "view_non_null";
 const char* const c_view_field_extra_hpassword_salt = "hpassword_salt";
 const char* const c_view_field_extra_always_editable = "always_editable";
+const char* const c_view_field_extra_always_non_null = "always_non_null";
 const char* const c_view_field_extra_create_datetime = "create_datetime";
 const char* const c_view_field_extra_create_user_key = "create_user_key";
 const char* const c_view_field_extra_modify_datetime = "modify_datetime";

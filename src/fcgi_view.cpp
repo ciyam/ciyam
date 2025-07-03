@@ -1532,6 +1532,9 @@ bool output_view_form( ostream& os, const string& act,
       if( source.field_values.count( source_value_id ) )
          cell_data = source.field_values.find( source_value_id )->second;
 
+      if( cell_data.empty( ) && extra_data.count( c_view_field_extra_always_non_null ) )
+         continue;
+
       if( !is_in_edit && cell_data.empty( ) && extra_data.count( c_view_field_extra_view_non_null ) )
          continue;
 
