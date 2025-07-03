@@ -525,6 +525,7 @@ const int c_enum_view_field_access_scope_editing_only( 3 );
 const int c_enum_view_field_access_scope_viewing_only( 4 );
 const int c_enum_view_field_access_scope_updating_only( 5 );
 const int c_enum_view_field_access_scope_viewing_non_null( 6 );
+const int c_enum_view_field_access_scope_always_if_non_null( 7 );
 
 string get_enum_string_view_field_access_scope( int val )
 {
@@ -546,6 +547,8 @@ string get_enum_string_view_field_access_scope( int val )
       string_name = "enum_view_field_access_scope_updating_only";
    else if( to_string( val ) == to_string( "6" ) )
       string_name = "enum_view_field_access_scope_viewing_non_null";
+   else if( to_string( val ) == to_string( "7" ) )
+      string_name = "enum_view_field_access_scope_always_if_non_null";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_field_access_scope" );
 
@@ -8480,6 +8483,7 @@ void Meta_Field::static_get_all_enum_pairs( vector< pair< string, string > >& pa
    pairs.push_back( make_pair( "enum_view_field_access_scope_4", get_enum_string_view_field_access_scope( 4 ) ) );
    pairs.push_back( make_pair( "enum_view_field_access_scope_5", get_enum_string_view_field_access_scope( 5 ) ) );
    pairs.push_back( make_pair( "enum_view_field_access_scope_6", get_enum_string_view_field_access_scope( 6 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_access_scope_7", get_enum_string_view_field_access_scope( 7 ) ) );
 
    pairs.push_back( make_pair( "enum_view_change_restrict_0", get_enum_string_view_change_restrict( 0 ) ) );
    pairs.push_back( make_pair( "enum_view_change_restrict_1", get_enum_string_view_change_restrict( 1 ) ) );
@@ -8629,6 +8633,7 @@ void Meta_Field::static_class_init( const char* p_module_name )
    g_view_field_access_scope_enum.insert( 4 );
    g_view_field_access_scope_enum.insert( 5 );
    g_view_field_access_scope_enum.insert( 6 );
+   g_view_field_access_scope_enum.insert( 7 );
 
    g_view_change_restrict_enum.insert( 0 );
    g_view_change_restrict_enum.insert( 1 );

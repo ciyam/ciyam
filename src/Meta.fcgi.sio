@@ -2107,6 +2107,10 @@
      <data>6
      <name>enum_view_field_access_scope_viewing_non_null
     </value>
+    <value/>
+     <data>7
+     <name>enum_view_field_access_scope_always_if_non_null
+    </value>
    </values>
   </enum>
   <enum/>
