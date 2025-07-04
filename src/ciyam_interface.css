@@ -121,7 +121,7 @@ body
    margin: 0px;
    height: 100%;
    min-height: 100%;
-   background: url(background_texture.png) #ccc;
+   background: url( 'background_texture.png' ) #ccc;
    max-width: 100% !important;
 }
 
@@ -439,7 +439,7 @@ a
 {
    height: 25px;
    text-align: right;
-   background: url(ico_password.png) bottom right no-repeat;
+   background: url( 'ico_password.png' ) bottom right no-repeat;
 }
 
 #nav #username
@@ -462,7 +462,7 @@ a
    width: 990px;
    height: 90px;
    margin: 0px auto;
-   background: url(name_small.png) center left no-repeat;
+   background: url( 'name_small.png' ) center left no-repeat;
    display: block;
    position: relative;
 }
@@ -1106,7 +1106,7 @@ td.list
 
 input.pikaday_button
 {
-   background: url(cal.png) no-repeat;
+   background: url( 'cal.png' ) no-repeat;
    cursor: pointer;
    border: none;
    height: 23px;
@@ -1751,14 +1751,14 @@ table table th
    margin-top: -110px;
    padding-top: 110px;
    margin-bottom: 50px;
-   background: url(background_image.jpg) center 0;
+   background: url( 'background_image.jpg' ) center 0;
 }
 
 .vertical .home
 {
    margin-top: 0;
    padding-top: 0;
-   background: url(background_image.jpg) center -110px;
+   background: url( 'background_image.jpg' ) center -110px;
 }
 
 .home_container
@@ -1806,7 +1806,7 @@ table table th
    top: 100px;
    left: 100px;
    display: block;
-   background: url(nav_left.png) no-repeat center;
+   background: url( 'nav_left.png' ) no-repeat center;
    cursor: pointer;
    opacity: .6;
    -webkit-transition: all 0.5s ease;
@@ -1824,7 +1824,7 @@ table table th
    top: 100px;
    right: 100px;
    display: block;
-   background: url(nav_right.png) no-repeat center;
+   background: url( 'nav_right.png' ) no-repeat center;
    cursor: pointer;
    opacity: .6;
    -webkit-transition: all 0.5s ease;
@@ -1856,7 +1856,7 @@ table table th
 .home_slides_container ul.paginate li
 {
    list-style-type: none;
-   background: url(nav_circle_grey.png) no-repeat center;
+   background: url( 'nav_circle_grey.png' ) no-repeat center;
    width: 30px;
    height: 50px;
    display: inline-block;
@@ -1872,12 +1872,12 @@ table table th
 
 .home_slides_container ul.paginate li:hover
 {
-   background: url(nav_circle_grey2.png) no-repeat center;
+   background: url( 'nav_circle_grey2.png' ) no-repeat center;
 }
 
 .home_slides_container ul.paginate li.active
 {
-   background: url(nav_circle_blue.png) no-repeat center;
+   background: url( 'nav_circle_blue.png' ) no-repeat center;
 }
 
 .home_slide
@@ -2003,17 +2003,17 @@ table.login tr
 
 .icon-user
 {
-   background: url('ico_user.png') no-repeat right 16px;
+   background: url( 'ico_user.png' ) no-repeat right 16px;
 }
 
 .icon-psw
 {
-   background: url('ico_password.png')  no-repeat right 16px;
+   background: url( 'ico_password.png' )  no-repeat right 16px;
 }
 
 .icon-pers
 {
-   background: url('ico_automatic.png')  no-repeat right 14px;
+   background: url( 'ico_automatic.png' )  no-repeat right 14px;
 }
 
 table.login .submit td

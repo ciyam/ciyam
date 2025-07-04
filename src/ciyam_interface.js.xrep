@@ -1,9 +1,7 @@
-/*
-** Copyright (c) 2012-2025 CIYAM Developers
-**
-** Distributed under the MIT/X11 software license, please refer to the file license.txt
-** in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-*/
+// Copyright (c) 2012-2025 CIYAM Developers
+//
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 `{`#$include @`}
 `{`#config.info @`}
@@ -503,9 +501,15 @@ function load2( )
 
    clearTimeout( warn_refresh_timer_id );
 
-   // NOTE: This is necessary (at least for Firefox) to force a page
-   // reload to occur when going back in history.
+   // NOTE: This is required (at least for Firefox) to
+   // force page reloading when going back in history.
    window.onunload = function( ){ };
+
+   // NOTE: If present this session storage variable
+   // indicates that the user is currently logged in
+   // (otherwise is reset using application links).
+   if( sessionStorage.getItem( 'logged' ) != null )
+      loggedIn = true;
 
    var pos = qsFurther.indexOf( 'act=' );
 
@@ -834,16 +838,23 @@ function fade_out( n )
 
 function after_force( )
 {
+   loggedIn = false;
+
    if( document.getElementById( 'form_content_func' ) != null )
       eval( document.getElementById( 'form_content_func' ).value );
 
    if( document.getElementById( 'extra_content_func' ) != null )
       eval( document.getElementById( 'extra_content_func' ).value );
 
-   if( !loggedIn && encryptPosts && can_write_to_session_storage( ) )
-      sessionStorage.removeItem( 'key' );
+   if( encryptPosts && can_write_to_session_storage( ) )
+   {
+      if( !loggedIn )
+         sessionStorage.removeItem( 'logged' );
+      else
+         sessionStorage.setItem( 'logged', '1' );
+   }
 
-   if( uniqueId != '' && can_write_to_session_storage( ) )
+   if( ( uniqueId != '' ) && can_write_to_session_storage( ) )
       sessionStorage.setItem( 'unique', uniqueId );
 
    if( usePageFading )
@@ -894,9 +905,10 @@ function process( )
 
    document.body.style.opacity = 25;
 
-   if( xmlReq.responseText == null || xmlReq.responseText.length == 0 )
+   if( ( xmlReq.responseText == null ) || ( xmlReq.responseText.length == 0 ) )
    {
       xmlReq = null;
+
       alert( displayTimeout );
 
       return;
@@ -2373,6 +2385,7 @@ function enable_form( f )
       {
          if( !f.elements[ i ].was_disabled )
             f.elements[ i ].disabled = false;
+
          f.elements[ i ].was_disabled = false;
       }
    }

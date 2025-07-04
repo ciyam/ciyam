@@ -948,7 +948,8 @@ void request_handler::process_request( )
          is_ssl = true;
          input_data.insert( make_pair( c_http_param_ssl, p_ssl ) );
       }
-      else if( get_storage_info( ).encrypt_data )
+
+      if( get_storage_info( ).encrypt_data )
          encrypt_data = true;
 
       if( p_host )
@@ -1060,11 +1061,6 @@ void request_handler::process_request( )
             has_failed_to_decrypt = true;
       }
 
-      // NOTE: Erase the base64 data if it wasn't decrypted so that other code can
-      // just check if it's present to know that client-crypto is currently in use.
-      if( !encrypt_data || has_failed_to_decrypt )
-         input_data.erase( c_param_base64 );
-
       string back( input_data[ c_param_back ] );
       string data( input_data[ c_param_data ] );
       string keep( input_data[ c_param_keep ] );
@@ -1075,8 +1071,10 @@ void request_handler::process_request( )
       string persistent( input_data[ c_param_persistent ] );
 
       cmd = input_data[ c_param_cmd ];
+
       hash = input_data[ c_param_hash ];
       user = input_data[ c_param_user ];
+
       session_id = input_data[ c_param_session ];
 
       bool is_kept = ( keep == c_true );
@@ -1087,9 +1085,10 @@ void request_handler::process_request( )
          session_id.erase( 0, spos + 1 );
 
       module_name = input_data[ c_param_module ];
+
       module_ref = get_storage_info( ).get_module_ref( module_name );
 
-      if( cmd == c_cmd_activate && ( !username.empty( ) || !userhash.empty( ) ) )
+      if( ( cmd == c_cmd_activate ) && ( !username.empty( ) || !userhash.empty( ) ) )
       {
          data.erase( );
          user.erase( );
@@ -1210,8 +1209,8 @@ void request_handler::process_request( )
       bool needs_identity = true;
 
       if( !is_kept
-       && cmd != c_cmd_password && cmd != c_cmd_credentials
        && !is_invalid_session && mod_info.allows_anonymous_access
+       && ( cmd != c_cmd_password ) && ( cmd != c_cmd_credentials )
        && ( username.empty( ) && userhash.empty( ) && !p_session_info ) )
       {
          is_authorised = true;
@@ -1416,6 +1415,7 @@ void request_handler::process_request( )
       else
       {
          new_session = false;
+
          p_session_info = get_session_info( session_id );
 
          if( p_session_info )
