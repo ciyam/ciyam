@@ -9794,23 +9794,30 @@ void slice_storage_log( command_handler& cmd_handler, const string& name, const 
          for( size_t i = 0; i < modules_for_slice.size( ); i++ )
          {
             string next_log_file_name( modules_for_slice[ i ].first + ".log.new" );
+
             output_log_files.push_back( new ofstream( next_log_file_name.c_str( ) ) );
+
             if( !*output_log_files.back( ) )
                throw runtime_error( "unable to open '" + next_log_file_name + "' for output" );
          }
 
          string log_file_name( name + c_log_file_ext );
+
          ifstream inpf( log_file_name.c_str( ) );
 
          if( !inpf )
             throw runtime_error( "unexpected error attempting to open '" + log_file_name + "' for reading" );
 
          string next;
+
          size_t line = 0;
-         time_t ts( time( 0 ) );
+
+         time_t ts = time( 0 );
+
          while( getline( inpf, next ) )
          {
             ++line;
+
             if( next.empty( ) )
                continue;
 
@@ -9818,14 +9825,16 @@ void slice_storage_log( command_handler& cmd_handler, const string& name, const 
                throw runtime_error( "unexpected formatting in log line #" + to_string( line ) + " ==> " + next );
 
             string::size_type pos = next.find( ']' );
+
             if( pos == string::npos )
                throw runtime_error( "unexpected formatting in log line #" + to_string( line ) + " ==> " + next );
 
             size_t tran_id = from_string< size_t >( next.substr( 1, pos - 1 ) );
 
-            if( time( 0 ) - ts >= 10 )
+            if( ( time( 0 ) - ts ) >= 10 )
             {
                ts = time( 0 );
+
                cmd_handler.output_progress( "Processed " + to_string( line ) + " lines..." );
 
                if( is_condemned_session( ) )
@@ -9843,12 +9852,14 @@ void slice_storage_log( command_handler& cmd_handler, const string& name, const 
             else if( tran_id > 1 )
             {
                vector< string > next_items;
+
                split( next, next_items, ' ' );
 
                if( next_items.size( ) < 5 )
                   throw runtime_error( "unexpected formatting in log line #" + to_string( line ) + " ==> " + next );
 
                string module( next_items[ 3 ] );
+
                if( module_aliases.count( module ) )
                   module = module_aliases.find( module )->second;
 
@@ -9898,6 +9909,7 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
       string new_ltf_file_name( name + ".ltf.new" );
 
       bool has_ltf_entries = false;
+
       if( file_exists( ltf_file_name ) )
       {
          has_ltf_entries = true;
@@ -9905,6 +9917,7 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
       }
 
       ofstream ltfs( new_ltf_file_name.c_str( ), ios::out | ios::app );
+
       if( !ltfs )
          throw runtime_error( "unable to open file '" + new_ltf_file_name + "' for output in splice_storage_log" );
 
@@ -9922,10 +9935,12 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
       }
 
       ltfs.flush( );
+
       if( !ltfs.good( ) )
          throw runtime_error( "unexpected error occurred writing to '" + new_ltf_file_name + "' in splice_storage_log" );
 
       ltfs.close( );
+
       if( !has_ltf_entries )
          remove_file( new_ltf_file_name );
 
@@ -9933,10 +9948,12 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
       string new_log_file_name( log_file_name + ".new" );
 
       ifstream logs( log_file_name.c_str( ) );
+
       if( !logs )
          throw runtime_error( "unable to open file '" + log_file_name + "' for input in splice_storage_log" );
 
       ofstream new_logs( new_log_file_name.c_str( ) );
+
       if( !new_logs )
          throw runtime_error( "unable to open file '" + new_log_file_name + "' for output in splice_storage_log" );
 
@@ -9951,16 +9968,20 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
          for( size_t i = 0; i < module_list.size( ); i++ )
          {
             string next_log_file_name( module_list[ i ] + c_log_file_ext );
+
             module_log_files.push_back( make_pair( new ifstream( next_log_file_name.c_str( ) ), "" ) );
          }
 
          string next;
+
          size_t line = 0;
-         time_t ts( time( 0 ) );
+
+         time_t ts = time( 0 );
 
          while( getline( logs, next ) )
          {
             ++line;
+
             if( next.empty( ) )
                continue;
 
@@ -9968,6 +9989,7 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
                throw runtime_error( "unexpected formatting in log line #" + to_string( line ) + " ==> " + next );
 
             string::size_type pos = next.find( ']' );
+
             if( pos == string::npos )
                throw runtime_error( "unexpected formatting in log line #" + to_string( line ) + " ==> " + next );
 
@@ -9976,9 +9998,10 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
             if( tran_id == 0 )
                continue;
 
-            if( time( 0 ) - ts >= 10 )
+            if( ( time( 0 ) - ts ) >= 10 )
             {
                ts = time( 0 );
+
                cmd_handler.output_progress( "Processed " + to_string( line ) + " lines..." );
 
                if( is_condemned_session( ) )
@@ -9986,6 +10009,7 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
             }
 
             multimap< size_t, string > new_lines;
+
             for( size_t i = 0; i < module_list.size( ); i++ )
             {
                while( *module_log_files[ i ].first )
@@ -10032,6 +10056,7 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
             file_copy( modules_file_name, new_modules_file_name );
 
          ofstream new_mods( new_modules_file_name.c_str( ), ios::out | ios::app );
+
          for( size_t i = 0; i < module_list.size( ); i++ )
             new_mods << module_list[ i ] << '\n';
       }
@@ -10039,12 +10064,14 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
       {
          for( size_t i = 0; i < module_log_files.size( ); i++ )
             delete module_log_files[ i ].first;
+
          throw;
       }
    }
    catch( ... )
    {
       term_storage( cmd_handler );
+
       throw;
    }
 
@@ -12373,9 +12400,11 @@ void get_all_field_data( size_t handle, const string& context,
    for( size_t i = 0; i < field_info.size( ); i++ )
    {
       string class_id;
+
       if( foreign_key_info.count( field_info[ i ].id ) )
       {
          size_t offset = 0;
+
          if( foreign_key_info[ field_info[ i ].id ].second.find( dcb.get_module_name( ) ) == 0 )
             offset = dcb.get_module_name( ).length( ) + 1;
 
@@ -12383,6 +12412,7 @@ void get_all_field_data( size_t handle, const string& context,
       }
 
       string field_value;
+
       if( !key.empty( ) )
          field_value = dcb.get_field_value( i );
 
@@ -12398,10 +12428,12 @@ class_base& get_class_base_from_handle( size_t handle, const string& context )
 {
    object_instance_registry_container& instance_registry( gtp_session->instance_registry );
    object_instance_registry_iterator oiri = instance_registry.find( handle );
+
    if( oiri == instance_registry.end( ) )
       throw runtime_error( "invalid object instance handle #" + to_string( handle ) );
 
    class_base* p_class_base( ( oiri->second ).p_class_base );
+
    p_class_base = p_class_base->get_dynamic_instance( );
 
    if( !context.empty( ) )
@@ -12415,6 +12447,7 @@ class_base& get_class_base_from_handle_for_op( size_t handle,
 {
    object_instance_registry_container& instance_registry( gtp_session->instance_registry );
    object_instance_registry_iterator oiri = instance_registry.find( handle );
+
    if( oiri == instance_registry.end( ) )
       throw runtime_error( "invalid object instance handle #" + to_string( handle ) );
 
@@ -12429,9 +12462,11 @@ class_base& get_class_base_from_handle_for_op( size_t handle,
    // there is probably no real benefit to supporting it (but perhaps some other future use might
    // benefit from this behaviour).
    class_base* p_dynamic_base = p_class_base->get_dynamic_instance( );
+
    if( !use_dynamic_context )
    {
-      if( p_class_base != p_dynamic_base && p_dynamic_base->get_op( ) == class_base::e_op_type_none )
+      if( ( p_class_base != p_dynamic_base )
+       && ( p_dynamic_base->get_op( ) == class_base::e_op_type_none ) )
          class_base_accessor( *p_class_base ).destroy_dynamic_instance( );
       else
          p_class_base = p_dynamic_base;
@@ -12441,17 +12476,17 @@ class_base& get_class_base_from_handle_for_op( size_t handle,
 
    class_base::op_type op( p_class_base->get_op( ) );
 
-   if( permit == e_permit_op_type_value_none && op != class_base::e_op_type_none )
+   if( ( permit == e_permit_op_type_value_none ) && ( op != class_base::e_op_type_none ) )
       throw runtime_error( "object instance #" + to_string( handle ) + " is currently involved in another operation" );
 
-   if( permit != e_permit_op_type_value_none && op == class_base::e_op_type_none )
+   if( ( permit != e_permit_op_type_value_none ) && ( op == class_base::e_op_type_none ) )
       throw runtime_error( "object instance #" + to_string( handle ) + " is not currently involved in an operation" );
 
-   if( permit == e_permit_op_type_value_review && op != class_base::e_op_type_review )
+   if( ( permit == e_permit_op_type_value_review ) && ( op != class_base::e_op_type_review ) )
       throw runtime_error( "object instance #" + to_string( handle ) + " is currently involved in another operation" );
 
-   if( permit == e_permit_op_type_value_create_update_destroy
-    && op != class_base::e_op_type_create && op != class_base::e_op_type_update && op != class_base::e_op_type_destroy )
+   if( ( permit == e_permit_op_type_value_create_update_destroy )
+    && ( op != class_base::e_op_type_create ) && ( op != class_base::e_op_type_update ) && ( op != class_base::e_op_type_destroy ) )
       throw runtime_error( "object instance #" + to_string( handle ) + " is currently involved in another operation" );
 
    return *p_class_base;
@@ -12486,7 +12521,9 @@ bool fetch_instance_from_db( class_base& instance,
          {
             instance_accessor.set_version( from_string< uint16_t >( ds.as_string( 1 ) ) );
             instance_accessor.set_revision( from_string< uint64_t >( ds.as_string( 2 ) ) );
+
             instance_accessor.set_security( from_string< uint64_t >( ds.as_string( 3 ) ) );
+
             instance_accessor.set_original_identity( ds.as_string( 4 ) );
 
             instance_accessor.set_original_revision( instance.get_revision( ) );
@@ -12503,6 +12540,7 @@ bool fetch_instance_from_db( class_base& instance,
                      fnum++;
 
                   TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - c_num_sys_field_names + 1 ) + " to " + ds.as_string( i ) );
+
                   instance.set_field_value( fnum - c_num_sys_field_names, ds.as_string( i ) );
                }
 
@@ -12543,17 +12581,19 @@ bool fetch_instance_from_db( class_base& instance,
 
                         handler.get_record_cache( ).erase( oldest_key_info );
                         handler.get_time_for_key( ).erase( oldest_key_info );
+
                         handler.get_key_for_time( ).erase( handler.get_key_for_time( ).begin( ) );
                      }
 
-                     time_t tm( time( 0 ) );
+                     time_t tm = time( 0 );
 
                      handler.get_key_for_time( ).insert( make_pair( tm, key_info ) );
                      handler.get_time_for_key( ).insert( make_pair( key_info, tm ) );
+
                      handler.get_record_cache( ).insert( make_pair( key_info, columns ) );
 
-                     if( handler.get_key_for_time( ).size( ) != handler.get_time_for_key( ).size( )
-                      || handler.get_key_for_time( ).size( ) != handler.get_record_cache( ).size( ) )
+                     if( ( handler.get_key_for_time( ).size( ) != handler.get_time_for_key( ).size( ) )
+                      || ( handler.get_key_for_time( ).size( ) != handler.get_record_cache( ).size( ) ) )
                         throw runtime_error( "*** record cache maps size mismatch ***" );
                   }
                }
@@ -12598,11 +12638,18 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
          while( tii->second != key_info )
             ++tii;
 
-         time_t tm( time( 0 ) );
-         handler.get_time_for_key( )[ key_info ] = tm;
+         time_t tm = time( 0 );
 
-         handler.get_key_for_time( ).erase( tii );
-         handler.get_key_for_time( ).insert( make_pair( tm, key_info ) );
+         // NOTE: Update the time information for the key
+         // (and replaces the matching reversed entry) if
+         // the current time is not identical.
+         if( tm != tii->first )
+         {
+            handler.get_time_for_key( )[ key_info ] = tm;
+
+            handler.get_key_for_time( ).erase( tii );
+            handler.get_key_for_time( ).insert( make_pair( tm, key_info ) );
+         }
 
          ++gtp_session->cache_count;
 
@@ -12614,9 +12661,12 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
          vector< string >& columns( handler.get_record_cache( )[ key_info ] );
 
          instance_accessor.set_key( columns[ 0 ], true );
+
          instance_accessor.set_version( from_string< uint16_t >( columns[ 1 ] ) );
          instance_accessor.set_revision( from_string< uint64_t >( columns[ 2 ] ) );
+
          instance_accessor.set_security( from_string< uint64_t >( columns[ 3 ] ) );
+
          instance_accessor.set_original_identity( columns[ 4 ] );
 
          instance_accessor.set_original_revision( instance.get_revision( ) );
