@@ -446,7 +446,7 @@ Is_In_Restore,M001C101F128
 Is_Initial_Record,M001C101F129
 Not_Is_In_Restore,M001C101F130
 Not_Is_Initial_Record,M001C101F131
-Ntfy_Message_Topic,M001C101F132
+Ntfy_Topic_Name,M001C101F132
 Unix_Now,M001C101F133
 Permissions,M001C101F134
 Reset_Password,M001C101F135

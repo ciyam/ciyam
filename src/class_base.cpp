@@ -90,6 +90,8 @@ const size_t c_reserve_for_secret = 200;
 const size_t c_num_hash_rounds = 1000000;
 
 const size_t c_ntfy_extra_rounds = 99999;
+
+// NOTE: This needs to be an even number.
 const size_t c_num_ntfy_topic_chars = 14;
 
 const size_t c_cascade_progress_seconds = 10;
@@ -97,6 +99,7 @@ const size_t c_cascade_progress_seconds = 10;
 const size_t c_lamport_key_size = ( 90 * 256 );
 
 const char* const c_ntfy_dummy_user = "ntfy";
+const char* const c_ntfy_topic_prefix = "up";
 const char* const c_ntfy_message_prefix = "[CIYAM]";
 const char* const c_ntfy_normal_reponse = "\"id\"";
 
@@ -5297,7 +5300,7 @@ string ntfy_topic( const string& user_key )
 
    keep_first_or_final_num_chars( retval, c_num_ntfy_topic_chars );
 
-   return base32::encode( hex_decode( retval ) );
+   return c_ntfy_topic_prefix + base32::encode( hex_decode( retval ) );
 }
 
 void send_ntfy_message( const string& user_key, const string& message, bool throw_on_error )
