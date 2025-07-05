@@ -5261,46 +5261,52 @@ string ntfy_topic( const string& user_key )
 {
    string retval;
 
-   string identity( get_raw_system_variable(
-    get_special_var_name( e_special_var_system_identity ) ) );
-
-   string topic_seed( user_key );
-
-   bool harden = false;
-
-   // NOTE: If the 'user_key' value does not contain
-   // the identity (such as an empty string or known
-   // special keys such as 'admin') then will append
-   // the system identity (so that each installation
-   // has its own unique topic values).
-   if( topic_seed.find( identity ) == string::npos )
+   // NOTE: The "admin" user is not
+   // provided with a topic value.
+   if( user_key != c_admin )
    {
-      harden = true;
-      topic_seed += identity;
-   }
+      string identity( get_raw_system_variable(
+       get_special_var_name( e_special_var_system_identity ) ) );
 
-   sha256 hash( topic_seed );
+      string topic_seed( user_key );
 
-   retval = hash.get_digest_as_string( );
+      bool harden = false;
 
-   // NOTE: For an empty or special key will harden the
-   // topic seed with numerous rounds (to prevent using
-   // a non-trivial brute force approach of determining
-   // the seed value). All normal user keys are created
-   // with both a time stamp prefix and identity suffix
-   // so are not being hardened.
-   if( harden )
-   {
-      for( size_t i = 0; i < c_ntfy_extra_rounds; i++ )
+      // NOTE: If the 'user_key' value does not contain
+      // the identity (due to either being null or some
+      // special value) then append the system identity
+      // (so that each system has unique topic values).
+      if( topic_seed.find( identity ) == string::npos )
       {
-         hash.update( retval + identity );
-         hash.get_digest_as_string( retval );
+         harden = true;
+         topic_seed += identity;
       }
+
+      sha256 hash( topic_seed );
+
+      retval = hash.get_digest_as_string( );
+
+      // NOTE: For an empty or special key will harden the
+      // topic seed with numerous rounds (to prevent using
+      // a non-trivial brute force approach of determining
+      // the seed value). All normal user keys are created
+      // with both a time stamp prefix and identity suffix
+      // so are not being hardened.
+      if( harden )
+      {
+         for( size_t i = 0; i < c_ntfy_extra_rounds; i++ )
+         {
+            hash.update( retval + identity );
+            hash.get_digest_as_string( retval );
+         }
+      }
+
+      keep_first_or_final_num_chars( retval, c_num_ntfy_topic_chars );
+
+      retval = c_ntfy_topic_prefix + base32::encode( hex_decode( retval ) );
    }
 
-   keep_first_or_final_num_chars( retval, c_num_ntfy_topic_chars );
-
-   return c_ntfy_topic_prefix + base32::encode( hex_decode( retval ) );
+   return retval;
 }
 
 void send_ntfy_message( const string& user_key, const string& message, bool throw_on_error )
