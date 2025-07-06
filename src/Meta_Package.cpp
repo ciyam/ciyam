@@ -1595,7 +1595,7 @@ void Meta_Package::impl::impl_Remove( )
             {
                outf << ".storage_init " << storage_name( ) << '\n';
 
-               outf << "@ifndef %ERROR%\n";
+               outf << "@ifndef $ERROR\n";
                outf << ".storage_transaction_start\n";
                outf << "@endif\n";
 
@@ -1639,7 +1639,13 @@ void Meta_Package::impl::impl_Remove( )
                // record creation).
                reverse( ordered.begin( ), ordered.end( ) );
 
-               int total = 0;
+               // NOTE: For UI "progress" outputs the total number of
+               // records that have been processed every ten seconds.
+               outf << ";\n";
+               outf << "TOTAL_RECORDS=0\n";
+               outf << ".utc_to_unix_time @now\n";
+               outf << "SHOW_PROGRESS_TIME=@$OUTPUT+10\n";
+               outf << ";\n";
 
                for( size_t i = 0; i < ordered.size( ); i++ )
                {
@@ -1647,25 +1653,35 @@ void Meta_Package::impl::impl_Remove( )
 
                   for( int j = 0; j < class_keys[ next_cid ].size( ); j++ )
                   {
-                     outf << "@ifndef %ERROR%\n";
+                     outf << "@ifndef $ERROR\n";
 
                      outf << ".pd " << get_uid( ) << " @now "
                       << get_obj( ).get_module_id( ) << ' ' << next_cid << " -p -q " << class_keys[ next_cid ][ j ] << '\n';
 
-                     outf << "@ifdef %ERROR%\n";
+                     outf << "@ifdef $ERROR\n";
                      outf << "#(failed to delete " << ordered[ i ] << " record " << class_keys[ next_cid ][ j ] << ")\n";
                      outf << "@endif\n";
 
-                     if( ++total % 50 == 0 )
-                        outf << "#Processed " << total << " records...\n";
+                     outf << ";\n";
+                     outf << "TOTAL_RECORDS=@$TOTAL_RECORDS+1\n";
+                     outf << ";\n";
+                     outf << ".utc_to_unix_time @now\n";
+                     outf << "SHOW_PROGRESS=@$OUTPUT>=$SHOW_PROGRESS_TIME\n";
 
+                     outf << "@ifeq $SHOW_PROGRESS 1\n";
+                     outf << "#Processed $TOTAL_RECORDS records...\n";
+                     outf << ".utc_to_unix_time @now\n";
+                     outf << "SHOW_PROGRESS_TIME=@$OUTPUT+10\n";
+                     outf << "@endif\n";
+
+                     outf << ";\n";
                      outf << "@endif\n";
                   }
 
                   class_keys[ next_cid ].clear( );
                }
 
-               outf << "@ifndef %ERROR%\n";
+               outf << "@ifndef $ERROR\n";
                outf << ".storage_transaction_commit\n";
                outf << "@else\n";
                outf << ".storage_transaction_rollback\n";
@@ -1674,7 +1690,7 @@ void Meta_Package::impl::impl_Remove( )
                if( is_last )
                   outf << ".system_variable @" << model_key << " \"\"\n";
 
-               outf << "@ifndef %ERROR%\n";
+               outf << "@ifndef $ERROR\n";
                outf << ".pe " << get_uid( ) << " @now " << get_obj( ).get_module_id( ) << " "
                 << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " 136440\n"; // i.e. Complete_Remove
                outf << "@else\n";
