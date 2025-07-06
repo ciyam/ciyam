@@ -208,6 +208,7 @@ const char* const c_special_variable_notifier_events = "@notifier_events";
 const char* const c_special_variable_paired_identity = "@paired_identity";
 const char* const c_special_variable_queue_hub_users = "@queue_hub_users";
 const char* const c_special_variable_row_cache_limit = "@row_cache_limit";
+const char* const c_special_variable_stderr_progress = "@stderr_progress";
 const char* const c_special_variable_system_identity = "@system_identity";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_dummy_time_stamp = "@dummy_time_stamp";
@@ -516,6 +517,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_paired_identity );
       g_special_variable_names.push_back( c_special_variable_queue_hub_users );
       g_special_variable_names.push_back( c_special_variable_row_cache_limit );
+      g_special_variable_names.push_back( c_special_variable_stderr_progress );
       g_special_variable_names.push_back( c_special_variable_system_identity );
       g_special_variable_names.push_back( c_special_variable_check_if_changed );
       g_special_variable_names.push_back( c_special_variable_dummy_time_stamp );

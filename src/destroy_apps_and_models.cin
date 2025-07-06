@@ -5,12 +5,13 @@
 ;
 ERROR=
 ;
-storage_init -admin Meta
+.storage_init -admin Meta
 @ifndef $ERROR
-storage_term
-storage_init Meta
-pe admin 20111102 Meta Workgroup guests -101410
-storage_term
+.storage_term
+.storage_init Meta
+.session_variable @stderr_progress 1
+.pe admin 20111102 Meta Workgroup guests -101410
+.storage_term
 @else
 @ifneq "$ERROR_FILE" ""
 >$ERROR_FILE

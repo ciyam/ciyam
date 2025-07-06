@@ -1599,6 +1599,9 @@ void Meta_Package::impl::impl_Remove( )
                outf << ".storage_transaction_start\n";
                outf << "@endif\n";
 
+               if( has_session_variable( get_special_var_name( e_special_var_stderr_progress ) ) )
+                  outf << "~>&2 echo \"\rRemoving " << get_obj( ).Name( ) << " package...\"\n";
+
                string attached_file_path_var( get_special_var_name( e_special_var_attached_file_path ) );
 
                if( !get_session_variable( attached_file_path_var ).empty( ) )
@@ -1669,7 +1672,12 @@ void Meta_Package::impl::impl_Remove( )
                      outf << "SHOW_PROGRESS=@$OUTPUT>=$SHOW_PROGRESS_TIME\n";
 
                      outf << "@ifeq $SHOW_PROGRESS 1\n";
-                     outf << "#Processed $TOTAL_RECORDS records...\n";
+
+                     if( !has_session_variable( get_special_var_name( e_special_var_stderr_progress ) ) )
+                        outf << "#Processed $TOTAL_RECORDS records...\n";
+                     else
+                        outf << "~>&2 echo \"Processed $TOTAL_RECORDS records...\"\n";
+
                      outf << ".utc_to_unix_time @now\n";
                      outf << "SHOW_PROGRESS_TIME=@$OUTPUT+10\n";
                      outf << "@endif\n";
