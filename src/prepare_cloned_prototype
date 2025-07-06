@@ -16,12 +16,16 @@ else
   rm -f ciyam_server.sid ciyam_server.sid.sav $WEBDIR/meta/identity.txt $WEBDIR/meta/encrypted.txt
 
   ./config
+
   sudo systemctl daemon-reload
   sudo systemctl start ciyamd
 
   sleep 0.5
 
   ./restore Meta
+
+  ./ciyam_client -quiet -no_prompt -exec="<meta_user_set_active.cin guest 0"
+
   sudo systemctl stop ciyamd
 
   rm -f ciyam.pem ciyam_server.sid $1.hdr $1.idx $1.dat $1.tlg

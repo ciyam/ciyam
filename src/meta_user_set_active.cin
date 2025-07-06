@@ -1,0 +1,33 @@
+; Copyright (c) 2025 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+ERROR=
+@ifeq "$1" ""
+ERROR=1
+@endif
+@ifeq "$2" ""
+ERROR=1
+@endif
+;
+@ifndef $ERROR
+OKAY=
+@ifeq "$2" "0"
+OKAY=1
+@endif
+@ifeq "$2" "1"
+OKAY=1
+@endif
+@ifndef $OKAY
+ERROR=1
+@endif
+@endif
+;
+@ifeq "$ERROR" "1"
+#Usage: meta_user_set_active.cin <user_key> 0|1
+@else
+.storage_init Meta
+.pu admin @now 100 100100 $1 100102=$2
+.quit
+@endif
