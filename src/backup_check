@@ -30,16 +30,28 @@ BACKUP_HEIGHT_FILE=$BACKUP_PATH/$BACKUP_HEIGHT
 
 IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
 
-if mountpoint -q $BACKUP_PATH; then
- if [ ! -f $IMPORTED_TIME_FILE ]; then
-  NEW_CHANGE=$(find $BACKUP_PATH -path lost+found -prune -o -name "*" -type f -print | head -n 1)
- else
-  NEW_CHANGE=$(find $BACKUP_PATH -path lost+found -prune -o -newermm $IMPORTED_TIME_FILE -name "*" -type d -print | head -n 1)
- fi
+skip_check_changes=
 
- if [ ! "$NEW_CHANGE" = "" ]; then
-  ./system_variable set @backup_needed "1"
-  ./system_variable set @restore_needed ""
+if [ -f .backup_needed ] || [ -f .prepare_backup_needed ]; then
+ skip_check_changes=1
+fi
+
+if [ -f .restore_needed ] || [ -f .complete_restore_needed ]; then
+ skip_check_changes=1
+fi
+
+if [ "$skip_check_changes" = "" ]; then
+ if mountpoint -q $BACKUP_PATH; then
+
+  if [ ! -f $IMPORTED_TIME_FILE ]; then
+   new_change=$(find $BACKUP_PATH -path lost+found -prune -o -name "*" -type f -print | head -n 1)
+  else
+   new_change=$(find $BACKUP_PATH -path lost+found -prune -o -newermm $IMPORTED_TIME_FILE -name "*" -type d -print | head -n 1)
+  fi
+
+  if [ ! "$new_change" = "" ]; then
+   ./system_variable set @backup_needed "1"
+  fi
  fi
 fi
 
