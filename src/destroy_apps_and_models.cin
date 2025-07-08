@@ -12,6 +12,10 @@ ERROR=
 .session_variable @stderr_progress 1
 .pe admin 20111102 Meta Workgroup guests -101410
 .storage_term
+.system_variable @backup_needed ""
+.system_variable @restore_needed ""
+.system_variable @prepare_backup_needed ""
+.system_variable @complete_restore_needed ""
 @else
 @ifneq "$ERROR_FILE" ""
 >$ERROR_FILE
