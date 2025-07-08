@@ -95,6 +95,8 @@ namespace
 
 #include "ciyam_constants.h"
 
+#include "ciyam_variable_names.h"
+
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
 #  ifndef USE_MAXIMUM_REQUEST_HANDLERS
 const int c_num_handlers = 10;
@@ -702,6 +704,17 @@ void reset_admin_password( session_info& sess_info,
 
    pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_pwd ) );
    pwd_field_value_pairs.push_back( make_pair( mod_info.user_hash_field_id, admin_user_hash ) );
+
+   if( g_is_blockchain_application )
+   {
+      // NOTE: Initial "admin" password setting is not being considered
+      // a necessary operation to require "backup preparation" to occur.
+      string can_omit_prepare_var_name( STRINGIZE( e_special_var_can_omit_prepare ) );
+
+      replace( can_omit_prepare_var_name, "e_special_var_", "@" );
+
+      pwd_field_value_pairs.push_back( make_pair( can_omit_prepare_var_name, c_true_value ) );
+   }
 
    string error_message;
 
