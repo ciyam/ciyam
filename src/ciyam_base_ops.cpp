@@ -28,6 +28,7 @@
 #include "ciyam_files.h"
 #include "ciyam_strings.h"
 #include "ciyam_variables.h"
+#include "class_utilities.h"
 #include "command_handler.h"
 #include "ods_file_system.h"
 #include "module_management.h"
@@ -3165,6 +3166,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                   else
                   {
                      stringstream sio_data;
+
                      auto_ptr< sio_writer > ap_sio_writer;
 
                      if( is_file_not_folder )
@@ -3215,6 +3217,25 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             }
             else
                throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in finish_instance_op" );
+         }
+
+         string blockchain_backup_height( get_system_variable(
+          get_special_var_name( e_special_var_blockchain_backup_height ) ) );
+
+         if( !is_special_storage
+          && !storage_locked_for_admin( )
+          && !blockchain_backup_height.empty( ) )
+         {
+            if( ( blockchain_backup_height != c_false_value )
+             || is_null( instance.get_variable( get_special_var_name( e_special_var_can_omit_prepare ) ) ) )
+            {
+               string prepare_var_name( get_special_var_name( e_special_var_prepare_backup_needed ) );
+
+               string prepare_file_name( c_hidden_file_prefix + prepare_var_name.substr( 1 ) );
+
+               if( !file_exists( prepare_file_name ) )
+                  set_system_variable( prepare_var_name, c_true_value );
+            }
          }
 
          // NOTE: In order to be able to create child records (or to review the just created instance)
