@@ -170,6 +170,7 @@ const char* const c_special_variable_opened_files = "@opened_files";
 const char* const c_special_variable_peer_map_key = "@peer_map_key";
 const char* const c_special_variable_shared_files = "@shared_files";
 const char* const c_special_variable_app_directory = "@app_directory";
+const char* const c_special_variable_backup_needed = "@backup_needed";
 const char* const c_special_variable_export_needed = "@export_needed";
 const char* const c_special_variable_import_needed = "@import_needed";
 const char* const c_special_variable_last_file_put = "@last_file_put";
@@ -210,6 +211,7 @@ const char* const c_special_variable_queue_hub_users = "@queue_hub_users";
 const char* const c_special_variable_row_cache_limit = "@row_cache_limit";
 const char* const c_special_variable_stderr_progress = "@stderr_progress";
 const char* const c_special_variable_system_identity = "@system_identity";
+const char* const c_special_variable_can_omit_prepare = "@can_omit_prepare";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_dummy_time_stamp = "@dummy_time_stamp";
 const char* const c_special_variable_preparing_backup = "@preparing_backup";
@@ -260,6 +262,7 @@ const char* const c_special_variable_blockchain_time_value = "@blockchain_time_v
 const char* const c_special_variable_keep_user_peers_alive = "@keep_user_peers_alive";
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
+const char* const c_special_variable_prepare_backup_needed = "@prepare_backup_needed";
 const char* const c_special_variable_blockchain_is_checking = "@blockchain_is_checking";
 const char* const c_special_variable_blockchain_is_combined = "@blockchain_is_combined";
 const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
@@ -479,6 +482,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_peer_map_key );
       g_special_variable_names.push_back( c_special_variable_shared_files );
       g_special_variable_names.push_back( c_special_variable_app_directory );
+      g_special_variable_names.push_back( c_special_variable_backup_needed );
       g_special_variable_names.push_back( c_special_variable_export_needed );
       g_special_variable_names.push_back( c_special_variable_import_needed );
       g_special_variable_names.push_back( c_special_variable_last_file_put );
@@ -519,6 +523,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_row_cache_limit );
       g_special_variable_names.push_back( c_special_variable_stderr_progress );
       g_special_variable_names.push_back( c_special_variable_system_identity );
+      g_special_variable_names.push_back( c_special_variable_can_omit_prepare );
       g_special_variable_names.push_back( c_special_variable_check_if_changed );
       g_special_variable_names.push_back( c_special_variable_dummy_time_stamp );
       g_special_variable_names.push_back( c_special_variable_preparing_backup );
@@ -569,6 +574,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_keep_user_peers_alive );
       g_special_variable_names.push_back( c_special_variable_package_install_extra );
       g_special_variable_names.push_back( c_special_variable_peer_is_synchronising );
+      g_special_variable_names.push_back( c_special_variable_prepare_backup_needed );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_checking );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_combined );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_fetching );
@@ -621,16 +627,54 @@ void init_special_variable_names( )
    }
 }
 
-void set_generate_hub_block( )
+void touch_or_remove( const string& var_name, bool remove )
 {
-   string file_name( c_special_variable_generate_hub_block );
+   string file_name( c_hidden_file_prefix + var_name.substr( 1 ) );
 
-   file_name = c_hidden_file_prefix + file_name.substr( 1 );
+   if( remove )
+      file_remove( file_name );
+   else if( !file_exists( file_name ) )
+      file_touch( file_name, 0, true );
+}
+
+void set_file_var_name( const string& var_name )
+{
+   string file_name( c_hidden_file_prefix + var_name.substr( 1 ) );
 
    if( file_exists( file_name ) )
-      g_variables[ c_special_variable_generate_hub_block ] = c_true_value;
-   else if( g_variables.count( c_special_variable_generate_hub_block ) )
-      g_variables.erase( c_special_variable_generate_hub_block );
+      g_variables[ var_name ] = c_true_value;
+   else if( g_variables.count( var_name ) )
+      g_variables.erase( var_name );
+}
+
+void set_backup_needed( bool check = true )
+{
+   string var_name( c_special_variable_backup_needed );
+
+   if( !check )
+      touch_or_remove( var_name, true );
+
+   set_file_var_name( var_name );
+}
+
+void set_restore_needed( bool check = true )
+{
+   string var_name( c_special_variable_restore_needed );
+
+   if( !check )
+      touch_or_remove( var_name, true );
+
+   set_file_var_name( var_name );
+}
+
+void set_generate_hub_block( bool check = true )
+{
+   string var_name( c_special_variable_generate_hub_block );
+
+   if( !check )
+      touch_or_remove( var_name, true );
+
+   set_file_var_name( var_name );
 }
 
 void set_ods_cache_hit_ratios( )
@@ -638,16 +682,24 @@ void set_ods_cache_hit_ratios( )
    g_variables[ c_special_variable_ods_cache_hit_ratios ] = system_ods_instance( ).get_cache_hit_ratios( );
 }
 
-void set_complete_restore_needed( )
+void set_prepare_backup_needed( bool check = true )
 {
-   string file_name( c_special_variable_complete_restore_needed );
+   string var_name( c_special_variable_prepare_backup_needed );
 
-   file_name = c_hidden_file_prefix + file_name.substr( 1 );
+   if( !check )
+      touch_or_remove( var_name, true );
 
-   if( file_exists( file_name ) )
-      g_variables[ c_special_variable_complete_restore_needed ] = c_true_value;
-   else if( g_variables.count( c_special_variable_complete_restore_needed ) )
-      g_variables.erase( c_special_variable_complete_restore_needed );
+   set_file_var_name( var_name );
+}
+
+void set_complete_restore_needed( bool check = true )
+{
+   string var_name( c_special_variable_complete_restore_needed );
+
+   if( !check )
+      touch_or_remove( var_name, true );
+
+   set_file_var_name( var_name );
 }
 
 }
@@ -844,11 +896,20 @@ string get_raw_system_variable( const string& name, bool is_internal )
 
       map< string, string >::const_iterator ci;
 
+      if( wildcard_match( var_name, c_special_variable_backup_needed ) )
+         set_backup_needed( );
+
+      if( wildcard_match( var_name, c_special_variable_restore_needed ) )
+         set_restore_needed( );
+
       if( wildcard_match( var_name, c_special_variable_generate_hub_block ) )
          set_generate_hub_block( );
 
       if( wildcard_match( var_name, c_special_variable_ods_cache_hit_ratios ) )
          set_ods_cache_hit_ratios( );
+
+      if( wildcard_match( var_name, c_special_variable_prepare_backup_needed ) )
+         set_prepare_backup_needed( );
 
       if( wildcard_match( var_name, c_special_variable_complete_restore_needed ) )
          set_complete_restore_needed( );
@@ -888,11 +949,20 @@ string get_raw_system_variable( const string& name, bool is_internal )
    }
    else
    {
+      if( var_name == c_special_variable_backup_needed )
+         set_backup_needed( );
+
+      if( var_name == c_special_variable_restore_needed )
+         set_restore_needed( );
+
       if( var_name == c_special_variable_generate_hub_block )
          set_generate_hub_block( );
 
       if( var_name == c_special_variable_ods_cache_hit_ratios )
          set_ods_cache_hit_ratios( );
+
+      if( var_name == c_special_variable_prepare_backup_needed )
+         set_prepare_backup_needed( );
 
       if( var_name == c_special_variable_complete_restore_needed )
          set_complete_restore_needed( );
@@ -986,32 +1056,106 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
       file_remove( tmp_file_name );
    }
+   else if( name == c_special_variable_backup_needed )
+   {
+      guard g( g_mutex );
+
+      set_restore_needed( );
+      set_prepare_backup_needed( );
+      set_complete_restore_needed( );
+
+      bool remove = value.empty( );
+
+      if( g_variables.count( c_special_variable_restore_needed )
+       || g_variables.count( c_special_variable_prepare_backup_needed )
+       || g_variables.count( c_special_variable_complete_restore_needed ) )
+         remove = true;
+
+      touch_or_remove( name, remove );
+
+      set_backup_needed( );
+   }
+   else if( name == c_special_variable_restore_needed )
+   {
+      guard g( g_mutex );
+
+      set_backup_needed( );
+      set_complete_restore_needed( );
+
+      bool remove = value.empty( );
+
+      if( g_variables.count( c_special_variable_complete_restore_needed ) )
+         remove = true;
+
+      touch_or_remove( name, remove );
+
+      if( !remove )
+      {
+         if( g_variables.count( c_special_variable_backup_needed ) )
+            set_backup_needed( false );
+
+         if( g_variables.count( c_special_variable_prepare_backup_needed ) )
+            set_prepare_backup_needed( false );
+      }
+
+      set_restore_needed( );
+   }
    else if( name == c_special_variable_generate_hub_block )
    {
       guard g( g_mutex );
 
       string file_name( c_hidden_file_prefix + name.substr( 1 ) );
 
-      if( value.empty( ) )
-         set_generate_hub_block( );
-      else
+      touch_or_remove( name, value.empty( ) );
+
+      set_generate_hub_block( );
+   }
+   else if( name == c_special_variable_prepare_backup_needed )
+   {
+      guard g( g_mutex );
+
+      set_backup_needed( );
+      set_restore_needed( );
+      set_complete_restore_needed( );
+
+      bool remove = value.empty( );
+
+      if( g_variables.count( c_special_variable_restore_needed )
+       || g_variables.count( c_special_variable_complete_restore_needed ) )
+         remove = true;
+
+      touch_or_remove( name, remove );
+
+      set_prepare_backup_needed( );
+
+      if( !remove )
       {
-         if( file_touch( file_name, 0, true, true ) )
-            g_variables[ name ] = c_true_value;
+         if( g_variables.count( c_special_variable_backup_needed ) )
+            set_backup_needed( false );
       }
    }
    else if( name == c_special_variable_complete_restore_needed )
    {
       guard g( g_mutex );
 
-      string file_name( c_hidden_file_prefix + name.substr( 1 ) );
+      set_backup_needed( );
+      set_restore_needed( );
+      set_prepare_backup_needed( );
 
-      if( value.empty( ) )
-         set_complete_restore_needed( );
-      else
+      touch_or_remove( name, value.empty( ) );
+
+      set_complete_restore_needed( );
+
+      if( !value.empty( ) )
       {
-         if( file_touch( file_name, 0, true, true ) )
-            g_variables[ name ] = c_true_value;
+         if( g_variables.count( c_special_variable_backup_needed ) )
+            set_backup_needed( false );
+
+         if( g_variables.count( c_special_variable_restore_needed ) )
+            set_restore_needed( false );
+
+         if( g_variables.count( c_special_variable_prepare_backup_needed ) )
+            set_prepare_backup_needed( false );
       }
    }
    else
