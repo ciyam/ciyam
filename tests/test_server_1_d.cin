@@ -55,4 +55,30 @@ run_script test4
 wait 250
 ~cat ~test.txt
 ~rm -f ~test.txt
+system_variable *needed*
+system_variable @backup_needed 1
+system_variable *needed*
+system_variable @restore_needed 1
+system_variable *needed*
+system_variable @prepare_backup_needed 1
+system_variable *needed*
+system_variable @complete_restore_needed 1
+system_variable *needed*
+system_variable @backup_needed 1
+system_variable *needed*
+system_variable @restore_needed 1
+system_variable *needed*
+system_variable @prepare_backup_needed 1
+system_variable *needed*
+system_variable @complete_restore_needed ""
+system_variable @prepare_backup_needed 1
+system_variable *needed*
+system_variable @backup_needed 1
+system_variable *needed*
+system_variable @restore_needed 1
+system_variable *needed*
+system_variable @complete_restore_needed 1
+system_variable *needed*
+system_variable @complete_restore_needed ""
+system_variable *needed*
 quit

@@ -116,4 +116,41 @@ wait 250
 (started test4)
 (finished test4)
 (finished test3)
+system_variable *needed*
+system_variable @backup_needed 1
+system_variable *needed*
+@backup_needed 1
+system_variable @restore_needed 1
+system_variable *needed*
+@restore_needed 1
+system_variable @prepare_backup_needed 1
+system_variable *needed*
+@restore_needed 1
+system_variable @complete_restore_needed 1
+system_variable *needed*
+@complete_restore_needed 1
+system_variable @backup_needed 1
+system_variable *needed*
+@complete_restore_needed 1
+system_variable @restore_needed 1
+system_variable *needed*
+@complete_restore_needed 1
+system_variable @prepare_backup_needed 1
+system_variable *needed*
+@complete_restore_needed 1
+system_variable @complete_restore_needed ""
+system_variable @prepare_backup_needed 1
+system_variable *needed*
+@prepare_backup_needed 1
+system_variable @backup_needed 1
+system_variable *needed*
+@prepare_backup_needed 1
+system_variable @restore_needed 1
+system_variable *needed*
+@restore_needed 1
+system_variable @complete_restore_needed 1
+system_variable *needed*
+@complete_restore_needed 1
+system_variable @complete_restore_needed ""
+system_variable *needed*
 quit
