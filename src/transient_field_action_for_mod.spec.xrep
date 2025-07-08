@@ -3,17 +3,21 @@
 `{`$check_iter`=`'`'`}`{`@eq`(`$arg_iterating`,`'true`'`)`$check_iter`=`'true`'`}`{`@eq`(`$arg_not_iterating`,`'true`'`)`$check_iter`=`'true`'`}\
 `{`$check_admin`=`'`'`}`{`@eq`(`$arg_admin_always`,`'true`'`)`$check_admin`=`'true`'`}`{`@eq`(`$arg_admin_never`,`'true`'`)`$check_admin`=`'true`'`}\
 `{`@eq`(`$check_admin`,`'`'`)\
-   if( `{`!`@eq`(`$arg_tfield`,`'`'`)`{`@eq`(`$arg_tfistexttype`,`'1`'`)\
-!is_null( `}get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}\
- && `}`{`@eq`(`$arg_even_when_changing`,`'`'`)!( state & c_state_is_changing )
+   if( `{`@eq`(`$arg_even_when_changing`,`'`'`)!( state & c_state_is_changing )
+    && `}`{`!`@eq`(`$arg_sfield`,`'`'`)get_obj( ).`{`$arg_sfield`}( )
+    && `}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`@eq`(`$arg_tfistexttype`,`'1`'`)\
+!is_null( `}get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}
     && `}( state & c_modifier_`{`$arg_modifier`} )`{`!`@eq`(`$arg_not_sess_var`,`'`'`)
     && get_session_variable( "`{`$arg_not_sess_var`}" ).empty( )`} )
    {
 `,\
-   if( `{`@eq`(`$arg_admin_never`,`'true`'`)!is_admin_uid( ) && `}\
-`{`@eq`(`$arg_admin_always`,`'true`'`)is_admin_uid( ) || `}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`@eq`(`$arg_admin_always`,`'true`'`)( `}\
-`{`@eq`(`$arg_tfistexttype`,`'1`'`)!is_null( `}get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}\
- && `}`{`@eq`(`$arg_even_when_changing`,`'`'`)!( state & c_state_is_changing )
+   if( `{`@eq`(`$arg_admin_never`,`'true`'`)!is_admin_uid( )
+    && `}\
+`{`@eq`(`$arg_admin_always`,`'true`'`)is_admin_uid( )
+    || `}`{`@eq`(`$arg_even_when_changing`,`'`'`)!( state & c_state_is_changing )
+    && `}`{`!`@eq`(`$arg_sfield`,`'`'`)get_obj( ).`{`$arg_sfield`}( )
+    && `}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`@eq`(`$arg_admin_always`,`'true`'`)( `}\
+`{`@eq`(`$arg_tfistexttype`,`'1`'`)!is_null( `}get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}
     && `}( state & c_modifier_`{`$arg_modifier`} )`{`!`@eq`(`$arg_not_sess_var`,`'`'`)
     && get_session_variable( "`{`$arg_not_sess_var`}" ).empty( )`}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`@eq`(`$arg_admin_always`,`'true`'`) )`}`} )
    {
