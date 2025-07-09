@@ -1967,6 +1967,8 @@ void Meta_Application::impl::impl_Generate( )
       if( !outupg )
          throw runtime_error( "unexpected error opening '" + upgrade_script + "' for output" );
 
+      outs << "#!/bin/bash\n\n";
+
       outs << "export WEBDIR=" << get_web_root( ) << "\n\n";
       outs << "echo Starting Generate... >>" << generate_log_file << "\n";
       outs << "if [ ! -d " << web_dir_var << "/" << app_dir << " ]; then\n"
