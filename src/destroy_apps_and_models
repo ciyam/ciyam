@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ ! "$1" = "okay" ]; then
- echo Usage: destroy_apps_and_models [okay] [[error file]]
+ echo Usage: destroy_apps_and_models [okay] [[error file] [[progress pipe]]]
 else
- ./ciyam_client -quiet -no_prompt -vars=ERROR_FILE=$2 < destroy_apps_and_models.cin
+ ./ciyam_client -quiet -no_prompt -vars=ERROR_FILE=$2,PROGRESS_PIPE=$3 < destroy_apps_and_models.cin
 fi

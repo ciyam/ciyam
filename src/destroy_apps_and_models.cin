@@ -9,7 +9,9 @@ ERROR=
 @ifndef $ERROR
 .storage_term
 .storage_init Meta
-.session_variable @stderr_progress 1
+@ifneq "$PROGRESS_PIPE" ""
+.session_variable @progress_pipe $PROGRESS_PIPE
+@endif
 .pe admin 20111102 Meta Workgroup guests -101410
 .storage_term
 .system_variable @backup_needed ""
