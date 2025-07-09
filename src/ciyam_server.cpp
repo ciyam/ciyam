@@ -306,8 +306,8 @@ int main( int argc, char* argv[ ] )
          if( sid < 0 )
             exit( EXIT_FAILURE );
 
-         // FUTURE: Standard out should probably also be closed here (but can be useful
-         // to help diagnose problems by allowing for simple "cout" style debugging).
+         // FUTURE: Standard error should probably also be closed here (but
+         // is useful to help diagnose issues via simple "cerr" debugging).
          close( STDOUT_FILENO );
          // close( STDERR_FILENO );
       }
