@@ -1360,6 +1360,8 @@ void Meta_Package::impl::impl_Install( )
          if( !outs )
             throw runtime_error( "unable to open '" + script_filename + "' for output" );
 
+         outs << "#!/bin/bash\n\n";
+
          outs << "./ciyam_client " << standard_client_args << " -no_stderr < ";
          outs << commands_filename << " >>" << install_log << "\n";
          outs << "echo Finished Install..." << ">>" << install_log << "\n"; // FUTURE: Should be a module string...
@@ -1581,6 +1583,14 @@ void Meta_Package::impl::impl_Remove( )
          string script_filename( get_obj( ).get_key( ) );
          string commands_filename( get_obj( ).get_key( ) + ".cin" );
 
+         // NOTE: A "progress pipe" file supports viewing progress
+         // when this function has been called from a console with
+         // a bash script (such as "reconstruct_meta") as standard
+         // output is captured and standard error would not appear
+         // when running as a daemon.
+         string progress_pipe( get_raw_session_variable(
+          get_special_var_name( e_special_var_progress_pipe ) ) );
+
          // NOTE: Empty code block for scope purposes.
          {
             ofstream outf( commands_filename.c_str( ) );
@@ -1599,8 +1609,8 @@ void Meta_Package::impl::impl_Remove( )
                outf << ".storage_transaction_start\n";
                outf << "@endif\n";
 
-               if( has_session_variable( get_special_var_name( e_special_var_stderr_progress ) ) )
-                  outf << "~>&2 echo \"\rRemoving " << get_obj( ).Name( ) << " package...\"\n";
+               if( !progress_pipe.empty( ) )
+                  outf << "~echo \"\rRemoving " << get_obj( ).Name( ) << " package...\" >> " << progress_pipe << "\n";
 
                string attached_file_path_var( get_special_var_name( e_special_var_attached_file_path ) );
 
@@ -1673,10 +1683,10 @@ void Meta_Package::impl::impl_Remove( )
 
                      outf << "@ifeq $SHOW_PROGRESS 1\n";
 
-                     if( !has_session_variable( get_special_var_name( e_special_var_stderr_progress ) ) )
+                     if( progress_pipe.empty( ) )
                         outf << "#Processed $TOTAL_RECORDS records...\n";
                      else
-                        outf << "~>&2 echo \"Processed $TOTAL_RECORDS records...\"\n";
+                        outf << "~echo \"Processed $TOTAL_RECORDS records...\" >> " << progress_pipe << "\n";
 
                      outf << ".utc_to_unix_time @now\n";
                      outf << "SHOW_PROGRESS_TIME=@$OUTPUT+10\n";
@@ -1717,6 +1727,7 @@ void Meta_Package::impl::impl_Remove( )
             if( !skip )
             {
                ofstream outl( install_log.c_str( ), ios::out | ios::app );
+
                if( !outl )
                   throw runtime_error( "unable to open '" + install_log + "' for output" );
 
@@ -1727,6 +1738,8 @@ void Meta_Package::impl::impl_Remove( )
 
             if( !outs )
                throw runtime_error( "unable to open '" + script_filename + "' for output" );
+
+            outs << "#!/bin/bash\n\n";
 
             outs << "./ciyam_client " << standard_client_args << " < ";
             outs << commands_filename << " >>" << install_log << "\n";
