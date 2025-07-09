@@ -5775,7 +5775,7 @@ int exec_system( const string& cmd, bool async, bool delay )
    string async_var( get_raw_session_variable( get_special_var_name( e_special_var_allow_async ) ) );
 
    // NOTE: The session variable @allow_async can be used to force non-async execution.
-   if( async_var == "0" || async_var == c_false )
+   if( ( async_var == "0" ) || ( async_var == c_false ) )
       async = false;
 
    if( async || delay )
