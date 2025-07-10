@@ -1114,7 +1114,8 @@ maxretry = 3
 mode     = aggressive
 ...
 [postfix-sasl]
-enabled = true
+enabled  = true
+filter   = postfix[mode=aggressive]
 ...
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
