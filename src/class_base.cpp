@@ -1656,9 +1656,11 @@ string class_base::get_fields_and_values( field_label_type label_type,
    {
       bool include = ( include_everything ? true : ( !is_field_default( i ) && !is_field_transient( i ) ) );
 
-      // NOTE: Including modified restricts the fields for inclusion
-      // to only non-default and non-transient changed field values.
-      if( include && include_modified )
+      // NOTE: If requesting "modified" then only includes
+      // non-transient fields with values that have either
+      // changed or were not equal to the provided initial
+      // field value.
+      if( include_modified && !is_field_transient( i ) )
       {
          if( !p_initial_field_values )
             include = has_field_changed( i );
@@ -1666,7 +1668,7 @@ string class_base::get_fields_and_values( field_label_type label_type,
             include = ( get_field_value( i ) != ( *p_initial_field_values )[ i ] );
       }
 
-      // NOTE: Will always include the graph parent if is not empty.
+      // NOTE: Always include the graph parent if is not empty.
       if( !graph_parent_fk_field.empty( ) && ( graph_parent_fk_field == get_field_id( i ) ) )
          include = true;
 
