@@ -332,10 +332,10 @@ Meta DB has been created.
 vi autoscript.sio
 (uncomment out all standard scripts)
 
-(if no ciyamd.service exists then ./init_service)
-sudo cp ciyamd.service /etc/systemd/system
+(if no ciyam.service exists then ./init_service)
+sudo cp ciyam.service /etc/systemd/system
 
-sudo vi /etc/systemd/system/ciyamd.service
+sudo vi /etc/systemd/system/ciyam.service
 (ensure that the "Environment" values matches the exported values above)
 
 Make necessary changes (for VMs) to the "ciyam_server.sio" configuration file:
@@ -351,10 +351,10 @@ vi ciyam_server.sio
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 sudo systemctl daemon-reload
-sudo systemctl enable ciyamd
+sudo systemctl enable ciyam
 
-sudo systemctl start ciyamd
-sudo systemctl status ciyamd
+sudo systemctl start ciyam
+sudo systemctl status ciyam
 
 Adding extra package types to Meta
 ----------------------------------
