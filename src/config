@@ -47,13 +47,7 @@ else
   chmod g-r password.info
  fi
 
-# NOTE: Obsolete non-systemd service (if
-# needed again would need to be updated).
-# if [ ! -f ciyamd ]; then
-#  ./xrep @ciyamd.xrep uid=$USER >ciyamd
-# fi
-
- if [ ! -f ciyamd.service ]; then
+ if [ ! -f ciyam.service ]; then
   ./init_service
  fi
 

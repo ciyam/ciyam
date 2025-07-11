@@ -174,4 +174,4 @@ ciyam_server.sio
 
 # Ignore PEM and service.
 ciyam.pem
-ciyamd.service
+ciyam.service

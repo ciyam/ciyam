@@ -24,6 +24,6 @@ else
  if [ "$MYSQL" = "" ]; then
   echo "Error: Neither MySQL (nor MariaDB) program was found (not installed?)."
  else
-  ./xrep @ciyamd.service.xrep user=$USER group=$GROUP mysql=$MYSQL webdir=$WEBDIR >ciyamd.service
+  ./xrep @ciyam.service.xrep user=$USER group=$GROUP mysql=$MYSQL webdir=$WEBDIR >ciyam.service
  fi
 fi

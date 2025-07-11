@@ -10,7 +10,7 @@ else
  if [ "$WEBDIR" = "" ]; then
   echo "Error: Missing environment variable 'WEBDIR'."
  else
-  sudo systemctl stop ciyamd
+  sudo systemctl stop ciyam
 
   rm -r files/*
   rm -f ciyam_server.sid ciyam_server.sid.sav $WEBDIR/meta/identity.txt $WEBDIR/meta/encrypted.txt
@@ -18,7 +18,7 @@ else
   ./config
 
   sudo systemctl daemon-reload
-  sudo systemctl start ciyamd
+  sudo systemctl start ciyam
 
   sleep 0.5
 
@@ -26,7 +26,7 @@ else
 
   ./ciyam_client -quiet -no_prompt -exec="<meta_user_set_active.cin guest 0"
 
-  sudo systemctl stop ciyamd
+  sudo systemctl stop ciyam
 
   rm -f ciyam.pem ciyam_server.sid $1.hdr $1.idx $1.dat $1.tlg
 
