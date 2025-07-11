@@ -3485,7 +3485,8 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `{`#trigger_function.spec.xrep section=after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_function=$specification_\0_function arg_arg1=$specification_\0_arg1\
  arg_arg2=$specification_\0_arg2 arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
- arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only arg_skip_restore=$specification_\0_skip_restore`}\
+ arg_explicit=$specification_\0_explicit arg_create_only=$specification_\0_create_only\
+ arg_update_only=$specification_\0_update_only arg_skip_restore=$specification_\0_skip_restore`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_parent_update_field`'`)`&`@eq`(`$specification_\0_destroy`,`'`'`)
 `{`#trigger_parent_update_field.spec.xrep section=after_store class_name=$class_name module_name=$module_name\
@@ -3645,7 +3646,8 @@ void `{`$full_class_name`}::impl::after_destroy( bool is_internal )
 `{`#trigger_function.spec.xrep section=after_destroy class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_function=$specification_\0_function arg_arg1=$specification_\0_arg1\
  arg_arg2=$specification_\0_arg2 arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
- arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only arg_skip_restore=$specification_\0_skip_restore`}\
+ arg_explicit=$specification_\0_explicit arg_create_only=$specification_\0_create_only\
+ arg_update_only=$specification_\0_update_only arg_skip_restore=$specification_\0_skip_restore`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_parent_update_field`'`)`&`@eq`(`$specification_\0_destroy`,`'true`'`)
 `{`#trigger_parent_update_field.spec.xrep section=after_destroy class_name=$class_name module_name=$module_name\

@@ -2,10 +2,11 @@
    // [(start trigger_function)] `{`$arg_id`}
    if( `{`!`@eq`(`$arg_create_only`,`'`'`)`|`!`@eq`(`$arg_update_only`,`'`'`)\
 `{`!`@eq`(`$arg_update_only`,`'`'`)!`}is_create
+    && `}`{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )
     && `}!get_obj( ).get_is_for_peer( )`{`!`@eq`(`$arg_modifier`,`'`'`)
     && ( state & c_modifier_`{`$arg_modifier`} )`}`{`!`@eq`(`$arg_tfield`,`'`'`)
-    && get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$arg_skip_restore`,`'`'`)
-    && !storage_locked_for_admin( )`} )
+    && get_obj( ).`{`$arg_tfield`}( )`} )
+`{`@eq`(`$arg_explicit`,`'`'`)\
    {
       temporary_session_variable tmp_session_key_var(
        get_special_var_name( e_special_var_key ), get_obj( ).get_key( ) );
@@ -15,8 +16,12 @@
 `}`{`!`@eq`(`$arg_arg2`,`'`'`)
       temporary_session_variable tmp_session_arg2_var(
        get_special_var_name( e_special_var_arg2 ), get_obj( ).`{`$arg_arg2`}( ) );
-`}
+`}`}`{`@eq`(`$arg_explicit`,`'`'`)
       `{`$arg_function`}( );
    }
+`,\
+      `{`$arg_function`}( `{`!`@eq`(`$arg_arg1`,`'`'`)get_obj( ).`{`$arg_arg1`}( )\
+`{`!`@eq`(`$arg_arg2`,`'`'`), `}`}`{`!`@eq`(`$arg_arg2`,`'`'`)get_obj( ).`{`$arg_arg2`}( )`} );
+`}\
    // [(finish trigger_function)] `{`$arg_id`}
 `}
