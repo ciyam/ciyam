@@ -1135,9 +1135,9 @@ sudo apt install mailutils -y
 sudo apt install lockfile-progs -y
 
 sudo wget -O /usr/bin/expand_template https://raw.githubusercontent.com/ciyam/ciyam/master/expand_template
-sudo wget -O /usr/bin/check_mail_epoch.sh.template https://raw.githubusercontent.com/ciyam/ciyam/master/check_mail_epoch.sh.template
-
 sudo chmod a+x /usr/bin/expand_template
+
+sudo wget -O /usr/bin/check_mail_epoch.sh.template https://raw.githubusercontent.com/ciyam/ciyam/master/check_mail_epoch.sh.template
 
 sudo vi /etc/ntfy/client.yml
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -1169,7 +1169,65 @@ crontab -e
 NOTE: The "2>&1" stops Cron from automatically emailing when an error occurs during
 script execution (such as being unable to lock the user's mailbox to scan headers).
 
-On the mobile device would subscribe to the ntfy topic: up_***user_name***
+On the mobile device subscribe to the ntfy topic: up_***user_name***
+
+Creating a Cron Job for new Matrix notifications using Ntfy
+-----------------------------------------------------------
+
+Although when using "ntfy" on a mobile device it should receive a notification in a
+few seconds the Element (or Element-X) application often takes a lot longer to wake
+up and report the notification (which is not very helpful for incoming calls). What
+follows will provide a secondary notifcation (straight to "ntfy") which can be used
+as a work-around to get closer to having "instant" notifications.
+
+NOTE: If these two commands were not performed from the prior section.
+sudo wget -O /usr/bin/expand_template https://raw.githubusercontent.com/ciyam/ciyam/master/expand_template
+sudo chmod a+x /usr/bin/expand_template
+
+sudo wget -O /usr/bin/check_ntfy_epoch.sh.template https://raw.githubusercontent.com/ciyam/ciyam/master/check_ntfy_epoch.sh.template
+
+sudo su ***user_name***
+
+cd ~
+
+expand_template /usr/bin/check_ntfy_epoch.sh.template check_ntfy_epoch.sh
+
+chmod a+x check_ntfy_epoch.sh
+
+NOTE: The ***topic_name*** needs to be obtained from "ntfy" on the mobile device.
+
+vi check_ntfy.sh
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#!/bin/bash
+
+while true
+do
+ ntfy subscribe up***topic_name*** "/home/***user_name***/check_ntfy_epoch.sh Matrix"
+
+ if [ -f /home/***user_name***/check_ntfy.stop ];
+  rm /home/***user_name***/check_ntfy.stop
+  break
+ fi
+
+ sleep 10
+done
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+chmod a+x check_ntfy.sh
+
+(run manually to check that no error occurs)
+./check_ntfy.sh
+
+crontab -e
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+@reboot /home/***user_name***/check_ntfy.sh >/dev/null 2>&1
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+NOTE: Use the following commands in order to force immediate execution.
+sudo rm /var/run/crond.reboot
+sudo systemctl restart cron
+
+On the mobile device subscribe to the ntfy topic: up_***user_name***
 
 Upgrading to a new version of Lubuntu OS
 ----------------------------------------

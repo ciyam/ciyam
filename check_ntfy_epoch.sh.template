@@ -1,0 +1,50 @@
+#!/bin/bash
+# Copyright (c) 2025 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+home=/home/$USER
+
+cd ${DOLLAR}home
+
+msg_type=${DOLLAR}1
+
+changed=0
+priority=0
+
+new_epoch=${DOLLAR}NTFY_TIME
+
+if [ "${DOLLAR}msg_type" == "" ]; then
+ priority=1
+ msg_type=Unknown
+fi
+
+if [ "${DOLLAR}msg_type" == "Matrix" ]; then
+ if [[ "${DOLLAR}NTFY_MESSAGE" == *"\"prio\":\"high\""* ]]; then
+  priority=1
+ fi
+fi
+
+if [ "${DOLLAR}new_epoch" = "" ]; then
+ echo "Error: Needs NTFY_TIME to be set by caller."
+else
+ if [ -f ".ntfy_epoch" ]; then
+  old_epoch=$(<.ntfy_epoch)
+
+  if [ $((${DOLLAR}new_epoch)) -gt $((${DOLLAR}old_epoch)) ]; then
+   changed=1
+  fi
+ else
+  changed=1
+ fi
+
+ if [ "${DOLLAR}changed" == "1" ]; then
+  if [ "${DOLLAR}priority" == "1" ]; then
+   unset "${DOLLAR}{!NTFY_@}"
+   ntfy pub up_$USER "${DOLLAR}msg_type"
+  fi
+  echo -n ${DOLLAR}new_epoch >.ntfy_epoch
+ fi
+fi
+
