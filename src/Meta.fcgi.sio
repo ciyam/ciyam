@@ -7817,7 +7817,7 @@
      <ftype>int
      <extra>range=0..999999
      <mandatory>true
-     <modifiers>400:relegate,200:relegate,40000:relegate,10000:relegate,100:relegate,4000:relegate
+     <modifiers>400:relegate,200:relegate,40000:relegate,10000:relegate,800:relegate,100:relegate,4000:relegate
     </field>
     <field/>
      <name>field_type_min_value

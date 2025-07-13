@@ -5673,7 +5673,7 @@
 `{`$specification_Type_view_field003`=`'102103`'`}
 `{`$specification_Type_view_ftype003`=`'int`'`}
 `{`$specification_Type_view_extra003`=`'range=0..999999`'`}
-`{`$specification_Type_view_fmods003`=`'400:relegate,200:relegate,40000:relegate,10000:relegate,100:relegate,4000:relegate`'`}
+`{`$specification_Type_view_fmods003`=`'400:relegate,200:relegate,40000:relegate,10000:relegate,800:relegate,100:relegate,4000:relegate`'`}
 `{`$specification_Type_view_fname003`=`'field_type_max_size`'`}
 `{`$specification_Type_view_fmand003`=`'true`'`}
 `{`$specification_Type_view_field004`=`'102104`'`}

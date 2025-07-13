@@ -186,7 +186,7 @@ modifier_add -id=102313 Type Is_Time Max_Size:relegate\
 ,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate,Default_UOM:relegate
 modifier_add -id=102314 Type Is_Numeric Max_Size:relegate\
 ,String_Domain:relegate,Date_Precision:relegate,Time_Precision:relegate,Int_Type:relegate
-modifier_add -id=102315 Type Is_Int Numeric_Digits:relegate\
+modifier_add -id=102315 Type Is_Int Max_Size:relegate,Numeric_Digits:relegate\
 ,Auto_Round:relegate,Numeric_Decimals:relegate,String_Domain:relegate,Date_Precision:relegate\
 ,Time_Precision:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Numeric_Type:relegate
 modifier_add -id=102316 Type Is_Bool Max_Size:relegate,Min_Value:relegate,Max_Value:relegate\
