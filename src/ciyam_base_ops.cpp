@@ -35,6 +35,8 @@
 
 using namespace std;
 
+//#define COMPILE_PROTOTYPE_CODE
+
 namespace
 {
 
@@ -3136,6 +3138,72 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                if( supports_sql_undo )
                   append_undo_sql_stmts( sql_undo_stmts );
+
+#ifdef COMPILE_PROTOTYPE_CODE
+               // NOTE: Objects are stored in the form of a structured I/O
+               // file with the path "/objects/files/<class_id>/" and name
+               // being "<security>.<key_value>".
+               if( app_name == c_meta_storage_name )
+               {
+                  ods& ods_db( storage_ods_instance( ) );
+
+                  auto_ptr< ods::bulk_write > ap_bulk_write;
+
+                  if( !ods_db.is_thread_bulk_write_locked( ) )
+                     ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
+
+                  ods_file_system ofs( ods_db );
+
+                  ofs.set_root_folder( c_storage_folder_name_objects );
+
+                  string files_folder_name( c_storage_folder_name_files );
+
+                  if( !ofs.has_folder( files_folder_name ) )
+                     ofs.add_folder( files_folder_name );
+
+                  ofs.set_folder( files_folder_name );
+
+                  string class_id( instance.get_class_id( ) );
+
+                  if( !ofs.has_folder( class_id ) )
+                     ofs.add_folder( class_id );
+
+                  ofs.set_folder( class_id );
+
+                  stringstream sio_data;
+
+                  sio_writer writer( sio_data );
+
+                  bool had_any_non_transients = false;
+
+                  int num_fields = instance.get_num_fields( );
+
+                  for( int i = 0; i < num_fields; i++ )
+                  {
+                     if( instance.is_field_transient( i ) )
+                        continue;
+
+                     had_any_non_transients = true;
+
+                     string data( instance.get_field_value( i ) );
+                     string attribute_name( lower( instance.get_field_name( i ) ) );
+
+                     writer.write_attribute( attribute_name, data );
+                  }
+
+                  string instance_file_name(
+                   to_string( instance.get_security( ) ) + '.' + instance.get_key( ) );
+
+                  if( had_any_non_transients )
+                  {
+                     writer.finish_sections( );
+
+                     ofs.store_file( instance_file_name, 0, &sio_data );
+                  }
+                  else
+                     ofs.store_file( instance_file_name, c_file_zero_length );
+               }
+#endif
             }
             else if( persistence_type == 1 ) // i.e. ODS global persistence
             {
@@ -3173,6 +3241,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                         ap_sio_writer.reset( new sio_writer( sio_data ) );
 
                      bool had_any_non_transients = false;
+
                      int num_fields = instance.get_num_fields( );
 
                      if( !is_file_not_folder )
@@ -3207,6 +3276,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                         if( had_any_non_transients )
                         {
                            ap_sio_writer->finish_sections( );
+
                            sys_ods_fs.store_file( instance.get_key( ), 0, &sio_data );
                         }
                         else

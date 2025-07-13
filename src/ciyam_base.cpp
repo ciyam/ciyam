@@ -978,9 +978,9 @@ string storage_handler::get_variable( const string& var_name )
 
          ods_file_system ofs( *ods::instance( ) );
 
-         if( ofs.has_folder( c_storable_folder_name_variables ) )
+         if( ofs.has_folder( c_storage_folder_name_variables ) )
          {
-            ofs.set_folder( c_storable_folder_name_variables );
+            ofs.set_folder( c_storage_folder_name_variables );
 
             string expr;
 
@@ -1053,9 +1053,9 @@ string storage_handler::get_variable( const string& var_name )
 
          ods_file_system ofs( *ods::instance( ) );
 
-         if( ofs.has_folder( c_storable_folder_name_variables ) )
+         if( ofs.has_folder( c_storage_folder_name_variables ) )
          {
-            ofs.set_folder( c_storable_folder_name_variables );
+            ofs.set_folder( c_storage_folder_name_variables );
 
             string expr;
 
@@ -1181,12 +1181,12 @@ void storage_handler::set_variable( const string& var_name, const string& new_va
          ods_file_system ofs( *ods::instance( ) );
 
          if( !new_value.empty( )
-          && !ofs.has_folder( c_storable_folder_name_variables ) )
-            ofs.add_folder( c_storable_folder_name_variables );
+          && !ofs.has_folder( c_storage_folder_name_variables ) )
+            ofs.add_folder( c_storage_folder_name_variables );
 
-         if( ofs.has_folder( c_storable_folder_name_variables ) )
+         if( ofs.has_folder( c_storage_folder_name_variables ) )
          {
-            ofs.set_folder( c_storable_folder_name_variables );
+            ofs.set_folder( c_storage_folder_name_variables );
 
             if( new_value.empty( ) )
             {
@@ -2446,14 +2446,14 @@ void perform_storage_op( storage_op op,
 
             delete_directory_files( name, true );
 
-            if( !ofs.has_folder( c_storable_folder_name_modules ) )
+            if( !ofs.has_folder( c_storage_folder_name_modules ) )
             {
                has_exported_objects = false;
 
-               if( ofs.has_folder( c_storable_folder_name_channels ) )
+               if( ofs.has_folder( c_storage_folder_name_channels ) )
                   has_imported_channels = true;
 
-               if( ofs.has_folder( c_storable_folder_name_datachains ) )
+               if( ofs.has_folder( c_storage_folder_name_datachains ) )
                   has_imported_datachains = true;
             }
          }
@@ -2479,18 +2479,21 @@ void perform_storage_op( storage_op op,
 
             ods_file_system ofs( *ap_ods );
 
-            ofs.add_folder( c_storable_folder_name_modules );
+            ofs.add_folder( c_storage_folder_name_modules );
+
+            if( name == c_meta_storage_name )
+               ofs.add_folder( c_storage_folder_name_objects );
 
             if( is_peerchain_application )
             {
                if( !has_imported_channels )
-                  ofs.add_folder( c_storable_folder_name_channels );
+                  ofs.add_folder( c_storage_folder_name_channels );
 
                if( !has_imported_datachains )
-                  ofs.add_folder( c_storable_folder_name_datachains );
+                  ofs.add_folder( c_storage_folder_name_datachains );
             }
 
-            ofs.add_folder( c_storable_folder_name_variables );
+            ofs.add_folder( c_storage_folder_name_variables );
 
             ap_handler->get_root( ).store_as_text_files( ofs );
 
@@ -2506,7 +2509,7 @@ void perform_storage_op( storage_op op,
             ods_file_system ofs( *ap_ods );
             ap_handler->get_root( ).fetch_from_text_files( ofs );
 
-            ofs.set_folder( c_storable_folder_name_modules );
+            ofs.set_folder( c_storage_folder_name_modules );
 
             vector< string > order_prefixed_module_list;
             ofs.list_folders( order_prefixed_module_list );
@@ -2524,9 +2527,9 @@ void perform_storage_op( storage_op op,
 
             ofs.set_folder( ".." );
 
-            if( ofs.has_folder( c_storable_folder_name_variables ) )
+            if( ofs.has_folder( c_storage_folder_name_variables ) )
             {
-               ofs.set_folder( c_storable_folder_name_variables );
+               ofs.set_folder( c_storage_folder_name_variables );
 
                // NOTE: Restore all persistent storage variable values.
                vector< string > variable_files;
@@ -9284,14 +9287,14 @@ void export_storage( command_handler& cmd_handler )
 
       string name( handler.get_name( ) );
 
-      if( ofs.has_folder( c_storable_folder_name_channels ) )
+      if( ofs.has_folder( c_storage_folder_name_channels ) )
       {
-         ofs.set_folder( c_storable_folder_name_channels );
+         ofs.set_folder( c_storage_folder_name_channels );
 
          create_dir( name );
 
          string child_folder_name( name + '/' );
-         child_folder_name += c_storable_folder_name_channels;
+         child_folder_name += c_storage_folder_name_channels;
 
          create_dir( child_folder_name );
 
@@ -9301,15 +9304,15 @@ void export_storage( command_handler& cmd_handler )
          has_exported_any = true;
       }
 
-      if( ofs.has_folder( c_storable_folder_name_datachains ) )
+      if( ofs.has_folder( c_storage_folder_name_datachains ) )
       {
          if( !has_exported_any )
             create_dir( name );
 
-         ofs.set_folder( c_storable_folder_name_datachains );
+         ofs.set_folder( c_storage_folder_name_datachains );
 
          string child_folder_name( name + '/' );
-         child_folder_name += c_storable_folder_name_datachains;
+         child_folder_name += c_storage_folder_name_datachains;
 
          create_dir( child_folder_name );
 
@@ -10823,10 +10826,10 @@ void add_security_group( const string& group_key )
 
    ods_file_system ofs( *ods::instance( ) );
 
-   if( !ofs.has_folder( c_storable_folder_name_gid_data ) )
-      ofs.add_folder( c_storable_folder_name_gid_data );
+   if( !ofs.has_folder( c_storage_folder_name_gid_data ) )
+      ofs.add_folder( c_storage_folder_name_gid_data );
 
-   ofs.set_folder( c_storable_folder_name_gid_data );
+   ofs.set_folder( c_storage_folder_name_gid_data );
 
    string gid_file_name( group_key + '.'
     + to_string( ++gtp_session->p_storage_handler->get_root( ).group_identity_new ) );
@@ -10840,7 +10843,7 @@ int64_t group_security_value( const string& group_key_value )
 
    ods_file_system ofs( *ods::instance( ) );
 
-   ofs.set_folder( c_storable_folder_name_gid_data );
+   ofs.set_folder( c_storage_folder_name_gid_data );
 
    string group_number;
 
@@ -10864,9 +10867,9 @@ string convert_group_keys_to_numbers( const string& group_keys )
 
       ods_file_system ofs( *ods::instance( ) );
 
-      if( ofs.has_folder( c_storable_folder_name_gid_data ) )
+      if( ofs.has_folder( c_storage_folder_name_gid_data ) )
       {
-         ofs.set_folder( c_storable_folder_name_gid_data );
+         ofs.set_folder( c_storage_folder_name_gid_data );
 
          for( size_t i = 0; i < groups.size( ); i++ )
          {
@@ -10896,9 +10899,9 @@ bool get_uid_data( const string& uid, size_t& level, string& gids )
 
    ods_file_system ofs( *ods::instance( ) );
 
-   if( ofs.has_folder( c_storable_folder_name_uid_data ) )
+   if( ofs.has_folder( c_storage_folder_name_uid_data ) )
    {
-      ofs.set_folder( c_storable_folder_name_uid_data );
+      ofs.set_folder( c_storage_folder_name_uid_data );
 
       string level_suffix;
 
@@ -10925,10 +10928,10 @@ void set_uid_data( const string& uid, const string& level, const string& group_k
 
    ods_file_system ofs( *ods::instance( ) );
 
-   if( !ofs.has_folder( c_storable_folder_name_uid_data ) )
-      ofs.add_folder( c_storable_folder_name_uid_data );
+   if( !ofs.has_folder( c_storage_folder_name_uid_data ) )
+      ofs.add_folder( c_storage_folder_name_uid_data );
 
-   ofs.set_folder( c_storable_folder_name_uid_data );
+   ofs.set_folder( c_storage_folder_name_uid_data );
 
    size_t level_value = 0;
 
@@ -11242,7 +11245,7 @@ void module_load( const string& module_name,
 
                ods_file_system ofs( *p_ods );
 
-               ofs.set_folder( c_storable_folder_name_modules );
+               ofs.set_folder( c_storage_folder_name_modules );
 
                string prefix( to_comparable_string( handler.get_root( ).module_list.size( ), false, 3 ) );
 

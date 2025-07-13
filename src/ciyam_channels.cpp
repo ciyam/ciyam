@@ -337,14 +337,16 @@ void storage_channel_document_restore( const string& identity_path )
       string identity( identity_path.substr( opened_files_path.length( ) + 1, pos - opened_files_path.length( ) - 1 ) );
       string file_path( identity_path.substr( pos + 1 ) );
 
-      ods_file_system ofs( storage_ods_instance( ) );
+      ods& ods_db( storage_ods_instance( ) );
 
       auto_ptr< ods::bulk_read > ap_bulk_read;
 
-      if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
-         ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
+      if( !ods_db.is_thread_bulk_locked( ) )
+         ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
 
-      ofs.set_root_folder( c_storable_folder_name_channels );
+      ods_file_system ofs( ods_db );
+
+      ofs.set_root_folder( c_storage_folder_name_channels );
 
       string destination( opened_files_path + '/' + identity + '/' + file_path );
 
@@ -517,14 +519,16 @@ void storage_channel_list( ostream& os )
 {
    guard g( g_mutex );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_read > ap_bulk_read;
 
-   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    ofs.list_folders( os );
 }
@@ -540,14 +544,16 @@ void storage_channel_create( const char* p_identity, const char* p_channel_infor
    if( is_standard )
       throw runtime_error( "invalid non-peerchain storage '" + name + "' for storage_channel_create" );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    string identity;
 
@@ -606,14 +612,16 @@ void storage_channel_destroy( const char* p_identity )
    if( is_standard )
       throw runtime_error( "invalid non-peerchain storage '" + name + "' for storage_channel_destroy" );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    string identity;
 
@@ -646,14 +654,16 @@ void storage_channel_update( const char* p_identity, const char* p_channel_infor
    if( is_standard )
       throw runtime_error( "invalid non-peerchain storage '" + name + "' for storage_channel_update" );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    string identity;
 
@@ -711,14 +721,16 @@ string storage_channel_documents( const string& identity, bool get_height, bool 
       throw runtime_error( "invalid non-peerchain storage '"
        + name + "' for storage_channel_documents" );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_read > ap_bulk_read;
 
-   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    string retval;
 
@@ -777,14 +789,16 @@ void storage_channel_documents_open( const char* p_identity )
       throw runtime_error( "invalid non-peerchain storage '"
        + name + "' for storage_channel_documents_open" );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_read > ap_bulk_read;
 
-   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    string identity;
 
@@ -916,14 +930,16 @@ void storage_channel_documents_close( const char* p_identity )
       throw runtime_error( "invalid non-peerchain storage '"
        + name + "' for storage_channel_documents_close" );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    string identity;
 
@@ -948,7 +964,7 @@ void storage_channel_documents_close( const char* p_identity )
    string path( get_system_variable(
     get_special_var_name( e_special_var_opened_files ) ) + '/' + identity );
 
-   ods::transaction ods_tx( storage_ods_instance( ) );
+   ods::transaction ods_tx( ods_db );
 
    string prefix( get_raw_system_variable(
     get_special_var_name( e_special_var_opened_files ) ) + '/' + identity + '/' );
@@ -1273,7 +1289,7 @@ bool storage_channel_documents_opened( const string& identity )
 
                         string date_and_time( extended_information.substr( pos + 1 ) );
 
-                        replace( next_document, '/' + string( c_storable_folder_name_channels ), opened_files_directory );
+                        replace( next_document, '/' + string( c_storage_folder_name_channels ), opened_files_directory );
 
                         if( !paths_and_time_stamps.empty( ) )
                            paths_and_time_stamps += '\n';
@@ -1344,14 +1360,16 @@ string storage_channel_documents_update( const string& identity, bool submitted 
       throw runtime_error( "unexpected blockchain identity directory '"
        + blockchain_identity + "' for channel '" + identity + "' already exists" );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    if( !ofs.has_folder( identity ) )
       throw runtime_error( "channel folder for '" + identity + "' was not found" );
@@ -1489,7 +1507,7 @@ string storage_channel_documents_update( const string& identity, bool submitted 
          }
       }
 
-      ods::transaction ods_tx( storage_ods_instance( ) );
+      ods::transaction ods_tx( ods_db );
 
       if( file_exists( files_name ) )
       {
@@ -1658,14 +1676,16 @@ string storage_channel_documents_prepare( const string& identity )
    if( file_exists( bundle_file_name ) )
       file_remove( bundle_file_name );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    if( !ofs.has_folder( identity ) )
       throw runtime_error( "channel folder for '" + identity + "' was not found" );
@@ -1783,7 +1803,7 @@ string storage_channel_documents_prepare( const string& identity )
       if( file_exists( blockchain_identity + ".bun.gz" ) )
          retval = blockchain_identity;
 
-      ods::transaction ods_tx( storage_ods_instance( ) );
+      ods::transaction ods_tx( ods_db );
 
       ofs.set_folder( c_channel_folder_ciyam );
 
@@ -1863,14 +1883,16 @@ void storage_channel_documents_cancel_pending( const char* p_identity )
       throw runtime_error( "blockchain identity for '"
        + identity + "' not found in storage_channel_documents_cancel_pending" );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    if( ofs.has_folder( identity ) )
       ofs.set_folder( identity );
@@ -1924,14 +1946,16 @@ void storage_channel_documents_reject_waiting( const char* p_identity, const cha
    if( is_standard )
       throw runtime_error( "invalid non-peerchain storage '" + name + "' for storage_channel_documents_reject_waiting" );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    if( ofs.has_folder( identity ) )
       ofs.set_folder( identity );
@@ -2041,14 +2065,16 @@ void storage_channel_documents_reject_reviewing( const char* p_identity, const c
    if( is_standard )
       throw runtime_error( "invalid non-peerchain storage '" + name + "' for storage_channel_documents_reject_reviewing" );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    if( ofs.has_folder( identity ) )
       ofs.set_folder( identity );
@@ -2091,7 +2117,7 @@ void storage_channel_documents_reject_reviewing( const char* p_identity, const c
       string reviewing;
       string new_reviewing;
 
-      ods::transaction ods_tx( storage_ods_instance( ) );
+      ods::transaction ods_tx( ods_db );
 
       ofs.fetch_from_text_file( c_channel_reviewing, reviewing );
       
@@ -2164,14 +2190,16 @@ void storage_channel_documents_approve_waiting( const char* p_identity, const ch
    if( is_standard )
       throw runtime_error( "invalid non-peerchain storage '" + name + "' for storage_channel_documents_approve_waiting" );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    if( ofs.has_folder( identity ) )
       ofs.set_folder( identity );
@@ -2214,7 +2242,7 @@ void storage_channel_documents_approve_waiting( const char* p_identity, const ch
       string waiting;
       string new_waiting;
 
-      ods::transaction ods_tx( storage_ods_instance( ) );
+      ods::transaction ods_tx( ods_db );
 
       ofs.fetch_from_text_file( c_channel_waiting, waiting );
       
@@ -2287,14 +2315,16 @@ void storage_channel_documents_approve_reviewing( const char* p_identity, const 
    if( is_standard )
       throw runtime_error( "invalid non-peerchain storage '" + name + "' for storage_channel_documents_approve_reviewing" );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    if( ofs.has_folder( identity ) )
       ofs.set_folder( identity );
@@ -2337,7 +2367,7 @@ void storage_channel_documents_approve_reviewing( const char* p_identity, const 
       string reviewing;
       string new_reviewing;
 
-      ods::transaction ods_tx( storage_ods_instance( ) );
+      ods::transaction ods_tx( ods_db );
 
       ofs.fetch_from_text_file( c_channel_reviewing, reviewing );
       
@@ -2386,14 +2416,16 @@ string storage_channel_documents_specific(
 
    string retval;
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_read > ap_bulk_read;
 
-   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    if( identity.empty( ) )
       throw runtime_error( "unexpected null identity in storage_channel_documents_specific" );
@@ -2496,14 +2528,16 @@ void list_datachains( ostream& os )
 {
    guard g( g_mutex );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_read > ap_bulk_read;
 
-   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_datachains );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_datachains );
 
    ofs.list_folders( os );
 }
@@ -2512,14 +2546,16 @@ void list_datachains( vector< string >& datachains )
 {
    guard g( g_mutex );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_read > ap_bulk_read;
 
-   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_datachains );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_datachains );
 
    ofs.list_folders( datachains );
 }
@@ -2528,14 +2564,16 @@ bool has_datachain( const string& identity )
 {
    guard g( g_mutex );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_read > ap_bulk_read;
 
-   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_datachains );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_datachains );
 
    if( !ofs.has_folder( identity ) )
       throw runtime_error( "datachain '" + identity + "' not found" );
@@ -2549,14 +2587,16 @@ string get_datachain_info( const string& identity, size_t* p_data_type, size_t* 
 
    string retval;
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_read > ap_bulk_read;
 
-   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_datachains );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_datachains );
 
    if( !ofs.has_folder( identity ) )
       throw runtime_error( "datachain '" + identity + "' not found" );
@@ -2590,14 +2630,16 @@ void create_datachain_info( const string& identity, size_t data_type )
 {
    guard g( g_mutex );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    vector< string > folders;
 
@@ -2608,7 +2650,7 @@ void create_datachain_info( const string& identity, size_t data_type )
    if( channels.find( identity ) != channels.end( ) )
       throw runtime_error( "datachain '" + identity + "' is a channel identity" );
 
-   ofs.set_root_folder( c_storable_folder_name_datachains );
+   ofs.set_root_folder( c_storage_folder_name_datachains );
 
    folders.clear( );
 
@@ -2616,7 +2658,7 @@ void create_datachain_info( const string& identity, size_t data_type )
       throw runtime_error( "datachain '" + identity + "' already exists" );
    else
    {
-      ods::transaction ods_tx( storage_ods_instance( ) );
+      ods::transaction ods_tx( ods_db );
 
       ofs.add_folder( identity );
 
@@ -2635,18 +2677,20 @@ void remove_datachain_info( const string& identity )
 {
    guard g( g_mutex );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_datachains );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_datachains );
 
    if( ofs.has_folder( identity ) )
    {
-      ods::transaction ods_tx( storage_ods_instance( ) );
+      ods::transaction ods_tx( ods_db );
 
       ofs.remove_folder( identity, 0, true );
 
@@ -2658,14 +2702,16 @@ void set_datachain_height( const string& identity, size_t new_height )
 {
    guard g( g_mutex );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   ofs.set_root_folder( c_storable_folder_name_datachains );
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_datachains );
 
    if( !ofs.has_folder( identity ) )
       throw runtime_error( "datachain '" + identity + "' not found" );
@@ -2673,7 +2719,7 @@ void set_datachain_height( const string& identity, size_t new_height )
    {
       ofs.set_folder( identity );
 
-      ods::transaction ods_tx( storage_ods_instance( ) );
+      ods::transaction ods_tx( ods_db );
 
       int32_t height;
       ofs.fetch_from_text_file( c_datachain_height, height );
@@ -2693,16 +2739,18 @@ bool is_linked_to_datachain( const string& channel, const string& identity )
 {
    guard g( g_mutex );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_read > ap_bulk_read;
 
-   if( !storage_ods_instance( ).is_thread_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
+
+   ods_file_system ofs( ods_db );
 
    vector< string > folders;
 
-   ofs.set_root_folder( c_storable_folder_name_datachains );
+   ofs.set_root_folder( c_storage_folder_name_datachains );
 
    bool retval = false;
 
@@ -2730,16 +2778,18 @@ void link_channel_to_datachain( const string& channel, const string& identity )
 {
    guard g( g_mutex );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
+
+   ods_file_system ofs( ods_db );
 
    vector< string > folders;
 
-   ofs.set_root_folder( c_storable_folder_name_channels );
+   ofs.set_root_folder( c_storage_folder_name_channels );
 
    ofs.list_folders( folders );
 
@@ -2748,7 +2798,7 @@ void link_channel_to_datachain( const string& channel, const string& identity )
    if( channels.find( channel ) == channels.end( ) )
       throw runtime_error( "channel '" + channel + "' not found" );
 
-   ofs.set_root_folder( c_storable_folder_name_datachains );
+   ofs.set_root_folder( c_storage_folder_name_datachains );
 
    folders.clear( );
 
@@ -2760,9 +2810,9 @@ void link_channel_to_datachain( const string& channel, const string& identity )
       throw runtime_error( "datachain '" + identity + "' not found" );
    else
    {
-      ods::transaction ods_tx( storage_ods_instance( ) );
+      ods::transaction ods_tx( ods_db );
 
-      ofs.set_root_folder( c_storable_folder_name_datachains );
+      ofs.set_root_folder( c_storage_folder_name_datachains );
 
       ofs.set_folder( identity );
 
@@ -2794,16 +2844,18 @@ void unlink_channel_from_datachain( const string& channel, const string& identit
 {
    guard g( g_mutex );
 
-   ods_file_system ofs( storage_ods_instance( ) );
+   vector< string > folders;
+
+   ods& ods_db( storage_ods_instance( ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
 
-   if( !storage_ods_instance( ).is_thread_bulk_write_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( storage_ods_instance( ) ) );
+   if( !ods_db.is_thread_bulk_write_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
 
-   vector< string > folders;
+   ods_file_system ofs( ods_db );
 
-   ofs.set_root_folder( c_storable_folder_name_datachains );
+   ofs.set_root_folder( c_storage_folder_name_datachains );
 
    ofs.list_folders( folders );
 
@@ -2813,9 +2865,9 @@ void unlink_channel_from_datachain( const string& channel, const string& identit
       throw runtime_error( "datachain '" + identity + "' not found" );
    else
    {
-      ods::transaction ods_tx( storage_ods_instance( ) );
+      ods::transaction ods_tx( ods_db );
 
-      ofs.set_root_folder( c_storable_folder_name_datachains );
+      ofs.set_root_folder( c_storage_folder_name_datachains );
 
       ofs.set_folder( identity );
 
