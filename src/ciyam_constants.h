@@ -194,10 +194,9 @@ const char* const c_system_peerchain_folder = "peer";
 const char* const c_system_variables_folder = "vars";
 const char* const c_system_repository_folder = "repo";
 
-const char* const c_storage_folder_name_files = "files";
-const char* const c_storage_folder_name_links = "links";
+const char* const c_storage_folder_name_dot_dat = ".dat";
+const char* const c_storage_folder_name_dot_idx = ".idx";
 const char* const c_storage_folder_name_modules = "modules";
-const char* const c_storage_folder_name_objects = "objects";
 const char* const c_storage_folder_name_channels = "channels";
 const char* const c_storage_folder_name_gid_data = "gid_data";
 const char* const c_storage_folder_name_uid_data = "uid_data";

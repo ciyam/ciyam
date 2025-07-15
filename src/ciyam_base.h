@@ -650,7 +650,7 @@ void CIYAM_BASE_DECL_SPEC attach_storage( const std::string& name, command_handl
 void CIYAM_BASE_DECL_SPEC backup_storage(
  command_handler& cmd_handler, int* p_truncation_count = 0, std::string* p_sav_db_file_names = 0 );
 
-void CIYAM_BASE_DECL_SPEC export_storage( command_handler& cmd_handler );
+bool CIYAM_BASE_DECL_SPEC export_storage( command_handler& cmd_handler );
 
 void CIYAM_BASE_DECL_SPEC restore_storage( command_handler& cmd_handler );
 

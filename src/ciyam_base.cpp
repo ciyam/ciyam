@@ -2482,7 +2482,10 @@ void perform_storage_op( storage_op op,
             ofs.add_folder( c_storage_folder_name_modules );
 
             if( name == c_meta_storage_name )
-               ofs.add_folder( c_storage_folder_name_objects );
+            {
+               ofs.add_folder( c_storage_folder_name_dot_dat );
+               ofs.add_folder( c_storage_folder_name_dot_idx );
+            }
 
             if( is_peerchain_application )
             {
@@ -9269,8 +9272,10 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
    }
 }
 
-void export_storage( command_handler& cmd_handler )
+bool export_storage( command_handler& cmd_handler )
 {
+   bool has_exported_any = false;
+
    if( ods::instance( ) && gtp_session->p_storage_handler->get_ods( ) )
    {
       if( ods::instance( )->get_transaction_level( ) )
@@ -9282,8 +9287,6 @@ void export_storage( command_handler& cmd_handler )
          throw runtime_error( "cannot export from storage unless it has been locked for admin" );
 
       ods_file_system ofs( *ods::instance( ) );
-
-      bool has_exported_any = false;
 
       string name( handler.get_name( ) );
 
@@ -9322,6 +9325,8 @@ void export_storage( command_handler& cmd_handler )
          has_exported_any = true;
       }
    }
+
+   return has_exported_any;
 }
 
 void restore_storage( command_handler& cmd_handler )

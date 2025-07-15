@@ -46,13 +46,22 @@ const string c_null_key( 1, '\0' );
 
 const int c_loop_variable_digits = 8;
 
+const char c_security_suffix = '-';
+
 const char* const c_ui_type_repl_name = "TYPE";
 
 const char* const c_ui_type_submit_file = "ui_TYPE_submit";
 
 const char* const c_ui_submit_type_peer = "peer";
 
+const char* const c_primary_key_name = "@pk";
+const char* const c_links_instance_lock_key = "@links";
+
 const char* const c_invalid_key_characters = "`~!@#$%^&*<>()[]{}/\\?|-+=.,;:'\"";
+
+const size_t c_sec_prefix_length = 6;
+
+const size_t c_num_links_lock_retries = 10;
 
 const size_t c_iteration_row_cache_limit = 100;
 
@@ -3141,67 +3150,177 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
 #ifdef COMPILE_PROTOTYPE_CODE
                // NOTE: Objects are stored in the form of a structured I/O
-               // file with the path "/objects/files/<class_id>/" and name
-               // being "<security>.<key_value>".
+               // file using the path "/.dat/<class_id>/" with a file name
+               // that is simply the instance's key value. A primary index
+               // file link is stored in "/.idx/<class_id>" using the name
+               // "<security>-<key>" whilst all other index file links are
+               // found in a two digit folder named according to the index
+               // number with the name "<security>-<index_data>". If index
+               // is not unique then the instance key is appended (like an
+               // additional field). Security digits are followed by field
+               // values which are separated by tab characters.
                if( app_name == c_meta_storage_name )
                {
-                  ods& ods_db( storage_ods_instance( ) );
-
-                  auto_ptr< ods::bulk_write > ap_bulk_write;
-
-                  if( !ods_db.is_thread_bulk_write_locked( ) )
-                     ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
-
-                  ods_file_system ofs( ods_db );
-
-                  ofs.set_root_folder( c_storage_folder_name_objects );
-
-                  string files_folder_name( c_storage_folder_name_files );
-
-                  if( !ofs.has_folder( files_folder_name ) )
-                     ofs.add_folder( files_folder_name );
-
-                  ofs.set_folder( files_folder_name );
+                  size_t links_lock = 0;
 
                   string class_id( instance.get_class_id( ) );
 
-                  if( !ofs.has_folder( class_id ) )
-                     ofs.add_folder( class_id );
+                  links_lock = obtain_storage_lock( c_update_lock_name,
+                   class_id, c_links_instance_lock_key, c_num_links_lock_retries );
 
-                  ofs.set_folder( class_id );
-
-                  stringstream sio_data;
-
-                  sio_writer writer( sio_data );
-
-                  bool had_any_non_transients = false;
-
-                  int num_fields = instance.get_num_fields( );
-
-                  for( int i = 0; i < num_fields; i++ )
+                  if( links_lock )
                   {
-                     if( instance.is_field_transient( i ) )
-                        continue;
+                     storage_scoped_lock_holder lock_holder( links_lock );
 
-                     had_any_non_transients = true;
+                     ods& ods_db( storage_ods_instance( ) );
 
-                     string data( instance.get_field_value( i ) );
-                     string attribute_name( lower( instance.get_field_name( i ) ) );
+                     auto_ptr< ods::bulk_write > ap_bulk_write;
 
-                     writer.write_attribute( attribute_name, data );
+                     if( !ods_db.is_thread_bulk_write_locked( ) )
+                        ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
+
+                     ods::transaction ods_tx( ods_db );
+
+                     ods_file_system ofs( ods_db );
+
+                     string source_file_name( "/" );
+
+                     ofs.set_root_folder( c_storage_folder_name_dot_dat );
+
+                     source_file_name += c_storage_folder_name_dot_dat;
+
+                     if( !ofs.has_folder( class_id ) )
+                        ofs.add_folder( class_id );
+
+                     ofs.set_folder( class_id );
+
+                     source_file_name += '/' + class_id;
+
+                     string instance_file_name( instance.get_key( ) );
+
+                     source_file_name += '/' + instance_file_name;
+
+                     // FUTURE: Rather than simply removing the
+                     // instance data file (which automatically
+                     // removes all index link files) an update
+                     // should selectively remove those indexes
+                     // that have changed.
+                     if( ( op == class_base::e_op_type_update )
+                      || ( op == class_base::e_op_type_destroy ) )
+                        ofs.remove_file( instance_file_name );
+
+                     if( ( op == class_base::e_op_type_create )
+                      || ( op == class_base::e_op_type_update ) )
+                     {
+                        stringstream sio_data;
+
+                        sio_writer writer( sio_data );
+
+                        bool had_any_non_transients = false;
+
+                        int num_fields = instance.get_num_fields( );
+
+                        for( int i = 0; i < num_fields; i++ )
+                        {
+                           if( instance.is_field_transient( i ) )
+                              continue;
+
+                           had_any_non_transients = true;
+
+                           string data( instance.get_field_value( i ) );
+                           string attribute_name( lower( instance.get_field_name( i ) ) );
+
+                           writer.write_attribute( attribute_name, data );
+                        }
+
+                        if( had_any_non_transients )
+                        {
+                           writer.finish_sections( );
+
+                           ofs.store_file( instance_file_name, 0, &sio_data );
+                        }
+                        else
+                           ofs.store_file( instance_file_name, c_file_zero_length );
+
+                        vector< pair< string, string > > all_index_pairs;
+
+                        instance.get_all_index_pairs( all_index_pairs );
+
+                        size_t num_index_pairs = all_index_pairs.size( );
+
+                        ofs.set_root_folder( c_storage_folder_name_dot_idx );
+
+                        if( !ofs.has_folder( class_id ) )
+                           ofs.add_folder( class_id );
+
+                        ofs.set_folder( class_id );
+
+                        string security_prefix(
+                         to_comparable_string( instance.get_security( ), false, c_sec_prefix_length ) );
+
+                        // NOTE: Create a primary key link (so instance iteration confined by a security
+                        // prefix can be used even if no explicit indexes exist).
+                        ofs.link_file( security_prefix + c_security_suffix + instance_file_name, source_file_name );
+
+                        for( size_t i = 0; i < num_index_pairs; i++ )
+                        {
+                           pair< string, string > next_pair = all_index_pairs[ i ];
+
+                           vector< string > names;
+                           vector< string > types;
+
+                           split( next_pair.first, names );
+                           split( next_pair.second, types );
+
+                           if( names.size( ) != types.size( ) )
+                              throw runtime_error( "unexpected index pairs names.size( ) != types.size( )" );
+
+                           string index_num_folder( to_string( i ) );
+
+                           if( i < 10 )
+                              index_num_folder = "0" + index_num_folder;
+
+                           if( !ofs.has_folder( index_num_folder ) )
+                              ofs.add_folder( index_num_folder );
+
+                           ofs.set_folder( index_num_folder );
+
+                           size_t num_index_fields = names.size( );
+
+                           bool is_unique = true;
+
+                           string link_file_name;
+
+                           for( size_t j = 0; j < num_index_fields; j++ )
+                           {
+                              string next_name( names[ j ] );
+                              string next_type( types[ j ] );
+
+                              if( next_name == c_primary_key_name )
+                                 is_unique = false;
+                              else
+                              {
+                                 if( j > 0 )
+                                    link_file_name += '\t';
+
+                                 // FUTURE: Need to use comparable values for both integer and numeric types.
+                                 link_file_name += instance.get_field_value( instance.get_field_num( next_name ) );
+                              }
+                           }
+
+                           if( is_unique )
+                              ofs.link_file( string( c_sec_prefix_length, '0' ) + c_security_suffix + link_file_name, source_file_name );
+
+                           link_file_name = security_prefix + c_security_suffix + link_file_name + '\t' + instance.get_key( );
+
+                           ofs.link_file( link_file_name, source_file_name );
+
+                           ofs.set_folder( ".." );
+                        }
+                     }
+
+                     ods_tx.commit( );
                   }
-
-                  string instance_file_name(
-                   to_string( instance.get_security( ) ) + '.' + instance.get_key( ) );
-
-                  if( had_any_non_transients )
-                  {
-                     writer.finish_sections( );
-
-                     ofs.store_file( instance_file_name, 0, &sio_data );
-                  }
-                  else
-                     ofs.store_file( instance_file_name, c_file_zero_length );
                }
 #endif
             }
