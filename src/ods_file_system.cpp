@@ -1297,9 +1297,9 @@ string ods_file_system::last_file_name_with_prefix( const string& prefix )
    return retval;
 }
 
-string ods_file_system::link_target( const string& name )
+string ods_file_system::link_source( const string& name )
 {
-   string retval;
+   string retval( name );
 
    btree_type& bt( p_impl->bt );
 

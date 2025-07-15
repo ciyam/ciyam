@@ -396,7 +396,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          if( !source.empty( ) )
             ap_ofs->link_file( name, source );
          else
-            *ods_fsed_handler.get_std_out( ) << ap_ofs->link_target( name ) << '\n';
+            *ods_fsed_handler.get_std_out( ) << ap_ofs->link_source( name ) << '\n';
       }
       else if( command == c_cmd_ods_fsed_file_links )
       {

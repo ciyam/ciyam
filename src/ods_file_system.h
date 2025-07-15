@@ -210,7 +210,7 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
 
    std::string last_file_name_with_prefix( const std::string& prefix );
 
-   std::string link_target( const std::string& name );
+   std::string link_source( const std::string& name );
 
    void link_file( const std::string& name, const std::string& source );
 
