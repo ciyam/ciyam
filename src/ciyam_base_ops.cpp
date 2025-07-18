@@ -3258,9 +3258,11 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                         string security_prefix(
                          to_comparable_string( instance.get_security( ), false, c_sec_prefix_length ) );
 
-                        // NOTE: Create a primary key link (so instance iteration confined by a security
-                        // prefix can be used even if no explicit indexes exist).
+                        // NOTE: Create a primary key link (so instance iteration confined by
+                        // a security prefix is possible even if no explicit indexes exist).
                         ofs.link_file( security_prefix + c_security_suffix + instance_file_name, source_file_name );
+
+                        temporary_allow_specials allow_specials( ofs );
 
                         for( size_t i = 0; i < num_index_pairs; i++ )
                         {
@@ -3306,6 +3308,24 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                                  // FUTURE: Need to use comparable values for both integer and numeric types.
                                  link_file_name += instance.get_field_value( instance.get_field_num( next_name ) );
                               }
+                           }
+
+                           size_t link_file_name_len = link_file_name.size( );
+
+                           // NOTE: Although special characters are allowed because
+                           // ODS FS needs '/', ':' and '|' characters for internal
+                           // folder names they are replaced by non-printable ASCII
+                           // characters. Although not a problem for unique indexes
+                           // it will potentially be noticed due to index file name
+                           // ordering (although not likely to be a serious issue).
+                           for( size_t i = 0; i < link_file_name_len; i++ )
+                           {
+                              if( link_file_name [ i ] == '/' )
+                                 link_file_name [ i ] = '\x01';
+                              else if( link_file_name [ i ] == ':' )
+                                 link_file_name [ i ] = '\x02';
+                              else if( link_file_name [ i ] == '|' )
+                                 link_file_name [ i ] = '\x03';
                            }
 
                            if( is_unique )
