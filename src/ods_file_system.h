@@ -31,6 +31,7 @@ class ods;
 struct progress;
 
 struct temporary_force_write;
+struct temporary_allow_specials;
 struct temporary_include_hidden;
 
 class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
@@ -40,6 +41,7 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    ~ods_file_system( );
 
    friend struct temporary_force_write;
+   friend struct temporary_allow_specials;
    friend struct temporary_include_hidden;
 
    inline std::string get_folder( ) const { return current_folder; }
@@ -305,11 +307,11 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    void list_files_or_objects( const std::string& expr,
     std::ostream& os, const std::string& start_from,
     bool objects = true, list_style style = e_list_style_default,
-    bool inclusive = true, size_t limit = 0, bool in_reverse_order = false );
+    bool inclusive = true, size_t limit = 0, bool in_reverse_order = false, bool branch = false );
 
-   void branch_files_or_objects(
-    std::ostream& os, const std::string& folder, const std::string& expr,
-    branch_style style, bool show_folders = false, const std::string* p_start_folder = 0 );
+   void branch_files_or_objects( std::ostream& os,
+    const std::string& folder, const std::string& expr, branch_style style,
+    bool show_folders = false, const std::string* p_start_folder = 0, size_t depth = 0 );
 
    bool move_files_and_folders( const std::string& source,
     const std::string& destination, bool src_is_root, bool dest_is_root, bool replace_existing = false );
@@ -355,6 +357,16 @@ struct temporary_force_write
    ods_file_system& ofs;
 
    bool old_force_write;
+};
+
+struct temporary_allow_specials
+{
+   temporary_allow_specials( ods_file_system& ofs );
+   ~temporary_allow_specials( );
+
+   ods_file_system& ofs;
+
+   bool old_allow_specials;
 };
 
 struct temporary_include_hidden

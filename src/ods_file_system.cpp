@@ -43,6 +43,7 @@
 #include "storable_btree.h"
 
 //#define DEBUG
+
 //#define USE_BULK_PAUSE
 //#define ALLOW_SAME_FILE_AND_FOLDER_NAMES
 
@@ -60,6 +61,8 @@ const char c_special = '!';
 const char* const c_root_folder = "/";
 const char* const c_parent_folder = "..";
 const char* const c_current_folder = ".";
+
+const char* const c_dummy_suffix = "\t";
 
 const char* const c_pipe_separator = "|";
 const char* const c_colon_separator = ":";
@@ -505,6 +508,27 @@ string process_rename_expressions(
    return output;
 }
 
+bool folder_matches_suffix( const string& extra, const string& branch_suffix )
+{
+   string compare( extra );
+
+   string::size_type pos = compare.rfind( c_folder, compare.length( ) - 2 );
+
+   if( pos != string::npos )
+      ++pos;
+   else
+      pos = 0;
+
+   if( pos != 0 )
+      compare.erase( 0, pos );
+
+   if( !compare.empty( ) )
+      compare.erase( compare.length( ) - 1 );
+
+   return  wildcard_match( branch_suffix, compare );
+}
+
+
 }
 
 struct ods_file_system::impl
@@ -514,6 +538,8 @@ struct ods_file_system::impl
     bt( o ),
     force_write( false ),
     skip_hidden( true ),
+    show_folders( true ),
+    allow_specials( false ),
     skip_hidden_count( 0 ),
     for_regression_tests( false ),
     next_transaction_id( 0 )
@@ -524,6 +550,13 @@ struct ods_file_system::impl
 
    bool force_write;
    bool skip_hidden;
+
+   bool show_folders;
+
+   bool allow_specials;
+
+   string branch_prefix;
+   string branch_suffix;
 
    size_t skip_hidden_count;
 
@@ -616,7 +649,7 @@ string ods_file_system::determine_folder(
    replace( new_folder, c_below_current_folder, c_folder_separator );
 
    // NOTE: Ignore trailing separator (unless is the only character).
-   string::size_type pos = new_folder.rfind( c_folder_separator );
+   string::size_type pos = new_folder.rfind( c_folder );
 
    if( pos && ( pos != string::npos ) && ( pos == new_folder.length( ) - 1 ) )
       new_folder.erase( new_folder.size( ) - 1 );
@@ -637,7 +670,7 @@ string ods_file_system::determine_folder(
 
       while( pos == 0 )
       {
-         string::size_type dpos = old_current_folder.rfind( c_folder_separator );
+         string::size_type dpos = old_current_folder.rfind( c_folder );
 
          if( dpos != string::npos && old_current_folder != string( c_root_folder ) )
          {
@@ -702,7 +735,7 @@ string ods_file_system::determine_strip_and_change_folder( string& name )
 {
    string original_folder;
 
-   string::size_type pos = name.rfind( c_folder_separator );
+   string::size_type pos = name.rfind( c_folder );
 
    if( pos != string::npos )
    {
@@ -775,27 +808,7 @@ void ods_file_system::list_links( const string& name, ostream& os )
       p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
-   if( name[ 0 ] == c_folder )
-      tmp_item.val = name;
-   else
-   {
-      if( current_folder == string( c_root_folder ) )
-         tmp_item.val = current_folder + name;
-      else
-         tmp_item.val = current_folder + c_folder_separator + name;
-   }
-
-   replace( tmp_item.val, c_folder_separator, c_pipe_separator );
-
-   string::size_type pos = tmp_item.val.rfind( c_pipe_separator );
-
-   if( pos != string::npos )
-   {
-      tmp_item.val[ pos ] = c_folder;
-
-      if( pos == 0 )
-         tmp_item.val = c_pipe + tmp_item.val;
-   }
+   tmp_item.val = value_folder_and_file_name( name );
 
    tmp_iter = bt.find( tmp_item );
 
@@ -810,6 +823,7 @@ void ods_file_system::list_links( const string& name, ostream& os )
       if( !is_link )
       {
          string link_prefix( to_string( id.get_num( ) ) + c_pipe_separator );
+
          tmp_item.val = link_prefix;
 
          tmp_iter = bt.lower_bound( tmp_item );
@@ -865,14 +879,14 @@ void ods_file_system::list_folders( const string& expr, ostream& os,
 
    expand_entity_expression( expr, had_wildcard, entity_expr, had_wildcard ? "\0" : c_folder_separator );
 
-   if( expr.empty( ) && current_folder != string( c_root_folder ) )
+   if( expr.empty( ) && ( current_folder != string( c_root_folder ) ) )
       entity_expr += string( c_folder_separator );
 
    if( !entity_expr.empty( ) )
    {
-      replace( entity_expr, c_folder_separator, c_colon_separator );
+      string::size_type pos = entity_expr.rfind( c_folder );
 
-      string::size_type pos = entity_expr.rfind( c_colon );
+      replace( entity_expr, c_folder_separator, c_colon_separator );
 
       if( pos == 0 )
          entity_expr += c_folder;
@@ -930,6 +944,11 @@ void ods_file_system::branch_folders( const string& expr, ostream& os, branch_st
    bool brief = ( style == e_branch_style_brief );
    bool full = ( style == e_branch_style_extended );
 
+   auto_ptr< temporary_include_hidden > ap_include_hidden;
+
+   if( full )
+      ap_include_hidden.reset( new temporary_include_hidden( *this ) );
+
    string entity_expr( current_folder );
 
    entity_expr += expr;
@@ -947,10 +966,8 @@ void ods_file_system::branch_folders( const string& expr, ostream& os, branch_st
    if( entity_expr.find_first_of( "?*" ) == string::npos )
       entity_expr += "*";
 
-   perform_match( os, entity_expr,
-    "", 0, &search_replaces, full ? 0 : prefix_1.c_str( ),
-    full ? 0 : prefix_2.c_str( ), '\0', brief ? e_file_size_output_type_none
-    : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ), "|/" );
+   perform_match( os, entity_expr, "", 0, &search_replaces,
+    ( full ? 0 : prefix_1.c_str( ) ), ( full ? 0 : prefix_2.c_str( ) ), '\0', e_file_size_output_type_none, "|/" );
 }
 
 void ods_file_system::add_file( const string& name,
@@ -970,7 +987,7 @@ void ods_file_system::add_file( const string& name,
 
    bool has_utf8 = false;
 
-   if( valid_file_name( name, &has_utf8 ) != name )
+   if( !p_impl->allow_specials && valid_file_name( name, &has_utf8 ) != name )
       throw runtime_error( "invalid file name '" + name + "'" );
    else
    {
@@ -1341,13 +1358,14 @@ string ods_file_system::link_source( const string& name )
 
          tmp_iter = bt.lower_bound( tmp_item );
 
-         if( ( tmp_iter != bt.end( ) ) && ( tmp_iter->val.find( special_prefix ) == 0 ) )
+         if( ( tmp_iter != bt.end( ) )
+          && ( tmp_iter->val.find( special_prefix ) == 0 ) )
          {
             retval = tmp_iter->val.substr( special_prefix.length( ) );
 
             replace( retval, c_pipe_separator, c_folder_separator );
 
-            if( !retval.empty( ) && retval[ 0 ] != c_folder )
+            if( !retval.empty( ) && ( retval[ 0 ] != c_folder ) )
                retval = c_folder_separator + retval;
          }
       }
@@ -1379,7 +1397,8 @@ void ods_file_system::link_file( const string& name, const string& source )
 
    bool has_utf8 = false;
 
-   if( valid_file_name( dest_name, &has_utf8 ) != dest_name )
+   if( !p_impl->allow_specials
+    && valid_file_name( dest_name, &has_utf8 ) != dest_name )
       throw runtime_error( "invalid file name '" + name + "'" );
    else
    {
@@ -1387,6 +1406,7 @@ void ods_file_system::link_file( const string& name, const string& source )
       btree_type::item_type tmp_item;
 
       auto_ptr< ods::transaction > ap_ods_tx;
+
       if( !o.is_in_transaction( ) )
          ap_ods_tx.reset( new ods::transaction( o ) );
 
@@ -1438,6 +1458,7 @@ void ods_file_system::link_file( const string& name, const string& source )
                if( ( tmp_iter == bt.end( ) ) || ( tmp_iter->val.find( link_prefix ) != 0 ) )
                {
                   tmp_item.val = to_string( id.get_num( ) ) + c_special + source_value.substr( 1 );
+
                   tmp_item.set_is_link( );
 
                   tmp_item.get_file( ).get_id( ).set_new( );
@@ -1508,7 +1529,7 @@ void ods_file_system::move_file( const string& source, const string& destination
 
    bool has_utf8 = false;
 
-   if( valid_file_name( dest_name, &has_utf8 ) != dest_name )
+   if( !p_impl->allow_specials && valid_file_name( dest_name, &has_utf8 ) != dest_name )
       throw runtime_error( "invalid destination file name '" + dest_name + "'" );
    else
    {
@@ -2641,7 +2662,7 @@ string ods_file_system::value_folder_and_file_name( const string& provided, stri
 
    string::size_type pos = provided.rfind( c_folder );
 
-   string file_name( provided.substr( pos == string::npos ? 0 : pos + 1 ) );
+   string file_name( provided.substr( ( pos == string::npos ) ? 0 : ( pos + 1 ) ) );
 
    if( pos == string::npos )
       folder = current_folder;
@@ -2652,13 +2673,9 @@ string ods_file_system::value_folder_and_file_name( const string& provided, stri
 
    string key( folder );
 
-   key += c_folder + file_name;
-
    replace( key, c_folder_separator, c_pipe_separator );
 
-   string::size_type ppos = key.rfind( c_pipe_separator );
-
-   key[ ppos ] = c_folder;
+   key += c_folder + file_name;
 
    if( p_folder )
       *p_folder = folder;
@@ -2691,17 +2708,25 @@ void ods_file_system::perform_match(
       p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
+   string suffix( p_impl->branch_suffix );
+
+#ifdef DEBUG
+   cerr << "[perform_match] expr = '" << expr << "', suffix = '" << suffix << "'" << endl;
+#endif
+
    btree_type::iterator match_iter;
    btree_type::item_type match_item;
 
    size_t pos = first_wildcard_character_pos( expr );
+
    match_item.val = expr.substr( 0, pos );
 
    size_t minimum_length = match_item.val.length( );
 
    bool is_folder_expr = false;
 
-   if( pos != string::npos && pos > 0 && expr[ pos - 1 ] == c_folder )
+   if( ( pos != string::npos )
+    && ( pos > 0 ) && ( expr[ pos - 1 ] == c_folder ) )
       is_folder_expr = true;
 
    auto_ptr< regex > ap_regex;
@@ -2771,20 +2796,22 @@ void ods_file_system::perform_match(
 
    if( match_iter != bt.end( ) )
    {
-      btree_type::item_type tmp_item;
-      tmp_item.val = expr;
-
       bool okay = true;
+
+      btree_type::item_type tmp_item;
+
+      tmp_item.val = expr;
 
       do
       {
-         if( p_range && !p_range->second.empty( ) && match_iter->val >= p_range->second )
+         if( p_range && !p_range->second.empty( ) && ( match_iter->val >= p_range->second ) )
             break;
 
 #ifdef USE_BULK_PAUSE
          if( ap_bulk.get( ) && ( ++iterations % 5000 == 0 ) )
          {
             btree_type::item_type tmp_item;
+
             tmp_item.val = match_iter->val;
 
             ap_bulk->pause( );
@@ -2792,9 +2819,11 @@ void ods_file_system::perform_match(
             if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
             {
                o >> bt;
+
                p_impl->next_transaction_id = o.get_next_transaction_id( );
 
                match_iter = bt.lower_bound( tmp_item );
+
                if( match_iter == bt.end( ) )
                   break;
             }
@@ -2805,7 +2834,14 @@ void ods_file_system::perform_match(
 
          if( p_impl->skip_hidden )
          {
-            if( match_iter->val.find( "/." ) != string::npos )
+            string::size_type from = match_item.val.length( );
+
+            if( from >= 1 )
+               --from;
+
+            // NOTE: A hidden folder might be part of the provided
+            // expression's match value so checks after that point.
+            if( match_iter->val.find( "/.", from ) != string::npos )
                skip = true;
          }
 
@@ -2821,11 +2857,11 @@ void ods_file_system::perform_match(
                {
                   string val( match_iter->val );
 
-                  if( is_folder_expr && ( val.length( ) < minimum_length
-                   || ( val.length( ) == minimum_length && val[ val.length( ) - 1 ] == c_folder ) ) )
+                  if( is_folder_expr && ( ( val.length( ) < minimum_length )
+                   || ( ( val.length( ) == minimum_length ) && ( val[ val.length( ) - 1 ] == c_folder ) ) ) )
                      val.erase( );
 
-                  if( p_ignore_with_prefix && val.find( p_ignore_with_prefix ) == 0 )
+                  if( p_ignore_with_prefix && ( val.find( p_ignore_with_prefix ) == 0 ) )
                      val.erase( );
 
                   if( !val.empty( ) && p_search_replaces )
@@ -2839,10 +2875,20 @@ void ods_file_system::perform_match(
                   else if( p_prefix_2 && val.find( p_prefix_2 ) == 0 )
                      val.erase( 0, strlen( p_prefix_2 ) );
 
-                  if( erase_all_before_and_including )
+                  if( !p_impl->branch_prefix.empty( ) )
+                  {
+                     string::size_type pos = val.find( p_impl->branch_prefix );
+
+                     if( pos != string::npos )
+                        val.erase( 0, p_impl->branch_prefix.length( ) + pos );
+
+                     if( !val.empty( ) && ( val[ 0 ] == c_folder ) )
+                        val.erase( 0, 1 );
+                  }
+                  else if( erase_all_before_and_including )
                   {
                      pos = val.rfind( erase_all_before_and_including,
-                      val.length( ) == 1 ? string::npos : val.length( ) - 2 );
+                      ( ( val.length( ) == 1 ) ? string::npos : ( val.length( ) - 2 ) ) );
 
                      if( pos != string::npos )
                         val.erase( 0, pos + 1 );
@@ -2854,10 +2900,79 @@ void ods_file_system::perform_match(
                      {
                         string extra( p_extra_items->front( ) );
 
-                        if( extra <= val )
+                        string::size_type pos = extra.find( '\t' );
+
+                        string extra_list_info;
+
+                        if( pos != string::npos )
                         {
-                           os << extra << '\n';
+                           extra_list_info = extra.substr( pos + 1 );
+
+                           extra.erase( pos );
+                        }
+
+                        string compare( extra );
+
+                        // NOTE: If "val" does not include the path
+                        // then remove parent folders from "extra".
+                        if( val.find( c_folder ) == string::npos )
+                        {
+                           string::size_type start = 0;
+
+                           for( size_t i = 0; i < compare.length( ) - 1; i++ )
+                           {
+                              if( compare[ i ] == c_folder )
+                                 start = i + 1;
+                           }
+
+                           if( start )
+                              compare.erase( 0, start );
+                        }
+
+                        if( compare <= val )
+                        {
+                           bool show_folder = p_impl->show_folders;
+
+                           if( show_folder && !suffix.empty( ) )
+                              show_folder = folder_matches_suffix( extra, suffix );
+
+                           if( show_folder )
+                              os << extra << '\n';
+
                            p_extra_items->pop_front( );
+
+                           if( !extra_list_info.empty( ) )
+                           {
+                              vector< string > list_info_args;
+
+                              split( extra_list_info, list_info_args, '\t' );
+
+                              if( list_info_args.size( ) != 4 )
+                                 throw runtime_error( "unexpected list_info_args size " + to_string( list_info_args.size( ) ) );
+
+                              string origin( list_info_args[ 0 ] );
+                              string folder( list_info_args[ 1 ] );
+                              string objects( list_info_args[ 2 ] );
+                              string style( list_info_args[ 3 ] );
+
+#ifdef DEBUG
+                              cerr << "0) origin = '" << origin << "', suffix = '" << suffix
+                               << "', folder = '" << folder << "', objects = " << objects << ", style = " << style << endl;
+#endif
+                              string child_expr( origin );
+
+                              if( !child_expr.empty( )
+                               && ( child_expr[ child_expr.length( ) - 1 ] != c_folder ) )
+                                 child_expr += c_folder;
+
+                              child_expr += folder;
+
+                              if( !suffix.empty( ) )
+                                 child_expr += c_folder + suffix;
+
+                              list_files_or_objects( child_expr, os, "",
+                               ( objects == "1" ), ( list_style )( style[ 0 ] - '0' ), true, 0, false, true );
+                           }
                         }
                         else
                            break;
@@ -2943,8 +3058,61 @@ void ods_file_system::perform_match(
    {
       while( p_extra_items && !p_extra_items->empty( ) )
       {
-         os << p_extra_items->front( ) << '\n';
+         string extra( p_extra_items->front( ) );
+
+         string::size_type pos = extra.find( '\t' );
+
+         string extra_list_info;
+
+         if( pos != string::npos )
+         {
+            extra_list_info = extra.substr( pos + 1 );
+
+            extra.erase( pos );
+         }
+
+         bool show_folder = p_impl->show_folders;
+
+         if( show_folder && !suffix.empty( ) )
+            show_folder = folder_matches_suffix( extra, suffix );
+
+         if( show_folder )
+            os << extra << '\n';
+
          p_extra_items->pop_front( );
+
+         if( !extra_list_info.empty( ) )
+         {
+            vector< string > list_info_args;
+
+            split( extra_list_info, list_info_args, '\t' );
+
+            if( list_info_args.size( ) != 4 )
+               throw runtime_error( "unexpected list_info_args size " + to_string( list_info_args.size( ) ) );
+
+            string origin( list_info_args[ 0 ] );
+            string folder( list_info_args[ 1 ] );
+            string objects( list_info_args[ 2 ] );
+            string style( list_info_args[ 3 ] );
+
+#ifdef DEBUG
+            cerr << "1) origin = '" << origin << "', suffix = '" << suffix
+             << "', folder = '" << folder << "', objects = " << objects << ", style = " << style << endl;
+#endif
+            string child_expr( origin );
+
+            if( !child_expr.empty( )
+             && ( child_expr[ child_expr.length( ) - 1 ] != c_folder ) )
+               child_expr += c_folder;
+
+            child_expr += folder;
+
+            if( !suffix.empty( ) )
+               child_expr += c_folder + suffix;
+
+            list_files_or_objects( child_expr, os, "",
+             ( objects == "1" ), ( list_style )( style[ 0 ] - '0' ), true, 0, false, true );
+         }
       }
    }
 }
@@ -2956,37 +3124,38 @@ void ods_file_system::expand_entity_expression(
    {
       // NOTE: If a superflous final folder separator had been provided then remove it.
       if( entity_expr.size( ) > 1
-       && entity_expr.substr( entity_expr.length( ) - 1 ) == string( c_folder_separator ) )
+       && ( entity_expr.substr( entity_expr.length( ) - 1 ) == string( c_folder_separator ) ) )
          entity_expr.erase( entity_expr.length( ) - 1 );
    }
 
-   string::size_type pos = expr.rfind( c_folder_separator );
+   string::size_type pos = expr.rfind( c_folder );
 
-   if( pos != string::npos || expr == string( c_parent_folder ) )
+   if( ( pos != string::npos ) || ( expr == string( c_parent_folder ) ) )
    {
       if( pos == 0 )
       {
-         if( !had_wildcard || expr == string( c_folder_separator ) )
+         if( !had_wildcard || ( expr == string( c_folder_separator ) ) )
             entity_expr = expr;
          else
             entity_expr = string( c_folder_separator ) + expr;
 
-         if( entity_expr.size( ) > 1 && p_suffix )
+         if( p_suffix && ( entity_expr.size( ) > 1 ) )
             entity_expr += string( p_suffix );
       }
       else
       {
-         // NOTE: For an expr such as: ../.. need to make sure that the trailing parent
-         // folder is included.
-         if( pos != string::npos && expr.find( c_parent_folder, pos + 1 ) == pos + 1 )
+         // NOTE: For an expr like ../.. need to ensure
+         // that the trailing parent folder is included.
+         if( ( pos != string::npos )
+          && ( expr.find( c_parent_folder, pos + 1 ) == ( pos + 1 ) ) )
             pos += strlen( c_parent_folder ) + 1;
 
          entity_expr = determine_folder( expr.substr( 0, pos ), false, true );
 
-         if( entity_expr.size( ) > 1 && p_suffix && pos == string::npos )
+         if( p_suffix && ( pos == string::npos ) && ( entity_expr.size( ) > 1 ) )
             entity_expr += string( p_suffix );
 
-         if( !entity_expr.empty( ) && pos != string::npos )
+         if( ( pos != string::npos ) && !entity_expr.empty( ) )
          {
             entity_expr += expr.substr( pos );
 
@@ -2997,12 +3166,12 @@ void ods_file_system::expand_entity_expression(
    }
    else if( !expr.empty( ) )
    {
-      if( !had_wildcard && entity_expr == string( c_folder_separator ) )
+      if( !had_wildcard && ( entity_expr == string( c_folder_separator ) ) )
          entity_expr += expr;
       else
          entity_expr += string( c_folder_separator ) + expr;
 
-      if( !had_wildcard && p_suffix )
+      if( p_suffix && !had_wildcard )
          entity_expr += string( p_suffix );
    }
 }
@@ -3018,12 +3187,12 @@ void ods_file_system::get_child_folders(
 
    expand_entity_expression( expr, had_wildcard, folder_expr, had_wildcard ? "\0" : c_folder_separator );
 
-   if( expr.empty( ) && current_folder != string( c_root_folder ) )
+   if( expr.empty( ) && ( current_folder != string( c_root_folder ) ) )
       folder_expr += string( c_folder_separator );
 
-   replace( folder_expr, c_folder_separator, c_colon_separator );
+   string::size_type pos = folder_expr.rfind( c_folder );
 
-   string::size_type pos = folder_expr.rfind( c_colon );
+   replace( folder_expr, c_folder_separator, c_colon_separator );
 
    if( pos == 0 )
       folder_expr += c_folder;
@@ -3040,8 +3209,7 @@ void ods_file_system::get_child_folders(
 
    ostringstream osstr;
 
-   perform_match( osstr, folder_expr, "",
-    0, &search_replaces, 0, 0, full ? '\0' : c_folder );
+   perform_match( osstr, folder_expr, "", 0, &search_replaces, 0, 0, full ? '\0' : c_folder );
 
    split( osstr.str( ), folders, '\n' );
 
@@ -3060,6 +3228,7 @@ void ods_file_system::get_child_folders(
          if( full )
          {
             string perms;
+
             int64_t tm_val = 0;
 
             has_folder( folders[ i ], &perms, &tm_val );
@@ -3082,21 +3251,26 @@ void ods_file_system::get_child_folders(
 }
 
 void ods_file_system::list_files_or_objects(
- const string& expr, ostream& os, const string& start_from,
- bool objects, list_style style, bool inclusive, size_t limit, bool in_reverse_order )
+ const string& expr, ostream& os, const string& start_from, bool objects,
+ list_style style, bool inclusive, size_t limit, bool in_reverse_order, bool branch )
 {
    bool brief = ( style == e_list_style_brief );
    bool full = ( style == e_list_style_extended );
 
    string entity_expr( current_folder );
+
    bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
    expand_entity_expression( expr, had_wildcard, entity_expr );
 
+#ifdef DEBUG
+   cerr << "expr = '" << expr << "', entity_expr = '" << entity_expr << "', branch = " << branch << endl;
+#endif
+
    if( !entity_expr.empty( ) )
    {
       bool is_folder = has_folder( entity_expr )
-       || entity_expr == string( c_root_folder );
+       || ( entity_expr == string( c_root_folder ) );
 
       bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
@@ -3117,20 +3291,127 @@ void ods_file_system::list_files_or_objects(
       if( full )
          ap_include_hidden.reset( new temporary_include_hidden( *this ) );
 
-      if( objects )
-         get_child_folders( expr, full, extras );
+      if( branch || objects )
+      {
+         if( !branch )
+            get_child_folders( expr, full, extras );
+         else
+         {
+            string suffix( expr );
+
+            string::size_type pos = suffix.rfind( c_folder );
+
+            if( pos != string::npos )
+               suffix.erase( 0, pos + 1 );
+
+            if( suffix.find_first_of( "?*" ) == string::npos )
+               suffix.erase( );
+
+            string prefix( expr );
+
+            if( !suffix.empty( ) )
+            {
+               pos = prefix.rfind( suffix );
+
+               if( pos != string::npos )
+                  prefix.erase( pos );
+            }
+
+            if( p_impl->branch_suffix == c_dummy_suffix )
+            {
+               p_impl->branch_suffix = suffix;
+
+               // NOTE: If not outputting the full path then
+               // store the branch prefix for later removal.
+               if( !full )
+               {
+                  string branch_prefix( entity_expr );
+
+                  pos = branch_prefix.find_first_of( "?*" );
+
+                  if( pos != string::npos )
+                  {
+                     branch_prefix.erase( pos );
+
+                     pos = branch_prefix.rfind( c_folder );
+
+                     if( pos != branch_prefix.length( ) )
+                        branch_prefix.erase( pos + 1 );
+
+                  }
+
+                  if( !branch_prefix.empty( )
+                   && ( branch_prefix[ branch_prefix.length( ) - 1 ] != c_folder ) )
+                     branch_prefix += c_folder;
+
+                  p_impl->branch_prefix = branch_prefix;
+               }
+            }
+
+            if( !prefix.empty( ) && ( prefix[ prefix.length( ) - 1 ] == c_folder ) )
+               prefix.erase( prefix.length( ) - 1 );
+
+            get_child_folders( prefix, false, extras, false );
+#ifdef DEBUG
+            cerr << "(added " << extras.size( ) << " folders for '"
+             << prefix << "' suffix = '" << suffix << "')" << endl;
+#endif
+
+            // NOTE: Rework "extras" to include the prefix
+            // and append data (tab separated columns) for
+            // usage in nested calls to this function.
+            for( size_t i = 0; i < extras.size( ); i++ )
+            {
+               string child_folder( extras[ i ] );
+
+               string::size_type pos = child_folder.rfind( c_folder );
+
+               if( pos != string::npos )
+                  child_folder.erase( 0, pos + 1 );
+
+               string extra( prefix );
+
+               if( !extra.empty( ) )
+                  extra += c_folder;
+
+               if( full )
+                  extra = c_folder + extra;
+
+               extra += child_folder + c_folder;
+
+               // NOTE: Remove the branch prefix from "extra"
+               // (which includes leading and trailing folder
+               // characters that might not be present).
+               if( !p_impl->branch_prefix.empty( ) )
+               {
+                  string branch_prefix( p_impl->branch_prefix );
+
+                  if( !branch_prefix.empty( ) && ( branch_prefix[ 0 ] == c_folder ) )
+                  {
+                     if( !extra.empty( ) && ( extra[ 0 ] != c_folder ) )
+                        branch_prefix.erase( 0, 1 );
+                  }
+
+                  pos = extra.find( branch_prefix );
+
+                  if( pos != string::npos )
+                     extra.erase( 0, branch_prefix.length( ) + pos );
+               }
+
+               extras[ i ] = extra + '\t' + prefix + '\t' + child_folder
+                + '\t' + to_string( objects ) + '\t' + to_string( ( int )style );
+            }
+         }
+      }
+
+      string::size_type pos = entity_expr.rfind( c_folder );
 
       replace( entity_expr, c_folder_separator, c_pipe_separator );
 
       if( is_folder && !had_wildcard )
          entity_expr += "/*";
-      else
-      {
-         string::size_type pos = entity_expr.rfind( c_pipe );
-
-         if( pos != string::npos )
-            entity_expr[ pos ] = c_folder;
-      }
+      else if( pos != string::npos )
+         entity_expr[ pos ] = c_folder;
 
       search_replaces.clear( );
       search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
@@ -3138,183 +3419,26 @@ void ods_file_system::list_files_or_objects(
       if( full )
          search_replaces.push_back( make_pair( "//", c_root_folder ) );
 
-      perform_match( os, entity_expr, "", 0, &search_replaces,
-       0, 0, full ? '\0' : c_folder, brief ? e_file_size_output_type_none
-       : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ),
+      perform_match( os, entity_expr, "", 0, &search_replaces, 0, 0,
+       ( full ? '\0' : c_folder ), ( brief ? e_file_size_output_type_none
+       : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ) ),
        0, &extras, &range, inclusive, limit, in_reverse_order );
    }
 }
 
-void ods_file_system::branch_files_or_objects( ostream& os, const string& folder,
- const string& expr, branch_style style, bool show_folders, const string* p_start_folder )
+void ods_file_system::branch_files_or_objects( ostream& os,
+ const string& folder, const string& expr, branch_style style,
+ bool show_folders, const string* p_start_folder, size_t depth )
 {
-   bool brief = ( style == e_branch_style_brief );
-   bool full = ( style == e_branch_style_extended );
+   auto_ptr< restorable< bool > > ap_show_folders;
 
-   deque< string > folders;
+   restorable< string > tmp_branch_prefix( p_impl->branch_prefix, "" );
+   restorable< string > tmp_branch_suffix( p_impl->branch_suffix, c_dummy_suffix );
 
-   bool skip_hidden = p_impl->skip_hidden;
+   if( !show_folders )
+      ap_show_folders.reset( new restorable< bool >( p_impl->show_folders, false ) );
 
-   // NOTE: If not determined already then only include hidden objects if is a 'full' list.
-   if( !p_impl->skip_hidden_count )
-      skip_hidden = !full;
-
-   restorable< bool > temp_skip_hidden( p_impl->skip_hidden, skip_hidden );
-
-   bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
-
-   get_child_folders( folder, false, folders, false );
-
-   pair< string, string > range;
-
-   vector< pair< string, string > > search_replaces;
-   search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
-
-   search_replaces.push_back( make_pair( "//", c_root_folder ) );
-
-   string prefix_1( p_start_folder ? *p_start_folder : folder );
-   string prefix_2( prefix_1 );
-
-   if( prefix_1.size( ) > 1 )
-      prefix_1 += string( c_folder_separator );
-
-   string entity_expr( folder );
-
-   replace( entity_expr, c_folder_separator, c_pipe_separator );
-
-   entity_expr += c_folder_separator + expr;
-
-   bool is_root_folder = ( folder == string( c_root_folder ) );
-
-   for( size_t i = 0; i < folders.size( ); i++ )
-   {
-      string next_entity_expr( entity_expr );
-
-      string::size_type pos = next_entity_expr.find_first_of( "?*" );
-
-      string wildcard_expr( "*" );
-
-      if( pos != string::npos )
-         wildcard_expr = next_entity_expr.substr( pos );
-
-      if( i == 0 )
-      {
-         range.first = next_entity_expr.substr( 0, pos );
-
-         if( pos == string::npos )
-            next_entity_expr += wildcard_expr;
-
-         if( is_root_folder )
-            range.second = range.first;
-         else
-         {
-            pos = range.first.rfind( c_folder );
-            range.second = range.first.substr( 0, pos + 1 );
-         }
-      }
-      else
-      {
-         if( is_root_folder )
-            pos = range.first.rfind( c_pipe, range.first.length( ) - 2 );
-         else
-            pos = range.first.rfind( c_folder, range.first.length( ) - 2 );
-
-         range.second = range.first.substr( 0, ( pos == string::npos ) ? string::npos : pos + 1 );
-
-         if( next_entity_expr.find_first_of( "?*" ) == string::npos )
-            next_entity_expr += wildcard_expr;
-      }
-
-      if( i > 0 && is_root_folder )
-         range.second += c_folder;
-
-      range.second += folders[ i ];
-
-#ifdef DEBUG
-      cout << "i = " << i << ", (" << folder << ") "
-       << next_entity_expr << " " << range.first << " ==> " << range.second << endl;
-#endif
-
-      perform_match( os, next_entity_expr,
-       "", 0, &search_replaces, full ? 0 : prefix_1.c_str( ),
-       full ? 0 : prefix_2.c_str( ), '\0', brief ? e_file_size_output_type_none
-       : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ), 0, 0, &range );
-
-      string next_folder( folder );
-
-      if( folder.size( ) > 1 )
-         next_folder += c_folder_separator;
-
-      next_folder += folders[ i ];
-
-      // NOTE: Don't output the folder if it doesn't match the provided expression.
-      if( show_folders && wildcard_match( expr, folders[ i ] ) )
-      {
-         string output( next_folder );
-
-         if( !full )
-         {
-            string::size_type pos = output.find( current_folder );
-
-            size_t length( current_folder.length( ) );
-
-            if( length > 1 )
-               ++length;
-
-            if( pos == 0 )
-               output.erase( 0, length );
-         }
-
-         if( !output.empty( ) )
-         {
-            if( full )
-            {
-               output += c_folder_separator;
-
-               string perms;
-               int64_t tm_val = 0;
-
-               has_folder( next_folder, &perms, &tm_val );
-
-               if( !perms.empty( ) )
-               {
-                  output += " " + perms;
-
-                  if( tm_val )
-                  {
-                     date_time dtm( tm_val );
-                     output += " " + dtm.as_string( e_time_format_hhmmss, true );
-                  }
-               }
-
-               os << output << endl;
-            }
-            else
-               os << output << c_folder_separator << endl;
-         }
-      }
-
-      branch_files_or_objects( os, next_folder, expr,
-       style, show_folders, p_start_folder ? p_start_folder : &folder );
-
-      range.first = range.second + c_folder;
-   }
-
-   range.second.erase( );
-
-   string::size_type pos = entity_expr.find_first_of( "?*" );
-
-   if( pos == string::npos )
-      entity_expr += "*";
-
-#ifdef DEBUG
-   cout << "(" << folder << ") " << entity_expr << " " << range.first << " ==> " << range.second << endl;
-#endif
-
-   perform_match( os, entity_expr,
-    "", 0, &search_replaces, full ? 0 : prefix_1.c_str( ),
-    full ? 0 : prefix_2.c_str( ), '\0', brief ? e_file_size_output_type_none
-    : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ), 0, 0, &range );
+   list_files_or_objects( expr, os, "", show_folders, ( list_style )style, true, 0, false, true );
 }
 
 bool ods_file_system::move_files_and_folders( const string& source,
@@ -3330,6 +3454,7 @@ bool ods_file_system::move_files_and_folders( const string& source,
    if( pos == string::npos )
    {
       pos = full_name.rfind( c_folder );
+
       dest_name = full_name.substr( 0, pos + 1 ) + destination;
    }
 
@@ -3354,6 +3479,7 @@ bool ods_file_system::move_files_and_folders( const string& source,
          bt.erase( tmp_iter );
 
          next.erase( 0, full_name.length( ) );
+
          next = dest_name + next;
 
          tmp_item.val = next;
@@ -3373,15 +3499,20 @@ bool ods_file_system::move_files_and_folders( const string& source,
             break;
       }
 
+      string::size_type fpos = full_name.rfind( c_folder );
+      string::size_type dpos = dest_name.rfind( c_folder );
+
       replace( full_name, c_folder_separator, c_colon_separator );
       replace( dest_name, c_folder_separator, c_colon_separator );
 
       if( src_is_root )
       {
          string root_name( full_name );
+
          root_name.insert( 1, c_folder_separator );
 
          tmp_item.val = root_name;
+
          tmp_iter = bt.find( tmp_item );
 
          if( tmp_iter != bt.end( ) )
@@ -3389,13 +3520,11 @@ bool ods_file_system::move_files_and_folders( const string& source,
       }
       else
       {
-         string folder_name( full_name );
-
-         pos = folder_name.rfind( c_colon );
-
-         if( pos != string::npos )
+         if( fpos != string::npos )
          {
-            folder_name[ pos ] = c_folder;
+            string folder_name( full_name );
+
+            folder_name[ fpos ] = c_folder;
 
             tmp_item.val = folder_name;
 
@@ -3409,6 +3538,7 @@ bool ods_file_system::move_files_and_folders( const string& source,
       if( dest_is_root )
       {
          string new_root_name( dest_name );
+
          new_root_name.insert( 1, c_folder_separator );
 
          tmp_item.val = new_root_name;
@@ -3418,6 +3548,7 @@ bool ods_file_system::move_files_and_folders( const string& source,
 
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
          replace( new_root_name, c_colon_separator, c_pipe_separator );
+
          tmp_item.val = new_root_name;
 
          if( bt.find( tmp_item ) != bt.end( ) )
@@ -3429,11 +3560,9 @@ bool ods_file_system::move_files_and_folders( const string& source,
       {
          string new_folder_name( dest_name );
 
-         pos = new_folder_name.rfind( c_colon );
-
-         if( pos != string::npos )
+         if( dpos != string::npos )
          {
-            new_folder_name[ pos ] = c_folder;
+            new_folder_name[ dpos ] = c_folder;
 
             tmp_item.val = new_folder_name;
 
@@ -3442,6 +3571,7 @@ bool ods_file_system::move_files_and_folders( const string& source,
 
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
             replace( new_folder_name, c_colon_separator, c_pipe_separator );
+
             tmp_item.val = new_folder_name;
 
             if( bt.find( tmp_item ) != bt.end( ) )
@@ -3456,6 +3586,7 @@ bool ods_file_system::move_files_and_folders( const string& source,
       while( true )
       {
          tmp_item.val = full_name;
+
          tmp_iter = bt.lower_bound( tmp_item );
 
          if( tmp_iter == bt.end( ) )
@@ -3487,6 +3618,7 @@ bool ods_file_system::move_files_and_folders( const string& source,
 
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
             replace( next, c_colon_separator, c_pipe_separator );
+
             tmp_item.val = next;
 
             if( bt.find( tmp_item ) != bt.end( ) )
@@ -3504,6 +3636,7 @@ bool ods_file_system::move_files_and_folders( const string& source,
       while( true )
       {
          tmp_item.val = full_name;
+
          tmp_iter = bt.lower_bound( tmp_item );
 
          if( tmp_iter == bt.end( ) )
@@ -3519,6 +3652,7 @@ bool ods_file_system::move_files_and_folders( const string& source,
             break;
 
          bool is_link = tmp_iter->get_is_link( );
+
          oid id = tmp_iter->get_file( ).get_id( );
 
          bt.erase( tmp_iter );
@@ -3550,6 +3684,7 @@ bool ods_file_system::move_files_and_folders( const string& source,
 
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
             replace( next, c_pipe_separator, c_colon_separator );
+
             tmp_item.val = next;
 
             if( bt.find( tmp_item ) != bt.end( ) )
@@ -3630,9 +3765,9 @@ bool ods_file_system::remove_items_for_file(
 
    tmp_item.val += c_folder + src_name;
 
-   replace( tmp_item.val, c_folder_separator, c_pipe_separator );
+   pos = tmp_item.val.rfind( c_folder );
 
-   pos = tmp_item.val.rfind( c_pipe_separator );
+   replace( tmp_item.val, c_folder_separator, c_pipe_separator );
 
    if( pos != string::npos )
    {
@@ -3727,7 +3862,8 @@ bool ods_file_system::remove_items_for_file(
 
                   tmp_iter = bt.lower_bound( tmp_item );
 
-                  if( tmp_iter == bt.end( ) || tmp_iter->val.find( link_prefix ) != 0 )
+                  if( ( tmp_iter == bt.end( ) )
+                   || ( tmp_iter->val.find( link_prefix ) != 0 ) )
                      break;
 
                   string link_name( tmp_iter->val.substr( link_prefix.length( ) - 1 ) );
@@ -3765,7 +3901,7 @@ bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_n
       string name_1( name );
       string name_2( replaced( name_1, c_folder_separator, c_colon_separator ) );
 
-      string::size_type pos = name_2.rfind( c_colon_separator );
+      string::size_type pos = name_1.rfind( c_folder );
 
       if( pos == 0 )
          name_2.insert( 1, c_root_folder );
@@ -3806,9 +3942,9 @@ bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_n
                tmp_item.val = c_colon_separator + current_folder + name;
             else
             {
-               replace( tmp_item.val, c_folder_separator, c_colon_separator );
+               string::size_type pos = tmp_item.val.rfind( c_folder );
 
-               string::size_type pos = tmp_item.val.rfind( c_colon_separator );
+               replace( tmp_item.val, c_folder_separator, c_colon_separator );
 
                if( pos != string::npos )
                   tmp_item.val[ pos ] = c_folder;
@@ -3822,7 +3958,7 @@ bool ods_file_system::remove_items_for_folder( const string& name, bool ignore_n
          string name_1( current_folder + c_folder + name );
          string name_2( replaced( name_1, c_folder_separator, c_colon_separator ) );
 
-         string::size_type pos = name_2.rfind( c_colon_separator );
+         string::size_type pos = name_1.rfind( c_folder );
 
          if( pos != string::npos )
             name_2[ pos ] = c_folder;
@@ -3858,6 +3994,19 @@ temporary_force_write::temporary_force_write( ods_file_system& ofs )
 temporary_force_write::~temporary_force_write( )
 {
    ofs.p_impl->force_write = old_force_write;
+}
+
+temporary_allow_specials::temporary_allow_specials( ods_file_system& ofs )
+ :
+ ofs( ofs ),
+ old_allow_specials( ofs.p_impl->allow_specials )
+{
+   ofs.p_impl->allow_specials = true;
+}
+
+temporary_allow_specials::~temporary_allow_specials( )
+{
+   ofs.p_impl->allow_specials = old_allow_specials;
 }
 
 temporary_include_hidden::temporary_include_hidden( ods_file_system& ofs, bool include_hidden )
