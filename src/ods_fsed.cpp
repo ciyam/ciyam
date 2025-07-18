@@ -348,9 +348,6 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
             ap_ofs->branch_folders( expr, *ods_fsed_handler.get_std_out( ), style );
          else
          {
-            if( expr.empty( ) )
-               expr = "*";
-
             if( !has_parm_val( parameters, c_cmd_ods_fsed_branch_objects ) )
                ap_ofs->branch_files( expr, *ods_fsed_handler.get_std_out( ), style );
             else
