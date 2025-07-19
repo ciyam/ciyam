@@ -751,8 +751,8 @@ string storage_channel_documents( const string& identity, bool get_height, bool 
             style = ods_file_system::e_branch_style_brief;
 
          if( !get_raw_session_variable(
-          get_special_var_name( e_special_var_style_extended ) ).empty( ) )
-            style = ods_file_system::e_branch_style_extended;
+          get_special_var_name( e_special_var_style_full_blown ) ).empty( ) )
+            style = ods_file_system::e_branch_style_full_blown;
 
          ofs.branch_objects( "*", ss, style );
 
@@ -1232,8 +1232,8 @@ bool storage_channel_documents_opened( const string& identity )
                set_system_variable( get_special_var_name(
                 e_special_var_opened_user ) + '_' + identity, user );
 
-               temporary_session_variable tmp_style_extended(
-                get_special_var_name( e_special_var_style_extended ), c_true_value );
+               temporary_session_variable tmp_style_full_blown(
+                get_special_var_name( e_special_var_style_full_blown ), c_true_value );
 
                set_system_variable( prefix + c_channel_readme_file, string( 1, c_notifier_ignore_char ) );
 
