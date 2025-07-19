@@ -296,53 +296,77 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_ods_fsed_files )
       {
-         bool full( has_parm_val( parameters, c_cmd_ods_fsed_files_full ) );
          bool brief( has_parm_val( parameters, c_cmd_ods_fsed_files_brief ) );
+         bool full_blown( has_parm_val( parameters, c_cmd_ods_fsed_files_full_blown ) );
+         bool unredacted( has_parm_val( parameters, c_cmd_ods_fsed_files_unredacted ) );
          string expr( get_parm_val( parameters, c_cmd_ods_fsed_files_expr ) );
 
          ods_file_system::list_style style = ods_file_system::e_list_style_default;
 
          if( brief )
             style = ods_file_system::e_list_style_brief;
-         else if( full )
-            style = ods_file_system::e_list_style_extended;
+         else if( full_blown )
+            style = ods_file_system::e_list_style_full_blown;
+
+         auto_ptr< temporary_include_hidden > ap_tmp_include_hidden;
+
+         if( unredacted )
+            ap_tmp_include_hidden.reset( new temporary_include_hidden( *ap_ofs ) );
 
          ap_ofs->list_files( expr, *ods_fsed_handler.get_std_out( ), style );
       }
       else if( command == c_cmd_ods_fsed_folders )
       {
-         bool full( has_parm_val( parameters, c_cmd_ods_fsed_folders_full ) );
+         bool full_blown( has_parm_val( parameters, c_cmd_ods_fsed_folders_full_blown ) );
+         bool unredacted( has_parm_val( parameters, c_cmd_ods_fsed_folders_unredacted ) );
          string expr( get_parm_val( parameters, c_cmd_ods_fsed_folders_expr ) );
 
-         ap_ofs->list_folders( expr, *ods_fsed_handler.get_std_out( ), full );
+         auto_ptr< temporary_include_hidden > ap_tmp_include_hidden;
+
+         if( unredacted )
+            ap_tmp_include_hidden.reset( new temporary_include_hidden( *ap_ofs ) );
+
+         ap_ofs->list_folders( expr, *ods_fsed_handler.get_std_out( ), full_blown );
       }
       else if( command == c_cmd_ods_fsed_objects )
       {
-         bool full( has_parm_val( parameters, c_cmd_ods_fsed_objects_full ) );
          bool brief( has_parm_val( parameters, c_cmd_ods_fsed_objects_brief ) );
+         bool full_blown( has_parm_val( parameters, c_cmd_ods_fsed_objects_full_blown ) );
+         bool unredacted( has_parm_val( parameters, c_cmd_ods_fsed_objects_unredacted ) );
          string expr( get_parm_val( parameters, c_cmd_ods_fsed_objects_expr ) );
 
          ods_file_system::list_style style = ods_file_system::e_list_style_default;
 
          if( brief )
             style = ods_file_system::e_list_style_brief;
-         else if( full )
-            style = ods_file_system::e_list_style_extended;
+         else if( full_blown )
+            style = ods_file_system::e_list_style_full_blown;
+
+         auto_ptr< temporary_include_hidden > ap_tmp_include_hidden;
+
+         if( unredacted )
+            ap_tmp_include_hidden.reset( new temporary_include_hidden( *ap_ofs ) );
 
          ap_ofs->list_objects( expr, *ods_fsed_handler.get_std_out( ), style );
       }
       else if( command == c_cmd_ods_fsed_branch )
       {
-         bool full( has_parm_val( parameters, c_cmd_ods_fsed_branch_full ) );
          bool brief( has_parm_val( parameters, c_cmd_ods_fsed_branch_brief ) );
+         bool full_blown( has_parm_val( parameters, c_cmd_ods_fsed_branch_full_blown ) );
+         bool unredacted( has_parm_val( parameters, c_cmd_ods_fsed_branch_unredacted ) );
          string expr( get_parm_val( parameters, c_cmd_ods_fsed_branch_expr ) );
 
          ods_file_system::branch_style style = ods_file_system::e_branch_style_default;
 
          if( brief )
             style = ods_file_system::e_branch_style_brief;
-         else if( full )
-            style = ods_file_system::e_branch_style_extended;
+         else if( full_blown )
+            style = ods_file_system::e_branch_style_full_blown;
+
+         auto_ptr< temporary_include_hidden > ap_tmp_include_hidden;
+
+         if( unredacted )
+            ap_tmp_include_hidden.reset( new temporary_include_hidden( *ap_ofs ) );
 
          if( has_parm_val( parameters, c_cmd_ods_fsed_branch_folders ) )
             ap_ofs->branch_folders( expr, *ods_fsed_handler.get_std_out( ), style );
