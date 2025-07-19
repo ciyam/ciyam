@@ -939,12 +939,7 @@ void ods_file_system::branch_folders( const string& expr, vector< string >& fold
 void ods_file_system::branch_folders( const string& expr, ostream& os, branch_style style )
 {
    bool brief = ( style == e_branch_style_brief );
-   bool full = ( style == e_branch_style_extended );
-
-   auto_ptr< temporary_include_hidden > ap_include_hidden;
-
-   if( full )
-      ap_include_hidden.reset( new temporary_include_hidden( *this ) );
+   bool full_blown = ( style == e_branch_style_full_blown );
 
    string entity_expr( current_folder );
 
@@ -992,7 +987,7 @@ void ods_file_system::branch_folders( const string& expr, ostream& os, branch_st
    }
 
    perform_match( os, entity_expr, "", 0, &search_replaces,
-    ( full ? 0 : prefix_1.c_str( ) ), ( full ? 0 : prefix_2.c_str( ) ), '\0', e_file_size_output_type_none, "|/" );
+    ( full_blown ? 0 : prefix_1.c_str( ) ), ( full_blown ? 0 : prefix_2.c_str( ) ), '\0', e_file_size_output_type_none, "|/" );
 }
 
 void ods_file_system::add_file( const string& name,
@@ -3220,7 +3215,7 @@ void ods_file_system::expand_entity_expression(
 }
 
 void ods_file_system::get_child_folders(
- const string& expr, bool full, deque< string >& folders, bool append_separator )
+ const string& expr, bool full_blown, deque< string >& folders, bool append_separator )
 {
    bool has_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
@@ -3249,14 +3244,14 @@ void ods_file_system::get_child_folders(
 
    ostringstream osstr;
 
-   perform_match( osstr, folder_expr, "", 0, &search_replaces, 0, 0, ( full ? '\0' : c_folder ) );
+   perform_match( osstr, folder_expr, "", 0, &search_replaces, 0, 0, ( full_blown ? '\0' : c_folder ) );
 
    split( osstr.str( ), folders, '\n' );
 
    if( !folders.empty( ) && folders.back( ).empty( ) )
       folders.pop_back( );
 
-   if( full || append_separator )
+   if( full_blown || append_separator )
    {
       for( size_t i = 0; i < folders.size( ); i++ )
       {
@@ -3265,7 +3260,7 @@ void ods_file_system::get_child_folders(
          if( append_separator )
             extra += c_folder_separator;
 
-         if( full )
+         if( full_blown )
          {
             string perms;
 
@@ -3295,7 +3290,7 @@ void ods_file_system::list_files_or_objects(
  list_style style, bool inclusive, size_t limit, bool in_reverse_order, bool branch )
 {
    bool brief = ( style == e_list_style_brief );
-   bool full = ( style == e_list_style_extended );
+   bool full_blown = ( style == e_list_style_full_blown );
 
    string entity_expr( current_folder );
 
@@ -3324,15 +3319,10 @@ void ods_file_system::list_files_or_objects(
 
       vector< pair< string, string > > search_replaces;
 
-      auto_ptr< temporary_include_hidden > ap_include_hidden;
-
-      if( full )
-         ap_include_hidden.reset( new temporary_include_hidden( *this ) );
-
       if( branch || objects )
       {
          if( !branch )
-            get_child_folders( expr, full, extras );
+            get_child_folders( expr, full_blown, extras );
          else
          {
             string suffix( expr );
@@ -3359,9 +3349,9 @@ void ods_file_system::list_files_or_objects(
             {
                p_impl->branch_suffix = suffix;
 
-               // NOTE: If not outputting the full path then
+               // NOTE: If the full path will not be output
                // store the branch prefix for later removal.
-               if( !full )
+               if( !full_blown )
                {
                   string branch_prefix( entity_expr );
 
@@ -3414,7 +3404,7 @@ void ods_file_system::list_files_or_objects(
 
                extra += child_folder + c_folder;
 
-               if( full && !extra.empty( )
+               if( full_blown && !extra.empty( )
                 && ( extra[ 0 ] != c_folder ) )
                   extra = c_folder + extra;
 
@@ -3456,8 +3446,8 @@ void ods_file_system::list_files_or_objects(
       search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
 
       perform_match( os, entity_expr, "", 0, &search_replaces, 0, 0,
-       ( full ? '\0' : c_folder ), ( brief ? e_file_size_output_type_none
-       : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ) ),
+       ( full_blown ? '\0' : c_folder ), ( brief ? e_file_size_output_type_none
+       : ( full_blown ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ) ),
        0, &extras, &range, inclusive, limit, in_reverse_order );
    }
 }
