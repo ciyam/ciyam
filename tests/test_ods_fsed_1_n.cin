@@ -23,6 +23,7 @@ folder_add xxx/.yyy
 folder_add xxx/.yyy/zzz
 branch objects
 branch -f objects
+branch -f -u objects
 folder_remove xxx
 folder_remove -r xxx
 branch folders

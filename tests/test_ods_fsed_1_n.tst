@@ -81,6 +81,9 @@ xxx/
 zzz/
 branch -f objects
 /xxx/
+/zzz/
+branch -f -u objects
+/xxx/
 /xxx/.yyy/
 /xxx/.yyy/zzz/
 /zzz/
