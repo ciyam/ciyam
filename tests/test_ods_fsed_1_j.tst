@@ -71,6 +71,104 @@ abc/xyz/test_A/
 abc/xyz/test_B/
 abc/xyz/test_C/
 abc/zzz/
+branch folders /
+abc
+abc/aaa
+abc/def
+abc/def/test_1
+abc/def/test_1/ghi
+abc/def/test_1/ghi/111
+abc/def/test_1/ghi/555
+abc/def/test_1/ghi/999
+abc/def/test_1/test_2
+abc/def/test_1/test_2/test_3
+abc/nnn
+abc/xyz
+abc/xyz/test_A
+abc/xyz/test_B
+abc/xyz/test_C
+abc/zzz
+branch objects /
+abc/
+abc/aaa/
+abc/def/
+abc/def/test_1/
+abc/def/test_1/ghi/
+abc/def/test_1/ghi/111/
+abc/def/test_1/ghi/555/
+abc/def/test_1/ghi/999/
+abc/def/test_1/test_2/
+abc/def/test_1/test_2/test_3/
+abc/nnn/
+abc/xyz/
+abc/xyz/test_A/
+abc/xyz/test_B/
+abc/xyz/test_C/
+abc/zzz/
+branch folders abc
+aaa
+def
+def/test_1
+def/test_1/ghi
+def/test_1/ghi/111
+def/test_1/ghi/555
+def/test_1/ghi/999
+def/test_1/test_2
+def/test_1/test_2/test_3
+nnn
+xyz
+xyz/test_A
+xyz/test_B
+xyz/test_C
+zzz
+branch folders /abc
+aaa
+def
+def/test_1
+def/test_1/ghi
+def/test_1/ghi/111
+def/test_1/ghi/555
+def/test_1/ghi/999
+def/test_1/test_2
+def/test_1/test_2/test_3
+nnn
+xyz
+xyz/test_A
+xyz/test_B
+xyz/test_C
+zzz
+branch objects /abc
+aaa/
+def/
+def/test_1/
+def/test_1/ghi/
+def/test_1/ghi/111/
+def/test_1/ghi/555/
+def/test_1/ghi/999/
+def/test_1/test_2/
+def/test_1/test_2/test_3/
+nnn/
+xyz/
+xyz/test_A/
+xyz/test_B/
+xyz/test_C/
+zzz/
+branch folders abc/def
+test_1
+test_1/ghi
+test_1/ghi/111
+test_1/ghi/555
+test_1/ghi/999
+test_1/test_2
+test_1/test_2/test_3
+branch folders /abc/def
+test_1
+test_1/ghi
+test_1/ghi/111
+test_1/ghi/555
+test_1/ghi/999
+test_1/test_2
+test_1/test_2/test_3
 dump
 Total index levels = 0
 Total number of nodes = 1

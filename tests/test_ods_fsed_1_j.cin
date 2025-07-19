@@ -6,5 +6,12 @@ branch folders
 folder_move def abc
 branch folders
 branch objects
+branch folders /
+branch objects /
+branch folders abc
+branch folders /abc
+branch objects /abc
+branch folders abc/def
+branch folders /abc/def
 dump
 exit

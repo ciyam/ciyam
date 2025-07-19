@@ -298,8 +298,7 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
     std::pair< std::string, std::string >* p_range = 0, bool inclusive = true,
     size_t limit = 0, bool in_reverse_order = false );
 
-   void expand_entity_expression( const std::string& expr,
-    bool had_wildcard, std::string& entity_expr, const char* p_suffix = 0 );
+   void expand_entity_expression( const std::string& expr, std::string& entity_expr, const char* p_suffix = 0 );
 
    void get_child_folders( const std::string& expr,
     bool full, std::deque< std::string >& folders, bool append_separator = true );

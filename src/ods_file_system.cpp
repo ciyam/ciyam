@@ -875,9 +875,9 @@ void ods_file_system::list_folders( const string& expr, ostream& os,
 {
    string entity_expr( current_folder );
 
-   bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
+   bool has_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
-   expand_entity_expression( expr, had_wildcard, entity_expr, had_wildcard ? "\0" : c_folder_separator );
+   expand_entity_expression( expr, entity_expr, has_wildcard ? "\0" : c_folder_separator );
 
    if( expr.empty( ) && ( current_folder != string( c_root_folder ) ) )
       entity_expr += string( c_folder_separator );
@@ -893,15 +893,12 @@ void ods_file_system::list_folders( const string& expr, ostream& os,
       else if( pos != string::npos )
          entity_expr[ pos ] = c_folder;
 
-      if( !had_wildcard )
+      if( !has_wildcard )
          entity_expr += "*";
 
       vector< pair< string, string > > search_replaces;
 
       search_replaces.push_back( make_pair( c_colon_separator, c_folder_separator ) );
-
-      if( full_path )
-         search_replaces.push_back( make_pair( "//", c_root_folder ) );
 
       perform_match( os, entity_expr, "", 0, &search_replaces, 0, 0,
        full_path ? '\0' : c_folder, e_file_size_output_type_none,
@@ -951,20 +948,48 @@ void ods_file_system::branch_folders( const string& expr, ostream& os, branch_st
 
    string entity_expr( current_folder );
 
-   entity_expr += expr;
+   expand_entity_expression( expr, entity_expr );
+
+#ifdef DEBUG
+   cerr << "expr = '" << expr << "', entity_expr = '" << entity_expr << "' (branch folders)" << endl;
+#endif
 
    vector< pair< string, string > > search_replaces;
 
    search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
 
-   string prefix_1( current_folder );
-   string prefix_2( prefix_1 );
+   string prefix( entity_expr );
 
-   if( prefix_1.size( ) > 1 )
+   string::size_type pos = prefix.find_first_of( "?*" );
+
+   if( pos != string::npos )
+   {
+      pos = entity_expr.rfind( '/', pos );
+
+      if( pos != string::npos )
+         prefix = entity_expr.substr( 0, pos );
+   }
+
+   string prefix_1( prefix );
+   string prefix_2( prefix );
+
+   if( ( prefix_1.size( ) > 1 )
+    && ( prefix_1[ prefix_1.length( ) - 1 ] != c_folder ) )
       prefix_1 += string( c_folder_separator );
 
+   // NOTE: Unless a wildcard expression was provided need
+   // to append "*" in order to match all branch items and
+   // a trailing folder appended before that to ensure the
+   // starting folder itself is not included (in order for
+   // output to be consistent with other branch commands).
    if( entity_expr.find_first_of( "?*" ) == string::npos )
+   {
+      if( !entity_expr.empty( )
+       && ( entity_expr[ entity_expr.length( ) - 1 ] != c_folder ) )
+         entity_expr += c_folder;
+
       entity_expr += "*";
+   }
 
    perform_match( os, entity_expr, "", 0, &search_replaces,
     ( full ? 0 : prefix_1.c_str( ) ), ( full ? 0 : prefix_2.c_str( ) ), '\0', e_file_size_output_type_none, "|/" );
@@ -2711,7 +2736,17 @@ void ods_file_system::perform_match(
    string suffix( p_impl->branch_suffix );
 
 #ifdef DEBUG
-   cerr << "[perform_match] expr = '" << expr << "', suffix = '" << suffix << "'" << endl;
+   cerr << "[perform_match] expr = '" << expr << "', suffix = '" << suffix << "', p_prefix_1 = '";
+
+   if( p_prefix_1 )
+      cerr << string( p_prefix_1 );
+
+   cerr << "', p_prefix_2 = '";
+
+   if( p_prefix_2 )
+      cerr << string( p_prefix_2 );
+
+   cerr << "'" << endl;
 #endif
 
    btree_type::iterator match_iter;
@@ -2864,38 +2899,44 @@ void ods_file_system::perform_match(
                   if( p_ignore_with_prefix && ( val.find( p_ignore_with_prefix ) == 0 ) )
                      val.erase( );
 
-                  if( !val.empty( ) && p_search_replaces )
-                  {
-                     for( size_t i = 0; i < p_search_replaces->size( ); i++ )
-                        replace( val, ( *p_search_replaces )[ i ].first, ( *p_search_replaces )[ i ].second );
-                  }
-
-                  if( p_prefix_1 && val.find( p_prefix_1 ) == 0 )
-                     val.erase( 0, strlen( p_prefix_1 ) );
-                  else if( p_prefix_2 && val.find( p_prefix_2 ) == 0 )
-                     val.erase( 0, strlen( p_prefix_2 ) );
-
-                  if( !p_impl->branch_prefix.empty( ) )
-                  {
-                     string::size_type pos = val.find( p_impl->branch_prefix );
-
-                     if( pos != string::npos )
-                        val.erase( 0, p_impl->branch_prefix.length( ) + pos );
-
-                     if( !val.empty( ) && ( val[ 0 ] == c_folder ) )
-                        val.erase( 0, 1 );
-                  }
-                  else if( erase_all_before_and_including )
-                  {
-                     pos = val.rfind( erase_all_before_and_including,
-                      ( ( val.length( ) == 1 ) ? string::npos : ( val.length( ) - 2 ) ) );
-
-                     if( pos != string::npos )
-                        val.erase( 0, pos + 1 );
-                  }
-
                   if( !val.empty( ) )
                   {
+                     if( p_search_replaces )
+                     {
+                        for( size_t i = 0; i < p_search_replaces->size( ); i++ )
+                           replace( val, ( *p_search_replaces )[ i ].first, ( *p_search_replaces )[ i ].second );
+
+                        // NOTE: For root files and folders will end up with a
+                        // double folder prefix (as ":/" or "|/" become "//").
+                        if( ( val.size( ) >= 2 )
+                         && ( val[ 0 ] == c_folder ) && ( val[ 1 ] == c_folder ) )
+                           val.erase( 0, 1 );
+                     }
+
+                     if( p_prefix_1 && val.find( p_prefix_1 ) == 0 )
+                        val.erase( 0, strlen( p_prefix_1 ) );
+                     else if( p_prefix_2 && val.find( p_prefix_2 ) == 0 )
+                        val.erase( 0, strlen( p_prefix_2 ) );
+
+                     if( !p_impl->branch_prefix.empty( ) )
+                     {
+                        string::size_type pos = val.find( p_impl->branch_prefix );
+
+                        if( pos != string::npos )
+                           val.erase( 0, p_impl->branch_prefix.length( ) + pos );
+
+                        if( !val.empty( ) && ( val[ 0 ] == c_folder ) )
+                           val.erase( 0, 1 );
+                     }
+                     else if( erase_all_before_and_including )
+                     {
+                        pos = val.rfind( erase_all_before_and_including,
+                         ( ( val.length( ) == 1 ) ? string::npos : ( val.length( ) - 2 ) ) );
+
+                        if( pos != string::npos )
+                           val.erase( 0, pos + 1 );
+                     }
+
                      while( p_extra_items && !p_extra_items->empty( ) )
                      {
                         string extra( p_extra_items->front( ) );
@@ -3118,8 +3159,10 @@ void ods_file_system::perform_match(
 }
 
 void ods_file_system::expand_entity_expression(
- const string& expr, bool had_wildcard, string& entity_expr, const char* p_suffix )
+ const string& expr, string& entity_expr, const char* p_suffix )
 {
+   bool has_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
+
    if( !expr.empty( ) )
    {
       // NOTE: If a superflous final folder separator had been provided then remove it.
@@ -3134,7 +3177,7 @@ void ods_file_system::expand_entity_expression(
    {
       if( pos == 0 )
       {
-         if( !had_wildcard || ( expr == string( c_folder_separator ) ) )
+         if( !has_wildcard || ( expr == string( c_folder_separator ) ) )
             entity_expr = expr;
          else
             entity_expr = string( c_folder_separator ) + expr;
@@ -3166,12 +3209,12 @@ void ods_file_system::expand_entity_expression(
    }
    else if( !expr.empty( ) )
    {
-      if( !had_wildcard && ( entity_expr == string( c_folder_separator ) ) )
+      if( !has_wildcard && ( entity_expr == string( c_folder_separator ) ) )
          entity_expr += expr;
       else
          entity_expr += string( c_folder_separator ) + expr;
 
-      if( p_suffix && !had_wildcard )
+      if( p_suffix && !has_wildcard )
          entity_expr += string( p_suffix );
    }
 }
@@ -3179,13 +3222,13 @@ void ods_file_system::expand_entity_expression(
 void ods_file_system::get_child_folders(
  const string& expr, bool full, deque< string >& folders, bool append_separator )
 {
-   bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
+   bool has_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
    vector< pair< string, string > > search_replaces;
 
    string folder_expr( current_folder );
 
-   expand_entity_expression( expr, had_wildcard, folder_expr, had_wildcard ? "\0" : c_folder_separator );
+   expand_entity_expression( expr, folder_expr, has_wildcard ? "\0" : c_folder_separator );
 
    if( expr.empty( ) && ( current_folder != string( c_root_folder ) ) )
       folder_expr += string( c_folder_separator );
@@ -3199,17 +3242,14 @@ void ods_file_system::get_child_folders(
    else if( pos != string::npos )
       folder_expr[ pos ] = c_folder;
 
-   if( !had_wildcard )
+   if( !has_wildcard )
       folder_expr += "*";
 
    search_replaces.push_back( make_pair( c_colon_separator, c_folder_separator ) );
 
-   if( full )
-      search_replaces.push_back( make_pair( "//", c_root_folder ) );
-
    ostringstream osstr;
 
-   perform_match( osstr, folder_expr, "", 0, &search_replaces, 0, 0, full ? '\0' : c_folder );
+   perform_match( osstr, folder_expr, "", 0, &search_replaces, 0, 0, ( full ? '\0' : c_folder ) );
 
    split( osstr.str( ), folders, '\n' );
 
@@ -3259,9 +3299,7 @@ void ods_file_system::list_files_or_objects(
 
    string entity_expr( current_folder );
 
-   bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
-
-   expand_entity_expression( expr, had_wildcard, entity_expr );
+   expand_entity_expression( expr, entity_expr );
 
 #ifdef DEBUG
    cerr << "expr = '" << expr << "', entity_expr = '" << entity_expr << "', branch = " << branch << endl;
@@ -3272,7 +3310,7 @@ void ods_file_system::list_files_or_objects(
       bool is_folder = has_folder( entity_expr )
        || ( entity_expr == string( c_root_folder ) );
 
-      bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
+      bool has_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
       pair< string, string > range;
 
@@ -3374,10 +3412,11 @@ void ods_file_system::list_files_or_objects(
                if( !extra.empty( ) )
                   extra += c_folder;
 
-               if( full )
-                  extra = c_folder + extra;
-
                extra += child_folder + c_folder;
+
+               if( full && !extra.empty( )
+                && ( extra[ 0 ] != c_folder ) )
+                  extra = c_folder + extra;
 
                // NOTE: Remove the branch prefix from "extra"
                // (which includes leading and trailing folder
@@ -3408,16 +3447,13 @@ void ods_file_system::list_files_or_objects(
 
       replace( entity_expr, c_folder_separator, c_pipe_separator );
 
-      if( is_folder && !had_wildcard )
+      if( is_folder && !has_wildcard )
          entity_expr += "/*";
       else if( pos != string::npos )
          entity_expr[ pos ] = c_folder;
 
       search_replaces.clear( );
       search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
-
-      if( full )
-         search_replaces.push_back( make_pair( "//", c_root_folder ) );
 
       perform_match( os, entity_expr, "", 0, &search_replaces, 0, 0,
        ( full ? '\0' : c_folder ), ( brief ? e_file_size_output_type_none
