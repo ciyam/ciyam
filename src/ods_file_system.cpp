@@ -1892,7 +1892,7 @@ void ods_file_system::replace_file( const string& name,
    }
 }
 
-void ods_file_system::permissions_file( const string& name, ostream* p_os )
+void ods_file_system::get_time_stamp( const string& name, ostream* p_os )
 {
    btree_type& bt( p_impl->bt );
 
@@ -1913,17 +1913,153 @@ void ods_file_system::permissions_file( const string& name, ostream* p_os )
 
    string value( key_value( name ) );
 
+   string folder( full_folder_name( name ) );
+
    tmp_item.val = value;
 
    tmp_iter = bt.find( tmp_item );
 
    if( tmp_iter == bt.end( ) )
    {
+      tmp_item.val = folder;
+
+      tmp_iter = bt.find( tmp_item );
+   }
+
+   if( tmp_iter != bt.end( ) )
+   {
+      tmp_item = *tmp_iter;
+
+      if( p_os )
+         *p_os << date_time( tmp_item.get_time( ) ).as_string( e_time_format_hhmmss, true ) << endl;
+   }
+   else
+   {
       if( !p_os )
-         throw runtime_error( "file '" + name + "' not found" );
+         throw runtime_error( "object '" + name + "' not found" );
       else
       {
-         *p_os << "*** file '" << name << "' not found ***" << endl;
+         *p_os << "*** object '" << name << "' not found ***" << endl;
+         return;
+      }
+   }
+}
+
+void ods_file_system::set_time_stamp( const string& name, int64_t tm_val, ostream* p_os )
+{
+   btree_type& bt( p_impl->bt );
+
+   auto_ptr< ods::bulk_write > ap_bulk;
+
+   if( !o.is_thread_bulk_write_locked( ) )
+      ap_bulk.reset( new ods::bulk_write( o ) );
+
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
+   {
+      o >> bt;
+
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
+   }
+
+   btree_type::item_type tmp_item;
+   btree_type::iterator tmp_iter = bt.end( );
+
+   string value( key_value( name ) );
+
+   string folder( full_folder_name( name ) );
+
+   tmp_item.val = value;
+
+   tmp_iter = bt.find( tmp_item );
+
+   if( tmp_iter == bt.end( ) )
+   {
+      tmp_item.val = folder;
+
+      tmp_iter = bt.find( tmp_item );
+   }
+
+   if( tmp_iter == bt.end( ) )
+   {
+      if( !p_os )
+         throw runtime_error( "object '" + name + "' not found" );
+      else
+      {
+         *p_os << "*** object '" << name << "' not found ***" << endl;
+         return;
+      }
+   }
+   else
+   {
+      tmp_item = *tmp_iter;
+
+      int64_t old_tm_val = tmp_item.get_time( );
+
+      if( tm_val != old_tm_val )
+      {
+         auto_ptr< ods::transaction > ap_ods_tx;
+
+         if( !o.is_in_transaction( ) )
+            ap_ods_tx.reset( new ods::transaction( o ) );
+
+         btree_trans_type bt_tx( bt );
+
+         tmp_item.set_time( tm_val );
+
+         bt.erase( tmp_iter );
+         bt.insert( tmp_item );
+
+         bt_tx.commit( );
+
+         if( ap_ods_tx.get( ) )
+            ap_ods_tx->commit( );
+
+         p_impl->next_transaction_id = o.get_next_transaction_id( );
+      }
+   }
+}
+
+void ods_file_system::get_permissions( const string& name, ostream* p_os )
+{
+   btree_type& bt( p_impl->bt );
+
+   auto_ptr< ods::bulk_read > ap_bulk;
+
+   if( !o.is_thread_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_read( o ) );
+
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
+   {
+      o >> bt;
+
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
+   }
+
+   btree_type::item_type tmp_item;
+   btree_type::iterator tmp_iter = bt.end( );
+
+   string value( key_value( name ) );
+
+   string folder( full_folder_name( name ) );
+
+   tmp_item.val = value;
+
+   tmp_iter = bt.find( tmp_item );
+
+   if( tmp_iter == bt.end( ) )
+   {
+      tmp_item.val = folder;
+
+      tmp_iter = bt.find( tmp_item );
+   }
+
+   if( tmp_iter == bt.end( ) )
+   {
+      if( !p_os )
+         throw runtime_error( "object '" + name + "' not found" );
+      else
+      {
+         *p_os << "*** object '" << name << "' not found ***" << endl;
          return;
       }
    }
@@ -1936,7 +2072,7 @@ void ods_file_system::permissions_file( const string& name, ostream* p_os )
    }
 }
 
-void ods_file_system::permissions_file( const string& name, const string& perms, ostream* p_os )
+void ods_file_system::set_permissions( const string& name, const string& perms, ostream* p_os )
 {
    string old_perms;
 
@@ -1974,15 +2110,24 @@ void ods_file_system::permissions_file( const string& name, const string& perms,
 
    tmp_item.val = value;
 
+   string folder( full_folder_name( name ) );
+
    tmp_iter = bt.find( tmp_item );
 
    if( tmp_iter == bt.end( ) )
    {
+      tmp_item.val = folder;
+
+      tmp_iter = bt.find( tmp_item );
+   }
+
+   if( tmp_iter == bt.end( ) )
+   {
       if( !p_os )
-         throw runtime_error( "file '" + name + "' not found" );
+         throw runtime_error( "object '" + name + "' not found" );
       else
       {
-         *p_os << "*** file '" << name << "' not found ***" << endl;
+         *p_os << "*** object '" << name << "' not found ***" << endl;
          return;
       }
    }

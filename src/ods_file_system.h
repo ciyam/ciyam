@@ -245,8 +245,11 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       replace_file( name, "", p_os, p_is, p_progress, force_write );
    }
 
-   void permissions_file( const std::string& name, std::ostream* p_os );
-   void permissions_file( const std::string& name, const std::string& perms, std::ostream* p_os = 0 );
+   void get_time_stamp( const std::string& name, std::ostream* p_os );
+   void set_time_stamp( const std::string& name, int64_t tm_val, std::ostream* p_os );
+
+   void get_permissions( const std::string& name, std::ostream* p_os );
+   void set_permissions( const std::string& name, const std::string& perms, std::ostream* p_os = 0 );
 
    void store_as_text_file( const std::string& name, int32_t val );
    void store_as_text_file( const std::string& name, int64_t val );
@@ -282,6 +285,8 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    };
 
    void force_reload( );
+
+   inline std::string full_folder_name( const std::string& provided ) { return determine_folder( provided, false, true ); }
 
    std::string value_folder_and_file_name( const std::string& provided,
     std::string* p_folder = 0, std::string* p_file_name = 0 );

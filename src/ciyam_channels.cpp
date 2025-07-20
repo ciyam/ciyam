@@ -2255,7 +2255,7 @@ void storage_channel_documents_approve_waiting( const char* p_identity, const ch
          string next( all_waiting[ i ] );
 
          if( approving.count( next + file_sizes[ next ] ) )
-            ofs.permissions_file( "../" + next, c_perms_r_r );
+            ofs.set_permissions( "../" + next, c_perms_r_r );
          else
          {
             if( !new_waiting.empty( ) )
@@ -2380,7 +2380,7 @@ void storage_channel_documents_approve_reviewing( const char* p_identity, const 
          string next( all_reviewing[ i ] );
 
          if( approving.count( next + file_sizes[ next ] ) )
-            ofs.permissions_file( "../" + next, c_perms_r_r );
+            ofs.set_permissions( "../" + next, c_perms_r_r );
          else
          {
             if( !new_reviewing.empty( ) )
