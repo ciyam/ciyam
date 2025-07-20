@@ -1,12 +1,16 @@
 cd
 label yyy
 file_add yyy mnemonics.txt
-file_permissions yyy
-file_permissions yyy crap
-file_permissions yyy "rw-rw-r--"
-file_permissions yyy
-file_permissions yyy "rw-r--r--"
-file_permissions yyy
+object_time_stamp yyy
+object_time_stamp yyy nonsense
+object_time_stamp yyy 2020-02-02_20:20:20
+object_time_stamp yyy
+object_permissions yyy
+object_permissions yyy nonsense
+object_permissions yyy "rw-rw-r--"
+object_permissions yyy
+object_permissions yyy "rw-r--r--"
+object_permissions yyy
 branch objects
 file_get yyy test_ods_fsed_5_c.tmp
 ~diff -q mnemonics.txt test_ods_fsed_5_c.tmp

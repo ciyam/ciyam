@@ -452,16 +452,6 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 
          ap_ofs->replace_file( name, file_name, 0, ( use_cin ? &cin : 0 ), p_progress );
       }
-      else if( command == c_cmd_ods_fsed_file_permissions )
-      {
-         string name( get_parm_val( parameters, c_cmd_ods_fsed_file_permissions_name ) );
-         string permissions( get_parm_val( parameters, c_cmd_ods_fsed_file_permissions_permissions ) );
-
-         if( permissions.empty( ) )
-            ap_ofs->permissions_file( name, ods_fsed_handler.get_std_out( ) );
-         else
-            ap_ofs->permissions_file( name, permissions, ods_fsed_handler.get_std_out( ) );
-      }
       else if( command == c_cmd_ods_fsed_folder_add )
       {
          string name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_name ) );
@@ -482,6 +472,35 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          bool recurse( has_parm_val( parameters, c_cmd_ods_fsed_folder_remove_recurse ) );
 
          ap_ofs->remove_folder( name, 0, recurse );
+      }
+      else if( command == c_cmd_ods_fsed_object_time_stamp )
+      {
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_object_time_stamp_name ) );
+         string time_stamp( get_parm_val( parameters, c_cmd_ods_fsed_object_time_stamp_time_stamp ) );
+
+         if( time_stamp.empty( ) )
+            ap_ofs->get_time_stamp( name, ods_fsed_handler.get_std_out( ) );
+         else
+         {
+            int64_t tm_val = 0;
+
+            if( time_stamp == "@now" )
+               tm_val = unix_time( );
+            else
+               tm_val = unix_time( date_time( time_stamp ) );
+
+            ap_ofs->set_time_stamp( name, tm_val, ods_fsed_handler.get_std_out( ) );
+         }
+      }
+      else if( command == c_cmd_ods_fsed_object_permissions )
+      {
+         string name( get_parm_val( parameters, c_cmd_ods_fsed_object_permissions_name ) );
+         string permissions( get_parm_val( parameters, c_cmd_ods_fsed_object_permissions_permissions ) );
+
+         if( permissions.empty( ) )
+            ap_ofs->get_permissions( name, ods_fsed_handler.get_std_out( ) );
+         else
+            ap_ofs->set_permissions( name, permissions, ods_fsed_handler.get_std_out( ) );
       }
       else if( command == c_cmd_ods_fsed_export )
       {

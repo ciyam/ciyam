@@ -10,10 +10,11 @@ file_links "list soft links for an existing file" <val//name>
 file_move "move a file/link to another folder or rename it" <val//name><val//destination>
 file_remove "remove a file from below the current folder" <val//name>
 file_replace "replace the content of an existing file" <val//name>[<opt/-c/cin>|<val//file_name>]
-file_permissions "get/set the permissions for an existing file" <val//name>[<val//permissions>]
 folder_add "add a folder below the current folder" <val//name>
 folder_move "move a child folder below another folder or rename it" [<opt/-o/overwrite>]<val//name><val//destination>
 folder_remove "remove a folder from below the current folder" [<opt/-r/recurse>]<val//name>
+object_time_stamp "get/set the time stamp for an existing object" <val//name>[<val//time_stamp>]
+object_permissions "get/set the permissions for an existing object" <val//name>[<val//permissions>]
 export "export all objects to a directory" <val//directory>[<list//rename_exprs>]
 import "import all objects from a directory" [<opt/-f/force>]<val//directory>[<list//rename_exprs>]
 label "append a transaction log label" <val//name>
