@@ -2141,6 +2141,12 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#transient_field_from_file_attachment.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_suffix=$specification_\0_suffix`}\
 `,\
+`@eq`(`'\1`'`,`'transient_field_from_fk_key_list`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)`&`@eq`(`$specification_\0_finalise_fetch`,`'`'`)
+`{`#transient_field_from_fk_key_list.spec.xrep section=after_fetch class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_separator=$specification_\0_separator\
+ arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield\
+ arg_tfield=$specification_\0_tfield arg_not_new=$specification_\0_not_new arg_skip_restore=$specification_\0_skip_restore`}\
+`,\
 `@eq`(`'\1`'`,`'transient_field_from_function`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_from_function.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_func_name=$specification_\0_func_name\
@@ -2308,6 +2314,12 @@ void `{`$full_class_name`}::impl::finalise_fetch( bool skip_set_original )
  arg_separator=$specification_\0_separator arg_rfield=$specification_\0_rfield arg_reverse=$specification_\0_reverse\
  arg_non_empty=$specification_\0_non_empty arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
  arg_top_level=$specification_\0_top_level arg_always_use_separator=$specification_\0_always_use_separator`}
+`,\
+`@eq`(`'\1`'`,`'transient_field_from_fk_key_list`'`)`&`@eq`(`$specification_\0_finalise_fetch`,`'true`'`)\
+`{`#transient_field_from_fk_key_list.spec.xrep section=finalise_fetch class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_separator=$specification_\0_separator\
+ arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield\
+ arg_tfield=$specification_\0_tfield arg_not_new=$specification_\0_not_new arg_skip_restore=$specification_\0_skip_restore`}
 ### finalise_fetch
 `}`]`}
    // [<start finalise_fetch>]
@@ -2471,6 +2483,12 @@ void `{`$full_class_name`}::impl::post_init( )
 `@eq`(`'\1`'`,`'transient_field_from_dtm`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_from_dtm.spec.xrep section=post_init class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_unix=$specification_\0_unix`}
+`,\
+`@eq`(`'\1`'`,`'transient_field_from_fk_key_list`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
+`{`#transient_field_from_fk_key_list.spec.xrep section=post_init class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_separator=$specification_\0_separator\
+ arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield\
+ arg_tfield=$specification_\0_tfield arg_not_new=$specification_\0_not_new arg_skip_restore=$specification_\0_skip_restore`}
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_function`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_from_function.spec.xrep section=post_init class_name=$class_name\

@@ -1,0 +1,38 @@
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'finalise_fetch`'`,`$section`)\
+   // [(start transient_field_from_fk_key_list)] `{`$arg_id`}
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && `}`{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )
+    && `}`{`!`@eq`(`$arg_not_new`,`'`'`)!is_null( get_obj( ).get_key( ) )
+    && `}!get_obj( ).get_is_for_peer( ) )
+   {
+      string keys( get_obj( ).`{`$arg_sfield`}( ) );
+
+      if( !keys.empty( ) )
+      {
+         vector< string > all_keys;
+
+         split_string( keys, all_keys );
+
+         string str;
+
+         string original( get_obj( ).`{`$arg_spfield`}( ) );
+
+         for( size_t i = 0; i < all_keys.size( ); i++ )
+         {
+`{`!`@eq`(`$arg_separator`,`'`'`)\
+            if( i )
+               str += "`{`$arg_separator`}";
+
+`}\
+            get_obj( ).`{`$arg_spfield`}( ).set_key( all_keys[ i ] );
+
+            str += get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( );
+         }
+
+         get_obj( ).`{`$arg_field`}( str );
+
+         get_obj( ).`{`$arg_spfield`}( ).set_key( original );
+      }
+   }
+   // [(finish transient_field_from_fk_key_list)] `{`$arg_id`}
+`}
