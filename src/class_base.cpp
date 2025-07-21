@@ -164,10 +164,12 @@ const char* const c_gpg_key_fingerprint_prefix = "Key fingerprint = ";
 const char* const c_crypto_checksum_zero_padded = "00000-00000-000000-000000-00000-00000";
 
 typedef map< string, size_t > foreign_key_lock_container;
+
 typedef foreign_key_lock_container::iterator foreign_key_lock_iterator;
 typedef foreign_key_lock_container::const_iterator foreign_key_lock_const_iterator;
 
 vector< string > g_mnemonics;
+
 map< string, int > g_mnemonic_values;
 
 timezone_container g_timezones;
@@ -205,7 +207,9 @@ const string& attached_file_path_var_name( )
 void deconstruct_original_identity( class_base& cb, string& module_id, string& class_id )
 {
    string identity( cb.get_original_identity( ) );
+
    string::size_type pos = identity.find( ':' );
+
    if( pos == string::npos )
       throw runtime_error( "unexpected identity format" );
 
@@ -216,20 +220,23 @@ void deconstruct_original_identity( class_base& cb, string& module_id, string& c
 void remove_suffix( string& str, const string& suffix, const string& separator )
 {
    string::size_type pos = str.rfind( suffix );
-   if( pos != string::npos && pos == str.length( ) - suffix.length( ) )
+
+   if( ( pos != string::npos ) && ( pos == str.length( ) - suffix.length( ) ) )
    {
       str.erase( pos );
+
       if( !separator.empty( ) && str.length( ) >= separator.length( ) )
       {
          pos = str.rfind( separator );
-         if( pos != string::npos && pos == str.length( ) - separator.length( ) )
+
+         if( ( pos != string::npos ) && ( pos == str.length( ) - separator.length( ) ) )
             str.erase( pos );
       }
    }
 }
 
-string get_mask( int numeric_digits,
- int numeric_decimals, bool is_numeric, bool show_plus_sign, int zero_padding, bool include_commas = true )
+string get_mask( int numeric_digits, int numeric_decimals,
+ bool is_numeric, bool show_plus_sign, int zero_padding, bool include_commas = true )
 {
    string mask;
 
@@ -239,6 +246,7 @@ string get_mask( int numeric_digits,
       mask = "-";
 
    int whole_digits = numeric_digits;
+
    if( !whole_digits )
       whole_digits = is_numeric ? 19 : 10;
 
@@ -266,6 +274,7 @@ string get_mask( int numeric_digits,
    if( include_commas )
    {
       string::size_type pos = mask.find( '.' );
+
       if( pos == string::npos )
          pos = mask.length( ) - 1;
       else if( pos > 0 )
@@ -285,18 +294,20 @@ date_time local_utc_conv( const date_time& dt, int utc_offset,
  daylight_savings_info* p_daylight_savings_info, bool to_local, int* p_offset = 0, bool is_daylight = false )
 {
    int bias = 0;
+
    date_time retval( dt );
 
    if( p_daylight_savings_info && !p_daylight_savings_info->years_info.empty( ) )
    {
       years_info_const_iterator yici;
+
       yici = p_daylight_savings_info->years_info.lower_bound( dt.get_year( ) );
 
       // NOTE: If no entry found then it is assumed that DST is no longer applicable.
       if( yici != p_daylight_savings_info->years_info.end( ) )
       {
          // NOTE: If the entry found was greater than the current year then look for a previous entry.
-         if( yici != p_daylight_savings_info->years_info.begin( ) && yici->first > dt.get_year( ) )
+         if( ( yici != p_daylight_savings_info->years_info.begin( ) ) && ( yici->first > dt.get_year( ) ) )
             --yici;
 
          // NOTE: If the year being checked is not equal to the DST entry found then it is assumed
@@ -321,12 +332,12 @@ date_time local_utc_conv( const date_time& dt, int utc_offset,
 
             if( dt_begin < dt_finish )
             {
-               if( dt_check >= dt_begin && dt_check < dt_finish )
+               if( ( dt_check >= dt_begin ) && ( dt_check < dt_finish ) )
                   bias = yici->second.bias;
             }
             else
             {
-               if( dt_check < dt_finish || dt_check >= dt_begin )
+               if( ( dt_check < dt_finish ) || ( dt_check >= dt_begin ) )
                   bias = yici->second.bias;
             }
          }
@@ -348,16 +359,16 @@ string decode_text( const string& encoding, const string& charset, const string&
 {
    string decoded;
 
-   if( encoding == "7bit" || encoding == "8bit" || encoding.empty( ) )
+   if( ( encoding == "7bit" ) || ( encoding == "8bit" ) || encoding.empty( ) )
       decoded = data;
-   else if( encoding == "b" || encoding == "base64" )
+   else if( ( encoding == "b" ) || ( encoding == "base64" ) )
    {
       vector< string > lines;
       raw_split( data, lines, '\n' );
 
       decoded = base64::decode( raw_join( lines ) );
    }
-   else if( encoding == "q" || encoding == "quoted-printable" )
+   else if( ( encoding == "q" ) || ( encoding == "quoted-printable" ) )
       decoded = decode_quoted_printable( data );
    else
       throw runtime_error( "unexpected text encoding '" + encoding + "'" );
@@ -366,17 +377,21 @@ string decode_text( const string& encoding, const string& charset, const string&
    ( void )charset;
 #else
    string cs( lower( charset ) );
-   if( cs != "utf-8" && cs != "us-ascii" && cs != "iso-8859-1" )
+
+   if( ( cs != "utf-8" ) && ( cs != "us-ascii" ) && ( cs != "iso-8859-1" ) )
    {
       vector< string > lines;
+
       split( decoded, lines, '\n' );
 
       for( size_t i = 0; i < lines.size( ); i++ )
       {
          string& next_line( lines[ i ] );
+
          iconv_t cd;
 
          cd = iconv_open( "utf-8", cs.c_str( ) );
+
          if( cd == ( iconv_t )-1 )
          {
             if( errno == EINVAL )
@@ -386,12 +401,14 @@ string decode_text( const string& encoding, const string& charset, const string&
          }
 
          char buffer[ c_max_email_text_line ];
+
          memset( buffer, '\0', sizeof( buffer ) );
 
          size_t isize = next_line.length( );
          size_t avail = c_max_email_text_line - 1;
 
          char* p_buf = buffer;
+
          const char* p_src = next_line.c_str( );
 
          size_t rc = iconv( cd, ( char** )&p_src, &isize, &p_buf, &avail );
@@ -426,9 +443,10 @@ string decode_text( const string& encoding, const string& charset, const string&
 
 string replace_charset( const string& html_content )
 {
-   string s;
-   string tag;
+   string s, tag;
+
    bool in_tag = false;
+
    for( size_t i = 0; i < html_content.size( ); i++ )
    {
       if( html_content[ i ] == '<' )
@@ -440,25 +458,33 @@ string replace_charset( const string& html_content )
          else
          {
             in_tag = false;
+
             string::size_type pos = lower( tag ).find( "charset=" );
+
             if( pos != string::npos )
             {
                string::size_type epos = tag.find( "\"", pos );
+
                if( epos != string::npos )
                {
                   string append = tag.substr( epos );
+
                   tag.erase( pos );
+
                   tag += "charset=UTF-8";
+
                   tag += append;
 
                   s += "<" + tag + ">";
 
                   s += html_content.substr( i + 1 );
+
                   break;
                }
             }
 
             s += "<" + tag + ">";
+
             tag.erase( );
          }
       }
@@ -472,20 +498,20 @@ string replace_charset( const string& html_content )
 void decode_mime( mime_decoder& decoder, string& message,
  string& html_message, vector< pair< string, string > >& attachments )
 {
-   if( decoder.get_type( ) == "text" && decoder.get_subtype( ) == "plain" )
+   if( ( decoder.get_type( ) == "text" ) && ( decoder.get_subtype( ) == "plain" ) )
       message = decode_text( decoder.get_encoding( ), decoder.get_attribute( ), decoder.get_text_data( ) );
-   else if( decoder.get_type( ) == "text" && decoder.get_subtype( ) == "html" )
+   else if( ( decoder.get_type( ) == "text" ) && ( decoder.get_subtype( ) == "html" ) )
       html_message = decode_text( decoder.get_encoding( ), decoder.get_attribute( ), decoder.get_text_data( ) );
 
    for( size_t i = 0; i < decoder.num_parts( ); i++ )
    {
       mime_part& next_part( decoder.get_part( i ) );
 
-      if( next_part.type == "text" && next_part.subtype == "plain" )
+      if( ( next_part.type == "text" ) && ( next_part.subtype == "plain" ) )
          message = decode_text( next_part.encoding, next_part.attribute, next_part.data );
-      else if( next_part.type == "text" && next_part.subtype == "html" )
+      else if( ( next_part.type == "text" ) && ( next_part.subtype == "html" ) )
          html_message = decode_text( next_part.encoding, next_part.attribute, next_part.data );
-      else if( next_part.type == "image" || next_part.type == "application" )
+      else if( ( next_part.type == "image" ) || ( next_part.type == "application" ) )
          attachments.push_back( make_pair( next_part.encoding + " " + next_part.attribute, next_part.data ) );
    }
 
@@ -501,12 +527,13 @@ string escape_sep_if_quoted( const string& s, char sep )
    string str;
 
    bool in_quotes = false;
+
    for( size_t i = 0; i < s.length( ); i++ )
    {
       if( s[ i ] == '"' )
          in_quotes = !in_quotes;
 
-      if( in_quotes && s[ i ] == sep )
+      if( in_quotes && ( s[ i ] == sep ) )
          str += '\\';
 
       str += s[ i ];
@@ -599,6 +626,7 @@ void get_crypto_info( const string& extra_info, crypto_info& info )
    }
 
    string p2sh_prefix( extra_details[ c_crypto_info_p2sh_prefix ] );
+
    if( !p2sh_prefix.empty( ) )
    {
       info.override = true;
@@ -682,6 +710,7 @@ class_cascade::~class_cascade( )
 struct class_base::impl
 {
    bool has_changed_user_fields;
+
    map< string, string > variables;
 
    search_replace_container search_replacements;
@@ -776,6 +805,7 @@ void class_base::op_create( const string& key, op_create_rc* p_rc, bool is_inter
    last_lazy_fetch_key.erase( );
 
    instance_op_rc rc;
+
    begin_instance_op( e_instance_op_create, *this, key, is_internal, p_rc ? &rc : 0 );
 
    if( p_rc )
@@ -839,6 +869,7 @@ void class_base::op_update( const string& key, const string& fields, op_update_r
    try
    {
       instance_op_rc rc;
+
       begin_instance_op( e_instance_op_update, *p_dynamic_instance, key, is_internal, p_rc ? &rc : 0 );
 
       if( p_rc )
@@ -869,6 +900,7 @@ void class_base::op_update( const string& key, const string& fields, op_update_r
    {
       if( could_be_dynamic )
          cleanup_dynamic_instance( );
+
       throw;
    }
 }
@@ -883,6 +915,7 @@ void class_base::op_destroy( const string& key, op_destroy_rc* p_rc, bool is_int
    if( is_dynamic_enabled && !get_is_for_peer( ) )
    {
       instance_fetch_rc rc;
+
       perform_instance_fetch( *this, key, p_rc ? &rc : 0, true );
 
       if( p_rc )
@@ -904,6 +937,7 @@ void class_base::op_destroy( const string& key, op_destroy_rc* p_rc, bool is_int
    try
    {
       instance_op_rc rc;
+
       begin_instance_op( e_instance_op_destroy, *p_dynamic_instance, key, is_internal, p_rc ? &rc : 0 );
 
       if( p_rc )
@@ -938,6 +972,7 @@ void class_base::op_destroy( const string& key, op_destroy_rc* p_rc, bool is_int
    {
       if( could_be_dynamic )
          cleanup_dynamic_instance( );
+
       throw;
    }
 }
@@ -945,6 +980,7 @@ void class_base::op_destroy( const string& key, op_destroy_rc* p_rc, bool is_int
 void class_base::op_apply( op_apply_rc* p_rc, bool is_internal, set< string >* p_fields_set )
 {
    instance_op_rc rc;
+
    finish_instance_op( *p_dynamic_instance, true, is_internal, p_rc ? &rc : 0, p_fields_set );
 
    if( p_rc )
@@ -1044,6 +1080,7 @@ bool class_base::has_changed( ) const
    }
 
    string original_key;
+
    if( p_graph_parent->p_impl->foreign_key_values.count( graph_parent_fk_field ) )
       original_key = p_graph_parent->p_impl->foreign_key_values[ graph_parent_fk_field ];
 
@@ -1073,6 +1110,7 @@ void class_base::begin_review( const string& key, begin_review_rc* p_rc )
    if( is_dynamic_enabled )
    {
       instance_fetch_rc rc;
+
       perform_instance_fetch( *this, key, p_rc ? &rc : 0, true );
 
       if( p_rc )
@@ -1093,6 +1131,7 @@ void class_base::begin_review( const string& key, begin_review_rc* p_rc )
    try
    {
       instance_op_rc rc;
+
       begin_instance_op( e_instance_op_review, *p_dynamic_instance, key, true, p_rc ? &rc : 0 );
 
       if( p_rc )
@@ -1123,6 +1162,7 @@ void class_base::begin_review( const string& key, begin_review_rc* p_rc )
    {
       if( could_be_dynamic )
          cleanup_dynamic_instance( );
+
       throw;
    }
 }
@@ -1167,8 +1207,10 @@ void class_base::perform_lazy_fetch( )
          perform_fetch( s, &rc );
 
          last_lazy_fetch_key = s;
+
          last_lazy_fetch_ver = version;
          last_lazy_fetch_rev = revision;
+
          last_lazy_fetch_sec = security;
 
          last_lazy_fetch_field_values.clear( );
@@ -1181,8 +1223,10 @@ void class_base::perform_lazy_fetch( )
       else
       {
          key = last_lazy_fetch_key;
+
          version = last_lazy_fetch_ver;
          revision = last_lazy_fetch_rev;
+
          security = last_lazy_fetch_sec;
 
          original_revision = revision;
@@ -1307,7 +1351,7 @@ void class_base::copy_all_field_values( const class_base& src )
    for( size_t i = 0; i < num_fields; i++ )
    {
       // NOTE: If either the source or destination is in a "minimal update" then only copy
-      // those fields that have been fetched (otherwise fields will incorrectly be changed).
+      // those fields that have been fetched (otherwise fields can incorrectly be changed).
       if( ( op != e_op_type_update
        || ( utype != e_update_type_minimal )
        || fetch_field_names.count( get_field_name( i ) ) )
@@ -1437,6 +1481,7 @@ string class_base::get_attached_file_path( const string& file_name ) const
    if( path.empty( ) )
    {
       path = storage_web_root( true );
+
       path += "/" + string( c_files_directory ) + "/" + get_module_id( ) + "/" + get_class_id( );
    }
 
@@ -2055,6 +2100,7 @@ void class_base::construct_dynamic_instance( )
       TRACE_LOG( TRACE_CLASSOPS, "constructing dynamic instance for " + get_original_identity( ) );
 
       string module_id, class_id;
+
       deconstruct_original_identity( *this, module_id, class_id );
 
       p_dynamic_instance = construct_object( module_id, class_id );
@@ -2162,9 +2208,11 @@ void class_base::perform_field_search_replacements( )
       while( true )
       {
          string::size_type lpos = str.find( "{?" );
+
          if( lpos != string::npos )
          {
             string::size_type epos = str.find( "}", lpos );
+
             if( epos == string::npos )
                throw runtime_error( "unexpected missing '}' in '" + str + "'" );
 
@@ -2172,9 +2220,11 @@ void class_base::perform_field_search_replacements( )
          }
 
          string::size_type rpos = str.find( "{#" );
+
          if( rpos != string::npos )
          {
             string::size_type epos = str.find( "}", rpos );
+
             if( epos == string::npos )
                throw runtime_error( "unexpected missing '}' in '" + str + "'" );
 
@@ -2195,10 +2245,12 @@ void class_base::perform_field_search_replacements( )
          while( true )
          {
             string::size_type pos = str.find( '[' );
+
             if( pos == string::npos )
                break;
 
             string::size_type epos = str.find( ']', pos + 1 );
+
             if( epos == string::npos )
                throw runtime_error( "unexpected missing ']' in '" + str + "'" );
 
