@@ -117,6 +117,7 @@ ERROR=Failed due to a WEBDIR environment variable not having being set.
 ; NOTE: Restart the web server in order to force the FCGI UI to reload all application server information.
 ~sudo systemctl restart apache2
 ~rm -f $WEBDIR/meta/.prepare.restore
+~touch $WEBDIR/meta/ciyam_interface.stop
 @endif
 ;
 .system_variable @restore_system ""

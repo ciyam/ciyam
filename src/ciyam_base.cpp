@@ -4535,6 +4535,16 @@ void init_globals( const char* p_sid, int* p_use_udp )
          g_using_ssl = true;
       }
 #endif
+
+      if( !g_web_root.empty( ) )
+      {
+         // NOTE: If has completed restoring remove the FCGI UI stop file.
+         string ui_stop_file( g_web_root
+          + '/' + lower( c_meta_storage_name ) + "/ciyam_interface.stop" );
+
+         if( file_exists( ui_stop_file ) )
+            file_remove( ui_stop_file );
+      }
    }
    catch( exception& x )
    {
