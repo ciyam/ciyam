@@ -26,8 +26,8 @@
 `{`@eq`(`$type`,`'day`'`)`$type`=`'days`'`}\
 `{`@eq`(`$type`,`'month`'`)`$type`=`'months`'`}\
 `{`@eq`(`$type`,`'year`'`)`$type`=`'years`'`}\
-`{`$value`=`$arg_value`}\
-`{`@eq`(`$value`,`'@null`'`)`$arg_value`=`'`'`}\
+`{`$value`=`$arg_value`}`{`@eq`(`$value`,`'@null`'`)`$arg_value`=`'`'`}\
+`{`$check_field`=`$arg_sfield`}`{`!`@eq`(`$arg_use_field_for_check`,`'`'`)`$check_field`=`$arg_field`}\
 `{`@eq`(`$arg_sfistexttype`,`'1`'`)`&`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
 `{`@eq`(`$arg_scfistexttype`,`'1`'`)`&`!`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
    // [(start transient_field_from_op)] `{`$arg_id`}
@@ -49,7 +49,7 @@
     && ( state & c_modifier_`{`$arg_modifier`} )\
 `}`{`@eq`(`$arg_not_pedit`,`'true`'`)
     && ( !get_obj( ).get_graph_parent( ) || !get_obj( ).get_graph_parent( )->get_is_editing( ) )`}
-    && get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`$arg_sfield`} )
+    && ( get_obj( ).`{`!`@eq`(`$arg_use_field_for_check`,`'`'`)`$arg_field`,`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`}`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`$check_field`} ) )
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
 `{`@eq`(`$arg_ofield`,`'`'`)`$value`,get_obj( ).`{`$arg_ofield`}( )`} );
 `}`,\
@@ -59,7 +59,8 @@
     && ( state & c_modifier_`{`$arg_modifier`} )\
 `}`{`@eq`(`$arg_not_pedit`,`'true`'`)
     && ( !get_obj( ).get_graph_parent( ) || !get_obj( ).get_graph_parent( )->get_is_editing( ) )`}
-    && `{`@eq`(`$arg_tfistexttype`,`'1`'`)!is_null( `}get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}`{`!`@eq`(`$arg_check`,`'`'`) && get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`$arg_sfield`}`} )
+    && `{`@eq`(`$arg_tfistexttype`,`'1`'`)!is_null( `}get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}`{`!`@eq`(`$arg_check`,`'`'`)
+    && ( get_obj( ).`{`!`@eq`(`$arg_use_field_for_check`,`'`'`)`$arg_field`,`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`}`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`$check_field`} )`} )
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
 `{`@eq`(`$arg_ofield`,`'`'`)`$value`,get_obj( ).`{`$arg_ofield`}( )`} );
 `}\

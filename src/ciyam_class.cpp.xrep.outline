@@ -2171,7 +2171,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_tfistexttype=$specification_\0_tfistexttype arg_value=$specification_\0_value\
  arg_ofield=$specification_\0_ofield arg_sfistexttype=$specification_\0_sfistexttype\
  arg_scfistexttype=$specification_\0_scfistexttype arg_op=$specification_\0_op\
- arg_type=$specification_\0_type arg_check=$specification_\0_check arg_not_pedit=$specification_\0_not_pedit`}\
+ arg_type=$specification_\0_type arg_check=$specification_\0_check\
+ arg_use_field_for_check=$specification_\0_use_field_for_check arg_not_pedit=$specification_\0_not_pedit`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_sum`'`)
 `{`#transient_field_from_sum.spec.xrep section=after_fetch class_name=$class_name\
@@ -2506,7 +2507,8 @@ void `{`$full_class_name`}::impl::post_init( )
  arg_tfistexttype=$specification_\0_tfistexttype arg_value=$specification_\0_value\
  arg_ofield=$specification_\0_ofield arg_sfistexttype=$specification_\0_sfistexttype\
  arg_scfistexttype=$specification_\0_scfistexttype arg_op=$specification_\0_op\
- arg_type=$specification_\0_type arg_check=$specification_\0_check arg_not_pedit=$specification_\0_not_pedit`}
+ arg_type=$specification_\0_type arg_check=$specification_\0_check\
+ arg_use_field_for_check=$specification_\0_use_field_for_check arg_not_pedit=$specification_\0_not_pedit`}
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_variable`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_from_variable.spec.xrep section=post_init class_name=$class_name\
@@ -4848,6 +4850,11 @@ void `{`$full_class_name`}::get_required_field_names(
 `{`#transient_field_concat.spec.xrep section=get_required_field_names\
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield arg_field1=$specification_\0_field1\
  arg_field2=$specification_\0_field2 arg_field3=$specification_\0_field3 arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'transient_field_from_fk_key_list`'`)
+`{`#transient_field_from_fk_key_list.spec.xrep section=get_required_field_names\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field\
+ arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_module_string`'`)`&`!`@eq`(`'`'`,`$specification_\0_tfield`)
 `{`#transient_field_from_module_string.spec.xrep section=get_required_field_names\
