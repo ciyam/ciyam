@@ -24,21 +24,6 @@
 #  include <stdexcept>
 #endif
 
-#ifdef __BORLANDC__
-#  include <dir.h>
-#  ifndef STRICT
-#     define STRICT // Needed for "windows.h" by various Borland headers.
-#  endif
-#endif
-#ifdef _WIN32
-#  define _WIN32_WINNT 0x0500 // Needed for the CreateHardLink API function.
-#  define NOMINMAX
-#  define _WINSOCKAPI_
-#  include <windows.h>
-#  include <tchar.h>
-#  include <direct.h>
-#  include <shellapi.h>
-#endif
 #ifdef __GNUG__
 #  include <unistd.h>
 #  include <sys/stat.h>
@@ -60,9 +45,6 @@
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"
 #  include "crypto_keys.h"
-#  ifdef _WIN32
-#     include <openssl/applink.c>
-#  endif
 #endif
 #include "threads.h"
 #include "date_time.h"
@@ -80,10 +62,6 @@
 
 #define ALWAYS_REPLACE_SESSION
 //#define ALLOW_MULTIPLE_RECORD_ENTRY
-
-#ifdef _WIN32
-#  define USE_MOD_FASTCGI_KLUDGE
-#endif
 
 //#define USE_MAXIMUM_REQUEST_HANDLERS
 #define USE_MULTIPLE_REQUEST_HANDLERS
@@ -127,10 +105,6 @@ const char* const c_has_restored_file = ".has_restored";
 
 const char* const c_prepare_backup_file = "../meta/.prepare.backup";
 const char* const c_prepare_restore_file = "../meta/.prepare.restore";
-
-#ifdef _WIN32
-const char* const c_kill_script = "ciyam_interface.kill.bat";
-#endif
 
 const char* const c_login_htms = "login.htms";
 const char* const c_backup_htms = "backup.htms";
@@ -318,19 +292,23 @@ void disconnect_socket( tcp_socket* p_socket )
 {
    guard g( g_socket_mutex );
 
-   for( size_t i = 0; i < g_sockets.size( ); i++ )
+   if( p_socket )
    {
-      if( g_sockets[ i ].second == p_socket )
+      for( size_t i = 0; i < g_sockets.size( ); i++ )
       {
-         if( g_sockets[ i ].second && g_sockets[ i ].second->okay( ) )
+         if( g_sockets[ i ].second == p_socket )
          {
-            g_sockets[ i ].second->close( );
-            delete g_sockets[ i ].second;
-         }
+            if( g_sockets[ i ].second && g_sockets[ i ].second->okay( ) )
+            {
+               g_sockets[ i ].second->close( );
+               delete g_sockets[ i ].second;
+            }
 
-         g_sockets[ i ].first = false;
-         g_sockets[ i ].second = 0;
-         break;
+            g_sockets[ i ].first = false;
+            g_sockets[ i ].second = 0;
+
+            break;
+         }
       }
    }
 }
@@ -409,6 +387,7 @@ void destroy_session( const string& session_id )
    if( si != g_sessions.end( ) )
    {
       delete si->second;
+
       g_sessions.erase( si );
    }
 }
@@ -459,7 +438,7 @@ void destroy_user_session_info( const string& user_id, const char* p_module = 0 
 
    for( si = g_sessions.begin( ), end = g_sessions.end( ); si != end; ++si )
    {
-      if( p_module && string( p_module ) != ( si->second )->user_module )
+      if( p_module && ( string( p_module ) != ( si->second )->user_module ) )
          continue;
 
       if( user_id == ( si->second )->user_id )
@@ -472,6 +451,7 @@ void destroy_user_session_info( const string& user_id, const char* p_module = 0 
          throw runtime_error( GDS( c_display_you_are_currently_logged_in ) );
 
       delete si->second;
+
       g_sessions.erase( si );
    }
 }
@@ -490,6 +470,7 @@ session_info* get_session_info( const string& session_id, bool lock_session = tr
    {
       if( lock_session )
          si->second->locked = true;
+
       return si->second;
    }
 }
@@ -538,6 +519,7 @@ void parse_param_input( const char* p_param, map< string, string >& input_data, 
 void read_global_storage_info( )
 {
    vector< string > log_messages;
+
    read_storage_info( get_storage_info( ), log_messages );
 
    g_is_blockchain_application = !get_storage_info( ).blockchain.empty( );
@@ -637,6 +619,7 @@ bool process_log_file( const string& module_name,
    bool has_output_form = false;
 
    vector< string > lines;
+
    buffer_file_lines( log_file_name, lines );
 
    bool has_any_error = false;
@@ -645,7 +628,7 @@ bool process_log_file( const string& module_name,
    // NOTE: If the second last line starts with four '=' characters is assuming
    // that the script has completed and will rename the file (allowing the user
    // time to view the file data which disappears after the page is refreshed).
-   if( lines.size( ) >= 3 && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
+   if( ( lines.size( ) >= 3 ) && ( lines[ lines.size( ) - 2 ].find( "===" ) == 0 ) )
    {
       has_completed = true;
 
@@ -739,10 +722,6 @@ class timeout_handler : public thread
 
 void timeout_handler::on_start( )
 {
-#ifdef _WIN32
-   if( file_exists( c_kill_script ) )
-      file_remove( c_kill_script );
-#endif
    while( true )
    {
       msleep( 1000 );
@@ -781,6 +760,7 @@ void timeout_handler::on_start( )
             remove_session_temp_directory( si->second->session_id );
 
             delete si->second;
+
             dead_sessions.push_back( si );
          }
       }
@@ -800,6 +780,7 @@ void timeout_handler::on_start( )
          if( g_has_connected )
          {
             g_has_connected = false;
+
             g_socket.write_line( c_cmd_quit );
             g_socket.close( );
          }
@@ -844,14 +825,6 @@ void timeout_handler::on_start( )
                init_extkeys( );
          }
       }
-
-#ifdef _WIN32
-      if( !file_exists( c_kill_script ) )
-      {
-         ofstream outf( c_kill_script );
-         outf << "TASKKILL /F /PID " << get_pid( ) << '\n';
-      }
-#endif
    }
 }
 
@@ -1018,7 +991,7 @@ void request_handler::process_request( )
 
       // NOTE: If an existing session is present then obtain its
       // password hash for decrypting base64 data (if required).
-      if( !session_id.empty( ) && session_id != c_new_session )
+      if( !session_id.empty( ) && ( session_id != c_new_session ) )
       {
          p_session_info = get_session_info( session_id, false );
 
@@ -1183,7 +1156,8 @@ void request_handler::process_request( )
 
       bool is_invalid_session = false;
 
-      if( !session_id.empty( ) && ( session_id != c_new_session ) && ( cmd != c_cmd_join ) && ( cmd != c_cmd_status ) )
+      if( !session_id.empty( )
+       && ( session_id != c_new_session ) && ( cmd != c_cmd_join ) && ( cmd != c_cmd_status ) )
       {
          if( user.empty( ) || ( !user.empty( ) && ( hash == get_user_hash( user ) ) ) )
          {
@@ -1205,6 +1179,7 @@ void request_handler::process_request( )
                   username = user;
                   cmd = c_cmd_home;
                   session_id.erase( );
+
                   is_authorised = true;
                }
                else if( !session_id.empty( ) && ( session_id != get_unique( g_id, raddr ) ) )
@@ -3525,6 +3500,7 @@ void request_handler::process_request( )
    remove_utf8_bom( interface_html );
 
    string direction;
+
    if( is_vertical )
       direction = "vertical";
    else
@@ -3539,7 +3515,9 @@ void request_handler::process_request( )
    if( pos != string::npos )
    {
       output += interface_html.substr( 0, pos );
+
       output += title;
+
       pos += strlen( c_title );
    }
    else
@@ -3550,7 +3528,9 @@ void request_handler::process_request( )
    if( cpos != string::npos )
    {
       output += interface_html.substr( pos, cpos - pos );
+
       output += form_content.str( );
+
       cpos += strlen( c_form_content_comment );
    }
    else
@@ -3632,16 +3612,11 @@ int main( int argc, char* argv[ ] )
 
    try
    {
-#ifndef _WIN32
       umask( WEB_FILES_UMASK );
-#endif
       string exe_path = string( argv[ 0 ] );
 
-#ifndef _WIN32
       size_t pos = exe_path.find_last_of( "/" );
-#else
-      size_t pos = exe_path.find_last_of( "\\" );
-#endif
+
       if( pos != string::npos )
          exe_path.erase( pos );
       else
@@ -3790,22 +3765,17 @@ int main( int argc, char* argv[ ] )
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
          FCGX_Init( );
 
-         // NOTE: Apache's "mod_fcgid" only supports single threaded FCGI servers so check
-         // if "mod_fastcgi" is in use before starting any other request handling threads.
-#  ifdef USE_MOD_FASTCGI_KLUDGE
-         if( has_environment_variable( "_FCGI_MUTEX_" ) ) // i.e. this var is only found in mod_fastcgi
-#  endif
+         // NOTE: Start all but one as separate threads - the main thread runs the final handler.
+         for( size_t i = 1; i < c_num_handlers; i++ )
          {
-            // NOTE: Start all but one as separate threads - the main thread runs the final handler.
-            for( size_t i = 1; i < c_num_handlers; i++ )
-            {
-               request_handler* p_request_handler = new request_handler;
-               p_request_handler->start( );
-            }
+            request_handler* p_request_handler = new request_handler;
+
+            p_request_handler->start( );
          }
 #endif
 
          request_handler* p_request_handler = new request_handler;
+
          p_request_handler->on_start( );
       }
 
@@ -3816,18 +3786,16 @@ int main( int argc, char* argv[ ] )
    }
    catch( exception& x )
    {
-      LOG_TRACE( string( "error: " ) + x.what( ) );
       rc = 1;
+
+      LOG_TRACE( string( "error: " ) + x.what( ) );
    }
    catch( ... )
    {
-      LOG_TRACE( "unexpected exception caught" );
       rc = 2;
+
+      LOG_TRACE( "unexpected exception caught" );
    }
 
-#ifdef _WIN32
-   if( file_exists( c_kill_script ) )
-      file_remove( c_kill_script );
-#endif
    return rc;
 }
