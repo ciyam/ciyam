@@ -19,8 +19,6 @@
 
 #include "utilities.h"
 
-//#define DEBUG
-
 using namespace std;
 
 namespace
