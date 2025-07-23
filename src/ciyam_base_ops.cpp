@@ -57,6 +57,9 @@ const char* const c_ui_submit_type_peer = "peer";
 const char* const c_primary_key_name = "@pk";
 const char* const c_links_instance_lock_key = "@links";
 
+const char* const c_attribute_meta_ver_info = "_ver_";
+const char* const c_attribute_meta_typ_info = "_typ_";
+
 const char* const c_invalid_key_characters = "`~!@#$%^&*<>()[]{}/\\?|-+=.,;:'\"";
 
 const size_t c_sec_prefix_length = 6;
@@ -3103,6 +3106,9 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                }
             }
 
+            int16_t version = instance.get_version( );
+            int64_t revision = instance.get_revision( );
+
             if( persistence_type == 0 ) // i.e. SQL persistence
             {
                vector< string > sql_stmts;
@@ -3115,10 +3121,16 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                get_instance_sql_stmts( instance, sql_stmts, p_sql_undo_stmts );
 
+               bool skipped_empty_update = false;
+
                // NOTE: If updating but no fields apart from the revision one were changed (by any
                // derivation) then all update statements are discarded to skip the unnecessary SQL.
-               if( op == class_base::e_op_type_update && instance_accessor.has_skipped_empty_update( ) )
+               if( ( op == class_base::e_op_type_update )
+                && instance_accessor.has_skipped_empty_update( ) )
+               {
                   sql_stmts.clear( );
+                  skipped_empty_update = true;
+               }
 
                if( sql_stmts.empty( ) && ( op == class_base::e_op_type_create ) )
                {
@@ -3145,7 +3157,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                executing_sql = false;
 
-               if( supports_sql_undo )
+               if( supports_sql_undo && !skipped_empty_update )
                   append_undo_sql_stmts( sql_undo_stmts );
 
 #ifdef COMPILE_PROTOTYPE_CODE
@@ -3159,7 +3171,8 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                // is not unique then the instance key is appended (like an
                // additional field). Security digits are followed by field
                // values which are separated by tab characters.
-               if( app_name == c_meta_storage_name )
+               if( !skipped_empty_update
+                && ( app_name == c_meta_storage_name ) )
                {
                   size_t links_lock = 0;
 
@@ -3203,8 +3216,8 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                      // FUTURE: Rather than simply removing the
                      // instance data file (which automatically
                      // removes all index link files) an update
-                     // should selectively remove those indexes
-                     // that have changed.
+                     // should instead remove (and then re-add)
+                     // only the index links that have changed.
                      if( ( op == class_base::e_op_type_update )
                       || ( op == class_base::e_op_type_destroy ) )
                         ofs.remove_file( instance_file_name );
@@ -3219,6 +3232,18 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                         bool had_any_non_transients = false;
 
                         int num_fields = instance.get_num_fields( );
+
+                        // FUTURE: If not using SQL persistence
+                        // would need to actually increment the
+                        // revision in the instance object.
+                        if( op == class_base::e_op_type_update )
+                           revision = instance.get_revision( );
+
+                        string version_info(
+                         to_string( version ) + '.' + to_string( revision ) );
+
+                        writer.write_attribute( c_attribute_meta_ver_info, version_info );
+                        writer.write_attribute( c_attribute_meta_typ_info, instance.get_original_identity( ) );
 
                         for( int i = 0; i < num_fields; i++ )
                         {
