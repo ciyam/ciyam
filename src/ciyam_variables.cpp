@@ -259,6 +259,7 @@ const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_rati
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_blockchain_next_extra = "@blockchain_next_extra";
 const char* const c_special_variable_blockchain_time_value = "@blockchain_time_value";
+const char* const c_special_variable_force_transaction_log = "@force_transaction_log";
 const char* const c_special_variable_keep_user_peers_alive = "@keep_user_peers_alive";
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
@@ -571,6 +572,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_secondary_validation );
       g_special_variable_names.push_back( c_special_variable_blockchain_next_extra );
       g_special_variable_names.push_back( c_special_variable_blockchain_time_value );
+      g_special_variable_names.push_back( c_special_variable_force_transaction_log );
       g_special_variable_names.push_back( c_special_variable_keep_user_peers_alive );
       g_special_variable_names.push_back( c_special_variable_package_install_extra );
       g_special_variable_names.push_back( c_special_variable_peer_is_synchronising );

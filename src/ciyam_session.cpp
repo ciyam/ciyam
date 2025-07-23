@@ -132,7 +132,7 @@ inline void issue_error( const string& message )
 inline void issue_warning( const string& message )
 {
 #ifdef DEBUG
-   cout << "session warning: " << message << endl;
+   cerr << "session warning: " << message << endl;
 #else
    TRACE_LOG( TRACE_SESSIONS, string( "session warning: " ) + message );
 #endif
@@ -1418,7 +1418,7 @@ command_functor* ciyam_session_command_functor_factory( const string& /*name*/, 
 void ciyam_session_command_functor::operator ( )( const string& command, const parameter_info& parameters )
 {
 #ifdef DEBUG
-   cout << "processing command: " << command << endl;
+   cerr << "processing command: " << command << endl;
 #endif
    string response;
 
@@ -4057,13 +4057,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          mclass = resolve_class_id( module, mclass, &socket_handler.get_transformations( ) );
 
          map< string, string > field_value_items;
+
          parse_field_values( module, mclass, field_values, field_value_items, &socket_handler.get_transformations( ) );
 
          map< string, string > check_value_items;
+
          if( !check_values.empty( ) )
             parse_field_values( module, mclass, check_values, check_value_items, &socket_handler.get_transformations( ) );
 
          string ltf_key( c_log_transformation_scope_create_update_only );
+
          ltf_key += " " + module + " " + mclass + " " + string( c_log_transformation_op_ignore_field );
 
          if( socket_handler.get_transformations( ).count( ltf_key ) )
@@ -4078,6 +4081,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          ltf_key = string( c_log_transformation_scope_create_update_only );
+
          ltf_key += " " + module + " " + mclass + " " + string( c_log_transformation_op_change_field_value );
 
          if( !socket_handler.get_transformations( ).empty( ) )
@@ -4088,12 +4092,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          ltf_key = string( c_log_transformation_scope_create_update_only );
+
          ltf_key += " " + module + " " + mclass
           + " " + string( c_log_transformation_op_instance_change_field_value ) + " " + key;
 
          if( !socket_handler.get_transformations( ).empty( ) )
          {
             perform_field_value_transformations( socket_handler.get_transformations( ), ltf_key, field_value_items );
+
             if( !check_values.empty( ) )
                perform_field_value_transformations( socket_handler.get_transformations( ), ltf_key, check_value_items );
          }
@@ -4101,6 +4107,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool skip_update = false;
 
          ltf_key = string( c_log_transformation_scope_any_perform_op );
+
          ltf_key += " " + module + " " + string( c_log_transformation_op_skip_operation ) + " " + mclass;
 
          string ltf_uid_dtm_key( ltf_key + " " + uid + " " + dtm );
@@ -4111,6 +4118,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
          {
             ltf_key = string( c_log_transformation_scope_create_update_destroy );
+
             ltf_key += " " + module + " " + mclass + " " + string( c_log_transformation_op_skip_operation ) + " " + key;
 
             if( socket_handler.get_transformations( ).count( ltf_key ) )
@@ -4135,6 +4143,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_dtm( dtm );
                set_grp( grp );
                set_uid( uid );
+
                set_class( mclass );
                set_module( module );
                set_tz_name( tz_name );
@@ -4235,6 +4244,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         if( !value.empty( ) && was_date_time )
                         {
                            method_name_and_args = "cmd " + i->first + " raw";
+
                            value = execute_object_command( handle, "", method_name_and_args );
                         }
                      }
@@ -4281,10 +4291,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !using_verbose_logging )
                {
                   replace_field_values_to_log( next_command, field_values_to_log );
+
                   replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
                }
 
-               if( instance_persistence_type_is_sql( handle ) )
+               bool force_tx_logging = has_session_variable(
+                get_special_var_name( e_special_var_force_transaction_log ) );
+
+               // NOTE: Only logs the command if SQL persistence
+               // is applicable or if a special session variable
+               // to force logging has been set.
+               if( force_tx_logging
+                || instance_persistence_type_is_sql( handle ) )
                   transaction_log_command( next_command );
 
                op_instance_apply( handle, "", false, 0, &fields_set );
@@ -4296,6 +4314,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                    mclass, method, &socket_handler.get_transformations( ) );
 
                   response = instance_execute( handle, "", key, method_name );
+
                   transaction_commit( );
                }
 
@@ -4307,7 +4326,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   transaction_rollback( );
 
                possibly_expected_error = true;
+
                destroy_object_instance( handle );
+
                throw;
             }
             catch( ... )
@@ -4316,6 +4337,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   transaction_rollback( );
 
                destroy_object_instance( handle );
+
                throw;
             }
          }
@@ -4353,6 +4375,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool skip_destroy = false;
 
          string ltf_key( c_log_transformation_scope_any_perform_op );
+
          ltf_key += " " + module + " " + string( c_log_transformation_op_skip_operation ) + " " + mclass;
 
          string ltf_uid_dtm_key( ltf_key + " " + uid + " " + dtm );
@@ -4363,6 +4386,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
          {
             ltf_key = string( c_log_transformation_scope_create_update_destroy );
+
             ltf_key += " " + module + " " + mclass + " " + string( c_log_transformation_op_skip_operation ) + " " + key;
 
             if( socket_handler.get_transformations( ).count( ltf_key ) )
@@ -4375,6 +4399,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !skip_destroy )
          {
             map< string, string > set_value_items;
+
             if( !set_values.empty( ) )
                parse_field_values( module, mclass, set_values, set_value_items, &socket_handler.get_transformations( ) );
 
@@ -4403,6 +4428,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 
                op_destroy_rc rc;
+
                op_instance_destroy( handle, "", key, ver_info, false, &rc );
 
                if( !is_system_uid( ) && !storage_locked_for_admin( ) )
@@ -4444,12 +4470,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             catch( exception& )
             {
                possibly_expected_error = true;
+
                destroy_object_instance( handle );
+
                throw;
             }
             catch( ... )
             {
                destroy_object_instance( handle );
+
                throw;
             }
          }
@@ -4472,6 +4501,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string key_prefix;
          string field_values_to_log;
+
          string module_and_class( module + ' ' + mclass );
 
          if( tz_name.empty( ) )
@@ -7189,14 +7219,14 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
    }
 
 #ifdef DEBUG
-   cout << "cmd_and_args = '" << cmd_and_args << "'" << endl;
+   cerr << "cmd_and_args = '" << cmd_and_args << "'" << endl;
 #endif
 }
 
 void socket_command_processor::output_command_usage( const string& wildcard_match_expr ) const
 {
 #ifdef DEBUG
-   cout << "<processing usage request>" << endl;
+   cerr << "<processing usage request>" << endl;
 #endif
 
    socket.set_delay( );
@@ -7318,7 +7348,7 @@ ciyam_session::~ciyam_session( )
 void ciyam_session::on_start( )
 {
 #ifdef DEBUG
-   cout << "started session..." << endl;
+   cerr << "started session..." << endl;
 #endif
    try
    {
@@ -7396,7 +7426,7 @@ void ciyam_session::on_start( )
    }
 
 #ifdef DEBUG
-   cout << "finished session..." << endl;
+   cerr << "finished session..." << endl;
 #endif
    delete this;
 }
