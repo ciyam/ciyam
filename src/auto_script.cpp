@@ -501,7 +501,7 @@ autoscript_session::~autoscript_session( )
 void autoscript_session::on_start( )
 {
 #ifdef DEBUG
-   cout << "started autoscript session..." << endl;
+   cerr << "started autoscript session..." << endl;
 #endif
    try
    {
@@ -799,19 +799,19 @@ void autoscript_session::on_start( )
    catch( exception& x )
    {
 #ifdef DEBUG
-      cout << "autoscript error: " << x.what( ) << endl;
+      cerr << "autoscript error: " << x.what( ) << endl;
 #endif
       TRACE_LOG( TRACE_ANYTHING, string( "autoscript error: " ) + x.what( ) );
    }
    catch( ... )
    {
 #ifdef DEBUG
-      cout << "unexpected autoscript exception..." << endl;
+      cerr << "unexpected autoscript exception..." << endl;
 #endif
       TRACE_LOG( TRACE_ANYTHING, "autoscript error: unexpected unknown exception caught" );
    }
 #ifdef DEBUG
-   cout << "finished autoscript session..." << endl;
+   cerr << "finished autoscript session..." << endl;
 #endif
    delete this;
 }

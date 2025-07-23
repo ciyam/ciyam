@@ -8344,14 +8344,14 @@ void peer_session_starter::on_start( )
    catch( exception& x )
    {
 #ifdef DEBUG
-      cout << "peer_session_starter error: " << x.what( ) << endl;
+      cerr << "peer_session_starter error: " << x.what( ) << endl;
 #endif
       TRACE_LOG( TRACE_ANYTHING, string( "peer_session_starter error: " ) + x.what( ) );
    }
    catch( ... )
    {
 #ifdef DEBUG
-      cout << "unexpected peer_session_starter exception" << endl;
+      cerr << "unexpected peer_session_starter exception" << endl;
 #endif
       TRACE_LOG( TRACE_ANYTHING, "peer_session_starter error: unexpected unknown exception caught" );
    }

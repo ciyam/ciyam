@@ -778,7 +778,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
          }
 
 #ifdef DEBUG
-         cout << "sending command: " << str << endl;
+         cerr << "sending command: " << str << endl;
 #endif
          socket.write_line( str );
 
@@ -1482,7 +1482,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                if( response == string( c_response_okay_more ) )
                {
 #ifdef DEBUG
-                  cout << response;
+                  cerr << response;
 #endif
                   response.erase( );
                   continue;
@@ -1499,7 +1499,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                   had_not_found = true;
 #ifdef DEBUG
-                  cout << response;
+                  cerr << response;
 #endif
                   response = string( c_not_found_output );
                }
@@ -1660,7 +1660,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                   had_single_char_message = false;
 #ifdef DEBUG
-                  cout << response;
+                  cerr << response;
 #endif
                }
             }
