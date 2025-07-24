@@ -3614,12 +3614,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          catch( exception& )
          {
             possibly_expected_error = true;
+
             destroy_object_instance( handle );
+
             throw;
          }
          catch( ... )
          {
             destroy_object_instance( handle );
+
             throw;
          }
       }
@@ -3773,6 +3776,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // create instead (which means if any cloned fields were not provided by the create
          // command itself then the record may not be the same after a restore occurs).
          string::size_type pos = key.find( ' ' );
+
          if( pos != string::npos )
          {
             string clone_key( key.substr( pos + 1 ) );
@@ -3785,6 +3789,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool skip_create = false;
 
          string ltf_key( c_log_transformation_scope_any_perform_op );
+
          ltf_key += " " + module + " " + string( c_log_transformation_op_skip_operation ) + " " + mclass;
 
          string ltf_uid_dtm_key( ltf_key + " " + uid + " " + dtm );
@@ -3795,6 +3800,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
          {
             ltf_key = string( c_log_transformation_scope_create_update_destroy );
+
             ltf_key += " " + module + " " + mclass + " " + string( c_log_transformation_op_skip_operation ) + " " + key;
 
             if( socket_handler.get_transformations( ).count( ltf_key ) )
@@ -3804,6 +3810,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                parse_field_values( module, mclass, field_values, field_value_items, &socket_handler.get_transformations( ) );
 
                ltf_key = string( c_log_transformation_scope_create_update_only );
+
                ltf_key += " " + module + " " + mclass + " " + string( c_log_transformation_op_ignore_field );
 
                if( socket_handler.get_transformations( ).count( ltf_key ) )
@@ -3815,12 +3822,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 
                ltf_key = string( c_log_transformation_scope_create_update_only );
+
                ltf_key += " " + module + " " + mclass + " " + string( c_log_transformation_op_change_field_value );
 
                if( !socket_handler.get_transformations( ).empty( ) )
                   perform_field_value_transformations( socket_handler.get_transformations( ), ltf_key, field_value_items );
 
                ltf_key = string( c_log_transformation_scope_create_update_only );
+
                ltf_key += " " + module + " " + mclass
                 + " " + string( c_log_transformation_op_instance_change_field_value ) + " " + key;
 
@@ -3846,6 +3855,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_dtm( dtm );
                set_grp( grp );
                set_uid( uid );
+
                set_class( mclass );
                set_module( module );
                set_tz_name( tz_name );
@@ -3967,7 +3977,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
                }
 
-               if( instance_persistence_type_is_sql( handle ) )
+               if( instance_persistence_uses_log( handle ) )
                   transaction_log_command( next_command );
 
                op_instance_apply( handle, "", false, 0, &fields_set );
@@ -4295,14 +4305,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
                }
 
-               bool force_tx_logging = has_session_variable(
-                get_special_var_name( e_special_var_force_transaction_log ) );
-
-               // NOTE: Only logs the command if SQL persistence
-               // is applicable or if a special session variable
-               // to force logging has been set.
-               if( force_tx_logging
-                || instance_persistence_type_is_sql( handle ) )
+               if( instance_persistence_uses_log( handle ) )
                   transaction_log_command( next_command );
 
                op_instance_apply( handle, "", false, 0, &fields_set );
@@ -4459,7 +4462,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      }
                   }
 
-                  if( instance_persistence_type_is_sql( handle ) )
+                  if( instance_persistence_uses_log( handle ) )
                      transaction_log_command( next_command );
 
                   op_instance_apply( handle, "", false );
@@ -4650,7 +4653,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             bool using_verbose_logging = get_storage_using_verbose_logging( );
 
-            if( !instance_persistence_type_is_sql( handle ) )
+            if( !instance_persistence_uses_log( handle ) )
                log_transaction = false;
 
             bool has_any_set_flds = false;

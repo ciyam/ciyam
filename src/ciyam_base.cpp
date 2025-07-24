@@ -13035,11 +13035,11 @@ bool instance_has_changed( size_t handle, const string& context )
    return instance.has_changed( );
 }
 
-bool instance_persistence_type_is_sql( size_t handle )
+bool instance_persistence_uses_log( size_t handle )
 {
    class_base& instance( get_class_base_from_handle( handle, "" ) );
 
-   return ( instance.get_persistence_type( ) == 0 ); // i.e. SQL persistence
+   return ( instance.get_persistence_type( ) < 2 ); // i.e. SQL or ODS local persistence
 }
 
 bool instance_iterate( size_t handle, const string& context,

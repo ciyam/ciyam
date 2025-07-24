@@ -1109,7 +1109,7 @@ std::string CIYAM_BASE_DECL_SPEC instance_get_fields_and_values( size_t handle,
 
 bool CIYAM_BASE_DECL_SPEC instance_has_changed( size_t handle, const std::string& context );
 
-bool CIYAM_BASE_DECL_SPEC instance_persistence_type_is_sql( size_t handle );
+bool CIYAM_BASE_DECL_SPEC instance_persistence_uses_log( size_t handle );
 
 bool CIYAM_BASE_DECL_SPEC instance_iterate( size_t handle,
  const std::string& context, const std::string& key_info, const std::string& fields,

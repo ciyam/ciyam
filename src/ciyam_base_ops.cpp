@@ -2596,7 +2596,7 @@ void begin_instance_op( instance_op op, class_base& instance,
                instance_accessor.fetch( sql, false );
                found = fetch_instance_from_db( instance, sql );
             }
-            else if( persistence_type == 1 ) // i.e. ODS global persistence
+            else if( persistence_type == 2 ) // i.e. ODS global persistence
                found = has_instance_in_global_storage( instance, clone_key );
             else
                throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in begin_instance_op" );
@@ -2671,7 +2671,7 @@ void begin_instance_op( instance_op op, class_base& instance,
                instance_accessor.fetch( sql, true );
                found = fetch_instance_from_db( instance, sql, true );
             }
-            else if( persistence_type == 1 ) // i.e. ODS global persistence
+            else if( persistence_type == 2 ) // i.e. ODS global persistence
                found = has_instance_in_global_storage( instance, key_for_op );
             else
                throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in begin_instance_op" );
@@ -2717,7 +2717,7 @@ void begin_instance_op( instance_op op, class_base& instance,
                found = fetch_instance_from_db( instance, sql,
                 false, is_minimal_update && op == e_instance_op_update );
             }
-            else if( persistence_type == 1 ) // i.e. ODS global persistence
+            else if( persistence_type == 2 ) // i.e. ODS global persistence
             {
                found = fetch_instance_from_global_storage( instance, key_for_op );
                instance_accessor.set_original_identity( instance.get_current_identity( ) );
@@ -2773,7 +2773,7 @@ void begin_instance_op( instance_op op, class_base& instance,
 
             found = fetch_instance_from_db( instance, sql );
          }
-         else if( persistence_type == 1 ) // i.e. ODS global persistence
+         else if( persistence_type == 2 ) // i.e. ODS global persistence
          {
             found = fetch_instance_from_global_storage( instance, key_for_op );
 
@@ -3369,7 +3369,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                }
 #endif
             }
-            else if( persistence_type == 1 ) // i.e. ODS global persistence
+            else if( persistence_type == 2 ) // i.e. ODS global persistence
             {
                if( instance.get_variable( get_special_var_name( e_special_var_skip_persistance ) ).empty( )
                 && ( ( op == class_base::e_op_type_create ) || ( op == class_base::e_op_type_update ) || ( op == class_base::e_op_type_destroy ) ) )
@@ -3667,7 +3667,7 @@ void perform_instance_fetch( class_base& instance,
          found = fetch_instance_from_db( instance, sql,
           only_sys_fields, false, ( has_simple_keyinfo && !has_sess_tx_key_info ) );
       }
-      else if( persistence_type == 1 ) // i.e. ODS global persistence
+      else if( persistence_type == 2 ) // i.e. ODS global persistence
          found = fetch_instance_from_global_storage( instance, key_info );
       else
          found = fetch_instance_from_system_variable( instance, key_info );
@@ -4205,7 +4205,7 @@ bool perform_instance_iterate( class_base& instance,
             found = fetch_instance_from_db( instance,
              instance_accessor.select_fields( ), instance_accessor.select_columns( ), skip_after_fetch );
          }
-         else if( ( persistence_type == 1 ) || ( persistence_type == 3 ) ) // i.e. ODS global persistence or system variables
+         else if( ( persistence_type == 2 ) || ( persistence_type == 3 ) ) // i.e. ODS global persistence or system variables
          {
             size_t limit = row_limit > 0 ? row_limit : row_cache_limit;
 
@@ -4216,7 +4216,7 @@ bool perform_instance_iterate( class_base& instance,
             if( key_info == c_null_key )
                start_from = instance.get_key( );
 
-            if( persistence_type == 1 )
+            if( persistence_type == 2 ) // i.e. ODS global persistence
                fetch_keys_from_global_storage( instance,
                 start_from, inclusive, limit, global_keys, ( direction == e_iter_direction_backwards ) );
             else
@@ -4297,7 +4297,7 @@ bool perform_instance_iterate( class_base& instance,
                }
             }
          }
-         else if( ( persistence_type == 1 ) || ( persistence_type == 3 ) ) // i.e. ODS global persistence or system variable
+         else if( ( persistence_type == 2 ) || ( persistence_type == 3 ) ) // i.e. ODS global persistence or system variable
          {
             if( !global_keys.empty( ) )
             {
@@ -4321,7 +4321,7 @@ bool perform_instance_iterate( class_base& instance,
                {
                   if( i == 0 )
                   {
-                     if( persistence_type == 1 ) // i.e. ODS global persistence
+                     if( persistence_type == 2 ) // i.e. ODS global persistence
                         fetch_instance_from_global_storage(
                          instance, global_keys[ i ], field_names, 0, skip_after_fetch );
                      else
@@ -4332,7 +4332,7 @@ bool perform_instance_iterate( class_base& instance,
                   {
                      vector< string > columns;
 
-                     if( persistence_type == 1 ) // i.e. ODS global persistence
+                     if( persistence_type == 2 ) // i.e. ODS global persistence
                      {
                         if( !fetch_instance_from_global_storage( instance, global_keys[ i ], field_names, &columns ) )
                            break;
