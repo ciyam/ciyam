@@ -4,12 +4,11 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef CIYAM_SPECIAL_VARS_H
-#  define CIYAM_SPECIAL_VARS_H
+#ifndef CIYAM_VARIABLE_NAMES_H
+#  define CIYAM_VARIABLE_NAMES_H
 
 enum special_var
 {
-   e_special_var_bh,
    e_special_var_id,
    e_special_var_os,
    e_special_var_dtm,
@@ -224,7 +223,6 @@ enum special_var
    e_special_var_secondary_validation,
    e_special_var_blockchain_next_extra,
    e_special_var_blockchain_time_value,
-   e_special_var_force_transaction_log,
    e_special_var_keep_user_peers_alive,
    e_special_var_package_install_extra,
    e_special_var_peer_is_synchronising,

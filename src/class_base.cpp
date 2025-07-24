@@ -1768,8 +1768,6 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts,
    bool retval = false;
    sql_stmts.clear( );
 
-   string block_height( get_raw_session_variable( get_special_var_name( e_special_var_bh ) ) );
-
    switch( op )
    {
       case e_op_type_none:
@@ -1778,13 +1776,10 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts,
 
       case e_op_type_create:
       revision = 0;
+
       if( p_sql_undo_stmts )
-      {
-         if( block_height.empty( ) )
-            revision = is_init_uid( ) ? 0 : c_unconfirmed_revision;
-         else
-            revision = from_string< uint64_t >( block_height );
-      }
+         revision = is_init_uid( ) ? 0 : c_unconfirmed_revision;
+
       original_identity = construct_class_identity( *this );
       do_generate_sql( e_generate_sql_type_insert, sql_stmts, tx_key_info, p_sql_undo_stmts );
       /* drop through */
@@ -1793,12 +1788,7 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts,
       if( !p_sql_undo_stmts )
          ++revision;
       else if( sql_stmts.empty( ) )
-      {
-         if( block_height.empty( ) )
-            revision = is_init_uid( ) ? 0 : c_unconfirmed_revision;
-         else
-            revision = from_string< uint64_t >( block_height );
-      }
+         revision = is_init_uid( ) ? 0 : c_unconfirmed_revision;
 
       p_impl->has_changed_user_fields = false;
 
@@ -1824,8 +1814,6 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts,
 bool class_base::has_skipped_empty_update( )
 {
    if( p_impl->has_changed_user_fields )
-      return false;
-   else if( has_raw_session_variable( get_special_var_name( e_special_var_bh ) ) )
       return false;
    else
    {
@@ -2396,8 +2384,7 @@ string class_base::generate_sql_insert( const string& class_name, string* p_undo
    vector< string > sql_column_names;
    get_sql_column_names( sql_column_names, &done, &class_name );
 
-   if( sql_column_names.empty( )
-    && !has_raw_session_variable( get_special_var_name( e_special_var_bh ) ) )
+   if( sql_column_names.empty( ) )
       sql_stmt.erase( );
    else
    {
@@ -2460,8 +2447,7 @@ string class_base::generate_sql_update( const string& class_name, string* p_undo
    vector< string > sql_column_names;
    get_sql_column_names( sql_column_names, &done, &class_name );
 
-   if( sql_column_names.empty( )
-    && !has_raw_session_variable( get_special_var_name( e_special_var_bh ) ) )
+   if( sql_column_names.empty( ) )
    {
       sql_stmt.erase( );
 

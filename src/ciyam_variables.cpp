@@ -44,7 +44,6 @@ const size_t c_secret_truncate_length = 9;
 
 const char* const c_variable_expression = "variable_expression";
 
-const char* const c_special_variable_bh = "@bh";
 const char* const c_special_variable_id = "@id";
 const char* const c_special_variable_os = "@os";
 const char* const c_special_variable_dtm = "@dtm";
@@ -259,7 +258,6 @@ const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_rati
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_blockchain_next_extra = "@blockchain_next_extra";
 const char* const c_special_variable_blockchain_time_value = "@blockchain_time_value";
-const char* const c_special_variable_force_transaction_log = "@force_transaction_log";
 const char* const c_special_variable_keep_user_peers_alive = "@keep_user_peers_alive";
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
@@ -354,10 +352,9 @@ void init_special_variable_names( )
 
    g_secret_hash_prefix = string( c_special_variable_secret_hash ) + "_";
 
-   // NOTE: These must be aligned with the enum in "ciyam_common.h".
+   // NOTE: These must align with the enums in "ciyam_variable_names.h".
    if( g_special_variable_names.empty( ) )
    {
-      g_special_variable_names.push_back( c_special_variable_bh );
       g_special_variable_names.push_back( c_special_variable_id );
       g_special_variable_names.push_back( c_special_variable_os );
       g_special_variable_names.push_back( c_special_variable_dtm );
@@ -572,7 +569,6 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_secondary_validation );
       g_special_variable_names.push_back( c_special_variable_blockchain_next_extra );
       g_special_variable_names.push_back( c_special_variable_blockchain_time_value );
-      g_special_variable_names.push_back( c_special_variable_force_transaction_log );
       g_special_variable_names.push_back( c_special_variable_keep_user_peers_alive );
       g_special_variable_names.push_back( c_special_variable_package_install_extra );
       g_special_variable_names.push_back( c_special_variable_peer_is_synchronising );
