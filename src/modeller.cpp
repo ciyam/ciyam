@@ -1069,11 +1069,13 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                }
 
                string file_name( g_model.get_name( ) );
+
                file_name += '_';
                file_name += next_class_name;
                file_name += c_xrep_variables_ext;
 
                ofstream outf( file_name.c_str( ) );
+
                if( !outf )
                   throw runtime_error( "unable to open file '" + file_name + "' for output" );
 
@@ -1084,22 +1086,38 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                outf << "`{`$plural_name`=`'" << next_plural_name << "`'`}\n";
                outf << "`{`$class_version`=`'1`'`}\n";
 
-               string::size_type pos = next_class_extra.find( "global" );
+               string::size_type pos = next_class_extra.find( "local" );
+
                if( pos == 0 )
                {
                   outf << "`{`$persistence_type`=`'1`'`}\n";
 
                   pos = next_class_extra.find( ':' );
+
+                  if( pos != string::npos )
+                     outf << "`{`$persistence_extra`=`'" << next_class_extra.substr( pos + 1 ) << "`'`}\n";
+               }
+
+               pos = next_class_extra.find( "global" );
+
+               if( pos == 0 )
+               {
+                  outf << "`{`$persistence_type`=`'2`'`}\n";
+
+                  pos = next_class_extra.find( ':' );
+
                   if( pos != string::npos )
                      outf << "`{`$persistence_extra`=`'" << next_class_extra.substr( pos + 1 ) << "`'`}\n";
                }
 
                pos = next_class_extra.find( "sysvar" );
+
                if( pos == 0 )
                {
                   outf << "`{`$persistence_type`=`'3`'`}\n";
 
                   pos = next_class_extra.find( ':' );
+
                   if( pos != string::npos )
                      outf << "`{`$persistence_extra`=`'" << next_class_extra.substr( pos + 1 ) << "`'`}\n";
                }
@@ -1112,12 +1130,15 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                vector< pair< string, pair< string, string > > > base_field_info;
 
                vector< field_data > all_field_data_with_base;
+
                g_model.get_field_data( next_class_name, all_field_data_with_base, e_get_field_type_any, true );
 
                vector< field_data > all_field_data;
+
                g_model.get_field_data( next_class_name, all_field_data );
 
                map< string, string > all_field_ids_and_names;
+
                for( int j = 0; j < all_field_data.size( ); j++ )
                   all_field_ids_and_names.insert( make_pair( all_field_data[ j ].id, all_field_data[ j ].name ) );
 
@@ -1129,6 +1150,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                }
 
                vector< field_data > parent_field_data;
+
                g_model.get_field_data( next_class_name, parent_field_data, e_get_field_type_relationships );
 
                map< string, string > field_names_and_raw_types;
@@ -1158,6 +1180,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                g_model.get_all_base_related_classes( next_class_name, all_base_related_classes );
 
                map< string, string > user_defined_enum_types;
+
                for( vector< user_defined_enum_data >::size_type i = 0; i < all_ude_data.size( ); i++ )
                   user_defined_enum_types.insert( make_pair( all_ude_data[ i ].name, all_ude_data[ i ].type ) );
 

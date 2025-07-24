@@ -101,7 +101,7 @@ user_defined_enum_add -id=907 app_type bool 0=Blockchain,1=Traditional
 user_defined_enum_add -id=950 archive_standard_size numeric 100000000000=100\\_GB,300000000000=300\\_GB,500000000000=500\\_GB
 user_defined_enum_add -id=955 peerchain_status int 0=Halted,1=Waiting,2=Connected,3=Connecting,4=Disconnecting
 user_defined_enum_add -id=960 peerchain_peer_type int -2=Hub,-1=User,0=Hosted,1=Local_Only,2=Backup_Only,3=Shared_Only
-user_defined_enum_add -id=970 persistence_type int 0=SQL_DB,1=Global_ODS_DB,3=System_Variables
+user_defined_enum_add -id=970 persistence_type int 0=SQL_DB,1=ODS_Local_DB,2=ODS_Global_DB,3=System_Variables
 user_defined_type_add -id=1000 str5 string "max_size 5"
 user_defined_type_add -id=1005 str10 string "max_size 10"
 user_defined_type_add -id=1010 str30 string "max_size 30"

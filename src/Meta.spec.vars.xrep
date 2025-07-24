@@ -59,7 +59,7 @@
 `{`$enum_pdf_font_type`=`'0=Times_Roman 1=Helvetica 20=SimSun 21=SimHei`'`}
 `{`$enum_peerchain_peer_type`=`'-2=Hub -1=User 0=Hosted 1=Local_Only 2=Backup_Only 3=Shared_Only`'`}
 `{`$enum_peerchain_status`=`'0=Halted 1=Waiting 2=Connected 3=Connecting 4=Disconnecting`'`}
-`{`$enum_persistence_type`=`'0=SQL_DB 1=Global_ODS_DB 3=System_Variables`'`}
+`{`$enum_persistence_type`=`'0=SQL_DB 1=ODS_Local_DB 2=ODS_Global_DB 3=System_Variables`'`}
 `{`$enum_primitive`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool`'`}
 `{`$enum_procedure_arg_primitive`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool 99=Any_Primitive`'`}
 `{`$enum_procedure_arg_type`=`'0=in 1=out 99=Any_Type`'`}

@@ -224,7 +224,7 @@ class META_GLOBAL_ARCHIVE_DECL_SPEC Meta_Global_Archive : public class_base
    static const char* static_persistence_extra( );
 
    static int static_class_type( ) { return 0; }
-   static int static_persistence_type( ) { return 1; }
+   static int static_persistence_type( ) { return 2; }
 
    static bool static_has_derivations( );
 

@@ -202,7 +202,7 @@ class META_GLOBAL_REPOSITORY_ENTRY_DECL_SPEC Meta_Global_Repository_Entry : publ
    static const char* static_persistence_extra( );
 
    static int static_class_type( ) { return 0; }
-   static int static_persistence_type( ) { return 1; }
+   static int static_persistence_type( ) { return 2; }
 
    static bool static_has_derivations( );
 

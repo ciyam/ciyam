@@ -1657,7 +1657,11 @@
     </value>
     <value/>
      <data>1
-     <name>enum_persistence_type_global_ods_db
+     <name>enum_persistence_type_ods_local_db
+    </value>
+    <value/>
+     <data>2
+     <name>enum_persistence_type_ods_global_db
     </value>
     <value/>
      <data>3

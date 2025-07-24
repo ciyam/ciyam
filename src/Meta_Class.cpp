@@ -554,7 +554,8 @@ string get_enum_string_class_extra( int val )
 }
 
 const int c_enum_persistence_type_SQL_DB( 0 );
-const int c_enum_persistence_type_Global_ODS_DB( 1 );
+const int c_enum_persistence_type_ODS_Local_DB( 1 );
+const int c_enum_persistence_type_ODS_Global_DB( 2 );
 const int c_enum_persistence_type_System_Variables( 3 );
 
 string get_enum_string_persistence_type( int val )
@@ -566,7 +567,9 @@ string get_enum_string_persistence_type( int val )
    else if( to_string( val ) == to_string( "0" ) )
       string_name = "enum_persistence_type_SQL_DB";
    else if( to_string( val ) == to_string( "1" ) )
-      string_name = "enum_persistence_type_Global_ODS_DB";
+      string_name = "enum_persistence_type_ODS_Local_DB";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_persistence_type_ODS_Global_DB";
    else if( to_string( val ) == to_string( "3" ) )
       string_name = "enum_persistence_type_System_Variables";
    else
@@ -8698,6 +8701,7 @@ void Meta_Class::static_get_all_enum_pairs( vector< pair< string, string > >& pa
 
    pairs.push_back( make_pair( "enum_persistence_type_0", get_enum_string_persistence_type( 0 ) ) );
    pairs.push_back( make_pair( "enum_persistence_type_1", get_enum_string_persistence_type( 1 ) ) );
+   pairs.push_back( make_pair( "enum_persistence_type_2", get_enum_string_persistence_type( 2 ) ) );
    pairs.push_back( make_pair( "enum_persistence_type_3", get_enum_string_persistence_type( 3 ) ) );
 
    pairs.push_back( make_pair( "enum_class_type_0", get_enum_string_class_type( 0 ) ) );
@@ -8790,6 +8794,7 @@ void Meta_Class::static_class_init( const char* p_module_name )
 
    g_persistence_type_enum.insert( 0 );
    g_persistence_type_enum.insert( 1 );
+   g_persistence_type_enum.insert( 2 );
    g_persistence_type_enum.insert( 3 );
 
    g_class_type_enum.insert( 0 );

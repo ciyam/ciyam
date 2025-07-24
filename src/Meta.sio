@@ -39712,7 +39712,7 @@
     <id>970
     <name>persistence_type
     <type>int
-    <key_values>0=SQL_DB,1=Global_ODS_DB,3=System_Variables
+    <key_values>0=SQL_DB,1=ODS_Local_DB,2=ODS_Global_DB,3=System_Variables
    </user_defined_enum>
    <user_defined_enum/>
     <id>500
