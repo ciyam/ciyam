@@ -770,6 +770,7 @@ curl https://ntfy.***domain_name***/_matrix/push/v1/notify
 
 sudo vi /etc/matrix-synapse/homeserver.yaml
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
 push:
   enabled: true
   include_content: false
@@ -787,6 +788,139 @@ Creating new users and admin users for Matrix-Synapse
 sudo register_new_matrix_user -u ***user_name*** -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
 
 sudo register_new_matrix_user -u ***admin_name*** -a -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
+
+Account creation with tokens for Matrix-Synapse using Matrix Registration Bot
+-----------------------------------------------------------------------------
+
+sudo apt install pipx -y
+
+mkdir matrix-registration
+
+(if not worried about verifying the "bot user" then skip)
+
+******************************* BOT USER VERIFICATION *****************************
+pipx install matrix-commander
+
+mv .local/bin/matrix-commander matrix-registration
+***********************************************************************************
+
+pipx install matrix-registration-bot
+
+mv .local/bin/matrix-registration-bot matrix-registration
+
+cd matrix-registration
+
+head -c 32 /dev/random | sha256sum | cut -c -32
+***registration_password***
+
+sudo register_new_matrix_user -u registration-bot -a -c /etc/matrix-synapse/homeserver.yaml http://localhost:8008
+(use the random password just created above)
+
+******************************* BOT USER VERIFICATION *****************************
+
+https://app.element.io/#/welcome
+
+After logging in add a person (to create an initial room) and when prompted to "Set up recovery" click on Continue
+then the "Set up recovery" button (in black) then Continue again (remembering to keep a copy of the recovery key).
+
+Next verify the "registration-bot" user with Emoji's in the normal manner.
+
+Next copy the room identity (required for matrix-commander) by clicking on Room Info -> Settings -> Advanced.
+***room_identity***
+(remain logged in to the Web UI whilst proceeding with the following console commands)
+
+./matrix-commander --login password --homeserver https://***domain_name*** --room-default ***room_identity***
+(when prompted provide the ***registration_password*** and for the device name use "matrix-registration-bot")
+
+./matrix-commander --verify
+
+Back in the Web UI go to All Settings -> Sessions and find the Unverified Session ("matrix-registration-bot")
+click on it and then click on the Verify Session button for it (in black).
+
+(the console will display the emojis and then type in "Yes" after confirming the same emojis from the Web UI)
+
+cat credentials.json
+
+(copy the access token value that is shown in the cat output)
+***access_token***
+******************************* SKIPPING VERIFICATION *****************************
+
+(if either did not install or was unable to login using matrix-commander)
+
+curl -X POST --header 'Content-Type: application/json' -d '{ "identifier": { "type": "m.id.user", "user": "registration-bot" },
+ "password": ""***registration_password***", "type": "m.login.password"}' 'https://***domain_name***/_matrix/client/r0/login'
+
+(copy the access token value that is shown in the login output)
+***access_token***
+***********************************************************************************
+
+vi config.yml
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+bot:
+  server: "https://***domain_name***"
+  username: "registration-bot"
+#  password: ***registration_password***
+  access_token: "***access_token***"
+  prefix: ""
+api:
+  base_url: "https://***domain_name***"
+  token: "***access_token***"
+logging:
+  level: DEBUG/INFO/ERROR
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+(to test interactively)
+./matrix-registration-bot
+
+vi matrix-registration-bot.service
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+[Unit]
+Description=matrix-registration-bot
+
+[Service]
+Type=simple
+ExecStart=/home/admin/.local/share/pipx/venvs/matrix-registration-bot/bin/matrix-registration-bot
+WorkingDirectory=/home/admin/matrix-registration
+
+Restart=always
+RestartSec=30
+SyslogIdentifier=matrix-registration-bot
+
+[Install]
+WantedBy=multi-user.target
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo cp matrix-registration-bot.service /usr/lib/systemd/system
+
+sudo systemctl daemon-reload
+sudo systemctl start matrix-registration-bot
+sudo systemctl status matrix-registration-bot
+
+sudo systemctl enable matrix-registration-bot
+
+You should be able to now add "@registration-bot:***domain_name***" and type "help"
+in the chat in order to get instructions on how to use the bot.
+
+sudo vi /etc/matrix-synapse/homeserver.yaml
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+suppress_key_server_warning: true
+...
+enable_registration: true
+registration_requires_token: true
+...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo systemctl restart matrix-synapse
+sudo systemctl status matrix-synapse
+
+New users will now be able to create their own account names and passwords provided
+that they include a valid registration token.
+
+NOTE: Only the "registration-bot" user itself (from its list of Unverified Sessions)
+will work with "matrix-commander --verify" so if wanting further users to verify the
+bot will need to use the Web UI to login as "registration-bot" with the Recovery Key
+Restore being performed. After restoring can do an emoji verification between users.
 
 Install and configure email services with Postfix and Dovecot
 -------------------------------------------------------------
