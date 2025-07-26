@@ -461,11 +461,43 @@ sudo apt-get install python3-certbot
 sudo apt-get install python3-certbot-apache
 
 sudo certbot --noninteractive --register-unsafely-without-email --agree-tos --apache -d ***domain_name***,www.***domain_name***
-NOTE: Also append ",ntfy.***domain_name***" if wanting to use the "ntfy" service for self-hosted Element-X notifications.
+NOTE: Also append ",ntfy.***domain_name***" if wanting to use the "ntfy" service for self-hosted notifications.
 
 sudo systemctl daemon-reload
 sudo systemctl status certbot
 sudo systemctl list-timers --all
+
+NOTE: Create the following for the CIYAM service to also use certbot certificates.
+
+sudo vi /etc/letsencrypt/renewal-hooks/deploy/ciyam-certbot-deploy.sh
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#!/bin/bash
+
+set -e
+
+for domain in $RENEWED_DOMAINS; do
+ case $domain in
+ ***domain_name***)
+  daemon_cert_root=/home/admin/ciyam/src
+
+  umask 077
+
+  cat "$RENEWED_LINEAGE/privkey.pem" "$RENEWED_LINEAGE/fullchain.pem" > "$daemon_cert_root/ciyam.pem"
+
+  chown admin "$daemon_cert_root/ciyam.pem"
+  chmod 400 "$daemon_cert_root/ciyam.pem"
+
+  systemctl restart ciyam >/dev/null
+  ;;
+ esac
+done
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo chmod 700 /etc/letsencrypt/renewal-hooks/deploy/ciyam-certbot-deploy.sh
+
+NOTE: If wanting to test this deploy hook execute the following:
+
+sudo certbot renew --dry-run --run-deploy-hooks
 
 Installing and configuring Matrix-Synapse with PostgreSQL
 ---------------------------------------------------------
