@@ -1310,12 +1310,15 @@ void Meta_Workgroup::impl::for_store( bool is_create, bool is_internal )
       class_pointer< Meta_Auto_Code > cp_auto_code( e_create_instance );
 
       string key( get_obj( ).get_lock_class_id( ) );
+
       key += "X" + to_string( c_field_id_Id );
 
       cp_auto_code->set_instance( key );
 
       string next_value;
+
       cp_auto_code->Increment( next_value );
+
       if( next_value.empty( ) ) // FUTURE: The error message itself should be a module string.
          throw runtime_error( "Unable to automatically generate value for Id" );
 

@@ -429,6 +429,7 @@ void Meta_Auto_Code::impl::impl_Increment( string& Next_Value )
 
    // [(start for_auto_code)] 600295
    get_obj( ).op_update( );
+
    if( !get_obj( ).Exhausted( ) )
    {
       string mask( get_obj( ).Mask( ) );
@@ -436,6 +437,7 @@ void Meta_Auto_Code::impl::impl_Increment( string& Next_Value )
       if( is_null( get_obj( ).Next( ) ) )
       {
          string str;
+
          for( size_t i = 0; i < mask.size( ); i++ )
          {
             if( mask[ i ] == '?' )
@@ -454,11 +456,14 @@ void Meta_Auto_Code::impl::impl_Increment( string& Next_Value )
       if( mask.size( ) != get_obj( ).Next( ).size( ) )
       {
          get_obj( ).op_cancel( );
+
          throw runtime_error( "unexpected mask/next size mismatch" );
       }
 
       bool finished = false;
+
       string str( get_obj( ).Next( ) );
+
       for( size_t i = mask.size( ); i > 0; i-- )
       {
          if( mask[ i - 1 ] == '?' )
