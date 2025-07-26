@@ -1144,9 +1144,12 @@ bool fetch_instance_from_db( class_base& instance,
       TRACE_LOG( TRACE_SQLCLSET, "(from instance dataset)" );
 
       instance_accessor.set_key( sd.as_string( 0 ), true );
+
       instance_accessor.set_version( from_string< uint16_t >( sd.as_string( 1 ) ) );
       instance_accessor.set_revision( from_string< uint64_t >( sd.as_string( 2 ) ) );
+
       instance_accessor.set_security( from_string< uint64_t >( sd.as_string( 3 ) ) );
+
       instance_accessor.set_original_identity( sd.as_string( 4 ) );
 
       instance_accessor.set_original_revision( instance.get_revision( ) );
@@ -1185,6 +1188,34 @@ bool global_storage_persistence_is_file( string& root_child_folder )
    }
 
    return is_file_not_folder;
+}
+
+bool has_instance_in_local_storage( class_base& instance, const string& key )
+{
+   bool retval = false;
+
+   string class_id( instance.get_class_id( ) );
+
+   ods& ods_db( storage_ods_instance( ) );
+
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !ods_db.is_thread_bulk_read_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
+
+   ods_file_system ofs( ods_db );
+
+   ofs.set_root_folder( c_storage_folder_name_dot_dat );
+
+   if( ofs.has_folder( class_id ) )
+   {
+      ofs.set_folder( class_id );
+
+      if( ofs.has_file( key ) )
+         retval = true;
+   }
+
+   return retval;
 }
 
 bool has_instance_in_global_storage( class_base& instance, const string& key )
@@ -1346,9 +1377,12 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
    instance_accessor.clear( );
 
    instance_accessor.set_key( instance_accessor.row_cache( )[ 0 ][ 0 ], true );
+
    instance_accessor.set_version( from_string< uint16_t >( instance_accessor.row_cache( )[ 0 ][ 1 ] ) );
    instance_accessor.set_revision( from_string< uint64_t >( instance_accessor.row_cache( )[ 0 ][ 2 ] ) );
+
    instance_accessor.set_security( from_string< uint64_t >( instance_accessor.row_cache( )[ 0 ][ 3 ] ) );
+
    instance_accessor.set_original_identity( instance_accessor.row_cache( )[ 0 ][ 4 ] );
 
    instance_accessor.set_original_revision( instance.get_revision( ) );
@@ -1396,6 +1430,195 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
       instance_accessor.perform_after_fetch( );
 }
 
+bool fetch_instance_from_local_storage( class_base& instance, const string& key_info,
+ const vector< string >& field_names, vector< string >* p_columns = 0, bool skip_after_fetch = false )
+{
+   bool found = false;
+
+   field_info_container field_info;
+   instance.get_field_info( field_info );
+
+   class_base_accessor instance_accessor( instance );
+
+   ods& ods_db( storage_ods_instance( ) );
+
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !ods_db.is_thread_bulk_read_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
+
+   ods_file_system ofs( ods_db );
+
+   string source_file_name( "/" );
+
+   string key( key_info );
+
+   string prefix;
+
+   string::size_type pos = key_info.find( ' ' );
+
+   if( pos == string::npos )
+   {
+      source_file_name += c_storage_folder_name_dot_dat;
+
+      ofs.set_root_folder( c_storage_folder_name_dot_dat );
+   }
+   else
+   {
+      string field_id( key.substr( 0, pos ) );
+
+      key.erase( 0, pos + 1 );
+
+      source_file_name += c_storage_folder_name_dot_idx;
+
+      ofs.set_root_folder( c_storage_folder_name_dot_idx );
+
+      vector< pair< string, string > > all_index_pairs;
+
+      instance.get_all_index_pairs( all_index_pairs );
+
+      size_t num_index_pairs = all_index_pairs.size( );
+
+      string field_name( instance_accessor.get_field_name( field_id ) );
+
+      int index_num = -1;
+
+      for( size_t i = 0; i < num_index_pairs; i++ )
+      {
+         pair< string, string > next_pair = all_index_pairs[ i ];
+
+         if( next_pair.first == field_name )
+         {
+            index_num = i;
+            break;
+         }
+      }
+
+      if( index_num < 0 )
+         throw runtime_error( "unable to find an index pair for '" + field_id + "'" );
+
+      if( index_num < 10 )
+         prefix += "0";
+
+      prefix += to_string( index_num ) + '/';
+
+      // NOTE: For unique index fetching an instance can only
+      // be retrieved if it is not being security restricted.
+      prefix += string( c_sec_prefix_length, '0' ) + c_security_suffix;
+   }
+
+   string class_id( instance.get_class_id( ) );
+
+   if( ofs.has_folder( class_id ) )
+   {
+      ofs.set_folder( class_id );
+
+      source_file_name += '/' + class_id;
+
+      source_file_name += '/' + prefix + key;
+
+      if( ofs.has_file( source_file_name ) )
+      {
+         found = true;
+
+         stringstream sio_data;
+
+         ofs.get_file( source_file_name, &sio_data );
+
+         sio_reader reader( sio_data );
+
+         string data;
+
+         int num_fields = instance.get_num_fields( );
+
+         string version_info( reader.read_attribute( c_attribute_meta_ver_info ) );
+         string original_identity( reader.read_attribute( c_attribute_meta_typ_info ) );
+
+         string::size_type pos = version_info.find( '.' );
+
+         if( pos == string::npos )
+            throw runtime_error( "unexpected version_info '"
+             + version_info + "' in fetch_instance_from_local_storage" );
+
+         string version( version_info.substr( 0, pos ) );
+         string revision( version_info.substr( pos + 1 ) );
+
+         if( p_columns )
+         {
+            p_columns->push_back( key );
+
+            p_columns->push_back( version );
+            p_columns->push_back( revision );
+
+            p_columns->push_back( "0" );
+
+            p_columns->push_back( original_identity );
+         }
+         else
+         {
+            instance_accessor.set_key( key, true );
+
+            instance_accessor.set_version( from_string< int16_t >( version ) );
+            instance_accessor.set_revision( from_string< int64_t >( revision ) );
+
+            instance_accessor.set_security( 0 );
+
+            instance_accessor.set_original_identity( original_identity );
+            instance_accessor.set_original_revision( instance.get_revision( ) );
+         }
+
+         for( size_t i = 0; i < num_fields; i++ )
+         {
+            size_t field_num = instance.get_field_num( field_names[ i ] );
+
+            if( instance.is_field_transient( field_num ) )
+            {
+               if( p_columns )
+                  p_columns->push_back( instance.get_field_value( field_num ) );
+
+               continue;
+            }
+
+            string attribute_name( lower( field_names[ i ] ) );
+
+            data = reader.read_attribute( attribute_name );
+
+            if( p_columns )
+               p_columns->push_back( data );
+            else
+               instance.set_field_value( field_num, data );
+         }
+
+         if( !p_columns )
+         {
+            instance_accessor.after_fetch_from_db( );
+
+            if( !skip_after_fetch )
+               instance_accessor.perform_after_fetch( );
+         }
+      }
+   }
+
+   return found;
+}
+
+bool fetch_instance_from_local_storage( class_base& instance, const string& key_info )
+{
+   field_info_container field_info;
+
+   instance.get_field_info( field_info );
+
+   vector< string > field_names;
+
+   for( size_t i = 0; i < field_info.size( ); i++ )
+   {
+      if( !field_info[ i ].is_transient )
+         field_names.push_back( field_info[ i ].name );
+   }
+
+   return fetch_instance_from_local_storage( instance, key_info, field_names );
+}
+
 bool fetch_instance_from_global_storage( class_base& instance, const string& key,
  const vector< string >& field_names, vector< string >* p_columns = 0, bool skip_after_fetch = false )
 {
@@ -1438,6 +1661,7 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
 
          p_columns->push_back( "1" );
          p_columns->push_back( "0" );
+
          p_columns->push_back( "0" );
 
          p_columns->push_back( instance.get_module_id( ) + ':' + instance.get_class_id( ) );
@@ -1448,6 +1672,7 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
 
          instance_accessor.set_version( 1 );
          instance_accessor.set_revision( 0 );
+
          instance_accessor.set_security( 0 );
 
          instance_accessor.set_original_revision( instance.get_revision( ) );
@@ -1460,6 +1685,7 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
       if( !field_names.empty( ) )
       {
          stringstream sio_data;
+
          auto_ptr< sio_reader > ap_sio_reader;
 
          if( is_file_not_folder )
@@ -1510,6 +1736,7 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
 bool fetch_instance_from_global_storage( class_base& instance, const string& key )
 {
    field_info_container field_info;
+
    instance.get_field_info( field_info );
 
    vector< string > field_names;
@@ -1604,6 +1831,7 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
 
          p_columns->push_back( "1" );
          p_columns->push_back( "0" );
+
          p_columns->push_back( "0" );
 
          p_columns->push_back( instance.get_module_id( ) + ':' + instance.get_class_id( ) );
@@ -1614,6 +1842,7 @@ bool fetch_instance_from_system_variable( class_base& instance, const string& ke
 
          instance_accessor.set_version( 1 );
          instance_accessor.set_revision( 0 );
+
          instance_accessor.set_security( 0 );
 
          instance_accessor.set_original_revision( instance.get_revision( ) );
@@ -2498,6 +2727,7 @@ void begin_instance_op( instance_op op, class_base& instance,
    if( op == e_instance_op_create )
    {
       string::size_type pos = key_for_op.find( ' ' );
+
       if( pos != string::npos )
       {
          clone_key = key.substr( pos + 1 );
@@ -2522,6 +2752,13 @@ void begin_instance_op( instance_op op, class_base& instance,
    string lock_class_id( instance.get_lock_class_id( ) );
 
    int persistence_type = instance.get_persistence_type( );
+
+#ifdef COMPILE_PROTOTYPE_CODE
+   string app_name( storage_name( ) );
+
+   if( app_name == c_meta_storage_name )
+      persistence_type = 1;
+#endif
 
    bool is_minimal_update = ( op == e_instance_op_update ) && !instance_accessor.fetch_field_names( ).empty( );
 
@@ -2596,6 +2833,8 @@ void begin_instance_op( instance_op op, class_base& instance,
                instance_accessor.fetch( sql, false );
                found = fetch_instance_from_db( instance, sql );
             }
+            else if( persistence_type == 1 ) // i.e. ODS local persistence
+               found = has_instance_in_local_storage( instance, clone_key );
             else if( persistence_type == 2 ) // i.e. ODS global persistence
                found = has_instance_in_global_storage( instance, clone_key );
             else
@@ -2671,6 +2910,8 @@ void begin_instance_op( instance_op op, class_base& instance,
                instance_accessor.fetch( sql, true );
                found = fetch_instance_from_db( instance, sql, true );
             }
+            else if( persistence_type == 1 ) // i.e. ODS local persistence
+               found = has_instance_in_local_storage( instance, key_for_op );
             else if( persistence_type == 2 ) // i.e. ODS global persistence
                found = has_instance_in_global_storage( instance, key_for_op );
             else
@@ -2717,6 +2958,8 @@ void begin_instance_op( instance_op op, class_base& instance,
                found = fetch_instance_from_db( instance, sql,
                 false, is_minimal_update && op == e_instance_op_update );
             }
+            else if( persistence_type == 1 ) // i.e. ODS local persistence
+               found = fetch_instance_from_local_storage( instance, key_for_op );
             else if( persistence_type == 2 ) // i.e. ODS global persistence
             {
                found = fetch_instance_from_global_storage( instance, key_for_op );
@@ -2773,6 +3016,8 @@ void begin_instance_op( instance_op op, class_base& instance,
 
             found = fetch_instance_from_db( instance, sql );
          }
+         else if( persistence_type == 1 ) // i.e. ODS local persistence
+            found = fetch_instance_from_local_storage( instance, key_for_op );
          else if( persistence_type == 2 ) // i.e. ODS global persistence
          {
             found = fetch_instance_from_global_storage( instance, key_for_op );
@@ -2905,6 +3150,13 @@ void finish_instance_op( class_base& instance, bool apply_changes,
    class_base_accessor instance_accessor( instance );
 
    int persistence_type = instance.get_persistence_type( );
+
+#ifdef COMPILE_PROTOTYPE_CODE
+   string app_name( storage_name( ) );
+
+   if( app_name == c_meta_storage_name )
+      persistence_type = 1;
+#endif
 
    if( !apply_changes || ( op == class_base::e_op_type_review ) )
       perform_op_cancel( instance, op );
@@ -3160,7 +3412,9 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                if( supports_sql_undo && !skipped_empty_update )
                   append_undo_sql_stmts( sql_undo_stmts );
 
-#ifdef COMPILE_PROTOTYPE_CODE
+            }
+            else if( persistence_type == 1 ) // i.e. ODS local persistence
+            {
                // NOTE: Objects are stored in the form of a structured I/O
                // file using the path "/.dat/<class_id>/" with a file name
                // that is simply the instance's key value. A primary index
@@ -3171,203 +3425,199 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                // is not unique then the instance key is appended (like an
                // additional field). Security digits are followed by field
                // values which are separated by tab characters.
-               if( !skipped_empty_update
-                && ( app_name == c_meta_storage_name ) )
+               size_t links_lock = 0;
+
+               string class_id( instance.get_class_id( ) );
+
+               links_lock = obtain_storage_lock( c_update_lock_name,
+                class_id, c_links_instance_lock_key, c_num_links_lock_retries );
+
+               if( links_lock )
                {
-                  size_t links_lock = 0;
+                  storage_scoped_lock_holder lock_holder( links_lock );
 
-                  string class_id( instance.get_class_id( ) );
+                  ods& ods_db( storage_ods_instance( ) );
 
-                  links_lock = obtain_storage_lock( c_update_lock_name,
-                   class_id, c_links_instance_lock_key, c_num_links_lock_retries );
+                  auto_ptr< ods::bulk_write > ap_bulk_write;
 
-                  if( links_lock )
+                  if( !ods_db.is_thread_bulk_write_locked( ) )
+                     ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
+
+                  ods::transaction ods_tx( ods_db );
+
+                  ods_file_system ofs( ods_db );
+
+                  string source_file_name( "/" );
+
+                  ofs.set_root_folder( c_storage_folder_name_dot_dat );
+
+                  source_file_name += c_storage_folder_name_dot_dat;
+
+                  if( !ofs.has_folder( class_id ) )
+                     ofs.add_folder( class_id );
+
+                  ofs.set_folder( class_id );
+
+                  source_file_name += '/' + class_id;
+
+                  string instance_file_name( instance.get_key( ) );
+
+                  source_file_name += '/' + instance_file_name;
+
+                  // FUTURE: Rather than simply removing the
+                  // instance data file (which automatically
+                  // removes all index link files) an update
+                  // should instead remove (and then re-add)
+                  // only the index links that have changed.
+                  if( ( op == class_base::e_op_type_update )
+                   || ( op == class_base::e_op_type_destroy ) )
+                     ofs.remove_file( instance_file_name );
+
+                  if( ( op == class_base::e_op_type_create )
+                   || ( op == class_base::e_op_type_update ) )
                   {
-                     storage_scoped_lock_holder lock_holder( links_lock );
+                     stringstream sio_data;
 
-                     ods& ods_db( storage_ods_instance( ) );
+                     sio_writer writer( sio_data );
 
-                     auto_ptr< ods::bulk_write > ap_bulk_write;
+                     bool had_any_non_transients = false;
 
-                     if( !ods_db.is_thread_bulk_write_locked( ) )
-                        ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
+                     int num_fields = instance.get_num_fields( );
 
-                     ods::transaction ods_tx( ods_db );
+                     if( op == class_base::e_op_type_update )
+                        instance_accessor.set_revision( ++revision );
 
-                     ods_file_system ofs( ods_db );
+                     string version_info(
+                      to_string( version ) + '.' + to_string( revision ) );
 
-                     string source_file_name( "/" );
+                     writer.write_attribute( c_attribute_meta_ver_info, version_info );
 
-                     ofs.set_root_folder( c_storage_folder_name_dot_dat );
+                     if( op == class_base::e_op_type_create )
+                        writer.write_attribute( c_attribute_meta_typ_info, instance.get_current_identity( ) );
+                     else
+                        writer.write_attribute( c_attribute_meta_typ_info, instance.get_original_identity( ) );
 
-                     source_file_name += c_storage_folder_name_dot_dat;
+                     for( int i = 0; i < num_fields; i++ )
+                     {
+                        if( instance.is_field_transient( i ) )
+                           continue;
+
+                        had_any_non_transients = true;
+
+                        string data( instance.get_field_value( i ) );
+                        string attribute_name( lower( instance.get_field_name( i ) ) );
+
+                        writer.write_attribute( attribute_name, data );
+                     }
+
+                     if( had_any_non_transients )
+                     {
+                        writer.finish_sections( );
+
+                        ofs.store_file( instance_file_name, 0, &sio_data );
+                     }
+                     else
+                        ofs.store_file( instance_file_name, c_file_zero_length );
+
+                     vector< pair< string, string > > all_index_pairs;
+
+                     instance.get_all_index_pairs( all_index_pairs );
+
+                     size_t num_index_pairs = all_index_pairs.size( );
+
+                     ofs.set_root_folder( c_storage_folder_name_dot_idx );
 
                      if( !ofs.has_folder( class_id ) )
                         ofs.add_folder( class_id );
 
                      ofs.set_folder( class_id );
 
-                     source_file_name += '/' + class_id;
+                     string security_prefix(
+                      to_comparable_string( instance.get_security( ), false, c_sec_prefix_length ) );
 
-                     string instance_file_name( instance.get_key( ) );
+                     // NOTE: Create a primary key link (so instance iteration confined by
+                     // a security prefix is possible even if no explicit indexes exist).
+                     ofs.link_file( security_prefix + c_security_suffix + instance_file_name, source_file_name );
 
-                     source_file_name += '/' + instance_file_name;
+                     temporary_allow_specials allow_specials( ofs );
 
-                     // FUTURE: Rather than simply removing the
-                     // instance data file (which automatically
-                     // removes all index link files) an update
-                     // should instead remove (and then re-add)
-                     // only the index links that have changed.
-                     if( ( op == class_base::e_op_type_update )
-                      || ( op == class_base::e_op_type_destroy ) )
-                        ofs.remove_file( instance_file_name );
-
-                     if( ( op == class_base::e_op_type_create )
-                      || ( op == class_base::e_op_type_update ) )
+                     for( size_t i = 0; i < num_index_pairs; i++ )
                      {
-                        stringstream sio_data;
+                        pair< string, string > next_pair = all_index_pairs[ i ];
 
-                        sio_writer writer( sio_data );
+                        vector< string > names;
+                        vector< string > types;
 
-                        bool had_any_non_transients = false;
+                        split( next_pair.first, names );
+                        split( next_pair.second, types );
 
-                        int num_fields = instance.get_num_fields( );
+                        if( names.size( ) != types.size( ) )
+                           throw runtime_error( "unexpected index pairs names.size( ) != types.size( )" );
 
-                        // FUTURE: If not using SQL persistence
-                        // would need to actually increment the
-                        // revision in the instance object.
-                        if( op == class_base::e_op_type_update )
-                           revision = instance.get_revision( );
+                        string index_num_folder( to_string( i ) );
 
-                        string version_info(
-                         to_string( version ) + '.' + to_string( revision ) );
+                        if( i < 10 )
+                           index_num_folder = "0" + index_num_folder;
 
-                        writer.write_attribute( c_attribute_meta_ver_info, version_info );
-                        writer.write_attribute( c_attribute_meta_typ_info, instance.get_original_identity( ) );
+                        if( !ofs.has_folder( index_num_folder ) )
+                           ofs.add_folder( index_num_folder );
 
-                        for( int i = 0; i < num_fields; i++ )
+                        ofs.set_folder( index_num_folder );
+
+                        size_t num_index_fields = names.size( );
+
+                        bool is_unique = true;
+
+                        string link_file_name;
+
+                        for( size_t j = 0; j < num_index_fields; j++ )
                         {
-                           if( instance.is_field_transient( i ) )
-                              continue;
+                           string next_name( names[ j ] );
+                           string next_type( types[ j ] );
 
-                           had_any_non_transients = true;
-
-                           string data( instance.get_field_value( i ) );
-                           string attribute_name( lower( instance.get_field_name( i ) ) );
-
-                           writer.write_attribute( attribute_name, data );
-                        }
-
-                        if( had_any_non_transients )
-                        {
-                           writer.finish_sections( );
-
-                           ofs.store_file( instance_file_name, 0, &sio_data );
-                        }
-                        else
-                           ofs.store_file( instance_file_name, c_file_zero_length );
-
-                        vector< pair< string, string > > all_index_pairs;
-
-                        instance.get_all_index_pairs( all_index_pairs );
-
-                        size_t num_index_pairs = all_index_pairs.size( );
-
-                        ofs.set_root_folder( c_storage_folder_name_dot_idx );
-
-                        if( !ofs.has_folder( class_id ) )
-                           ofs.add_folder( class_id );
-
-                        ofs.set_folder( class_id );
-
-                        string security_prefix(
-                         to_comparable_string( instance.get_security( ), false, c_sec_prefix_length ) );
-
-                        // NOTE: Create a primary key link (so instance iteration confined by
-                        // a security prefix is possible even if no explicit indexes exist).
-                        ofs.link_file( security_prefix + c_security_suffix + instance_file_name, source_file_name );
-
-                        temporary_allow_specials allow_specials( ofs );
-
-                        for( size_t i = 0; i < num_index_pairs; i++ )
-                        {
-                           pair< string, string > next_pair = all_index_pairs[ i ];
-
-                           vector< string > names;
-                           vector< string > types;
-
-                           split( next_pair.first, names );
-                           split( next_pair.second, types );
-
-                           if( names.size( ) != types.size( ) )
-                              throw runtime_error( "unexpected index pairs names.size( ) != types.size( )" );
-
-                           string index_num_folder( to_string( i ) );
-
-                           if( i < 10 )
-                              index_num_folder = "0" + index_num_folder;
-
-                           if( !ofs.has_folder( index_num_folder ) )
-                              ofs.add_folder( index_num_folder );
-
-                           ofs.set_folder( index_num_folder );
-
-                           size_t num_index_fields = names.size( );
-
-                           bool is_unique = true;
-
-                           string link_file_name;
-
-                           for( size_t j = 0; j < num_index_fields; j++ )
+                           if( next_name == c_primary_key_name )
+                              is_unique = false;
+                           else
                            {
-                              string next_name( names[ j ] );
-                              string next_type( types[ j ] );
+                              if( j > 0 )
+                                 link_file_name += '\t';
 
-                              if( next_name == c_primary_key_name )
-                                 is_unique = false;
-                              else
-                              {
-                                 if( j > 0 )
-                                    link_file_name += '\t';
-
-                                 // FUTURE: Need to use comparable values for both integer and numeric types.
-                                 link_file_name += instance.get_field_value( instance.get_field_num( next_name ) );
-                              }
+                              // FUTURE: Need to use comparable values for both integer and numeric types.
+                              link_file_name += instance.get_field_value( instance.get_field_num( next_name ) );
                            }
-
-                           size_t link_file_name_len = link_file_name.size( );
-
-                           // NOTE: Although special characters are allowed because
-                           // ODS FS needs '/', ':' and '|' characters for internal
-                           // folder names they are replaced by non-printable ASCII
-                           // characters. Although not a problem for unique indexes
-                           // it will potentially be noticed due to index file name
-                           // ordering (although not likely to be a serious issue).
-                           for( size_t i = 0; i < link_file_name_len; i++ )
-                           {
-                              if( link_file_name [ i ] == '/' )
-                                 link_file_name [ i ] = '\x01';
-                              else if( link_file_name [ i ] == ':' )
-                                 link_file_name [ i ] = '\x02';
-                              else if( link_file_name [ i ] == '|' )
-                                 link_file_name [ i ] = '\x03';
-                           }
-
-                           if( is_unique )
-                              ofs.link_file( string( c_sec_prefix_length, '0' ) + c_security_suffix + link_file_name, source_file_name );
-
-                           link_file_name = security_prefix + c_security_suffix + link_file_name + '\t' + instance.get_key( );
-
-                           ofs.link_file( link_file_name, source_file_name );
-
-                           ofs.set_folder( ".." );
                         }
+
+                        size_t link_file_name_len = link_file_name.size( );
+
+                        // NOTE: Although special characters are allowed because
+                        // ODS FS needs '/', ':' and '|' characters for internal
+                        // folder names they are replaced by non-printable ASCII
+                        // characters. Although not a problem for unique indexes
+                        // it will potentially be noticed due to index file name
+                        // ordering (although not likely to be a serious issue).
+                        for( size_t i = 0; i < link_file_name_len; i++ )
+                        {
+                           if( link_file_name [ i ] == '/' )
+                              link_file_name [ i ] = '\x01';
+                           else if( link_file_name [ i ] == ':' )
+                              link_file_name [ i ] = '\x02';
+                           else if( link_file_name [ i ] == '|' )
+                              link_file_name [ i ] = '\x03';
+                        }
+
+                        link_file_name = security_prefix + c_security_suffix + link_file_name;
+
+                        if( !is_unique )
+                           link_file_name += ( '\t' + instance.get_key( ) );
+
+                        ofs.link_file( link_file_name, source_file_name );
+
+                        ofs.set_folder( ".." );
                      }
-
-                     ods_tx.commit( );
                   }
+
+                  ods_tx.commit( );
                }
-#endif
             }
             else if( persistence_type == 2 ) // i.e. ODS global persistence
             {
@@ -3629,6 +3879,13 @@ void perform_instance_fetch( class_base& instance,
 
    int persistence_type = instance.get_persistence_type( );
 
+#ifdef COMPILE_PROTOTYPE_CODE
+   string app_name( storage_name( ) );
+
+   if( app_name == c_meta_storage_name )
+      persistence_type = 1;
+#endif
+
    if( instance.get_is_in_op( ) && !instance_accessor.get_in_op_begin( ) )
       throw runtime_error( "cannot fetch "
        + instance.get_class_name( ) + " record whilst currently perfoming an instance operation" );
@@ -3667,6 +3924,8 @@ void perform_instance_fetch( class_base& instance,
          found = fetch_instance_from_db( instance, sql,
           only_sys_fields, false, ( has_simple_keyinfo && !has_sess_tx_key_info ) );
       }
+      else if( persistence_type == 1 ) // i.e. ODS local persistence
+         found = fetch_instance_from_local_storage( instance, key_info );
       else if( persistence_type == 2 ) // i.e. ODS global persistence
          found = fetch_instance_from_global_storage( instance, key_info );
       else
@@ -4297,7 +4556,7 @@ bool perform_instance_iterate( class_base& instance,
                }
             }
          }
-         else if( ( persistence_type == 2 ) || ( persistence_type == 3 ) ) // i.e. ODS global persistence or system variable
+         else if( ( persistence_type >= 1 ) && ( persistence_type <= 3 ) ) // i.e. ODS local/global persistence or system variables
          {
             if( !global_keys.empty( ) )
             {
@@ -4321,7 +4580,10 @@ bool perform_instance_iterate( class_base& instance,
                {
                   if( i == 0 )
                   {
-                     if( persistence_type == 2 ) // i.e. ODS global persistence
+                     if( persistence_type == 1 ) // i.e. ODS local persistence
+                        fetch_instance_from_local_storage(
+                         instance, global_keys[ i ], field_names, 0, skip_after_fetch );
+                     else if( persistence_type == 2 ) // i.e. ODS global persistence
                         fetch_instance_from_global_storage(
                          instance, global_keys[ i ], field_names, 0, skip_after_fetch );
                      else
@@ -4332,7 +4594,12 @@ bool perform_instance_iterate( class_base& instance,
                   {
                      vector< string > columns;
 
-                     if( persistence_type == 2 ) // i.e. ODS global persistence
+                     if( persistence_type == 1 ) // i.e. ODS local persistence
+                     {
+                        if( !fetch_instance_from_local_storage( instance, global_keys[ i ], field_names, &columns ) )
+                           break;
+                     }
+                     else if( persistence_type == 2 ) // i.e. ODS global persistence
                      {
                         if( !fetch_instance_from_global_storage( instance, global_keys[ i ], field_names, &columns ) )
                            break;
@@ -4344,6 +4611,7 @@ bool perform_instance_iterate( class_base& instance,
                      }
 
                      found_next = true;
+
                      rows.push_back( columns );
                   }
 
