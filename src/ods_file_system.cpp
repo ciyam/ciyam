@@ -631,7 +631,15 @@ void ods_file_system::set_folder( const string& new_folder, bool* p_rc )
 
 void ods_file_system::set_root_folder( const string& new_folder, bool* p_rc )
 {
-   set_folder( string( c_root_folder ) + new_folder, p_rc );
+   char ch = '\0';
+
+   if( !new_folder.empty( ) )
+      ch = new_folder[ 0 ];
+
+   if( ch == c_folder )
+      set_folder( new_folder, p_rc );
+   else
+      set_folder( string( c_root_folder ) + new_folder, p_rc );
 }
 
 string ods_file_system::determine_folder(
@@ -1355,7 +1363,17 @@ string ods_file_system::link_source( const string& name )
    string dest_name;
    string dest_folder;
 
-   string value( value_folder_and_file_name( name, &dest_folder, &dest_name ) );
+   // NOTE: As link names will be returned by
+   // "list_files" with a trailing '*' if the
+   // last character is that then will ignore
+   // it (but will not accept it in any other
+   // position).
+   string::size_type pos = name.rfind( '*' );
+
+   if( pos != ( name.length( ) - 1 ) )
+      pos = string::npos;
+
+   string value( value_folder_and_file_name( name.substr( 0, pos ), &dest_folder, &dest_name ) );
 
    btree_type::iterator tmp_iter;
    btree_type::item_type tmp_item;
