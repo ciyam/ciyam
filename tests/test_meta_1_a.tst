@@ -335,13 +335,13 @@ pf Meta Enum_Item "" Label,@order,@level,Enum,Enum.Name,Enum.@group,@owner
 [guests_primitive00005 =1.0 259 100:104100] numeric,guests_primitive00005,,guests_primitive,primitive,guests,
 [guests_primitive00006 =1.0 259 100:104100] int,guests_primitive00006,,guests_primitive,primitive,guests,
 [guests_primitive00007 =1.0 259 100:104100] bool,guests_primitive00007,,guests_primitive,primitive,guests,
-[primitive0000000001 =1.0 259 100:104100] string,primitive0000000001,,primitive,primitive,,
-[primitive0000000002 =1.0 259 100:104100] datetime,primitive0000000002,,primitive,primitive,,
-[primitive0000000003 =1.0 259 100:104100] date,primitive0000000003,,primitive,primitive,,
-[primitive0000000004 =1.0 259 100:104100] time,primitive0000000004,,primitive,primitive,,
-[primitive0000000005 =1.0 259 100:104100] numeric,primitive0000000005,,primitive,primitive,,
-[primitive0000000006 =1.0 259 100:104100] int,primitive0000000006,,primitive,primitive,,
-[primitive0000000007 =1.0 259 100:104100] bool,primitive0000000007,,primitive,primitive,,
+[primitive00001 =1.0 259 100:104100] string,primitive00001,,primitive,primitive,,
+[primitive00002 =1.0 259 100:104100] datetime,primitive00002,,primitive,primitive,,
+[primitive00003 =1.0 259 100:104100] date,primitive00003,,primitive,primitive,,
+[primitive00004 =1.0 259 100:104100] time,primitive00004,,primitive,primitive,,
+[primitive00005 =1.0 259 100:104100] numeric,primitive00005,,primitive,primitive,,
+[primitive00006 =1.0 259 100:104100] int,primitive00006,,primitive,primitive,,
+[primitive00007 =1.0 259 100:104100] bool,primitive00007,,primitive,primitive,,
 pc guest 20120102 100 105100 guest_model "105101=Sample,300500=guests,105102=0.1,105103=2012,105104=M001,105112=0,105118=0"
 guest_model
 pf 100 105100 guest_model "105101,105102,105103,105104,105105,105106,105107,105108,105109,105110,105111,105112,105113,105114,105118"
