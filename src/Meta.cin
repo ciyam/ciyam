@@ -1134,10 +1134,13 @@ index_add -id=400501 Model {Workgroup},Id unique
 index_add -id=400600 Class {Model},Name unique
 index_add -id=400605 Class {Model},Delay_Initial_Records,Name unique
 index_add -id=400610 Class {Model},Id unique
+index_add -id=400620 Class Source_{Class},Name unique
+index_add -id=400625 Class Source_{Class},Id unique
 index_add -id=400700 Field {Class},Name unique
 index_add -id=400710 Field {Class},Id unique
 index_add -id=400800 Index {Class},Order unique
 index_add -id=400900 Modifier {Class},Name unique
+index_add -id=400920 Modifier Source_{Modifier},Name
 index_add -id=401000 Procedure {Class},Name unique
 index_add -id=401010 Procedure {Class},Id unique
 index_add -id=401100 Procedure_Arg {Procedure},Order unique
@@ -2103,7 +2106,7 @@ specification_add -id=601420 {Enum_Item}_child_list0 list "@601420_* child:no_li
 specification_add -id=601500 {Model}_group_list list "* group:no_limit Model Name,Id,Version {Workgroup}"
 specification_add -id=601510 {Model}_view view "? standard Model\
  Name,Id;no_edit+non_new,Status;view_only,Version,Home_Title\
-,Year_Created;show,Type;new_edit+force,{Permission}:Name!@group:{Workgroup}+Name\
+,Year_Created;show,Type;new_edit+force,{Permission}:Name!@group:{Workgroup}\
 ,Add_Packages;new_only,Use_Package_Demo_Data,Allow_Anonymous_Access,Source_File;non_new,Commands_File;non_new,Actions"
 specification_add -id=601520 {Package}_child_list0 list "@601520_* child:no_limit Package Name {Model}"
 specification_add -id=601530 {Package}_view view "? standard:no_edit Package\
@@ -2122,10 +2125,10 @@ specification_add -id=601610 {Class}_view view "? standard Class {Model}:Name;no
 ,Source_{Class}:Name!@fkey1:{Model}+Name;new_edit+force+link\
 ,Name;forced,Plural;forced,Id;no_edit+non_new,Type;show,Extra,Persistence_Type;force,Persistence_Extra\
 ,Static_Instance_Key,Delay_Initial_Records,Create_View;new_only,Create_List;new_only\
-,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
-,Create_Restriction,Create_{Permission}:Name!@group:{Workgroup}+Name\
-,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}+Name\
-,Destroy_Restriction,Destroy_{Permission}:Name!@group:{Workgroup}+Name\
+,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}\
+,Create_Restriction,Create_{Permission}:Name!@group:{Workgroup}\
+,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}\
+,Destroy_Restriction,Destroy_{Permission}:Name!@group:{Workgroup}\
 ,Quick_Link_Field:Name!@key:{Class};non_new,Header_File,Source_File,Commands_File"
 specification_add -id=601620 {Class}_child_list0 list "@601620_* child:no_limit Class Name,Id {Model}"
 specification_add -id=601710 {Field}_view view "? standard Field {Class}:Name;no_edit+link\
@@ -2133,8 +2136,8 @@ specification_add -id=601710 {Field}_view view "? standard Field {Class}:Name;no
 ,Primitive;hidden+key1,Extra_Filter;hidden,Parent_Class:Name;no_edit+link,Extra,UOM;force,UOM_Name,UOM_Symbol\
 ,{Enum}:Name!@group:{Workgroup}+@key1:Primitive;link,{Enum}_Filter:Name!@group:{Workgroup};link\
 ,Encrypted;force,Use_In_Text_Search,Create_View_Field;new_only,Create_List_Field;new_only\
-,Access_Scope,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
-,Change_Scope,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}+Name"
+,Access_Scope,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}\
+,Change_Scope,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}"
 specification_add -id=601720 {Field}_child_list0 list "@601720_* child:no_limit Field\
  Name,Id,{Type}:Name;link,Mandatory,Def_Value {Class}"
 specification_add -id=601810 {Index}_view view "? standard Index {Class}:Name;no_edit+link+fkey1\
@@ -2150,7 +2153,7 @@ specification_add -id=602010 {Modifier_Affect}_view view "? standard Modifier_Af
 specification_add -id=602020 {Modifier_Affect}_child_list0 list "@602020_* child:sort_no_limit Modifier_Affect\
  Scope,Type,{Field}:Name -n=Scope {Modifier}"
 specification_add -id=602100 {Procedure}_view view "? standard Procedure\
- {Class}:Name;no_edit+link,Name,Id;no_edit+non_new,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name"
+ {Class}:Name;no_edit+link,Name,Id;no_edit+non_new,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}"
 specification_add -id=602120 {Procedure}_child_list0 list "@602120_* child:no_limit Procedure Name,Id {Class}"
 specification_add -id=602200 {Procedure_Arg}_view view "? standard Procedure_Arg\
  {Procedure}:Name;no_edit+link,Name,Type,Primitive"
@@ -2162,7 +2165,7 @@ specification_add -id=602300 {Relationship}_view view "? standard Relationship\
 ,Parent_Class:Name!@fkey1:{Model}+Name;fkey2+link+force+new_edit\
 ,Parent_Field_For_View:Name!@fkey2:{Class}+Name;new_only,Parent_Field_For_List:Name!@fkey2:{Class}+Name;new_only\
 ,Mandatory,Transient;force,Name;forced,Cascade_Op,Extra;forced,Access_Scope,Access_Restriction\
-,Access_{Permission}:Name!@group:{Workgroup}+Name,Change_Scope,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}+Name"
+,Access_{Permission}:Name!@group:{Workgroup},Change_Scope,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}"
 specification_add -id=602320 {Relationship}_child_list0 list "@602320_* child:sort_no_limit Relationship\
  Child_Class:Name,Parent_Class:Name,Name,Mandatory,Cascade_Op {Model}"
 specification_add -id=602321 {Relationship}_child_list1 list "@602321_Child_* child:no_new,sort_no_limit Relationship\
@@ -2217,7 +2220,7 @@ specification_add -id=602500 {Specification}_view view "? standard Specification
 ,Child_Relationship:Child_Name!@fkey2:Parent_Class+@sort;link\
 ,Use_Test_Parent_Child;force,Test_Field:Name!@fkey2:{Class}+Name;link,Test_Parent_Class:Name;hidden+fkey6\
 ,Test_Parent:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link+force+forced,Test_Child:Name!@fkey6:{Class}+Name;link\
-,Test_Value,{Permission}:Name!@group:{Workgroup}+Name,Other_Permission:Name!@group:{Workgroup}+Name,Other_Permission_2:Name!@group:{Workgroup}+Name\
+,Test_Value,{Permission}:Name!@group:{Workgroup},Other_Permission:Name!@group:{Workgroup}+Name,Other_Permission_2:Name!@group:{Workgroup}+Name\
 ,Options,Actions,All_Vars;no_edit,All_Strings;no_edit"
 specification_add -id=602530 {Specification}_child_list0 list "@602530_Child_* child:no_new,no_limit\
  Specification Name -act=+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues Parent_{Specification}"
@@ -2229,8 +2232,8 @@ specification_add -id=602550 {Specification}_child_list2 list "@602550_* child:n
  -act=+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues {Model} Parent_{Specification},@key,restricted Can_Access_Below_Model,restricted:1"
 specification_add -id=602610 {View}_view view "? standard View {Model}:Name;no_edit+link+fkey1\
 ,Name;no_edit,Id;no_edit+non_new,Type:Name;force,{Class}:Name!@fkey1:{Model}+Name;new_edit+link,Title\
-,@tab:Security_Options,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
-,Change_Restriction;force,Change_{Permission}:Name!@group:{Workgroup}+Name\
+,@tab:Security_Options,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}\
+,Change_Restriction;force,Change_{Permission}:Name!@group:{Workgroup}\
 ,@tab:Advanced_UI_Options,Allow_Copy_Action,Auto_Back_After_Save,Allow_Printable_Version;force\
 ,Print_Without_Highlight,PDF_View_Type;force,PDF_Font_Type,Use_First_Row_As_Header,File_Links_Always_As_Single\
 ,Ignore_Parent_Record,Ignore_Unactionable_Records"
@@ -2244,18 +2247,18 @@ specification_add -id=602710 {View_Field}_view view "? standard View_Field {View
 ,Sort_Manually,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction;link,New_Source;force\
 ,New_Value,Enum_Starts_At,Enum_Finishes_At,Trigger_Option,Trigger_Behaviour,Trigger_For_State,FK_Trigger_Option,FK_Trigger_Behaviour\
 ,Mandatory_Option,Child_List_Extra_Option,Date_Precision_Option,Font_Size,Alignment,Orientation,Use_Full_Width,Use_Full_Height\
-,Ignore_Manual_Links,Label_Source_Child,Show_Hide_Start_Point,Link_Restriction,Link_{Permission}:Name!@group:{Workgroup}+Name\
-,Access_Scope,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
-,Change_Scope,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}+Name,Tab_Name,Allow_Anonymous_Access"
+,Ignore_Manual_Links,Label_Source_Child,Show_Hide_Start_Point,Link_Restriction,Link_{Permission}:Name!@group:{Workgroup}\
+,Access_Scope,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}\
+,Change_Scope,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup},Tab_Name,Allow_Anonymous_Access"
 specification_add -id=602720 {View_Field}_child_list0 list "@602720_* child:no_limit\
  View_Field Name -act=+!120410+@rfields+@rvalues,+!^120420+@rfields+@rvalues {View}"
 specification_add -id=602800 {List}_view view "? standard List {Model}:Name;no_edit+link+fkey1\
 ,Name;no_edit,Id;no_edit+non_new,Type:Name;force,{Class}:Name!@fkey1:{Model}+Name;new_edit+link+fkey2\
 ,Parent_Field:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link+force,Parent_Class;hidden+fkey3,Title,Style;force\
 ,@tab:Security_Options\
-,Print_Restriction,Access_Restriction;force,Access_{Permission}:Name!@group:{Workgroup}+Name;force,Access_Parent_Modifier:Name!@fkey3:{Class}+Name;force\
-,Create_Restriction,Create_{Permission}:Name!@group:{Workgroup}+Name,Create_Parent_Modifier:Name!@fkey3:{Class}+Name;force\
-,Destroy_Restriction,Destroy_{Permission}:Name!@group:{Workgroup}+Name,Destroy_Parent_Modifier:Name!@fkey3:{Class}+Name;force,Allow_Anonymous_Access\
+,Print_Restriction,Access_Restriction;force,Access_{Permission}:Name!@group:{Workgroup};force,Access_Parent_Modifier:Name!@fkey3:{Class}+Name;force\
+,Create_Restriction,Create_{Permission}:Name!@group:{Workgroup},Create_Parent_Modifier:Name!@fkey3:{Class}+Name;force\
+,Destroy_Restriction,Destroy_{Permission}:Name!@group:{Workgroup},Destroy_Parent_Modifier:Name!@fkey3:{Class}+Name;force,Allow_Anonymous_Access\
 ,@tab:Basic_UI_Options\
 ,Allow_Quick_Link,Search_Option_Limit,Direction,Delete_Direction,Display_Row_Limit;force,Sort_Rows_In_UI;force\
 ,Limit_Scroll_And_New,Is_Variation,Display_Totals,Display_Sub_Totals,Allow_Text_Search;force,Text_Match_Highlight\
@@ -2280,7 +2283,7 @@ specification_add -id=602850 {List_Field}_view view "? standard List_Field {List
 ,Procedure_Args,Omit_Versions,Reverse_Order,Retain_Selected_Rows,Hide_If_Is_Changing,Non_Instance_Procedure;force\
 ,Font_Size,Alignment,Orientation,Notes_Truncation,Print_Type,Use_Type_Field:Name!@fkey1:{Class}+Is_Foreign_Key=0+Name;link\
 ,Label_Class,Label_Source,Label_Source_Child,Use_In_Text_Search_Title,Exact_Match_Only,Link_Type\
-,Link_Restriction;force+forced,Link_{Permission}:Name!@group:{Workgroup}+Name,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
+,Link_Restriction;force+forced,Link_{Permission}:Name!@group:{Workgroup},Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}\
 ,Parent_Class;hidden+fkey6,Access_Parent_Modifier:Name!@fkey6:{Class}+Name,Link_Empty_Restriction,Allow_Anonymous_Access"
 specification_add -id=602860 {List_Field}_child_list0 list "@602860_* child:no_limit\
  List_Field Name -act=+!124410+@rfields+@rvalues,+!^124420+@rfields+@rvalues {List}"

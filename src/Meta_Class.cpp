@@ -8716,6 +8716,8 @@ void Meta_Class::static_get_all_index_pairs( vector< pair< string, string > >& p
    pairs.push_back( make_pair( "Model,Delay_Initial_Records,Name", "string,bool,string" ) );
    pairs.push_back( make_pair( "Model,Id", "string,string" ) );
    pairs.push_back( make_pair( "Model,Name", "string,string" ) );
+   pairs.push_back( make_pair( "Source_Class,Id", "string,string" ) );
+   pairs.push_back( make_pair( "Source_Class,Name", "string,string" ) );
 }
 
 void Meta_Class::static_get_all_unique_indexes( vector< string >& unique_indexes )
@@ -8723,6 +8725,8 @@ void Meta_Class::static_get_all_unique_indexes( vector< string >& unique_indexes
    unique_indexes.push_back( "Model,Delay_Initial_Records,Name" );
    unique_indexes.push_back( "Model,Id" );
    unique_indexes.push_back( "Model,Name" );
+   unique_indexes.push_back( "Source_Class,Id" );
+   unique_indexes.push_back( "Source_Class,Name" );
 }
 
 void Meta_Class::static_get_sql_indexes( vector< string >& indexes )
@@ -8730,6 +8734,8 @@ void Meta_Class::static_get_sql_indexes( vector< string >& indexes )
    indexes.push_back( "C_Model,C_Delay_Initial_Records,C_Name" );
    indexes.push_back( "C_Model,C_Id" );
    indexes.push_back( "C_Model,C_Name" );
+   indexes.push_back( "C_Source_Class,C_Id" );
+   indexes.push_back( "C_Source_Class,C_Name" );
 }
 
 void Meta_Class::static_get_sql_unique_indexes( vector< string >& indexes )
@@ -8737,6 +8743,8 @@ void Meta_Class::static_get_sql_unique_indexes( vector< string >& indexes )
    indexes.push_back( "C_Model,C_Delay_Initial_Records,C_Name" );
    indexes.push_back( "C_Model,C_Id" );
    indexes.push_back( "C_Model,C_Name" );
+   indexes.push_back( "C_Source_Class,C_Id" );
+   indexes.push_back( "C_Source_Class,C_Name" );
 }
 
 void Meta_Class::static_insert_derivation( const string& module_and_class_id )

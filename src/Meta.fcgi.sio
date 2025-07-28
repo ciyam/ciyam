@@ -3085,7 +3085,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_class_create_restriction
@@ -3105,7 +3105,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_class_change_restriction
@@ -3125,7 +3125,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_class_destroy_restriction
@@ -3145,7 +3145,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_class_quick_link_field
@@ -3488,7 +3488,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_field_change_scope
@@ -3516,7 +3516,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
    </fields>
   </view>
@@ -4117,7 +4117,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_list_access_parent_modifier
@@ -4149,7 +4149,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_list_create_parent_modifier
@@ -4181,7 +4181,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_list_destroy_parent_modifier
@@ -4915,7 +4915,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_list_field_access_restriction
@@ -4935,7 +4935,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_list_field_parent_class
@@ -5053,7 +5053,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_model_add_packages
@@ -5731,7 +5731,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
    </fields>
   </view>
@@ -5929,7 +5929,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_relationship_change_scope
@@ -5957,7 +5957,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
    </fields>
   </view>
@@ -6494,7 +6494,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_specification_other_permission
@@ -8115,7 +8115,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_view_change_restriction
@@ -8135,7 +8135,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>tab_advanced_ui_options
@@ -8545,7 +8545,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_view_field_access_scope
@@ -8573,7 +8573,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_view_field_change_scope
@@ -8601,7 +8601,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_view_field_tab_name

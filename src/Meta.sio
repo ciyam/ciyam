@@ -1760,6 +1760,10 @@
         <id>400610
         <num>1
        </index>
+       <index/>
+        <id>400625
+        <num>1
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -1820,6 +1824,10 @@
        <index/>
         <id>400605
         <num>2
+       </index>
+       <index/>
+        <id>400620
+        <num>1
        </index>
       </indexes>
       <modifiers/>
@@ -2136,6 +2144,14 @@
       <class_id>106100
       <relationship_id>200620
       <indexes/>
+       <index/>
+        <id>400620
+        <num>0
+       </index>
+       <index/>
+        <id>400625
+        <num>0
+       </index>
       </indexes>
       <modifiers/>
        <modifier/>
@@ -2390,6 +2406,16 @@
      </field>
     </fields>
     <indexes/>
+     <index/>
+      <id>400625
+      <name>[Source_{Class}],[Id]
+      <unique>true
+     </index>
+     <index/>
+      <id>400620
+      <name>[Source_{Class}],[Name]
+      <unique>true
+     </index>
      <index/>
       <id>400605
       <name>[{Model}],[Delay_Initial_Records],[Name]
@@ -11639,6 +11665,10 @@
         <id>400900
         <num>1
        </index>
+       <index/>
+        <id>400920
+        <num>1
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -11701,6 +11731,10 @@
       <class_id>109100
       <relationship_id>200910
       <indexes/>
+       <index/>
+        <id>400920
+        <num>0
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -11775,6 +11809,11 @@
      </field>
     </fields>
     <indexes/>
+     <index/>
+      <id>400920
+      <name>[Source_{Modifier}],[Name]
+      <unique>false
+     </index>
      <index/>
       <id>400900
       <name>[{Class}],[Name]
@@ -31414,13 +31453,13 @@
      <field_info>106122;new_only
      <field_info>106123;new_only
      <field_info>106124;enum=655
-     <field_info>300633:116101!@group:301500+116101
+     <field_info>300633:116101!@group:301500
      <field_info>106126;enum=680
-     <field_info>300635:116101!@group:301500+116101
+     <field_info>300635:116101!@group:301500
      <field_info>106125;enum=657
-     <field_info>300634:116101!@group:301500+116101
+     <field_info>300634:116101!@group:301500
      <field_info>106127;enum=680
-     <field_info>300636:116101!@group:301500+116101
+     <field_info>300636:116101!@group:301500
      <field_info>300630:107101!@key:300700;non_new
      <field_info>106109
      <field_info>106108
@@ -32099,10 +32138,10 @@
      <field_info>107120;new_only
      <field_info>107123;enum=661
      <field_info>107121;enum=655
-     <field_info>300750:116101!@group:301500+116101
+     <field_info>300750:116101!@group:301500
      <field_info>107124;enum=662
      <field_info>107122;enum=657
-     <field_info>300760:116101!@group:301500+116101
+     <field_info>300760:116101!@group:301500
     </data>
    </specification>
    <specification/>
@@ -33511,9 +33550,9 @@
      <field_info>124128
      <field_info>124118;enum=697
      <field_info>124108;force+forced+enum=691
-     <field_info>302135:116101!@group:301500+116101
+     <field_info>302135:116101!@group:301500
      <field_info>124103;enum=690
-     <field_info>302130:116101!@group:301500+116101
+     <field_info>302130:116101!@group:301500
      <field_info>302115;hidden+fkey6
      <field_info>302199:109101!@fkey6:300900+109101
      <field_info>124134;enum=691
@@ -33854,13 +33893,13 @@
      <field_info>@tab:Security_Options
      <field_info>122123;enum=681
      <field_info>122103;force+enum=680
-     <field_info>301993:116101!@group:301500+116101;force
+     <field_info>301993:116101!@group:301500;force
      <field_info>301998:109101!@fkey3:300900+109101;force
      <field_info>122104;enum=680
-     <field_info>301994:116101!@group:301500+116101
+     <field_info>301994:116101!@group:301500
      <field_info>301998a:109101!@fkey3:300900+109101;force
      <field_info>122105;enum=680
-     <field_info>301995:116101!@group:301500+116101
+     <field_info>301995:116101!@group:301500
      <field_info>301998b:109101!@fkey3:300900+109101;force
      <field_info>122145
      <field_info>@tab:Basic_UI_Options
@@ -34069,7 +34108,7 @@
      <field_info>105117
      <field_info>105103;show
      <field_info>105118;new_edit+force+enum=850
-     <field_info>301600:116101!@group:301500+116101
+     <field_info>301600:116101!@group:301500
      <field_info>105112;new_only+enum=575
      <field_info>105115
      <field_info>105116
@@ -35192,7 +35231,7 @@
      <field_info>111101
      <field_info>111103;no_edit+non_new
      <field_info>111104;enum=655
-     <field_info>301120:116101!@group:301500+116101
+     <field_info>301120:116101!@group:301500
     </data>
    </specification>
    <specification/>
@@ -35414,10 +35453,10 @@
      <field_info>113104;forced+enum=585
      <field_info>113112;enum=661
      <field_info>113114;enum=655
-     <field_info>301330c:116101!@group:301500+116101
+     <field_info>301330c:116101!@group:301500
      <field_info>113113;enum=662
      <field_info>113115;enum=657
-     <field_info>301330d:116101!@group:301500+116101
+     <field_info>301330d:116101!@group:301500
     </data>
    </specification>
    <specification/>
@@ -38237,7 +38276,7 @@
      <field_info>301486:107101!@fkey2:300700+107108=1+107101;link+force+forced
      <field_info>301488:107101!@fkey6:300700+107101;link
      <field_info>115103
-     <field_info>301499:116101!@group:301500+116101
+     <field_info>301499:116101!@group:301500
      <field_info>301331:116101!@group:301500+116101
      <field_info>301332:116101!@group:301500+116101
      <field_info>115104
@@ -39120,13 +39159,13 @@
      <field_info>120128;enum=639
      <field_info>120116
      <field_info>120108;enum=663
-     <field_info>301915:116101!@group:301500+116101
+     <field_info>301915:116101!@group:301500
      <field_info>120119;enum=661
      <field_info>120105;enum=660
-     <field_info>301920:116101!@group:301500+116101
+     <field_info>301920:116101!@group:301500
      <field_info>120120;enum=662
      <field_info>120106;enum=660
-     <field_info>301930:116101!@group:301500+116101
+     <field_info>301930:116101!@group:301500
      <field_info>120103
      <field_info>120129
     </data>
@@ -39290,9 +39329,9 @@
      <field_info>118104
      <field_info>@tab:Security_Options
      <field_info>118102;enum=655
-     <field_info>301825:116101!@group:301500+116101
+     <field_info>301825:116101!@group:301500
      <field_info>118103;force+enum=657
-     <field_info>301830:116101!@group:301500+116101
+     <field_info>301830:116101!@group:301500
      <field_info>@tab:Advanced_UI_Options
      <field_info>118113
      <field_info>118115
