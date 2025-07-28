@@ -285,7 +285,14 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    std::string get_peer_identity( ) const;
 
+   std::string get_local_folder( ) const;
+   std::string get_local_origin( ) const;
+   std::string get_local_prefix( ) const;
+
    void set_is_for_peer( const std::string& identity );
+
+   void set_local_info( const std::string& folder,
+    const std::string& origin, const std::string& prefix );
 
    void copy_all_field_values( const class_base& src );
    void copy_original_field_values( const class_base& src );

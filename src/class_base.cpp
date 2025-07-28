@@ -1331,6 +1331,21 @@ string class_base::get_peer_identity( ) const
    return get_graph_root( )->get_variable( get_special_var_name( e_special_var_identity ) );
 }
 
+string class_base::get_local_folder( ) const
+{
+   return get_variable( get_special_var_name( e_special_var_local_folder ) );
+}
+
+string class_base::get_local_origin( ) const
+{
+   return get_variable( get_special_var_name( e_special_var_local_origin ) );
+}
+
+string class_base::get_local_prefix( ) const
+{
+   return get_variable( get_special_var_name( e_special_var_local_prefix ) );
+}
+
 void class_base::set_is_for_peer( const string& identity )
 {
    get_graph_root( )->set_variable( get_special_var_name( e_special_var_identity ), identity );
@@ -1338,6 +1353,13 @@ void class_base::set_is_for_peer( const string& identity )
    // NOTE: Set object variables to prevent operations that would require reading other peer records.
    set_variable( get_special_var_name( e_special_var_skip_parent_updates ), c_true_value );
    set_variable( get_special_var_name( e_special_var_skip_total_child_field_in_parent ), c_true_value );
+}
+
+void class_base::set_local_info( const string& folder, const string& origin, const string& prefix )
+{
+   set_variable( get_special_var_name( e_special_var_local_folder ), folder );
+   set_variable( get_special_var_name( e_special_var_local_origin ), origin );
+   set_variable( get_special_var_name( e_special_var_local_prefix ), prefix );
 }
 
 void class_base::copy_all_field_values( const class_base& src )
