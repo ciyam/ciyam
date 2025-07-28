@@ -59,6 +59,8 @@ void CIYAM_BASE_DECL_SPEC begin_instance_op( instance_op op,
 void CIYAM_BASE_DECL_SPEC finish_instance_op( class_base& instance, bool apply_changes,
  bool internal_operation = true, instance_op_rc* p_rc = 0, std::set< std::string >* p_fields_set = 0 );
 
+bool CIYAM_BASE_DECL_SPEC perform_instance_check( class_base& instance, const std::string& key );
+
 void CIYAM_BASE_DECL_SPEC perform_instance_fetch(
  class_base& instance, const std::string& key_info,
  instance_fetch_rc* p_rc = 0, bool only_sys_fields = false, bool do_not_use_cache = false );

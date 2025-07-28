@@ -12841,12 +12841,7 @@ void instance_check( class_base& instance, instance_check_rc* p_rc )
 
    class_base_accessor instance_accessor( instance );
 
-   string sql;
-
-   instance_accessor.fetch( sql, true, true );
-
-   bool found = fetch_instance_from_db( instance, sql, true,
-    false, !gtp_session->p_storage_handler->get_is_locked_for_admin( ) );
+   bool found = perform_instance_check( instance, instance_accessor.get_lazy_fetch_key( ) );
 
    if( !found )
    {
@@ -12868,8 +12863,10 @@ void instance_tx_check( class_base& instance )
 
    storage_handler& handler( *gtp_session->p_storage_handler );
 
+   int64_t transaction_level = ods::instance( )->get_transaction_level( );
+
    if( instance_accessor.get_lock_handle( ) && ( !handler.has_lock_info( instance_accessor.get_lock_handle( ) )
-    || handler.get_lock_info( instance_accessor.get_lock_handle( ) ).transaction_level != ods::instance( )->get_transaction_level( ) ) )
+    || ( handler.get_lock_info( instance_accessor.get_lock_handle( ) ).transaction_level != transaction_level ) ) )
       throw runtime_error( "attempt to perform apply for operation commenced outside the current transaction scope" );
 }
 
