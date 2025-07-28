@@ -1954,6 +1954,7 @@ void Meta_Type::impl::validate(
           + " must be <= " + get_module_string( c_field_display_name_Numeric_Digits ) + "." ) );
 
       bool has_invalid = false;
+
       if( !get_obj( ).Min_Value( ).empty( ) && !is_valid_str_val< numeric >( get_obj( ).Min_Value( ) ) )
       {
          has_invalid = true;
@@ -1989,6 +1990,7 @@ void Meta_Type::impl::validate(
       }
 
       bool has_invalid = false;
+
       if( !get_obj( ).Min_Value( ).empty( ) && !is_valid_str_val< int >( get_obj( ).Min_Value( ) ) )
       {
          has_invalid = true;
@@ -2017,6 +2019,7 @@ void Meta_Type::impl::validate(
    else if( get_obj( ).Primitive( ) == c_enum_primitive_date )
    {
       bool has_invalid = false;
+
       if( !get_obj( ).Min_Value( ).empty( ) && !is_valid_str_val< udate >( get_obj( ).Min_Value( ) ) )
       {
          has_invalid = true;
@@ -2045,6 +2048,7 @@ void Meta_Type::impl::validate(
    else if( get_obj( ).Primitive( ) == c_enum_primitive_time )
    {
       bool has_invalid = false;
+
       if( !get_obj( ).Min_Value( ).empty( ) && !is_valid_str_val< mtime >( get_obj( ).Min_Value( ) ) )
       {
          has_invalid = true;
@@ -2073,6 +2077,7 @@ void Meta_Type::impl::validate(
    else if( get_obj( ).Primitive( ) == c_enum_primitive_datetime )
    {
       bool has_invalid = false;
+
       if( !get_obj( ).Min_Value( ).empty( ) && !is_valid_str_val< date_time >( get_obj( ).Min_Value( ) ) )
       {
          has_invalid = true;
