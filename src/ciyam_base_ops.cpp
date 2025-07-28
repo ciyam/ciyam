@@ -175,9 +175,10 @@ size_t split_csv_values( const string& line,
    }
 
    values.push_back( next_value );
+
    last_value_incomplete = in_quotes;
 
-   return values.size( ) - last_value_incomplete;
+   return ( values.size( ) - last_value_incomplete );
 }
 
 void split_key_info( const string& key_info,
@@ -237,6 +238,7 @@ void split_key_info( const string& key_info,
       else
       {
          vector< string > all_values;
+
          split( values, all_values );
 
          if( all_values.size( ) < num_fixed )
@@ -478,11 +480,12 @@ string construct_paging_sql( const vector< pair< string, string > >& paging_info
    string page_inclusive( reverse ? " <= " : " >= " );
 
    string sql( "(" );
+
    for( size_t i = 0; i < paging_info.size( ); i++ )
    {
       if( i == 0 )
       {
-         if( !inclusive || i != paging_info.size( ) - 1 )
+         if( !inclusive || ( i != paging_info.size( ) - 1 ) )
             sql += "C_" + paging_info[ i ].first + page_exclusive + paging_info[ i ].second;
          else
             sql += "C_" + paging_info[ i ].first + page_inclusive + paging_info[ i ].second;
@@ -490,6 +493,7 @@ string construct_paging_sql( const vector< pair< string, string > >& paging_info
       else
       {
          sql += " OR (";
+
          for( size_t j = 0; j < i; j++ )
          {
             if( j > 0 )
@@ -498,7 +502,8 @@ string construct_paging_sql( const vector< pair< string, string > >& paging_info
          }
 
          sql += " AND ";
-         if( !inclusive || i != paging_info.size( ) - 1 )
+
+         if( !inclusive || ( i != paging_info.size( ) - 1 ) )
             sql += "C_" + paging_info[ i ].first + page_exclusive + paging_info[ i ].second;
          else
             sql += "C_" + paging_info[ i ].first + page_inclusive + paging_info[ i ].second;
@@ -506,6 +511,7 @@ string construct_paging_sql( const vector< pair< string, string > >& paging_info
          sql += ")";
       }
    }
+
    sql += ")";
 
    return sql;
@@ -1124,6 +1130,114 @@ string construct_sql_select(
    return sql_fields_and_table + sql;
 }
 
+string determine_local_iteration_info(
+ class_base& instance, const vector< string >& order_info,
+ const vector< pair< string, string > >& fixed_info, string& prefix )
+{
+   string class_id( instance.get_class_id( ) );
+   string module_name( instance.get_module_name( ) );
+
+   class_base_accessor instance_accessor( instance );
+
+   string folder, sub_folder, order_field_list;
+
+   for( size_t i = 0; i < order_info.size( ); i++ )
+   {
+      if( i > 0 )
+         order_field_list += ',';
+
+      if( order_info[ i ] == c_key_field_name )
+         order_field_list += c_key_field;
+      else
+         order_field_list += get_field_name_for_id_or_name( module_name, class_id, order_info[ i ] );
+   }
+
+   string order_without_key;
+
+   string::size_type pos = order_field_list.rfind( ',' );
+
+   if( pos != string::npos )
+      order_without_key = order_field_list.substr( 0, pos );
+
+   // NOTE: To simplify index comparisions will always append the
+   // key field (if it had not already been provided as the final
+   // field).
+   if( !order_field_list.empty( ) )
+   {
+      string::size_type pos = order_field_list.find( c_key_field );
+
+      if( pos == string::npos )
+         order_field_list += ',' + string( c_key_field );
+   }
+
+   if( order_info.empty( ) || ( order_field_list == c_key_field ) )
+      folder += c_storage_folder_name_dot_dat;
+   else
+   {
+      vector< pair< string, string > > all_index_pairs;
+
+      instance.get_all_index_pairs( all_index_pairs );
+
+      size_t num_index_pairs = all_index_pairs.size( );
+
+      int index_num = -1;
+      int index_partial = -1;
+
+      for( size_t i = 0; i < num_index_pairs; i++ )
+      {
+         pair< string, string > next_pair = all_index_pairs[ i ];
+
+         string next_field_list( next_pair.first );
+
+         string::size_type pos = next_field_list.find( c_key_field );
+
+         // NOTE: Always append the key field to simplify
+         // comparisions. This should not cause any issue
+         // as it does not make sense to have both unique
+         // and non-unique indexes on the same fields.
+         if( pos == string::npos )
+            next_field_list += ',' + string( c_key_field );
+
+         if( next_field_list == order_field_list )
+         {
+            index_num = i;
+            break;
+         }
+         else if( ( index_partial < 0 ) && ( next_field_list.find( order_without_key ) == 0 ) )
+            index_partial = i;
+      }
+
+      if( ( index_num < 0 ) && ( index_partial < 0 ) )
+         throw runtime_error( "unable to find an index pair for '"
+          + order_field_list + "' in class '" + instance.get_class_name( ) + "'" );
+
+      // NOTE: Will always prefer an exact index match but if
+      // none was found then will use the first partial match.
+      if( index_num < 0 )
+         index_num = index_partial;
+
+      folder += c_storage_folder_name_dot_idx;
+
+      if( index_num < 10 )
+         sub_folder += '0';
+
+      sub_folder += to_string( index_num );
+
+      if( !fixed_info.empty( ) )
+      {
+         for( size_t i = 0; i < fixed_info.size( ); i++ )
+            prefix += fixed_info[ i ].second + '\t';
+      }
+   }
+
+   folder += '/' + class_id;
+
+   if( !sub_folder.empty( ) )
+      folder += '/' + sub_folder;
+
+   return folder;
+}
+
 bool fetch_instance_from_db( class_base& instance,
  const map< int, int >& fields, const vector< int >& columns, bool skip_after_fetch )
 {
@@ -1243,8 +1357,67 @@ bool has_instance_in_global_storage( class_base& instance, const string& key )
       return sys_ods_fs.has_folder( key );
 }
 
+void fetch_keys_from_local_storage( class_base& instance,
+ bool inclusive, size_t limit, vector< string >& instance_keys, bool in_reverse_order )
+{
+   string folder( instance.get_local_folder( ) );
+   string origin( instance.get_local_origin( ) );
+   string prefix( instance.get_local_prefix( ) );
+
+   ods& ods_db( storage_ods_instance( ) );
+
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !ods_db.is_thread_bulk_read_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
+
+   ods_file_system ofs( ods_db );
+
+   string expr;
+
+   bool index_branch = false;
+
+   if( folder.find( c_storage_folder_name_dot_idx ) == 0 )
+   {
+      index_branch = true;
+
+      expr = string( c_sec_prefix_length, '0' ) + c_security_suffix;
+   }
+
+   expr += prefix + "*";
+
+   // NOTE: The folder for an index branch may not
+   // have been created so need to check if exists
+   // before attempting to set the root folder.
+   if( !index_branch || ofs.has_folder( folder ) )
+   {
+      ofs.set_root_folder( folder );
+
+      ofs.list_files( expr, instance_keys, true, origin, inclusive, limit, in_reverse_order );
+   }
+
+   if( index_branch )
+   {
+      for( size_t i = 0; i < instance_keys.size( ); i++ )
+      {
+         string next_link( instance_keys[ i ] );
+
+         // NOTE: The link source will include the full
+         // path so removes the path to leave the key.
+         string source( ofs.link_source( next_link ) );
+
+         string::size_type pos = source.rfind( '/' );
+
+         if( pos != string::npos )
+            source.erase( 0, pos + 1 );
+
+         instance_keys[ i ] = source;
+      }
+   }
+}
+
 void fetch_keys_from_global_storage( class_base& instance,
- const string& start_from, bool inclusive, size_t limit, vector< string >& global_keys, bool in_reverse_order )
+ const string& start_from, bool inclusive, size_t limit, vector< string >& instance_keys, bool in_reverse_order )
 {
    string persistence_extra( instance.get_persistence_extra( ) );
 
@@ -1268,19 +1441,19 @@ void fetch_keys_from_global_storage( class_base& instance,
    {
       if( ( is_file_not_folder && sys_ods_fs.has_file( start_from ) )
        || ( !is_file_not_folder && sys_ods_fs.has_folder( start_from ) ) )
-         global_keys.push_back( start_from );
+         instance_keys.push_back( start_from );
    }
    else
    {
       if( is_file_not_folder )
-         sys_ods_fs.list_files( global_keys, start_from, inclusive, limit, in_reverse_order );
+         sys_ods_fs.list_files( instance_keys, start_from, inclusive, limit, in_reverse_order );
       else
-         sys_ods_fs.list_folders( global_keys, start_from, inclusive, limit, in_reverse_order );
+         sys_ods_fs.list_folders( instance_keys, start_from, inclusive, limit, in_reverse_order );
    }
 }
 
 void fetch_keys_from_system_variables( class_base& instance,
- const string& start_from, bool inclusive, size_t limit, vector< string >& global_keys, bool in_reverse_order )
+ const string& start_from, bool inclusive, size_t limit, vector< string >& instance_keys, bool in_reverse_order )
 {
    string prefix, parent_key_value;
    string persistence_extra( instance.get_persistence_extra( ) );
@@ -1359,15 +1532,15 @@ void fetch_keys_from_system_variables( class_base& instance,
                continue;
          }
 
-         global_keys.push_back( key );
+         instance_keys.push_back( key );
 
-         if( limit && ( global_keys.size( ) >= limit ) )
+         if( limit && ( instance_keys.size( ) >= limit ) )
             break;
       }
    }
 }
 
-void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch )
+void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch, int persistence_type )
 {
    class_base_accessor instance_accessor( instance );
 
@@ -1387,7 +1560,7 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
 
    instance_accessor.set_original_revision( instance.get_revision( ) );
 
-   if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+   if( persistence_type == 0 ) // i.e. SQL persistence
    {
       TRACE_LOG( TRACE_SQLSTMTS, "(row cache for '" + instance.get_class_id( )
        + ")" + string( !skip_after_fetch ? "" : " *** skip_after_fetch ***" ) );
@@ -1502,8 +1675,8 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
 
       prefix += to_string( index_num ) + '/';
 
-      // NOTE: For unique index fetching an instance can only
-      // be retrieved if it is not being security restricted.
+      // NOTE: For unique index fetching an instance will only
+      // currently be retrieved if is not security restricted.
       prefix += string( c_sec_prefix_length, '0' ) + c_security_suffix;
    }
 
@@ -1528,8 +1701,6 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
          sio_reader reader( sio_data );
 
          string data;
-
-         int num_fields = instance.get_num_fields( );
 
          string version_info( reader.read_attribute( c_attribute_meta_ver_info ) );
          string original_identity( reader.read_attribute( c_attribute_meta_typ_info ) );
@@ -1567,6 +1738,8 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
             instance_accessor.set_original_revision( instance.get_revision( ) );
          }
 
+         int num_fields = field_names.size( );
+
          for( size_t i = 0; i < num_fields; i++ )
          {
             size_t field_num = instance.get_field_num( field_names[ i ] );
@@ -1581,7 +1754,7 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
 
             string attribute_name( lower( field_names[ i ] ) );
 
-            data = reader.read_attribute( attribute_name );
+            data = unescaped( reader.read_attribute( attribute_name ), "trn\t\r\n" );
 
             if( p_columns )
                p_columns->push_back( data );
@@ -2106,6 +2279,7 @@ string exec_bulk_ops( const string& module,
          string log_lines;
 
          vector< string > key_fields;
+
          set< string > sorted_key_fields;
 
          vector< string > fixed_fields;
@@ -2141,8 +2315,11 @@ string exec_bulk_ops( const string& module,
          size_t num_created = 0;
          size_t num_skipped = 0;
          size_t num_updated = 0;
+
          size_t num_destroyed = 0;
+
          size_t key_field_num = 0;
+
          size_t transaction_id = 0;
 
          string last_suffixed_key;
@@ -2231,9 +2408,11 @@ string exec_bulk_ops( const string& module,
             bool destroy_record = destroy_records;
 
             size_t num_values = 0;
+
             vector< string > values;
 
             size_t continuation_offset = 0;
+
             bool last_value_incomplete = false;
 
             while( true )
@@ -2244,19 +2423,22 @@ string exec_bulk_ops( const string& module,
                   break;
 
                next = values.back( );
+
                values.pop_back( );
 
                string continuation;
+
                if( !getline( inpf, continuation ) )
                   throw runtime_error( "unexpected incomplete record found at line #" + to_string( line ) );
 
-               // NOTE: In case the string file had been treated as binary during an FTP transfer remove trailing CR.
-               if( continuation.size( ) && continuation[ continuation.size( ) - 1 ] == '\r' )
+               // NOTE: In case the string file has ended up with CRLFs remove the trailing CR.
+               if( continuation.size( ) && ( continuation[ continuation.size( ) - 1 ] == '\r' ) )
                   continuation.erase( continuation.size( ) - 1 );
 
                continuation_offset = next.size( ) + 1;
 
                ++line;
+
                next += '\n' + continuation;
             }
 
@@ -2567,16 +2749,19 @@ string exec_bulk_ops( const string& module,
             if( found_instance && !destroy_record && !instance_has_changed( handle, "" ) )
             {
                skipped_instance = true;
+
                op_instance_cancel( handle, "", false );
             }
             else
             {
                op_apply_rc rc;
+
                op_instance_apply( handle, "", false, &rc );
 
                if( rc != e_op_apply_rc_okay )
                {
                   class_base& instance( get_class_base_from_handle( handle, "" ) );
+
                   string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
 
                   op_instance_cancel( handle, "", false );
@@ -2596,11 +2781,13 @@ string exec_bulk_ops( const string& module,
                      throw runtime_error( "unexpected op_apply rc #" + to_string( rc ) );
 
                   ++errors;
+
                   continue;
                }
 
                if( !log_lines.empty( ) )
                   log_lines += "\n";
+
                log_lines += next_log_line;
             }
 
@@ -2616,9 +2803,11 @@ string exec_bulk_ops( const string& module,
                   ts = time( 0 );
 
                   transaction_log_command( log_lines );
+
                   transaction_commit( );
 
                   in_trans = false;
+
                   log_lines.clear( );
 
                   // FUTURE: This message should be handled as a server string message.
@@ -2645,6 +2834,7 @@ string exec_bulk_ops( const string& module,
          if( in_trans )
          {
             transaction_log_command( log_lines );
+
             transaction_commit( );
          }
 
@@ -2834,11 +3024,11 @@ void begin_instance_op( instance_op op, class_base& instance,
                found = fetch_instance_from_db( instance, sql );
             }
             else if( persistence_type == 1 ) // i.e. ODS local persistence
-               found = has_instance_in_local_storage( instance, clone_key );
+               found = fetch_instance_from_local_storage( instance, clone_key );
             else if( persistence_type == 2 ) // i.e. ODS global persistence
-               found = has_instance_in_global_storage( instance, clone_key );
+               found = fetch_instance_from_global_storage( instance, clone_key );
             else
-               throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " in begin_instance_op" );
+               throw runtime_error( "unexpected persistence type #" + to_string( persistence_type ) + " for cloning in begin_instance_op" );
 
             xlock_holder.release( );
 
@@ -2900,7 +3090,7 @@ void begin_instance_op( instance_op op, class_base& instance,
       {
          string sql;
 
-         // NOTE: Skip this check during a restore as an optimsation to reduce SQL (iff requested).
+         // NOTE: Skip this check during a restore as an optimsation to reduce DB ops.
          if( !storage_locked_for_admin( ) || !session_skip_fk_fetches( ) )
          {
             bool found = false;
@@ -2956,7 +3146,7 @@ void begin_instance_op( instance_op op, class_base& instance,
                instance_accessor.fetch( sql, false, false );
 
                found = fetch_instance_from_db( instance, sql,
-                false, is_minimal_update && op == e_instance_op_update );
+                false, ( is_minimal_update && ( op == e_instance_op_update ) ) );
             }
             else if( persistence_type == 1 ) // i.e. ODS local persistence
                found = fetch_instance_from_local_storage( instance, key_for_op );
@@ -3507,7 +3697,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                         string data( instance.get_field_value( i ) );
                         string attribute_name( lower( instance.get_field_name( i ) ) );
 
-                        writer.write_attribute( attribute_name, data );
+                        writer.write_attribute( attribute_name, escaped( data, 0, '\\', "trn\t\r\n" ) );
                      }
 
                      if( had_any_non_transients )
@@ -3860,6 +4050,41 @@ void finish_instance_op( class_base& instance, bool apply_changes,
     + ", apply_changes = " + to_string( apply_changes ) + ", key = " + instance.get_key( ) );
 }
 
+bool perform_instance_check( class_base& instance, const string& key )
+{
+   bool found = false;
+
+   check_storage( );
+
+   class_base_accessor instance_accessor( instance );
+
+   int persistence_type = instance.get_persistence_type( );
+
+#ifdef COMPILE_PROTOTYPE_CODE
+   string app_name( storage_name( ) );
+
+   if( app_name == c_meta_storage_name )
+      persistence_type = 1;
+#endif
+
+   if( persistence_type == 0 ) // i.e. SQL persistence
+   {
+      string sql;
+
+      instance_accessor.fetch( sql, true, true );
+
+      found = fetch_instance_from_db( instance, sql, true );
+   }
+   else if( persistence_type == 1 ) // i.e. ODS local persistence
+      found = has_instance_in_local_storage( instance, key );
+   else if( persistence_type == 2 ) // i.e. ODS global persistence
+      found = has_instance_in_local_storage( instance, key );
+   else
+      found = fetch_instance_from_system_variable( instance, key );
+
+   return found;
+}
+
 void perform_instance_fetch( class_base& instance,
  const string& key_info, instance_fetch_rc* p_rc, bool only_sys_fields, bool do_not_use_cache )
 {
@@ -3891,6 +4116,7 @@ void perform_instance_fetch( class_base& instance,
        + instance.get_class_name( ) + " record whilst currently perfoming an instance operation" );
 
    bool found_in_cache = false;
+
    bool has_simple_keyinfo = ( key_info.find( ' ' ) == string::npos );
 
    bool has_sess_tx_key_info = false;
@@ -3925,9 +4151,19 @@ void perform_instance_fetch( class_base& instance,
           only_sys_fields, false, ( has_simple_keyinfo && !has_sess_tx_key_info ) );
       }
       else if( persistence_type == 1 ) // i.e. ODS local persistence
-         found = fetch_instance_from_local_storage( instance, key_info );
+      {
+         if( only_sys_fields )
+            found = has_instance_in_local_storage( instance, key_info );
+         else
+            found = fetch_instance_from_local_storage( instance, key_info );
+      }
       else if( persistence_type == 2 ) // i.e. ODS global persistence
-         found = fetch_instance_from_global_storage( instance, key_info );
+      {
+         if( only_sys_fields )
+            found = has_instance_in_global_storage( instance, key_info );
+         else
+            found = fetch_instance_from_global_storage( instance, key_info );
+      }
       else
          found = fetch_instance_from_system_variable( instance, key_info );
    }
@@ -3965,8 +4201,8 @@ bool perform_instance_iterate( class_base& instance,
     + "', key_info = '" + key_info + "', fields = '" + fields + "', direction = "
     + to_string( direction ) + ", text = '" + text + "', query = '" + query + "'" );
 
-   oid id;
    string sql, key;
+
    size_t num_fields = 0;
 
    string class_id( instance.get_class_id( ) );
@@ -3975,29 +4211,39 @@ bool perform_instance_iterate( class_base& instance,
    class_base_accessor instance_accessor( instance );
 
    // NOTE: If row_limit < 0 then iteration is being continued.
-   if( row_limit >= 0 && instance.get_is_iterating( ) )
+   if( ( row_limit >= 0 ) && instance.get_is_iterating( ) )
    {
       string class_name( instance.get_class_name( ) );
+
       class_base* p_parent = instance.get_graph_parent( );
 
       while( p_parent )
       {
          class_name += string( " <- " ) + p_parent->get_class_name( );
+
          p_parent = p_parent->get_graph_parent( );
       }
 
       throw runtime_error( "iterate called whilst already iterating (class: " + class_name + ")" );
    }
 
-   // NOTE: Because filtering can exclude records from the DB fetch the limit must be
-   // omitted if any filters have been supplied.
+   // NOTE: Because filtering can exclude records from the DB fetch
+   // the limit has to be zeroed if any filters have been supplied.
    if( p_filters )
    {
       row_limit = 0;
+
       instance_accessor.filters( ) = *p_filters;
    }
 
    int persistence_type = instance.get_persistence_type( );
+
+#ifdef COMPILE_PROTOTYPE_CODE
+   string app_name( storage_name( ) );
+
+   if( app_name == c_meta_storage_name )
+      persistence_type = 1;
+#endif
 
    if( instance.get_is_in_op( ) && !instance_accessor.get_in_op_begin( ) )
       throw runtime_error( "cannot begin iteration whilst currently perfoming an instance operation" );
@@ -4008,8 +4254,9 @@ bool perform_instance_iterate( class_base& instance,
          vector< string > field_info;
          vector< string > order_info;
 
-         vector< pair< string, string > > query_info;
          vector< pair< string, string > > fixed_info;
+         vector< pair< string, string > > query_info;
+
          vector< pair< string, string > > paging_info;
 
          string sec_marker;
@@ -4034,7 +4281,7 @@ bool perform_instance_iterate( class_base& instance,
             sec.erase( );
          else
          {
-            if( instance.get_class_type( ) != 1 ) // i.e. user
+            if( instance.get_class_type( ) != 1 ) // i.e. not user
             {
                bool found_uid_data = false;
 
@@ -4058,6 +4305,7 @@ bool perform_instance_iterate( class_base& instance,
                sec_marker = uuid( ).as_string( );
 
                vector< string > gid_vals;
+
                split( gids, gid_vals, '|' );
 
                for( size_t i = 0; i < gid_vals.size( ); i++ )
@@ -4101,6 +4349,7 @@ bool perform_instance_iterate( class_base& instance,
             set< string > fetch_field_names;
 
             vector< string > tmp_field_info;
+
             split( fields, tmp_field_info );
 
             for( size_t i = 0; i < tmp_field_info.size( ); i++ )
@@ -4156,8 +4405,8 @@ bool perform_instance_iterate( class_base& instance,
             {
                instance.get_required_field_names( required_fields, false, &field_dependents );
 
-               if( required_fields.size( ) == required_fields_size
-                && field_dependents_size == field_dependents.size( ) )
+               if( ( required_fields.size( ) == required_fields_size )
+                && ( field_dependents_size == field_dependents.size( ) ) )
                   break;
 
                if( ++iterations > c_max_required_field_iterations )
@@ -4172,6 +4421,7 @@ bool perform_instance_iterate( class_base& instance,
                if( !fetch_field_names.count( *i ) )
                {
                   field_info.push_back( *i );
+
                   instance_accessor.fetch_field_names( ).insert( *i );
                }
             }
@@ -4194,6 +4444,7 @@ bool perform_instance_iterate( class_base& instance,
             else
             {
                vector< string > replacements;
+
                instance.get_transient_replacement_field_names( fk_field, replacements );
 
                for( size_t i = 0; i < replacements.size( ); i++ )
@@ -4270,15 +4521,17 @@ bool perform_instance_iterate( class_base& instance,
                if( ( pos != string::npos ) && ( pos != extra_key_info.size( ) - 1 ) )
                {
                   split( extra_key_info.substr( pos + 1 ), extra_key_values );
+
                   extra_key_info.erase( pos + 1 );
                }
             }
 
             // NOTE: If we have one more extra key value then assume it is that of the primary key.
-            if( extra_key_values.size( ) == all_keys.size( ) + 1 )
+            if( extra_key_values.size( ) == ( all_keys.size( ) + 1 ) )
                all_keys.push_back( get_special_var_name( e_special_var_key ) );
 
             bool first_extra = true;
+
             vector< string > final_keys;
 
             for( size_t i = 0; i < all_keys.size( ); i++ )
@@ -4316,6 +4569,7 @@ bool perform_instance_iterate( class_base& instance,
                         // row limit therefore must be cleared as it is not known which records may later be
                         // filtered.
                         row_limit = 0;
+
                         instance_accessor.transient_filter_field_values( ).insert( make_pair( next, next_value ) );
                      }
                   }
@@ -4329,6 +4583,7 @@ bool perform_instance_iterate( class_base& instance,
                         extra_key_info += ',';
 
                      first_extra = false;
+
                      extra_key_info += escaped( extra_key_values[ i ], "," );
                   }
                }
@@ -4358,6 +4613,7 @@ bool perform_instance_iterate( class_base& instance,
          if( !query.empty( ) )
          {
             vector< string > query_parts;
+
             split( query, query_parts );
 
             for( size_t i = 0; i < query_parts.size( ); i++ )
@@ -4415,9 +4671,23 @@ bool perform_instance_iterate( class_base& instance,
 
             setup_select_columns( instance, field_info );
          }
+         else if( persistence_type == 1 ) // i.e. ODS local persistence
+         {
+            string prefix, origin;
+
+            string folder( determine_local_iteration_info( instance, order_info, fixed_info, prefix ) );
+
+            if( !paging_info.empty( ) )
+            {
+               for( size_t i = 0; i < paging_info.size( ); i++ )
+                  origin += paging_info[ i ].second + '\t';
+            }
+
+            instance.set_local_info( folder, origin, prefix );
+         }
       }
 
-      vector< string > global_keys;
+      vector< string > instance_keys;
 
       bool skip_after_fetch = false;
 
@@ -4464,25 +4734,38 @@ bool perform_instance_iterate( class_base& instance,
             found = fetch_instance_from_db( instance,
              instance_accessor.select_fields( ), instance_accessor.select_columns( ), skip_after_fetch );
          }
+         else if( persistence_type == 1 ) // i.e. ODS local persistence
+         {
+            size_t limit = ( row_limit > 0 ) ? row_limit : row_cache_limit;
+
+            if( limit > row_cache_limit )
+               limit = row_cache_limit;
+
+            fetch_keys_from_local_storage( instance,
+             inclusive, limit, instance_keys, ( direction == e_iter_direction_backwards ) );
+
+            found = ( instance_keys.size( ) > 0 );
+         }
          else if( ( persistence_type == 2 ) || ( persistence_type == 3 ) ) // i.e. ODS global persistence or system variables
          {
-            size_t limit = row_limit > 0 ? row_limit : row_cache_limit;
+            size_t limit = ( row_limit > 0 ) ? row_limit : row_cache_limit;
 
             if( limit > row_cache_limit )
                limit = row_cache_limit;
 
             string start_from( key_info );
+
             if( key_info == c_null_key )
                start_from = instance.get_key( );
 
             if( persistence_type == 2 ) // i.e. ODS global persistence
                fetch_keys_from_global_storage( instance,
-                start_from, inclusive, limit, global_keys, ( direction == e_iter_direction_backwards ) );
+                start_from, inclusive, limit, instance_keys, ( direction == e_iter_direction_backwards ) );
             else
                fetch_keys_from_system_variables( instance,
-                start_from, inclusive, limit, global_keys, ( direction == e_iter_direction_backwards ) );
+                start_from, inclusive, limit, instance_keys, ( direction == e_iter_direction_backwards ) );
 
-            found = ( global_keys.size( ) > 0 );
+            found = ( instance_keys.size( ) > 0 );
          }
          else
             throw runtime_error( "unexpected persistence type #"
@@ -4542,6 +4825,7 @@ bool perform_instance_iterate( class_base& instance,
                found_next = true;
 
                vector< string > columns;
+
                int fcount = sd.get_fieldcount( );
 
                for( int i = 0; i < fcount; i++ )
@@ -4558,7 +4842,7 @@ bool perform_instance_iterate( class_base& instance,
          }
          else if( ( persistence_type >= 1 ) && ( persistence_type <= 3 ) ) // i.e. ODS local/global persistence or system variables
          {
-            if( !global_keys.empty( ) )
+            if( !instance_keys.empty( ) )
             {
                vector< int > field_nums;
                vector< string > field_names;
@@ -4576,19 +4860,19 @@ bool perform_instance_iterate( class_base& instance,
 
                instance_accessor.field_nums( ) = field_nums;
 
-               for( size_t i = 0; i < global_keys.size( ); i++ )
+               for( size_t i = 0; i < instance_keys.size( ); i++ )
                {
                   if( i == 0 )
                   {
                      if( persistence_type == 1 ) // i.e. ODS local persistence
                         fetch_instance_from_local_storage(
-                         instance, global_keys[ i ], field_names, 0, skip_after_fetch );
+                         instance, instance_keys[ i ], field_names, 0, skip_after_fetch );
                      else if( persistence_type == 2 ) // i.e. ODS global persistence
                         fetch_instance_from_global_storage(
-                         instance, global_keys[ i ], field_names, 0, skip_after_fetch );
+                         instance, instance_keys[ i ], field_names, 0, skip_after_fetch );
                      else
                         fetch_instance_from_system_variable(
-                         instance, global_keys[ i ], field_names, 0, skip_after_fetch );
+                         instance, instance_keys[ i ], field_names, 0, skip_after_fetch );
                   }
                   else
                   {
@@ -4596,17 +4880,17 @@ bool perform_instance_iterate( class_base& instance,
 
                      if( persistence_type == 1 ) // i.e. ODS local persistence
                      {
-                        if( !fetch_instance_from_local_storage( instance, global_keys[ i ], field_names, &columns ) )
+                        if( !fetch_instance_from_local_storage( instance, instance_keys[ i ], field_names, &columns ) )
                            break;
                      }
                      else if( persistence_type == 2 ) // i.e. ODS global persistence
                      {
-                        if( !fetch_instance_from_global_storage( instance, global_keys[ i ], field_names, &columns ) )
+                        if( !fetch_instance_from_global_storage( instance, instance_keys[ i ], field_names, &columns ) )
                            break;
                      }
                      else
                      {
-                        if( !fetch_instance_from_system_variable( instance, global_keys[ i ], field_names, &columns ) )
+                        if( !fetch_instance_from_system_variable( instance, instance_keys[ i ], field_names, &columns ) )
                            break;
                      }
 
@@ -4638,7 +4922,7 @@ bool perform_instance_iterate( class_base& instance,
             if( !found_next )
                found = false;
             else
-               fetch_instance_from_row_cache( instance, skip_after_fetch );
+               fetch_instance_from_row_cache( instance, skip_after_fetch, persistence_type );
          }
 
          if( query_finished )
@@ -4686,13 +4970,23 @@ bool perform_instance_iterate_next( class_base& instance )
    if( instance.get_is_in_op( ) && !instance_accessor.get_in_op_begin( ) )
       throw runtime_error( "cannot continue iteration whilst currently perfoming an instance operation" );
 
+   int persistence_type = instance.get_persistence_type( );
+
+#ifdef COMPILE_PROTOTYPE_CODE
+   string app_name( storage_name( ) );
+
+   if( app_name == c_meta_storage_name )
+      persistence_type = 1;
+#endif
+
    bool found = false, cache_depleted = false;
 
    if( !instance_accessor.row_cache( ).empty( ) )
    {
-      if( instance_accessor.row_cache( ).size( ) == 1 && instance_accessor.row_cache( )[ 0 ].empty( ) )
+      if( ( instance_accessor.row_cache( ).size( ) == 1 ) && instance_accessor.row_cache( )[ 0 ].empty( ) )
       {
          cache_depleted = true;
+
          instance.iterate_stop( );
       }
       else
@@ -4704,10 +4998,10 @@ bool perform_instance_iterate_next( class_base& instance )
          string skip_after_fetch_var(
           instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
-         if( skip_after_fetch_var == c_true || skip_after_fetch_var == c_true_value )
+         if( ( skip_after_fetch_var == c_true ) || ( skip_after_fetch_var == c_true_value ) )
             skip_after_fetch = true;
 
-         fetch_instance_from_row_cache( instance, skip_after_fetch );
+         fetch_instance_from_row_cache( instance, skip_after_fetch, persistence_type );
       }
    }
 
