@@ -14,7 +14,8 @@ else
  uuid=$(uuidgen)
  tmp_file=~$uuid
 
- ./test_sql Meta Meta "SELECT CONCAT('export CIYAM_MODEL=', C_Key_) FROM T_Meta_Model WHERE C_Name = '$1'">$tmp_file
+ echo -n "export CIYAM_MODEL=" >$tmp_file
+ ./ciyam_client -quiet -no_prompt -no_stderr -exec="<model_key.cin $1" >>$tmp_file
  chmod a+x $tmp_file
  . ./$tmp_file
 
