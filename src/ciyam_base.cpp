@@ -2614,6 +2614,7 @@ void perform_storage_op( storage_op op,
          gtp_session->ap_db.reset( new sql_db( p_new_handler->get_name( ), p_new_handler->get_name( ) ) );
 
          ods::instance( new ods( *p_new_handler->get_ods( ) ) );
+
          created_ods_instance = true;
 
          gtp_session->p_storage_handler = p_new_handler;
@@ -3875,11 +3876,13 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
    instance_accessor.clear( );
 
    instance_accessor.set_key( instance_accessor.row_cache( )[ 0 ][ 0 ], true );
+
    instance_accessor.set_version( from_string< uint16_t >( instance_accessor.row_cache( )[ 0 ][ 1 ] ) );
    instance_accessor.set_revision( from_string< uint64_t >( instance_accessor.row_cache( )[ 0 ][ 2 ] ) );
-   instance_accessor.set_security( from_string< uint64_t >( instance_accessor.row_cache( )[ 0 ][ 3 ] ) );
-   instance_accessor.set_original_identity( instance_accessor.row_cache( )[ 0 ][ 4 ] );
 
+   instance_accessor.set_security( from_string< uint64_t >( instance_accessor.row_cache( )[ 0 ][ 3 ] ) );
+
+   instance_accessor.set_original_identity( instance_accessor.row_cache( )[ 0 ][ 4 ] );
    instance_accessor.set_original_revision( instance.get_revision( ) );
 
    if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence

@@ -211,7 +211,8 @@ void deconstruct_original_identity( class_base& cb, string& module_id, string& c
    string::size_type pos = identity.find( ':' );
 
    if( pos == string::npos )
-      throw runtime_error( "unexpected identity format" );
+      throw runtime_error( "unexpected identity format '" + identity
+       + "' for class " + class_id + " instance '" + cb.get_key( ) + "'" );
 
    module_id = identity.substr( 0, pos );
    class_id = identity.substr( pos + 1 );
@@ -796,6 +797,7 @@ class_base::~class_base( )
       delete p_dynamic_instance;
 
    delete p_sql_data;
+
    delete p_impl;
 }
 
@@ -837,9 +839,10 @@ void class_base::op_update( const string& key, const string& fields, op_update_r
 
    bool could_be_dynamic = false;
 
-   if( is_dynamic_enabled )
+   if( is_dynamic_enabled && !get_is_for_peer( ) )
    {
       instance_fetch_rc rc;
+
       perform_instance_fetch( *this, key, p_rc ? &rc : 0, true );
 
       if( p_rc )
@@ -852,6 +855,7 @@ void class_base::op_update( const string& key, const string& fields, op_update_r
       }
 
       could_be_dynamic = true;
+
       construct_dynamic_instance( );
 
       if( is_being_cascaded )
@@ -863,6 +867,7 @@ void class_base::op_update( const string& key, const string& fields, op_update_r
    else
    {
       utype = e_update_type_minimal;
+
       split( fields, fetch_field_names );
    }
 
@@ -893,7 +898,7 @@ void class_base::op_update( const string& key, const string& fields, op_update_r
          }
       }
 
-      if( could_be_dynamic && p_dynamic_instance->op != e_op_type_update )
+      if( could_be_dynamic && ( p_dynamic_instance->op != e_op_type_update ) )
          cleanup_dynamic_instance( );
    }
    catch( ... )
@@ -928,6 +933,7 @@ void class_base::op_destroy( const string& key, op_destroy_rc* p_rc, bool is_int
       }
 
       could_be_dynamic = true;
+
       construct_dynamic_instance( );
 
       if( is_being_cascaded )
@@ -965,7 +971,7 @@ void class_base::op_destroy( const string& key, op_destroy_rc* p_rc, bool is_int
          }
       }
 
-      if( could_be_dynamic && p_dynamic_instance->op != e_op_type_destroy )
+      if( could_be_dynamic && ( p_dynamic_instance->op != e_op_type_destroy ) )
          cleanup_dynamic_instance( );
    }
    catch( ... )
@@ -2107,7 +2113,7 @@ void class_base::construct_dynamic_instance( )
       if( p_dynamic_instance != this )
          destroy_dynamic_instance( );
 
-      TRACE_LOG( TRACE_CLASSOPS, "constructing dynamic instance for " + get_original_identity( ) );
+      TRACE_LOG( TRACE_CLASSOPS, "constructing dynamic instance for '" + get_original_identity( ) + "'" );
 
       string module_id, class_id;
 

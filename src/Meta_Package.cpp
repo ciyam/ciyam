@@ -972,6 +972,7 @@ void Meta_Package::impl::impl_Complete_Remove( )
    get_obj( ).Installed_Order( "" );
 
    string std_package_key;
+
    if( !is_null( get_obj( ).Model( ).Workgroup( ).Standard_Package( ) ) )
       std_package_key = get_obj( ).Model( ).Workgroup( ).Standard_Package( ).get_key( );
 
@@ -1069,6 +1070,7 @@ void Meta_Package::impl::impl_Install( )
       }
 
       string deps( get_obj( ).Package_Type( ).Dependencies( ) );
+
       deps = search_replace( deps, "\n", "," );
 
       vector< string > dependency_keys;
@@ -1076,11 +1078,13 @@ void Meta_Package::impl::impl_Install( )
       if( !deps.empty( ) )
       {
          split_string( deps, dependencies );
+
          for( size_t i = 0; i < dependencies.size( ); i++ )
          {
             string next( dependencies[ i ] );
 
             string::size_type pos = next.find( ' ' );
+
             if( pos != string::npos )
                next.erase( pos );
 
@@ -1409,6 +1413,7 @@ void Meta_Package::impl::impl_Install( )
          capture_session( session_id( ) );
 
       chmod( script_filename.c_str( ), 0770 );
+
       exec_system( "./run_temp " + script_filename, async );
    }
    // [<finish Install_impl>]
@@ -1457,6 +1462,7 @@ void Meta_Package::impl::impl_Remove( )
       get_obj( ).Installed( false );
 
       string install_log( get_obj( ).get_key( ) + ".install.log" );
+
       string install_details( load_file( install_log, true ) );
 
       ofstream outl( install_log.c_str( ) );
@@ -1581,6 +1587,7 @@ void Meta_Package::impl::impl_Remove( )
          }
 
          string script_filename( get_obj( ).get_key( ) );
+
          string commands_filename( get_obj( ).get_key( ) + ".cin" );
 
          // NOTE: A "progress pipe" file supports viewing progress
