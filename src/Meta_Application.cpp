@@ -1889,6 +1889,14 @@ void Meta_Application::impl::impl_Generate( )
 
    bool skip_exec = !generate_log_file.empty( );
 
+   bool async = true;
+
+   if( get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "0"
+    || get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "false"
+    || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "0"
+    || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "false" )
+      async = false;
+
    // NOTE: The UI allows this to be set so use this as the value during
    // the generate but put the value back to its last saved value after.
    int gen_type = get_obj( ).Generate_Type( );
@@ -2086,7 +2094,9 @@ void Meta_Application::impl::impl_Generate( )
       outv << "\x60{\x60$module_prefix\x60=\x60'" << get_obj( ).Module_Prefix( ) << "\x60'\x60}\n";
 
       string all_modules;
+
       vector< string > modules;
+
       set< string > active_modules;
       map< string, string > module_packages;
 
@@ -2128,11 +2138,13 @@ void Meta_Application::impl::impl_Generate( )
 
             if( !all_modules.empty( ) )
                all_modules += ' ';
+
             all_modules += get_obj( ).child_Module( ).Model( ).Name( );
 
             outm << get_obj( ).child_Module( ).Model( ).Name( ) << '\n';
 
             modules.push_back( get_obj( ).child_Module( ).Model( ).Name( ) );
+
          } while( get_obj( ).child_Module( ).iterate_next( ) );
       }
 
@@ -2202,38 +2214,50 @@ void Meta_Application::impl::impl_Generate( )
 
       for( set< string >::iterator i = old_modules.begin( ); i != old_modules.end( ); ++i )
       {
-         outs << "./remove_app_module " << *i << " "
-          << app_dir << " " << get_obj( ).Name( ) << " >>" << generate_log_file << "\n";
+         if( !get_obj( ).Created_Database( ) )
+            outs << "./remove_app_module " << *i << " " << app_dir << " >>" << generate_log_file << "\n";
+         else
+            outs << "./remove_app_module " << *i << " " << app_dir << " " << get_obj( ).Name( ) << " >>" << generate_log_file << "\n";
 
-         string class_list( *i + ".classes.lst" );
-         if( exists_file( class_list ) )
+         if( get_obj( ).Created_Database( ) )
          {
-            set< string > old_class_names;
-            read_file_lines( class_list, old_class_names );
+            string class_list( *i + ".classes.lst" );
 
-            string obsolete_ddl( get_obj( ).Name( ) + ".obsolete.sql" );
-            ofstream outf( obsolete_ddl.c_str( ), ios::out | ios::app );
+            if( exists_file( class_list ) )
+            {
+               set< string > old_class_names;
 
-            if( !outf )
-               throw runtime_error( "unable to open '" + obsolete_ddl + "' for output" );
+               read_file_lines( class_list, old_class_names );
 
-            for( set< string >::iterator j = old_class_names.begin( ); j != old_class_names.end( ); ++j )
-               outf << "DROP TABLE IF EXISTS T_" << *i << '_' << *j << ";\n";
+               string obsolete_ddl( get_obj( ).Name( ) + ".obsolete.sql" );
 
-            outf.flush( );
-            if( !outf.good( ) )
-               throw runtime_error( "file output stream '" + obsolete_ddl + "' is bad" );
+               ofstream outf( obsolete_ddl.c_str( ), ios::out | ios::app );
+
+               if( !outf )
+                  throw runtime_error( "unable to open '" + obsolete_ddl + "' for output" );
+
+               for( set< string >::iterator j = old_class_names.begin( ); j != old_class_names.end( ); ++j )
+                  outf << "DROP TABLE IF EXISTS T_" << *i << '_' << *j << ";\n";
+
+               outf.flush( );
+
+               if( !outf.good( ) )
+                  throw runtime_error( "file output stream '" + obsolete_ddl + "' is bad" );
+            }
          }
       }
 
       outss2 << "storage_init " << storage_name( ) << "\n";
+
       outss2 << "pu sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Updating Links...\"\n";
+
       outss2 << "pe sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( )
        << " " << to_string( c_procedure_id_Generate_File_Links ) << "\n";
-      outss2 << "quit\n";
+
+      outss2 << ".quit\n";
 
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
       {
@@ -2242,18 +2266,23 @@ void Meta_Application::impl::impl_Generate( )
       }
 
       outss3 << "storage_init " << storage_name( ) << "\n";
+
       outss3 << "pu sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Performing Make...\"\n";
-      outss3 << "quit\n";
+
+      outss3 << ".quit\n";
 
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
       {
          outs << "\necho Starting Make... >>" << generate_log_file << "\n";
+
          outs << "./ciyam_client " << standard_client_args << " -no_stderr < " << get_obj( ).Name( ) << ".generate.3.cin\n";
+
          outs << "if [ -f make.dtm ]; then\n";
          outs << " rm make.dtm\n";
          outs << "fi\n";
+
          outs << "make " << all_modules << " dtm >>" << generate_log_file << " 2>&1\n";
          outs << "echo Finished Make... >>" << generate_log_file << "\n\n";
 
@@ -2345,6 +2374,7 @@ void Meta_Application::impl::impl_Generate( )
       }
 
       outssx << "storage_init " << storage_name( ) << "\n";
+
       outssx << "pu sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Actions ) << "=127410,"
@@ -2353,6 +2383,10 @@ void Meta_Application::impl::impl_Generate( )
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Generated\"\n";
 
       outssx << "system_variable @" << storage_name( ) << "_protect \"\"\n";
+
+      if( async )
+         outssx << ".session_lock -release -at_term " << session_id( ) << "\n"; // see NOTE below...
+
       outssx << "quit\n";
 
       outs << "\n./ciyam_client -quiet " << standard_client_args << " < " << get_obj( ).Name( ) << ".generate.x.cin\n";
@@ -2407,10 +2441,17 @@ void Meta_Application::impl::impl_Generate( )
       throw;
    }
 
+   // NOTE: If the thread that has spawned the child process is terminated (due
+   // to client deciding to finish its session) then this can potentially cause
+   // big troubles due to resource inheritance so the session is captured prior
+   // to the async request and will be released at the end of the script.
+   if( async )
+      capture_session( session_id( ) );
+
    chmod( generate_script.c_str( ), 0777 );
 
    if( !skip_exec )
-      exec_system( "./" + generate_script, true );
+      exec_system( "./" + generate_script, async );
    // [<finish Generate_impl>]
 }
 
