@@ -1560,7 +1560,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 #ifdef __GNUG__
       int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( ods_index_entry_buffer ) );
 
-      if( rc != 0 || !p_data )
+      if( ( rc != 0 ) || !p_data )
          THROW_ODS_ERROR( "unexpected failure for posix_memalign" );
 #endif
    }
@@ -1736,11 +1736,6 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( _lseek( read_index_handle, ( num * sizeof( ods_index_entry_buffer ) ), SEEK_SET ) < 0 )
          THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
-#ifndef __GNUG__
-      char* p_data( ( char* )&data );
-#else
-#endif
-
       int len = _read( read_index_handle, ( void* )p_data, sizeof( ods_index_entry_buffer ) );
 
       if( len != sizeof( ods_index_entry_buffer ) )
@@ -1812,7 +1807,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
 #ifdef __GNUG__
       int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( trans_op_buffer ) );
 
-      if( rc != 0 || !p_data )
+      if( ( rc != 0 ) || !p_data )
          THROW_ODS_ERROR( "unexpected failure for posix_memalign" );
 #endif
    }
@@ -1890,7 +1885,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
          THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
 #ifndef __GNUG__
-      char* p_data( ( char* )&data );
+      char* p_data = ( char* )&data;
 #endif
 
       if( _read( tran_ops_handle,
@@ -1944,9 +1939,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
       if( _lseek( tran_ops_handle, ( num * sizeof( trans_op_buffer ) ), SEEK_SET ) < 0 )
          THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
-#ifndef __GNUG__
-      char* p_data( ( char* )&data );
-#else
+#ifdef __GNUG__
       memcpy( p_data, &data, sizeof( trans_op_buffer ) );
 #endif
 
@@ -1972,7 +1965,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
 #ifdef __GNUG__
       int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( trans_data_buffer ) );
 
-      if( rc != 0 || !p_data )
+      if( ( rc != 0 ) || !p_data )
          THROW_ODS_ERROR( "unexpected failure for posix_memalign" );
 #endif
    }
@@ -1992,6 +1985,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
       guard lock_trans( trans_data_lock );
 
       ostringstream osstr;
+
       osstr << hex << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << tran_id;
 
       file_name = osstr.str( ) + c_data_file_name_ext;
@@ -2050,7 +2044,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
          THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
 #ifndef __GNUG__
-      char* p_data( ( char* )&data );
+      char* p_data = ( char* )&data;
 #endif
 
       if( _read( tran_data_handle,
@@ -2104,9 +2098,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
       if( _lseek( tran_data_handle, ( num * sizeof( trans_data_buffer ) ), SEEK_SET ) < 0 )
          THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
-#ifndef __GNUG__
-      char* p_data( ( char* )&data );
-#else
+#ifdef __GNUG__
       memcpy( p_data, &data, sizeof( trans_data_buffer ) );
 #endif
 
@@ -2194,9 +2186,11 @@ struct ods::impl
    ods_data_entry_buffer data_write_buffer;
    ods_data_entry_buffer data_read_key_buffer;
    ods_data_entry_buffer data_write_key_buffer;
+
    ref_count_ptr< ods_data_cache_buffer > rp_ods_data_cache_buffer;
 
    ods_index_entry_buffer index_item_buffer;
+
    ref_count_ptr< ods_index_cache_buffer > rp_ods_index_cache_buffer;
 
    int64_t trans_level;
@@ -2208,6 +2202,7 @@ struct ods::impl
    int64_t total_trans_op_count;
 
    transaction_buffer* p_trans_buffer;
+
    ods_trans_op_cache_buffer* p_ods_trans_op_cache_buffer;
    ods_trans_data_cache_buffer* p_ods_trans_data_cache_buffer;
 
