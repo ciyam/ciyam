@@ -4,5 +4,5 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 storage_init Meta
-pe 20100101 sys Meta 105100 %1 105410
+pe 20100101 sys Meta 105100 $1 105410
 .quit
