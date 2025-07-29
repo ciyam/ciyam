@@ -1733,17 +1733,16 @@ void Meta_Initial_Record_Value::static_get_all_enum_pairs( vector< pair< string,
 
 void Meta_Initial_Record_Value::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
 {
-   ( void )pairs;
+   pairs.push_back( make_pair( "Initial_Record,@pk", "string,string" ) );
 }
 
 void Meta_Initial_Record_Value::static_get_all_unique_indexes( vector< string >& unique_indexes )
 {
-   ( void )unique_indexes;
 }
 
 void Meta_Initial_Record_Value::static_get_sql_indexes( vector< string >& indexes )
 {
-   ( void )indexes;
+   indexes.push_back( "C_Initial_Record,C_Key_" );
 }
 
 void Meta_Initial_Record_Value::static_get_sql_unique_indexes( vector< string >& indexes )

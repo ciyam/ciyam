@@ -16634,8 +16634,10 @@ void Meta_Specification::static_get_all_enum_pairs( vector< pair< string, string
 
 void Meta_Specification::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
 {
+   pairs.push_back( make_pair( "Class,Order,@pk", "string,string,string" ) );
    pairs.push_back( make_pair( "Class,Parent_Specification,Order", "string,string,string" ) );
    pairs.push_back( make_pair( "Class,Specification_Type,@pk", "string,string,string" ) );
+   pairs.push_back( make_pair( "Field,@pk", "string,string" ) );
    pairs.push_back( make_pair( "Model,Id", "string,string" ) );
    pairs.push_back( make_pair( "Model,Order", "string,string" ) );
    pairs.push_back( make_pair( "Model,Parent_Specification,Can_Access_Below_Model,Order", "string,string,bool,string" ) );
@@ -16660,8 +16662,10 @@ void Meta_Specification::static_get_all_unique_indexes( vector< string >& unique
 
 void Meta_Specification::static_get_sql_indexes( vector< string >& indexes )
 {
+   indexes.push_back( "C_Class,C_Order,C_Key_" );
    indexes.push_back( "C_Class,C_Parent_Specification,C_Order" );
    indexes.push_back( "C_Class,C_Specification_Type,C_Key_" );
+   indexes.push_back( "C_Field,C_Key_" );
    indexes.push_back( "C_Model,C_Id" );
    indexes.push_back( "C_Model,C_Order" );
    indexes.push_back( "C_Model,C_Parent_Specification,C_Can_Access_Below_Model,C_Order" );

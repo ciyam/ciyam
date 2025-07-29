@@ -4814,6 +4814,7 @@ void Meta_Relationship::static_get_all_enum_pairs( vector< pair< string, string 
 void Meta_Relationship::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
 {
    pairs.push_back( make_pair( "Model,Child_Class,Name", "string,string,string" ) );
+   pairs.push_back( make_pair( "Parent_Class,@pk", "string,string" ) );
 }
 
 void Meta_Relationship::static_get_all_unique_indexes( vector< string >& unique_indexes )
@@ -4824,6 +4825,7 @@ void Meta_Relationship::static_get_all_unique_indexes( vector< string >& unique_
 void Meta_Relationship::static_get_sql_indexes( vector< string >& indexes )
 {
    indexes.push_back( "C_Model,C_Child_Class,C_Name" );
+   indexes.push_back( "C_Parent_Class,C_Key_" );
 }
 
 void Meta_Relationship::static_get_sql_unique_indexes( vector< string >& indexes )
