@@ -4152,10 +4152,11 @@ void perform_instance_fetch( class_base& instance,
       }
       else if( persistence_type == 1 ) // i.e. ODS local persistence
       {
-         if( only_sys_fields )
-            found = has_instance_in_local_storage( instance, key_info );
-         else
-            found = fetch_instance_from_local_storage( instance, key_info );
+         // FUTURE: If "only_sys_fields" is true then all instance file
+         // data does not need to be read, however, "original identity"
+         // needs to be read and is currently included in the file data
+         // so for now must read the record.
+         found = fetch_instance_from_local_storage( instance, key_info );
       }
       else if( persistence_type == 2 ) // i.e. ODS global persistence
       {
