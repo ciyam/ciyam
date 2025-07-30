@@ -1564,8 +1564,10 @@ op_lock storage_handler::get_lock_info( const string& lock_class, const string& 
       if( lci->first != key )
          break;
 
-      // NOTE: If more than one matching lock exists then return the strongest lock type.
-      if( lci->second.type > lock.type )
+      // NOTE: If more than one matching lock exists then return the strongest lock type
+      // (including any remaining "tx_type" locks which might still need to be checked).
+      if( ( lci->second.type > lock.type )
+       || ( ( lock.type == op_lock::e_lock_type_none ) && ( lci->second.tx_type > lock.tx_type ) ) )
          lock = lci->second;
    }
 
@@ -12877,14 +12879,14 @@ bool is_change_locked( class_base& instance, bool include_cascades )
 {
    op_lock lock = gtp_session->p_storage_handler->get_lock_info( instance.get_lock_class_id( ), instance.get_key( ) );
 
-   return lock.type >= op_lock::e_lock_type_update && ( include_cascades || !lock.p_root_class );
+   return ( lock.type >= op_lock::e_lock_type_update ) && ( include_cascades || !lock.p_root_class );
 }
 
 bool is_destroy_locked( class_base& instance, bool include_cascades )
 {
    op_lock lock = gtp_session->p_storage_handler->get_lock_info( instance.get_lock_class_id( ), instance.get_key( ) );
 
-   return lock.type == op_lock::e_lock_type_destroy && ( include_cascades || !lock.p_root_class );
+   return ( lock.type == op_lock::e_lock_type_destroy ) && ( include_cascades || !lock.p_root_class );
 }
 
 bool is_create_locked_by_own_session(
@@ -12901,7 +12903,7 @@ bool is_create_locked_by_own_session(
    if( !is_create_locked && also_check_tx_lock_type )
       is_create_locked = ( lock.tx_type == op_lock::e_lock_type_create );
 
-   if( lock.p_session == gtp_session && is_create_locked )
+   if( is_create_locked && ( lock.p_session == gtp_session ) )
    {
       rc = true;
 
@@ -12930,7 +12932,7 @@ bool is_update_locked_by_own_session( class_base& instance, const char* p_key )
    lock = gtp_session->p_storage_handler->get_lock_info(
     instance.get_lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
 
-   return lock.p_session == gtp_session && lock.type == op_lock::e_lock_type_update;
+   return ( lock.p_session == gtp_session ) && ( lock.type == op_lock::e_lock_type_update );
 }
 
 bool is_destroy_locked_by_own_session( class_base& instance, const char* p_key )
@@ -12941,7 +12943,8 @@ bool is_destroy_locked_by_own_session( class_base& instance, const char* p_key )
    lock = gtp_session->p_storage_handler->get_lock_info(
     instance.get_lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
 
-   return lock.p_session == gtp_session && lock.type == op_lock::e_lock_type_destroy;
+   return ( lock.p_session == gtp_session )
+    && ( ( lock.type == op_lock::e_lock_type_destroy ) || ( lock.tx_type == op_lock::e_lock_type_destroy ) );
 }
 
 bool is_update_or_destroy_locked_by_own_session( class_base& instance, const char* p_key )
@@ -12952,8 +12955,8 @@ bool is_update_or_destroy_locked_by_own_session( class_base& instance, const cha
    lock = gtp_session->p_storage_handler->get_lock_info(
     instance.get_lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
 
-   return lock.p_session == gtp_session
-    && ( lock.type == op_lock::e_lock_type_update || lock.type == op_lock::e_lock_type_destroy );
+   return ( lock.p_session == gtp_session ) && ( ( lock.type == op_lock::e_lock_type_update )
+    || ( lock.type == op_lock::e_lock_type_destroy ) || ( lock.tx_type == op_lock::e_lock_type_destroy ) );
 }
 
 void instance_fetch( size_t handle, const string& context, const string& key_info, instance_fetch_rc* p_rc )
