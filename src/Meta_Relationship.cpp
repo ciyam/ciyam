@@ -2451,32 +2451,37 @@ void Meta_Relationship::impl::for_store( bool is_create, bool is_internal )
    {
       Meta_Field rel_field;
 
-      if( is_create )
-         rel_field.op_create( get_obj( ).get_key( ) + "_C" );
-      else
-         rel_field.op_update( get_obj( ).get_key( ) + "_C" );
+      string field_key( get_obj( ).get_key( ) + "_C" );
 
-      rel_field.Class( get_obj( ).Child_Class( ) );
-      rel_field.Id( get_obj( ).Field_Id( ) );
-      rel_field.Name( get_obj( ).Name( ) );
-      rel_field.Mandatory( get_obj( ).Mandatory( ) );
-      rel_field.Transient( get_obj( ).Transient( ) );
-      rel_field.Parent_Class( get_obj( ).Parent_Class( ) );
-      rel_field.Access_Scope( get_obj( ).Access_Scope( ) );
-      rel_field.Change_Scope( get_obj( ).Change_Scope( ) );
-      rel_field.Access_Restriction( get_obj( ).Access_Restriction( ) );
-      rel_field.Change_Restriction( get_obj( ).Change_Restriction( ) );
-      rel_field.Access_Permission( get_obj( ).Access_Permission( ) );
-      rel_field.Change_Permission( get_obj( ).Change_Permission( ) );
+      if( !is_destroy_locked_by_own_session( rel_field, field_key.c_str( ) ) )
+      {
+         if( is_create )
+            rel_field.op_create( field_key );
+         else
+            rel_field.op_update( field_key );
 
-      rel_field.Type( get_obj( ).Model( ).Workgroup( ).get_key( ) + "_foreign_key" );
-      rel_field.Extra( get_obj( ).Extra( ) * -1 );
-      rel_field.Internal( true );
+         rel_field.Class( get_obj( ).Child_Class( ) );
+         rel_field.Id( get_obj( ).Field_Id( ) );
+         rel_field.Name( get_obj( ).Name( ) );
+         rel_field.Mandatory( get_obj( ).Mandatory( ) );
+         rel_field.Transient( get_obj( ).Transient( ) );
+         rel_field.Parent_Class( get_obj( ).Parent_Class( ) );
+         rel_field.Access_Scope( get_obj( ).Access_Scope( ) );
+         rel_field.Change_Scope( get_obj( ).Change_Scope( ) );
+         rel_field.Access_Restriction( get_obj( ).Access_Restriction( ) );
+         rel_field.Change_Restriction( get_obj( ).Change_Restriction( ) );
+         rel_field.Access_Permission( get_obj( ).Access_Permission( ) );
+         rel_field.Change_Permission( get_obj( ).Change_Permission( ) );
 
-      rel_field.op_apply( );
+         rel_field.Type( get_obj( ).Model( ).Workgroup( ).get_key( ) + "_foreign_key" );
+         rel_field.Extra( get_obj( ).Extra( ) * -1 );
+         rel_field.Internal( true );
 
-      get_obj( ).Field_Id( rel_field.Id( ) );
-      get_obj( ).Field_Key( rel_field.get_key( ) );
+         rel_field.op_apply( );
+
+         get_obj( ).Field_Id( rel_field.Id( ) );
+         get_obj( ).Field_Key( rel_field.get_key( ) );
+      }
    }
    // [(finish meta_relationship_field)] 600095
 
@@ -2529,6 +2534,7 @@ void Meta_Relationship::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).child_Relationship_Source( ).Parent_Class( parent_class );
 
          get_obj( ).child_Relationship_Source( ).op_apply( );
+
       } while( get_obj( ).child_Relationship_Source( ).iterate_next( ) );
    }
 
@@ -2555,6 +2561,7 @@ void Meta_Relationship::impl::after_store( bool is_create, bool is_internal )
           && all_classes.count( get_obj( ).Parent_Class( ).Id( ) ) )
          {
             string key_info( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
+
             key_info += ' ';
             key_info += get_obj( ).get_key( );
 
@@ -2576,9 +2583,12 @@ void Meta_Relationship::impl::after_store( bool is_create, bool is_internal )
             // and change the Parent Class to link to the correct model here.
             if( child_class.child_Field( ).iterate_forwards( key_info, true, 1, e_sql_optimisation_unordered ) )
             {
-               child_class.child_Field( ).op_update( );
-               child_class.child_Field( ).Parent_Class( all_classes[ get_obj( ).Parent_Class( ).Id( ) ] );
-               child_class.child_Field( ).op_apply( );
+               if( !is_destroy_locked_by_own_session( child_class.child_Field( ) ) )
+               {
+                  child_class.child_Field( ).op_update( );
+                  child_class.child_Field( ).Parent_Class( all_classes[ get_obj( ).Parent_Class( ).Id( ) ] );
+                  child_class.child_Field( ).op_apply( );
+               }
 
                get_obj( ).Child_Class( ).child_Class_Source( ).Model( ).child_Relationship( ).Field_Key( child_class.child_Field( ).get_key( ) );
             }
@@ -2614,8 +2624,14 @@ void Meta_Relationship::impl::for_destroy( bool is_internal )
    {
       Meta_Field rel_field;
 
-      rel_field.op_destroy( get_obj( ).get_key( ) + "_C" );
-      rel_field.op_apply( );
+      string field_key( get_obj( ).get_key( ) + "_C" );
+
+      if( !is_destroy_locked_by_own_session( rel_field, field_key.c_str( ) ) )
+      {
+         rel_field.op_destroy( field_key );
+
+         rel_field.op_apply( );
+      }
    }
    // [(finish meta_relationship_field)] 600095
 
@@ -4815,6 +4831,7 @@ void Meta_Relationship::static_get_all_index_pairs( vector< pair< string, string
 {
    pairs.push_back( make_pair( "Model,Child_Class,Name", "string,string,string" ) );
    pairs.push_back( make_pair( "Parent_Class,@pk", "string,string" ) );
+   pairs.push_back( make_pair( "Source_Relationship,@pk", "string,string" ) );
 }
 
 void Meta_Relationship::static_get_all_unique_indexes( vector< string >& unique_indexes )
@@ -4826,6 +4843,7 @@ void Meta_Relationship::static_get_sql_indexes( vector< string >& indexes )
 {
    indexes.push_back( "C_Model,C_Child_Class,C_Name" );
    indexes.push_back( "C_Parent_Class,C_Key_" );
+   indexes.push_back( "C_Source_Relationship,C_Key_" );
 }
 
 void Meta_Relationship::static_get_sql_unique_indexes( vector< string >& indexes )

@@ -10,22 +10,27 @@
    {
       `{`$module_name`}_`{`$arg_fclass`} rel_field;
 
-      if( is_create )
-         rel_field.op_create( get_obj( ).get_key( ) + "_C" );
-      else
-         rel_field.op_update( get_obj( ).get_key( ) + "_C" );
+      string field_key( get_obj( ).get_key( ) + "_C" );
+
+      if( !is_destroy_locked_by_own_session( rel_field, field_key.c_str( ) ) )
+      {
+         if( is_create )
+            rel_field.op_create( field_key );
+         else
+            rel_field.op_update( field_key );
 
 `{`?`$arg_field_list`[`$arg_field_list`%,`,\
-      rel_field.\\0( get_obj( ).\\1( ) );\
+         rel_field.\\0( get_obj( ).\\1( ) );\
 `+\n`]\n`}
-      rel_field.`{`$arg_tfield`}( get_obj( ).`{`$arg_mclass`}( ).`{`$arg_gclass`}( ).get_key( ) + "_foreign_key" );
-      rel_field.`{`$arg_xfield`}( get_obj( ).`{`$arg_xsfield`}( ) * -1 );
-      rel_field.`{`$arg_ifield`}( true );
+         rel_field.`{`$arg_tfield`}( get_obj( ).`{`$arg_mclass`}( ).`{`$arg_gclass`}( ).get_key( ) + "_foreign_key" );
+         rel_field.`{`$arg_xfield`}( get_obj( ).`{`$arg_xsfield`}( ) * -1 );
+         rel_field.`{`$arg_ifield`}( true );
 
-      rel_field.op_apply( );
+         rel_field.op_apply( );
 
-      get_obj( ).`{`$arg_idfield`}( rel_field.`{`$arg_fidfield`}( ) );
-      get_obj( ).`{`$arg_keyfield`}( rel_field.get_key( ) );
+         get_obj( ).`{`$arg_idfield`}( rel_field.`{`$arg_fidfield`}( ) );
+         get_obj( ).`{`$arg_keyfield`}( rel_field.get_key( ) );
+      }
    }
    // [(finish meta_relationship_field)] `{`$arg_id`}
 `}
@@ -35,8 +40,14 @@
    {
       `{`$module_name`}_`{`$arg_fclass`} rel_field;
 
-      rel_field.op_destroy( get_obj( ).get_key( ) + "_C" );
-      rel_field.op_apply( );
+      string field_key( get_obj( ).get_key( ) + "_C" );
+
+      if( !is_destroy_locked_by_own_session( rel_field, field_key.c_str( ) ) )
+      {
+         rel_field.op_destroy( field_key );
+
+         rel_field.op_apply( );
+      }
    }
    // [(finish meta_relationship_field)] `{`$arg_id`}
 `}
