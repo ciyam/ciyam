@@ -18,7 +18,9 @@ ERROR=
 .system_variable @restore_needed ""
 .system_variable @prepare_backup_needed ""
 .system_variable @complete_restore_needed ""
-@else
+@endif
+;
+@ifdef $ERROR
 @ifneq "$ERROR_FILE" ""
 >$ERROR_FILE
 #Error: $ERROR
