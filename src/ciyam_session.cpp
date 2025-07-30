@@ -4432,7 +4432,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                op_destroy_rc rc;
 
-               op_instance_destroy( handle, "", key, ver_info, false, &rc );
+               bool force_internal = has_session_variable(
+                get_special_var_name( e_special_var_force_internal ) );
+
+               op_instance_destroy( handle, "", key, ver_info, force_internal, &rc );
 
                if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                   check_instance_op_permission( module, handle, get_destroy_instance_info( handle, "" ) );

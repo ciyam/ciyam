@@ -153,6 +153,7 @@ enum special_var
    e_special_var_update_fields,
    e_special_var_cmd_delay_wait,
    e_special_var_files_area_dir,
+   e_special_var_force_internal,
    e_special_var_peer_clone_key,
    e_special_var_peer_initiator,
    e_special_var_peer_responder,

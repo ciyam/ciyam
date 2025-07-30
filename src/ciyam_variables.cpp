@@ -188,6 +188,7 @@ const char* const c_special_variable_sub_directory = "@sub_directory";
 const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_cmd_delay_wait = "@cmd_delay_wait";
 const char* const c_special_variable_files_area_dir = "@files_area_dir";
+const char* const c_special_variable_force_internal = "@force_internal";
 const char* const c_special_variable_peer_clone_key = "@peer_clone_key";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
@@ -502,6 +503,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_update_fields );
       g_special_variable_names.push_back( c_special_variable_cmd_delay_wait );
       g_special_variable_names.push_back( c_special_variable_files_area_dir );
+      g_special_variable_names.push_back( c_special_variable_force_internal );
       g_special_variable_names.push_back( c_special_variable_peer_clone_key );
       g_special_variable_names.push_back( c_special_variable_peer_initiator );
       g_special_variable_names.push_back( c_special_variable_peer_responder );

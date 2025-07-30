@@ -1666,6 +1666,8 @@ void Meta_Package::impl::impl_Remove( )
                outf << ".utc_to_unix_time @now\n";
                outf << "SHOW_PROGRESS_TIME=@$OUTPUT+10\n";
                outf << ";\n";
+               outf << "session_variable @force_internal 1\n";
+               outf << ";\n";
 
                for( size_t i = 0; i < ordered.size( ); i++ )
                {
