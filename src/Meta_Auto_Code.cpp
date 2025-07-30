@@ -437,7 +437,6 @@ void Meta_Auto_Code::impl::impl_Increment( string& Next_Value )
       if( is_null( get_obj( ).Next( ) ) )
       {
          string str;
-
          for( size_t i = 0; i < mask.size( ); i++ )
          {
             if( mask[ i ] == '?' )
