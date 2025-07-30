@@ -1386,10 +1386,9 @@ void fetch_keys_from_local_storage( class_base& instance,
 
    expr += prefix + "*";
 
-   // NOTE: The folder for an index branch may not
-   // have been created so need to check if exists
-   // before attempting to set the root folder.
-   if( !index_branch || ofs.has_folder( folder ) )
+   // NOTE: First check if the folder exists
+   // as it might not yet have been created.
+   if( ofs.has_root_folder( folder ) )
    {
       ofs.set_root_folder( folder );
 
@@ -3605,6 +3604,9 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             }
             else if( persistence_type == 1 ) // i.e. ODS local persistence
             {
+               if( op == class_base::e_op_type_destroy )
+                  instance_accessor.destroy( );
+
                // NOTE: Objects are stored in the form of a structured I/O
                // file using the path "/.dat/<class_id>/" with a file name
                // that is simply the instance's key value. A primary index
@@ -3814,6 +3816,9 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                if( instance.get_variable( get_special_var_name( e_special_var_skip_persistance ) ).empty( )
                 && ( ( op == class_base::e_op_type_create ) || ( op == class_base::e_op_type_update ) || ( op == class_base::e_op_type_destroy ) ) )
                {
+                  if( op == class_base::e_op_type_destroy )
+                     instance_accessor.destroy( );
+
                   string persistence_extra( instance.get_persistence_extra( ) );
 
                   string root_child_folder( persistence_extra );
