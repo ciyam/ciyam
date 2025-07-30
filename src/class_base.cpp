@@ -1948,10 +1948,14 @@ void class_base::destroy( )
       time_t ts = time( 0 );
       bool output_progress = false;
 
-      TRACE_LOG( TRACE_CLASSOPS, "=== begin cascade [class: " + get_class_name( ) + ", key = " + get_key( ) + "] ===" );
+      TRACE_LOG( TRACE_CLASSOPS, "=== begin cascade [class: "
+       + get_class_name( ) + " (" + get_class_id( ) + "), key = " + get_key( ) + "] ===" );
 
       if( !get_raw_variable( get_special_var_name( e_special_var_progress ) ).empty( ) )
          output_progress = true;
+
+      string pass_unlink( "unlink" );
+      string pass_destroy( "destroy" );
 
       for( int pass = 0; pass < 2; ++pass )
       {
@@ -1961,6 +1965,8 @@ void class_base::destroy( )
             next_op = e_cascade_op_unlink;
          else
             next_op = e_cascade_op_destroy;
+
+         TRACE_LOG( TRACE_CLASSOPS, "(cascade " + ( ( pass != 0 ) ? pass_unlink : pass_destroy ) + " pass)" );
 
          // NOTE: Due to the way that Meta model relationships
          // are ordered to prevent a number of possible issues
@@ -1993,22 +1999,27 @@ void class_base::destroy( )
                      output_progress_message( "Cascaded " + to_string( i ) + " children..." );
                   }
 
+                  // NOTE: Due to relationship complexities cascading can
+                  // end up being repeated so need to ignore records that
+                  // have been destroy locked by own session.
+                  if( !is_destroy_locked_by_own_session( *p_class_base ) )
+                     continue;
+
                   if( next_op == e_cascade_op_destroy )
                   {
                      restorable< bool > tmp_force_fetch( p_class_base->force_fetch, true );
 
                      op_destroy_rc rc;
+
                      p_class_base->op_destroy( &rc );
 
                      if( rc != e_op_destroy_rc_not_found )
                         p_class_base->op_apply( );
                   }
-                  // NOTE: The model relationships may end up with instances being destroyed trying to
-                  // unlink themselves from parents which are also being destroyed so these unlink ops
-                  // are simply ignored.
-                  else if( !is_destroy_locked_by_own_session( *p_class_base ) )
+                  else
                   {
                      op_update_rc rc;
+
                      p_class_base->op_update( &rc );
 
                      if( rc != e_op_update_rc_not_found )
