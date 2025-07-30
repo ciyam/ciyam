@@ -3,7 +3,7 @@
 `{`@eq`(`$arg_fkfield`,`'`'`)
    class_pointer< `{`$module_name`}_`{`$arg_pclass`} > cp_parent( &get_obj( ).`{`$arg_pfield`}( )`{`@eq`(`$arg_grand_parent`,`'true`'`).`{`$arg_pfield`}( )`} );
 
-   if( !cp_parent->get_key( ).empty( ) )
+   if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
    {
       cp_parent->op_update( );
       cp_parent->op_apply( );
@@ -13,7 +13,7 @@
    {
       class_pointer< `{`$module_name`}_`{`$arg_pclass`} > cp_parent( &get_obj( ).`{`$arg_pfield`}( )`{`@eq`(`$arg_grand_parent`,`'true`'`).`{`$arg_pfield`}( )`} );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -30,7 +30,7 @@
    {
       class_pointer< `{`$module_name`}_`{`$arg_pclass`} > cp_parent( &get_obj( ).`{`$arg_pfield`}( )`{`@eq`(`$arg_grand_parent`,`'true`'`).`{`$arg_pfield`}( )`} );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -43,7 +43,7 @@
    {
       class_pointer< `{`$module_name`}_`{`$arg_pclass`} > cp_parent( &get_obj( ).`{`$arg_pfield`}( )`{`@eq`(`$arg_grand_parent`,`'true`'`).`{`$arg_pfield`}( )`} );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );

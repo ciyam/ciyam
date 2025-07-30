@@ -8640,7 +8640,7 @@ void Meta_Specification::impl::after_store( bool is_create, bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8653,7 +8653,7 @@ void Meta_Specification::impl::after_store( bool is_create, bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8666,7 +8666,7 @@ void Meta_Specification::impl::after_store( bool is_create, bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8679,7 +8679,7 @@ void Meta_Specification::impl::after_store( bool is_create, bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8692,7 +8692,7 @@ void Meta_Specification::impl::after_store( bool is_create, bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8705,7 +8705,7 @@ void Meta_Specification::impl::after_store( bool is_create, bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8718,7 +8718,7 @@ void Meta_Specification::impl::after_store( bool is_create, bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8731,7 +8731,7 @@ void Meta_Specification::impl::after_store( bool is_create, bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8785,7 +8785,7 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8800,7 +8800,7 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8815,7 +8815,7 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8830,7 +8830,7 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8845,7 +8845,7 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8860,7 +8860,7 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8875,7 +8875,7 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
@@ -8890,7 +8890,7 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
-      if( !cp_parent->get_key( ).empty( ) )
+      if( !cp_parent->get_key( ).empty( ) && !is_destroy_locked_by_own_session( *cp_parent ) )
       {
          cp_parent->op_update( );
          cp_parent->op_apply( );
