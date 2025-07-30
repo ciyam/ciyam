@@ -4294,6 +4294,10 @@
       <class_id>107100
       <relationship_id>200740
       <indexes/>
+       <index/>
+        <id>400725
+        <num>0
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -4678,6 +4682,11 @@
      </field>
     </fields>
     <indexes/>
+     <index/>
+      <id>400725
+      <name>[Source_{Field}]
+      <unique>false
+     </index>
      <index/>
       <id>400710
       <name>[{Class}],[Id]
@@ -6356,6 +6365,10 @@
       <class_id>107100
       <relationship_id>202520
       <indexes/>
+       <index/>
+        <id>400931
+        <num>0
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -6406,6 +6419,11 @@
      </field>
     </fields>
     <indexes/>
+     <index/>
+      <id>400931
+      <name>[{Field}]
+      <unique>false
+     </index>
      <index/>
       <id>400930
       <name>[{Initial_Record}]
@@ -15991,6 +16009,10 @@
       <class_id>113100
       <relationship_id>201330
       <indexes/>
+       <index/>
+        <id>401210
+        <num>0
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -16053,6 +16075,11 @@
      <index/>
       <id>401205
       <name>[Parent_Class]
+      <unique>false
+     </index>
+     <index/>
+      <id>401210
+      <name>[Source_{Relationship}]
       <unique>false
      </index>
      <index/>

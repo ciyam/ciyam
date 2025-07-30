@@ -1733,6 +1733,7 @@ void Meta_Initial_Record_Value::static_get_all_enum_pairs( vector< pair< string,
 
 void Meta_Initial_Record_Value::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
 {
+   pairs.push_back( make_pair( "Field,@pk", "string,string" ) );
    pairs.push_back( make_pair( "Initial_Record,@pk", "string,string" ) );
 }
 
@@ -1742,6 +1743,7 @@ void Meta_Initial_Record_Value::static_get_all_unique_indexes( vector< string >&
 
 void Meta_Initial_Record_Value::static_get_sql_indexes( vector< string >& indexes )
 {
+   indexes.push_back( "C_Field,C_Key_" );
    indexes.push_back( "C_Initial_Record,C_Key_" );
 }
 

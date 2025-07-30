@@ -8569,6 +8569,7 @@ void Meta_Field::static_get_all_index_pairs( vector< pair< string, string > >& p
    pairs.push_back( make_pair( "Class,Id", "string,string" ) );
    pairs.push_back( make_pair( "Class,Name", "string,string" ) );
    pairs.push_back( make_pair( "Enum,Name,@pk", "string,string,string" ) );
+   pairs.push_back( make_pair( "Source_Field,@pk", "string,string" ) );
 }
 
 void Meta_Field::static_get_all_unique_indexes( vector< string >& unique_indexes )
@@ -8582,6 +8583,7 @@ void Meta_Field::static_get_sql_indexes( vector< string >& indexes )
    indexes.push_back( "C_Class,C_Id" );
    indexes.push_back( "C_Class,C_Name" );
    indexes.push_back( "C_Enum,C_Name,C_Key_" );
+   indexes.push_back( "C_Source_Field,C_Key_" );
 }
 
 void Meta_Field::static_get_sql_unique_indexes( vector< string >& indexes )
