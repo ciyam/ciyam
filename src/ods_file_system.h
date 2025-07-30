@@ -264,6 +264,8 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
 
    bool has_folder( const std::string& name, std::string* p_perms = 0, int64_t* p_tm_val = 0 );
 
+   bool has_root_folder( const std::string& name, std::string* p_perms = 0, int64_t* p_tm_val = 0 );
+
    void move_folder( const std::string& name,
     const std::string& destination, bool overwrite = false, std::ostream* p_os = 0 );
 

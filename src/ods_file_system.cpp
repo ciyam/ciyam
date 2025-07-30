@@ -2474,6 +2474,25 @@ bool ods_file_system::has_folder( const string& name, string* p_perms, int64_t* 
    return false;
 }
 
+bool ods_file_system::has_root_folder( const string& name, string* p_perms, int64_t* p_tm_val )
+{
+   if( name.empty( ) )
+      return false;
+   else
+   {
+      string::size_type pos = 0;
+
+      string full_name( c_root_folder );
+
+      if( name[ 0 ] == c_folder )
+         ++pos;
+
+      full_name += name.substr( pos );
+
+      return has_folder( full_name, p_perms, p_tm_val );
+   }
+}
+
 void ods_file_system::move_folder( const string& name, const string& destination, bool overwrite, ostream* p_os )
 {
    btree_type& bt( p_impl->bt );
