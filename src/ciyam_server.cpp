@@ -57,6 +57,7 @@ bool g_start_udp_stream_sessions = true;
 void* signal_handler( void* id )
 {
    int sig;
+
    sigwait( &sig_set, &sig );
 
    ++g_server_shutdown;
@@ -174,7 +175,7 @@ void ciyam_server_command_handler::process_custom_startup_option( size_t num, co
 {
    if( num == 0 )
    {
-      if( !option.empty( ) && option[ 0 ] >= '0' && option[ 0 ] <= '9' )
+      if( !option.empty( ) && ( option[ 0 ] >= '0' ) && ( option[ 0 ] <= '9' ) )
          g_port = atoi( option.c_str( ) );
       else
          throw runtime_error( "unexpected startup option '" + option + "'" );
@@ -250,6 +251,7 @@ int main( int argc, char* argv[ ] )
    try
    {
       ciyam_server_command_handler cmd_handler;
+
       // NOTE: Use block scope for startup command processor object...
       {
          startup_command_processor processor( cmd_handler, application_title, argc, argv );
@@ -270,13 +272,13 @@ int main( int argc, char* argv[ ] )
           "", "switch on quiet operating mode", new ciyam_server_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_no_auto, 4,
-          "", "don't start the autoscript thread", new ciyam_server_startup_functor( cmd_handler ) );
+          "", "do not start the autoscript thread", new ciyam_server_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_no_peers, 4,
-          "", "don't start the peer sessions thread", new ciyam_server_startup_functor( cmd_handler ) );
+          "", "do not start the peer sessions thread", new ciyam_server_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_no_streams, 4,
-          "", "don't start any udp stream session threads", new ciyam_server_startup_functor( cmd_handler ) );
+          "", "do not start any udp stream session threads", new ciyam_server_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_test_peer_port, 5,
           "<val//port>", "port number for interactive peer testing", new ciyam_server_startup_functor( cmd_handler ) );
@@ -297,12 +299,15 @@ int main( int argc, char* argv[ ] )
       if( g_is_daemon )
       {
          pid_t pid = fork( );
+
          if( pid < 0 )
             exit( EXIT_FAILURE );
+
          if( pid > 0 )
             exit( EXIT_SUCCESS );
 
          pid_t sid = setsid( );
+
          if( sid < 0 )
             exit( EXIT_FAILURE );
 
@@ -316,9 +321,11 @@ int main( int argc, char* argv[ ] )
       pthread_t tid;
 
       sigemptyset( &sig_set );
+
       sigaddset( &sig_set, SIGINT );
       sigaddset( &sig_set, SIGABRT );
       sigaddset( &sig_set, SIGTERM );
+
       pthread_sigmask( SIG_BLOCK, &sig_set, 0 );
 
       pthread_create( &tid, 0, signal_handler, ( void* )1 );
@@ -326,6 +333,7 @@ int main( int argc, char* argv[ ] )
       srand( time( 0 ) );
 
       string pid( to_string( get_pid( ) ) );
+
       set_environment_variable( "PID", pid.c_str( ) );
 
       if( g_port != c_default_ciyam_port )
@@ -334,6 +342,7 @@ int main( int argc, char* argv[ ] )
       string shutdown_reason( "due to interrupt" );
 
       bool is_update = false;
+
       auto_ptr< dynamic_library > ap_dynamic_library;
 
       while( true )
