@@ -294,6 +294,10 @@ class CIYAM_BASE_DECL_SPEC class_base
    void set_local_info( const std::string& folder,
     const std::string& origin, const std::string& prefix );
 
+   void set_local_folder( const std::string& folder );
+   void set_local_origin( const std::string& folder );
+   void set_local_prefix( const std::string& folder );
+
    void copy_all_field_values( const class_base& src );
    void copy_original_field_values( const class_base& src );
 

@@ -1368,6 +1368,21 @@ void class_base::set_local_info( const string& folder, const string& origin, con
    set_variable( get_special_var_name( e_special_var_local_prefix ), prefix );
 }
 
+void class_base::set_local_folder( const std::string& folder )
+{
+   set_variable( get_special_var_name( e_special_var_local_folder ), folder );
+}
+
+void class_base::set_local_origin( const std::string& origin )
+{
+   set_variable( get_special_var_name( e_special_var_local_origin ), origin );
+}
+
+void class_base::set_local_prefix( const std::string& prefix )
+{
+   set_variable( get_special_var_name( e_special_var_local_prefix ), prefix );
+}
+
 void class_base::copy_all_field_values( const class_base& src )
 {
    if( get_class_id( ) != src.get_class_id( ) )
