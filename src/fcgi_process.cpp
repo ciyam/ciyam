@@ -68,6 +68,8 @@ mutex g_join_mutex;
 
 const int c_max_pin_time_difference = 30;
 
+const int c_security_delay_time = 2000;
+
 const int c_initial_response_timeout = 7500;
 const int c_subsequent_response_timeout = 2000;
 
@@ -1928,10 +1930,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          {
             string list_perm( lmci->second->perm );
 
-            if( !list_perm.empty( ) && list_perm[ 0 ] == '!' )
+            if( !list_perm.empty( ) && ( list_perm[ 0 ] == '!' ) )
                list_perm.erase( 0, 1 );
 
-            bool has_perm( has_permission( list_perm, *p_session_info ) );
+            bool has_perm = has_permission( list_perm, *p_session_info );
 
             // FUTURE: Currently logic that requires a permission for an "admin" list is not supported
             // (i.e. either the user is "admin" OR has the "perm"). If this is to be changed then this
@@ -1953,7 +1955,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             // NOTE: For the "admin" user only display lists specifically targeted for "admin"
             // (to reduce unnecessary clutter as "admin" is not intended for "standard" usage).
             if( p_session_info->is_admin_user
-             && ( lmci->second->type != c_list_type_admin && lmci->second->type != c_list_type_child_admin ) )
+             && ( ( lmci->second->type != c_list_type_admin )
+             && ( lmci->second->type != c_list_type_child_admin ) ) )
                has_perm = false;
 
             if( using_anonymous && !lmci->second->extras.count( c_list_type_extra_allow_anonymous ) )
@@ -1998,6 +2001,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                string::size_type pos = i->second[ 0 ].find( '!' );
 
                item_name = i->second[ 0 ].substr( 0, pos );
+
                if( pos != string::npos )
                   id = i->second[ 0 ].substr( pos + 1 );
 
@@ -2035,6 +2039,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   string::size_type pos = i->second[ j ].find( '!' );
 
                   string id, item_name( i->second[ j ].substr( 0, pos ) );
+
                   if( pos != string::npos )
                      id = i->second[ j ].substr( pos + 1 );
 
@@ -2050,6 +2055,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   if( use_url_checksum )
                   {
                      string checksum_values( string( c_cmd_list ) + id + uselect );
+
                      extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
                   }
 
@@ -2102,6 +2108,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   if( column_info[ 0 ].find( "?cmd=list" ) == string::npos )
                   {
                      string checksum_values( string( c_cmd_view ) + column_info[ 2 ] + uselect );
+
                      extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
                   }
                   else
@@ -2169,6 +2176,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      if( !found_slides )
                      {
                         found_slides = true;
+
                         extra_content_func += "totalNumSlides = " + to_string( ( i->second ).row_data.size( ) ) + "; show_next_slide( );";
 
                         extra_content << "            <div class=\"home_slides_container clearfix\" id=\"home_slides_container\">\n";
@@ -2177,8 +2185,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         extra_content << "                <a class=\"nav_right\" onclick=\"goto_next_slide( );\"></a>\n";
                         extra_content << "                <ul class=\"paginate\" id=\"home_slides_paginate\">\n";
                         extra_content << "                    <li class=\"active\" onclick=\"goto_slide( 0 );\"></li>\n";
+
                         for( size_t s = 1; s < ( i->second ).row_data.size( ); s++ )
                            extra_content << "                    <li class=\"inactive\" onclick=\"goto_slide( " << to_string( s ) << " );\"></li>\n";
+
                         extra_content << "                </ul>\n";
                      }
 
@@ -2193,6 +2203,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                            extra_content << "               <p class=\"caption center\">" << p_session_info->sys_message << "</p>\n";
 
                         string key, data;
+
                         vector< string > columns;
 
                         key = ( i->second ).row_data[ s ].first;
@@ -2357,11 +2368,12 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                    make_pair( c_display_user_id_has_already_been_taken_parm_id, req_username ) ) + "</p>";
 
                if( is_ssl )
-                  msleep( 2000 );
+                  msleep( c_security_delay_time );
             }
             else
             {
-               msleep( 2000 );
+               msleep( c_security_delay_time );
+
                req_username += uuid( ).as_string( ).substr( 0, 10 );
             }
 
@@ -2372,15 +2384,22 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             if( file_exists( c_sign_up_types_map ) )
             {
                buffer_file_items( c_sign_up_types_map, sign_up_types_map );
+
                clone_key = sign_up_types_map[ account_type ];
             }
 
             if( error_message.empty( ) && !gpg_public_key.empty( ) )
             {
                string key, email_addr;
+
+               string file_name( "~" + uuid( ).as_string( ) );
+
+               string gpg_file_name( file_name + ".gpg" );
+               string tmp_file_name( file_name + ".tmp" );
+
                regex expr( "-----BEGIN PGP PUBLIC KEY BLOCK-----.*-----END PGP PUBLIC KEY BLOCK-----" );
 
-               string::size_type len;
+               string::size_type len = 0;
                string::size_type pos = expr.search( gpg_public_key, &len );
 
                if( pos == string::npos )
@@ -2388,16 +2407,19 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                else
                {
                   string pubkey( gpg_public_key.substr( pos, len ) );
-                  write_file( "x.gpg", pubkey );
+
+                  write_file( gpg_file_name, pubkey );
 
                   string cmd( "gpg --batch --import " );
-                  cmd += "x.gpg >x.tmp 2>&1";
+
+                  cmd += gpg_file_name + " >" + tmp_file_name + " 2>&1";
 
                   int rc = system( cmd.c_str( ) );
                   ( void )rc;
 
                   vector< string > lines;
-                  buffer_file_lines( "x.tmp", lines );
+
+                  buffer_file_lines( tmp_file_name, lines );
 
                   if( lines.size( ) < 3 )
                      had_unexpected_error = true;
@@ -2410,11 +2432,12 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   else
                   {
                      string result;
+
                      string first_line( lines[ 0 ] );
 
                      regex expr( "\".*\"" );
 
-                     string::size_type len;
+                     string::size_type len = 0;
                      string::size_type pos = expr.search( first_line, &len );
 
                      if( pos == string::npos )
@@ -2463,10 +2486,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                               if( pos == string::npos )
                               {
-                                 cmd = "gpg --batch --delete-key --yes " + key + ">x.tmp 2>&1";
+                                 cmd = "gpg --batch --delete-key --yes " + key + ">" + tmp_file_name + " 2>&1";
 
                                  if( system( cmd.c_str( ) ) != 0 )
-                                    LOG_TRACE( buffer_file( "x.tmp" ) );
+                                    LOG_TRACE( buffer_file( tmp_file_name ) );
 
                                  error_message = "<p class=\"error\" align=\"center\">" + GDS( c_display_email_not_found_in_gpg_public_key ) + "</p>";
                               }
@@ -2480,9 +2503,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   }
 
                   if( !error_message.empty( ) || had_unexpected_error )
-                     file_remove( "x.gpg" );
+                     file_remove( gpg_file_name );
                         
-                  file_remove( "x.tmp" );
+                  file_remove( tmp_file_name );
                }
 
                if( error_message.empty( ) && !had_unexpected_error )
@@ -2551,7 +2574,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         if( !is_anon_email_addr )
                         {
                            email = data_encrypt( email_addr, sid );
-                           gpg_key_file = get_storage_info( ).web_root + "/x.gpg";
+                           gpg_key_file = get_storage_info( ).web_root + '/' + gpg_file_name;
                         }
 
                         // NOTE: The GPG key is installed when the User is created as it is being
@@ -2569,12 +2592,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                            if( !key.empty( ) && file_exists( key + ".asc" ) )
                            {
-                              file_remove( key + "x.asc" );
-
-                              string cmd( "gpg --batch --delete-key --yes " + key + ">x.tmp 2>&1" );
+                              string cmd( "gpg --batch --delete-key --yes " + key + ">" + tmp_file_name + " 2>&1" );
 
                               if( system( cmd.c_str( ) ) != 0 )
-                                 LOG_TRACE( buffer_file( "x.tmp" ) );
+                                 LOG_TRACE( buffer_file( tmp_file_name ) );
                            }
                         }
                         else
@@ -2586,14 +2607,15 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                      clear_key( sid );
 
-                     file_remove( "x.gpg" );
-                     file_remove( "x.tmp" );
+                     file_remove( gpg_file_name );
+                     file_remove( tmp_file_name );
 
                      if( error_message.empty( ) )
                      {
                         if( is_help_request || is_anon_email_addr )
                         {
                            has_completed = true;
+
                            gpg_message = buffer_file( key + ".asc" );
 
                            if( !is_help_request )
@@ -2617,6 +2639,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                               error_message = "<p class=\"error\" align=\"center\">" + smtp_result + "</p>";
                         }
                      }
+
+                     file_remove( key + ".asc" );
                   }
 
                   file_remove( key );
@@ -2741,6 +2765,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             }
 
             string email( input_data[ c_openid_ext_email ] );
+
             string encrypted_email;
 
             if( !email.empty( ) )
@@ -2810,7 +2835,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
             if( !pin.empty( ) )
             {
-               msleep( 2000 );
+               msleep( c_security_delay_time );
+
                error_message = "<p class=\"error\" align=\"center\">" + GDS( c_display_incorrect_pin ) + "</p>";
             }
 

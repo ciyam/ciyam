@@ -2138,6 +2138,7 @@ bool fetch_user_record(
  string& username, const string& userhash, const string& password, const string& unique_data )
 {
    string field_list( mod_info.user_uid_field_id );
+
    field_list += "," + mod_info.user_pwd_field_id;
 
    if( !mod_info.user_hdl_field_id.empty( ) )
@@ -2219,6 +2220,7 @@ bool fetch_user_record(
       throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
 
    string::size_type pos = user_info.first.find( " " );
+
    sess_info.user_key = user_info.first.substr( 0, pos );
 
    vector< string > user_data;
@@ -2238,6 +2240,7 @@ bool fetch_user_record(
       if( user_password.length( ) < 20 )
       {
          sess_info.pwd_encrypted = false;
+
          user_password = hash_password( gid + user_data[ 1 ]
           + ( userhash.empty( ) ? username : user_data[ 0 ] ), 100 );
       }
