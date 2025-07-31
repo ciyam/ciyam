@@ -98,6 +98,10 @@ const size_t c_lock_file_sleep_time = 100;
 const size_t c_max_lock_attempts = 20;
 const size_t c_lock_attempt_sleep_time = 200;
 
+const size_t c_log_cycle_seconds = 5;
+
+const size_t c_log_num_excessive = 5000;
+
 const size_t c_sleep_after_script_time = 1000;
 
 const size_t c_num_txs_for_reset = 250000;
@@ -3949,6 +3953,15 @@ bool timezones_file_has_changed( )
 
 uint64_t g_trace_flags;
 
+uint64_t g_log_num_messages = 0;
+
+int64_t g_log_unix_check_time = 0;
+
+// FUTURE: Could use system variables and/or server
+// startup options in order to change the following.
+bool g_log_milliseconds = false;
+bool g_log_check_excessive = true;
+
 // IMPORTANT: Modifications made to this function may
 // prevent the "admin" account from using the FCGI UI.
 void hash_sid_val( string& sid )
@@ -4003,6 +4016,8 @@ void log_trace_message( uint64_t flag, const string& message )
 
    if( flag != TRACE_ANYTHING )
    {
+      // FUTURE: If setting the system variable just set a global
+      // variable then this would prevent potential mutex issues.
       string trace_session_id( get_raw_system_variable(
        get_special_var_name( e_special_var_trace_session_id ) ) );
 
@@ -4015,9 +4030,41 @@ void log_trace_message( uint64_t flag, const string& message )
       }
    }
 
+   date_time now( date_time::local( ) );
+
+   uint64_t unix_now = unix_time( now );
+
+   if( g_log_check_excessive )
+   {
+      // NOTE: Resets the number of log messages counted towards being
+      // potentially excessive every "cycle" seconds (thus the logging
+      // pause only occurs if the excessive log message count has been
+      // reached since the start of the last cycle). Although not very
+      // sophisticated it will help prevent unexpected dramatic growth
+      // of the server log file).
+      if( ( unix_now - g_log_unix_check_time ) >= c_log_cycle_seconds )
+      {
+         g_log_num_messages = 0;
+         g_log_unix_check_time = unix_now;
+      }
+      else
+      {
+         if( ++g_log_num_messages >= c_log_num_excessive )
+         {
+            // NOTE: Sets "flag" to zero in order to ensure
+            // a special "excessive logging" message can be
+            // found in the log itself.
+            if( g_log_num_messages == c_log_num_excessive )
+               flag = 0;
+            else
+               ignore = true;
+         }
+      }
+   }
+
    if( !ignore )
    {
-      string type( "unknown" );
+      string type( "general" );
 
       switch( flag )
       {
@@ -4084,19 +4131,21 @@ void log_trace_message( uint64_t flag, const string& message )
          case TRACE_NOTIFIER:
          type = "inotify";
          break;
-
-         case TRACE_ANYTHING:
-         type = "general";
-         break;
       }
 
       string log_file_name( get_files_area_dir( ) );
+
       log_file_name += '/' + string( c_server_log_file );
 
       ofstream outf( log_file_name.c_str( ), ios::out | ios::app );
 
-      outf << '[' << date_time::local( ).as_string( true, false ) << "] [" << setw( 6 )
-       << setfill( '0' ) << ( gtp_session ? gtp_session->id : 0 ) << "] [" << type << "] " << message << '\n';
+      outf << '[' << now.as_string( true, g_log_milliseconds ) << "] [" << setw( 6 )
+       << setfill( '0' ) << ( gtp_session ? gtp_session->id : 0 ) << "] [" << type << "] ";
+
+      if( flag )
+         outf << message << '\n';
+      else
+         outf << "****** skipped excessive logging ******\n";
    }
 }
 
