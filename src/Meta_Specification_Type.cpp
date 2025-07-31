@@ -13627,6 +13627,7 @@ void Meta_Specification_Type::static_get_all_index_pairs( vector< pair< string, 
    pairs.push_back( make_pair( "Is_Child_Only,Is_System,Parent_Specification_Type,Name", "bool,bool,string,string" ) );
    pairs.push_back( make_pair( "Is_Child_Only,Parent_Specification_Type,Can_Access_Below_Model,Name", "bool,string,bool,string" ) );
    pairs.push_back( make_pair( "Is_Child_Only,Parent_Specification_Type,Name", "bool,string,string" ) );
+   pairs.push_back( make_pair( "Parent_Specification_Type,Is_Child_Only,Name", "string,bool,string" ) );
    pairs.push_back( make_pair( "Parent_Specification_Type,Name", "string,string" ) );
 }
 
@@ -13636,6 +13637,7 @@ void Meta_Specification_Type::static_get_all_unique_indexes( vector< string >& u
    unique_indexes.push_back( "Is_Child_Only,Is_System,Parent_Specification_Type,Name" );
    unique_indexes.push_back( "Is_Child_Only,Parent_Specification_Type,Can_Access_Below_Model,Name" );
    unique_indexes.push_back( "Is_Child_Only,Parent_Specification_Type,Name" );
+   unique_indexes.push_back( "Parent_Specification_Type,Is_Child_Only,Name" );
    unique_indexes.push_back( "Parent_Specification_Type,Name" );
 }
 
@@ -13645,6 +13647,7 @@ void Meta_Specification_Type::static_get_sql_indexes( vector< string >& indexes 
    indexes.push_back( "C_Is_Child_Only,C_Is_System,C_Parent_Specification_Type,C_Name" );
    indexes.push_back( "C_Is_Child_Only,C_Parent_Specification_Type,C_Can_Access_Below_Model,C_Name" );
    indexes.push_back( "C_Is_Child_Only,C_Parent_Specification_Type,C_Name" );
+   indexes.push_back( "C_Parent_Specification_Type,C_Is_Child_Only,C_Name" );
    indexes.push_back( "C_Parent_Specification_Type,C_Name" );
 }
 
@@ -13654,6 +13657,7 @@ void Meta_Specification_Type::static_get_sql_unique_indexes( vector< string >& i
    indexes.push_back( "C_Is_Child_Only,C_Is_System,C_Parent_Specification_Type,C_Name" );
    indexes.push_back( "C_Is_Child_Only,C_Parent_Specification_Type,C_Can_Access_Below_Model,C_Name" );
    indexes.push_back( "C_Is_Child_Only,C_Parent_Specification_Type,C_Name" );
+   indexes.push_back( "C_Parent_Specification_Type,C_Is_Child_Only,C_Name" );
    indexes.push_back( "C_Parent_Specification_Type,C_Name" );
 }
 

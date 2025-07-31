@@ -10211,6 +10211,14 @@
     </parent>
    </parents>
    <restricts/>
+    <restrict/>
+     <name>field_specification_type_is_child_only
+     <field>114151
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <operations>restricted:0
+    </restrict>
    </restricts>
   </list>
   <list/>

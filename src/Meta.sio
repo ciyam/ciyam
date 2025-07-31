@@ -23096,6 +23096,10 @@
       <default_value>0
       <indexes/>
        <index/>
+        <id>401605
+        <num>1
+       </index>
+       <index/>
         <id>401610
         <num>0
        </index>
@@ -23118,6 +23122,10 @@
        <specification/>
         <id>602400
         <item>field
+       </specification>
+       <specification/>
+        <id>602410
+        <item>rfield
        </specification>
       </specifications>
      </field>
@@ -23180,6 +23188,10 @@
        <index/>
         <id>401600
         <num>1
+       </index>
+       <index/>
+        <id>401605
+        <num>2
        </index>
        <index/>
         <id>401610
@@ -24108,6 +24120,10 @@
         <num>0
        </index>
        <index/>
+        <id>401605
+        <num>0
+       </index>
+       <index/>
         <id>401610
         <num>1
        </index>
@@ -24967,6 +24983,11 @@
      <index/>
       <id>401610
       <name>[Is_Child_Only],[Parent_{Specification_Type}],[Name]
+      <unique>true
+     </index>
+     <index/>
+      <id>401605
+      <name>[Parent_{Specification_Type}],[Is_Child_Only],[Name]
       <unique>true
      </index>
      <index/>
@@ -35867,6 +35888,7 @@
      <field_info>114101
      <field_info>114102
      <parent_info>301700,114100,@key,restricted
+     <restrict_info>114151,restricted:0
     </data>
    </specification>
    <specification/>

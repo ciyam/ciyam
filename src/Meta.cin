@@ -1169,6 +1169,7 @@ index_add -id=401440 Specification {Field}
 index_add -id=401500 Permission {Workgroup},Name unique
 index_add -id=401510 Permission {Workgroup},Id unique
 index_add -id=401600 Specification_Type Parent_{Specification_Type},Name unique
+index_add -id=401605 Specification_Type Parent_{Specification_Type},Is_Child_Only,Name unique
 index_add -id=401610 Specification_Type Is_Child_Only,Parent_{Specification_Type},Name unique
 index_add -id=401611 Specification_Type Is_Child_Only,Is_System,Parent_{Specification_Type},Name unique
 index_add -id=401615 Specification_Type Is_Child_Only,Parent_{Specification_Type},Can_Access_Below_Model,Name unique
@@ -2209,7 +2210,7 @@ specification_add -id=602400 {Specification_Type}_view view "? standard:admin_ed
 ,Next_Protect_Procedure,Next_Protect_Source_Parent,Next_Protect_Child_Rel\
 ,Next_Specification_Actions,Next_Child_{Specification_Type}:Name;link"
 specification_add -id=602410 {Specification_Type}_list list "* admin:limit=50\
- Specification_Type Name,Specification_Name Parent_{Specification_Type},@key,restricted"
+ Specification_Type Name,Specification_Name Parent_{Specification_Type},@key,restricted Is_Child_Only,restricted:0"
 specification_add -id=602420 {Specification_Type}_child_list0 list "@602420_Child_* child:admin_new,admin_erase,no_limit\
  Specification_Type Name,Specification_Name Parent_{Specification_Type}"
 specification_add -id=602500 {Specification}_view view "? standard Specification\
