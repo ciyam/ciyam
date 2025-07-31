@@ -618,12 +618,14 @@ string construct_sql_select(
          had_any_restrict = true;
 
          bool invert = false;
+
          string invert_prefix;
 
-         if( field_values.length( ) && field_values[ 0 ] == '!' )
+         if( field_values.length( ) && ( field_values[ 0 ] == '!' ) )
          {
             invert = true;
             invert_prefix = "NOT ";
+
             field_values.erase( 0, 1 );
          }
 
@@ -635,7 +637,7 @@ string construct_sql_select(
 
          // NOTE: If a child sub-context & field has been provided then one or more sub-selects
          // (depending upon the operator used) will be included in the generated SQL expression.
-         if( !field_name.empty( ) && field_name[ 0 ] == '_' )
+         if( !field_name.empty( ) && ( field_name[ 0 ] == '_' ) )
          {
             string::size_type pos = field_name.find( '.' );
 
@@ -663,7 +665,8 @@ string construct_sql_select(
          }
 
          string field_type;
-         bool is_sql_numeric;
+
+         bool is_sql_numeric = false;
 
          get_field_name( *p_instance, field_name, &is_sql_numeric, &field_type );
 
@@ -691,7 +694,8 @@ string construct_sql_select(
 
          if( field_values.length( ) >= 2 )
          {
-            if( field_values[ 0 ] == '*' && field_values[ field_values.length( ) - 1 ] == '*' )
+            if( ( field_values[ 0 ] == '*' )
+             && ( field_values[ field_values.length( ) - 1 ] == '*' ) )
             {
                was_like = true;
 
@@ -845,6 +849,7 @@ string construct_sql_select(
                sql += " OR ";
 
             string like_expr( escaped( text_search_words[ i ], "'%_" ) );
+
             like_expr = "%" + like_expr + "%";
 
             // NOTE: Due to issues with UTF-8 and MySQL the query needs to use both the case
@@ -873,7 +878,8 @@ string construct_sql_select(
          had_any_restrict = true;
 
          string field_type;
-         bool is_sql_numeric;
+
+         bool is_sql_numeric = false;
 
          get_field_name( instance, next_field, &is_sql_numeric, &field_type );
 
@@ -928,6 +934,7 @@ string construct_sql_select(
          {
             invert = true;
             invert_prefix = "NOT ";
+
             next_value.erase( 0, 1 );
          }
 
@@ -935,9 +942,11 @@ string construct_sql_select(
          // it will become a LIKE prefix and the '*' is changed to a SQL wildcard.
          bool value_is_like_prefix = false;
 
-         if( !next_value.empty( ) && next_value[ next_value.length( ) - 1 ] == '*' )
+         if( !next_value.empty( )
+          && ( next_value[ next_value.length( ) - 1 ] == '*' ) )
          {
             value_is_like_prefix = true;
+
             next_value[ next_value.length( ) - 1 ] = '%';
          }
 
@@ -947,9 +956,11 @@ string construct_sql_select(
          if( !value_is_like_prefix )
          {
             string::size_type pos = next_value.find( ".." );
+
             if( pos != string::npos )
             {
                is_between = true;
+
                if( is_sql_numeric )
                {
                   lhs = next_value.substr( 0, pos );
@@ -993,7 +1004,8 @@ string construct_sql_select(
          string next_value( paging_info[ i ].second );
 
          string field_type;
-         bool is_sql_numeric;
+
+         bool is_sql_numeric = false;
 
          get_field_name( instance, next_field, &is_sql_numeric, &field_type );
 
@@ -1029,6 +1041,7 @@ string construct_sql_select(
       }
 
       vector< string > unique_indexes;
+
       instance.get_sql_unique_indexes( unique_indexes );
 
       set< string > sorted_unique_indexes( unique_indexes.begin( ), unique_indexes.end( ) );
@@ -1038,6 +1051,7 @@ string construct_sql_select(
       for( size_t i = 0; i < order_info.size( ); i++ )
       {
          string next_field( order_info[ i ] );
+
          get_field_name( instance, next_field );
 
          // NOTE: As the "key" is always appended to the ordering (in case no unique index found)
@@ -1074,9 +1088,11 @@ string construct_sql_select(
    if( !use_index_fields.empty( ) )
    {
       vector< string > indexes;
+
       instance.get_sql_indexes( indexes );
 
       vector< string > unique_indexes;
+
       instance.get_sql_unique_indexes( unique_indexes );
 
       set< string > sorted_unique_indexes( unique_indexes.begin( ), unique_indexes.end( ) );
@@ -1084,6 +1100,7 @@ string construct_sql_select(
       for( size_t i = use_index_fields.size( ); i < order_info.size( ); i++ )
       {
          string next_field( order_info[ i ] );
+
          get_field_name( instance, next_field );
 
          use_index_fields.push_back( "C_" + next_field );
@@ -1096,6 +1113,7 @@ string construct_sql_select(
       for( size_t i = 0; i < indexes.size( ); i++ )
       {
          vector< string > index_fields;
+
          split( indexes[ i ], index_fields );
 
          // NOTE: As the "key" is always appended to the ordering (in case no unique index found)
@@ -1110,7 +1128,7 @@ string construct_sql_select(
                if( index_fields[ j ] != use_index_fields[ j ] )
                   break;
 
-               if( j == use_index_fields.size( ) - 1 )
+               if( j == ( use_index_fields.size( ) - 1 ) )
                   found = true;
             }
          }
@@ -1119,6 +1137,7 @@ string construct_sql_select(
          {
             index_to_use = "I_" + string( instance.get_module_name( ) ) + "_"
              + string( instance.get_class_name( ) ) + "_" + ( i < 10 ? "0" : "" ) + to_string( i );
+
             break;
          }
       }
@@ -1384,7 +1403,14 @@ void fetch_keys_from_local_storage( class_base& instance,
       expr = string( c_sec_prefix_length, '0' ) + c_security_suffix;
    }
 
-   expr += prefix + "*";
+   expr += prefix;
+
+   string start_from;
+
+   if( !origin.empty( ) )
+      start_from = expr + origin;
+
+   expr += "*";
 
    // NOTE: First check if the folder exists
    // as it might not yet have been created.
@@ -1392,7 +1418,7 @@ void fetch_keys_from_local_storage( class_base& instance,
    {
       ofs.set_root_folder( folder );
 
-      ofs.list_files( expr, instance_keys, true, origin, inclusive, limit, in_reverse_order );
+      ofs.list_files( expr, instance_keys, true, start_from, inclusive, limit, in_reverse_order );
    }
 
    if( index_branch )
@@ -1606,6 +1632,7 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
  const vector< string >& field_names, vector< string >* p_columns = 0, bool skip_after_fetch = false )
 {
    bool found = false;
+   bool is_file_link = false;
 
    field_info_container field_info;
    instance.get_field_info( field_info );
@@ -1621,7 +1648,7 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
 
    ods_file_system ofs( ods_db );
 
-   string source_file_name( "/" );
+   string file_name( "/" );
 
    string key( key_info );
 
@@ -1631,7 +1658,7 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
 
    if( pos == string::npos )
    {
-      source_file_name += c_storage_folder_name_dot_dat;
+      file_name += c_storage_folder_name_dot_dat;
 
       ofs.set_root_folder( c_storage_folder_name_dot_dat );
    }
@@ -1641,7 +1668,7 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
 
       key.erase( 0, pos + 1 );
 
-      source_file_name += c_storage_folder_name_dot_idx;
+      file_name += c_storage_folder_name_dot_idx;
 
       ofs.set_root_folder( c_storage_folder_name_dot_idx );
 
@@ -1669,6 +1696,8 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
       if( index_num < 0 )
          throw runtime_error( "unable to find an index pair for '" + field_id + "'" );
 
+      is_file_link = true;
+
       if( index_num < 10 )
          prefix += "0";
 
@@ -1685,17 +1714,17 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
    {
       ofs.set_folder( class_id );
 
-      source_file_name += '/' + class_id;
+      file_name += '/' + class_id;
 
-      source_file_name += '/' + prefix + key;
+      file_name += '/' + prefix + key;
 
-      if( ofs.has_file( source_file_name ) )
+      if( ofs.has_file( file_name ) )
       {
          found = true;
 
          stringstream sio_data;
 
-         ofs.get_file( source_file_name, &sio_data );
+         ofs.get_file( file_name, &sio_data );
 
          sio_reader reader( sio_data );
 
@@ -1712,6 +1741,20 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
 
          string version( version_info.substr( 0, pos ) );
          string revision( version_info.substr( pos + 1 ) );
+
+         // NOTE: The link source will include the full
+         // path so removes the path to leave the key.
+         if( is_file_link )
+         {
+            string source( ofs.link_source( file_name ) );
+
+            string::size_type pos = source.rfind( '/' );
+
+            if( pos != string::npos )
+               source.erase( 0, pos + 1 );
+
+            key = source;
+         }
 
          if( p_columns )
          {
@@ -4686,7 +4729,12 @@ bool perform_instance_iterate( class_base& instance,
             if( !paging_info.empty( ) )
             {
                for( size_t i = 0; i < paging_info.size( ); i++ )
-                  origin += paging_info[ i ].second + '\t';
+               {
+                  if( i > 0 )
+                     origin += '\t';
+
+                  origin += paging_info[ i ].second;
+               }
             }
 
             instance.set_local_info( folder, origin, prefix );
@@ -4731,7 +4779,7 @@ bool perform_instance_iterate( class_base& instance,
                 get_special_var_name( e_special_var_loop ),
                 to_comparable_string( 0, false, c_loop_variable_digits ) );
 
-               instance_accessor.set_is_in_iteration( true, direction == e_iter_direction_forwards );
+               instance_accessor.set_is_in_iteration( true, ( direction == e_iter_direction_forwards ) );
             }
          }
 
@@ -4746,6 +4794,9 @@ bool perform_instance_iterate( class_base& instance,
 
             if( limit > row_cache_limit )
                limit = row_cache_limit;
+
+            if( key_info == c_null_key )
+               instance.set_local_origin( instance.get_key( ) );
 
             fetch_keys_from_local_storage( instance,
              inclusive, limit, instance_keys, ( direction == e_iter_direction_backwards ) );
@@ -4803,6 +4854,7 @@ bool perform_instance_iterate( class_base& instance,
                   {
                      if( i > 0 )
                         sql_plan += " | ";
+
                      sql_plan += ds.as_string( i );
                   }
                }
@@ -4918,7 +4970,7 @@ bool perform_instance_iterate( class_base& instance,
                + to_string( persistence_type ) + " in perform_instance_iterate" );
 
          // NOTE: Put a dummy row at the end to stop iteration.
-         if( query_finished && ( found_next || key_info != c_null_key ) )
+         if( query_finished && ( found_next || ( key_info != c_null_key ) ) )
             rows.push_back( vector< string >( ) );
 
          instance_accessor.row_cache( ) = rows;
