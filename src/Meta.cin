@@ -1149,6 +1149,7 @@ index_add -id=400960 Modifier_Affect {Modifier}
 index_add -id=400970 Modifier_Affect Source_{Modifier_Affect}
 index_add -id=401000 Procedure {Class},Name unique
 index_add -id=401010 Procedure {Class},Id unique
+index_add -id=401015 Procedure Source_{Procedure}
 index_add -id=401100 Procedure_Arg {Procedure},Order unique
 index_add -id=401110 Procedure_Arg {Procedure},Name unique
 index_add -id=401200 Relationship {Model},Child_Class,Name unique
