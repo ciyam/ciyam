@@ -1329,14 +1329,9 @@ bool has_instance_in_local_storage( class_base& instance, const string& key )
 
    string class_id( instance.get_class_id( ) );
 
-   ods& ods_db( storage_ods_instance( ) );
+   storage_ods_bulk_read ods_bulk_read;
 
-   auto_ptr< ods::bulk_read > ap_bulk_read;
-
-   if( !ods_db.is_thread_bulk_read_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
-
-   ods_file_system ofs( ods_db );
+   ods_file_system ofs( storage_ods_instance( ) );
 
    ofs.set_root_folder( c_storage_folder_name_dot_dat );
 
@@ -1361,10 +1356,7 @@ bool has_instance_in_global_storage( class_base& instance, const string& key )
 
    system_ods_fs_guard ods_fs_guard;
 
-   ods& sys_ods( system_ods_instance( ) );
-
-   ods::bulk_read bulk_read( sys_ods );
-   scoped_ods_instance ods_instance( sys_ods );
+   system_ods_bulk_read ods_bulk_read;
 
    ods_file_system& sys_ods_fs( system_ods_file_system( ) );
 
@@ -1383,14 +1375,9 @@ void fetch_keys_from_local_storage( class_base& instance,
    string origin( instance.get_local_origin( ) );
    string prefix( instance.get_local_prefix( ) );
 
-   ods& ods_db( storage_ods_instance( ) );
+   storage_ods_bulk_read ods_bulk_read;
 
-   auto_ptr< ods::bulk_read > ap_bulk_read;
-
-   if( !ods_db.is_thread_bulk_read_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
-
-   ods_file_system ofs( ods_db );
+   ods_file_system ofs( storage_ods_instance( ) );
 
    string expr;
 
@@ -1452,11 +1439,7 @@ void fetch_keys_from_global_storage( class_base& instance,
 
    system_ods_fs_guard ods_fs_guard;
 
-   ods& sys_ods( system_ods_instance( ) );
-
-   ods::bulk_read bulk_read( sys_ods );
-
-   scoped_ods_instance ods_instance( sys_ods );
+   system_ods_bulk_read ods_bulk_read;
 
    ods_file_system& sys_ods_fs( system_ods_file_system( ) );
 
@@ -1639,14 +1622,9 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
 
    class_base_accessor instance_accessor( instance );
 
-   ods& ods_db( storage_ods_instance( ) );
+   storage_ods_bulk_read ods_bulk_read;
 
-   auto_ptr< ods::bulk_read > ap_bulk_read;
-
-   if( !ods_db.is_thread_bulk_read_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( ods_db ) );
-
-   ods_file_system ofs( ods_db );
+   ods_file_system ofs( storage_ods_instance( ) );
 
    string file_name( "/" );
 
@@ -1850,11 +1828,7 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
 
    system_ods_fs_guard ods_fs_guard;
 
-   ods& sys_ods( system_ods_instance( ) );
-
-   ods::bulk_read bulk_read( sys_ods );
-
-   scoped_ods_instance ods_instance( sys_ods );
+   system_ods_bulk_read ods_bulk_read;
 
    ods_file_system& sys_ods_fs( system_ods_file_system( ) );
 
@@ -3673,10 +3647,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                   ods& ods_db( storage_ods_instance( ) );
 
-                  auto_ptr< ods::bulk_write > ap_bulk_write;
-
-                  if( !ods_db.is_thread_bulk_write_locked( ) )
-                     ap_bulk_write.reset( new ods::bulk_write( ods_db ) );
+                  storage_ods_bulk_write ods_bulk_write;
 
                   ods::transaction ods_tx( ods_db );
 
@@ -3867,10 +3838,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                   string root_child_folder( persistence_extra );
                   bool is_file_not_folder( global_storage_persistence_is_file( root_child_folder ) );
 
-                  ods& sys_ods( system_ods_instance( ) );
-
-                  ods::bulk_write bulk_write( sys_ods );
-                  scoped_ods_instance ods_instance( sys_ods );
+                  system_ods_bulk_write ods_bulk_write;
 
                   ods_file_system& sys_ods_fs( system_ods_file_system( ) );
 
@@ -4298,6 +4266,15 @@ bool perform_instance_iterate( class_base& instance,
       throw runtime_error( "cannot begin iteration whilst currently perfoming an instance operation" );
    else
    {
+      auto_ptr< storage_ods_bulk_read > ap_storage_ods_bulk_read;
+
+      // IMPORTANT: As bulk locking is being performed when fetching
+      // the instance keys and then again for each separate instance
+      // in order to prevent potential bulk locking conflicts obtain
+      // the ODS bulk read lock now.
+      if( persistence_type == 1 )
+         ap_storage_ods_bulk_read.reset( new storage_ods_bulk_read( ) );
+
       if( ( row_limit >= 0 ) && ( key_info != c_null_key ) )
       {
          vector< string > field_info;
