@@ -508,8 +508,8 @@ struct session
    deque< string > file_hashes_to_get;
    deque< string > file_hashes_to_put;
 
-   auto_ptr< ods::bulk_read > ap_bulk_read;
-   auto_ptr< ods::bulk_write > ap_bulk_write;
+   auto_ptr< storage_ods_bulk_read > ap_bulk_read;
+   auto_ptr< storage_ods_bulk_write > ap_bulk_write;
 
    set< string > tx_key_info;
 
@@ -810,8 +810,8 @@ class storage_handler
     name( name ),
     p_ods( p_ods ),
     ref_count( 0 ),
-    p_bulk_write( 0 ),
     next_lock_handle( 0 ),
+    bulk_lock_sess_id( 0 ),
     p_alternative_log_file( 0 ),
     is_locked_for_admin( false ),
     has_sql_undo_support( false )
@@ -843,6 +843,12 @@ class storage_handler
    bool is_special_storage_name( ) { return ( name == c_meta_storage_name ) || ( name == c_ciyam_storage_name ); }
 
    bool is_using_verbose_logging( ) const { return ( name == c_meta_storage_name ); }
+
+   void set_bulk_lock_sess_id( );
+
+   size_t get_bulk_lock_sess_id( ) const { return bulk_lock_sess_id; }
+
+   date_time get_bulk_lock_date_time( ) const { return dtm_bulk_locked; }
 
    bool get_is_locked_for_admin( ) const { return is_locked_for_admin; }
    void set_is_locked_for_admin( bool lock_for_admin = true ) { is_locked_for_admin = lock_for_admin; }
@@ -895,14 +901,16 @@ class storage_handler
    ods* p_ods;
    size_t ref_count;
 
-   ods::bulk_write* p_bulk_write;
-
    ofstream log_file;
    ofstream* p_alternative_log_file;
 
    storage_root root;
 
    size_t next_lock_handle;
+
+   size_t bulk_lock_sess_id;
+
+   date_time dtm_bulk_locked;
 
    bool is_locked_for_admin;
    bool has_sql_undo_support;
@@ -931,6 +939,14 @@ class storage_handler
    storage_handler( const storage_handler& );
    storage_handler& operator ==( const storage_handler& );
 };
+
+void storage_handler::set_bulk_lock_sess_id( )
+{
+   if( gtp_session )
+      bulk_lock_sess_id = gtp_session->id;
+
+   dtm_bulk_locked = date_time::local( );
+}
 
 string storage_handler::get_variable( const string& var_name )
 {
@@ -975,10 +991,10 @@ string storage_handler::get_variable( const string& var_name )
          if( gtp_session->ap_bulk_read.get( ) )
             throw runtime_error( "storage is bulk locked for read by this session" );
 
-         auto_ptr< ods::bulk_write > ap_bulk_write;
+         auto_ptr< storage_ods_bulk_write > ap_bulk_write;
 
          if( !gtp_session->ap_bulk_write.get( ) )
-            ap_bulk_write.reset( new ods::bulk_write( *ods::instance( ) ) );
+            ap_bulk_write.reset( new storage_ods_bulk_write( ) );
 
          ods_file_system ofs( *ods::instance( ) );
 
@@ -1049,11 +1065,11 @@ string storage_handler::get_variable( const string& var_name )
       }
       else
       {
-         auto_ptr< ods::bulk_read > ap_bulk_read;
+         auto_ptr< storage_ods_bulk_read > ap_bulk_read;
 
          if( !gtp_session->ap_bulk_read.get( )
           && !gtp_session->ap_bulk_write.get( ) )
-            ap_bulk_read.reset( new ods::bulk_read( *ods::instance( ) ) );
+            ap_bulk_read.reset( new storage_ods_bulk_read( ) );
 
          ods_file_system ofs( *ods::instance( ) );
 
@@ -1177,10 +1193,10 @@ void storage_handler::set_variable( const string& var_name, const string& new_va
         if( gtp_session->ap_bulk_read.get( ) )
             throw runtime_error( "storage is bulk locked for read by this session" );
 
-         auto_ptr< ods::bulk_write > ap_bulk_write;
+         auto_ptr< storage_ods_bulk_write > ap_bulk_write;
 
          if( !gtp_session->ap_bulk_write.get( ) )
-            ap_bulk_write.reset( new ods::bulk_write( *ods::instance( ) ) );
+            ap_bulk_write.reset( new storage_ods_bulk_write( ) );
 
          ods_file_system ofs( *ods::instance( ) );
 
@@ -2205,8 +2221,7 @@ void init_system_ods( bool* p_restored = 0 )
       gap_ods->compress_and_reset_tx_log( &progress );
    }
 
-   ods::bulk_write bulk_write( *gap_ods );
-   scoped_ods_instance ods_instance( *gap_ods );
+   system_ods_bulk_write ods_bulk_write;
 
    gap_ofs.reset( new ods_file_system( *gap_ods ) );
 
@@ -2516,6 +2531,7 @@ void perform_storage_op( storage_op op,
             ods::bulk_read bulk_read( *ap_ods );
 
             ods_file_system ofs( *ap_ods );
+
             ap_handler->get_root( ).fetch_from_text_files( ofs );
 
             ofs.set_folder( c_storage_folder_name_modules );
@@ -4006,6 +4022,7 @@ void list_trace_flags( vector< string >& flag_names )
    flag_names.push_back( "sync_ops" ); // TRACE_SYNC_OPS
    flag_names.push_back( "peer_ops" ); // TRACE_PEER_OPS
    flag_names.push_back( "notifier" ); // TRACE_NOTIFIER
+   flag_names.push_back( "ods_bulk" ); // TRACE_ODS_BULK
 }
 
 void log_trace_message( uint64_t flag, const string& message )
@@ -4130,6 +4147,10 @@ void log_trace_message( uint64_t flag, const string& message )
 
          case TRACE_NOTIFIER:
          type = "inotify";
+         break;
+
+         case TRACE_ODS_BULK:
+         type = "ods_blk";
          break;
       }
 
@@ -5230,8 +5251,7 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
 {
    system_ods_fs_guard ods_fs_guard;
 
-   ods::bulk_read bulk_read( *gap_ods );
-   scoped_ods_instance ods_instance( *gap_ods );
+   system_ods_bulk_read ods_bulk_read;
 
    string retval;
 
@@ -5306,8 +5326,7 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
 {
    system_ods_fs_guard ods_fs_guard;
 
-   ods::bulk_read bulk_read( *gap_ods );
-   scoped_ods_instance ods_instance( *gap_ods );
+   system_ods_bulk_read  ods_bulk_read;
 
    gap_ofs->set_root_folder( c_system_peerchain_folder );
 
@@ -5357,8 +5376,7 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
 {
    system_ods_fs_guard ods_fs_guard;
 
-   ods::bulk_read bulk_read( *gap_ods );
-   scoped_ods_instance ods_instance( *gap_ods );
+   system_ods_bulk_read ods_bulk_read;
 
    gap_ofs->set_root_folder( c_system_peerchain_folder );
 
@@ -10337,9 +10355,9 @@ void storage_bulk_start( bool is_write )
          throw runtime_error( "storage is already bulk locked for write by this session" );
 
       if( !is_write )
-         gtp_session->ap_bulk_read.reset( new ods::bulk_read( *ods::instance( ) ) );
+         gtp_session->ap_bulk_read.reset( new storage_ods_bulk_read( ) );
       else
-         gtp_session->ap_bulk_write.reset( new ods::bulk_write( *ods::instance( ) ) );
+         gtp_session->ap_bulk_write.reset( new storage_ods_bulk_write( ) );
    }
 }
 
@@ -10428,6 +10446,124 @@ ods& storage_ods_instance( )
    return *ods::instance( );
 }
 
+struct storage_ods_bulk_read::impl
+{
+   impl( )
+   {
+      ods* p_ods = ods::instance( );
+
+      if( !p_ods )
+         throw runtime_error( "unexpected null ods::instance( ) in storage_ods_bulk_read" );
+
+      if( !p_ods->is_thread_bulk_locked( ) )
+      {
+         try
+         {
+            ap_ods_bulk_read.reset( new ods::bulk_read( *p_ods ) );
+
+            if( gtp_session )
+               gtp_session->p_storage_handler->set_bulk_lock_sess_id( );
+
+            TRACE_LOG( TRACE_ODS_BULK, "[bulk_read] storage_ods (obtained)" );
+         }
+         catch( ... )
+         {
+            size_t other_sess_id = 0;
+            date_time dtm_bulk_locked;
+
+            if( gtp_session )
+            {
+               other_sess_id = gtp_session->p_storage_handler->get_bulk_lock_sess_id( );
+               dtm_bulk_locked = gtp_session->p_storage_handler->get_bulk_lock_date_time( );
+            }
+
+            TRACE_LOG( TRACE_ANYTHING, "[bulk_read] storage_ods **failed** (locked by session #"
+             + to_string( other_sess_id ) + " " + dtm_bulk_locked.as_string( true, false ) + ")" );
+
+            throw;
+         }
+      }
+   }
+
+   auto_ptr< ods::bulk_read > ap_ods_bulk_read;
+};
+
+storage_ods_bulk_read::storage_ods_bulk_read( )
+{
+   p_impl = new impl;
+}
+
+storage_ods_bulk_read::~storage_ods_bulk_read( )
+{
+   uint64_t trace_flag = 0;
+
+   if( p_impl && p_impl->ap_ods_bulk_read.get( ) )
+      trace_flag = TRACE_ODS_BULK;
+
+   TRACE_LOG( trace_flag, "[bulk_read] storage_ods (released)" );
+
+   delete p_impl;
+}
+
+struct storage_ods_bulk_write::impl
+{
+   impl( progress* p_progress )
+   {
+      ods* p_ods = ods::instance( );
+
+      if( !p_ods )
+         throw runtime_error( "unexpected null ods::instance( ) in storage_ods_bulk_write" );
+
+      if( !p_ods->is_thread_bulk_write_locked( ) )
+      {
+         try
+         {
+            ap_ods_bulk_write.reset( new ods::bulk_write( *p_ods, p_progress ) );
+
+            if( gtp_session )
+               gtp_session->p_storage_handler->set_bulk_lock_sess_id( );
+
+            TRACE_LOG( TRACE_ODS_BULK, "[bulk_write] storage_ods (obtained)" );
+         }
+         catch( ... )
+         {
+            size_t other_sess_id = 0;
+            date_time dtm_bulk_locked;
+
+            if( gtp_session )
+            {
+               other_sess_id = gtp_session->p_storage_handler->get_bulk_lock_sess_id( );
+               dtm_bulk_locked = gtp_session->p_storage_handler->get_bulk_lock_date_time( );
+            }
+
+            TRACE_LOG( TRACE_ANYTHING, "[bulk_write] storage_ods **failed** (locked by session #"
+             + to_string( other_sess_id ) + " " + dtm_bulk_locked.as_string( true, false ) + ")" );
+
+            throw;
+         }
+      }
+   }
+
+   auto_ptr< ods::bulk_write > ap_ods_bulk_write;
+};
+
+storage_ods_bulk_write::storage_ods_bulk_write( progress* p_progress )
+{
+   p_impl = new impl( p_progress );
+}
+
+storage_ods_bulk_write::~storage_ods_bulk_write( )
+{
+   uint64_t trace_flag = 0;
+
+   if( p_impl && p_impl->ap_ods_bulk_write.get( ) )
+      trace_flag = TRACE_ODS_BULK;
+
+   TRACE_LOG( trace_flag, "[bulk_write] storage_ods (released)" );
+
+   delete p_impl;
+}
+
 ods& system_ods_instance( )
 {
    return *gap_ods;
@@ -10442,8 +10578,7 @@ void export_repository_entries( )
 {
    system_ods_fs_guard ods_fs_guard;
 
-   ods::bulk_read bulk_read( *gap_ods );
-   scoped_ods_instance ods_instance( *gap_ods );
+   system_ods_bulk_read ods_bulk_read;
 
    gap_ofs->set_root_folder( c_system_repository_folder );
 
@@ -10455,10 +10590,26 @@ struct system_ods_bulk_read::impl
    impl( )
    {
       if( !gap_ods->is_thread_bulk_locked( ) )
-         ap_ods_bulk_read.reset( new ods::bulk_read( *gap_ods ) );
+      {
+         try
+         {
+            ap_ods_bulk_read.reset( new ods::bulk_read( *gap_ods ) );
+
+            ap_scoped_instance.reset( new scoped_ods_instance( *gap_ods ) );
+
+            TRACE_LOG( TRACE_ODS_BULK, "[bulk_read] system_ods (obtained)" );
+         }
+         catch( ... )
+         {
+            TRACE_LOG( TRACE_ANYTHING, "[bulk_read] system_ods **failed**" );
+
+            throw;
+         }
+      }
    }
 
    auto_ptr< ods::bulk_read > ap_ods_bulk_read;
+   auto_ptr< scoped_ods_instance > ap_scoped_instance;
 };
 
 system_ods_bulk_read::system_ods_bulk_read( )
@@ -10468,6 +10619,13 @@ system_ods_bulk_read::system_ods_bulk_read( )
 
 system_ods_bulk_read::~system_ods_bulk_read( )
 {
+   uint64_t trace_flag = 0;
+
+   if( p_impl && p_impl->ap_ods_bulk_read.get( ) )
+      trace_flag = TRACE_ODS_BULK;
+
+   TRACE_LOG( trace_flag, "[bulk_read] system_ods (released)" );
+
    delete p_impl;
 }
 
@@ -10476,10 +10634,26 @@ struct system_ods_bulk_write::impl
    impl( progress* p_progress )
    {
       if( !gap_ods->is_thread_bulk_write_locked( ) )
-         ap_ods_bulk_write.reset( new ods::bulk_write( *gap_ods, p_progress ) );
+      {
+         try
+         {
+            ap_ods_bulk_write.reset( new ods::bulk_write( *gap_ods, p_progress ) );
+
+            ap_scoped_instance.reset( new scoped_ods_instance( *gap_ods ) );
+
+            TRACE_LOG( TRACE_ODS_BULK, "[bulk_write] system_ods (obtained)" );
+         }
+         catch( ... )
+         {
+            TRACE_LOG( TRACE_ANYTHING, "[bulk_write] system_ods **failed**" );
+
+            throw;
+         }
+      }
    }
 
    auto_ptr< ods::bulk_write > ap_ods_bulk_write;
+   auto_ptr< scoped_ods_instance > ap_scoped_instance;
 };
 
 system_ods_bulk_write::system_ods_bulk_write( progress* p_progress )
@@ -10489,6 +10663,13 @@ system_ods_bulk_write::system_ods_bulk_write( progress* p_progress )
 
 system_ods_bulk_write::~system_ods_bulk_write( )
 {
+   uint64_t trace_flag = 0;
+
+   if( p_impl && p_impl->ap_ods_bulk_write.get( ) )
+      trace_flag = TRACE_ODS_BULK;
+
+   TRACE_LOG( trace_flag, "[bulk_write] system_ods (released)" );
+
    delete p_impl;
 }
 
@@ -10893,6 +11074,8 @@ void add_security_group( const string& group_key )
 {
    guard g( g_gid_mutex );
 
+   storage_ods_bulk_write ods_bulk_write;
+
    ods_file_system ofs( *ods::instance( ) );
 
    if( !ofs.has_folder( c_storage_folder_name_gid_data ) )
@@ -10909,6 +11092,8 @@ void add_security_group( const string& group_key )
 int64_t group_security_value( const string& group_key_value )
 {
    guard g( g_gid_mutex );
+
+   storage_ods_bulk_read ods_bulk_read;
 
    ods_file_system ofs( *ods::instance( ) );
 
@@ -10933,6 +11118,8 @@ string convert_group_keys_to_numbers( const string& group_keys )
       vector< string > groups;
 
       split( group_keys, groups, '|' );
+
+      storage_ods_bulk_read ods_bulk_read;
 
       ods_file_system ofs( *ods::instance( ) );
 
@@ -10966,6 +11153,8 @@ bool get_uid_data( const string& uid, size_t& level, string& gids )
 
    bool retval = false;
 
+   storage_ods_bulk_read ods_bulk_read;
+
    ods_file_system ofs( *ods::instance( ) );
 
    if( ofs.has_folder( c_storage_folder_name_uid_data ) )
@@ -10992,6 +11181,8 @@ void set_uid_data( const string& uid, const string& level, const string& group_k
    guard g( g_uid_mutex );
 
    string gids( convert_group_keys_to_numbers( group_keys ) );
+
+   storage_ods_bulk_write ods_bulk_write;
 
    ods::transaction tx( *ods::instance( ) );
 
@@ -11311,6 +11502,8 @@ void module_load( const string& module_name,
 
                   ap_guard.reset( new guard( g_mutex ) );
                }
+
+               storage_ods_bulk_write ods_bulk_write;
 
                ods_file_system ofs( *p_ods );
 
@@ -11939,7 +12132,7 @@ string get_field_values( size_t handle,
    special_field_names.insert( make_pair( c_order_field, order_field_name ) );
    special_field_names.insert( make_pair( c_owner_field, owner_field_name ) );
 
-   if( p_omit_matching && p_omit_matching->size( ) != field_list.size( ) )
+   if( p_omit_matching && ( p_omit_matching->size( ) != field_list.size( ) ) )
       throw runtime_error( "unexpected 'omit matching' vector size mismatch" );
 
    for( size_t i = 0; i < field_list.size( ); i++ )
@@ -12004,7 +12197,7 @@ string get_field_values( size_t handle,
          else if( is_special && ( insert_name != c_ignore_field ) )
             add_next_value( as_csv,
              get_field_value( handle, parent_context, insert_name ), field_values );
-         else if( !insert_name.empty( ) && insert_name[ 0 ] == '@' )
+         else if( !insert_name.empty( ) && ( insert_name[ 0 ] == '@' ) )
             add_next_value( as_csv,
              instance_get_variable( handle, parent_context, insert_name ), field_values );
          else
@@ -12129,7 +12322,7 @@ string get_field_values( size_t handle,
 
       if( insert_name == c_key_field )
       {
-         if( !p_replace_map || p_replace_map->find( key_value ) == p_replace_map->end( ) )
+         if( !p_replace_map || ( p_replace_map->find( key_value ) == p_replace_map->end( ) ) )
             add_next_value( as_csv, key_value, field_values );
          else
             add_next_value( as_csv, p_replace_map->find( key_value )->second, field_values );
@@ -12137,7 +12330,7 @@ string get_field_values( size_t handle,
       else if( is_special && ( insert_name != c_ignore_field ) )
          add_next_value( as_csv,
           get_field_value( handle, parent_context, insert_name ), field_values );
-      else if( !insert_name.empty( ) && insert_name[ 0 ] == '@' )
+      else if( !insert_name.empty( ) && ( insert_name[ 0 ] == '@' ) )
          add_next_value( as_csv,
           instance_get_variable( handle, parent_context, insert_name ), field_values );
       else
@@ -12155,6 +12348,7 @@ void set_any_field_ids_to_names( size_t handle, const string& context, vector< s
    map< string, string > ids_to_names;
 
    field_info_container field_info;
+
    instance.get_field_info( field_info );
 
    for( size_t i = 0; i < field_info.size( ); i++ )
@@ -12175,6 +12369,7 @@ void set_any_field_names_to_ids( size_t handle, const string& context, vector< s
    map< string, string > names_to_ids;
 
    field_info_container field_info;
+
    instance.get_field_info( field_info );
 
    for( size_t i = 0; i < field_info.size( ); i++ )
@@ -12195,6 +12390,7 @@ bool determine_alternative_key_fields( size_t handle, const string& context,
    set< string > sorted_available_fields( available_fields.begin( ), available_fields.end( ) );
 
    vector< key_field_info_container > all_key_field_info;
+
    instance.get_alternative_key_field_info( all_key_field_info );
 
    vector< key_field_info_container > candidates_key_field_info;
@@ -12202,12 +12398,14 @@ bool determine_alternative_key_fields( size_t handle, const string& context,
    for( size_t i = 0; i < all_key_field_info.size( ); i++ )
    {
       bool is_candidate = true;
+
       for( size_t j = 0; j < all_key_field_info[ i ].size( ); j++ )
       {
          if( !sorted_available_fields.count( all_key_field_info[ i ][ j ].id )
           && !sorted_available_fields.count( all_key_field_info[ i ][ j ].name ) )
          {
             is_candidate = false;
+
             break;
          }
       }
@@ -12246,6 +12444,7 @@ void get_foreign_field_and_class_ids( size_t handle,
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
    vector< field_data > all_field_data;
+
    get_all_field_data( handle, "", "", all_field_data );
 
    for( size_t i = 0; i < all_field_data.size( ); i++ )
@@ -12261,6 +12460,7 @@ void get_base_class_info( size_t handle,
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
    class_base& dcb( *instance.get_dynamic_instance( ) );
+
    dcb.get_base_class_info( base_class_info );
 }
 
@@ -12462,9 +12662,11 @@ void get_all_field_data( size_t handle, const string& context,
       dcb.get_base_class_info( *p_base_class_info );
 
    foreign_key_info_container foreign_key_info;
+
    get_foreign_key_info_for_module_class( dcb.get_module_id( ), dcb.get_class_id( ), foreign_key_info );
 
    field_info_container field_info;
+
    dcb.get_field_info( field_info );
 
    // FUTURE: It would make things easier (and improve performance) if both the fk class id and
@@ -12499,6 +12701,7 @@ void get_all_field_data( size_t handle, const string& context,
 class_base& get_class_base_from_handle( size_t handle, const string& context )
 {
    object_instance_registry_container& instance_registry( gtp_session->instance_registry );
+
    object_instance_registry_iterator oiri = instance_registry.find( handle );
 
    if( oiri == instance_registry.end( ) )
@@ -13160,6 +13363,7 @@ void op_instance_update( size_t handle,
    class_base& instance( get_class_base_from_handle_for_op( handle, context ) );
 
    class_base_accessor( instance ).set_ver_exp( ver_info );
+
    instance.op_update( key, p_rc, internal_operation );
 }
 
@@ -13180,6 +13384,7 @@ void op_instance_apply( size_t handle, const string& context,
     get_class_base_from_handle_for_op( handle, context, e_permit_op_type_value_create_update_destroy ) );
 
    op_apply_rc rc;
+
    instance.op_apply( &rc, internal_operation, p_fields_set );
 
    if( p_rc )
@@ -13300,6 +13505,7 @@ void transaction_commit( )
       // such an error message is found it will be thrown as an exception from here (even though the
       // transaction commit has completed and the command for this session has already been logged).
       string script_error;
+
       string check_script_error(
        get_raw_session_variable( get_special_var_name( e_special_var_check_script_error ) ) );
 

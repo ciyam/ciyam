@@ -55,6 +55,7 @@ struct progress;
 #  define TRACE_SYNC_OPS   0x00002000U
 #  define TRACE_PEER_OPS   0x00004000U
 #  define TRACE_NOTIFIER   0x00008000U
+#  define TRACE_ODS_BULK   0x00010000U
 #  define TRACE_ANYTHING   0xffffffffU
 
 #  define IF_IS_TRACING( flags )\
@@ -720,6 +721,28 @@ void CIYAM_BASE_DECL_SPEC storage_unlock_all_tables( );
 bool CIYAM_BASE_DECL_SPEC storage_locked_for_admin( );
 
 ods CIYAM_BASE_DECL_SPEC& storage_ods_instance( );
+
+class CIYAM_BASE_DECL_SPEC storage_ods_bulk_read
+{
+   public:
+   storage_ods_bulk_read( );
+   ~storage_ods_bulk_read( );
+
+   private:
+   struct impl;
+   impl* p_impl;
+};
+
+class CIYAM_BASE_DECL_SPEC storage_ods_bulk_write
+{
+   public:
+   storage_ods_bulk_write( progress* p_progress = 0 );
+   ~storage_ods_bulk_write( );
+
+   private:
+   struct impl;
+   impl* p_impl;
+};
 
 ods CIYAM_BASE_DECL_SPEC& system_ods_instance( );
 
