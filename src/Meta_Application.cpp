@@ -1978,7 +1978,7 @@ void Meta_Application::impl::impl_Generate( )
       outs << "#!/bin/bash\n\n";
 
       outs << "export WEBDIR=" << get_web_root( ) << "\n\n";
-      outs << "echo Starting Generate... >>" << generate_log_file << "\n";
+      outs << "echo Starting Generate... >" << generate_log_file << "\n";
       outs << "if [ ! -d " << web_dir_var << "/" << app_dir << " ]; then\n"
        << " ./setup " << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file
        << "\nfi\n\n";
@@ -2101,6 +2101,7 @@ void Meta_Application::impl::impl_Generate( )
       map< string, string > module_packages;
 
       string key_info( FIELD_ID( Meta, Module, Order ) );
+
       key_info += ' ';
 
       if( get_obj( ).child_Module( ).iterate_forwards( key_info ) )
@@ -2181,12 +2182,15 @@ void Meta_Application::impl::impl_Generate( )
       outv << "\x60{\x60$modules\x60=\x60'" << all_modules << "\x60'\x60}\n";
 
       outss1 << "storage_init " << storage_name( ) << "\n";
+
       outss1 << "pe sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( )
-       << " " << to_string( c_procedure_id_Generate_Modules ) << "\n";
+       << " -" << to_string( c_procedure_id_Generate_Modules ) << "\n";
+
       outss1 << "pu sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Generating Source...\"\n";
+
       outss1 << "quit\n";
 
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
@@ -2255,7 +2259,7 @@ void Meta_Application::impl::impl_Generate( )
 
       outss2 << "pe sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( )
-       << " " << to_string( c_procedure_id_Generate_File_Links ) << "\n";
+       << " -" << to_string( c_procedure_id_Generate_File_Links ) << "\n";
 
       outss2 << ".quit\n";
 
@@ -2490,6 +2494,7 @@ void Meta_Application::impl::impl_Generate_Modules( )
       return;
 
    string key_info( FIELD_ID( Meta, Module, Order ) );
+
    key_info += ' ';
 
    if( get_obj( ).child_Module( ).iterate_forwards( key_info ) )
@@ -2517,6 +2522,7 @@ void Meta_Application::impl::impl_Generate_Upgrade_DDL( )
    vector< string > modules;
 
    string key_info( FIELD_ID( Meta, Module, Order ) );
+
    key_info += ' ';
 
    if( get_obj( ).child_Module( ).iterate_forwards( key_info ) )
