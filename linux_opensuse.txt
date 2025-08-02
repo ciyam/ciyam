@@ -840,6 +840,8 @@ pipx install matrix-registration-bot
 mkdir matrix-registration
 mv .local/bin/matrix-registration-bot matrix-registration
 
+cd matrix-registration
+
 head -c 32 /dev/random | sha256sum | cut -c -32
 ***registration_password***
 
