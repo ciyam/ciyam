@@ -10,7 +10,7 @@
  <timezone>UTC
  <web_root>$WEBDIR
 # <max_peers>100
- <set_trace>10000
+ <set_trace>80000
 # <use_https>false
 # <ntfy_server>name.org
 # <max_sessions>100
