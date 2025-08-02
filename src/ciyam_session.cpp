@@ -6919,7 +6919,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          for( size_t i = 0; i < trace_flag_names.size( ); i++ )
          {
-            osstr << hex << setw( 4 ) << setfill( '0' ) << flag << '=' << trace_flag_names[ i ] << '\n';
+            osstr << hex << setw( 5 ) << setfill( '0' ) << flag << '=' << trace_flag_names[ i ] << '\n';
             flag *= 2;
          }
 
