@@ -299,6 +299,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          bool brief( has_parm_val( parameters, c_cmd_ods_fsed_files_brief ) );
          bool full_blown( has_parm_val( parameters, c_cmd_ods_fsed_files_full_blown ) );
          bool unredacted( has_parm_val( parameters, c_cmd_ods_fsed_files_unredacted ) );
+         string start( get_parm_val( parameters, c_cmd_ods_fsed_files_start ) );
          string expr( get_parm_val( parameters, c_cmd_ods_fsed_files_expr ) );
 
          ods_file_system::list_style style = ods_file_system::e_list_style_default;
@@ -313,7 +314,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          if( unredacted )
             ap_tmp_include_hidden.reset( new temporary_include_hidden( *ap_ofs ) );
 
-         ap_ofs->list_files( expr, *ods_fsed_handler.get_std_out( ), style );
+         ap_ofs->list_files( expr, *ods_fsed_handler.get_std_out( ), start, style );
       }
       else if( command == c_cmd_ods_fsed_folders )
       {
@@ -333,6 +334,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          bool brief( has_parm_val( parameters, c_cmd_ods_fsed_objects_brief ) );
          bool full_blown( has_parm_val( parameters, c_cmd_ods_fsed_objects_full_blown ) );
          bool unredacted( has_parm_val( parameters, c_cmd_ods_fsed_objects_unredacted ) );
+         string start( get_parm_val( parameters, c_cmd_ods_fsed_objects_start ) );
          string expr( get_parm_val( parameters, c_cmd_ods_fsed_objects_expr ) );
 
          ods_file_system::list_style style = ods_file_system::e_list_style_default;
@@ -347,7 +349,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          if( unredacted )
             ap_tmp_include_hidden.reset( new temporary_include_hidden( *ap_ofs ) );
 
-         ap_ofs->list_objects( expr, *ods_fsed_handler.get_std_out( ), style );
+         ap_ofs->list_objects( expr, *ods_fsed_handler.get_std_out( ), start, style );
       }
       else if( command == c_cmd_ods_fsed_branch )
       {

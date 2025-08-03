@@ -134,6 +134,12 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       list_files_or_objects( expr, os, "", true, style );
    }
 
+   inline void list_objects( const std::string& expr, std::ostream& os,
+    const std::string& start_from, list_style style = e_list_style_default )
+   {
+      list_files_or_objects( expr, os, start_from, true, style );
+   }
+
    enum branch_style
    {
       e_branch_style_brief,
