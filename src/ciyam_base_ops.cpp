@@ -48,6 +48,8 @@ const int c_loop_variable_digits = 8;
 
 const char c_security_suffix = '-';
 
+const char* const c_all = "all";
+
 const char* const c_ui_type_repl_name = "TYPE";
 
 const char* const c_ui_type_submit_file = "ui_TYPE_submit";
@@ -1189,6 +1191,10 @@ string determine_local_iteration_info(
          order_field_list += ',' + string( c_key_field );
    }
 
+   string local_starts_name( get_special_var_name( e_special_var_local_starts ) );
+
+   instance.set_variable( local_starts_name, c_key_field );
+
    if( order_info.empty( ) || ( order_field_list == c_key_field ) )
       folder += c_storage_folder_name_dot_dat;
    else
@@ -1234,6 +1240,15 @@ string determine_local_iteration_info(
       // none was found then will use the first partial match.
       if( index_num < 0 )
          index_num = index_partial;
+
+      string field_name( all_index_pairs[ index_num ].first );
+
+      string::size_type pos = field_name.rfind( ',' );
+
+      if( pos != string::npos )
+         field_name.erase( 0, pos + 1 );
+
+      instance.set_variable( local_starts_name, field_name );
 
       folder += c_storage_folder_name_dot_idx;
 
@@ -2910,6 +2925,16 @@ void begin_instance_op( instance_op op, class_base& instance,
    if( op == e_instance_op_none )
       return;
 
+   if( is_condemned_session( ) )
+   {
+      string stop_condemned( get_raw_system_variable(
+       get_special_var_name( e_special_var_stop_condemned ) ) );
+
+      if( ( stop_condemned == c_all )
+       || ( stop_condemned == to_string( session_id( ) ) ) )
+         throw runtime_error( "*** condemned session has been stopped ***" );
+   }
+
    TRACE_LOG( TRACE_CLASSOPS, "begin (enter) op = "
     + instance_op_name( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_modification ) + ", key = " + key );
@@ -4214,6 +4239,16 @@ bool perform_instance_iterate( class_base& instance,
 
    bool found = false;
 
+   if( is_condemned_session( ) )
+   {
+      string stop_condemned( get_raw_system_variable(
+       get_special_var_name( e_special_var_stop_condemned ) ) );
+
+      if( ( stop_condemned == c_all )
+       || ( stop_condemned == to_string( session_id( ) ) ) )
+         throw runtime_error( "*** condemned session has been stopped ***" );
+   }
+
    TRACE_LOG( TRACE_CLASSOPS, "[iterate] class = '" + instance.get_class_name( )
     + "', key_info = '" + key_info + "', fields = '" + fields + "', direction = "
     + to_string( direction ) + ", text = '" + text + "', query = '" + query + "'" );
@@ -4714,6 +4749,20 @@ bool perform_instance_iterate( class_base& instance,
                }
             }
 
+            // KLUDGE: Currently supports only simplistic query
+            // information and requires further work to support
+            // more complicated queries.
+            if( !query_info.empty( ) )
+            {
+               if( query_info.size( ) > 1 )
+                  throw runtime_error( "complex query support not yet implemented" );
+
+               // KLUDGE: Assmes the data in the single pair is
+               // suitable to be a prefix (but is not verifying
+               // that this is even correct).
+               prefix = query_info[ 0 ].second;
+            }
+
             instance.set_local_info( folder, origin, prefix );
          }
       }
@@ -4773,7 +4822,14 @@ bool perform_instance_iterate( class_base& instance,
                limit = row_cache_limit;
 
             if( key_info == c_null_key )
-               instance.set_local_origin( instance.get_key( ) );
+            {
+               string start_field_name( instance.get_variable( get_special_var_name( e_special_var_local_starts ) ) );
+
+               if( start_field_name.empty( ) || ( start_field_name == c_key_field ) )
+                  instance.set_local_origin( instance.get_key( ) );
+               else
+                  instance.set_local_origin( instance.get_field_value( instance.get_field_num( start_field_name ) ) );
+            }
 
             fetch_keys_from_local_storage( instance,
              inclusive, limit, instance_keys, ( direction == e_iter_direction_backwards ) );
@@ -4897,7 +4953,7 @@ bool perform_instance_iterate( class_base& instance,
 
                for( size_t i = 0; i < instance_keys.size( ); i++ )
                {
-                  if( i == 0 )
+                  if( ( i == 0 ) && ( key_info != c_null_key ) )
                   {
                      if( persistence_type == 1 ) // i.e. ODS local persistence
                         fetch_instance_from_local_storage(
@@ -5040,10 +5096,11 @@ bool perform_instance_iterate_next( class_base& instance )
       }
    }
 
-   int loop_num = atoi( instance.get_raw_variable( get_special_var_name( e_special_var_loop ) ).c_str( ) );
+   string loop_var_name( get_special_var_name( e_special_var_loop ) );
 
-   instance.set_variable( get_special_var_name( e_special_var_loop ),
-    to_comparable_string( ++loop_num, false, c_loop_variable_digits ) );
+   int loop_num = atoi( instance.get_raw_variable( loop_var_name ).c_str( ) );
+
+   instance.set_variable( loop_var_name, to_comparable_string( ++loop_num, false, c_loop_variable_digits ) );
 
    if( found || cache_depleted )
       return found;
