@@ -2670,6 +2670,7 @@ void Meta_Procedure_Arg::static_get_all_index_pairs( vector< pair< string, strin
 {
    pairs.push_back( make_pair( "Procedure,Name", "string,string" ) );
    pairs.push_back( make_pair( "Procedure,Order", "string,string" ) );
+   pairs.push_back( make_pair( "Source_Procedure_Arg,@pk", "string,string" ) );
 }
 
 void Meta_Procedure_Arg::static_get_all_unique_indexes( vector< string >& unique_indexes )
@@ -2682,6 +2683,7 @@ void Meta_Procedure_Arg::static_get_sql_indexes( vector< string >& indexes )
 {
    indexes.push_back( "C_Procedure,C_Name" );
    indexes.push_back( "C_Procedure,C_Order" );
+   indexes.push_back( "C_Source_Procedure_Arg,C_Key_" );
 }
 
 void Meta_Procedure_Arg::static_get_sql_unique_indexes( vector< string >& indexes )

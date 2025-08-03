@@ -1152,6 +1152,7 @@ index_add -id=401010 Procedure {Class},Id unique
 index_add -id=401015 Procedure Source_{Procedure}
 index_add -id=401100 Procedure_Arg {Procedure},Order unique
 index_add -id=401110 Procedure_Arg {Procedure},Name unique
+index_add -id=401115 Procedure_Arg Source_{Procedure_Arg}
 index_add -id=401200 Relationship {Model},Child_Class,Name unique
 index_add -id=401205 Relationship Parent_Class
 index_add -id=401210 Relationship Source_{Relationship}
