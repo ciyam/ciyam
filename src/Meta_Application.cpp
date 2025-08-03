@@ -1882,12 +1882,13 @@ void Meta_Application::impl::impl_Generate( )
    else
       throw runtime_error( "Generate requires at least one Module." );
 
-   set_system_variable( "@" + storage_name( ) + "_protect", "1" );
-
    string generate_log_file( get_raw_session_variable(
     get_special_var_name( e_special_var_generate_log_file ) ) );
 
    bool skip_exec = !generate_log_file.empty( );
+
+   if( !skip_exec )
+      set_system_variable( "@" + storage_name( ) + "_protect", "1" );
 
    bool async = true;
 
@@ -2434,8 +2435,13 @@ void Meta_Application::impl::impl_Generate( )
       if( !outupg.good( ) )
          throw runtime_error( "upgrade script output stream is bad" );
 
-      get_obj( ).Actions( "" );
-      get_obj( ).Generate_Status( "Generating Metadata..." );
+      if( skip_exec )
+         get_obj( ).Generate_Status( "Generated Script" );
+      else
+      {
+         get_obj( ).Actions( "" );
+         get_obj( ).Generate_Status( "Generating Metadata..." );
+      }
 
       get_obj( ).op_apply( );
    }
@@ -2449,7 +2455,7 @@ void Meta_Application::impl::impl_Generate( )
    // to client deciding to finish its session) then this can potentially cause
    // big troubles due to resource inheritance so the session is captured prior
    // to the async request and will be released at the end of the script.
-   if( async )
+   if( async && !skip_exec )
       capture_session( session_id( ) );
 
    chmod( generate_script.c_str( ), 0777 );
@@ -3895,7 +3901,18 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
       set_session_variable( get_special_var_name( e_special_var_name ), get_obj( ).Name( ) );
       set_session_variable( get_special_var_name( e_special_var_script ), get_obj( ).Creation_Script( ).Script_Name( ) );
 
-      run_script( "install_application", true, true );
+      bool async = true;
+
+      if( get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "0"
+       || get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "false"
+       || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "0"
+       || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "false" )
+         async = false;
+
+      if( !async )
+         output_progress_message( "Installing Packages..." ); // FUTURE: This should be a module string.
+
+      run_script( "install_application", async, true );
    }
    // [<finish for_store>]
 }
