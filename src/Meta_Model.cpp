@@ -1784,8 +1784,8 @@ void Meta_Model::impl::impl_Generate( )
       {
          do
          {
-            // NOTE: As there are Specification derivations a review is being
-            // used to ensure that a dynamic instance will be used if required.
+            // NOTE: As there could be one or more derived Specification classes a review
+            // is being used to ensure that a dynamic instance will be used when required.
             get_obj( ).child_Specification( ).begin_review( get_obj( ).child_Specification( ).get_key( ) );
 
             if( !get_obj( ).child_Specification( ).Vars( ).empty( )
