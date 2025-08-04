@@ -2865,10 +2865,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_forwards_handle ) );
          string context( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_forwards_context ) );
          string key_info( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_forwards_key_info ) );
-         bool inclusive = has_parm_val( parameters, c_cmd_ciyam_session_object_iterate_forwards_inc );
+         bool not_inclusive = has_parm_val( parameters, c_cmd_ciyam_session_object_iterate_forwards_not_inc );
 
          bool rc = instance_iterate( atoi( handle.c_str( ) ),
-          context, key_info, "", "", "", e_iter_direction_forwards, inclusive );
+          context, key_info, "", "", "", e_iter_direction_forwards, !not_inclusive );
 
          if( !rc )
          {
@@ -2881,10 +2881,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_backwards_handle ) );
          string context( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_backwards_context ) );
          string key_info( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_backwards_key_info ) );
-         bool inclusive = has_parm_val( parameters, c_cmd_ciyam_session_object_iterate_backwards_inc );
+         bool not_inclusive = has_parm_val( parameters, c_cmd_ciyam_session_object_iterate_backwards_not_inc );
 
          bool rc = instance_iterate( atoi( handle.c_str( ) ),
-          context, key_info, "", "", "", e_iter_direction_backwards, inclusive );
+          context, key_info, "", "", "", e_iter_direction_backwards, !not_inclusive );
 
          if( !rc )
          {
@@ -3114,7 +3114,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( pos != string::npos )
             {
                parent_key = key_info.substr( 0, pos );
+
                key_info.erase( 0, pos + 1 );
+
                found_parent_key = true;
             }
          }
@@ -3238,9 +3240,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
          }
 
-         // KLUDGE: Assume a dynamic instance is needed if a context has been supplied
-         // as there is no simple way to otherwise determine this (maybe it's not even
-         // worth worrying about trying to optimise this behaviour).
          size_t handle = create_object_instance( module, mclass, 0,
           !context.empty( ) || get_module_class_has_derivations( module, mclass ) );
 
@@ -3385,6 +3384,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                prepare_object_instance( handle, context, true );
 
                string output( "[" + instance_key_info( handle, context ) + "]" );
+
                string field_output( get_field_values( handle, context, field_list, tz_name, true, false, 0, &field_inserts ) );
 
                if( !field_output.empty( ) )
@@ -3394,8 +3394,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             // NOTE: If just performing a simple record fetch then use "instance_fetch"
             // instead of "instance_iterate" (reduces complexity and supports caching).
-            else if( !create_pdf && !key_info.empty( ) && ( num_limit == 1 )
-             && filter_set.empty( ) && parent_key.empty( ) && set_value_items.empty( ) )
+            else if( !create_pdf && !key_info.empty( ) && ( num_limit == 1 ) && parent_key.empty( )
+             && search_text.empty( ) && search_query.empty( ) && filter_set.empty( ) && set_value_items.empty( ) )
             {
                instance_fetch_rc rc;
                instance_fetch( handle, context, key_info, &rc );
@@ -3405,7 +3405,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   string key_output( "[" + instance_key_info( handle, context ) + "]" );
 
                   string field_output( get_field_values( handle, context, field_list, tz_name,
-                   false, false, 0, &field_inserts, &search_replaces, no_default_values ? &default_values : 0 ) );
+                   false, false, 0, &field_inserts, &search_replaces, ( no_default_values ? &default_values : 0 ) ) );
 
                   if( minimal )
                      response = field_output;
@@ -3521,9 +3521,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         string key_output( "[" + instance_key_info( handle, context ) + "]" );
 
-                        string field_output( get_field_values( handle, context, field_list, tz_name,
-                         false, false, summaries.empty( ) ? 0 : &raw_values, &field_inserts, &search_replaces,
-                         no_default_values ? &default_values : 0 ) );
+                        string field_output( get_field_values( handle, context,
+                         field_list, tz_name, false, false, ( summaries.empty( ) ? 0 : &raw_values ),
+                         &field_inserts, &search_replaces, ( no_default_values ? &default_values : 0 ) ) );
 
                         if( minimal )
                            output = field_output;
@@ -3566,6 +3566,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( g_server_shutdown || ( num_limit && ( ++num_found >= num_limit ) ) )
                      {
                         instance_iterate_stop( handle, context );
+
                         break;
                      }
                   } while( instance_iterate_next( handle, context ) );
@@ -3585,6 +3586,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   else
                   {
                      map< string, string > pdf_final_variables;
+
                      add_final_pdf_variables( pdf_gen_variables, summaries, pdf_final_variables );
 
                      generate_pdf_doc( format_file, output_file, pdf_final_variables, p_pdf_progress );

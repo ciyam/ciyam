@@ -58,8 +58,8 @@ object_iterate_next "next iteration on a persistent instance" <val//handle>[<val
 object_iterate_stop "stop iteration on a persistent instance" <val//handle>[<val/./context>]
 object_review_begin "begin review on a persistent instance" <val//handle>[<val/./context>][<val//key>]
 object_review_finish "finish review on a persistent instance" <val//handle>[<val/./context>]
-object_iterate_forwards "iterate forwards on a persistent instance" <val//handle>[<val/./context>][<val//key_info>][<opt/inc>]
-object_iterate_backwards "iterate backwards on a persistent instance" <val//handle>[<val/./context>][<val//key_info>][<opt/inc>]
+object_iterate_forwards "iterate forwards on a persistent instance" <val//handle>[<val/./context>][<val//key_info>][<opt/not_inc>]
+object_iterate_backwards "iterate backwards on a persistent instance" <val//handle>[<val/./context>][<val//key_info>][<opt/not_inc>]
 peer_listen "add/remove peer blockchain listeners" [<opt/-remove/remove>]<val//port><list//blockchains>
 peer_reject "add/list/remove peer ip addresses for rejection" <opt/-list/list>|{[<opt/-remove/remove>]<val//ip_addr>}
 peer_connect "add a new peer connection" [<opt/-force/force>][<val/-num=/num_supporters>]<val//blockchain><val//host_and_or_port>[<opt/-hub/hub>|<opt/-data/data>|<opt/-user/user>|<opt/-backup/backup>|<opt/-shared/shared>]
