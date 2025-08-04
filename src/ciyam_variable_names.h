@@ -134,6 +134,7 @@ enum special_var
    e_special_var_local_origin,
    e_special_var_local_prefix,
    e_special_var_local_starts,
+   e_special_var_local_suffix,
    e_special_var_opened_files,
    e_special_var_peer_map_key,
    e_special_var_shared_files,

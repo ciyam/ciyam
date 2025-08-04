@@ -57,6 +57,7 @@ const char* const c_ui_type_submit_file = "ui_TYPE_submit";
 const char* const c_ui_submit_type_peer = "peer";
 
 const char* const c_primary_key_name = "@pk";
+
 const char* const c_links_instance_lock_key = "@links";
 
 const char* const c_attribute_meta_ver_info = "_ver_";
@@ -1260,7 +1261,12 @@ string determine_local_iteration_info(
       if( !fixed_info.empty( ) )
       {
          for( size_t i = 0; i < fixed_info.size( ); i++ )
-            prefix += fixed_info[ i ].second + '\t';
+         {
+            if( ( i > 0 ) || !prefix.empty( ) )
+               prefix += '\t';
+
+            prefix += fixed_info[ i ].second;
+         }
       }
    }
 
@@ -1410,11 +1416,24 @@ void fetch_keys_from_local_storage( class_base& instance,
    string start_from;
 
    if( !origin.empty( ) )
-      start_from = expr + origin;
+   {
+      start_from = expr;
 
-   expr += "*";
+      if( !prefix.empty( ) )
+         start_from += '\t';
 
-   // NOTE: First check if the folder exists
+      start_from += origin;
+   }
+
+   string suffix( instance.get_variable(
+    get_special_var_name( e_special_var_local_suffix ) ) );
+
+   if( suffix.empty( ) )
+      expr += "*";
+   else
+      expr += suffix;
+
+  // NOTE: First check if the folder exists
    // as it might not yet have been created.
    if( ofs.has_root_folder( folder ) )
    {
@@ -4196,8 +4215,45 @@ void perform_instance_fetch( class_base& instance,
          // FUTURE: If "only_sys_fields" is true then all instance file
          // data does not need to be read, however, "original identity"
          // needs to be read and is currently included in the file data
-         // so for now must read the record.
-         found = fetch_instance_from_local_storage( instance, key_info );
+         // so for now must read the entire record.
+
+         if( key_info.find( ' ' ) == string::npos )
+            found = fetch_instance_from_local_storage( instance, key_info );
+         else
+         {
+            vector< string > order_info;
+
+            vector< pair< string, string > > fixed_info;
+            vector< pair< string, string > > paging_info;
+
+            split_key_info( key_info, fixed_info, paging_info, order_info, false );
+
+            string prefix, origin;
+
+            string folder( determine_local_iteration_info( instance, order_info, fixed_info, prefix ) );
+
+            if( !paging_info.empty( ) )
+            {
+               for( size_t i = 0; i < paging_info.size( ); i++ )
+               {
+                  if( i > 0 )
+                     origin += '\t';
+
+                  origin += paging_info[ i ].second;
+               }
+            }
+
+            instance.set_local_info( folder, origin, prefix );
+
+            vector< string > instance_keys;
+
+            fetch_keys_from_local_storage( instance, true, 1, instance_keys, false );
+
+            if( instance_keys.empty( ) )
+               found = false;
+            else
+               found = fetch_instance_from_local_storage( instance, instance_keys[ 0 ] );
+         }
       }
       else if( persistence_type == 2 ) // i.e. ODS global persistence
       {
@@ -4749,18 +4805,34 @@ bool perform_instance_iterate( class_base& instance,
                }
             }
 
-            // KLUDGE: Currently supports only simplistic query
-            // information and requires further work to support
-            // more complicated queries.
-            if( !query_info.empty( ) )
+            string local_suffix_name( get_special_var_name( e_special_var_local_suffix ) );
+
+            if( query_info.empty( ) )
+               instance.set_variable( local_suffix_name, "" );
+            else
             {
+               // KLUDGE: Currently can only handle an extemely simplistic query.
                if( query_info.size( ) > 1 )
                   throw runtime_error( "complex query support not yet implemented" );
 
-               // KLUDGE: Assmes the data in the single pair is
-               // suitable to be a prefix (but is not verifying
-               // that this is even correct).
-               prefix = query_info[ 0 ].second;
+               string first_query_field( query_info[ 0 ].first );
+
+               string last_order_field;
+
+               // NOTE: Will allow a single field query that is on the last field
+               // (or second last for non-unique indexes) in the order field list.
+               if( !order_info.empty( ) )
+               {
+                  last_order_field = order_info[ order_info.size( ) - 1 ];
+
+                  if( ( order_info.size( ) > 1 ) && ( last_order_field == c_key_field_name ) )
+                     last_order_field = order_info[ order_info.size( ) - 2 ];
+               }
+
+               if( first_query_field != last_order_field )
+                  throw runtime_error( "only a simple query for '" + last_order_field + "' is currently supported" );
+
+               instance.set_variable( local_suffix_name, query_info[ 0 ].second );
             }
 
             instance.set_local_info( folder, origin, prefix );

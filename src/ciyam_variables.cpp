@@ -169,6 +169,7 @@ const char* const c_special_variable_local_folder = "@local_folder";
 const char* const c_special_variable_local_origin = "@local_origin";
 const char* const c_special_variable_local_prefix = "@local_prefix";
 const char* const c_special_variable_local_starts = "@local_starts";
+const char* const c_special_variable_local_suffix = "@local_suffix";
 const char* const c_special_variable_opened_files = "@opened_files";
 const char* const c_special_variable_peer_map_key = "@peer_map_key";
 const char* const c_special_variable_shared_files = "@shared_files";
@@ -486,6 +487,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_local_origin );
       g_special_variable_names.push_back( c_special_variable_local_prefix );
       g_special_variable_names.push_back( c_special_variable_local_starts );
+      g_special_variable_names.push_back( c_special_variable_local_suffix );
       g_special_variable_names.push_back( c_special_variable_opened_files );
       g_special_variable_names.push_back( c_special_variable_peer_map_key );
       g_special_variable_names.push_back( c_special_variable_shared_files );
