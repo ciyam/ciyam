@@ -3758,6 +3758,21 @@ int main( int argc, char* argv[ ] )
 
       DEBUG_TRACE( "[now starting handlers]" );
 
+      // NOTE: If a "complete restore" has been performed
+      // then the "stop file" can be expected to be found
+      // until the application server is ready for client
+      // connections (so waits for as much as ten seconds
+      // if this file is found but after that will simply
+      // continue so that the "under maintenance" message
+      // can be displayed).
+      for( size_t i = 0; i < 20; i++ )
+      {
+         if( file_exists( c_stop_file ) )
+            msleep( 500 );
+         else
+            break;
+      }
+
       // NOTE: Scope for timeout handler temporary object.
       {
          timeout_handler( ).start( );
@@ -3773,7 +3788,6 @@ int main( int argc, char* argv[ ] )
             p_request_handler->start( );
          }
 #endif
-
          request_handler* p_request_handler = new request_handler;
 
          p_request_handler->on_start( );
