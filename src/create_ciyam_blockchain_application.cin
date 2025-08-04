@@ -48,7 +48,7 @@ STANDARD_KEY=$OUTPUT
 .pc $CIYAM_UID @now 100 136100 " " "136101=User,136107=Users,302810=User,302800=$MODEL_KEY"
 USER_PACKAGE_KEY=$OUTPUT
 ;
-.pf 100 137100 -q=302820=$USER_PACKAGE_KEY,137101=opt_user_bool_use_authenticator "" @key -min
+.pf 100 137100 "302820,137101#2 $USER_PACKAGE_KEY,opt_user_bool_use_authenticator" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate User package option 'use_authenticator'.
 @endif
@@ -64,7 +64,7 @@ USER_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 137100 -q=302820=$USER_PACKAGE_KEY,137101=opt_user_bool_use_templates "" @key -min
+.pf 100 137100 "302820,137101#2 $USER_PACKAGE_KEY,opt_user_bool_use_templates" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate User package option 'use_templates'.
 @endif
@@ -80,7 +80,7 @@ USER_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 137100 -q=302820=$USER_PACKAGE_KEY,137101=opt_user_bool_use_access "" @key -min
+.pf 100 137100 "302820,137101#2 $USER_PACKAGE_KEY,opt_user_bool_use_access" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate User package option 'use_access'.
 @endif
@@ -106,7 +106,7 @@ USER_OPTION_KEY=$OUTPUT
 .pc $CIYAM_UID @now 100 136100 " " "136101=Group,136107=Groups,302810=Group,302800=$MODEL_KEY"
 GROUP_PACKAGE_KEY=$OUTPUT
 ;
-.pf 100 137100 -q=302820=$GROUP_PACKAGE_KEY,137101=opt_group_bool_use_group_memberships "" @key -min
+.pf 100 137100 "302820,137101#2 $GROUP_PACKAGE_KEY,opt_group_bool_use_group_memberships" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Group package option 'use_group_memberships'.
 @endif
@@ -122,7 +122,7 @@ GROUP_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 137100 -q=302820=$GROUP_PACKAGE_KEY,137101=opt_group_string_groups_for_anon "" @key -min
+.pf 100 137100 "302820,137101#2 $GROUP_PACKAGE_KEY,opt_group_string_groups_for_anon" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Group package option 'groups_for_anon'.
 @endif
@@ -147,7 +147,7 @@ GROUP_OPTION_KEY=$OUTPUT
 .pc $CIYAM_UID @now 100 136100 " " "136101=Message,136107=Messages,302810=Message,302800=$MODEL_KEY"
 MESSAGE_PACKAGE_KEY=$OUTPUT
 ;
-.pf 100 137100 -q=302820=$MESSAGE_PACKAGE_KEY,137101=opt_message_int_max_attached_files "" @key -min
+.pf 100 137100 "302820,137101#2 $MESSAGE_PACKAGE_KEY,opt_message_int_max_attached_files" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Message package option 'max_attached_files'.
 @endif
@@ -163,7 +163,7 @@ MESSAGE_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 137100 -q=302820=$MESSAGE_PACKAGE_KEY,137101=opt_message_bool_use_max_attached_files "" @key -min
+.pf 100 137100 "302820,137101#2 $MESSAGE_PACKAGE_KEY,opt_message_bool_use_max_attached_files" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Message package option 'use_max_attached_files'.
 @endif
@@ -188,7 +188,7 @@ MESSAGE_OPTION_KEY=$OUTPUT
 .pc $CIYAM_UID @now 100 136100 " " "136101=Blog,136107=Blogs,302810=Blog,302800=$MODEL_KEY"
 BLOG_PACKAGE_KEY=$OUTPUT
 ;
-.pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_bool_use_home_list "" @key -min
+.pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_bool_use_home_list" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'use_home_list'.
 @endif
@@ -204,7 +204,7 @@ BLOG_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_bool_use_user_access "" @key -min
+.pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_bool_use_user_access" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'use_user_access'.
 @endif
@@ -220,7 +220,7 @@ BLOG_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_package_group_package "" @key -min
+.pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_package_group_package" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'group_package'.
 @endif
@@ -236,7 +236,7 @@ BLOG_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_package_message_package "" @key -min
+.pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_package_message_package" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'message_package'.
 @endif
@@ -252,7 +252,7 @@ BLOG_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_bool_use_permissions "" @key -min
+.pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_bool_use_permissions" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'use_permissions'.
 @endif
@@ -268,7 +268,7 @@ BLOG_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_bool_use_tags "" @key -min
+.pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_bool_use_tags" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'use_tags'.
 @endif
@@ -284,7 +284,7 @@ BLOG_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_bool_use_tags_limit "" @key -min
+.pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_bool_use_tags_limit" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Blog package option 'use_tags_limit'.
 @endif
@@ -309,7 +309,7 @@ BLOG_OPTION_KEY=$OUTPUT
 .pc $CIYAM_UID @now 100 136100 " " "136101=Forum,136107=Forums,302810=Forum,302800=$MODEL_KEY"
 FORUM_PACKAGE_KEY=$OUTPUT
 ;
-.pf 100 137100 -q=302820=$FORUM_PACKAGE_KEY,137101=opt_forum_bool_use_home_list "" @key -min
+.pf 100 137100 "302820,137101#2 $FORUM_PACKAGE_KEY,opt_forum_bool_use_home_list" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Forum package option 'use_home_list'.
 @endif
@@ -325,7 +325,7 @@ FORUM_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 137100 -q=302820=$FORUM_PACKAGE_KEY,137101=opt_forum_bool_use_user_access "" @key -min
+.pf 100 137100 "302820,137101#2 $FORUM_PACKAGE_KEY,opt_forum_bool_use_user_access" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Forum package option 'use_user_access'.
 @endif
@@ -341,7 +341,7 @@ FORUM_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 137100 -q=302820=$FORUM_PACKAGE_KEY,137101=opt_forum_package_group_package "" @key -min
+.pf 100 137100 "302820,137101#2 $FORUM_PACKAGE_KEY,opt_forum_package_group_package" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Forum package option 'group_package'.
 @endif
