@@ -7505,21 +7505,25 @@ void Meta_Package_Option::static_get_all_enum_pairs( vector< pair< string, strin
 
 void Meta_Package_Option::static_get_all_index_pairs( vector< pair< string, string > >& pairs )
 {
+   pairs.push_back( make_pair( "Package,Id", "string,string" ) );
    pairs.push_back( make_pair( "Package,Name", "string,string" ) );
 }
 
 void Meta_Package_Option::static_get_all_unique_indexes( vector< string >& unique_indexes )
 {
+   unique_indexes.push_back( "Package,Id" );
    unique_indexes.push_back( "Package,Name" );
 }
 
 void Meta_Package_Option::static_get_sql_indexes( vector< string >& indexes )
 {
+   indexes.push_back( "C_Package,C_Id" );
    indexes.push_back( "C_Package,C_Name" );
 }
 
 void Meta_Package_Option::static_get_sql_unique_indexes( vector< string >& indexes )
 {
+   indexes.push_back( "C_Package,C_Id" );
    indexes.push_back( "C_Package,C_Name" );
 }
 

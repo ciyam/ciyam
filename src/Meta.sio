@@ -13135,6 +13135,10 @@
       <type>1020
       <mandatory>true
       <indexes/>
+       <index/>
+        <id>400965
+        <num>1
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -13933,6 +13937,10 @@
         <id>400960
         <num>0
        </index>
+       <index/>
+        <id>400965
+        <num>0
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -13993,6 +14001,11 @@
      </field>
     </fields>
     <indexes/>
+     <index/>
+      <id>400965
+      <name>[{Package}],[Id]
+      <unique>true
+     </index>
      <index/>
       <id>400960
       <name>[{Package}],[Name]
@@ -15590,6 +15603,10 @@
         <id>401200
         <num>1
        </index>
+       <index/>
+        <id>401202
+        <num>0
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -16090,6 +16107,11 @@
      </field>
     </fields>
     <indexes/>
+     <index/>
+      <id>401202
+      <name>[Child_Class]
+      <unique>false
+     </index>
      <index/>
       <id>401205
       <name>[Parent_Class]
