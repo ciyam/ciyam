@@ -543,8 +543,8 @@ retention:
   min_lifetime: 1d
   max_lifetime: 3d
 media_retention:
-  local_media_lifetime: 3d
-  remote_media_lifetime: 1d
+  local_media_lifetime: 5d
+  remote_media_lifetime: 3d
 ...
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -877,7 +877,7 @@ cat credentials.json
 ***access_token***
 ******************************* SKIPPING VERIFICATION *****************************
 
-(if either did not install or was unable to login using matrix-commander)
+(if either did not install or unable to login using matrix-commander)
 
 curl -X POST --header 'Content-Type: application/json' -d '{ "identifier": { "type": "m.id.user", "user": "registration-bot" },
  "password": ""***registration_password***", "type": "m.login.password"}' 'https://***domain_name***/_matrix/client/r0/login'
@@ -921,6 +921,62 @@ SyslogIdentifier=matrix-registration-bot
 [Install]
 WantedBy=multi-user.target
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+****************************** Custom Token Handling ******************************
+
+Because "matrix-registration-bot" outputs the commands it receives (using "cerr") a
+"funnel" script can be used pipe the bot output through a "filter" script which can
+then execute an arbitrary command. From matrix clients (such as Element) the "show"
+command is expected to provide a "token" name which can be tested for in the filter
+script.
+
+NOTE: Any "special token" used in the filter should not itself be used as part of a
+file or service name (as the script is being run as "root" by default). This custom
+token handling implemention should be used in conjunction with "allowed" bot users.
+In order to output which "special tokens" are available it is recommended to create
+dummy tokens using "https://awesome-technologies.github.io/synapse-admin" (add with
+"0" usages and no expiry date) or if an ***access_token*** is available then simply
+by using "curl" as follows:
+
+curl -X POST -H "Content-Type: application/json" -d '{ "token": "custom_token", "uses_allowed": 0 }
+' https://***domain_name***/_synapse/admin/v1/registration_tokens/new?access_token=***access_token***
+
+vi matrix-registration-bot-filter
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#!/bin/bash
+
+while read line
+do
+ if [[ "$line" == *"'echo-test'"* ]]; then
+  echo "This is a test"
+ fi
+ echo "$line"
+done < "${1:-/dev/stdin}"
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+chmod a+x matrix-registration-bot-filter
+
+vi matrix-registration-bot-funnel
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#!/bin/bash
+
+/home/admin/.local/share/pipx/venvs/matrix-registration-bot/bin/matrix-registration-bot 2>&1 | /home/admin/matrix-registration/matrix-registration-bot-filter
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+chmod a+x matrix-registration-bot-funnel
+
+vi matrix-registration-bot.service
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+ExecStart=/home/admin/matrix-registration/matrix-registration-bot-funnel
+...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+(to test interactively)
+./matrix-registration-bot-funnel
+
+***********************************************************************************
 
 sudo cp matrix-registration-bot.service /usr/lib/systemd/system
 
