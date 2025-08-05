@@ -371,7 +371,7 @@ FORUM_OPTION_KEY=$OUTPUT
 .pc $CIYAM_UID @now 100 127100 " " "127101=$CIYAM_MODEL,302220=$CIYAM_GRP,127137=0"
 @endif
 ;
-.pf 100 106100 -q=106101=User "" @key -min
+.pf 100 106100 "106101#1 User" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Class for 'User'.
 @endif
@@ -382,7 +382,7 @@ ERROR=Unable to locate Class for 'User'.
 ;
 USER_CLASS_KEY=$OUTPUT
 ;
-.pf 100 129100 -q=129101=Adopter "" @key -min
+.pf 100 129100 "129101#1 Adopter" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Initial_Record for 'Adopter'.
 @endif
@@ -393,7 +393,7 @@ ERROR=Unable to locate Initial_Record for 'Adopter'.
 ;
 INITIAL_RECORD_ADOPTER_KEY=$OUTPUT
 ;
-.pf 100 129100 -q=129101=Creator "" @key -min
+.pf 100 129100 "129101#1 Creator" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Initial_Record for 'Creator'.
 @endif
@@ -404,7 +404,7 @@ ERROR=Unable to locate Initial_Record for 'Creator'.
 ;
 INITIAL_RECORD_CREATOR_KEY=$OUTPUT
 ;
-.pf 100 103100 -q=103101=User_Access "" @key -min
+.pf 100 103100 "103101#1 User_Access" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Enum 'User_Access'.
 @endif
@@ -415,7 +415,7 @@ ERROR=Unable to locate Enum 'User_Access'.
 ;
 USER_ACCESS_ENUM_KEY=$OUTPUT
 ;
-.pf 100 104100 -q=300400=$USER_ACCESS_ENUM_KEY,104101=Guided "" Value -min
+.pf 100 104100 "300400,104101#2 $USER_ACCESS_ENUM_KEY,Guided" #1 Value -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Enum Item 'Guided' for Enum 'User_Access'.
 @endif
@@ -426,7 +426,7 @@ ERROR=Unable to locate Enum Item 'Guided' for Enum 'User_Access'.
 ;
 USER_ACCESS_GUIDED_VALUE=$OUTPUT
 ;
-.pf 100 104100 -q=300400=$USER_ACCESS_ENUM_KEY,104101=Restricted "" Value -min
+.pf 100 104100 "300400,104101#2 $USER_ACCESS_ENUM_KEY,Restricted" #1 Value -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Enum Item 'Restricted' for Enum 'User_Access'.
 @endif
@@ -437,7 +437,7 @@ ERROR=Unable to locate Enum Item 'Restricted' for Enum 'User_Access'.
 ;
 USER_ACCESS_RESTRICTED_VALUE=$OUTPUT
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Access "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Access" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Access' for Class 'User'.
 @endif
@@ -460,7 +460,7 @@ ACCESS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Change_Default_Group "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Change_Default_Group" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Change_Default_Group' for Class 'User'.
 @endif
@@ -477,7 +477,7 @@ CAN_CHANGE_DEFAULT_GROUP_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Submit_Own_Blogs "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Submit_Own_Blogs" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Submit_Own_Blogs' for Class 'User'.
 @endif
@@ -494,7 +494,7 @@ CAN_SUBMIT_OWN_BLOGS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Submit_Other_Blogs "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Submit_Other_Blogs" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Submit_Other_Blogs' for Class 'User'.
 @endif
@@ -511,7 +511,7 @@ CAN_SUBMIT_OTHER_BLOGS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Maintain_Blogs "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Maintain_Blogs" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Maintain_Blogs' for Class 'User'.
 @endif
@@ -534,7 +534,7 @@ CAN_MAINTAIN_BLOGS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Maintain_Blog_Tags "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Maintain_Blog_Tags" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Maintain_Blog_Tags' for Class 'User'.
 @endif
@@ -557,7 +557,7 @@ CAN_MAINTAIN_BLOG_TAGS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Maintain_Blog_Tag_Access "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Maintain_Blog_Tag_Access" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Maintain_Blog_Tag_Access' for Class 'User'.
 @endif
@@ -574,7 +574,7 @@ CAN_MAINTAIN_BLOG_TAG_ACCESS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Pin_Topics "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Pin_Topics" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Pin_Topics' for Class 'User'.
 @endif
@@ -591,7 +591,7 @@ CAN_PIN_TOPICS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Move_Topics "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Move_Topics" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Move_Topics' for Class 'User'.
 @endif
@@ -608,7 +608,7 @@ CAN_MOVE_TOPICS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Lock_Own_Topics "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Lock_Own_Topics" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Lock_Own_Topics' for Class 'User'.
 @endif
@@ -625,7 +625,7 @@ CAN_LOCK_OWN_TOPICS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Submit_Own_Posts "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Submit_Own_Posts" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Submit_Own_Posts' for Class 'User'.
 @endif
@@ -642,7 +642,7 @@ CAN_SUBMIT_OWN_POSTS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Submit_Other_Posts "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Submit_Other_Posts" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Submit_Other_Posts' for Class 'User'.
 @endif
@@ -659,7 +659,7 @@ CAN_SUBMIT_OTHER_POSTS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Create_Top_Level_Boards "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Create_Top_Level_Boards" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Create_Top_Level_Boards' for Class 'User'.
 @endif
@@ -676,7 +676,7 @@ CAN_CREATE_TOP_LEVEL_BOARDS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 -q=300700=$USER_CLASS_KEY,107101=Can_Maintain_Topics_And_Posts "" @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Maintain_Topics_And_Posts" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Field 'Can_Maintain_Topics_And_Posts' for Class 'User'.
 @endif
