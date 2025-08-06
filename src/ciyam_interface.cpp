@@ -117,6 +117,7 @@ const char* const c_restore_htms = "restore.htms";
 const char* const c_activate_htms = "activate.htms";
 const char* const c_identity_htms = "identity.htms";
 const char* const c_password_htms = "password.htms";
+const char* const c_register_htms = "register.htms";
 const char* const c_ssl_signup_htms = "ssl_signup.htms";
 const char* const c_no_identity_htms = "no_identity.htms";
 const char* const c_authenticate_htms = "authenticate.htms";
@@ -195,6 +196,7 @@ string g_seed;
 string g_id_pwd;
 string g_bad_seed;
 string g_seed_error;
+string g_register_error;
 
 int g_unlock_attempts = 0;
 
@@ -212,6 +214,7 @@ string g_restore_html;
 string g_activate_html;
 string g_identity_html;
 string g_password_html;
+string g_register_html;
 string g_ssl_signup_html;
 string g_no_identity_html;
 string g_authenticate_html;
@@ -980,6 +983,9 @@ void request_handler::process_request( )
 
       string cmd( input_data[ c_param_cmd ] );
 
+      string hostname( input_data[ c_param_hostname ] );
+      string token_id( input_data[ c_param_token_id ] );
+
       string userhash( input_data[ c_param_userhash ] );
       string username( input_data[ c_param_username ] );
 
@@ -1265,6 +1271,23 @@ void request_handler::process_request( )
                cmd = c_cmd_home;
          }
       }
+      else if( cmd == c_cmd_register )
+      {
+         if( !password.empty( ) )
+         {
+            crypt_decoded( unique_id, password );
+
+            if( ( username.length( ) < 3 ) || ( username.length( ) > 30 ) )
+               g_register_error = GDS( c_display_username_num_chars );
+            else
+            {
+               regex expr( "[a-z0-9_-]{3,35}", true, true );
+
+               if( expr.search( username ) != 0 )
+                  g_register_error = GDS( c_display_username_incorrect );
+            }
+         }
+      }
       else if( g_id.empty( ) )
          cmd = c_cmd_home;
 
@@ -1352,7 +1375,7 @@ void request_handler::process_request( )
                username = user;
                cmd = c_cmd_login;
             }
-            else if( !using_anonymous )
+            else if( !using_anonymous && ( cmd != c_cmd_register ) )
                cmd = c_cmd_home;
 
             if( g_max_user_limit && ( get_num_sessions( ) >= g_max_user_limit ) )
@@ -1516,7 +1539,7 @@ void request_handler::process_request( )
                   // sometimes fail after a system restore due to the new server socket acceptor).
                   // To prevent unnecessary delays initially only wait for 0.5s but if connect has
                   // failed again will then wait for another 2.5s before a final retry (after that
-                  // the user can manually attemtp to reconnect).
+                  // the user can manually attempt to reconnect).
                   if( !has_connected )
                   {
                      p_session_info->p_socket->close( );
@@ -2052,6 +2075,67 @@ void request_handler::process_request( )
                         }
                      }
 
+                     if( cmd == c_cmd_register )
+                     {
+                        if( !password.empty( ) && g_register_error.empty( ) )
+                        {
+                           string tmp_file_name( "~" + uuid( ).as_string( ) );
+
+                           string prefix( "curl -s -H \"Content-Type: application/json\" -X GET " );
+
+                           string homeserver( "https://" );
+
+                           if( hostname.find( '/' ) != string::npos )
+                              homeserver = hostname;
+                           else
+                              homeserver += hostname;
+
+                           string command( prefix );
+
+                           command += "\"" + homeserver + "/_matrix/client/v3/register/available?username=" + username + "\" > ";
+
+                           command += tmp_file_name;
+
+                           system( command.c_str( ) );
+
+                           string response( buffer_file( tmp_file_name ) );
+
+                           if( response.find( "{\"available\":true}" ) != string::npos )
+                           {
+                              // KLUDGE: For now report available as an error.
+                              g_register_error = "This Username is available!";
+                           }
+                           else
+                           {
+                              if( response.find( "M_USER_IN_USE" ) != string::npos )
+                                 g_register_error = GDS( c_display_username_taken );
+                              else
+                                 g_register_error = "unexpected response: " + response;
+                           }
+
+                           file_remove( tmp_file_name );
+                        }
+
+                        string register_html( g_register_html );
+
+                        str_replace( register_html,
+                         c_register_introduction, GDS( c_display_register_introduction ) );
+
+                        str_replace( register_html, c_token_id, token_id );
+
+                        str_replace( register_html, c_hostname, hostname );
+                        str_replace( register_html, c_username, username );
+
+                        str_replace( register_html, c_register_error, g_register_error );
+
+                        output_form( module_name, extra_content,
+                         register_html, "", false, GDS( c_display_register_account ) );
+
+                        has_output_form = true;
+
+                        g_register_error.erase( );
+                     }
+
                      if( !has_output_form )
                      {
                         g_max_user_limit = ( size_t )atoi( identity_info.substr( pos + 1 ).c_str( ) );
@@ -2395,6 +2479,7 @@ void request_handler::process_request( )
                   p_session_info->is_openid = was_openid;
 
                   string path( c_files_directory );
+
                   path += "/" + string( c_tmp_directory );
                   path += "/" + session_id;
 
@@ -3654,6 +3739,7 @@ int main( int argc, char* argv[ ] )
       g_activate_html = buffer_file( c_activate_htms );
       g_identity_html = buffer_file( c_identity_htms );
       g_password_html = buffer_file( c_password_htms );
+      g_register_html = buffer_file( c_register_htms );
       g_ssl_signup_html = buffer_file( c_ssl_signup_htms );
       g_no_identity_html = buffer_file( c_no_identity_htms );
       g_authenticate_html = buffer_file( c_authenticate_htms );
@@ -3700,6 +3786,13 @@ int main( int argc, char* argv[ ] )
       str_replace( g_password_html, c_new_password, GDS( c_display_new_password ) );
       str_replace( g_password_html, c_change_password, GDS( c_display_change_password ) );
       str_replace( g_password_html, c_verify_new_password, GDS( c_display_verify_new_password ) );
+
+      str_replace( g_register_html, c_hostname, GDS( c_display_hostname ) );
+      str_replace( g_register_html, c_password, GDS( c_display_password ) );
+      str_replace( g_register_html, c_token_id, GDS( c_display_token_id ) );
+      str_replace( g_register_html, c_username, GDS( c_display_username ) );
+      str_replace( g_register_html, c_verify_password, GDS( c_display_verify_password ) );
+      str_replace( g_register_html, c_register_account, GDS( c_display_register_account ) );
 
       str_replace( g_ssl_signup_html, c_email, GDS( c_display_email ) );
       str_replace( g_ssl_signup_html, c_password, GDS( c_display_password ) );

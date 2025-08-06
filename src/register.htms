@@ -1,0 +1,67 @@
+<div class="wrapper box-shadow">
+
+<div align="center">
+<div class="register_form">
+<p>
+@@register_introduction
+</p>
+<p class="error">
+@@register_error
+</p>
+
+<form method="POST" name="register" id="register"
+ onsubmit="return dyn_load( this, 'cmd=register'
+  + '&hostname=' + document.register.hostname.value
+  + '&password=' + encrypt_raw_data( document.register.password.value, uniqueId )
+  + '&token_id=' + document.register.token_id.value
+  + '&username=' + document.register.username.value, uniqueId, false );">
+<table class="list login box-shadow" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+   <td align="right" class="icon-user">@@username</td>
+   <td>
+      <input class="loginfields" type="text" name="username" tabindex="1"
+       id="username" size="30" maxlength="30" validate="reqd" onkeypress="className = 'loginfields'" value="@@username"/>
+   </td>
+</tr>
+<tr>
+   <td align="right" class="icon-psw">@@password</td>
+   <td>
+       <input class="loginfields" type="password" name="password" tabindex="2"
+        id="password" size="25" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'"/>
+   </td>
+</tr>
+<tr>
+   <td align="right" class="icon-psw">@@verify_password</td>
+   <td>
+      <input class="loginfields" type="password" name="valpassword" tabindex="3"
+       id="valpassword" size="25" maxlength="50" validate="reqd;verify:password" onkeypress="className = 'loginfields'"/>
+   </td>
+</tr>
+<tr>
+   <td align="right">@@hostname</td>
+   <td>
+      <input class="loginfields" type="text" name="hostname" tabindex="4"
+       id="hostname" size="35" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'" value="@@hostname"/>
+   </td>
+</tr>
+<tr>
+   <td align="right">@@token_id</td>
+   <td>
+      <input class="loginfields" type="text" name="token_id" tabindex="5"
+       id="token_id" size="35" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'" value="@@token_id"/>
+   </td>
+</tr>
+<tr class="odd_data submit">
+   <td class="center"  colspan="2">
+      <input name="submit" class="button" id="submit" tabindex="6" value="@@register_account" type="submit"/>
+   </td>
+</tr>
+</tbody>
+</table>
+</form>
+
+</div>
+</div>
+
+</div>
