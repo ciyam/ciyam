@@ -35,6 +35,8 @@ pikaday.js
 prepare.htms
 printlist.htms
 printview.htms
+register.htms
+registered.htms
 restore.htms
 sha1.js
 sha2.js
