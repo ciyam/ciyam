@@ -118,6 +118,7 @@ const char* const c_activate_htms = "activate.htms";
 const char* const c_identity_htms = "identity.htms";
 const char* const c_password_htms = "password.htms";
 const char* const c_register_htms = "register.htms";
+const char* const c_registered_htms = "registered.htms";
 const char* const c_ssl_signup_htms = "ssl_signup.htms";
 const char* const c_no_identity_htms = "no_identity.htms";
 const char* const c_authenticate_htms = "authenticate.htms";
@@ -164,6 +165,14 @@ const char* const c_ssl_sign_up_extra_details = "@@ssl_sign_up_extra_details";
 const char* const c_user_other_none = "~";
 
 const char* const c_reset_identity_password = "*******";
+
+const char* const c_matrix_json_user_id = "\"user_id\"";
+const char* const c_matrix_json_completed = "\"completed\"";
+const char* const c_matrix_json_session_prefix = "{\"session\":\"";
+const char* const c_matrix_json_available_response = "{\"available\":true}";
+const char* const c_matrix_json_register_auth_prefix = "{ \"auth\": { \"type\": \"m.login.registration_token\", \"token\": ";
+const char* const c_matrix_json_available_auth_details = "\"@@token_id\", \"session\": \"@@session_id\" }, \"password\" : \"@@password\", \"username\": \"@@username\" }";
+const char* const c_matrix_json_register_dummy_auth = "{ \"auth\": { \"type\": \"m.login.dummy\", \"session\": \"@@session_id\" } }";
 
 // NOTE: When not using multiple request handlers a single socket is being used to access
 // the application server (in order to allow testing without possible concurrency issues).
@@ -215,6 +224,7 @@ string g_activate_html;
 string g_identity_html;
 string g_password_html;
 string g_register_html;
+string g_registered_html;
 string g_ssl_signup_html;
 string g_no_identity_html;
 string g_authenticate_html;
@@ -1358,6 +1368,7 @@ void request_handler::process_request( )
                else
                {
                   string activate_html( g_activate_html );
+
                   str_replace( activate_html, c_username, user );
 
                   string message( "<p><b>"
@@ -2077,11 +2088,13 @@ void request_handler::process_request( )
 
                      if( cmd == c_cmd_register )
                      {
+                        bool user_registered = false;
+
                         if( !password.empty( ) && g_register_error.empty( ) )
                         {
                            string tmp_file_name( "~" + uuid( ).as_string( ) );
 
-                           string prefix( "curl -s -H \"Content-Type: application/json\" -X GET " );
+                           string prefix( "curl -s -H \"Content-Type: application/json\" -X " );
 
                            string homeserver( "https://" );
 
@@ -2090,20 +2103,118 @@ void request_handler::process_request( )
                            else
                               homeserver += hostname;
 
-                           string command( prefix );
+                           string command( prefix + "GET " );
 
                            command += "\"" + homeserver + "/_matrix/client/v3/register/available?username=" + username + "\" > ";
 
                            command += tmp_file_name;
 
-                           system( command.c_str( ) );
+                           int rc = system( command.c_str( ) );
+                           ( void )rc;
 
                            string response( buffer_file( tmp_file_name ) );
 
-                           if( response.find( "{\"available\":true}" ) != string::npos )
+                           // NOTE: Assuming the username is available then the register workflow
+                           // first starts with obtaining a "session" identifier. Next along with
+                           // the account token and matrix session execute the "register" command
+                           // providing both the username and password. A third and final step is
+                           // to issue a "dummy login" command (after which the account should be
+                           // available for usage).
+                           if( response.find( c_matrix_json_available_response ) != string::npos )
                            {
-                              // KLUDGE: For now report available as an error.
-                              g_register_error = "This Username is available!";
+                              string command( prefix + "POST -d " );
+
+                              command += "'{ }' \"" + homeserver + "/_matrix/client/v3/register\" > ";
+
+                              command += tmp_file_name;
+
+                              int rc = system( command.c_str( ) );
+                              ( void )rc;
+
+                              response = buffer_file( tmp_file_name );
+
+                              string session_info( response );
+
+                              string::size_type pos = session_info.find( c_matrix_json_session_prefix );
+
+                              if( pos == 0 )
+                              {
+                                 session_info.erase( 0, strlen( c_matrix_json_session_prefix ) );
+
+                                 pos = session_info.find( '"' );
+
+                                 if( ( pos == string::npos ) || ( pos < 20 ) )
+                                    g_register_error = "unexpected response: " + response;
+                                 else
+                                 {
+                                    string session_id( session_info.substr( 0, pos ) );
+
+                                    string command( prefix + "POST -d " );
+
+                                    string register_data_file( "~" + uuid( ).as_string( ) );
+
+                                    command += "'@" + register_data_file + "' \""
+                                     + homeserver + "/_matrix/client/v3/register\" > " + tmp_file_name;
+
+                                    string register_prefix( c_matrix_json_register_auth_prefix );
+                                    string register_details( c_matrix_json_available_auth_details );
+
+                                    str_replace( register_details, c_token_id, token_id );
+                                    str_replace( register_details, c_session_id, session_id );
+                                    str_replace( register_details, c_password, password );
+                                    str_replace( register_details, c_username, username );
+
+                                    string register_json_data( register_prefix + register_details );
+
+                                    // FUTURE: This file should have access set to "700".
+                                    write_file( register_data_file, register_json_data );
+
+                                    int rc = system( command.c_str( ) );
+                                    ( void )rc;
+
+                                    response = buffer_file( tmp_file_name );
+
+                                    if( response.find( "M_USER_IN_USE" ) != string::npos )
+                                       g_register_error = GDS( c_display_username_taken );
+                                    else if( response.find( "M_UNAUTHORIZED" ) != string::npos )
+                                       g_register_error = GDS( c_display_invalid_token_id );
+                                    else if( response.find( c_matrix_json_completed ) != string::npos )
+                                    {
+                                       string command( prefix + "POST -d " );
+
+                                       string dummy_login( c_matrix_json_register_dummy_auth );
+
+                                       str_replace( dummy_login, c_session_id, session_id );
+
+                                       command += "'" + dummy_login + "' \""
+                                        + homeserver + "/_matrix/client/v3/register\" > " + tmp_file_name;
+
+                                       int rc = system( command.c_str( ) );
+                                       ( void )rc;
+
+                                       response = buffer_file( tmp_file_name );
+
+                                       if( response.find( c_matrix_json_user_id ) != string::npos )
+                                          user_registered = true;
+                                       else
+                                          g_register_error = "unexpected response: " + response;
+                                    }
+                                    else
+                                       g_register_error = "unexpected response: " + response;
+
+                                    // NOTE: This data includes the username and password
+                                    // so first shred its content before then deleting it.
+                                    string shred_command( "shred " + register_data_file );
+
+                                    rc = system( shred_command.c_str( ) );
+                                    ( void )rc;
+
+                                    file_remove( register_data_file );
+
+                                 }
+                              }
+                              else
+                                 g_register_error = "unexpected response: " + response;
                            }
                            else
                            {
@@ -2116,20 +2227,34 @@ void request_handler::process_request( )
                            file_remove( tmp_file_name );
                         }
 
-                        string register_html( g_register_html );
+                        if( !user_registered )
+                        {
+                           string register_html( g_register_html );
 
-                        str_replace( register_html,
-                         c_register_introduction, GDS( c_display_register_introduction ) );
+                           str_replace( register_html,
+                            c_register_introduction, GDS( c_display_register_introduction ) );
 
-                        str_replace( register_html, c_token_id, token_id );
+                           str_replace( register_html, c_token_id, token_id );
 
-                        str_replace( register_html, c_hostname, hostname );
-                        str_replace( register_html, c_username, username );
+                           str_replace( register_html, c_hostname, hostname );
+                           str_replace( register_html, c_username, username );
 
-                        str_replace( register_html, c_register_error, g_register_error );
+                           str_replace( register_html, c_register_error, g_register_error );
 
-                        output_form( module_name, extra_content,
-                         register_html, "", false, GDS( c_display_register_account ) );
+                           output_form( module_name, extra_content,
+                            register_html, "", false, GDS( c_display_register_account ) );
+                        }
+                        else
+                        {
+                           string registered_html( g_registered_html );
+
+                           str_replace( registered_html, c_registered_message,
+                            string_message( GDS( c_display_registered_message ),
+                            make_pair( c_display_registered_message_parm_username, username ) ) );
+
+                           output_form( module_name, extra_content,
+                            registered_html, "", false, GDS( c_display_registered_title ) );
+                        }
 
                         has_output_form = true;
 
@@ -3740,6 +3865,7 @@ int main( int argc, char* argv[ ] )
       g_identity_html = buffer_file( c_identity_htms );
       g_password_html = buffer_file( c_password_htms );
       g_register_html = buffer_file( c_register_htms );
+      g_registered_html = buffer_file( c_registered_htms );
       g_ssl_signup_html = buffer_file( c_ssl_signup_htms );
       g_no_identity_html = buffer_file( c_no_identity_htms );
       g_authenticate_html = buffer_file( c_authenticate_htms );
