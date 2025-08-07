@@ -849,7 +849,7 @@ sudo register_new_matrix_user -u registration-bot -a -c /etc/matrix-synapse/home
 (use the random password just created above)
 
 curl -X POST --header 'Content-Type: application/json' -d '{ "identifier": { "type": "m.id.user", "user": "registration-bot" },
- "password": ""***registration_password***", "type": "m.login.password"}' 'https://***domain_name***/_matrix/client/r0/login'
+ "password": "***registration_password***", "type": "m.login.password"}' 'https://***domain_name***/_matrix/client/r0/login'
 
 (note the access token value that is shown in the login output)
 ***access_token***
@@ -898,15 +898,18 @@ then execute an arbitrary command. From matrix clients (such as Element) the "sh
 command is expected to provide a "token" name which can be tested for in the filter
 script.
 
+NOTE: The following project is useful for matrix administration (including tokens).
+
+https://github.com/Awesome-Technologies/synapse-admin
+
 NOTE: Any "special token" used in the filter should not itself be used as part of a
 file or service name (as the script is being run as "root" by default). This custom
 token handling implemention should be used in conjunction with "allowed" bot users.
 In order to output which "special tokens" are available it is recommended to create
-dummy tokens using "https://awesome-technologies.github.io/synapse-admin" (add with
-"0" usages and no expiry date) or if an ***access_token*** is available then simply
-by using "curl" as follows:
+dummy tokens via the following simple "curl" command (which uses ***access_token***
+which is the same as used previously):
 
-curl -X POST -H "Content-Type: application/json" -d '{ "token": "custom_token", "uses_allowed": 0 }
+curl -X POST -H "Content-Type: application/json" -d '{ "token": "echo-test", "uses_allowed": 0 }
 ' https://***domain_name***/_synapse/admin/v1/registration_tokens/new?access_token=***access_token***
 
 vi matrix-registration-bot-filter
@@ -972,3 +975,11 @@ sudo systemctl status matrix-synapse
 
 New users will now be able to create their own account names and passwords provided
 that they include a valid registration token.
+
+NOTE: If not installing the Matrix Authentication Service then new accounts are not
+able to be created using Element-X so as a work-around the CIYAM FCGI UI provides a
+form to register an account so that you can then manually login with Element-X (and
+generate the account recovery key). A URL for this form is as follows:
+
+https://***domain_name***/home?cmd=register&hostname=***domain_name***&token_id=XXX
+(where XXX needs to be replaced by an actual token created by the registration bot)
