@@ -898,10 +898,6 @@ then execute an arbitrary command. From matrix clients (such as Element) the "sh
 command is expected to provide a "token" name which can be tested for in the filter
 script.
 
-NOTE: The following project is useful for matrix administration (including tokens).
-
-https://github.com/Awesome-Technologies/synapse-admin
-
 NOTE: Any "special token" used in the filter should not itself be used as part of a
 file or service name (as the script is being run as "root" by default). This custom
 token handling implemention should be used in conjunction with "allowed" bot users.
@@ -983,3 +979,37 @@ generate the account recovery key). A URL for this form is as follows:
 
 https://***domain_name***/home?cmd=register&hostname=***domain_name***&token_id=XXX
 (where XXX needs to be replaced by an actual token created by the registration bot)
+
+Matrix-Synapse Administration
+-----------------------------
+
+The following project is useful for Matrix-Synapse administration.
+
+https://github.com/Awesome-Technologies/synapse-admin
+
+(assuming synapse-admin-VER.REV.tar.gz is in admin's home directory)
+
+cd $WEBDIR
+tar -xvzf ~/synapse-admin-VER.REV.tar.gz
+
+rm ~/synapse-admin-VER.REV.tar.gz
+
+mv synapse-admin-VER.REV synapse-admin
+
+vi synapse-admin/config.json
+{
+ "restrictBaseUrl": "https://***domain_name***"
+}
+
+sudo vi /etc/apache2/sites-available/000-default-le-ssl.conf
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+...
+# NOTE: Uncomment out the following if allowing external adminstration.
+    ProxyPass /_synapse/admin http://127.0.0.1:8008/_synapse/admin nocanon
+    ProxyPassReverse /_synapse/admin http://127.0.0.1:8008/_synapse/admin
+...
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+sudo systemctl restart apache2
+
+https://***domain-name***/synapse-admin
