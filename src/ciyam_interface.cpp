@@ -3839,11 +3839,26 @@ int main( int argc, char* argv[ ] )
 
 #ifdef SSL_SUPPORT
       if( file_exists( c_ciyam_pem ) )
+      {
+         // NOTE: If a PEM link is found but its
+         // target is not then it's possibly due
+         // to timing (if the application server
+         // has been started for the first time)
+         // so is looping here for a few seconds
+         // re-checking.
+         for( size_t i = 0; i < 20; i++ )
+         {
+            if( file_exists( c_ciyam_pem, true ) )
+               break;
+
+            msleep( 250 );
+         }
 #  ifndef USE_MULTIPLE_REQUEST_HANDLERS
          init_ssl( c_ciyam_pem );
 #  else
          init_ssl( c_ciyam_pem, 0, 0, true );
 #  endif
+      }
 #endif
 
       DEBUG_TRACE( "cwd = " + get_cwd( ) );
@@ -3851,6 +3866,7 @@ int main( int argc, char* argv[ ] )
       DEBUG_TRACE( "[read strings]" );
 
       init_strings( );
+
       init_extkeys( );
 
       g_login_html = buffer_file( c_login_htms );
