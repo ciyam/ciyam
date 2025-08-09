@@ -117,6 +117,7 @@ const char* const c_not_found_output = "Not Found";
 const char* const c_error_output_prefix = "Error: ";
 
 const size_t c_pid_timeout = 5000; // i.e. 5 secs
+const size_t c_tls_timeout = 5000; // i.e. 5 secs
 const size_t c_pubkey_timeout = 5000; // i.e. 5 secs
 const size_t c_command_timeout = 60000; // i.e. 60 secs
 const size_t c_connect_timeout = 10000; // i.e. 10 secs
@@ -796,7 +797,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 #ifdef SSL_SUPPORT
          if( !socket.is_secure( )
           && ( ( str == c_session_cmd_tls ) || str == c_session_cmd_starttls ) )
-            socket.ssl_connect( );
+            socket.ssl_connect( c_tls_timeout );
 #endif
          if( ( str == c_session_cmd_bye )
           || ( str == c_session_cmd_quit )
@@ -1785,7 +1786,7 @@ int main( int argc, char* argv[ ] )
 
 #ifdef SSL_SUPPORT
             if( g_use_tls )
-               socket.ssl_connect( );
+               socket.ssl_connect( c_tls_timeout );
 #endif
 
             if( socket.write_line( to_string( g_pid ) + c_key_exchange_suffix, c_pid_timeout ) <= 0 )
