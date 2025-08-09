@@ -11,6 +11,9 @@
 
 #  include <openssl/ssl.h>
 
+const size_t c_default_ssl_accept_timeout = 30000;
+const size_t c_default_ssl_connect_timeout = 30000;
+
 void init_ssl( const char* p_keyfile,
  const char* p_password = 0, const char* p_CA_List = 0, bool multi_threaded = false );
 
@@ -24,25 +27,28 @@ struct ssl_init
       init_ssl( p_keyfile, p_password, p_CA_List, multi_threaded );
    }
 
-   ~ssl_init( ) { term_ssl( ); }
+   inline ~ssl_init( ) { term_ssl( ); }
 };
 
 class ssl_socket : public tcp_socket
 {
    public:
    ssl_socket( );
+
    ssl_socket( SOCKET socket );
 
    virtual ~ssl_socket( );
 
-   void ssl_accept( );
-   void ssl_connect( );
+   void ssl_accept( size_t timeout = c_default_ssl_accept_timeout, bool* p_rc = 0 );
+
+   void ssl_connect( size_t timeout = c_default_ssl_connect_timeout, bool* p_rc = 0 );
 
    bool is_secure( ) const { return secure; }
 
    bool is_tls_handshake( );
 
    int recv( unsigned char* buf, int buflen, size_t timeout = 0 );
+
    int send( const unsigned char* buf, int buflen, size_t timeout = 0 );
 
    private:
@@ -51,4 +57,3 @@ class ssl_socket : public tcp_socket
 };
 
 #endif
-
