@@ -6672,7 +6672,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
                 + hash.get_digest_as_string( ).substr( 0, 9 ) + '=' + base64::encode( ss.str( ) );
 
 #ifdef SSL_SUPPORT
-               this->ap_socket->ssl_connect( );
+               this->ap_socket->ssl_connect( c_initial_timeout );
 
                using_tls = true;
 #endif
