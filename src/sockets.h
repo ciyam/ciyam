@@ -9,10 +9,7 @@
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <string>
-#     ifdef _WIN32
-#        define NOMINMAX
-#        include <winsock2.h>
-#     else
+#     ifdef __GNUG__
 #        include <sys/socket.h>
 #        include <arpa/inet.h>
 #     endif
@@ -20,25 +17,10 @@
 
 struct progress;
 
-#ifdef _WIN32
-class winsock_init
-{
-   public:
-   int status;
-   WSADATA wsd;
-
-   winsock_init( WORD wVersionRequested = 0x0002 );
-   ~winsock_init( );
-};
-#endif
-
-#ifdef _WIN32
-typedef int socklen_t;
-#else
 #  define SOCKET int
 #  define INVALID_SOCKET -1
-#endif
 
+const size_t c_default_accept_timeout = 30000;
 const size_t c_default_connect_timeout = 30000;
 
 class ip_address : public sockaddr_in
@@ -72,13 +54,14 @@ class socket_base
    virtual void close( );
 
    bool bind( const ip_address& addr );
+
+   SOCKET accept( ip_address& addr, size_t timeout = c_default_accept_timeout ) const;
+
    bool connect( const ip_address& addr, size_t timeout = c_default_connect_timeout );
 
    virtual void on_bind( ) { }
 
    bool listen( );
-
-   SOCKET accept( ip_address& addr, size_t timeout = 0 ) const;
 
    bool set_no_linger( );
    bool set_reuse_addr( );

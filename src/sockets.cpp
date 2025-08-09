@@ -16,7 +16,7 @@
 #  include <fstream>
 #  include <iostream>
 #  include <stdexcept>
-#  ifndef _WIN32
+#  ifdef __GNUG__
 #     include <fcntl.h>
 #     include <netdb.h>
 #     include <stdarg.h>
@@ -75,19 +75,7 @@ struct scoped_empty_file_delete
 
 }
 
-#ifdef _WIN32
-winsock_init::winsock_init( WORD wVersionRequested )
-{
-   status = ::WSAStartup( wVersionRequested, &wsd );
-}
-
-winsock_init::~winsock_init( )
-{
-   ::WSACleanup( );
-}
-#endif
-
-#ifndef _WIN32
+#ifdef __GNUG__
 #  define HOSTENT hostent
 #  define IN_ADDR in_addr
 #  define SOCKET_ERROR -1
@@ -135,24 +123,12 @@ void ip_address::resolve( const char* p_address, int port )
 
 string ip_address::get_addr_string( ) const
 {
+#ifdef __GNUG__
    char buf[ 64 ];
-#ifndef _WIN32
+
    ::inet_ntop( AF_INET, &( sin_addr ), buf, sizeof( buf ) ); // NOTE: use AF_INET ==> AF_INET6 for ipv6
 #else
-   DWORD addr_size = sizeof( buf );
-   ::WSAAddressToString( ( LPSOCKADDR )this, sizeof( ip_address ), 0, buf, &addr_size );
-
-   int dots = 0;
-   for( size_t i = 0; i < sizeof( buf ); i++ )
-   {
-      if( buf[ i ] == '.' )
-         ++dots;
-      else if( buf[ i ] == ':' && dots == 3 )
-      {
-         buf[ i ] = '\0';
-         break;
-      }
-   }
+#  error get_addr_string not implemented for this platform
 #endif
    return string( buf );
 }
@@ -184,11 +160,7 @@ void socket_base::close( )
    if( socket != INVALID_SOCKET )
    {
       ::shutdown( socket, 2 );
-#ifndef _WIN32
       ::close( socket );
-#else
-      ::closesocket( socket );
-#endif
    }
 
    socket = INVALID_SOCKET;
@@ -197,6 +169,23 @@ void socket_base::close( )
 bool socket_base::bind( const ip_address& addr )
 {
    return ::bind( socket, ( const sockaddr* )&addr, sizeof( sockaddr ) ) != SOCKET_ERROR;
+}
+
+SOCKET socket_base::accept( ip_address& addr, size_t timeout ) const
+{
+   bool okay = true;
+
+   if( timeout )
+      okay = has_input( timeout );
+
+   if( !okay )
+      return INVALID_SOCKET;
+   else
+   {
+      socklen_t len = sizeof( sockaddr );
+
+      return ::accept( socket, ( sockaddr* )&addr, &len );
+   }
 }
 
 bool socket_base::connect( const ip_address& addr, size_t timeout )
@@ -251,30 +240,9 @@ bool socket_base::listen( )
    return ::listen( socket, SOMAXCONN ) != SOCKET_ERROR;
 }
 
-SOCKET socket_base::accept( ip_address& addr, size_t timeout ) const
-{
-   bool okay = true;
-
-   if( timeout )
-      okay = has_input( timeout );
-
-   if( !okay )
-      return INVALID_SOCKET;
-   else
-   {
-      socklen_t len = sizeof( sockaddr );
-
-      return ::accept( socket, ( sockaddr* )&addr, &len );
-   }
-}
-
 bool socket_base::set_blocking( )
 {
-#ifdef _WIN32
-   unsigned long val = 0;
-
-   return ::ioctlsocket( socket, FIONBIO, &val ) != SOCKET_ERROR;
-#else
+#ifdef __GNUG__
    long val;
 
    if( val = ::fcntl( socket, F_GETFL, 0 ) < 0 )
@@ -283,16 +251,14 @@ bool socket_base::set_blocking( )
    val &= ~O_NONBLOCK;
 
    return ::fcntl( socket, F_SETFL, val ) >= 0;
+#else
+#  error set_blocking not implemented for this platform
 #endif
 }
 
 bool socket_base::set_non_blocking( )
 {
-#ifdef _WIN32
-   unsigned long val = 1;
-
-   return ::ioctlsocket( socket, FIONBIO, &val ) != SOCKET_ERROR;
-#else
+#ifdef __GNUG__
    long val;
 
    if( val = ::fcntl( socket, F_GETFL, 0 ) < 0 )
@@ -301,16 +267,14 @@ bool socket_base::set_non_blocking( )
    val |= O_NONBLOCK;
 
    return ::fcntl( socket, F_SETFL, val ) >= 0;
+#else
+#  error set_non_blocking not implemented for this platform
 #endif
 }
 
 bool socket_base::set_no_linger( )
 {
-#ifdef _WIN32
-   LINGER val;
-#else
    struct linger val;
-#endif
 
    val.l_onoff = 1;
    val.l_linger = 0;
