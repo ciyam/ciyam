@@ -151,14 +151,20 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
       return false;
    }
 
+   size_t reponse_timeout = c_initial_response_timeout;
+
 #ifdef SSL_SUPPORT
    if( cmd == "starttls" )
-      sess_info.p_socket->ssl_connect( );
+   {
+      reponse_timeout = c_subsequent_response_timeout;
+
+      sess_info.p_socket->ssl_connect( c_initial_response_timeout );
+   }
 #endif
 
    string response;
 
-   if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 )
+   if( sess_info.p_socket->read_line( response, reponse_timeout ) <= 0 )
    {
       if( sess_info.p_socket->had_timeout( ) )
          DEBUG_TRACE( "timeout awaiting initial response" );
@@ -173,6 +179,7 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
       if( response != c_response_okay )
       {
          *p_response = response;
+
          DEBUG_TRACE( response );
 
          if( response.find( c_response_error_prefix ) == 0 )
@@ -185,6 +192,7 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
          else
          {
             p_response->clear( );
+
             return true;
          }
       }
@@ -205,6 +213,7 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
    if( response != c_response_okay )
    {
       DEBUG_TRACE( "unexpected server response '" + response + "'" );
+
       return false;
    }
 
