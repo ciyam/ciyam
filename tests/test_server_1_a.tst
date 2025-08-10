@@ -611,6 +611,12 @@ regex "^[@]?[a-b][a-b]+$$" "@ba@"
 regex "^[@]?[a-b][a-b]+$$" "@ba@"
 regex "^[@]?[a-b][a-b]+$$" "@bb@"
 regex "^[@]?[a-b][a-b]+$$" "@bb@"
+regex "^([a-z]{1}[a-z0-9]{0,8}[a-z]{1})" abc123def
+ab
+regex "([a-z]{1}[a-z0-9]{0,8}[a-z]{1})$$" abc123def
+ef
+regex "^([a-z]{1}[a-z0-9]{0,8}[a-z]{1})$$" abc123def
+abc123def
 regex @peerchain_identity 012343210
 012343210
 regex @peerchain_identity abcdedbca
