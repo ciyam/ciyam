@@ -1403,7 +1403,16 @@ std::string CIYAM_BASE_DECL_SPEC encode_hex( const std::string& s );
 std::string CIYAM_BASE_DECL_SPEC decode_if_base64( const std::string& s );
 std::string CIYAM_BASE_DECL_SPEC encode_to_base64( const std::string& x );
 
-std::string CIYAM_BASE_DECL_SPEC check_with_regex( const std::string& r, const std::string& s, bool* p_rc = 0 );
+enum regex_output_type
+{
+   e_regex_output_type_refs,
+   e_regex_output_type_input,
+   e_regex_output_type_matched,
+   e_regex_output_type_automatic
+};
+
+std::string CIYAM_BASE_DECL_SPEC check_with_regex( const std::string& r,
+ const std::string& s, bool* p_rc = 0, regex_output_type output_type = e_regex_output_type_automatic );
 
 std::string CIYAM_BASE_DECL_SPEC hash_sha1( const std::string& s, int num_chars = 0 );
 

@@ -611,12 +611,40 @@ regex "^[@]?[a-b][a-b]+$$" "@ba@"
 regex "^[@]?[a-b][a-b]+$$" "@ba@"
 regex "^[@]?[a-b][a-b]+$$" "@bb@"
 regex "^[@]?[a-b][a-b]+$$" "@bb@"
+regex "abc(def)?ghi" abcghi
+regex "abc(def)?ghi" abcdefghi
+def
+regex "abc(def)?ghi" abcghijkl
+regex -refs "abc(def)?ghi" abcghijkl
+regex -input "abc(def)?ghi" abcghijkl
+abcghijkl
+regex -matched "abc(def)?ghi" abcghijkl
+abcghi
 regex "^([a-z]{1}[a-z0-9]{0,8}[a-z]{1})" abc123def
 ab
 regex "([a-z]{1}[a-z0-9]{0,8}[a-z]{1})$$" abc123def
 ef
 regex "^([a-z]{1}[a-z0-9]{0,8}[a-z]{1})$$" abc123def
 abc123def
+regex "([a-z]+)" abc-def
+abc
+regex "([a-z]+)([-_.][a-z]+)" abc-def
+abc-def
+regex "([a-z]+)([-_.][a-z]+)" abc_def
+abc_def
+regex "([a-z]+)([-_.][a-z]+)" abc.def
+abc.def
+regex "([a-z]+)([-_.][a-z]+)" abc--def
+regex "([a-z]+)([-_.][a-z]+)" abc__def
+regex "([a-z]+)([-_.][a-z]+)" abc..def
+regex "([a-z]+)([-_.][a-z]+)" abc-_def
+regex "([a-z]+)([-_.][a-z]+)" abc-.def
+regex "([a-z]+)([-_.][a-z]+)" abc_-def
+regex "([a-z]+)([-_.][a-z]+)" abc_.def
+regex "([a-z]+)([-_.][a-z]+)" abc.-def
+regex "([a-z]+)([-_.][a-z]+)" abc._def
+regex "([a-z]+)([-_.][a-z]+)([-_.][a-z]+)" abc-def-ghi
+abc-def-ghi
 regex @peerchain_identity 012343210
 012343210
 regex @peerchain_identity abcdedbca

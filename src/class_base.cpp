@@ -4263,7 +4263,7 @@ string encode_to_base64( const string& s )
    return prefix + base64::encode( str );
 }
 
-string check_with_regex( const string& r, const string& s, bool* p_rc )
+string check_with_regex( const string& r, const string& s, bool* p_rc, regex_output_type output_type )
 {
    string re( r );
 
@@ -4285,7 +4285,11 @@ string check_with_regex( const string& r, const string& s, bool* p_rc )
 
    vector< string > refs;
 
-   if( expr.search( s, 0, &refs ) == string::npos )
+   size_t length = 0;
+
+   string::size_type pos = expr.search( s, &length, &refs );
+
+   if( pos == string::npos )
    {
       if( !s.empty( ) )
       {
@@ -4305,12 +4309,23 @@ string check_with_regex( const string& r, const string& s, bool* p_rc )
 
    string retval( s );
 
-   if( !refs.empty( ) )
+   if( output_type != e_regex_output_type_input )
    {
-      retval.clear( );
+      if( output_type == e_regex_output_type_matched )
+      {
+         if( pos == string::npos )
+            retval.erase( );
+         else
+            retval = s.substr( pos, length );
+      }
+      else if( !refs.empty( )
+       || ( output_type == e_regex_output_type_refs ) )
+      {
+         retval.erase( );
 
-      for( size_t i = 0; i < refs.size( ); i++ )
-         retval += refs[ i ];
+         for( size_t i = 0; i < refs.size( ); i++ )
+            retval += refs[ i ];
+      }
    }
 
    return retval;
