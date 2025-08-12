@@ -146,7 +146,7 @@ utc_to_local "convert UTC to local for a timezone" <val//tz_name><val//utc_time>
 utc_from_local "convert local to UTC for a timezone" <val//tz_name><val//local_time>
 utc_to_unix_time "convert UTC to unix time" <val//utc_time>
 utc_from_unix_time "convert unix time to UTC" <val//unix_time>
-utils_regex|regex "check regex with text" [<opt/-refs/refs>|<opt/-input/input>|<opt/-matched/matched>]<val//expr_or_name><val//text_to_check>
+utils_regex|regex "check regex with text" [<opt/-chain/chain>][<opt/-refs/refs>|<opt/-input/input>|<opt/-matched/matched>]<val//expr_or_name><val//text_to_check>
 utils_decode|decode "decode base64 to hex" [<opt/-url/url>][<opt/-text/text>]<val//data>
 utils_encode|encode "encode hex to base64" [<opt/-url/url>][<opt/-text/text>]<val//data>
 utils_decrypt|decrypt "decrypt key/data/password" [<opt/-harden_key/harden_key>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]

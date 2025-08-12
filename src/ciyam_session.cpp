@@ -7008,6 +7008,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string expr( get_parm_val( parameters, c_cmd_ciyam_session_utils_regex_expr_or_name ) );
          string text( get_parm_val( parameters, c_cmd_ciyam_session_utils_regex_text_to_check ) );
+         bool chain = has_parm_val( parameters, c_cmd_ciyam_session_utils_regex_chain );
          bool refs = has_parm_val( parameters, c_cmd_ciyam_session_utils_regex_refs );
          bool input = has_parm_val( parameters, c_cmd_ciyam_session_utils_regex_input );
          bool matched = has_parm_val( parameters, c_cmd_ciyam_session_utils_regex_matched );
@@ -7023,7 +7024,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else if( matched )
             output_type = e_regex_output_type_matched;
 
-         string found( check_with_regex( expr, text, &rc, output_type ) );
+         string found( check_with_regex( expr, text, &rc, output_type, chain ) );
 
          if( rc )
             response = found;
