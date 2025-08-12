@@ -1411,8 +1411,9 @@ enum regex_output_type
    e_regex_output_type_automatic
 };
 
-std::string CIYAM_BASE_DECL_SPEC check_with_regex( const std::string& r,
- const std::string& s, bool* p_rc = 0, regex_output_type output_type = e_regex_output_type_automatic );
+std::string CIYAM_BASE_DECL_SPEC check_with_regex(
+ const std::string& r, const std::string& s, bool* p_rc = 0,
+ regex_output_type output_type = e_regex_output_type_automatic, bool use_chain = false );
 
 std::string CIYAM_BASE_DECL_SPEC hash_sha1( const std::string& s, int num_chars = 0 );
 

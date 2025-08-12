@@ -4263,7 +4263,8 @@ string encode_to_base64( const string& s )
    return prefix + base64::encode( str );
 }
 
-string check_with_regex( const string& r, const string& s, bool* p_rc, regex_output_type output_type )
+string check_with_regex( const string& r, const string& s,
+ bool* p_rc, regex_output_type output_type, bool use_chain )
 {
    string re( r );
 
@@ -4278,7 +4279,12 @@ string check_with_regex( const string& r, const string& s, bool* p_rc, regex_out
    else if( re == c_special_regex_for_peerchain_description )
       re = "^" + string( c_regex_peerchain_description ) + "$";
 
-   regex expr( re );
+   auto_ptr< regex_base > ap_regex;
+
+   if( !use_chain )
+      ap_regex.reset( new regex( re ) );
+   else
+      ap_regex.reset( new regex_chain( re ) );
 
    if( p_rc )
       *p_rc = true;
@@ -4287,7 +4293,7 @@ string check_with_regex( const string& r, const string& s, bool* p_rc, regex_out
 
    size_t length = 0;
 
-   string::size_type pos = expr.search( s, &length, &refs );
+   string::size_type pos = ap_regex->search( s, &length, &refs );
 
    if( pos == string::npos )
    {
