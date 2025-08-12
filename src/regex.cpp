@@ -243,7 +243,7 @@ struct search_state
 void dump_state( const string& msg, const search_state& s, size_t offset )
 {
    if( !msg.empty( ) )
-      cout << "[ " << msg << ": part #" << ( offset + 1 ) << " ]" << endl;
+      cout << '[' << msg << ": part #" << ( offset + 1 ) << ']' << endl;
 
    cout << "ch = " << s.ch << endl;
    cout << "last_ch = " << s.last_ch << endl;
@@ -252,6 +252,7 @@ void dump_state( const string& msg, const search_state& s, size_t offset )
    cout << "is_range = " << s.is_range << endl;
    cout << "had_empty = " << s.had_empty << endl;
    cout << "had_range = " << s.had_range << endl;
+   cout << "is_in_ref = " << s.is_in_ref << endl;
    cout << "is_in_set = " << s.is_in_set << endl;
    cout << "was_in_set = " << s.was_in_set << endl;
    cout << "is_matches = " << s.is_matches << endl;
@@ -259,6 +260,7 @@ void dump_state( const string& msg, const search_state& s, size_t offset )
    cout << "has_minimum = " << s.has_minimum << endl;
    cout << "has_maximum = " << s.has_maximum << endl;
    cout << "set_started = " << s.set_started << endl;
+   cout << "had_finish_ref = " << s.had_finish_ref << endl;
    cout << "is_set_matches = " << s.is_set_matches << endl;
 }
 #endif
@@ -466,7 +468,6 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
 
                if( i != ( expr.length( ) - 1 ) )
                {
-
 #ifdef DEBUG
                   dump_state( "at 2", s, parts.size( ) );
 #endif
@@ -547,7 +548,10 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
 
             s.had_finish_ref = true;
 
-            next_part.finish_ref = true;
+            if( parts.empty( ) || next_part.start_ref )
+               next_part.finish_ref = true;
+            else if( i != ( expr.length( ) - 1 ) )
+               parts[ parts.size( ) - 1 ].finish_ref = true;
          }
          else if( s.ch == '[' )
          {
@@ -974,6 +978,9 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
    {
       if( s.is_range && !s.has_maximum )
          next_part.max_matches = next_part.min_matches;
+
+      if( s.had_finish_ref )
+         next_part.finish_ref = true;
 
 #ifdef DEBUG
       dump_state( "at 15", s, parts.size( ) );
@@ -2173,6 +2180,173 @@ string::size_type regex::search( const string& text, string::size_type* p_length
 void regex::dump( ostream& os )
 {
    p_impl->dump( os );
+}
+
+regex_chain::regex_chain( const string& expr )
+{
+   bool is_in_ref = false;
+   bool is_in_set = false;
+   bool had_escape = false;
+   bool is_in_range = false;
+   bool was_inverted = false;
+   bool was_separator = false;
+
+   string next_expr;
+
+   char last_ch = '\0';
+
+   regex* p_regex = 0;
+
+   for( size_t i = 0; i < expr.length( ); i++ )
+   {
+      char ch = expr[ i ];
+
+      if( was_separator )
+      {
+         bool inverted = false;
+
+         if( ch == '!' )
+            inverted = true;
+
+         if( !inverted && ( ch != last_ch ) )
+            throw runtime_error( "invalid chain separator suffix found in '" + expr + "'" );
+
+         try
+         {
+            p_regex = new regex( next_expr );
+         }
+         catch( ... )
+         {
+            cleanup( );
+
+            throw;
+         }
+
+         regexes.push_back( make_pair( p_regex, was_inverted ) );
+
+         next_expr.erase( );
+
+         was_separator = false;
+
+         was_inverted = inverted;
+
+         continue;
+      }
+
+      if( had_escape )
+         had_escape = false;
+      else if( ch == '\\' )
+         had_escape = true;
+      else if( ch == '&' && !is_in_ref && !is_in_set && !is_in_range )
+      {
+         if( i == 0 )
+            throw runtime_error( "invalid leading chain separator found in '" + expr + "'" );
+
+         was_separator = true;
+      }
+      else if( ch == '(' && !is_in_set )
+      {
+         if( is_in_range )
+            throw runtime_error( "invalid ref start character found in range for '" + expr + "'" );
+
+         is_in_ref = true;
+      }
+      else if( ch == ')' && !is_in_set )
+      {
+         if( !is_in_ref )
+            throw runtime_error( "invalid ref finish character found in '" + expr + "'" );
+
+         is_in_ref = false;
+      }
+      else if( ch == '[' )
+      {
+         if( is_in_range )
+            throw runtime_error( "invalid set start character found in range for '" + expr + "'" );
+
+         is_in_set = true;
+      }
+      else if( ch == ']' )
+      {
+         if( !is_in_set )
+            throw runtime_error( "invalid set finish character found in '" + expr + "'" );
+
+         is_in_set = false;
+      }
+      else if( ch == '{' && !is_in_set )
+         is_in_range = true;
+      else if( ch == '}' && !is_in_set )
+      {
+         if( !is_in_range )
+            throw runtime_error( "invalid range finish character found in '" + expr + "'" );
+
+         is_in_range = false;
+      }
+
+      if( !was_separator )
+         next_expr += ch;
+
+      last_ch = ch;
+   }
+
+   if( !next_expr.empty( ) )
+   {
+      try
+      {
+         p_regex = new regex( next_expr );
+      }
+      catch( ... )
+      {
+         cleanup( );
+
+         throw;
+      }
+
+      regexes.push_back( make_pair( p_regex, was_inverted ) );
+   }
+}
+
+regex_chain::~regex_chain( )
+{
+   cleanup( );
+}
+
+string::size_type regex_chain::search( const string& text, string::size_type* p_length, vector< string >* p_refs )
+{
+   string::size_type pos = string::npos;
+   string::size_type last_pos = string::npos;
+
+   for( size_t i = 0; i < regexes.size( ); i++ )
+   {
+      regex* p_regex = regexes[ i ].first;
+
+      bool inverted = regexes[ i ].second;
+
+      pos = ( regexes[ i ].first )->search( text, ( inverted ? 0 : p_length ), ( inverted ? 0 : p_refs ) );
+
+      if( inverted )
+      {
+         if( pos == string::npos )
+            pos = last_pos;
+         else
+         {
+            pos = string::npos;
+
+            break;
+         }
+      }
+      else if( pos == string::npos )
+         break;
+      else
+         last_pos = pos;
+   }
+
+   return pos;
+}
+
+void regex_chain::cleanup( )
+{
+   for( size_t i = 0; i < regexes.size( ); i++ )
+      delete regexes[ i ].first;
 }
 
 #ifdef COMPILE_TESTBED_MAIN

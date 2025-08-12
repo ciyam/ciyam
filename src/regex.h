@@ -11,6 +11,7 @@
 #     include <vector>
 #     include <string>
 #     include <iosfwd>
+#     include <algorithm>
 #  endif
 
 const char* const c_regex_label = "[A-Za-z0-9_]+";
@@ -26,6 +27,12 @@ const char* const c_regex_peerchain_identity = "[a-f0-9]{9}";
 const char* const c_regex_floating_point_number = "[-+]?[0-9]+\\.[0-9]+";
 const char* const c_regex_peerchain_description = "[A-Za-z0-9-+.' ]+";
 
+struct regex_base
+{
+   virtual std::string::size_type search( const std::string& text,
+    std::string::size_type* p_length, std::vector< std::string >* p_refs ) = 0;
+};
+
 // NOTE: This regular expression implementation does not perform backtracking and so will never
 // match greedily (and does not support non-greedy match tokens such as +? *?). It does support
 // back references via parenthesis grouping but does not support group options such as ?: which
@@ -33,10 +40,11 @@ const char* const c_regex_peerchain_description = "[A-Za-z0-9-+.' ]+";
 // supported and alternations (such as: one|two|three) are also not supported (the latter could
 // be added without too much difficulty). The design choices were made in order to do the least
 // number of comparisons while still supporting non-trivial expressions.
-class regex
+class regex : public regex_base
 {
    public:
    regex( const std::string& expr, bool match_at_start = false, bool match_at_finish = false );
+
    ~regex( );
 
    std::string get_expr( ) const;
@@ -54,5 +62,27 @@ class regex
    impl* p_impl;
 };
 
-#endif
+// NOTE: The regular expression chain class supports the chaining of multiple standard regular
+// expressions with either "&&" or "&!" separators. The "search" for this class calls "search"
+// for each standard regular expression (using the same "text" argument) and then depending on
+// the prior separator will either stop if has not matched (&&) or if it has matched (&!). The
+// expression "^[a-z][-a-z]+$&&^.*[^-]$" will match "abcde" and "ab-de" along with "a---e" but
+// will not match "-bcde", "abcd-" or "abc--". To stop "--" from being used the "&!" separator
+// could be used to further extend the chain to "^[a-z][-a-z]+$&&^.*[^-]$&!^.*--.*$".
+class regex_chain : public regex_base
+{
+   public:
+   regex_chain( const std::string& expr );
 
+   ~regex_chain( );
+
+   std::string::size_type search( const std::string& text,
+    std::string::size_type* p_length = 0, std::vector< std::string >* p_refs = 0 );
+
+   private:
+   void cleanup( );
+
+   std::vector< std::pair< regex*, bool > > regexes;
+};
+
+#endif
