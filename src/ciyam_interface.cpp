@@ -1173,7 +1173,8 @@ void request_handler::process_request( )
       bool is_invalid_session = false;
 
       if( !session_id.empty( )
-       && ( session_id != c_new_session ) && ( cmd != c_cmd_join ) && ( cmd != c_cmd_status ) )
+       && ( session_id != c_new_session )
+       && ( cmd != c_cmd_join ) && ( cmd != c_cmd_status ) )
       {
          if( user.empty( ) || ( !user.empty( ) && ( hash == get_user_hash( user ) ) ) )
          {
@@ -1184,7 +1185,7 @@ void request_handler::process_request( )
                if( cmd.empty( ) || ( cmd == c_cmd_home ) || ( cmd == c_cmd_quit ) || ( cmd == c_cmd_login )
                 || ( !password.empty( ) && ( cmd == c_cmd_password ) ) || !username.empty( ) || !userhash.empty( ) )
                {
-                  if( cmd != c_cmd_password )
+                  if( ( cmd != c_cmd_password ) && ( cmd != c_cmd_register ) )
                      cmd = c_cmd_home;
 
                   session_id.erase( );
@@ -1291,7 +1292,7 @@ void request_handler::process_request( )
                g_register_error = GDS( c_display_username_num_chars );
             else
             {
-               regex expr( "[a-z0-9_-]{3,35}", true, true );
+               regex_chain expr( "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$$&!^.*--.*$" );
 
                if( expr.search( username ) != 0 )
                   g_register_error = GDS( c_display_username_incorrect );
