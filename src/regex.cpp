@@ -164,6 +164,16 @@ inline bool is_word_char( char ch )
    return rc;
 }
 
+inline bool is_last_pos( size_t pos, const string& s )
+{
+   return ( ( pos + 1 ) == s.length( ) );
+}
+
+inline bool is_before_last( size_t pos, const string& s )
+{
+   return ( ( pos + 1 ) < s.length( ) );
+}
+
 bool match_literal( const string& lit, const string& text, size_t pos )
 {
    size_t len( text.length( ) );
@@ -190,7 +200,7 @@ bool match_literal( const string& lit, const string& text, size_t pos )
          if( ( i == ( lit.length( ) - 2 ) ) && ( lit[ lit.length( ) - 1 ] == '\b' ) )
             return true;
 
-         return ( i == ( lit.length( ) - 1 ) );
+         return is_last_pos( i, lit );
       }
    }
 
@@ -329,6 +339,16 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
 
    size_t start = 0;
 
+   bool last_is_dollar = false;
+
+   // NOTE: As escaping can change whether the
+   // last character is the "match at end" one
+   // this variable is only actually used when
+   // already at the second last character.
+   if( !expr.empty( )
+    && ( expr[ expr.length( ) - 1 ] == '$' ) )
+      last_is_dollar = true;
+
    for( size_t i = 0; i < expr.length( ); i++ )
    {
       s.ch = expr[ i ];
@@ -348,7 +368,7 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
 
       char next_ch = '\0';
 
-      if( i < ( expr.length( ) - 1 ) )
+      if( is_before_last( i, expr ) )
          next_ch = expr[ i + 1 ];
 
       s.ch_used = false;
@@ -393,7 +413,7 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
          }
 
          if( ( s.ch == 'x' )
-          && ( i < ( expr.length( ) - 1 ) ) )
+          && is_before_last( i, expr ) )
          {
             s.ch = hex_nibble( expr[ i + 1 ] );
 
@@ -403,10 +423,10 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
 
             i += 2;
 
-            if( i < ( expr.length( ) - 1 ) )
-               next_ch = expr[ i + 1 ];
-            else
+            if( !is_before_last( i, expr ) )
                next_ch = '\0';
+            else
+               next_ch = expr[ i + 1 ];
          }
 
          if( s.is_in_set )
@@ -466,7 +486,7 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
             {
                add_special_set( next_part, s.ch );
 
-               if( i != ( expr.length( ) - 1 ) )
+               if( !is_last_pos( i, expr ) )
                {
 #ifdef DEBUG
                   dump_state( "at 2", s, parts.size( ) );
@@ -498,7 +518,7 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
       }
       else
       {
-         if( ( s.ch == '$' ) && ( i == ( expr.length( ) - 1 ) ) )
+         if( ( s.ch == '$' ) && is_last_pos( i, expr ) )
          {
             s.ch_used = true;
 
@@ -550,7 +570,8 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
 
             if( parts.empty( ) || next_part.start_ref )
                next_part.finish_ref = true;
-            else if( i != ( expr.length( ) - 1 ) )
+            else if( !is_last_pos( i, expr )
+             && ( !last_is_dollar || !is_last_pos( i + 1, expr ) ) )
                parts[ parts.size( ) - 1 ].finish_ref = true;
          }
          else if( s.ch == '[' )
@@ -979,7 +1000,8 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
       if( s.is_range && !s.has_maximum )
          next_part.max_matches = next_part.min_matches;
 
-      if( s.had_finish_ref )
+      if( s.had_finish_ref && ( parts.empty( )
+       || !parts[ parts.size( ) - 1 ].finish_ref ) )
          next_part.finish_ref = true;
 
 #ifdef DEBUG
@@ -1206,6 +1228,9 @@ string::size_type regex::impl::search(
       {
          last_part_matched = 0;
 
+#ifdef DEBUG
+         cout << "\n==> starting from pos = " << from << endl;
+#endif
          pos = do_search( text, from, p_length, p_refs, &last_part_matched );
 
          if( !from || ( pos != string::npos ) )
@@ -1247,20 +1272,30 @@ string::size_type regex::impl::search(
 
       string text_final( text_copy );
 
+#ifdef DEBUG
+      cout << "\nmatched '" << text.substr( pos, pos + *p_length ) << "'" << endl;
+#endif
       string last_okay;
 
       size_t copy_last_part_matched = 0;
 
       string::size_type cpos = string::npos;
 
+      bool has_found_reduced = false;
+
       while( text_copy.length( ) > 1 )
       {
          text_copy.erase( text_copy.length( ) - 1 );
 
+#ifdef DEBUG
+         cout << "\n==> repeating with reduced length" << endl;
+#endif
          cpos = do_search( text_copy, 0, 0, 0, &copy_last_part_matched );
 
          if( copy_last_part_matched < last_part_to_match )
             cpos = string::npos;
+         else
+            has_found_reduced = true;
 
          if( cpos == string::npos )
             break;
@@ -1268,13 +1303,16 @@ string::size_type regex::impl::search(
             text_final = text_final.erase( text_final.length( ) - 1 );
       }
 
-      if( text.length( ) != text_final.length( ) )
+      if( has_found_reduced )
       {
          if( p_refs )
             p_refs->clear( );
 
          *p_length = 0;
 
+#ifdef DEBUG
+         cout << "\n==> redo final for p_length and p_refs" << endl;
+#endif
          pos = do_search( text_final, 0, p_length, p_refs );
       }
    }
@@ -1302,8 +1340,12 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
    deque< size_t > min_chars_remaining;
 
 #ifdef DEBUG
-cout << "\ntext = '" << text << "'" << endl;
+   size_t last_part_matched = 0;
+
+   if( !p_last_part_matched )
+      p_last_part_matched = &last_part_matched;
 #endif
+
    if( parts.size( ) > 1 )
    {
       bool skip_maximum = false;
@@ -1315,7 +1357,7 @@ cout << "\ntext = '" << text << "'" << endl;
       size_t total_max_chars = 0;
       size_t total_min_chars = 0;
 
-      size_t i = ( parts.size( ) - 1 );
+      size_t ip = ( parts.size( ) - 1 );
 
       // NOTE: Iterate in reverse from the last
       // part in order to determine the max/min
@@ -1326,15 +1368,15 @@ cout << "\ntext = '" << text << "'" << endl;
       // found will continue with zero values.
       while( true )
       {
-         size_t max_matches = parts[ i ].max_matches;
-         size_t min_matches = parts[ i ].min_matches;
+         size_t max_matches = parts[ ip ].max_matches;
+         size_t min_matches = parts[ ip ].min_matches;
 
-         bool has_back_refs = parts[ i ].has_back_refs;
+         bool has_back_refs = parts[ ip ].has_back_refs;
 
          size_t length_multiplier = 1;
 
-         if( parts[ i ].type == e_part_type_lit )
-            length_multiplier = literal_size( parts[ i ].literal );
+         if( parts[ ip ].type == e_part_type_lit )
+            length_multiplier = literal_size( parts[ ip ].literal );
 
          if( skip_maximum )
             max_chars_remaining.push_front( 0 );
@@ -1376,10 +1418,10 @@ cout << "\ntext = '" << text << "'" << endl;
             min_chars_remaining.push_front( total_min_chars );
          }
 
-         if( i == 0 )
+         if( ip == 0 )
             break;
 
-         --i;
+         --ip;
       }
 
       if( clear_maximums )
@@ -1420,6 +1462,10 @@ cout << "\ntext = '" << text << "'" << endl;
 
    while( !parts.empty( ) )
    {
+#ifdef DEBUG
+      cout << "\ntext = '" << text << "'" << endl;
+      cout << "--------" << string( start, '-' ) << "^" << endl;
+#endif
       size_t part_from = pf;
       size_t last_found = 0;
 
@@ -1440,7 +1486,7 @@ cout << "\ntext = '" << text << "'" << endl;
          string::size_type pos = text.find( prefix, from );
 
          if( pos == string::npos )
-            return pos;
+            break;
 
          start = pos;
 
@@ -2015,6 +2061,12 @@ cout << "\ntext = '" << text << "'" << endl;
 
    if( okay && match_at_finish && ( finishes != ( text.length( ) - 1 ) ) )
       okay = false;
+
+#ifdef DEBUG
+   if( !okay || ( begins == string::npos )
+    || ( *p_last_part_matched < ( parts.size( ) - 1 ) ) )
+      cout << "\n*** no match found ***\n" << endl;
+#endif
 
    // NOTE: If the last literal ends with a boundary match character
    // and the last matched character is a non-word character then it

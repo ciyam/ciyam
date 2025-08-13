@@ -620,6 +620,10 @@ regex -input "abc(def)?ghi" abcghijkl
 abcghijkl
 regex -matched "abc(def)?ghi" abcghijkl
 abcghi
+regex "bc\\\.(.*)\\\." bc.abc123def.99.blk
+abc123def
+regex "bc\\\.(.*)\\\." bc.abc123def.zenith
+abc123def
 regex "^([a-z]{1}[a-z0-9]{0,8}[a-z]{1})" abc123def
 ab
 regex "([a-z]{1}[a-z0-9]{0,8}[a-z]{1})$$" abc123def
