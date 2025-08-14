@@ -27,10 +27,20 @@ const char* const c_regex_peerchain_identity = "[a-f0-9]{9}";
 const char* const c_regex_floating_point_number = "[-+]?[0-9]+\\.[0-9]+";
 const char* const c_regex_peerchain_description = "[A-Za-z0-9-+.' ]+";
 
+enum regex_search_expense
+{
+   e_regex_search_expense_none,
+   e_regex_search_expense_trivial,
+   e_regex_search_expense_significant,
+   e_regex_search_expense_overwhelming
+};
+
 struct regex_base
 {
    virtual std::string::size_type search( const std::string& text,
     std::string::size_type* p_length, std::vector< std::string >* p_refs ) = 0;
+
+   virtual regex_search_expense get_search_expense( ) const = 0;
 };
 
 // NOTE: This regular expression implementation does not perform backtracking and so will never
@@ -49,11 +59,15 @@ class regex : public regex_base
 
    std::string get_expr( ) const;
 
-   int get_min_size( ) const;
-   int get_max_size( ) const;
+   size_t get_min_size( ) const;
+   size_t get_max_size( ) const;
 
    std::string::size_type search( const std::string& text,
     std::string::size_type* p_length = 0, std::vector< std::string >* p_refs = 0 );
+
+   size_t get_search_iterations( ) const;
+
+   regex_search_expense get_search_expense( ) const;
 
    void dump( std::ostream& os );
 
@@ -79,8 +93,12 @@ class regex_chain : public regex_base
    std::string::size_type search( const std::string& text,
     std::string::size_type* p_length = 0, std::vector< std::string >* p_refs = 0 );
 
+   inline regex_search_expense get_search_expense( ) const { return combined_search_expense; }
+
    private:
    void cleanup( );
+
+   regex_search_expense combined_search_expense;
 
    std::vector< std::pair< regex*, bool > > regexes;
 };

@@ -10,6 +10,8 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <map>
+#  include <set>
 #  include <sstream>
 #  include <fstream>
 #  include <iostream>
@@ -309,12 +311,18 @@ struct regex::impl
 
    bool prefix_at_boundary;
 
+   size_t search_iterations;
+
    size_t last_unlimited_part;
 
    size_t min_size_from_finish;
    size_t max_size_from_finish;
 
+   regex_search_expense last_search_expense;
+
    vector< part > parts;
+
+   set< size_t > skip_parts;
 
    vector< string > ref_vals;
 
@@ -329,9 +337,11 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
  match_at_start( match_at_start ),
  match_at_finish( match_at_finish ),
  prefix_at_boundary( false ),
+ search_iterations( 0 ),
  last_unlimited_part( 0 ),
  min_size_from_finish( 0 ),
- max_size_from_finish( 0 )
+ max_size_from_finish( 0 ),
+ last_search_expense( e_regex_search_expense_none )
 {
    part next_part;
 
@@ -1103,7 +1113,11 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
 string::size_type regex::impl::search(
  const string& text, string::size_type* p_length, vector< string >* p_refs )
 {
-   if( parts.empty( ) || ( min_size && ( text.length( ) < min_size ) ) )
+   search_iterations = 0;
+
+   last_search_expense = e_regex_search_expense_none;
+
+  if( parts.empty( ) || ( min_size && ( text.length( ) < min_size ) ) )
       return string::npos;
 
 #ifdef DEBUG
@@ -1160,18 +1174,18 @@ string::size_type regex::impl::search(
    min_size_from_finish = 0;
    max_size_from_finish = 0;
 
-   bool has_optional_parts = false;
-
 #ifdef DEBUG
    bool has_unlimited_parts = false;
 #endif
 
+   skip_parts.clear( );
+
    for( size_t i = 0; i < parts.size( ); i++ )
    {
-      if( parts[ i ].min_matches )
-         last_part_to_match = i;
+      if( !parts[ i ].min_matches )
+         skip_parts.insert( i );
       else
-         has_optional_parts = true;
+         last_part_to_match = i;
 
       if( match_at_finish )
       {
@@ -1213,109 +1227,98 @@ string::size_type regex::impl::search(
    if( !p_length )
       p_length = &dummy_length;
 
+   bool remove_skips_from_last = false;
+
+   if( match_at_finish && !match_at_start )
+      remove_skips_from_last = true;
+
+   if( skip_parts.size( ) == parts.size( ) )
+      skip_parts.clear( );
+
+#ifdef DEBUG
+   if( !skip_parts.empty( ) )
+      cout << "\nremove_skips_from_last = " << remove_skips_from_last << endl;
+#endif
+
    string::size_type pos = string::npos;
 
-   // NOTE: If matching at the end but not at the start then start as close
-   // to the end as possible and work backwards until has reached the start
-   // or has matched.
-   if( match_at_finish && !match_at_start )
-   {
-      string::size_type start = ( text.length( ) - min_size );
-
-      string::size_type from = start;
-
-      while( true )
-      {
-         last_part_matched = 0;
-
-#ifdef DEBUG
-         cout << "\n==> starting from pos = " << from << endl;
-#endif
-         pos = do_search( text, from, p_length, p_refs, &last_part_matched );
-
-         if( !from || ( pos != string::npos ) )
-            break;
-
-         --from;
-      }
-   }
-   else
-      pos = do_search( text, 0, p_length, p_refs, &last_part_matched );
-
-   if( last_part_matched < last_part_to_match )
+   while( true )
    {
 #ifdef DEBUG
-      if( pos != string::npos )
-         cout << "\nlast_part_matched = #" << ( last_part_matched + 1 ) << endl;
+      if( !skip_parts.empty( ) )
+      {
+         cout << "\n[skipping ";
+
+         for( set< size_t >::iterator si = skip_parts.begin( ); si != skip_parts.end( ); ++si )
+            cout << " #" << ( *si + 1 );
+
+         cout << "]" << endl;
+      }
 #endif
-      pos = string::npos;
+      // NOTE: If matching at the end but not at the start then
+      // start as close to the end as possible and then extends
+      // the length (backwards) until it has matched or reached
+      // the start.
+      if( match_at_finish && !match_at_start )
+      {
+         string::size_type from = ( text.length( ) - ( min_size ? min_size : 1 ) );
+
+         while( true )
+         {
+            last_part_matched = 0;
+
+#ifdef DEBUG
+            cout << "\n==> starting from pos = " << from << endl;
+#endif
+            pos = do_search( text, from, p_length, p_refs, &last_part_matched );
+
+            if( !from || ( pos != string::npos ) )
+               break;
+
+            --from;
+         }
+      }
+      else
+         pos = do_search( text, 0, p_length, p_refs, &last_part_matched );
+
+      if( ( pos != string::npos ) && ( last_part_matched < last_part_to_match ) )
+      {
+#ifdef DEBUG
+         if( pos != string::npos )
+            cout << "\nlast_part_matched = #" << ( last_part_matched + 1 ) << endl;
+#endif
+         pos = string::npos;
+      }
+
+      if( skip_parts.empty( ) || ( pos != string::npos ) )
+         break;
+
+      if( !remove_skips_from_last )
+         skip_parts.erase( skip_parts.begin( ) );
+      else
+         skip_parts.erase( --skip_parts.end( ) );
    }
 
-   // NOTE: Due to the way that parts are processed when searching
-   // the initial match might include optional parts that could be
-   // omitted so will copy the original text from its start to the
-   // the last character included in the matching expression range
-   // and will loop trying to match with the final character being
-   // removed in each iteration (stopping when it fails to match).
-   // Finally if a shorter match was found then need to repeat for
-   // a final time to set "pos", "p_length" and "p_refs".
-   //
-   // FUTURE: With a few changes the final repeat could be removed
-   // and the part processing approach should be reviewed to check
-   // if these repeat searches can become redundant.
-   if( p_length
-    && ( *p_length > min_size )
-    && !match_at_finish && has_optional_parts
-    && had_refs_or_length && ( pos != string::npos ) )
+   last_search_expense = e_regex_search_expense_none;
+
+   if( search_iterations )
    {
-      string text_copy( text, 0, pos + *p_length );
-
-      string text_final( text_copy );
-
-#ifdef DEBUG
-      cout << "\nmatched '" << text.substr( pos, pos + *p_length ) << "'" << endl;
-#endif
-      string last_okay;
-
-      size_t copy_last_part_matched = 0;
-
-      string::size_type cpos = string::npos;
-
-      bool has_found_reduced = false;
-
-      while( text_copy.length( ) > 1 )
-      {
-         text_copy.erase( text_copy.length( ) - 1 );
-
-#ifdef DEBUG
-         cout << "\n==> repeating with reduced length" << endl;
-#endif
-         cpos = do_search( text_copy, 0, 0, 0, &copy_last_part_matched );
-
-         if( copy_last_part_matched < last_part_to_match )
-            cpos = string::npos;
-         else
-            has_found_reduced = true;
-
-         if( cpos == string::npos )
-            break;
-         else
-            text_final = text_final.erase( text_final.length( ) - 1 );
-      }
-
-      if( has_found_reduced )
-      {
-         if( p_refs )
-            p_refs->clear( );
-
-         *p_length = 0;
-
-#ifdef DEBUG
-         cout << "\n==> redo final for p_length and p_refs" << endl;
-#endif
-         pos = do_search( text_final, 0, p_length, p_refs );
-      }
+      if( search_iterations <= text.length( ) )
+         last_search_expense = e_regex_search_expense_trivial;
+      else if( search_iterations <= ( text.length( ) * text.length( ) ) )
+         last_search_expense = e_regex_search_expense_significant;
+      else
+         last_search_expense = e_regex_search_expense_overwhelming;
    }
+
+#ifdef DEBUG
+   cout << "\n(search expense = " << ( int )last_search_expense << ")";
+
+   if( pos != string::npos )
+      cout << '\n';
+
+   cout << endl;
+#endif
 
    return pos;
 }
@@ -1333,8 +1336,6 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
    part_refs.clear( );
 
    size_t pf = 0;
-
-   bool had_min = false;
 
    deque< size_t > max_chars_remaining;
    deque< size_t > min_chars_remaining;
@@ -1443,28 +1444,24 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
 #endif
    }
 
+   bool had_any_min = false;
+
    // NOTE: Need to force all refs to be empty strings in case they are in optional parts.
    for( size_t i = 0; i < parts.size( ); i++ )
    {
       if( parts[ i ].start_ref )
          part_refs[ i ] = "";
 
-      // NOTE: If matching at the end but not at the start then only start matching after
-      // any non-optional parts (i.e. preceeding optional parts are ignored in this case).
-      if( !had_min && match_at_finish && !match_at_start )
-      {
-         if( !parts[ i ].min_matches )
-            ++pf;
-         else
-            had_min = true;
-      }
+      if( parts[ i ].min_matches )
+         had_any_min = true;
+      else if( !had_any_min && skip_parts.count( i ) )
+         pf = ( i + 1 );
    }
 
    while( !parts.empty( ) )
    {
 #ifdef DEBUG
       cout << "\ntext = '" << text << "'" << endl;
-      cout << "--------" << string( start, '-' ) << "^" << endl;
 #endif
       size_t part_from = pf;
       size_t last_found = 0;
@@ -1511,6 +1508,9 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
 
       for( size_t i = start; i < text.length( ); i++ )
       {
+#ifdef DEBUG
+         cout << "--------" << string( i, '-' ) << "^" << endl;
+#endif
          bool has_last_set = false;
          bool has_last_literal = false;
 
@@ -1539,7 +1539,17 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
             if( i >= text.length( ) )
                break;
 
+            if( skip_parts.count( j ) )
+            {
+#ifdef DEBUG
+               cout << "(skipping over part #" << ( j + 1 ) << ")" << endl;
+#endif
+               continue;
+            }
+
             size_t li = i;
+
+            ++search_iterations;
 
             bool already_matched = false;
 
@@ -1617,8 +1627,8 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
 #ifdef DEBUG
                         if( j == 0 )
                            cout << '\n';
-                        cout << "matched literal in part #" << ( j + 1 ) << " for " << literal
-                         << " at " << i << ( text.length( ) > 50 ? string( ) : " ==> "
+                        cout << "matched literal in part #" << ( j + 1 ) << " for '" << literal
+                         << "' at " << i << ( text.length( ) > 50 ? string( ) : " ==> "
                          + text.substr( start, i - start + literal.length( ) ) ) << endl;
 #endif
                         if( !literal.empty( ) && ( literal[ 0 ] == '\b' ) && !is_word_char( text[ i ] ) )
@@ -1700,8 +1710,8 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
                            cout << '\n';
                         cout << "matched set in part #" << ( j + 1 )
                          << ( p.inverted ? " (inverted)" : "" )
-                         << " for " << text.substr( i, min_matches )
-                         << " at " << i << ( text.length( ) > 50 ? string( )
+                         << " for '" << text.substr( i, min_matches )
+                         << "' at " << i << ( text.length( ) > 50 ? string( )
                          : " ==> " + text.substr( start, i - start + min_matches ) ) << endl;
 #endif
                         if( !okay )
@@ -1887,8 +1897,8 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
                 && match_literal( expand_refs( last_literal ), text, i ) )
                {
 #ifdef DEBUG
-                  cout << "matched last literal: " << last_literal
-                   << " in part #" << ( last_lit_part + 1 ) << " at " << i
+                  cout << "matched last literal '" << last_literal
+                   << "' in part #" << ( last_lit_part + 1 ) << " at " << i
                    << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + 1 ) ) << endl;
 #endif
                   j = part_from = matched_last_part = last_lit_part;
@@ -1949,9 +1959,9 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
                      if( matched )
                      {
 #ifdef DEBUG
-                        cout << "matched last set: " << last_set[ x ].first
+                        cout << "matched last set " << last_set[ x ].first
                          << "-" << last_set[ x ].second << ( last_set_inverted ? "  (inverted)" : "" )
-                         << " in part #" << ( last_set_part + 1 ) << " for " << text[ i ] << " at " << i
+                         << " in part #" << ( last_set_part + 1 ) << " for '" << text[ i ] << "' at " << i
                          << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + 1 ) ) << endl;
 #endif
                         j = part_from = matched_last_part = last_set_part;
@@ -2046,16 +2056,18 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
          }
       }
 
-      if( okay || ( match_at_start && ( begins == string::npos ) ) )
+      if( okay || match_at_start || ( begins == string::npos ) )
          break;
 
       if( !text.length( ) || ( start++ >= ( text.length( ) - 1 ) ) )
          break;
 
-      if( match_at_start )
-         break;
+      if( ( begins != string::npos ) && ( start <= begins ) )
+         start = ( begins + 1 );
+
+      begins = string::npos;
 #ifdef DEBUG
-       cout << "\n(retry match from pos: " << start << ")" << endl;
+      cout << "\n(retry match from pos: " << start << ")" << endl;
 #endif
    }
 
@@ -2065,7 +2077,7 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
 #ifdef DEBUG
    if( !okay || ( begins == string::npos )
     || ( *p_last_part_matched < ( parts.size( ) - 1 ) ) )
-      cout << "\n*** no match found ***\n" << endl;
+      cout << "\n*** no match found ***" << endl;
 #endif
 
    // NOTE: If the last literal ends with a boundary match character
@@ -2214,12 +2226,12 @@ string regex::get_expr( ) const
    return p_impl->expr;
 }
 
-int regex::get_min_size( ) const
+size_t regex::get_min_size( ) const
 {
    return p_impl->min_size;
 }
 
-int regex::get_max_size( ) const
+size_t regex::get_max_size( ) const
 {
    return p_impl->max_size;
 }
@@ -2229,12 +2241,24 @@ string::size_type regex::search( const string& text, string::size_type* p_length
    return p_impl->search( text, p_length, p_refs );
 }
 
+size_t regex::get_search_iterations( ) const
+{
+   return p_impl->search_iterations;
+}
+
+regex_search_expense regex::get_search_expense( ) const
+{
+   return p_impl->last_search_expense;
+}
+
 void regex::dump( ostream& os )
 {
    p_impl->dump( os );
 }
 
 regex_chain::regex_chain( const string& expr )
+ :
+ combined_search_expense( e_regex_search_expense_none )
 {
    bool is_in_ref = false;
    bool is_in_set = false;
@@ -2367,6 +2391,8 @@ string::size_type regex_chain::search( const string& text, string::size_type* p_
    string::size_type pos = string::npos;
    string::size_type last_pos = string::npos;
 
+   size_t total_search_iterations = 0;
+
    for( size_t i = 0; i < regexes.size( ); i++ )
    {
       regex* p_regex = regexes[ i ].first;
@@ -2374,6 +2400,8 @@ string::size_type regex_chain::search( const string& text, string::size_type* p_
       bool inverted = regexes[ i ].second;
 
       pos = ( regexes[ i ].first )->search( text, ( inverted ? 0 : p_length ), ( inverted ? 0 : p_refs ) );
+
+      total_search_iterations += ( regexes[ i ].first )->get_search_iterations( );
 
       if( inverted )
       {
@@ -2390,6 +2418,18 @@ string::size_type regex_chain::search( const string& text, string::size_type* p_
          break;
       else
          last_pos = pos;
+   }
+
+   combined_search_expense = e_regex_search_expense_none;
+
+   if( total_search_iterations )
+   {
+      if( total_search_iterations <= text.length( ) )
+         combined_search_expense = e_regex_search_expense_trivial;
+      else if( total_search_iterations <= ( text.length( ) * text.length( ) ) )
+         combined_search_expense = e_regex_search_expense_significant;
+      else
+         combined_search_expense = e_regex_search_expense_overwhelming;
    }
 
    return pos;
