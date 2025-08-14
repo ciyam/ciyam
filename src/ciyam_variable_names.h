@@ -227,6 +227,7 @@ enum special_var
    e_special_var_blockchain_unix_time,
    e_special_var_disallow_connections,
    e_special_var_ods_cache_hit_ratios,
+   e_special_var_regex_search_expense,
    e_special_var_secondary_validation,
    e_special_var_blockchain_next_extra,
    e_special_var_blockchain_time_value,

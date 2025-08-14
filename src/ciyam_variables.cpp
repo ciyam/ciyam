@@ -262,6 +262,7 @@ const char* const c_special_variable_blockchain_hind_hash = "@blockchain_hind_ha
 const char* const c_special_variable_blockchain_unix_time = "@blockchain_unix_time";
 const char* const c_special_variable_disallow_connections = "@disallow_connections";
 const char* const c_special_variable_ods_cache_hit_ratios = "@ods_cache_hit_ratios";
+const char* const c_special_variable_regex_search_expense = "@regex_search_expense";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_blockchain_next_extra = "@blockchain_next_extra";
 const char* const c_special_variable_blockchain_time_value = "@blockchain_time_value";
@@ -580,6 +581,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_blockchain_unix_time );
       g_special_variable_names.push_back( c_special_variable_disallow_connections );
       g_special_variable_names.push_back( c_special_variable_ods_cache_hit_ratios );
+      g_special_variable_names.push_back( c_special_variable_regex_search_expense );
       g_special_variable_names.push_back( c_special_variable_secondary_validation );
       g_special_variable_names.push_back( c_special_variable_blockchain_next_extra );
       g_special_variable_names.push_back( c_special_variable_blockchain_time_value );

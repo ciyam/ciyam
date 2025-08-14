@@ -4289,11 +4289,19 @@ string check_with_regex( const string& r, const string& s,
    if( p_rc )
       *p_rc = true;
 
-   vector< string > refs;
-
    size_t length = 0;
 
+   vector< string > refs;
+
    string::size_type pos = ap_regex->search( s, &length, &refs );
+
+   string regex_serach_expense_var_name(
+    get_special_var_name( e_special_var_regex_search_expense ) );
+
+   // NOTE: If interested to know the regex "search expense"
+   // then will need to have first set the session variable.
+   if( has_session_variable( regex_serach_expense_var_name ) )
+      set_session_variable( regex_serach_expense_var_name, to_string( ap_regex->get_search_expense( ) ) );
 
    if( pos == string::npos )
    {
