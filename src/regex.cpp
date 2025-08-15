@@ -30,6 +30,8 @@ using namespace std;
 namespace
 {
 
+const size_t c_max_parts = 999;
+
 enum part_type
 {
    e_part_type_lit,
@@ -291,8 +293,9 @@ struct regex::impl
    string::size_type search( const string& text,
     string::size_type* p_length, vector< string >* p_refs );
 
-   string::size_type do_search( const string& text, size_t start,
-    string::size_type* p_length, vector< string >* p_refs, size_t* p_last_part_matched = 0 );
+   string::size_type do_search( const string& text,
+    size_t start, string::size_type* p_length, vector< string >* p_refs,
+    size_t* p_last_part_matched = 0, size_t* p_first_part_matched = 0 );
 
    bool match_set( const string& text, size_t off, const part& p );
 
@@ -321,8 +324,6 @@ struct regex::impl
    regex_search_expense last_search_expense;
 
    vector< part > parts;
-
-   set< size_t > skip_parts;
 
    vector< string > ref_vals;
 
@@ -1043,6 +1044,9 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
     && !parts[ parts.size( ) - 1 ].finish_ref )
       parts[ parts.size( ) - 1 ].finish_ref = true;
 
+   if( parts.size( ) > c_max_parts )
+      throw runtime_error( "unexpected maximum allowed parts (" + to_string( c_max_parts ) + ") was exceeded" );
+
    for( size_t i = 0; i < parts.size( ); i++ )
    {
       if( parts[ i ].type == e_part_type_lit )
@@ -1178,13 +1182,9 @@ string::size_type regex::impl::search(
    bool has_unlimited_parts = false;
 #endif
 
-   skip_parts.clear( );
-
    for( size_t i = 0; i < parts.size( ); i++ )
    {
-      if( !parts[ i ].min_matches )
-         skip_parts.insert( i );
-      else
+      if( parts[ i ].min_matches )
          last_part_to_match = i;
 
       if( match_at_finish )
@@ -1227,76 +1227,82 @@ string::size_type regex::impl::search(
    if( !p_length )
       p_length = &dummy_length;
 
-   bool remove_skips_from_last = false;
-
-   if( match_at_finish && !match_at_start )
-      remove_skips_from_last = true;
-
-   if( skip_parts.size( ) == parts.size( ) )
-      skip_parts.clear( );
-
-#ifdef DEBUG
-   if( !skip_parts.empty( ) )
-      cout << "\nremove_skips_from_last = " << remove_skips_from_last << endl;
-#endif
-
    string::size_type pos = string::npos;
 
-   while( true )
+   // NOTE: If matching at the end but not at the start then
+   // start as close to the end as possible and then extends
+   // the length (backwards) until it no longer is finding a
+   // match (after one has been found) or is at the start or
+   // if has matched the first part (assuming that the final
+   // required part was included).
+   if( match_at_finish && !match_at_start )
+   {
+      string::size_type from = ( text.length( ) - ( min_size ? min_size : 1 ) );
+
+      size_t last_length = 0;
+
+      size_t last_first_part = ( c_max_parts + 1 );
+
+      vector< string > last_refs;
+
+      while( true )
+      {
+         size_t next_length = 0;
+         size_t next_last_part = 0;
+
+         size_t next_first_part = c_max_parts;
+
+         vector< string > next_refs;
+
+         string::size_type next_pos = string::npos;
+
+#ifdef DEBUG
+         cout << "\n==> starting from pos = " << from << endl;
+#endif
+         next_pos = do_search( text, from, &next_length, &next_refs, &next_last_part, &next_first_part );
+
+         // NOTE: Do not extend with the same first part
+         // unless the last part has now been increased.
+         if( ( next_pos != string::npos )
+          && ( ( next_first_part < last_first_part )
+          || ( next_last_part > last_part_matched ) ) )
+         {
+            pos = next_pos;
+
+            last_first_part = next_first_part;
+
+            last_length = next_length;
+            last_part_matched = next_last_part;
+
+            last_refs.swap( next_refs );
+
+            if( ( next_first_part == 0 ) && ( last_part_matched >= last_part_to_match ) )
+               break;
+         }
+
+         if( !from || ( last_length && ( next_pos == string::npos ) ) )
+            break;
+
+         --from;
+      }
+
+      if( last_length )
+      {
+         *p_length = last_length;
+
+         last_refs.swap( *p_refs );
+      }
+   }
+   else
+      pos = do_search( text, 0, p_length, p_refs, &last_part_matched );
+
+   if( ( pos != string::npos ) && ( last_part_matched < last_part_to_match ) )
    {
 #ifdef DEBUG
-      if( !skip_parts.empty( ) )
-      {
-         cout << "\n[skipping ";
-
-         for( set< size_t >::iterator si = skip_parts.begin( ); si != skip_parts.end( ); ++si )
-            cout << " #" << ( *si + 1 );
-
-         cout << "]" << endl;
-      }
+      if( pos != string::npos )
+         cout << "\nlast_part_matched = #" << ( last_part_matched + 1 ) << endl;
 #endif
-      // NOTE: If matching at the end but not at the start then
-      // start as close to the end as possible and then extends
-      // the length (backwards) until it has matched or reached
-      // the start.
-      if( match_at_finish && !match_at_start )
-      {
-         string::size_type from = ( text.length( ) - ( min_size ? min_size : 1 ) );
-
-         while( true )
-         {
-            last_part_matched = 0;
-
-#ifdef DEBUG
-            cout << "\n==> starting from pos = " << from << endl;
-#endif
-            pos = do_search( text, from, p_length, p_refs, &last_part_matched );
-
-            if( !from || ( pos != string::npos ) )
-               break;
-
-            --from;
-         }
-      }
-      else
-         pos = do_search( text, 0, p_length, p_refs, &last_part_matched );
-
-      if( ( pos != string::npos ) && ( last_part_matched < last_part_to_match ) )
-      {
-#ifdef DEBUG
-         if( pos != string::npos )
-            cout << "\nlast_part_matched = #" << ( last_part_matched + 1 ) << endl;
-#endif
-         pos = string::npos;
-      }
-
-      if( skip_parts.empty( ) || ( pos != string::npos ) )
-         break;
-
-      if( !remove_skips_from_last )
-         skip_parts.erase( skip_parts.begin( ) );
-      else
-         skip_parts.erase( --skip_parts.end( ) );
+      pos = string::npos;
    }
 
    last_search_expense = e_regex_search_expense_none;
@@ -1323,8 +1329,9 @@ string::size_type regex::impl::search(
    return pos;
 }
 
-string::size_type regex::impl::do_search( const string& text, size_t start,
- string::size_type* p_length, vector< string >* p_refs, size_t* p_last_part_matched )
+string::size_type regex::impl::do_search(
+ const string& text, size_t start, string::size_type* p_length,
+ vector< string >* p_refs, size_t* p_last_part_matched, size_t* p_first_part_matched )
 {
    bool done = false;
    bool okay = false;
@@ -1340,12 +1347,16 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
    deque< size_t > max_chars_remaining;
    deque< size_t > min_chars_remaining;
 
-#ifdef DEBUG
    size_t last_part_matched = 0;
+   size_t last_part_to_match = 0;
+
+   size_t first_part_matched = ( c_max_parts + 1 );
 
    if( !p_last_part_matched )
       p_last_part_matched = &last_part_matched;
-#endif
+
+   if( !p_first_part_matched )
+      p_first_part_matched = &first_part_matched;
 
    if( parts.size( ) > 1 )
    {
@@ -1371,6 +1382,9 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
       {
          size_t max_matches = parts[ ip ].max_matches;
          size_t min_matches = parts[ ip ].min_matches;
+
+         if( min_matches && !last_part_to_match )
+            last_part_to_match = ip;
 
          bool has_back_refs = parts[ ip ].has_back_refs;
 
@@ -1444,18 +1458,11 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
 #endif
    }
 
-   bool had_any_min = false;
-
    // NOTE: Need to force all refs to be empty strings in case they are in optional parts.
    for( size_t i = 0; i < parts.size( ); i++ )
    {
       if( parts[ i ].start_ref )
          part_refs[ i ] = "";
-
-      if( parts[ i ].min_matches )
-         had_any_min = true;
-      else if( !had_any_min && skip_parts.count( i ) )
-         pf = ( i + 1 );
    }
 
    while( !parts.empty( ) )
@@ -1539,14 +1546,6 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
             if( i >= text.length( ) )
                break;
 
-            if( skip_parts.count( j ) )
-            {
-#ifdef DEBUG
-               cout << "(skipping over part #" << ( j + 1 ) << ")" << endl;
-#endif
-               continue;
-            }
-
             size_t li = i;
 
             ++search_iterations;
@@ -1574,7 +1573,7 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
             if( !skip
              && !p.min_matches && min_chars_remaining.size( )
              && ( j < min_chars_remaining.size( ) - 1 )
-             && ( ( i + min_chars_remaining[ j + 1 ] ) >= text.length( ) ) )
+             && ( ( i + min_chars_remaining[ j + 1 ] ) > text.length( ) ) )
                skip = true;
 
             if( j == matched_last_part )
@@ -1624,6 +1623,9 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
                      {
                         if( p_last_part_matched )
                            *p_last_part_matched = j;
+
+                        if( p_first_part_matched && ( *p_first_part_matched == c_max_parts ) )
+                           *p_first_part_matched = j;
 #ifdef DEBUG
                         if( j == 0 )
                            cout << '\n';
@@ -1683,6 +1685,9 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
                         else
                            has_last_literal = false;
 
+                        has_last_set_used = false;
+                        has_last_literal_used = false;
+
                         last_lit_part = j;
 
                         last_literal = p.literal;
@@ -1703,6 +1708,9 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
                      {
                         if( p_last_part_matched )
                            *p_last_part_matched = j;
+
+                        if( p_first_part_matched && ( *p_first_part_matched == c_max_parts ) )
+                           *p_first_part_matched = j;
 
                         size_t min_matches = max( ( size_t )1, p.min_matches );
 #ifdef DEBUG
@@ -1758,6 +1766,9 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
                            has_last_set = false;
 
                         has_last_literal = false;
+
+                        has_last_set_used = false;
+                        has_last_literal_used = false;
 
                         last_set_part = j;
 
@@ -2017,10 +2028,10 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
             }
          }
 
-         if( match_at_start && ( !okay || ( begins != 0 ) ) )
+         if( done || ( part_from > last_part_to_match ) )
             break;
 
-         if( done || ( part_from >= parts.size( ) ) )
+         if( match_at_start && ( !okay || ( begins != 0 ) ) )
             break;
 
          if( ( i > finishes ) && ( i < ( text.length( ) - 1 ) ) )
@@ -2076,7 +2087,7 @@ string::size_type regex::impl::do_search( const string& text, size_t start,
 
 #ifdef DEBUG
    if( !okay || ( begins == string::npos )
-    || ( *p_last_part_matched < ( parts.size( ) - 1 ) ) )
+    || ( *p_last_part_matched < last_part_to_match ) )
       cout << "\n*** no match found ***" << endl;
 #endif
 

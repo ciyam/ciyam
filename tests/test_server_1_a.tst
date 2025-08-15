@@ -625,11 +625,15 @@ abc123def
 regex "bc\\\.(.*)\\\." bc.abc123def.zenith
 abc123def
 regex "^([a-z]{1}[a-z0-9]{0,8}[a-z]{1})" abc123def
-ab
+abc
 regex "([a-z]{1}[a-z0-9]{0,8}[a-z]{1})$$" abc123def
-ef
+def
 regex "^([a-z]{1}[a-z0-9]{0,8}[a-z]{1})$$" abc123def
 abc123def
+regex -matched "([a-b]*[0-9]{0,8}[a-z]{1})$$" def123g
+3g
+regex -matched "([a-f]*[0-9]{0,8}[a-z]{1})$$" abcdef123g
+f123g
 regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" abc
 abc
 regex -chain "^[a-z][-a-z0-9]{2,29}$$&&.*[^-]$$&!^.*--.*$$" a-c
