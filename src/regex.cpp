@@ -293,9 +293,9 @@ struct regex::impl
    string::size_type search( const string& text,
     string::size_type* p_length, vector< string >* p_refs );
 
-   string::size_type do_search( const string& text,
-    size_t start, string::size_type* p_length, vector< string >* p_refs,
-    size_t* p_last_part_matched = 0, size_t* p_first_part_matched = 0 );
+   string::size_type do_search(
+    const string& text, size_t start, string::size_type* p_length,
+    vector< string >* p_refs, size_t* p_last_part_matched = 0, bool allow_retries = true );
 
    bool match_set( const string& text, size_t off, const part& p );
 
@@ -1232,25 +1232,19 @@ string::size_type regex::impl::search(
    // NOTE: If matching at the end but not at the start then
    // start as close to the end as possible and then extends
    // the length (backwards) until it no longer is finding a
-   // match (after one has been found) or is at the start or
-   // if has matched the first part (assuming that the final
-   // required part was included).
+   // match (after one has been found) or is at the start.
    if( match_at_finish && !match_at_start )
    {
-      string::size_type from = ( text.length( ) - ( min_size ? min_size : 1 ) );
-
       size_t last_length = 0;
 
-      size_t last_first_part = ( c_max_parts + 1 );
-
       vector< string > last_refs;
+
+      string::size_type from = ( text.length( ) - ( min_size ? min_size : 1 ) );
 
       while( true )
       {
          size_t next_length = 0;
          size_t next_last_part = 0;
-
-         size_t next_first_part = c_max_parts;
 
          vector< string > next_refs;
 
@@ -1259,24 +1253,22 @@ string::size_type regex::impl::search(
 #ifdef DEBUG
          cout << "\n==> starting from pos = " << from << endl;
 #endif
-         next_pos = do_search( text, from, &next_length, &next_refs, &next_last_part, &next_first_part );
+         // NOTE: Does not allow "retries" when searching backwards (as that could end up with
+         // potentially many searches being performed that are identical to prior iterations).
+         next_pos = do_search( text, from, &next_length, &next_refs, &next_last_part, false );
 
-         // NOTE: Do not extend with the same first part
-         // unless the last part has now been increased.
-         if( ( next_pos != string::npos )
-          && ( ( next_first_part < last_first_part )
-          || ( next_last_part > last_part_matched ) ) )
+         if( next_pos != string::npos )
          {
             pos = next_pos;
-
-            last_first_part = next_first_part;
 
             last_length = next_length;
             last_part_matched = next_last_part;
 
             last_refs.swap( next_refs );
 
-            if( ( next_first_part == 0 ) && ( last_part_matched >= last_part_to_match ) )
+            // NOTE: If the match includes the last part
+            // that is required will finish immediately.
+            if( last_part_matched >= last_part_to_match )
                break;
          }
 
@@ -1331,7 +1323,7 @@ string::size_type regex::impl::search(
 
 string::size_type regex::impl::do_search(
  const string& text, size_t start, string::size_type* p_length,
- vector< string >* p_refs, size_t* p_last_part_matched, size_t* p_first_part_matched )
+ vector< string >* p_refs, size_t* p_last_part_matched, bool allow_retries )
 {
    bool done = false;
    bool okay = false;
@@ -1350,13 +1342,8 @@ string::size_type regex::impl::do_search(
    size_t last_part_matched = 0;
    size_t last_part_to_match = 0;
 
-   size_t first_part_matched = ( c_max_parts + 1 );
-
    if( !p_last_part_matched )
       p_last_part_matched = &last_part_matched;
-
-   if( !p_first_part_matched )
-      p_first_part_matched = &first_part_matched;
 
    if( parts.size( ) > 1 )
    {
@@ -1623,9 +1610,6 @@ string::size_type regex::impl::do_search(
                      {
                         if( p_last_part_matched )
                            *p_last_part_matched = j;
-
-                        if( p_first_part_matched && ( *p_first_part_matched == c_max_parts ) )
-                           *p_first_part_matched = j;
 #ifdef DEBUG
                         if( j == 0 )
                            cout << '\n';
@@ -1708,9 +1692,6 @@ string::size_type regex::impl::do_search(
                      {
                         if( p_last_part_matched )
                            *p_last_part_matched = j;
-
-                        if( p_first_part_matched && ( *p_first_part_matched == c_max_parts ) )
-                           *p_first_part_matched = j;
 
                         size_t min_matches = max( ( size_t )1, p.min_matches );
 #ifdef DEBUG
@@ -2077,6 +2058,9 @@ string::size_type regex::impl::do_search(
          start = ( begins + 1 );
 
       begins = string::npos;
+
+      if( !allow_retries )
+         break;
 #ifdef DEBUG
       cout << "\n(retry match from pos: " << start << ")" << endl;
 #endif
