@@ -39,43 +39,46 @@ class ods_file_system;
 
 struct progress;
 
-#  define TRACE_COMMANDS   0x00000001U
-#  define TRACE_SQLSTMTS   0x00000002U
-#  define TRACE_CLASSOPS   0x00000004U
-#  define TRACE_MODS_GEN   0x00000008U
-#  define TRACE_SQLCLSET   0x00000010U
-#  define TRACE_FLD_VALS   0x00000020U
-#  define TRACE_LOCK_OPS   0x00000040U
-#  define TRACE_CTR_DTRS   0x00000080U
-#  define TRACE_SESSIONS   0x00000100U
-#  define TRACE_MAIL_OPS   0x00000200U
-#  define TRACE_PDF_VALS   0x00000400U
-#  define TRACE_SOCK_OPS   0x00000800U
-#  define TRACE_CORE_FLS   0x00001000U
-#  define TRACE_SYNC_OPS   0x00002000U
-#  define TRACE_PEER_OPS   0x00004000U
-#  define TRACE_NOTIFIER   0x00008000U
-#  define TRACE_ODS_BULK   0x00010000U
-#  define TRACE_ANYTHING   0xffffffffU
+#  define TRACE_GENERAL 0x00000000U
+#  define TRACE_LOCKING 0x00000001U
+#  define TRACE_OBJECTS 0x00000002U
+#  define TRACE_QUERIES 0x00000004U
+#  define TRACE_SESSION 0x00000008U
+#  define TRACE_SOCKETS 0x00000010U
+#  define TRACE_VARIOUS 0x00000020U
+
+#  define TRACE_COLLAGE 0x0000ffffU
+
+#  define TRACE_MINIMAL 0x00010000U
+#  define TRACE_INITIAL 0x00020000U
+#  define TRACE_DETAILS 0x00040000U
+#  define TRACE_VERBOSE 0x00080000U
+
+#  define TRACE_WAITING 0x80000000U
 
 #  define IF_IS_TRACING( flags )\
-if( get_trace_flags( ) & ( flags ) )
+if( ( get_trace_flags( ) & ( flags ) ) == ( flags ) )
 
-#  define TRACE_LOG( flag, message )\
-if( ( flag == TRACE_ANYTHING ) || ( get_trace_flags( ) & flag ) )\
-   log_trace_message( flag, message )
+#  define IF_NOT_IS_TRACING( flags )\
+if( !( ( get_trace_flags( ) & ( flags ) ) == ( flags ) ) )
 
-#  define TEMP_TRACE( message ) TRACE_LOG( TRACE_ANYTHING, message )
+#  define TRACE_LOG( flags, message )\
+if( ( flags ) && ( ( get_trace_flags( ) & ( flags ) ) == ( flags ) ) )\
+   log_trace_message( flags, message )
 
-uint64_t CIYAM_BASE_DECL_SPEC get_trace_flags( );
-void CIYAM_BASE_DECL_SPEC set_trace_flags( uint64_t flags );
+#  define TEMP_TRACE( message ) TRACE_LOG( TRACE_MINIMAL, message )
+
+uint32_t CIYAM_BASE_DECL_SPEC get_trace_flags( );
+
+void CIYAM_BASE_DECL_SPEC set_trace_flags( uint32_t flags );
 
 struct temp_trace_flags
 {
-   temp_trace_flags( uint64_t tmp_flags )
+   temp_trace_flags( uint32_t temp_flags )
    {
       flags = get_trace_flags( );
-      set_trace_flags( tmp_flags );
+
+      set_trace_flags( temp_flags );
    }
 
    ~temp_trace_flags( )
@@ -83,20 +86,42 @@ struct temp_trace_flags
       set_trace_flags( flags );
    }
 
-   uint64_t flags;
+   uint32_t flags;
 };
 
-extern "C" void CIYAM_BASE_DECL_SPEC trace_flags( uint64_t flags );
+void CIYAM_BASE_DECL_SPEC list_trace_flags( std::ostream& os );
 
-typedef void ( *fp_trace_flags )( uint64_t );
+void CIYAM_BASE_DECL_SPEC trace_flag_names( const std::string& names, bool unset = false );
 
-void CIYAM_BASE_DECL_SPEC list_trace_flags( std::vector< std::string >& flag_names );
+std::string CIYAM_BASE_DECL_SPEC get_trace_flag_names( );
 
-void CIYAM_BASE_DECL_SPEC log_trace_message( uint64_t flag, const std::string& message );
+inline void set_trace_flag_names( const std::string& names )
+{
+   trace_flag_names( names );
+}
 
-extern "C" void CIYAM_BASE_DECL_SPEC log_trace_string( uint64_t flag, const char* p_message );
+inline void unset_trace_flag_names( const std::string& names )
+{
+   trace_flag_names( names, true );
+}
 
-typedef void ( *fp_log_trace_string )( uint64_t, const char* );
+std::string CIYAM_BASE_DECL_SPEC get_trace_level( );
+
+void CIYAM_BASE_DECL_SPEC set_trace_level( const std::string& level_name );
+
+void CIYAM_BASE_DECL_SPEC list_trace_levels( std::vector< std::string >& level_names );
+
+void CIYAM_BASE_DECL_SPEC set_trace_info( const std::string& info );
+
+extern "C" void CIYAM_BASE_DECL_SPEC trace_info( const char* p_info );
+
+typedef void ( *fp_trace_info )( const char* );
+
+void CIYAM_BASE_DECL_SPEC log_trace_message( uint32_t flag, const std::string& message );
+
+extern "C" void CIYAM_BASE_DECL_SPEC log_trace_string( uint32_t flag, const char* p_message );
+
+typedef void ( *fp_log_trace_string )( uint32_t, const char* );
 
 class CIYAM_BASE_DECL_SPEC trace_mutex : public mutex
 {
@@ -110,42 +135,43 @@ class CIYAM_BASE_DECL_SPEC trace_mutex : public mutex
 void CIYAM_BASE_DECL_SPEC list_trace_mutex_lock_ids(
  std::ostream& os, mutex* p_mutex = 0, const char* p_mutex_name = 0 );
 
-int CIYAM_BASE_DECL_SPEC get_server_port( );
+unsigned int CIYAM_BASE_DECL_SPEC get_server_port( );
 
-extern "C" void CIYAM_BASE_DECL_SPEC set_server_port( int p );
+extern "C" void CIYAM_BASE_DECL_SPEC set_server_port( unsigned int p );
 
-typedef void ( *fp_set_server_port )( int );
+typedef void ( *fp_set_server_port )( unsigned int );
 
-int CIYAM_BASE_DECL_SPEC get_stream_port( );
-int CIYAM_BASE_DECL_SPEC get_stream_sock( );
+unsigned int CIYAM_BASE_DECL_SPEC get_stream_port( );
+unsigned int CIYAM_BASE_DECL_SPEC get_stream_sock( );
 
-extern "C" void CIYAM_BASE_DECL_SPEC set_stream_socket( int p, int s );
+extern "C" void CIYAM_BASE_DECL_SPEC set_stream_socket( unsigned int p, unsigned int s );
 
-typedef void ( *fp_set_stream_socket )( int, int );
+typedef void ( *fp_set_stream_socket )( unsigned int, unsigned int );
 
-extern "C" void CIYAM_BASE_DECL_SPEC register_listener( int port, const char* p_info, const char* p_id_info = 0 );
-extern "C" void CIYAM_BASE_DECL_SPEC unregister_listener( int port, const char* p_id_info = 0 );
+extern "C" void CIYAM_BASE_DECL_SPEC register_listener( unsigned int port, const char* p_info, const char* p_id_info = 0 );
+extern "C" void CIYAM_BASE_DECL_SPEC unregister_listener( unsigned int port, const char* p_id_info = 0 );
 
-typedef void ( *fp_register_listener )( int, const char*, const char* );
-typedef void ( *fp_unregister_listener )( int, const char* );
+typedef void ( *fp_register_listener )( unsigned int, const char*, const char* );
+typedef void ( *fp_unregister_listener )( unsigned int, const char* );
 
 class CIYAM_BASE_DECL_SPEC listener_registration
 {
    public:
-   listener_registration( int port, const std::string& info, const char* p_id_info = 0 );
+   listener_registration( unsigned int port, const std::string& info, const char* p_id_info = 0 );
+
    ~listener_registration( );
 
    void insert_id( const std::string& id );
    void remove_id( const std::string& id );
 
    private:
-   int port;
+   unsigned int port;
 
    std::string id_info;
 };
 
-bool CIYAM_BASE_DECL_SPEC has_registered_listener( int port );
-bool CIYAM_BASE_DECL_SPEC has_registered_listener_id( const std::string& id, int* p_port = 0 );
+bool CIYAM_BASE_DECL_SPEC has_registered_listener( unsigned int port );
+bool CIYAM_BASE_DECL_SPEC has_registered_listener_id( const std::string& id, unsigned int* p_port = 0 );
 
 void CIYAM_BASE_DECL_SPEC list_listeners( std::ostream& os );
 
@@ -196,6 +222,7 @@ inline std::string get_identity(
  bool use_max_sid_entropy = false, const char* p_pubkey = 0 )
 {
    std::string s;
+
    get_identity( s, append_max_user_limit, use_max_sid_entropy, p_pubkey );
 
    return s;
@@ -294,6 +321,7 @@ std::string CIYAM_BASE_DECL_SPEC get_smtp_password( );
 std::string CIYAM_BASE_DECL_SPEC get_smtp_security( );
 
 int CIYAM_BASE_DECL_SPEC get_smtp_max_send_attempts( );
+
 int64_t CIYAM_BASE_DECL_SPEC get_smtp_max_attached_data( );
 
 std::string CIYAM_BASE_DECL_SPEC get_smtp_suffix_or_domain( );
@@ -302,7 +330,8 @@ struct external_client
 {
    external_client( ) : port( 0 ), is_local( false ) { }
 
-   int port;
+   unsigned int port;
+
    bool is_local;
 
    std::string protocol;
@@ -399,6 +428,7 @@ class CIYAM_BASE_DECL_SPEC session_file_buffer_access
 {
    public:
    session_file_buffer_access( );
+
    ~session_file_buffer_access( );
 
    void copy_to_string(
@@ -465,11 +495,11 @@ std::string CIYAM_BASE_DECL_SPEC get_gpg_password( );
 std::string CIYAM_BASE_DECL_SPEC get_rpc_password( );
 std::string CIYAM_BASE_DECL_SPEC get_sql_password( );
 
-int CIYAM_BASE_DECL_SPEC get_test_peer_port( );
+unsigned int CIYAM_BASE_DECL_SPEC get_test_peer_port( );
 
-extern "C" void CIYAM_BASE_DECL_SPEC set_test_peer_port( int port );
+extern "C" void CIYAM_BASE_DECL_SPEC set_test_peer_port( unsigned int port );
 
-typedef int ( *fp_set_test_peer_port )( int );
+typedef int ( *fp_set_test_peer_port )( unsigned int );
 
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_gpg_password( );
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_pem_password( );
@@ -535,8 +565,8 @@ std::string CIYAM_BASE_DECL_SPEC get_raw_session_variable( const std::string& na
 
 bool CIYAM_BASE_DECL_SPEC has_session_variable( const std::string& name_or_expr, const std::string* p_sess_id = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name_or_expr, const std::string* p_sess_id = 0 );
 std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name, size_t slot );
+std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name_or_expr, const std::string* p_sess_id = 0 );
 
 std::string get_session_variable_from_matching_blockchain( const std::string& name,
  const std::string& check_name, const std::string& check_value, bool matching_own_ip_address = false );
@@ -619,6 +649,7 @@ struct restorable_session_variables
 struct temporary_identity_suffix
 {
    temporary_identity_suffix( const std::string& temporary_suffix );
+
    ~temporary_identity_suffix( );
 
    std::string current_suffix;
@@ -662,6 +693,7 @@ void CIYAM_BASE_DECL_SPEC term_storage( command_handler& cmd_handler );
 struct storage_scoped_lock_holder
 {
    storage_scoped_lock_holder( size_t lock_handle );
+
    ~storage_scoped_lock_holder( );
 
    void release( );
@@ -726,6 +758,7 @@ class CIYAM_BASE_DECL_SPEC storage_ods_bulk_read
 {
    public:
    storage_ods_bulk_read( );
+
    ~storage_ods_bulk_read( );
 
    private:
@@ -737,6 +770,7 @@ class CIYAM_BASE_DECL_SPEC storage_ods_bulk_write
 {
    public:
    storage_ods_bulk_write( progress* p_progress = 0 );
+
    ~storage_ods_bulk_write( );
 
    private:
@@ -754,6 +788,7 @@ class CIYAM_BASE_DECL_SPEC system_ods_bulk_read
 {
    public:
    system_ods_bulk_read( );
+
    ~system_ods_bulk_read( );
 
    private:
@@ -765,6 +800,7 @@ class CIYAM_BASE_DECL_SPEC system_ods_bulk_write
 {
    public:
    system_ods_bulk_write( progress* p_progress = 0 );
+
    ~system_ods_bulk_write( );
 
    private:
@@ -782,6 +818,7 @@ struct temporary_uid
    temporary_uid( const std::string& new_uid, bool do_not_erase_sec = false )
    {
       old_uid = get_uid( false );
+
       set_uid( new_uid, do_not_erase_sec );
 
       this->do_not_erase_sec = do_not_erase_sec;
@@ -1042,8 +1079,10 @@ struct field_data
    std::string id;
    std::string name;
    std::string value;
+
    bool mandatory;
    bool transient;
+
    std::string class_id;
    std::string type_name;
 };
@@ -1197,6 +1236,7 @@ class CIYAM_BASE_DECL_SPEC transaction
 {
    public:
    transaction( bool is_not_dummy = true );
+
    ~transaction( );
 
    void commit( );
@@ -1213,6 +1253,7 @@ class CIYAM_BASE_DECL_SPEC transaction
 struct CIYAM_BASE_DECL_SPEC record_initialiser
 {
    record_initialiser( std::ofstream& log_file );
+
    ~record_initialiser( );
 };
 

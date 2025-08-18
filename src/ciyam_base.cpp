@@ -114,6 +114,8 @@ const size_t c_min_smtp_max_send_attempts = 1;
 
 const size_t c_minimum_encrypted_password_size = 10;
 
+const uint64_t c_unset_trace_flags = TRACE_WAITING;
+
 // NOTE: Limit the buffer to twice the maximum file size (if a compression
 // call returns buffer too small then the file can be stored uncompressed).
 const int c_max_file_buffer_expansion = 2;
@@ -167,8 +169,8 @@ const char* const c_attribute_username = "username";
 const char* const c_attribute_web_root = "web_root";
 const char* const c_attribute_arguments = "arguments";
 const char* const c_attribute_max_peers = "max_peers";
-const char* const c_attribute_set_trace = "set_trace";
 const char* const c_attribute_use_https = "use_https";
+const char* const c_attribute_trace_info = "trace_info";
 const char* const c_attribute_ntfy_server = "ntfy_server";
 const char* const c_attribute_gpg_password = "gpg_password";
 const char* const c_attribute_max_sessions = "max_sessions";
@@ -225,6 +227,19 @@ const char* const c_uid_unknown = "<unknown>";
 const char* const c_script_dummy_filename = "*script*";
 
 const char* const c_default_protocol_handler = "file://";
+
+const char* const c_trace_level_minimal = "minimal";
+const char* const c_trace_level_initial = "initial";
+const char* const c_trace_level_details = "details";
+const char* const c_trace_level_verbose = "verbose";
+
+const char* const c_trace_flag_general = "general";
+const char* const c_trace_flag_locking = "locking";
+const char* const c_trace_flag_objects = "objects";
+const char* const c_trace_flag_queries = "queries";
+const char* const c_trace_flag_session = "session";
+const char* const c_trace_flag_sockets = "sockets";
+const char* const c_trace_flag_various = "various";
 
 const char* const c_storable_file_name_id = "id";
 const char* const c_storable_file_name_limit = "limit";
@@ -1298,7 +1313,7 @@ bool storage_handler::obtain_lock( size_t& handle,
    if( num_attempts )
       attempts = num_attempts;
 
-   TRACE_LOG( TRACE_LOCK_OPS, "[obtain lock] class = " + lock_class
+   TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[obtain lock] class = " + lock_class
     + ", instance = " + lock_instance + ", type = " + to_string( type ) + " (" + op_lock::lock_type_name( type ) + ")"
     + ", p_session = " + to_string( p_session ) + ", p_class_base = " + to_string( p_class_base ) + ", p_root_class = " + to_string( p_root_class ) );
 
@@ -1414,7 +1429,7 @@ bool storage_handler::obtain_lock( size_t& handle,
                   lock_conflict = true;
 
                   if( !attempts )
-                     TRACE_LOG( TRACE_LOCK_OPS, "*** failed to acquire lock due to lock #" + to_string( next_lock.handle ) + " ***" );
+                     TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "*** failed to acquire lock due to lock #" + to_string( next_lock.handle ) + " ***" );
 
                   break;
                }
@@ -1452,12 +1467,12 @@ bool storage_handler::obtain_lock( size_t& handle,
          msleep( c_lock_attempt_sleep_time );
    }
 
-   IF_IS_TRACING( TRACE_LOCK_OPS )
+   IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
       dump_locks( osstr );
 
-      TRACE_LOG( TRACE_LOCK_OPS, "[dumping locks]\n" + osstr.str( ) );
+      TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dumping locks]\n" + osstr.str( ) );
    }
 
    return found;
@@ -1468,7 +1483,7 @@ void storage_handler::transform_lock( size_t handle,
 {
    guard g( lock_mutex );
 
-   TRACE_LOG( TRACE_LOCK_OPS, "[transform lock] handle = "
+   TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[transform lock] handle = "
     + to_string( handle ) + ", new_type = " + to_string( new_type ) );
 
    if( handle && ( lock_duplicates.find( handle ) == lock_duplicates.end( ) ) )
@@ -1500,12 +1515,12 @@ void storage_handler::transform_lock( size_t handle,
       }
    }
 
-   IF_IS_TRACING( TRACE_LOCK_OPS )
+   IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
       dump_locks( osstr );
 
-      TRACE_LOG( TRACE_LOCK_OPS, "[dump_locks]\n" + osstr.str( ) );
+      TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
    }
 }
 
@@ -1513,7 +1528,7 @@ void storage_handler::release_lock( size_t handle, bool force_removal )
 {
    guard g( lock_mutex );
 
-   TRACE_LOG( TRACE_LOCK_OPS, "[release lock] handle = "
+   TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[release lock] handle = "
     + to_string( handle ) + ", force_removal = " + to_string( force_removal ) );
 
    if( lock_duplicates.find( handle ) != lock_duplicates.end( ) )
@@ -1536,12 +1551,12 @@ void storage_handler::release_lock( size_t handle, bool force_removal )
       }
    }
 
-   IF_IS_TRACING( TRACE_LOCK_OPS )
+   IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
       dump_locks( osstr );
 
-      TRACE_LOG( TRACE_LOCK_OPS, "[dump_locks]\n" + osstr.str( ) );
+      TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
    }
 }
 
@@ -1623,7 +1638,7 @@ void storage_handler::release_locks_for_owner( class_base& owner, bool force_rem
 {
    guard g( lock_mutex );
 
-   TRACE_LOG( TRACE_LOCK_OPS, "[release locks for owner] owner = "
+   TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[release locks for owner] owner = "
     + to_string( &owner ) + ", force_removal = " + to_string( force_removal ) );
 
    lock_index_iterator lii;
@@ -1649,12 +1664,12 @@ void storage_handler::release_locks_for_owner( class_base& owner, bool force_rem
          ++lii;
    }
 
-   IF_IS_TRACING( TRACE_LOCK_OPS )
+   IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
       dump_locks( osstr );
 
-      TRACE_LOG( TRACE_LOCK_OPS, "[dump_locks]\n" + osstr.str( ) );
+      TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
    }
 }
 
@@ -1662,7 +1677,7 @@ void storage_handler::release_locks_for_commit( session* p_session )
 {
    guard g( lock_mutex );
 
-   TRACE_LOG( TRACE_LOCK_OPS, "[release locks for commit] p_session = " + to_string( p_session ) );
+   TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[release locks for commit] p_session = " + to_string( p_session ) );
 
    ods* p_ods( ods::instance( ) );
 
@@ -1697,12 +1712,12 @@ void storage_handler::release_locks_for_commit( session* p_session )
          ++lii;
    }
 
-   IF_IS_TRACING( TRACE_LOCK_OPS )
+   IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
       dump_locks( osstr );
 
-      TRACE_LOG( TRACE_LOCK_OPS, "[dump_locks]\n" + osstr.str( ) );
+      TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
    }
 }
 
@@ -1710,7 +1725,7 @@ void storage_handler::release_locks_for_rollback( session* p_session )
 {
    guard g( lock_mutex );
 
-   TRACE_LOG( TRACE_LOCK_OPS, "[release locks for rollback] p_session = " + to_string( p_session ) );
+   TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[release locks for rollback] p_session = " + to_string( p_session ) );
 
    ods* p_ods( ods::instance( ) );
 
@@ -1731,12 +1746,12 @@ void storage_handler::release_locks_for_rollback( session* p_session )
          ++lii;
    }
 
-   IF_IS_TRACING( TRACE_LOCK_OPS )
+   IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
       dump_locks( osstr );
 
-      TRACE_LOG( TRACE_LOCK_OPS, "[dump_locks]\n" + osstr.str( ) );
+      TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
    }
 }
 
@@ -1744,7 +1759,7 @@ void storage_handler::release_all_locks_for_session( session* p_session )
 {
    guard g( lock_mutex );
 
-   TRACE_LOG( TRACE_LOCK_OPS, "[release all locks for session] p_session = " + to_string( p_session ) );
+   TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[release all locks for session] p_session = " + to_string( p_session ) );
 
    lock_index_iterator lii;
 
@@ -1761,12 +1776,12 @@ void storage_handler::release_all_locks_for_session( session* p_session )
          ++lii;
    }
 
-   IF_IS_TRACING( TRACE_LOCK_OPS )
+   IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
    {
       ostringstream osstr;
       dump_locks( osstr );
 
-      TRACE_LOG( TRACE_LOCK_OPS, "[dump_locks]\n" + osstr.str( ) );
+      TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
    }
 }
 
@@ -1841,10 +1856,10 @@ string g_empty_string;
 
 string_container g_strings;
 
-int g_server_port = c_default_ciyam_port;
+unsigned int g_server_port = c_default_ciyam_port;
 
-int g_stream_port = 0;
-int g_stream_sock = 0;
+unsigned int g_stream_port = 0;
+unsigned int g_stream_sock = 0;
 
 size_t g_max_sessions = c_max_sessions_default;
 size_t g_max_storage_handlers = c_max_storage_handlers_default + 1; // i.e. extra for <none>
@@ -1872,8 +1887,6 @@ string g_timezone;
 
 string g_web_root;
 
-string g_set_trace;
-
 string g_ntfy_server;
 
 bool g_use_udp = false;
@@ -1885,11 +1898,15 @@ string g_pem_password;
 string g_rpc_password;
 string g_sql_password;
 
-int g_test_peer_port = 0;
-
 string g_user_home_path;
 
 string g_default_storage;
+
+string g_server_log_file;
+
+uint32_t g_trace_flags = c_unset_trace_flags;
+
+unsigned int g_test_peer_port = 0;
 
 unsigned int g_session_timeout = 0;
 
@@ -2031,7 +2048,7 @@ struct reconstruct_trace_progress : progress
       // FUTURE: This message should be handled as a server string message.
       string message( "(starting restore for ODS DB '" + name + "'..." );
 
-      TRACE_LOG( TRACE_ANYTHING, message );
+      TRACE_LOG( TRACE_MINIMAL, message );
    }
 
    void clear_num_cout_chars( )
@@ -2050,7 +2067,7 @@ struct reconstruct_trace_progress : progress
       // FUTURE: This message should be handled as a server string message.
       string message( "...finished restore for ODS DB '" + name + "')" );
 
-      TRACE_LOG( TRACE_ANYTHING, message );
+      TRACE_LOG( TRACE_MINIMAL, message );
 
       clear_num_cout_chars( );
 
@@ -2106,7 +2123,7 @@ struct reconstruct_trace_progress : progress
             // FUTURE: This message should be handled as a server string message.
             final_message = "...restore for '" + name + "' is continuing...";
 
-         TRACE_LOG( TRACE_ANYTHING, final_message );
+         TRACE_LOG( TRACE_MINIMAL, final_message );
       }
    }
 
@@ -2168,7 +2185,7 @@ void init_system_ods( bool* p_restored = 0 )
          {
             restore_system_db = false;
 
-            TRACE_LOG( TRACE_ANYTHING, "*** mismatched number of system/backup ODS DB files ("
+            TRACE_LOG( TRACE_MINIMAL, "*** mismatched number of system/backup ODS DB files ("
              + to_string( num_system_db_files ) + '/' + to_string( num_system_backup_files ) + ") ***" );
          }
       }
@@ -2309,8 +2326,8 @@ void term_system_ods( )
    gap_ods.reset( );
 }
 
-typedef map< int, string > listener_container;
-typedef map< string, int > listener_id_container;
+typedef map< unsigned int, string > listener_container;
+typedef map< string, unsigned int > listener_id_container;
 
 typedef listener_container::const_iterator listener_const_iterator;
 typedef listener_id_container::const_iterator listener_id_const_iterator;
@@ -3685,18 +3702,11 @@ void read_server_configuration( )
       g_max_peers = atoi( reader.read_opt_attribute(
        c_attribute_max_peers, to_string( c_default_max_peers ) ).c_str( ) );
 
-      g_set_trace = reader.read_opt_attribute( c_attribute_set_trace );
-
-      if( !g_set_trace.empty( ) )
-      {
-         int trace_flags;
-         istringstream isstr( g_set_trace );
-         isstr >> hex >> trace_flags;
-
-         set_trace_flags( get_trace_flags( ) | trace_flags );
-      }
-
       g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, c_false ) ) == c_true );
+
+      string trace_info( reader.read_opt_attribute( c_attribute_trace_info ) );
+
+      set_trace_info( trace_info );
 
       g_ntfy_server = reader.read_opt_attribute( c_attribute_ntfy_server );
 
@@ -3854,9 +3864,6 @@ void read_server_configuration( )
 
             client.port = atoi( reader.read_opt_attribute( c_attribute_port, "0" ).c_str( ) );
 
-            if( client.port < 0 )
-               throw runtime_error( "invalid client port value " + to_string( client.port ) );
-
             string key = reader.read_attribute( c_attribute_label );
             client.is_local = ( lower( reader.read_opt_attribute( c_attribute_is_local, c_false ) ) == c_true );
 
@@ -3909,13 +3916,14 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
 
    if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
    {
-      TRACE_LOG( TRACE_SQLSTMTS, "(row cache for '" + instance.get_class_id( )
-       + ")" + string( !skip_after_fetch ? "" : " *** skip_after_fetch ***" ) );
+      TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES,
+       "(row cache for '" + instance.get_class_id( ) + ")"
+       + string( !skip_after_fetch ? "" : " *** skip_after_fetch ***" ) );
 
       const map< int, int >& fields( instance_accessor.select_fields( ) );
       const vector< int >& columns( instance_accessor.select_columns( ) );
 
-      TRACE_LOG( TRACE_SQLCLSET, "(from row cache)" );
+      TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES, "(from row cache)" );
 
       for( int i = c_num_sys_field_names; i < instance_accessor.row_cache( )[ 0 ].size( ); i++ )
       {
@@ -3924,7 +3932,9 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
 
          int fnum = fields.find( columns[ i - c_num_sys_field_names ] )->second;
 
-         TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum + 1 ) + " to " + instance_accessor.row_cache( )[ 0 ][ i ] );
+         TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES,
+          "setting field #" + to_string( fnum + 1 ) + " to " + instance_accessor.row_cache( )[ 0 ][ i ] );
+
          instance.set_field_value( fnum, instance_accessor.row_cache( )[ 0 ][ i ] );
       }
    }
@@ -3967,8 +3977,6 @@ bool timezones_file_has_changed( )
    return changed;
 }
 
-uint64_t g_trace_flags;
-
 uint64_t g_log_num_messages = 0;
 
 int64_t g_log_unix_check_time = 0;
@@ -3989,49 +3997,216 @@ void hash_sid_val( string& sid )
 
 }
 
-uint64_t get_trace_flags( )
+uint32_t get_trace_flags( )
 {
    return g_trace_flags;
 }
 
-void set_trace_flags( uint64_t flags )
+void set_trace_flags( uint32_t flags )
 {
    g_trace_flags = flags;
 }
 
-void trace_flags( uint64_t flags )
+void list_trace_flags( ostream& os )
 {
+   os << c_trace_flag_general; // TRACE_GENERAL
+
+   os << "\n";
+   os << c_trace_flag_locking; // TRACE_LOCKING
+
+   os << "\n";
+   os << c_trace_flag_objects; // TRACE_OBJECTS
+
+   os << "\n";
+   os << c_trace_flag_queries; // TRACE_QUERIES
+
+   os << "\n";
+   os << c_trace_flag_session; // TRACE_SESSION
+
+   os << "\n";
+   os << c_trace_flag_sockets; // TRACE_SOCKETS
+
+   os << "\n";
+   os << c_trace_flag_various; // TRACE_VARIOUS
+}
+
+void trace_flag_names( const string& names, bool unset )
+{
+   uint32_t new_flags = 0;
+
+   if( names == "all" )
+      new_flags = TRACE_COLLAGE;
+   else
+   {
+      vector< string > all_names;
+
+      split( names, all_names );
+
+      for( size_t i = 0; i < all_names.size( ); i++ )
+      {
+         string next_name( all_names[ i ] );
+
+         if( next_name == c_trace_flag_general )
+            new_flags |= TRACE_GENERAL;
+         else if( next_name == c_trace_flag_locking )
+            new_flags |= TRACE_LOCKING;
+         else if( next_name == c_trace_flag_objects )
+            new_flags |= TRACE_OBJECTS;
+         else if( next_name == c_trace_flag_queries )
+            new_flags |= TRACE_QUERIES;
+         else if( next_name == c_trace_flag_session )
+            new_flags |= TRACE_SESSION;
+         else if( next_name == c_trace_flag_sockets )
+            new_flags |= TRACE_SOCKETS;
+         else if( next_name == c_trace_flag_various )
+            new_flags |= TRACE_VARIOUS;
+         else
+            throw runtime_error( "invalid trace flag name '" + next_name + "'" );
+      }
+   }
+
+   if( !unset )
+      g_trace_flags |= new_flags;
+   else
+      g_trace_flags &= ~new_flags;
+}
+
+string get_trace_flag_names( )
+{
+   string retval( c_trace_flag_general );
+
+   if( g_trace_flags & TRACE_LOCKING )
+      retval += ',' + string( c_trace_flag_locking );
+
+   if( g_trace_flags & TRACE_OBJECTS )
+      retval += ',' + string( c_trace_flag_objects );
+
+   if( g_trace_flags & TRACE_QUERIES )
+      retval += ',' + string( c_trace_flag_queries );
+
+   if( g_trace_flags & TRACE_SESSION )
+      retval += ',' + string( c_trace_flag_session );
+
+   if( g_trace_flags & TRACE_SOCKETS )
+      retval += ',' + string( c_trace_flag_sockets );
+
+   if( g_trace_flags & TRACE_VARIOUS )
+      retval += ',' + string( c_trace_flag_various );
+
+   return retval;
+}
+
+string get_trace_level( )
+{
+   string retval( strlen( c_trace_level_minimal ), '*' );
+
+   if( g_trace_flags & TRACE_VERBOSE )
+      retval = c_trace_level_verbose;
+   else if( g_trace_flags & TRACE_DETAILS )
+      retval = c_trace_level_details;
+   else if( g_trace_flags & TRACE_INITIAL )
+      retval = c_trace_level_initial;
+   else if( g_trace_flags & TRACE_MINIMAL )
+      retval = c_trace_level_minimal;
+
+   return retval;
+}
+
+void set_trace_level( const string& level_name )
+{
+   uint32_t flags = ( g_trace_flags & TRACE_COLLAGE );
+
+   flags |= TRACE_MINIMAL;
+
+   if( level_name != c_trace_level_minimal )
+   {
+      flags |= TRACE_INITIAL;
+
+      if( level_name != c_trace_level_initial )
+      {
+         flags |= TRACE_DETAILS;
+
+         if( level_name != c_trace_level_details )
+         {
+            if( level_name != c_trace_level_verbose )
+               throw runtime_error( "invalid trace level name '" + level_name + "'" );
+
+            flags |= TRACE_VERBOSE;
+         }
+      }
+   }
+
    set_trace_flags( flags );
 }
 
-void list_trace_flags( vector< string >& flag_names )
+void list_trace_levels( vector< string >& level_names )
 {
-   flag_names.push_back( "commands" ); // TRACE_COMMANDS
-   flag_names.push_back( "sqlstmts" ); // TRACE_SQLSTMTS
-   flag_names.push_back( "classops" ); // TRACE_CLASSOPS
-   flag_names.push_back( "mods_gen" ); // TRACE_MODS_GEN
-   flag_names.push_back( "sql_sets" ); // TRACE_SQLCLSET
-   flag_names.push_back( "fld_vals" ); // TRACE_FLD_VALS
-   flag_names.push_back( "lock_ops" ); // TRACE_LOCK_OPS
-   flag_names.push_back( "ctr_dtrs" ); // TRACE_CTR_DTRS
-   flag_names.push_back( "sessions" ); // TRACE_SESSIONS
-   flag_names.push_back( "mail_ops" ); // TRACE_MAIL_OPS
-   flag_names.push_back( "pdf_vals" ); // TRACE_PDF_VALS
-   flag_names.push_back( "sock_ops" ); // TRACE_SOCK_OPS
-   flag_names.push_back( "core_fls" ); // TRACE_CORE_FLS
-   flag_names.push_back( "sync_ops" ); // TRACE_SYNC_OPS
-   flag_names.push_back( "peer_ops" ); // TRACE_PEER_OPS
-   flag_names.push_back( "notifier" ); // TRACE_NOTIFIER
-   flag_names.push_back( "ods_bulk" ); // TRACE_ODS_BULK
+   level_names.push_back( c_trace_level_minimal );
+   level_names.push_back( c_trace_level_initial );
+   level_names.push_back( c_trace_level_details );
+   level_names.push_back( c_trace_level_verbose );
 }
 
-void log_trace_message( uint64_t flag, const string& message )
+void set_trace_info( const string& info )
+{
+   // NOTE: Only sets the trace flags if they
+   // had not been set during server startup.
+   if( g_trace_flags == c_unset_trace_flags )
+   {
+      string trace_info( info );
+
+      string trace_hex_flags;
+
+      string::size_type pos = trace_info.find( ':' );
+
+      if( pos != string::npos )
+      {
+         trace_hex_flags = trace_info.substr( pos + 1 );
+
+         trace_info.erase( pos );
+      }
+      else
+      {
+         // NOTE: If only hex then will interpret as flags.
+         pos = trace_info.find_first_not_of( "0123456789abcdef" );
+
+         if( pos == string::npos )
+         {
+            trace_hex_flags = trace_info;
+
+            trace_info.erase( );
+         }
+      }
+
+      g_server_log_file = trace_info;
+
+      uint64_t trace_flags = TRACE_MINIMAL;
+
+      if( !trace_hex_flags.empty( ) )
+      {
+         istringstream isstr( trace_hex_flags );
+
+         isstr >> hex >> trace_flags;
+      }
+
+      set_trace_flags( trace_flags );
+   }
+}
+
+void trace_info( const char* p_info )
+{
+   set_trace_info( p_info );
+}
+
+void log_trace_message( uint32_t flag, const string& message )
 {
    guard g( g_trace_mutex );
 
    bool ignore = false;
 
-   if( flag != TRACE_ANYTHING )
+   string prefix;
+
+   if( flag != TRACE_MINIMAL )
    {
       // FUTURE: If setting the system variable just set a global
       // variable then this would prevent potential mutex issues.
@@ -4045,6 +4220,15 @@ void log_trace_message( uint64_t flag, const string& message )
          if( session_id != from_string< size_t >( trace_session_id ) )
             ignore = true;
       }
+
+      if( flag & TRACE_INITIAL )
+         prefix = " --";
+      else if( flag & TRACE_DETAILS )
+         prefix = " ==";
+      else if( flag & TRACE_VERBOSE )
+         prefix = " ##";
+
+      flag &= ~TRACE_COLLAGE;
    }
 
    date_time now( date_time::local( ) );
@@ -4081,87 +4265,57 @@ void log_trace_message( uint64_t flag, const string& message )
 
    if( !ignore )
    {
-      string type( "general" );
+      string type( c_trace_flag_general );
 
       switch( flag )
       {
-         case TRACE_COMMANDS:
-         type = "command";
+         case TRACE_LOCKING:
+         type = c_trace_flag_locking;
          break;
 
-         case TRACE_SQLSTMTS:
-         type = "sqlstmt";
+         case TRACE_OBJECTS:
+         type = c_trace_flag_objects;
          break;
 
-         case TRACE_CLASSOPS:
-         type = "classop";
+         case TRACE_QUERIES:
+         type = c_trace_flag_queries;
          break;
 
-         case TRACE_MODS_GEN:
-         type = "mod_gen";
+         case TRACE_SESSION:
+         type = c_trace_flag_session;
          break;
 
-         case TRACE_SQLCLSET:
-         type = "sql_set";
+         case TRACE_SOCKETS:
+         type = c_trace_flag_sockets;
          break;
 
-         case TRACE_FLD_VALS:
-         type = "fld_val";
-         break;
-
-         case TRACE_LOCK_OPS:
-         type = "lock_op";
-         break;
-
-         case TRACE_CTR_DTRS:
-         type = "ctr_dtr";
-         break;
-
-         case TRACE_SESSIONS:
-         type = "session";
-         break;
-
-         case TRACE_MAIL_OPS:
-         type = "mail_op";
-         break;
-
-         case TRACE_PDF_VALS:
-         type = "pdf_val";
-         break;
-
-         case TRACE_SOCK_OPS:
-         type = "sock_op";
-         break;
-
-         case TRACE_CORE_FLS:
-         type = "core_fs";
-         break;
-
-         case TRACE_SYNC_OPS:
-         type = "sync_op";
-         break;
-
-         case TRACE_PEER_OPS:
-         type = "peer_op";
-         break;
-
-         case TRACE_NOTIFIER:
-         type = "inotify";
-         break;
-
-         case TRACE_ODS_BULK:
-         type = "ods_blk";
+         case TRACE_VARIOUS:
+         type = c_trace_flag_various;
          break;
       }
 
-      string log_file_name( get_files_area_dir( ) );
+      bool has_log_path = false;
 
-      log_file_name += '/' + string( c_server_log_file );
+      if( g_server_log_file.empty( ) )
+         g_server_log_file = c_server_log_file;
+      else
+         has_log_path = ( g_server_log_file.find( '/' ) != string::npos );
+
+      string log_file_name;
+
+      if( !has_log_path )
+         log_file_name = get_files_area_dir( ) + '/';
+
+      log_file_name += g_server_log_file;
 
       ofstream outf( log_file_name.c_str( ), ios::out | ios::app );
 
-      outf << '[' << now.as_string( true, g_log_milliseconds ) << "] [" << setw( 6 )
-       << setfill( '0' ) << ( gtp_session ? gtp_session->id : 0 ) << "] [" << type << "] ";
+      string time_stamp( now.as_string( true, g_log_milliseconds ) );
+
+      outf << '[' << time_stamp
+       << "] [" << setw( 6 ) << setfill( '0' )
+       << ( gtp_session ? gtp_session->id : 0 )
+       << "] [" << type << "]" << prefix << ' ';
 
       if( flag )
          outf << message << '\n';
@@ -4170,9 +4324,10 @@ void log_trace_message( uint64_t flag, const string& message )
    }
 }
 
-void log_trace_string( uint64_t flag, const char* p_message )
+void log_trace_string( uint32_t flag, const char* p_message )
 {
-   log_trace_message( flag, p_message );
+   if( g_trace_flags & flag )
+      log_trace_message( flag, p_message );
 }
 
 void trace_mutex::pre_acquire( const guard* p_guard, const char* p_msg )
@@ -4182,7 +4337,7 @@ void trace_mutex::pre_acquire( const guard* p_guard, const char* p_msg )
    if( p_msg )
       extra = " " + string( p_msg );
 
-   TRACE_LOG( TRACE_SYNC_OPS, "pre_acquire: mutex = "
+   TRACE_LOG( TRACE_VERBOSE | TRACE_LOCKING, "pre_acquire: mutex = "
     + to_string( this ) + ", guard = " + to_string( p_guard ) + extra );
 }
 
@@ -4193,7 +4348,7 @@ void trace_mutex::post_acquire( const guard* p_guard, const char* p_msg )
    if( p_msg )
       extra = " " + string( p_msg );
 
-   TRACE_LOG( TRACE_SYNC_OPS, "post_acquire: mutex = "
+   TRACE_LOG( TRACE_VERBOSE | TRACE_LOCKING, "post_acquire: mutex = "
     + to_string( this ) + ", guard = " + to_string( p_guard ) + extra );
 }
 
@@ -4204,7 +4359,7 @@ void trace_mutex::has_released( const guard* p_guard, const char* p_msg )
    if( p_msg )
       extra = " " + string( p_msg );
 
-   TRACE_LOG( TRACE_SYNC_OPS, "has_released: mutex = "
+   TRACE_LOG( TRACE_VERBOSE | TRACE_LOCKING, "has_released: mutex = "
     + to_string( this ) + ", guard = " + to_string( p_guard ) + extra );
 }
 
@@ -4259,33 +4414,33 @@ void list_trace_mutex_lock_ids( ostream& os, mutex* p_mutex, const char* p_mutex
       os.flush( );
 }
 
-int get_server_port( )
+unsigned int get_server_port( )
 {
    return g_server_port;
 }
 
-void set_server_port( int p )
+void set_server_port( unsigned int p )
 {
    g_server_port = p;
 }
 
-int get_stream_port( )
+unsigned int get_stream_port( )
 {
    return g_stream_port;
 }
 
-int get_stream_sock( )
+unsigned int get_stream_sock( )
 {
    return g_stream_sock;
 }
 
-void set_stream_socket( int p, int s )
+void set_stream_socket( unsigned int p, unsigned int s )
 {
    g_stream_port = p;
    g_stream_sock = s;
 }
 
-void register_listener( int port, const char* p_info, const char* p_id_info )
+void register_listener( unsigned int port, const char* p_info, const char* p_id_info )
 {
    g_listeners.insert( make_pair( port, p_info ) );
 
@@ -4304,7 +4459,7 @@ void register_listener( int port, const char* p_info, const char* p_id_info )
    }
 }
 
-void unregister_listener( int port, const char* p_id_info )
+void unregister_listener( unsigned int port, const char* p_id_info )
 {
    if( p_id_info )
    {
@@ -4335,7 +4490,7 @@ void unregister_listener( int port, const char* p_id_info )
       g_listeners.erase( port );
 }
 
-listener_registration::listener_registration( int port, const string& info, const char* p_id_info )
+listener_registration::listener_registration( unsigned int port, const string& info, const char* p_id_info )
  :
  port( port )
 {
@@ -4403,14 +4558,14 @@ void listener_registration::remove_id( const string& id )
    }
 }
 
-bool has_registered_listener( int port )
+bool has_registered_listener( unsigned int port )
 {
    guard g( g_mutex );
 
    return g_listeners.count( port );
 }
 
-bool has_registered_listener_id( const string& id, int* p_port )
+bool has_registered_listener_id( const string& id, unsigned int* p_port )
 {
    guard g( g_mutex );
 
@@ -4512,6 +4667,7 @@ void init_globals( const char* p_sid, int* p_use_udp )
       bool restored = false;
 
       init_files_area( );
+
       init_system_ods( &restored );
 
       init_archive_info( 0, restored );
@@ -4590,6 +4746,7 @@ void init_globals( const char* p_sid, int* p_use_udp )
          g_storage_handlers.push_back( 0 );
 
       g_storage_handlers[ 0 ] = new storage_handler( 0, c_default_storage_name );
+
       g_storage_handlers[ 0 ]->get_root( ).identity = c_default_storage_identity;
 
       g_storage_handler_index.insert( make_pair( c_default_storage_name, 0 ) );
@@ -4605,7 +4762,14 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       if( file_exists( c_ciyam_pem ) )
       {
-         init_ssl( c_ciyam_pem, 0, 0, true );
+         // NOTE: If using an encrypted PEM then the FCGI UI
+         // would fail its "init_ssl" call so until this has
+         // been resolved it is only recommended for systems
+         // that do not use the FCGI UI.
+         if( g_pem_password.empty( ) )
+            init_ssl( c_ciyam_pem, 0, 0, true );
+         else
+            init_ssl( c_ciyam_pem, g_pem_password.c_str( ), 0, true );
 
          g_using_ssl = true;
       }
@@ -4623,7 +4787,7 @@ void init_globals( const char* p_sid, int* p_use_udp )
    }
    catch( exception& x )
    {
-      TRACE_LOG( TRACE_ANYTHING, x.what( ) );
+      TRACE_LOG( TRACE_MINIMAL, x.what( ) );
       throw;
    }
 }
@@ -4637,6 +4801,7 @@ void term_globals( )
       if( g_sessions[ i ] )
       {
          delete g_sessions[ i ];
+
          g_sessions[ i ] = 0;
       }
    }
@@ -4646,6 +4811,7 @@ void term_globals( )
       if( g_storage_handlers[ i ] )
       {
          delete g_storage_handlers[ i ];
+
          g_storage_handlers[ i ] = 0;
       }
    }
@@ -4688,6 +4854,7 @@ string get_string( const string& key )
    string str( key );
 
    string_const_iterator sci = g_strings.find( key );
+
    if( sci != g_strings.end( ) )
       str = sci->second;
 
@@ -4699,6 +4866,7 @@ string get_string_message( const string& string_message, const pair< string, str
    string message;
 
    string::size_type pos = string_message.find( parm1.first );
+
    if( pos == string::npos )
       throw runtime_error( "parameter '" + parm1.first + "' not found in '" + string_message + "'" );
 
@@ -5884,7 +6052,7 @@ int exec_system( const string& cmd, bool async, bool delay )
       }
    }
 
-   TRACE_LOG( TRACE_SESSIONS, async ? async_cmd : exec_cmd );
+   TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, async ? async_cmd : exec_cmd );
 
    rc = system( async ? async_cmd.c_str( ) : exec_cmd.c_str( ) );
 
@@ -5924,7 +6092,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
    if( get_script_reconfig( ) && scripts_file_has_changed( ) )
    {
       read_script_info( );
-      TRACE_LOG( TRACE_ANYTHING, "[manuscript.sio] updated" );
+      TRACE_LOG( TRACE_MINIMAL, "[manuscript.sio] updated" );
    }
 
    // NOTE: If the name '@none" is provided then just returns zero.
@@ -5933,7 +6101,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
    if( !g_scripts.count( script_name ) )
    {
-      TRACE_LOG( TRACE_ANYTHING, "attempt to run unknown script '" + script_name + "'" );
+      TRACE_LOG( TRACE_MINIMAL, "attempt to run unknown script '" + script_name + "'" );
 
       throw runtime_error( "unknown script '" + script_name + "'" );
    }
@@ -6368,7 +6536,7 @@ bool can_create_script_lock_file( const string& name )
             {
                g_checked_script_lock_files.insert( name );
 
-               TRACE_LOG( TRACE_ANYTHING, "(unexpected lock file '" + name + "' could not be removed)" );
+               TRACE_LOG( TRACE_MINIMAL, "(unexpected lock file '" + name + "' could not be removed)" );
             }
          }
       }
@@ -7319,16 +7487,13 @@ string get_sql_password( )
    return pwd;
 }
 
-int get_test_peer_port( )
+unsigned int get_test_peer_port( )
 {
    return g_test_peer_port;
 }
 
-void set_test_peer_port( int port )
+void set_test_peer_port( unsigned int port )
 {
-   if( port < 0 )
-      throw runtime_error( "invalid port number: " + to_string( port ) );
-
    g_test_peer_port = port;
 }
 
@@ -8072,19 +8237,6 @@ bool has_session_variable( const string& name_or_expr, const string* p_sess_id )
    return !get_session_variable( name_or_expr, p_sess_id ).empty( );
 }
 
-string get_session_variable( const string& name_or_expr, const string* p_sess_id )
-{
-   size_t sess_id = 0;
-
-   if( p_sess_id )
-      sess_id = from_string< size_t >( *p_sess_id );
-
-   raw_session_variable_getter raw_getter( sess_id );
-   variable_expression expr( name_or_expr, raw_getter );
-
-   return expr.get_value( );
-}
-
 string get_session_variable( const string& name, size_t slot )
 {
    guard g( g_session_mutex, "get_session_variable" );
@@ -8098,6 +8250,19 @@ string get_session_variable( const string& name, size_t slot )
    }
 
    return retval;
+}
+
+string get_session_variable( const string& name_or_expr, const string* p_sess_id )
+{
+   size_t sess_id = 0;
+
+   if( p_sess_id )
+      sess_id = from_string< size_t >( *p_sess_id );
+
+   raw_session_variable_getter raw_getter( sess_id );
+   variable_expression expr( name_or_expr, raw_getter );
+
+   return expr.get_value( );
 }
 
 string get_session_variable_from_matching_blockchain( const string& name,
@@ -9690,7 +9855,8 @@ void storage_process_rewind( const string& label, map< string, string >& file_in
 
          if( !next_statement.empty( ) )
          {
-            TRACE_LOG( TRACE_SQLSTMTS, next_statement );
+            TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, next_statement );
+
             exec_sql( *gtp_session->ap_db, next_statement );
          }
       }
@@ -10464,7 +10630,7 @@ struct storage_ods_bulk_read::impl
             if( gtp_session )
                gtp_session->p_storage_handler->set_bulk_lock_sess_id( );
 
-            TRACE_LOG( TRACE_ODS_BULK, "[bulk_read] storage_ods (obtained)" );
+            TRACE_LOG( TRACE_INITIAL | TRACE_LOCKING, "[bulk_read] storage_ods (obtained)" );
          }
          catch( ... )
          {
@@ -10477,7 +10643,7 @@ struct storage_ods_bulk_read::impl
                dtm_bulk_locked = gtp_session->p_storage_handler->get_bulk_lock_date_time( );
             }
 
-            TRACE_LOG( TRACE_ANYTHING, "[bulk_read] storage_ods **failed** (locked by session #"
+            TRACE_LOG( TRACE_MINIMAL, "[bulk_read] storage_ods **failed** (locked by session #"
              + to_string( other_sess_id ) + " " + dtm_bulk_locked.as_string( true, false ) + ")" );
 
             throw;
@@ -10498,7 +10664,7 @@ storage_ods_bulk_read::~storage_ods_bulk_read( )
    uint64_t trace_flag = 0;
 
    if( p_impl && p_impl->ap_ods_bulk_read.get( ) )
-      trace_flag = TRACE_ODS_BULK;
+      trace_flag = ( TRACE_INITIAL | TRACE_LOCKING );
 
    TRACE_LOG( trace_flag, "[bulk_read] storage_ods (released)" );
 
@@ -10523,7 +10689,7 @@ struct storage_ods_bulk_write::impl
             if( gtp_session )
                gtp_session->p_storage_handler->set_bulk_lock_sess_id( );
 
-            TRACE_LOG( TRACE_ODS_BULK, "[bulk_write] storage_ods (obtained)" );
+            TRACE_LOG( TRACE_INITIAL | TRACE_LOCKING, "[bulk_write] storage_ods (obtained)" );
          }
          catch( ... )
          {
@@ -10536,7 +10702,7 @@ struct storage_ods_bulk_write::impl
                dtm_bulk_locked = gtp_session->p_storage_handler->get_bulk_lock_date_time( );
             }
 
-            TRACE_LOG( TRACE_ANYTHING, "[bulk_write] storage_ods **failed** (locked by session #"
+            TRACE_LOG( TRACE_MINIMAL, "[bulk_write] storage_ods **failed** (locked by session #"
              + to_string( other_sess_id ) + " " + dtm_bulk_locked.as_string( true, false ) + ")" );
 
             throw;
@@ -10557,7 +10723,7 @@ storage_ods_bulk_write::~storage_ods_bulk_write( )
    uint64_t trace_flag = 0;
 
    if( p_impl && p_impl->ap_ods_bulk_write.get( ) )
-      trace_flag = TRACE_ODS_BULK;
+      trace_flag = ( TRACE_INITIAL | TRACE_LOCKING );
 
    TRACE_LOG( trace_flag, "[bulk_write] storage_ods (released)" );
 
@@ -10597,11 +10763,11 @@ struct system_ods_bulk_read::impl
 
             ap_scoped_instance.reset( new scoped_ods_instance( *gap_ods ) );
 
-            TRACE_LOG( TRACE_ODS_BULK, "[bulk_read] system_ods (obtained)" );
+            TRACE_LOG( TRACE_INITIAL | TRACE_LOCKING, "[bulk_read] system_ods (obtained)" );
          }
          catch( ... )
          {
-            TRACE_LOG( TRACE_ANYTHING, "[bulk_read] system_ods **failed**" );
+            TRACE_LOG( TRACE_MINIMAL, "[bulk_read] system_ods **failed**" );
 
             throw;
          }
@@ -10622,7 +10788,7 @@ system_ods_bulk_read::~system_ods_bulk_read( )
    uint64_t trace_flag = 0;
 
    if( p_impl && p_impl->ap_ods_bulk_read.get( ) )
-      trace_flag = TRACE_ODS_BULK;
+      trace_flag = ( TRACE_INITIAL | TRACE_LOCKING );
 
    TRACE_LOG( trace_flag, "[bulk_read] system_ods (released)" );
 
@@ -10641,11 +10807,11 @@ struct system_ods_bulk_write::impl
 
             ap_scoped_instance.reset( new scoped_ods_instance( *gap_ods ) );
 
-            TRACE_LOG( TRACE_ODS_BULK, "[bulk_write] system_ods (obtained)" );
+            TRACE_LOG( TRACE_INITIAL | TRACE_LOCKING, "[bulk_write] system_ods (obtained)" );
          }
          catch( ... )
          {
-            TRACE_LOG( TRACE_ANYTHING, "[bulk_write] system_ods **failed**" );
+            TRACE_LOG( TRACE_MINIMAL, "[bulk_write] system_ods **failed**" );
 
             throw;
          }
@@ -10666,7 +10832,7 @@ system_ods_bulk_write::~system_ods_bulk_write( )
    uint64_t trace_flag = 0;
 
    if( p_impl && p_impl->ap_ods_bulk_write.get( ) )
-      trace_flag = TRACE_ODS_BULK;
+      trace_flag = ( TRACE_INITIAL | TRACE_LOCKING );
 
    TRACE_LOG( trace_flag, "[bulk_write] system_ods (released)" );
 
@@ -11763,7 +11929,8 @@ string execute_object_command( size_t handle, const string& context, const strin
 {
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
-   TRACE_LOG( TRACE_CLASSOPS, "execute_object_command( ) [class: " + instance.get_class_name( ) + "] " + method_name_and_args );
+   TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS,
+    "execute_object_command( ) [class: " + instance.get_class_name( ) + "] " + method_name_and_args );
 
    return instance.execute( method_name_and_args );
 }
@@ -12778,9 +12945,10 @@ bool fetch_instance_from_db( class_base& instance,
 
    if( !found && gtp_session && gtp_session->ap_db.get( ) )
    {
-      TRACE_LOG( TRACE_SQLSTMTS, sql );
+      TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, sql );
 
       sql_dataset ds( *gtp_session->ap_db.get( ), sql );
+
       found = ds.next( );
 
       ++gtp_session->sql_count;
@@ -12805,7 +12973,7 @@ bool fetch_instance_from_db( class_base& instance,
 
             if( !sys_only_fields )
             {
-               TRACE_LOG( TRACE_SQLCLSET, "(from temporary dataset)" );
+               TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES, "(from temporary dataset)" );
 
                int fnum = c_num_sys_field_names;
 
@@ -12814,7 +12982,8 @@ bool fetch_instance_from_db( class_base& instance,
                   while( instance.is_field_transient( fnum - c_num_sys_field_names ) )
                      fnum++;
 
-                  TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - c_num_sys_field_names + 1 ) + " to " + ds.as_string( i ) );
+                  TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES,
+                   "setting field #" + to_string( fnum - c_num_sys_field_names + 1 ) + " to " + ds.as_string( i ) );
 
                   instance.set_field_value( fnum - c_num_sys_field_names, ds.as_string( i ) );
                }
@@ -12931,7 +13100,7 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
          if( !sys_only_fields )
             instance_accessor.clear( );
 
-         TRACE_LOG( TRACE_SQLSTMTS, "*** fetching '" + key_info + "' from cache ***" );
+         TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, "*** fetching '" + key_info + "' from cache ***" );
 
          vector< string >& columns( handler.get_record_cache( )[ key_info ] );
 
@@ -12948,7 +13117,7 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
 
          if( !sys_only_fields )
          {
-            TRACE_LOG( TRACE_SQLCLSET, "(from cache)" );
+            TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES, "(from cache)" );
 
             int fnum = c_num_sys_field_names;
 
@@ -12957,7 +13126,9 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
                while( instance.is_field_transient( fnum - c_num_sys_field_names ) )
                   fnum++;
 
-               TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - c_num_sys_field_names + 1 ) + " to " + columns[ i ] );
+               TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES,
+                "setting field #" + to_string( fnum - c_num_sys_field_names + 1 ) + " to " + columns[ i ] );
+
                instance.set_field_value( fnum - c_num_sys_field_names, columns[ i ] );
             }
 
@@ -13254,7 +13425,8 @@ string instance_execute( size_t handle,
    class_base& instance( get_class_base_from_handle( handle, context ) );
    class_base_accessor instance_accessor( instance );
 
-   TRACE_LOG( TRACE_CLASSOPS, "instance_execute( ) [class: " + instance.get_class_name( ) + "] " + method_name_and_args );
+   TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS,
+    "instance_execute( ) [class: " + instance.get_class_name( ) + "] " + method_name_and_args );
 
    return instance.execute( method_name_and_args );
 }
@@ -13421,7 +13593,8 @@ void transaction_start( )
 
    if( gtp_session->ap_db.get( ) && gtp_session->transactions.empty( ) )
    {
-      TRACE_LOG( TRACE_SQLSTMTS, "BEGIN" );
+      TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, "BEGIN" );
+
       exec_sql( *gtp_session->ap_db, "BEGIN" );
    }
 
@@ -13470,7 +13643,8 @@ void transaction_commit( )
 
          if( gtp_session->ap_db.get( ) )
          {
-            TRACE_LOG( TRACE_SQLSTMTS, "COMMIT" );
+            TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, "COMMIT" );
+
             exec_sql( *gtp_session->ap_db, "COMMIT" );
          }
 
@@ -13493,7 +13667,7 @@ void transaction_commit( )
    {
       for( size_t i = 0; i < gtp_session->async_or_delayed_system_commands.size( ); i++ )
       {
-         TRACE_LOG( TRACE_SESSIONS, gtp_session->async_or_delayed_system_commands[ i ] );
+         TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, gtp_session->async_or_delayed_system_commands[ i ] );
 
          int rc = system( gtp_session->async_or_delayed_system_commands[ i ].c_str( ) );
          ( void )rc;
@@ -13553,7 +13727,8 @@ void transaction_rollback( )
 
       if( gtp_session->ap_db.get( ) && gtp_session->transactions.empty( ) )
       {
-         TRACE_LOG( TRACE_SQLSTMTS, "ROLLBACK" );
+         TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, "ROLLBACK" );
+
          exec_sql( *gtp_session->ap_db, "ROLLBACK" );
 
          gtp_session->transaction_log_command.erase( );
