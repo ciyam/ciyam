@@ -11,7 +11,7 @@
  <web_root>$WEBDIR
 # <max_peers>100
 # <use_https>false
-# <trace_info>ciyam_server.log:10000
+# <trace_info>@files_area_dir:10000
 # <ntfy_server>name.org
 # <max_sessions>100
 # <gpg_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
