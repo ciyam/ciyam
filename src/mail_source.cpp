@@ -381,8 +381,8 @@ pop3_source::impl::impl( )
          ctype = e_pop3_ctype_tls;
    }
 
-   if( get_trace_flags( ) & TRACE_MAIL_OPS )
-      ap_progress.reset( new trace_progress( TRACE_MAIL_OPS ) );
+   if( get_trace_flags( ) & ( TRACE_DETAILS | TRACE_SOCKETS ) )
+      ap_progress.reset( new trace_progress( TRACE_DETAILS | TRACE_SOCKETS ) );
 
    ap_pop.reset( new pop3( host, port, ctype, ap_progress.get( ) ) );
 }
@@ -422,8 +422,8 @@ pop3_source::impl::impl( const string& username, const string& password )
          ctype = e_pop3_ctype_tls;
    }
 
-   if( get_trace_flags( ) & TRACE_MAIL_OPS )
-      ap_progress.reset( new trace_progress( TRACE_MAIL_OPS ) );
+   if( get_trace_flags( ) & ( TRACE_DETAILS | TRACE_SOCKETS ) )
+      ap_progress.reset( new trace_progress( TRACE_DETAILS | TRACE_SOCKETS ) );
 
    ap_pop.reset( new pop3( host, port, ctype, ap_progress.get( ) ) );
 }

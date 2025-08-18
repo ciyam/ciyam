@@ -7,12 +7,12 @@
 
 struct trace_progress : progress
 {
-   trace_progress( unsigned flag ) : flag( flag ) { }
+   trace_progress( uint32_t flags ) : flags( flags ) { }
 
    void output_progress( const string& message,
     unsigned long num = 0, unsigned long total = 0 );
 
-   unsigned flag;
+   uint32_t flags;
 };
 
 void trace_progress::output_progress(
@@ -28,7 +28,7 @@ void trace_progress::output_progress(
          extra += '/' + to_string( total );
    }
 
-   if( get_trace_flags( ) & flag )
-      log_trace_message( flag, message + extra );
+   if( ( get_trace_flags( ) & flags ) == flags )
+      log_trace_message( flags, message + extra );
 }
 
