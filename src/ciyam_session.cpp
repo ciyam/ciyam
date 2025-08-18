@@ -6547,7 +6547,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string log_file_name;
 
          if( is_script || is_server )
-            log_file_name = get_files_area_dir( );
+            log_file_name = get_log_files_dir( );
          else if( !is_application )
             log_file_name = get_web_root( );
 
