@@ -125,7 +125,7 @@ inline void issue_error( const string& message )
 #ifdef DEBUG
    cerr << "session error: " << message << endl;
 #else
-   TRACE_LOG( TRACE_ANYTHING, string( "session error: " ) + message );
+   TRACE_LOG( TRACE_MINIMAL, string( "session error: " ) + message );
 #endif
 }
 
@@ -134,7 +134,7 @@ inline void issue_warning( const string& message )
 #ifdef DEBUG
    cerr << "session warning: " << message << endl;
 #else
-   TRACE_LOG( TRACE_SESSIONS, string( "session warning: " ) + message );
+   TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, string( "session warning: " ) + message );
 #endif
 }
 
@@ -901,13 +901,13 @@ void parse_field_values( const string& module,
             field_id_or_name = p_transformations->find( ltf_key )->second;
       }
 
-      TRACE_LOG( TRACE_FLD_VALS, "field name (start) '" + field_value_pairs[ i ].substr( 0, pos ) + "'" );
-      TRACE_LOG( TRACE_FLD_VALS, "field name (trans) '" + field_id_or_name + "'" );
+      TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "field name (start) '" + field_value_pairs[ i ].substr( 0, pos ) + "'" );
+      TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "field name (trans) '" + field_id_or_name + "'" );
 
       field_id_or_name = get_field_id_for_id_or_name( module, class_id, field_id_or_name );
 
-      TRACE_LOG( TRACE_FLD_VALS, "field id (checked) '" + field_id_or_name + "'" );
-      TRACE_LOG( TRACE_FLD_VALS, "field value (data) '" + field_value_pairs[ i ].substr( pos + 1 ) + "'" );
+      TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "field id (checked) '" + field_id_or_name + "'" );
+      TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "field value (data) '" + field_value_pairs[ i ].substr( pos + 1 ) + "'" );
 
       field_value_items[ field_id_or_name ] = field_value_pairs[ i ].substr( pos + 1 );
    }
@@ -934,9 +934,9 @@ void perform_field_value_transformations(
 void output_response_lines( tcp_socket& socket, const string& response )
 {
    progress* p_progress = 0;
-   trace_progress progress( TRACE_SOCK_OPS );
+   trace_progress progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+   if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_progress = &progress;
 
    vector< string > lines;
@@ -1258,9 +1258,9 @@ class socket_command_handler : public command_handler
    void output_progress( const string& message, unsigned long num = 0, unsigned long total = 0 )
    {
       progress* p_progress = 0;
-      trace_progress progress( TRACE_SOCK_OPS );
+      trace_progress progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-      if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
          p_progress = &progress;
 
       string extra;
@@ -1331,7 +1331,7 @@ void socket_command_handler::preprocess_command_and_args( string& str, const str
 
    if( !str.empty( ) )
    {
-      TRACE_LOG( TRACE_COMMANDS, cmd_and_args );
+      TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, cmd_and_args );
 
       if( str[ 0 ] == '?' || str.find( "help" ) == 0 )
       {
@@ -1367,15 +1367,15 @@ void socket_command_handler::preprocess_command_and_args( string& str, const str
 void socket_command_handler::postprocess_command_and_args( const string& cmd_and_args )
 {
    if( has_finished( ) )
-      TRACE_LOG( TRACE_SESSIONS, "finished session" );
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "finished session" );
 }
 
 void socket_command_handler::handle_command_response( const string& response, bool is_special )
 {
    progress* p_progress = 0;
-   trace_progress progress( TRACE_SOCK_OPS );
+   trace_progress progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+   if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_progress = &progress;
 
    if( !is_restoring( ) )
@@ -1453,17 +1453,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 #ifdef HPDF_SUPPORT
    progress* p_pdf_progress = 0;
 
-   trace_progress pdf_progress( TRACE_PDF_VALS );
+   trace_progress pdf_progress( TRACE_DETAILS | TRACE_VARIOUS );
 
-   if( get_trace_flags( ) & TRACE_PDF_VALS )
+   if( get_trace_flags( ) & ( TRACE_DETAILS | TRACE_VARIOUS ) )
       p_pdf_progress = &pdf_progress;
 #endif
 
    progress* p_sock_progress = 0;
 
-   trace_progress sock_progress( TRACE_SOCK_OPS );
+   trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+   if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_sock_progress = &sock_progress;
 
    try
@@ -4929,7 +4929,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             catch( exception& x )
             {
-               TRACE_LOG( ( is_auto_uid( ) ? TRACE_ANYTHING : TRACE_SESSIONS ),
+               TRACE_LOG( ( is_auto_uid( ) ? TRACE_MINIMAL : TRACE_INITIAL | TRACE_SESSION ),
                 string( "session error: " ) + x.what( ) + " [" + method_id + "]" );
 
                set_script_error_if_applicable( x.what( ) );
@@ -4957,7 +4957,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             catch( ... )
             {
-               TRACE_LOG( TRACE_ANYTHING, "session error: "
+               TRACE_LOG( TRACE_MINIMAL, "session error: "
                 + string( c_unexpected_unknown_exception ) + " [" + method_id + "]" );
 
                set_script_error_if_applicable( c_unexpected_unknown_exception );
@@ -6427,8 +6427,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( !new_flags.empty( ) )
          {
-            if( !( get_trace_flags( ) & TRACE_COMMANDS ) )
-               log_trace_message( TRACE_COMMANDS, "trace " + new_flags );
+            IF_NOT_IS_TRACING( TRACE_DETAILS | TRACE_SESSION )
+               log_trace_message( TRACE_DETAILS | TRACE_SESSION, "trace " + new_flags );
 
             istringstream isstr( new_flags );
 
@@ -6912,27 +6912,72 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_system_trace_flags )
       {
-         vector< string > trace_flag_names;
+         bool list = has_parm_val( parameters, c_cmd_ciyam_session_system_trace_flags_list );
+         bool unset = has_parm_val( parameters, c_cmd_ciyam_session_system_trace_flags_unset );
+         string names( get_parm_val( parameters, c_cmd_ciyam_session_system_trace_flags_names ) );
 
-         list_trace_flags( trace_flag_names );
-
-         int flag = 1;
-         ostringstream osstr;
-
-         for( size_t i = 0; i < trace_flag_names.size( ); i++ )
+         if( list )
          {
-            osstr << hex << setw( 5 ) << setfill( '0' ) << flag << '=' << trace_flag_names[ i ] << '\n';
-            flag *= 2;
-         }
+            ostringstream osstr;
 
-         response = osstr.str( );
+            list_trace_flags( osstr );
+
+            response = osstr.str( );
+         }
+         else
+         {
+            if( !names.empty( ) )
+            {
+               string cmd( "trace_flags " );
+
+               if( !unset )
+                  cmd += "-set";
+               else
+                  cmd += "-unset";
+
+               IF_NOT_IS_TRACING( TRACE_DETAILS | TRACE_SESSION )
+                  log_trace_message( TRACE_DETAILS | TRACE_SESSION, cmd + ' ' + names );
+
+               trace_flag_names( names, unset );
+            }
+            else
+               response = get_trace_flag_names( );
+         }
+      }
+      else if( command == c_cmd_ciyam_session_system_trace_level )
+      {
+         string new_level( get_parm_val( parameters, c_cmd_ciyam_session_system_trace_level_new_level ) );
+
+         if( new_level.empty( ) )
+            response = get_trace_level( );
+         else
+         {
+            IF_NOT_IS_TRACING( TRACE_DETAILS | TRACE_SESSION )
+               log_trace_message( TRACE_DETAILS | TRACE_SESSION, "trace_level " + new_level );
+
+            set_trace_level( new_level );
+         }
+      }
+      else if( command == c_cmd_ciyam_session_system_trace_levels )
+      {
+         vector< string > trace_level_names;
+
+         list_trace_levels( trace_level_names );
+
+         for( size_t i = 0; i < trace_level_names.size( ); i++ )
+         {
+            if( i > 0 )
+               response += '\n';
+
+            response += trace_level_names[ i ];
+         }
       }
       else if( command == c_cmd_ciyam_session_system_trace_message )
       {
          string message_flag( get_parm_val( parameters, c_cmd_ciyam_session_system_trace_message_flag ) );
          string message_text( get_parm_val( parameters, c_cmd_ciyam_session_system_trace_message_text ) );
 
-         uint64_t trace_flag = TRACE_ANYTHING;
+         uint64_t trace_flag = TRACE_MINIMAL;
 
          if( !message_flag.empty( ) )
          {
@@ -7137,7 +7182,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    catch( exception& x )
    {
       TRACE_LOG( ( possibly_expected_error
-       ? TRACE_COMMANDS | TRACE_SESSIONS : TRACE_ANYTHING ), string( "session error: " ) + x.what( ) );
+       ? TRACE_INITIAL | TRACE_SESSION : TRACE_MINIMAL ), string( "session error: " ) + x.what( ) );
 
       set_script_error_if_applicable( x.what( ) );
 
@@ -7152,7 +7197,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    }
    catch( ... )
    {
-      TRACE_LOG( TRACE_ANYTHING, "session error: " + string( c_unexpected_unknown_exception ) );
+      TRACE_LOG( TRACE_MINIMAL, "session error: " + string( c_unexpected_unknown_exception ) );
 
       set_script_error_if_applicable( c_unexpected_unknown_exception );
 
@@ -7202,15 +7247,15 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
    if( is_first_command )
    {
       is_first_command = false;
-      TRACE_LOG( TRACE_SESSIONS, "started session (tid = " + to_string( current_thread_id( ) ) + ")" );
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "started session (tid = " + to_string( current_thread_id( ) ) + ")" );
    }
 
    while( true )
    {
       progress* p_progress = 0;
-      trace_progress progress( TRACE_SOCK_OPS );
+      trace_progress progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-      if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
          p_progress = &progress;
 
       if( socket.read_line( cmd_and_args, c_request_timeout, 0, p_progress ) <= 0 )

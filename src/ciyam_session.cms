@@ -137,7 +137,9 @@ system_run_script|run_script "run an external script or program" <val//script_na
 system_smtp_owner|smtp_owner "retrieves the system SMTP sender name or address"
 system_time_zones|time_zones "display a list of known time zones"
 system_export_repo|export_repo "exports all repository entries"
-system_trace_flags|trace_flags "view available system trace flags"
+system_trace_flags|trace_flags "get/set/list system trace flags" [<opt/-list/list>|{{<opt/-set/set>|<opt/-unset/unset>}<list//names>}]
+system_trace_level|trace_level "get/set system trace level" [<val//new_level>]
+system_trace_levels|trace_levels "view available system trace levels"
 system_trace_message|trace_message "output a message to the server trace log" [<val/-f=/flag>]<val//text>
 test "test command for prototyping" [<oval//arg_1>][<oval//arg_2>][<oval//arg_3>]
 utc_now "get the current UTC time"
