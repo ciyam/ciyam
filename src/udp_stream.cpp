@@ -124,17 +124,17 @@ void udp_stream_session::on_start( )
 
    try
    {
-      TRACE_LOG( TRACE_SESSIONS,
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
        "started " + stream_name + " session (tid = " + to_string( current_thread_id( ) ) + ")" );
 
       progress* p_progress = 0;
-      trace_progress progress( TRACE_SOCK_OPS );
+      trace_progress progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
       while( true )
       {
          p_progress = 0;
 
-         if( get_trace_flags( ) & TRACE_SOCK_OPS )
+         if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
             p_progress = &progress;
 
          if( direction == e_udp_direction_recv )
@@ -248,21 +248,21 @@ void udp_stream_session::on_start( )
             break;
       }
 
-      TRACE_LOG( TRACE_SESSIONS, "finished " + stream_name + " session" );
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "finished " + stream_name + " session" );
    }
    catch( exception& x )
    {
 #ifdef DEBUG
       cout << "udp_stream error: " << x.what( ) << endl;
 #endif
-      TRACE_LOG( TRACE_ANYTHING, string( "udp_stream error: " ) + x.what( ) );
+      TRACE_LOG( TRACE_MINIMAL, string( "udp_stream error: " ) + x.what( ) );
    }
    catch( ... )
    {
 #ifdef DEBUG
       cout << "unexpected udp_stream exception..." << endl;
 #endif
-      TRACE_LOG( TRACE_ANYTHING, "udp_stream error: unexpected unknown exception caught" );
+      TRACE_LOG( TRACE_MINIMAL, "udp_stream error: unexpected unknown exception caught" );
    }
 #ifdef DEBUG
    cout << "finished " << stream_name << " session..." << endl;

@@ -194,12 +194,12 @@ bool has_max_peers( )
 
 inline void issue_error( const string& message, bool possibly_expected = false )
 {
-   TRACE_LOG( ( possibly_expected ? TRACE_SESSIONS : TRACE_ANYTHING ), string( "peer session error: " ) + message );
+   TRACE_LOG( ( possibly_expected ? TRACE_INITIAL | TRACE_SESSION : TRACE_MINIMAL ), string( "peer session error: " ) + message );
 }
 
 inline void issue_warning( const string& message )
 {
-   TRACE_LOG( TRACE_SESSIONS, string( "peer session warning: " ) + message );
+   TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, string( "peer session warning: " ) + message );
 }
 
 void increment_active_listeners( )
@@ -439,7 +439,8 @@ void check_found_prefixed( const string& hash, unsigned char file_type )
 
             g_peer_found_matching[ peer_map_key ] = hex_match_prefix;
 
-            TRACE_LOG( TRACE_PEER_OPS, "(check_found_prefixed) matched '" + hex_match_prefix + "' prefix for tree item #" + count_found );
+            TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION,
+             "(check_found_prefixed) matched '" + hex_match_prefix + "' prefix for tree item #" + count_found );
 
             if( !has_raw_session_variable(
              get_special_var_name( e_special_var_blockchain_peer_supporter ) ) )
@@ -1260,7 +1261,7 @@ void process_core_file( const string& hash, const string& blockchain )
 {
    guard g( g_mutex, "process_core_file" );
 
-   TRACE_LOG( TRACE_PEER_OPS, "(process_core_file) hash: " + hash );
+   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(process_core_file) hash: " + hash );
 
    string::size_type pos = hash.find( ':' );
 
@@ -1359,7 +1360,7 @@ void process_repository_file( const string& blockchain,
 {
    guard g( g_mutex, "process_repository_file" );
 
-   TRACE_LOG( TRACE_PEER_OPS, "(process_repository_file) hash_info: " + hash_info );
+   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(process_repository_file) hash_info: " + hash_info );
 
    string::size_type pos = hash_info.find( ':' );
 
@@ -1896,7 +1897,7 @@ void process_put_file( const string& blockchain,
  const string& file_data, bool check_for_supporters, bool is_test_session,
  set< string >& target_hashes, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
-   TRACE_LOG( TRACE_PEER_OPS, "(process_put_file) blockchain: " + blockchain );
+   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(process_put_file) blockchain: " + blockchain );
 
    vector< string > blobs;
    split( file_data, blobs, c_blob_separator );
@@ -2162,7 +2163,7 @@ bool has_all_list_items(
  bool touch_all_lists = false, date_time* p_dtm = 0, progress* p_progress = 0,
  size_t* p_total_processed = 0, string* p_blob_data = 0, map< string, size_t >* p_first_prefixed = 0 )
 {
-   TRACE_LOG( TRACE_PEER_OPS, "(has_all_list_items) hash: " + hash );
+   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(has_all_list_items) hash: " + hash );
 
    bool retval = true;
 
@@ -2498,7 +2499,7 @@ void process_list_items( const string& blockchain,
  const string& hash, bool recurse, size_t* p_num_items_found = 0,
  set< string >* p_list_items_to_ignore = 0, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
-   TRACE_LOG( TRACE_PEER_OPS, "(process_list_items) hash: " + hash );
+   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "(process_list_items) hash: " + hash );
 
    string all_list_items( extract_file( hash, "" ) );
 
@@ -2935,7 +2936,8 @@ void process_signature_file( const string& blockchain, const string& hash, size_
 {
    guard g( g_mutex, "process_signature_file" );
 
-   TRACE_LOG( TRACE_PEER_OPS, "(process_signature_file) hash: " + hash + " height: " + to_string( height ) );
+   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION,
+    "(process_signature_file) hash: " + hash + " height: " + to_string( height ) );
 
    if( !height )
       throw runtime_error( "invalid zero height for process_signature_file" );
@@ -3093,7 +3095,8 @@ void process_public_key_file( const string& blockchain,
 
       output_sync_progress_message( identity, height, height_other, true );
 
-      TRACE_LOG( TRACE_PEER_OPS, "::: new zenith hash: " + block_hash + " height: " + to_string( height ) );
+      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION,
+       "::: new zenith hash: " + block_hash + " height: " + to_string( height ) );
 
       if( has_raw_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ) )
          process_queued_hub_using_peerchains( identity );
@@ -3352,7 +3355,8 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
    bool peer_has_tree_items = has_raw_session_variable(
     get_special_var_name( e_special_var_blockchain_get_tree_files ) );
 
-   TRACE_LOG( TRACE_PEER_OPS, "(process_block_for_height) hash: " + hash + " height: " + to_string( height ) );
+   TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION,
+    "(process_block_for_height) hash: " + hash + " height: " + to_string( height ) );
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
@@ -3688,7 +3692,7 @@ class socket_command_handler : public command_handler
          set_system_variable( c_progress_output_prefix + get_identity( ), progress_message );
       }
 
-      TRACE_LOG( TRACE_SESSIONS, get_blockchain( ).empty( )
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, get_blockchain( ).empty( )
        ? "finished peer session" : "finished peer session for blockchain " + get_blockchain( ) );
    }
 
@@ -3721,9 +3725,9 @@ class socket_command_handler : public command_handler
    void output_progress( const string& message, unsigned long num = 0, unsigned long total = 0 )
    {
       progress* p_progress = 0;
-      trace_progress progress( TRACE_SOCK_OPS );
+      trace_progress progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-      if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
          p_progress = &progress;
 
       string extra;
@@ -3922,9 +3926,9 @@ void socket_command_handler::get_hello( )
    last_issued_was_put = false;
 
    progress* p_progress = 0;
-   trace_progress progress( TRACE_SOCK_OPS );
+   trace_progress progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+   if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_progress = &progress;
 
    string data, hello_hash;
@@ -3976,9 +3980,9 @@ void socket_command_handler::put_hello( )
    last_issued_was_put = true;
 
    progress* p_sock_progress = 0;
-   trace_progress sock_progress( TRACE_SOCK_OPS );
+   trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+   if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_sock_progress = &sock_progress;
 
    string data, hello_hash;
@@ -4012,9 +4016,9 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
    last_issued_was_put = false;
 
    progress* p_sock_progress = 0;
-   trace_progress sock_progress( TRACE_SOCK_OPS );
+   trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+   if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_sock_progress = &sock_progress;
 
    string::size_type pos = hash_info.find( ':' );
@@ -4094,9 +4098,9 @@ void socket_command_handler::put_file( const string& hash )
    last_issued_was_put = true;
 
    progress* p_sock_progress = 0;
-   trace_progress sock_progress( TRACE_SOCK_OPS );
+   trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+   if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_sock_progress = &sock_progress;
 
    string hash_info_for_put( hash );
@@ -4124,9 +4128,9 @@ void socket_command_handler::put_file( const string& hash )
 void socket_command_handler::msg_peer( const string& data )
 {
    progress* p_sock_progress = 0;
-   trace_progress sock_progress( TRACE_SOCK_OPS );
+   trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+   if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_sock_progress = &sock_progress;
 
    string msg_info( data );
@@ -4158,9 +4162,9 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
    bool has_extra = false;
 
    progress* p_sock_progress = 0;
-   trace_progress sock_progress( TRACE_SOCK_OPS );
+   trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+   if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_sock_progress = &sock_progress;
 
    string expected;
@@ -5118,7 +5122,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       output_sync_progress_message( identity, blockchain_height, blockchain_height_other, true );
 
-      TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
+      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "=== new zenith hash: "
        + block_processing + " height: " + to_string( blockchain_height ) );
 
       if( !peer_map_key.empty( ) )
@@ -5199,7 +5203,7 @@ void socket_command_handler::preprocess_command_and_args( string& str, const str
 
    if( !str.empty( ) )
    {
-      TRACE_LOG( TRACE_COMMANDS, cmd_and_args );
+      TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, cmd_and_args );
 
       if( ( str[ 0 ] == '?' ) || ( str.find( "help" ) == 0 ) )
       {
@@ -5237,9 +5241,9 @@ void socket_command_handler::postprocess_command_and_args( const string& cmd_and
 void socket_command_handler::handle_command_response( const string& response, bool is_special )
 {
    progress* p_sock_progress = 0;
-   trace_progress sock_progress( TRACE_SOCK_OPS );
+   trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+   if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_sock_progress = &sock_progress;
 
    if( !response.empty( ) )
@@ -5305,9 +5309,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 #endif
 
    progress* p_sock_progress = 0;
-   trace_progress sock_progress( TRACE_SOCK_OPS );
+   trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+   if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_sock_progress = &sock_progress;
 
    if( command != c_cmd_peer_session_bye )
@@ -5351,7 +5355,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    {
       unsigned long num_msecs = from_string< unsigned long >( peer_msleep );
 
-      TRACE_LOG( TRACE_PEER_OPS, "*** peer sleep for " + to_string( num_msecs ) + "ms ***" );
+      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "*** peer sleep for " + to_string( num_msecs ) + "ms ***" );
 
       msleep( num_msecs );
    }
@@ -6042,7 +6046,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    }
    catch( exception& x )
    {
-      TRACE_LOG( ( possibly_expected_error ? TRACE_SESSIONS : 0 ), string( "peer session error: " ) + x.what( ) );
+      TRACE_LOG( ( possibly_expected_error ? TRACE_INITIAL | TRACE_SESSION : 0 ), string( "peer session error: " ) + x.what( ) );
 
       send_okay_response = false;
       response = string( c_response_error_prefix ) + x.what( );
@@ -6051,7 +6055,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    }
    catch( ... )
    {
-      TRACE_LOG( TRACE_ANYTHING, "peer session error: unexpected unknown exception caught" );
+      TRACE_LOG( TRACE_MINIMAL, "peer session error: unexpected unknown exception caught" );
 
       send_okay_response = false;
       response = string( c_response_error_prefix ) + "unexpected unknown exception caught";
@@ -6082,7 +6086,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
             socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_sock_progress );
 
-            TRACE_LOG( TRACE_SESSIONS, "*** condemning session due to data session sync ***" );
+            TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "*** condemning session due to data session sync ***" );
          }
       }
    }
@@ -6098,7 +6102,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_sock_progress );
 
-         TRACE_LOG( TRACE_SESSIONS, "*** condemning session due to paired session sync ***" );
+         TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "*** condemning session due to paired session sync ***" );
       }
    }
 
@@ -6179,12 +6183,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                if( is_only_session )
                {
-                  TRACE_LOG( TRACE_SESSIONS,
+                  TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
                    "(ending session due to matching paired identity '" + paired_identity + "' session not being found)" );
                }
                else if( is_missing_backup )
                {
-                  TRACE_LOG( TRACE_SESSIONS,
+                  TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
                    "(ending session due to mandatory backup identity '" + backup_identity + "' session not being found)" );
                }
 
@@ -6317,9 +6321,9 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
    while( true )
    {
       progress* p_sock_progress = 0;
-      trace_progress sock_progress( TRACE_SOCK_OPS );
+      trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
-      if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
          p_sock_progress = &sock_progress;
 
       if( !check_for_supporters
@@ -6596,10 +6600,10 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
       }
 
       progress* p_sock_progress = 0;
-      trace_progress sock_progress( TRACE_SOCK_OPS );
+      trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
 #ifdef DEBUG_PEER_HANDSHAKE
-      if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
          p_sock_progress = &sock_progress;
 #endif
 
@@ -7013,10 +7017,10 @@ void peer_session::on_start( )
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
 
       progress* p_sock_progress = 0;
-      trace_progress sock_progress( TRACE_SOCK_OPS );
+      trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
 #ifdef DEBUG_PEER_HANDSHAKE
-      if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
          p_sock_progress = &sock_progress;
 #endif
 
@@ -7428,7 +7432,7 @@ void peer_session::on_start( )
 
       if( okay )
       {
-         TRACE_LOG( TRACE_SESSIONS,
+         TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
           string( has_session_secret ? "started secure peer session " : "started *insecure* peer session " )
           + ( !is_responder ? "(as initiator)" : "(as responder)" )
           + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain )
@@ -7486,10 +7490,10 @@ void peer_session::on_start( )
 void peer_session::process_greeting( )
 {
    progress* p_sock_progress = 0;
-   trace_progress sock_progress( TRACE_SOCK_OPS );
+   trace_progress sock_progress( TRACE_VERBOSE | TRACE_SOCKETS );
 
 #ifdef DEBUG_PEER_HANDSHAKE
-   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+   if( get_trace_flags( ) & ( TRACE_VERBOSE | TRACE_SOCKETS ) )
       p_sock_progress = &sock_progress;
 #endif
 
@@ -7660,7 +7664,7 @@ void peer_listener::on_start( )
 
          if( okay )
          {
-            TRACE_LOG( TRACE_ANYTHING, "peer listener started on tcp port " + to_string( port ) );
+            TRACE_LOG( TRACE_MINIMAL, "peer listener started on tcp port " + to_string( port ) );
 
             size_t num_iterations = 0;
 
@@ -7830,7 +7834,7 @@ void peer_listener::on_start( )
       issue_error( "unexpected unknown exception occurred" );
    }
 
-   TRACE_LOG( TRACE_ANYTHING, "peer listener finished (tcp port " + to_string( port ) + ")" );
+   TRACE_LOG( TRACE_MINIMAL, "peer listener finished (tcp port " + to_string( port ) + ")" );
 
    decrement_active_listeners( );
 
@@ -8346,14 +8350,14 @@ void peer_session_starter::on_start( )
 #ifdef DEBUG
       cerr << "peer_session_starter error: " << x.what( ) << endl;
 #endif
-      TRACE_LOG( TRACE_ANYTHING, string( "peer_session_starter error: " ) + x.what( ) );
+      TRACE_LOG( TRACE_MINIMAL, string( "peer_session_starter error: " ) + x.what( ) );
    }
    catch( ... )
    {
 #ifdef DEBUG
       cerr << "unexpected peer_session_starter exception" << endl;
 #endif
-      TRACE_LOG( TRACE_ANYTHING, "peer_session_starter error: unexpected unknown exception caught" );
+      TRACE_LOG( TRACE_MINIMAL, "peer_session_starter error: unexpected unknown exception caught" );
    }
 
    delete this;

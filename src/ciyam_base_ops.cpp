@@ -1295,7 +1295,7 @@ bool fetch_instance_from_db( class_base& instance,
    }
    else
    {
-      TRACE_LOG( TRACE_SQLCLSET, "(from instance dataset)" );
+      TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES, "(from instance dataset)" );
 
       instance_accessor.set_key( sd.as_string( 0 ), true );
 
@@ -1317,7 +1317,9 @@ bool fetch_instance_from_db( class_base& instance,
 
          int fnum( fields.find( columns[ i - c_num_sys_field_names ] )->second );
 
-         TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum + 1 ) + " to " + sd.as_string( i ) );
+         TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES,
+          "setting field #" + to_string( fnum + 1 ) + " to " + sd.as_string( i ) );
+
          instance.set_field_value( fnum, sd.as_string( i ) );
       }
    }
@@ -1604,13 +1606,14 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch,
 
    if( persistence_type == 0 ) // i.e. SQL persistence
    {
-      TRACE_LOG( TRACE_SQLSTMTS, "(row cache for '" + instance.get_class_id( )
-       + ")" + string( !skip_after_fetch ? "" : " *** skip_after_fetch ***" ) );
+      TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES,
+       "(row cache for '" + instance.get_class_id( ) + ")"
+       + string( !skip_after_fetch ? "" : " *** skip_after_fetch ***" ) );
 
       const map< int, int >& fields( instance_accessor.select_fields( ) );
       const vector< int >& columns( instance_accessor.select_columns( ) );
 
-      TRACE_LOG( TRACE_SQLCLSET, "(from row cache)" );
+      TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES, "(from row cache)" );
 
       for( int i = c_num_sys_field_names; i < instance_accessor.row_cache( )[ 0 ].size( ); i++ )
       {
@@ -1619,7 +1622,8 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch,
 
          int fnum = fields.find( columns[ i - c_num_sys_field_names ] )->second;
 
-         TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum + 1 ) + " to " + instance_accessor.row_cache( )[ 0 ][ i ] );
+         TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES,
+          "setting field #" + to_string( fnum + 1 ) + " to " + instance_accessor.row_cache( )[ 0 ][ i ] );
 
          instance.set_field_value( fnum, instance_accessor.row_cache( )[ 0 ][ i ] );
       }
@@ -2954,7 +2958,7 @@ void begin_instance_op( instance_op op, class_base& instance,
          throw runtime_error( "*** condemned session has been stopped ***" );
    }
 
-   TRACE_LOG( TRACE_CLASSOPS, "begin (enter) op = "
+   TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "begin (enter) op = "
     + instance_op_name( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_modification ) + ", key = " + key );
 
@@ -3013,7 +3017,7 @@ void begin_instance_op( instance_op op, class_base& instance,
    bool is_minimal_update = ( op == e_instance_op_update ) && !instance_accessor.fetch_field_names( ).empty( );
 
    if( is_minimal_update )
-      TRACE_LOG( TRACE_CLASSOPS, "*** minimal update ***" );
+      TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "*** minimal update ***" );
 
    // NOTE: A create op can be started (but not applied) without an instance key (this is to help with record
    // preparation when cloning in order to create a new instance).
@@ -3374,7 +3378,7 @@ void begin_instance_op( instance_op op, class_base& instance,
    if( xlock_handle )
       instance_accessor.set_xlock_handle( xlock_handle );
 
-   TRACE_LOG( TRACE_CLASSOPS, "begin (leave) op = "
+   TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "begin (leave) op = "
     + instance_op_name( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_modification ) + ", key = " + key );
 }
@@ -3392,7 +3396,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
    if( op == class_base::e_op_type_none )
       return;
 
-   TRACE_LOG( TRACE_CLASSOPS, "finish (enter) op = "
+   TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "finish (enter) op = "
     + instance_op_name( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_operation )
     + ", apply_changes = " + to_string( apply_changes ) + ", key = " + instance.get_key( ) );
@@ -3637,7 +3641,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                if( sql_stmts.empty( ) && ( op == class_base::e_op_type_create ) )
                {
                   // NOTE: If creating and no SQL exists then will log if is tracing.
-                  TRACE_LOG( TRACE_SQLSTMTS, "*** no SQL statement for create ***" );
+                  TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, "*** no SQL statement for create ***" );
                }
 
                if( !sql_stmts.empty( ) && has_sql_db( ) )
@@ -3649,7 +3653,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                      if( sql_stmts[ i ].empty( ) )
                         continue;
 
-                     TRACE_LOG( TRACE_SQLSTMTS, sql_stmts[ i ] );
+                     TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, sql_stmts[ i ] );
 
                      exec_sql( get_sql_db( ), sql_stmts[ i ] );
 
@@ -4053,7 +4057,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                   sql += " = " + all_column_values[ column_numbers[ unique_index_columns[ j ] ] ];
                }
 
-               TRACE_LOG( TRACE_SQLSTMTS, sql );
+               TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, sql );
 
                sql_dataset ds( get_sql_db( ), sql );
 
@@ -4075,7 +4079,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             throw;
          else
          {
-            TRACE_LOG( TRACE_SQLSTMTS, e.what( ) );
+            TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, e.what( ) );
 
             string names;
             string values;
@@ -4104,7 +4108,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
    instance_accessor.set_ver_exp( "" );
 
-   TRACE_LOG( TRACE_CLASSOPS, "finish (leave) op = "
+   TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "finish (leave) op = "
     + instance_op_name( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_operation )
     + ", apply_changes = " + to_string( apply_changes ) + ", key = " + instance.get_key( ) );
@@ -4305,9 +4309,9 @@ bool perform_instance_iterate( class_base& instance,
          throw runtime_error( "*** condemned session has been stopped ***" );
    }
 
-   TRACE_LOG( TRACE_CLASSOPS, "[iterate] class = '" + instance.get_class_name( )
-    + "', key_info = '" + key_info + "', fields = '" + fields + "', direction = "
-    + to_string( direction ) + ", text = '" + text + "', query = '" + query + "'" );
+   TRACE_LOG( TRACE_INITIAL | TRACE_OBJECTS, "[iterate] class = '"
+    + instance.get_class_name( ) + "', key_info = '" + key_info + "', fields = '" + fields
+    + "', direction = " + to_string( direction ) + ", text = '" + text + "', query = '" + query + "'" );
 
    string sql, key;
 
@@ -4770,7 +4774,7 @@ bool perform_instance_iterate( class_base& instance,
                {
                   sql_stmts.push_back( replaced( sql, sec_marker, sec_values[ i ] ) );
 
-                  TRACE_LOG( TRACE_SQLSTMTS, sql_stmts.back( ) );
+                  TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, sql_stmts.back( ) );
                }
 
                instance_accessor.p_sql_data( ) = new sql_dataset_group(
@@ -4781,7 +4785,7 @@ bool perform_instance_iterate( class_base& instance,
             }
             else
             {
-               TRACE_LOG( TRACE_SQLSTMTS, sql );
+               TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, sql );
 
                instance_accessor.p_sql_data( ) = new sql_dataset( get_sql_db( ), sql );
             }
@@ -4943,7 +4947,7 @@ bool perform_instance_iterate( class_base& instance,
          {
             session_inc_sql_count( );
 
-            IF_IS_TRACING( TRACE_SQLSTMTS )
+            IF_IS_TRACING( TRACE_DETAILS | TRACE_QUERIES )
             {
                string sql_plan( "EXPLAIN " + sql );
 
@@ -4964,7 +4968,7 @@ bool perform_instance_iterate( class_base& instance,
                   }
                }
 
-               TRACE_LOG( TRACE_SQLSTMTS, sql_plan );
+               TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, sql_plan );
             }
          }
       }

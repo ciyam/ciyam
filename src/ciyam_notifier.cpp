@@ -47,12 +47,12 @@ const size_t c_wait_sleep_time = 10;
 
 inline void issue_error( const string& message, bool possibly_expected = false )
 {
-   TRACE_LOG( ( possibly_expected ? TRACE_SESSIONS : TRACE_ANYTHING ), string( "notifier error: " ) + message );
+   TRACE_LOG( ( possibly_expected ? TRACE_INITIAL | TRACE_SESSION : TRACE_MINIMAL ), string( "notifier error: " ) + message );
 }
 
 inline void issue_warning( const string& message )
 {
-   TRACE_LOG( TRACE_SESSIONS, string( "notifier warning: " ) + message );
+   TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, string( "notifier warning: " ) + message );
 }
 
 void increment_active_listeners( )
@@ -349,7 +349,7 @@ void ciyam_notifier::on_start( )
 
       has_set_system_variable = true;
 
-      TRACE_LOG( TRACE_SESSIONS, "notifier started for '" + watch_root + "'" );
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "notifier started for '" + watch_root + "'" );
 
       string events;
 
@@ -400,7 +400,7 @@ void ciyam_notifier::on_start( )
             map< string, string > cookie_id_original_names;
 
             if( !all_events.empty( ) )
-               TRACE_LOG( TRACE_NOTIFIER, "found #" + to_string( all_events.size( ) ) + " events" );
+               TRACE_LOG( TRACE_VERBOSE | TRACE_VARIOUS, "found #" + to_string( all_events.size( ) ) + " events" );
 
             for( size_t i = 0; i < all_events.size( ); i++ )
             {
@@ -412,7 +412,7 @@ void ciyam_notifier::on_start( )
 
                if( !next_event.empty( ) )
                {
-                  TRACE_LOG( TRACE_NOTIFIER, "event: " + next_event );
+                  TRACE_LOG( TRACE_VERBOSE | TRACE_VARIOUS, "event: " + next_event );
 
                   if( next_event[ 0 ] == '-' )
                   {
@@ -442,7 +442,7 @@ void ciyam_notifier::on_start( )
                               else if( now <= ( unix_watch + num_ignore_secs ) )
                               {
                                  file_name.erase( );
-                                 TRACE_LOG( TRACE_NOTIFIER, "(ignoring possible initial scan)" );
+                                 TRACE_LOG( TRACE_VERBOSE | TRACE_VARIOUS, "(ignoring possible initial scan)" );
                               }
                            }
                         }
@@ -903,7 +903,7 @@ void ciyam_notifier::on_start( )
       set_system_variable( watch_variable_name + '*', "" );
    }
 
-   TRACE_LOG( TRACE_SESSIONS, "notifier finished for '" + watch_root + "'" );
+   TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "notifier finished for '" + watch_root + "'" );
 
    decrement_active_listeners( );
 
