@@ -1123,7 +1123,7 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
                   else
                   {
                      // FUTURE: This message should be handled as a server string message.
-                     TRACE_LOG( TRACE_ANYTHING, "Skipping unexpected invalid tag file '" + fs.get_name( ) + "'." );
+                     TRACE_LOG( TRACE_MINIMAL, "Skipping unexpected invalid tag file '" + fs.get_name( ) + "'." );
                   }
                }
                else
@@ -1324,7 +1324,7 @@ void init_archive_info( progress* p_progress, bool has_restored_system )
                 e_special_var_queue_archive_info_for_resize ), archive + ',' + to_string( used ) );
             else
                // FUTURE: This message should be handled as a server string message.
-               TRACE_LOG( TRACE_ANYTHING, "Archive '" + archive + "' needs to be repaired (incorrect size info)." );
+               TRACE_LOG( TRACE_MINIMAL, "Archive '" + archive + "' needs to be repaired (incorrect size info)." );
          }
       }
    }

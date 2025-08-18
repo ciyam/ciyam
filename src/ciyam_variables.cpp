@@ -1292,7 +1292,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
             // just in case a deadlock could arise during the resync calls.
             guard g( g_mutex, "set_system_variable" );
 
-            TRACE_LOG( TRACE_ANYTHING, "*** switched files area across to: " + val + " ***" );
+            TRACE_LOG( TRACE_MINIMAL, "*** switched files area across to: " + val + " ***" );
 
             string from( get_files_area_dir( ) );
             set_files_area_dir( val );
@@ -1302,7 +1302,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
             resync_archive_info( p_progress );
 
-            TRACE_LOG( TRACE_ANYTHING, "*** switched files area over from: " + from + " ***" );
+            TRACE_LOG( TRACE_MINIMAL, "*** switched files area over from: " + from + " ***" );
          }
       }
       else if( var_name == string( c_special_variable_ods_cache_hit_ratios ) )

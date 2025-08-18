@@ -169,7 +169,7 @@ void read_script_info( )
          }
 
          // NOTE: If is not the first read then log the reload.
-         TRACE_LOG( TRACE_ANYTHING, output );
+         TRACE_LOG( TRACE_MINIMAL, output );
       }
 
       g_scripts.clear( );
@@ -513,7 +513,7 @@ void autoscript_session::on_start( )
       if( !script_reconfig )
          changed = true;
 
-      TRACE_LOG( TRACE_SESSIONS,
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
        "started autoscript session (tid = " + to_string( current_thread_id( ) ) + ")" );
 
       string log_all_scripts_name( get_special_var_name( e_special_var_log_all_scripts ) );
@@ -765,7 +765,7 @@ void autoscript_session::on_start( )
                {
                   if( ++count >= c_max_reschedule_attempts )
                   {
-                     TRACE_LOG( TRACE_ANYTHING,
+                     TRACE_LOG( TRACE_MINIMAL,
                       "warning: unable to scheule autoscript '" + name + "'" );
 
                      next = date_time::maximum( );
@@ -794,21 +794,21 @@ void autoscript_session::on_start( )
          dtm = date_time::local( );
       }
 
-      TRACE_LOG( TRACE_SESSIONS, "finished autoscript session" );
+      TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "finished autoscript session" );
    }
    catch( exception& x )
    {
 #ifdef DEBUG
       cerr << "autoscript error: " << x.what( ) << endl;
 #endif
-      TRACE_LOG( TRACE_ANYTHING, string( "autoscript error: " ) + x.what( ) );
+      TRACE_LOG( TRACE_MINIMAL, string( "autoscript error: " ) + x.what( ) );
    }
    catch( ... )
    {
 #ifdef DEBUG
       cerr << "unexpected autoscript exception..." << endl;
 #endif
-      TRACE_LOG( TRACE_ANYTHING, "autoscript error: unexpected unknown exception caught" );
+      TRACE_LOG( TRACE_MINIMAL, "autoscript error: unexpected unknown exception caught" );
    }
 #ifdef DEBUG
    cerr << "finished autoscript session..." << endl;
