@@ -10,11 +10,12 @@
  <timezone>UTC
  <web_root>$WEBDIR
 # <max_peers>100
- <set_trace>80000
 # <use_https>false
+# <trace_info>ciyam_server.log:10000
 # <ntfy_server>name.org
 # <max_sessions>100
 # <gpg_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
+# <pem_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <rpc_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <sql_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <test_peer_port>0

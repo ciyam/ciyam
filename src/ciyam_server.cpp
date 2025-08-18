@@ -78,7 +78,7 @@ const char* const c_cmd_files = "files";
 const char* const c_cmd_files_directory = "directory";
 
 const char* const c_cmd_trace = "trace";
-const char* const c_cmd_trace_hex_flags = "hex_flags";
+const char* const c_cmd_trace_info = "info";
 
 const char* const c_cmd_quiet = "quiet";
 
@@ -98,15 +98,15 @@ const char* const c_cmd_daemon = "daemon";
 bool g_is_daemon = false;
 #endif
 
-int g_port = c_default_ciyam_port;
-
-int g_flags = 0;
-bool g_has_flags = false;
+unsigned int g_port = c_default_ciyam_port;
 
 string g_entropy;
+
+string g_trace_info;
+
 string g_files_directory;
 
-int g_test_peer_port = 0;
+unsigned int g_test_peer_port = 0;
 
 const int c_accept_timeout = 500;
 const int c_active_start_delay = 250;
@@ -119,7 +119,7 @@ const char* const c_shutdown_signal_file = "ciyam_server.stop";
 
 const char* const c_ciyam_base_lib = "ciyam_base.so";
 
-const char* const c_trace_flags_func_name = "trace_flags";
+const char* const c_trace_info_func_name = "trace_info";
 const char* const c_init_globals_func_name = "init_globals";
 const char* const c_term_globals_func_name = "term_globals";
 const char* const c_server_command_func_name = "server_command";
@@ -176,7 +176,7 @@ void ciyam_server_command_handler::process_custom_startup_option( size_t num, co
    if( num == 0 )
    {
       if( !option.empty( ) && ( option[ 0 ] >= '0' ) && ( option[ 0 ] <= '9' ) )
-         g_port = atoi( option.c_str( ) );
+         g_port = from_string< unsigned int >( option );
       else
          throw runtime_error( "unexpected startup option '" + option + "'" );
    }
@@ -214,12 +214,9 @@ class ciyam_server_startup_functor : public command_functor
       }
       else if( command == c_cmd_trace )
       {
-         string flags( get_parm_val( parameters, c_cmd_trace_hex_flags ) );
+         string info( get_parm_val( parameters, c_cmd_trace_info ) );
 
-         istringstream isstr( flags );
-         isstr >> hex >> g_flags;
-
-         g_has_flags = true;
+         g_trace_info = info;
       }
       else if( command == c_cmd_quiet )
          g_is_quiet = true;
@@ -266,7 +263,7 @@ int main( int argc, char* argv[ ] )
           "<val//directory>", "system files area directory", new ciyam_server_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_trace, 2,
-          "<val//hex_flags>", "hexadecimal trace flags value", new ciyam_server_startup_functor( cmd_handler ) );
+          "<val//info>", "initial trace logging information", new ciyam_server_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_quiet, 3,
           "", "switch on quiet operating mode", new ciyam_server_startup_functor( cmd_handler ) );
@@ -351,8 +348,8 @@ int main( int argc, char* argv[ ] )
 
          ap_dynamic_library.reset( new dynamic_library( c_ciyam_base_lib, "ciyam_base" ) );
 
-         fp_trace_flags fp_trace_flags_func;
-         fp_trace_flags_func = ( fp_trace_flags )ap_dynamic_library->bind_to_function( c_trace_flags_func_name );
+         fp_trace_info fp_trace_info_func;
+         fp_trace_info_func = ( fp_trace_info )ap_dynamic_library->bind_to_function( c_trace_info_func_name );
 
          fp_init_globals fp_init_globals_func;
          fp_init_globals_func = ( fp_init_globals )ap_dynamic_library->bind_to_function( c_init_globals_func_name );
@@ -402,17 +399,17 @@ int main( int argc, char* argv[ ] )
          fp_unregister_listener fp_unregister_listener_func;
          fp_unregister_listener_func = ( fp_unregister_listener )ap_dynamic_library->bind_to_function( c_unregister_listener_func_name );
 
-         // NOTE: If trace flags are provided then set them before calling "init_globals"
-         // as they may be of some assistance in tracing an issue with the init function.
-         if( g_has_flags )
-            ( *fp_trace_flags_func )( g_flags );
-
          // NOTE: Always set the files area even if to an empty string to ensure that the
          // "@files_area_dir" system variable is being defaulted for its usage in scripts.
          if( g_files_directory.empty( ) )
             ( *fp_set_files_area_dir_func )( "" );
          else
             ( *fp_set_files_area_dir_func )( g_files_directory.c_str( ) );
+
+         // NOTE: If trace info is provided then set this before calling "init_globals"
+         // as it could be of some assistance in tracing issues with the init function.
+         if( !g_trace_info.empty( ) )
+            ( *fp_trace_info_func )( g_trace_info.c_str( ) );
 
          if( g_test_peer_port )
             ( *fp_set_test_peer_port_func )( g_test_peer_port );
@@ -446,7 +443,7 @@ int main( int argc, char* argv[ ] )
             {
                string init_message( "server started (pid = " + pid + ")" );
 
-               ( *fp_log_trace_string_func )( TRACE_ANYTHING, init_message.c_str( ) );
+               ( *fp_log_trace_string_func )( TRACE_MINIMAL, init_message.c_str( ) );
             }
 
             okay = s.bind( address );
@@ -461,7 +458,7 @@ int main( int argc, char* argv[ ] )
 
                string start_message( "main listener started on tcp port " + to_string( g_port ) );
 
-               ( *fp_log_trace_string_func )( TRACE_ANYTHING, start_message.c_str( ) );
+               ( *fp_log_trace_string_func )( TRACE_MINIMAL, start_message.c_str( ) );
 
                file_remove( c_shutdown_signal_file );
 
@@ -486,7 +483,7 @@ int main( int argc, char* argv[ ] )
 
                      string start_message( "main streamer started on udp port " + to_string( g_port ) );
 
-                     ( *fp_log_trace_string_func )( TRACE_ANYTHING, start_message.c_str( ) );
+                     ( *fp_log_trace_string_func )( TRACE_MINIMAL, start_message.c_str( ) );
                   }
                }
 
@@ -610,12 +607,12 @@ int main( int argc, char* argv[ ] )
                {
                   finish_message = "main streamer finished (udp port " + to_string( g_port ) + ")";
 
-                  ( *fp_log_trace_string_func )( TRACE_ANYTHING, finish_message.c_str( ) );
+                  ( *fp_log_trace_string_func )( TRACE_MINIMAL, finish_message.c_str( ) );
                }
 
                finish_message = "main listener finished (tcp port " + to_string( g_port ) + ")";
 
-               ( *fp_log_trace_string_func )( TRACE_ANYTHING, finish_message.c_str( ) );
+               ( *fp_log_trace_string_func )( TRACE_MINIMAL, finish_message.c_str( ) );
 
                if( !is_update )
                {
@@ -623,7 +620,7 @@ int main( int argc, char* argv[ ] )
                      cout << "server shutdown (" << shutdown_reason << ") now completed..." << endl;
 
                   string term_message( "server shutdown (" + shutdown_reason + ")" );
-                  ( *fp_log_trace_string_func )( TRACE_ANYTHING, term_message.c_str( ) );
+                  ( *fp_log_trace_string_func )( TRACE_MINIMAL, term_message.c_str( ) );
                }
             }
             else
@@ -634,7 +631,7 @@ int main( int argc, char* argv[ ] )
                u.close( );
 
                cerr << "error: unexpected socket error" << endl;
-               ( *fp_log_trace_string_func )( TRACE_ANYTHING, "error: unexpected socket error" );
+               ( *fp_log_trace_string_func )( TRACE_MINIMAL, "error: unexpected socket error" );
             }
 
             ( *fp_unregister_listener_func )( g_port, "" );
@@ -645,7 +642,7 @@ int main( int argc, char* argv[ ] )
          if( !is_update )
             break;
 
-         ( *fp_log_trace_string_func )( TRACE_ANYTHING, "*** reloading ciyam_base.so library ***" );
+         ( *fp_log_trace_string_func )( TRACE_MINIMAL, "*** reloading ciyam_base.so library ***" );
 
          // NOTE: Force the dynamic library to be unloaded.
          ap_dynamic_library.reset( 0 );
