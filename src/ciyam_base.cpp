@@ -1866,6 +1866,8 @@ size_t g_max_storage_handlers = c_max_storage_handlers_default + 1; // i.e. extr
 
 size_t g_notifier_ignore_secs = c_notifier_ignore_secs_default;
 
+string g_log_files_dir;
+
 string g_files_area_dir;
 string g_files_area_dir_default;
 
@@ -1901,8 +1903,6 @@ string g_sql_password;
 string g_user_home_path;
 
 string g_default_storage;
-
-string g_server_log_file;
 
 uint32_t g_trace_flags = c_unset_trace_flags;
 
@@ -4178,7 +4178,20 @@ void set_trace_info( const string& info )
          }
       }
 
-      g_server_log_file = trace_info;
+      // NOTE: If any remaining trace info then it is assumed
+      // to be either a directory or (if starting with '@') a
+      // system variable name (the value of which is expected
+      // to be a directory).
+      if( !trace_info.empty( ) )
+      {
+         if( ( trace_info[ 0 ] != '@' ) && !dir_exists( trace_info ) )
+            throw runtime_error( "unexpected log files dir '" + trace_info + "' not found" );
+
+         // NOTE: If is "@files_area_dir" then skip assignment
+         // as it will be using this value directly by default.
+         if( trace_info != get_special_var_name( e_special_var_files_area_dir ) )
+            g_log_files_dir = trace_info;
+      }
 
       uint64_t trace_flags = TRACE_MINIMAL;
 
@@ -4294,19 +4307,13 @@ void log_trace_message( uint32_t flag, const string& message )
          break;
       }
 
-      bool has_log_path = false;
+      string log_file_name( get_log_files_dir( ) );
 
-      if( g_server_log_file.empty( ) )
-         g_server_log_file = c_server_log_file;
-      else
-         has_log_path = ( g_server_log_file.find( '/' ) != string::npos );
+      if( !log_file_name.empty( )
+       && log_file_name[ log_file_name.length( ) - 1 ] != '/' )
+         log_file_name += '/';
 
-      string log_file_name;
-
-      if( !has_log_path )
-         log_file_name = get_files_area_dir( ) + '/';
-
-      log_file_name += g_server_log_file;
+      log_file_name += c_server_log_file;
 
       ofstream outf( log_file_name.c_str( ), ios::out | ios::app );
 
@@ -5645,6 +5652,26 @@ bool get_using_ssl( )
    return g_using_ssl;
 }
 
+string get_log_files_dir( )
+{
+   guard g( g_mutex );
+
+   if( !g_log_files_dir.empty( ) )
+   {
+      if( g_log_files_dir[ 0 ] != '@' )
+         return g_log_files_dir;
+      else
+      {
+         if( !has_system_variable( g_log_files_dir ) )
+            throw runtime_error( "unexpected log files dir variable '" + g_log_files_dir + "' not found" );
+
+         return get_system_variable( g_log_files_dir );
+      }
+   }
+   else
+      return g_files_area_dir;
+}
+
 string get_files_area_dir( )
 {
    guard g( g_mutex );
@@ -6213,7 +6240,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
          // NOTE: If making any change to "script_args" then it likely will also need
          // to be done in "auto_script.cpp" (as it also executes the 'script' script).
-         script_args += " \"" + get_files_area_dir( ) + "\"";
+         script_args += " \"" + get_log_files_dir( ) + "\"";
 
          // NOTE: For cases where one script may end up calling numerous others (i.e.
          // such as a scan across records) this special session variable is available

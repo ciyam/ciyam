@@ -283,6 +283,8 @@ bool CIYAM_BASE_DECL_SPEC get_use_udp( );
 
 bool CIYAM_BASE_DECL_SPEC get_using_ssl( );
 
+std::string CIYAM_BASE_DECL_SPEC get_log_files_dir( );
+
 std::string CIYAM_BASE_DECL_SPEC get_files_area_dir( );
 
 extern "C" void CIYAM_BASE_DECL_SPEC set_files_area_dir( const char* p_files_area_dir );
