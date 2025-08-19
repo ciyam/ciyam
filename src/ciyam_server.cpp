@@ -74,13 +74,16 @@ const char* const c_cmd_sid_entropy = "entropy";
 const char* const c_cmd_chdir = "chdir";
 const char* const c_cmd_chdir_directory = "directory";
 
-const char* const c_cmd_files = "files";
-const char* const c_cmd_files_directory = "directory";
+const char* const c_cmd_quiet = "quiet";
 
 const char* const c_cmd_trace = "trace";
-const char* const c_cmd_trace_info = "info";
+const char* const c_cmd_trace_flags = "flags";
 
-const char* const c_cmd_quiet = "quiet";
+const char* const c_cmd_log_dir = "log_dir";
+const char* const c_cmd_log_dir_directory = "directory";
+
+const char* const c_cmd_files_area_dir = "files_area_dir";
+const char* const c_cmd_files_area_dir_directory = "directory";
 
 const char* const c_cmd_no_auto = "no_auto";
 const char* const c_cmd_no_peers = "no_peers";
@@ -102,9 +105,13 @@ unsigned int g_port = c_default_ciyam_port;
 
 string g_entropy;
 
-string g_trace_info;
+uint32_t g_trace_flags = 0;
 
-string g_files_directory;
+bool g_set_trace_flags = false;
+
+string g_log_files_directory;
+
+string g_files_area_directory;
 
 unsigned int g_test_peer_port = 0;
 
@@ -119,7 +126,7 @@ const char* const c_shutdown_signal_file = "ciyam_server.stop";
 
 const char* const c_ciyam_base_lib = "ciyam_base.so";
 
-const char* const c_trace_info_func_name = "trace_info";
+const char* const c_trace_flags_func_name = "trace_flags";
 const char* const c_init_globals_func_name = "init_globals";
 const char* const c_term_globals_func_name = "term_globals";
 const char* const c_server_command_func_name = "server_command";
@@ -128,6 +135,7 @@ const char* const c_init_auto_script_func_name = "init_auto_script";
 const char* const c_init_udp_streams_func_name = "init_udp_streams";
 const char* const c_log_trace_string_func_name = "log_trace_string";
 const char* const c_register_listener_func_name = "register_listener";
+const char* const c_set_log_files_dir_func_name = "set_log_files_dir";
 const char* const c_set_stream_socket_func_name = "set_stream_socket";
 const char* const c_init_ciyam_session_func_name = "init_ciyam_session";
 const char* const c_set_files_area_dir_func_name = "set_files_area_dir";
@@ -206,26 +214,36 @@ class ciyam_server_startup_functor : public command_functor
 
          set_cwd( directory );
       }
-      else if( command == c_cmd_files )
-      {
-         string directory( get_parm_val( parameters, c_cmd_files_directory ) );
-
-         g_files_directory = directory;
-      }
-      else if( command == c_cmd_trace )
-      {
-         string info( get_parm_val( parameters, c_cmd_trace_info ) );
-
-         g_trace_info = info;
-      }
       else if( command == c_cmd_quiet )
          g_is_quiet = true;
+      else if( command == c_cmd_trace )
+      {
+         string flags( get_parm_val( parameters, c_cmd_trace_flags ) );
+
+         g_set_trace_flags = true;
+
+         istringstream isstr( flags );
+
+         isstr >> hex >> g_trace_flags;
+      }
+      else if( command == c_cmd_log_dir )
+      {
+         string directory( get_parm_val( parameters, c_cmd_log_dir_directory ) );
+
+         g_log_files_directory = directory;
+      }
       else if( command == c_cmd_no_auto )
          g_start_autoscript = false;
       else if( command == c_cmd_no_peers )
          g_start_peer_sessions = false;
       else if( command == c_cmd_no_streams )
          g_start_udp_stream_sessions = false;
+      else if( command == c_cmd_files_area_dir )
+      {
+         string directory( get_parm_val( parameters, c_cmd_files_area_dir_directory ) );
+
+         g_files_area_directory = directory;
+      }
       else if( command == c_cmd_test_peer_port )
       {
          string port( get_parm_val( parameters, c_cmd_test_peer_port_port ) );
@@ -249,7 +267,7 @@ int main( int argc, char* argv[ ] )
    {
       ciyam_server_command_handler cmd_handler;
 
-      // NOTE: Use block scope for startup command processor object...
+      // NOTE: Use block scope for startup command processor object.
       {
          startup_command_processor processor( cmd_handler, application_title, argc, argv );
 
@@ -259,29 +277,32 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_chdir, 1,
           "<val//directory>", "change working directory", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_files, 1,
-          "<val//directory>", "system files area directory", new ciyam_server_startup_functor( cmd_handler ) );
+         cmd_handler.add_command( c_cmd_quiet, 2,
+          "", "use quiet operating mode", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_trace, 2,
-          "<val//info>", "initial trace logging information", new ciyam_server_startup_functor( cmd_handler ) );
+         cmd_handler.add_command( c_cmd_trace, 3,
+          "<val//flags>", "hex trace flags value", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_quiet, 3,
-          "", "switch on quiet operating mode", new ciyam_server_startup_functor( cmd_handler ) );
+         cmd_handler.add_command( c_cmd_log_dir, 4,
+          "<val//directory>", "log files directory", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_no_auto, 4,
+         cmd_handler.add_command( c_cmd_no_auto, 5,
           "", "do not start the autoscript thread", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_no_peers, 4,
+         cmd_handler.add_command( c_cmd_no_peers, 5,
           "", "do not start the peer sessions thread", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_no_streams, 4,
+         cmd_handler.add_command( c_cmd_no_streams, 5,
           "", "do not start any udp stream session threads", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_test_peer_port, 5,
+         cmd_handler.add_command( c_cmd_files_area_dir, 6,
+          "<val//directory>", "files area directory", new ciyam_server_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_test_peer_port, 7,
           "<val//port>", "port number for interactive peer testing", new ciyam_server_startup_functor( cmd_handler ) );
 
 #ifdef __GNUG__
-         cmd_handler.add_command( c_cmd_daemon, 6,
+         cmd_handler.add_command( c_cmd_daemon, 8,
           "", "run server as a daemon", new ciyam_server_startup_functor( cmd_handler ) );
 #endif
 
@@ -348,8 +369,8 @@ int main( int argc, char* argv[ ] )
 
          ap_dynamic_library.reset( new dynamic_library( c_ciyam_base_lib, "ciyam_base" ) );
 
-         fp_trace_info fp_trace_info_func;
-         fp_trace_info_func = ( fp_trace_info )ap_dynamic_library->bind_to_function( c_trace_info_func_name );
+         fp_trace_flags fp_trace_flags_func;
+         fp_trace_flags_func = ( fp_trace_flags )ap_dynamic_library->bind_to_function( c_trace_flags_func_name );
 
          fp_init_globals fp_init_globals_func;
          fp_init_globals_func = ( fp_init_globals )ap_dynamic_library->bind_to_function( c_init_globals_func_name );
@@ -375,6 +396,9 @@ int main( int argc, char* argv[ ] )
          fp_register_listener fp_register_listener_func;
          fp_register_listener_func = ( fp_register_listener )ap_dynamic_library->bind_to_function( c_register_listener_func_name );
 
+         fp_set_log_files_dir fp_set_log_files_dir_func;
+         fp_set_log_files_dir_func = ( fp_set_log_files_dir )ap_dynamic_library->bind_to_function( c_set_log_files_dir_func_name );
+
          fp_set_stream_socket fp_set_stream_socket_func;
          fp_set_stream_socket_func = ( fp_set_stream_socket )ap_dynamic_library->bind_to_function( c_set_stream_socket_func_name );
 
@@ -399,17 +423,16 @@ int main( int argc, char* argv[ ] )
          fp_unregister_listener fp_unregister_listener_func;
          fp_unregister_listener_func = ( fp_unregister_listener )ap_dynamic_library->bind_to_function( c_unregister_listener_func_name );
 
-         // NOTE: Always set the files area even if to an empty string to ensure that the
-         // "@files_area_dir" system variable is being defaulted for its usage in scripts.
-         if( g_files_directory.empty( ) )
-            ( *fp_set_files_area_dir_func )( "" );
-         else
-            ( *fp_set_files_area_dir_func )( g_files_directory.c_str( ) );
+         // NOTE: If trace flags has been provided then set before calling other functions
+         // (as it could be of some assistance in tracing issues with the those functions).
+         if( g_set_trace_flags )
+            ( *fp_trace_flags_func )( g_trace_flags );
 
-         // NOTE: If trace info is provided then set this before calling "init_globals"
-         // as it could be of some assistance in tracing issues with the init function.
-         if( !g_trace_info.empty( ) )
-            ( *fp_trace_info_func )( g_trace_info.c_str( ) );
+         if( !g_log_files_directory.empty( ) )
+            ( *fp_set_log_files_dir_func )( g_log_files_directory.c_str( ) );
+
+         if( !g_files_area_directory.empty( ) )
+            ( *fp_set_files_area_dir_func )( g_files_area_directory.c_str( ) );
 
          if( g_test_peer_port )
             ( *fp_set_test_peer_port_func )( g_test_peer_port );
