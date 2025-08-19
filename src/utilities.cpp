@@ -756,7 +756,7 @@ int64_t file_size( const char* p_name, unsigned char* p_hdr, size_t hdr_size )
       struct stat statbuf;
 
       if( stat( p_name, &statbuf ) < 0 )
-         throw runtime_error( "unable to stat '" + to_string( p_name ) + "'" );
+         throw runtime_error( "unable to access '" + to_string( p_name ) + "'" );
 
       retval = statbuf.st_size;
 
@@ -775,7 +775,7 @@ int64_t file_size( const char* p_name, unsigned char* p_hdr, size_t hdr_size )
          _close( fd );
 
          if( stat( p_name, &statbuf ) < 0 )
-            throw runtime_error( "unable to stat '" + to_string( p_name ) + "'" );
+            throw runtime_error( "unable to access '" + to_string( p_name ) + "'" );
 
          retval = statbuf.st_size;
       }
@@ -794,7 +794,7 @@ string file_user( const char* p_name )
    int rc = stat( p_name, &statbuf );
 
    if( rc != 0 )
-      throw runtime_error( "unable to stat '" + to_string( p_name ) + "'" );
+      throw runtime_error( "unable to access '" + to_string( p_name ) + "'" );
 
 #ifdef __GNUG__
    struct passwd* p_passwd = getpwuid( statbuf.st_uid );
@@ -817,7 +817,7 @@ string file_group( const char* p_name )
    int rc = stat( p_name, &statbuf );
 
    if( rc != 0 )
-      throw runtime_error( "unable to stat '" + to_string( p_name ) + "'" );
+      throw runtime_error( "unable to access '" + to_string( p_name ) + "'" );
 
 #ifdef __GNUG__
    struct group* p_group = getgrgid( statbuf.st_gid );
@@ -840,7 +840,7 @@ string file_perms( const char* p_name )
    int rc = stat( p_name, &statbuf );
 
    if( rc != 0 )
-      throw runtime_error( "unable to stat '" + to_string( p_name ) + "'" );
+      throw runtime_error( "unable to access '" + to_string( p_name ) + "'" );
 
 #ifdef _WIN32
    string extra;
