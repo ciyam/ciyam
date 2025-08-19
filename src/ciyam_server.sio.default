@@ -10,14 +10,15 @@
  <timezone>UTC
  <web_root>$WEBDIR
 # <max_peers>100
-# <use_https>false
-# <trace_info>@files_area_dir:10000
-# <ntfy_server>name.org
+# <use_https>true
+# <ntfy_server>ntfy.name.org
+# <trace_flags>10000
 # <max_sessions>100
 # <gpg_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <pem_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <rpc_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <sql_password>#a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
+# <log_files_path>
 # <test_peer_port>0
  <user_home_path>/home/$USER
 # <default_storage>Meta
@@ -30,8 +31,6 @@
 # <ods_use_sync_write>true
 # <max_storage_handlers>10
 # <notifier_ignore_secs>2
-# <files_area_item_max_num>100K
-# <files_area_item_max_size>1M
 # <num_recv_stream_sessions>10
 # <num_send_stream_sessions>1
  <email/>
@@ -53,6 +52,11 @@
 #   <max_attached_data>100kB
 #  </smtp>
  </email>
+ <files/>
+#  <directory>files
+#  <max_file_size>1M
+#  <max_num_files>100K
+ </files>
 # <extern/>
 #  <client/>
 #   <label>XBT

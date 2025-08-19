@@ -139,6 +139,8 @@ const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
 const char* const c_server_demo_identities_list = "ciyam_demo_identities.lst";
 
+const char* const c_default_trace_flags = "10000";
+
 const char* const c_server_folder_backup = "backup";
 const char* const c_server_folder_opened = "opened";
 const char* const c_server_folder_shared = "shared";
@@ -150,6 +152,7 @@ const char* const c_section_mbox = "mbox";
 const char* const c_section_pop3 = "pop3";
 const char* const c_section_smtp = "smtp";
 const char* const c_section_email = "email";
+const char* const c_section_files = "files";
 const char* const c_section_script = "script";
 
 const char* const c_attribute_name = "name";
@@ -168,15 +171,19 @@ const char* const c_attribute_timezone = "timezone";
 const char* const c_attribute_username = "username";
 const char* const c_attribute_web_root = "web_root";
 const char* const c_attribute_arguments = "arguments";
+const char* const c_attribute_directory = "directory";
 const char* const c_attribute_max_peers = "max_peers";
 const char* const c_attribute_use_https = "use_https";
-const char* const c_attribute_trace_info = "trace_info";
 const char* const c_attribute_ntfy_server = "ntfy_server";
+const char* const c_attribute_trace_flags = "trace_flags";
 const char* const c_attribute_gpg_password = "gpg_password";
 const char* const c_attribute_max_sessions = "max_sessions";
 const char* const c_attribute_pem_password = "pem_password";
 const char* const c_attribute_rpc_password = "rpc_password";
 const char* const c_attribute_sql_password = "sql_password";
+const char* const c_attribute_max_file_size = "max_file_size";
+const char* const c_attribute_max_num_files = "max_num_files";
+const char* const c_attribute_log_files_path = "log_files_path";
 const char* const c_attribute_test_peer_port = "test_peer_port";
 const char* const c_attribute_user_home_path = "user_home_path";
 const char* const c_attribute_default_storage = "default_storage";
@@ -191,8 +198,6 @@ const char* const c_attribute_ods_use_encrypted = "ods_use_encrypted";
 const char* const c_attribute_ods_use_sync_write = "ods_use_sync_write";
 const char* const c_attribute_max_storage_handlers = "max_storage_handlers";
 const char* const c_attribute_notifier_ignore_secs = "notifier_ignore_secs";
-const char* const c_attribute_files_area_item_max_num = "files_area_item_max_num";
-const char* const c_attribute_files_area_item_max_size = "files_area_item_max_size";
 const char* const c_attribute_num_recv_stream_sessions = "num_recv_stream_sessions";
 const char* const c_attribute_num_send_stream_sessions = "num_send_stream_sessions";
 
@@ -1892,7 +1897,7 @@ string g_web_root;
 string g_ntfy_server;
 
 bool g_use_udp = false;
-bool g_use_https = false;
+bool g_use_https = true;
 bool g_using_ssl = false;
 
 string g_gpg_password;
@@ -3702,13 +3707,24 @@ void read_server_configuration( )
       g_max_peers = atoi( reader.read_opt_attribute(
        c_attribute_max_peers, to_string( c_default_max_peers ) ).c_str( ) );
 
-      g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, c_false ) ) == c_true );
-
-      string trace_info( reader.read_opt_attribute( c_attribute_trace_info ) );
-
-      set_trace_info( trace_info );
+      g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, c_true ) ) == c_true );
 
       g_ntfy_server = reader.read_opt_attribute( c_attribute_ntfy_server );
+
+      string trace_flags( reader.read_opt_attribute( c_attribute_trace_flags, c_default_trace_flags ) );
+
+      // NOTE: Only set the trace flags if they
+      // had not been set via the command-line.
+      if( g_trace_flags == c_unset_trace_flags )
+      {
+         uint32_t flags = 0;
+
+         istringstream isstr( trace_flags );
+
+         isstr >> hex >> flags;
+
+         set_trace_flags( flags );
+      }
 
       g_max_sessions = atoi( reader.read_opt_attribute(
        c_attribute_max_sessions, to_string( c_max_sessions_default ) ).c_str( ) );
@@ -3725,6 +3741,14 @@ void read_server_configuration( )
       g_pem_password = reader.read_opt_attribute( c_attribute_pem_password );
       g_rpc_password = reader.read_opt_attribute( c_attribute_rpc_password );
       g_sql_password = reader.read_opt_attribute( c_attribute_sql_password );
+
+      string log_files_dir( reader.read_opt_attribute( c_attribute_log_files_path ) );
+
+      // NOTE: Don't override if was provided as a startup option.
+      if( g_log_files_dir.empty( ) )
+         set_log_files_dir( log_files_dir );
+
+      set_system_variable( get_special_var_name( e_special_var_log_files_dir ), g_log_files_dir, true );
 
       int test_peer_port = atoi( reader.read_opt_attribute( c_attribute_test_peer_port, "0" ).c_str( ) );
 
@@ -3793,13 +3817,6 @@ void read_server_configuration( )
       g_notifier_ignore_secs = atoi( reader.read_opt_attribute(
        c_attribute_notifier_ignore_secs, to_string( c_notifier_ignore_secs_default ) ).c_str( ) );
 
-      // NOTE: Use "unformat_bytes" here as well so 10K (instead of 10000) can be used in the config file.
-      g_files_area_item_max_num = ( size_t )unformat_bytes( reader.read_opt_attribute(
-       c_attribute_files_area_item_max_num, to_string( c_files_area_item_max_num_default ) ).c_str( ) );
-
-      g_files_area_item_max_size = ( size_t )unformat_bytes( reader.read_opt_attribute(
-       c_attribute_files_area_item_max_size, to_string( c_files_area_item_max_size_default ) ).c_str( ) );
-
       g_num_recv_stream_sessions = from_string< size_t >( reader.read_opt_attribute(
        c_attribute_num_recv_stream_sessions, to_string( c_num_recv_stream_sessions_default ) ) );
 
@@ -3855,6 +3872,23 @@ void read_server_configuration( )
       }
 
       reader.finish_section( c_section_email );
+
+      reader.start_section( c_section_files );
+
+      string files_area_dir( reader.read_opt_attribute( c_attribute_directory ) );
+
+      // NOTE: Don't override if was provided as a startup option.
+      if( !has_system_variable( get_special_var_name( e_special_var_files_area_dir ) ) )
+         set_files_area_dir( files_area_dir );
+
+      g_files_area_item_max_size = ( size_t )unformat_bytes( reader.read_opt_attribute(
+       c_attribute_max_file_size, to_string( c_files_area_item_max_size_default ) ).c_str( ) );
+
+      // NOTE: Use "unformat_bytes" here also so 100K (instead of 100000) can be used.
+      g_files_area_item_max_num = ( size_t )unformat_bytes( reader.read_opt_attribute(
+       c_attribute_max_num_files, to_string( c_files_area_item_max_num_default ) ).c_str( ) );
+
+      reader.finish_section( c_section_files );
 
       if( reader.has_started_section( c_section_extern ) )
       {
@@ -4007,6 +4041,11 @@ void set_trace_flags( uint32_t flags )
    g_trace_flags = flags;
 }
 
+void trace_flags( uint32_t flags )
+{
+   set_trace_flags( flags );
+}
+
 void list_trace_flags( ostream& os )
 {
    os << c_trace_flag_general; // TRACE_GENERAL
@@ -4145,70 +4184,6 @@ void list_trace_levels( vector< string >& level_names )
    level_names.push_back( c_trace_level_initial );
    level_names.push_back( c_trace_level_details );
    level_names.push_back( c_trace_level_verbose );
-}
-
-void set_trace_info( const string& info )
-{
-   // NOTE: Only sets the trace flags if they
-   // had not been set during server startup.
-   if( g_trace_flags == c_unset_trace_flags )
-   {
-      string trace_info( info );
-
-      string trace_hex_flags;
-
-      string::size_type pos = trace_info.find( ':' );
-
-      if( pos != string::npos )
-      {
-         trace_hex_flags = trace_info.substr( pos + 1 );
-
-         trace_info.erase( pos );
-      }
-      else
-      {
-         // NOTE: If only hex then will interpret as flags.
-         pos = trace_info.find_first_not_of( "0123456789abcdef" );
-
-         if( pos == string::npos )
-         {
-            trace_hex_flags = trace_info;
-
-            trace_info.erase( );
-         }
-      }
-
-      // NOTE: If any remaining trace info then it is assumed
-      // to be either a directory or (if starting with '@') a
-      // system variable name (the value of which is expected
-      // to be a directory).
-      if( !trace_info.empty( ) )
-      {
-         if( ( trace_info[ 0 ] != '@' ) && !dir_exists( trace_info ) )
-            throw runtime_error( "unexpected log files dir '" + trace_info + "' not found" );
-
-         // NOTE: If is "@files_area_dir" then skip assignment
-         // as it will be using this value directly by default.
-         if( trace_info != get_special_var_name( e_special_var_files_area_dir ) )
-            g_log_files_dir = trace_info;
-      }
-
-      uint64_t trace_flags = TRACE_MINIMAL;
-
-      if( !trace_hex_flags.empty( ) )
-      {
-         istringstream isstr( trace_hex_flags );
-
-         isstr >> hex >> trace_flags;
-      }
-
-      set_trace_flags( trace_flags );
-   }
-}
-
-void trace_info( const char* p_info )
-{
-   set_trace_info( p_info );
 }
 
 void log_trace_message( uint32_t flag, const string& message )
@@ -5657,19 +5632,30 @@ string get_log_files_dir( )
    guard g( g_mutex );
 
    if( !g_log_files_dir.empty( ) )
-   {
-      if( g_log_files_dir[ 0 ] != '@' )
-         return g_log_files_dir;
-      else
-      {
-         if( !has_system_variable( g_log_files_dir ) )
-            throw runtime_error( "unexpected log files dir variable '" + g_log_files_dir + "' not found" );
-
-         return get_system_variable( g_log_files_dir );
-      }
-   }
+      return g_log_files_dir;
    else
       return g_files_area_dir;
+}
+
+void set_log_files_dir( const char* p_dir_name )
+{
+   guard g( g_mutex );
+
+   if( !p_dir_name )
+      g_log_files_dir.erase( );
+   else
+   {
+      string dir_name( p_dir_name );
+
+      // NOTE: If is now the same as the
+      // files area then will just erase
+      // (in order to "follow" the files
+      // area if it is later changed).
+      if( dir_name == g_files_area_dir )
+         g_log_files_dir.erase( );
+      else
+         g_log_files_dir = dir_name;
+   }
 }
 
 string get_files_area_dir( )
@@ -5696,6 +5682,7 @@ void set_files_area_dir( const char* p_files_area_dir )
          if( g_files_area_dir_default.empty( ) )
          {
             was_first = true;
+
             g_files_area_dir_default = g_files_area_dir;
          }
       }
@@ -5704,6 +5691,7 @@ void set_files_area_dir( const char* p_files_area_dir )
          if( g_files_area_dir_default.empty( ) )
          {
             was_first = true;
+
             g_files_area_dir_default = string( c_files_directory );
          }
 

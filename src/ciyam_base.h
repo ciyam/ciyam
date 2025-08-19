@@ -72,6 +72,10 @@ uint32_t CIYAM_BASE_DECL_SPEC get_trace_flags( );
 
 void CIYAM_BASE_DECL_SPEC set_trace_flags( uint32_t flags );
 
+extern "C" void CIYAM_BASE_DECL_SPEC trace_flags( uint32_t );
+
+typedef void ( *fp_trace_flags )( uint32_t );
+
 struct temp_trace_flags
 {
    temp_trace_flags( uint32_t temp_flags )
@@ -110,12 +114,6 @@ std::string CIYAM_BASE_DECL_SPEC get_trace_level( );
 void CIYAM_BASE_DECL_SPEC set_trace_level( const std::string& level_name );
 
 void CIYAM_BASE_DECL_SPEC list_trace_levels( std::vector< std::string >& level_names );
-
-void CIYAM_BASE_DECL_SPEC set_trace_info( const std::string& info );
-
-extern "C" void CIYAM_BASE_DECL_SPEC trace_info( const char* p_info );
-
-typedef void ( *fp_trace_info )( const char* );
 
 void CIYAM_BASE_DECL_SPEC log_trace_message( uint32_t flag, const std::string& message );
 
@@ -284,6 +282,15 @@ bool CIYAM_BASE_DECL_SPEC get_use_udp( );
 bool CIYAM_BASE_DECL_SPEC get_using_ssl( );
 
 std::string CIYAM_BASE_DECL_SPEC get_log_files_dir( );
+
+extern "C" void CIYAM_BASE_DECL_SPEC set_log_files_dir( const char* p_dir_name );
+
+typedef void ( *fp_set_log_files_dir )( const char* );
+
+inline void set_log_files_dir( const std::string& log_files_dir )
+{
+   set_log_files_dir( log_files_dir.c_str( ) );
+}
 
 std::string CIYAM_BASE_DECL_SPEC get_files_area_dir( );
 
