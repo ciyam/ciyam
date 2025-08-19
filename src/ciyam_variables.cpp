@@ -178,6 +178,7 @@ const char* const c_special_variable_backup_needed = "@backup_needed";
 const char* const c_special_variable_export_needed = "@export_needed";
 const char* const c_special_variable_import_needed = "@import_needed";
 const char* const c_special_variable_last_file_put = "@last_file_put";
+const char* const c_special_variable_log_files_dir = "@log_files_dir";
 const char* const c_special_variable_num_put_files = "@num_put_files";
 const char* const c_special_variable_peer_sec_hash = "@peer_sec_hash";
 const char* const c_special_variable_prior_storage = "@prior_storage";
@@ -497,6 +498,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_export_needed );
       g_special_variable_names.push_back( c_special_variable_import_needed );
       g_special_variable_names.push_back( c_special_variable_last_file_put );
+      g_special_variable_names.push_back( c_special_variable_log_files_dir );
       g_special_variable_names.push_back( c_special_variable_num_put_files );
       g_special_variable_names.push_back( c_special_variable_peer_sec_hash );
       g_special_variable_names.push_back( c_special_variable_prior_storage );
@@ -1230,6 +1232,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
       else if( persist
        && ( ( var_name == c_special_variable_os )
        || ( var_name == c_special_variable_peer_port )
+       || ( var_name == c_special_variable_log_files_dir )
        || ( var_name == c_special_variable_files_area_dir )
        || ( var_name == c_special_variable_generate_hub_block )
        || ( var_name == c_special_variable_disallow_connections )
@@ -1281,7 +1284,12 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          }
       }
 
-      if( var_name == string( c_special_variable_files_area_dir ) )
+      if( var_name == string( c_special_variable_log_files_dir ) )
+      {
+         if( !is_init )
+            set_log_files_dir( val );
+      }
+      else if( var_name == string( c_special_variable_files_area_dir ) )
       {
          if( !is_init )
          {
@@ -1295,6 +1303,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
             TRACE_LOG( TRACE_MINIMAL, "*** switched files area across to: " + val + " ***" );
 
             string from( get_files_area_dir( ) );
+
             set_files_area_dir( val );
 
             resync_files_area( p_progress );

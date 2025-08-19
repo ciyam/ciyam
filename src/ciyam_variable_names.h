@@ -143,6 +143,7 @@ enum special_var
    e_special_var_export_needed,
    e_special_var_import_needed,
    e_special_var_last_file_put,
+   e_special_var_log_files_dir,
    e_special_var_num_put_files,
    e_special_var_peer_sec_hash,
    e_special_var_prior_storage,
