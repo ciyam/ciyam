@@ -6432,7 +6432,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             istringstream isstr( new_flags );
 
-            uint64_t trace_flags;
+            uint32_t trace_flags;
             isstr >> hex >> trace_flags;
 
             set_trace_flags( trace_flags );
