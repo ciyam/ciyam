@@ -5692,7 +5692,7 @@ void set_files_area_dir( const char* p_files_area_dir )
          {
             was_first = true;
 
-            g_files_area_dir_default = string( c_files_directory );
+            g_files_area_dir_default = string( c_ciyam_files_directory );
          }
 
          g_files_area_dir = g_files_area_dir_default;
@@ -9862,6 +9862,7 @@ void storage_process_rewind( const string& label, map< string, string >& file_in
       outf.close( );
 
       string storage_files_dir( get_web_root( ) );
+
       storage_files_dir += '/' + lower( gtp_session->p_storage_handler->get_name( ) ) + '/' + string( c_files_directory );
 
       for( size_t i = 0; i < undo_statements.size( ); i++ )
@@ -9878,6 +9879,7 @@ void storage_process_rewind( const string& label, map< string, string >& file_in
    }
 
    string log_name( gtp_session->p_storage_handler->get_name( ) + c_log_file_ext );
+
    string new_log_name( log_name + ".new" );
 
    if( file_exists( new_undo_sql ) )
@@ -9889,10 +9891,12 @@ void storage_process_rewind( const string& label, map< string, string >& file_in
          handler.get_log_file( ).close( );
 
       ifstream inpf( log_name.c_str( ) );
+
       if( !inpf )
          throw runtime_error( "unable to open '" + log_name + "' for input" );
 
       ofstream outf( new_log_name.c_str( ) );
+
       if( !outf )
          throw runtime_error( "unable to open '" + new_log_name + "' for output" );
 
@@ -9905,6 +9909,7 @@ void storage_process_rewind( const string& label, map< string, string >& file_in
       while( getline( inpf, next ) )
       {
          string::size_type pos = next.find( ']' );
+
          if( pos != string::npos && next.find( block_marker ) == pos + 1 )
          {
             if( label == next.substr( pos + block_marker.length( ) ) )
@@ -9922,6 +9927,7 @@ void storage_process_rewind( const string& label, map< string, string >& file_in
       }
 
       outf.flush( );
+
       if( !outf.good( ) )
          throw runtime_error( "*** unexpected error occurred writing to new transaction log ***" );
 
@@ -9997,6 +10003,7 @@ void slice_storage_log( command_handler& cmd_handler, const string& name, const 
       vector< pair< string, string > > modules_for_slice;
 
       size_t num_modules( gtp_session->p_storage_handler->get_root( ).module_list.size( ) );
+
       for( size_t i = 0; i < num_modules; i++ )
       {
          string next_module( gtp_session->p_storage_handler->get_root( ).module_list[ i ] );
@@ -10009,9 +10016,11 @@ void slice_storage_log( command_handler& cmd_handler, const string& name, const 
 
       // NOTE: For each module being extracted create an .ltf file from the storage .ltf file (if exists).
       string ltf_file_name( name + ".ltf" );
+
       if( file_exists( ltf_file_name ) )
       {
          vector< string > ltf_lines;
+
          buffer_file_lines( ltf_file_name, ltf_lines );
 
          for( size_t i = 0; i < modules_for_slice.size( ); i++ )
@@ -10019,13 +10028,16 @@ void slice_storage_log( command_handler& cmd_handler, const string& name, const 
             string module_ltf_file_name( modules_for_slice[ i ].first + ".ltf.new" );
 
             ofstream outs( module_ltf_file_name.c_str( ) );
+
             if( !outs )
                throw runtime_error( "unexpected error opening '" + module_ltf_file_name + "' for output" );
 
             size_t num_lines = 0;
+
             for( size_t j = 0; j < ltf_lines.size( ); j++ )
             {
                vector< string > ltf_line_info;
+
                split( ltf_lines[ j ], ltf_line_info, ' ' );
 
                if( ltf_line_info.size( ) >= 3 )
@@ -10035,22 +10047,26 @@ void slice_storage_log( command_handler& cmd_handler, const string& name, const 
                   if( ltf_line_info[ 2 ] == "map_module" && ltf_line_info[ 3 ] == modules_for_slice[ i ].second )
                   {
                      is_alias = true;
+
                      module_aliases.insert( make_pair( ltf_line_info[ 1 ], ltf_line_info[ 3 ] ) );
                   }
 
                   if( is_alias || ltf_line_info[ 1 ] == modules_for_slice[ i ].second )
                   {
                      ++num_lines;
+
                      outs << ltf_lines[ j ] << '\n';
                   }
                }
             }
 
             outs.flush( );
+
             if( !outs.good( ) )
                throw runtime_error( "unexpected error occurred writing to '" + module_ltf_file_name + "'" );
 
             outs.close( );
+
             if( !num_lines )
                remove_file( module_ltf_file_name );
          }
@@ -10145,6 +10161,7 @@ void slice_storage_log( command_handler& cmd_handler, const string& name, const 
          for( size_t i = 0; i < output_log_files.size( ); i++ )
          {
             output_log_files[ i ]->close( );
+
             delete output_log_files[ i ];
          }
       }
@@ -10152,12 +10169,14 @@ void slice_storage_log( command_handler& cmd_handler, const string& name, const 
       {
          for( size_t i = 0; i < output_log_files.size( ); i++ )
             delete output_log_files[ i ];
+
          throw;
       }
    }
    catch( ... )
    {
       term_storage( cmd_handler );
+
       throw;
    }
 
@@ -10184,6 +10203,7 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
       if( file_exists( ltf_file_name ) )
       {
          has_ltf_entries = true;
+
          file_copy( ltf_file_name, new_ltf_file_name );
       }
 
@@ -10295,6 +10315,7 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
                         throw runtime_error( "unexpected formatting in ==> " + next_module_line );
 
                      string::size_type pos = next_module_line.find( ']' );
+
                      if( pos == string::npos )
                         throw runtime_error( "unexpected formatting in log line ==> " + next_module_line );
 
@@ -10388,6 +10409,7 @@ void storage_add_dead_key( const string& cid, const string& key )
    string dead_keys_file( gtp_session->p_storage_handler->get_name( ) + c_dead_keys_suffix );
 
    ofstream outf( dead_keys_file.c_str( ), ios::out | ios::app );
+
    if( !outf )
       throw runtime_error( "unable to open '" + dead_keys_file + "' for output" );
 
@@ -10506,6 +10528,7 @@ string storage_web_root( bool expand, bool check_is_linked )
 void storage_web_root( const string& new_root )
 {
    guard g( g_mutex );
+
    ods* p_ods( ods::instance( ) );
 
    gtp_session->p_storage_handler->get_root( ).web_root = new_root;
@@ -10518,6 +10541,7 @@ void storage_web_root( const string& new_root )
        gtp_session->p_storage_handler->get_root( ).web_root, c_storable_file_pad_len );
 
       gtp_session->transaction_log_command = ";web_root ==> " + new_root;
+
       append_transaction_log_command( *gtp_session->p_storage_handler );
    }
 }
@@ -10562,6 +10586,7 @@ void storage_lock_all_tables( )
          throw runtime_error( "cannot lock tables whilst a transaction is active" );
 
       ods* p_ods( ods::instance( ) );
+
       storage_handler& handler( *gtp_session->p_storage_handler );
 
       try
@@ -10592,6 +10617,7 @@ void storage_lock_all_tables( )
 
                   if( !all_table_info.empty( ) )
                      all_table_info += ",";
+
                   all_table_info += table_name + " WRITE";
                }
             }
@@ -10603,6 +10629,7 @@ void storage_lock_all_tables( )
       catch( ... )
       {
          exec_sql( *gtp_session->ap_db, "UNLOCK TABLES" );
+
          throw;
       }
    }
@@ -10709,6 +10736,7 @@ struct storage_ods_bulk_write::impl
          catch( ... )
          {
             size_t other_sess_id = 0;
+
             date_time dtm_bulk_locked;
 
             if( gtp_session )
@@ -10940,6 +10968,7 @@ string gen_key( const char* p_suffix )
          }
 
          ostringstream osstr;
+
          osstr << hex << g_key_tm_val << setw( 3 ) << setfill( '0' ) << g_key_count;
 
          key = osstr.str( ) + gtp_session->identity_suffix;
@@ -10957,6 +10986,7 @@ string get_uid( bool remove_display_name )
    string uid( gtp_session->uid );
 
    string::size_type pos = string::npos;
+
    if( remove_display_name )
       pos = uid.find( ':' );
 
@@ -11403,8 +11433,10 @@ size_t get_next_handle( )
 
 void module_list( ostream& os )
 {
-   for( module_const_iterator
-    mci = gtp_session->modules_by_name.begin( ), end = gtp_session->modules_by_name.end( ); mci != end; ++mci )
+   module_const_iterator mci = gtp_session->modules_by_name.begin( );
+   module_const_iterator end = gtp_session->modules_by_name.end( );
+
+   for( ; mci != end; ++mci )
       os << mci->second << ' ' << mci->first << '\n';
 }
 
@@ -11639,16 +11671,20 @@ void module_load( const string& module_name,
                         split( sql_indexes[ j ], index_columns );
 
                         outf << "\nCREATE UNIQUE INDEX " << index_prefix << "_";
+
                         if( j < 10 )
                            outf << '0';
+
                         outf << j << " ON " << table_name << '\n';
                         outf << "(\n";
                         outf << " C_Sec_";
+
                         for( size_t k = 0; k < index_columns.size( ); k++ )
                         {
                            outf << ",\n";
                            outf << " " << index_columns[ k ];
                         }
+
                         outf << "\n);\n";
                      }
                   }
@@ -12143,6 +12179,7 @@ void get_all_field_scope_and_permission_info( size_t handle,
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
    field_info_container field_info;
+
    instance.get_field_info( field_info );
 
    for( size_t i = 0; i < field_info.size( ); i++ )
@@ -12161,6 +12198,7 @@ string get_field_name_for_id( size_t handle, const string& context, const string
    map< string, string > ids_to_names;
 
    field_info_container field_info;
+
    instance.get_field_info( field_info );
 
    for( size_t i = 0; i < field_info.size( ); i++ )
@@ -12185,6 +12223,7 @@ string get_field_id_for_name( size_t handle, const string& context, const string
    map< string, string > names_to_ids;
 
    field_info_container field_info;
+
    instance.get_field_info( field_info );
 
    for( size_t i = 0; i < field_info.size( ); i++ )
@@ -12210,11 +12249,12 @@ string get_field_type_name( size_t handle,
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
    field_info_container field_info;
+
    instance.get_field_info( field_info );
 
    for( size_t i = 0; i < field_info.size( ); i++ )
    {
-      if( field_info[ i ].id == id_or_name || field_info[ i ].name == id_or_name )
+      if( ( field_info[ i ].id == id_or_name ) || ( field_info[ i ].name == id_or_name ) )
       {
          type_name = field_info[ i ].type_name;
 
@@ -12243,9 +12283,11 @@ string get_field_uom_symbol( size_t handle, const string& context, const string&
    class_base_accessor instance_accessor( instance );
 
    string field( id_or_name );
+
    if( !instance_accessor.get_field_name( field ) )
    {
       const char* p_id = instance_accessor.get_field_id( field );
+
       if( p_id )
          field = string( p_id );
    }
@@ -12259,9 +12301,11 @@ string get_field_display_name( size_t handle, const string& context, const strin
    class_base_accessor instance_accessor( instance );
 
    string field( id_or_name );
+
    if( !instance_accessor.get_field_name( field ) )
    {
       const char* p_id = instance_accessor.get_field_id( field );
+
       if( p_id )
          field = string( p_id );
    }
@@ -12276,6 +12320,7 @@ void inline add_next_value( bool as_csv, const string& next_value, string& field
    else
    {
       string next_csv_value;
+
       if( next_value.find_first_of( ",\"\r\n" ) == string::npos )
          next_csv_value = next_value;
       else
@@ -13632,6 +13677,7 @@ void transaction_commit( )
       gtp_session->transactions.top( )->commit( );
 
       delete gtp_session->transactions.top( );
+
       gtp_session->transactions.pop( );
 
       if( !gtp_session->transactions.size( ) )
@@ -13738,6 +13784,7 @@ void transaction_rollback( )
       gtp_session->transactions.top( )->rollback( );
 
       delete gtp_session->transactions.top( );
+
       gtp_session->transactions.pop( );
 
       if( gtp_session->ap_db.get( ) && gtp_session->transactions.empty( ) )

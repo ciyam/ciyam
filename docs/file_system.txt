@@ -1,9 +1,9 @@
 Understanding the File System
 -----------------------------
 
-Immediately below the directory where the application server operates is a "files" directory which allows the
-application server to function as a file storage system accessible via the standard protocol as well as being
-accessible via the peer protocol.
+Immediately below the directory where the application server resides is a "files" directory (which by default
+is named ".ciyam") that allows the application server to function as a file storage system accessible via the
+standard protocol as well as being accessible via the peer protocol.
 
 The way this file system operates is quite similar to how "git" operates under the covers and so will be very
 familiar to those who have a thorough knowledge of that system. Each file is stored in a directory whose name
@@ -19,9 +19,9 @@ To see the list and usage of all the file system commands issue the following co
 
 > ? file*
 
-When starting "ciyam_server" the files area directory can be changed with the "-files=<directory>" option and
-it should be noted that the system log files ("ciyam_script.log" and "ciyam_server.log") are created/appended
-in the files area directory (although they are not considered to be part of the file storage system).
+When starting "ciyam_server" the files area directory can be modified using the "-files_area_dir=<directory>"
+option and it should also be noted that the system log files ("ciyam_script.log" and "ciyam_server.log") will
+be created in the files area directory if no specific log files directory has been provided.
 
 Fundamental File Types
 ----------------------
@@ -38,10 +38,10 @@ being themselves other List files.
 
 The following illustrates the type, full path and the content of the fundamental files types:
 
-[blob - files/cc/eeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef]
+[blob - .ciyam/cc/eeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef]
 ^Ahello
 
-[list - files/02/9eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a]
+[list - .ciyam/02/9eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a]
 ^Bcceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef first
 
 It should be noted that the caret symbol is being used to indicate control characters in the above content so
@@ -273,15 +273,23 @@ The "file_stats" command can be used to see a summary of the file system usage:
 The response says that 3 out of 100,000 possible files are currently being stored in the files area and these
 files are using 152 bytes of the maximum possible capacity of 100 GB being used with a total of 4 file tags.
 
-There are two settings in "ciyam_server.sio" configuration file that are relevant to the file system and they
+There are three settings in "ciyam_server.sio" configuration file that are relevant to this file system which
 are as follows (uncomment and change then restart "ciyam_server" for the new settings to take effect):
 
-# <files_area_item_max_num>100K
-# <files_area_item_max_size>1M
+ <files/>
+#  <directory>.ciyam
+#  <max_file_size>1M
+#  <max_num_files>100K
+ </files>
 
-Although it might be useful to increase the maximum number of files permitted (assuming available disk space)
-it should be noted that changing the maximum file size should only be for testing purposes as this value will
-need to be identical between all peer connections.
+The files directory is named ".ciyam" by default (and is located immediately beneath the application server's
+current working directory) and can be changed with the directory attribute in the server's configuration file
+or via a server startup option. It can also be changed at run-time by using the special system variable named
+"@files_area_dir" (which will result in an automatic "file_resync" when set).
+
+It may be useful to increase the maximum number of files permitted (assuming there is available disk storage)
+but any change to the maximum file size should only be temporary (such as for testing purposes) as this value
+needs to be identical between peer connections.
 
 It is not recommended to do any changes to the "files" subdirectory directly but if this has occurred then it
 is possible to re-synchronise the application server with the following command:
@@ -292,10 +300,6 @@ Note that this command's output mimics that of "file_stats" as a way to easily c
 It should also be noted that files that ought to be tags (but are either not tag files or are somehow invalid
 due to external changes made in the files area directory) will be listed in the application server log. These
 files can be automatically deleted by using the command option "-remove_invalid_tags").
-
-Although the files system directory is called "files" by default (and is located directly below the directory
-that is the application server's current working directory) it can be changed via the special system variable
-"@files_area_dir" (which will result in an automatic "file_resync" when set).
 
 Core Files
 ----------
@@ -371,7 +375,7 @@ file_put mnenomics.txt
 
 Now if the command "file_tags ts.*" is issued the output would look something like this:
 
-ts.2018123018404900000
+ts.202012300003210202
 
 As the tag is based upon the current time when multiple such tags are found they will be output in order from
 oldest to most recently added. This is then used to determine which files to automatically archive (or simply

@@ -1007,7 +1007,7 @@ string get_raw_system_variable( const string& name, bool is_internal )
       else if( name == get_special_var_name( e_special_var_none ) )
          retval = " ";
       else if( var_name == c_special_variable_files_area_dir )
-         retval = c_files_directory;
+         retval = c_ciyam_files_directory;
    }
 
    return retval;
@@ -1273,7 +1273,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
       else
       {
          if( val.empty( ) && ( var_name == string( c_special_variable_files_area_dir ) ) )
-            val = string( c_files_directory );
+            val = string( c_ciyam_files_directory );
 
          if( !val.empty( ) )
             g_variables[ var_name ] = val;

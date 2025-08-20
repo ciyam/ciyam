@@ -224,6 +224,8 @@ const char* const c_label_prefix = "label";
 
 const char* const c_files_directory = "files";
 
+const char* const c_ciyam_files_directory = ".ciyam";
+
 const char* const c_application_script_prefix = "app_script:";
 
 const size_t c_peer_sleep_time = 500; // i.e. 0.5 secs

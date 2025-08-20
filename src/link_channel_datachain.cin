@@ -38,6 +38,9 @@ ERROR=Unexpected datachain type missing for '$IDENTITY'.
 #Error: $ERROR
 @else
 ;
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+;
 DEMO=
 .system_variable @system_is_for_demo
 @ifdef $OUTPUT
@@ -71,8 +74,8 @@ IDENTITY_REMOVED=@repstr:$IDENTITY/:$ALL_DATA_CHAINS
 ;
 @ifeq "$ALL_DATA_CHAINS" "$IDENTITY_REMOVED"
 .storage_datachain_details $IDENTITY -type=$DATA_TYPE
-~mkdir files/$IDENTITY
-.file_archive -add files/$IDENTITY $DATA_SIZE $IDENTITY
+~mkdir $FILES_AREA_DIR/$IDENTITY
+.file_archive -add $FILES_AREA_DIR/$IDENTITY $DATA_SIZE $IDENTITY
 @endif
 .storage_datachain_details $IDENTITY -link $CHANNEL
 ;

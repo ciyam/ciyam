@@ -21,13 +21,13 @@ cd ~/ciyam/src
 #                                                                                                           #
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
- rm -rf files/*
+ rm -rf .ciyam/*
 
  mkdir -p bc.e3733d121
  rm -rf bc.e3733d121/*
  mkdir -p bc.e3733d121/e3733d121
 
- ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files_area_dir=bc.e3733d121 13031 &
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
 
  ./ciyam_client -quiet -connect_retries=10 13031
@@ -35,7 +35,7 @@ file_archive -add bc.e3733d121/e3733d121 10MB e3733d121
 peer_listen 12021 e3733d121
 system_variable @secret_hash_forward a3711b6a6ee792d091e23e54d8eca5a5d1baed743f0ad829461eb1b9d74f249a
 system_variable @secret_hash_reverse fec71842b182e8e05e5f808fa1d34f13988e90f0154c05c8951040b1240d95ad
-;trace 14900
+;trace f0018
 quit
 
 #-----------------------------------------------------------------------------------------------------------#
@@ -70,7 +70,7 @@ REPO_CRYPT_PASSWORD=@sid
 <tree_insert_trunks.cin ciyam Backup,.Backup
 <bc_gen_keys.cin de604cee0755a3d81944ea96aed12681 e3733d121 -5
 <bc_gen_block.cin e3733d121 5
-;trace 14900
+;trace f0018
 peer_connect e3733d121 12021
 wait 1000
 session_list
@@ -181,7 +181,7 @@ e3733d121 [okay      ] (196.0 kB/10.0 MB) bc.e3733d121/e3733d121
 ^C
 
  fg
-./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031
+./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files_area_dir=bc.e3733d121 13031
 ^C
 
 #-----------------------------------------------------------------------------------------------------------#
@@ -218,20 +218,20 @@ exit
 #-----------------------------------------------------------------------------------------------------------#
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
- rm -r files/*
+ rm -r .ciyam/*
 
- ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files_area_dir=bc.e3733d121 13031 &
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
 
  ./ciyam_client -quiet -connect_retries=10 13031
 peer_listen 12021 e3733d121
-;trace 14900
+;trace f0018
 quit
 
  ./ciyam_client
-~mkdir files/e3733d121
-file_archive -add files/e3733d121 10MB e3733d121
-;trace 14900
+~mkdir .ciyam/e3733d121
+file_archive -add .ciyam/e3733d121 10MB e3733d121
+;trace f0018
 peer_connect e3733d121 12021
 wait 500
 session_list
@@ -283,17 +283,17 @@ bc.e3733d121.zenith
 [23/100000]185.2 kB/100.0 GB:24 tag(s)
 
 > file_archives
-e3733d121 [okay      ] (196.0 kB/10.0 MB) files/e3733d121
+e3733d121 [okay      ] (196.0 kB/10.0 MB) .ciyam/e3733d121
 
 > file_info bc.e3733d121.zenith
 [core-blob] 2f81b61b72185ec053c8f5bfaa65c78ba2ac49f3cf28583701ab25c3f5870c7c (285 B) blk
 
 #-----------------------------------------------------------------------------------------------------------#
-# Now shut down the '-files=bc.e3733d121' server instance using 'fg' and 'ctrl-c'                           #
+# Now shut down the '-files_area_dir=bc.e3733d121' server instance using 'fg' and 'ctrl-c'                  #
 #-----------------------------------------------------------------------------------------------------------#
 
  fg 1
-./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031
+./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files_area_dir=bc.e3733d121 13031
 ^C
 
 #-----------------------------------------------------------------------------------------------------------#
@@ -302,16 +302,16 @@ e3733d121 [okay      ] (196.0 kB/10.0 MB) files/e3733d121
  rm -rf bc.e3733d121/*
  mkdir -p bc.e3733d121/e3733d121
 
- ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files_area_dir=bc.e3733d121 13031 &
 
  ./ciyam_client -quiet -connect_retries=10 13031
 file_archive -add bc.e3733d121/e3733d121 10MB e3733d121
 peer_listen 12021 e3733d121
-;trace 14900
+;trace f0018
 quit
 
  ./ciyam_client
-;trace 14900
+;trace f0018
 peer_connect e3733d121 12021
 wait 500
 session_list
@@ -381,13 +381,13 @@ e3733d121 [okay      ] (196.0 kB/10.0 MB) bc.e3733d121/e3733d121
 #-----------------------------------------------------------------------------------------------------------#
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
- rm -r files/*
+ rm -r .ciyam/*
 
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
 
  ./ciyam_client -quiet -connect_retries=10
 <bc_gen.cin -backup de604cee0755a3d81944ea96aed12681
-;trace 14900
+;trace f0018
 peer_connect e3733d121 12021
 wait 500
 session_list
@@ -470,13 +470,14 @@ ciyam
 ^C
 
  fg
-./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031
+./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files_area_dir=bc.e3733d121 13031
 ^C
 
 #-----------------------------------------------------------------------------------------------------------#
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
- rm -r files/*
+ rm .restore_needed
+ rm -r .ciyam/*
  rm -rf bc.e3733d121/*
  rmdir bc.e3733d121
 
@@ -628,7 +629,7 @@ d74a4c88ad8f3fc3295da8967ffa452ac2669d3cbf6dee738fadb180ddfd3751 (photo_5.jpg.00
 #-----------------------------------------------------------------------------------------------------------#
 # Assuming normal files area is owner and at height 5 use this to test incomplete backup recovery           #
 #-----------------------------------------------------------------------------------------------------------#
- ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files_area_dir=bc.e3733d121 13031 &
 
 ./ciyam_client 13031
 file_info -content bc.e3733d121.zenith
@@ -673,13 +674,13 @@ storage_term
 file_tag $OUTPUT bc.e3733d121.zenith
 ;
 peer_listen 12021 e3733d121
-;trace 14900
+;trace f0018
 quit
 
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
 
 ./ciyam_client
-;trace 14900
+;trace f0018
 peer_connect e3733d121 12021
 wait 500
 session_list
@@ -689,18 +690,18 @@ session_list
 session_kill 2
 quit
 
-vi files/ciyam_server.log
+vi .ciyam/ciyam_server.log
 
 vi bc.e3733d121/ciyam_server.log
 
 #-----------------------------------------------------------------------------------------------------------#
 # Assuming special files area is backup and at height 5 use this to test incomplete clone recovery          #
 #-----------------------------------------------------------------------------------------------------------#
- ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files_area_dir=bc.e3733d121 13031 &
 
  ./ciyam_client -quiet -connect_retries=10 13031
 peer_listen 12021 e3733d121
-;trace 14900
+;trace f0018
 quit
 
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
@@ -746,7 +747,7 @@ storage_term
 .file_hash bc.e3733d121.4.blk
 file_tag $OUTPUT bc.e3733d121.zenith
 ;
-;trace 14900
+;trace f0018
 peer_connect e3733d121 12021
 wait 500
 session_list
@@ -756,18 +757,18 @@ session_list
 session_kill 2
 quit
 
-vi files/ciyam_server.log
+vi .ciyam/ciyam_server.log
 
 vi bc.e3733d121/ciyam_server.log
 
 #-----------------------------------------------------------------------------------------------------------#
 # Assuming special files area is backup and at height 5 use this to test incomplete restore recovery        #
 #-----------------------------------------------------------------------------------------------------------#
- ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files=bc.e3733d121 13031 &
+ ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files_area_dir=bc.e3733d121 13031 &
 
  ./ciyam_client -quiet -connect_retries=10 13031
 peer_listen 12021 e3733d121
-;trace 14900
+;trace f0018
 quit
 
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
@@ -828,7 +829,7 @@ storage_term
 .file_hash bc.e3733d121.4.blk
 file_tag $OUTPUT bc.e3733d121.zenith
 ;
-;trace 14900
+;trace f0018
 peer_connect e3733d121 12021
 wait 500
 session_list
@@ -838,6 +839,6 @@ session_list
 session_kill 2
 quit
 
-vi files/ciyam_server.log
+vi .ciyam/ciyam_server.log
 
 vi bc.e3733d121/ciyam_server.log

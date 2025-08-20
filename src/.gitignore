@@ -62,7 +62,7 @@ xvars
 !app.log
 
 # Ignore local files area.
-files
+.ciyam
 
 # Ignore locally generated config.
 config.h
