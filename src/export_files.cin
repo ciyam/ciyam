@@ -27,11 +27,13 @@ OLD_ARCHIVE_PATH=$OUTPUT
 .session_variable @blockchain_archive_path "$CIYAM_ARCHIVE_PATH"
 @else
 @ifdef $USE_BACKUP_ARCHIVE
-.system_variable @blockchain_backup_archive
+.system_variable @blockchain_backup_identity
+.file_archives -path_only $OUTPUT
 .session_variable @blockchain_archive_path "$OUTPUT"
 @else
 @ifdef $USE_SHARED_ARCHIVE
-.system_variable @blockchain_shared_archive
+.system_variable @blockchain_shared_identity
+.file_archives -path_only $OUTPUT
 .session_variable @blockchain_archive_path "$OUTPUT"
 @endif
 @endif
