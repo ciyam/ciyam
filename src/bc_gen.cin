@@ -384,12 +384,8 @@ CHANNEL_SIZE=1GB
 @else
 @ifdef $SHARED
 .file_archive -add $FILES_AREA_DIR/$IDENT $SHARED_SIZE $IDENT
-.system_variable >@blockchain_shared_archive $FILES_AREA_DIR/$IDENT
 @else
 .file_archive -add $FILES_AREA_DIR/$IDENT $BACKUP_SIZE $IDENT
-@ifndef $ERROR
-.system_variable >@blockchain_backup_archive $FILES_AREA_DIR/$IDENT
-@endif
 @endif
 @endif
 @endif
