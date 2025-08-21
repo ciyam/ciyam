@@ -83,6 +83,7 @@ const char* const c_special_variable_bytes = "@bytes";
 const char* const c_special_variable_class = "@class";
 const char* const c_special_variable_deque = "@deque";
 const char* const c_special_variable_embed = "@embed";
+const char* const c_special_variable_files = "@files";
 const char* const c_special_variable_print = "@print";
 const char* const c_special_variable_quiet = "@quiet";
 const char* const c_special_variable_slotx = "@slotx";
@@ -403,6 +404,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_class );
       g_special_variable_names.push_back( c_special_variable_deque );
       g_special_variable_names.push_back( c_special_variable_embed );
+      g_special_variable_names.push_back( c_special_variable_files );
       g_special_variable_names.push_back( c_special_variable_print );
       g_special_variable_names.push_back( c_special_variable_quiet );
       g_special_variable_names.push_back( c_special_variable_slotx );

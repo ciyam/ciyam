@@ -48,6 +48,7 @@ enum special_var
    e_special_var_class,
    e_special_var_deque,
    e_special_var_embed,
+   e_special_var_files,
    e_special_var_print,
    e_special_var_quiet,
    e_special_var_slotx,
