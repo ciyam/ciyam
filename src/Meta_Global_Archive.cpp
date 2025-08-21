@@ -1131,7 +1131,10 @@ void Meta_Global_Archive::impl::for_store( bool is_create, bool is_internal )
    temporary_session_variable tmp_session_size(
     get_special_var_name( e_special_var_size ), to_string( get_obj( ).Size_Limit( ) ) );
 
-   run_script( "add_archive", false, false, true );
+   if( is_create )
+      run_script( "add_archive", false, false, true );
+   else
+      run_script( "resize_archive", false, false, true );
 
    get_obj( ).set_variable( get_special_var_name( e_special_var_skip_persistance ), "1" );
    // [<finish for_store>]

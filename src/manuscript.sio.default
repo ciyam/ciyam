@@ -121,6 +121,11 @@
   <arguments>repair_archive.cin @name
  </script>
  <script/>
+  <name>resize_archive
+  <filename>*script*
+  <arguments>resize_archive.cin @size @name
+ </script>
+ <script/>
   <name>status_archive
   <filename>*script*
   <arguments>status_archive.cin @name
