@@ -29,7 +29,7 @@ file_crypt "decrypt/encrypt/recrypt one or more files in the files area" [<opt/-
 file_stats "get files area stats"
 file_touch "touch a file in the files area or in an archive" <val//hash>[<val//archive>]
 file_resync "resync files area info" [<opt/-remove_invalid_tags/remove_invalid_tags>]
-file_archive "add/clear/remove/repair/destroy a file archive" {<opt/-add/add><val//path><val//size_limit>}|<opt/-clear/clear>|<opt/-remove/remove>|<opt/-repair/repair>|{<opt/-resize/resize><val//new_size_limit>}|<opt/-destroy/destroy><val//name>
+file_archive "add/clear/remove/repair/resize/destroy a file archive" {<opt/-add/add><val//path><val//size_limit>}|<opt/-clear/clear>|<opt/-remove/remove>|<opt/-repair/repair>|{<opt/-resize/resize><val//new_size_limit>}|<opt/-destroy/destroy><val//name>
 file_archives "list file archives and optionally update status information" [<opt/-min/minimal>|{{<opt/-path_only/path_only>|<opt/-status_update/update_status>}[<val//name>]}]
 file_relegate "relegate one or more files from the files area to the archives" <val/-n=/num_files>|<val/-s=/size_limit>|{[<opt/-destroy/destroy>|<opt/-blacklist/blacklist>]<val//hash>}[<val//archive>]
 file_retrieve "retrieve a relegated file from the archives into the files area" <val//hash>[<val/-d=/days_ahead>|<val//tag>]
