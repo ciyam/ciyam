@@ -862,6 +862,23 @@ string create_repository_lists(
    return sha256( public_key_file_data ).get_digest_as_string( );
 }
 
+string dir_archive_path( const string& path )
+{
+   string retval( path );
+
+   string files_prefix( get_special_var_name( e_special_var_files ) );
+
+   string::size_type pos = retval.find( files_prefix + '/' );
+
+   if( pos == 0 )
+   {
+      retval.erase( 0, files_prefix.size( ) );
+      retval.insert( 0, get_files_area_dir( ) );
+   }
+
+   return retval;
+}
+
 string get_archive_status( const string& path )
 {
    string retval( c_okay );
@@ -4605,7 +4622,19 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
    ods_fs.add_folder( name );
    ods_fs.set_folder( name );
 
-   ods_fs.store_as_text_file( c_file_archive_path, path );
+   string path_to_store( path );
+
+   string files_area_dir( get_files_area_dir( ) );
+
+   if( path_to_store.find( files_area_dir + '/' ) == 0 )
+   {
+      path_to_store.erase( 0, files_area_dir.length( ) );
+
+      path_to_store.insert( 0, get_special_var_name( e_special_var_files ) );
+   }
+
+   ods_fs.store_as_text_file( c_file_archive_path, path_to_store );
+
    ods_fs.store_as_text_file( c_file_archive_size_avail, size_limit );
    ods_fs.store_as_text_file( c_file_archive_size_limit, size_limit );
 
@@ -4637,6 +4666,8 @@ void clear_file_archive( const string& name )
 
       string path;
       ods_fs.fetch_from_text_file( c_file_archive_path, path );
+
+      path = dir_archive_path( path );
 
       int64_t size_limit = 0;
       ods_fs.fetch_from_text_file( c_file_archive_size_limit, size_limit );
@@ -4696,6 +4727,8 @@ void remove_file_archive( const string& name, bool destroy_files, bool remove_di
 
          string path;
          ods_fs.fetch_from_text_file( c_file_archive_path, path );
+
+         path = dir_archive_path( path );
 
          string status_info;
          ods_fs.fetch_from_text_file( c_file_archive_status_info, status_info );
@@ -4777,6 +4810,8 @@ void repair_file_archive( const string& name, progress* p_progress )
 
       string path;
       ods_fs.fetch_from_text_file( c_file_archive_path, path );
+
+      path = dir_archive_path( path );
 
       int64_t size_used = 0;
       int64_t size_avail = 0;
@@ -4873,6 +4908,8 @@ void resize_file_archive( const string& name, int64_t new_size_limit, progress* 
       string path;
       ods_fs.fetch_from_text_file( c_file_archive_path, path );
 
+      path = dir_archive_path( path );
+
       int64_t size_avail = 0;
       ods_fs.fetch_from_text_file( c_file_archive_size_avail, size_avail );
 
@@ -4958,6 +4995,8 @@ void archives_status_update( const string& name )
 
       string path;
       ods_fs.fetch_from_text_file( c_file_archive_path, path );
+
+      path = dir_archive_path( path );
 
       int64_t avail = 0;
       ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
@@ -5066,6 +5105,8 @@ string list_file_archives( archive_list_type list_type,
 
       string path;
       ods_fs.fetch_from_text_file( c_file_archive_path, path );
+
+      path = dir_archive_path( path );
 
       int64_t avail = 0;
       int64_t limit = 0;
