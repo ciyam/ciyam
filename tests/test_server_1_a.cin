@@ -374,7 +374,7 @@ X=@repstr:\:/\/:$X
 #REVERSED: $REVERSED
 #CIYAM_FISSILE: $CIYAM_FISSILE
 ;
-PATHS=@paths:..:^.git*,^src/tmp*,^src/haru*,^src/.ciyam*
+PATHS=@paths:..:^.git*,^src/tmp*,^src/haru*,^src/.files*
 #$PATHS
 ;
 #[test*.jpg]

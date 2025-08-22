@@ -2,7 +2,7 @@ Understanding the File System
 -----------------------------
 
 Immediately below the directory where the application server resides is a "files" directory (which by default
-is named ".ciyam") that allows the application server to function as a file storage system accessible via the
+is named ".files") that allows the application server to function as a file storage system accessible via the
 standard protocol as well as being accessible via the peer protocol.
 
 The way this file system operates is quite similar to how "git" operates under the covers and so will be very
@@ -38,10 +38,10 @@ being themselves other List files.
 
 The following illustrates the type, full path and the content of the fundamental files types:
 
-[blob - .ciyam/cc/eeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef]
+[blob - .files/cc/eeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef]
 ^Ahello
 
-[list - .ciyam/02/9eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a]
+[list - .files/02/9eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a]
 ^Bcceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef first
 
 It should be noted that the caret symbol is being used to indicate control characters in the above content so
@@ -277,12 +277,12 @@ There are three settings in "ciyam_server.sio" configuration file that are relev
 are as follows (uncomment and change then restart "ciyam_server" for the new settings to take effect):
 
  <files/>
-#  <directory>.ciyam
+#  <directory>.files
 #  <max_file_size>1M
 #  <max_num_files>100K
  </files>
 
-The files directory is named ".ciyam" by default (and is located immediately beneath the application server's
+The files directory is named ".files" by default (and is located immediately beneath the application server's
 current working directory) and can be changed with the directory attribute in the server's configuration file
 or via a server startup option. It can also be changed at run-time by using the special system variable named
 "@files_area_dir" (which will result in an automatic "file_resync" when set).
@@ -328,9 +328,9 @@ to these external archive files are not recommended.
 Archive Maintenance
 -------------------
 
-The "file_archive" command is used to add/remove/repair or even destroy an archive. The path that you wish to
-use for an archive is expected to already exist (i.e. it will not be created) as most often the path would be
-a "mount point".
+The "file_archive" command is used to add/remove/repair/resize or destroy an archive. The path intended to be
+used as an archive is expected to already exist (i.e. it will not be created) as it could be expected that it
+is a "mount point".
 
 Assuming the path for the archive is "/mnt/a001", the name chosen for the archive is "001" and it is intended
 to hold up to 100GB of data the create command would be as follows:
@@ -343,14 +343,14 @@ from the "file_archives" command would be as follows:
 
 001 [okay      ] (0 B/100.0 GB) /mnt/a001
 
-If the path wasn't accessible then you would instead see the following:
+If the path was not accessible then you would instead see the following:
 
 001 [bad access] (0 B/100.0 GB) /mnt/a001
 
 Assuming the issue with the path was then resolved use the "-status_update" option for "file_archives" for it
 to re-check that it can access and write to the path. It should be noted that the size that was specified for
 the archive creation should be a fair bit less than the physical size of the storage device as the file names
-used are sixty four characters each (and typically an OS uses quite a lot more bytes per file as overhead).
+used are sixty four characters each (and typically the OS uses quite a lot more bytes per file as overhead).
 
 If an archive is removed (by using the "-remove" option with the "file_archive" command) then the files which
 are already in the archive will remain (only size information will be removed from the global ODS DB). If one

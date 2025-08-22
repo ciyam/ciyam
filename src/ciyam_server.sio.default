@@ -53,7 +53,7 @@
 #  </smtp>
  </email>
  <files/>
-#  <directory>.ciyam
+#  <directory>.files
 #  <max_file_size>1M
 #  <max_num_files>100K
  </files>
