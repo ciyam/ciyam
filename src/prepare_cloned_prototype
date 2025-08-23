@@ -12,7 +12,7 @@ else
  else
   sudo systemctl stop ciyam
 
-  rm -r .ciyam/*
+  rm -r .files/*
   rm -f ciyam_server.sid ciyam_server.sid.sav $WEBDIR/meta/identity.txt $WEBDIR/meta/encrypted.txt
 
   ./config
