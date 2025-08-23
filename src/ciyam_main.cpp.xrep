@@ -44,7 +44,8 @@
 #include "module_interface.cpp"
 
 `{`(`?`$specification_home_message_id`)`&`@eq`(`$specification_home_message_type`,`'stats`'`)\
-`{`#home_message_stats.spec.xrep section=includes model_name=$model_name\
+`{`#home_message_stats.spec.xrep section=includes\
+ model_name=$model_name arg_id=$specification_home_message_id\
  arg_primary_class=$specification_home_message_primary_class\
  arg_primary_stats1_cclass=$specification_home_message_primary_stats1_cclass\
  arg_primary_stats1_class1=$specification_home_message_primary_stats1_class1\
@@ -62,7 +63,7 @@
 `}
 `{`(`?`$specification_home_message_id`)`&`@eq`(`$specification_home_message_type`,`'top_n`'`)\
 `{`#home_message_top_n.spec.xrep section=includes model_name=$model_name\
- arg_class=$specification_home_message_class`}
+ arg_id=$specification_home_message_id arg_class=$specification_home_message_class`}
 `}
 // [<start includes>]
 `{`(`?`$user_source`)`#$user_source section=includes`}
@@ -111,7 +112,8 @@ void module_`{`$model_name`}_command_functor::operator ( )( const string& comman
       if( command == c_cmd_`{`$model_name`}_ver )
          osstr << get_module_string( "title" );
 `{`(`?`$specification_home_message_id`)`&`@eq`(`$specification_home_message_type`,`'stats`'`)\
-`{`#home_message_stats.spec.xrep section=commands_impl model_name=$model_name id=$specification_home_message_id\
+`{`#home_message_stats.spec.xrep section=commands_impl\
+ model_name=$model_name arg_id=$specification_home_message_id\
  arg_primary_class=$specification_home_message_primary_class\
  arg_secondary_class=$specification_home_message_secondary_class\
  arg_primary_stats1_cclass=$specification_home_message_primary_stats1_cclass\
@@ -142,7 +144,8 @@ void module_`{`$model_name`}_command_functor::operator ( )( const string& comman
  arg_secondary_stats2_value2=$specification_home_message_secondary_stats2_value2\
  arg_secondary_stats2_perm=$specification_home_message_secondary_stats2_perm`}`}
 `{`(`?`$specification_home_message_id`)`&`@eq`(`$specification_home_message_type`,`'top_n`'`)\
-`{`#home_message_top_n.spec.xrep section=commands_impl model_name=$model_name\
+`{`#home_message_top_n.spec.xrep section=commands_impl\
+ model_name=$model_name arg_id=$specification_home_message_id\
  arg_class=$specification_home_message_class arg_limit=$specification_home_message_limit\
  arg_field=$specification_home_message_field arg_ofield=$specification_home_message_ofield`}`}
       // [<start commands_impl>]
