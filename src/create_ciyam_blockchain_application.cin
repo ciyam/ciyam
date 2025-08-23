@@ -163,6 +163,22 @@ MESSAGE_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
+.pf 100 137100 "302820,137101#2 $MESSAGE_PACKAGE_KEY,opt_message_bool_use_home_message" #1 @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Message package option 'use_home_message'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+MESSAGE_OPTION_KEY=$OUTPUT
+.pu $CIYAM_UID @now 100 137100 $MESSAGE_OPTION_KEY "137102=1"
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
 .pf 100 137100 "302820,137101#2 $MESSAGE_PACKAGE_KEY,opt_message_bool_use_max_attached_files" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Message package option 'use_max_attached_files'.
