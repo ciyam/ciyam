@@ -693,15 +693,16 @@ Private_Identity,M001C108F142
 QR_Code,M001C108F143
 QR_Code_Scanned,M001C108F144
 QR_Code_Text,M001C108F145
-Reconnect_Pending,M001C108F146
-Shared_Checksum,M001C108F147
-Shared_Secret,M001C108F148
-Shared_Secret_Hash,M001C108F149
-Connection_Type,M001C108F150
-Status,M001C108F151
-Status_,M001C108F152
-Sync_Status,M001C108F153
-System_Secret,M001C108F154
+Reconnect_Not_Pending,M001C108F146
+Reconnect_Pending,M001C108F147
+Shared_Checksum,M001C108F148
+Shared_Secret,M001C108F149
+Shared_Secret_Hash,M001C108F150
+Connection_Type,M001C108F151
+Status,M001C108F152
+Status_,M001C108F153
+Sync_Status,M001C108F154
+System_Secret,M001C108F155
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000
