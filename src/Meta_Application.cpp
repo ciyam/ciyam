@@ -2360,7 +2360,7 @@ void Meta_Application::impl::impl_Generate( )
          }
 
          outs << " if [ ! -f " << get_obj( ).Name( ) << ".log ]; then\n";
-         outs << "  echo \"[0]" << uuid( ).as_string( ) << " \" > " << get_obj( ).Name( ) << ".log\n";
+         outs << "  echo \"[0]" << uuid( ).as_string( ) << "\" > " << get_obj( ).Name( ) << ".log\n";
          outs << "  echo \"[1];module ==> none\" >> " << get_obj( ).Name( ) << ".log\n";
          outs << "  echo \"[2];dummy init\" >> " << get_obj( ).Name( ) << ".log\n";
          outs << " fi\n";
