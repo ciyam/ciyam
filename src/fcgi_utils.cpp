@@ -95,7 +95,8 @@ void log_trace_message( const string& message )
    guard g( g_mutex );
 
    ofstream outf( c_log_file, ios::out | ios::app );
-   outf << message << '\n';
+
+   outf << '[' << date_time::local( ).as_string( e_time_format_hhmm, true ) << "] " << message << '\n';
 }
 
 void get_server_sid( string& sid )
