@@ -309,11 +309,13 @@ void disconnect_socket( tcp_socket* p_socket )
    {
       for( size_t i = 0; i < g_sockets.size( ); i++ )
       {
-         if( g_sockets[ i ].second == p_socket )
+         if( p_socket == g_sockets[ i ].second )
          {
-            if( g_sockets[ i ].second && g_sockets[ i ].second->okay( ) )
+            if( g_sockets[ i ].second )
             {
-               g_sockets[ i ].second->close( );
+               if( g_sockets[ i ].second->okay( ) )
+                  g_sockets[ i ].second->close( );
+
                delete g_sockets[ i ].second;
             }
 
@@ -335,9 +337,10 @@ void disconnect_sockets( bool released_only )
       if( released_only && g_sockets[ i ].first )
          continue;
 
-      if( g_sockets[ i ].second && g_sockets[ i ].second->okay( ) )
+      if( g_sockets[ i ].second )
       {
-         g_sockets[ i ].second->close( );
+         if( g_sockets[ i ].second->okay( ) )
+            g_sockets[ i ].second->close( );
 
          delete g_sockets[ i ].second;
       }
@@ -674,10 +677,14 @@ bool process_log_file( const string& module_name,
       output_form( module_name, extra_content, output_html, "", false, title );
 
       has_output_form = true;
-
-      if( !get_is_disconnected( ) )
-         disconnect_all_session_sockets( );
    }
+
+   // NOTE: If waiting then assumes the FCGI UI will
+   // have been restarted (by the "complete_restore"
+   // application protocol script) else will need to
+   // now disconnect all session sockets.
+   if( !wait_if_no_error && !get_is_disconnected( ) )
+      disconnect_all_session_sockets( );
 
    return has_output_form;
 }
@@ -759,14 +766,14 @@ void timeout_handler::on_start( )
             // anonymous sessions (this should be investigated further at some stage).
             if( !si->second->user_id.empty( ) || !si->second->user_name.empty( ) )
             {
-               LOG_TRACE( "[timeout: "
-                + ( si->second->user_name.empty( ) ? si->second->user_id : si->second->user_name )
-                + " at " + date_time::local( ).as_string( true, false ) + " from " + si->second->ip_addr + "]" );
+               LOG_TRACE( "[timeout: " + ( si->second->user_name.empty( )
+                ? si->second->user_id : si->second->user_name ) + " from " + si->second->ip_addr + "]" );
             }
 
             if( si->second->p_socket )
             {
                release_socket( si->second->p_socket );
+
                si->second->p_socket = 0;
             }
 
@@ -2287,6 +2294,7 @@ void request_handler::process_request( )
                          mii != get_storage_info( ).modules_index.end( ); ++mii )
                         {
                            module_info& mod_info( *mii->second );
+
                            read_module_strings( mod_info, *p_session_info->p_socket );
 
                            if( !simple_command( *p_session_info, mod_info.name + "_ver", &response ) )
@@ -2617,9 +2625,8 @@ void request_handler::process_request( )
 
                   if( !is_replacement_session )
                   {
-                     LOG_TRACE( "[login: "
-                      + ( p_session_info->user_name.empty( ) ? p_session_info->user_id : p_session_info->user_name )
-                      + " at " + date_time::local( ).as_string( true, false ) + " from " + p_session_info->ip_addr + "]" );
+                     LOG_TRACE( "[login: " + ( p_session_info->user_name.empty( )
+                      ? p_session_info->user_id : p_session_info->user_name ) + " from " + p_session_info->ip_addr + "]" );
                   }
 
                   if( p_session_info->user_has_auth == c_true_value )
@@ -3531,8 +3538,7 @@ void request_handler::process_request( )
       if( log_error )
 #endif
       {
-         LOG_TRACE( string( "error: " ) + error
-          + " (at " + date_time::local( ).as_string( true, false ) + " from " + raddr + ")" );
+         LOG_TRACE( string( "error: " ) + error + " (from " + raddr + ")" );
       }
 
       ostringstream osstr;
@@ -3836,7 +3842,7 @@ int main( int argc, char* argv[ ] )
       if( !exe_path.empty( ) )
          set_cwd( exe_path );
 
-      LOG_TRACE( "[started at: " + date_time::local( ).as_string( true, false ) + "]" );
+      LOG_TRACE( "[started]" );
 
 #ifdef SSL_SUPPORT
       if( file_exists( c_ciyam_pem ) )
@@ -4032,7 +4038,7 @@ int main( int argc, char* argv[ ] )
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
       remove_sockets( );
 #endif
-      LOG_TRACE( "[finished at: " + date_time::local( ).as_string( true, false ) + "]" );
+      LOG_TRACE( "[finished]" );
    }
    catch( exception& x )
    {
