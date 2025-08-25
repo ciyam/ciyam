@@ -1430,9 +1430,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
    {
       remove_non_persistent( session_id );
 
-      LOG_TRACE( "[logout: "
-       + ( p_session_info->user_name.empty( ) ? p_session_info->user_id : p_session_info->user_name )
-       + " at " + date_time::local( ).as_string( true, false ) + " from " + p_session_info->ip_addr + "]" );
+      LOG_TRACE( "[logout: " + ( p_session_info->user_name.empty( )
+       ? p_session_info->user_id : p_session_info->user_name ) + " from " + p_session_info->ip_addr + "]" );
 
       // FUTURE: If this module allows anonymous access and a logout has just occurred
       // then currently a page refresh is being forced to occur in order to reload the
@@ -2600,8 +2599,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         }
                         else
                         {
-                           LOG_TRACE( "[add_user: " + req_username + " at "
-                            + date_time::local( ).as_string( true, false ) + " from " + raddr + "]" );
+                           LOG_TRACE( "[add_user: " + req_username + " from " + raddr + "]" );
                         }
                      }
 
@@ -2674,8 +2672,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                // the case where sending the activation email fails).
                if( error_message.empty( ) )
                {
-                  LOG_TRACE( "[add_user: " + req_username + " at "
-                   + date_time::local( ).as_string( true, false ) + " from " + raddr + "]" );
+                  LOG_TRACE( "[add_user: " + req_username + " from " + raddr + "]" );
 
                   string smtp_result;
                   ostringstream osstr;
@@ -2792,8 +2789,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             {
                has_completed = true;
 
-               LOG_TRACE( "[add_user: " + req_username + " at "
-                + date_time::local( ).as_string( true, false ) + " from " + raddr + "]" );
+               LOG_TRACE( "[add_user: " + req_username + " from " + raddr + "]" );
 
                extra_content << "<p align=\"center\"><b>"
                 << GDS( c_display_welcome_aboard ) << " " << req_username << " !</p>\n";
