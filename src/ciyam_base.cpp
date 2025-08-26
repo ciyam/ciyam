@@ -506,6 +506,7 @@ struct session
    vector< string > storage_controlled_modules;
 
    string transaction_log_command;
+
    transaction_commit_helper* p_tx_helper;
 
    vector< string > peerchain_log_commands;
@@ -3415,9 +3416,11 @@ void append_transaction_log_command( storage_handler& handler,
     && ( log_even_when_locked || handler.get_alternative_log_file( ) || !handler.get_is_locked_for_admin( ) ) )
    {
       string log_filename( handler.get_name( ) );
+
       log_filename += c_log_file_ext;
 
       bool is_new = false;
+
       if( !file_exists( log_filename ) )
          is_new = true;
 
@@ -3455,13 +3458,16 @@ void append_transaction_log_command( storage_handler& handler,
       if( is_new )
          log_file << c_storage_identity_tx_id << handler.get_root( ).identity << '\n';
 
-      int32_t tx_id;
+      int32_t tx_id = 0;
 
       bool use_init_tx_id = false;
+
       string init_log_id( get_raw_session_variable( get_special_var_name( e_special_var_init_log_id ) ) );
 
-      if( init_log_id == c_true || init_log_id == c_true_value )
+      if( ( init_log_id == c_true ) || ( init_log_id == c_true_value ) )
          use_init_tx_id = true;
+
+      bool skip_persistence = has_session_variable( get_special_var_name( e_special_var_skip_persistence ) );
 
       // NOTE: When log file is truncated during a backup no transaction is active so
       // change the tx id to 'initial' to ensure that a restore is able to understand
@@ -3477,31 +3483,45 @@ void append_transaction_log_command( storage_handler& handler,
       {
          log_identity& identity( handler.get_root( ).log_id );
 
-         if( identity.next_id == identity.ceiling )
+         // NOTE: If skipped persistence then will
+         // simply use the last tx identity value.
+         if( skip_persistence )
+            tx_id = identity.next_id;
+         else
          {
-            identity.ceiling += c_identity_burn;
 
-            ods_file_system ofs( *ods::instance( ) );
+            if( identity.next_id == identity.ceiling )
+            {
+               identity.ceiling += c_identity_burn;
 
-            // NOTE: Store the "ceiling" rather than "next_id" to avoid having to
-            // perform extra I/O for every transaction. If storage termination is
-            // to occur normally then the actual "next_id" will be written and no
-            // identity value is lost. If for some reason normal termination does
-            // not occur then up to the "burn" number of identities will be lost.
-            ofs.store_as_text_file( c_storable_file_name_log_id, identity.ceiling );
+               ods_file_system ofs( *ods::instance( ) );
+
+               // NOTE: Store the "ceiling" rather than "next_id" to avoid having to
+               // perform extra I/O for every transaction. If storage termination is
+               // to occur normally then the actual "next_id" will be written and no
+               // identity value is lost. If for some reason normal termination does
+               // not occur then up to the "burn" number of identities will be lost.
+               ofs.store_as_text_file( c_storable_file_name_log_id, identity.ceiling );
+            }
+
+            tx_id = ++identity.next_id;
          }
-
-         tx_id = ++identity.next_id;
       }
 
       string next_line;
+
       vector< string > lines;
+
+      string prefix;
+
+      if( skip_persistence )
+         prefix = ";";
 
       raw_split( gtp_session->transaction_log_command, lines, '\n' );
 
       for( size_t i = 0; i < lines.size( ); i++ )
       {
-         next_line = "[" + to_string( tx_id ) + "]" + lines[ i ] + "\n";
+         next_line = "[" + to_string( tx_id ) + "]" + prefix + lines[ i ] + "\n";
 
          log_file << next_line;
       }
@@ -9759,16 +9779,17 @@ void storage_comment( const string& comment )
       log_identity& identity( handler.get_root( ).log_id );
 
       bool use_init_tx_id = false;
+
       string init_log_id( get_raw_session_variable( get_special_var_name( e_special_var_init_log_id ) ) );
 
-      if( init_log_id == c_true || init_log_id == c_true_value )
+      if( ( init_log_id == c_true ) || ( init_log_id == c_true_value ) )
          use_init_tx_id = true;
 
       // NOTE: During a "restore" the comment does not need to be logged unless it follows or is a part of
       // the initial data records (such comments prior are appended by the "storage restore" code itself).
       if( use_init_tx_id || !storage_locked_for_admin( ) || ( identity.next_id >= c_tx_id_initial ) )
       {
-         if( use_init_tx_id || identity.next_id == c_tx_id_initial )
+         if( use_init_tx_id || ( identity.next_id == c_tx_id_initial ) )
             append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, c_tx_id_initial );
          else
             append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id + 1 );
@@ -9782,20 +9803,23 @@ void storage_comment( const string& comment )
 
          if( comment.find( label_comment ) == 0 )
          {
-            if( storage_locked_for_admin( ) && ( identity.next_id + 1 >= c_tx_id_standard ) )
+            if( storage_locked_for_admin( ) && ( ( identity.next_id + 1 ) >= c_tx_id_standard ) )
                gtp_session->sql_undo_statements.push_back( "#" + comment );
             else
             {
                string undo_sql_filename( handler.get_name( ) );
+
                undo_sql_filename += ".undo.sql";
 
                ofstream outf( undo_sql_filename.c_str( ), ios::out | ios::app );
+
                if( !outf )
                   throw runtime_error( "unable to open '" + undo_sql_filename + "' for output" );
 
                outf << "#" << comment << '\n';
 
                outf.flush( );
+
                if( !outf.good( ) )
                   throw runtime_error( "*** unexpected error occurred writing to undo sql ***" );
             }
@@ -9980,6 +10004,7 @@ size_t storage_cache_limit( size_t new_limit )
       log_identity& identity( handler.get_root( ).log_id );
 
       gtp_session->transaction_log_command = ";cache_limit ==> " + to_string( new_limit );
+
       append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id );
    }
 
@@ -13526,7 +13551,7 @@ bool instance_persistence_uses_log( size_t handle )
 {
    class_base& instance( get_class_base_from_handle( handle, "" ) );
 
-   return ( instance.get_persistence_type( ) < 2 ); // i.e. SQL or ODS local persistence
+   return ( instance.get_persistence_type( ) <= 2 ); // i.e. SQL or ODS persistence
 }
 
 bool instance_iterate( size_t handle, const string& context,
@@ -13702,6 +13727,8 @@ void transaction_commit( )
 
          append_transaction_log_command( handler );
 
+         set_session_variable( get_special_var_name( e_special_var_skip_persistence ), "" );
+
          if( gtp_session->ap_db.get( ) )
          {
             TRACE_LOG( TRACE_DETAILS | TRACE_QUERIES, "COMMIT" );
@@ -13822,6 +13849,7 @@ void transaction_rollback( )
          gtp_session->async_or_delayed_args_files.clear( );
          gtp_session->async_or_delayed_system_commands.clear( );
 
+         set_session_variable( get_special_var_name( e_special_var_skip_persistence ), "" );
          set_session_variable( get_special_var_name( e_special_var_check_script_error ), "" );
       }
    }

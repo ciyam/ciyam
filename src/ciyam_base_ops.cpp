@@ -3875,8 +3875,15 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             }
             else if( persistence_type == 2 ) // i.e. ODS global persistence
             {
-               if( instance.get_variable( get_special_var_name( e_special_var_skip_persistance ) ).empty( )
-                && ( ( op == class_base::e_op_type_create ) || ( op == class_base::e_op_type_update ) || ( op == class_base::e_op_type_destroy ) ) )
+               string skip_persistence_name( get_special_var_name( e_special_var_skip_persistence ) );
+
+               if( instance.has_variable( skip_persistence_name ) )
+               {
+                  instance.set_variable( skip_persistence_name, "" );
+
+                  set_session_variable( skip_persistence_name, c_true_value );
+               }
+               else if( ( op == class_base::e_op_type_create ) || ( op == class_base::e_op_type_update ) || ( op == class_base::e_op_type_destroy ) )
                {
                   if( op == class_base::e_op_type_destroy )
                      instance_accessor.destroy( );
@@ -3884,6 +3891,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                   string persistence_extra( instance.get_persistence_extra( ) );
 
                   string root_child_folder( persistence_extra );
+
                   bool is_file_not_folder( global_storage_persistence_is_file( root_child_folder ) );
 
                   system_ods_bulk_write ods_bulk_write;
@@ -3987,8 +3995,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             instance_accessor.after_destroy( internal_operation );
          // NOTE: Although "after_store" is normally skipped for "minimal" updates in the case of Meta
          // it must still be called so that "aliased" class artifacts will behave as would be expected.
-         else if( ( op == class_base::e_op_type_create )
-          || !instance.get_is_minimal_update( )
+         else if( ( op == class_base::e_op_type_create ) || !instance.get_is_minimal_update( )
           || ( ( op == class_base::e_op_type_update ) && ( app_name == c_meta_storage_name ) ) )
             instance_accessor.after_store( ( op == class_base::e_op_type_create ), internal_operation );
 
