@@ -192,7 +192,7 @@ enum special_var
    e_special_var_protocol_handler,
    e_special_var_session_id_owner,
    e_special_var_skip_after_fetch,
-   e_special_var_skip_persistance,
+   e_special_var_skip_persistence,
    e_special_var_skip_submit_file,
    e_special_var_style_full_blown,
    e_special_var_trace_session_id,

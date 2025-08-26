@@ -227,7 +227,7 @@ const char* const c_special_variable_progress_seconds = "@progress_seconds";
 const char* const c_special_variable_protocol_handler = "@protocol_handler";
 const char* const c_special_variable_session_id_owner = "@session_id_owner";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
-const char* const c_special_variable_skip_persistance = "@skip_persistance";
+const char* const c_special_variable_skip_persistence = "@skip_persistence";
 const char* const c_special_variable_skip_submit_file = "@skip_submit_file";
 const char* const c_special_variable_style_full_blown = "@style_full_blown";
 const char* const c_special_variable_trace_session_id = "@trace_session_id";
@@ -548,7 +548,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_protocol_handler );
       g_special_variable_names.push_back( c_special_variable_session_id_owner );
       g_special_variable_names.push_back( c_special_variable_skip_after_fetch );
-      g_special_variable_names.push_back( c_special_variable_skip_persistance );
+      g_special_variable_names.push_back( c_special_variable_skip_persistence );
       g_special_variable_names.push_back( c_special_variable_skip_submit_file );
       g_special_variable_names.push_back( c_special_variable_style_full_blown );
       g_special_variable_names.push_back( c_special_variable_trace_session_id );
