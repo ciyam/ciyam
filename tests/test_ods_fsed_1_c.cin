@@ -4,6 +4,8 @@ folder_add xyz
 branch objects
 folder_add ghi
 folder_add def
+folder_add "abc\ndef"
+folder_add "abc\tdef"
 branch objects
 dump
 exit

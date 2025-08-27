@@ -7,6 +7,11 @@ abc/
 xyz/
 folder_add ghi
 folder_add def
+folder_add "abc\ndef"
+error: invalid folder name 'abc
+def'
+folder_add "abc\tdef"
+error: invalid folder name 'abc	def'
 branch objects
 abc/
 def/

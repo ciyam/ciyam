@@ -1098,6 +1098,7 @@ string valid_file_name( const string& str, bool* p_has_utf8_chars, bool allow_pa
    for( size_t i = 0; i < str.length( ); i++ )
    {
       char c = str[ i ];
+
       int ic = ( int )c;
 
       if( num_extra )
@@ -1153,8 +1154,9 @@ string valid_file_name( const string& str, bool* p_has_utf8_chars, bool allow_pa
          if( allow_path_separators )
             s += c;
       }
-      else  if( c != '"' && c != ':' && c != '?'
-       && c!= '*' && c != '<' && c != '>' && c != '|' && c != '\\' )
+      else  if( ( c >= ' ' ) && ( c != '"' )
+       && ( c != ':' ) && ( c != '?' ) && ( c!= '*' )
+       && ( c != '<' ) && ( c != '>' ) && ( c != '|' ) && ( c != '\\' ) )
          s += c;
    }
 
@@ -1186,13 +1188,14 @@ boyer_moore::boyer_moore( const string& pattern )
 
    while( curr >= 0 )
    {
-      while( match < psize && pattern[ curr ] != pattern[ match ] )
+      while( ( match < psize ) && ( pattern[ curr ] != pattern[ match ] ) )
       {
          jump[ match ] = min( jump[ match ], psize - curr - 1 );
          match = matches[ match ];
       }
 
       matches[ curr ] = match;
+
       --curr;
       --match;
    }
@@ -1210,7 +1213,7 @@ boyer_moore::boyer_moore( const string& pattern )
 
 string::size_type boyer_moore::find( const string& text )
 {
-   if( text.empty( ) || pattern.empty( ) || text.size( ) < pattern.size( ) )
+   if( text.empty( ) || pattern.empty( ) || ( text.size( ) < pattern.size( ) ) )
       return string::npos;
  
    int text_i = pattern.size( ) - 1;
@@ -1219,7 +1222,7 @@ string::size_type boyer_moore::find( const string& text )
    {
       int pattern_i = ( int )( pattern.size( ) - 1 );
 
-      while( pattern_i >= 0 && text[ text_i ] == pattern[ pattern_i ] )
+      while( ( pattern_i >= 0 ) && ( text[ text_i ] == pattern[ pattern_i ] ) )
       {
          --text_i;
          --pattern_i;
