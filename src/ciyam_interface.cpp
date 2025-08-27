@@ -1179,6 +1179,11 @@ void request_handler::process_request( )
 
       bool is_invalid_session = false;
 
+      // NOTE: Ignore "register" command if Meta.
+      if( ( cmd == c_cmd_register )
+       && ( module_name == c_meta_model_name ) )
+         cmd = c_cmd_home;
+
       if( !session_id.empty( )
        && ( session_id != c_new_session )
        && ( cmd != c_cmd_join ) && ( cmd != c_cmd_status ) )
@@ -1501,7 +1506,7 @@ void request_handler::process_request( )
          bool has_output_form = false;
          bool has_set_identity = false;
 
-         if( module_name == "Meta" )
+         if( module_name == c_meta_model_name )
          {
             is_meta_module = true;
             p_session_info->is_meta_module = true;
