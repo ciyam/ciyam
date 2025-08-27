@@ -1286,11 +1286,13 @@ bool fetch_instance_from_db( class_base& instance,
    sql_data& sd( *instance_accessor.p_sql_data( ) );
 
    bool found = sd.next( );
+
    instance_accessor.clear( );
 
    if( !found )
    {
       delete instance_accessor.p_sql_data( );
+
       instance_accessor.p_sql_data( ) = 0;
    }
    else
@@ -1340,6 +1342,7 @@ bool global_storage_persistence_is_file( string& root_child_folder )
     && root_child_folder[ root_child_folder.length( ) - 1 ] == c_global_storage_file_not_folder_suffix )
    {
       is_file_not_folder = true;
+
       root_child_folder.erase( root_child_folder.length( ) - 1 );
    }
 
@@ -1362,8 +1365,16 @@ bool has_instance_in_local_storage( class_base& instance, const string& key )
    {
       ofs.set_folder( class_id );
 
-      if( ofs.has_file( key ) )
-         retval = true;
+      string key_prefix( key );
+
+      string::size_type pos = key_prefix.find( '\t' );
+
+      if( pos == string::npos )
+         key_prefix += '\t';
+      else
+         key_prefix.erase( pos + 1 );
+
+      retval = ofs.has_file( key_prefix, true );
    }
 
    return retval;
@@ -1435,7 +1446,7 @@ void fetch_keys_from_local_storage( class_base& instance,
    else
       expr += suffix;
 
-  // NOTE: First check if the folder exists
+   // NOTE: First check if the folder exists
    // as it might not yet have been created.
    if( ofs.has_root_folder( folder ) )
    {
@@ -1734,10 +1745,20 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
 
       file_name += '/' + prefix + key;
 
-      if( ofs.has_file( file_name ) )
+      if( is_file_link || ( file_name.find( '\t' ) != string::npos ) )
+         found = ofs.has_file( file_name );
+      else
       {
-         found = true;
+         string suffix;
 
+         found = ofs.has_file( file_name + '\t', true, &suffix );
+
+         if( !suffix.empty( ) )
+            file_name += '\t' + suffix;
+      }
+
+      if( found )
+      {
          stringstream sio_data;
 
          ofs.get_file( file_name, &sio_data );
@@ -1746,10 +1767,55 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
 
          string data;
 
+         string::size_type pos = string::npos;
+
          string version_info( reader.read_attribute( c_attribute_meta_ver_info ) );
          string original_identity( reader.read_attribute( c_attribute_meta_typ_info ) );
 
-         string::size_type pos = version_info.find( '.' );
+         // NOTE: The link source will include the full
+         // path so removes this path in order to leave
+         // just the source file name.
+         if( is_file_link )
+         {
+            string source( ofs.link_source( file_name ) );
+
+            pos = source.rfind( '/' );
+
+            if( pos != string::npos )
+               source.erase( 0, pos + 1 );
+
+            key = source;
+         }
+
+         pos = key.find( '\t' );
+
+         uint64_t security = 0;
+
+         // NOTE: It is expected that the file name is
+         // in the form of: <key>\t<sec>\t<typ>\t<ver>
+         if( pos != string::npos )
+         {
+            string extras( key.substr( pos + 1 ) );
+
+            if( !extras.empty( ) )
+            {
+               vector< string > all_extras;
+
+               split( extras, all_extras, '\t' );
+
+               security = from_string< uint64_t >( all_extras[ 0 ] );
+
+               if( all_extras.size( ) > 1 )
+                  original_identity = all_extras[ 1 ];
+
+               if( all_extras.size( ) > 2 )
+                  version_info = all_extras[ 2 ];
+            }
+
+            key.erase( pos );
+         }
+
+         pos = version_info.find( '.' );
 
          if( pos == string::npos )
             throw runtime_error( "unexpected version_info '"
@@ -1758,20 +1824,6 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
          string version( version_info.substr( 0, pos ) );
          string revision( version_info.substr( pos + 1 ) );
 
-         // NOTE: The link source will include the full
-         // path so removes the path to leave the key.
-         if( is_file_link )
-         {
-            string source( ofs.link_source( file_name ) );
-
-            string::size_type pos = source.rfind( '/' );
-
-            if( pos != string::npos )
-               source.erase( 0, pos + 1 );
-
-            key = source;
-         }
-
          if( p_columns )
          {
             p_columns->push_back( key );
@@ -1779,7 +1831,7 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
             p_columns->push_back( version );
             p_columns->push_back( revision );
 
-            p_columns->push_back( "0" );
+            p_columns->push_back( to_string( security ) );
 
             p_columns->push_back( original_identity );
          }
@@ -1790,7 +1842,7 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
             instance_accessor.set_version( from_string< int16_t >( version ) );
             instance_accessor.set_revision( from_string< int64_t >( revision ) );
 
-            instance_accessor.set_security( 0 );
+            instance_accessor.set_security( security );
 
             instance_accessor.set_original_identity( original_identity );
             instance_accessor.set_original_revision( instance.get_revision( ) );
@@ -3674,7 +3726,8 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                // NOTE: Objects are stored in the form of a structured I/O
                // file using the path "/.dat/<class_id>/" with a file name
-               // that is simply the instance's key value. A primary index
+               // that consists of the following formatted object instance
+               // core data: "<key>\t<sec>\t<typ>\t<ver>". A primary index
                // file link is stored in "/.idx/<class_id>" using the name
                // "<security>-<key>" whilst all other index file links are
                // found in a two digit folder named according to the index
@@ -3716,13 +3769,25 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                   string instance_file_name( instance.get_key( ) );
 
+                  string security_value( to_comparable_string(
+                   instance.get_security( ), false, c_sec_prefix_length ) );
+
+                  instance_file_name += '\t' + security_value;
+
+                  if( op == class_base::e_op_type_create )
+                     instance_file_name += '\t' + instance.get_current_identity( );
+                  else
+                     instance_file_name += '\t' + instance.get_original_identity( );
+
+                  instance_file_name += '\t' + to_string( version ) + '.' + to_string( revision );
+
                   source_file_name += '/' + instance_file_name;
 
-                  // FUTURE: Rather than simply removing the
-                  // instance data file (which automatically
-                  // removes all index link files) an update
-                  // should instead remove (and then re-add)
-                  // only the index links that have changed.
+                  temporary_allow_specials allow_specials( ofs );
+
+                  // NOTE: Removing the instance data file
+                  // results in all index link files being
+                  // automatically removed.
                   if( ( op == class_base::e_op_type_update )
                    || ( op == class_base::e_op_type_destroy ) )
                      ofs.remove_file( instance_file_name );
@@ -3743,6 +3808,22 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                      string version_info(
                       to_string( version ) + '.' + to_string( revision ) );
+
+                     string::size_type pos = instance_file_name.rfind( '\t' );
+
+                     if( ( pos != string::npos ) && ( op == class_base::e_op_type_update ) )
+                     {
+                        instance_file_name.erase( pos + 1 );
+                        instance_file_name += version_info;
+
+                        pos = source_file_name.rfind( '\t' );
+
+                        if( pos == string::npos )
+                           throw runtime_error( "unexpected source_file_name '" + source_file_name + "' missing ver/rev info" );
+
+                        source_file_name.erase( pos + 1 );
+                        source_file_name += version_info;
+                     }
 
                      writer.write_attribute( c_attribute_meta_ver_info, version_info );
 
@@ -3786,14 +3867,9 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                      ofs.set_folder( class_id );
 
-                     string security_prefix(
-                      to_comparable_string( instance.get_security( ), false, c_sec_prefix_length ) );
-
                      // NOTE: Create a primary key link (so instance iteration confined by
                      // a security prefix is possible even if no explicit indexes exist).
-                     ofs.link_file( security_prefix + c_security_suffix + instance_file_name, source_file_name );
-
-                     temporary_allow_specials allow_specials( ofs );
+                     ofs.link_file( security_value + c_security_suffix + instance_file_name, source_file_name );
 
                      for( size_t i = 0; i < num_index_pairs; i++ )
                      {
@@ -3859,7 +3935,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                               link_file_name [ i ] = '\x03';
                         }
 
-                        link_file_name = security_prefix + c_security_suffix + link_file_name;
+                        link_file_name = security_value + c_security_suffix + link_file_name;
 
                         if( !is_unique )
                            link_file_name += ( '\t' + instance.get_key( ) );
