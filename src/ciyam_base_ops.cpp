@@ -60,9 +60,6 @@ const char* const c_primary_key_name = "@pk";
 
 const char* const c_links_instance_lock_key = "@links";
 
-const char* const c_attribute_meta_ver_info = "_ver_";
-const char* const c_attribute_meta_typ_info = "_typ_";
-
 const char* const c_invalid_key_characters = "`~!@#$%^&*<>()[]{}/\\?|-+=.,;:'\"";
 
 const size_t c_sec_prefix_length = 6;
@@ -1660,8 +1657,10 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch,
       instance_accessor.perform_after_fetch( );
 }
 
-bool fetch_instance_from_local_storage( class_base& instance, const string& key_info,
- const vector< string >& field_names, vector< string >* p_columns = 0, bool skip_after_fetch = false )
+bool fetch_instance_from_local_storage(
+ class_base& instance, const string& key_info,
+ bool only_sys_fields, const vector< string >& field_names,
+ vector< string >* p_columns = 0, bool skip_after_fetch = false )
 {
    bool found = false;
    bool is_file_link = false;
@@ -1754,23 +1753,24 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
          found = ofs.has_file( file_name + '\t', true, &suffix );
 
          if( !suffix.empty( ) )
+         {
             file_name += '\t' + suffix;
+
+            pos = file_name.rfind( '/' );
+
+            if( pos == string::npos )
+               throw runtime_error( "unexpected file_name '"
+                + file_name + "' in fetch_instance_from_local_storage" );
+
+            key = file_name.substr( pos + 1 );
+         }
       }
 
       if( found )
       {
-         stringstream sio_data;
-
-         ofs.get_file( file_name, &sio_data );
-
-         sio_reader reader( sio_data );
-
-         string data;
-
          string::size_type pos = string::npos;
 
-         string version_info( reader.read_attribute( c_attribute_meta_ver_info ) );
-         string original_identity( reader.read_attribute( c_attribute_meta_typ_info ) );
+         string version_info, original_identity;
 
          // NOTE: The link source will include the full
          // path so removes this path in order to leave
@@ -1848,36 +1848,47 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
             instance_accessor.set_original_revision( instance.get_revision( ) );
          }
 
-         int num_fields = field_names.size( );
-
-         for( size_t i = 0; i < num_fields; i++ )
+         if( !only_sys_fields )
          {
-            size_t field_num = instance.get_field_num( field_names[ i ] );
+            string data;
 
-            if( instance.is_field_transient( field_num ) )
+            stringstream sio_data;
+
+            ofs.get_file( file_name, &sio_data );
+
+            sio_reader reader( sio_data );
+
+            int num_fields = field_names.size( );
+
+            for( size_t i = 0; i < num_fields; i++ )
             {
-               if( p_columns )
-                  p_columns->push_back( instance.get_field_value( field_num ) );
+               size_t field_num = instance.get_field_num( field_names[ i ] );
 
-               continue;
+               if( instance.is_field_transient( field_num ) )
+               {
+                  if( p_columns )
+                     p_columns->push_back( instance.get_field_value( field_num ) );
+
+                  continue;
+               }
+
+               string attribute_name( lower( field_names[ i ] ) );
+
+               data = unescaped( reader.read_attribute( attribute_name ), "trn\t\r\n" );
+
+               if( p_columns )
+                  p_columns->push_back( data );
+               else
+                  instance.set_field_value( field_num, data );
             }
 
-            string attribute_name( lower( field_names[ i ] ) );
+            if( !p_columns )
+            {
+               instance_accessor.after_fetch_from_db( );
 
-            data = unescaped( reader.read_attribute( attribute_name ), "trn\t\r\n" );
-
-            if( p_columns )
-               p_columns->push_back( data );
-            else
-               instance.set_field_value( field_num, data );
-         }
-
-         if( !p_columns )
-         {
-            instance_accessor.after_fetch_from_db( );
-
-            if( !skip_after_fetch )
-               instance_accessor.perform_after_fetch( );
+               if( !skip_after_fetch )
+                  instance_accessor.perform_after_fetch( );
+            }
          }
       }
    }
@@ -1885,7 +1896,7 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
    return found;
 }
 
-bool fetch_instance_from_local_storage( class_base& instance, const string& key_info )
+bool fetch_instance_from_local_storage( class_base& instance, const string& key_info, bool only_sys_fields )
 {
    field_info_container field_info;
 
@@ -1899,7 +1910,7 @@ bool fetch_instance_from_local_storage( class_base& instance, const string& key_
          field_names.push_back( field_info[ i ].name );
    }
 
-   return fetch_instance_from_local_storage( instance, key_info, field_names );
+   return fetch_instance_from_local_storage( instance, key_info, only_sys_fields, field_names );
 }
 
 bool fetch_instance_from_global_storage( class_base& instance, const string& key,
@@ -3140,7 +3151,7 @@ void begin_instance_op( instance_op op, class_base& instance,
                found = fetch_instance_from_db( instance, sql );
             }
             else if( persistence_type == 1 ) // i.e. ODS local persistence
-               found = fetch_instance_from_local_storage( instance, clone_key );
+               found = fetch_instance_from_local_storage( instance, clone_key, false );
             else if( persistence_type == 2 ) // i.e. ODS global persistence
                found = fetch_instance_from_global_storage( instance, clone_key );
             else
@@ -3265,7 +3276,7 @@ void begin_instance_op( instance_op op, class_base& instance,
                 false, ( is_minimal_update && ( op == e_instance_op_update ) ) );
             }
             else if( persistence_type == 1 ) // i.e. ODS local persistence
-               found = fetch_instance_from_local_storage( instance, key_for_op );
+               found = fetch_instance_from_local_storage( instance, key_for_op, false );
             else if( persistence_type == 2 ) // i.e. ODS global persistence
             {
                found = fetch_instance_from_global_storage( instance, key_for_op );
@@ -3323,7 +3334,7 @@ void begin_instance_op( instance_op op, class_base& instance,
             found = fetch_instance_from_db( instance, sql );
          }
          else if( persistence_type == 1 ) // i.e. ODS local persistence
-            found = fetch_instance_from_local_storage( instance, key_for_op );
+            found = fetch_instance_from_local_storage( instance, key_for_op, false );
          else if( persistence_type == 2 ) // i.e. ODS global persistence
          {
             found = fetch_instance_from_global_storage( instance, key_for_op );
@@ -3687,6 +3698,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                 && instance_accessor.has_skipped_empty_update( ) )
                {
                   sql_stmts.clear( );
+
                   skipped_empty_update = true;
                }
 
@@ -3825,13 +3837,6 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                         source_file_name += version_info;
                      }
 
-                     writer.write_attribute( c_attribute_meta_ver_info, version_info );
-
-                     if( op == class_base::e_op_type_create )
-                        writer.write_attribute( c_attribute_meta_typ_info, instance.get_current_identity( ) );
-                     else
-                        writer.write_attribute( c_attribute_meta_typ_info, instance.get_original_identity( ) );
-
                      for( int i = 0; i < num_fields; i++ )
                      {
                         if( instance.is_field_transient( i ) )
@@ -3869,7 +3874,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                      // NOTE: Create a primary key link (so instance iteration confined by
                      // a security prefix is possible even if no explicit indexes exist).
-                     ofs.link_file( security_value + c_security_suffix + instance_file_name, source_file_name );
+                     ofs.link_file( security_value + c_security_suffix + instance.get_key( ), source_file_name );
 
                      for( size_t i = 0; i < num_index_pairs; i++ )
                      {
@@ -4299,13 +4304,8 @@ void perform_instance_fetch( class_base& instance,
       }
       else if( persistence_type == 1 ) // i.e. ODS local persistence
       {
-         // FUTURE: If "only_sys_fields" is true then all instance file
-         // data does not need to be read, however, "original identity"
-         // needs to be read and is currently included in the file data
-         // so for now must read the entire record.
-
          if( key_info.find( ' ' ) == string::npos )
-            found = fetch_instance_from_local_storage( instance, key_info );
+            found = fetch_instance_from_local_storage( instance, key_info, only_sys_fields );
          else
          {
             vector< string > order_info;
@@ -4339,7 +4339,7 @@ void perform_instance_fetch( class_base& instance,
             if( instance_keys.empty( ) )
                found = false;
             else
-               found = fetch_instance_from_local_storage( instance, instance_keys[ 0 ] );
+               found = fetch_instance_from_local_storage( instance, instance_keys[ 0 ], only_sys_fields );
          }
       }
       else if( persistence_type == 2 ) // i.e. ODS global persistence
@@ -5116,7 +5116,7 @@ bool perform_instance_iterate( class_base& instance,
                   {
                      if( persistence_type == 1 ) // i.e. ODS local persistence
                         fetch_instance_from_local_storage(
-                         instance, instance_keys[ i ], field_names, 0, skip_after_fetch );
+                         instance, instance_keys[ i ], false, field_names, 0, skip_after_fetch );
                      else if( persistence_type == 2 ) // i.e. ODS global persistence
                         fetch_instance_from_global_storage(
                          instance, instance_keys[ i ], field_names, 0, skip_after_fetch );
@@ -5130,7 +5130,7 @@ bool perform_instance_iterate( class_base& instance,
 
                      if( persistence_type == 1 ) // i.e. ODS local persistence
                      {
-                        if( !fetch_instance_from_local_storage( instance, instance_keys[ i ], field_names, &columns ) )
+                        if( !fetch_instance_from_local_storage( instance, instance_keys[ i ], false, field_names, &columns ) )
                            break;
                      }
                      else if( persistence_type == 2 ) // i.e. ODS global persistence
