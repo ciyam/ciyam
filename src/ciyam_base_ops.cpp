@@ -3876,6 +3876,8 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                      // a security prefix is possible even if no explicit indexes exist).
                      ofs.link_file( security_value + c_security_suffix + instance.get_key( ), source_file_name );
 
+                     vector< string > duplicate_fields;
+
                      for( size_t i = 0; i < num_index_pairs; i++ )
                      {
                         pair< string, string > next_pair = all_index_pairs[ i ];
@@ -3945,10 +3947,32 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                         if( !is_unique )
                            link_file_name += ( '\t' + instance.get_key( ) );
 
-                        ofs.link_file( link_file_name, source_file_name );
+                        // NOTE: If a link file exists then this is because a
+                        // duplicate record has been found (and an error will
+                        // occur). Execution will continue in order to ensure
+                        // that the duplicate error chosen to be displayed is
+                        // for the shortest possible index (as this should be
+                        // the easiest to understand such as simply "Name").
+                        if( ofs.has_file( link_file_name ) )
+                        {
+                           if( duplicate_fields.empty( ) || ( names.size( ) < duplicate_fields.size( ) ) )
+                           {
+                              duplicate_fields.clear( );
+
+                              if( names.size( ) > 1 )
+                                 duplicate_fields.push_back( names[ names.size( ) - 2 ] );
+
+                              duplicate_fields.push_back( names[ names.size( ) - 1 ] );
+                           }
+                        }
+                        else
+                           ofs.link_file( link_file_name, source_file_name );
 
                         ofs.set_folder( ".." );
                      }
+
+                     if( !duplicate_fields.empty( ) )
+                        throw runtime_error( "@" + join( duplicate_fields ) );
                   }
 
                   ods_tx.commit( );
@@ -4111,12 +4135,15 @@ void finish_instance_op( class_base& instance, bool apply_changes,
           && ( op == class_base::e_op_type_create || op == class_base::e_op_type_update ) )
          {
             vector< string > all_unique_indexes;
+
             instance.get_sql_unique_indexes( all_unique_indexes );
 
             vector< string > all_column_names;
+
             instance.get_sql_column_names( all_column_names );
 
             vector< string > all_column_values;
+
             instance.get_sql_column_values( all_column_values );
 
             map< string, size_t > column_numbers;
@@ -4129,6 +4156,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             for( size_t i = 0; i < all_unique_indexes.size( ); i++ )
             {
                vector< string > unique_index_columns;
+
                split( all_unique_indexes[ i ], unique_index_columns );
 
                string sql( "SELECT C_Key_ FROM T_" + string( instance.get_module_name( ) )
@@ -4154,11 +4182,36 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                   if( field.empty( ) || unique_index_columns.size( ) < num_columns )
                   {
                      num_columns = unique_index_columns.size( );
+
                      field = unique_index_columns[ unique_index_columns.size( ) - 1 ].substr( 2 );
 
                      if( unique_index_columns.size( ) > 1 )
                         second = unique_index_columns[ unique_index_columns.size( ) - 2 ].substr( 2 );
                   }
+               }
+            }
+         }
+
+         if( !executing_sql
+          && ( op == class_base::e_op_type_create || op == class_base::e_op_type_update ) )
+         {
+            string error( e.what( ) );
+
+            // NOTE: For ODS local storage the exception should be "@<fld1>[,<fld2>[,...]]".
+            if( !error.empty( ) && ( error[ 0 ] == '@' ) )
+            {
+               string fields( error.substr( 1 ) );
+
+               if( !fields.empty( ) )
+               {
+                  vector< string > all_fields;
+
+                  split( fields, all_fields );
+
+                  if( all_fields.size( ) > 1 )
+                     second = all_fields[ all_fields.size( ) - 2 ];
+
+                  field = all_fields[ all_fields.size( ) - 1 ];
                }
             }
          }
