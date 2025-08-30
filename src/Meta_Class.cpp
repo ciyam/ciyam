@@ -5043,6 +5043,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
 
    // [(start file_link)] 620038
    // NOTE: Empty code block for scope purposes.
+   if( !get_obj( ).get_is_being_cascaded( ) )
    {
       string sep( "-" );
       string ext( ".cpp" );
@@ -5070,6 +5071,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
 
    // [(start file_link)] 630038
    // NOTE: Empty code block for scope purposes.
+   if( !get_obj( ).get_is_being_cascaded( ) )
    {
       string sep( "-" );
       string ext( ".h" );
@@ -5097,6 +5099,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
 
    // [(start file_link)] 640038
    // NOTE: Empty code block for scope purposes.
+   if( !get_obj( ).get_is_being_cascaded( ) )
    {
       string sep( "-" );
       string ext( ".cms" );
@@ -5124,7 +5127,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
 
    // [<start for_store>]
 //nyi
-   if( get_obj( ).Create_View( ) )
+   if( is_create && get_obj( ).Create_View( ) )
    {
       string view_key( incremented_key_val( get_obj( ).get_key( ), 1 ) );
 
@@ -5136,7 +5139,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
       get_obj( ).Created_View( view_key );
    }
 
-   if( get_obj( ).Create_List( ) )
+   if( is_create && get_obj( ).Create_List( ) )
    {
       string list_key( incremented_key_val( get_obj( ).get_key( ), 2 ) );
 

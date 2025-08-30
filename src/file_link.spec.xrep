@@ -1,6 +1,7 @@
 `{`@eq`(`'for_store`'`,`$section`)\
    // [(start file_link)] `{`$arg_id`}
    // NOTE: Empty code block for scope purposes.
+   if( !get_obj( ).get_is_being_cascaded( ) )
    {
       string sep( "-" );
       string ext( "`{`$arg_ext`}" );

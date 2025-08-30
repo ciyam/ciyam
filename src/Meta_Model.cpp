@@ -7683,6 +7683,7 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
 
    // [(start file_link)] 600011
    // NOTE: Empty code block for scope purposes.
+   if( !get_obj( ).get_is_being_cascaded( ) )
    {
       string sep( "-" );
       string ext( ".cpp" );
@@ -7710,6 +7711,7 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
 
    // [(start file_link)] 600012
    // NOTE: Empty code block for scope purposes.
+   if( !get_obj( ).get_is_being_cascaded( ) )
    {
       string sep( "-" );
       string ext( ".cms" );
