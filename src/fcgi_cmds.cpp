@@ -1528,9 +1528,11 @@ bool populate_list_info( list_source& list,
             field_value = '*' + replaced( escaped( field_value, "\"" ), ",", "\\\\\\," ) + '*';
 
          // NOTE: Value prefixes 'T' and 'U' are used for "datetime" values.
-         if( svname[ 0 ] >= 'T' && svname[ 0 ] <= 'U' && !field_value.empty( ) )
+         if( !field_value.empty( ) && ( svname[ 0 ] >= 'T' ) && ( svname[ 0 ] <= 'U' ) )
          {
             date_time dt( field_value );
+
+            dt -= ( seconds )sess_info.gmt_offset;
 
             field_value = format_date_time( dt );
          }
@@ -2742,8 +2744,9 @@ void save_record( const string& module_id,
       if( field_id == view.ignore_encrypted_field )
          ignore_encrypted = ( next == string( c_true_value ) );
 
-      size_t j;
-      for( j = 0; j < view.field_ids.size( ); j++ )
+      size_t j = 0;
+
+      for( ; j < view.field_ids.size( ); j++ )
       {
          if( view.field_ids[ j ] == field_id )
             break;
@@ -2801,6 +2804,7 @@ void save_record( const string& module_id,
          if( !next.empty( ) && sess_info.tz_name.empty( ) )
          {
             date_time dt( next );
+
             dt -= ( seconds )sess_info.gmt_offset;
 
             next = dt.as_string( );
@@ -2884,11 +2888,12 @@ void save_record( const string& module_id,
 
    clear_key( sid );
 
-   // NOTE: After dealing with all the field values provided via the UI next check the view
-   // for any "defcurrent" fields that haven't already been provided.
+   // NOTE: After dealing with all the field values provided via the UI checks
+   // the view for any "defcurrent" fields that have not already been provided.
    if( is_new_record )
    {
       date_time dt_current;
+
       get_session_dtm( sess_info, dt_current );
 
       for( size_t i = 0; i < view.field_ids.size( ); i++ )

@@ -457,6 +457,7 @@ void setup_gmt_and_dtm_offset( map< string, string >& input_data, session_info& 
    if( !utcdtm.empty( ) )
    {
       date_time dt( input_data[ c_param_utcdtm ] );
+
       sess_info.dtm_offset = ( seconds )( dt - date_time::standard( ) );
    }
 
@@ -511,6 +512,7 @@ void remove_non_persistent( const string& session_id )
 void remove_session_temp_directory( const string& session_id )
 {
    string path( c_files_directory );
+
    path += "/" + string( c_tmp_directory );
    path += "/" + session_id;
 

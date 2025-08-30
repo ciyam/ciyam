@@ -1280,6 +1280,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          for( size_t i = 0; i < pairs.size( ); i++ )
          {
             string::size_type pos = pairs[ i ].find( '=' );
+
             if( pos == string::npos )
                throw runtime_error( "unexpected pair format '" + pairs[ i ] + "'" );
 
