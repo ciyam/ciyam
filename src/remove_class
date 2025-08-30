@@ -7,7 +7,6 @@
 if [ $# -ne 2 ]; then
  echo Usage: remove_class [module name] [class name]
 else
-echo "here for $1_$2..."
  if [ -f $1_$2.cmh ]; then
   rm $1_$2.cmh
  fi

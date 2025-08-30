@@ -48,9 +48,41 @@ STANDARD_KEY=$OUTPUT
 .pc $CIYAM_UID @now 100 136100 " " "136101=User,136107=Users,302810=User,302800=$MODEL_KEY"
 USER_PACKAGE_KEY=$OUTPUT
 ;
+.pf 100 137100 "302820,137101#2 $USER_PACKAGE_KEY,opt_user_bool_use_access" #1 @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate User package option 'use_access'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+USER_OPTION_KEY=$OUTPUT
+.pu $CIYAM_UID @now 100 137100 $USER_OPTION_KEY "137102=1"
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
 .pf 100 137100 "302820,137101#2 $USER_PACKAGE_KEY,opt_user_bool_use_authenticator" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate User package option 'use_authenticator'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+USER_OPTION_KEY=$OUTPUT
+.pu $CIYAM_UID @now 100 137100 $USER_OPTION_KEY "137102=1"
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+.pf 100 137100 "302820,137101#2 $USER_PACKAGE_KEY,opt_user_bool_use_tags" #1 @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate User package option 'use_tags'.
 @endif
 @ifdef $ERROR
 @label ERROR
@@ -79,23 +111,6 @@ USER_OPTION_KEY=$OUTPUT
 @label ERROR
 @endif
 @skip
-;
-.pf 100 137100 "302820,137101#2 $USER_PACKAGE_KEY,opt_user_bool_use_access" #1 @key -min
-@ifndef $OUTPUT
-ERROR=Unable to locate User package option 'use_access'.
-@endif
-@ifdef $ERROR
-@label ERROR
-@endif
-@skip
-;
-USER_OPTION_KEY=$OUTPUT
-.pu $CIYAM_UID @now 100 137100 $USER_OPTION_KEY "137102=1"
-@ifdef $ERROR
-@label ERROR
-@endif
-@skip
-
 ;
 .pe $CIYAM_UID @now 100 136100 "-v=@async=false,@message=Installing User Package..." $USER_PACKAGE_KEY -136410
 @ifdef $ERROR
@@ -284,9 +299,9 @@ BLOG_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_bool_use_tags" #1 @key -min
+.pf 100 137100 "302820,137101#2 $BLOG_PACKAGE_KEY,opt_blog_bool_use_user_tags" #1 @key -min
 @ifndef $OUTPUT
-ERROR=Unable to locate Blog package option 'use_tags'.
+ERROR=Unable to locate Blog package option 'use_user_tags'.
 @endif
 @ifdef $ERROR
 @label ERROR
@@ -550,41 +565,41 @@ CAN_MAINTAIN_BLOGS_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Maintain_Blog_Tags" #1 @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Maintain_Tags" #1 @key -min
 @ifndef $OUTPUT
-ERROR=Unable to locate Field 'Can_Maintain_Blog_Tags' for Class 'User'.
+ERROR=Unable to locate Field 'Can_Maintain_Tags' for Class 'User'.
 @endif
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
 ;
-CAN_MAINTAIN_BLOG_TAGS_KEY=$OUTPUT
+CAN_MAINTAIN_TAGS_KEY=$OUTPUT
 ;
-.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MAINTAIN_BLOG_TAGS_KEY% 130101=1
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MAINTAIN_TAGS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
 ;
-.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_CREATOR_KEY%_%CAN_MAINTAIN_BLOG_TAGS_KEY% 130101=1
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_CREATOR_KEY%_%CAN_MAINTAIN_TAGS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
 ;
-.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Maintain_Blog_Tag_Access" #1 @key -min
+.pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Maintain_Tag_Access" #1 @key -min
 @ifndef $OUTPUT
-ERROR=Unable to locate Field 'Can_Maintain_Blog_Tag_Access' for Class 'User'.
+ERROR=Unable to locate Field 'Can_Maintain_Tag_Access' for Class 'User'.
 @endif
 @ifdef $ERROR
 @label ERROR
 @endif
 @skip
 ;
-CAN_MAINTAIN_BLOG_TAG_ACCESS_KEY=$OUTPUT
+CAN_MAINTAIN_TAG_ACCESS_KEY=$OUTPUT
 ;
-.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MAINTAIN_BLOG_TAG_ACCESS_KEY% 130101=1
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTER_KEY%_%CAN_MAINTAIN_TAG_ACCESS_KEY% 130101=1
 @ifdef $ERROR
 @label ERROR
 @endif
