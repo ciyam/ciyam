@@ -7220,7 +7220,7 @@ void disconnect_peerchain( const string& identity, bool no_delay )
    if( set_system_variable( '~' + identity, c_true_value, check_not_has ) )
    {
       if( !no_delay )
-         msleep( c_peer_sleep_time * 2 );
+         msleep( c_peer_sleep_time * 5 );
    }
 }
 
