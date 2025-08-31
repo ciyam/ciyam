@@ -808,6 +808,8 @@ void Meta_Global_Repository_Entry::impl::for_store( bool is_create, bool is_inte
    ( void )state;
 
    // [<start for_store>]
+//nyi
+   set_session_variable( get_special_var_name( e_special_var_skip_persistence ), c_true_value );
    // [<finish for_store>]
 }
 
@@ -853,6 +855,8 @@ void Meta_Global_Repository_Entry::impl::for_destroy( bool is_internal )
     get_special_var_name( e_special_var_hash ), hash );
 
    run_script( "remove_file", false, false, true );
+
+   set_session_variable( get_special_var_name( e_special_var_skip_persistence ), c_true_value );
    // [<finish for_destroy>]
 }
 

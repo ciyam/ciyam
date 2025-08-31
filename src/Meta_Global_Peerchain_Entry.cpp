@@ -1553,6 +1553,8 @@ void Meta_Global_Peerchain_Entry::impl::for_store( bool is_create, bool is_inter
    if( ( get_obj( ).Host_Name( ) == c_local_host )
     && ( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Hosted ) )
       throw runtime_error( "Invalid Host Name '" + to_string( c_local_host ) + "' for Hosted Peerchain Entry" );
+
+   set_session_variable( get_special_var_name( e_special_var_skip_persistence ), c_true_value );
    // [<finish for_store>]
 }
 
@@ -1630,6 +1632,8 @@ void Meta_Global_Peerchain_Entry::impl::for_destroy( bool is_internal )
       delete_files_area_files_for_pat( c_bc_prefix + reversed + ".*" );
 
    delete_files_area_files_for_pat( c_bc_prefix + get_obj( ).Chain_Id( ) + ".*" );
+
+   set_session_variable( get_special_var_name( e_special_var_skip_persistence ), c_true_value );
    // [<finish for_destroy>]
 }
 
