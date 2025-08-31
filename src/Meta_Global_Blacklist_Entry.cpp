@@ -631,7 +631,7 @@ void Meta_Global_Blacklist_Entry::impl::for_store( bool is_create, bool is_inter
 
    run_script( "add_blacklist", false, true, true );
 
-   get_obj( ).set_variable( get_special_var_name( e_special_var_skip_persistence ), "1" );
+   get_obj( ).set_variable( get_special_var_name( e_special_var_skip_persistence ), c_true_value );
    // [<finish for_store>]
 }
 

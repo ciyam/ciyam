@@ -1136,7 +1136,7 @@ void Meta_Global_Archive::impl::for_store( bool is_create, bool is_internal )
    else
       run_script( "resize_archive", false, false, true );
 
-   get_obj( ).set_variable( get_special_var_name( e_special_var_skip_persistence ), "1" );
+   get_obj( ).set_variable( get_special_var_name( e_special_var_skip_persistence ), c_true_value );
    // [<finish for_store>]
 }
 
@@ -1178,7 +1178,7 @@ void Meta_Global_Archive::impl::for_destroy( bool is_internal )
 
    run_script( "remove_archive", false, false, true );
 
-   get_obj( ).set_variable( get_special_var_name( e_special_var_skip_persistence ), "1" );
+   get_obj( ).set_variable( get_special_var_name( e_special_var_skip_persistence ), c_true_value );
    // [<finish for_destroy>]
 }
 
