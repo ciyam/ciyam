@@ -3467,7 +3467,9 @@ void append_transaction_log_command( storage_handler& handler,
       if( ( init_log_id == c_true ) || ( init_log_id == c_true_value ) )
          use_init_tx_id = true;
 
-      bool skip_persistence = has_session_variable( get_special_var_name( e_special_var_skip_persistence ) );
+      string skip_persistence_name( get_special_var_name( e_special_var_skip_persistence ) );
+
+      bool skip_persistence = has_session_variable( skip_persistence_name );
 
       // NOTE: When log file is truncated during a backup no transaction is active so
       // change the tx id to 'initial' to ensure that a restore is able to understand
@@ -3515,7 +3517,11 @@ void append_transaction_log_command( storage_handler& handler,
       string prefix;
 
       if( skip_persistence )
+      {
          prefix = ";";
+
+         set_session_variable( skip_persistence_name, "" );
+      }
 
       raw_split( gtp_session->transaction_log_command, lines, '\n' );
 
