@@ -2168,7 +2168,7 @@ specification_add -id=601920 {Modifier}_child_list0 list "@601920_* child:fixed,
 specification_add -id=602010 {Modifier_Affect}_view view "? standard Modifier_Affect\
  {Modifier}:Name;no_edit+link,Scope;no_edit,Type,Extra,{Field}:Name!@fkey1:{Class}+Name;link,{Class};fkey1+hidden"
 specification_add -id=602020 {Modifier_Affect}_child_list0 list "@602020_* child:sort_no_limit Modifier_Affect\
- Scope,Type,{Field}:Name -n=Scope {Modifier}"
+ Scope,Type,{Field}:Name,Extra -n=Scope {Modifier}"
 specification_add -id=602100 {Procedure}_view view "? standard Procedure\
  {Class}:Name;no_edit+link,Name,Id;no_edit+non_new,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}"
 specification_add -id=602120 {Procedure}_child_list0 list "@602120_* child:no_limit Procedure Name,Id {Class}"

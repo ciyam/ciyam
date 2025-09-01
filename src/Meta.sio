@@ -11938,6 +11938,10 @@
         <id>602010
         <item>field
        </specification>
+       <specification/>
+        <id>602020
+        <item>field
+       </specification>
       </specifications>
      </field>
      <field/>
@@ -34366,6 +34370,7 @@
      <field_info>110101;enum=540
      <field_info>110102;enum=550
      <field_info>301020:107101;max_size=50
+     <field_info>110103;enum=560
     </data>
    </specification>
    <specification/>

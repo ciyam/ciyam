@@ -2854,6 +2854,13 @@
 `{`$specification_Modifier_Affect_child_list0_pclsnm02`=`'Field`'`}
 `{`$specification_Modifier_Affect_child_list0_pfldnm02`=`'Name`'`}
 `{`$specification_Modifier_Affect_child_list0_pfield02`=`'107101`'`}
+`{`$specification_Modifier_Affect_child_list0_column03`=`'110103`'`}
+`{`$specification_Modifier_Affect_child_list0_clname03`=`'Modifier_Affect_Extra`'`}
+`{`$specification_Modifier_Affect_child_list0_cltype03`=`'int`'`}
+`{`$specification_Modifier_Affect_child_list0_clxtra03`=`'enum=560`'`}
+`{`$specification_Modifier_Affect_child_list0_clmods03`=`'`'`}
+`{`$specification_Modifier_Affect_child_list0_cluniq03`=`'false`'`}
+`{`$specification_Modifier_Affect_child_list0_cindex03`=`'false`'`}
 `{`}
 `{`$specification_Module_child_list0_id`=`'602950`'`}
 `{`$specification_Module_child_list0_cid`=`'126100`'`}

@@ -9560,6 +9560,15 @@
      <unique>false
      <indexed>false
     </column>
+    <column/>
+     <name>field_modifier_affect_extra
+     <field>110103
+     <ftype>int
+     <extra>enum=560
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
    </columns>
    <parents/>
    </parents>
