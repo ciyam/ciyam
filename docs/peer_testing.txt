@@ -21,7 +21,7 @@ cd ~/ciyam/src
 #                                                                                                           #
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
- rm -rf .ciyam/*
+ rm -rf .files/*
 
  mkdir -p bc.e3733d121
  rm -rf bc.e3733d121/*
@@ -218,7 +218,7 @@ exit
 #-----------------------------------------------------------------------------------------------------------#
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
- rm -r .ciyam/*
+ rm -r .files/*
 
  ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files_area_dir=bc.e3733d121 13031 &
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
@@ -229,8 +229,8 @@ peer_listen 12021 e3733d121
 quit
 
  ./ciyam_client
-~mkdir .ciyam/e3733d121
-file_archive -add .ciyam/e3733d121 10MB e3733d121
+~mkdir .files/e3733d121
+file_archive -add .files/e3733d121 10MB e3733d121
 ;trace f0018
 peer_connect e3733d121 12021
 wait 500
@@ -283,7 +283,7 @@ bc.e3733d121.zenith
 [23/100000]185.2 kB/100.0 GB:24 tag(s)
 
 > file_archives
-e3733d121 [okay      ] (196.0 kB/10.0 MB) .ciyam/e3733d121
+e3733d121 [okay      ] (196.0 kB/10.0 MB) .files/e3733d121
 
 > file_info bc.e3733d121.zenith
 [core-blob] 2f81b61b72185ec053c8f5bfaa65c78ba2ac49f3cf28583701ab25c3f5870c7c (285 B) blk
@@ -292,7 +292,7 @@ e3733d121 [okay      ] (196.0 kB/10.0 MB) .ciyam/e3733d121
 # Now shut down the '-files_area_dir=bc.e3733d121' server instance using 'fg' and 'ctrl-c'                  #
 #-----------------------------------------------------------------------------------------------------------#
 
- fg 1
+ fg %1
 ./ciyam_server -quiet -sid=de604cee0755a3d81944ea96aed12681 -files_area_dir=bc.e3733d121 13031
 ^C
 
@@ -374,14 +374,14 @@ e3733d121 [okay      ] (196.0 kB/10.0 MB) bc.e3733d121/e3733d121
 # Now shut down the '-no_peers' server instance using 'fg' and 'ctrl-c'                                     #
 #-----------------------------------------------------------------------------------------------------------#
 
- fg 2
+ fg %2
 ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers
 ^C
 
 #-----------------------------------------------------------------------------------------------------------#
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
- rm -r .ciyam/*
+ rm -r .files/*
 
  ./ciyam_server -quiet -sid=9a96178dfe775b4baaeed2488c44a54d -no_peers &
 
@@ -477,7 +477,7 @@ ciyam
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
  rm .restore_needed
- rm -r .ciyam/*
+ rm -r .files/*
  rm -rf bc.e3733d121/*
  rmdir bc.e3733d121
 
@@ -690,7 +690,7 @@ session_list
 session_kill 2
 quit
 
-vi .ciyam/ciyam_server.log
+vi .files/ciyam_server.log
 
 vi bc.e3733d121/ciyam_server.log
 
@@ -757,7 +757,7 @@ session_list
 session_kill 2
 quit
 
-vi .ciyam/ciyam_server.log
+vi .files/ciyam_server.log
 
 vi bc.e3733d121/ciyam_server.log
 
@@ -839,6 +839,6 @@ session_list
 session_kill 2
 quit
 
-vi .ciyam/ciyam_server.log
+vi .files/ciyam_server.log
 
 vi bc.e3733d121/ciyam_server.log
