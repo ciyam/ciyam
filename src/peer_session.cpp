@@ -943,6 +943,7 @@ string determine_identity( const string& concatenated_pubkey_hashes )
    // NOTE: Shared blockchains will use the backup identity in reverse so if the
    // identity value is palendromic then increment (or zero) the last character.
    string reversed( identity );
+
    reverse( reversed.begin( ), reversed.end( ) );
 
    if( identity == reversed )
@@ -3100,6 +3101,18 @@ void process_public_key_file( const string& blockchain,
 
       if( has_raw_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ) )
          process_queued_hub_using_peerchains( identity );
+      else
+      {
+         peerchain_type chain_type = get_blockchain_type( blockchain );
+
+         if( ( chain_type == e_peerchain_type_backup )
+          || ( chain_type == e_peerchain_type_shared ) )
+         {
+            condemn_this_session( );
+
+            throw runtime_error( "new core blockchain requires verification" );
+         }
+      }
    }
 
    if( key_scale == e_public_key_scale_primary )
@@ -4503,8 +4516,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          else if( !is_waiting_for_hub )
          {
             // NOTE: Check whether a new block has been created either locally or remotely.
-            string next_block_tag( blockchain
-             + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
+            string next_block_tag( blockchain + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
 
             bool has_tree_files = false;
             bool force_tree_root_add = false;
@@ -6107,8 +6119,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    }
 
    // NOTE: If backup is being prepared then condemn session.
-   if( has_raw_system_variable(
-    get_special_var_name( e_special_var_prepare_system ) ) )
+   if( has_raw_system_variable( get_special_var_name( e_special_var_prepare_system ) ) )
       condemn_this_session( );
 
    // NOTE: It is possible that a support session had been started for
@@ -7222,6 +7233,7 @@ void peer_session::on_start( )
             if( get_block_height_from_tags( blockchain, zenith_hash, blockchain_height ) )
             {
                has_zenith = true;
+
                cmd_handler.set_blockchain_height( blockchain_height );
 
                string signature_tag( blockchain + '.' + to_string( blockchain_height ) + c_sig_suffix );
@@ -7371,13 +7383,16 @@ void peer_session::on_start( )
          }
       }
 
-      // NOTE: If a hub identity has been provided then connect to it (unless already connected).
-      if( okay && !is_responder && !is_for_support && !hub_identity.empty( ) )
+      // NOTE: If a hub identity has been provided (and a zenith tag was found)
+      // then will now connect to it (unless it has already been connected to).
+      if( okay && has_zenith && !is_responder && !is_for_support && !hub_identity.empty( ) )
       {
          string hub_genesis_hash( get_raw_system_variable( "@" + identity ) );
 
-         // NOTE: If a hub identity genesis block is already known then verify the identity.
-         if( !hub_genesis_hash.empty( ) )
+         // NOTE: If a hub identity genesis block is already known then verify
+         // the identity (unless the file is not found which will occur if the
+         // hub blockchain has been removed).
+         if( !hub_genesis_hash.empty( ) && has_file( hub_genesis_hash ) )
          {
             core_file_data core_data( extract_file( hub_genesis_hash, "" ) );
 
@@ -7972,6 +7987,7 @@ peer_session* create_peer_initiator( const string& blockchain,
        + " sessions for support (max is " + to_string( c_max_num_for_support ) + ")" );
 
    int port = 0;
+
    string host( c_local_host );
 
    parse_host_and_or_port( host_and_or_port, host, port );
@@ -8118,8 +8134,9 @@ peer_session* create_peer_initiator( const string& blockchain,
                   has_main_session = true;
                   p_main_session = p_session;
 
-                  // NOTE: If okay when initially started then will later automatically try reconnecting.
-                  if( is_paired && !is_secondary
+                  // NOTE: If okay when initially started then will later automatically try
+                  // reconnecting (unless is not applicable or does not have a zenith tag).
+                  if( is_paired && !is_secondary && has_tag( blockchain + c_zenith_suffix )
                    && ( !p_other_session_extras || p_other_session_extras->backup_identity.empty( ) ) )
                      set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, c_true_value );
                }
@@ -8306,6 +8323,7 @@ void peer_session_starter::on_start( )
          else
          {
             bool is_listener = false;
+
             vector< string > all_entries;
 
             // NOTE: If first entry is prefixed with '!' then will start all as listeners.
@@ -8417,6 +8435,12 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
       blockchain.erase( pos );
    }
+
+   // NOTE: If this is a new (non-local) blockchain
+   // then will initially disallow support sessions
+   // (as checksum verification is first required).
+   if( !has_tag( blockchain + c_zenith_suffix ) )
+      num_for_support = 0;
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
