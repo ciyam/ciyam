@@ -1020,6 +1020,10 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_id=$specification_\\0_id arg_inc_value=$specification_\\0_inc_value arg_mask_field=$specification_\\0_mask_field\
  arg_next_field=$specification_\\0_next_field arg_exhausted_field=$specification_\\0_exhausted_field`}\
 `,\
+`@eq`(`'\\1`'`,`'for_call_proc`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
+`{`#for_call_proc.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
+ arg_id=$specification_\\0_id arg_oprocedure=$specification_\\0_oprocedure`}\
+`,\
 `@eq`(`'\\1`'`,`'for_call_proc_in_parent`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_call_parent_proc.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
  arg_id=$specification_\\0_id arg_procedure_arg=$specification_\\0_procedure_arg\

@@ -1,0 +1,5 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_call_proc)] `{`$arg_id`}
+   get_obj( ).`{`$arg_oprocedure`}( );
+   // [(finish for_call_proc)] `{`$arg_id`}
+`}
