@@ -3042,17 +3042,17 @@ void process_public_key_file( const string& blockchain,
 
    pubkey_tag += ".";
 
-   string demo_backup_blockchain( c_bc_prefix );
-   demo_backup_blockchain += c_test_backup_identity;
+   string test_backup_blockchain( c_bc_prefix );
+   test_backup_blockchain += c_test_backup_identity;
 
-   string demo_shared_blockchain( c_bc_prefix );
-   demo_shared_blockchain += c_test_shared_identity;
+   string test_shared_blockchain( c_bc_prefix );
+   test_shared_blockchain += c_test_shared_identity;
 
    size_t scaling_value = c_bc_scaling_value;
 
-   if( ( blockchain == demo_backup_blockchain )
-    || ( blockchain == demo_shared_blockchain ) )
-      scaling_value = c_bc_scaling_demo_value;
+   if( ( blockchain == test_backup_blockchain )
+    || ( blockchain == test_shared_blockchain ) )
+      scaling_value = c_bc_scaling_test_value;
 
    size_t scaling_squared = ( scaling_value * scaling_value );
 
@@ -3101,16 +3101,19 @@ void process_public_key_file( const string& blockchain,
 
       if( has_raw_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ) )
          process_queued_hub_using_peerchains( identity );
-      else
+      else if( scaling_value != c_bc_scaling_test_value )
       {
          peerchain_type chain_type = get_blockchain_type( blockchain );
 
-         if( ( chain_type == e_peerchain_type_backup )
+         if( ( chain_type == e_peerchain_type_user )
+          || ( chain_type == e_peerchain_type_backup )
           || ( chain_type == e_peerchain_type_shared ) )
          {
+            msleep( c_finish_sleep_time );
+
             condemn_this_session( );
 
-            throw runtime_error( "new core blockchain requires verification" );
+            throw runtime_error( "new core/user blockchain requires verification" );
          }
       }
    }

@@ -21,7 +21,7 @@ const size_t c_encrypted_length = 32;
 const size_t c_bc_identity_length = 9;
 
 const size_t c_bc_scaling_value = 50;
-const size_t c_bc_scaling_demo_value = 5;
+const size_t c_bc_scaling_test_value = 5;
 
 const size_t c_secret_reserve_size = 256;
 

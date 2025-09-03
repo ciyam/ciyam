@@ -206,7 +206,7 @@ void verify_block( const string& content, bool check_dependents )
 
    if( ( blockchain_identity == string( c_test_backup_identity ) )
     || ( blockchain_identity == string( c_test_shared_identity ) ) )
-      scaling_value = c_bc_scaling_demo_value;
+      scaling_value = c_bc_scaling_test_value;
 
    size_t scaling_squared = ( scaling_value * scaling_value );
 
