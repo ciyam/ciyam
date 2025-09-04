@@ -4236,11 +4236,11 @@ void log_trace_message( uint32_t flag, const string& message )
       }
 
       if( flag & TRACE_INITIAL )
-         prefix = " --";
+         prefix = " -";
       else if( flag & TRACE_DETAILS )
          prefix = " ==";
       else if( flag & TRACE_VERBOSE )
-         prefix = " ##";
+         prefix = " ###";
 
       flag &= ~TRACE_COLLAGE;
    }
