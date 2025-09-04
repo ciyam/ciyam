@@ -115,8 +115,8 @@ Active,M001C102F105
 Active_And_New,M001C102F106
 Active_And_Not_Activated,M001C102F107
 Active_And_Not_New,M001C102F108
-Active_Not_New_And_Ext_Contact,M001C102F109
-Active_Not_New_And_Verified,M001C102F110
+Active_And_Verified,M001C102F109
+Active_Not_New_And_Ext_Contact,M001C102F110
 Alias,M001C102F111
 Alias_And_Identity,M001C102F112
 Backup_Identity,M001C102F113
@@ -357,7 +357,8 @@ Status_,M001C108F159
 Sync_Status,M001C108F160
 System_Secret,M001C108F161
 Verified_Checksum,M001C108F162
-Unverified_Checksum,M001C108F163
+Verified_Checksum_And_Auto_Off,M001C108F163
+Unverified_Checksum,M001C108F164
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000
