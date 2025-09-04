@@ -17,7 +17,7 @@ cd ~/ciyam/src
 #                                                                                                           #
 # taxi act describe attitude focus ugly govern outer note isolate endless act                               #
 #                                                                                                           #
-# (which if entered via the UI would reesult in the identity value 6b24210e8)                               #
+# (which if entered via the UI would result in the identity value 6b24210e8)                                #
 #                                                                                                           #
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
