@@ -36,6 +36,7 @@
 #include "utilities.h"
 #include "date_time.h"
 #include "ciyam_base.h"
+#include "class_base.h"
 #include "ciyam_files.h"
 #ifdef SSL_SUPPORT
 #  include "crypto_keys.h"
@@ -134,7 +135,7 @@ const size_t c_key_pair_separator_pos = 44;
 
 const size_t c_wait_sleep_time = 250;
 const size_t c_start_sleep_time = 2500;
-const size_t c_finish_sleep_time = 1000;
+const size_t c_finish_sleep_time = 2000;
 const size_t c_support_sleep_time = 1000;
 
 const size_t c_connect_timeout = 15000;
@@ -764,6 +765,9 @@ string decrypt_cmd_data( const tcp_socket& socket,
     to_string( socket.get_num_read_lines( ) ) ), e_stream_cipher_chacha20 );
 
    string data( ss.str( ) );
+
+   if( data == c_cmd_peer_session_bye )
+      throw runtime_error( "session was terminated by peer" );
 
    string::size_type pos = data.rfind( '?' );
 
@@ -3109,6 +3113,18 @@ void process_public_key_file( const string& blockchain,
           || ( chain_type == e_peerchain_type_backup )
           || ( chain_type == e_peerchain_type_shared ) )
          {
+            if( chain_type == e_peerchain_type_user )
+            {
+               if( !has_tag( blockchain + c_master_suffix ) )
+                  lock_blockchain( identity );
+            }
+            else
+            {
+               if( !has_session_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) )
+                && ( identity == get_raw_session_variable( get_special_var_name( e_special_var_paired_identity ) ) ) )
+                  lock_blockchain( identity );
+            }
+
             msleep( c_finish_sleep_time );
 
             condemn_this_session( );
@@ -6352,7 +6368,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
             if( socket.read_line( response, c_request_timeout, 0, p_sock_progress ) <= 0 )
             {
-               cmd_and_args = "bye";
+               cmd_and_args = c_cmd_peer_session_bye;
+
                break;
             }
 
@@ -6372,7 +6389,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
             if( response != string( c_response_okay ) )
             {
-               cmd_and_args = "bye";
+               cmd_and_args = c_cmd_peer_session_bye;
+
                break;
             }
 
@@ -6396,7 +6414,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          {
             // NOTE: If the session is not captured and it has either been condemned or
             // the server is shutting down, or its socket has died then force a "bye".
-            cmd_and_args = "bye";
+            cmd_and_args = c_cmd_peer_session_bye;
             break;
          }
 
@@ -6411,7 +6429,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          if( !is_local || !socket.had_timeout( ) )
          {
             // NOTE: Don't allow zombies to hang around unless they are local.
-            cmd_and_args = "bye";
+            cmd_and_args = c_cmd_peer_session_bye;
+
             break;
          }
       }
@@ -6421,7 +6440,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
             condemn_this_session( );
 
          if( ( cmd_and_args == c_response_okay ) || ( cmd_and_args == c_response_okay_more ) )
-            cmd_and_args = "bye";
+            cmd_and_args = c_cmd_peer_session_bye;
 
          if( !g_server_shutdown )
          {
@@ -6906,6 +6925,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
                if( chain_type != e_peerchain_type_any )
                {
                   string error;
+
                   check_blockchain_type( blockchain, chain_type, &error );
 
                   if( !error.empty( ) )
@@ -6957,6 +6977,10 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
                throw runtime_error( error );
             }
+
+            if( is_locked_blockchain( unprefixed_blockchain ) )
+               // FUTURE: This message should be handled as a server string message.
+               throw runtime_error( "Waiting for peer checksum verification." );
 
             // NOTE: Prevent potential immediate killing of a reconnected session via UI.
             if( !is_data && !is_user )
@@ -7711,6 +7735,7 @@ void peer_listener::on_start( )
                      split( unprefixed_blockchains, existing_blockchains );
 
                      vector< string > all_changes;
+
                      split( identity_changes, all_changes );
 
                      for( size_t i = 0; i < all_changes.size( ); i++ )
