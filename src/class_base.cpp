@@ -6297,6 +6297,33 @@ string local_peer_hub_checksum( const string& extra )
    return crypto_checksum( hash );
 }
 
+void lock_blockchain( const string& identity )
+{
+   string genesis_tag( c_bc_prefix + identity + ".0.blk" );
+
+   if( !has_tag( genesis_tag ) )
+      throw runtime_error( "unable to find genesis tag '" + genesis_tag + "'" );
+
+   string hash( tag_file_hash( genesis_tag ) );
+
+   tag_file( c_bc_prefix + identity + c_locked_suffix, hash );
+}
+
+void unlock_blockchain( const string& identity )
+{
+   string lock_tag( c_bc_prefix + identity + c_locked_suffix );
+
+   if( has_tag( lock_tag ) )
+      tag_del( lock_tag );
+}
+
+bool is_locked_blockchain( const string& identity )
+{
+   string lock_tag( c_bc_prefix + identity + c_locked_suffix );
+
+   return has_tag( lock_tag );
+}
+
 bool any_session_backup_blockchains( )
 {
    bool retval = false;

@@ -1699,6 +1699,11 @@ std::string CIYAM_BASE_DECL_SPEC local_shared_checksum( const std::string& extra
 std::string CIYAM_BASE_DECL_SPEC local_combined_checksum( const std::string& extra );
 std::string CIYAM_BASE_DECL_SPEC local_peer_hub_checksum( const std::string& extra );
 
+void lock_blockchain( const std::string& identity );
+void unlock_blockchain( const std::string& identity );
+
+bool is_locked_blockchain( const std::string& identity );
+
 bool CIYAM_BASE_DECL_SPEC any_session_backup_blockchains( );
 
 std::string CIYAM_BASE_DECL_SPEC local_backup_blockchain_status( );
