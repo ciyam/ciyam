@@ -18,7 +18,7 @@ else
 
   mkfifo reconstruct_meta.pipe
 
-  tail -f reconstruct_meta.pipe &
+  tail -f reconstruct_meta.pipe 2>/dev/null &
 
   ./destroy_apps_and_models $1 "~reconstruct_meta" "reconstruct_meta.pipe"
 
