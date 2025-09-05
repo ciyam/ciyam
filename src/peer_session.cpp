@@ -766,7 +766,7 @@ string decrypt_cmd_data( const tcp_socket& socket,
 
    string data( ss.str( ) );
 
-   if( data == c_cmd_peer_session_bye )
+   if( secret_data == c_cmd_peer_session_bye )
       throw runtime_error( "session was terminated by peer" );
 
    string::size_type pos = data.rfind( '?' );
@@ -3125,9 +3125,9 @@ void process_public_key_file( const string& blockchain,
                   lock_blockchain( identity );
             }
 
-            msleep( c_finish_sleep_time );
-
             condemn_this_session( );
+
+            msleep( c_finish_sleep_time );
 
             throw runtime_error( "new core/user blockchain requires verification" );
          }
