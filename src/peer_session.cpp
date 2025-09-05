@@ -1807,7 +1807,7 @@ bool get_block_height_from_tags( const string& blockchain, const string& hash, s
       string::size_type spos = next_tag.find( c_blk_suffix );
 
       // NOTE: Determine the block height from its block tag.
-      if( pos == 0 && spos != string::npos )
+      if( ( pos == 0 ) && ( spos != string::npos ) )
       {
          found = true;
 
@@ -1846,6 +1846,7 @@ bool add_put_list_if_available( const string& hub_identity, const string& blockc
             string hub_opl_info( extract_file( hub_opl_hash, "" ) );
 
             vector< string > lines;
+
             split( hub_opl_info, lines, '\n' );
 
             for( size_t i = 0; i < lines.size( ); i++ )
@@ -1862,6 +1863,7 @@ bool add_put_list_if_available( const string& hub_identity, const string& blockc
                      throw runtime_error( "unexpected opl line " + lines[ i ] );
 
                   string encoded_hash( next_line.substr( pos + 1 ) );
+
                   next_line.erase( pos );
 
                   pos = next_line.find( c_put_suffix );
@@ -1884,6 +1886,7 @@ bool add_put_list_if_available( const string& hub_identity, const string& blockc
                         string put_file_hash( hex_encode( base64::decode( encoded_hash ) ) );
 
                         add_peer_file_hash_for_get( put_file_hash );
+
                         set_session_variable( get_special_var_name( e_special_var_blockchain_put_list_hash ), put_file_hash );
                      }
                   }
@@ -3388,7 +3391,8 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
     get_special_var_name( e_special_var_blockchain_get_tree_files ) );
 
    TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION,
-    "(process_block_for_height) hash: " + hash + " height: " + to_string( height ) );
+    "(process_block_for_height) hash: " + hash + " height: "
+    + to_string( height ) + " (is_fetching = " + to_string( is_fetching ) + ")" );
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
@@ -7467,6 +7471,8 @@ void peer_session::on_start( )
 
             create_peer_initiator( hub_blockchain, host_and_port,
              false, 0, false, false, false, e_peerchain_type_hub, true );
+
+            set_waiting_for_hub_progress( identity, hub_identity );
 
             set_hub_system_variable_if_required( identity, hub_identity );
          }
