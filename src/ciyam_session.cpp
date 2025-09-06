@@ -1331,13 +1331,26 @@ void socket_command_handler::preprocess_command_and_args( string& str, const str
 
    if( !str.empty( ) )
    {
-      TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, cmd_and_args );
+      string::size_type pos = string::npos;
+
+      // NOTE: In order to prevent accidentail leakage of sensitive information
+      // (such as passwords) a command can be prefixed with '/' to truncate the
+      // log output immediately after the command name.
+      if( ( str.length( ) > 1 ) && ( str[ 0 ] == '/' ) )
+      {
+         str.erase( 0, 1 );
+
+         pos = cmd_and_args.find( ' ' );
+      }
+
+      TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, cmd_and_args.substr( 0, pos ) );
 
       if( str[ 0 ] == '?' || str.find( "help" ) == 0 )
       {
          string::size_type pos = str.find( ' ' );
 
          string wildcard_match_expr;
+
          if( pos != string::npos )
             wildcard_match_expr = str.substr( pos + 1 );
 
@@ -1355,6 +1368,7 @@ void socket_command_handler::preprocess_command_and_args( string& str, const str
       else if( str == "kill" )
       {
          g_server_shutdown = true;
+
          str.erase( );
       }
 #endif

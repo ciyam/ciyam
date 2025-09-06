@@ -435,6 +435,7 @@ decode -url -text $OUTPUT
 encode -url -text abcdefgh
 decode -url -text $OUTPUT
 ;
+/crypto_hash hello
 crypto_hash hello
 encode $OUTPUT
 decode $OUTPUT
@@ -443,6 +444,7 @@ crypto_hash hello
 encode -url $OUTPUT
 decode -url $OUTPUT
 ;
+/crypto_hash -512 hello
 crypto_hash -512 hello
 encode $OUTPUT
 decode $OUTPUT
