@@ -95,8 +95,8 @@ PEER_PORT=0
 ;
 @ifdef $SHARED_SECRET
 .decrypt $SHARED_SECRET
-.crypto_hash -hex -x=100000 $OUTPUT
-.system_variable >@secret_hash_$IDENTITY $OUTPUT
+./crypto_hash -hex -x=100000 $OUTPUT
+./system_variable >@secret_hash_$IDENTITY $OUTPUT
 @endif
 ;
 @ifndef $PEERCHAIN_HUB

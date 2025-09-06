@@ -114,21 +114,21 @@ MODULUS=@$NEXT_HEIGHT#$MULTIPLE
 ;
 @ifeq "$MODULUS" "0"
 @ifdef $CHANNEL
-.crypto_hash $SEED -s=$IDENT$HEIGHT
+./crypto_hash $SEED -s=$IDENT$HEIGHT
 @else
 @ifndef $PEER_HUB
 @ifndef $SHARED
-.crypto_hash $SEED -s=-$HEIGHT
+./crypto_hash $SEED -s=-$HEIGHT
 @else
-.crypto_hash $SEED -s=+$HEIGHT
+./crypto_hash $SEED -s=+$HEIGHT
 @endif
 @else
-.crypto_hash $SEED -s=#$HEIGHT
+./crypto_hash $SEED -s=#$HEIGHT
 @endif
 @endif
 ENTROPY_HASH=$OUTPUT
 ;
-.crypto_lamport new_primary $ENTROPY_HASH$EXTRA
+./crypto_lamport new_primary $ENTROPY_HASH$EXTRA
 ;
 .file_put new_primary.key bc.$IDENT.$HEIGHT.key
 .file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
@@ -145,21 +145,21 @@ HEIGHT=@$HEIGHT+$MULTIPLE
 @ifndef $HEIGHT_ONLY
 ;
 @ifdef $CHANNEL
-.crypto_hash $SEED -s=$IDENT$HEIGHT
+./crypto_hash $SEED -s=$IDENT$HEIGHT
 @else
 @ifndef $PEER_HUB
 @ifndef $SHARED
-.crypto_hash $SEED -s=-$HEIGHT
+./crypto_hash $SEED -s=-$HEIGHT
 @else
-.crypto_hash $SEED -s=+$HEIGHT
+./crypto_hash $SEED -s=+$HEIGHT
 @endif
 @else
-.crypto_hash $SEED -s=#$HEIGHT
+./crypto_hash $SEED -s=#$HEIGHT
 @endif
 @endif
 ENTROPY_HASH=$OUTPUT
 ;
-.crypto_lamport new_primary $ENTROPY_HASH$EXTRA
+./crypto_lamport new_primary $ENTROPY_HASH$EXTRA
 ;
 @ifneq "$MODULUS" "0"
 .file_put new_primary.key bc.$IDENT.$HEIGHT.key
@@ -183,21 +183,21 @@ MODULUS=@$NEXT_HEIGHT#$SQUARED
 HEIGHT=@$HEIGHT+$SQUARED
 ;
 @ifdef $CHANNEL
-.crypto_hash $SEED -s=$IDENT$HEIGHT
+./crypto_hash $SEED -s=$IDENT$HEIGHT
 @else
 @ifndef $PEER_HUB
 @ifndef $SHARED
-.crypto_hash $SEED -s=-$HEIGHT
+./crypto_hash $SEED -s=-$HEIGHT
 @else
-.crypto_hash $SEED -s=+$HEIGHT
+./crypto_hash $SEED -s=+$HEIGHT
 @endif
 @else
-.crypto_hash $SEED -s=#$HEIGHT
+./crypto_hash $SEED -s=#$HEIGHT
 @endif
 @endif
 ENTROPY_HASH=$OUTPUT
 ;
-.crypto_lamport new_primary $ENTROPY_HASH$EXTRA
+./crypto_lamport new_primary $ENTROPY_HASH$EXTRA
 ;
 .file_kill -q bc.$IDENT.$HEIGHT.key
 ;

@@ -25,9 +25,9 @@ TARGET=%SPLIT:2%
 ;
 @ifdef $SHARED_SECRET
 .decrypt $SHARED_SECRET
-.crypto_hash -hex -x=100000 $OUTPUT
+./crypto_hash -hex -x=100000 $OUTPUT
 SHARED_SECRET_HASH=$OUTPUT
-.system_variable >@secret_hash_$IDENT $SHARED_SECRET_HASH
+./system_variable >@secret_hash_$IDENT $SHARED_SECRET_HASH
 @endif
 ;
 @endif
