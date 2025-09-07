@@ -2014,14 +2014,14 @@ void class_base::destroy( )
                      output_progress_message( "Cascaded " + to_string( i ) + " children..." );
                   }
 
-                  // NOTE: Due to relationship complexities cascading can
-                  // end up being repeated so need to ignore records that
-                  // have been destroy locked by own session.
-                  if( !is_destroy_locked_by_own_session( *p_class_base ) )
-                     continue;
-
                   if( next_op == e_cascade_op_destroy )
                   {
+                     // NOTE: The first pass should have locked all relevant
+                     // records so if any records are found that the session
+                     // has not already locked then will ignore them.
+                     if( !is_destroy_locked_by_own_session( *p_class_base ) )
+                        continue;
+
                      restorable< bool > tmp_force_fetch( p_class_base->force_fetch, true );
 
                      op_destroy_rc rc;
@@ -2033,6 +2033,15 @@ void class_base::destroy( )
                   }
                   else
                   {
+                     // NOTE: Due to relationship complexities cascading can
+                     // end up being repeated so need to ignore records that
+                     // have been destroy locked by own session. Also due to
+                     // first pass locking all records to be updated for the
+                     // cascade operation should already be update locked.
+                     if( is_destroy_locked_by_own_session( *p_class_base )
+                      || !is_update_locked_by_own_session( *p_class_base ) )
+                        continue;
+
                      op_update_rc rc;
 
                      p_class_base->op_update( &rc );
@@ -2043,6 +2052,7 @@ void class_base::destroy( )
                         p_class_base->op_apply( );
                      }
                   }
+
                } while( p_class_base->iterate_next( ) );
             }
          }
