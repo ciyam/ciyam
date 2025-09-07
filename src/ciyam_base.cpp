@@ -1279,13 +1279,16 @@ void storage_handler::dump_locks( ostream& os ) const
 
    if( minimal_output )
    {
-      os << "handle   key (class_id:instance)                          type\n";
-      os << "-------- ------------------------------------------------ ----------\n";
+      os << "handle   key (class_id:instance)                                          type\n";
+      os << "-------- ---------------------------------------------------------------- ----------\n";
    }
    else
    {
-      os << "handle   key (class_id:instance)                          type       tx_type    tran_id    tran_level p_session      p_class_base   p_root_class\n";
-      os << "-------- ------------------------------------------------ ---------- ---------- ---------- ---------- -------------- -------------- --------------\n";
+      os << "handle   key (class_id:instance)                                          type       ";
+      os << "tx_type    tran_id    tran_level p_session      p_class_base   p_root_class\n";
+
+      os << "-------- ---------------------------------------------------------------- ---------- ";
+      os << "---------- ---------- ---------- -------------- -------------- --------------\n";
    }
 
    for( lici = lock_index.begin( ); lici != lock_index.end( ); ++lici )
@@ -1295,7 +1298,7 @@ void storage_handler::dump_locks( ostream& os ) const
       os.setf( ios::left );
 
       os << setw( 8 ) << lici->first
-       << ' ' << setw( 48 ) << lici->second->first
+       << ' ' << setw( 64 ) << lici->second->first
        << ' ' << setw( 10 ) << op_lock::lock_type_name( next_lock.type );
 
       if( minimal_output )
