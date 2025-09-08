@@ -4022,6 +4022,15 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
       instance_accessor.perform_after_fetch( );
 }
 
+string hex_level( uint32_t level )
+{
+   ostringstream osstr;
+
+   osstr << setw( 5 ) << setfill( '0' ) << hex << level;
+
+   return osstr.str( );
+}
+
 time_t g_timezones_mod;
 
 bool timezones_file_has_changed( )
@@ -4029,6 +4038,7 @@ bool timezones_file_has_changed( )
    bool changed = false;
 
    time_t t = 0;
+
    if( file_exists( c_timezones_file ) )
       t = last_modification_time( c_timezones_file );
 
@@ -4049,8 +4059,9 @@ int64_t g_log_unix_check_time = 0;
 bool g_log_milliseconds = false;
 bool g_log_check_excessive = true;
 
-// IMPORTANT: Modifications made to this function may
-// prevent the "admin" account from using the FCGI UI.
+// IMPORTANT: Any changes made to this function could
+// prevent the "admin" account from using the FCGI UI
+// (so will need to carefully check before changing).
 void hash_sid_val( string& sid )
 {
    sha256 hash( sid );
@@ -4077,25 +4088,19 @@ void trace_flags( uint32_t flags )
 
 void list_trace_flags( ostream& os )
 {
-   os << c_trace_flag_general; // TRACE_GENERAL
-
+   os << setw( 5 ) << setfill( '0' ) << hex << TRACE_GENERAL << ' ' << c_trace_flag_general;
+   os << '\n';
+   os << setw( 5 ) << setfill( '0' ) << hex << TRACE_LOCKING << ' ' << c_trace_flag_locking;
+   os << '\n';
+   os << setw( 5 ) << setfill( '0' ) << hex << TRACE_OBJECTS << ' ' << c_trace_flag_objects;
+   os << '\n';
+   os << setw( 5 ) << setfill( '0' ) << hex << TRACE_QUERIES << ' ' << c_trace_flag_queries;
    os << "\n";
-   os << c_trace_flag_locking; // TRACE_LOCKING
-
-   os << "\n";
-   os << c_trace_flag_objects; // TRACE_OBJECTS
-
-   os << "\n";
-   os << c_trace_flag_queries; // TRACE_QUERIES
-
-   os << "\n";
-   os << c_trace_flag_session; // TRACE_SESSION
-
-   os << "\n";
-   os << c_trace_flag_sockets; // TRACE_SOCKETS
-
-   os << "\n";
-   os << c_trace_flag_various; // TRACE_VARIOUS
+   os << setw( 5 ) << setfill( '0' ) << hex << TRACE_SESSION << ' ' << c_trace_flag_session;
+   os << '\n';
+   os << setw( 5 ) << setfill( '0' ) << hex << TRACE_SOCKETS << ' ' << c_trace_flag_sockets;
+   os << '\n';
+   os << setw( 5 ) << setfill( '0' ) << hex << TRACE_VARIOUS << ' ' << c_trace_flag_various;
 }
 
 void trace_flag_names( const string& names, bool unset )
@@ -4209,10 +4214,10 @@ void set_trace_level( const string& level_name )
 
 void list_trace_levels( vector< string >& level_names )
 {
-   level_names.push_back( c_trace_level_minimal );
-   level_names.push_back( c_trace_level_initial );
-   level_names.push_back( c_trace_level_details );
-   level_names.push_back( c_trace_level_verbose );
+   level_names.push_back( hex_level( TRACE_MINIMAL ) + ' ' + string( c_trace_level_minimal ) );
+   level_names.push_back( hex_level( TRACE_INITIAL ) + ' ' + string( c_trace_level_initial ) );
+   level_names.push_back( hex_level( TRACE_DETAILS ) + ' ' + string( c_trace_level_details ) );
+   level_names.push_back( hex_level( TRACE_VERBOSE ) + ' ' + string( c_trace_level_verbose ) );
 }
 
 void log_trace_message( uint32_t flag, const string& message )
