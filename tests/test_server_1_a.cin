@@ -1,6 +1,8 @@
 version
 #$MAX_FILE_SIZE
 session_list -min
+trace_levels
+trace_flags -list
 encrypt -no_ssl -no_salt -pwd_and_data "pwd test_data_to_encrypt"
 a=X
 b=Y

@@ -3,6 +3,19 @@ version
 1MB
 session_list -min
 1* session_list <none> 127.0.0.1 0:0 0:0 =2
+trace_levels
+10000 minimal
+20000 initial
+40000 details
+80000 verbose
+trace_flags -list
+00000 general
+00001 locking
+00002 objects
+00004 queries
+00008 session
+00010 sockets
+00020 various
 encrypt -no_ssl -no_salt -pwd_and_data "pwd test_data_to_encrypt"
 WHC7HAap9vD4fzBv7wSoama3S5o=
 X
