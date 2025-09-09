@@ -388,6 +388,22 @@ FORUM_OPTION_KEY=$OUTPUT
 @endif
 @skip
 ;
+.pf 100 137100 "302820,137101#2 $FORUM_PACKAGE_KEY,opt_forum_package_message_package" #1 @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Forum package option 'message_package'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+FORUM_OPTION_KEY=$OUTPUT
+.pu $CIYAM_UID @now 100 137100 $FORUM_OPTION_KEY "302830=$MESSAGE_PACKAGE_KEY"
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
 .pe $CIYAM_UID @now 100 136100 "-v=@async=false,@message=Installing Forum Package..." $FORUM_PACKAGE_KEY -136410
 @ifdef $ERROR
 @label ERROR
