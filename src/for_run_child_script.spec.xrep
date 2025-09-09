@@ -32,8 +32,7 @@
 
 `{`$i`}   temporary_session_variable tmp_session_class_var(
 `{`$i`}    get_special_var_name( e_special_var_class ), get_obj( ).child_`{`$arg_child`}( ).get_class_id( ) );
-
-`{`!`@eq`(`$arg_fields_and_values`,`'`'`)\
+`{`!`@eq`(`$arg_fields_and_values`,`'`'`)
 `{`$i`}   temporary_session_variable tmp_session_fields_and_values_var(
 `{`$i`}    get_special_var_name( e_special_var_fields_and_values ), get_obj( ).child_`{`$arg_child`}( ).get_fields_and_values( ) );
 `}
