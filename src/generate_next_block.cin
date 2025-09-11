@@ -12,6 +12,7 @@ IDENT=$1
 ;
 SEED=$2
 TREE=$3
+UTIME=$4
 ;
 FIRST=1
 BACKUP=
@@ -86,7 +87,9 @@ SEED=\\@sid:$OUTPUT
 @endif
 @endif
 ;
+@ifndef $UTIME
 UTIME=@unix:
+@endif
 ;
 @:LOOP
 ;
