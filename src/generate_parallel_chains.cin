@@ -69,6 +69,8 @@ NEXT_IDENTITY=$OUTPUT
 .file_core -header bc.$NEXT_IDENTITY.zenith h
 @ifndef $ERROR
 OTHER_HEIGHT=$OUTPUT
+.file_core -attribute bc.$NEXT_IDENTITY.zenith u
+UTIME=$OUTPUT
 ;
 @:INNER
 ;
@@ -86,7 +88,7 @@ IS_LT=@$OTHER_HEIGHT<$ZENITH_HEIGHT
 OTHER_HEIGHT=@$OTHER_HEIGHT+1
 .session_variable @deque
 OTHER_DEQUE=$OUTPUT
-<generate_next_block.cin $NEXT_IDENTITY @sid !bc.$IDENTITY.$OTHER_HEIGHT.blk
+<generate_next_block.cin $NEXT_IDENTITY @sid !bc.$IDENTITY.$OTHER_HEIGHT.blk $UTIME
 .session_variable @deque "~$OTHER_DEQUE"
 ;
 !!@:INNER
