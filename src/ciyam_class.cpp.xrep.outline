@@ -4918,7 +4918,11 @@ void `{`$full_class_name`}::get_always_required_field_names(
    ( void )use_transients;\
 `}
 `{`?`$all_get_always_required_field_names_specifications`[`$all_get_always_required_field_names_specifications`%,`,\
-`{`@eq`(`'\1`'`,`'destroy_restrict`'`)
+`{`@eq`(`'\1`'`,`'create_child`'`)`&`!`@eq`(`'`'`,`$specification_\0_field_list`)
+`{`#create_child.spec.xrep section=get_always_required_field_names\
+ arg_id=$specification_\0_id arg_field_list=$specification_\0_field_list`}\
+`,\
+`@eq`(`'\1`'`,`'destroy_restrict`'`)
 `{`#destroy_restrict.spec.xrep section=get_always_required_field_names\
  arg_id=$specification_\0_id arg_sfield=$specification_\0_field arg_pfield=$specification_\0_pfield`}\
 `,\

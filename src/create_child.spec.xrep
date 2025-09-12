@@ -58,3 +58,14 @@
    }
    // [(finish create_child)] `{`$arg_id`}
 `}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start create_child)] `{`$arg_id`}
+`{`[`$arg_field_list`%,`,\
+   dependents.insert( "\\1" );
+
+   if( ( use_transients && is_field_transient( e_field_id_\\1 ) )
+    || ( !use_transients && !is_field_transient( e_field_id_\\1 ) ) )
+      names.insert( "\\1" );
+`+\n`]`}\
+   // [(finish create_child)] `{`$arg_id`}
+`}
