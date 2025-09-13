@@ -1,7 +1,9 @@
 `{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_to_enum_item_label)] `{`$arg_id`}
-`{`$i`=`'`'`}`{`!`@eq`(`$arg_check_default`,`'`'`)`{`$i`=`'   `'`}\
-   if( get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$arg_check_default`,`'`'`)`{`$i`=`'   `'`}`}\
+`{`!`@eq`(`$i`,`'`'`)\
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_check_default`,`'`'`)
+    && ( `}`}`{`!`@eq`(`$arg_check_default`,`'`'`)get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`}`{`!`@eq`(`$arg_tfield`,`'`'`) )`}`} )
 `}\
 `{`$i`}   get_obj( ).`{`$arg_field`}( get_enum_string_`{`$arg_enum`}( get_obj( ).`{`$arg_sfield`}( ) ) );
    // [(finish transient_field_to_enum_item_label)] `{`$arg_id`}
@@ -16,5 +18,15 @@
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
          names.insert( "`{`$arg_sfield`}" );
    }
+`{`!`@eq`(`$arg_tfield`,`'`'`)
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_tfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+         names.insert( "`{`$arg_tfield`}" );
+   }
+`}\
    // [(finish transient_field_to_enum_item_label)] `{`$arg_id`}
 `}
