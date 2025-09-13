@@ -1,6 +1,9 @@
 `{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_to_enum_item_label)] `{`$arg_id`}
-   get_obj( ).`{`$arg_field`}( get_enum_string_`{`$arg_enum`}( get_obj( ).`{`$arg_sfield`}( ) ) );
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_check_default`,`'`'`)`{`$i`=`'   `'`}\
+   if( get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )
+`}\
+`{`$i`}   get_obj( ).`{`$arg_field`}( get_enum_string_`{`$arg_enum`}( get_obj( ).`{`$arg_sfield`}( ) ) );
    // [(finish transient_field_to_enum_item_label)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
