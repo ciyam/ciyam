@@ -7472,9 +7472,10 @@ void peer_session::on_start( )
             create_peer_initiator( hub_blockchain, host_and_port,
              false, 0, false, false, false, e_peerchain_type_hub, true );
 
-            set_waiting_for_hub_progress( identity, hub_identity );
-
             set_hub_system_variable_if_required( identity, hub_identity );
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_waiting_for_hub ), c_true_value );
          }
       }
 
