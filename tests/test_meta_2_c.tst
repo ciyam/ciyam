@@ -355,11 +355,12 @@ Shared_Secret_Hash,M001C108F156
 Connection_Type,M001C108F157
 Status,M001C108F158
 Status_,M001C108F159
-Sync_Status,M001C108F160
-System_Secret,M001C108F161
-Verified_Checksum,M001C108F162
-Verified_Checksum_And_Auto_Off,M001C108F163
-Unverified_Checksum,M001C108F164
+Status_Name,M001C108F160
+Sync_Status,M001C108F161
+System_Secret,M001C108F162
+Verified_Checksum,M001C108F163
+Verified_Checksum_And_Auto_Off,M001C108F164
+Unverified_Checksum,M001C108F165
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000

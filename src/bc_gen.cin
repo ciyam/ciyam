@@ -318,6 +318,9 @@ BLOCK_HASH=$OUTPUT
 @ifndef $HUB
 @ifndef $SHARED
 @ifndef $EXTRA_SUFFIX
+; FUTURE: This message should be handled as a server string.
+.system_variable %$IDENT "Currently at height 0"
+;
 .system_variable >@blockchain_backup_height 0
 .system_variable >@blockchain_backup_initial $BLOCK_HASH
 @endif
