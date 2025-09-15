@@ -3123,8 +3123,9 @@ void process_public_key_file( const string& blockchain,
             }
             else
             {
-               if( !has_session_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) )
-                && ( identity == get_raw_session_variable( get_special_var_name( e_special_var_paired_identity ) ) ) )
+               string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
+
+               if( has_system_variable( secret_hash_name + '_' + identity ) )
                   lock_blockchain( identity );
             }
 
@@ -6593,9 +6594,6 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
       if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) )
          throw runtime_error( "invalid blockchain tag prefix '" + blockchain + "'" );
 
-      string unprefixed_blockchain( blockchain );
-      replace( unprefixed_blockchain, c_bc_prefix, "" );
-
       if( port.empty( ) && blockchain.empty( ) )
          port = get_test_peer_port( );
 
@@ -6654,6 +6652,8 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
 
       if( !is_responder )
       {
+         string unprefixed_blockchain( replaced( blockchain, c_bc_prefix, "" ) );
+
          if( is_for_support )
             pid = string( c_dummy_support_tag );
 
@@ -6865,6 +6865,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
          if( pos != string::npos )
          {
             set< string > blockchains;
+
             split( blockchain, blockchains );
 
             string peer_info( pid.substr( pos + 1 ) );
@@ -6965,6 +6966,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
                string forwards_tag( blockchain + c_zenith_suffix );
 
                string reversed( unprefixed_blockchain );
+
                reverse( reversed.begin( ), reversed.end( ) );
 
                string reversed_tag( c_bc_prefix + reversed + c_zenith_suffix );
@@ -8520,6 +8522,7 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    if( p_local_main && create_reversed )
    {
       string reversed( identity );
+
       reverse( reversed.begin( ), reversed.end( ) );
 
       string reversed_chain( c_bc_prefix + reversed );
@@ -8601,6 +8604,7 @@ void init_peer_sessions( int start_listeners )
          if( add_reversed )
          {
             string reversed( next_identity );
+
             reverse( reversed.begin( ), reversed.end( ) );
 
             reversed = c_bc_prefix + reversed;
