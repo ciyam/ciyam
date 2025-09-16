@@ -6324,7 +6324,11 @@ void unlock_blockchain( const string& identity )
    string lock_tag( c_bc_prefix + identity + c_locked_suffix );
 
    if( has_tag( lock_tag ) )
+   {
       tag_del( lock_tag );
+
+      set_system_variable( get_special_var_name( e_special_var_unlocked ) + '_' + identity, c_true_value );
+   }
 }
 
 bool is_locked_blockchain( const string& identity )
