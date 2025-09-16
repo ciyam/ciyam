@@ -8457,6 +8457,7 @@ void peer_session_starter::start_peer_session( const string& peer_info )
    if( pos != string::npos )
    {
       num_for_support = from_string< size_t >( blockchain.substr( pos + 1 ) );
+
       blockchain.erase( pos );
    }
 
@@ -8473,13 +8474,20 @@ void peer_session_starter::start_peer_session( const string& peer_info )
       blockchain.erase( pos );
    }
 
+   string identity( replaced( blockchain, c_bc_prefix, "" ) );
+
+   string reversed( identity );
+
+   reverse( reversed.begin( ), reversed.end( ) );
+
+   string reversed_chain( c_bc_prefix + reversed );
+
    // NOTE: If this is a new (non-local) blockchain
    // then will initially disallow support sessions
    // (as checksum verification is first required).
-   if( !has_tag( blockchain + c_zenith_suffix ) )
+   if( !has_tag( blockchain + c_zenith_suffix )
+    || ( create_reversed && !has_tag( reversed_chain + c_zenith_suffix ) ) )
       num_for_support = 0;
-
-   string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
    string secret_hash_name( get_special_var_name( e_special_var_secret_hash ) );
 
@@ -8508,33 +8516,67 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    size_t zero_or_dummy = ( !num_for_support ? 0 : c_dummy_num_for_support );
 
-   // NOTE: First create main sessions for both the local and hosted blockchains.
-   peer_session* p_local_main = create_peer_initiator( blockchain + paired_suffix, info,
-    false, zero_or_dummy, false, false, false, chain_type, true, p_extra_value, &other_extras );
+   peer_session* p_local_main = 0;
+
+   // NOTE: Empty code block for scope purposes.
+   {
+      size_t max_retry_seconds = 0;
+
+      string unlocked_variable( get_special_var_name( e_special_var_unlocked ) );
+
+      if( chain_type != e_peerchain_type_user )
+         unlocked_variable += '_' + identity;
+      else
+         unlocked_variable += '_' + reversed;
+
+      // NOTE: If the blockchain has just been unlocked
+      // then will try re-connecting for one minute (to
+      // provide some time for the peer to also unlock).
+      if( has_system_variable( unlocked_variable ) )
+      {
+         max_retry_seconds = 60;
+
+         set_system_variable( unlocked_variable, "" );
+      }
+
+      date_time dtm( date_time::local( ) );
+
+      while( true )
+      {
+         p_local_main = create_peer_initiator( blockchain + paired_suffix, info,
+          false, zero_or_dummy, false, false, false, chain_type, true, p_extra_value, &other_extras );
+
+         if( p_local_main )
+            break;
+
+         date_time now( date_time::local( ) );
+
+         uint64_t elapsed = seconds_between( dtm, now );
+
+         if( elapsed >= max_retry_seconds )
+            break;
+
+         msleep( 1000 );
+      }
+   }
 
    if( !p_local_main )
       set_system_variable( identity, "" );
    else if( peer_type >= c_peer_type_combined )
-      peer_session* p_hosted_main = create_peer_initiator( blockchain, info,
+      create_peer_initiator( blockchain, info,
        false, zero_or_dummy, false, true, false, chain_type, false, p_extra_value, &other_extras );
 
    // NOTE: If peer type is user or combined then will also create reversed identity sessions.
    if( p_local_main && create_reversed )
    {
-      string reversed( identity );
-
-      reverse( reversed.begin( ), reversed.end( ) );
-
-      string reversed_chain( c_bc_prefix + reversed );
-
       other_extras.backup_identity = identity;
       other_extras.is_combined_backup = false;
 
-      peer_session* p_local_shared = create_peer_initiator( reversed_chain + paired_suffix, info,
+      peer_session* p_local_reversed = create_peer_initiator( reversed_chain + paired_suffix, info,
        false, zero_or_dummy, false, false, false, reversed_chain_type, false, p_extra_value, &other_extras );
 
-      if( p_local_shared && ( peer_type >= c_peer_type_combined ) )
-         peer_session* p_hosted_shared = create_peer_initiator( reversed_chain, info,
+      if( p_local_reversed && ( peer_type >= c_peer_type_combined ) )
+         create_peer_initiator( reversed_chain, info,
           false, zero_or_dummy, false, true, false, reversed_chain_type, false, p_extra_value, &other_extras );
    }
 }
