@@ -53,11 +53,15 @@ ENCRYPTED_PASSWORD=@shared_secret_$IDENTITY
 @:WAIT_LOOP
 ;
 @label WAIT_NEXT
+;
+.system_variable $BLOCKCHAIN
+@ifndef $OUTPUT
 .session_variable -num_found $BLOCKCHAIN
 @ifeq "$OUTPUT" "1"
 .session_variable -num_found $IN_REVERSE
 @ifeq "$OUTPUT" "1"
 @label WAIT_DONE
+@endif
 @endif
 @endif
 ;
