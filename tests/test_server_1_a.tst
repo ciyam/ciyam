@@ -764,6 +764,11 @@ session_variable test
 1
 session_variable test @decrement
 session_variable test
+session_variable test xxx
+session_variable test
+xxx
+session_variable test @null
+session_variable test
 session_variable @set aaa
 session_variable @set aaa
 aaa

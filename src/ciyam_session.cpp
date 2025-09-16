@@ -2798,11 +2798,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( has_new_val )
          {
             check_not_possible_protocol_response( new_value );
+
             instance_set_variable( atoi( handle.c_str( ) ), context, name_or_expr, new_value );
          }
          else
          {
             response = instance_get_variable( atoi( handle.c_str( ) ), context, name_or_expr );
+
             check_not_possible_protocol_response( response );
          }
       }
@@ -5229,13 +5231,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                needs_response = true;
             else
             {
+               string null_value( get_special_var_name( e_special_var_null ) );
+
+               if( new_value == null_value )
+                  new_value.erase( );
+
                check_not_possible_protocol_response( new_value );
+
                set_session_variable( name_or_expr, new_value, &needs_response, &handler, p_sess_id );
             }
 
             if( needs_response )
             {
                response = get_session_variable( name_or_expr, p_sess_id );
+
                check_not_possible_protocol_response( response );
             }
          }
@@ -6793,6 +6802,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( has_new_val )
          {
+            string null_value( get_special_var_name( e_special_var_null ) );
+
+            if( new_value == null_value )
+               new_value.erase( );
+
+            if( check_value == null_value )
+               check_value.erase( );
+
             check_not_possible_protocol_response( new_value );
 
             if( !has_check_val )

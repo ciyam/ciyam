@@ -39,6 +39,11 @@ aaa bbb ccc ddd
 run_script !test "@arg1=aaa,@two=bbb,@arg3=ccc,@opt2=ddd"
 system_variable @test
 aaa bbb ccc ddd
+system_variable @test xxx
+system_variable @test
+xxx
+system_variable @test @null
+system_variable @test
 run_script test*
 test @one @two opt @opt1 @opt2
 test1 [ *** busy *** ]

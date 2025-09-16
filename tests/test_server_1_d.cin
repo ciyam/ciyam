@@ -27,6 +27,10 @@ system_variable @test
 run_script !test "@arg1=aaa,@two=bbb,@arg3=ccc,@opt2=ddd"
 system_variable @test
 .system_variable @test ""
+system_variable @test xxx
+system_variable @test
+system_variable @test @null
+system_variable @test
 ~touch ~test.sh
 run_script test*
 ~rm -f ~test.txt
