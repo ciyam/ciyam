@@ -98,6 +98,8 @@ const size_t c_response_reserve_size = 1024;
 
 const size_t c_max_key_append_chars = 7;
 
+const char* const c_str_prefix = "c_str_";
+
 const char* const c_passtotp_prefix = "passtotp.";
 
 const char* const c_unexpected_unknown_exception = "unexpected unknown exception caught";
@@ -167,6 +169,22 @@ inline string convert_local_to_utc( const string& local, const string& tz_name )
    }
 
    return s;
+}
+
+void get_parm_and_value( const string& parm_and_value, string& parm, string& value )
+{
+   if( !parm_and_value.empty( ) )
+   {
+      string::size_type pos = parm_and_value.find( '=' );
+
+      parm = parm_and_value.substr( 0, pos );
+
+      if( !parm.empty( ) && ( parm[ 0 ] != '{' ) )
+         parm = '{' + parm + '}';
+
+      if( pos != string::npos )
+         value = parm_and_value.substr( pos + 1 );
+   }
 }
 
 void check_key_has_suffix( const string& key, const string& suffix )
@@ -4220,7 +4238,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   if( value != i->second )
                      throw runtime_error( get_string_message( GS( c_str_field_is_incorrect ),
-                      make_pair( c_str_parm_field_is_incorrect_field, get_field_name_for_id( handle, "", i->first ) ) ) );
+                      make_pair( c_str_field_is_incorrect_field, get_field_name_for_id( handle, "", i->first ) ) ) );
                }
 
                set< string > fields_set;
@@ -6490,6 +6508,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = osstr.str( );
       }
+      else if( command == c_cmd_ciyam_session_system_strings )
+      {
+         ostringstream osstr;
+
+         list_strings( osstr );
+
+         response = osstr.str( );
+      }
       else if( command == c_cmd_ciyam_session_system_version )
          response = c_protocol_version;
       else if( command == c_cmd_ciyam_session_system_identity )
@@ -7019,6 +7045,43 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( get_trace_flags( ) & trace_flag )
             log_trace_message( trace_flag, message_text );
+      }
+      else if( command == c_cmd_ciyam_session_system_string_message )
+      {
+         string key_value( get_parm_val( parameters, c_cmd_ciyam_session_system_string_message_key_value ) );
+         string parm_and_value_1( get_parm_val( parameters, c_cmd_ciyam_session_system_string_message_parm_and_value_1 ) );
+         string parm_and_value_2( get_parm_val( parameters, c_cmd_ciyam_session_system_string_message_parm_and_value_2 ) );
+         string parm_and_value_3( get_parm_val( parameters, c_cmd_ciyam_session_system_string_message_parm_and_value_3 ) );
+         string parm_and_value_4( get_parm_val( parameters, c_cmd_ciyam_session_system_string_message_parm_and_value_4 ) );
+
+         if( key_value.find( c_str_prefix ) != 0 )
+            key_value = c_str_prefix + key_value;
+
+         string parm_1, value_1;
+         string parm_2, value_2;
+         string parm_3, value_3;
+         string parm_4, value_4;
+
+         get_parm_and_value( parm_and_value_1, parm_1, value_1 );
+         get_parm_and_value( parm_and_value_2, parm_2, value_2 );
+         get_parm_and_value( parm_and_value_3, parm_3, value_3 );
+         get_parm_and_value( parm_and_value_4, parm_4, value_4 );
+
+         if( parm_and_value_1.empty( ) )
+            response = get_string( key_value );
+         else if( parm_and_value_2.empty( ) )
+            response = get_string_message( get_string( key_value ), make_pair( parm_1, value_1 ) );
+         else if( parm_and_value_3.empty( ) )
+            response = get_string_message(
+             get_string( key_value ), make_pair( parm_1, value_1 ), make_pair( parm_2, value_2 ) );
+         else if( parm_and_value_4.empty( ) )
+            response = get_string_message(
+             get_string( key_value ), make_pair( parm_1, value_1 ),
+             make_pair( parm_2, value_2 ), make_pair( parm_3, value_3 ) );
+         else
+            response = get_string_message( get_string( key_value ),
+             make_pair( parm_1, value_1 ), make_pair( parm_2, value_2 ),
+             make_pair( parm_3, value_3 ), make_pair( parm_4, value_4 ) );
       }
       else if( command == c_cmd_ciyam_session_test )
       {
