@@ -4865,6 +4865,12 @@ void check_timezone_info( )
       setup_time_zones( );
 }
 
+void list_strings( ostream& os )
+{
+   for( string_const_iterator sci = g_strings.begin( ); sci != g_strings.end( ); ++sci )
+      os << sci->first.substr( strlen( "c_str_" ) ) << ' ' << sci->second << '\n';
+}
+
 string get_string( const string& key )
 {
    string str( key );
@@ -4887,7 +4893,9 @@ string get_string_message( const string& string_message, const pair< string, str
       throw runtime_error( "parameter '" + parm1.first + "' not found in '" + string_message + "'" );
 
    message = string_message.substr( 0, pos );
+
    message += parm1.second;
+
    message += string_message.substr( pos + parm1.first.length( ) );
 
    return message;
@@ -5894,7 +5902,7 @@ void verify_active_external_service( const string& ext_key )
    if( !active_external_service( ext_key ) )
       throw runtime_error(
        get_string_message( GS( c_str_external_service_unavailable ),
-       make_pair( c_str_parm_external_service_unavailable_symbol, ext_key ) ) );
+       make_pair( c_str_external_service_unavailable_symbol, ext_key ) ) );
 }
 
 void decrypt_data( string& s, const string& data,
@@ -11509,7 +11517,7 @@ void module_class_list( const string& module, ostream& os, const char* p_pat )
 
       if( mci == gtp_session->modules_by_name.end( ) )
          throw runtime_error( get_string_message( GS( c_str_module_not_loaded ),
-          make_pair( c_str_parm_module_not_loaded_module, module ) ) );
+          make_pair( c_str_module_not_loaded_module, module ) ) );
    }
 
    module_class_list_error rc = list_module_classes( module, os, -1, p_pat );
@@ -11528,7 +11536,7 @@ void module_strings_list( const string& module, ostream& os )
 
       if( mci == gtp_session->modules_by_name.end( ) )
          throw runtime_error( get_string_message( GS( c_str_module_not_loaded ),
-          make_pair( c_str_parm_module_not_loaded_module, module ) ) );
+          make_pair( c_str_module_not_loaded_module, module ) ) );
    }
 
    module_string_list_error rc = list_module_strings( module, os );
@@ -11547,7 +11555,7 @@ void module_class_fields_list( const string& module, const string& class_id_or_n
 
       if( mci == gtp_session->modules_by_name.end( ) )
          throw runtime_error( get_string_message( GS( c_str_module_not_loaded ),
-          make_pair( c_str_parm_module_not_loaded_module, module ) ) );
+          make_pair( c_str_module_not_loaded_module, module ) ) );
    }
 
    module_class_field_list_error rc = list_module_class_fields( module, class_id_or_name, os );
@@ -11566,7 +11574,7 @@ void module_class_procedures_list( const string& module, const string& class_id_
 
       if( mci == gtp_session->modules_by_name.end( ) )
          throw runtime_error( get_string_message( GS( c_str_module_not_loaded ),
-          make_pair( c_str_parm_module_not_loaded_module, module ) ) );
+          make_pair( c_str_module_not_loaded_module, module ) ) );
    }
 
    module_class_procedure_list_error rc = list_module_class_procedures( module, class_id_or_name, os );
@@ -11580,7 +11588,7 @@ void module_load( const string& module_name,
 {
    if( gtp_session->modules_by_name.find( module_name ) != gtp_session->modules_by_name.end( ) )
       throw runtime_error( get_string_message( GS( c_str_module_is_loaded ),
-       make_pair( c_str_parm_module_is_loaded_module, module_name ) ) );
+       make_pair( c_str_module_is_loaded_module, module_name ) ) );
 
    module_load_error rc = load_module( module_name );
 
@@ -11588,10 +11596,10 @@ void module_load( const string& module_name,
    {
       if( rc == e_module_load_error_file_does_not_exist )
          throw runtime_error( get_string_message( GS( c_str_module_not_exists ),
-          make_pair( c_str_parm_module_not_exists_module, module_name ) ) );
+          make_pair( c_str_module_not_exists_module, module_name ) ) );
       else if( rc == e_module_load_error_external_module_failure )
          throw runtime_error( get_string_message( GS( c_str_module_depends_reqd ),
-          make_pair( c_str_parm_module_depends_reqd_module, module_name ) ) );
+          make_pair( c_str_module_depends_reqd_module, module_name ) ) );
       else
          throw runtime_error( "unexpected module load error #" + to_string( rc ) );
    }
@@ -11844,7 +11852,7 @@ void module_unload( const string& module_name, command_handler& cmd_handler, boo
 
    if( mi == gtp_session->modules_by_name.end( ) )
       throw runtime_error( get_string_message( GS( c_str_module_not_loaded ),
-       make_pair( c_str_parm_module_not_loaded_module, module_name ) ) );
+       make_pair( c_str_module_not_loaded_module, module_name ) ) );
 
    destroy_object_instances( module_name );
 
@@ -13376,8 +13384,8 @@ void instance_check( class_base& instance, instance_check_rc* p_rc )
          *p_rc = e_instance_check_rc_not_found;
       else
          throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-          make_pair( c_str_parm_record_not_found_class, instance.get_display_name( ) ),
-          make_pair( c_str_parm_record_not_found_key, instance_accessor.get_lazy_fetch_key( ) ) ) );
+          make_pair( c_str_record_not_found_class, instance.get_display_name( ) ),
+          make_pair( c_str_record_not_found_key, instance_accessor.get_lazy_fetch_key( ) ) ) );
    }
 }
 

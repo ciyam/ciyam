@@ -185,6 +185,8 @@ extern "C" void CIYAM_BASE_DECL_SPEC check_timezone_info( );
 
 typedef void ( *fp_check_timezone_info )( );
 
+void CIYAM_BASE_DECL_SPEC list_strings( std::ostream& os );
+
 std::string CIYAM_BASE_DECL_SPEC get_string( const std::string& key );
 
 std::string CIYAM_BASE_DECL_SPEC get_string_message(
