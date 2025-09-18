@@ -3774,7 +3774,7 @@ string generate_password( const string& user_id, bool include_prefix )
       return pwd;
    
    return get_string_message( GS( c_str_copy_password_to_clipboard ),
-    make_pair( c_str_parm_copy_password_to_clipboard_value, pwd ) );
+    make_pair( c_str_copy_password_to_clipboard_value, pwd ) );
 }
 
 void remove_gpg_key( const string& gpg_key_id, bool ignore_error )

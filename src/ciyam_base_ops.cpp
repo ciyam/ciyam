@@ -3053,7 +3053,7 @@ void begin_instance_op( instance_op op, class_base& instance,
 
       if( key_for_op.find_first_of( c_invalid_key_characters ) != string::npos )
          throw runtime_error( get_string_message(
-          GS( c_str_key_invalid ), make_pair( c_str_parm_key_invalid_key, key_for_op ) ) );
+          GS( c_str_key_invalid ), make_pair( c_str_key_invalid_key, key_for_op ) ) );
    }
 
    size_t lock_handle = 0;
@@ -3168,8 +3168,8 @@ void begin_instance_op( instance_op op, class_base& instance,
                }
                else
                   throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-                   make_pair( c_str_parm_record_not_found_class, instance.get_display_name( ) ),
-                   make_pair( c_str_parm_record_not_found_key, instance.get_key( ) ) ) );
+                   make_pair( c_str_record_not_found_class, instance.get_display_name( ) ),
+                   make_pair( c_str_record_not_found_key, instance.get_key( ) ) ) );
             }
          }
          else
@@ -3247,7 +3247,7 @@ void begin_instance_op( instance_op op, class_base& instance,
                }
                else
                   throw runtime_error( get_string_message( GS( c_str_record_exists ),
-                   make_pair( c_str_parm_record_exists_class, instance.get_display_name( ) ) ) );
+                   make_pair( c_str_record_exists_class, instance.get_display_name( ) ) ) );
             }
          }
 
@@ -3298,23 +3298,23 @@ void begin_instance_op( instance_op op, class_base& instance,
                }
                else
                   throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-                   make_pair( c_str_parm_record_not_found_class, instance.get_display_name( ) ),
-                   make_pair( c_str_parm_record_not_found_key, instance.get_key( ) ) ) );
+                   make_pair( c_str_record_not_found_class, instance.get_display_name( ) ),
+                   make_pair( c_str_record_not_found_key, instance.get_key( ) ) ) );
             }
 
             string ver_expected( instance_accessor.get_ver_exp( ) );
 
             if( !ver_expected.empty( ) && ver_expected != instance.get_version_info( ) )
                throw runtime_error( get_string_message( GS( c_str_version_mismatch ),
-                make_pair( c_str_parm_version_mismatch_found, instance.get_version_info( ) ),
-                make_pair( c_str_parm_version_mismatch_expected, ver_expected ) ) );
+                make_pair( c_str_version_mismatch_found, instance.get_version_info( ) ),
+                make_pair( c_str_version_mismatch_expected, ver_expected ) ) );
 
             if( ( op == e_instance_op_update ) && !storage_locked_for_admin( )
              && ( !internal_modification
              && ( instance.get_state( ) & c_state_uneditable )
              && !( instance.get_state( ) & c_state_ignore_uneditable ) ) )
                throw runtime_error( get_string_message( GS( c_str_cannot_update ),
-                make_pair( c_str_parm_cannot_update_class, instance.get_display_name( ) ) ) );
+                make_pair( c_str_cannot_update_class, instance.get_display_name( ) ) ) );
 
             if( ( op == e_instance_op_update )
              && ( instance.get_current_identity( ) != instance.get_original_identity( ) ) )
@@ -3357,20 +3357,20 @@ void begin_instance_op( instance_op op, class_base& instance,
             }
             else
                throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-                make_pair( c_str_parm_record_not_found_class, instance.get_display_name( ) ),
-                make_pair( c_str_parm_record_not_found_key, instance.get_key( ) ) ) );
+                make_pair( c_str_record_not_found_class, instance.get_display_name( ) ),
+                make_pair( c_str_record_not_found_key, instance.get_key( ) ) ) );
          }
 
          string ver_expected( instance_accessor.get_ver_exp( ) );
 
          if( !ver_expected.empty( ) && ver_expected != instance.get_version_info( ) )
             throw runtime_error( get_string_message( GS( c_str_version_mismatch ),
-             make_pair( c_str_parm_version_mismatch_found, instance.get_version_info( ) ),
-             make_pair( c_str_parm_version_mismatch_expected, ver_expected ) ) );
+             make_pair( c_str_version_mismatch_found, instance.get_version_info( ) ),
+             make_pair( c_str_version_mismatch_expected, ver_expected ) ) );
 
          if( !instance_accessor.can_destroy( internal_modification ) )
             throw runtime_error( get_string_message( GS( c_str_cannot_destroy ),
-             make_pair( c_str_parm_cannot_destroy_class, instance.get_display_name( ) ) ) );
+             make_pair( c_str_cannot_destroy_class, instance.get_display_name( ) ) ) );
 
          if( instance.get_current_identity( ) != instance.get_original_identity( ) )
             throw runtime_error( "cannot destroy '" + instance.get_original_identity( )
@@ -3417,7 +3417,7 @@ void begin_instance_op( instance_op op, class_base& instance,
             }
             else
                throw runtime_error( get_string_message( GS( c_str_record_constrained ),
-                make_pair( c_str_parm_record_constrained_class, constraining_class ) ) );
+                make_pair( c_str_record_constrained_class, constraining_class ) ) );
          }
       }
 
@@ -4240,9 +4240,9 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
             throw runtime_error(
              get_string_message( GS( c_str_index_duplicate ),
-             make_pair( c_str_parm_index_duplicate_field, names ),
-             make_pair( c_str_parm_index_duplicate_value, values ),
-             make_pair( c_str_parm_index_duplicate_class, instance.get_display_name( ) ) ) );
+             make_pair( c_str_index_duplicate_field, names ),
+             make_pair( c_str_index_duplicate_value, values ),
+             make_pair( c_str_index_duplicate_class, instance.get_display_name( ) ) ) );
          }
       }
    }
@@ -4420,8 +4420,8 @@ void perform_instance_fetch( class_base& instance,
             keys.erase( 0, pos + 1 );
 
          throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-          make_pair( c_str_parm_record_not_found_class, instance.get_display_name( ) ),
-          make_pair( c_str_parm_record_not_found_key, keys ) ) );
+          make_pair( c_str_record_not_found_class, instance.get_display_name( ) ),
+          make_pair( c_str_record_not_found_key, keys ) ) );
       }
    }
 }
