@@ -200,7 +200,8 @@ bool has_max_peers( )
 
 inline void issue_error( const string& message, bool possibly_expected = false )
 {
-   TRACE_LOG( ( possibly_expected ? TRACE_INITIAL | TRACE_SESSION : TRACE_MINIMAL ), string( "peer session error: " ) + message );
+   TRACE_LOG( ( !possibly_expected ? TRACE_MINIMAL
+    : TRACE_INITIAL | TRACE_SESSION ), string( "peer session error: " ) + message );
 }
 
 inline void issue_warning( const string& message )
@@ -224,8 +225,7 @@ void decrement_active_listeners( )
 
 string get_current_height_prefix( )
 {
-   // FUTURE: This message should be handled as a server string message.
-   return "Currently at height ";
+   return GS( c_str_current_height_prefix );
 }
 
 string special_connection_message( const string& id, bool has_timed_out = false )
@@ -233,25 +233,20 @@ string special_connection_message( const string& id, bool has_timed_out = false 
    string msg;
 
    if( id == c_special_message_0 )
-      // FUTURE: The following should be handled as server string messages.
-      msg = "Invalid peer handshake.";
+      msg = GS( c_str_invalid_peer_handshake );
    else if( id == c_special_message_1 )
    {
-      // FUTURE: The following should be handled as server string messages.
       if( !has_timed_out )
-         msg = "Waiting for peer verification.";
+         msg = GS( c_str_waiting_for_verification );
       else
-         msg = "Timed out waiting for peer verification.";
+         msg = GS( c_str_timed_out_waiting_for_verification );
    }
    else if( id == c_special_message_2 )
-      // FUTURE: This message should be handled as a server string message.
-      msg = "Requested peerchain is not available.";
+      msg = GS( c_str_requested_peerchain_unavailable );
    else if( id == c_special_message_3 )
-      // FUTURE: This message should be handled as a server string message.
-      msg = "Invalid time difference (check system clocks).";
+      msg = GS( c_str_invalid_time_difference );
    else
-      // FUTURE: This message should be handled as a server string message.
-      msg = "Unexpected special connection message '" + id + "'";
+      msg = "unexpected special connection message '" + id + "'";
 
 
    return msg;
@@ -553,8 +548,9 @@ void set_waiting_for_hub_progress( const string& identity, const string& hub_ide
    set_session_variable(
     get_special_var_name( e_special_var_blockchain_waiting_for_hub ), c_true_value );
 
-   // FUTURE: This message should be handled as a server string message.
-   string progress_message( "Waiting for peer hub sync..." );
+   string progress_message( GS( c_str_waiting_for_peer_hub_sync ) );
+
+   progress_message += c_ellipsis;
 
    set_session_progress_message( progress_message );
    set_system_variable( c_progress_output_prefix + identity, progress_message );
@@ -1192,8 +1188,7 @@ void check_blockchain_type( const string& blockchain, peerchain_type chain_type,
       string error;
 
       if( !okay )
-         // FUTURE: This message should be handled as a server string message.
-         error = "Incorrect or unsupported Peer Type.";
+         error = GS( c_str_incorrect_or_unsupported_peer_type );
 
       if( !error.empty( ) )
       {
@@ -2022,8 +2017,12 @@ void process_put_file( const string& blockchain,
             string progress( "." );
 
             if( num_tree_items.empty( ) || blockchain_height_processing.empty( ) )
-               // FUTURE: This message should be handled as a server string message.
-               progress = "Processed " + to_string( i ) + " items" + to_string( c_ellipsis );
+            {
+               progress = get_string_message( GS( c_str_processed_items ),
+                make_pair( c_str_processed_items_num, to_string( i ) ) );
+
+               progress += c_ellipsis;
+            }
             else
             {
                string count( to_string( get_blockchain_tree_item( blockchain ) ) );
@@ -2042,8 +2041,8 @@ void process_put_file( const string& blockchain,
                   }
                }
 
-               // FUTURE: This message should be handled as a server string message.
-               string progress_message( "Syncing at height " + to_string( next_height ) );
+               string progress_message(
+                GS( c_str_syncing_at_height_prefix ) + to_string( next_height ) );
 
                if( !blockchain_height_other.empty( ) )
                {
@@ -2291,8 +2290,7 @@ bool has_all_list_items(
                {
                   size_t next_height = from_string< size_t >( blockchain_height_processing );
 
-                  // FUTURE: This message should be handled as a server string message.
-                  progress = "Checking at height " + to_string( next_height );
+                  progress = GS( c_str_checking_at_height_prefix ) + to_string( next_height );
 
                   if( !blockchain_height_other.empty( ) )
                   {
@@ -2323,16 +2321,15 @@ bool has_all_list_items(
                {
                   size_t next_height = from_string< size_t >( blockchain_height_processing );
 
-                  // FUTURE: These messages should be handled as a server string messages.
                   if( is_fetching )
-                     progress = "Polling at";
+                     progress = GS( c_str_polling_at_height_prefix );
                   else
                   {
-                     progress = "Mapping for";
-                     ext_progress = "Mapping at";
+                     progress = GS( c_str_mapping_for_height_prefix );
+                     ext_progress = GS( c_str_mapping_at_height_prefix );
                   }
 
-                  string progress_append( " height " + to_string( next_height ) );
+                  string progress_append( to_string( next_height ) );
 
                   if( !blockchain_height_other.empty( ) )
                   {
@@ -2688,18 +2685,18 @@ void process_list_items( const string& blockchain,
 
             // FUTURE: These messages should be handled as server string messages.
             if( !p_num_items_found )
-               progress = "Processing: " + hash;
+               progress = GS( processing_prefix ) + hash;
             else
             {
                string count( to_string( *p_num_items_found ) );
 
                if( is_fetching )
                {
-                  progress = "Syncing";
+                  progress = GS( c_str_syncing );
 
                   if( !blockchain_height_processing.empty( ) )
                   {
-                     progress += " at height " + blockchain_height_processing;
+                     progress += GS( c_str_at_height_suffix ) + " " + blockchain_height_processing;
 
                      if( !blockchain_height_other.empty( ) )
                      {
@@ -2725,10 +2722,10 @@ void process_list_items( const string& blockchain,
                }
                else
                {
-                  progress = "Preparing";
+                  progress = GS( c_str_preparing );
 
                   if( !blockchain_height_processing.empty( ) )
-                     progress += " at height " + blockchain_height_processing;
+                     progress += GS( c_str_at_height_suffix ) + " " + blockchain_height_processing;
 
                   progress += c_percentage_separator;
 
@@ -2768,8 +2765,7 @@ void process_list_items( const string& blockchain,
 
                   string progress_message;
 
-                  // FUTURE: This message should be handled as a server string message.
-                  progress_message = "Syncing at height ";
+                  progress_message = GS( c_str_syncing_at_height_prefix );
 
                   progress_message += blockchain_height_processing;
 
@@ -4491,8 +4487,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                }
             }
 
-            // FUTURE: This message should be handled as a server string message.
-            string progress_message( "Syncing at height " + to_string( blockchain_height + 1 ) );
+            string progress_message(
+             GS( c_str_syncing_at_height_prefix ) + to_string( blockchain_height + 1 ) );
 
             if( blockchain_height_other > ( blockchain_height + 1 ) )
                progress_message += '/' + to_string( blockchain_height_other );
@@ -5925,8 +5921,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      if( blockchain_height > blockchain_height_other )
                         ++extra;
 
-                     // FUTURE: This message should be handled as a server string message.
-                     string progress_message( "Syncing for height " + to_string( blockchain_height_other + extra ) );
+                     string progress_message(
+                      GS( syncing_for_height_prefix )
+                      + to_string( blockchain_height_other + extra ) );
 
                      if( blockchain_height > ( blockchain_height_other + extra ) )
                         progress_message += '/' + to_string( blockchain_height );
@@ -7044,15 +7041,10 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
    }
    catch( exception& x )
    {
-      string error( x.what( ) );
-
       if( *this->ap_socket )
-         this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_request_timeout );
+         this->ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
 
-      if( !error.empty( ) && ( error[ 0 ] == '@' ) )
-         error = special_connection_message( error );
-
-      throw runtime_error( error );
+      throw;
    }
    catch( ... )
    {
@@ -7330,8 +7322,7 @@ void peer_session::on_start( )
                   output_sync_progress_message( unprefixed_blockchain, blockchain_height );
                else
                {
-                  // FUTURE: This message should be handled as a server string message.
-                  string progress_message( "Syncing at height 0" );
+                  string progress_message( GS( c_str_syncing_at_height_prefix ) + "0" );
 
                   progress_message += c_ellipsis;
 
@@ -7424,8 +7415,7 @@ void peer_session::on_start( )
 
                   if( block_hash != expected_hash )
                   {
-                     // FUTURE: This message should be handled as a server string message.
-                     string error( "Unexpected blockchain fork detected." );
+                     string error( GS( c_str_unexpected_blockchain_fork ) );
 
                      set_system_variable( c_error_message_prefix + identity, error );
 
@@ -7462,8 +7452,7 @@ void peer_session::on_start( )
 
             if( hub_identity != core_data.get_header( c_file_type_core_block_header_identity ) )
             {
-               // FUTURE: This message should be handled as a server string message.
-               string error( "Incorrect hub identity '" + hub_identity + "' was provided." );
+               string error( GS( c_str_found_incorrect_hub_identity ) );
 
                set_system_variable( c_error_message_prefix + identity, error );
 
@@ -7587,9 +7576,9 @@ void peer_session::process_greeting( )
 
       // FUTURE: These messages should be handled as a server string messages.
       if( ap_socket->had_timeout( ) )
-         error = "Timeout occurred trying to connect to peer.";
+         error = GS( c_str_timeout_connecting_to_peer );
       else
-         error = "Peer has unexpectedly terminated this connection.";
+         error = GS( c_str_peer_terminated_connection );
 
       ap_socket->close( );
       throw runtime_error( error );
@@ -7617,9 +7606,9 @@ void peer_session::process_greeting( )
    {
       ap_socket->close( );
 
-      // FUTURE: This message should be handled as a server string message.
-      string error( "Incompatible protocol version "
-       + ver_info.ver + " (was expecting " + string( c_protocol_version ) + ")." );
+      string error( get_string_message( GS( c_str_version_mismatch ),
+       make_pair( c_str_version_mismatch_found, ver_info.ver ),
+       make_pair( c_str_version_mismatch_expected, string( c_protocol_version ) ) ) );
 
       throw runtime_error( error );
    }
@@ -7899,8 +7888,8 @@ void peer_listener::on_start( )
                vector< string > identities;
                split( unprefixed_blockchains, identities );
 
-               // FUTURE: This message should be handled as a server string message.
-               string error( "Unable to start peerchain using port number " + to_string( port ) + "." );
+               string error( get_string_message( GS( c_str_unable_to_start_peerchain ),
+                make_pair( c_str_unable_to_start_peerchain_port, to_string( port ) ) ) );
 
                for( size_t i = 0; i < identities.size( ); i++ )
                   set_system_variable( c_error_message_prefix + identities[ i ], error );
@@ -8093,8 +8082,9 @@ peer_session* create_peer_initiator( const string& blockchain,
 
    if( ( ip_addr == c_null_ip_addr ) || ( ip_addr == c_null_ip_addr_for_ipv6 ) )
    {
-      // FUTURE: This message should be handled as a server string message.
-      string error( "Unable to determine address for domain name '" + host + "'." );
+      string error(
+       get_string_message( GS( c_str_unable_to_determine_address ),
+       make_pair( c_str_unable_to_determine_address_domain, host ) ) );
 
       if( is_interactive )
          throw runtime_error( error );
@@ -8145,8 +8135,10 @@ peer_session* create_peer_initiator( const string& blockchain,
             remove_peer_ip_addr_from_rejection( ip_addr );
          else if( !get_is_accepted_peer_ip_addr( ip_addr ) )
          {
-            // FUTURE: This message should be handled as a server string message.
-            string error( "Host '" + host + "' address " + ip_addr + " is not permitted." );
+            string error(
+             get_string_message( GS( c_str_host_address_not_permitted ),
+             make_pair( c_str_host_address_not_permitted_host, host ),
+             make_pair( c_str_host_address_not_permitted_address, ip_addr ) ) );
 
             if( is_interactive )
                throw runtime_error( error );
@@ -8231,11 +8223,15 @@ peer_session* create_peer_initiator( const string& blockchain,
             string error;
 
             if( !ap_socket->had_timeout( ) )
-               // FUTURE: This message should be handled as a server string message.
-               error = "Failed trying to connect to '" + host + "' using port number " + to_string( port ) + ".";
+               error = get_string_message(
+                GS( c_str_failed_connect_to_peer ),
+                make_pair( c_str_failed_connect_to_peer_host, host ),
+                make_pair( c_str_failed_connect_to_peer_port, to_string( port ) ) );
             else
-               // FUTURE: This message should be handled as a server string message.
-               error = "Timed out trying to connect to '" + host + "' using port number " + to_string( port ) + ".";
+               error = get_string_message(
+                GS( c_str_timed_out_connecting_to_peer ),
+                make_pair( c_str_timed_out_connecting_to_peer_host, host ),
+                make_pair( c_str_timed_out_connecting_to_peer_port, to_string( port ) ) );
 
             if( is_interactive )
                throw runtime_error( error );
