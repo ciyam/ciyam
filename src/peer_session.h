@@ -174,9 +174,11 @@ struct other_session_extras
    }
 
    size_t num_for_support;
-   std::string backup_identity;
 
    bool is_combined_backup;
+
+   std::string backup_identity;
+   std::string special_message;
 };
 
 class mutex;

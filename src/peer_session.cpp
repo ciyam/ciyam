@@ -94,6 +94,11 @@ const char* const c_dummy_message_data = "utf8:test";
 
 const char* const c_percentage_separator = " - ";
 
+const char* const c_special_message_0 = "@0";
+const char* const c_special_message_1 = "@1";
+const char* const c_special_message_2 = "@2";
+const char* const c_special_message_3 = "@3";
+
 const size_t c_prefix_length = 4;
 const size_t c_checksum_length = 8;
 
@@ -221,6 +226,35 @@ string get_current_height_prefix( )
 {
    // FUTURE: This message should be handled as a server string message.
    return "Currently at height ";
+}
+
+string special_connection_message( const string& id, bool has_timed_out = false )
+{
+   string msg;
+
+   if( id == c_special_message_0 )
+      // FUTURE: The following should be handled as server string messages.
+      msg = "Invalid peer handshake.";
+   else if( id == c_special_message_1 )
+   {
+      // FUTURE: The following should be handled as server string messages.
+      if( !has_timed_out )
+         msg = "Waiting for peer verification.";
+      else
+         msg = "Timed out waiting for peer verification.";
+   }
+   else if( id == c_special_message_2 )
+      // FUTURE: This message should be handled as a server string message.
+      msg = "Requested peerchain is not available.";
+   else if( id == c_special_message_3 )
+      // FUTURE: This message should be handled as a server string message.
+      msg = "Invalid time difference (check system clocks).";
+   else
+      // FUTURE: This message should be handled as a server string message.
+      msg = "Unexpected special connection message '" + id + "'";
+
+
+   return msg;
 }
 
 string get_hub_identity( const string& own_identity, bool force_extra_match = false )
@@ -6726,8 +6760,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
       }
       else
       {
-         // FUTURE: This message should be handled as a server string message.
-         string invalid_handshake( "Invalid peer handshake." );
+         string invalid_handshake( c_special_message_0 );
 
          pid.erase( );
 
@@ -6788,8 +6821,7 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
                   // than the current value (in order to try and ensure that peers
                   // have a reasonably accurate clock).
                   if( difference > c_max_seconds_difference )
-                     // FUTURE: This message should be handled as a server string message.
-                     throw runtime_error( "Invalid time difference (check system clocks)." );
+                     throw runtime_error( c_special_message_3 );
 
                   string hash_secret_lines( get_raw_system_variable(
                    get_special_var_name( e_special_var_secret_hash ) + "_*" ) );
@@ -6976,17 +7008,11 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
                   has_user = true;
             }
 
-            if( !has_data && !has_user && !blockchains.count( blockchain ) )
-            {
-               // FUTURE: This message should be handled as a server string message.
-               string error( "Peerchain identity '" + unprefixed_blockchain + "' is not available." );
-
-               throw runtime_error( error );
-            }
-
             if( is_locked_blockchain( unprefixed_blockchain ) )
-               // FUTURE: This message should be handled as a server string message.
-               throw runtime_error( "Waiting for peer checksum verification." );
+               throw runtime_error( c_special_message_1 );
+
+            if( !has_data && !has_user && !blockchains.count( blockchain ) )
+               throw runtime_error( c_special_message_2 );
 
             // NOTE: Prevent potential immediate killing of a reconnected session via UI.
             if( !is_data && !is_user )
@@ -7018,10 +7044,15 @@ peer_session::peer_session( int64_t time_val, bool is_responder,
    }
    catch( exception& x )
    {
-      if( *this->ap_socket )
-         this->ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
+      string error( x.what( ) );
 
-      throw;
+      if( *this->ap_socket )
+         this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_request_timeout );
+
+      if( !error.empty( ) && ( error[ 0 ] == '@' ) )
+         error = special_connection_message( error );
+
+      throw runtime_error( error );
    }
    catch( ... )
    {
@@ -8035,6 +8066,7 @@ peer_session* create_peer_initiator( const string& blockchain,
    size_t total_to_create = ( has_main_session ? 0 : 1 ) + num_for_support;
 
    string identity( blockchain );
+
    replace( identity, c_bc_prefix, "" );
 
    string::size_type pos = identity.find( ':' );
@@ -8044,6 +8076,7 @@ peer_session* create_peer_initiator( const string& blockchain,
    if( pos != string::npos )
    {
       explicit_paired_identity = identity.substr( pos + 1 );
+
       identity.erase( pos );
 
       replace( explicit_paired_identity, c_bc_prefix, "" );
@@ -8128,6 +8161,7 @@ peer_session* create_peer_initiator( const string& blockchain,
          if( ap_socket->connect( address, !has_main_session ? c_connect_timeout : c_support_timeout ) )
          {
             const char* p_identity = 0;
+
             peer_extra extra = e_peer_extra_none;
 
             if( !has_main_session && ( is_secondary || has_separate_identity ) )
@@ -8153,8 +8187,15 @@ peer_session* create_peer_initiator( const string& blockchain,
             }
             catch( exception& x )
             {
-               if( !has_main_session )
-                  set_system_variable( c_error_message_prefix + identity, x.what( ) );
+               string error( x.what( ) );
+
+               if( !error.empty( ) && ( error[ 0 ] == '@' ) )
+               {
+                  if( p_other_session_extras )
+                     p_other_session_extras->special_message = error;
+               }
+               else if( !has_main_session )
+                  set_system_variable( c_error_message_prefix + identity, error );
             }
             catch( ... )
             {
@@ -8169,6 +8210,7 @@ peer_session* create_peer_initiator( const string& blockchain,
                if( !p_main_session )
                {
                   has_main_session = true;
+
                   p_main_session = p_session;
 
                   // NOTE: If okay when initially started then will later automatically try
@@ -8530,16 +8572,21 @@ void peer_session_starter::start_peer_session( const string& peer_info )
          unlocked_variable += '_' + reversed;
 
       // NOTE: If the blockchain has just been unlocked
-      // then will try re-connecting for one minute (to
+      // then will try re-connecting for 30 seconds (to
       // provide some time for the peer to also unlock).
       if( has_system_variable( unlocked_variable ) )
       {
-         max_retry_seconds = 60;
+         max_retry_seconds = 30;
 
          set_system_variable( unlocked_variable, "" );
       }
 
       date_time dtm( date_time::local( ) );
+
+      bool progress_message_changed = false;
+
+      string original_progress_message(
+       get_raw_system_variable( c_progress_output_prefix + identity ) );
 
       while( true )
       {
@@ -8553,11 +8600,26 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
          uint64_t elapsed = seconds_between( dtm, now );
 
-         if( elapsed >= max_retry_seconds )
+         if( ( elapsed >= max_retry_seconds )
+          || ( other_extras.special_message != c_special_message_1 ) )
+         {
+            if( !other_extras.special_message.empty( ) )
+               set_system_variable( c_error_message_prefix + identity,
+                special_connection_message( other_extras.special_message, ( elapsed >= max_retry_seconds ) ) );
+
             break;
+         }
+
+         progress_message_changed = true;
+
+         set_system_variable( c_progress_output_prefix + identity,
+          special_connection_message( other_extras.special_message ) );
 
          msleep( 1000 );
       }
+
+      if( progress_message_changed )
+         set_system_variable( c_progress_output_prefix + identity, original_progress_message );
    }
 
    if( !p_local_main )
