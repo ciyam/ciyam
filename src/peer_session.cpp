@@ -3116,11 +3116,6 @@ void process_public_key_file( const string& blockchain,
 
    if( !height && has_all_pub_keys && zenith_height.empty( ) )
    {
-      string block_hash( tag_file_hash(
-       blockchain + '.' + to_string( height ) + c_blk_suffix ) );
-
-      tag_file( blockchain + c_zenith_suffix, block_hash );
-
       string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
       set_session_variable( get_special_var_name(
@@ -3129,15 +3124,11 @@ void process_public_key_file( const string& blockchain,
       set_session_variable( get_special_var_name(
        e_special_var_blockchain_height_processing ), "" );
 
-      set_session_variable( zenith_height_name, to_string( height ) );
-
-      output_sync_progress_message( identity, height, height_other, true );
-
-      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION,
-       "::: new zenith hash: " + block_hash + " height: " + to_string( height ) );
+      bool is_hub_blockchain = false;
+      bool needs_verification = false;
 
       if( has_raw_session_variable( get_special_var_name( e_special_var_blockchain_is_hub ) ) )
-         process_queued_hub_using_peerchains( identity );
+         is_hub_blockchain = true;
       else if( scaling_value != c_bc_scaling_test_value )
       {
          peerchain_type chain_type = get_blockchain_type( blockchain );
@@ -3159,12 +3150,31 @@ void process_public_key_file( const string& blockchain,
                   lock_blockchain( identity );
             }
 
-            condemn_this_session( );
-
-            msleep( c_finish_sleep_time );
-
-            throw runtime_error( "new core/user blockchain requires verification" );
+            needs_verification = true;
          }
+      }
+
+      string block_hash( tag_file_hash(
+       blockchain + '.' + to_string( height ) + c_blk_suffix ) );
+
+      tag_file( blockchain + c_zenith_suffix, block_hash );
+
+      set_session_variable( zenith_height_name, to_string( height ) );
+
+      output_sync_progress_message( identity, height, height_other, true );
+
+      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION,
+       "::: new zenith hash: " + block_hash + " height: " + to_string( height ) );
+
+      if( is_hub_blockchain )
+         process_queued_hub_using_peerchains( identity );
+      if( needs_verification )
+      {
+         condemn_this_session( );
+
+         msleep( c_finish_sleep_time );
+
+         throw runtime_error( "new core/user blockchain requires verification" );
       }
    }
 
@@ -7574,13 +7584,13 @@ void peer_session::process_greeting( )
    {
       string error;
 
-      // FUTURE: These messages should be handled as a server string messages.
       if( ap_socket->had_timeout( ) )
          error = GS( c_str_timeout_connecting_to_peer );
       else
          error = GS( c_str_peer_terminated_connection );
 
       ap_socket->close( );
+
       throw runtime_error( error );
    }
 
@@ -7680,10 +7690,7 @@ void peer_session::process_greeting( )
       {
          ap_socket->close( );
 
-         // FUTURE: This message should be handled as a server string message.
-         string error( "Unexpected files area item size mismatch." );
-
-         throw runtime_error( error );
+         throw runtime_error( GS( c_str_files_area_item_size_mismatch ) );
       }
    }
 }
