@@ -85,6 +85,7 @@ const char* const c_str_found_incorrect_hub_identity = "Found incorrect hub iden
 const char* const c_str_timed_out_connecting_to_peer = "Timed out trying to connect to '{@host}' using port number {@port}.";
 const char* const c_str_timed_out_connecting_to_peer_host = "{@host}";
 const char* const c_str_timed_out_connecting_to_peer_port = "{@port}";
+const char* const c_str_files_area_item_size_mismatch = "Unexpected files area item size mismatch.";
 const char* const c_str_requested_peerchain_unavailable = "Requested peerchain is not available.";
 const char* const c_str_incorrect_or_unsupported_peer_type = "Incorrect or unsupported Peer Type.";
 const char* const c_str_timed_out_waiting_for_verification = "Timed out waiting for peer verification.";
