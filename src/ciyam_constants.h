@@ -95,6 +95,8 @@ const char* const c_master_suffix = ".master";
 const char* const c_shared_suffix = ".shared";
 const char* const c_zenith_suffix = ".zenith";
 
+const char* const c_genesis_suffix = ".0.blk";
+
 const char* const c_identity_suffix = "identity";
 
 const char* const c_dead_keys_suffix = ".dead_keys.lst";

@@ -6309,7 +6309,7 @@ string local_peer_hub_checksum( const string& extra )
 
 void lock_blockchain( const string& identity )
 {
-   string genesis_tag( c_bc_prefix + identity + ".0.blk" );
+   string genesis_tag( c_bc_prefix + identity + c_genesis_suffix );
 
    if( !has_tag( genesis_tag ) )
       throw runtime_error( "unable to find genesis tag '" + genesis_tag + "'" );
