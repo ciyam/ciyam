@@ -9,15 +9,32 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "1"
-#NOTE: This script requires an identity.
+#NOTE: This script requires an identity (and optionally its paired extra identity).
 @else
 ERROR=
 ;
 IDENTITY=$1
+PAIRED_EXTRA=$2
 ;
 .storage_init Meta
 .pd sys @now Meta Global_Peerchain_Entry $IDENTITY
 @ifndef $ERROR
+@ifdef $PAIRED_EXTRA
+.system_variable @$PAIRED_EXTRA
+@ifdef $OUTPUT
+.file_tags $OUTPUT
+@ifdef $OUTPUT
+.regex -refs bc.([0-9a-f]{9}).0.blk %OUTPUT:1%
+HUB_IDENTITY=$OUTPUT
+@ifdef $HUB_IDENTITY
+.file_kill -p=bc.$HUB_IDENTITY.*
+.system_variable #$HUB_IDENTITY ""
+.system_variable %%$HUB_IDENTITY ""
+@endif
+@endif
+.system_variable >@$PAIRED_EXTRA ""
+@endif
+@endif
 #Deleted global peerchain entry for identity '$IDENTITY'.
 @endif
 .storage_term

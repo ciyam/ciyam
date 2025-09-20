@@ -253,7 +253,7 @@
  <script/>
   <name>destroy_peerchain_entry
   <filename>*script*
-  <arguments>destroy_peerchain_entry.cin @identity
+  <arguments>destroy_peerchain_entry.cin @identity @paired_extra
  </script>
  <script/>
   <name>prepare_blog_for_submit
