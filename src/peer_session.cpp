@@ -1028,9 +1028,7 @@ peerchain_type get_blockchain_type( const string& blockchain )
 {
    peerchain_type chain_type = e_peerchain_type_any;
 
-   string genesis_tag( blockchain );
-
-   genesis_tag += ".0" + string( c_blk_suffix );
+   string genesis_tag( blockchain + c_genesis_suffix );
 
    if( has_tag( genesis_tag ) )
    {
@@ -1099,9 +1097,7 @@ peerchain_type get_blockchain_type( const string& blockchain )
 
 void check_blockchain_type( const string& blockchain, peerchain_type chain_type, string* p_error = 0 )
 {
-   string genesis_tag( blockchain );
-
-   genesis_tag += ".0" + string( c_blk_suffix );
+   string genesis_tag( blockchain + c_genesis_suffix );
 
    if( has_tag( genesis_tag ) )
    {
@@ -1245,7 +1241,7 @@ void set_hub_system_variable_if_required( const string& identity, const string& 
 {
    if( get_raw_system_variable( "@" + identity ).empty( ) )
    {
-      string hub_genesis_tag( c_bc_prefix + hub_identity + string( ".0" ) + c_blk_suffix );
+      string hub_genesis_tag( c_bc_prefix + hub_identity + c_genesis_suffix );
       string hub_genesis_hash;
 
       if( has_tag( hub_genesis_tag ) )
@@ -4561,7 +4557,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       if( !is_for_support && !blockchain.empty( ) )
       {
-         string genesis_block_tag( blockchain + ".0" + string( c_blk_suffix ) );
+         string genesis_block_tag( blockchain + c_genesis_suffix );
 
          // NOTE: If the genesis block is not present then check if it now exists.
          if( !has_tag( genesis_block_tag ) )
@@ -5932,7 +5928,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         ++extra;
 
                      string progress_message(
-                      GS( syncing_for_height_prefix )
+                      GS( c_str_syncing_for_height_prefix )
                       + to_string( blockchain_height_other + extra ) );
 
                      if( blockchain_height > ( blockchain_height_other + extra ) )
@@ -7349,17 +7345,21 @@ void peer_session::on_start( )
          identity = unprefixed_blockchain;
 
          if( !is_for_support )
-         {
             set_session_variable( identity, c_true_value );
-
-            set_system_variable( c_error_message_prefix + identity, "" );
-
-            if( !paired_identity.empty( ) )
-               set_system_variable( c_error_message_prefix + paired_identity, "" );
-         }
 
          if( must_clear_system_variable )
             set_system_variable( paired_identity.empty( ) ? identity : paired_identity, "" );
+      }
+
+      bool had_tag = false;
+
+      string tag_name( get_special_var_name( e_special_var_tag ) );
+
+      if( has_system_variable( tag_name + '_' + identity ) )
+      {
+         had_tag = true;
+
+         set_system_variable( tag_name + '_' + identity, "" );
       }
 
       if( !is_responder )
@@ -7373,7 +7373,7 @@ void peer_session::on_start( )
 
             // NOTE: In case the responder does not have the genesis block include
             // its hash as a dummy "nonce" (to be used by the responder for "get").
-            string genesis_block_tag( blockchain + ".0" + string( c_blk_suffix ) );
+            string genesis_block_tag( blockchain + c_genesis_suffix );
 
             if( !has_tag( genesis_block_tag ) )
                hash_or_tag += ' ' + hello_hash;
@@ -7449,7 +7449,8 @@ void peer_session::on_start( )
 
       // NOTE: If a hub identity has been provided (and a zenith tag was found)
       // then will now connect to it (unless it has already been connected to).
-      if( okay && has_zenith && !is_responder && !is_for_support && !hub_identity.empty( ) )
+      if( okay && has_zenith
+       && !is_responder && !is_for_support && !hub_identity.empty( ) )
       {
          string hub_genesis_hash( get_raw_system_variable( "@" + identity ) );
 
@@ -7464,7 +7465,16 @@ void peer_session::on_start( )
             {
                string error( GS( c_str_found_incorrect_hub_identity ) );
 
-               set_system_variable( c_error_message_prefix + identity, error );
+               // NOTE: To prevent constant reconnection attempts will now
+               // clear both the "tag" and "auto" system variables for the
+               // paired identity (and sets the error for the paired chain
+               // so it can be easily found in the UI).
+               set_system_variable( tag_name + '_' + paired_identity, "" );
+
+               set_system_variable(
+                get_special_var_name( e_special_var_auto ) + '_' + paired_identity, "" );
+
+               set_system_variable( c_error_message_prefix + paired_identity, error );
 
                throw runtime_error( error );
             }
@@ -7513,12 +7523,22 @@ void peer_session::on_start( )
 
       if( okay )
       {
+         // NOTE: For an initiator all relevant peerchain identity error
+         // messages will have been cleared before starting each session
+         // but for responders will need to clear own error message now.
+         if( is_responder && !is_for_support )
+            set_system_variable( c_error_message_prefix + identity, "" );
+
+         // NOTE: If the peer session should be able to be automatically
+         // reconnected then will set the system variable for that now.
+         if( had_tag )
+            set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, c_true_value );
+
          TRACE_LOG( TRACE_INITIAL | TRACE_SESSION,
           string( has_session_secret ? "started secure peer session " : "started *insecure* peer session " )
           + ( !is_responder ? "(as initiator)" : "(as responder)" )
           + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain )
-          + ( !is_owner ? "" : " owner" )
-          + ( !is_for_support ? "" : " support" )
+          + ( !is_owner ? "" : " owner" ) + ( !is_for_support ? "" : " support" )
           + " (tid = " + to_string( current_thread_id( ) ) + ")" );
 
          socket_command_processor processor( *ap_socket, cmd_handler, is_local, is_owner, is_responder );
@@ -8078,9 +8098,6 @@ peer_session* create_peer_initiator( const string& blockchain,
       replace( explicit_paired_identity, c_bc_prefix, "" );
    }
 
-   if( !is_interactive && !has_main_session )
-      set_system_variable( c_error_message_prefix + identity, "" );
-
    ip_address address( host.c_str( ), port );
 
    string ip_addr( address.get_addr_string( ) );
@@ -8213,10 +8230,15 @@ peer_session* create_peer_initiator( const string& blockchain,
                   p_main_session = p_session;
 
                   // NOTE: If okay when initially started then will later automatically try
-                  // reconnecting (unless is not applicable or does not have a zenith tag).
+                  // reconnecting (unless not applicable or does not have a zenith tag). To
+                  // be sure an error in "on_start" (perhaps due to a fork or other serious
+                  // issue) does not result in looping repeatedly only set the "tag" system
+                  // variable here (it will be cleared and the "auto" variable set assuming
+                  // the handshake is successful).
                   if( is_paired && !is_secondary && has_tag( blockchain + c_zenith_suffix )
                    && ( !p_other_session_extras || p_other_session_extras->backup_identity.empty( ) ) )
-                     set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, c_true_value );
+                     set_system_variable(
+                      get_special_var_name( e_special_var_tag ) + '_' + identity, c_true_value );
                }
 
                if( p_other_session_extras )
@@ -8549,6 +8571,23 @@ void peer_session_starter::start_peer_session( const string& peer_info )
       paired_suffix = ':' + identity;
 
    set_system_variable( c_error_message_prefix + identity, "" );
+
+   if( create_reversed )
+      set_system_variable( c_error_message_prefix + reversed, "" );
+
+   if( p_extra_value )
+   {
+      string paired( get_own_identity( ( peer_type == c_peer_type_shared_only ), p_extra_value ) );
+
+      set_system_variable( c_error_message_prefix + paired, "" );
+
+      if( create_reversed )
+      {
+         reverse( paired.begin( ), paired.end( ) );
+
+         set_system_variable( c_error_message_prefix + paired, "" );
+      }
+   }
 
    // NOTE: This will be cleared by the peer session after it has started
    // (or cleared below if 'p_local_main' is returned as a null pointer).
