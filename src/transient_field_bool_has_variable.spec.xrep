@@ -1,11 +1,12 @@
 `{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_bool_has_variable)] `{`$arg_id`}
+`{`$val`=`$arg_value`}`{`@eq`(`$val`,`'@null`'`)`$val`=`'`'`}\
 `{`@eq`(`$arg_system`,`'true`'`)\
-   get_obj( ).`{`$arg_field`}( has_system_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`} ) );
+   get_obj( ).`{`$arg_field`}( has_system_variable( "`{`$val`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`} ) );
 `,`@eq`(`$arg_session`,`'true`'`)\
-   get_obj( ).`{`$arg_field`}( has_session_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`} ) );
+   get_obj( ).`{`$arg_field`}( has_session_variable( "`{`$val`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`} ) );
 `,\
-   get_obj( ).`{`$arg_field`}( get_obj( ).has_variable( "`{`$arg_value`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`} ) );
+   get_obj( ).`{`$arg_field`}( get_obj( ).has_variable( "`{`$val`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( )`} ) );
 `}\
    // [(finish transient_field_bool_has_variable)] `{`$arg_id`}
 `}
