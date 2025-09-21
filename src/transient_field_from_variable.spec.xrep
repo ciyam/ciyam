@@ -1,5 +1,6 @@
 `{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_from_variable)] `{`$arg_id`}
+`{`$var`=`$arg_variable`}`{`@eq`(`$var`,`'@percent`'`)`$var`=`'%`'`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
    if( get_obj( ).`{`$arg_tfield`}( ) )
 `,\
@@ -8,15 +9,15 @@
    {
 `{`@eq`(`$arg_system`,`'true`'`)\
       string value( get_system_variable( `{`@eq`(`$arg_session`,`'true`'`)get_session_variable( `}\
-"`{`$arg_variable`}"`{`@eq`(`$arg_session`,`'true`'`) )`}`{`!`@eq`(`$arg_ofield`,`'`'`)\
+"`{`$var`}"`{`@eq`(`$arg_session`,`'true`'`) )`}`{`!`@eq`(`$arg_ofield`,`'`'`)\
  + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
 `{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`}`{`@eq`(`$arg_not_internal`,`'true`'`), false`} ) );
 `,`@eq`(`$arg_session`,`'true`'`)\
-      string value( get_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
+      string value( get_session_variable( "`{`$var`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
  + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
 `{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`} ) );
 `,\
-      string value( get_obj( ).get_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
+      string value( get_obj( ).get_variable( "`{`$var`}"`{`!`@eq`(`$arg_ofield`,`'`'`)\
  + `{`@eq`(`$arg_ofisfk`,`'1`'`)to_string( `}get_obj( ).`{`$arg_ofield`}( )\
 `{`@eq`(`$arg_ofisfk`,`'1`'`) )`}`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`}`} ) );
 `}
