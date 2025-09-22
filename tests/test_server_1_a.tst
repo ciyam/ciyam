@@ -23,9 +23,12 @@ cannot_destroy Delete not permitted for this {@class} record.
 cannot_link_to_self {@class} cannot be linked to itself.
 cannot_update Update not permitted for this {@class} record.
 checking_at_height_prefix Checking at height 
+class_is_locked This {@class} is currently locked - retry again shortly.
 copy_password_to_clipboard @clipboard:Password;{@value}
 current_height_prefix Currently at height 
-currently_locked This {@class} is currently locked - retry again shortly.
+currently_locked Currently locked (please try again later).
+decrypting Decrypting
+encrypting Encrypting
 error {@error}.
 exceeded_maximum has exceeded the maximum size limit of {@limit} characters.
 external_service_unavailable External service {@symbol} does not appear to be currently available.
@@ -74,6 +77,7 @@ incorrect_numeric_format must have no more than {@wholes} whole number(s) and no
 incorrect_numeric_fraction_2 must only have .0 or .5 as a fraction (i.e. round to the nearest half).
 incorrect_numeric_fraction_4 must only have .0, .25, .5 or .75 as a fraction (i.e. round to the nearest quarter).
 incorrect_or_unsupported_peer_type Incorrect or unsupported Peer Type.
+incorrect_shared_secret Found invalid/corrupt peer data (incorrect shared secret?).
 index_duplicate This {@field} [val: {@value}] is already being used by another {@class} record.
 invalid Invalid {@field}.
 invalid_day_type {@field1} is not valid for this {@field2}.
