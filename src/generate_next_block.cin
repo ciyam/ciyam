@@ -135,8 +135,8 @@ HAS_NO_OPL=1
 <bc_gen_block.cin $IDENT $NEW_HEIGHT $TREE
 ;
 @ifndef $ERROR
-; FUTURE: This message should be handled as a server string.
-.system_variable %$IDENT "Currently at height $NEW_HEIGHT"
+.string_message current_height_prefix
+.system_variable %$IDENT "$OUTPUT$NEW_HEIGHT"
 @endif
 ;
 @ifdef $FIRST

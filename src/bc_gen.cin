@@ -63,6 +63,8 @@ EXTRA_SUFFIX=_$EXTRA
 @skip
 @:NEXT
 ;
+HEIGHT=0
+;
 @ifdef $DATA
 DATA_KEY=$SEED
 SEED=\@sid:$DATA_KEY
@@ -318,8 +320,9 @@ BLOCK_HASH=$OUTPUT
 @ifndef $HUB
 @ifndef $SHARED
 @ifndef $EXTRA_SUFFIX
-; FUTURE: This message should be handled as a server string.
-.system_variable %$IDENT "Currently at height 0"
+.string_message current_height_prefix
+CURRENT_HEIGHT_PROGRESS=$OUTPUT$HEIGHT
+.system_variable %$IDENT "$CURRENT_HEIGHT_PROGRESS"
 ;
 .system_variable >@blockchain_backup_height 0
 .system_variable >@blockchain_backup_initial $BLOCK_HASH

@@ -209,8 +209,10 @@ BACKUP_HEIGHT_FILE=@files:$BACKUP_PATH:.backup.height
 .system_variable @blockchain_peer_hub_height $HEIGHT
 @endif
 ;
-; FUTURE: This message should be handled as a server string.
-.system_variable %$NEXT_IDENT "Currently at height $HEIGHT"
+.string_message current_height_prefix
+CURRENT_HEIGHT_PROGRESS=$OUTPUT$HEIGHT
+.system_variable %$NEXT_IDENT "$CURRENT_HEIGHT_PROGRESS"
+;
 @ifneq "$SEED" ""
 <bc_gen_keys.cin $SEED $NEXT_IDENT $HEIGHT
 @endif

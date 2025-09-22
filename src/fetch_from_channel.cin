@@ -114,8 +114,8 @@ BUNDLE_HASH=%OUTPUT:2%
 ;
 @ifneq $SYSTEM_RETVAL 0
 ~rmdir $UUID
-; FUTURE: This message should be handled as a server string.
-ERROR=Found invalid/corrupt peer data (incorrect shared secret?).
+.string_message incorrect_shared_secret
+ERROR=$OUTPUT
 #$ERROR
 @else
 SUBMIT_AFTER_FETCH=@file:$UUID/.fetch
@@ -266,8 +266,8 @@ BUNDLE_HASH=%OUTPUT:2%
 ;
 @ifneq $SYSTEM_RETVAL 0
 ~rmdir $UUID
-; FUTURE: This message should be handled as a server string.
-ERROR=Found invalid/corrupt peer data (incorrect shared secret?).
+.string_message incorrect_shared_secret
+ERROR=$OUTPUT
 #$ERROR
 @else
 SUBMIT_AFTER_FETCH=@file:$UUID/.fetch

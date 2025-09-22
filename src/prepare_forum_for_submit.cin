@@ -41,8 +41,8 @@ WEB_SUBMIT_FILE=@files:$WEBDIR/$APP_DIR:$SUBMIT_FILE
 ;
 .system_variable @prepare_forum_$IDENTITY ""
 @else
-; FUTURE: This message should be handled as a server string.
-ERROR=Currently locked (please try again later).
+.string_message currently_locked
+ERROR=$OUTPUT
 #$ERROR
 @endif
 ;
