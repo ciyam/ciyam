@@ -244,7 +244,7 @@ unsigned char get_file_type_and_extra( const string& hash, const char* p_file_na
 
    multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
 
-   if( i == g_hash_tags.end( ) || ( hash != i->first.get_hash_string( ) ) )
+   if( ( i == g_hash_tags.end( ) ) || ( ( hash != i->first.get_hash_string( ) ) ) )
    {
       if( !p_file_name )
          throw runtime_error( "unexpected hash tag for " + hash + " not found" );
@@ -264,7 +264,7 @@ void set_file_type_and_extra( const string& hash, unsigned char file_type_and_ex
 {
    multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
 
-   if( i == g_hash_tags.end( ) || ( hash != i->first.get_hash_string( ) ) )
+   if( ( i == g_hash_tags.end( ) ) || ( ( hash != i->first.get_hash_string( ) ) ) )
       throw runtime_error( "unable to find " + hash + " in 'set_file_type_and_extra'" );
    else 
    {
@@ -280,7 +280,7 @@ void set_file_type_and_extra( const string& hash, unsigned char file_type_and_ex
 
          i = g_hash_tags.lower_bound( hash );
 
-         if( i == g_hash_tags.end( ) || hash != i->first.get_hash_string( ) )
+         if( ( i == g_hash_tags.end( ) ) || ( hash != i->first.get_hash_string( ) ) )
             break;
       }
 
@@ -479,6 +479,7 @@ void validate_list( const string& data, bool* p_rc = 0,
 void validate_hash_with_uncompressed_content( const string& hash, const string& file_name )
 {
    sha256 test_hash;
+
    test_hash.update( file_name, true );
 
    if( hash != test_hash.get_digest_as_string( ) )
@@ -501,6 +502,7 @@ void validate_hash_with_uncompressed_content( const string& hash,
          p_data[ 0 ] &= ~c_file_type_val_compressed;
 
       sha256 test_hash;
+
       test_hash.update( p_data, length );
 
       if( lower( hash ) == test_hash.get_digest_as_string( ) )
@@ -555,6 +557,7 @@ void remove_file_padding( const string& hash, const string& extra_header, string
    if( padding )
    {
       total_bytes -= padding;
+
       file_data.erase( file_data.length( ) - padding );
    }
 
@@ -610,6 +613,7 @@ string transform_shared_list_info( const string& repository,
  session_file_buffer_access& file_buffer, size_t offset, size_t length, progress* p_progress )
 {
    string list_data;
+
    file_buffer.copy_to_string( list_data, offset, length );
 
    string encrypted_list_data( list_data.substr( 0, 1 ) );
@@ -625,7 +629,7 @@ string transform_shared_list_info( const string& repository,
 
    map< string, string > mapped_hashes;
 
-   size_t num_seconds;
+   size_t num_seconds = 0;
 
    session_progress_settings( num_seconds, p_progress );
 
@@ -702,6 +706,7 @@ string transform_shared_list_info( const string& repository,
          if( elapsed >= num_seconds )
          {
             dtm = now;
+
             p_progress->output_progress( "." );
          }
       }
@@ -717,6 +722,7 @@ string create_repository_lists(
  size_t offset, size_t length, string* p_encrypted_file_data, progress* p_progress )
 {
    string file_data;
+
    file_buffer.copy_to_string( file_data, offset, length );
 
    string encrypted_file_data( file_data.substr( 0, 1 ) );
@@ -733,7 +739,7 @@ string create_repository_lists(
 
    map< string, string > mapped_hashes;
 
-   size_t num_seconds;
+   size_t num_seconds = 0;
 
    session_progress_settings( num_seconds, p_progress );
 
@@ -768,6 +774,7 @@ string create_repository_lists(
          was_peer_mapped = !is_repeated;
 
          string::size_type pos = encrypted_hash.find( ':' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected encrypted_hash missing public key" );
 
@@ -789,6 +796,7 @@ string create_repository_lists(
                throw runtime_error( "unexpected repository entry for '" + next_hash + "' not found in create_repository_lists" );
 
             string dummy;
+
             fetch_repository_entry_record( repository, next_hash, dummy, dummy, public_key );
          }
       }
@@ -826,6 +834,7 @@ string create_repository_lists(
          public_key_file_data += hex_decode( next_hash );
 
          string prefix( public_key.substr( 0, 2 ) );
+
          public_key.erase( 0, 2 );
 
          public_key_file_data += hex_decode( public_key );
@@ -849,6 +858,7 @@ string create_repository_lists(
          if( elapsed >= num_seconds )
          {
             dtm = now;
+
             p_progress->output_progress( "." );
          }
       }
@@ -873,6 +883,7 @@ string dir_archive_path( const string& path )
    if( pos == 0 )
    {
       retval.erase( 0, files_prefix.size( ) );
+
       retval.insert( 0, get_files_area_dir( ) );
    }
 
@@ -996,6 +1007,7 @@ void output_repository_progress( progress* p_progress,
 struct repository_lock
 {
    repository_lock( const string& repository );
+
    ~repository_lock( );
 
    string repo_lock_name;
@@ -1098,6 +1110,7 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
       date_time dt_epoch( c_time_stamp_unix_epoch );
 
       directory_filter df;
+
       fs_iterator dfsi( files_area_dir, &df );
 
       bool is_first = true;
@@ -1105,16 +1118,17 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
       int64_t secs_diff = local_secs_diff( );
 
       string ciyam_prefix( c_ciyam_tag );
+
       ciyam_prefix += '_';
 
-      size_t num_seconds;
+      size_t num_seconds = 0;
 
       session_progress_settings( num_seconds, p_progress );
 
       do
       {
          // NOTE: Skip directories that might be archives.
-         if( !is_first && dfsi.get_name( ).length( ) > 2 )
+         if( !is_first && ( dfsi.get_name( ).length( ) > 2 ) )
             continue;
 
          file_filter ff;
@@ -1131,6 +1145,7 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
                   continue;
 
                string data( buffer_file( fs.get_full_name( ) ) );
+
                string file_name( construct_file_name_from_hash( data, false, false ) );
 
                if( !file_exists( file_name ) )
@@ -1146,6 +1161,7 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
                else
                {
                   unsigned char file_type_and_extra = '\0';
+
                   file_size( file_name, &file_type_and_extra, sizeof( file_type_and_extra ) );
 
                   file_hash_info hash_info( data, file_type_and_extra );
@@ -1269,7 +1285,7 @@ void init_archive_info( progress* p_progress, bool has_restored_system )
 
       date_time dtm( date_time::local( ) );
 
-      size_t num_seconds;
+      size_t num_seconds = 0;
 
       session_progress_settings( num_seconds, p_progress );
 
@@ -1391,6 +1407,7 @@ bool has_tag( const string& name, file_type type )
       return false;
 
    string::size_type pos = name.rfind( '*' );
+
    map< string, file_hash_info >::iterator i = ( pos == 0 ? g_tag_hashes.end( ) : g_tag_hashes.lower_bound( name.substr( 0, pos ) ) );
 
    if( i == g_tag_hashes.end( ) || ( pos == string::npos && i->first != name ) )
@@ -1609,7 +1626,7 @@ string file_type_info( const string& tag_or_hash,
    string use_tag_or_hash( tag_or_hash );
    string files_area_dir( get_files_area_dir( ) );
 
-   size_t num_seconds;
+   size_t num_seconds = 0;
 
    session_progress_settings( num_seconds, p_progress );
 
@@ -1760,13 +1777,13 @@ string file_type_info( const string& tag_or_hash,
    // NOTE: If the prefix begins with a caret character
    // then it will be treated inversely (i.e. will only
    // match items that do not match).
-   if( !prefix.empty( ) && prefix[ 0 ] == '^' )
+   if( !prefix.empty( ) && ( prefix[ 0 ] == '^' ) )
    {
       prefix.erase( 0, 1 );
       is_inverted_prefix = true;
 
       // NOTE: Treat ^^ as a ^ without inverting.
-      if( !prefix.empty( ) && prefix[ 0 ] == '^' )
+      if( !prefix.empty( ) && ( prefix[ 0 ] == '^' ) )
          is_inverted_prefix = false;
    }
 
@@ -1890,7 +1907,7 @@ string file_type_info( const string& tag_or_hash,
    {
       if( file_type == c_file_type_val_blob )
       {
-         if( !output_last_only || depth == indent + 1 )
+         if( !output_last_only || ( depth == indent + 1 ) )
          {
             if( expansion == e_file_expansion_recursive_hashes )
                retval += lower( hash );
@@ -1937,7 +1954,7 @@ string file_type_info( const string& tag_or_hash,
 
          split_list_items( final_data.substr( 1 ), list_items );
 
-         if( !output_last_only || depth == indent + 1 )
+         if( !output_last_only || ( depth == indent + 1 ) )
          {
             if( expansion == e_file_expansion_recursive_hashes )
                retval += lower( hash );
@@ -1958,11 +1975,13 @@ string file_type_info( const string& tag_or_hash,
          for( size_t i = 0; i < list_items.size( ); i++ )
          {
             string next( list_items[ i ] );
+
             string::size_type pos = next.find( ' ' );
 
             string next_hash( next.substr( 0, pos ) );
 
             string next_name;
+
             if( pos != string::npos )
                next_name = next.substr( pos + 1 );
 
@@ -2017,7 +2036,7 @@ string file_type_info( const string& tag_or_hash,
                   // NOTE: If instructed to "allow_all_after" then once an item's name is found to
                   // be equal to or longer in length than the provided prefix then every following
                   // item in the entire branch below this will be output.
-                  if( p_prefix && allow_all_after && next_name.length( ) >= strlen( p_prefix ) )
+                  if( p_prefix && allow_all_after && ( next_name.length( ) >= strlen( p_prefix ) ) )
                   {
                      allow_all = true;
                      allow_all_after = false;
@@ -2042,6 +2061,7 @@ string file_type_info( const string& tag_or_hash,
                   {
                      if( !retval.empty( ) )
                         retval += "\n";
+
                      retval += additional;
                   }
                }
@@ -2092,7 +2112,7 @@ void file_list_item_pos(
 
       split_list_items( all_list_items, list_items );
 
-      size_t num_seconds;
+      size_t num_seconds = 0;
 
       session_progress_settings( num_seconds, p_progress );
 
@@ -2101,6 +2121,7 @@ void file_list_item_pos(
          if( p_dtm && p_progress )
          {
             date_time now( date_time::local( ) );
+
             uint64_t elapsed = seconds_between( *p_dtm, now );
 
             if( elapsed >= num_seconds )
@@ -2289,7 +2310,7 @@ string create_raw_file( const string& data, bool compress,
       validate_list( final_data.substr( 1 ), 0, allow_missing_items );
 
 #ifdef ZLIB_SUPPORT
-   if( compress && !is_encrypted && !is_compressed && final_data.size( ) >= c_min_size_to_compress )
+   if( compress && !is_encrypted && !is_compressed && ( final_data.size( ) >= c_min_size_to_compress ) )
    {
       unsigned long size = final_data.size( ) - 1;
       unsigned long csize = file_buffer.get_size( );
@@ -2398,7 +2419,7 @@ string create_list_file( const string& add_tags, const string& del_items,
    bool allow_new = false;
    bool is_new_list = false;
 
-   if( !use_new_tag.empty( ) && use_new_tag[ 0 ] == '!' )
+   if( !use_new_tag.empty( ) && ( use_new_tag[ 0 ] == '!' ) )
    {
       allow_new = true;
       use_new_tag.erase( 0, 1 );
@@ -2418,6 +2439,7 @@ string create_list_file( const string& add_tags, const string& del_items,
    if( !is_new_list )
    {
       bool is_list = false;
+
       data = extract_file( hash, "", '\0', &is_list );
 
       if( !is_list )
@@ -2445,6 +2467,7 @@ string create_list_file( const string& add_tags, const string& del_items,
          // NOTE: If the new item is not expected to actually be a tag then its hash
          // needs to be provided before the item name.
          string::size_type pos = next_tag.find( ' ' );
+
          if( pos != string::npos )
          {
             next_hash = next_tag.substr( 0, pos );
@@ -2454,7 +2477,8 @@ string create_list_file( const string& add_tags, const string& del_items,
          // NOTE: An added item can take its name from a corresponding delete item by
          // prefixing the tag name with a '?' character.
          string old_tag;
-         if( !next_tag.empty( ) && next_tag[ 0 ] == '?' )
+
+         if( !next_tag.empty( ) && ( next_tag[ 0 ] == '?' ) )
          {
             if( i >= items_to_remove.size( ) )
                throw runtime_error( "invalid ? prefixed tag (not enough delete items)" );
@@ -2493,6 +2517,7 @@ string create_list_file( const string& add_tags, const string& del_items,
       string::size_type pos = next.find( ' ' );
 
       string next_hash( next.substr( 0, pos ) );
+
       string next_name;
 
       if( next_hash == hash )
@@ -2568,6 +2593,7 @@ string create_list_file( const string& add_tags, const string& del_items,
       {
          if( i > 0 )
             data += '\n';
+
          data += new_items[ i ];
       }
       else
@@ -3225,7 +3251,7 @@ string extract_tags_from_lists( const string& tag_or_hash,
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "File '" + tag_or_hash + "' is not a list." );
 
-   size_t num_seconds;
+   size_t num_seconds = 0;
 
    session_progress_settings( num_seconds, p_progress );
 
@@ -3326,7 +3352,7 @@ string list_file_tags(
    if( !all_excludes.empty( ) )
       split( all_excludes, excludes );
 
-   size_t num_seconds;
+   size_t num_seconds = 0;
 
    session_progress_settings( num_seconds, p_progress );
 
@@ -3555,7 +3581,7 @@ void crypt_file( const string& repository,
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Attempt to recrypt recursively when not 'blobs only'." );
 
-   size_t num_seconds;
+   size_t num_seconds = 0;
 
    session_progress_settings( num_seconds, p_progress );
 
@@ -4396,7 +4422,7 @@ void delete_files_for_tags( const string& pat, progress* p_progress, const char*
       for( size_t i = 0; i < all_tags.size( ); i++ )
          hashes.insert( tag_file_hash( all_tags[ i ] ) );
 
-      size_t num_seconds;
+      size_t num_seconds = 0;
 
       session_progress_settings( num_seconds, p_progress );
 
@@ -4740,7 +4766,7 @@ void remove_file_archive( const string& name, bool destroy_files, bool remove_di
 
          if( new_status_info == string( c_okay ) )
          {
-            size_t num_seconds;
+            size_t num_seconds = 0;
 
             session_progress_settings( num_seconds, p_progress );
 
@@ -4836,7 +4862,7 @@ void repair_file_archive( const string& name, progress* p_progress )
 
          regex expr( c_regex_hash_256, true, true );
 
-         size_t num_seconds;
+         size_t num_seconds = 0;
 
          session_progress_settings( num_seconds, p_progress );
 
@@ -5877,7 +5903,7 @@ size_t count_total_repository_entries(
    size_t total_entries = 0;
    size_t total_archive_files = files_in_archive( repository );
 
-   size_t num_seconds;
+   size_t num_seconds = 0;
 
    session_progress_settings( num_seconds, p_progress );
 
@@ -5891,6 +5917,7 @@ size_t count_total_repository_entries(
       date_time now( date_time::local( ) );
 
       vector< string > repo_entries;
+
       ods_fs.list_files( repository + '*', repo_entries, false, last_key, last_key.empty( ), 1000 );
 
       if( repo_entries.empty( ) )
@@ -5962,7 +5989,7 @@ size_t remove_all_repository_entries( const string& repository,
    string last_key;
    vector< string > files_to_remove;
 
-   size_t num_seconds;
+   size_t num_seconds = 0;
 
    session_progress_settings( num_seconds, p_progress );
 
@@ -5976,6 +6003,7 @@ size_t remove_all_repository_entries( const string& repository,
       date_time now( date_time::local( ) );
 
       vector< string > repo_entries;
+
       ods_fs.list_files( repository + '*', repo_entries, false, last_key, last_key.empty( ), 100 );
 
       if( repo_entries.empty( ) )
@@ -6080,7 +6108,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
    string last_key;
    vector< string > files_to_remove;
 
-   size_t num_seconds;
+   size_t num_seconds = 0;
 
    session_progress_settings( num_seconds, p_progress );
 
@@ -6094,6 +6122,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
       date_time now( date_time::local( ) );
 
       vector< string > repo_entries;
+
       ods_fs.list_files( repository + '*', repo_entries, false, last_key, last_key.empty( ), 100 );
 
       if( repo_entries.empty( ) )
