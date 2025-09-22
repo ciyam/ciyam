@@ -6017,7 +6017,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          else
             store_file( hash, socket, 0, p_sock_progress, false, 0, false, &file_data, &num_bytes );
 
-         if( hash != hello_hash && ( blockchain.empty( )
+         if( ( hash != hello_hash ) && ( blockchain.empty( )
           || has_raw_session_variable( get_special_var_name( e_special_var_blockchain_get_tree_files ) ) ) )
          {
             date_time dtm( date_time::local( ) );
@@ -8645,7 +8645,9 @@ void peer_session_starter::start_peer_session( const string& peer_info )
          if( ( elapsed >= max_retry_seconds )
           || ( other_extras.special_message != c_special_message_1 ) )
          {
-            if( !other_extras.special_message.empty( ) )
+            // NOTE: If not looping then will ignore "waiting for verification".
+            if( !other_extras.special_message.empty( )
+             && ( max_retry_seconds || ( other_extras.special_message != c_special_message_1 ) ) )
                set_system_variable( c_error_message_prefix + identity,
                 special_connection_message( other_extras.special_message, ( elapsed >= max_retry_seconds ) ) );
 
