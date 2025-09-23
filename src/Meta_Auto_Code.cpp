@@ -756,7 +756,7 @@ void Meta_Auto_Code::impl::validate(
       if( !okay )
          p_validation_errors->insert( validation_error_value_type( c_field_name_Next,
           get_string_message( GS( c_str_field_mismatch ), make_pair(
-          c_str_parm_field_mismatch_field, get_module_string( c_field_display_name_Next ) ),
+          c_str_parm_field_mismatch_field1, get_module_string( c_field_display_name_Next ) ),
           make_pair( c_str_parm_field_mismatch_field2, get_module_string( c_field_display_name_Mask ) ) ) ) );
    }
    // [(finish for_auto_code)] 600295

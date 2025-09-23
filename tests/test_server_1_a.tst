@@ -19,86 +19,86 @@ trace_flags -list
 strings
 and and
 at_height_suffix  at height
-cannot_destroy Delete not permitted for this {@class} record.
-cannot_link_to_self {@class} cannot be linked to itself.
-cannot_update Update not permitted for this {@class} record.
+cannot_destroy Delete not permitted for this @class record.
+cannot_link_to_self @class cannot be linked to itself.
+cannot_update Update not permitted for this @class record.
 checking_at_height_prefix Checking at height 
-class_is_locked This {@class} is currently locked - retry again shortly.
-copy_password_to_clipboard @clipboard:Password;{@value}
+class_is_locked This @class is currently locked - retry again shortly.
+copy_password_to_clipboard @clipboard:Password;@value
 current_height_prefix Currently at height 
 currently_locked Currently locked (please try again later).
 decrypting Decrypting
 encrypting Encrypting
-error {@error}.
-exceeded_maximum has exceeded the maximum size limit of {@limit} characters.
-external_service_unavailable External service {@symbol} does not appear to be currently available.
-failed_connect_to_peer Failed trying to connect to '{@host}' using port number {@port}.
+error @error.
+exceeded_maximum has exceeded the maximum size limit of @limit characters.
+external_service_unavailable External service @symbol does not appear to be currently available.
+failed_connect_to_peer Failed trying to connect to '@host' using port number @port.
 false False
-field_and_original_mismatch {@pfield} is not compatible with the original's {@field}.
-field_dep_must_be_changed {@field1} must be changed as {@field2} was changed.
-field_has_invalid_value {@field} has not been set to a permitted value.
-field_is_incorrect {@field} is incorrect.
-field_mismatch {@field} does not match {@field2}.
-field_must_be_between {@field} must be between {@lvalue} and {@rvalue}.
-field_must_be_empty_for_root {@field} must be empty for the root folder.
-field_must_be_empty_match {@field2} must be empty when {@field1} is empty.
-field_must_be_eq_other {@field} must be equal to {@field2}.
-field_must_be_eq_value {@field} must be equal to {@value}.
-field_must_be_greater_or_equal {@field} must be greater than or equal to {@field2}.
-field_must_be_gt_other {@field} must be greater than {@field2}.
-field_must_be_gt_value {@field} must be greater than {@value}.
-field_must_be_gteq_other {@field} must be greater than or equal to {@field2}.
-field_must_be_gteq_value {@field} must be greater than or equal to {@value}.
-field_must_be_lt_other {@field} must be less than {@field2}.
-field_must_be_lt_value {@field} must be less than {@value}.
-field_must_be_lteq_other {@field} must be less than or equal to {@field2}.
-field_must_be_lteq_value {@field} must be less than or equal to {@value}.
-field_must_be_neq_other {@field} must be not equal to {@field2}.
-field_must_be_neq_value {@field} must be not equal to {@value}.
-field_must_contain_no_more {@field} must contain no more than {@limit} items.
-field_must_match_parents {@field} must match that of the {@pfield}.
-field_must_not_be_changed {@field} must not be changed.
-field_must_not_be_changed_if {@field} may not be changed if {@tfield}.
-field_must_not_be_changed_non_default {@field} must not be changed unless it has its default value.
-field_must_not_be_empty {@field} must not be empty.
-field_must_not_be_zero {@field} must not be zero.
-field_not_comaptible This {@field} cannot be used with this {@field2}.
-field_types_must_match {@field1} and {@field2} types must match.
+field_and_original_mismatch @pfield is not compatible with the original's @field.
+field_dep_must_be_changed @field1 must be changed as @field2 was changed.
+field_has_invalid_value @field has not been set to a permitted value.
+field_is_incorrect @field is incorrect.
+field_mismatch @field1 does not match @field2.
+field_must_be_between @field must be between @lvalue and @rvalue.
+field_must_be_empty_for_root @field must be empty for the root folder.
+field_must_be_empty_match @field2 must be empty when @field1 is empty.
+field_must_be_eq_other @field1 must be equal to @field2.
+field_must_be_eq_value @field1 must be equal to @value.
+field_must_be_greater_or_equal @field must be greater than or equal to @field2.
+field_must_be_gt_other @field1 must be greater than @field2.
+field_must_be_gt_value @field1 must be greater than @value.
+field_must_be_gteq_other @field1 must be greater than or equal to @field2.
+field_must_be_gteq_value @field1 must be greater than or equal to @value.
+field_must_be_lt_other @field1 must be less than @field2.
+field_must_be_lt_value @field1 must be less than @value.
+field_must_be_lteq_other @field1 must be less than or equal to @field2.
+field_must_be_lteq_value @field1 must be less than or equal to @value.
+field_must_be_neq_other @field1 must be not equal to @field2.
+field_must_be_neq_value @field1 must be not equal to @value.
+field_must_contain_no_more @field must contain no more than @limit items.
+field_must_match_parents @field must match that of the @pfield.
+field_must_not_be_changed @field must not be changed.
+field_must_not_be_changed_if @field may not be changed if @tfield.
+field_must_not_be_changed_non_default @field must not be changed unless it has its default value.
+field_must_not_be_empty @field must not be empty.
+field_must_not_be_zero @field must not be zero.
+field_not_comaptible This @field1 cannot be used with this @field2.
+field_types_must_match @field1 and @field2 types must match.
 files_area_item_size_mismatch Unexpected files area item size mismatch.
 footer Copyright (c) 2012-2025 CIYAM Developers
-found_child_record Found {@class} for {@field}.
+found_child_record Found @class for @field.
 found_incorrect_hub_identity Found incorrect hub identity.
-has_one_or_more_active_children This {@class} has one or more {@cfield} child {@children}.
-home_group_stats Your {@group} currently has {@num} {@type}
-home_stats You currently have {@num} {@type}
-home_stats_extra  and {@num} {@type}
-host_address_not_permitted Host '{@host}' address {@address} is not permitted.
-incorrect_numeric_format must have no more than {@wholes} whole number(s) and no more than {@decimals} decimal(s).
+has_one_or_more_active_children This @class has one or more @cfield child @children.
+home_group_stats Your @group currently has @num @type
+home_stats You currently have @num @type
+home_stats_extra  and @num @type
+host_address_not_permitted Host '@host' address @address is not permitted.
+incorrect_numeric_format must have no more than @wholes whole number(s) and no more than @decimals decimal(s).
 incorrect_numeric_fraction_2 must only have .0 or .5 as a fraction (i.e. round to the nearest half).
 incorrect_numeric_fraction_4 must only have .0, .25, .5 or .75 as a fraction (i.e. round to the nearest quarter).
 incorrect_or_unsupported_peer_type Incorrect or unsupported Peer Type.
 incorrect_shared_secret Found invalid/corrupt peer data (incorrect shared secret?).
-index_duplicate This {@field} [val: {@value}] is already being used by another {@class} record.
-invalid Invalid {@field}.
-invalid_day_type {@field1} is not valid for this {@field2}.
-invalid_dom_for_yearly {@field} is not valid for this month.
-invalid_duplicate_field_value {@field} must not contain duplicates.
+index_duplicate This @field [val: @value] is already being used by another @class record.
+invalid Invalid @field.
+invalid_day_type @field1 is not valid for this @field2.
+invalid_dom_for_yearly @field is not valid for this month.
+invalid_duplicate_field_value @field must not contain duplicates.
 invalid_filename is not a valid filename (cannot use '"', ':', '?', '*', '<', '>', '|', '/', '\' or extended ASCII characters).
 invalid_identifier is not a valid identifier ([a-zA-Z][_0-9a-zA-Z]*).
 invalid_label is not a valid label ([_0-9a-zA-Z]+).
-invalid_own_identity {@field} must not be your own.
+invalid_own_identity @field must not be your own.
 invalid_peer_handshake Invalid peer handshake.
 invalid_time_difference Invalid time difference (check system clocks).
-invalid_type {@field} is not a valid {@label}.
-key_invalid Key '{@key}' contains invalid characters.
-linking_to_class_prohibited Linking to this {@class} is prohibited.
+invalid_type @field is not a valid @label.
+key_invalid Key '@key' contains invalid characters.
+linking_to_class_prohibited Linking to this @class is prohibited.
 mapping_at_height_prefix Mapping at height 
 mapping_for_height_prefix Mapping for height 
-module_depends_reqd Module '{@module}' requires external dependencies to be loaded first.
-module_is_loaded Module '{@module}' is already loaded.
-module_not_exists Module '{@module}' does not appear to exist.
-module_not_loaded Module '{@module}' is not currently loaded.
-no_children_for_this_record No {@children} exist for this {@class}.
+module_depends_reqd Module '@module' requires external dependencies to be loaded first.
+module_is_loaded Module '@module' is already loaded.
+module_not_exists Module '@module' does not appear to exist.
+module_not_loaded Module '@module' is not currently loaded.
+no_children_for_this_record No @children exist for this @class.
 no_reply_email_text IMPORTANT: Remember, this is just a notification. Please do not reply to this email.
 none (none)
 or or
@@ -108,29 +108,29 @@ peer_terminated_connection Peer has unexpectedly terminated this connection.
 permission_denied Permission denied.
 polling_at_height_prefix Polling at height 
 preparing Preparing
-processed_items Processed {@num} items
+processed_items Processed @num items
 processing_prefix Processing: 
-record_constrained This record cannot be deleted as it is being used by one or more {@class} records.
-record_exists This {@class} already exists or is not able to be created.
-record_not_found {@class} record '{@key}' was not found.
+record_constrained This record cannot be deleted as it is being used by one or more @class records.
+record_exists This @class already exists or is not able to be created.
+record_not_found @class record '@key' was not found.
 records record(s)
 requested_peerchain_unavailable Requested peerchain is not available.
 subtotal Subtotal
 syncing Syncing
 syncing_at_height_prefix Syncing at height 
 syncing_for_height_prefix Syncing for height 
-timed_out_connecting_to_peer Timed out trying to connect to '{@host}' using port number {@port}.
+timed_out_connecting_to_peer Timed out trying to connect to '@host' using port number @port.
 timed_out_waiting_for_verification Timed out waiting for peer verification.
 timeout_connecting_to_peer Timeout occurred trying to connect to peer.
 total Total
 true True
-unable_to_create_using_external Unable to create {@class} for {@symbol} (external service not available?).
-unable_to_determine_address Unable to determine address for domain name '{@domain}'.
-unable_to_start_peerchain Unable to start peerchain using port number {@port}.
+unable_to_create_using_external Unable to create @class for @symbol (external service not available?).
+unable_to_determine_address Unable to determine address for domain name '@domain'.
+unable_to_start_peerchain Unable to start peerchain using port number @port.
 unexpected_blockchain_fork Unexpected blockchain fork detected.
 unknown (unknown)
-value_must_be_in_range must contain a value in the range {@from} to {@to}.
-version_mismatch Version mismatch (found {@found} but expected {@expected}).
+value_must_be_in_range must contain a value in the range @from to @to.
+version_mismatch Version mismatch (found @found but expected @expected).
 waiting_for_peer_hub_sync Waiting for peer hub sync
 waiting_for_verification Waiting for peer verification.
 string_message total

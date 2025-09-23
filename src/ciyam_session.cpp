@@ -179,9 +179,6 @@ void get_parm_and_value( const string& parm_and_value, string& parm, string& val
 
       parm = parm_and_value.substr( 0, pos );
 
-      if( !parm.empty( ) && ( parm[ 0 ] != '{' ) )
-         parm = '{' + parm + '}';
-
       if( pos != string::npos )
          value = parm_and_value.substr( pos + 1 );
    }
