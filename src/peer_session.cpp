@@ -4343,6 +4343,8 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
          if( response != "." )
             set_session_progress_message( response );
 
+         check_for_missing_other_sessions( date_time::local( ) );
+
          continue;
       }
 
@@ -6426,6 +6428,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
                if( response != "." )
                   set_session_progress_message( response );
 
+               check_for_missing_other_sessions( date_time::local( ) );
+
                continue;
             }
 
@@ -6501,6 +6505,9 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
                   set_session_progress_message( cmd_and_args );
 
                cmd_and_args.erase( );
+
+               check_for_missing_other_sessions( date_time::local( ) );
+
                continue;
             }
          }
