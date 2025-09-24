@@ -314,6 +314,18 @@ int main( int argc, char* argv[ ] )
 
       umask( STANDARD_UMASK );
 
+      string exe_path( argv[ 0 ] );
+
+      size_t pos = exe_path.find_last_of( "/" );
+
+      if( pos != string::npos )
+         exe_path.erase( pos );
+      else
+         exe_path.erase( );
+
+      if( !exe_path.empty( ) )
+         set_cwd( exe_path );
+
       if( g_is_daemon )
       {
          pid_t pid = fork( );

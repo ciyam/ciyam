@@ -13,7 +13,7 @@ Environment="CIYAM_USER=`{`$user`}"
 Environment="CIYAM_GROUP=`{`$group`}"
 Environment="CIYAM_MYSQL=sudo `{`$mysql`}"
 ExecStartPre=
-ExecStart=/home/`{`$user`}/ciyam/src/ciyam_server -daemon -chdir=/home/`{`$user`}/ciyam/src
+ExecStart=/home/`{`$user`}/ciyam/src/ciyam_server -daemon
 ExecStartPost=
 ExecStop=
 ExecReload=
