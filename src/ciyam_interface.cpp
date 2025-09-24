@@ -3835,7 +3835,8 @@ int main( int argc, char* argv[ ] )
    try
    {
       umask( WEB_FILES_UMASK );
-      string exe_path = string( argv[ 0 ] );
+
+      string exe_path( argv[ 0 ] );
 
       size_t pos = exe_path.find_last_of( "/" );
 
