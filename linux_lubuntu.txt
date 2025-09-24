@@ -1730,7 +1730,7 @@ while true
 do
  ntfy subscribe up***topic_name*** "/home/***user_name***/check_ntfy_epoch.sh Matrix"
 
- if [ -f /home/***user_name***/check_ntfy.stop ];
+ if [ -f /home/***user_name***/check_ntfy.stop ]; then
   rm /home/***user_name***/check_ntfy.stop
   break
  fi
