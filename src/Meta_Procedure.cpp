@@ -1228,6 +1228,12 @@ void Meta_Procedure::impl::after_fetch( )
    ( void )state;
 
    // [<start after_fetch>]
+//nyi
+   string id( get_obj( ).Id( ) );
+
+   string class_id( get_obj( ).Class( ).Id( ) );
+
+   get_obj( ).set_variable( "@Id", search_replace( id, class_id, "" ) );
    // [<finish after_fetch>]
 }
 

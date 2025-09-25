@@ -4883,6 +4883,12 @@ void Meta_Class::impl::after_fetch( )
    ( void )state;
 
    // [<start after_fetch>]
+//nyi
+   string id( get_obj( ).Id( ) );
+
+   string model_id( get_obj( ).Model( ).Id( ) );
+
+   get_obj( ).set_variable( "@Id", search_replace( id, model_id, "" ) );
    // [<finish after_fetch>]
 }
 

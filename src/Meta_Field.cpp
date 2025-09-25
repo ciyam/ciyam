@@ -4211,6 +4211,12 @@ void Meta_Field::impl::after_fetch( )
       get_obj( ).Extra_Filter( "int" );
    else if( get_obj( ).Primitive( ) == 6 )
       get_obj( ).Extra_Filter( "bln" );
+
+   string id( get_obj( ).Id( ) );
+
+   string class_id( get_obj( ).Class( ).Id( ) );
+
+   get_obj( ).set_variable( "@Id", search_replace( id, class_id, "" ) );
    // [<finish after_fetch>]
 }
 
