@@ -1,0 +1,55 @@
+; Copyright (c) 2025 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+.session_variable @deque commence
+.session_variable @single_string_response 1
+;
+;~rm -f $WEBDIR/meta/all.map
+;
+.storage_init Meta
+@ifndef $ERROR
+;
+.pf Meta Package "" @key -min
+.session_variable @deque "~$OUTPUT"
+@:LOOP
+;
+@label NEXT
+.session_variable @deque front
+@ifndef $OUTPUT
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+;
+~cat $WEBDIR/meta/files/100/136100/$OUTPUT.map >> $WEBDIR/meta/all.map
+;
+.session_variable @deque pop_front
+;
+!!@:LOOP
+;
+@:END_LOOP
+;
+#;;; Models
+pf Meta Model "" @key,Id -min all.map
+;
+#;;; Classes
+pf Meta Class "" @key,@Id -min all.map
+;
+#;;; Fields
+pf Meta Field "" @key,@Id -min all.map
+;
+#;;; Procedures
+pf Meta Procedure "" @key,@Id -min all.map
+;
+storage_term
+;
+;~rm -f $WEBDIR/meta/all.map
+;
+@endif
+;
+.session_variable @deque complete
+
