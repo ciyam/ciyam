@@ -69,11 +69,11 @@
 `,\
 `{`$i`}      p_validation_errors->insert( construct_validation_error( vf.num, "",
 `{`$i`}       get_string_message( GS( c_str_found_child_record ),
-`{`$i`}       make_pair( c_str_parm_found_child_record_class, cp_key_source->get_display_name( ) ),
+`{`$i`}       make_pair( c_str_found_child_record_class, cp_key_source->get_display_name( ) ),
 `{`@eq`(`$arg_scfield`,`'`'`)\
-`{`$i`}       make_pair( c_str_parm_found_child_record_field, get_obj( ).`{`$arg_sfield`}( ) ) ) ) );
+`{`$i`}       make_pair( c_str_found_child_record_field, get_obj( ).`{`$arg_sfield`}( ) ) ) ) );
 `,\
-`{`$i`}       make_pair( c_str_parm_found_child_record_field, get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) ) ) ) );
+`{`$i`}       make_pair( c_str_found_child_record_field, get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) ) ) ) );
 `}`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
       }

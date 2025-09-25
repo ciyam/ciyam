@@ -14,8 +14,8 @@
          if( all_items.size( ) > limit )
             p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_`{`$arg_field`},
              get_string_message( GS( c_str_field_must_contain_no_more ), make_pair(
-             c_str_parm_field_must_contain_no_more_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
-             make_pair( c_str_parm_field_must_contain_no_more_limit, to_string( limit ) ) ) ) );
+             c_str_field_must_contain_no_more_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+             make_pair( c_str_field_must_contain_no_more_limit, to_string( limit ) ) ) ) );
       }
    }
    // [(finish check_list_size_limit)] `{`$arg_id`}

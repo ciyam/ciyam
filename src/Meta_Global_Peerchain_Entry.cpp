@@ -1293,12 +1293,12 @@ void Meta_Global_Peerchain_Entry::impl::validate(
    if( is_null( v_Description ) && !value_will_be_provided( c_field_name_Description ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Description,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Description ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Description ) ) ) ) );
 
    if( is_null( v_Host_Name ) && !value_will_be_provided( c_field_name_Host_Name ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Host_Name,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Host_Name ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Host_Name ) ) ) ) );
 
    if( !is_null( v_Chain_Id )
     && ( v_Chain_Id != g_default_Chain_Id
@@ -1359,12 +1359,12 @@ void Meta_Global_Peerchain_Entry::impl::validate(
    if( !g_peerchain_peer_type_enum.count( v_Peer_Type ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Peer_Type,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
-       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Peer_Type ) ) ) ) );
+       c_str_field_has_invalid_value_field, get_module_string( c_field_display_name_Peer_Type ) ) ) ) );
 
    if( !g_peerchain_status_enum.count( v_Status ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Status,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
-       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Status ) ) ) ) );
+       c_str_field_has_invalid_value_field, get_module_string( c_field_display_name_Status ) ) ) ) );
 
    // [<start validate>]
    // [<finish validate>]

@@ -1149,17 +1149,17 @@ void Meta_Procedure::impl::validate(
    if( is_null( v_Id ) && !value_will_be_provided( c_field_name_Id ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Id,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Id ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Id ) ) ) ) );
 
    if( is_null( v_Name ) && !value_will_be_provided( c_field_name_Name ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
 
    if( v_Class.empty( ) && !value_will_be_provided( c_field_name_Class ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Class,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Class ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Class ) ) ) ) );
 
    if( !is_null( v_Id )
     && ( v_Id != g_default_Id
@@ -1178,7 +1178,7 @@ void Meta_Procedure::impl::validate(
    if( !g_view_access_restrict_enum.count( v_Access_Restriction ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Access_Restriction,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
-       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Restriction ) ) ) ) );
+       c_str_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Restriction ) ) ) ) );
 
    // [<start validate>]
    // [<finish validate>]

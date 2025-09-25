@@ -11,10 +11,10 @@
 
          p_validation_errors->insert( construct_validation_error( vf.num,
           "", get_string_message( GS( c_str_has_one_or_more_active_children ),
-          make_pair( c_str_parm_has_one_or_more_active_children_class, get_obj( ).get_display_name( ) ),
-          make_pair( c_str_parm_has_one_or_more_active_children_cfield, get_module_string(
+          make_pair( c_str_has_one_or_more_active_children_class, get_obj( ).get_display_name( ) ),
+          make_pair( c_str_has_one_or_more_active_children_cfield, get_module_string(
           get_obj( ).child_`{`$arg_child`}( ).get_field_display_name( FIELD_ID( `{`$module_name`}, `{`$arg_cclass`}, `{`$arg_cfield`} ) ) ) ),
-          make_pair( c_str_parm_has_one_or_more_active_children_children, get_obj( ).child_`{`$arg_child`}( ).get_display_name( true ) ) ) ) );
+          make_pair( c_str_has_one_or_more_active_children_children, get_obj( ).child_`{`$arg_child`}( ).get_display_name( true ) ) ) ) );
       }
    }
    // [(finish check_children_not_active)] `{`$arg_id`}

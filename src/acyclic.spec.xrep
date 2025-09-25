@@ -4,7 +4,7 @@
       p_validation_errors->insert(
        construct_validation_error( vf.num, c_field_name_`{`$arg_field`},
        get_string_message( GS( c_str_cannot_link_to_self ), make_pair(
-       c_str_parm_cannot_link_to_self_class, get_obj( ).get_display_name( ) ) ) ) );
+       c_str_cannot_link_to_self_class, get_obj( ).get_display_name( ) ) ) ) );
 
    `{`$full_class_name`}* p_parent = &get_obj( ).`{`$arg_field`}( );
    if( p_parent->has_changed( ) )
@@ -20,7 +20,7 @@
             p_validation_errors->insert(
              construct_validation_error( vf.num, c_field_name_`{`$arg_field`},
              get_string_message( GS( c_str_linking_to_class_prohibited ), make_pair(
-             c_str_parm_linking_to_class_prohibited_class, p_parent->get_display_name( ) ) ) ) );
+             c_str_linking_to_class_prohibited_class, p_parent->get_display_name( ) ) ) ) );
             break;
          }
 

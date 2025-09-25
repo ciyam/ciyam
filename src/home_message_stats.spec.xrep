@@ -96,8 +96,8 @@
          }
 
          osstr << get_string_message( GS( c_str_home_stats ),
-          make_pair( c_str_parm_home_stats_num, to_string( num_stats_1 ) ),
-          make_pair( c_str_parm_home_stats_type, get_module_string( "`{`$arg_id`}_primary_stats1_title" ) ) );
+          make_pair( c_str_home_stats_num, to_string( num_stats_1 ) ),
+          make_pair( c_str_home_stats_type, get_module_string( "`{`$arg_id`}_primary_stats1_title" ) ) );
 
          osstr << " " << user.child_`{`$child1_suffix`}( ).get_display_name( num_stats_1 != 1 );`}`{`!`@eq`(`$arg_primary_stats2_cclass`,`'`'`)
 
@@ -158,8 +158,8 @@
             }
 
             osstr << get_string_message( GS( c_str_home_stats_extra ),
-             make_pair( c_str_parm_home_stats_extra_num, to_string( num_stats_2 ) ),
-             make_pair( c_str_parm_home_stats_extra_type, get_module_string( "`{`$arg_id`}_primary_stats2_title" ) ) );
+             make_pair( c_str_home_stats_extra_num, to_string( num_stats_2 ) ),
+             make_pair( c_str_home_stats_extra_type, get_module_string( "`{`$arg_id`}_primary_stats2_title" ) ) );
 
             osstr << " " << user.child_`{`$child2_suffix`}( ).get_display_name( num_stats_2 != 1 );
          }
@@ -229,9 +229,9 @@
             }
 
             osstr << get_string_message( GS( c_str_home_group_stats ),
-             make_pair( c_str_parm_home_group_stats_group, group.get_display_name( ) ),
-             make_pair( c_str_parm_home_group_stats_num, to_string( num_stats_1 ) ),
-             make_pair( c_str_parm_home_group_stats_type, get_module_string( "`{`$arg_id`}_secondary_stats1_title" ) ) );
+             make_pair( c_str_home_group_stats_group, group.get_display_name( ) ),
+             make_pair( c_str_home_group_stats_num, to_string( num_stats_1 ) ),
+             make_pair( c_str_home_group_stats_type, get_module_string( "`{`$arg_id`}_secondary_stats1_title" ) ) );
 
             osstr << " " << group.child_`{`$child1_suffix`}( ).get_display_name( num_stats_1 != 1 );`}`{`!`@eq`(`$arg_secondary_stats2_cclass`,`'`'`)
 
@@ -292,8 +292,8 @@
                }
 
                osstr << get_string_message( GS( c_str_home_stats_extra ),
-                make_pair( c_str_parm_home_stats_extra_num, to_string( num_stats_2 ) ),
-                make_pair( c_str_parm_home_stats_extra_type, get_module_string( "`{`$arg_id`}_secondary_stats2_title" ) ) );
+                make_pair( c_str_home_stats_extra_num, to_string( num_stats_2 ) ),
+                make_pair( c_str_home_stats_extra_type, get_module_string( "`{`$arg_id`}_secondary_stats2_title" ) ) );
 
                osstr << " " << group.child_`{`$child2_suffix`}( ).get_display_name( num_stats_2 != 1 );
             }

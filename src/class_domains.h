@@ -51,8 +51,8 @@ template< int N, int X > std::string domain_int_range< N, X >::error_message( co
 
    return get_string_message(
     GS( c_str_value_must_be_in_range ),
-    make_pair( c_str_parm_value_must_be_in_range_from, min ),
-    make_pair( c_str_parm_value_must_be_in_range_to, max ) );
+    make_pair( c_str_value_must_be_in_range_from, min ),
+    make_pair( c_str_value_must_be_in_range_to, max ) );
 }
 
 template< int Y1, int M1, int D1, int Y2, int M2, int D2 > struct domain_date_range
@@ -87,8 +87,8 @@ template< int Y1, int M1, int D1, int Y2, int M2, int D2 >
  std::string domain_date_range< Y1, M1, D1, Y2, M2, D2 >::error_message( ) const
 {
    return get_string_message( GS( c_str_value_must_be_in_range ),
-    make_pair( c_str_parm_value_must_be_in_range_from, min.as_string( true ) ),
-    make_pair( c_str_parm_value_must_be_in_range_to, max.as_string( true ) ) );
+    make_pair( c_str_value_must_be_in_range_from, min.as_string( true ) ),
+    make_pair( c_str_value_must_be_in_range_to, max.as_string( true ) ) );
 }
 
 template< int Y1, int M1, int D1, int H1, int N1, int S1, int Y2, int M2, int D2, int H2, int N2, int S2 > struct domain_datetime_range
@@ -123,8 +123,8 @@ template< int Y1, int M1, int D1, int H1, int N1, int S1, int Y2, int M2, int D2
  std::string domain_datetime_range< Y1, M1, D1, H1, N1, S1, Y2, M2, D2, H2, N2, S2 >::error_message( ) const
 {
    return get_string_message( GS( c_str_value_must_be_in_range ),
-    make_pair( c_str_parm_value_must_be_in_range_from, min.as_string( true, false ) ),
-    make_pair( c_str_parm_value_must_be_in_range_to, max.as_string( true, false ) ) );
+    make_pair( c_str_value_must_be_in_range_from, min.as_string( true, false ) ),
+    make_pair( c_str_value_must_be_in_range_to, max.as_string( true, false ) ) );
 }
 
 template< int I, int D = 10 > struct divisor
@@ -181,8 +181,8 @@ template< typename N, int64_t W1, int64_t F1, int64_t W2, int64_t F2 >
 
    return get_string_message(
     GS( c_str_value_must_be_in_range ),
-    make_pair( c_str_parm_value_must_be_in_range_from, min ),
-    make_pair( c_str_parm_value_must_be_in_range_to, max ) );
+    make_pair( c_str_value_must_be_in_range_from, min ),
+    make_pair( c_str_value_must_be_in_range_to, max ) );
 }
 
 template< typename N, int S, int P, int F = 0 > struct domain_numeric_format
@@ -236,8 +236,8 @@ template< typename N, int S, int P, int F >
 template< typename N, int S, int P, int F > std::string domain_numeric_format< N, S, P, F >::error_message( ) const
 {
    return get_string_message( GS( c_str_incorrect_numeric_format ),
-    make_pair( c_str_parm_incorrect_numeric_format_wholes, to_string( S - P ) ),
-    make_pair( c_str_parm_incorrect_numeric_format_decimals, to_string( P ) ) );
+    make_pair( c_str_incorrect_numeric_format_wholes, to_string( S - P ) ),
+    make_pair( c_str_incorrect_numeric_format_decimals, to_string( P ) ) );
 }
 
 template< typename N, int S, int P, int F > std::string domain_numeric_format< N, S, P, F >::error_message_2( ) const
@@ -271,7 +271,7 @@ template< int M > struct domain_string_max_size
 template< int M > std::string domain_string_max_size< M >::error_message( ) const
 {
    return get_string_message( GS( c_str_exceeded_maximum ),
-    make_pair( c_str_parm_exceeded_maximum_limit, to_string( M ) ) );
+    make_pair( c_str_exceeded_maximum_limit, to_string( M ) ) );
 }
 
 inline bool label_character( char c )

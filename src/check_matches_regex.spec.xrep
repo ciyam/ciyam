@@ -20,8 +20,8 @@
       if( !okay )
          p_validation_errors->insert( construct_validation_error( vf.num,
           c_field_name_`{`$arg_field`}, get_string_message( GS( c_str_invalid_type ), make_pair(
-          c_str_parm_invalid_type_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
-          make_pair( c_str_parm_invalid_type_label, get_module_string( "`{`$arg_id`}_label" ) ) ) ) );
+          c_str_invalid_type_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+          make_pair( c_str_invalid_type_label, get_module_string( "`{`$arg_id`}_label" ) ) ) ) );
    }
    // [(finish check_matches_regex)] `{`$arg_id`}
 `}

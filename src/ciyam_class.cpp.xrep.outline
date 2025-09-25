@@ -1739,13 +1739,13 @@ void `{`$full_class_name`}::impl::validate(
    if( is_null( v_\$ ) && !value_will_be_provided( c_field_name_\$ ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_\$,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_\$ ) ) ) ) );\
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_\$ ) ) ) ) );\
 `+\n`]`}
 `{`?`$mandatory_parent_fields`[`$mandatory_parent_fields`,
    if( v_\$.empty( ) && !value_will_be_provided( c_field_name_\$ ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_\$,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_\$ ) ) ) ) );\
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_\$ ) ) ) ) );\
 `+\n`]`}
 `{`(`?`$domain_fields`)\
 `{`?`$domain_fields`[`$domain_fields`,\
@@ -1764,7 +1764,7 @@ void `{`$full_class_name`}::impl::validate(
    if( !g_\1_enum.count( v_\0 ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_\0,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
-       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_\0 ) ) ) ) );\
+       c_str_field_has_invalid_value_field, get_module_string( c_field_display_name_\0 ) ) ) ) );\
 `+\n`]`}
 `{`?`$all_validate_specifications`[`$all_validate_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'acyclic`'`)

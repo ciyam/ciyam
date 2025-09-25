@@ -1440,30 +1440,30 @@ void Meta_Specification_Field_Action::impl::validate(
    if( !g_field_action_create_access_restriction_enum.count( v_Access_Restriction ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Access_Restriction,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
-       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Restriction ) ) ) ) );
+       c_str_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Restriction ) ) ) ) );
 
    if( !g_field_action_create_type_enum.count( v_Create_Type ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Create_Type,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
-       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Create_Type ) ) ) ) );
+       c_str_field_has_invalid_value_field, get_module_string( c_field_display_name_Create_Type ) ) ) ) );
 
    if( !g_field_action_type_enum.count( v_Type ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Type,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
-       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
+       c_str_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
 
    // [(start check_cond_non_null)] 600270
    if( get_obj( ).Type( ) == 0 && get_obj( ).Specification_Type( ).Allow_Procedure( ) && is_null( get_obj( ).New_Record_Class( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_New_Record_Class, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_New_Record_Class ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_New_Record_Class ) ) ) ) );
    // [(finish check_cond_non_null)] 600270
 
    // [(start check_cond_non_null)] 600271
    if( get_obj( ).Type( ) == 0 && get_obj( ).Specification_Type( ).Allow_Procedure( ) && is_null( get_obj( ).New_Record_FK_Field( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_New_Record_FK_Field, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_New_Record_FK_Field ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_New_Record_FK_Field ) ) ) ) );
    // [(finish check_cond_non_null)] 600271
 
    // [<start validate>]

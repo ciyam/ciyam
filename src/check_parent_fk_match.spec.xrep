@@ -16,7 +16,7 @@
 `}`}\
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_`{`$arg_field`}, get_string_message( GS( c_str_field_must_match_parents ), make_pair(
-       c_str_parm_field_must_match_parents_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
-       make_pair( c_str_parm_field_must_match_parents_pfield, get_module_string( c_field_display_name_`{`$arg_pfield`} ) ) ) ) );
+       c_str_field_must_match_parents_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+       make_pair( c_str_field_must_match_parents_pfield, get_module_string( c_field_display_name_`{`$arg_pfield`} ) ) ) ) );
    // [(finish check_parent_fk_match)] `{`$arg_id`}
 `}

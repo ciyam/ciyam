@@ -35,27 +35,27 @@
       if( !error.empty( ) )
       {
          p_validation_errors->insert( construct_validation_error( vf.num, "",
-          get_string_message( GS( c_str_error ), make_pair( c_str_parm_error_error, error ) ) ) );
+          get_string_message( GS( c_str_error ), make_pair( c_str_error_error, error ) ) ) );
       }
 
       if( get_obj( ).`{`$arg_mfield`}( ).`{`$arg_mttfield`}( ) && get_obj( ).`{`$arg_field`}( ).`{`$arg_prfield`}( ) != test_primitive )
          p_validation_errors->insert( construct_validation_error( vf.num, "",
           get_string_message( GS( c_str_field_types_must_match ), make_pair(
-          c_str_parm_field_types_must_match_field1, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
-          make_pair( c_str_parm_field_types_must_match_field2, get_module_string( c_field_display_name_`{`$arg_tfield`} ) ) ) ) );
+          c_str_field_types_must_match_field1, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+          make_pair( c_str_field_types_must_match_field2, get_module_string( c_field_display_name_`{`$arg_tfield`} ) ) ) ) );
 
       if( get_obj( ).`{`$arg_mfield`}( ).`{`$arg_mtsfield`}( ) && get_obj( ).`{`$arg_field`}( ).`{`$arg_prfield`}( ) != source_primitive )
          p_validation_errors->insert( construct_validation_error( vf.num, "",
           get_string_message( GS( c_str_field_types_must_match ), make_pair(
-          c_str_parm_field_types_must_match_field1, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
-          make_pair( c_str_parm_field_types_must_match_field2, get_module_string( c_field_display_name_`{`$arg_sfield`} ) ) ) ) );
+          c_str_field_types_must_match_field1, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+          make_pair( c_str_field_types_must_match_field2, get_module_string( c_field_display_name_`{`$arg_sfield`} ) ) ) ) );
 
       if( get_obj( ).`{`$arg_mfield`}( ).`{`$arg_sftfield`}( )
        && get_obj( ).`{`$arg_tfield`}( ).get_key( ).empty( ) && !get_obj( ).`{`$arg_sfield`}( ).get_key( ).empty( ) )
          p_validation_errors->insert( construct_validation_error( vf.num, "",
           get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
-          c_str_parm_field_must_be_empty_match_field2, get_module_string( c_field_display_name_`{`$arg_sfield`} ) ),
-          make_pair( c_str_parm_field_must_be_empty_match_field1, get_module_string( c_field_display_name_`{`$arg_tfield`} ) ) ) ) );
+          c_str_field_must_be_empty_match_field2, get_module_string( c_field_display_name_`{`$arg_sfield`} ) ),
+          make_pair( c_str_field_must_be_empty_match_field1, get_module_string( c_field_display_name_`{`$arg_tfield`} ) ) ) ) );
 
       if( get_obj( ).`{`$arg_mfield`}( ).`{`$arg_crmfield`}( )
        && get_obj( ).`{`$arg_cfield`}( ).get_key( ) != get_obj( ).`{`$arg_mcrfield`}( ).`{`$arg_mcrcfield`}( ).get_key( ) )

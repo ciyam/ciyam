@@ -721,17 +721,17 @@ void Meta_Application_Script::impl::validate(
    if( is_null( v_Name ) && !value_will_be_provided( c_field_name_Name ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
 
    if( is_null( v_Script_Name ) && !value_will_be_provided( c_field_name_Script_Name ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Script_Name,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Script_Name ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Script_Name ) ) ) ) );
 
    if( v_Package_Type.empty( ) && !value_will_be_provided( c_field_name_Package_Type ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Package_Type,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Package_Type ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Package_Type ) ) ) ) );
 
    if( !is_null( v_Name )
     && ( v_Name != g_default_Name

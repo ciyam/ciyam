@@ -5,10 +5,10 @@
     || get_obj( ).`{`$arg_field`}( ) > get_obj( ).`{`$arg_rfield`}( )`{`!`@eq`(`$arg_tfield`,`'`'`) )`} )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_`{`$arg_field`}, get_string_message( GS( c_str_field_must_be_between ), make_pair(
-       c_str_parm_field_must_be_between_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
-       make_pair( c_str_parm_field_must_be_between_lvalue,
+       c_str_field_must_be_between_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+       make_pair( c_str_field_must_be_between_lvalue,
        to_formatted_string( get_obj( ).`{`$arg_lfield`}( ), vf.get( "`{`$arg_lfield`}" ).c_str( ) ) ),
-       make_pair( c_str_parm_field_must_be_between_rvalue,
+       make_pair( c_str_field_must_be_between_rvalue,
        to_formatted_string( get_obj( ).`{`$arg_rfield`}( ), vf.get( "`{`$arg_rfield`}" ).c_str( ) ) ) ) ) );
    // [(finish check_field_is_between)] `{`$arg_id`}
 `}

@@ -3,7 +3,7 @@
    if( is_null( get_obj( ).`{`$arg_field1`}( ) ) && !is_null( get_obj( ).`{`$arg_field2`}( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_`{`$arg_field1`}, get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
-       c_str_parm_field_must_be_empty_match_field2, get_module_string( c_field_display_name_`{`$arg_field2`} ) ),
-       make_pair( c_str_parm_field_must_be_empty_match_field1, get_module_string( c_field_display_name_`{`$arg_field1`} ) ) ) ) );
+       c_str_field_must_be_empty_match_field2, get_module_string( c_field_display_name_`{`$arg_field2`} ) ),
+       make_pair( c_str_field_must_be_empty_match_field1, get_module_string( c_field_display_name_`{`$arg_field1`} ) ) ) ) );
    // [(finish check_null_match)] `{`$arg_id`}
 `}

@@ -6980,32 +6980,32 @@ void Meta_Specification::impl::validate(
    if( is_null( v_Id ) && !value_will_be_provided( c_field_name_Id ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Id,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Id ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Id ) ) ) ) );
 
    if( is_null( v_Name ) && !value_will_be_provided( c_field_name_Name ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
 
    if( is_null( v_Order ) && !value_will_be_provided( c_field_name_Order ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Order,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Order ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Order ) ) ) ) );
 
    if( v_Class.empty( ) && !value_will_be_provided( c_field_name_Class ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Class,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Class ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Class ) ) ) ) );
 
    if( v_Model.empty( ) && !value_will_be_provided( c_field_name_Model ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Model,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Model ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Model ) ) ) ) );
 
    if( v_Specification_Type.empty( ) && !value_will_be_provided( c_field_name_Specification_Type ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Specification_Type,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Specification_Type ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Specification_Type ) ) ) ) );
 
    if( !is_null( v_Comments )
     && ( v_Comments != g_default_Comments
@@ -7053,196 +7053,196 @@ void Meta_Specification::impl::validate(
    if( get_obj( ).Specification_Type( ).Needs_Class( ) && is_null( get_obj( ).Class( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Class, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Class ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Class ) ) ) ) );
    // [(finish check_cond_non_null)] 600130
 
    // [(start check_cond_non_null)] 600130a
    if( get_obj( ).Specification_Type( ).Needs_Other_Class( ) && is_null( get_obj( ).Other_Class( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Other_Class, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Class ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Class ) ) ) ) );
    // [(finish check_cond_non_null)] 600130a
 
    // [(start check_cond_non_null)] 600131
    if( get_obj( ).Specification_Type( ).Needs_Field( ) && is_null( get_obj( ).Field( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Field, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Field ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Field ) ) ) ) );
    // [(finish check_cond_non_null)] 600131
 
    // [(start check_cond_non_null)] 600132
    if( get_obj( ).Specification_Type( ).Needs_Procedure( ) && is_null( get_obj( ).Procedure( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Procedure, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Procedure ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Procedure ) ) ) ) );
    // [(finish check_cond_non_null)] 600132
 
    // [(start check_cond_non_null)] 600133
    if( get_obj( ).Specification_Type( ).Needs_Procedure_Arg( ) && is_null( get_obj( ).Procedure_Arg( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Procedure_Arg, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Procedure_Arg ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Procedure_Arg ) ) ) ) );
    // [(finish check_cond_non_null)] 600133
 
    // [(start check_cond_non_null)] 600133a
    if( get_obj( ).Specification_Type( ).Needs_Procedure_Arg_2( ) && is_null( get_obj( ).Procedure_Arg_2( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Procedure_Arg_2, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Procedure_Arg_2 ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Procedure_Arg_2 ) ) ) ) );
    // [(finish check_cond_non_null)] 600133a
 
    // [(start check_cond_non_null)] 600133b
    if( get_obj( ).Specification_Type( ).Needs_Procedure_Arg_3( ) && is_null( get_obj( ).Procedure_Arg_3( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Procedure_Arg_3, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Procedure_Arg_3 ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Procedure_Arg_3 ) ) ) ) );
    // [(finish check_cond_non_null)] 600133b
 
    // [(start check_cond_non_null)] 600133c
    if( get_obj( ).Specification_Type( ).Needs_Other_Procedure( ) && is_null( get_obj( ).Other_Procedure( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Other_Procedure, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Procedure ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Procedure ) ) ) ) );
    // [(finish check_cond_non_null)] 600133c
 
    // [(start check_cond_non_null)] 600133d
    if( get_obj( ).Specification_Type( ).Needs_Other_Procedure_2( ) && is_null( get_obj( ).Other_Procedure_2( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Other_Procedure_2, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Procedure_2 ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Procedure_2 ) ) ) ) );
    // [(finish check_cond_non_null)] 600133d
 
    // [(start check_cond_non_null)] 600134
    if( get_obj( ).Specification_Type( ).Needs_Modifier( ) && is_null( get_obj( ).Modifier( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Modifier, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Modifier ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Modifier ) ) ) ) );
    // [(finish check_cond_non_null)] 600134
 
    // [(start check_cond_non_null)] 600134a
    if( get_obj( ).Specification_Type( ).Needs_Other_Modifier( ) && is_null( get_obj( ).Other_Modifier( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Other_Modifier, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Modifier ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Modifier ) ) ) ) );
    // [(finish check_cond_non_null)] 600134a
 
    // [(start check_cond_non_null)] 600134b
    if( get_obj( ).Specification_Type( ).Needs_Other_Modifier_2( ) && is_null( get_obj( ).Other_Modifier_2( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Other_Modifier_2, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Modifier_2 ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Modifier_2 ) ) ) ) );
    // [(finish check_cond_non_null)] 600134b
 
    // [(start check_cond_non_null)] 600135
    if( get_obj( ).Specification_Type( ).Needs_Enum( ) && is_null( get_obj( ).Enum( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Enum, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum ) ) ) ) );
    // [(finish check_cond_non_null)] 600135
 
    // [(start check_cond_non_null)] 600136
    if( get_obj( ).Specification_Type( ).Needs_Enum_Item( ) && is_null( get_obj( ).Enum_Item( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Enum_Item, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum_Item ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum_Item ) ) ) ) );
    // [(finish check_cond_non_null)] 600136
 
    // [(start check_cond_non_null)] 600136a
    if( get_obj( ).Specification_Type( ).Needs_Enum_Item_2( ) && is_null( get_obj( ).Enum_Item_2( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Enum_Item_2, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum_Item_2 ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum_Item_2 ) ) ) ) );
    // [(finish check_cond_non_null)] 600136a
 
    // [(start check_cond_non_null)] 600136b
    if( get_obj( ).Specification_Type( ).Needs_Enum_Item_3( ) && is_null( get_obj( ).Enum_Item_3( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Enum_Item_3, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum_Item_3 ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum_Item_3 ) ) ) ) );
    // [(finish check_cond_non_null)] 600136b
 
    // [(start check_cond_non_null)] 600136c
    if( get_obj( ).Specification_Type( ).Needs_Enum_Item_4( ) && is_null( get_obj( ).Enum_Item_4( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Enum_Item_4, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum_Item_4 ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum_Item_4 ) ) ) ) );
    // [(finish check_cond_non_null)] 600136c
 
    // [(start check_cond_non_null)] 600136d
    if( get_obj( ).Specification_Type( ).Needs_Enum_Item_5( ) && is_null( get_obj( ).Enum_Item_5( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Enum_Item_5, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum_Item_5 ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum_Item_5 ) ) ) ) );
    // [(finish check_cond_non_null)] 600136d
 
    // [(start check_cond_non_null)] 600137
    if( get_obj( ).Specification_Type( ).Needs_Value( ) && is_null( get_obj( ).Value( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Value, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Value ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Value ) ) ) ) );
    // [(finish check_cond_non_null)] 600137
 
    // [(start check_cond_non_null)] 600138
    if( get_obj( ).Specification_Type( ).Needs_Source_Parent( ) && is_null( get_obj( ).Source_Parent( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Source_Parent, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Parent ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Parent ) ) ) ) );
    // [(finish check_cond_non_null)] 600138
 
    // [(start check_cond_non_null)] 600139
    if( get_obj( ).Specification_Type( ).Needs_Source_Field( ) && is_null( get_obj( ).Source_Field( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Source_Field, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Field ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Field ) ) ) ) );
    // [(finish check_cond_non_null)] 600139
 
    // [(start check_cond_non_null)] 600140
    if( get_obj( ).Specification_Type( ).Needs_Test_Field( ) && !get_obj( ).Use_Test_Parent_Child( ) && is_null( get_obj( ).Test_Field( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Test_Field, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Test_Field ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Test_Field ) ) ) ) );
    // [(finish check_cond_non_null)] 600140
 
    // [(start check_cond_non_null)] 600141
    if( get_obj( ).Specification_Type( ).Needs_Test_Field( ) && get_obj( ).Use_Test_Parent_Child( ) && is_null( get_obj( ).Test_Child( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Test_Child, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Test_Child ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Test_Child ) ) ) ) );
    // [(finish check_cond_non_null)] 600141
 
    // [(start check_cond_non_null)] 600142
    if( get_obj( ).Specification_Type( ).Needs_Test_Value( ) && is_null( get_obj( ).Test_Value( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Test_Value, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Test_Value ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Test_Value ) ) ) ) );
    // [(finish check_cond_non_null)] 600142
 
    // [(start check_cond_non_null)] 600143
    if( get_obj( ).Specification_Type( ).Needs_Source_Child( ) && is_null( get_obj( ).Source_Child( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Source_Child, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Child ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Child ) ) ) ) );
    // [(finish check_cond_non_null)] 600143
 
    // [(start check_cond_non_null)] 600144
    if( get_obj( ).Specification_Type( ).Needs_Source_Field_Or_Child( ) && !get_obj( ).Use_Source_Parent( ) && is_null( get_obj( ).Source_Field( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Source_Field, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Field ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Field ) ) ) ) );
    // [(finish check_cond_non_null)] 600144
 
    // [(start check_cond_non_null)] 600145
    if( get_obj( ).Specification_Type( ).Needs_Source_Field_Or_Child( ) && get_obj( ).Use_Source_Parent( ) && is_null( get_obj( ).Source_Child( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Source_Child, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Child ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Child ) ) ) ) );
    // [(finish check_cond_non_null)] 600145
 
    // [(start check_cond_non_null)] 600146
    if( get_obj( ).Specification_Type( ).Needs_Child_Relationship( ) && is_null( get_obj( ).Child_Relationship( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Child_Relationship, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Child_Relationship ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Child_Relationship ) ) ) ) );
    // [(finish check_cond_non_null)] 600146
 
    // [(start meta_spec_field_type)] 600147
@@ -7281,27 +7281,27 @@ void Meta_Specification::impl::validate(
       if( !error.empty( ) )
       {
          p_validation_errors->insert( construct_validation_error( vf.num, "",
-          get_string_message( GS( c_str_error ), make_pair( c_str_parm_error_error, error ) ) ) );
+          get_string_message( GS( c_str_error ), make_pair( c_str_error_error, error ) ) ) );
       }
 
       if( get_obj( ).Specification_Type( ).Test_Field_Type_Match( ) && get_obj( ).Field( ).Primitive( ) != test_primitive )
          p_validation_errors->insert( construct_validation_error( vf.num, "",
           get_string_message( GS( c_str_field_types_must_match ), make_pair(
-          c_str_parm_field_types_must_match_field1, get_module_string( c_field_display_name_Field ) ),
-          make_pair( c_str_parm_field_types_must_match_field2, get_module_string( c_field_display_name_Test_Field ) ) ) ) );
+          c_str_field_types_must_match_field1, get_module_string( c_field_display_name_Field ) ),
+          make_pair( c_str_field_types_must_match_field2, get_module_string( c_field_display_name_Test_Field ) ) ) ) );
 
       if( get_obj( ).Specification_Type( ).Source_Field_Type_Match( ) && get_obj( ).Field( ).Primitive( ) != source_primitive )
          p_validation_errors->insert( construct_validation_error( vf.num, "",
           get_string_message( GS( c_str_field_types_must_match ), make_pair(
-          c_str_parm_field_types_must_match_field1, get_module_string( c_field_display_name_Field ) ),
-          make_pair( c_str_parm_field_types_must_match_field2, get_module_string( c_field_display_name_Source_Field ) ) ) ) );
+          c_str_field_types_must_match_field1, get_module_string( c_field_display_name_Field ) ),
+          make_pair( c_str_field_types_must_match_field2, get_module_string( c_field_display_name_Source_Field ) ) ) ) );
 
       if( get_obj( ).Specification_Type( ).Source_Field_Needs_Test_Field( )
        && get_obj( ).Test_Field( ).get_key( ).empty( ) && !get_obj( ).Source_Field( ).get_key( ).empty( ) )
          p_validation_errors->insert( construct_validation_error( vf.num, "",
           get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
-          c_str_parm_field_must_be_empty_match_field2, get_module_string( c_field_display_name_Source_Field ) ),
-          make_pair( c_str_parm_field_must_be_empty_match_field1, get_module_string( c_field_display_name_Test_Field ) ) ) ) );
+          c_str_field_must_be_empty_match_field2, get_module_string( c_field_display_name_Source_Field ) ),
+          make_pair( c_str_field_must_be_empty_match_field1, get_module_string( c_field_display_name_Test_Field ) ) ) ) );
 
       if( get_obj( ).Specification_Type( ).Child_Relationship_Class_Match( )
        && get_obj( ).Class( ).get_key( ) != get_obj( ).Child_Relationship( ).Child_Class( ).get_key( ) )
@@ -7329,50 +7329,50 @@ void Meta_Specification::impl::validate(
    if( is_null( get_obj( ).Test_Child( ) ) && !is_null( get_obj( ).Test_Parent( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Test_Child, get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
-       c_str_parm_field_must_be_empty_match_field2, get_module_string( c_field_display_name_Test_Parent ) ),
-       make_pair( c_str_parm_field_must_be_empty_match_field1, get_module_string( c_field_display_name_Test_Child ) ) ) ) );
+       c_str_field_must_be_empty_match_field2, get_module_string( c_field_display_name_Test_Parent ) ),
+       make_pair( c_str_field_must_be_empty_match_field1, get_module_string( c_field_display_name_Test_Child ) ) ) ) );
    // [(finish check_null_match)] 600177
 
    // [(start check_cond_non_null)] 610131
    if( get_obj( ).Specification_Type( ).Needs_Other_Field( ) && is_null( get_obj( ).Other_Field( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Other_Field, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Field ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Field ) ) ) ) );
    // [(finish check_cond_non_null)] 610131
 
    // [(start check_cond_non_null)] 610143
    if( get_obj( ).Specification_Type( ).Needs_Other_Source_Child( ) && is_null( get_obj( ).Other_Source_Child( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Other_Source_Child, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Source_Child ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Source_Child ) ) ) ) );
    // [(finish check_cond_non_null)] 610143
 
    // [(start check_cond_non_null)] 610146
    if( get_obj( ).Specification_Type( ).Needs_Permission( ) && is_null( get_obj( ).Permission( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Permission, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Permission ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Permission ) ) ) ) );
    // [(finish check_cond_non_null)] 610146
 
    // [(start check_cond_non_null)] 620131
    if( get_obj( ).Specification_Type( ).Needs_Other_Field_2( ) && is_null( get_obj( ).Other_Field_2( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Other_Field_2, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Field_2 ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Field_2 ) ) ) ) );
    // [(finish check_cond_non_null)] 620131
 
    // [(start check_cond_non_null)] 620143
    if( get_obj( ).Specification_Type( ).Needs_Other_Source_Child_2( ) && is_null( get_obj( ).Other_Source_Child_2( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Other_Source_Child_2, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Source_Child_2 ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Source_Child_2 ) ) ) ) );
    // [(finish check_cond_non_null)] 620143
 
    // [(start check_cond_non_null)] 630131
    if( get_obj( ).Specification_Type( ).Needs_Other_Class_Field( ) && is_null( get_obj( ).Other_Class_Field( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Other_Class_Field, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Class_Field ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Class_Field ) ) ) ) );
    // [(finish check_cond_non_null)] 630131
 
    // [<start validate>]

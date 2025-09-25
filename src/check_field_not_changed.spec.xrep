@@ -9,11 +9,11 @@
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_`{`$arg_field`},
 `{`@eq`(`$arg_tfield`,`'`'`)\
        get_string_message( GS( c_str_field_must_not_be_changed ), make_pair(
-       c_str_parm_field_must_not_be_changed_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ) ) ) );
+       c_str_field_must_not_be_changed_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ) ) ) );
 `,\
        get_string_message( GS( c_str_field_must_not_be_changed_if ), make_pair(
-       c_str_parm_field_must_not_be_changed_if_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
-       make_pair( c_str_parm_field_must_not_be_changed_if_tfield, get_module_string( c_field_display_name_`{`$arg_tfield`} ) ) ) ) );
+       c_str_field_must_not_be_changed_if_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+       make_pair( c_str_field_must_not_be_changed_if_tfield, get_module_string( c_field_display_name_`{`$arg_tfield`} ) ) ) ) );
 `}\
    // [(finish check_field_not_changed)] `{`$arg_id`}
 `}

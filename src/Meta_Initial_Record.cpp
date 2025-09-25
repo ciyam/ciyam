@@ -891,17 +891,17 @@ void Meta_Initial_Record::impl::validate(
    if( is_null( v_Key ) && !value_will_be_provided( c_field_name_Key ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Key,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Key ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Key ) ) ) ) );
 
    if( is_null( v_Order ) && !value_will_be_provided( c_field_name_Order ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Order,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Order ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Order ) ) ) ) );
 
    if( v_Class.empty( ) && !value_will_be_provided( c_field_name_Class ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Class,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Class ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Class ) ) ) ) );
 
    if( !is_null( v_Comments )
     && ( v_Comments != g_default_Comments

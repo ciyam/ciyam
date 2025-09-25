@@ -47,8 +47,8 @@ get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}`}`{`!`@eq`(`$ar
 `}\
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_`{`$arg_field`}, get_string_message( GS( c_str_field_must_be_`{`$arg_op`}_other ), make_pair(
-       c_str_parm_field_must_be_`{`$arg_op`}_other_field1, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
-       make_pair( c_str_parm_field_must_be_`{`$arg_op`}_other_field2, \
+       c_str_field_must_be_`{`$arg_op`}_other_field1, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+       make_pair( c_str_field_must_be_`{`$arg_op`}_other_field2, \
 `{`@eq`(`$arg_use_source_value`,`'true`'`)to_string( get_obj( ).`{`$arg_sfield`}( ) )`,get_module_string( c_field_display_name_`{`$arg_sfield`} )`} ) ) ) );
 `,\
 `{`@eq`(`$arg_not_pedit`,`'`'`)\
@@ -76,8 +76,8 @@ get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}`}`{`!`@eq`(`$ar
 `}\
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_`{`$arg_field`}, get_string_message( GS( c_str_field_must_be_`{`$arg_op`}_other ), make_pair(
-       c_str_parm_field_must_be_`{`$arg_op`}_other_field1, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
-       make_pair( c_str_parm_field_must_be_`{`$arg_op`}_other_field2, \
+       c_str_field_must_be_`{`$arg_op`}_other_field1, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+       make_pair( c_str_field_must_be_`{`$arg_op`}_other_field2, \
 `{`@eq`(`$arg_use_source_value`,`'true`'`)to_string( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_sfield`}( ) )`,get_module_string( c_field_display_name_`{`$arg_spfield`} )
        + " " + get_obj( ).`{`$arg_spfield`}( ).get_field_display_name( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_sfield`} ) )`} ) ) ) );
 `}\

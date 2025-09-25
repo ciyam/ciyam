@@ -704,12 +704,12 @@ void Meta_Initial_Record_Value::impl::validate(
    if( v_Field.empty( ) && !value_will_be_provided( c_field_name_Field ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Field,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Field ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Field ) ) ) ) );
 
    if( v_Initial_Record.empty( ) && !value_will_be_provided( c_field_name_Initial_Record ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Initial_Record,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Initial_Record ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Initial_Record ) ) ) ) );
 
    // [<start validate>]
 //nyi

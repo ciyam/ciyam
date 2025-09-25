@@ -7,6 +7,6 @@
     && g_default_`{`$arg_field`} != get_obj( ).get_original_field_value( c_field_name_`{`$arg_field`} ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_`{`$arg_field`},
        get_string_message( GS( c_str_field_must_not_be_changed_non_default ), make_pair(
-       c_str_parm_field_must_not_be_changed_non_default_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ) ) ) );
+       c_str_field_must_not_be_changed_non_default_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ) ) ) );
    // [(finish check_not_changed_unless_was_default)] `{`$arg_id`}
 `}

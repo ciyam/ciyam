@@ -1079,22 +1079,22 @@ void Meta_Enum_Item::impl::validate(
    if( is_null( v_Label ) && !value_will_be_provided( c_field_name_Label ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Label,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Label ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Label ) ) ) ) );
 
    if( is_null( v_Order ) && !value_will_be_provided( c_field_name_Order ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Order,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Order ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Order ) ) ) ) );
 
    if( is_null( v_Value ) && !value_will_be_provided( c_field_name_Value ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Value,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Value ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Value ) ) ) ) );
 
    if( v_Enum.empty( ) && !value_will_be_provided( c_field_name_Enum ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Enum,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum ) ) ) ) );
 
    if( !is_null( v_Filter )
     && ( v_Filter != g_default_Filter

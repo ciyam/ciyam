@@ -12,7 +12,7 @@
       if( all_items.size( ) != unique_items.size( ) )
          p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_`{`$arg_field`},
           get_string_message( GS( c_str_invalid_duplicate_field_value ), make_pair(
-          c_str_parm_invalid_duplicate_field_value_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ) ) ) );
+          c_str_invalid_duplicate_field_value_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ) ) ) );
    }
    // [(finish check_list_duplicates)] `{`$arg_id`}
 `}

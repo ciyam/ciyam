@@ -1149,33 +1149,33 @@ void Meta_Modifier_Affect::impl::validate(
    if( v_Class.empty( ) && !value_will_be_provided( c_field_name_Class ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Class,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Class ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Class ) ) ) ) );
 
    if( v_Modifier.empty( ) && !value_will_be_provided( c_field_name_Modifier ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Modifier,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Modifier ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Modifier ) ) ) ) );
 
    if( !g_modifier_affect_extra_enum.count( v_Extra ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Extra,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
-       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Extra ) ) ) ) );
+       c_str_field_has_invalid_value_field, get_module_string( c_field_display_name_Extra ) ) ) ) );
 
    if( !g_modifier_affect_scope_enum.count( v_Scope ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Scope,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
-       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Scope ) ) ) ) );
+       c_str_field_has_invalid_value_field, get_module_string( c_field_display_name_Scope ) ) ) ) );
 
    if( !g_modifier_affect_type_enum.count( v_Type ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Type,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
-       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
+       c_str_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
 
    // [(start check_cond_non_null)] 600081a
    if( !get_obj( ).Scope( ) && is_null( get_obj( ).Field( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,
        c_field_name_Field, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Field ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Field ) ) ) ) );
    // [(finish check_cond_non_null)] 600081a
 
    // [<start validate>]

@@ -781,7 +781,7 @@ void system_variable_lock::acquire_lock( const string& name, const char* p_displ
    {
       if( p_display_name_str )
          throw runtime_error( get_string_message( GS( c_str_class_is_locked ),
-          make_pair( c_str_parm_class_is_locked_class, p_display_name_str ) ) );
+          make_pair( c_str_class_is_locked_class, p_display_name_str ) ) );
       else
          throw runtime_error( "unable to acquire lock for system variable '" + name + "'" );
    }

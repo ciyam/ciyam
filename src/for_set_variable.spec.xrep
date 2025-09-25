@@ -19,7 +19,7 @@
       return;
 `,\
       throw runtime_error( get_string_message( GS( c_str_currently_locked ),
-       make_pair( c_str_parm_currently_locked_class, get_obj( ).get_display_name( ) ) ) );
+       make_pair( c_str_currently_locked_class, get_obj( ).get_display_name( ) ) ) );
 `}`}`,`@eq`(`$arg_session`,`'true`'`)\
 `{`!`@eq`(`$i`,`'`'`)\
    if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`) && `}`}\

@@ -974,7 +974,7 @@ void Meta_Global_Archive::impl::validate(
    if( is_null( v_Path ) && !value_will_be_provided( c_field_name_Path ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Path,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Path ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Path ) ) ) ) );
 
    if( !is_null( v_Name )
     && ( v_Name != g_default_Name
@@ -1000,7 +1000,7 @@ void Meta_Global_Archive::impl::validate(
    if( !g_archive_standard_size_enum.count( v_Standard_Size_Limit ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Standard_Size_Limit,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
-       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Standard_Size_Limit ) ) ) ) );
+       c_str_field_has_invalid_value_field, get_module_string( c_field_display_name_Standard_Size_Limit ) ) ) ) );
 
    // [<start validate>]
    // [<finish validate>]

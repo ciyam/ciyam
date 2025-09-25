@@ -987,17 +987,17 @@ void Meta_User::impl::validate(
    if( is_null( v_Description ) && !value_will_be_provided( c_field_name_Description ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Description,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Description ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Description ) ) ) ) );
 
    if( is_null( v_Password ) && !value_will_be_provided( c_field_name_Password ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Password,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Password ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Password ) ) ) ) );
 
    if( is_null( v_Username ) && !value_will_be_provided( c_field_name_Username ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Username,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Username ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Username ) ) ) ) );
 
    if( !is_null( v_Description )
     && ( v_Description != g_default_Description

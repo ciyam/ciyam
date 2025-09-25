@@ -1200,17 +1200,17 @@ void Meta_Permission::impl::validate(
    if( is_null( v_Id ) && !value_will_be_provided( c_field_name_Id ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Id,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Id ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Id ) ) ) ) );
 
    if( is_null( v_Name ) && !value_will_be_provided( c_field_name_Name ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
 
    if( v_Workgroup.empty( ) && !value_will_be_provided( c_field_name_Workgroup ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Workgroup,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Workgroup ) ) ) ) );
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Workgroup ) ) ) ) );
 
    if( !is_null( v_Id )
     && ( v_Id != g_default_Id
