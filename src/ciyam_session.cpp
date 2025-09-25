@@ -517,6 +517,7 @@ string resolve_module_id( const string& id_or_name, const map< string, string >*
    if( p_transformations && !p_transformations->empty( ) )
    {
       string ltf_key( c_log_transformation_scope_any_change );
+
       ltf_key += " " + id_or_name + " " + string( c_log_transformation_op_map_module );
 
       if( p_transformations->count( ltf_key ) )
@@ -536,6 +537,7 @@ string resolve_class_id( const string& module, const string& id_or_name,
    if( p_transformations && !p_transformations->empty( ) )
    {
       string ltf_key( c_log_transformation_scope_any_change );
+
       ltf_key += " " + module + " " + id_or_name + " " + string( c_log_transformation_op_map_class_id );
 
       if( p_transformations->count( ltf_key ) )
@@ -544,7 +546,7 @@ string resolve_class_id( const string& module, const string& id_or_name,
 
    class_id = get_class_id_for_id_or_name( module, class_id );
 
-   if( p_exception_info && class_id == get_class_name_for_id_or_name( module, class_id ) )
+   if( p_exception_info && ( class_id == get_class_name_for_id_or_name( module, class_id ) ) )
       throw runtime_error( "unknown class '" + class_id + "' " + *p_exception_info );
 
    return class_id;
@@ -559,6 +561,7 @@ string resolve_field_id(
    if( p_transformations && !p_transformations->empty( ) )
    {
       string ltf_key( c_log_transformation_scope_any_change );
+
       ltf_key += " " + module
        + " " + mclass + " " + string( c_log_transformation_op_map_field_id ) + " " + id_or_name;
 
@@ -568,7 +571,7 @@ string resolve_field_id(
 
    field_id = get_field_id_for_id_or_name( module, mclass, field_id );
 
-   if( p_exception_info && field_id == get_field_name_for_id_or_name( module, mclass, field_id ) )
+   if( p_exception_info && ( field_id == get_field_name_for_id_or_name( module, mclass, field_id ) ) )
       throw runtime_error( "unknown field '" + field_id + "' " + *p_exception_info );
 
    return field_id;
@@ -583,6 +586,7 @@ string resolve_method_name( const string& module, const string& mclass,
    if( p_transformations && !p_transformations->empty( ) )
    {
       string ltf_key( c_log_transformation_scope_update_execute_only );
+
       ltf_key += " " + module + " " + mclass + " " + string( c_log_transformation_op_map_method_id ) + " " + id_or_name;
 
       if( p_transformations->count( ltf_key ) )
@@ -898,9 +902,11 @@ void parse_field_values( const string& module,
    field_value_items.clear( );
 
    string::size_type pos;
+
    for( size_t i = 0; i < field_value_pairs.size( ); i++ )
    {
       pos = field_value_pairs[ i ].find( '=' );
+
       if( pos == string::npos )
          throw runtime_error( "unexpected field=value pair format '" + field_value_pairs[ i ] + "'" );
 
@@ -909,6 +915,7 @@ void parse_field_values( const string& module,
       if( p_transformations && !p_transformations->empty( ) )
       {
          string ltf_key( c_log_transformation_scope_any_change );
+
          ltf_key += " " + module + " " + class_id + " "
           + string( c_log_transformation_op_map_field_id ) + " " + field_id_or_name;
 
@@ -936,9 +943,11 @@ void perform_field_value_transformations(
  const string& ltf_prefix, map< string, string >& field_value_items )
 {
    map< string, string >::iterator mi;
+
    for( mi = field_value_items.begin( ); mi != field_value_items.end( ); ++mi )
    {
       string ltf_key( ltf_prefix );
+
       ltf_key += " " + mi->first + " " + mi->second;
 
       if( transformations.count( ltf_key ) )
@@ -1018,6 +1027,7 @@ void read_log_transformation_info( const string& file_name, map< string, string 
       ifstream inpf( file_name.c_str( ) );
 
       string next_line;
+
       while( getline( inpf, next_line ) )
       {
          remove_trailing_cr_from_text_file_line( next_line );
@@ -1029,37 +1039,47 @@ void read_log_transformation_info( const string& file_name, map< string, string 
             continue;
 
          size_t pos = next_line.find( ' ' );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected log transformation info '" + next_line + "'" );
 
          string trans_scope( next_line.substr( 0, pos ) );
+
          next_line.erase( 0, pos + 1 );
 
          if( trans_scope == c_log_transformation_scope_execute_only )
          {
             string key( trans_scope );
+
             pos = next_line.find( ' ' );
+
             if( pos == string::npos )
                throw runtime_error( "unexpected execute info '" + next_line + "'" );
 
             string module( next_line.substr( 0, pos ) );
+
             next_line.erase( 0, pos + 1 );
 
             pos = next_line.find( ' ' );
+
             if( pos == string::npos )
                throw runtime_error( "unexpected execute info '" + next_line + "'" );
 
             string class_id( next_line.substr( 0, pos ) );
+
             next_line.erase( 0, pos + 1 );
 
             pos = next_line.find( ' ' );
+
             if( pos == string::npos )
                throw runtime_error( "unexpected execute info '" + next_line + "'" );
 
             string procedure( next_line.substr( 0, pos ) );
+
             next_line.erase( 0, pos + 1 );
 
             pos = next_line.find( ' ' );
+
             string operation( next_line.substr( 0, pos ) );
 
             if( pos == string::npos )
@@ -1076,78 +1096,93 @@ void read_log_transformation_info( const string& file_name, map< string, string 
                throw runtime_error( "unknown execute transformation operation '" + operation + "'" );
 
             key += " " + module + " " + class_id + " " + procedure + " " + operation;
+
             transformations.insert( make_pair( key, next_line ) );
          }
-         else if( trans_scope == c_log_transformation_scope_any_change
-          || trans_scope == c_log_transformation_scope_any_perform_op
-          || trans_scope == c_log_transformation_scope_create_update_only
-          || trans_scope == c_log_transformation_scope_update_execute_only
-          || trans_scope == c_log_transformation_scope_create_update_destroy )
+         else if( ( trans_scope == c_log_transformation_scope_any_change )
+          || ( trans_scope == c_log_transformation_scope_any_perform_op )
+          || ( trans_scope == c_log_transformation_scope_create_update_only )
+          || ( trans_scope == c_log_transformation_scope_update_execute_only )
+          || ( trans_scope == c_log_transformation_scope_create_update_destroy ) )
          {
             string key( trans_scope );
+
             pos = next_line.find( ' ' );
+
             if( pos == string::npos )
                throw runtime_error( "unexpected transformation info '" + next_line + "'" );
 
             string module( next_line.substr( 0, pos ) );
+
             next_line.erase( 0, pos + 1 );
 
             pos = next_line.find( ' ' );
+
             if( pos == string::npos )
                throw runtime_error( "unexpected transformation info '" + next_line + "'" );
 
             string class_id( next_line.substr( 0, pos ) );
+
             next_line.erase( 0, pos + 1 );
 
             if( class_id == c_log_transformation_op_map_module )
             {
                key += " " + module + " " + class_id;
+
                transformations.insert( make_pair( key, next_line ) );
             }
             else if( class_id == c_log_transformation_op_skip_operation )
             {
                key += " " + module + " " + class_id + " " + next_line;
+
                transformations.insert( make_pair( key, string( ) ) );
             }
             else
             {
                pos = next_line.find( ' ' );
+
                if( pos == string::npos )
                   throw runtime_error( "unexpected transformation info '" + next_line + "'" );
 
                string operation( next_line.substr( 0, pos ) );
+
                next_line.erase( 0, pos + 1 );
 
-               if( operation != c_log_transformation_op_ignore_field
-                && operation != c_log_transformation_op_map_class_id
-                && operation != c_log_transformation_op_map_field_id
-                && operation != c_log_transformation_op_map_method_id
-                && operation != c_log_transformation_op_skip_operation
-                && operation != c_log_transformation_op_change_field_value
-                && operation != c_log_transformation_op_instance_change_field_value )
+               if( ( operation != c_log_transformation_op_ignore_field )
+                && ( operation != c_log_transformation_op_map_class_id )
+                && ( operation != c_log_transformation_op_map_field_id )
+                && ( operation != c_log_transformation_op_map_method_id )
+                && ( operation != c_log_transformation_op_skip_operation )
+                && ( operation != c_log_transformation_op_change_field_value )
+                && ( operation != c_log_transformation_op_instance_change_field_value ) )
                   throw runtime_error( "unknown transformation operation '" + operation + "'" );
 
                if( operation == c_log_transformation_op_map_field_id
                 || operation == c_log_transformation_op_map_method_id )
                {
                   pos = next_line.find( ' ' );
+
                   if( pos == string::npos )
                      throw runtime_error( "unexpected field/method transformation format '" + next_line + "'" );
 
                   operation += " " + next_line.substr( 0, pos );
+
                   next_line.erase( 0, pos + 1 );
                }
 
                if( operation == c_log_transformation_op_skip_operation )
                {
                   operation += " " + next_line;
+
                   next_line.erase( );
                }
 
                bool is_op_instance_change_field = false;
+
                if( operation == c_log_transformation_op_instance_change_field_value )
                {
                   pos = next_line.find( ' ' );
+
                   if( pos == string::npos )
                      throw runtime_error( "unexpected instance change field format '" + next_line + "'" );
 
@@ -1160,6 +1195,7 @@ void read_log_transformation_info( const string& file_name, map< string, string 
                if( is_op_instance_change_field || operation == c_log_transformation_op_change_field_value )
                {
                   pos = next_line.find_last_of( '=' );
+
                   if( pos == string::npos )
                      throw runtime_error( "unexpected field transformation format '" + next_line + "'" );
 
@@ -1168,6 +1204,7 @@ void read_log_transformation_info( const string& file_name, map< string, string 
                }
 
                key += " " + module + " " + class_id + " " + operation;
+
                transformations.insert( make_pair( key, next_line ) );
             }
          }
