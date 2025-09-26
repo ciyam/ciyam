@@ -27,6 +27,7 @@ class_is_locked This @class is currently locked - retry again shortly.
 copy_password_to_clipboard @clipboard:Password;@value
 current_height_prefix Currently at height 
 currently_locked Currently locked (please try again later).
+db_identity_mismatch DB identity mismatch with transaction log.
 decrypting Decrypting
 encrypting Encrypting
 error @error.
@@ -73,6 +74,7 @@ home_group_stats Your @group currently has @num @type
 home_stats You currently have @num @type
 home_stats_extra  and @num @type
 host_address_not_permitted Host '@host' address @address is not permitted.
+incomplete_restore_files Incomplete or missing file set for restore.
 incorrect_numeric_format must have no more than @wholes whole number(s) and no more than @decimals decimal(s).
 incorrect_numeric_fraction_2 must only have .0 or .5 as a fraction (i.e. round to the nearest half).
 incorrect_numeric_fraction_4 must only have .0, .25, .5 or .75 as a fraction (i.e. round to the nearest quarter).
@@ -115,6 +117,13 @@ record_exists This @class already exists or is not able to be created.
 record_not_found @class record '@key' was not found.
 records record(s)
 requested_peerchain_unavailable Requested peerchain is not available.
+restored_num_log_ops Restored @num log operations...
+restoring_extra_meta_records Restoring additional Meta records...
+restoring_std_meta_records Restoring standard Meta records...
+session_rpc_access_denied Session RPC access denied.
+session_terminated Session was terminated by server.
+storage_backup_underway Application is being prepared for backup.
+storage_restore_underway Application is being prepared for restore.
 subtotal Subtotal
 syncing Syncing
 syncing_at_height_prefix Syncing at height 

@@ -1608,8 +1608,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          if( !okay )
-            // FUTURE: This message should be handled as a server string message.
-            throw runtime_error( "Session RPC access denied." );
+            throw runtime_error( GS( c_str_session_rpc_access_denied ) );
       }
 
       if( socket_handler.has_restricted_commands( ) )
@@ -5356,12 +5355,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool admin = has_parm_val( parameters, c_cmd_ciyam_session_storage_init_admin );
 
          if( !admin && has_system_variable( get_special_var_name( e_special_var_preparing_backup ) ) )
-            // FUTURE: This message should be handled as a server string message.
-            throw runtime_error( "Application is being prepared for Backup." );
+            throw runtime_error( GS( c_str_storage_backup_underway ) );
 
          if( !admin && has_system_variable( get_special_var_name( e_special_var_preparing_restore ) ) )
-            // FUTURE: This message should be handled as a server string message.
-            throw runtime_error( "Application is being prepared for Restore." );
+            throw runtime_error( GS( c_str_storage_restore_underway ) );
 
          init_storage( name, directory, handler, admin );
       }
@@ -5753,7 +5750,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( !rebuild && !partial && ( !exists_files( sav_db_file_names, ' ' )
           || !exists_file( sav_sql_name ) || !exists_file( backup_sql_name ) ) )
-            throw runtime_error( "incomplete or missing file set for backup restore" );
+            throw runtime_error( GS( c_str_incomplete_restore_files ) );
 
          storage_admin_name_lock( name );
 
@@ -5907,13 +5904,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 
                // NOTE: As recovery can take a long time issue "progress" messages to ensure that
-               // client applications don't end up timing out whilst waiting for the final response.
+               // client applications do not end up "timing out" waiting until the final response.
                if( ( time( 0 ) - ts ) >= 5 )
                {
                   ts = time( 0 );
 
-                  // FUTURE: This message should be handled as a server string message.
-                  handler.output_progress( "Recovered " + to_string( line ) + " log operations..." );
+                  handler.output_progress(
+                   get_string_message( GS( c_str_restored_num_log_ops ),
+                   make_pair( c_str_restored_num_log_ops_num, to_string( line ) ) ) );
 
                   // NOTE: Commit at each progress point to avoid any lengthy commit delays.
                   if( in_trans )
@@ -5923,9 +5921,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      transaction_commit( );
                   }
 
-                  // FUTURE: This message should be handled as a server string message.
                   if( is_condemned_session( ) )
-                     throw runtime_error( "Session was terminated by server." );
+                     throw runtime_error( GS( c_str_session_terminated ) );
                }
 
                if( next.size( ) < 3 || next[ 0 ] != '[' || pos == string::npos )
@@ -5949,9 +5946,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   transaction_start( );
                }
 
-               // FUTURE: This message should be handled as a server string message.
                if( !tran_id && !is_new && ( tran_info != storage_identity( ) ) )
-                  throw runtime_error( "DB identity mismatch with transaction log." );
+                  throw runtime_error( GS( c_str_db_identity_mismatch ) );
 
                if( !tran_id )
                {
@@ -6007,8 +6003,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      string std_next;
 
-                     // FUTURE: This message should be handled as a server string message.
-                     handler.output_progress( "Restoring standard Meta records..." );
+                     handler.output_progress( GS( c_str_restoring_std_meta_records ) );
 
                      while( getline( std_inpf, std_next ) )
                      {
@@ -6033,8 +6028,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         string extra_next;
 
-                        // FUTURE: This message should be handled as a server string message.
-                        handler.output_progress( "Restoring additional Meta records..." );
+                        handler.output_progress( GS( c_str_restoring_extra_meta_records ) );
 
                         while( getline( extra_inpf, extra_next ) )
                         {
@@ -6120,6 +6114,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( is_new )
             {
                new_logf.flush( );
+
                if( !new_logf.good( ) )
                   throw runtime_error( "unexpected bad log stream for '" + new_log_name + "'" );
 
