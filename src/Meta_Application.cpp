@@ -2380,6 +2380,10 @@ void Meta_Application::impl::impl_Generate( )
          outs << "fi\n";
       }
 
+      outssx << ">" << get_obj( ).Name( ) << ".map.new\n";
+      outssx << "<output_all_mapped_meta_data.cin\n";
+      outssx << ">\n";
+
       outssx << "storage_init " << storage_name( ) << "\n";
 
       outssx << "pu sys " << c_ciyam_dummy_date << " " << get_obj( ).get_module_id( )
@@ -2394,7 +2398,7 @@ void Meta_Application::impl::impl_Generate( )
       if( async )
          outssx << ".session_lock -release -at_term " << session_id( ) << "\n"; // see NOTE below...
 
-      outssx << "quit\n";
+      outssx << ".quit\n";
 
       outs << "\n./ciyam_client -quiet " << standard_client_args << " < " << get_obj( ).Name( ) << ".generate.x.cin\n";
 
