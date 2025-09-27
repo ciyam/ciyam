@@ -37,13 +37,13 @@
 pf Meta Model "" @key,Id -min all.map
 ;
 #;;; Classes
-pf Meta Class "" @key,@Id -min all.map
+pf Meta Class "" @key,Id -min all.map
 ;
 #;;; Fields
-pf Meta Field "" @key,@Id -min all.map
+pf Meta Field "" @key,Id -min all.map
 ;
 #;;; Procedures
-pf Meta Procedure "" @key,@Id -min all.map
+pf Meta Procedure "" @key,Id -min all.map
 ;
 storage_term
 ;
