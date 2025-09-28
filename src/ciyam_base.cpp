@@ -9814,7 +9814,7 @@ void storage_comment( const string& comment )
          if( use_init_tx_id || ( identity.next_id == c_tx_id_initial ) )
             append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, c_tx_id_initial );
          else
-            append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id + 1 );
+            append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id );
       }
 
       if( handler.supports_sql_undo( ) )
