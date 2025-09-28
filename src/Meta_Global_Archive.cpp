@@ -642,7 +642,10 @@ void Meta_Global_Archive::impl::impl_Repair_Archive( )
     get_special_var_name( e_special_var_name ), get_obj( ).get_key( ) );
 
    set_system_variable( "@" + get_obj( ).get_key( ) + "_repair", "1" );
+
    run_script( "repair_archive", true, true, true );
+
+   set_session_variable( get_special_var_name( e_special_var_skip_persistence ), c_true_value );
    // [<finish Repair_Archive_impl>]
 }
 
@@ -672,6 +675,8 @@ void Meta_Global_Archive::impl::impl_Status_Update( )
       get_obj( ).set_variable(
        get_special_var_name( e_special_var_return ), "Status Info has changed." ); // FUTURE: Should be a module string...
    }
+
+   set_session_variable( get_special_var_name( e_special_var_skip_persistence ), c_true_value );
    // [<finish Status_Update_impl>]
 }
 
