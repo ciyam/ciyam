@@ -961,12 +961,17 @@ void parse_field_values( const string& module,
             TRACE_LOG( TRACE_DETAILS | TRACE_OBJECTS, "field now (if ltf) '" + field_id_or_name + "'" );
          }
 
-         if( ( module != c_meta_module_id ) && ( field_id_or_name.find( mapped_module ) != 0 ) )
+         if( mapped_module != c_meta_module_id )
          {
+            mapped_module = get_module_id_for_id_or_name( mapped_module );
+
+            mapped_mclass = get_class_id_for_id_or_name( mapped_module, mapped_mclass );
+
             if( field_id_or_name.find( mapped_mclass ) != 0 )
                field_id_or_name = mapped_mclass + field_id_or_name;
 
-            field_id_or_name = mapped_module + field_id_or_name;
+            if( field_id_or_name.find( mapped_module ) != 0 )
+               field_id_or_name = mapped_module + field_id_or_name;
          }
 
          field_id_or_name = get_field_id_for_id_or_name( mapped_module, mapped_mclass, field_id_or_name );
