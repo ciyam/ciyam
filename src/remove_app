@@ -7,24 +7,23 @@
 if [ $# -ne 1 ]; then
  echo Usage: remove_app [app name]
 else
+ if [ -f $1.map ]; then
+  rm $1.map
+ fi
  if [ -f $1.log ]; then
   rm $1.log
  fi
+ if [ -f $1.ltf ]; then
+  rm $1.ltf
+ fi
  if [ -f $1.sql ]; then
   rm $1.sql
- fi
-
- if [ -f $1.txs.log ]; then
-  rm $1.txs.log
  fi
 
  if [ -f $1.undo.sql ]; then
   rm $1.undo.sql
  fi
 
- if [ -f $1.tlg ]; then
-  rm $1.tlg
- fi
  if [ -f $1.dat ]; then
   rm $1.dat
  fi
@@ -33,6 +32,9 @@ else
  fi
  if [ -f $1.idx ]; then
   rm $1.idx
+ fi
+ if [ -f $1.tlg ]; then
+  rm $1.tlg
  fi
 
  if [ -f $1.algos.lst ]; then
