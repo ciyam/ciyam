@@ -1255,9 +1255,8 @@ bool wildcard_match( const char* p_expr, const char* p_data )
    }
 }
 
-string& replace( string& s, const char* p_findstr, const char* p_replstr )
+string& replace( string& s, const char* p_findstr, const char* p_replstr, bool first_only )
 {
-   string str;
    size_t from = 0;
 
    if( !p_findstr || !p_replstr )
@@ -1265,6 +1264,8 @@ string& replace( string& s, const char* p_findstr, const char* p_replstr )
 
    if( *p_findstr )
    {
+      string str;
+
       while( true )
       {
          size_t pos = s.find( p_findstr, from );
@@ -1282,6 +1283,9 @@ string& replace( string& s, const char* p_findstr, const char* p_replstr )
          str += s.substr( pos );
 
          s = str;
+
+         if( first_only )
+            break;
       }
    }
 

@@ -745,99 +745,118 @@ inline bool wildcard_match( const std::string& expr, const std::string& data )
    return wildcard_match( expr.c_str( ), data.c_str( ) );
 }
 
-std::string& replace( std::string& s, const char* p_findstr, const char* p_replstr );
+std::string& replace( std::string& s, const char* p_findstr, const char* p_replstr, bool first_only = false );
 
-inline std::string& replace( std::string& s, const std::string& findstr, const char* p_replstr )
+inline std::string& replace( std::string& s,
+ const std::string& findstr, const char* p_replstr, bool first_only = false )
 {
-   return replace( s, findstr.c_str( ), p_replstr );
-}
-
-inline std::string& replace( std::string& s, const std::string& findstr, const std::string& replstr )
-{
-   return replace( s, findstr.c_str( ), replstr.c_str( ) );
+   return replace( s, findstr.c_str( ), p_replstr, first_only );
 }
 
 inline std::string& replace( std::string& s,
- const char* p_findstr1, const char* p_replstr1, const char* p_findstr2, const char* p_replstr2 )
+ const std::string& findstr, const std::string& replstr, bool first_only = false )
 {
-   return replace( replace( s, p_findstr1, p_replstr1 ), p_findstr2, p_replstr2 );
+   return replace( s, findstr.c_str( ), replstr.c_str( ), first_only );
 }
 
 inline std::string& replace( std::string& s,
- const std::string& findstr1, const char* p_replstr1, const char* p_findstr2, const char* p_replstr2 )
+ const char* p_findstr1, const char* p_replstr1,
+ const char* p_findstr2, const char* p_replstr2, bool first_only = false )
 {
-   return replace( replace( s, findstr1.c_str( ), p_replstr1 ), p_findstr2, p_replstr2 );
+   return replace( replace( s, p_findstr1, p_replstr1, first_only ), p_findstr2, p_replstr2, first_only );
 }
 
 inline std::string& replace( std::string& s,
- const std::string& findstr1, const std::string& replstr1, const char* p_findstr2, const char* p_replstr2 )
+ const std::string& findstr1, const char* p_replstr1,
+ const char* p_findstr2, const char* p_replstr2, bool first_only = false )
 {
-   return replace( replace( s, findstr1.c_str( ), replstr1.c_str( ) ), p_findstr2, p_replstr2 );
+   return replace( replace( s, findstr1.c_str( ), p_replstr1, first_only ), p_findstr2, p_replstr2, first_only );
 }
 
 inline std::string& replace( std::string& s,
- const std::string& findstr1, const std::string& replstr1, const std::string& findstr2, const char* p_replstr2 )
+ const std::string& findstr1, const std::string& replstr1,
+ const char* p_findstr2, const char* p_replstr2, bool first_only = false )
 {
-   return replace( replace( s, findstr1.c_str( ), replstr1.c_str( ) ), findstr2.c_str( ), p_replstr2 );
+   return replace( replace( s, findstr1.c_str( ), replstr1.c_str( ), first_only ), p_findstr2, p_replstr2, first_only );
 }
 
 inline std::string& replace( std::string& s,
- const std::string& findstr1, const std::string& replstr1, const std::string& findstr2, const std::string& replstr2 )
+ const std::string& findstr1, const std::string& replstr1,
+ const std::string& findstr2, const char* p_replstr2, bool first_only = false )
 {
-   replace( s, findstr1.c_str( ), replstr1.c_str( ) );
-   return replace( s, findstr2.c_str( ), replstr2.c_str( ) );
+   return replace( replace( s, findstr1.c_str( ), replstr1.c_str( ), first_only ), findstr2.c_str( ), p_replstr2, first_only );
 }
 
-inline std::string replaced( const std::string& src, const char* p_findstr, const char* p_replstr )
+inline std::string& replace( std::string& s,
+ const std::string& findstr1, const std::string& replstr1,
+ const std::string& findstr2, const std::string& replstr2, bool first_only = false )
+{
+   replace( s, findstr1.c_str( ), replstr1.c_str( ), first_only );
+
+   return replace( s, findstr2.c_str( ), replstr2.c_str( ), first_only );
+}
+
+inline std::string replaced( const std::string& src,
+ const char* p_findstr, const char* p_replstr, bool first_only = false )
 {
    std::string s( src );
-   replace( s, p_findstr, p_replstr );
+
+   replace( s, p_findstr, p_replstr, first_only );
+
    return s;
 }
 
-inline std::string replaced( const std::string& src, const char* p_findstr, const std::string& replstr )
+inline std::string replaced( const std::string& src,
+ const char* p_findstr, const std::string& replstr, bool first_only = false )
 {
-   return replaced( src, p_findstr, replstr.c_str( ) );
-}
-
-inline std::string replaced( const std::string& src, const std::string& findstr, const char* p_replstr )
-{
-   return replaced( src, findstr.c_str( ), p_replstr );
-}
-
-inline std::string replaced( const std::string& src, const std::string& findstr, const std::string& replstr )
-{
-   return replaced( src, findstr.c_str( ), replstr.c_str( ) );
+   return replaced( src, p_findstr, replstr.c_str( ), first_only );
 }
 
 inline std::string replaced( const std::string& src,
- const char* p_findstr1, const char* p_replstr1, const char* p_findstr2, const char* p_replstr2 )
+ const std::string& findstr, const char* p_replstr, bool first_only = false )
 {
-   return replaced( replaced( src, p_findstr1, p_replstr1 ), p_findstr2, p_replstr2 );
+   return replaced( src, findstr.c_str( ), p_replstr, first_only );
 }
 
 inline std::string replaced( const std::string& src,
- const std::string& findstr1, const char* p_replstr1, const char* p_findstr2, const char* p_replstr2 )
+ const std::string& findstr, const std::string& replstr, bool first_only = false )
 {
-   return replaced( replaced( src, findstr1.c_str( ), p_replstr1 ), p_findstr2, p_replstr2 );
+   return replaced( src, findstr.c_str( ), replstr.c_str( ), first_only );
+}
+
+inline std::string replaced(
+ const std::string& src, const char* p_findstr1, const char* p_replstr1,
+ const char* p_findstr2, const char* p_replstr2, bool first_only = false )
+{
+   return replaced( replaced( src, p_findstr1, p_replstr1, first_only ), p_findstr2, p_replstr2, first_only );
 }
 
 inline std::string replaced( const std::string& src,
- const std::string& findstr1, const std::string& replstr1, const char* p_findstr2, const char* p_replstr2 )
+ const std::string& findstr1, const char* p_replstr1,
+ const char* p_findstr2, const char* p_replstr2, bool first_only = false )
 {
-   return replaced( replaced( src, findstr1.c_str( ), replstr1.c_str( ) ), p_findstr2, p_replstr2 );
+   return replaced( replaced( src, findstr1.c_str( ), p_replstr1, first_only ), p_findstr2, p_replstr2, first_only );
 }
 
 inline std::string replaced( const std::string& src,
- const std::string& findstr1, const std::string& replstr1, const std::string& findstr2, const char* p_replstr2 )
+ const std::string& findstr1, const std::string& replstr1,
+ const char* p_findstr2, const char* p_replstr2, bool first_only = false )
 {
-   return replaced( replaced( src, findstr1.c_str( ), replstr1.c_str( ) ), findstr2.c_str( ), p_replstr2 );
+   return replaced( replaced( src, findstr1.c_str( ), replstr1.c_str( ), first_only ), p_findstr2, p_replstr2, first_only );
 }
 
 inline std::string replaced( const std::string& src,
- const std::string& findstr1, const std::string& replstr1, const std::string& findstr2, const std::string& replstr2 )
+ const std::string& findstr1, const std::string& replstr1,
+ const std::string& findstr2, const char* p_replstr2, bool first_only = false )
 {
-   return replaced( replaced( src, findstr1.c_str( ), replstr1.c_str( ) ), findstr2.c_str( ), replstr2.c_str( ) );
+   return replaced( replaced( src, findstr1.c_str( ), replstr1.c_str( ), first_only ), findstr2.c_str( ), p_replstr2, first_only );
+}
+
+inline std::string replaced( const std::string& src,
+ const std::string& findstr1, const std::string& replstr1,
+ const std::string& findstr2, const std::string& replstr2, bool first_only = false )
+{
+   return replaced( replaced( src, findstr1.c_str( ), replstr1.c_str( ), first_only ), findstr2.c_str( ), replstr2.c_str( ), first_only );
 }
 
 std::string& escape( std::string& s, const char* p_chars = 0,
