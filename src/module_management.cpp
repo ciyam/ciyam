@@ -436,11 +436,13 @@ void init_module_class_field_info( const string& module_id_or_name,
                ( crci->second )->get_field_info( all_field_info );
 
                field_info_const_iterator fici;
+
                for( fici = all_field_info.begin( ); fici != all_field_info.end( ); ++fici )
                {
                   field_ids.insert( make_pair( fici->id, fici->name ) );
                   field_names.insert( make_pair( fici->name, fici->id ) );
                }
+
                break;
             }
          }
@@ -771,7 +773,9 @@ string get_class_id_for_id_or_name( const string& module_id_or_name, const strin
    if( !directory.empty( ) )
       directory += "/";
 
-   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+   string module_id( module_id_from_id_or_name( module_id_or_name ) );
+
+   module_iterator mi = g_modules.find( directory + module_id );
 
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_id_for_id_or_name" );
@@ -785,10 +789,8 @@ string get_class_id_for_id_or_name( const string& module_id_or_name, const strin
    {
       if( ( mi->second ).class_names.count( id_or_name ) )
          class_id = ( mi->second ).class_names[ id_or_name ];
-      else if( ( mi->second ).class_ids.count( module_id_or_name + id_or_name ) )
-         class_id = module_id_or_name + id_or_name;
-      else if( ( mi->second ).class_names.count( module_id_or_name + ' ' + id_or_name ) )
-         class_id = ( mi->second ).class_names[ module_id_or_name + ' ' + id_or_name ];
+      else if( ( mi->second ).class_ids.count( module_id + id_or_name ) )
+         class_id = module_id + id_or_name;
    }
 
    return class_id;
@@ -803,7 +805,9 @@ string get_class_name_for_id_or_name( const string& module_id_or_name, const str
    if( !directory.empty( ) )
       directory += "/";
 
-   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+   string module_id( module_id_from_id_or_name( module_id_or_name ) );
+
+   module_iterator mi = g_modules.find( directory + module_id );
 
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_id_for_id_or_name" );
@@ -815,6 +819,8 @@ string get_class_name_for_id_or_name( const string& module_id_or_name, const str
 
    if( ( mi->second ).class_ids.count( id_or_name ) )
       class_name = ( mi->second ).class_ids[ id_or_name ];
+   else if( ( mi->second ).class_ids.count( module_id + id_or_name ) )
+      class_name = ( mi->second ).class_ids[ module_id + id_or_name ];
 
    return class_name;
 }
@@ -829,7 +835,9 @@ string get_field_id_for_id_or_name(
    if( !directory.empty( ) )
       directory += "/";
 
-   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+   string module_id( module_id_from_id_or_name( module_id_or_name ) );
+
+   module_iterator mi = g_modules.find( directory + module_id );
 
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_id_for_id_or_name" );
@@ -838,23 +846,23 @@ string get_field_id_for_id_or_name(
    string class_id( class_id_or_name );
 
    if( ( mi->second ).class_ids.empty( ) )
-      init_module_class_info( module_id_or_name, mi->second );
+      init_module_class_info( module_id, mi->second );
 
    if( ( mi->second ).class_names.count( class_id_or_name ) )
       class_id = ( mi->second ).class_names[ class_id_or_name ];
+   else if( ( mi->second ).class_ids.count( module_id + class_id_or_name ) )
+      class_id = module_id + class_id_or_name;
 
    if( !( mi->second ).class_field_ids.count( class_id ) )
-      init_module_class_field_info( module_id_or_name, class_id_or_name, mi->second );
+      init_module_class_field_info( module_id, class_id, mi->second );
 
-   if( ( mi->second ).class_field_names.count( class_id )
-    && ( mi->second ).class_field_names[ class_id ].count( id_or_name ) )
-      field_id = ( mi->second ).class_field_names[ class_id ][ id_or_name ];
-   else if( ( mi->second ).class_field_ids[ class_id ].count( class_id_or_name + id_or_name ) )
-      field_id = class_id_or_name + id_or_name;
-   else if( ( mi->second ).class_field_ids[ class_id ].count( module_id_or_name + id_or_name ) )
-      field_id = module_id_or_name + id_or_name;
-   else if( ( mi->second ).class_field_ids[ class_id ].count( module_id_or_name + class_id_or_name + id_or_name ) )
-      field_id = module_id_or_name + class_id_or_name + id_or_name;
+   if( ( mi->second ).class_field_names.count( class_id ) )
+   {
+      if( ( mi->second ).class_field_names[ class_id ].count( id_or_name ) )
+         field_id = ( mi->second ).class_field_names[ class_id ][ id_or_name ];
+      else if( ( mi->second ).class_field_ids[ class_id ].count( class_id + id_or_name ) )
+         field_id = class_id + id_or_name;
+   }
 
    return field_id;
 }
@@ -869,7 +877,9 @@ string get_field_name_for_id_or_name(
    if( !directory.empty( ) )
       directory += "/";
 
-   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+   string module_id( module_id_from_id_or_name( module_id_or_name ) );
+
+   module_iterator mi = g_modules.find( directory + module_id );
 
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_id_for_id_or_name" );
@@ -878,18 +888,22 @@ string get_field_name_for_id_or_name(
    string class_id( class_id_or_name );
 
    if( ( mi->second ).class_ids.empty( ) )
-      init_module_class_info( module_id_or_name, mi->second );
+      init_module_class_info( module_id, mi->second );
 
    if( ( mi->second ).class_names.count( class_id_or_name ) )
       class_id = ( mi->second ).class_names[ class_id_or_name ];
+   else if( ( mi->second ).class_ids.count( module_id + class_id_or_name ) )
+      class_id = module_id + class_id;
 
    if( !( mi->second ).class_field_ids.count( class_id ) )
-      init_module_class_field_info( module_id_or_name, class_id_or_name, mi->second );
+      init_module_class_field_info( module_id, class_id, mi->second );
 
    if( ( mi->second ).class_field_ids.count( class_id ) )
    {
       if( ( mi->second ).class_field_ids[ class_id ].count( id_or_name ) )
          field_name = ( mi->second ).class_field_ids[ class_id ][ id_or_name ];
+      else if( ( mi->second ).class_field_ids[ class_id ].count( class_id + id_or_name ) )
+         field_name = ( mi->second ).class_field_ids[ class_id ][ class_id + id_or_name ];
    }
 
    return field_name;
