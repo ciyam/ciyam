@@ -33,7 +33,7 @@ else
 
    ./reinstall_packages $1
    ./install_custom_application_scripts
-   ./install Meta meta
+   ./install_module Meta meta
   fi
  fi
 fi

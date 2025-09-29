@@ -77,7 +77,7 @@ else
 
     ./genmake
     if [ ! "$app_dir" = "" ]; then
-     ./install $mod_name $app_dir $mod_alias
+     ./install_module $mod_name $app_dir $mod_alias
     fi
 
    fi

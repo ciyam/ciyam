@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 2 ]; then
- echo Usage: install [module name] [app dir] [[module alias]]
+ echo Usage: install_module [module name] [app dir] [[module alias]]
 else
  export alias=$3
  export directory=$WEBDIR/$2
