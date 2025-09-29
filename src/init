@@ -30,5 +30,14 @@ else
   sleep 2
   ./ciyam_client -quiet -no_prompt -connect_retries=10 < init.cin
   touch ciyam_server.stop
+
+  for i in {1..20}
+  do
+   sleep 0.5
+   if [ ! -f ciyam_server.stop ]; then
+    break;
+   fi
+  done
+
  fi
 fi
