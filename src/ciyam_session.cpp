@@ -6611,6 +6611,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool is_write = has_parm_val( parameters, c_cmd_ciyam_session_storage_bulk_start_write );
 
+         possibly_expected_error = true;
+
          storage_bulk_start( is_write );
       }
       else if( command == c_cmd_ciyam_session_storage_dump_cache )
