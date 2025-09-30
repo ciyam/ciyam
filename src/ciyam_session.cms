@@ -88,7 +88,7 @@ storage_info "name and other information about the currently linked storage"
 storage_init "link to an existing or newly created storage" [<opt/-admin/admin>][<val/-directory=/directory>]<val//name>
 storage_term "unlink from the currently linked storage"
 storage_attach "link to an existing storage" [<opt/-admin/admin>]<val//name>
-storage_backup "create a storage backup" [<opt/-trunc/truncate>]<val//name>
+storage_backup "create a storage backup" [<opt/-init/initial>|<opt/-trunc/truncate>]<val//name>
 storage_create "link to a newly created storage" [<opt/-admin/admin>][<val/-directory=/directory>]<val//name>
 storage_comment "append a comment to the storage log" <val//text>
 storage_restore "perform storage restore" [<val/-trace=/trace_info>][<val/-stop_regex=/stop_regex>|<val/-stop_at_tx=/stop_at_tx>][<opt/-rebuild/rebuild>|<opt/-partial/partial>][<opt/-quicker/quicker>][<val/-directory=/directory>]<val//name>

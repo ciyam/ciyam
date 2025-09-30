@@ -5725,11 +5725,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_storage_backup )
       {
          string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_backup_name ) );
+         bool initial_log = has_parm_val( parameters, c_cmd_ciyam_session_storage_backup_initial );
          bool truncate_log = has_parm_val( parameters, c_cmd_ciyam_session_storage_backup_truncate );
 
-         bool is_meta = ( name == c_meta_model_name );
-
          int truncation_count = 0;
+
          string sav_db_file_names;
 
          init_storage( name, "", handler, true );
@@ -5738,248 +5738,253 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          term_storage( handler );
 
-         bool has_ltf = false;
-         bool has_dead_keys = false;
-         bool has_demo_keys = false;
-
-         string log_name( name + ".log" );
-         string sql_name( name + ".sql" );
-
-         string backup_sql_name( name + ".backup.sql" );
-
-         string sav_log_name( log_name + ".sav" );
-         string sav_sql_name( sql_name + ".sav" );
-
-         string ltf_name( name + ".ltf" );
-         string sav_ltf_name( ltf_name + ".sav" );
-
-         string dead_keys_name( name + c_dead_keys_suffix );
-         string sav_dead_keys_name( dead_keys_name + ".sav" );
-
-         string demo_keys_name( name + c_demo_keys_suffix );
-         string sav_demo_keys_name( demo_keys_name + ".sav" );
-
-         string autoscript_name( "autoscript.sio" );
-         string manuscript_name( "manuscript.sio" );
-
-         string sav_autoscript_name( autoscript_name + ".sav" );
-         string sav_manuscript_name( manuscript_name + ".sav" );
-
-         string server_sio_name( "ciyam_server.sio" );
-         string sav_server_sio_name( server_sio_name + ".sav" );
-
-         string sav_server_db_file_names;
-
-         // NOTE: Scope to ensure streams are closed.
+         if( !initial_log )
          {
-            ifstream logf( log_name.c_str( ), ios::in | ios::binary );
-            ifstream sqlf( sql_name.c_str( ), ios::in | ios::binary );
+            bool has_ltf = false;
+            bool has_dead_keys = false;
+            bool has_demo_keys = false;
 
-            if( !logf || !sqlf )
-               throw runtime_error( "unable to open backup input files for '" + name + "' (in use?)" );
+            bool is_meta = ( name == c_meta_model_name );
 
-            ofstream sav_logf( sav_log_name.c_str( ), ios::out | ios::binary );
-            ofstream sav_sqlf( sav_sql_name.c_str( ), ios::out | ios::binary );
+            string log_name( name + ".log" );
+            string sql_name( name + ".sql" );
 
-            if( !sav_logf || !sav_sqlf )
-               throw runtime_error( "unable to open backup output files for '" + name + "'" );
+            string backup_sql_name( name + ".backup.sql" );
 
-            copy_stream( logf, sav_logf );
-            copy_stream( sqlf, sav_sqlf );
+            string sav_log_name( log_name + ".sav" );
+            string sav_sql_name( sql_name + ".sav" );
 
-            if( exists_file( ltf_name ) )
+            string ltf_name( name + ".ltf" );
+            string sav_ltf_name( ltf_name + ".sav" );
+
+            string dead_keys_name( name + c_dead_keys_suffix );
+            string sav_dead_keys_name( dead_keys_name + ".sav" );
+
+            string demo_keys_name( name + c_demo_keys_suffix );
+            string sav_demo_keys_name( demo_keys_name + ".sav" );
+
+            string autoscript_name( "autoscript.sio" );
+            string manuscript_name( "manuscript.sio" );
+
+            string sav_autoscript_name( autoscript_name + ".sav" );
+            string sav_manuscript_name( manuscript_name + ".sav" );
+
+            string server_sio_name( "ciyam_server.sio" );
+            string sav_server_sio_name( server_sio_name + ".sav" );
+
+            string sav_server_db_file_names;
+
+            // NOTE: Scope to ensure streams are closed.
             {
-               ifstream ltff( ltf_name.c_str( ), ios::in | ios::binary );
+               ifstream logf( log_name.c_str( ), ios::in | ios::binary );
+               ifstream sqlf( sql_name.c_str( ), ios::in | ios::binary );
 
-               if( !ltff )
-                  throw runtime_error( "unable to open '" + ltf_name + "' for input" );
+               if( !logf || !sqlf )
+                  throw runtime_error( "unable to open backup input files for '" + name + "' (in use?)" );
 
-               ofstream sav_ltff( sav_ltf_name.c_str( ), ios::out | ios::binary );
+               ofstream sav_logf( sav_log_name.c_str( ), ios::out | ios::binary );
+               ofstream sav_sqlf( sav_sql_name.c_str( ), ios::out | ios::binary );
 
-               if( !sav_ltff )
-                  throw runtime_error( "unable to open '" + sav_ltf_name + "' for output" );
+               if( !sav_logf || !sav_sqlf )
+                  throw runtime_error( "unable to open backup output files for '" + name + "'" );
 
-               copy_stream( ltff, sav_ltff );
+               copy_stream( logf, sav_logf );
+               copy_stream( sqlf, sav_sqlf );
 
-               has_ltf = true;
+               if( exists_file( ltf_name ) )
+               {
+                  ifstream ltff( ltf_name.c_str( ), ios::in | ios::binary );
+
+                  if( !ltff )
+                     throw runtime_error( "unable to open '" + ltf_name + "' for input" );
+
+                  ofstream sav_ltff( sav_ltf_name.c_str( ), ios::out | ios::binary );
+
+                  if( !sav_ltff )
+                     throw runtime_error( "unable to open '" + sav_ltf_name + "' for output" );
+
+                  copy_stream( ltff, sav_ltff );
+
+                  has_ltf = true;
+               }
+
+               if( exists_file( dead_keys_name ) )
+               {
+                  ifstream keysf( dead_keys_name.c_str( ), ios::in | ios::binary );
+
+                  if( !keysf )
+                     throw runtime_error( "unable to open '" + dead_keys_name + "' for input" );
+
+                  ofstream sav_keysf( sav_dead_keys_name.c_str( ), ios::out | ios::binary );
+
+                  if( !sav_keysf )
+                     throw runtime_error( "unable to open '" + sav_dead_keys_name + "' for output" );
+
+                  copy_stream( keysf, sav_keysf );
+
+                  has_dead_keys = true;
+               }
+
+               if( exists_file( demo_keys_name ) )
+               {
+                  ifstream keysf( demo_keys_name.c_str( ), ios::in | ios::binary );
+
+                  if( !keysf )
+                     throw runtime_error( "unable to open '" + demo_keys_name + "' for input" );
+
+                  ofstream sav_keysf( sav_demo_keys_name.c_str( ), ios::out | ios::binary );
+
+                  if( !sav_keysf )
+                     throw runtime_error( "unable to open '" + sav_demo_keys_name + "' for output" );
+
+                  copy_stream( keysf, sav_keysf );
+
+                  has_demo_keys = true;
+               }
+
+               if( is_meta )
+               {
+                  ifstream ascf( autoscript_name.c_str( ), ios::in | ios::binary );
+
+                  if( !ascf )
+                     throw runtime_error( "unable to open '" + autoscript_name + "' for input" );
+
+                  ofstream sav_ascf( sav_autoscript_name.c_str( ), ios::out | ios::binary );
+
+                  if( !sav_ascf )
+                     throw runtime_error( "unable to open '" + sav_autoscript_name + "' for output" );
+
+                  copy_stream( ascf, sav_ascf );
+
+                  ifstream mscf( manuscript_name.c_str( ), ios::in | ios::binary );
+
+                  if( !mscf )
+                     throw runtime_error( "unable to open '" + manuscript_name + "' for input" );
+
+                  ofstream sav_mscf( sav_manuscript_name.c_str( ), ios::out | ios::binary );
+
+                  if( !sav_mscf )
+                     throw runtime_error( "unable to open '" + sav_manuscript_name + "' for output" );
+
+                  copy_stream( mscf, sav_mscf );
+
+                  ifstream siof( server_sio_name.c_str( ), ios::in | ios::binary );
+
+                  if( !siof )
+                     throw runtime_error( "unable to open server backup input files for '" + name + "'" );
+
+                  ofstream sav_siof( sav_server_sio_name.c_str( ), ios::out | ios::binary );
+
+                  if( !sav_siof )
+                     throw runtime_error( "unable to open server backup output files for '" + name + "'" );
+
+                  copy_stream( siof, sav_siof );
+
+                  sav_server_db_file_names = system_ods_instance( ).backup_database( ".sav", ' ' );
+               }
             }
 
-            if( exists_file( dead_keys_name ) )
+            string file_names( sav_db_file_names );
+
+            file_names += " " + sav_sql_name;
+            file_names += " " + sav_log_name;
+            file_names += " " + backup_sql_name;
+
+            if( has_ltf )
+               file_names += " " + sav_ltf_name;
+
+            if( has_dead_keys )
+               file_names += " " + sav_dead_keys_name;
+
+            if( has_demo_keys )
+               file_names += " " + sav_demo_keys_name;
+
+            string module_list( name + ".modules.lst" );
+
+            file_names += " " + module_list;
+
+            // NOTE: Although the initial data lists and .csv files are backed up they
+            // can only be restored manually (because if these files were missing then
+            // the application should be regenerated in order to recreate them).
+            vector< string > modules;
+
+            buffer_file_lines( module_list, modules );
+
+            for( size_t i = 0; i < modules.size( ); i++ )
             {
-               ifstream keysf( dead_keys_name.c_str( ), ios::in | ios::binary );
+               string module_init_list( modules[ i ] + ".init.lst" );
 
-               if( !keysf )
-                  throw runtime_error( "unable to open '" + dead_keys_name + "' for input" );
+               if( exists_file( module_init_list ) )
+               {
+                  file_names += " " + module_init_list;
 
-               ofstream sav_keysf( sav_dead_keys_name.c_str( ), ios::out | ios::binary );
+                  vector< string > init_classes;
+                  buffer_file_lines( module_init_list, init_classes );
 
-               if( !sav_keysf )
-                  throw runtime_error( "unable to open '" + sav_dead_keys_name + "' for output" );
-
-               copy_stream( keysf, sav_keysf );
-
-               has_dead_keys = true;
-            }
-
-            if( exists_file( demo_keys_name ) )
-            {
-               ifstream keysf( demo_keys_name.c_str( ), ios::in | ios::binary );
-
-               if( !keysf )
-                  throw runtime_error( "unable to open '" + demo_keys_name + "' for input" );
-
-               ofstream sav_keysf( sav_demo_keys_name.c_str( ), ios::out | ios::binary );
-
-               if( !sav_keysf )
-                  throw runtime_error( "unable to open '" + sav_demo_keys_name + "' for output" );
-
-               copy_stream( keysf, sav_keysf );
-
-               has_demo_keys = true;
+                  for( size_t j = 0; j < init_classes.size( ); j++ )
+                     file_names += " " + modules[ i ] + "_" + init_classes[ j ] + ".csv";
+               }
             }
 
             if( is_meta )
             {
-               ifstream ascf( autoscript_name.c_str( ), ios::in | ios::binary );
+               file_names += " Meta.cin";
 
-               if( !ascf )
-                  throw runtime_error( "unable to open '" + autoscript_name + "' for input" );
+               file_names += " " + sav_autoscript_name;
+               file_names += " " + sav_manuscript_name;
+               file_names += " " + sav_server_sio_name;
 
-               ofstream sav_ascf( sav_autoscript_name.c_str( ), ios::out | ios::binary );
-
-               if( !sav_ascf )
-                  throw runtime_error( "unable to open '" + sav_autoscript_name + "' for output" );
-
-               copy_stream( ascf, sav_ascf );
-
-               ifstream mscf( manuscript_name.c_str( ), ios::in | ios::binary );
-
-               if( !mscf )
-                  throw runtime_error( "unable to open '" + manuscript_name + "' for input" );
-
-               ofstream sav_mscf( sav_manuscript_name.c_str( ), ios::out | ios::binary );
-
-               if( !sav_mscf )
-                  throw runtime_error( "unable to open '" + sav_manuscript_name + "' for output" );
-
-               copy_stream( mscf, sav_mscf );
-
-               ifstream siof( server_sio_name.c_str( ), ios::in | ios::binary );
-
-               if( !siof )
-                  throw runtime_error( "unable to open server backup input files for '" + name + "'" );
-
-               ofstream sav_siof( sav_server_sio_name.c_str( ), ios::out | ios::binary );
-
-               if( !sav_siof )
-                  throw runtime_error( "unable to open server backup output files for '" + name + "'" );
-
-               copy_stream( siof, sav_siof );
-
-               sav_server_db_file_names = system_ods_instance( ).backup_database( ".sav", ' ' );
+               file_names += " " + sav_server_db_file_names;
             }
-         }
-
-         string file_names( sav_db_file_names );
-
-         file_names += " " + sav_sql_name;
-         file_names += " " + sav_log_name;
-         file_names += " " + backup_sql_name;
-
-         if( has_ltf )
-            file_names += " " + sav_ltf_name;
-
-         if( has_dead_keys )
-            file_names += " " + sav_dead_keys_name;
-
-         if( has_demo_keys )
-            file_names += " " + sav_demo_keys_name;
-
-         string module_list( name + ".modules.lst" );
-
-         file_names += " " + module_list;
-
-         // NOTE: Although the initial data lists and .csv files are backed up they
-         // can only be restored manually (because if these files were missing then
-         // the application should be regenerated in order to recreate them).
-         vector< string > modules;
-
-         buffer_file_lines( module_list, modules );
-
-         for( size_t i = 0; i < modules.size( ); i++ )
-         {
-            string module_init_list( modules[ i ] + ".init.lst" );
-
-            if( exists_file( module_init_list ) )
+            else
             {
-               file_names += " " + module_init_list;
-
-               vector< string > init_classes;
-               buffer_file_lines( module_init_list, init_classes );
-
-               for( size_t j = 0; j < init_classes.size( ); j++ )
-                  file_names += " " + modules[ i ] + "_" + init_classes[ j ] + ".csv";
+               if( file_exists( name + ".app.vars.xrep" ) )
+                  file_names += " " + name + ".app.vars.xrep";
             }
-         }
 
-         if( is_meta )
-         {
-            file_names += " Meta.cin";
+            ostringstream osstr;
 
-            file_names += " " + sav_autoscript_name;
-            file_names += " " + sav_manuscript_name;
-            file_names += " " + sav_server_sio_name;
+            osstr << setw( 3 ) << setfill( '0' ) << truncation_count;
 
-            file_names += " " + sav_server_db_file_names;
-         }
-         else
-         {
-            if( file_exists( name + ".app.vars.xrep" ) )
-               file_names += " " + name + ".app.vars.xrep";
-         }
+            if( exists_file( name + ".backup.bun.gz" ) )
+               remove_file( name + ".backup.bun.gz" );
 
-         ostringstream osstr;
+            exec_system( "./bundle -q " + name + ".backup.bun.gz " + file_names );
 
-         osstr << setw( 3 ) << setfill( '0' ) << truncation_count;
+            if( truncate_log )
+               exec_system( "./bundle -q " + name + "." + osstr.str( ) + ".bun.gz "
+                + name + ".log." + osstr.str( ) + " " + name + ".tlg." + osstr.str( ) );
 
-         if( exists_file( name + ".backup.bun.gz" ) )
-            remove_file( name + ".backup.bun.gz" );
+            remove_files( sav_db_file_names, ' ' );
 
-         exec_system( "./bundle -q " + name + ".backup.bun.gz " + file_names );
+            remove_file( sav_sql_name );
+            remove_file( sav_log_name );
 
-         if( truncate_log )
-            exec_system( "./bundle -q " + name + "." + osstr.str( ) + ".bun.gz "
-             + name + ".log." + osstr.str( ) + " " + name + ".tlg." + osstr.str( ) );
+            remove_file( backup_sql_name );
 
-         remove_files( sav_db_file_names, ' ' );
+            if( has_ltf )
+               remove_file( sav_ltf_name );
 
-         remove_file( sav_sql_name );
-         remove_file( sav_log_name );
+            if( has_dead_keys )
+               remove_file( sav_dead_keys_name );
 
-         remove_file( backup_sql_name );
+            if( has_demo_keys )
+               remove_file( sav_demo_keys_name );
 
-         if( has_ltf )
-            remove_file( sav_ltf_name );
+            if( is_meta )
+            {
+               remove_file( sav_autoscript_name );
+               remove_file( sav_manuscript_name );
+               remove_file( sav_server_sio_name );
 
-         if( has_dead_keys )
-            remove_file( sav_dead_keys_name );
+               remove_files( sav_server_db_file_names, ' ' );
+            }
 
-         if( has_demo_keys )
-            remove_file( sav_demo_keys_name );
-
-         if( is_meta )
-         {
-            remove_file( sav_autoscript_name );
-            remove_file( sav_manuscript_name );
-            remove_file( sav_server_sio_name );
-
-            remove_files( sav_server_db_file_names, ' ' );
-         }
-
-         if( truncate_log )
-         {
-            remove_file( name + ".log." + osstr.str( ) );
-            remove_file( name + ".tlg." + osstr.str( ) );
+            if( truncate_log )
+            {
+               remove_file( name + ".log." + osstr.str( ) );
+               remove_file( name + ".tlg." + osstr.str( ) );
+            }
          }
       }
       else if( command == c_cmd_ciyam_session_storage_create )
