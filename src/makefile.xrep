@@ -32,6 +32,7 @@
 ##             clean                clean standard targets
 ##             strip                strip executable targets
 ##             usage                outputs usage information
+##             install              creates installation archive
 ##
 ## Standard
 `{`[`$libs`;20`,##             \? make lib\$.a target`+\n`]`}
@@ -200,5 +201,7 @@ clean:
 strip:
 	@strip `{`[`$dyn_libs`,\$.so`+ `]`} `{`[`$executables`,\$`+ `]`}
 
+install:
+	@./install.sh `{`[`$dyn_libs`,\$.so`+ `]`}
 # Dependency include
 -include $(ALL_DEP_FILES)

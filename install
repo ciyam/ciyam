@@ -1,0 +1,140 @@
+#!/bin/bash
+# Copyright (c) 2025 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+INSTALL_PATH=/opt/ciyam
+
+copy_default( )
+{
+ if [ "$1" = "" ]; then
+  echo "Error: Unexpected missing file name for 'copy_default'."
+  exit
+ fi
+
+ if [ ! -f $INSTALL_PATH/$1.default ]; then
+  cp ciyam/$1.default $INSTALL_PATH
+  cp $INSTALL_PATH/$1.default $INSTALL_PATH/$1
+ else
+  cmp -s ciyam/$1.default $INSTALL_PATH/$1.default
+  if [ $? -eq 1 ]; then
+   echo "Warning: The following changes for '$1.default' might need to be made to '$1'."
+   diff ciyam/$1.default $INSTALL_PATH/$1.default
+  fi
+ fi
+
+}
+
+CIYAM_USER=$USER
+CIYAM_GROUP=$(id -gn)
+
+if [ "$WEBDIR" = "" ]; then
+ echo "Error: Missing WEBDIR environment variable."
+ exit
+fi
+
+if [ ! -d $INSTALL_PATH ]; then
+ sudo mkdir $INSTALL_PATH
+ sudo chown $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
+fi
+
+if [ ! -d $INSTALL_PATH ]; then
+ echo "Error: Unable to access/create $INSTALL_PATH directory (incorrect user?)."
+ exit
+fi
+
+has_service=
+
+if [ -f /usr/lib/systemd/system/ciyam.service ]; then
+ has_service=1
+ sudo systemctl stop ciyam
+ sudo systemctl restart apache2
+fi
+
+copy_default autoscript.sio
+
+copy_default manuscript.sio
+
+copy_default ciyam_server.sio
+
+source ./env_vars.sh
+
+rm env_vars.sh
+
+# NOTE: Remove module DB export directory when not new
+# and will protect the OS user's password when is new.
+if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.modules.lst ]; then
+ rm -r ciyam/$CIYAM_APP_MOD
+ rm -f ciyam/$CIYAM_APP_MOD.backup.sql
+else
+ touch $INSTALL_PATH/.${CIYAM_USER}_password_protected
+ sed -i 's/# <default_storage>Meta/ <default_storage>$CIYAM_APP_MOD/g' $INSTALL_PATH/ciyam_server.sio
+fi
+
+sudo cp -R ciyam/* $INSTALL_PATH
+
+sudo chown -R $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
+
+rm -r ciyam
+
+if [ ! -d $WEBDIR/meta ]; then
+ sudo mkdir $WEBDIR/meta
+ sudo chmod g+w $WEBDIR/meta
+ sudo chown $CIYAM_USER:$CIYAM_GROUP $WEBDIR/meta
+fi
+
+if [ ! -d $WEBDIR/meta ]; then
+ echo "Error: Unable to access/create $WEBDIR/meta directory (incorrect perms?)."
+ exit
+fi
+
+if [ ! -d $WEBDIR/$CIYAM_APP_DIR ]; then
+ sudo mkdir $WEBDIR/$CIYAM_APP_DIR
+ sudo chmod g+w $WEBDIR/$CIYAM_APP_DIR
+ sudo chown $CIYAM_USER:$CIYAM_GROUP $WEBDIR/$CIYAM_APP_DIR
+fi
+
+if [ ! -d $WEBDIR/$CIYAM_APP_DIR ]; then
+ echo "Error: Unable to access/create $WEBDIR/$CIYAM_APP_DIR directory (incorrect perms?)."
+ exit
+fi
+
+sudo cp -R $CIYAM_APP_DIR/* $WEBDIR/$CIYAM_APP_DIR
+
+sudo chmod -R g+w $WEBDIR/$CIYAM_APP_DIR
+sudo chown -R $CIYAM_USER:$CIYAM_GROUP $WEBDIR/$CIYAM_APP_DIR
+
+rm -r $CIYAM_APP_DIR
+
+if [ ! -f $WEBDIR/$CIYAM_APP_DIR/ciyam.pem ]; then
+ ln -s /opt/ciyam/ciyam.pem $WEBDIR/$CIYAM_APP_DIR/ciyam.pem
+fi
+
+if [ -f $INSTALL_PATH/Meta.backup.sql ]; then
+ pushd $INSTALL_PATH > /dev/null
+ if [ "$has_service" = "1" ]; then
+  ./drop_db Meta .
+ fi
+ ./create_db Meta .
+ popd > /dev/null
+fi
+
+if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.backup.sql ]; then
+ pushd $INSTALL_PATH > /dev/null
+ ./create_db $CIYAM_APP_MOD .
+ popd > /dev/null
+fi
+
+sudo mv ciyam.service /usr/lib/systemd/system
+
+sudo systemctl daemon-reload
+
+if [ "$has_service" = "" ]; then
+ sudo systemctl enable ciyam
+fi
+
+sudo systemctl start ciyam
+sudo systemctl status ciyam
+
+rm install
