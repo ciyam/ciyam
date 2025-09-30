@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: create_db [[-rebuild]] [db name] [[.]\|[password]]
+ echo "Usage: create_db [[-rebuild]] [db name] [[.]|[password]]"
 else
  if [ "$1" = "-rebuild" ]; then
   db_name=$2
@@ -27,23 +27,24 @@ else
 
  tmp_file=$(mktemp --suffix ".tmp")
 
- echo DROP DATABASE IF EXISTS $db_name\;>$tmp_file
+ echo "DROP DATABASE IF EXISTS $db_name;" >$tmp_file
 
- # NOTE: UTF-8 is not being used for 32 bit systems due to index length issues with older MySQL versions.
- if [ ! -d /usr/lib32 ] && [ ! -d /usr/lib64 ]; then
-  echo CREATE DATABASE $db_name\;>>$tmp_file
- else
-  echo CREATE DATABASE $db_name CHARACTER SET utf8 COLLATE utf8_bin\;>>$tmp_file
- fi
+ echo "CREATE DATABASE $db_name CHARACTER SET utf8 COLLATE utf8_bin;" >>$tmp_file
 
  if [ "$rebuild" = "true" ]; then
-  echo GRANT USAGE ON \*.\* TO \'$db_name\'@\'localhost\'\;>>$tmp_file
-  echo DROP USER \'$db_name\'@\'localhost\'\;>>$tmp_file
+  echo "GRANT USAGE ON *.* TO $db_name@localhost;" >>$tmp_file
+  echo "DROP USER $db_name@localhost;" >>$tmp_file
  fi
 
- echo CREATE USER \'$db_name\'@\'localhost\'\;>>$tmp_file
- echo GRANT ALL PRIVILEGES ON $db_name.\* TO \'$db_name\'@\'localhost\'\;>>$tmp_file
- echo quit>>$tmp_file
+ echo "CREATE USER $db_name@localhost;" >>$tmp_file
+ echo "GRANT ALL PRIVILEGES ON $db_name.* TO $db_name@localhost;" >>$tmp_file
+
+ if [ -f $db_name.backup.sql ]; then
+  echo "USE $db_name;" >>$tmp_file
+  echo "source $db_name.backup.sql" >>$tmp_file
+ fi
+
+ echo "quit" >>$tmp_file
 
  if [ "$password" = "." ]; then
   $CIYAM_MYSQL -uroot<$tmp_file
@@ -52,4 +53,8 @@ else
  fi
 
  rm $tmp_file
+
+ if [ -f $db_name.backup.sql ]; then
+  rm $db_name.backup.sql
+ fi
 fi

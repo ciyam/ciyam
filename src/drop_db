@@ -5,12 +5,12 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: drop_db [db name] [[.]\|[password]]
+ echo "Usage: drop_db [db name] [[.]|[password]]"
 else
  tmp_file=$(mktemp --suffix ".tmp")
 
- echo DROP USER \'$1\'@\'localhost\'\;>$tmp_file
- echo DROP DATABASE IF EXISTS $1\;>>$tmp_file
+ echo "DROP USER $1@localhost;" >$tmp_file
+ echo "DROP DATABASE IF EXISTS $1;" >>$tmp_file
  echo quit>>$tmp_file
 
  if [ "$CIYAM_MYSQL" = "" ]; then
