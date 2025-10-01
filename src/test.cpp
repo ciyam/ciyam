@@ -10,12 +10,6 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
-#  ifdef __BORLANDC__
-#     include <cio>
-#  endif
-#  ifdef _MSC_VER
-#     include <io.h>
-#  endif
 #  ifdef __GNUG__
 #     include <unistd.h>
 #  endif
@@ -62,7 +56,9 @@ struct test
 {
    string name;
    string description;
+
    vector< string > kills;
+
    vector< test_step > test_steps;
 };
 
@@ -130,11 +126,7 @@ const char* const c_output_type_automatic = "automatic";
 const char* const c_special_test_step_name_init = "*init*";
 const char* const c_special_test_step_name_term = "*term*";
 
-#ifdef _WIN32
-const char* const c_null_device_name = "nul";
-#else
 const char* const c_null_device_name = "/dev/null";
-#endif
 
 const char* const c_files_directory_var_name = "FILES_DIR";
 const char* const c_tests_directory_var_name = "TESTS_DIR";
@@ -158,20 +150,24 @@ void remove_file( const char* p_file_name )
 void copy_file( const char* p_input_file, const char* p_output_file )
 {
    ifstream inpf( p_input_file, ios::in | ios::binary );
+
    if( !inpf )
       throw runtime_error( "unable to open file '" + string( p_input_file ) + "' for input" );
 
    ofstream outf( p_output_file, ios::out | ios::trunc | ios::binary );
+
    if( !outf )
       throw runtime_error( "unable to open file '" + string( p_output_file ) + "' for output" );
 
    inpf.seekg( 0, ios::end );
+
    if( !inpf.good( ) )
       throw runtime_error( "unexpected seek error for '" + string( p_input_file ) + "'" );
 
    size_t length = ( size_t )inpf.tellg( );
 
    inpf.seekg( 0, ios::beg );
+
    if( !inpf.good( ) )
       throw runtime_error( "unexpected seek error for '" + string( p_input_file ) + "'" );
 
@@ -180,14 +176,17 @@ void copy_file( const char* p_input_file, const char* p_output_file )
    for( size_t i = 0; i < length - 1; i += c_buffer_size )
    {
       size_t chunk = c_buffer_size;
-      if( i + chunk > length - 1 )
+
+      if( ( i + chunk ) > ( length - 1 ) )
          chunk = length - i;
 
       inpf.read( ap_buffer.get( ), chunk );
+
       if( !inpf.good( ) )
          throw runtime_error( "unexpected read error for '" + string( p_input_file ) + "'" );
 
       outf.write( ap_buffer.get( ), chunk );
+
       if( !outf.good( ) )
          throw runtime_error( "unexpected write error for '" + string( p_output_file ) + "'" );
    }
@@ -196,18 +195,22 @@ void copy_file( const char* p_input_file, const char* p_output_file )
 bool files_differ( const char* p_file_name_1, const char* p_file_name_2 )
 {
    ifstream inpf1( p_file_name_1, ios::in | ios::binary );
+
    if( !inpf1 )
       throw runtime_error( "unable to open file '" + string( p_file_name_1 ) + "' for input" );
 
    ifstream inpf2( p_file_name_2, ios::in | ios::binary );
+
    if( !inpf2 )
       throw runtime_error( "unable to open file '" + string( p_file_name_2 ) + "' for input" );
 
    inpf1.seekg( 0, ios::end );
+
    if( !inpf1.good( ) )
       throw runtime_error( "unexpected seek error for '" + string( p_file_name_1 ) + "'" );
 
    inpf2.seekg( 0, ios::end );
+
    if( !inpf2.good( ) )
       throw runtime_error( "unexpected seek error for '" + string( p_file_name_2 ) + "'" );
 
@@ -220,10 +223,12 @@ bool files_differ( const char* p_file_name_1, const char* p_file_name_2 )
       size_t length = ( size_t )inpf1.tellg( );
 
       inpf1.seekg( 0, ios::beg );
+
       if( !inpf1.good( ) )
          throw runtime_error( "unexpected seek error for '" + string( p_file_name_1 ) + "'" );
 
       inpf2.seekg( 0, ios::beg );
+
       if( !inpf2.good( ) )
          throw runtime_error( "unexpected seek error for '" + string( p_file_name_2 ) + "'" );
 
@@ -233,14 +238,17 @@ bool files_differ( const char* p_file_name_1, const char* p_file_name_2 )
       for( size_t i = 0; i < length - 1; i += c_buffer_size )
       {
          size_t chunk = c_buffer_size;
-         if( i + chunk > length - 1 )
+
+         if( ( i + chunk ) > ( length - 1 ) )
             chunk = length - i;
 
          inpf1.read( ap_buffer1.get( ), chunk );
+
          if( !inpf1.good( ) )
             throw runtime_error( "unexpected read error for '" + string( p_file_name_1 ) + "'" );
 
          inpf2.read( ap_buffer2.get( ), chunk );
+
          if( !inpf2.good( ) )
             throw runtime_error( "unexpected read error for '" + string( p_file_name_2 ) + "'" );
 
@@ -258,6 +266,7 @@ bool files_differ( const char* p_file_name_1, const char* p_file_name_2 )
 void test_sio_reader_writer( const string& file_name )
 {
    ifstream inpf( file_name.c_str( ) );
+
    if( !inpf )
       throw runtime_error( "unable to open file '" + file_name + "' for input" );
 
@@ -267,18 +276,22 @@ void test_sio_reader_writer( const string& file_name )
    sio_reader reader( inpf, true, &initial_comments );
 
    ostringstream osstr;
+
    sio_writer writer( osstr, &initial_comments );
 
    string comment;
+
    while( reader )
    {
       while( reader.has_read_comment( comment ) )
          writer.write_comment( comment );
 
       string name, value;
+
       while( reader.has_started_section( name ) )
       {
          writer.start_section( name );
+
          name.erase( );
       }
 
@@ -288,6 +301,7 @@ void test_sio_reader_writer( const string& file_name )
       while( reader.has_read_attribute( name, value ) )
       {
          writer.write_attribute( name, value );
+
          name.erase( );
       }
 
@@ -297,6 +311,7 @@ void test_sio_reader_writer( const string& file_name )
       while( reader.has_finished_section( name ) )
       {
          writer.finish_section( name );
+
          name.erase( );
       }
    }
@@ -329,8 +344,10 @@ void test_sio_reader_writer( const string& file_name )
       if( orig_lines != copy_lines )
       {
          ostringstream osstr;
+
          osstr << "unexpected sio reader/writer mismatch (only matched "
           << copy_lines << " of " << orig_lines << " total lines)";
+
          throw runtime_error( osstr.str( ) );
       }
    }
@@ -408,29 +425,26 @@ void perform_test_step( const test_step& s, const string& test_name )
 {
    ++g_num_test_steps_attempted;
 
-#ifdef _WIN32
-   string command;
-#else
    string command( "./" );
-#endif
 
    string exec( s.exec );
 
    bool expecting_failure = false;
-   if( !exec.empty( ) && exec[ 0 ] == '!' )
+
+   if( !exec.empty( ) && ( exec[ 0 ] == '!' ) )
    {
       exec.erase( 0, 1 );
       expecting_failure = true;
    }
 
    bool is_async = false;
-   if( !exec.empty( ) && exec[ 0 ] == '*' )
+   if( !exec.empty( ) && ( exec[ 0 ] == '*' ) )
    {
       is_async = true;
       exec.erase( 0, 1 );
    }
 
-   if( !exec.empty( ) && exec[ 0 ] == '$' )
+   if( !exec.empty( ) && ( exec[ 0 ] == '$' ) )
    {
       command.erase( );
       exec.erase( 0, 1 );
@@ -453,6 +467,7 @@ void perform_test_step( const test_step& s, const string& test_name )
    string test_output_file_name;
 
    command += " >";
+
    if( s.output != e_output_type_none )
    {
       test_step_name = test_output_file_name = temp_output_file_name = test_name + '_' + s.name;
@@ -472,20 +487,14 @@ void perform_test_step( const test_step& s, const string& test_name )
       command += c_null_device_name;
 
    if( is_async )
-   {
-#ifdef _WIN32
-      command = "start /min " + command;
-#else
       command += " &";
-#endif
-   }
 
    if( !s.exec.empty( ) )
    {
 #ifdef DEBUG
       cout << "exec: " << command << endl;
 #endif
-      if( system( command.c_str( ) ) != 0 && !expecting_failure )
+      if( ( system( command.c_str( ) ) != 0 ) && !expecting_failure )
          throw runtime_error( "unexpected system failure" );
    }
 
@@ -507,11 +516,8 @@ void perform_test_step( const test_step& s, const string& test_name )
 
             if( !g_is_quiet )
             {
-#ifdef _WIN32
-               string str( "diff -q " );
-#else
                string str( "./diff -q " );
-#endif
+
                str += test_output_file_name;
                str += ' ';
                str += temp_output_file_name;
@@ -534,6 +540,7 @@ void perform_test_step( const test_step& s, const string& test_name )
          copy_file( temp_output_file_name.c_str( ), test_output_file_name.c_str( ) );
 
          ++g_num_test_steps_captured;
+
          if( !g_is_quiet )
             cout << "  " << test_step_name << ": (captured)" << endl;
 
@@ -547,6 +554,7 @@ void perform_test_step( const test_step& s, const string& test_name )
 int main( int argc, char* argv[ ] )
 {
    int first_arg = 1;
+
    if( argc < 2
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "-?" || string( argv[ 1 ] ) == "/?" )
    {
@@ -626,13 +634,17 @@ int main( int argc, char* argv[ ] )
       specific_test_spec specific_test;
 
       string::size_type pos = next.find( ':' );
+
       specific_test.group = next.substr( 0, pos );
+
       if( pos != string::npos )
       {
          next.erase( 0, pos + 1 );
 
          pos = next.find( ';' );
+
          specific_test.tests = next.substr( 0, pos );
+
          if( pos != string::npos )
          {
             next.erase( 0, pos + 1 );
@@ -645,25 +657,32 @@ int main( int argc, char* argv[ ] )
 
    try
    {
+      // NOTE: The test set file can be either
+      // in the current directory or (when not
+      // in current) in the "tests" directory.
+      if( !file_exists( test_set_file_name ) )
+      {
+         if( !g_tests_directory.empty( )
+          && file_exists( g_tests_directory + '/' + test_set_file_name ) )
+            test_set_file_name = g_tests_directory + '/' + test_set_file_name;
+      }
+
       test_sio_reader_writer( test_set_file_name );
 
       string::size_type pos = test_set_file_name.find( '.' );
-      string init_script( "init_" + test_set_file_name.substr( 0, pos ) );
 
-#ifdef _WIN32
-      init_script += ".bat";
-#endif
+      string init_script( "init_" + test_set_file_name.substr( 0, pos ) );
 
       if( file_exists( init_script ) )
       {
-#ifndef _WIN32
          init_script = "./" + init_script;
-#endif
+
          int rc = system( init_script.c_str( ) );
          ( void )rc;
       }
 
       ifstream inpf( test_set_file_name.c_str( ) );
+
       if( !inpf )
       {
          cerr << "error: unable to open file '" << test_set_file_name << "' for input" << endl;
@@ -675,10 +694,13 @@ int main( int argc, char* argv[ ] )
       set< string > group_names;
 
       sio_reader reader( inpf );
+
       reader.start_section( c_section_groups );
+
       while( reader.has_started_section( c_section_group ) )
       {
          group g;
+
          g.name = reader.read_attribute( c_group_name_value );
 
          if( group_names.count( g.name ) )
@@ -688,6 +710,7 @@ int main( int argc, char* argv[ ] )
          group_names.insert( g.name );
 
          reader.start_section( c_section_tests );
+
          while( reader.has_started_section( c_section_test ) )
          {
             test t;
@@ -706,6 +729,7 @@ int main( int argc, char* argv[ ] )
             while( reader.has_read_attribute( c_test_step_kill_value, s ) )
             {
                string findstr( 1, c_env_var_prefix );
+
                findstr += c_files_directory_var_name;
 
                replace( s, findstr, g_files_directory );
@@ -749,17 +773,22 @@ int main( int argc, char* argv[ ] )
                    + "' for output (expected 'none', 'generated' or 'automatic')" );
 
                t.test_steps.push_back( ts );
+
                reader.finish_section( c_section_test_step );
             }
 
             g.tests.push_back( t );
+
             reader.finish_section( c_section_test );
          }
+
          reader.finish_section( c_section_tests );
 
          g_groups.push_back( g );
+
          reader.finish_section( c_section_group );
       }
+
       reader.finish_section( c_section_groups );
 
       reader.verify_finished_sections( );
@@ -769,14 +798,17 @@ int main( int argc, char* argv[ ] )
          for( group_size_type g = 0; g < g_groups.size( ); g++ )
          {
             string group_name;
+
             init_group( g_groups[ g ], group_name );
 
             bool had_init = false;
+
             size_t num_tests = g_groups[ g ].tests.size( );
 
             for( vector< test >::size_type t = 0; t < num_tests; t++ )
             {
                string test_name( group_name );
+
                init_group_test( g_groups[ g ].tests[ t ], test_name );
 
                size_t num_steps = g_groups[ g ].tests[ t ].test_steps.size( );
@@ -791,15 +823,15 @@ int main( int argc, char* argv[ ] )
                   // NOTE: If the very first step in the first group test is named as an init
                   // step then remember that this has been executed so a matching term in the
                   // very last step of the last group test will be executed on an error exit.
-                  if( t == 0 && s == 0
-                   && g_groups[ g ].tests[ t ].test_steps[ s ].name == string( c_special_test_step_name_init ) )
+                  if( ( t == 0 ) && ( s == 0 )
+                   && ( g_groups[ g ].tests[ t ].test_steps[ s ].name == string( c_special_test_step_name_init ) ) )
                      had_init = true;
                }
 
-               if( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched )
+               if( ( g_error_stop == e_error_stop_point_step ) && g_num_test_steps_mismatched )
                   break;
 
-               if( g_error_stop == e_error_stop_point_test && g_num_test_steps_mismatched )
+               if( ( g_error_stop == e_error_stop_point_test ) && g_num_test_steps_mismatched )
                   break;
             }
 
@@ -807,18 +839,18 @@ int main( int argc, char* argv[ ] )
 
             string final_step_name = g_groups[ g ].tests[ num_tests - 1 ].test_steps[ final_steps - 1 ].name;
 
-            if( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched
-             || g_error_stop == e_error_stop_point_test && g_num_test_steps_mismatched )
+            if( ( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched )
+             || ( g_error_stop == e_error_stop_point_test && g_num_test_steps_mismatched ) )
             {
                // NOTE: If an init step had been executed in the first group test then if
                // the final step of the final group test is a term step then execute it.
-               if( had_init && final_step_name == string( c_special_test_step_name_term ) )
+               if( had_init && ( final_step_name == string( c_special_test_step_name_term ) ) )
                   perform_test_step( g_groups[ g ].tests[ num_tests - 1 ].test_steps[ final_steps - 1 ], group_name );
 
                return 1;
             }
 
-            if( g_error_stop == e_error_stop_point_group && g_num_test_steps_mismatched )
+            if( ( g_error_stop == e_error_stop_point_group ) && g_num_test_steps_mismatched )
                return 1;
          }
       }
@@ -827,107 +859,125 @@ int main( int argc, char* argv[ ] )
          for( vector< specific_test_spec >::size_type i = 0; i < specific_tests.size( ); i++ )
          {
             size_t gi = group_index( specific_tests[ i ].group );
+
             if( gi == 0 )
             {
                cerr << "error: unknown group name '" << specific_tests[ i ].group << "'" << endl;
+
                return 1;
             }
 
             size_t g = gi - 1;
+
             string group_name;
+
             init_group( g_groups[ g ], group_name );
 
             string tests( specific_tests[ i ].tests );
+
             if( tests.empty( ) )
             {
                for( vector< test >::size_type t = 0; t < g_groups[ g ].tests.size( ); t++ )
                {
                   string test_name( group_name );
+
                   init_group_test( g_groups[ g ].tests[ t ], test_name );
 
                   for( vector< test_step >::size_type s = 0; s < g_groups[ g ].tests[ t ].test_steps.size( ); s++ )
                   {
                      perform_test_step( g_groups[ g ].tests[ t ].test_steps[ s ], test_name );
 
-                     if( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched )
+                     if( ( g_error_stop == e_error_stop_point_step ) && g_num_test_steps_mismatched )
                         return 1;
                   }
 
-                  if( g_error_stop == e_error_stop_point_test && g_num_test_steps_mismatched )
+                  if( ( g_error_stop == e_error_stop_point_test ) && g_num_test_steps_mismatched )
                      return 1;
                }
             }
             else
             {
                string::size_type tpos = tests.find( ',' );
+
                while( true )
                {
                   string next_test( tests.substr( 0, tpos ) );
 
                   string test_name( group_name );
+
                   size_t ti = group_test_index( g_groups[ g ], next_test );
+
                   if( ti == 0 )
                   {
                      cerr << "error: unknown test name '"
                       << next_test << "' for group '" << group_name << "'" << endl;
+
                      return 1;
                   }
 
                   size_t t = ti - 1;
+
                   init_group_test( g_groups[ g ].tests[ t ], test_name );
 
                   string steps( specific_tests[ i ].steps );
+
                   if( steps.empty( ) )
                   {
                      for( vector< test_step >::size_type s = 0; s < g_groups[ g ].tests[ t ].test_steps.size( ); s++ )
                      {
                         perform_test_step( g_groups[ g ].tests[ t ].test_steps[ s ], test_name );
 
-                        if( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched )
+                        if( ( g_error_stop == e_error_stop_point_step ) && g_num_test_steps_mismatched )
                            return 1;
                      }
                   }
                   else
                   {
                      string::size_type spos = steps.find( ',' );
+
                      while( true )
                      {
                         string next_step( steps.substr( 0, spos ) );
 
                         size_t si = group_test_step_index( g_groups[ g ].tests[ t ], next_step );
+
                         if( si == 0 )
                         {
                            cerr << "error: unknown test step '" << next_step
                             << "' for test '" << test_name << "' in group '" << group_name << "'" << endl;
+
                            return 1;
                         }
 
                         size_t s = si - 1;
+
                         perform_test_step( g_groups[ g ].tests[ t ].test_steps[ s ], test_name );
 
-                        if( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched )
+                        if( ( g_error_stop == e_error_stop_point_step ) && g_num_test_steps_mismatched )
                            return 1;
 
                         if( spos == string::npos )
                            break;
 
                         steps.erase( 0, spos + 1 );
+
                         spos = steps.find( ',' );
                      }
                   }
 
-                  if( g_error_stop == e_error_stop_point_test && g_num_test_steps_mismatched )
+                  if( ( g_error_stop == e_error_stop_point_test ) && g_num_test_steps_mismatched )
                      return 1;
 
                   if( tpos == string::npos )
                      break;
 
                   tests.erase( 0, tpos + 1 );
+
                   tpos = tests.find( ',' );
                }
             }
 
-            if( g_error_stop == e_error_stop_point_group && g_num_test_steps_mismatched )
+            if( ( g_error_stop == e_error_stop_point_group ) && g_num_test_steps_mismatched )
                return 1;
          }
       }
@@ -935,9 +985,10 @@ int main( int argc, char* argv[ ] )
       if( !g_is_quiet )
          cout << endl;
          
-      if( g_num_test_steps_succeeded + g_num_test_steps_captured == g_num_test_steps_attempted )
+      if( ( g_num_test_steps_succeeded + g_num_test_steps_captured ) == g_num_test_steps_attempted )
       {
          cout << "summary: passed (" << g_num_test_steps_succeeded;
+
          if( g_num_test_steps_succeeded == 1 )
             cout << " test step succeeded";
          else
@@ -946,6 +997,7 @@ int main( int argc, char* argv[ ] )
          if( g_num_test_steps_captured )
          {
             cout << " and " << g_num_test_steps_captured;
+
             if( g_num_test_steps_captured == 1 )
                cout << " test was captured";
             else
@@ -962,6 +1014,7 @@ int main( int argc, char* argv[ ] )
       else
       {
          cerr << "summary: *** failed *** (" << g_num_test_steps_attempted;
+
          if( g_num_test_steps_attempted == 1 )
             cerr << " was attempted";
          else
@@ -970,6 +1023,7 @@ int main( int argc, char* argv[ ] )
          if( g_num_test_steps_captured )
          {
             cerr << " and " << g_num_test_steps_captured;
+
             if( g_num_test_steps_captured == 1 )
                cerr << " test was captured";
             else
@@ -979,14 +1033,14 @@ int main( int argc, char* argv[ ] )
          if( g_num_test_steps_mismatched )
          {
             cerr << " with " << g_num_test_steps_mismatched;
+
             if( g_num_test_steps_mismatched == 1 )
                cerr << " failure";
             else
                cerr << " failures";
          }
 
-         size_t num_accounted
-          = g_num_test_steps_succeeded + g_num_test_steps_captured + g_num_test_steps_mismatched;
+         size_t num_accounted = g_num_test_steps_succeeded + g_num_test_steps_captured + g_num_test_steps_mismatched;
 
          if( num_accounted != g_num_test_steps_attempted )
             cerr << " and " << ( g_num_test_steps_attempted - num_accounted ) << " unaccounted for";
@@ -997,6 +1051,7 @@ int main( int argc, char* argv[ ] )
    catch( exception& x )
    {
       cerr << "error: " << x.what( ) << endl;
+
       return 1;
    }
 }
