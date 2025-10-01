@@ -34,6 +34,71 @@ if [ "$WEBDIR" = "" ]; then
  exit
 fi
 
+had_error=
+release_dir=
+release_file=
+
+ls -1 ciyam.*.tar.gz > ~install 2>/dev/null
+
+if [ -s ~install ]; then
+ num_files=$(wc -l < ~install)
+
+ if [ "$num_files" != "1" ]; then
+  had_error=1
+
+  echo "Error: Multiple 'ciyam.<ver>.<rev>.tar.gz' files found (remove old versions)."
+ else
+  release_file=$(<~install)
+  release_dir=${release_file%.tar.gz}
+
+  if [ ! -d $release_dir ]; then
+   tar -xvzf $release_file --exclude='install'
+  fi
+ fi
+else
+ had_error=1
+
+ echo "Error: No 'ciyam.<ver>.<rev>.tar.gz' file was found (release archive deleted?)."
+fi
+
+rm -f ~install
+
+if [ "$had_error" = "1" ]; then
+ exit
+fi
+
+if [ "$release_dir" = "" ]; then
+ echo "Error: Unexpected missing 'release_dir' variable."
+
+ exit
+fi
+
+# NOTE: If is a development environment then will save and erase the current
+# identity (and also stop the application server if it's currently running).
+if [ -d src ]; then
+ pushd src > /dev/null
+
+ if [ -f ciyam_server.sid ]; then
+  ./save_identity > /dev/null
+  ./erase_identity > /dev/null
+
+  # NOTE: Check if the application server is running.
+  touch ciyam_server.cmd
+  sleep 0.5
+
+  if [ -f ciyam_server.cmd ]; then
+   rm ciyam_server.cmd
+  else
+   touch ciyam_server.stop
+   sleep 1
+  fi
+ fi
+
+ popd > /dev/null
+fi
+
+cd $release_dir
+
 if [ ! -d $INSTALL_PATH ]; then
  sudo mkdir $INSTALL_PATH
  sudo chown $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
@@ -41,6 +106,7 @@ fi
 
 if [ ! -d $INSTALL_PATH ]; then
  echo "Error: Unable to access/create $INSTALL_PATH directory (incorrect user?)."
+
  exit
 fi
 
@@ -65,7 +131,7 @@ rm env_vars.sh
 # NOTE: Remove module DB export directory when not new
 # and will protect the OS user's password when is new.
 if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.modules.lst ]; then
- rm -r ciyam/$CIYAM_APP_MOD
+ rm -rf ciyam/$CIYAM_APP_MOD
  rm -f ciyam/$CIYAM_APP_MOD.backup.sql
 else
  touch $INSTALL_PATH/.${CIYAM_USER}_password_protected
@@ -86,6 +152,7 @@ fi
 
 if [ ! -d $WEBDIR/meta ]; then
  echo "Error: Unable to access/create $WEBDIR/meta directory (incorrect perms?)."
+
  exit
 fi
 
@@ -97,6 +164,7 @@ fi
 
 if [ ! -d $WEBDIR/$CIYAM_APP_DIR ]; then
  echo "Error: Unable to access/create $WEBDIR/$CIYAM_APP_DIR directory (incorrect perms?)."
+
  exit
 fi
 
@@ -137,4 +205,6 @@ fi
 sudo systemctl start ciyam
 sudo systemctl status ciyam
 
-rm install
+cd ..
+
+rmdir $release_dir
