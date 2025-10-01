@@ -7,25 +7,36 @@
 if [ "$WEBDIR" = "" ]; then
   echo Error: Missing environment variable 'WEBDIR'.
 else
- export RESTORED=
+ restored_any=
+ restored_meta=
 
  if [ -f ciyam_server.sid.sav ]; then
-  export RESTORED=1
+  restored_any=1
+
   mv ciyam_server.sid.sav ciyam_server.sid
  fi
 
  if [ -f $WEBDIR/meta/identity.txt.sav ]; then
-  export RESTORED=1
+  restored_any=1
+  restored_meta=1
+
   mv $WEBDIR/meta/identity.txt.sav $WEBDIR/meta/identity.txt
   rm -f $WEBDIR/meta/encrypted.txt
  fi
 
  if [ -f $WEBDIR/meta/encrypted.txt.sav ]; then
-  export RESTORED=1
+  restored_any=1
+
   mv $WEBDIR/meta/encrypted.txt.sav $WEBDIR/meta/encrypted.txt
+ else
+  # NOTE: If has restored but found no "encrypted.txt.sav" then
+  # will remove "encrypted.txt" (i.e. assumes was unencrypted).
+  if [ "$restored_meta" = "1" ]; then
+   rm -f $WEBDIR/meta/encrypted.txt
+  fi
  fi
 
- if [ "$RESTORED" = "1" ]; then
+ if [ "$restored_any" = "1" ]; then
   echo "NOTE: Will need to restart both the application and HTTP server."
  fi
 fi
