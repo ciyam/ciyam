@@ -6,7 +6,8 @@
 
 has_base=
 all_modules=$*
-main_module=
+main_module=Meta
+release_name=ciyam.0.1
 
 while true
 do
@@ -29,6 +30,17 @@ done
 
 if [ "$WEBDIR" = "" ]; then
  echo "Error: Missing WEBDIR environment variable."
+
+ exit
+fi
+
+# NOTE: Check if the application server is running.
+touch ciyam_server.cmd
+sleep 0.5
+
+if [ -f ciyam_server.cmd ]; then
+ echo "Error: Application server needs to be running to create install archive."
+
  exit
 fi
 
@@ -38,49 +50,67 @@ else
  CIYAM_USER=$USER
  CIYAM_GROUP=$(id -gn)
 
- if [ "$main_module" = "" ]; then
-  echo "Error: No main module found (need to generate application?)."
-  exit
- fi
+ if [ ! -d $release_name ]; then
+  mkdir $release_name
+  if [ ! -d $release_name ]; then
+   echo "Error: Unable to create '$release_name' directory."
 
- if [ ! -d ciyam.0.1 ]; then
-  mkdir ciyam.0.1
-  if [ ! -d ciyam.0.1 ]; then
-   echo "Error: Unable to create 'ciyam.0.1' directory."
    exit
   fi
-  mkdir ciyam.0.1/ciyam
-  if [ ! -d ciyam.0.1/ciyam ]; then
-   echo "Error: Unable to create 'ciyam.0.1/ciyam' directory."
+  mkdir $release_name/ciyam
+  if [ ! -d $release_name/ciyam ]; then
+   echo "Error: Unable to create '$release_name/ciyam' directory."
+
    exit
   fi
  fi
 
- cp [l-t]*.sh ciyam.0.1/ciyam
+ cp [l-t]*.sh $release_name/ciyam
 
- cp [a-z]*.cin ciyam.0.1/ciyam
+ cp [a-z]*.cin $release_name/ciyam
 
- cp *.default ciyam.fissile timezones.sio ciyam.0.1/ciyam
+ cp *.default ciyam.fissile timezones.sio $release_name/ciyam
 
- cp Meta.dat Meta.idx Meta.hdr Meta.tlg Meta.sql Meta.txt Meta.modules.lst ciyam.0.1/ciyam
+ cp Meta.dat Meta.idx Meta.hdr Meta.tlg Meta.sql Meta.txt Meta.modules.lst $release_name/ciyam
 
- cp modules.lst packages.lst ciyam_demo_identities.lst ciyam.0.1/ciyam
+ cp modules.lst packages.lst ciyam_demo_identities.lst $release_name/ciyam
 
- cp mnemonics.txt ciyam_strings.txt module_strings.txt ciyam.0.1/ciyam
+ cp mnemonics.txt ciyam_strings.txt module_strings.txt $release_name/ciyam
 
- cp add_user backup_check backup_export backup_import construct create_ciyam_pem ciyam.0.1/ciyam
- cp create_db drop_db export_files generate_next_block hub_check import_files init_identity ciyam.0.1/ciyam
- cp prepare_for_import restore shared_export shared_check shared_import system_variable update unlock_identity ciyam.0.1/ciyam
+ cp add_user backup_check backup_export backup_import construct create_ciyam_pem $release_name/ciyam
+ cp create_db drop_db export_files generate_next_block hub_check import_files init_identity $release_name/ciyam
+ cp prepare_for_import restore shared_export shared_check shared_import system_variable update unlock_identity $release_name/ciyam
 
- cp ext_request run_script run_temp script set_password ciyam.0.1/ciyam
+ cp ext_request run_script run_temp script set_password $release_name/ciyam
 
- cp bundle unbundle ciyam_client ciyam_server ods_fsed $all_modules ciyam.0.1/ciyam
+ cp bundle unbundle ciyam_client ciyam_server ods_fsed $all_modules $release_name/ciyam
 
- if [ ! "$main_module" = "" ]; then
-  cp $main_module.sql ciyam.0.1/ciyam
-  cp $main_module.txt ciyam.0.1/ciyam
-  cp $main_module.map.new ciyam.0.1/ciyam
-  cp $main_module.modules.lst ciyam.0.1/ciyam
+ if [ "$main_module" = "Meta" ]; then
+  ./ciyam_command storage_backup -init $main_module
+
+  if [ -f $main_module.backup.sql ]; then
+   mv $main_module.backup.sql $release_name/ciyam
+  fi
+
+  echo "export CIYAM_APP_DIR=${main_module,,}" > $release_name/env_vars.sh
+  echo "export CIYAM_APP_MOD=$main_module" >> $release_name/env_vars.sh
+
+  chmod a+x $release_name/env_vars.sh
+
+  sudo systemctl restart apache2
+
+  cp -R $WEBDIR/${main_module,,} $release_name/${main_module,,}
+
+  rm -f $release_name/${main_module,,}/*.log
+  rm -f $release_name/${main_module,,}/*.sav
+  rm -f $release_name/${main_module,,}/ciyam.pem
+  rm -f $release_name/${main_module,,}/identity.txt
+  rm -f $release_name/${main_module,,}/encrypted.txt
+ else
+  cp $main_module.sql $release_name/ciyam
+  cp $main_module.txt $release_name/ciyam
+  cp $main_module.map.new $release_name/ciyam
+  cp $main_module.modules.lst $release_name/ciyam
 
   if grep -q "^ <ods_use_encrypted>false$" ciyam_server.sio; then
    ./ods_fsed -quiet "-exec=export $main_module" $main_module
@@ -88,48 +118,47 @@ else
    ./export_encrypted_ods_db $main_module
   fi
 
-  mv $main_module ciyam.0.1/ciyam
+  mv $main_module $release_name/ciyam
 
   ./ciyam_command storage_backup -init Meta
   ./ciyam_command storage_backup -init $main_module
 
   if [ -f Meta.backup.sql ]; then
-   mv Meta.backup.sql ciyam.0.1/ciyam
+   mv Meta.backup.sql $release_name/ciyam
   fi
 
   if [ -f $main_module.backup.sql ]; then
-   mv $main_module.backup.sql ciyam.0.1/ciyam
+   mv $main_module.backup.sql $release_name/ciyam
   fi
 
-  echo "export CIYAM_APP_DIR=${main_module,,}" > ciyam.0.1/env_vars.sh
-  echo "export CIYAM_APP_MOD=$main_module" >> ciyam.0.1/env_vars.sh
+  echo "export CIYAM_APP_DIR=${main_module,,}" > $release_name/env_vars.sh
+  echo "export CIYAM_APP_MOD=$main_module" >> $release_name/env_vars.sh
 
-  chmod a+x ciyam.0.1/env_vars.sh
+  chmod a+x $release_name/env_vars.sh
 
   sudo systemctl restart apache2
 
-  cp -R $WEBDIR/${main_module,,} ciyam.0.1/${main_module,,}
-  rm -f ciyam.0.1/${main_module,,}/ciyam.pem
+  cp -R $WEBDIR/${main_module,,} $release_name/${main_module,,}
+
+  rm -f $release_name/${main_module,,}/*.log
+  rm -f $release_name/${main_module,,}/*.sav
+  rm -f $release_name/${main_module,,}/ciyam.pem
  fi
 
- cp autoscript.sio.default ciyam.0.1/ciyam/autoscript.sio
+ cp autoscript.sio.default $release_name/ciyam/autoscript.sio
 
- cp manuscript.sio.default ciyam.0.1/ciyam/manuscript.sio
+ cp manuscript.sio.default $release_name/ciyam/manuscript.sio
 
- cp ciyam_server.sio.default ciyam.0.1/ciyam/ciyam_server.sio
+ cp ciyam_server.sio.default $release_name/ciyam/ciyam_server.sio
 
  if [ ! -f ciyam.service ]; then
   ./init_service
  fi
 
- cp ../install ciyam.0.1
+ cp ciyam.service $release_name
 
- chmod a+x ciyam.0.1/install
+ rm -f ../$release_name.tar.gz
+ tar -czvf ../$release_name.tar.gz ../install $release_name
 
- cp ciyam.service ciyam.0.1
-
- rm -f ciyam.0.1.tar.gz
- tar -czvf ciyam.0.1.tar.gz ciyam.0.1
-
- rm -R ciyam.0.1
+ rm -R $release_name
 fi
