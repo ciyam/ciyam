@@ -46,7 +46,7 @@ if [ -s ~install ]; then
  if [ "$num_files" != "1" ]; then
   had_error=1
 
-  echo "Error: Multiple 'ciyam.<ver>.<rev>.tar.gz' files found (remove old versions)."
+  echo "Error: Multiple 'ciyam.<ver>.<rev>.tar.gz' files found (move old versions)."
  else
   release_file=$(<~install)
   release_dir=${release_file%.tar.gz}
@@ -73,10 +73,14 @@ if [ "$release_dir" = "" ]; then
  exit
 fi
 
+is_dev_env=
+
 # NOTE: If is a development environment then will save and erase the current
 # identity (and also stop the application server if it's currently running).
 if [ -d src ]; then
  pushd src > /dev/null
+
+ is_dev_env=1
 
  if [ -f ciyam_server.sid ]; then
   ./save_identity > /dev/null
@@ -128,17 +132,52 @@ source ./env_vars.sh
 
 rm env_vars.sh
 
+has_system=
+
 # NOTE: Remove module DB export directory when not new
 # and will protect the OS user's password when is new.
 if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.modules.lst ]; then
+ has_system=1
  rm -rf ciyam/$CIYAM_APP_MOD
  rm -f ciyam/$CIYAM_APP_MOD.backup.sql
 else
  touch $INSTALL_PATH/.${CIYAM_USER}_password_protected
- sed -i 's/# <default_storage>Meta/ <default_storage>$CIYAM_APP_MOD/g' $INSTALL_PATH/ciyam_server.sio
+
+ if [ ! "$CIYAM_APP_MOD" = "Meta" ]; then
+  sed -i "s/# <default_storage>Meta/ <default_storage>$CIYAM_APP_MOD/g" $INSTALL_PATH/ciyam_server.sio
+ fi
 fi
 
 sudo cp -R ciyam/* $INSTALL_PATH
+
+needs_restore=
+
+# NOTE: If there is a <main>.map and now <main>.map.new
+# then the DB will need to be restored (due to required
+# transformations) unless the files are identical.
+if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.map ]; then
+ if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.map.new ]; then
+  cmp -s $INSTALL_PATH/$CIYAM_APP_MOD.map $INSTALL_PATH/$CIYAM_APP_MOD.map.new
+  if [ $? -eq 0 ]; then
+   rm -f $INSTALL_PATH/$CIYAM_APP_MOD.map.new
+  else
+   needs_restore=1
+  fi
+ fi
+else
+ if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.map.new ]; then
+  mv $INSTALL_PATH/$CIYAM_APP_MOD.map.new $INSTALL_PATH/$CIYAM_APP_MOD.map
+ fi
+fi
+
+# NOTE: Prevent actual Linux users
+# from being added for development
+# environments.
+if [ "$has_system" = "" ]; then
+ if [ "$is_dev_env" = "1" ]; then
+  touch $INSTALL_PATH/.no_add_user
+ fi
+fi
 
 sudo chown -R $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
 

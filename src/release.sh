@@ -6,20 +6,26 @@
 
 has_base=
 all_modules=$*
-main_module=Meta
+main_module=
 release_name=ciyam.0.1
+
+if [ "$1" = "" ]; then
+ echo "Usage: release.sh [module names]"
+
+ exit
+fi
 
 while true
 do
- if [ "$1" == "" ]; then
+ if [ "$1" = "" ]; then
   break;
  fi
 
- if [ "$1" == "ciyam_base.so" ]; then
+ if [ "$1" = "ciyam_base.so" ]; then
   has_base=1
  else
   if [ "$main_module" = "" ]; then
-   if [ ! "$1" == "Meta.so" ]; then
+   if [ ! "$1" = "Meta.so" ]; then
     main_module=${1%.*}
    fi
   fi
@@ -27,6 +33,10 @@ do
 
  shift
 done
+
+if [ "$main_module" = "" ]; then
+ main_module=Meta
+fi
 
 if [ "$WEBDIR" = "" ]; then
  echo "Error: Missing WEBDIR environment variable."
@@ -39,7 +49,7 @@ touch ciyam_server.cmd
 sleep 0.5
 
 if [ -f ciyam_server.cmd ]; then
- echo "Error: Application server needs to be running to create install archive."
+ echo "Error: Application server needs to be running to create release archive."
 
  exit
 fi
@@ -69,16 +79,18 @@ else
 
  cp [a-z]*.cin $release_name/ciyam
 
- cp *.default ciyam.fissile timezones.sio $release_name/ciyam
+ cp ciyam.fissile timezones.sio $release_name/ciyam
 
- cp Meta.dat Meta.idx Meta.hdr Meta.tlg Meta.sql Meta.txt Meta.modules.lst $release_name/ciyam
+ cp autoscript.sio.default ciyam_server.sio.default manuscript.sio.default $release_name/ciyam
+
+ cp Meta.cin Meta.dat Meta.idx Meta.hdr Meta.tlg Meta.sql Meta.txt Meta.modules.lst $release_name/ciyam
 
  cp modules.lst packages.lst ciyam_demo_identities.lst $release_name/ciyam
 
- cp mnemonics.txt ciyam_strings.txt module_strings.txt $release_name/ciyam
+ cp channel_readme.md mnemonics.txt ciyam_strings.txt module_strings.txt $release_name/ciyam
 
- cp add_user backup_check backup_export backup_import construct create_ciyam_pem $release_name/ciyam
- cp create_db drop_db export_files generate_next_block hub_check import_files init_identity $release_name/ciyam
+ cp add_user backup_check backup_export backup_import ciyam_backup ciyam_command ciyam_restore construct $release_name/ciyam
+ cp create_ciyam_pem create_db drop_db export_files generate_next_block hub_check import_files init_identity $release_name/ciyam
  cp prepare_for_import restore shared_export shared_check shared_import system_variable update unlock_identity $release_name/ciyam
 
  cp ext_request run_script run_temp script set_password $release_name/ciyam
@@ -111,6 +123,8 @@ else
   cp $main_module.txt $release_name/ciyam
   cp $main_module.map.new $release_name/ciyam
   cp $main_module.modules.lst $release_name/ciyam
+
+  cp $main_module*.csv $main_module.*.vars.lst $release_name/ciyam
 
   if grep -q "^ <ods_use_encrypted>false$" ciyam_server.sio; then
    ./ods_fsed -quiet "-exec=export $main_module" $main_module
@@ -145,20 +159,30 @@ else
   rm -f $release_name/${main_module,,}/ciyam.pem
  fi
 
- cp autoscript.sio.default $release_name/ciyam/autoscript.sio
-
- cp manuscript.sio.default $release_name/ciyam/manuscript.sio
-
- cp ciyam_server.sio.default $release_name/ciyam/ciyam_server.sio
-
  if [ ! -f ciyam.service ]; then
   ./init_service
  fi
 
  cp ciyam.service $release_name
 
+ had_install=
+
+ # NOTE: Assuming was not already present will copy
+ # the 'install' bash script (then remove it after)
+ # in order to stop 'tar' complaining about needing
+ # to remove a '../' prefix.
+ if [ -f install ]; then
+  had_install=1
+ else
+  cp ../install .
+ fi
+
  rm -f ../$release_name.tar.gz
- tar -czvf ../$release_name.tar.gz ../install $release_name
+ tar -czvf ../$release_name.tar.gz install $release_name
+
+ if [ "$had_install" = "" ]; then
+  rm -f install
+ fi
 
  rm -R $release_name
 fi
