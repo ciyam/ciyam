@@ -34,6 +34,8 @@ else
  if [ "$rebuild" = "true" ]; then
   echo "GRANT USAGE ON *.* TO $db_name@localhost;" >>$tmp_file
   echo "DROP USER $db_name@localhost;" >>$tmp_file
+ else
+  echo "DROP USER IF EXISTS $db_name@localhost;" >>$tmp_file
  fi
 
  echo "CREATE USER $db_name@localhost;" >>$tmp_file
