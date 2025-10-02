@@ -10,6 +10,10 @@ else
  user_id=$1
  password=$2
 
+ if [ -f .no_add_user ]; then
+  exit
+ fi
+
  if [ ! -d /home/$user_id ]; then
 
   if [ "$password" = "password.info" ]; then
