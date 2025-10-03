@@ -102,6 +102,7 @@ const char* const c_backup_log_file = "../meta/backup.log";
 const char* const c_restore_log_file = "../meta/restore.log";
 
 const char* const c_has_restored_file = ".has_restored";
+const char* const c_allow_register_file = ".allow_register";
 
 const char* const c_prepare_backup_file = "../meta/.prepare.backup";
 const char* const c_prepare_restore_file = "../meta/.prepare.restore";
@@ -1179,9 +1180,11 @@ void request_handler::process_request( )
 
       bool is_invalid_session = false;
 
-      // NOTE: Ignore "register" command if Meta.
+      // NOTE: Ignore "register" command if Meta
+      // (unless ".allow_register" file exists).
       if( ( cmd == c_cmd_register )
-       && ( module_name == c_meta_model_name ) )
+       && ( ( module_name == c_meta_model_name )
+       && !file_exists( c_allow_register_file ) ) )
          cmd = c_cmd_home;
 
       if( !session_id.empty( )
@@ -1304,7 +1307,7 @@ void request_handler::process_request( )
                g_register_error = GDS( c_display_username_num_chars );
             else
             {
-               regex_chain expr( "^[a-z][-a-z0-9]{2,29}$&&.*[^-]$$&!^.*--.*$" );
+               regex_chain expr( "^[a-z][-a-z0-9]{2,29}$&&^.*[^-]$&!^.*--.*$" );
 
                if( expr.search( username ) != 0 )
                   g_register_error = GDS( c_display_username_incorrect );
