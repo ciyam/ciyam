@@ -19,6 +19,7 @@ else
   echo Error: Module \'$mod_name\' does not exist.
  else
   ./xrep @remove_module.xrep name=$mod_name modules=@modules.lst >modules.lst.new
+
   if [ $? -eq 0 ]; then
    ./update modules.lst modules.lst.new
 
@@ -50,6 +51,9 @@ else
     fi
     if [ -f $mod_name.sql ]; then
      rm $mod_name.sql
+    fi
+    if [ -f $mod_name.map.new ]; then
+     rm $mod_name.map.new
     fi
     if [ -f $mod_name.init.lst ]; then
      rm $mod_name.init.lst
