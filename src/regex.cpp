@@ -257,25 +257,25 @@ struct search_state
 void dump_state( const string& msg, const search_state& s, size_t offset )
 {
    if( !msg.empty( ) )
-      cout << '[' << msg << ": part #" << ( offset + 1 ) << ']' << endl;
+      cerr << '[' << msg << ": part #" << ( offset + 1 ) << ']' << endl;
 
-   cout << "ch = " << s.ch << endl;
-   cout << "last_ch = " << s.last_ch << endl;
+   cerr << "ch = " << s.ch << endl;
+   cerr << "last_ch = " << s.last_ch << endl;
 
-   cout << "ch_used = " << s.ch_used << endl;
-   cout << "is_range = " << s.is_range << endl;
-   cout << "had_empty = " << s.had_empty << endl;
-   cout << "had_range = " << s.had_range << endl;
-   cout << "is_in_ref = " << s.is_in_ref << endl;
-   cout << "is_in_set = " << s.is_in_set << endl;
-   cout << "was_in_set = " << s.was_in_set << endl;
-   cout << "is_matches = " << s.is_matches << endl;
-   cout << "had_escape = " << s.had_escape << endl;
-   cout << "has_minimum = " << s.has_minimum << endl;
-   cout << "has_maximum = " << s.has_maximum << endl;
-   cout << "set_started = " << s.set_started << endl;
-   cout << "had_finish_ref = " << s.had_finish_ref << endl;
-   cout << "is_set_matches = " << s.is_set_matches << endl;
+   cerr << "ch_used = " << s.ch_used << endl;
+   cerr << "is_range = " << s.is_range << endl;
+   cerr << "had_empty = " << s.had_empty << endl;
+   cerr << "had_range = " << s.had_range << endl;
+   cerr << "is_in_ref = " << s.is_in_ref << endl;
+   cerr << "is_in_set = " << s.is_in_set << endl;
+   cerr << "was_in_set = " << s.was_in_set << endl;
+   cerr << "is_matches = " << s.is_matches << endl;
+   cerr << "had_escape = " << s.had_escape << endl;
+   cerr << "has_minimum = " << s.has_minimum << endl;
+   cerr << "has_maximum = " << s.has_maximum << endl;
+   cerr << "set_started = " << s.set_started << endl;
+   cerr << "had_finish_ref = " << s.had_finish_ref << endl;
+   cerr << "is_set_matches = " << s.is_set_matches << endl;
 }
 #endif
 
@@ -1109,8 +1109,8 @@ regex::impl::impl( const string& expr, bool match_at_start, bool match_at_finish
    if( max_size )
       --max_size;
 #ifdef DEBUG
-   cout << "\nmin_size = " << min_size << endl;
-   cout << "max_size = " << max_size << endl;
+   cerr << "\nmin_size = " << min_size << endl;
+   cerr << "max_size = " << max_size << endl;
 #endif
 }
 
@@ -1125,8 +1125,8 @@ string::size_type regex::impl::search(
       return string::npos;
 
 #ifdef DEBUG
-   cout << "\ntext: " << text << endl;
-   dump( cout );
+   cerr << "\ntext: " << text << endl;
+   dump( cerr );
 #endif
 
    // NOTE: If the expression needs to match at the start and starts with a literal
@@ -1208,12 +1208,12 @@ string::size_type regex::impl::search(
    }
 
 #ifdef DEBUG
-   cout << "last_part_to_match = #" << ( last_part_to_match + 1 ) << endl;
+   cerr << "last_part_to_match = #" << ( last_part_to_match + 1 ) << endl;
 
    if( has_unlimited_parts )
-      cout << "last_unlimited_part = #" << ( last_unlimited_part + 1 ) << endl;
+      cerr << "last_unlimited_part = #" << ( last_unlimited_part + 1 ) << endl;
 
-   cout << "\nmin_size_from_finish = " << min_size_from_finish
+   cerr << "\nmin_size_from_finish = " << min_size_from_finish
     << '\n' << "max_size_from_finish = " << max_size_from_finish << endl;
 #endif
 
@@ -1251,7 +1251,7 @@ string::size_type regex::impl::search(
          string::size_type next_pos = string::npos;
 
 #ifdef DEBUG
-         cout << "\n==> starting from pos = " << from << endl;
+         cerr << "\n==> starting from pos = " << from << endl;
 #endif
          // NOTE: Does not allow "retries" when searching backwards (as that could end up with
          // potentially many searches being performed that are identical to prior iterations).
@@ -1282,7 +1282,8 @@ string::size_type regex::impl::search(
       {
          *p_length = last_length;
 
-         last_refs.swap( *p_refs );
+         if( p_refs )
+            last_refs.swap( *p_refs );
       }
    }
    else
@@ -1292,7 +1293,7 @@ string::size_type regex::impl::search(
    {
 #ifdef DEBUG
       if( pos != string::npos )
-         cout << "\nlast_part_matched = #" << ( last_part_matched + 1 ) << endl;
+         cerr << "\nlast_part_matched = #" << ( last_part_matched + 1 ) << endl;
 #endif
       pos = string::npos;
    }
@@ -1310,12 +1311,12 @@ string::size_type regex::impl::search(
    }
 
 #ifdef DEBUG
-   cout << "\n(search expense = " << ( int )last_search_expense << ")";
+   cerr << "\n(search expense = " << ( int )last_search_expense << ")";
 
    if( pos != string::npos )
-      cout << '\n';
+      cerr << "\n\n==> matched at pos = " << pos;
 
-   cout << endl;
+   cerr << endl;
 #endif
 
    return pos;
@@ -1434,14 +1435,14 @@ string::size_type regex::impl::do_search(
 
 #ifdef DEBUG
       if( max_chars_remaining.size( ) )
-         cout << '\n';
+         cerr << '\n';
       for( size_t i = 0; i < max_chars_remaining.size( ); i++ )
-         cout << "max_chars_remaining from part #" << ( i + 1 ) << " is " << max_chars_remaining[ i ] << endl;
+         cerr << "max_chars_remaining from part #" << ( i + 1 ) << " is " << max_chars_remaining[ i ] << endl;
 
       if( min_chars_remaining.size( ) )
-         cout << '\n';
+         cerr << '\n';
       for( size_t i = 0; i < min_chars_remaining.size( ); i++ )
-         cout << "min_chars_remaining from part #" << ( i + 1 ) << " is " << min_chars_remaining[ i ] << endl;
+         cerr << "min_chars_remaining from part #" << ( i + 1 ) << " is " << min_chars_remaining[ i ] << endl;
 #endif
    }
 
@@ -1455,7 +1456,7 @@ string::size_type regex::impl::do_search(
    while( !parts.empty( ) )
    {
 #ifdef DEBUG
-      cout << "\ntext = '" << text << "'" << endl;
+      cerr << "\ntext = '" << text << "'" << endl;
 #endif
       size_t part_from = pf;
       size_t last_found = 0;
@@ -1503,7 +1504,7 @@ string::size_type regex::impl::do_search(
       for( size_t i = start; i < text.length( ); i++ )
       {
 #ifdef DEBUG
-         cout << "--------" << string( i, '-' ) << "^" << endl;
+         cerr << "--------" << string( i, '-' ) << "^" << endl;
 #endif
          bool has_last_set = false;
          bool has_last_literal = false;
@@ -1612,8 +1613,8 @@ string::size_type regex::impl::do_search(
                            *p_last_part_matched = j;
 #ifdef DEBUG
                         if( j == 0 )
-                           cout << '\n';
-                        cout << "matched literal in part #" << ( j + 1 ) << " for '" << literal
+                           cerr << '\n';
+                        cerr << "matched literal in part #" << ( j + 1 ) << " for '" << literal
                          << "' at " << i << ( text.length( ) > 50 ? string( ) : " ==> "
                          + text.substr( start, i - start + literal.length( ) ) ) << endl;
 #endif
@@ -1696,8 +1697,8 @@ string::size_type regex::impl::do_search(
                         size_t min_matches = max( ( size_t )1, p.min_matches );
 #ifdef DEBUG
                         if( j == 0 )
-                           cout << '\n';
-                        cout << "matched set in part #" << ( j + 1 )
+                           cerr << '\n';
+                        cerr << "matched set in part #" << ( j + 1 )
                          << ( p.inverted ? " (inverted)" : "" )
                          << " for '" << text.substr( i, min_matches )
                          << "' at " << i << ( text.length( ) > 50 ? string( )
@@ -1861,7 +1862,7 @@ string::size_type regex::impl::do_search(
             if( force_repeat && forcing_previous_repeat )
             {
 #ifdef DEBUG
-               cout << "(forcing previous repeat)" << endl;
+               cerr << "(forcing previous repeat)" << endl;
 #endif
                repeats = repeats_used;
 
@@ -1889,7 +1890,7 @@ string::size_type regex::impl::do_search(
                 && match_literal( expand_refs( last_literal ), text, i ) )
                {
 #ifdef DEBUG
-                  cout << "matched last literal '" << last_literal
+                  cerr << "matched last literal '" << last_literal
                    << "' in part #" << ( last_lit_part + 1 ) << " at " << i
                    << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + 1 ) ) << endl;
 #endif
@@ -1951,7 +1952,7 @@ string::size_type regex::impl::do_search(
                      if( matched )
                      {
 #ifdef DEBUG
-                        cout << "matched last set " << last_set[ x ].first
+                        cerr << "matched last set " << last_set[ x ].first
                          << "-" << last_set[ x ].second << ( last_set_inverted ? "  (inverted)" : "" )
                          << " in part #" << ( last_set_part + 1 ) << " for '" << text[ i ] << "' at " << i
                          << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + 1 ) ) << endl;
@@ -2062,7 +2063,7 @@ string::size_type regex::impl::do_search(
       if( !allow_retries )
          break;
 #ifdef DEBUG
-      cout << "\n(retry match from pos: " << start << ")" << endl;
+      cerr << "\n(retry match from pos: " << start << ")" << endl;
 #endif
    }
 
@@ -2072,7 +2073,7 @@ string::size_type regex::impl::do_search(
 #ifdef DEBUG
    if( !okay || ( begins == string::npos )
     || ( *p_last_part_matched < last_part_to_match ) )
-      cout << "\n*** no match found ***" << endl;
+      cerr << "\n*** no match found ***" << endl;
 #endif
 
    // NOTE: If the last literal ends with a boundary match character
@@ -2205,7 +2206,7 @@ regex::regex( const string& expr, bool match_at_start, bool match_at_finish )
    }
    catch( exception& x )
    {
-      cout << "error: " << x.what( ) << endl;
+      cerr << "error: " << x.what( ) << endl;
       throw;
    }
 #endif
