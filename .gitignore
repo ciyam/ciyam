@@ -1,6 +1,3 @@
-# Ignore temporary files
-~*
-*.new
-*.old
-*.sav
-*.tmp
+# Ignore any release files.
+ciyam.*.tar.gz
+

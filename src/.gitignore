@@ -6,6 +6,11 @@ x
 x.cin
 x.cpp
 
+# Ignore all .old, .sav and .tmp files.
+*.old
+*.sav
+*.tmp
+
 # Ignore IP address files.
 *.ip
 
