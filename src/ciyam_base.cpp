@@ -2412,7 +2412,7 @@ void perform_storage_op( storage_op op,
             break;
       }
 
-      if( !slot || slot == g_max_storage_handlers )
+      if( !slot || ( slot == g_max_storage_handlers ) )
          throw runtime_error( "max. permitted concurrent storage handlers currently active" );
 
       if( gtp_session->ap_storage_name_lock.get( ) )
@@ -2563,11 +2563,13 @@ void perform_storage_op( storage_op op,
             ofs.set_folder( c_storage_folder_name_modules );
 
             vector< string > order_prefixed_module_list;
+
             ofs.list_folders( order_prefixed_module_list );
 
             for( size_t i = 0; i < order_prefixed_module_list.size( ); i++ )
             {
                string next( order_prefixed_module_list[ i ] );
+
                string::size_type pos = next.find( c_module_order_prefix_separator );
 
                if( pos != string::npos )
@@ -2590,6 +2592,7 @@ void perform_storage_op( storage_op op,
                for( size_t i = 0; i < variable_files.size( ); i++ )
                {
                   string value;
+
                   ofs.fetch_from_text_file( variable_files[ i ], value );
 
                   ap_handler->set_variable( variable_files[ i ], value );
@@ -2614,6 +2617,7 @@ void perform_storage_op( storage_op op,
                   string next( lines[ i ] );
 
                   string::size_type pos = next.find( ':' );
+
                   if( pos == string::npos )
                      throw runtime_error( "unexpected invalid dead key format '" + next + "'" );
 
@@ -2695,6 +2699,7 @@ void perform_storage_op( storage_op op,
          else if( file_exists( algos_file ) )
          {
             temporary_algo_prefix tmp_algo_prefix( gtp_session->p_storage_handler->get_name( ) );
+
             exec_algos_action( "load", algos_file, "" );
          }
 
@@ -2708,6 +2713,7 @@ void perform_storage_op( storage_op op,
          while( !gtp_session->storage_controlled_modules.empty( ) )
          {
             module_unload( gtp_session->storage_controlled_modules.back( ), cmd_handler );
+
             gtp_session->storage_controlled_modules.pop_back( );
          }
 
@@ -9646,6 +9652,7 @@ void restore_storage( command_handler& cmd_handler )
          throw runtime_error( "cannot restore a storage unless it has been locked for admin" );
 
       string sql_file_name( handler.get_name( ) );
+
       sql_file_name += ".backup.sql";
 
       if( !file_exists( sql_file_name ) )
@@ -9669,6 +9676,7 @@ void upgrade_storage( command_handler& cmd_handler )
          throw runtime_error( "cannot upgrade a storage unless it has been locked for admin" );
 
       string sql_file_name( handler.get_name( ) );
+
       sql_file_name += ".upgrade.sql";
 
       if( file_exists( sql_file_name ) && gtp_session->ap_db.get( ) )
