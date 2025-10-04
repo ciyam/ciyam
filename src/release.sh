@@ -46,7 +46,7 @@ fi
 
 # NOTE: Check if the application server is running.
 touch ciyam_server.cmd
-sleep 0.5
+sleep 1
 
 if [ -f ciyam_server.cmd ]; then
  echo "Error: Application server needs to be running to create release archive."
@@ -124,7 +124,9 @@ else
   cp $main_module.map.new $release_name/ciyam
   cp $main_module.modules.lst $release_name/ciyam
 
-  cp $main_module*.csv $main_module.*.vars.lst $release_name/ciyam
+  cp $main_module*.cin $main_module*.csv $main_module.*.vars.lst $main_module.init.lst $release_name/ciyam
+
+  sed -e '1,/^### .<start generated/ d' manuscript.sio > $release_name/ciyam/manuscript.sio.generated
 
   if grep -q "^ <ods_use_encrypted>false$" ciyam_server.sio; then
    ./ods_fsed -quiet "-exec=export $main_module" $main_module
@@ -133,6 +135,8 @@ else
   fi
 
   mv $main_module $release_name/ciyam
+
+  rm -f $release_name/ciyam/$main_module.generate.*.cin
 
   ./ciyam_command storage_backup -init Meta
   ./ciyam_command storage_backup -init $main_module
@@ -145,6 +149,8 @@ else
    mv $main_module.backup.sql $release_name/ciyam
   fi
 
+  cat $main_module.log | tail -n +2 > $release_name/ciyam/$main_module.log.app
+
   echo "export CIYAM_APP_DIR=${main_module,,}" > $release_name/env_vars.sh
   echo "export CIYAM_APP_MOD=$main_module" >> $release_name/env_vars.sh
 
@@ -153,10 +159,6 @@ else
   sudo systemctl restart apache2
 
   cp -R $WEBDIR/${main_module,,} $release_name/${main_module,,}
-
-  rm -f $release_name/${main_module,,}/*.log
-  rm -f $release_name/${main_module,,}/*.sav
-  rm -f $release_name/${main_module,,}/ciyam.pem
  fi
 
  if [ ! -f ciyam.service ]; then

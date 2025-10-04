@@ -10,7 +10,9 @@ elif [ $# -lt 2 ] && [ "$1" = "-quicker" ]; then
  echo "Usage: restore [[-quicker]] [app name] [[db_name[,...]]]"
 else
  if [ -f packages.lst ]; then
-  ./construct @packages.lst ciyam_class.cpp.xrep
+  if [ -f ciyam_class.cpp.xrep.outline ]; then
+   ./construct @packages.lst ciyam_class.cpp.xrep
+  fi
  fi
  if [ ! "$1" = "-quicker" ]; then
   export CIYAM_STORAGE=$1
