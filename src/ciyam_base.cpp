@@ -2444,7 +2444,7 @@ void perform_storage_op( storage_op op,
          bool has_imported_channels = false;
          bool has_imported_datachains = false;
 
-         if( ( name != c_meta_storage_name ) && ( name != c_ciyam_storage_name ) )
+         if( name != c_ciyam_storage_name )
          {
             if( dir_exists( name ) )
             {
