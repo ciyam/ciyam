@@ -6164,366 +6164,371 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( rebuild )
                upgrade_storage( handler );
 
-            bool is_new = false;
-
-            vector< string > module_tx_info;
-
-            if( !module_count( ) )
+            if( rebuild || partial )
             {
-               if( module_list.empty( ) )
-                  throw runtime_error( "no modules were found - DB must be rebuilt" );
+               bool is_new = false;
 
-               for( size_t i = 0; i < module_list.size( ); i++ )
+               vector< string > module_tx_info;
+
+               if( !module_count( ) )
                {
-                  module_load( module_list[ i ], handler, false, false );
-                  module_tx_info.push_back( "[1];module ==> " + module_list[ i ] );
-               }
+                  if( module_list.empty( ) )
+                     throw runtime_error( "no modules were found - DB must be rebuilt" );
 
-               is_new = true;
-
-               new_logf.open( new_log_name.c_str( ), ios::out );
-
-               if( !new_logf )
-                  throw runtime_error( "unable to open log file '" + new_log_name + "' for output." );
-            }
-
-            storage_lock_all_tables( );
-
-            has_locked_tables = true;
-
-            string log_file( name + ".log" );
-
-            ifstream inpf( log_file.c_str( ) );
-
-            if( !inpf )
-               throw runtime_error( "unable to open transaction log file '" + log_file + "' for input." );
-
-            socket_handler.set_restore_error( "" );
-
-            auto_ptr< restorable< bool > > ap_restoring( socket_handler.set_restoring( ) );
-
-            set_session_variable( get_special_var_name( e_special_var_restore ), c_true_value );
-
-            string next;
-
-            size_t line = 0;
-
-            bool verified = false;
-            bool is_partial = true;
-
-            time_t ts = time( 0 );
-
-            int trace_flags = 0;
-            size_t trace_start = 0;
-
-            if( !trace_info.empty( ) )
-            {
-               string::size_type pos = trace_info.find( ':' );
-
-               string flags( trace_info.substr( 0, pos ) );
-
-               istringstream isstr( flags );
-
-               isstr >> hex >> trace_flags;
-
-               if( pos != string::npos )
-               {
-                  string start( trace_info.substr( pos + 1 ) );
-
-                  istringstream isstr( start );
-                  isstr >> trace_start;
-               }
-            }
-
-            // NOTE: As multiple ops can have the same transaction id the test below is >= but must
-            // skip any ops that were part of the last transaction in the storage if it is not new.
-            size_t start_tran_id = c_tx_id_standard;
-
-            if( !is_new )
-               start_tran_id = next_transaction_id( );
-
-            size_t new_tran_id = start_tran_id;
-            size_t last_tran_id = start_tran_id;
-
-            size_t tline = 0;
-
-            bool is_first = true;
-            bool first_op = true;
-            bool performed_init = false;
-            bool is_skipping_legacy = false;
-            bool finished_skipping_legacy = false;
-
-            while( getline( inpf, next ) )
-            {
-               remove_trailing_cr_from_text_file_line( next, is_first );
-
-               if( is_first )
-                  is_first = false;
-
-               ++line;
-
-               string::size_type pos = next.find( ']' );
-
-               if( trace_flags && ( line >= trace_start ) )
-               {
-                  set_trace_flags( trace_flags );
-
-                  trace_flags = 0;
-               }
-
-               // NOTE: As recovery can take a long time issue "progress" messages to ensure that
-               // client applications do not end up "timing out" waiting until the final response.
-               if( ( time( 0 ) - ts ) >= 5 )
-               {
-                  ts = time( 0 );
-
-                  handler.output_progress(
-                   get_string_message( GS( c_str_restored_num_log_ops ),
-                   make_pair( c_str_restored_num_log_ops_num, to_string( line ) ) ) );
-
-                  // NOTE: Commit at each progress point to avoid any lengthy commit delays.
-                  if( in_trans )
+                  for( size_t i = 0; i < module_list.size( ); i++ )
                   {
-                     tline = line;
-                     in_trans = false;
-
-                     transaction_commit( );
+                     module_load( module_list[ i ], handler, false, false );
+                     module_tx_info.push_back( "[1];module ==> " + module_list[ i ] );
                   }
 
-                  if( is_condemned_session( ) )
-                     throw runtime_error( GS( c_str_session_terminated ) );
+                  is_new = true;
+
+                  new_logf.open( new_log_name.c_str( ), ios::out );
+
+                  if( !new_logf )
+                     throw runtime_error( "unable to open log file '" + new_log_name + "' for output." );
                }
 
-               if( ( next.size( ) < 3 ) || ( next[ 0 ] != '[' ) || ( pos == string::npos ) )
-                  throw runtime_error( "unexpected format found in transaction log line #" + to_string( line ) + " ==> " + next );
+               storage_lock_all_tables( );
 
-               size_t tran_id = from_string< size_t >( next.substr( 1, pos - 1 ) );
+               has_locked_tables = true;
 
-               string tran_info = next.substr( pos + 1 );
+               string log_file( name + ".log" );
 
-               if( stop_at_tx && ( tran_id >= stop_at_tx ) )
-                  break;
+               ifstream inpf( log_file.c_str( ) );
 
-               if( ap_regex.get( ) )
+               if( !inpf )
+                  throw runtime_error( "unable to open transaction log file '" + log_file + "' for input." );
+
+               socket_handler.set_restore_error( "" );
+
+               auto_ptr< restorable< bool > > ap_restoring( socket_handler.set_restoring( ) );
+
+               set_session_variable( get_special_var_name( e_special_var_restore ), c_true_value );
+
+               string next;
+
+               size_t line = 0;
+
+               bool verified = false;
+               bool is_partial = true;
+
+               time_t ts = time( 0 );
+
+               int trace_flags = 0;
+               size_t trace_start = 0;
+
+               if( !trace_info.empty( ) )
                {
-                  if( ap_regex->search( next ) != string::npos )
-                     break;
-               }
+                  string::size_type pos = trace_info.find( ':' );
 
-               if( !in_trans && ( line >= tline ) && ( tran_id >= c_tx_id_standard ) )
-               {
-                  in_trans = true;
+                  string flags( trace_info.substr( 0, pos ) );
 
-                  transaction_start( );
-               }
+                  istringstream isstr( flags );
 
-               if( !tran_id && !is_new && ( tran_info != storage_identity( ) ) )
-                  throw runtime_error( GS( c_str_db_identity_mismatch ) );
+                  isstr >> hex >> trace_flags;
 
-               if( !tran_id )
-               {
-                  if( is_new && !verified )
+                  if( pos != string::npos )
                   {
-                     vector< string > new_tx_log_lines;
+                     string start( trace_info.substr( pos + 1 ) );
 
-                     // NOTE: Restore the original identity.
-                     storage_identity( tran_info );
+                     istringstream isstr( start );
+                     isstr >> trace_start;
+                  }
+               }
 
-                     new_logf << c_storage_identity_tx_id << storage_identity( ) << '\n';
+               // NOTE: As multiple ops can have the same transaction id the test below is >= but must
+               // skip any ops that were part of the last transaction in the storage if it is not new.
+               size_t start_tran_id = c_tx_id_standard;
 
-                     for( size_t i = 0; i < module_tx_info.size( ); i++ )
-                        new_logf << module_tx_info[ i ] << '\n';
+               if( !is_new )
+                  start_tran_id = next_transaction_id( );
+
+               size_t new_tran_id = start_tran_id;
+               size_t last_tran_id = start_tran_id;
+
+               size_t tline = 0;
+
+               bool is_first = true;
+               bool first_op = true;
+               bool performed_init = false;
+               bool is_skipping_legacy = false;
+               bool finished_skipping_legacy = false;
+
+               while( getline( inpf, next ) )
+               {
+                  remove_trailing_cr_from_text_file_line( next, is_first );
+
+                  if( is_first )
+                     is_first = false;
+
+                  ++line;
+
+                  string::size_type pos = next.find( ']' );
+
+                  if( trace_flags && ( line >= trace_start ) )
+                  {
+                     set_trace_flags( trace_flags );
+
+                     trace_flags = 0;
                   }
 
-                  verified = true;
-
-                  continue;
-               }
-               else if( !verified )
-                  throw runtime_error( "unexpected DB identity missing from transaction log" );
-
-               if( tran_id == c_tx_id_module )
-                  is_partial = false;
-               else if( ( tran_id >= c_tx_id_initial ) && is_new && is_partial )
-                  throw runtime_error( "cannot restore from empty DB with a partial transaction log" );
-
-               if( ( tran_id > c_tx_id_module ) && is_new && !performed_init )
-               {
-                  if( in_trans )
-                     transaction_commit( );
-
-                  tline = line;
-
-                  in_trans = false;
-                  performed_init = true;
-
-                  // NOTE: Set the special transaction id for initial data records.
-                  set_transaction_id( c_tx_id_initial );
-
-                  record_initialiser init( new_logf );
-
-                  bool old_skip_fetches = session_skip_fk_fetches( );
-
-                  session_skip_fk_fetches( true );
-
-                  if( name == c_meta_model_name )
+                  // NOTE: As recovery can take a long time issue "progress" messages to ensure that
+                  // client applications do not end up "timing out" waiting until the final response.
+                  if( ( time( 0 ) - ts ) >= 5 )
                   {
-                     ifstream std_inpf( "Meta_init_std.cin" );
+                     ts = time( 0 );
 
-                     if( !std_inpf )
-                        throw runtime_error( "unable to open Meta_init_std.cin for input" );
+                     handler.output_progress(
+                      get_string_message( GS( c_str_restored_num_log_ops ),
+                      make_pair( c_str_restored_num_log_ops_num, to_string( line ) ) ) );
 
-                     string std_next;
-
-                     handler.output_progress( GS( c_str_restoring_std_meta_records ) );
-
-                     while( getline( std_inpf, std_next ) )
+                     // NOTE: Commit at each progress point to avoid any lengthy commit delays.
+                     if( in_trans )
                      {
-                        if( std_next.empty( ) )
-                           continue;
+                        tline = line;
+                        in_trans = false;
 
-                        if( std_next[ 0 ] != ';' )
-                           handler.execute_command( std_next );
-
-                        if( !socket_handler.get_restore_error( ).empty( ) )
-                           throw runtime_error( "unexpected error: " + socket_handler.get_restore_error( )
-                            + "\nprocessing transaction log line #" + to_string( line ) + " with std ==> " + std_next );
+                        transaction_commit( );
                      }
 
-                     // NOTE: Optional extra initial data records.
-                     if( file_exists( "Meta_init_extra.cin" ) )
+                     if( is_condemned_session( ) )
+                        throw runtime_error( GS( c_str_session_terminated ) );
+                  }
+
+                  if( ( next.size( ) < 3 ) || ( next[ 0 ] != '[' ) || ( pos == string::npos ) )
+                     throw runtime_error( "unexpected format found in transaction log line #" + to_string( line ) + " ==> " + next );
+
+                  size_t tran_id = from_string< size_t >( next.substr( 1, pos - 1 ) );
+
+                  string tran_info = next.substr( pos + 1 );
+
+                  if( stop_at_tx && ( tran_id >= stop_at_tx ) )
+                     break;
+
+                  if( ap_regex.get( ) )
+                  {
+                     if( ap_regex->search( next ) != string::npos )
+                        break;
+                  }
+
+                  if( !in_trans && ( line >= tline ) && ( tran_id >= c_tx_id_standard ) )
+                  {
+                     in_trans = true;
+
+                     transaction_start( );
+                  }
+
+                  if( !tran_id && !is_new && ( tran_info != storage_identity( ) ) )
+                     throw runtime_error( GS( c_str_db_identity_mismatch ) );
+
+                  if( !tran_id )
+                  {
+                     if( is_new && !verified )
                      {
-                        ifstream extra_inpf( "Meta_init_extra.cin" );
+                        vector< string > new_tx_log_lines;
 
-                        if( !extra_inpf )
-                           throw runtime_error( "unable to open Meta_init_extra.cin for input" );
+                        // NOTE: Restore the original identity.
+                        storage_identity( tran_info );
 
-                        string extra_next;
+                        new_logf << c_storage_identity_tx_id << storage_identity( ) << '\n';
 
-                        handler.output_progress( GS( c_str_restoring_extra_meta_records ) );
+                        for( size_t i = 0; i < module_tx_info.size( ); i++ )
+                           new_logf << module_tx_info[ i ] << '\n';
+                     }
 
-                        while( getline( extra_inpf, extra_next ) )
+                     verified = true;
+
+                     continue;
+                  }
+                  else if( !verified )
+                     throw runtime_error( "unexpected DB identity missing from transaction log" );
+
+                  if( tran_id == c_tx_id_module )
+                     is_partial = false;
+                  else if( ( tran_id >= c_tx_id_initial ) && is_new && is_partial )
+                     throw runtime_error( "cannot restore from empty DB with a partial transaction log" );
+
+                  if( ( tran_id > c_tx_id_module ) && is_new && !performed_init )
+                  {
+                     if( in_trans )
+                        transaction_commit( );
+
+                     tline = line;
+
+                     in_trans = false;
+                     performed_init = true;
+
+                     // NOTE: Set the special transaction id for initial data records.
+                     set_transaction_id( c_tx_id_initial );
+
+                     record_initialiser init( new_logf );
+
+                     bool old_skip_fetches = session_skip_fk_fetches( );
+
+                     session_skip_fk_fetches( true );
+
+                     if( name == c_meta_model_name )
+                     {
+                        ifstream std_inpf( "Meta_init_std.cin" );
+
+                        if( !std_inpf )
+                           throw runtime_error( "unable to open Meta_init_std.cin for input" );
+
+                        string std_next;
+
+                        handler.output_progress( GS( c_str_restoring_std_meta_records ) );
+
+                        while( getline( std_inpf, std_next ) )
                         {
-                           if( extra_next.empty( ) )
+                           if( std_next.empty( ) )
                               continue;
 
-                           if( extra_next[ 0 ] != ';' )
-                              handler.execute_command( extra_next );
+                           if( std_next[ 0 ] != ';' )
+                              handler.execute_command( std_next );
 
                            if( !socket_handler.get_restore_error( ).empty( ) )
                               throw runtime_error( "unexpected error: " + socket_handler.get_restore_error( )
-                               + "\nprocessing transaction log line #" + to_string( line ) + " with extra ==> " + extra_next );
+                               + "\nprocessing transaction log line #" + to_string( line ) + " with std ==> " + std_next );
                         }
-                     }
-                  }
-                  else
-                  {
-                     for( size_t i = 0; i < module_list.size( ); i++ )
-                     {
-                        string module_init_list( module_list[ i ] + ".init.lst" );
 
-                        if( exists_file( module_init_list ) )
+                        // NOTE: Optional extra initial data records.
+                        if( file_exists( "Meta_init_extra.cin" ) )
                         {
-                           vector< string > init_classes;
+                           ifstream extra_inpf( "Meta_init_extra.cin" );
 
-                           buffer_file_lines( module_init_list, init_classes );
+                           if( !extra_inpf )
+                              throw runtime_error( "unable to open Meta_init_extra.cin for input" );
 
-                           for( size_t j = 0; j < init_classes.size( ); j++ )
+                           string extra_next;
+
+                           handler.output_progress( GS( c_str_restoring_extra_meta_records ) );
+
+                           while( getline( extra_inpf, extra_next ) )
                            {
-                              string bulk_init_cmd( "perform_bulk_ops init " );
+                              if( extra_next.empty( ) )
+                                 continue;
 
-                              bulk_init_cmd += "20011111111002 ";
-                              bulk_init_cmd += module_list[ i ] + " " + init_classes[ j ] + " ";
-                              bulk_init_cmd += module_list[ i ] + "_" + init_classes[ j ] + ".csv";
+                              if( extra_next[ 0 ] != ';' )
+                                 handler.execute_command( extra_next );
 
-                              handler.execute_command( bulk_init_cmd );
-
-                              string init_output( module_list[ i ] + "_" + init_classes[ j ] + ".csv: " );
-
-                              init_output += buffer_file( module_list[ i ] + "_" + init_classes[ j ] + ".log" );
-
-                              handler.output_progress( init_output );
+                              if( !socket_handler.get_restore_error( ).empty( ) )
+                                 throw runtime_error( "unexpected error: " + socket_handler.get_restore_error( )
+                                  + "\nprocessing transaction log line #" + to_string( line ) + " with extra ==> " + extra_next );
                            }
                         }
                      }
+                     else
+                     {
+                        for( size_t i = 0; i < module_list.size( ); i++ )
+                        {
+                           string module_init_list( module_list[ i ] + ".init.lst" );
+
+                           if( exists_file( module_init_list ) )
+                           {
+                              vector< string > init_classes;
+
+                              buffer_file_lines( module_init_list, init_classes );
+
+                              for( size_t j = 0; j < init_classes.size( ); j++ )
+                              {
+                                 string bulk_init_cmd( "perform_bulk_ops init " );
+
+                                 bulk_init_cmd += "20011111111002 ";
+                                 bulk_init_cmd += module_list[ i ] + " " + init_classes[ j ] + " ";
+                                 bulk_init_cmd += module_list[ i ] + "_" + init_classes[ j ] + ".csv";
+
+                                 handler.execute_command( bulk_init_cmd );
+
+                                 string init_output( module_list[ i ] + "_" + init_classes[ j ] + ".csv: " );
+
+                                 init_output += buffer_file( module_list[ i ] + "_" + init_classes[ j ] + ".log" );
+
+                                 handler.output_progress( init_output );
+                              }
+                           }
+                        }
+                     }
+
+                     session_skip_fk_fetches( old_skip_fetches );
                   }
 
-                  session_skip_fk_fetches( old_skip_fetches );
-               }
-
-               // NOTE: Any operation whose transaction id is less than standard is skipped during a restore.
-               if( !tran_info.empty( ) && ( tran_id >= c_tx_id_standard ) )
-               {
-                  if( first_op )
+                  // NOTE: Any operation whose transaction id is less than standard is skipped during a restore.
+                  if( !tran_info.empty( ) && ( tran_id >= c_tx_id_standard ) )
                   {
-                     first_op = false;
+                     if( first_op )
+                     {
+                        first_op = false;
+
+                        if( is_new )
+                           start_tran_id = next_transaction_id( );
+                     }
+                     else if( tran_id > last_tran_id )
+                        ++new_tran_id;
+
+                     last_tran_id = tran_id;
+
+                     if( !is_new && tran_info[ 0 ] == ';' )
+                        storage_comment( tran_info.substr( 1 ) );
+
+                     if( ( tran_info[ 0 ] != ';' ) && ( is_new || ( tran_id >= start_tran_id ) ) )
+                     {
+                        set_transaction_id( new_tran_id );
+
+                        handler.execute_command( tran_info );
+                     }
 
                      if( is_new )
-                        start_tran_id = next_transaction_id( );
+                     {
+                        // NOTE: Comments will simply be output verbatum but as log commands
+                        // may have been transformed (due to an ".ltf" file) they need to be
+                        // obtained from "transaction log command" (which is then cleared).
+                        if( tran_info[ 0 ] == ';' )
+                           new_logf << '[' << tran_id << ']' << tran_info << '\n';
+                        else
+                           new_logf << '[' << new_tran_id << ']' << transaction_log_command( ) << '\n';
+
+                        transaction_log_command( "" );
+                     }
+
+                     if( !socket_handler.get_restore_error( ).empty( ) )
+                        throw runtime_error( "unexpected error: " + socket_handler.get_restore_error( )
+                         + "\nprocessing transaction log line #" + to_string( line ) + " with info ==> " + tran_info );
                   }
-                  else if( tran_id > last_tran_id )
-                     ++new_tran_id;
-
-                  last_tran_id = tran_id;
-
-                  if( !is_new && tran_info[ 0 ] == ';' )
-                     storage_comment( tran_info.substr( 1 ) );
-
-                  if( ( tran_info[ 0 ] != ';' ) && ( is_new || ( tran_id >= start_tran_id ) ) )
-                  {
-                     set_transaction_id( new_tran_id );
-
-                     handler.execute_command( tran_info );
-                  }
-
-                  if( is_new )
-                  {
-                     // NOTE: Comments will simply be output verbatum but as log commands
-                     // may have been transformed (due to an ".ltf" file) they need to be
-                     // obtained from "transaction log command" (which is then cleared).
-                     if( tran_info[ 0 ] == ';' )
-                        new_logf << '[' << tran_id << ']' << tran_info << '\n';
-                     else
-                        new_logf << '[' << new_tran_id << ']' << transaction_log_command( ) << '\n';
-
-                     transaction_log_command( "" );
-                  }
-
-                  if( !socket_handler.get_restore_error( ).empty( ) )
-                     throw runtime_error( "unexpected error: " + socket_handler.get_restore_error( )
-                      + "\nprocessing transaction log line #" + to_string( line ) + " with info ==> " + tran_info );
                }
+
+               if( is_new )
+               {
+                  new_logf.flush( );
+
+                  if( !new_logf.good( ) )
+                     throw runtime_error( "unexpected bad log stream for '" + new_log_name + "'" );
+
+                  inpf.close( );
+                  new_logf.close( );
+
+                  copy_file( new_log_name, log_file );
+
+                  remove_file( new_log_name );
+               }
+
+               if( in_trans )
+                  transaction_commit( );
+
+               // NOTE: Ensure that reserved transaction id's cannot be used later.
+               if( next_transaction_id( ) < ( c_tx_id_standard - 1 ) )
+                  set_transaction_id( c_tx_id_standard - 1 );
+
+               storage_unlock_all_tables( );
+
+               session_skip_fk_fetches( false );
+               session_skip_validation( false );
+               session_skip_is_constained( false );
+
+               set_trace_flags( original_trace_flags );
+
+               socket_handler.get_transformations( ).clear( );
             }
-
-            if( is_new )
-            {
-               new_logf.flush( );
-
-               if( !new_logf.good( ) )
-                  throw runtime_error( "unexpected bad log stream for '" + new_log_name + "'" );
-
-               inpf.close( );
-               new_logf.close( );
-
-               copy_file( new_log_name, log_file );
-
-               remove_file( new_log_name );
-            }
-
-            if( in_trans )
-               transaction_commit( );
-
-            // NOTE: Ensure that reserved transaction id's cannot be used later.
-            if( next_transaction_id( ) < ( c_tx_id_standard - 1 ) )
-               set_transaction_id( c_tx_id_standard - 1 );
-
-            storage_unlock_all_tables( );
-
-            session_skip_fk_fetches( false );
-            session_skip_validation( false );
-            session_skip_is_constained( false );
-
-            set_trace_flags( original_trace_flags );
 
             if( !rebuild && !partial )
             {
@@ -6547,7 +6552,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
 
             term_storage( handler );
-            socket_handler.get_transformations( ).clear( );
 
             set_session_variable( get_special_var_name( e_special_var_restore ), "" );
          }
