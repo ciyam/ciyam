@@ -91,10 +91,15 @@ ERROR=Failed due to unexpected missing '$STORAGE' application directory.
 ~./ciyam_restore $STORAGE $APP_DIR >> $CIYAM_EXEC_SYSTEM_APPEND
 .system_variable @preparing_restore ""
 ;
+NO_ADD_USER=@files::.no_add_user
+@ifdef $NO_ADD_USER
+~echo "(skipped adding users due to '.no_add_user')" >> $CIYAM_EXEC_SYSTEM_APPEND
+@else
 @ifdef $CIYAM_USER
 <add_all_users.cin $STORAGE
 @else
 ~echo "(skipped adding users due to missing CIYAM_USER)" >> $CIYAM_EXEC_SYSTEM_APPEND
+@endif
 @endif
 ;
 .system_export_repo
