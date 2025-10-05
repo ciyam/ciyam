@@ -1532,6 +1532,7 @@ void Meta_Model::impl::impl_Generate( )
 
       outs << "title \"" << search_replace( title, "_", " " ) << "\"\n";
       outs << "home_title \"" << get_obj( ).Home_Title( ) << "\"\n";
+      outs << "version \"" << get_obj( ).Version( ) << "\"\n";
 
       outs << "field_key \"Key\"\n";
       outs << "field_row \"#\"\n";
