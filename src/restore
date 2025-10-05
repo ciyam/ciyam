@@ -5,24 +5,35 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo "Usage: restore [[-quicker]] [app name] [[db_name[,...]]]"
+ echo "Usage: restore [[-quicker]] [app name] [[db name[,...]]]"
 elif [ $# -lt 2 ] && [ "$1" = "-quicker" ]; then
- echo "Usage: restore [[-quicker]] [app name] [[db_name[,...]]]"
+ echo "Usage: restore [[-quicker]] [app name] [[db name[,...]]]"
 else
  if [ -f packages.lst ]; then
   if [ -f ciyam_class.cpp.xrep.outline ]; then
    ./construct @packages.lst ciyam_class.cpp.xrep
   fi
  fi
+
+ input=restore.cin
+
  if [ ! "$1" = "-quicker" ]; then
   export CIYAM_STORAGE=$1
   export CIYAM_CREATE_DB_NAMES=$2
-
-  ./ciyam_client -quiet -no_prompt < restore.cin
  else
   export CIYAM_STORAGE=$2
   export CIYAM_CREATE_DB_NAMES=$3
 
-  ./ciyam_client -quiet -no_prompt < restore.cin $1
+  input="$input $1"
  fi
+
+ if [ "$CIYAM_STORAGE" = "Meta" ]; then
+  if [ ! -f Meta_init_std.cin ]; then
+   echo "Error: Meta application is not installed."
+
+   exit
+  fi
+ fi
+
+ ./ciyam_client -quiet -no_prompt < $input
 fi
