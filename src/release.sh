@@ -6,14 +6,45 @@
 
 has_base=
 all_modules=$*
-main_module=
-release_name=ciyam.0.1
 
 if [ "$1" = "" ]; then
  echo "Usage: release.sh [module names]"
 
  exit
 fi
+
+if [ ! -f .app_name ]; then
+ echo "Error: Missing '.app_name' file."
+
+ exit
+fi
+
+app_name=$(<.app_name)
+app_dir_name=${app_name,,}
+
+if [ "$app_name" = "" ]; then
+ echo "Error: Unexpected empty '.app_name' file."
+
+ exit
+fi
+
+if [ ! -f $app_name.txt ]; then
+ echo "Error: Missing application strings file '$app_name.txt'."
+
+ exit
+fi
+
+app_version=$(grep "^version " $app_name.txt | sed 's/[^0-9.]//g')
+
+if [ "$app_version" = "" ]; then
+ echo "Error: Application strings file '$app_name.txt' is missing expected 'version' string."
+
+ exit
+fi
+
+release_name=ciyam_$app_dir_name.$app_version
+
+main_module=
 
 while true
 do
@@ -24,10 +55,8 @@ do
  if [ "$1" = "ciyam_base.so" ]; then
   has_base=1
  else
-  if [ "$main_module" = "" ]; then
-   if [ ! "$1" = "Meta.so" ]; then
-    main_module=${1%.*}
-   fi
+  if [ "$1" = "$app_name.so" ]; then
+   main_module=${1%.*}
   fi
  fi
 
@@ -49,7 +78,7 @@ touch ciyam_server.cmd
 sleep 1
 
 if [ -f ciyam_server.cmd ]; then
- echo "Error: Application server needs to be running to create release archive."
+ echo "Error: Application server needs to be running to create a release archive."
 
  exit
 fi
@@ -67,6 +96,7 @@ else
 
    exit
   fi
+
   mkdir $release_name/ciyam
   if [ ! -d $release_name/ciyam ]; then
    echo "Error: Unable to create '$release_name/ciyam' directory."
@@ -83,7 +113,7 @@ else
 
  cp autoscript.sio.default ciyam_server.sio.default manuscript.sio.default $release_name/ciyam
 
- cp Meta.cin Meta.dat Meta.idx Meta.hdr Meta.tlg Meta.sql Meta.txt Meta.modules.lst $release_name/ciyam
+ cp Meta.cin Meta.sql Meta.txt Meta.modules.lst $release_name/ciyam
 
  cp modules.lst packages.lst ciyam_demo_identities.lst $release_name/ciyam
 
@@ -98,26 +128,19 @@ else
  cp bundle unbundle ciyam_client ciyam_server ods_fsed $all_modules $release_name/ciyam
 
  if [ "$main_module" = "Meta" ]; then
+  ./ods_fsed -quiet "-exec=export $main_module" $main_module
+
+  mv $main_module $release_name/ciyam
+
+  cp Meta_init_std.cin $release_name/ciyam
+
   ./ciyam_command storage_backup -init $main_module
 
   if [ -f $main_module.backup.sql ]; then
    mv $main_module.backup.sql $release_name/ciyam
   fi
 
-  echo "export CIYAM_APP_DIR=${main_module,,}" > $release_name/env_vars.sh
-  echo "export CIYAM_APP_MOD=$main_module" >> $release_name/env_vars.sh
-
-  chmod a+x $release_name/env_vars.sh
-
-  sudo systemctl restart apache2
-
-  cp -R $WEBDIR/${main_module,,} $release_name/${main_module,,}
-
-  rm -f $release_name/${main_module,,}/*.log
-  rm -f $release_name/${main_module,,}/*.sav
-  rm -f $release_name/${main_module,,}/ciyam.pem
-  rm -f $release_name/${main_module,,}/identity.txt
-  rm -f $release_name/${main_module,,}/encrypted.txt
+  cat Meta.log | tail -n +2 > $release_name/ciyam/$main_module.log.app
  else
   cp $main_module.sql $release_name/ciyam
   cp $main_module.txt $release_name/ciyam
@@ -138,6 +161,12 @@ else
 
   rm -f $release_name/ciyam/$main_module.generate.*.cin
 
+  ./ods_fsed -quiet "-exec=export Meta" Meta
+
+  mv Meta $release_name/ciyam
+
+  cat Meta.log | tail -n +2 | sed '/meta std (start)/!q' > $release_name/ciyam/Meta.log.app
+
   ./ciyam_command storage_backup -init Meta
   ./ciyam_command storage_backup -init $main_module
 
@@ -150,15 +179,23 @@ else
   fi
 
   cat $main_module.log | tail -n +2 > $release_name/ciyam/$main_module.log.app
+ fi
 
-  echo "export CIYAM_APP_DIR=${main_module,,}" > $release_name/env_vars.sh
-  echo "export CIYAM_APP_MOD=$main_module" >> $release_name/env_vars.sh
+ echo "export CIYAM_APP_DIR=$app_dir_name" > $release_name/env_vars.sh
+ echo "export CIYAM_APP_MOD=$main_module" >> $release_name/env_vars.sh
 
-  chmod a+x $release_name/env_vars.sh
+ chmod a+x $release_name/env_vars.sh
 
-  sudo systemctl restart apache2
+ sudo systemctl restart apache2
 
-  cp -R $WEBDIR/${main_module,,} $release_name/${main_module,,}
+ cp -R $WEBDIR/$app_dir_name $release_name/$app_dir_name
+
+ if [ "$main_module" = "Meta" ]; then
+  rm -f $release_name/$app_dir_name/*.log
+  rm -f $release_name/$app_dir_name/*.sav
+  rm -f $release_name/$app_dir_name/ciyam.pem
+  rm -f $release_name/$app_dir_name/identity.txt
+  rm -f $release_name/$app_dir_name/encrypted.txt
  fi
 
  if [ ! -f ciyam.service ]; then
