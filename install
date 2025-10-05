@@ -29,6 +29,17 @@ copy_default( )
 CIYAM_USER=$USER
 CIYAM_GROUP=$(id -gn)
 
+name=$1
+
+if [ "$name" = "" ]; then
+ name="*"
+fi
+
+if [ -f src/.app_name ]; then
+ name=$(<src/.app_name)
+ name=${name,,}
+fi
+
 if [ "$WEBDIR" = "" ]; then
  echo "Error: Missing WEBDIR environment variable."
  exit
@@ -38,7 +49,7 @@ had_error=
 release_dir=
 release_file=
 
-ls -1 ciyam.*.tar.gz > ~install 2>/dev/null
+ls -1 ciyam_$name.*.tar.gz > ~install 2>/dev/null
 
 if [ -s ~install ]; then
  num_files=$(wc -l < ~install)
@@ -46,7 +57,11 @@ if [ -s ~install ]; then
  if [ "$num_files" != "1" ]; then
   had_error=1
 
-  echo "Error: Multiple 'ciyam.<ver>.<rev>.tar.gz' files found (move old versions)."
+  if [ ! "$name" = "*" ]; then
+   echo "Error: Multiple 'ciyam_$name.<ver>.<rev>.tar.gz' files found (move old versions)."
+  else
+   echo "Error: Multiple 'ciyam_$name.<ver>.<rev>.tar.gz' files found (try ./install 'name')."
+  fi
  else
   release_file=$(<~install)
   release_dir=${release_file%.tar.gz}
@@ -58,7 +73,7 @@ if [ -s ~install ]; then
 else
  had_error=1
 
- echo "Error: No 'ciyam.<ver>.<rev>.tar.gz' file was found (release archive deleted?)."
+ echo "Error: No 'ciyam_$name.<ver>.<rev>.tar.gz' file was found (archive file removed?)."
 fi
 
 rm -f ~install
@@ -88,7 +103,7 @@ if [ -d src ]; then
 
   # NOTE: Check if the application server is running.
   touch ciyam_server.cmd
-  sleep 0.5
+  sleep 1
 
   if [ -f ciyam_server.cmd ]; then
    rm ciyam_server.cmd
@@ -150,10 +165,23 @@ sudo cp -R ciyam/* $INSTALL_PATH
 if [ "$has_system" = "" ]; then
  sudo chown -R $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
 
+ if [ ! -f $INSTALL_PATH/Meta.log ]; then
+  if [ ! "$CIYAM_APP_MOD" = "Meta" ]; then
+   dbus-uuidgen | xargs -I{} echo -n @{} > $INSTALL_PATH/Meta/id
+
+   cat $INSTALL_PATH/Meta/id | sed 's/@/[0]/g' | xargs echo -e > $INSTALL_PATH/Meta.log
+
+   cat $INSTALL_PATH/Meta.log.app >> $INSTALL_PATH/Meta.log
+
+   rm -f $INSTALL_PATH/Meta.log.app
+  fi
+ fi
+
  # NOTE: Replace the exported "id" with a newly generated "@<identity>".
  dbus-uuidgen | xargs -I{} echo -n @{} > $INSTALL_PATH/$CIYAM_APP_MOD/id
 
  cat $INSTALL_PATH/$CIYAM_APP_MOD/id | sed 's/@/[0]/g' | xargs echo -e > $INSTALL_PATH/$CIYAM_APP_MOD.log
+
  cat $INSTALL_PATH/$CIYAM_APP_MOD.log.app >> $INSTALL_PATH/$CIYAM_APP_MOD.log
 
  rm -f $INSTALL_PATH/$CIYAM_APP_MOD.log.app
@@ -248,12 +276,14 @@ if [ -f $INSTALL_PATH/Meta.backup.sql ]; then
   ./drop_db Meta .
  fi
  ./create_db Meta .
+ rm -f Meta.backup.sql
  popd > /dev/null
 fi
 
 if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.backup.sql ]; then
  pushd $INSTALL_PATH > /dev/null
  ./create_db $CIYAM_APP_MOD .
+ rm -f $CIYAM_APP_MOD.backup.sql
  popd > /dev/null
 fi
 
