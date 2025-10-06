@@ -2449,14 +2449,16 @@ void perform_storage_op( storage_op op,
             if( dir_exists( name ) )
             {
                has_exported_objects = true;
+
                open_mode = ods::e_open_mode_create_if_not_exist;
             }
 
-            if( g_ods_use_encrypted )
+            if( g_ods_use_encrypted && ( name != c_meta_storage_name ) )
             {
                get_sid( sid );
 
                sha256 hash( sid + name );
+
                sid = hash.get_digest_as_string( );
 
                p_password = sid.c_str( );
