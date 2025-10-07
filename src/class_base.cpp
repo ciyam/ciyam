@@ -79,7 +79,7 @@ namespace
 #include "ciyam_strings.h"
 #include "ciyam_constants.h"
 
-const string g_empty_fixed_key;
+const string g_null_string;
 
 const int c_max_graph_depth = 50;
 
@@ -1487,7 +1487,7 @@ const string& class_base::get_key( ) const
 
 const string& class_base::get_fixed_key( ) const
 {
-   return g_empty_fixed_key;
+   return g_null_string;
 }
 
 string class_base::get_parent_key( ) const
@@ -7229,24 +7229,31 @@ void connect_peerchain( const string& connect_info, bool no_delay )
    if( pos != string::npos )
    {
       is_peer_node = true;
+
       identity.erase( pos );
    }
 
-   set_variable_checker check_not_has(
-    e_variable_check_type_no_session_has, identity );
-
-   set_variable_checker check_not_has_either(
-    e_variable_check_type_not_has_other_system, '~' + identity, &check_not_has );
-
-   if( set_system_variable( get_special_var_name(
-    e_special_var_queue_peers ), connect_info, check_not_has_either ) )
+   // NOTE: Check that another session is not currently connecting.
+   if( set_system_variable( identity, c_true_value, g_null_string ) )
    {
-      // NOTE: If has "@auto_<identity>" then set it to "1" (in order to reset reconnect attempts).
-      if( has_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity ) )
-         set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, c_true_value );
+      set_variable_checker check_not_has(
+       e_variable_check_type_no_session_has, identity );
 
-      if( !no_delay )
-         msleep( c_peer_sleep_time * ( is_peer_node ? 2 : 5 ) );
+      set_variable_checker check_not_has_either(
+       e_variable_check_type_not_has_other_system, '~' + identity, &check_not_has );
+
+      if( set_system_variable( get_special_var_name(
+       e_special_var_queue_peers ), connect_info, check_not_has_either ) )
+      {
+         // NOTE: If has "@auto_<identity>" then set it to "1" (in order to reset reconnect attempts).
+         if( has_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity ) )
+            set_system_variable( get_special_var_name( e_special_var_auto ) + '_' + identity, c_true_value );
+
+         if( !no_delay )
+            msleep( c_peer_sleep_time * ( is_peer_node ? 2 : 5 ) );
+      }
+      else
+         set_system_variable( identity, "" );
    }
 }
 
