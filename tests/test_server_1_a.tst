@@ -5,9 +5,9 @@ session_list -min
 1* session_list <none> 127.0.0.1 0:0 0:0 =2
 trace_levels
 10000 minimal
-20000 initial
-40000 details
-80000 verbose
+30000 initial
+70000 details
+f0000 verbose
 trace_flags -list
 00000 general
 00001 locking
