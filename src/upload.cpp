@@ -37,7 +37,7 @@ using namespace std;
 
 string g_exe_path;
 
-const int c_chunk_size = 8192;
+const int c_chunk_size = 4096;
 
 const int c_num_handlers = 10;
 
@@ -156,6 +156,7 @@ void request_handler::process_request( )
    if( p_param )
    {
       FCGX_FPrintF( p_out, "<p>Found CONTENT_LENGTH: %s</p>\n", p_param );
+
       length = atoi( p_param );
    }
 
@@ -226,6 +227,7 @@ void request_handler::process_request( )
       else
       {
          ext = file_source.substr( pos );
+
          file_source.erase( pos );
       }
 
@@ -246,6 +248,7 @@ void request_handler::process_request( )
       if( pos != string::npos )
       {
          session_id = info.substr( 0, pos );
+
          info.erase( 0, pos + 1 );
       }
 
@@ -280,9 +283,10 @@ void request_handler::process_request( )
       // a verification file must contain the same information as the "name" attribute.
       string verification_file( path + "/tmp/" + session_id + "/" + file_id );
 
-      if( !file_exists( verification_file ) || ( buffer_file( verification_file ) != name ) )
+      if( !file_exists( verification_file )
+       || ( buffer_file( verification_file ) != name ) )
       {
-         max_size = 4096;
+         max_size = ( c_chunk_size - 1 );
 
          session_id.erase( );
 
@@ -359,6 +363,7 @@ void request_handler::process_request( )
          if( len2 > 0 )
          {
             outf.write( buf2, len2 );
+
             written += len2;
          }
 
@@ -368,11 +373,11 @@ void request_handler::process_request( )
 
          size += len;
 
-         if( ( max_size && written ) > max_size )
+         if( max_size && ( written > max_size ) )
             break;
       }
 
-      if( ( max_size && written ) > max_size )
+      if( max_size && ( written > max_size ) )
       {
          if( !ext.empty( ) )
             file_remove( file_name.c_str( ) );
@@ -385,6 +390,7 @@ void request_handler::process_request( )
          string file_info;
 
          file_info = path + sub_path;
+
          file_info += "/" + session_id;
 
          ofstream outf( file_info.c_str( ) );
