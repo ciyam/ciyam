@@ -3,28 +3,39 @@
    if( !get_obj( ).`{`$arg_field`}( ).empty( ) )
    {
       string src_file( get_obj( ).`{`$arg_field`}( ) );
+
       string src_path( get_obj( ).get_attached_file_path( ) );
+
       string dest_path( get_obj( ).child_`{`$arg_child`}( ).get_attached_file_path( ) );
 
       src_path += '/' + src_file;
 
       string ext;
+
       string::size_type pos = src_file.rfind( '.' );
 
       if( pos != string::npos )
          ext = src_file.substr( pos );
 
-      string dest_file( get_dtm( ) + '-' + string( "`{`$arg_cfield_id`}" ) + ext );
+      // NOTE: This "gen_key" call will be using "get_dtm" to ensure
+      // that the key value remains the same after a storage restore
+      // (but formatted in the same manner as a standard new key).
+      string new_key( gen_key( "", true ) );
+
+      string suffix( '-' + string( "`{`$arg_cfield_id`}" ) + ext );
+
+      string dest_file( new_key + suffix );
 
       dest_path += '/' + dest_file;
 
       if( !storage_locked_for_admin( ) )
       {
          create_directories_for_file_name( dest_path ); 
+
          file_rename( src_path, dest_path );
       }
 
-      get_obj( ).child_`{`$arg_child`}( ).op_create( get_dtm( ) );
+      get_obj( ).child_`{`$arg_child`}( ).op_create( new_key );
 
       get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cspfield`}( get_obj( ).get_key( ) );
 
