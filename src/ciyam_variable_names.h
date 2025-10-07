@@ -126,6 +126,7 @@ enum special_var
    e_special_var_queue_peers,
    e_special_var_secret_hash,
    e_special_var_skip_update,
+   e_special_var_sleep_after,
    e_special_var_state_names,
    e_special_var_style_brief,
    e_special_var_submit_type,
