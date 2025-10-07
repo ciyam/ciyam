@@ -3159,7 +3159,7 @@ void process_public_key_file( const string& blockchain,
 
       output_sync_progress_message( identity, height, height_other, true );
 
-      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION,
+      TRACE_LOG( TRACE_DETAILS | TRACE_SESSION,
        "::: new zenith hash: " + block_hash + " height: " + to_string( height ) );
 
       if( is_hub_blockchain )
@@ -5196,7 +5196,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       output_sync_progress_message( identity, blockchain_height, blockchain_height_other, true );
 
-      TRACE_LOG( TRACE_VERBOSE | TRACE_SESSION, "=== new zenith hash: "
+      TRACE_LOG( TRACE_DETAILS | TRACE_SESSION, "=== new zenith hash: "
        + block_processing + " height: " + to_string( blockchain_height ) );
 
       if( !peer_map_key.empty( ) )
