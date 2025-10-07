@@ -102,13 +102,13 @@ const size_t c_log_cycle_seconds = 5;
 
 const size_t c_log_num_excessive = 5000;
 
-const size_t c_sleep_after_script_time = 1000;
-
 const size_t c_num_txs_for_reset = 250000;
 
 const size_t c_storable_file_pad_len = 32;
 
 const size_t c_num_extra_entropy_chars = 10;
+
+const size_t c_sleep_after_script_time = 1500;
 
 const size_t c_min_smtp_max_send_attempts = 1;
 
@@ -4222,10 +4222,22 @@ void set_trace_level( const string& level_name )
 
 void list_trace_levels( vector< string >& level_names )
 {
-   level_names.push_back( hex_level( TRACE_MINIMAL ) + ' ' + string( c_trace_level_minimal ) );
-   level_names.push_back( hex_level( TRACE_INITIAL ) + ' ' + string( c_trace_level_initial ) );
-   level_names.push_back( hex_level( TRACE_DETAILS ) + ' ' + string( c_trace_level_details ) );
-   level_names.push_back( hex_level( TRACE_VERBOSE ) + ' ' + string( c_trace_level_verbose ) );
+   uint32_t level = 0;
+
+   // NOTE: As "set_trace_level" switches on each prior level is doing
+   // exactly the same with the hex values that are being output here.
+
+   level |= TRACE_MINIMAL;
+   level_names.push_back( hex_level( level ) + ' ' + string( c_trace_level_minimal ) );
+
+   level |= TRACE_INITIAL;
+   level_names.push_back( hex_level( level ) + ' ' + string( c_trace_level_initial ) );
+
+   level |= TRACE_DETAILS;
+   level_names.push_back( hex_level( level ) + ' ' + string( c_trace_level_details ) );
+
+   level |= TRACE_VERBOSE;
+   level_names.push_back( hex_level( level ) + ' ' + string( c_trace_level_verbose ) );
 }
 
 void log_trace_message( uint32_t flag, const string& message )
@@ -6058,7 +6070,7 @@ string totp_secret_key( const string& unique )
    return retval;
 }
 
-int exec_system( const string& cmd, bool async, bool delay )
+int exec_system( const string& cmd, bool async, bool delay, bool* p_delayed )
 {
    int rc = 0;
 
@@ -6108,10 +6120,15 @@ int exec_system( const string& cmd, bool async, bool delay )
       // to be issued synchronously then use "delay".
       if( gtp_session && !gtp_session->transactions.empty( ) )
       {
+         TRACE_LOG( TRACE_INITIAL | TRACE_SESSION, "(system exec delayed due to session tx)" );
+
          gtp_session->async_or_delayed_system_commands.push_back( async ? async_cmd : exec_cmd );
 
          if( !gtp_session->script_temp_args_file.empty( ) )
             gtp_session->async_or_delayed_args_files.push_back( gtp_session->script_temp_args_file );
+
+         if( p_delayed )
+            *p_delayed = true;
 
          return rc;
       }
@@ -6172,6 +6189,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
    }
 
    string filename( g_scripts[ script_name ].filename );
+
    bool is_script = ( filename == c_script_dummy_filename );
 
    bool is_busy = false;
@@ -6311,10 +6329,21 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
 
       if( !is_busy )
       {
-         rc = exec_system( cmd_and_args, async, delay );
+         bool was_delayed = false;
+
+         rc = exec_system( cmd_and_args, async, delay, &was_delayed );
 
          if( sleep_after )
-            msleep( c_sleep_after_script_time );
+         {
+            // NOTE: If has executed the system command will perform the "msleep"
+            // now otherwise will set the "@sleep_after" session variable so that
+            // it can occur when the system command is later executed.
+            if( !was_delayed )
+               msleep( c_sleep_after_script_time );
+            else
+               set_session_variable( get_special_var_name(
+                e_special_var_sleep_after ), to_string( c_sleep_after_script_time ) );
+         }
       }
    }
 
@@ -10939,7 +10968,7 @@ system_ods_bulk_write::~system_ods_bulk_write( )
    delete p_impl;
 }
 
-string gen_key( const char* p_suffix )
+string gen_key( const char* p_suffix, bool use_get_dtm )
 {
    string key( 20, '\0' );
 
@@ -10951,37 +10980,43 @@ string gen_key( const char* p_suffix )
 
       if( gtp_session->p_storage_handler->get_root( ).type == e_storage_type_standard )
       {
-         // NOTE: For non-peerchain storages uses human readable format
-         // (rather than hexadeciaml) for keys (which limits the number
-         // of keys that can be generated to 1000 per second).
-         while( true )
+         if( use_get_dtm )
+            key = get_dtm( );
+         else
          {
-            int64_t now = unix_time( );
-
-            if( now != g_key_tm_val )
+            // NOTE: For non-peerchain storages uses human readable format
+            // (rather than hexadeciaml) for keys (which limits the number
+            // of keys that can be generated to 1000 per second).
+            while( true )
             {
-               g_key_count = 0;
-               g_key_tm_val = now;
+               int64_t now = unix_time( );
 
-               break;
-            }
-            else
-            {
-               // NOTE: Supports 000-999 suffixes to the unix time value
-               // (and will reset it after waiting for the next second).
-               if( g_key_count >= 999 )
-                  msleep( 10 );
-               else
+               if( now != g_key_tm_val )
                {
-                  ++g_key_count;
+                  g_key_count = 0;
+                  g_key_tm_val = now;
+
                   break;
                }
+               else
+               {
+                  // NOTE: Supports 000-999 suffixes to the unix time value
+                  // (and will reset it after waiting for the next second).
+                  if( g_key_count >= 999 )
+                     msleep( 10 );
+                  else
+                  {
+                     ++g_key_count;
+
+                     break;
+                  }
+               }
             }
+
+            date_time dtm( g_key_tm_val );
+
+            key = dtm.as_string( e_time_format_hhmmss );
          }
-
-         date_time dtm( g_key_tm_val );
-
-         key = dtm.as_string( e_time_format_hhmmss );
 
          // NOTE: Leave three trailing zeroes so that
          // each key can have 999 further derivations
@@ -10989,7 +11024,7 @@ string gen_key( const char* p_suffix )
          // in Meta for Classes and Fields).
          char ccc[ ] = "ccc000";
 
-         size_t count = g_key_count;
+         size_t count = ( use_get_dtm ? 0 : g_key_count );
 
          ccc[ 0 ] = '0' + ( count / 100 );
          ccc[ 1 ] = '0' + ( ( count % 100 ) / 10 );
@@ -10999,34 +11034,42 @@ string gen_key( const char* p_suffix )
       }
       else
       {
-         while( true )
+         if( !use_get_dtm )
          {
-            int64_t now = unix_time( );
-
-            if( now != g_key_tm_val )
+            while( true )
             {
-               g_key_count = 0;
-               g_key_tm_val = now;
+               int64_t now = unix_time( );
 
-               break;
-            }
-            else
-            {
-               // NOTE: Supports 000-fff suffixes to the unix time value
-               // (and will reset it after waiting for the next second).
-               if( g_key_count >= 4095 )
-                  msleep( 10 );
+               if( now != g_key_tm_val )
+               {
+                  g_key_count = 0;
+                  g_key_tm_val = now;
+
+                  break;
+               }
                else
                {
-                  ++g_key_count;
-                  break;
+                  // NOTE: Supports 000-fff suffixes to the unix time value
+                  // (and will reset it after waiting for the next second).
+                  if( g_key_count >= 4095 )
+                     msleep( 10 );
+                  else
+                  {
+                     ++g_key_count;
+
+                     break;
+                  }
                }
             }
          }
 
+         size_t count = ( use_get_dtm ? 0 : g_key_count );
+
+         int64_t tm_val = ( use_get_dtm ? unix_time( date_time( get_dtm( ) ) ) : g_key_tm_val );
+
          ostringstream osstr;
 
-         osstr << hex << g_key_tm_val << setw( 3 ) << setfill( '0' ) << g_key_count;
+         osstr << hex << tm_val << setw( 3 ) << setfill( '0' ) << count;
 
          key = osstr.str( ) + gtp_session->identity_suffix;
       }
@@ -13791,6 +13834,18 @@ void transaction_commit( )
 
          int rc = system( gtp_session->async_or_delayed_system_commands[ i ].c_str( ) );
          ( void )rc;
+      }
+
+      string sleep_after_var_name( get_special_var_name( e_special_var_sleep_after ) );
+
+      // NOTE: The "@sleep_after" session variable is set by "run_script" to ensure that
+      // an msleep will occur only after script "system" command has occurred (otherwise
+      // the msleep would actually occur prior to execution).
+      if( has_session_variable( sleep_after_var_name ) )
+      {
+         msleep( from_string< unsigned long >( get_raw_session_variable( sleep_after_var_name ) ) );
+
+         set_session_variable( sleep_after_var_name, "" );
       }
 
       // NOTE: If the "args_file" session variable exists and a system variable with a name matching

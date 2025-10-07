@@ -386,7 +386,7 @@ inline std::string encrypt_data( const std::string& data, bool no_ssl = false,
 
 std::string CIYAM_BASE_DECL_SPEC totp_secret_key( const std::string& unique );
 
-int CIYAM_BASE_DECL_SPEC exec_system( const std::string& cmd, bool async = false, bool delay = false );
+int CIYAM_BASE_DECL_SPEC exec_system( const std::string& cmd, bool async = false, bool delay = false, bool* p_delayed = 0 );
 
 int CIYAM_BASE_DECL_SPEC run_script( const std::string& script_name,
  bool async = true, bool delay = false, bool no_logging = false, bool sleep_after = false );
@@ -819,7 +819,7 @@ class CIYAM_BASE_DECL_SPEC system_ods_bulk_write
    impl* p_impl;
 };
 
-std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0 );
+std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0, bool use_get_dtm = false );
 
 std::string CIYAM_BASE_DECL_SPEC get_uid( bool remove_display_name = true );
 void CIYAM_BASE_DECL_SPEC set_uid( const std::string& uid, bool do_not_erase_sec = false );
