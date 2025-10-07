@@ -1053,15 +1053,13 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                // NOTE: First determine the order of child tabs according to name.
                for( lici = mod_info.list_info.begin( ); lici != mod_info.list_info.end( ); ++lici )
                {
-                  if( lici->second->pclass == view.cid
-                   && ( lici->second->type == c_list_type_child
-                   || lici->second->type == c_list_type_user_child
-                   || lici->second->type == c_list_type_child_admin
-                   || lici->second->type == c_list_type_child_owner
-                   || lici->second->type == c_list_type_child_admin_owner ) )
-                  {
+                  if( ( lici->second->pclass == view.cid )
+                   && ( ( lici->second->type == c_list_type_child )
+                   || ( lici->second->type == c_list_type_user_child )
+                   || ( lici->second->type == c_list_type_child_admin )
+                   || ( lici->second->type == c_list_type_child_owner )
+                   || ( lici->second->type == c_list_type_child_admin_owner ) ) )
                      children.insert( make_pair( mod_info.get_string( lici->second->name ), lici ) );
-                  }
                }
 
                for( map< string, list_info_const_iterator >::iterator i = children.begin( ); i != children.end( ); ++i )
@@ -1069,6 +1067,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   list_info_const_iterator lici = i->second;
 
                   list_source child_list;
+
                   child_list.id = c_list_prefix + to_string( child_lists.size( ) );
 
                   child_list.module_id = module_id;
@@ -1079,12 +1078,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   setup_list_fields( child_list, data, module_name, *p_session_info, cmd == c_cmd_pview );
 
                   string class_view_id;
+
                   bool class_does_not_match = false;
 
                   // NOTE: For derived classes a child list intended to display instances of
                   // a base class may use a parent self relationship to the derived class so
                   // the correct view needs to be determined by checking the class id's.
                   view_info_const_iterator vici;
+
                   for( vici = mod_info.view_info.begin( ); vici != mod_info.view_info.end( ); ++vici )
                   {
                      if( ( vici->second )->cid == ( lici->second )->cid )
@@ -1102,6 +1103,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      child_list.row_errors = child_row_errors[ listarg ];
 
                   child_lists.push_back( child_list );
+
                   child_names.insert( make_pair( mod_info.get_string( child_lists.back( ).name ), child_lists.size( ) - 1 ) );
                }
             }
@@ -1114,6 +1116,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             if( !had_send_or_recv_error && view.has_file_attachments )
             {
                string class_id( ( vici->second )->cid );
+
                string module_id( get_module_id_for_attached_file( view ) );
 
                string relative_prefix( string( c_files_directory ) + "/" + module_id + "/" + class_id );
@@ -1128,6 +1131,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   if( file_exists( new_file_info ) )
                   {
                      ifstream inpf( new_file_info.c_str( ) );
+
                      getline( inpf, new_file );
 
                      string::size_type pos = new_file.find( ' ' );
@@ -1137,6 +1141,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      if( pos != string::npos )
                      {
                         new_source = new_file.substr( pos + 1 );
+
                         new_file.erase( pos );
                      }
                   }
@@ -1147,7 +1152,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   // with the file's path so this is now removed for the attached file field's value.
                   string new_file_name( new_file );
 
-                  if( !new_file_name.empty( ) && new_file_name[ 0 ] == '>' )
+                  if( !new_file_name.empty( ) && ( new_file_name[ 0 ] == '>' ) )
                   {
                      size_t max_size = atoi( new_file_name.substr( 1 ).c_str( ) );
 
@@ -1172,12 +1177,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      else
                      {
                         pos = new_file_name.find_last_of( "-" );
+
                         if( pos == string::npos )
                            throw runtime_error( "unexpected attached file name '" + new_file_name + "'" );
 
                         file_field_id = new_file_name.substr( pos + 1 );
 
                         pos = file_field_id.find( '.' );
+
                         if( pos != string::npos )
                            file_field_id.erase( pos );
                      }
@@ -1210,7 +1217,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         {
                            string old_file( relative_prefix + "/" + view.field_values[ file_field_id ] );
 
-                           if( old_file != new_file && file_exists( old_file ) )
+                           if( ( old_file != new_file ) && file_exists( old_file ) )
                               file_remove( old_file );
                         }
 

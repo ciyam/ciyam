@@ -2708,6 +2708,7 @@ bool output_view_form( ostream& os, const string& act,
                   else
                   {
                      ofstream outf( verification_file.c_str( ), ios::out | ios::binary );
+
                      outf << upload_info;
                   }
 #endif
