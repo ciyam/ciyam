@@ -153,7 +153,7 @@ ServerName localhost
 *** add all of the following lines here ***
 <IfModule fcgid_module>
    MaxProcessCount               10
-   MaxRequestLen                 10485760
+   MaxRequestLen                 100000000
    IdleTimeOut                   3600
    IPCConnectTimeout             20
    IPCCommTimeout                300
