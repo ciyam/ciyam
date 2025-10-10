@@ -429,6 +429,17 @@ ERROR=Unable to locate Class for 'User'.
 ;
 USER_CLASS_KEY=$OUTPUT
 ;
+.pf 100 106100 "106101#1 Group" #1 @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Class for 'Group'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+GROUP_CLASS_KEY=$OUTPUT
+;
 .pf 100 129100 "129101#1 Adopter" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Initial_Record for 'Adopter'.
@@ -450,6 +461,17 @@ ERROR=Unable to locate Initial_Record for 'Creator'.
 @skip
 ;
 INITIAL_RECORD_CREATOR_KEY=$OUTPUT
+;
+.pf 100 129100 "129101#1 adopters" #1 @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Initial_Record for 'adopters'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+INITIAL_RECORD_ADOPTERS_KEY=$OUTPUT
 ;
 .pf 100 103100 "103101#1 User_Access" #1 @key -min
 @ifndef $OUTPUT
@@ -523,6 +545,19 @@ CAN_CHANGE_DEFAULT_GROUP_KEY=$OUTPUT
 @label ERROR
 @endif
 @skip
+;
+.pf 100 107100 "300700,107101#2 $GROUP_CLASS_KEY,Submits_For" #1 @key -min
+@ifndef $OUTPUT
+ERROR=Unable to locate Field 'Submits_For' for Class 'Group'.
+@endif
+@ifdef $ERROR
+@label ERROR
+@endif
+@skip
+;
+SUBMITS_FOR_KEY=$OUTPUT
+;
+.pu $CIYAM_UID @now 100 130100 %INITIAL_RECORD_ADOPTERS_KEY%_%SUBMITS_FOR_KEY% 130101=creators
 ;
 .pf 100 107100 "300700,107101#2 $USER_CLASS_KEY,Can_Submit_Own_Blogs" #1 @key -min
 @ifndef $OUTPUT
