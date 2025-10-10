@@ -773,7 +773,7 @@ field_add -id=127123 Application Default_Multiline_Max_Rows int mand -def=50 -e=
 field_add -id=127124 Application Auto_Login_Days int mand -def=0 -e=app_auto_days
 field_add -id=127125 Application Create_Database bool mand -def=1 -transient
 field_add -id=127126 Application Created_Database bool mand -def=0
-field_add -id=127127 Application Default_Max_Attached_File_Size int mand -def=0 -x=int_type=bytes
+field_add -id=127127 Application Default_Max_Attached_File_Size int mand -def=25000000 -x=int_type=bytes
 field_add -id=127128 Application Add_Modules_Automatically bool mand -def=1 -transient
 field_add -id=127129 Application Keep_Existing_Data bool mand -def=1
 field_add -id=127130 Application Encrypt_Dynamic_Content bool mand -def=0

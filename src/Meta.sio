@@ -324,7 +324,7 @@
       <type>int
       <mandatory>true
       <extra>int_type=bytes
-      <default_value>0
+      <default_value>25000000
       <indexes/>
       </indexes>
       <modifiers/>
