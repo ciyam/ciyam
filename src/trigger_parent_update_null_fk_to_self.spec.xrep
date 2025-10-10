@@ -1,0 +1,19 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start trigger_parent_update_null_fk_to_self)] `{`$arg_id`}
+   if( !get_obj( ).get_is_for_peer( )`{`!`@eq`(`$arg_value`,`'`'`) && get_obj( ).has_variable( "`{`$arg_value`}" )`} )
+   {
+`{`!`@eq`(`$arg_value`,`'`'`)\
+      get_obj( ).set_variable( "`{`$arg_value`}", "" );
+
+`}\
+      if( is_null( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) ) )
+      {
+         get_obj( ).`{`$arg_spfield`}( ).op_update( );
+
+         get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( get_obj( ).get_key( ) );
+
+         get_obj( ).`{`$arg_spfield`}( ).op_apply( );
+      }
+   }
+   // [(finish trigger_parent_update_null_fk_to_self)] `{`$arg_id`}
+`}

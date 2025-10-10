@@ -1,0 +1,29 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start trigger_update_fk_parent_to_self)] `{`$arg_id`}
+   if( `{`!`@eq`(`$arg_create_only`,`'`'`)`|`!`@eq`(`$arg_update_only`,`'`'`)\
+`{`@eq`(`$arg_create_only`,`'`'`)!`}is_create
+    && `}!get_obj( ).get_is_for_peer( )
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && get_obj( ).`{`$arg_tfield`}( )
+`}`{`!`@eq`(`$arg_modifier`,`'`'`)\
+    && ( state & c_modifier_`{`$arg_modifier`} )
+`}\
+    && !is_null( get_obj( ).`{`$arg_spfield`}( ) ) )
+   {
+      get_obj( ).`{`$arg_spfield`}( ).op_update( );
+
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_check_null`,`'`'`)`{`$i`=`'   `'`}\
+      if( !is_null( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) ) )
+         get_obj( ).`{`$arg_spfield`}( ).op_cancel( );
+      else
+      {
+`}\
+`{`$i`}      get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( get_obj( ).get_key( ) );
+
+`{`$i`}      get_obj( ).`{`$arg_spfield`}( ).op_apply( );
+`{`!`@eq`(`$arg_check_null`,`'`'`)\
+      }
+`}\
+   }
+   // [(finish trigger_update_fk_parent_to_self)] `{`$arg_id`}
+`}

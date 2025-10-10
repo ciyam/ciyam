@@ -3484,6 +3484,13 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_dchild=$specification_\0_dchild arg_fk_back_to_self=$specification_\0_fk_back_to_self\
  arg_fk_src_child_branch=$specification_\0_fk_src_child_branch arg_create_or_update=$specification_\0_create_or_update`}\
 `,\
+`@eq`(`'\1`'`,`'trigger_create_child_for_fk_parent`'`)
+`{`#trigger_create_child_for_fk_parent.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
+ arg_id=$specification_\0_id arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield\
+ arg_var_name=$specification_\0_var_name arg_var_value=$specification_\0_var_value arg_child=$specification_\0_child\
+ arg_modifier=$specification_\0_modifier arg_csfield=$specification_\0_csfield arg_cspfield=$specification_\0_cspfield\
+ arg_tfield=$specification_\0_tfield arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only`}\
+`,\
 `@eq`(`'\1`'`,`'trigger_execute`'`)`&`@eq`(`'`'`,`$specification_\0_oprocedure`)`&`@eq`(`'`'`,`$specification_\0_for_store`)
 `{`#trigger_execute.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_fname=$specification_\0_fname\
@@ -3528,6 +3535,11 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield arg_tfield=$specification_\0_tfield\
  arg_oscfield=$specification_\0_oscfield arg_create_only=$specification_\0_create_only`}\
 `,\
+`@eq`(`'\1`'`,`'trigger_parent_update_null_fk_to_self`'`)
+`{`#trigger_parent_update_null_fk_to_self.spec.xrep section=after_store module_name=$module_name\
+ arg_id=$specification_\0_id arg_value=$specification_\0_value\
+ arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield`}\
+`,\
 `@eq`(`'\1`'`,`'trigger_parent_update_old_and_new`'`)
 `{`#trigger_parent_update_old_and_new.spec.xrep section=after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_pfield=$specification_\0_pfield arg_pclass=$specification_\0_pclass`}\
@@ -3550,6 +3562,12 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `{`#trigger_uid_data.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
  arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'trigger_update_fk_parent_to_self`'`)
+`{`#trigger_update_fk_parent_to_self.spec.xrep section=after_store module_name=$module_name\
+ arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier\
+ arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield arg_tfield=$specification_\0_tfield\
+ arg_check_null=$specification_\0_check_null arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_remove_matching_children_from_fk`'`)
 `{`#trigger_remove_matching_children_from_fk.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
