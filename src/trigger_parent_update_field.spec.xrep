@@ -16,7 +16,7 @@
     && `}get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )`{`@eq`(`$arg_skip_cloned_parent`,`'true`'`) )`}
    {
 `{`$i`=`'`'`}`{`!`@eq`(`$arg_ignore_locked`,`'true`'`)`{`$i`=`'   `'`}`}`{`@eq`(`$arg_ignore_locked`,`'`'`)\
-      if( !was_create_locked_by_own_session( get_obj( ).`{`$arg_spfield`}( ) ) )
+      if( !is_create_locked_by_own_session( get_obj( ).`{`$arg_spfield`}( ) ) )
       {
 `}`{`!`@eq`(`$arg_from_other`,`'`'`)\
 `{`$i`}      class_pointer< `{`$module_name`}_`{`$class_name`} > cp_other( e_create_instance );
