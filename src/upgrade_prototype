@@ -10,11 +10,11 @@ else
  if [ ! -f ciyam_server.sid.sav ]; then
   echo "Error: Saved identity (ciyam_server.sid.sav) was not found."
  else
-  ./restore_identity
+  ./restore_identity > /dev/null
   sudo systemctl restart ciyam
   sleep 1
   ./reconstruct_meta okay
   ./save_identity
-  ./erase_identity
+  ./erase_identity > /dev/null
  fi
 fi
