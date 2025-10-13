@@ -927,7 +927,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_output_arg=$specification_\\0_output_arg arg_output_field=$specification_\\0_output_field\
  arg_key_suffix=$specification_\\0_key_suffix arg_use_dtm_as_suffix=$specification_\\0_use_dtm_as_suffix\
  arg_use_test_field_as_suffix=$specification_\\0_use_test_field_as_suffix arg_is_clone=$specification_\\0_is_clone\
- arg_skip_child_updates=$specification_\\0_skip_child_updates arg_append_loopval=$specification_\\0_append_loopval`}\
+ arg_skip_child_updates=$specification_\\0_skip_child_updates arg_append_loopval=$specification_\\0_append_loopval\
+ arg_use_proc_arg_as_key_suffix=$specification_\\0_use_proc_arg_as_key_suffix`}\
 `,\
 `@eq`(`'\\1`'`,`'destroy_children`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#destroy_children.spec.xrep section=procedure class_name=$class_name\
@@ -3426,7 +3427,8 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_procedure= arg_output_arg= arg_output_field= arg_key_suffix=$specification_\0_key_suffix\
  arg_use_dtm_as_suffix=$specification_\0_use_dtm_as_suffix arg_is_clone=$specification_\0_is_clone\
  arg_use_test_field_as_suffix=$specification_\0_use_test_field_as_suffix\
- arg_skip_child_updates=$specification_\0_skip_child_updates arg_append_loopval=$specification_\0_append_loopval`}\
+ arg_skip_child_updates=$specification_\0_skip_child_updates arg_append_loopval=$specification_\0_append_loopval\
+ arg_use_proc_arg_as_key_suffix=$specification_\0_use_proc_arg_as_key_suffix`}\
 `,\
 `@eq`(`'\1`'`,`'create_children_for_fk_children`'`)
 `{`#create_children_for_fk_children.spec.xrep section=after_store full_class_name=$full_class_name\
@@ -3464,6 +3466,12 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_pfield=$specification_\0_pfield arg_pnfield=$specification_\0_pnfield arg_pn2field=$specification_\0_pn2field\
  arg_pn3field=$specification_\0_pn3field arg_tfield=$specification_\0_tfield arg_sfield=$specification_\0_sfield\
  arg_ignore_parent_skip_updates=$specification_\0_ignore_parent_skip_updates`}\
+`,\
+`@eq`(`'\1`'`,`'trigger_call_proc_for_uid_children`'`)
+`{`#trigger_call_proc_for_uid_children.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
+ arg_id=$specification_\0_id arg_child=$specification_\0_child arg_child_procedure=$specification_\0_child_procedure\
+ arg_modifier=$specification_\0_modifier arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
+ arg_was_create_locked=$specification_\0_was_create_locked`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_clone_default_children`'`)
 `{`#trigger_clone_default_children.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
