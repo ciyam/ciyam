@@ -1,11 +1,16 @@
 `{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_bool_uid)] `{`$arg_id`}
 `{`$sep`=`'`'`}\
+`{`@eq`(`$arg_init`,`'`'`)`&`@eq`(`$arg_peer`,`'`'`)`&`@eq`(`$arg_admin`,`'`'`)`&`@eq`(`$arg_system`,`'`'`)\
+   if( is_anon_uid( ) )
+      get_obj( ).`{`$arg_field`}( true );
+`,\
    if( `{`!`@eq`(`$arg_init`,`'`'`)is_init_uid( )`{`$sep`=`' || `'`}`}\
 `{`!`@eq`(`$arg_peer`,`'`'`)`{`$sep`}is_peer_uid( )`{`$sep`=`' || `'`}`}\
 `{`!`@eq`(`$arg_admin`,`'`'`)`{`$sep`}is_admin_uid( )`{`$sep`=`' || `'`}`}\
 `{`!`@eq`(`$arg_system`,`'`'`)`{`$sep`}is_system_uid( )`} )
       get_obj( ).`{`$arg_field`}( true );
+`}\
    else
       get_obj( ).`{`$arg_field`}( false );
    // [(finish transient_field_bool_uid)] `{`$arg_id`}
