@@ -1,5 +1,6 @@
 `{`@eq`(`'after_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
 `{`$value`=`$arg_value`}\
+`{`@eq`(`$arg_var_type`,`'@proc_arg`'`)`$value`=`$arg_output_arg`}\
 `{`!`@eq`(`$arg_var_name`,`'`'`)\
 `{`@eq`(`$arg_var_type`,`'object`'`)`$value`=`'get_obj( ).get_variable( "`{`$arg_var_name`}" )`'\
 `,`@eq`(`$arg_var_type`,`'system`'`)`$value`=`'get_system_variable( "`{`$arg_var_name`}" )`'\
@@ -18,8 +19,11 @@
 `}`{`@eq`(`$arg_key_suffix`,`'`'`)\
 `{`@eq`(`$arg_tfield`,`'`'`)`|`@eq`(`$arg_use_test_field_as_suffix`,`'`'`)\
 `{`@eq`(`$arg_use_dtm_as_suffix`,`'`'`)\
+`{`@eq`(`$arg_use_proc_arg_as_key_suffix`,`'`'`)\
       string child_key( get_obj( ).get_key( )`{`!`@eq`(`$arg_append_loopval`,`'true`'`) + "_C"`} );
 `,\
+      string child_key( get_obj( ).get_key( ) + '_' + `{`$arg_output_arg`} );
+`}`,\
       string child_key( get_obj( ).get_key( ) + "_" + get_dtm( ) );
 `}`,\
       string child_key( get_obj( ).get_key( ) + "_" + to_string( get_obj( ).`{`$arg_tfield`}( ) ) );
@@ -36,7 +40,7 @@
       get_obj( ).child_`{`$arg_child`}( ).op_create( child_key );
 
       get_obj( ).child_`{`$arg_child`}( ).`{`$arg_pfield`}( get_obj( ).get_key( ) );
-`{`!`@eq`(`$arg_field`,`'`'`)\
+`{`!`@eq`(`$arg_field`,`'`'`)
       get_obj( ).child_`{`$arg_child`}( ).`{`$arg_field`}( `{`$value`} );
 `}`{`?`$arg_field_list`[`$arg_field_list`%,`,
       copy_field_or_file_and_field(
@@ -47,14 +51,15 @@
       get_obj( ).child_`{`$arg_child`}( ).op_apply( );
 `{`!`@eq`(`$arg_cprocedure`,`'`'`)
       get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cprocedure`}( );
-`}`{`!`@eq`(`$arg_output_arg`,`'`'`)`&`@eq`(`'procedure`'`,`$section`)
+`}`{`@eq`(`$arg_use_proc_arg_as_key_suffix`,`'`'`)\
+`{`!`@eq`(`$arg_output_arg`,`'`'`)`&`@eq`(`'procedure`'`,`$section`)
 `{`!`@eq`(`$arg_output_field`,`'`'`)\
       `{`$arg_output_arg`} = to_string( get_obj( ).`{`$arg_output_field`}( ) );
 `,\
       // FUTURE: The return message itself should be a module string.
       `{`$arg_output_arg`} = get_obj( ).get_display_name( ) + " "
        + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
-`}`}\
+`}`}`}\
    }
    // [(finish create_child)] `{`$arg_id`}
 `}
