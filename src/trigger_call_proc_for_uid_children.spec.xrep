@@ -1,0 +1,31 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start trigger_call_proc_for_uid)] {$arg_id}
+   if( `{`!`@eq`(`$arg_was_create_locked`,`'`'`)!is_create && `}!is_system_uid( )
+`{`!`@eq`(`$arg_modifier`,`'`'`)\
+    && ( state & c_modifier_`{`$arg_modifier`} )
+`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && get_obj( ).`{`$arg_tfield`}( )
+`}\
+`{`!`@eq`(`$arg_sfield`,`'`'`)\
+    && !is_null( get_obj( ).`{`$arg_sfield`}( ) )
+`}`{`!`@eq`(`$arg_was_create_locked`,`'`'`)\
+    && was_create_locked_by_own_session( get_obj( ) )`} )
+   {
+      class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
+
+      cp_source->begin_review( get_uid( ) );
+
+      if( cp_source->child_`{`$arg_child`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            cp_source->child_`{`$arg_child`}( ).`{`$arg_child_procedure`}( get_obj( ).get_key( ) );
+
+         } while( cp_source->child_`{`$arg_child`}( ).iterate_next( ) );
+      }
+
+      cp_source->finish_review( );
+   }
+   // [(finish trigger_call_proc_for_uid)] {$arg_id}
+`}
