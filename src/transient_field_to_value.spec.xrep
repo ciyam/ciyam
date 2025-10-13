@@ -5,6 +5,7 @@
 `{`!`@eq`(`$arg_modifier`,`'`'`)`$has_tfield_or_modifier`=`'true`'`}\
 `{`@eq`(`$arg_value`,`'@dtm`'`)`$value`=`'get_dtm( )`'`,\
 `@eq`(`$arg_value`,`'@uid`'`)`$value`=`'get_uid( )`'`,\
+`@eq`(`$arg_value`,`'@null`'`)`$value`=`'""`'`,\
 `@eq`(`$arg_value`,`'@unix`'`)`$value`=`'get_unix_time( )`'`,\
 `@eq`(`$arg_fistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}\
    // [(start transient_field_to_value)] `{`$arg_id`}
