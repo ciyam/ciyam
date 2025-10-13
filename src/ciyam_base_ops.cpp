@@ -3523,7 +3523,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
       ods* p_ods( ods::instance( ) );
 
-      bool op_is_in_transaction = is_in_transaction( );
+      bool op_was_in_transaction = is_in_transaction( );
 
       instance_tx_check( instance );
 
@@ -3543,8 +3543,12 @@ void finish_instance_op( class_base& instance, bool apply_changes,
       try
       {
          // NOTE: The "for_store" or "for_destroy" triggers may result in further create, update
-         // or destroy operations so a transaction must be commenced here (unless already in one).
-         transaction tx( !op_is_in_transaction );
+         // or destroy operations so a transaction must now be commenced (unless already in one).
+         transaction tx( !op_was_in_transaction );
+
+         // NOTE: If a new transaction has commenced then update session locks with the tx info.
+         if( !op_was_in_transaction )
+            update_session_locks_for_transaction( );
 
          if( op == class_base::e_op_type_destroy )
             instance_accessor.for_destroy( internal_operation );
@@ -4113,7 +4117,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
           && ( op == class_base::e_op_type_create ) )
             add_security_group( instance.get_key( ) );
 
-         if( !op_is_in_transaction )
+         if( !op_was_in_transaction )
             tx.commit( );
 
          if( !instance.get_is_being_cascaded( ) && ( op == class_base::e_op_type_destroy ) )

@@ -1149,6 +1149,8 @@ void CIYAM_BASE_DECL_SPEC instance_check( class_base& instance, instance_check_r
 
 void CIYAM_BASE_DECL_SPEC instance_tx_check( class_base& instance );
 
+void CIYAM_BASE_DECL_SPEC update_session_locks_for_transaction( );
+
 bool CIYAM_BASE_DECL_SPEC is_change_locked( class_base& instance, bool include_cascades = false );
 bool CIYAM_BASE_DECL_SPEC is_destroy_locked( class_base& instance, bool include_cascades = false );
 

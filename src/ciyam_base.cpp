@@ -898,6 +898,8 @@ class storage_handler
 
    op_lock get_lock_info_for_owner( const string& lock_class, const string& lock_instance, class_base& owner ) const;
 
+   void update_session_locks_for_transaction( session* p_session );
+
    void release_locks_for_owner( class_base& owner, bool force_removal = false );
 
    void release_locks_for_commit( session* p_session );
@@ -1641,6 +1643,41 @@ op_lock storage_handler::get_lock_info_for_owner( const string& lock_class, cons
    }
 
    return lock;
+}
+
+void storage_handler::update_session_locks_for_transaction( session* p_session )
+{
+   guard g( lock_mutex );
+
+   TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[update session locks for transaction] p_session = " + to_string( p_session ) );
+
+   lock_index_iterator lii;
+
+   ods* p_ods( ods::instance( ) );
+
+   int64_t tran_id( p_ods->get_transaction_id( ) );
+   int64_t tran_level( p_ods->get_transaction_level( ) );
+
+   for( lii = lock_index.begin( ); lii != lock_index.end( ); ++lii )
+   {
+      op_lock& next_lock( lii->second->second );
+
+      if( next_lock.p_session == p_session )
+      {
+         next_lock.tx_type = next_lock.type;
+
+         next_lock.transaction_id = tran_id;
+         next_lock.transaction_level = tran_level;
+      }
+   }
+
+   IF_IS_TRACING( TRACE_DETAILS | TRACE_LOCKING )
+   {
+      ostringstream osstr;
+      dump_locks( osstr );
+
+      TRACE_LOG( TRACE_DETAILS | TRACE_LOCKING, "[dump_locks]\n" + osstr.str( ) );
+   }
 }
 
 void storage_handler::release_locks_for_owner( class_base& owner, bool force_removal )
@@ -13456,6 +13493,14 @@ void instance_tx_check( class_base& instance )
    if( instance_accessor.get_lock_handle( ) && ( !handler.has_lock_info( instance_accessor.get_lock_handle( ) )
     || ( handler.get_lock_info( instance_accessor.get_lock_handle( ) ).transaction_level != transaction_level ) ) )
       throw runtime_error( "attempt to perform apply for operation commenced outside the current transaction scope" );
+}
+
+void update_session_locks_for_transaction( )
+{
+   if( !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   gtp_session->p_storage_handler->update_session_locks_for_transaction( gtp_session );
 }
 
 bool is_change_locked( class_base& instance, bool include_cascades )
