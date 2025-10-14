@@ -1292,6 +1292,7 @@ bool output_view_form( ostream& os, const string& act,
       string source_value_id( source.value_ids[ i ] );
 
       map< string, string > extra_data;
+
       if( !source.vici->second->fields[ i ].extra.empty( ) )
          parse_field_extra( source.vici->second->fields[ i ].extra, extra_data );
 
@@ -1388,6 +1389,7 @@ bool output_view_form( ostream& os, const string& act,
       if( display_tabs && !has_displayed_tabs && source.field_tab_ids[ i ] )
       {
          ++num_displayed; // NOTE: Increment for even/odd row display of row following the tabs.
+
          has_displayed_tabs = true;
 
          output_view_tabs( os, source, sess_info, vtab_num, is_in_edit, data, user_select_key,
@@ -1466,6 +1468,7 @@ bool output_view_form( ostream& os, const string& act,
          continue;
 
       string show_opt( c_show_prefix );
+
       show_opt += '0' + source.field_tab_ids[ i ];
 
       // NOTE: The first field in a tab (including fields before any tabs) that contains the "show"
@@ -1691,10 +1694,9 @@ bool output_view_form( ostream& os, const string& act,
       // NOTE: The primary key and parent folder of a "root" folder may not be edited and record
       // editing below a parent does not allow the parent field value itself to be changed. Also
       // any "special fields" will require specialised editing (if editable).
-      if( !is_special_field && ( is_new_record
-       || is_always_editable || ( is_in_edit && source_field_id != c_key_field ) )
-       && ( source.root_folder.empty( )
-       || data != source.root_folder || !source.self_relationships.count( source_field_id ) ) )
+      if( !is_special_field && !is_protected_field
+       && ( is_new_record || is_always_editable || ( is_in_edit && ( source_field_id != c_key_field ) ) )
+       && ( source.root_folder.empty( ) || ( data != source.root_folder ) || !source.self_relationships.count( source_field_id ) ) )
       {
          if( has_value )
             cell_data = user_values.find( source_field_id )->second;
@@ -2132,6 +2134,7 @@ bool output_view_form( ostream& os, const string& act,
              || extra_data.count( c_view_field_extra_fkey8 ) || extra_data.count( c_view_field_extra_fkey9 ) )
             {
                os << " onchange=\"";
+
                was_special_parent = true;
 
                if( use_url_checksum )
@@ -2242,7 +2245,7 @@ bool output_view_form( ostream& os, const string& act,
 
                // NOTE: For "self relationships" do not allow the record being edited to be chosen as
                // its own parent.
-               if( key == data && source.self_relationships.count( source_field_id ) )
+               if( ( key == data ) && source.self_relationships.count( source_field_id ) )
                   continue;
 
                string original_display( display );
@@ -3222,6 +3225,7 @@ bool output_view_form( ostream& os, const string& act,
 
                      // NOTE: Remove parent version information as its not really relevant for foreign key selection.
                      size_t pos = key.find( ' ' );
+
                      if( pos != string::npos )
                         key.erase( pos );
 
@@ -3231,6 +3235,7 @@ bool output_view_form( ostream& os, const string& act,
                      if( key == cell_data )
                      {
                         cell_data = display;
+
                         break;
                      }
                   }
