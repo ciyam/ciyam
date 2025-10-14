@@ -1,0 +1,6 @@
+`{`@eq`(`'get_state`'`,`$section`)\
+   // [(start modifier_new_record)] `{`$arg_id`}
+   if( is_null( get_obj( ).get_key( ) ) )
+      state |= c_modifier_`{`$arg_modifier`};
+   // [(finish modifier_new_record)] `{`$arg_id`}
+`}

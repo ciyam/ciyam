@@ -1393,6 +1393,10 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier arg_value=$specification_\0_value\
  arg_extra=$specification_\0_extra arg_not_eq=$specification_\0_not_eq`}\
 `,\
+`@eq`(`'\1`'`,`'modifier_new_record`'`)
+`{`#modifier_new_record.spec.xrep section=get_state\
+ arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier`}\
+`,\
 `@eq`(`'\1`'`,`'modifier_past_date_time`'`)
 `{`#modifier_past_date_time.spec.xrep section=get_state\
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield arg_dfprim=$specification_\0_dfprim\
