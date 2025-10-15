@@ -1,25 +1,17 @@
-<Files ~ "\.(htms|sio|bat|sh)$">
- #Apache 2.4
+<Files ~ "\.(htms|sav|sio|sh)$">
  <IfModule mod_authz_core.c>
   Require all denied
- </IfModule>
-
- #Apache 2.2
- <IfModule !mod_authz_core.c>
-  Order Allow,Deny
-  Deny from all
  </IfModule>
 </Files>
 
-<Files identity.txt>
- #Apache 2.4
+<Files "encrypted.txt">
  <IfModule mod_authz_core.c>
   Require all denied
  </IfModule>
+</Files>
 
- #Apache 2.2
- <IfModule !mod_authz_core.c>
-  Order Allow,Deny
-  Deny from all
+<Files "identity.txt">
+ <IfModule mod_authz_core.c>
+  Require all denied
  </IfModule>
 </Files>

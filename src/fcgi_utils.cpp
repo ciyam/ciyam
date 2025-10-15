@@ -1164,14 +1164,8 @@ void setup_directories( )
             ofstream htaf( access_file.c_str( ), ios::out | ios::binary );
 
             htaf << "<Files *>\n";
-            htaf << " #Apache 2.4\n";
             htaf << " <IfModule mod_authz_core.c>\n";
             htaf << "  Require all denied\n";
-            htaf << " </IfModule>\n\n";
-
-            htaf << " #Apache 2.2\n";
-            htaf << " <IfModule !mod_authz_core.c>\n";
-            htaf << "  Deny from all\n";
             htaf << " </IfModule>\n";
             htaf << "</Files>\n";
          }
