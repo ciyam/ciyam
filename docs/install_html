@@ -12,9 +12,9 @@ else
  else
   cp document.css "$1"
 
-  cp name_small.png "$1"
-  cp logo-gryscl-128.png "$1"
-  cp background_texture.png "$1"
+  cp ../pics/name_small.png "$1"
+  cp ../pics/logo-gryscl-128.png "$1"
+  cp ../pics/background_texture.png "$1"
 
   [ -d "$1/fonts" ] ||
   {

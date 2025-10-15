@@ -529,6 +529,7 @@ COMBINED: 547200610
 REVERSED: 016002745
 CIYAM_FISSILE: 1
 docs
+pics
 src
 tests
 [test*.jpg]

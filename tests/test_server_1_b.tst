@@ -1033,22 +1033,22 @@ file_kill test
 file_kill old_test
 file_kill goodbye
 file_kill hello
-file_put 88B*pdf_icon.gif xxx
+file_put 88B*../pics/pdf_icon.gif xxx
 file_info -recurse -d=2 xxx
-[list] 54b86b564b22e56ec085e701a70002b9190ec264d486d2544c8e2b693fb14549 (234 B)
-pdf_icon.gif.000000
+[list] 93a21b9fb89fc0453e0c46c6f9726a7e6db4599875457d69aeedf6e44f80f2ec (244 B)
+../pics/pdf_icon.gif.000000
  [blob] b69ff7f3e051d9043be9208828100996cc71c6264d70ce8f221be3d629ed68e2 (88 B) [base64]
 R0lGODlhIAAgAMQTAN3d3QAAAN0AAHd3dzMzM/////8zM/9mZszMzLu7u2ZmZhEREf+ZmURERP8zZqqqqpmZmcwzM//MzP///wAAAAAAAAAAAAAAAAAA
-pdf_icon.gif.000001
+../pics/pdf_icon.gif.000001
  [blob] 8f5789261725146693475c9a588728d90cdc2e2e7418ae6519f6fe1b5340fd49 (88 B) [base64]
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAABMALAAAAAAgACAAAAX/4CSOU2CeaJqS7BgAcCzP8CIEpKrvZi3crp9wSCzefD9caVho/pqFJ1QYGABs
-pdf_icon.gif.000002
+../pics/pdf_icon.gif.000002
  [blob] c611034408228e6f9e263a0c32748d0b0fb566ad2584860f3780ea378b8435f0 (88 B) [base64]
 1KUwKohyvcXqdUFe4AJMZ/fZVSetgIF8UEVvmWzuUDyr47dqelRwMn5Gh0R8hXQ8jSeEMVUtJXOVlRERczSSLS80MgYHnzCcLJ6jAA4MqKU5qDChrAOT
-pdf_icon.gif.000003
+../pics/pdf_icon.gif.000003
  [blob] 2fd27c26d1919b9ec897ff34bd7f3c2d482aab2d7017e5b1c04d39ca6987b3c5 (88 B) [base64]
 p6MGBrK0rwyqop+tLq+4ALGbs52oB77Eocq+wCK1MwYMt6HV16LQJaPVyzLeANvSABIOw6gS4semMwgH1K+R7K5xBMQOCfcxCPt99MEANCCQANcDfwD6
-pdf_icon.gif.000004
+../pics/pdf_icon.gif.000004
  [blob] ef86dd9946ed6a67b44de7d9cc51eb244c353c0d9c624030e1aee54e7e76785a (87 B) [base64]
 /QIYLSEBBRAQKCBwbwCBAfoeAlDQQME6XRAIPMBIoJ++figJL967N24jgYEnVZosSVCBggcfkREEUHJixYsIBnqc2CBnO3mvxjlaynCEpadQLYUAADs=
 file_info -total_items xxx
@@ -1058,19 +1058,19 @@ file_info -total_encrypted xxx
 file_crypt b69ff7f3e051d9043be9208828100996cc71c6264d70ce8f221be3d629ed68e2 abc
 file_crypt ef86dd9946ed6a67b44de7d9cc51eb244c353c0d9c624030e1aee54e7e76785a abc
 file_info -recurse -d=2 xxx
-[list] 54b86b564b22e56ec085e701a70002b9190ec264d486d2544c8e2b693fb14549 (234 B)
-pdf_icon.gif.000000
+[list] 93a21b9fb89fc0453e0c46c6f9726a7e6db4599875457d69aeedf6e44f80f2ec (244 B)
+../pics/pdf_icon.gif.000000
  [blob] b69ff7f3e051d9043be9208828100996cc71c6264d70ce8f221be3d629ed68e2 (88 B) [***]
-pdf_icon.gif.000001
+../pics/pdf_icon.gif.000001
  [blob] 8f5789261725146693475c9a588728d90cdc2e2e7418ae6519f6fe1b5340fd49 (88 B) [base64]
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAABMALAAAAAAgACAAAAX/4CSOU2CeaJqS7BgAcCzP8CIEpKrvZi3crp9wSCzefD9caVho/pqFJ1QYGABs
-pdf_icon.gif.000002
+../pics/pdf_icon.gif.000002
  [blob] c611034408228e6f9e263a0c32748d0b0fb566ad2584860f3780ea378b8435f0 (88 B) [base64]
 1KUwKohyvcXqdUFe4AJMZ/fZVSetgIF8UEVvmWzuUDyr47dqelRwMn5Gh0R8hXQ8jSeEMVUtJXOVlRERczSSLS80MgYHnzCcLJ6jAA4MqKU5qDChrAOT
-pdf_icon.gif.000003
+../pics/pdf_icon.gif.000003
  [blob] 2fd27c26d1919b9ec897ff34bd7f3c2d482aab2d7017e5b1c04d39ca6987b3c5 (88 B) [base64]
 p6MGBrK0rwyqop+tLq+4ALGbs52oB77Eocq+wCK1MwYMt6HV16LQJaPVyzLeANvSABIOw6gS4semMwgH1K+R7K5xBMQOCfcxCPt99MEANCCQANcDfwD6
-pdf_icon.gif.000004
+../pics/pdf_icon.gif.000004
  [blob] ef86dd9946ed6a67b44de7d9cc51eb244c353c0d9c624030e1aee54e7e76785a (87 B) [***]
 file_info -total_items xxx
 5
@@ -1078,17 +1078,17 @@ file_info -total_encrypted xxx
 2
 file_crypt -recurse -blobs_only xxx abc
 file_info -recurse -d=2 xxx
-[list] 54b86b564b22e56ec085e701a70002b9190ec264d486d2544c8e2b693fb14549 (234 B)
-pdf_icon.gif.000000
+[list] 93a21b9fb89fc0453e0c46c6f9726a7e6db4599875457d69aeedf6e44f80f2ec (244 B)
+../pics/pdf_icon.gif.000000
  [blob] b69ff7f3e051d9043be9208828100996cc71c6264d70ce8f221be3d629ed68e2 (88 B) [base64]
 R0lGODlhIAAgAMQTAN3d3QAAAN0AAHd3dzMzM/////8zM/9mZszMzLu7u2ZmZhEREf+ZmURERP8zZqqqqpmZmcwzM//MzP///wAAAAAAAAAAAAAAAAAA
-pdf_icon.gif.000001
+../pics/pdf_icon.gif.000001
  [blob] 8f5789261725146693475c9a588728d90cdc2e2e7418ae6519f6fe1b5340fd49 (88 B) [***]
-pdf_icon.gif.000002
+../pics/pdf_icon.gif.000002
  [blob] c611034408228e6f9e263a0c32748d0b0fb566ad2584860f3780ea378b8435f0 (88 B) [***]
-pdf_icon.gif.000003
+../pics/pdf_icon.gif.000003
  [blob] 2fd27c26d1919b9ec897ff34bd7f3c2d482aab2d7017e5b1c04d39ca6987b3c5 (88 B) [***]
-pdf_icon.gif.000004
+../pics/pdf_icon.gif.000004
  [blob] ef86dd9946ed6a67b44de7d9cc51eb244c353c0d9c624030e1aee54e7e76785a (87 B) [base64]
 /QIYLSEBBRAQKCBwbwCBAfoeAlDQQME6XRAIPMBIoJ++figJL967N24jgYEnVZosSVCBggcfkREEUHJixYsIBnqc2CBnO3mvxjlaynCEpadQLYUAADs=
 file_info -total_items xxx
@@ -1097,16 +1097,16 @@ file_info -total_encrypted xxx
 3
 file_crypt -encrypt -recurse -blobs_only xxx abc
 file_info -recurse -d=2 xxx
-[list] 54b86b564b22e56ec085e701a70002b9190ec264d486d2544c8e2b693fb14549 (234 B)
-pdf_icon.gif.000000
+[list] 93a21b9fb89fc0453e0c46c6f9726a7e6db4599875457d69aeedf6e44f80f2ec (244 B)
+../pics/pdf_icon.gif.000000
  [blob] b69ff7f3e051d9043be9208828100996cc71c6264d70ce8f221be3d629ed68e2 (88 B) [***]
-pdf_icon.gif.000001
+../pics/pdf_icon.gif.000001
  [blob] 8f5789261725146693475c9a588728d90cdc2e2e7418ae6519f6fe1b5340fd49 (88 B) [***]
-pdf_icon.gif.000002
+../pics/pdf_icon.gif.000002
  [blob] c611034408228e6f9e263a0c32748d0b0fb566ad2584860f3780ea378b8435f0 (88 B) [***]
-pdf_icon.gif.000003
+../pics/pdf_icon.gif.000003
  [blob] 2fd27c26d1919b9ec897ff34bd7f3c2d482aab2d7017e5b1c04d39ca6987b3c5 (88 B) [***]
-pdf_icon.gif.000004
+../pics/pdf_icon.gif.000004
  [blob] ef86dd9946ed6a67b44de7d9cc51eb244c353c0d9c624030e1aee54e7e76785a (87 B) [***]
 file_info -total_items xxx
 5
@@ -1114,17 +1114,17 @@ file_info -total_encrypted xxx
 5
 file_crypt c611034408228e6f9e263a0c32748d0b0fb566ad2584860f3780ea378b8435f0 abc
 file_info -recurse -d=2 xxx
-[list] 54b86b564b22e56ec085e701a70002b9190ec264d486d2544c8e2b693fb14549 (234 B)
-pdf_icon.gif.000000
+[list] 93a21b9fb89fc0453e0c46c6f9726a7e6db4599875457d69aeedf6e44f80f2ec (244 B)
+../pics/pdf_icon.gif.000000
  [blob] b69ff7f3e051d9043be9208828100996cc71c6264d70ce8f221be3d629ed68e2 (88 B) [***]
-pdf_icon.gif.000001
+../pics/pdf_icon.gif.000001
  [blob] 8f5789261725146693475c9a588728d90cdc2e2e7418ae6519f6fe1b5340fd49 (88 B) [***]
-pdf_icon.gif.000002
+../pics/pdf_icon.gif.000002
  [blob] c611034408228e6f9e263a0c32748d0b0fb566ad2584860f3780ea378b8435f0 (88 B) [base64]
 1KUwKohyvcXqdUFe4AJMZ/fZVSetgIF8UEVvmWzuUDyr47dqelRwMn5Gh0R8hXQ8jSeEMVUtJXOVlRERczSSLS80MgYHnzCcLJ6jAA4MqKU5qDChrAOT
-pdf_icon.gif.000003
+../pics/pdf_icon.gif.000003
  [blob] 2fd27c26d1919b9ec897ff34bd7f3c2d482aab2d7017e5b1c04d39ca6987b3c5 (88 B) [***]
-pdf_icon.gif.000004
+../pics/pdf_icon.gif.000004
  [blob] ef86dd9946ed6a67b44de7d9cc51eb244c353c0d9c624030e1aee54e7e76785a (87 B) [***]
 file_info -total_items xxx
 5
@@ -1132,20 +1132,20 @@ file_info -total_encrypted xxx
 4
 file_crypt -decrypt -recurse -blobs_only xxx abc
 file_info -recurse -d=2 xxx
-[list] 54b86b564b22e56ec085e701a70002b9190ec264d486d2544c8e2b693fb14549 (234 B)
-pdf_icon.gif.000000
+[list] 93a21b9fb89fc0453e0c46c6f9726a7e6db4599875457d69aeedf6e44f80f2ec (244 B)
+../pics/pdf_icon.gif.000000
  [blob] b69ff7f3e051d9043be9208828100996cc71c6264d70ce8f221be3d629ed68e2 (88 B) [base64]
 R0lGODlhIAAgAMQTAN3d3QAAAN0AAHd3dzMzM/////8zM/9mZszMzLu7u2ZmZhEREf+ZmURERP8zZqqqqpmZmcwzM//MzP///wAAAAAAAAAAAAAAAAAA
-pdf_icon.gif.000001
+../pics/pdf_icon.gif.000001
  [blob] 8f5789261725146693475c9a588728d90cdc2e2e7418ae6519f6fe1b5340fd49 (88 B) [base64]
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAABMALAAAAAAgACAAAAX/4CSOU2CeaJqS7BgAcCzP8CIEpKrvZi3crp9wSCzefD9caVho/pqFJ1QYGABs
-pdf_icon.gif.000002
+../pics/pdf_icon.gif.000002
  [blob] c611034408228e6f9e263a0c32748d0b0fb566ad2584860f3780ea378b8435f0 (88 B) [base64]
 1KUwKohyvcXqdUFe4AJMZ/fZVSetgIF8UEVvmWzuUDyr47dqelRwMn5Gh0R8hXQ8jSeEMVUtJXOVlRERczSSLS80MgYHnzCcLJ6jAA4MqKU5qDChrAOT
-pdf_icon.gif.000003
+../pics/pdf_icon.gif.000003
  [blob] 2fd27c26d1919b9ec897ff34bd7f3c2d482aab2d7017e5b1c04d39ca6987b3c5 (88 B) [base64]
 p6MGBrK0rwyqop+tLq+4ALGbs52oB77Eocq+wCK1MwYMt6HV16LQJaPVyzLeANvSABIOw6gS4semMwgH1K+R7K5xBMQOCfcxCPt99MEANCCQANcDfwD6
-pdf_icon.gif.000004
+../pics/pdf_icon.gif.000004
  [blob] ef86dd9946ed6a67b44de7d9cc51eb244c353c0d9c624030e1aee54e7e76785a (87 B) [base64]
 /QIYLSEBBRAQKCBwbwCBAfoeAlDQQME6XRAIPMBIoJ++figJL967N24jgYEnVZosSVCBggcfkREEUHJixYsIBnqc2CBnO3mvxjlaynCEpadQLYUAADs=
 file_info -total_items xxx

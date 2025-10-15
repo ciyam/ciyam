@@ -512,7 +512,7 @@ file_kill test
 file_kill old_test
 file_kill goodbye
 file_kill hello
-file_put 88B*pdf_icon.gif xxx
+file_put 88B*../pics/pdf_icon.gif xxx
 file_info -recurse -d=2 xxx
 file_info -total_items xxx
 file_info -total_encrypted xxx
