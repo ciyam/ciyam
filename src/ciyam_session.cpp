@@ -52,6 +52,7 @@
 #include "hash_chain.h"
 #include "auto_script.h"
 #include "ciyam_files.h"
+#include "fs_iterator.h"
 #include "crypt_stream.h"
 #include "peer_session.h"
 #include "ciyam_strings.h"
@@ -86,10 +87,13 @@ mutex g_mutex;
 #include "trace_progress.cpp"
 
 const size_t c_request_timeout = 500; // i.e. 1/2 sec
+
 const size_t c_udp_wait_timeout = 50; // i.e. 1/20 sec
+
 const size_t c_listen_wait_timeout = 50; // i.e. 1/20 sec
 
 const size_t c_udp_wait_repeats = 10;
+
 const size_t c_listen_wait_repeats = 20;
 
 const int c_pdf_default_limit = 10000;
@@ -357,6 +361,31 @@ void append_datachain_as_variable_if_found( size_t handle, string& field_values_
    }
 }
 
+string get_mclass_unmapped( const string& module, const string& mclass )
+{
+   string mclass_unmapped( mclass );
+
+   // NOTE: Will prefix the mclass with the module if was
+   // not already (only if the lengths are the same size).
+   if( ( mclass_unmapped.find( module ) != 0 )
+    && ( mclass_unmapped.length( ) == module.length( ) ) )
+      mclass_unmapped = module + mclass_unmapped;
+
+   return mclass_unmapped;
+}
+
+string get_module_and_class( const string& module, const string& mclass )
+{
+   string::size_type pos = mclass.find( module );
+
+   if( pos != 0 )
+      pos = 0;
+   else
+      pos = module.length( );
+
+   return string( module + ' ' + mclass.substr( pos ) );
+}
+
 string get_shortened_field_id( const string& module, const string& mclass, const string& field_id )
 {
    // NOTE: If the module starts with a number then is assuming that it is Meta
@@ -542,31 +571,96 @@ string resolve_module_id( const string& id_or_name,
 string resolve_mclass_id( const string& module, const string& id_or_name,
  const map< string, string >* p_transformations = 0, const string* p_exception_info = 0 )
 {
-   string class_id( id_or_name );
+   string module_id( module );
+
+   string mclass_id( id_or_name );
+
+   // NOTE: For transformations the class id must not be
+   // prefixed by the module id (so if it is then remove
+   // it before looking up the transformation).
+   if( mclass_id.find( module_id ) == 0 )
+      mclass_id.erase( 0, module_id.length( ) );
 
    if( p_transformations && !p_transformations->empty( ) )
    {
       string ltf_key( c_log_transformation_scope_any_perform_op );
 
-      ltf_key += " " + module + " " + id_or_name + " " + string( c_log_transformation_op_map_class_id );
+      ltf_key += " " + module_id + " " + mclass_id + " " + string( c_log_transformation_op_map_class_id );
 
       if( p_transformations->count( ltf_key ) )
-         class_id = p_transformations->find( ltf_key )->second;
+         mclass_id = p_transformations->find( ltf_key )->second;
    }
 
-   class_id = get_class_id_for_id_or_name( module, class_id );
+   // NOTE: After looking up the mclass_id using the supplied module
+   // need to also potentially transform the module_id before trying
+   // to check using the actual module information.
+   if( p_transformations )
+      module_id = resolve_module_id( module_id, p_transformations );
 
-   if( p_exception_info && ( class_id == get_class_name_for_id_or_name( module, class_id ) ) )
-      throw runtime_error( "unknown class '" + class_id + "' " + *p_exception_info );
+   mclass_id = get_class_id_for_id_or_name( module_id, mclass_id );
 
-   return class_id;
+   if( p_exception_info && ( mclass_id == get_class_name_for_id_or_name( module_id, mclass_id ) ) )
+      throw runtime_error( "unknown class '" + mclass_id + "' " + *p_exception_info );
+
+   return mclass_id;
 }
 
-string resolve_method_name( const string& module, const string& mclass, const string& module_and_class,
+string resolve_field_id(
+ const string& module, const string& mclass, const string& id_or_name,
+ const map< string, string >* p_transformations = 0, const string* p_exception_info = 0 )
+{
+   string module_id( module );
+
+   string mclass_id( mclass );
+
+   string field_id( id_or_name );
+
+   if( field_id.find( mclass_id ) == 0 )
+      field_id.erase( 0, mclass_id.length( ) );
+
+   if( mclass_id.find( module_id ) == 0 )
+      mclass_id.erase( 0, module_id.length( ) );
+
+   if( p_transformations && !p_transformations->empty( ) )
+   {
+      string ltf_key( c_log_transformation_scope_any_perform_op );
+
+      ltf_key += " " + module_id
+       + " " + mclass_id + " " + string( c_log_transformation_op_map_field_id ) + " " + field_id;
+
+      if( p_transformations->count( ltf_key ) )
+         field_id = p_transformations->find( ltf_key )->second;
+   }
+
+   if( p_transformations )
+   {
+      module_id = resolve_module_id( module, p_transformations );
+      mclass_id = resolve_mclass_id( module, mclass, p_transformations );
+   }
+
+   field_id = get_field_id_for_id_or_name( module_id, mclass_id, field_id );
+
+   if( p_exception_info && ( field_id == get_field_name_for_id_or_name( module_id, mclass_id, field_id ) ) )
+      throw runtime_error( "unknown field '" + field_id + "' " + *p_exception_info );
+
+   return field_id;
+}
+
+void resolve_module_id_and_mclass_id( string& module,
+ string& mclass_id, const map< string, string >* p_transformations = 0 )
+{
+   // NOTE: Due to possible transformations resolve mclass before module.
+   mclass_id = resolve_mclass_id( module, mclass_id, p_transformations );
+
+   module = resolve_module_id( module, p_transformations );
+}
+
+string resolve_method_name(
+ const string& module_id, const string& mclass_id, const string& module_and_class,
  const string& id_or_name, const map< string, string >* p_transformations = 0, string* p_method_id = 0 )
 {
    string method( id_or_name );
-   string method_name( id_or_name );
+   string method_name( method );
 
    if( p_transformations && !p_transformations->empty( ) )
    {
@@ -578,7 +672,7 @@ string resolve_method_name( const string& module, const string& mclass, const st
          method = p_transformations->find( ltf_key )->second;
    }
 
-   const procedure_info_container& procedure_info( get_procedure_info_for_module_class( module, mclass ) );
+   const procedure_info_container& procedure_info( get_procedure_info_for_module_class( module_id, mclass_id ) );
 
    if( procedure_info.count( method ) )
    {
@@ -587,19 +681,19 @@ string resolve_method_name( const string& module, const string& mclass, const st
       if( p_method_id )
          *p_method_id = method;
    }
-   else if( procedure_info.count( mclass + method ) )
+   else if( procedure_info.count( mclass_id + method ) )
    {
-      method_name = procedure_info.find( mclass + method )->second.name;
+      method_name = procedure_info.find( mclass_id + method )->second.name;
 
       if( p_method_id )
-         *p_method_id = mclass + method;
+         *p_method_id = mclass_id + method;
    }
-   else if( procedure_info.count( module + mclass + method ) )
+   else if( procedure_info.count( module_id + mclass_id + method ) )
    {
-      method_name = procedure_info.find( module + mclass + method )->second.name;
+      method_name = procedure_info.find( module_id + mclass_id + method )->second.name;
 
       if( p_method_id )
-         *p_method_id = module + mclass + method;
+         *p_method_id = module_id + mclass_id + method;
    }
    else if( p_method_id )
    {
@@ -1172,6 +1266,7 @@ void read_log_transformation_info( const string& file_name, map< string, string 
                   is_op_instance_change_field = true;
 
                   operation += " " + next_line.substr( 0, pos );
+
                   next_line.erase( 0, pos + 1 );
                }
 
@@ -1183,6 +1278,7 @@ void read_log_transformation_info( const string& file_name, map< string, string 
                      throw runtime_error( "unexpected field transformation format '" + next_line + "'" );
 
                   operation += " " + next_line.substr( 0, pos );
+
                   next_line.erase( 0, pos + 1 );
                }
 
@@ -1251,6 +1347,7 @@ void process_map_data(
             if( !has_models )
             {
                okay = true;
+
                has_models = true;
             }
          }
@@ -1259,6 +1356,7 @@ void process_map_data(
             if( !has_classes )
             {
                okay = true;
+
                has_classes = true;
             }
          }
@@ -1267,6 +1365,7 @@ void process_map_data(
             if( !has_fields )
             {
                okay = true;
+
                has_fields = true;
             }
          }
@@ -1275,6 +1374,7 @@ void process_map_data(
             if( !has_methods )
             {
                okay = true;
+
                has_methods = true;
             }
          }
@@ -1311,10 +1411,10 @@ void process_map_data(
 
             if( pos != string::npos )
             {
+               okay = has_added = true;
+
                model_key = next_line.substr( 0, pos );
                model_id = next_line.substr( pos + 1 );
-
-               okay = has_added = true;
             }
          }
          else
@@ -4038,13 +4138,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string field_values_to_log;
 
+         string initial_module_and_mclass( module + mclass );
+
          string module_unmapped( module );
-         string mclass_unmapped( mclass );
 
-         if( mclass_unmapped.find( module_unmapped ) == string::npos )
-            mclass_unmapped = module_unmapped + mclass_unmapped;
+         string mclass_unmapped( get_mclass_unmapped( module, mclass ) );
 
-         string module_and_class( module + ' ' + mclass );
+         string module_and_mclass( get_module_and_class( module, mclass ) );
 
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
@@ -4165,8 +4265,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                key = new_key;
          }
 
-         module = resolve_module_id( module, &socket_handler.get_transformations( ) );
-         mclass = resolve_mclass_id( module, mclass, &socket_handler.get_transformations( ) );
+         resolve_module_id_and_mclass_id( module, mclass, &socket_handler.get_transformations( ) );
 
          // NOTE: If a record was being cloned from a "dead key" then just treat as a normal
          // create instead (which means if any cloned fields were not provided by the create
@@ -4198,17 +4297,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             ltf_key = string( c_log_transformation_scope_create_update_destroy );
 
-            ltf_key += " " + module_and_class + " " + string( c_log_transformation_op_skip_operation ) + " " + key;
+            ltf_key += " " + module_and_mclass + " " + string( c_log_transformation_op_skip_operation ) + " " + key;
 
             if( socket_handler.get_transformations( ).count( ltf_key ) )
                skip_create = true;
             else if( !field_values.empty( ) )
             {
-               parse_field_values( module_unmapped, mclass_unmapped, field_values, field_value_items, &socket_handler.get_transformations( ) );
+               parse_field_values( module_unmapped, mclass_unmapped,
+                field_values, field_value_items, &socket_handler.get_transformations( ) );
 
                ltf_key = string( c_log_transformation_scope_create_update_only );
 
-               ltf_key += " " + module_and_class + " " + string( c_log_transformation_op_ignore_field );
+               ltf_key += " " + module_and_mclass + " " + string( c_log_transformation_op_ignore_field );
 
                if( socket_handler.get_transformations( ).count( ltf_key ) )
                {
@@ -4220,14 +4320,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                ltf_key = string( c_log_transformation_scope_create_update_only );
 
-               ltf_key += " " + module_and_class + " " + string( c_log_transformation_op_change_field_value );
+               ltf_key += " " + module_and_mclass + " " + string( c_log_transformation_op_change_field_value );
 
                if( !socket_handler.get_transformations( ).empty( ) )
                   perform_field_value_transformations( socket_handler.get_transformations( ), ltf_key, field_value_items );
 
                ltf_key = string( c_log_transformation_scope_create_update_only );
 
-               ltf_key += " " + module_and_class
+               ltf_key += " " + module_and_mclass
                 + " " + string( c_log_transformation_op_instance_change_field_value ) + " " + key;
 
                if( !socket_handler.get_transformations( ).empty( ) )
@@ -4372,7 +4472,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   replace_field_values_to_log( next_command, field_values_to_log );
 
-                  replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
+                  replace_module_and_class_to_log( next_command, initial_module_and_mclass, module, mclass );
                }
 
                if( instance_persistence_uses_log( handle ) )
@@ -4386,7 +4486,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !method.empty( ) )
                {
                   string method_name( resolve_method_name( module, mclass,
-                   module_and_class, method, &socket_handler.get_transformations( ) ) );
+                   module_and_mclass, method, &socket_handler.get_transformations( ) ) );
 
                   instance_execute( handle, "", response, method_name );
 
@@ -4401,7 +4501,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   transaction_rollback( );
 
                possibly_expected_error = true;
+
                destroy_object_instance( handle );
+
                throw;
             }
             catch( ... )
@@ -4410,6 +4512,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   transaction_rollback( );
 
                destroy_object_instance( handle );
+
                throw;
             }
          }
@@ -4444,13 +4547,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string field_values_to_log;
 
+         string initial_module_and_mclass( module + mclass );
+
          string module_unmapped( module );
-         string mclass_unmapped( mclass );
 
-         if( mclass_unmapped.find( module_unmapped ) == string::npos )
-            mclass_unmapped = module_unmapped + mclass_unmapped;
+         string mclass_unmapped( get_mclass_unmapped( module, mclass ) );
 
-         string module_and_class( module + ' ' + mclass );
+         string module_and_mclass( get_module_and_class( module, mclass ) );
 
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
@@ -4469,21 +4572,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             set_session_variable( get_special_var_name( e_special_var_extra_field_values ), "!" );
          }
 
-         module = resolve_module_id( module, &socket_handler.get_transformations( ) );
-         mclass = resolve_mclass_id( module, mclass, &socket_handler.get_transformations( ) );
+         resolve_module_id_and_mclass_id( module, mclass, &socket_handler.get_transformations( ) );
 
          map< string, string > field_value_items;
 
-         parse_field_values( module_unmapped, mclass_unmapped, field_values, field_value_items, &socket_handler.get_transformations( ) );
+         parse_field_values( module_unmapped, mclass_unmapped,
+          field_values, field_value_items, &socket_handler.get_transformations( ) );
 
          map< string, string > check_value_items;
 
          if( !check_values.empty( ) )
-            parse_field_values( module_unmapped, mclass_unmapped, check_values, check_value_items, &socket_handler.get_transformations( ) );
+            parse_field_values( module_unmapped, mclass_unmapped,
+             check_values, check_value_items, &socket_handler.get_transformations( ) );
 
          string ltf_key( c_log_transformation_scope_create_update_only );
 
-         ltf_key += " " + module_and_class + " " + string( c_log_transformation_op_ignore_field );
+         ltf_key += " " + module_and_mclass + " " + string( c_log_transformation_op_ignore_field );
 
          if( socket_handler.get_transformations( ).count( ltf_key ) )
          {
@@ -4498,7 +4602,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          ltf_key = string( c_log_transformation_scope_create_update_only );
 
-         ltf_key += " " + module_and_class + " " + string( c_log_transformation_op_change_field_value );
+         ltf_key += " " + module_and_mclass + " " + string( c_log_transformation_op_change_field_value );
 
          if( !socket_handler.get_transformations( ).empty( ) )
          {
@@ -4509,7 +4613,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          ltf_key = string( c_log_transformation_scope_create_update_only );
 
-         ltf_key += " " + module_and_class
+         ltf_key += " " + module_and_mclass
           + " " + string( c_log_transformation_op_instance_change_field_value ) + " " + key;
 
          if( !socket_handler.get_transformations( ).empty( ) )
@@ -4535,7 +4639,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             ltf_key = string( c_log_transformation_scope_create_update_destroy );
 
-            ltf_key += " " + module_and_class + " " + string( c_log_transformation_op_skip_operation ) + " " + key;
+            ltf_key += " " + module_and_mclass + " " + string( c_log_transformation_op_skip_operation ) + " " + key;
 
             if( socket_handler.get_transformations( ).count( ltf_key ) )
                skip_update = true;
@@ -4708,7 +4812,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   replace_field_values_to_log( next_command, field_values_to_log );
 
-                  replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
+                  replace_module_and_class_to_log( next_command, initial_module_and_mclass, module, mclass );
                }
 
                if( instance_persistence_uses_log( handle ) )
@@ -4720,7 +4824,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !method.empty( ) )
                {
                   string method_name( resolve_method_name( module, mclass,
-                   module_and_class, method, &socket_handler.get_transformations( ) ) );
+                   module_and_mclass, method, &socket_handler.get_transformations( ) ) );
 
                   response = instance_execute( handle, "", key, method_name );
 
@@ -4768,12 +4872,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string ver_info( get_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_ver_info ) );
 
          string module_unmapped( module );
-         string mclass_unmapped( mclass );
 
-         if( mclass_unmapped.find( module_unmapped ) == string::npos )
-            mclass_unmapped = module_unmapped + mclass_unmapped;
+         string mclass_unmapped( get_mclass_unmapped( module, mclass ) );
 
-         string module_and_class( module + ' ' + mclass );
+         string module_and_mclass( get_module_and_class( module, mclass ) );
 
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
@@ -4784,8 +4886,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          set_dtm_if_now( dtm, next_command );
 
-         module = resolve_module_id( module, &socket_handler.get_transformations( ) );
-         mclass = resolve_mclass_id( module, mclass, &socket_handler.get_transformations( ) );
+         resolve_module_id_and_mclass_id( module, mclass, &socket_handler.get_transformations( ) );
 
          bool skip_destroy = false;
 
@@ -4802,7 +4903,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             ltf_key = string( c_log_transformation_scope_create_update_destroy );
 
-            ltf_key += " " + module_and_class + " " + string( c_log_transformation_op_skip_operation ) + " " + key;
+            ltf_key += " " + module_and_mclass + " " + string( c_log_transformation_op_skip_operation ) + " " + key;
 
             if( socket_handler.get_transformations( ).count( ltf_key ) )
                skip_destroy = true;
@@ -4816,7 +4917,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             map< string, string > set_value_items;
 
             if( !set_values.empty( ) )
-               parse_field_values( module_unmapped, mclass_unmapped, set_values, set_value_items, &socket_handler.get_transformations( ) );
+               parse_field_values( module_unmapped, mclass_unmapped,
+                set_values, set_value_items, &socket_handler.get_transformations( ) );
 
             size_t handle = create_object_instance( module, mclass,
              0, get_module_class_has_derivations( module, mclass ) );
@@ -4920,13 +5022,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string key_prefix;
          string field_values_to_log;
 
+         string initial_module_and_mclass( module + mclass );
+
          string module_unmapped( module );
-         string mclass_unmapped( mclass );
 
-         if( mclass_unmapped.find( module_unmapped ) == string::npos )
-            mclass_unmapped = module_unmapped + mclass_unmapped;
+         string mclass_unmapped( get_mclass_unmapped( module, mclass ) );
 
-         string module_and_class( module + ' ' + mclass );
+         string module_and_mclass( get_module_and_class( module, mclass ) );
 
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
@@ -4973,8 +5075,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
          }
 
-         module = resolve_module_id( module, &socket_handler.get_transformations( ) );
-         mclass = resolve_mclass_id( module, mclass, &socket_handler.get_transformations( ) );
+         resolve_module_id_and_mclass_id( module, mclass, &socket_handler.get_transformations( ) );
 
          bool skip_execute = false;
 
@@ -4993,12 +5094,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             string method_id;
 
             string method_and_args( resolve_method_name( module, mclass,
-             module_and_class, method, &socket_handler.get_transformations( ), &method_id ) );
+             module_and_mclass, method, &socket_handler.get_transformations( ), &method_id ) );
 
             map< string, string > set_value_items;
 
             if( !set_values.empty( ) )
-               parse_field_values( module_unmapped, mclass_unmapped, set_values, set_value_items, &socket_handler.get_transformations( ) );
+               parse_field_values( module_unmapped, mclass_unmapped,
+                set_values, set_value_items, &socket_handler.get_transformations( ) );
 
             // NOTE: Special case for @notifier child records.
             if( !args.empty( ) )
@@ -5019,7 +5121,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                string ltf_key( c_log_transformation_scope_method_execute );
 
-               ltf_key += " " + module_and_class + " " + method_id
+               ltf_key += " " + module_and_mclass + " " + method_id
                 + " " + string( c_log_transformation_op_map_first_arg_field_ids );
 
                if( socket_handler.get_transformations( ).count( ltf_key ) )
@@ -5038,7 +5140,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      {
                         string ltf_key( c_log_transformation_scope_any_perform_op );
 
-                        ltf_key += " " + module_and_class + " "
+                        ltf_key += " " + module_and_mclass + " "
                          + string( c_log_transformation_op_map_field_id ) + " " + field_ids[ i ];
 
                         if( !new_first_arg.empty( ) )
@@ -5060,7 +5162,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             {
                string ltf_key( c_log_transformation_scope_method_execute );
 
-               ltf_key += " " + module_and_class + " " + method_id
+               ltf_key += " " + module_and_mclass + " " + method_id
                 + " " + string( c_log_transformation_op_no_args_append );
 
                if( socket_handler.get_transformations( ).count( ltf_key ) )
@@ -5260,7 +5362,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         replace_method_with_shortened_id( next_command, method, rpos, module, mclass, method_id );
 
-                        replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
+                        replace_module_and_class_to_log( next_command, initial_module_and_mclass, module, mclass );
                      }
 
                      transaction_log_command( next_command );
@@ -5281,7 +5383,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                          + " " + mclass + " " + next_key + " =" + next_ver + " \"" + fields_and_values + "\"";
 
                         if( !using_verbose_logging )
-                           replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
+                           replace_module_and_class_to_log( next_command, initial_module_and_mclass, module, mclass );
 
                         remove_uid_extra_from_log_command( next_command );
 
@@ -6062,6 +6164,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string sav_server_db_file_names;
 
          vector< string > module_list;
+
          string module_list_name( name + ".modules.lst" );
 
          if( rebuild )
@@ -6549,6 +6652,126 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   remove_file( sav_demo_keys_name );
 
                remove_file( backup_sql_name );
+            }
+
+            if( rebuild )
+            {
+               string web_app_dir_prefix;
+
+               vector< string > module_ids;
+               vector< string > mclass_ids;
+
+               bool is_first = true;
+
+               directory_filter df;
+
+               fs_iterator dfsi( storage_web_root( true ) + '/' + string( c_files_directory ), &df );
+
+               do
+               {
+                  if( is_first )
+                  {
+                     is_first = false;
+
+                     web_app_dir_prefix = dfsi.get_full_name( ) + '/';
+
+                     continue;
+                  }
+
+                  if( dfsi.get_name( ) == c_tmp_directory )
+                     continue;
+
+                  string next_full_name( dfsi.get_full_name( ) );
+
+                  string::size_type pos = next_full_name.find( web_app_dir_prefix );
+
+                  if( pos == 0 )
+                  {
+                     string next_partial( next_full_name.substr( web_app_dir_prefix.length( ) ) );
+
+                     if( next_partial.find( '/' ) == string::npos )
+                        module_ids.push_back( next_partial );
+                     else
+                        mclass_ids.push_back( next_partial );
+
+                     file_filter ff;
+
+                     fs_iterator fs( dfsi.get_path_name( ), &ff );
+
+                     while( fs.has_next( ) )
+                     {
+                        string next_file( fs.get_name( ) );
+
+                        if( !next_file.empty( )
+                         && ( ( next_file[ 0 ] == '.' ) || ( next_file[ 0 ] == '_' ) ) )
+                           continue;
+
+                        string::size_type pos = next_file.rfind( '.' );
+
+                        if( pos != string::npos )
+                        {
+                           string ext( next_file.substr( pos + 1 ) );
+
+                           string suffix( next_file.substr( 0, pos ) );
+
+                           pos = suffix.rfind( '-' );
+
+                           // NOTE: Files are renamed (if the suffix is transformed)
+                           // where name is expected to be "<prefix>-<suffix>.<ext>"
+                           // and <suffix> takes the form of "M###C###F###" (such as
+                           // M101C102F103).
+                           if( pos != string::npos )
+                           {
+                              string prefix( suffix.substr( 0, pos ) );
+
+                              suffix.erase( 0, pos + 1 );
+
+                              string new_suffix( resolve_field_id( module_ids.back( ),
+                               mclass_ids.back( ), suffix, &socket_handler.get_transformations( ) ) );
+
+                              string old_file_name( fs.get_root( ) + '/' + next_file );
+
+                              string new_file_name( fs.get_root( ) + '/' + prefix + '-' + new_suffix + '.' + ext );
+
+                              if( new_file_name != old_file_name )
+                                 file_rename( old_file_name, new_file_name );
+                           }
+                        }
+                     }
+                  }
+
+               } while( dfsi.has_next( ) );
+
+               // NOTE: After processing files will process mclass id directory names.
+               for( size_t i = 0; i < mclass_ids.size( ); i++ )
+               {
+                  string next_mclass_id( mclass_ids[ i ] );
+
+                  string::size_type pos = next_mclass_id.find( '/' );
+
+                  if( pos != string::npos )
+                  {
+                     string module_id( next_mclass_id.substr( 0, pos ) );
+
+                     next_mclass_id.erase( 0, pos + 1 );
+
+                     string new_mclass_id( resolve_mclass_id( module_id, next_mclass_id, &socket_handler.get_transformations( ) ) );
+
+                     if( new_mclass_id != next_mclass_id )
+                        file_rename( web_app_dir_prefix + next_mclass_id, web_app_dir_prefix + new_mclass_id );
+                  }
+               }
+
+               // NOTE: After mclass id directory names will process model id directory names.
+               for( size_t i = 0; i < module_ids.size( ); i++ )
+               {
+                  string next_module_id( module_ids[ i ] );
+
+                  string new_module_id( resolve_module_id( next_module_id, &socket_handler.get_transformations( ) ) );
+
+                  if( new_module_id != next_module_id )
+                     file_rename( web_app_dir_prefix + next_module_id, web_app_dir_prefix + new_module_id );
+               }
             }
 
             term_storage( handler );
