@@ -225,6 +225,7 @@ const char* const c_storage_identity_tx_id = "[0]";
 
 const char* const c_label_prefix = "label";
 
+const char* const c_tmp_directory = "tmp";
 const char* const c_files_directory = "files";
 
 const char* const c_ciyam_files_directory = ".files";

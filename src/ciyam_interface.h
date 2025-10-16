@@ -85,8 +85,6 @@ const char* const c_http_param_query = "QUERY_STRING";
 const char* const c_http_param_cookie = "HTTP_COOKIE";
 const char* const c_http_param_uagent = "HTTP_USER_AGENT";
 
-const char* const c_tmp_directory = "tmp";
-
 const char* const c_key_field = "@key";
 const char* const c_row_field = "@row";
 
