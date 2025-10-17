@@ -104,6 +104,11 @@ const size_t c_max_key_append_chars = 7;
 
 const char* const c_str_prefix = "c_str_";
 
+const char* const c_ltf_extension = ".ltf";
+const char* const c_map_extension = ".map";
+const char* const c_new_extension = ".new";
+const char* const c_sav_extension = ".sav";
+
 const char* const c_meta_module_id = "100";
 
 const char* const c_passtotp_prefix = "passtotp.";
@@ -342,6 +347,14 @@ void check_instance_field_permission( const string& module,
 
    if( !perm_info.empty( ) )
       check_instance_op_permission( module, handle, perm_info, true );
+}
+
+void process_rename_pairs( vector< pair< string, string > >& rename_pairs )
+{
+   for( size_t i = 0; i < rename_pairs.size( ); i++ )
+      file_rename( rename_pairs[ i ].first, rename_pairs[ i ].second );
+
+   rename_pairs.clear( );
 }
 
 void append_datachain_as_variable_if_found( size_t handle, string& field_values_to_log )
@@ -1434,10 +1447,10 @@ void process_map_data(
 
 void generate_transformation_file( const string& name )
 {
-   string map_file_name( name + ".map" );
-   string new_map_file_name( map_file_name + ".new" );
+   string map_file_name( name + c_map_extension );
+   string new_map_file_name( map_file_name + c_new_extension );
 
-   string ltf_file_name( name + ".ltf" );
+   string ltf_file_name( name + c_ltf_extension );
 
    vector< string > ltf_file_lines;
 
@@ -5853,26 +5866,26 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             string backup_sql_name( name + ".backup.sql" );
 
-            string sav_log_name( log_name + ".sav" );
-            string sav_sql_name( sql_name + ".sav" );
+            string sav_log_name( log_name + c_sav_extension );
+            string sav_sql_name( sql_name + c_sav_extension );
 
-            string ltf_name( name + ".ltf" );
-            string sav_ltf_name( ltf_name + ".sav" );
+            string ltf_name( name + c_ltf_extension );
+            string sav_ltf_name( ltf_name + c_sav_extension );
 
             string dead_keys_name( name + c_dead_keys_suffix );
-            string sav_dead_keys_name( dead_keys_name + ".sav" );
+            string sav_dead_keys_name( dead_keys_name + c_sav_extension );
 
             string demo_keys_name( name + c_demo_keys_suffix );
-            string sav_demo_keys_name( demo_keys_name + ".sav" );
+            string sav_demo_keys_name( demo_keys_name + c_sav_extension );
 
             string autoscript_name( "autoscript.sio" );
             string manuscript_name( "manuscript.sio" );
 
-            string sav_autoscript_name( autoscript_name + ".sav" );
-            string sav_manuscript_name( manuscript_name + ".sav" );
+            string sav_autoscript_name( autoscript_name + c_sav_extension );
+            string sav_manuscript_name( manuscript_name + c_sav_extension );
 
             string server_sio_name( "ciyam_server.sio" );
-            string sav_server_sio_name( server_sio_name + ".sav" );
+            string sav_server_sio_name( server_sio_name + c_sav_extension );
 
             string sav_server_db_file_names;
 
@@ -5982,7 +5995,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   copy_stream( siof, sav_siof );
 
-                  sav_server_db_file_names = system_ods_instance( ).backup_database( ".sav", ' ' );
+                  sav_server_db_file_names = system_ods_instance( ).backup_database( c_sav_extension, ' ' );
                }
             }
 
@@ -6133,7 +6146,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string backup_sql_name( name + ".backup.sql" );
 
-         string ltf_name( name + ".ltf" );
+         string ltf_name( name + c_ltf_extension );
 
          string dead_keys_name( name + c_dead_keys_suffix );
 
@@ -6142,24 +6155,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // provided that the storage name matches its (one and only) module.
          string demo_keys_name( name + c_demo_keys_suffix );
 
-         string sav_db_file_names( ods_backup_file_names( name, ".sav", ' ' ) );
+         string sav_db_file_names( ods_backup_file_names( name, c_sav_extension, ' ' ) );
 
-         string sav_sql_name( sql_name + ".sav" );
-         string sav_log_name( log_name + ".sav" );
+         string sav_sql_name( sql_name + c_sav_extension );
+         string sav_log_name( log_name + c_sav_extension );
 
-         string sav_ltf_name( ltf_name + ".sav" );
+         string sav_ltf_name( ltf_name + c_sav_extension );
 
-         string sav_dead_keys_name( dead_keys_name + ".sav" );
-         string sav_demo_keys_name( demo_keys_name + ".sav" );
+         string sav_dead_keys_name( dead_keys_name + c_sav_extension );
+         string sav_demo_keys_name( demo_keys_name + c_sav_extension );
 
          string autoscript_name( "autoscript.sio" );
          string manuscript_name( "manuscript.sio" );
 
-         string sav_autoscript_name( autoscript_name + ".sav" );
-         string sav_manuscript_name( manuscript_name + ".sav" );
+         string sav_autoscript_name( autoscript_name + c_sav_extension );
+         string sav_manuscript_name( manuscript_name + c_sav_extension );
 
          string server_sio_name( "ciyam_server.sio" );
-         string sav_server_sio_name( server_sio_name + ".sav" );
+         string sav_server_sio_name( server_sio_name + c_sav_extension );
 
          string sav_server_db_file_names;
 
@@ -6198,7 +6211,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                file_names += " " + sav_manuscript_name;
                file_names += " " + sav_server_sio_name;
 
-               sav_server_db_file_names = ods_backup_file_names( "ciyam_server", ".sav", ' ' );
+               sav_server_db_file_names = ods_backup_file_names( "ciyam_server", c_sav_extension, ' ' );
 
                file_names += " " + sav_server_db_file_names;
             }
@@ -6249,7 +6262,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          generate_transformation_file( name );
 
-         read_log_transformation_info( name + ".ltf", socket_handler.get_transformations( ) );
+         read_log_transformation_info( name + c_ltf_extension, socket_handler.get_transformations( ) );
 
          session_skip_fk_fetches( quicker );
          session_skip_validation( quicker );
@@ -6629,31 +6642,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                session_skip_is_constained( false );
 
                set_trace_flags( original_trace_flags );
-
-               socket_handler.get_transformations( ).clear( );
             }
 
-            if( !rebuild && !partial )
-            {
-               remove_files( sav_db_file_names, ' ' );
-
-               remove_file( sav_sql_name );
-
-               if( exists_file( sav_log_name ) )
-                  remove_file( sav_log_name );
-
-               if( exists_file( sav_ltf_name ) )
-                  remove_file( sav_ltf_name );
-
-               if( exists_file( sav_dead_keys_name ) )
-                  remove_file( sav_dead_keys_name );
-
-               if( exists_file( sav_demo_keys_name ) )
-                  remove_file( sav_demo_keys_name );
-
-               remove_file( backup_sql_name );
-            }
-
+            // NOTE: After processing all DB records
+            // now will process all "web app" files.
             if( rebuild )
             {
                string web_app_dir_prefix;
@@ -6666,6 +6658,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                directory_filter df;
 
                fs_iterator dfsi( storage_web_root( true ) + '/' + string( c_files_directory ), &df );
+
+               string next_module, next_mclass_id;
+
+               vector< pair< string, string > > rename_pairs;
 
                do
                {
@@ -6689,10 +6685,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   {
                      string next_partial( next_full_name.substr( web_app_dir_prefix.length( ) ) );
 
-                     if( next_partial.find( '/' ) == string::npos )
+                     pos = next_partial.find( '/' );
+
+                     if( pos == string::npos )
+                     {
+                        next_module = next_partial;
+
                         module_ids.push_back( next_partial );
+                     }
                      else
+                     {
                         mclass_ids.push_back( next_partial );
+
+                        next_mclass_id = next_partial.substr( pos + 1 );
+                     }
 
                      file_filter ff;
 
@@ -6706,7 +6712,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                          && ( ( next_file[ 0 ] == '.' ) || ( next_file[ 0 ] == '_' ) ) )
                            continue;
 
-                        string::size_type pos = next_file.rfind( '.' );
+                        pos = next_file.rfind( '.' );
 
                         if( pos != string::npos )
                         {
@@ -6726,21 +6732,34 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                               suffix.erase( 0, pos + 1 );
 
-                              string new_suffix( resolve_field_id( module_ids.back( ),
-                               mclass_ids.back( ), suffix, &socket_handler.get_transformations( ) ) );
+                              string new_suffix( resolve_field_id( next_module,
+                               next_mclass_id, suffix, &socket_handler.get_transformations( ) ) );
 
                               string old_file_name( fs.get_root( ) + '/' + next_file );
 
                               string new_file_name( fs.get_root( ) + '/' + prefix + '-' + new_suffix + '.' + ext );
 
+                              // NOTE: If file names have a different suffix then will
+                              // rename them but due to potential duplicate names when
+                              // still processing a ".new" name is initially used with
+                              // a second pass (that takes place after file processing
+                              // has completed) is needed to remove the interim ".new"
+                              // extra file extension.
                               if( new_file_name != old_file_name )
-                                 file_rename( old_file_name, new_file_name );
+                              {
+                                 file_rename( old_file_name, new_file_name + c_new_extension );
+
+                                 rename_pairs.push_back( make_pair( new_file_name + c_new_extension, new_file_name ) );
+                              }
                            }
                         }
                      }
                   }
 
                } while( dfsi.has_next( ) );
+
+               // NOTE: Second pass to remove ".new" interim extra extension.
+               process_rename_pairs( rename_pairs );
 
                // NOTE: After processing files will process mclass id directory names.
                for( size_t i = 0; i < mclass_ids.size( ); i++ )
@@ -6758,9 +6777,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      string new_mclass_id( resolve_mclass_id( module_id, next_mclass_id, &socket_handler.get_transformations( ) ) );
 
                      if( new_mclass_id != next_mclass_id )
-                        file_rename( web_app_dir_prefix + next_mclass_id, web_app_dir_prefix + new_mclass_id );
+                     {
+                        file_rename( web_app_dir_prefix + next_mclass_id, web_app_dir_prefix + new_mclass_id + c_new_extension );
+
+                        rename_pairs.push_back( make_pair( web_app_dir_prefix + new_mclass_id + c_new_extension, web_app_dir_prefix + new_mclass_id ) );
+                     }
                   }
                }
+
+               process_rename_pairs( rename_pairs );
 
                // NOTE: After mclass id directory names will process model id directory names.
                for( size_t i = 0; i < module_ids.size( ); i++ )
@@ -6770,11 +6795,43 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   string new_module_id( resolve_module_id( next_module_id, &socket_handler.get_transformations( ) ) );
 
                   if( new_module_id != next_module_id )
-                     file_rename( web_app_dir_prefix + next_module_id, web_app_dir_prefix + new_module_id );
+                  {
+                     file_rename( web_app_dir_prefix + next_module_id, web_app_dir_prefix + new_module_id + c_new_extension );
+
+                     rename_pairs.push_back( make_pair( web_app_dir_prefix + new_module_id + c_new_extension, web_app_dir_prefix + new_module_id ) );
+                  }
                }
+
+               process_rename_pairs( rename_pairs );
             }
 
+            if( !rebuild && !partial )
+            {
+               remove_files( sav_db_file_names, ' ' );
+
+               remove_file( sav_sql_name );
+
+               if( exists_file( sav_log_name ) )
+                  remove_file( sav_log_name );
+
+               if( exists_file( sav_ltf_name ) )
+                  remove_file( sav_ltf_name );
+
+               if( exists_file( sav_dead_keys_name ) )
+                  remove_file( sav_dead_keys_name );
+
+               if( exists_file( sav_demo_keys_name ) )
+                  remove_file( sav_demo_keys_name );
+
+               remove_file( backup_sql_name );
+            }
+
+            if( file_exists( ltf_name ) )
+               file_remove( ltf_name );
+
             term_storage( handler );
+
+            socket_handler.get_transformations( ).clear( );
 
             set_session_variable( get_special_var_name( e_special_var_restore ), "" );
          }
