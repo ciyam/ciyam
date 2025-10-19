@@ -49,6 +49,7 @@
 #include "date_time.h"
 #include "ciyam_base.h"
 #include "class_base.h"
+#include "file_utils.h"
 #include "hash_chain.h"
 #include "auto_script.h"
 #include "ciyam_files.h"
@@ -578,11 +579,14 @@ string resolve_module_id( const string& id_or_name,
 
    module_id = get_module_id_for_id_or_name( module_id );
 
+   if( module_id == get_module_name_for_id_or_name( module_id ) )
+      throw runtime_error( "unknown module '" + id_or_name + "'" );
+
    return module_id;
 }
 
 string resolve_mclass_id( const string& module, const string& id_or_name,
- const map< string, string >* p_transformations = 0, const string* p_exception_info = 0 )
+ const map< string, string >* p_transformations = 0, const string* p_exception_info = 0, string* p_module_id = 0 )
 {
    string module_id( module );
 
@@ -606,21 +610,41 @@ string resolve_mclass_id( const string& module, const string& id_or_name,
 
    // NOTE: After looking up the mclass_id using the supplied module
    // need to also potentially transform the module_id before trying
-   // to check using the actual module information.
+   // to get the mclass_id using the actual module information.
    if( p_transformations )
       module_id = resolve_module_id( module_id, p_transformations );
 
+   if( p_module_id )
+      *p_module_id = module_id;
+
    mclass_id = get_class_id_for_id_or_name( module_id, mclass_id );
 
-   if( p_exception_info && ( mclass_id == get_class_name_for_id_or_name( module_id, mclass_id ) ) )
-      throw runtime_error( "unknown class '" + mclass_id + "' " + *p_exception_info );
+   // NOTE: If not Meta then is expected that the "module_id"
+   // will be the prefix of the "mclass_id" value.
+   if( module_id != c_meta_module_id )
+   {
+      if( p_exception_info && ( mclass_id.find( module_id ) != 0 ) )
+         throw runtime_error( "unknown class '" + id_or_name + "' " + *p_exception_info );
+
+      if( mclass_id.find( module_id ) != 0 )
+         throw runtime_error( "unknown class '" + id_or_name + "'" );
+   }
+   else
+   {
+      if( p_exception_info && ( mclass_id == get_class_name_for_id_or_name( module_id, mclass_id ) ) )
+         throw runtime_error( "unknown class '" + mclass_id + "' " + *p_exception_info );
+
+      if( mclass_id == get_class_name_for_id_or_name( module_id, mclass_id ) )
+         throw runtime_error( "unknown class '" + mclass_id + "'" );
+   }
 
    return mclass_id;
 }
 
-string resolve_field_id(
- const string& module, const string& mclass, const string& id_or_name,
- const map< string, string >* p_transformations = 0, const string* p_exception_info = 0 )
+string resolve_field_id( const string& module,
+ const string& mclass, const string& id_or_name,
+ const map< string, string >* p_transformations = 0,
+ const string* p_exception_info = 0, string* p_module_id = 0, string* p_mclass_id = 0 )
 {
    string module_id( module );
 
@@ -651,10 +675,33 @@ string resolve_field_id(
       mclass_id = resolve_mclass_id( module, mclass, p_transformations );
    }
 
+   if( p_module_id )
+      *p_module_id = module_id;
+
+   if( p_mclass_id )
+      *p_mclass_id = mclass_id;
+
    field_id = get_field_id_for_id_or_name( module_id, mclass_id, field_id );
 
-   if( p_exception_info && ( field_id == get_field_name_for_id_or_name( module_id, mclass_id, field_id ) ) )
-      throw runtime_error( "unknown field '" + field_id + "' " + *p_exception_info );
+   // NOTE: If not Meta then is expected that the "mclass_id"
+   // will be the prefix of the "field_id" value.
+   if( module_id != c_meta_module_id )
+   {
+      if( p_exception_info && ( field_id.find( mclass_id ) != 0 ) )
+         throw runtime_error( "unknown field '" + id_or_name + "' " + *p_exception_info );
+
+      if( field_id.find( mclass_id ) != 0 )
+         throw runtime_error( "unknown field '" + id_or_name + "'" );
+   }
+   else
+   {
+      if( p_exception_info
+       && ( field_id == get_field_name_for_id_or_name( module_id, mclass_id, field_id ) ) )
+         throw runtime_error( "unknown field '" + id_or_name + "' " + *p_exception_info );
+
+      if( field_id == get_field_name_for_id_or_name( module_id, mclass_id, field_id ) )
+         throw runtime_error( "unknown field '" + id_or_name + "'" );
+   }
 
    return field_id;
 }
@@ -1261,11 +1308,7 @@ void read_log_transformation_info( const string& file_name, map< string, string 
                }
 
                if( operation == c_log_transformation_op_skip_operation )
-               {
-                  operation += " " + next_line;
-
                   next_line.erase( );
-               }
 
                bool is_op_instance_change_field = false;
 
@@ -1275,20 +1318,6 @@ void read_log_transformation_info( const string& file_name, map< string, string 
 
                   if( pos == string::npos )
                      throw runtime_error( "unexpected instance change field format '" + next_line + "'" );
-
-                  is_op_instance_change_field = true;
-
-                  operation += " " + next_line.substr( 0, pos );
-
-                  next_line.erase( 0, pos + 1 );
-               }
-
-               if( is_op_instance_change_field || ( operation == c_log_transformation_op_change_field_value ) )
-               {
-                  pos = next_line.find_last_of( '=' );
-
-                  if( pos == string::npos )
-                     throw runtime_error( "unexpected field transformation format '" + next_line + "'" );
 
                   operation += " " + next_line.substr( 0, pos );
 
@@ -1531,12 +1560,15 @@ void generate_transformation_file( const string& name )
             else
                class_id.erase( 0, model_id.size( ) );
 
-            pos = new_class_id.find( model_id );
+            if( !new_class_id.empty( ) )
+            {
+               pos = new_class_id.find( model_id );
 
-            if( pos == string::npos )
-               throw runtime_error( "unexpected new_class_id '" + new_class_id + "' missing model_id prefix '" + model_id + "'" );
-            else
-               new_class_id.erase( 0, model_id.size( ) );
+               if( pos == string::npos )
+                  throw runtime_error( "unexpected new_class_id '" + new_class_id + "' missing model_id prefix '" + model_id + "'" );
+               else
+                  new_class_id.erase( 0, model_id.size( ) );
+            }
 
             if( new_class_id.empty( ) )
                ltf_file_lines.push_back( string( c_log_transformation_scope_any_perform_op ) + ' '
@@ -6648,6 +6680,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             // now will process all "web app" files.
             if( rebuild )
             {
+               temp_umask tum( 077 );
+
                string web_app_dir_prefix;
 
                vector< string > module_ids;
@@ -6662,6 +6696,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                string next_module, next_mclass_id;
 
                vector< pair< string, string > > rename_pairs;
+
+               string ignore_field( c_log_transformation_op_ignore_field );
+               string skip_operation( c_log_transformation_op_skip_operation );
 
                do
                {
@@ -6704,6 +6741,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      fs_iterator fs( dfsi.get_path_name( ), &ff );
 
+                     // NOTE: Initally files are processed and can end up being either
+                     // removed or renamed (being dependent upon transformations which
+                     // are relevant to existing file attachments).
                      while( fs.has_next( ) )
                      {
                         string next_file( fs.get_name( ) );
@@ -6725,31 +6765,116 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                            // NOTE: Files are renamed (if the suffix is transformed)
                            // where name is expected to be "<prefix>-<suffix>.<ext>"
                            // and <suffix> takes the form of "M###C###F###" (such as
-                           // M101C102F103).
+                           // M100C101F102).
                            if( pos != string::npos )
                            {
                               string prefix( suffix.substr( 0, pos ) );
 
                               suffix.erase( 0, pos + 1 );
 
-                              string new_suffix( resolve_field_id( next_module,
-                               next_mclass_id, suffix, &socket_handler.get_transformations( ) ) );
-
                               string old_file_name( fs.get_root( ) + '/' + next_file );
 
+                              bool removed = false;
+
+                              // NOTE: If either the module or mclass_id is flagged for
+                              // "skip_operation" or an "ignore_field" for the field_id
+                              // is found then will just remove the existing file.
+                              string ltf_key( c_log_transformation_scope_any_perform_op );
+
+                              ltf_key += " " + next_module + " " + skip_operation;
+
+                              if( socket_handler.get_transformations( ).count( ltf_key ) )
+                                 removed = true;
+
+                              pos = ltf_key.find( skip_operation );
+
+                              if( pos == string::npos )
+                                 throw runtime_error( "unexpected initial missing 'skip_operation' for field in ltf key" );
+
+                              ltf_key.erase( pos );
+
+                              ltf_key += next_mclass_id.substr( next_module.length( ) ) + " " + skip_operation;
+
+                              if( socket_handler.get_transformations( ).count( ltf_key ) )
+                                 removed = true;
+
+                              if( !removed )
+                              {
+                                 pos = ltf_key.rfind( skip_operation );
+
+                                 if( pos == string::npos )
+                                    throw runtime_error( "unexpected subsequent missing 'skip_operation' for field in ltf key" );
+
+                                 ltf_key.erase( pos );
+
+                                 ltf_key += ignore_field;
+
+                                 if( socket_handler.get_transformations( ).count( ltf_key ) )
+                                 {
+                                    string field_id( socket_handler.get_transformations( )[ ltf_key ] );
+
+                                    if( suffix == ( next_mclass_id + field_id ) )
+                                       removed = true;
+                                 }
+                              }
+
+                              if( removed )
+                              {
+                                 file_remove( old_file_name );
+
+                                 continue;
+                              }
+
+                              string new_module_id, new_mclass_id;
+
+                              string new_suffix( resolve_field_id( next_module, next_mclass_id,
+                               suffix, &socket_handler.get_transformations( ), 0, &new_module_id, &new_mclass_id ) );
+
+                              // NOTE: Initially the new file name will use the existing directory (whether or not
+                              // that will be the final location). Typically the directories will be renamed after
+                              // all of the files within them have been renamed.
                               string new_file_name( fs.get_root( ) + '/' + prefix + '-' + new_suffix + '.' + ext );
 
-                              // NOTE: If file names have a different suffix then will
-                              // rename them but due to potential duplicate names when
-                              // still processing a ".new" name is initially used with
-                              // a second pass (that takes place after file processing
-                              // has completed) is needed to remove the interim ".new"
-                              // extra file extension.
                               if( new_file_name != old_file_name )
                               {
-                                 file_rename( old_file_name, new_file_name + c_new_extension );
+                                 bool moved = false;
 
-                                 rename_pairs.push_back( make_pair( new_file_name + c_new_extension, new_file_name ) );
+                                 // NOTE: It is also possible that due to initial data
+                                 // the final file already exists in which case simply
+                                 // will remove the old one. If the final file was not
+                                 // found but its new directory already exists then it
+                                 // will be moved there now (needing no later rename).
+                                 if( new_mclass_id != next_mclass_id )
+                                 {
+                                    string final_file_name( web_app_dir_prefix + new_module_id
+                                     + '/' + new_mclass_id + '/' + prefix + '-' + new_suffix + '.' + ext );
+
+                                    if( file_exists( final_file_name ) )
+                                    {
+                                       removed = true;
+
+                                       file_remove( old_file_name );
+                                    }
+                                    else if( dir_exists( web_app_dir_prefix + new_module_id + '/' + new_mclass_id ) )
+                                    {
+                                       moved = true;
+
+                                       file_rename( old_file_name, final_file_name );
+                                    }
+                                 }
+
+                                 // NOTE: If file names have a different suffix then will
+                                 // rename them, however, due to possible duplicate names
+                                 // while processing a ".new" name is initially used with
+                                 // a second pass (that takes place after file processing
+                                 // completion) is required in order to remove all of the
+                                 // interim ".new" additional file extensions.
+                                 if( !moved && !removed )
+                                 {
+                                    file_rename( old_file_name, new_file_name + c_new_extension );
+
+                                    rename_pairs.push_back( make_pair( new_file_name + c_new_extension, new_file_name ) );
+                                 }
                               }
                            }
                         }
@@ -6758,7 +6883,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                } while( dfsi.has_next( ) );
 
-               // NOTE: Second pass to remove ".new" interim extra extension.
+               // NOTE: Second pass to remove ".new" additional file extensions.
                process_rename_pairs( rename_pairs );
 
                // NOTE: After processing files will process mclass id directory names.
@@ -6774,13 +6899,49 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      next_mclass_id.erase( 0, pos + 1 );
 
-                     string new_mclass_id( resolve_mclass_id( module_id, next_mclass_id, &socket_handler.get_transformations( ) ) );
+                     bool removed = false;
 
-                     if( new_mclass_id != next_mclass_id )
+                     // NOTE: If either the module or class has been flagged
+                     // by "skip_operation" then remove the mclass_id folder.
+                     string ltf_key( c_log_transformation_scope_any_perform_op );
+
+                     ltf_key += " " + module_id + " " + skip_operation;
+
+                     if( socket_handler.get_transformations( ).count( ltf_key ) )
+                        removed = true;
+
+                     pos = ltf_key.find( skip_operation );
+
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected missing 'skip_operation' for class in ltf key" );
+
+                     ltf_key.erase( pos );
+
+                     ltf_key += next_mclass_id.substr( module_id.length( ) ) + " " + skip_operation;
+
+                     if( socket_handler.get_transformations( ).count( ltf_key ) )
+                        delete_directory_files( web_app_dir_prefix + module_id + '/' + next_mclass_id, true );
+                     else
                      {
-                        file_rename( web_app_dir_prefix + next_mclass_id, web_app_dir_prefix + new_mclass_id + c_new_extension );
+                        string new_module_id;
 
-                        rename_pairs.push_back( make_pair( web_app_dir_prefix + new_mclass_id + c_new_extension, web_app_dir_prefix + new_mclass_id ) );
+                        string new_mclass_id( resolve_mclass_id( module_id,
+                         next_mclass_id, &socket_handler.get_transformations( ), 0, &new_module_id ) );
+
+                        if( new_mclass_id != next_mclass_id )
+                        {
+                           // NOTE: If the new directory already exists will simply purge the old one.
+                           if( dir_exists( web_app_dir_prefix + new_module_id + '/' + new_mclass_id ) )
+                              delete_directory_files( web_app_dir_prefix + module_id + '/' + next_mclass_id, true );
+                           else
+                           {
+                              file_rename( web_app_dir_prefix + module_id + '/' + next_mclass_id,
+                               web_app_dir_prefix + new_module_id + '/' + new_mclass_id + c_new_extension );
+
+                              rename_pairs.push_back( make_pair( web_app_dir_prefix + new_module_id
+                               + '/' + new_mclass_id + c_new_extension, web_app_dir_prefix + new_module_id + '/' + new_mclass_id ) );
+                           }
+                        }
                      }
                   }
                }
@@ -6792,13 +6953,33 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   string next_module_id( module_ids[ i ] );
 
-                  string new_module_id( resolve_module_id( next_module_id, &socket_handler.get_transformations( ) ) );
+                  // NOTE: If the module has been flagged by "skip_operation"
+                  // then will now remove the directory (and any files in it).
+                  string ltf_key( c_log_transformation_scope_any_perform_op );
 
-                  if( new_module_id != next_module_id )
+                  ltf_key += " " + next_module_id + " " + skip_operation;
+
+                  if( socket_handler.get_transformations( ).count( ltf_key ) )
+                     delete_directory_files( web_app_dir_prefix + next_module_id, true );
+                  else
                   {
-                     file_rename( web_app_dir_prefix + next_module_id, web_app_dir_prefix + new_module_id + c_new_extension );
+                     string new_module_id( resolve_module_id(
+                      next_module_id, &socket_handler.get_transformations( ) ) );
 
-                     rename_pairs.push_back( make_pair( web_app_dir_prefix + new_module_id + c_new_extension, web_app_dir_prefix + new_module_id ) );
+                     if( new_module_id != next_module_id )
+                     {
+                        // NOTE: If the new directory already exists will simply purge the old one.
+                        if( dir_exists( web_app_dir_prefix + new_module_id ) )
+                           delete_directory_files( web_app_dir_prefix + next_module_id, true );
+                        else
+                        {
+                           file_rename( web_app_dir_prefix + next_module_id,
+                            web_app_dir_prefix + new_module_id + c_new_extension );
+
+                           rename_pairs.push_back( make_pair( web_app_dir_prefix
+                            + new_module_id + c_new_extension, web_app_dir_prefix + new_module_id ) );
+                        }
+                     }
                   }
                }
 
