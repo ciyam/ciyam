@@ -4,26 +4,31 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+CONFIG_PATH=/etc/ciyam
 INSTALL_PATH=/opt/ciyam
+SYSTEM_LOG_PATH=/var/log/ciyam
 
-copy_default( )
+copy_config_default( )
 {
  if [ "$1" = "" ]; then
-  echo "Error: Unexpected missing file name for 'copy_default'."
+  echo "Error: Unexpected missing file name for 'copy_config_default'."
   exit
  fi
 
- if [ ! -f $INSTALL_PATH/$1.default ]; then
-  cp ciyam/$1.default $INSTALL_PATH
-  cp $INSTALL_PATH/$1.default $INSTALL_PATH/$1
+ if [ ! -f $CONFIG_PATH/$1.default ]; then
+  cp ciyam/$1.default $CONFIG_PATH
+  cp $CONFIG_PATH/$1.default $CONFIG_PATH/$1
  else
-  cmp -s ciyam/$1.default $INSTALL_PATH/$1.default
+  cmp -s ciyam/$1.default $CONFIG_PATH/$1.default
   if [ $? -eq 1 ]; then
    echo "Warning: The following changes for '$1.default' might need to be made to '$1'."
-   diff ciyam/$1.default $INSTALL_PATH/$1.default
+   diff ciyam/$1.default $CONFIG_PATH/$1.default
   fi
  fi
 
+ if [ ! -f $INSTALL_PATH/$1 ]; then
+  ln -s $CONFIG_PATH/$1 $INSTALL_PATH/$1
+ fi
 }
 
 CIYAM_USER=$USER
@@ -118,6 +123,17 @@ fi
 
 cd $release_dir
 
+if [ ! -d $CONFIG_PATH ]; then
+ sudo mkdir $CONFIG_PATH
+ sudo chown $CIYAM_USER:$CIYAM_GROUP $CONFIG_PATH
+fi
+
+if [ ! -d $CONFIG_PATH ]; then
+ echo "Error: Unable to access/create $CONFIG_PATH directory (incorrect user?)."
+
+ exit
+fi
+
 if [ ! -d $INSTALL_PATH ]; then
  sudo mkdir $INSTALL_PATH
  sudo chown $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
@@ -129,6 +145,22 @@ if [ ! -d $INSTALL_PATH ]; then
  exit
 fi
 
+if [ ! -d $SYSTEM_LOG_PATH ]; then
+ sudo mkdir $SYSTEM_LOG_PATH
+ sudo chown $CIYAM_USER:$CIYAM_GROUP $SYSTEM_LOG_PATH
+
+ touch $SYSTEM_LOG_PATH/ciyam_script.log
+ touch $SYSTEM_LOG_PATH/ciyam_server.log
+fi
+
+if [ ! -f $INSTALL_PATH/ciyam_script.log ]; then
+ ln -s $SYSTEM_LOG_PATH/ciyam_script.log $INSTALL_PATH/ciyam_script.log
+fi
+
+if [ ! -f $INSTALL_PATH/ciyam_server.log ]; then
+ ln -s $SYSTEM_LOG_PATH/ciyam_server.log $INSTALL_PATH/ciyam_server.log
+fi
+
 has_service=
 
 if [ -f /usr/lib/systemd/system/ciyam.service ]; then
@@ -137,11 +169,11 @@ if [ -f /usr/lib/systemd/system/ciyam.service ]; then
  sudo systemctl restart apache2
 fi
 
-copy_default autoscript.sio
+copy_config_default autoscript.sio
 
-copy_default manuscript.sio
+copy_config_default manuscript.sio
 
-copy_default ciyam_server.sio
+copy_config_default ciyam_server.sio
 
 source ./env_vars.sh
 
@@ -187,19 +219,19 @@ if [ "$has_system" = "" ]; then
  rm -f $INSTALL_PATH/$CIYAM_APP_MOD.log.app
 
  if [ "$is_dev_env" = "1" ]; then
-  sed -i "s/# <protocol_handler>file:/ <protocol_handler>apt:/g" $INSTALL_PATH/ciyam_server.sio
+  sed -i "s/# <protocol_handler>file:/ <protocol_handler>apt:/g" $CONFIG_PATH/ciyam_server.sio
  fi
 
  if [ ! "$CIYAM_APP_MOD" = "Meta" ]; then
-  sed -i "s/# <default_storage>Meta/ <default_storage>$CIYAM_APP_MOD/g" $INSTALL_PATH/ciyam_server.sio
+  sed -i "s/# <default_storage>Meta/ <default_storage>$CIYAM_APP_MOD/g" $CONFIG_PATH/ciyam_server.sio
  fi
 fi
 
 if [ -f $INSTALL_PATH/manuscript.sio.generated ]; then
- sed -n '/^# Copyright/,/^### .<start generated/p' $INSTALL_PATH/manuscript.sio > $INSTALL_PATH/manuscript.sio.new
- cat $INSTALL_PATH/manuscript.sio.generated >> $INSTALL_PATH/manuscript.sio.new
- cp $INSTALL_PATH/manuscript.sio $INSTALL_PATH/manuscript.sio.old
- $INSTALL_PATH/update $INSTALL_PATH/manuscript.sio $INSTALL_PATH/manuscript.sio.new > /dev/null
+ sed -n '/^# Copyright/,/^### .<start generated/p' $CONFIG_PATH/manuscript.sio > $CONFIG_PATH/manuscript.sio.new
+ cat $INSTALL_PATH/manuscript.sio.generated >> $CONFIG_PATH/manuscript.sio.new
+ cp $CONFIG_PATH/manuscript.sio $CONFIG_PATH/manuscript.sio.old
+ $INSTALL_PATH/update $CONFIG_PATH/manuscript.sio $CONFIG_PATH/manuscript.sio.new > /dev/null
 fi
 
 needs_restore=
