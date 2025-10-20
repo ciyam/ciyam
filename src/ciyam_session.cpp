@@ -6676,13 +6676,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_trace_flags( original_trace_flags );
             }
 
+            string web_app_files_dir(
+             storage_web_root( true ) + '/' + string( c_files_directory ) );
+
             // NOTE: After processing all DB records
             // now will process all "web app" files.
-            if( rebuild )
+            if( rebuild && dir_exists( web_app_files_dir ) )
             {
                temp_umask tum( 077 );
 
-               string web_app_dir_prefix;
+               string web_app_files_dir_prefix;
 
                vector< string > module_ids;
                vector< string > mclass_ids;
@@ -6691,7 +6694,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                directory_filter df;
 
-               fs_iterator dfsi( storage_web_root( true ) + '/' + string( c_files_directory ), &df );
+               fs_iterator dfsi( web_app_files_dir, &df );
 
                string next_module, next_mclass_id;
 
@@ -6706,7 +6709,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   {
                      is_first = false;
 
-                     web_app_dir_prefix = dfsi.get_full_name( ) + '/';
+                     web_app_files_dir_prefix = dfsi.get_full_name( ) + '/';
 
                      continue;
                   }
@@ -6716,11 +6719,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   string next_full_name( dfsi.get_full_name( ) );
 
-                  string::size_type pos = next_full_name.find( web_app_dir_prefix );
+                  string::size_type pos = next_full_name.find( web_app_files_dir_prefix );
 
                   if( pos == 0 )
                   {
-                     string next_partial( next_full_name.substr( web_app_dir_prefix.length( ) ) );
+                     string next_partial( next_full_name.substr( web_app_files_dir_prefix.length( ) ) );
 
                      pos = next_partial.find( '/' );
 
@@ -6846,7 +6849,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                                  // will be moved there now (needing no later rename).
                                  if( new_mclass_id != next_mclass_id )
                                  {
-                                    string final_file_name( web_app_dir_prefix + new_module_id
+                                    string final_file_name( web_app_files_dir_prefix + new_module_id
                                      + '/' + new_mclass_id + '/' + prefix + '-' + new_suffix + '.' + ext );
 
                                     if( file_exists( final_file_name ) )
@@ -6855,7 +6858,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                                        file_remove( old_file_name );
                                     }
-                                    else if( dir_exists( web_app_dir_prefix + new_module_id + '/' + new_mclass_id ) )
+                                    else if( dir_exists( web_app_files_dir_prefix + new_module_id + '/' + new_mclass_id ) )
                                     {
                                        moved = true;
 
@@ -6920,7 +6923,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      ltf_key += next_mclass_id.substr( module_id.length( ) ) + " " + skip_operation;
 
                      if( socket_handler.get_transformations( ).count( ltf_key ) )
-                        delete_directory_files( web_app_dir_prefix + module_id + '/' + next_mclass_id, true );
+                        delete_directory_files( web_app_files_dir_prefix + module_id + '/' + next_mclass_id, true );
                      else
                      {
                         string new_module_id;
@@ -6931,15 +6934,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         if( new_mclass_id != next_mclass_id )
                         {
                            // NOTE: If the new directory already exists will simply purge the old one.
-                           if( dir_exists( web_app_dir_prefix + new_module_id + '/' + new_mclass_id ) )
-                              delete_directory_files( web_app_dir_prefix + module_id + '/' + next_mclass_id, true );
+                           if( dir_exists( web_app_files_dir_prefix + new_module_id + '/' + new_mclass_id ) )
+                              delete_directory_files( web_app_files_dir_prefix + module_id + '/' + next_mclass_id, true );
                            else
                            {
-                              file_rename( web_app_dir_prefix + module_id + '/' + next_mclass_id,
-                               web_app_dir_prefix + new_module_id + '/' + new_mclass_id + c_new_extension );
+                              file_rename( web_app_files_dir_prefix + module_id + '/' + next_mclass_id,
+                               web_app_files_dir_prefix + new_module_id + '/' + new_mclass_id + c_new_extension );
 
-                              rename_pairs.push_back( make_pair( web_app_dir_prefix + new_module_id
-                               + '/' + new_mclass_id + c_new_extension, web_app_dir_prefix + new_module_id + '/' + new_mclass_id ) );
+                              rename_pairs.push_back( make_pair( web_app_files_dir_prefix + new_module_id
+                               + '/' + new_mclass_id + c_new_extension, web_app_files_dir_prefix + new_module_id + '/' + new_mclass_id ) );
                            }
                         }
                      }
@@ -6960,7 +6963,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   ltf_key += " " + next_module_id + " " + skip_operation;
 
                   if( socket_handler.get_transformations( ).count( ltf_key ) )
-                     delete_directory_files( web_app_dir_prefix + next_module_id, true );
+                     delete_directory_files( web_app_files_dir_prefix + next_module_id, true );
                   else
                   {
                      string new_module_id( resolve_module_id(
@@ -6969,15 +6972,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( new_module_id != next_module_id )
                      {
                         // NOTE: If the new directory already exists will simply purge the old one.
-                        if( dir_exists( web_app_dir_prefix + new_module_id ) )
-                           delete_directory_files( web_app_dir_prefix + next_module_id, true );
+                        if( dir_exists( web_app_files_dir_prefix + new_module_id ) )
+                           delete_directory_files( web_app_files_dir_prefix + next_module_id, true );
                         else
                         {
-                           file_rename( web_app_dir_prefix + next_module_id,
-                            web_app_dir_prefix + new_module_id + c_new_extension );
+                           file_rename( web_app_files_dir_prefix + next_module_id,
+                            web_app_files_dir_prefix + new_module_id + c_new_extension );
 
-                           rename_pairs.push_back( make_pair( web_app_dir_prefix
-                            + new_module_id + c_new_extension, web_app_dir_prefix + new_module_id ) );
+                           rename_pairs.push_back( make_pair( web_app_files_dir_prefix
+                            + new_module_id + c_new_extension, web_app_files_dir_prefix + new_module_id ) );
                         }
                      }
                   }
@@ -7476,9 +7479,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string log_file_name;
 
-         if( is_script || is_server )
-            log_file_name = get_log_files_dir( );
-         else if( !is_application )
+         if( !is_script && !is_server && !is_application )
             log_file_name = get_web_root( );
 
          if( !log_file_name.empty( ) )
