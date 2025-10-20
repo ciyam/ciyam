@@ -115,6 +115,7 @@ enum special_var
    e_special_var_tree_total,
    e_special_var_allow_async,
    e_special_var_application,
+   e_special_var_devt_system,
    e_special_var_errors_only,
    e_special_var_init_log_id,
    e_special_var_opened_user,

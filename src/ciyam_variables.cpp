@@ -150,6 +150,7 @@ const char* const c_special_variable_tree_match = "@tree_match";
 const char* const c_special_variable_tree_total = "@tree_total";
 const char* const c_special_variable_allow_async = "@allow_async";
 const char* const c_special_variable_application = "@application";
+const char* const c_special_variable_devt_system = "@devt_system";
 const char* const c_special_variable_errors_only = "@errors_only";
 const char* const c_special_variable_init_log_id = "@init_log_id";
 const char* const c_special_variable_opened_user = "@opened_user";
@@ -474,6 +475,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_tree_total );
       g_special_variable_names.push_back( c_special_variable_allow_async );
       g_special_variable_names.push_back( c_special_variable_application );
+      g_special_variable_names.push_back( c_special_variable_devt_system );
       g_special_variable_names.push_back( c_special_variable_errors_only );
       g_special_variable_names.push_back( c_special_variable_init_log_id );
       g_special_variable_names.push_back( c_special_variable_opened_user );
@@ -659,6 +661,12 @@ void touch_or_remove( const string& var_name, bool remove )
       file_remove( file_name );
    else if( !file_exists( file_name ) )
       file_touch( file_name, 0, true );
+}
+
+void set_devt_system( )
+{
+   if( file_exists( "config.info" ) )
+      g_variables[ c_special_variable_devt_system ] = c_true_value;
 }
 
 void set_file_var_name( const string& var_name )
@@ -920,6 +928,9 @@ string get_raw_system_variable( const string& name, bool is_internal )
 
       map< string, string >::const_iterator ci;
 
+      if( wildcard_match( var_name, c_special_variable_devt_system ) )
+         set_devt_system( );
+
       if( wildcard_match( var_name, c_special_variable_backup_needed ) )
          set_backup_needed( );
 
@@ -973,6 +984,9 @@ string get_raw_system_variable( const string& name, bool is_internal )
    }
    else
    {
+      if( var_name == c_special_variable_devt_system )
+         set_devt_system( );
+
       if( var_name == c_special_variable_backup_needed )
          set_backup_needed( );
 
@@ -1080,6 +1094,8 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
       file_remove( tmp_file_name );
    }
+   else if( name == c_special_variable_devt_system )
+      set_devt_system( );
    else if( name == c_special_variable_backup_needed )
    {
       guard g( g_mutex );
@@ -1308,8 +1324,6 @@ void set_system_variable( const string& name, const string& value, bool is_init,
             // just in case a deadlock could arise during the resync calls.
             guard g( g_mutex, "set_system_variable" );
 
-            TRACE_LOG( TRACE_MINIMAL, "*** switched files area across to: " + val + " ***" );
-
             string from( get_files_area_dir( ) );
 
             set_files_area_dir( val );
@@ -1319,7 +1333,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
             resync_archive_info( p_progress );
 
-            TRACE_LOG( TRACE_MINIMAL, "*** switched files area over from: " + from + " ***" );
+            TRACE_LOG( TRACE_MINIMAL, "*** switched files area over from '" + from + "' to '" + val + "' ***" );
          }
       }
       else if( var_name == string( c_special_variable_ods_cache_hit_ratios ) )
