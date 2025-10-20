@@ -700,9 +700,8 @@ void autoscript_session::on_start( )
                         throw runtime_error( "unable to open '" + script_args + "' for output" );
 
                      outf << "<" << arguments << endl;
-                     outf.close( );
 
-                     script_args += " \"" + get_files_area_dir( ) + "\"";
+                     outf.close( );
 
                      script_args += " " + name;
 

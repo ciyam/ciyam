@@ -18,10 +18,10 @@ if [ "$1" = "-log_on_error" ]; then
 fi
 
 if [ $# -lt 1 ]; then
- echo Usage: script [[-do_not_log\|-log_on_error]] [script and args file] [files area dir] [[script name]]
+ echo Usage: script [[-do_not_log\|-log_on_error]] [script and args file] [[script name]]
 else
- if [ $# -gt 2 ]; then
-  echo $(date) [$3] >>$1.log
+ if [ $# -gt 1 ]; then
+  echo $(date) [$2] >>$1.log
  fi
 
  log=1
@@ -37,7 +37,7 @@ else
  fi
 
  if [ $log = 1 ]; then
-  cat $1.log >>$2/ciyam_script.log
+  cat $1.log >>ciyam_script.log
  fi
 
  rm $1

@@ -286,7 +286,6 @@ file_stats
 ~rm test1/ciyam_server.dat
 ~rm test1/ciyam_server.hdr
 ~rm test1/ciyam_server.idx
-~rm test1/ciyam_server.log
 ~rm test1/ciyam_server.tlg
 file_info -recurse -d=999 test
 file_info -total_blobs test
