@@ -23,6 +23,13 @@ if [ ! -f ciyam_server.sio ]; then
  cp ciyam_server.sio.default ciyam_server.sio
 fi
 
+if [ ! -f ciyam_script.log ]; then
+ ln -s .files/ciyam_script.log ciyam_script.log
+fi
+if [ ! -f ciyam_server.log ]; then
+ ln -s .files/ciyam_server.log ciyam_server.log
+fi
+
 if [ ! -f ciyam.pem ]; then
  ./create_ciyam_pem
 fi
