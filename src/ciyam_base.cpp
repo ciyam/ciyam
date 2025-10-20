@@ -3614,9 +3614,11 @@ void restore_saved_and_keep_as_older( const string& file_name )
    if( file_exists( saved_file ) )
    {
       if( file_exists( file_name ) )
-         file_rename( file_name, older_file );
+         file_copy( file_name, older_file );
 
-      file_rename( saved_file, file_name );
+      file_copy( saved_file, file_name );
+
+      file_remove( saved_file );
    }
 }
 
@@ -4373,15 +4375,7 @@ void log_trace_message( uint32_t flag, const string& message )
          break;
       }
 
-      string log_file_name( get_log_files_dir( ) );
-
-      if( !log_file_name.empty( )
-       && log_file_name[ log_file_name.length( ) - 1 ] != '/' )
-         log_file_name += '/';
-
-      log_file_name += c_server_log_file;
-
-      ofstream outf( log_file_name.c_str( ), ios::out | ios::app );
+      ofstream outf( c_server_log_file, ios::out | ios::app );
 
       string time_stamp( now.as_string( true, g_log_milliseconds ) );
 
@@ -6331,15 +6325,13 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
             }
          }
 
-         // NOTE: If making any change to "script_args" then it likely will also need
-         // to be done in "auto_script.cpp" (as it also executes the 'script' script).
-         script_args += " \"" + get_log_files_dir( ) + "\"";
-
          // NOTE: For cases where one script may end up calling numerous others (i.e.
          // such as a scan across records) this special session variable is available
          // to prevent excess log entries appearing in the script log file.
          string quiet( get_raw_session_variable( get_special_var_name( e_special_var_quiet ) ) );
 
+         // NOTE: If making any change to "script_args" then it likely will also need
+         // to be done in "auto_script.cpp" (as it also executes the 'script' script).
          if( ( quiet != c_true ) && ( quiet != c_true_value ) )
             script_args += " " + script_name;
 
