@@ -6679,9 +6679,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             string web_app_files_dir(
              storage_web_root( true ) + '/' + string( c_files_directory ) );
 
-            // NOTE: After processing all DB records
-            // now will process all "web app" files.
-            if( rebuild && dir_exists( web_app_files_dir ) )
+            // NOTE: After processing all DB records now will process all
+            // "web app" files (if not Meta, rebuilding and are present).
+            if( !is_meta && rebuild && dir_exists( web_app_files_dir ) )
             {
                temp_umask tum( 077 );
 
