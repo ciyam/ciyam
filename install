@@ -24,9 +24,10 @@ copy_config_default( )
    echo "Warning: The following changes for '$1.default' might need to be made to '$1'."
    diff ciyam/$1.default $CONFIG_PATH/$1.default
   fi
+  cp ciyam/$1.default $CONFIG_PATH
  fi
 
- if [ ! -f $INSTALL_PATH/$1 ]; then
+ if [ ! -L $INSTALL_PATH/$1 ]; then
   ln -s $CONFIG_PATH/$1 $INSTALL_PATH/$1
  fi
 }
@@ -153,11 +154,11 @@ if [ ! -d $SYSTEM_LOG_PATH ]; then
  touch $SYSTEM_LOG_PATH/ciyam_server.log
 fi
 
-if [ ! -f $INSTALL_PATH/ciyam_script.log ]; then
+if [ ! -L $INSTALL_PATH/ciyam_script.log ]; then
  ln -s $SYSTEM_LOG_PATH/ciyam_script.log $INSTALL_PATH/ciyam_script.log
 fi
 
-if [ ! -f $INSTALL_PATH/ciyam_server.log ]; then
+if [ ! -L $INSTALL_PATH/ciyam_server.log ]; then
  ln -s $SYSTEM_LOG_PATH/ciyam_server.log $INSTALL_PATH/ciyam_server.log
 fi
 
@@ -298,7 +299,7 @@ sudo chown -R $CIYAM_USER:$CIYAM_GROUP $WEBDIR/$CIYAM_APP_DIR
 
 rm -r $CIYAM_APP_DIR
 
-if [ ! -f $WEBDIR/$CIYAM_APP_DIR/ciyam.pem ]; then
+if [ ! -L $WEBDIR/$CIYAM_APP_DIR/ciyam.pem ]; then
  ln -s /opt/ciyam/ciyam.pem $WEBDIR/$CIYAM_APP_DIR/ciyam.pem
 fi
 
