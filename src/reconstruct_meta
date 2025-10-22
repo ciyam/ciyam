@@ -20,7 +20,11 @@ else
 
   tail -f reconstruct_meta.pipe 2>/dev/null &
 
+  tail_pid="$!"
+
   ./destroy_apps_and_models $1 "~reconstruct_meta" "reconstruct_meta.pipe"
+
+  kill "$tail_pid"
 
   rm -f reconstruct_meta.pipe
 
