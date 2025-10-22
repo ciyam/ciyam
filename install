@@ -49,7 +49,7 @@ fi
 if [ "$WEBDIR" = "" ]; then
  if [ -d /var/www/html ]; then
   WEBDIR=/var/www/html
- elif[ -d /srv/www/htdocs ]; then
+ elif [ -d /srv/www/htdocs ]; then
   WEBDIR=/srv/www/htdocs
  fi
 fi
