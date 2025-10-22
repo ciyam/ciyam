@@ -15,7 +15,20 @@
 ;
 .session_variable @set ?Group,Blog,Forum,Message
 @ifeq "$OUTPUT" "1"
-.pc admin @now 100 138100 " " "138101=CIYAM Blockchain Application,138102=create_ciyam_blockchain_application,138103=Blog\\,Forum\\,Message,302840=Group"
+SCRIPT_NAME=create_ciyam_blockchain_application
+;
+VERSION=@file:~grep "CIYAM_VER=" $SCRIPT_NAME.cin 2> /dev/null
+;
+@ifdef $VERSION
+VERSION=%VERSION:1%
+VERSION=@repstr:CIYAM_VER=/:$VERSION
+@endif
+;
+@ifndef $VERSION
+VERSION=0.1
+@endif
+;
+.pc admin @now 100 138100 " " "138101=CIYAM Blockchain Application,138102=$VERSION,138103=$SCRIPT_NAME,138105=Blog\\,Forum\\,Message,302840=Group"
 @endif
 ;
 .session_variable @set complete

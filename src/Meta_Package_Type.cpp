@@ -668,25 +668,32 @@ void Meta_Package_Type::impl::impl_Install( )
       throw runtime_error( "Package information file is empty." );
 
    string details( lines[ 0 ] );
+
    string::size_type pos = details.find( ' ' );
+
    if( pos == string::npos )
       throw runtime_error( "unexpected package details: " + lines[ 0 ] );
 
    string name( details.substr( 0, pos ) );
+
    details.erase( 0, pos + 1 );
 
    pos = details.find( ' ' );
+
    if( pos == string::npos )
       throw runtime_error( "unexpected package details: " + lines[ 0 ] );
 
    string plural( details.substr( 0, pos ) );
+
    details.erase( 0, pos + 1 );
 
    pos = details.find( ' ' );
+
    if( pos == string::npos )
       throw runtime_error( "unexpected package details: " + lines[ 0 ] );
 
    int version( atoi( details.substr( 0, pos ).c_str( ) ) );
+
    details.erase( 0, pos + 1 );
 
    bool is_multi = false;
@@ -706,6 +713,7 @@ void Meta_Package_Type::impl::impl_Install( )
       {
          if( get_obj( ).Installed( ) )
             package_versions.insert( make_pair( get_obj( ).Name( ), get_obj( ).Version( ) ) );
+
       } while( get_obj( ).iterate_next( ) );
    }
 
@@ -728,6 +736,7 @@ void Meta_Package_Type::impl::impl_Install( )
    get_obj( ).Version( version );
 
    string dependencies;
+
    vector< string > application_scripts;
 
    for( size_t i = 1; i < lines.size( ); i++ )
@@ -737,20 +746,24 @@ void Meta_Package_Type::impl::impl_Install( )
       if( next.find( c_application_script_prefix ) == 0 )
       {
          application_scripts.push_back( next.substr( strlen( c_application_script_prefix ) ) );
+
          continue;
       }
 
       if( !dependencies.empty( ) )
          dependencies += '\n';
+
       dependencies += next;
 
       if( !storage_locked_for_admin( ) )
       {
          string::size_type pos = next.find( ' ' );
+
          if( pos == string::npos )
             throw runtime_error( "dependency " + next + " is missing version" );
 
          string name = next.substr( 0, pos );
+
          int version = atoi( next.substr( pos + 1 ).c_str( ) );
 
          if( !package_versions.count( name ) )
@@ -786,9 +799,22 @@ void Meta_Package_Type::impl::impl_Install( )
             throw runtime_error( "invalid application script info: " + next );
 
          string name( next.substr( spos + 1 ) );
+
          string script_name( next.substr( pos + 1, spos - pos - 1 ) );
 
+         string version( get_obj( ).child_Application_Script( ).Version( ) );
+
+         spos = name.find( ',' );
+
+         if( spos != string::npos )
+         {
+            version = name.substr( spos + 1 );
+
+            name.erase( spos );
+         }
+
          get_obj( ).child_Application_Script( ).Name( name );
+         get_obj( ).child_Application_Script( ).Version( version );
          get_obj( ).child_Application_Script( ).Script_Name( script_name );
          get_obj( ).child_Application_Script( ).Package_Type( get_obj( ).get_key( ) );
 

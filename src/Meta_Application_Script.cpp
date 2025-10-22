@@ -74,27 +74,31 @@ inline void sanity_check( const string& s )
 const int32_t c_version = 1;
 
 const char* const c_field_id_Name = "138101";
-const char* const c_field_id_Other_Package_Types = "138103";
+const char* const c_field_id_Other_Package_Types = "138105";
 const char* const c_field_id_Package_Type = "302840";
-const char* const c_field_id_Script_Name = "138102";
+const char* const c_field_id_Script_Name = "138103";
+const char* const c_field_id_Version = "138102";
 
 const char* const c_field_name_Name = "Name";
 const char* const c_field_name_Other_Package_Types = "Other_Package_Types";
 const char* const c_field_name_Package_Type = "Package_Type";
 const char* const c_field_name_Script_Name = "Script_Name";
+const char* const c_field_name_Version = "Version";
 
 const char* const c_field_display_name_Name = "field_application_script_name";
 const char* const c_field_display_name_Other_Package_Types = "field_application_script_other_package_types";
 const char* const c_field_display_name_Package_Type = "field_application_script_package_type";
 const char* const c_field_display_name_Script_Name = "field_application_script_script_name";
+const char* const c_field_display_name_Version = "field_application_script_version";
 
-const int c_num_fields = 4;
+const int c_num_fields = 5;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
    "138101",
    "138102",
    "138103",
+   "138105",
    "302840"
 };
 
@@ -103,7 +107,8 @@ const char* const c_all_sorted_field_names[ ] =
    "Name",
    "Other_Package_Types",
    "Package_Type",
-   "Script_Name"
+   "Script_Name",
+   "Version"
 };
 
 inline bool compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
@@ -125,6 +130,7 @@ bool is_transient_field( const string& ) { static bool false_value( false ); ret
 domain_string_max_size< 100 > g_Name_domain;
 domain_string_max_size< 200 > g_Other_Package_Types_domain;
 domain_string_max_size< 100 > g_Script_Name_domain;
+domain_string_max_size< 5 > g_Version_domain;
 
 string g_group_field_name;
 string g_level_field_name;
@@ -175,6 +181,7 @@ string g_default_Name = string( );
 string g_default_Other_Package_Types = string( );
 string g_default_Package_Type = string( );
 string g_default_Script_Name = string( );
+string g_default_Version = string( "0.1" );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -286,6 +293,13 @@ void Meta_Application_Script_command_functor::operator ( )( const string& comman
          string_getter< string >( cmd_handler.p_Meta_Application_Script->Script_Name( ), cmd_handler.retval );
       }
 
+      if( !handled && ( ( field_name == c_field_id_Version ) || ( field_name == c_field_name_Version ) ) )
+      {
+         handled = true;
+
+         string_getter< string >( cmd_handler.p_Meta_Application_Script->Version( ), cmd_handler.retval );
+      }
+
       if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
@@ -329,6 +343,14 @@ void Meta_Application_Script_command_functor::operator ( )( const string& comman
 
          func_string_setter< Meta_Application_Script, string >(
           *cmd_handler.p_Meta_Application_Script, &Meta_Application_Script::Script_Name, field_value );
+      }
+
+      if( !handled && ( ( field_name == c_field_id_Version ) || ( field_name == c_field_name_Version ) ) )
+      {
+         handled = true;
+
+         func_string_setter< Meta_Application_Script, string >(
+          *cmd_handler.p_Meta_Application_Script, &Meta_Application_Script::Version, field_value );
       }
 
       if( !handled )
@@ -379,6 +401,9 @@ struct Meta_Application_Script::impl : public Meta_Application_Script_command_ha
 
    const string& impl_Script_Name( ) const { return lazy_fetch( p_obj ), v_Script_Name; }
    void impl_Script_Name( const string& Script_Name ) { sanity_check( Script_Name ); v_Script_Name = Script_Name; }
+
+   const string& impl_Version( ) const { return lazy_fetch( p_obj ), v_Version; }
+   void impl_Version( const string& Version ) { sanity_check( Version ); v_Version = Version; }
 
    Meta_Package_Type& impl_Package_Type( )
    {
@@ -495,6 +520,7 @@ struct Meta_Application_Script::impl : public Meta_Application_Script_command_ha
    string v_Name;
    string v_Other_Package_Types;
    string v_Script_Name;
+   string v_Version;
 
    string v_Package_Type;
    mutable class_pointer< Meta_Package_Type > cp_Package_Type;
@@ -524,6 +550,10 @@ string Meta_Application_Script::impl::get_field_value( int field ) const
       retval = to_string( impl_Script_Name( ) );
       break;
 
+      case 4:
+      retval = to_string( impl_Version( ) );
+      break;
+
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
@@ -551,6 +581,10 @@ void Meta_Application_Script::impl::set_field_value( int field, const string& va
       func_string_setter< Meta_Application_Script::impl, string >( *this, &Meta_Application_Script::impl::impl_Script_Name, value );
       break;
 
+      case 4:
+      func_string_setter< Meta_Application_Script::impl, string >( *this, &Meta_Application_Script::impl::impl_Version, value );
+      break;
+
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
@@ -574,6 +608,10 @@ void Meta_Application_Script::impl::set_field_default( int field )
 
       case 3:
       impl_Script_Name( g_default_Script_Name );
+      break;
+
+      case 4:
+      impl_Version( g_default_Version );
       break;
 
       default:
@@ -601,6 +639,10 @@ bool Meta_Application_Script::impl::is_field_default( int field ) const
 
       case 3:
       retval = ( v_Script_Name == g_default_Script_Name );
+      break;
+
+      case 4:
+      retval = ( v_Version == g_default_Version );
       break;
 
       default:
@@ -690,6 +732,7 @@ void Meta_Application_Script::impl::clear( )
    v_Name = g_default_Name;
    v_Other_Package_Types = g_default_Other_Package_Types;
    v_Script_Name = g_default_Script_Name;
+   v_Version = g_default_Version;
 
    v_Package_Type = string( );
    if( cp_Package_Type )
@@ -728,6 +771,11 @@ void Meta_Application_Script::impl::validate(
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Script_Name ) ) ) ) );
 
+   if( is_null( v_Version ) && !value_will_be_provided( c_field_name_Version ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Version,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_field_must_not_be_empty_field, get_module_string( c_field_display_name_Version ) ) ) ) );
+
    if( v_Package_Type.empty( ) && !value_will_be_provided( c_field_name_Package_Type ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Package_Type,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
@@ -753,6 +801,13 @@ void Meta_Application_Script::impl::validate(
     && !g_Script_Name_domain.is_valid( v_Script_Name, error_message = "" ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Script_Name,
        get_module_string( c_field_display_name_Script_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Version )
+    && ( v_Version != g_default_Version
+    || !value_will_be_provided( c_field_name_Version ) )
+    && !g_Version_domain.is_valid( v_Version, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Version,
+       get_module_string( c_field_display_name_Version ) + " " + error_message ) );
 
    // [<start validate>]
    // [<finish validate>]
@@ -786,6 +841,12 @@ void Meta_Application_Script::impl::validate_set_fields(
     && !g_Script_Name_domain.is_valid( v_Script_Name, error_message = "" ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Script_Name,
        get_module_string( c_field_display_name_Script_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Version )
+    && ( fields_set.count( c_field_id_Version ) || fields_set.count( c_field_name_Version ) )
+    && !g_Version_domain.is_valid( v_Version, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Version,
+       get_module_string( c_field_display_name_Version ) + " " + error_message ) );
 }
 
 void Meta_Application_Script::impl::after_fetch( )
@@ -996,6 +1057,16 @@ const string& Meta_Application_Script::Script_Name( ) const
 void Meta_Application_Script::Script_Name( const string& Script_Name )
 {
    p_impl->impl_Script_Name( Script_Name );
+}
+
+const string& Meta_Application_Script::Version( ) const
+{
+   return p_impl->impl_Version( );
+}
+
+void Meta_Application_Script::Version( const string& Version )
+{
+   p_impl->impl_Version( Version );
 }
 
 Meta_Package_Type& Meta_Application_Script::Package_Type( )
@@ -1234,6 +1305,16 @@ const char* Meta_Application_Script::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Version )
+   {
+      p_id = c_field_id_Version;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
 
    return p_id;
 }
@@ -1278,6 +1359,16 @@ const char* Meta_Application_Script::get_field_name(
    else if( id == c_field_id_Script_Name )
    {
       p_name = c_field_name_Script_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Version )
+   {
+      p_name = c_field_name_Version;
 
       if( p_type_name )
          *p_type_name = "string";
@@ -1349,6 +1440,11 @@ string Meta_Application_Script::get_field_uom_symbol( const string& id_or_name )
       name = string( c_field_display_name_Script_Name );
       get_module_string( c_field_display_name_Script_Name, &next );
    }
+   if( ( id_or_name == c_field_id_Version ) || ( id_or_name == c_field_name_Version ) )
+   {
+      name = string( c_field_display_name_Version );
+      get_module_string( c_field_display_name_Version, &next );
+   }
 
    // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
    // has one) will be in the module string that immediately follows that of its name.
@@ -1372,6 +1468,8 @@ string Meta_Application_Script::get_field_display_name( const string& id_or_name
       display_name = get_module_string( c_field_display_name_Package_Type );
    if( ( id_or_name == c_field_id_Script_Name ) || ( id_or_name == c_field_name_Script_Name ) )
       display_name = get_module_string( c_field_display_name_Script_Name );
+   if( ( id_or_name == c_field_id_Version ) || ( id_or_name == c_field_name_Version ) )
+      display_name = get_module_string( c_field_display_name_Version );
 
    return display_name;
 }
@@ -1609,6 +1707,7 @@ void Meta_Application_Script::get_sql_column_names(
    names.push_back( "C_Other_Package_Types" );
    names.push_back( "C_Package_Type" );
    names.push_back( "C_Script_Name" );
+   names.push_back( "C_Version" );
 
    if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
@@ -1624,6 +1723,7 @@ void Meta_Application_Script::get_sql_column_values(
    values.push_back( sql_quote( to_string( Other_Package_Types( ) ) ) );
    values.push_back( sql_quote( to_string( Package_Type( ) ) ) );
    values.push_back( sql_quote( to_string( Script_Name( ) ) ) );
+   values.push_back( sql_quote( to_string( Version( ) ) ) );
 
    if( p_done && p_class_name && ( *p_class_name == static_class_name( ) ) )
       *p_done = true;
@@ -1705,9 +1805,10 @@ void Meta_Application_Script::static_get_class_info( class_info_container& class
 void Meta_Application_Script::static_get_field_info( field_info_container& all_field_info )
 {
    all_field_info.push_back( field_info( "138101", "Name", "string", false, "", "" ) );
-   all_field_info.push_back( field_info( "138103", "Other_Package_Types", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "138105", "Other_Package_Types", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "302840", "Package_Type", "Meta_Package_Type", true, "", "" ) );
-   all_field_info.push_back( field_info( "138102", "Script_Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "138103", "Script_Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "138102", "Version", "string", false, "", "" ) );
 }
 
 void Meta_Application_Script::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )
@@ -1746,7 +1847,7 @@ const char* Meta_Application_Script::static_get_field_id( field_id id )
       break;
 
       case 2:
-      p_id = "138103";
+      p_id = "138105";
       break;
 
       case 3:
@@ -1754,6 +1855,10 @@ const char* Meta_Application_Script::static_get_field_id( field_id id )
       break;
 
       case 4:
+      p_id = "138103";
+      break;
+
+      case 5:
       p_id = "138102";
       break;
    }
@@ -1785,6 +1890,10 @@ const char* Meta_Application_Script::static_get_field_name( field_id id )
       case 4:
       p_id = "Script_Name";
       break;
+
+      case 5:
+      p_id = "Version";
+      break;
    }
 
    if( !p_id )
@@ -1807,6 +1916,8 @@ int Meta_Application_Script::static_get_field_num( const string& field )
       rc += 3;
    else if( field == c_field_id_Script_Name || field == c_field_name_Script_Name )
       rc += 4;
+   else if( field == c_field_id_Version || field == c_field_name_Version )
+      rc += 5;
 
    return rc - 1;
 }
@@ -1832,6 +1943,7 @@ string Meta_Application_Script::static_get_sql_columns( )
     "C_Other_Package_Types VARCHAR(200) NOT NULL,"
     "C_Package_Type VARCHAR(75) NOT NULL,"
     "C_Script_Name VARCHAR(200) NOT NULL,"
+    "C_Version VARCHAR(200) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

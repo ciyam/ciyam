@@ -820,6 +820,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500923
+        <affect>protect
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -1014,7 +1018,7 @@
       </specifications>
      </field>
      <field/>
-      <id>138103
+      <id>138105
       <name>Other_Package_Types
       <type>1025
       <mandatory>false
@@ -1026,10 +1030,23 @@
       </specifications>
      </field>
      <field/>
-      <id>138102
+      <id>138103
       <name>Script_Name
       <type>1020
       <mandatory>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
+      <id>138102
+      <name>Version
+      <type>1000
+      <mandatory>true
+      <default_value>0.1
       <indexes/>
       </indexes>
       <modifiers/>

@@ -117,7 +117,7 @@
 `{`$specification_Application_group_list_clname01`=`'Application_Version`'`}
 `{`$specification_Application_group_list_cltype01`=`'string`'`}
 `{`$specification_Application_group_list_clxtra01`=`'max_size=5`'`}
-`{`$specification_Application_group_list_clmods01`=`'`'`}
+`{`$specification_Application_group_list_clmods01`=`'8000:protect`'`}
 `{`$specification_Application_group_list_cluniq01`=`'false`'`}
 `{`$specification_Application_group_list_cindex01`=`'false`'`}
 `{`$specification_Application_group_list_column02`=`'127105`'`}
@@ -217,7 +217,7 @@
 `{`$specification_Application_view_field012`=`'127102`'`}
 `{`$specification_Application_view_ftype012`=`'string`'`}
 `{`$specification_Application_view_extra012`=`'max_size=5`'`}
-`{`$specification_Application_view_fmods012`=`'`'`}
+`{`$specification_Application_view_fmods012`=`'8000:protect`'`}
 `{`$specification_Application_view_fname012`=`'field_application_version`'`}
 `{`$specification_Application_view_fmand012`=`'true`'`}
 `{`$specification_Application_view_field013`=`'127106`'`}

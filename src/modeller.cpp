@@ -788,6 +788,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
          bool has_output_any = false;
 
          vector< class_data > all_class_data;
+
          g_model.get_class_data( all_class_data );
 
          vector< user_defined_enum_data > mod_ude_data;
@@ -797,27 +798,32 @@ void modeller_command_functor::operator ( )( const string& command, const parame
          g_model.get_user_defined_enum_data( all_ude_data, true );
 
          vector< user_defined_type_data > all_udt_data;
+
          g_model.get_user_defined_type_data( all_udt_data, true );
 
          string spec_file_name( g_model.get_name( ) );
+
          spec_file_name += c_spec_ext;
          spec_file_name += c_xrep_variables_ext;
 
+         string vars_file_name( g_model.get_name( ) );
+
+         vars_file_name += c_xrep_variables_ext;
+
          string string_file_name( g_model.get_name( ) );
+
          string_file_name += c_txt_ext;
 
          ofstream specf;
+         ofstream varsf;
          ofstream stringf;
 
          if( class_name.empty( ) )
          {
             specf.open( spec_file_name.c_str( ), ios::out );
+
             if( !specf )
                throw runtime_error( "unable to open file '" + spec_file_name + "' for output" );
-
-            stringf.open( string_file_name.c_str( ), ios::out );
-            if( !stringf )
-               throw runtime_error( "unable to open file '" + string_file_name + "' for output" );
 
             specf << "`{`$model_id`=`'" << g_model.get_id( ) << "`'`}\n";
             specf << "`{`$model_name`=`'" << g_model.get_name( ) << "`'`}\n";
@@ -830,13 +836,32 @@ void modeller_command_functor::operator ( )( const string& command, const parame
 
          if( class_name.empty( ) )
          {
+            varsf.open( vars_file_name.c_str( ), ios::out );
+
+            if( !varsf )
+               throw runtime_error( "unable to open file '" + vars_file_name + "' for output" );
+
+            varsf << "`{`$model_name`=`'" << g_model.get_name( ) << "`'`}\n";
+            varsf << "`{`$model_title`=`'" << g_model.get_title( ) << "`'`}\n";
+            varsf << "`{`}\n";
+         }
+
+         if( class_name.empty( ) )
+         {
             string make_file_name( g_model.get_name( ) );
+
             make_file_name += c_make_ext;
             make_file_name += c_xrep_variables_ext;
 
             ofstream makef( make_file_name.c_str( ) );
+
             if( !makef )
                throw runtime_error( "unable to open file '" + make_file_name + "' for output" );
+
+            stringf.open( string_file_name.c_str( ), ios::out );
+
+            if( !stringf )
+               throw runtime_error( "unable to open file '" + string_file_name + "' for output" );
 
             string title( g_model.get_title( ) );
             replace_char_occurences( title, '_', ' ' );
@@ -849,6 +874,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
             stringf << "field_row \"#\"\n";
 
             vector< string > all_enums;
+
             for( vector< user_defined_enum_data >::size_type i = 0; i < mod_ude_data.size( ); i++ )
                all_enums.push_back( mod_ude_data[ i ].id + "," + mod_ude_data[ i ].name );
 
@@ -897,8 +923,11 @@ void modeller_command_functor::operator ( )( const string& command, const parame
             specf << "`{`$all_classes`=`'";
 
             vector< string > externals;
+
             externals.push_back( "ciyam_base" );
+
             g_model.get_external_module_names( externals );
+
             makef << "`{`$" << g_model.get_name( ) << "_dylk`=`'" << string_list( externals ) << "`'`}\n";
 
             makef << "`{`$" << g_model.get_name( ) << "_cpps`=`'" << g_model.get_name( ) << ".cpp";
@@ -1001,6 +1030,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
             }
 
             makef.flush( );
+
             if( !makef.good( ) )
                throw runtime_error( "unexpected error flushing output file '" + make_file_name + "'" );
 
@@ -1299,6 +1329,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                         sql_columns += ",\nC_";
 
                      bool is_large_text = false;
+
                      if( all_field_data[ i ].extra.find( "text" ) != string::npos
                       || all_field_data[ i ].extra.find( "notes" ) != string::npos
                       || all_field_data[ i ].extra.find( "content" ) != string::npos
@@ -1322,6 +1353,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                      bool is_sql_numeric;
 
                      sql_columns += field_name;
+
                      sql_columns += " " + get_sql_type(
                       all_field_data[ i ].sys_type, all_field_data[ i ].is_mandatory,
                       all_field_data[ i ].is_foreign_key, &is_sql_numeric, is_large_text, is_large_table );
@@ -1347,9 +1379,11 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                      if( field_type == all_udt_data[ j ].id )
                      {
                         domain_fields.push_back( field_name );
+
                         string domain_type( all_udt_data[ j ].domain_type );
 
                         string next_type( all_udt_data[ j ].type );
+
                         while( true )
                         {
                            bool found = false;
@@ -1361,10 +1395,12 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                               {
                                  found = true;
                                  is_domain_aggregate = true;
+
                                  next_type = all_udt_data[ k ].type;
 
                                  domain_type += ",\n ";
                                  domain_type += all_udt_data[ k ].domain_type;
+
                                  break;
                               }
                            }
@@ -1372,6 +1408,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                            if( !found )
                            {
                               field_type = next_type;
+
                               break;
                            }
                         }
@@ -1380,6 +1417,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                            domain_type = "aggregate_domain< " + field_type + ",\n " + domain_type + " >";
 
                         domain_type_names.push_back( domain_type );
+
                         break;
                      }
                   }
@@ -1403,6 +1441,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                      if( is_commandable_type( field_type ) )
                      {
                         string field_name_and_type( field_name );
+
                         field_name_and_type += ',';
                         field_name_and_type += raw_field_type;
 
@@ -1434,8 +1473,10 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                   if( !all_field_data[ i ].default_value.empty( ) )
                   {
                      string default_value( all_field_data[ i ].default_value );
+
                      if( is_string_type( all_field_data[ i ].sys_type ) )
                         default_value = '"' + default_value + '"';
+
                      outf << "`{`$field_default_" << all_field_data[ i ].name << "`=`'" << default_value << "`'`}\n";
                   }
                }
@@ -1470,7 +1511,9 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                if( !domain_fields.empty( ) )
                {
                   outf << "`{`}\n";
+
                   outf << "`{`$domain_fields`=`'" << string_list( domain_fields ) << "`'`}\n";
+
                   for( size_t i = 0; i < domain_fields.size( ); i++ )
                      outf << "`{`$domain_type_" << domain_fields[ i ] << "`=`'" << domain_type_names[ i ] << "`'`}\n";
                }
@@ -1484,8 +1527,10 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                if( !mandatory_normal_fields.empty( ) || !mandatory_parent_fields.empty( ) )
                {
                   outf << "`{`}\n";
+
                   if( !mandatory_normal_fields.empty( ) )
                      outf << "`{`$mandatory_normal_fields`=`'" << string_list( mandatory_normal_fields ) << "`'`}\n";
+
                   if( !mandatory_parent_fields.empty( ) )
                      outf << "`{`$mandatory_parent_fields`=`'" << string_list( mandatory_parent_fields ) << "`'`}\n";
                }
@@ -1493,7 +1538,9 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                if( !base_field_info.empty( ) )
                {
                   outf << "`{`}\n";
+
                   outf << "`{`$base_fields`=`'\\";
+
                   for( size_t i = 0; i < base_field_info.size( ); i++ )
                   {
                      if( i > 0 )
@@ -1501,6 +1548,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                      outf << "\n" << base_field_info[ i ].second.first
                       << "," << base_field_info[ i ].first << "," << base_field_info[ i ].second.second;
                   }
+
                   outf << "`'`}\n";
                }
 
@@ -1511,12 +1559,14 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                }
 
                vector< child_relationship_data > child_rel_info;
+
                g_model.get_child_relationship_data( next_class_name, child_rel_info );
 
                if( !child_rel_info.empty( ) )
                {
                   outf << "`{`}\n";
                   outf << "`{`$child_info`=`'\\\n";
+
                   for( vector< child_relationship_data >::size_type i = 0; i < child_rel_info.size( ); i++ )
                   {
                      string relationship_name( child_rel_info[ i ].name );
@@ -1850,6 +1900,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                }
 
                outf.flush( );
+
                if( !outf.good( ) )
                   throw runtime_error( "unexpected error flushing output file '" + file_name + "'" );
 
@@ -1859,10 +1910,17 @@ void modeller_command_functor::operator ( )( const string& command, const parame
          }
 
          specf.flush( );
+
          if( !specf.good( ) )
             throw runtime_error( "unexpected error flushing output file '" + spec_file_name + "'" );
 
+         varsf.flush( );
+
+         if( !varsf.good( ) )
+            throw runtime_error( "unexpected error flushing output file '" + vars_file_name + "'" );
+
          stringf.flush( );
+
          if( !stringf.good( ) )
             throw runtime_error( "unexpected error flushing output file '" + string_file_name + "'" );
 

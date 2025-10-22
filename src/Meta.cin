@@ -892,8 +892,9 @@ procedure_add -id=137420 Package_Option Select
 procedure_add -id=137430 Package_Option Clear
 class_add -id=138100 Application_Script Application_Scripts
 field_add -id=138101 Application_Script Name str100 mand
-field_add -id=138102 Application_Script Script_Name str100 mand
-field_add -id=138103 Application_Script Other_Package_Types str200 opt
+field_add -id=138102 Application_Script Version str5 mand -def=0.1
+field_add -id=138103 Application_Script Script_Name str100 mand
+field_add -id=138105 Application_Script Other_Package_Types str200 opt
 index_add -id=138201 Application_Script Name unique
 class_add -id=139100 Global_Archive Global_Archives -x=global:arch
 field_add -id=139101 Global_Archive Name str100 opt -transient
@@ -1391,7 +1392,7 @@ modifier_add -id=500911 Class Is_SQL_Persistence Persistence_Extra:relegate
 modifier_add -id=500920 Application Is_Not_Full_Generate Keep_Existing_Data:relegate
 modifier_add -id=500921 Application Was_Cloned Use_Script:relegate,Add_Modules_Automatically:relegate,Generate_Details:relegate
 modifier_add -id=500922 Application Has_No_Application_Log Keep_Existing_Data:relegate
-modifier_add -id=500923 Application Is_Using_Script Create_Database:relegate,Add_Modules_Automatically:relegate
+modifier_add -id=500923 Application Is_Using_Script Version:protect,Create_Database:relegate,Add_Modules_Automatically:relegate
 modifier_add -id=500924 Application Is_Not_Using_Script Creation_Script:relegate
 modifier_add -id=500925 Application Is_Installing_Script Generate_Type:relegate,Generate_Details:relegate
 modifier_add -id=500926 Application Has_No_Installation_Scripts Use_Script:relegate

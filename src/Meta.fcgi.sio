@@ -2712,7 +2712,7 @@
      <ftype>string
      <extra>max_size=5
      <mandatory>true
-     <modifiers>
+     <modifiers>8000:protect
     </field>
     <field/>
      <name>field_application_generate_details
@@ -8714,7 +8714,7 @@
      <field>127102
      <ftype>string
      <extra>max_size=5
-     <modifiers>
+     <modifiers>8000:protect
      <unique>false
      <indexed>false
     </column>

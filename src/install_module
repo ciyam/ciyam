@@ -18,8 +18,10 @@ else
   cp $1.fcgi.sio $directory
   chmod a+r $directory/$1.fcgi.sio
 
-  if [ ! "$alias" = "" ]; then
-   ./xrep @module.html.xrep model_vars=$1.vars.xrep > $directory/$alias.html
+  if [ "$alias" = "" ]; then
+   export alias=index
   fi
+
+  ./xrep @module.html.xrep model_vars=$1.vars.xrep > $directory/$alias.html
  fi
 fi
