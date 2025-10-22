@@ -47,7 +47,22 @@ if [ -f src/.app_name ]; then
 fi
 
 if [ "$WEBDIR" = "" ]; then
- echo "Error: Missing WEBDIR environment variable."
+ if [ -d /var/www/html ]; then
+  WEBDIR=/var/www/html
+ elif[ -d /srv/www/htdocs ]; then
+  WEBDIR=/srv/www/htdocs
+ fi
+fi
+
+if [ "$WEBDIR" = "" ]; then
+ echo "Error: Unable to determine WEBDIR (apache2 not installed?)."
+ exit
+fi
+
+HTTPD_GROUP=$(stat -c "%G" $WEBDIR 2> /dev/null)
+
+if [ "$HTTPD_GROUP" = "" ]; then
+ echo "Error: Unable to determine HTTPD_GROUP (incorrect WEBDIR?)."
  exit
 fi
 
@@ -167,7 +182,6 @@ has_service=
 if [ -f /usr/lib/systemd/system/ciyam.service ]; then
  has_service=1
  sudo systemctl stop ciyam
- sudo systemctl restart apache2
 fi
 
 copy_config_default autoscript.sio
@@ -271,7 +285,7 @@ rm -r ciyam
 if [ ! -d $WEBDIR/meta ]; then
  sudo mkdir $WEBDIR/meta
  sudo chmod g+w $WEBDIR/meta
- sudo chown $CIYAM_USER:$CIYAM_GROUP $WEBDIR/meta
+ sudo chown $CIYAM_USER:$HTTPD_GROUP $WEBDIR/meta
 fi
 
 if [ ! -d $WEBDIR/meta ]; then
@@ -283,7 +297,7 @@ fi
 if [ ! -d $WEBDIR/$CIYAM_APP_DIR ]; then
  sudo mkdir $WEBDIR/$CIYAM_APP_DIR
  sudo chmod g+w $WEBDIR/$CIYAM_APP_DIR
- sudo chown $CIYAM_USER:$CIYAM_GROUP $WEBDIR/$CIYAM_APP_DIR
+ sudo chown $CIYAM_USER:$HTTPD_GROUP $WEBDIR/$CIYAM_APP_DIR
 fi
 
 if [ ! -d $WEBDIR/$CIYAM_APP_DIR ]; then
@@ -295,13 +309,15 @@ fi
 sudo cp -R $CIYAM_APP_DIR/* $WEBDIR/$CIYAM_APP_DIR
 
 sudo chmod -R g+w $WEBDIR/$CIYAM_APP_DIR
-sudo chown -R $CIYAM_USER:$CIYAM_GROUP $WEBDIR/$CIYAM_APP_DIR
+sudo chown -R $CIYAM_USER:$HTTPD_GROUP $WEBDIR/$CIYAM_APP_DIR
 
 rm -r $CIYAM_APP_DIR
 
 if [ ! -L $WEBDIR/$CIYAM_APP_DIR/ciyam.pem ]; then
  ln -s /opt/ciyam/ciyam.pem $WEBDIR/$CIYAM_APP_DIR/ciyam.pem
 fi
+
+sudo systemctl restart apache2
 
 if [ -f $INSTALL_PATH/Meta.backup.sql ]; then
  pushd $INSTALL_PATH > /dev/null
