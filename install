@@ -184,7 +184,21 @@ if [ -f /usr/lib/systemd/system/ciyam.service ]; then
  sudo systemctl stop ciyam
 fi
 
+is_new=
+
+if [ ! -f $CONFIG_PATH/autoscript.sio ]; then
+ is_new=1
+fi
+
 copy_config_default autoscript.sio
+
+# NOTE: If is new and is not a development environment
+# then uncomment out all default "autoscript" entries.
+if [ "$is_new" = "1" ]; then
+ if [ "$is_dev_env" = "" ]; then
+  sed -i '/<sio\/>/,/<\/sio>/{s/^# / /g}' $CONFIG_PATH/autoscript.sio
+ fi
+fi
 
 copy_config_default manuscript.sio
 
@@ -196,15 +210,18 @@ rm env_vars.sh
 
 has_system=
 
-# NOTE: Remove module DB export directory when not new
-# and will protect the OS user's password when is new.
+# NOTE: Remove the module DB export directory when not new
+# and protect the OS user's password from being changed if
+# new when is a development environment.
 if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.modules.lst ]; then
  has_system=1
  rm -rf ciyam/$CIYAM_APP_MOD
  rm -f ciyam/$CIYAM_APP_MOD.log.app
  rm -f ciyam/$CIYAM_APP_MOD.backup.sql
 else
- touch $INSTALL_PATH/.${CIYAM_USER}_password_protected
+ if [ "$is_dev_env" = "1" ]; then
+  touch $INSTALL_PATH/.${CIYAM_USER}_password_protected
+ fi
 fi
 
 sudo cp -R ciyam/* $INSTALL_PATH
