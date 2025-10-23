@@ -119,9 +119,9 @@ else
 
  cp channel_readme.md mnemonics.txt ciyam_strings.txt module_strings.txt $release_name/ciyam
 
- cp add_user backup_check backup_export backup_import ciyam_backup ciyam_command ciyam_restore construct $release_name/ciyam
- cp create_ciyam_pem create_db drop_db export_files generate_next_block hub_check import_files init_identity $release_name/ciyam
- cp prepare_for_import restore shared_export shared_check shared_import system_variable update unlock_identity $release_name/ciyam
+ cp add_user backup_check backup_export backup_import block_tree_hash ciyam_backup ciyam_command ciyam_restore $release_name/ciyam
+ cp construct create_ciyam_pem create_db drop_db export_files generate_next_block hub_check import_files init_identity $release_name/ciyam
+ cp prepare_for_import restore shared_export shared_check shared_import system_variable tree_list update unlock_identity $release_name/ciyam
 
  cp ext_request run_script run_temp script set_password $release_name/ciyam
 
@@ -198,11 +198,17 @@ else
   rm -f $release_name/$app_dir_name/encrypted.txt
  fi
 
- if [ ! -f ciyam.service ]; then
-  ./init_service
+ if [ -f ciyam.service ]; then
+  mv ciyam.service ciyam.service.old
  fi
 
- cp ciyam.service $release_name
+ ./init_service
+
+ mv ciyam.service $release_name
+
+ if [ -f ciyam.service.old ]; then
+  mv ciyam.service.old ciyam.service
+ fi
 
  had_install=
 
