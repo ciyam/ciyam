@@ -313,9 +313,8 @@ sudo chown -R $CIYAM_USER:$HTTPD_GROUP $WEBDIR/$CIYAM_APP_DIR
 
 rm -r $CIYAM_APP_DIR
 
-if [ ! -L $WEBDIR/$CIYAM_APP_DIR/ciyam.pem ]; then
- ln -s /opt/ciyam/ciyam.pem $WEBDIR/$CIYAM_APP_DIR/ciyam.pem
-fi
+rm -f $WEBDIR/$CIYAM_APP_DIR/ciyam.pem
+ln -s /opt/ciyam/ciyam.pem $WEBDIR/$CIYAM_APP_DIR/ciyam.pem
 
 sudo systemctl restart apache2
 
