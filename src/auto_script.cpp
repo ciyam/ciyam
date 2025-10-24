@@ -45,6 +45,8 @@ namespace
 
 #include "ciyam_constants.h"
 
+const size_t c_max_execs = 99999;
+
 const size_t c_max_tolerance = 60;
 
 const char* const c_logging_never = "never";
@@ -144,6 +146,8 @@ string g_read_script_extra;
 
 vector< script_info > g_scripts;
 
+map< string, size_t > g_script_exec_limit;
+
 typedef multimap< date_time, int > script_schedule_container;
 typedef script_schedule_container::const_iterator script_schedule_const_iterator;
 
@@ -185,6 +189,8 @@ void read_script_info( )
          {
             script_info info;
 
+            size_t num_execs = ( c_max_execs + 1 );
+
             info.name = reader.read_attribute( c_attribute_name );
 
             string time_info( reader.read_attribute( c_attribute_time ) );
@@ -204,6 +210,19 @@ void read_script_info( )
             {
                info.allow_late_exec = true;
                cycle.erase( cycle.size( ) - 1 );
+            }
+
+            pos = cycle.find( '=' );
+
+            if( pos != string::npos )
+            {
+               num_execs = from_string< size_t >( cycle.substr( 0, pos ) );
+
+               if( ( num_execs == 0 ) || ( num_execs > c_max_execs ) )
+                  throw runtime_error( "invalid num execs value '"
+                   + to_string( num_execs ) + "' in cycle for '" + info.name + "'" );
+
+               cycle.erase( 0, pos + 1 );
             }
 
             if( !cycle.empty( ) && ( cycle[ cycle.size( ) - 1 ] == 'y' ) )
@@ -293,6 +312,9 @@ void read_script_info( )
 
             if( file_exists( info.tsfilename ) )
                info.last_mod = last_modification_time( info.tsfilename );
+
+            if( num_execs <= c_max_execs )
+               g_script_exec_limit.insert( make_pair( info.name, num_execs ) );
 
             g_scripts.push_back( info );
 
@@ -604,6 +626,7 @@ void autoscript_session::on_start( )
          }
 
          vector< date_time > erase_items;
+
          script_schedule_container new_schedule_items;
 
          i = g_script_schedule.lower_bound( now );
@@ -626,8 +649,10 @@ void autoscript_session::on_start( )
 
                string name( g_scripts[ j->second ].name );
 
+               string decorated_name( name );
+
                // NOTE: Use *<name> for scripts to run even if locked.
-               if( okay && !name.empty( ) && name[ 0 ] == '*' )
+               if( okay && !name.empty( ) && ( name[ 0 ] == '*' ) )
                {
                   okay = true;
                   special = true;
@@ -636,7 +661,7 @@ void autoscript_session::on_start( )
                }
 
                // NOTE: Use !<name> for scripts to only run when locked.
-               if( okay && !name.empty( ) && name[ 0 ] == '!' )
+               if( okay && !name.empty( ) && ( name[ 0 ] == '!' ) )
                {
                   okay = locked;
                   special = true;
@@ -677,8 +702,17 @@ void autoscript_session::on_start( )
                if( !lock_filename.empty( ) && !can_create_script_lock_file( lock_filename ) )
                   okay = false;
 
+               bool executed = false;
+
                int cycle_seconds = g_scripts[ j->second ].cycle_seconds;
                int cycle_num_years = g_scripts[ j->second ].cycle_num_years;
+
+               // NOTE: If a script is limited to a number of execs
+               // then will not execute after that limit is reached
+               // (even if still found in the schedule).
+               if( g_script_exec_limit.count( decorated_name )
+                && ( g_script_exec_limit[ decorated_name ] == 0 ) )
+                  okay = false;
 
                if( okay && !is_excluded( g_scripts[ j->second ], now )
                 && ( g_scripts[ j->second ].allow_late_exec || ( ( now - next ) <= 1.0 ) ) )
@@ -755,8 +789,26 @@ void autoscript_session::on_start( )
                   }
 
                   if( okay )
+                  {
+                     executed = true;
+
                      exec_system( cmd_and_args, true );
+                  }
                }
+
+               if( g_script_exec_limit.count( decorated_name ) )
+               {
+                  if( executed && g_script_exec_limit[ decorated_name ] )
+                     --g_script_exec_limit[ decorated_name ];
+
+                  // NOTE: If has reached exec limit then skip re-scheduling.
+                  if( !g_script_exec_limit[ decorated_name ] )
+                     continue;
+               }
+
+               if( ( g_scripts[ j->second ].finish_date != udate( ) )
+                && ( now.get_date( ) > g_scripts[ j->second ].finish_date ) )
+                  continue;
 
                size_t count = 0;
 
@@ -765,9 +817,10 @@ void autoscript_session::on_start( )
                   if( ++count >= c_max_reschedule_attempts )
                   {
                      TRACE_LOG( TRACE_MINIMAL,
-                      "warning: unable to scheule autoscript '" + name + "'" );
+                      "warning: unable to schedule autoscript '" + name + "'" );
 
                      next = date_time::maximum( );
+
                      break;
                   }
 
@@ -776,10 +829,6 @@ void autoscript_session::on_start( )
                   else
                      next += ( years )cycle_num_years;
                }
-
-               if( g_scripts[ j->second ].finish_date != udate( )
-                && now.get_date( ) > g_scripts[ j->second ].finish_date )
-                  continue;
 
                new_schedule_items.insert( make_pair( next, j->second ) );
             }
