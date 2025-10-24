@@ -17,18 +17,24 @@ copy_config_default( )
 
  if [ ! -f $CONFIG_PATH/$1.default ]; then
   cp ciyam/$1.default $CONFIG_PATH
+  chown $CIYAM_USER:$CIYAM_GROUP $CONFIG_PATH/$1.default
+
   cp $CONFIG_PATH/$1.default $CONFIG_PATH/$1
+  chown $CIYAM_USER:$CIYAM_GROUP $CONFIG_PATH/$1
  else
   cmp -s ciyam/$1.default $CONFIG_PATH/$1.default
+
   if [ $? -eq 1 ]; then
    echo "Warning: The following changes for '$1.default' might need to be made to '$1'."
    diff ciyam/$1.default $CONFIG_PATH/$1.default
   fi
+
   cp ciyam/$1.default $CONFIG_PATH
  fi
 
  if [ ! -L $INSTALL_PATH/$1 ]; then
   ln -s $CONFIG_PATH/$1 $INSTALL_PATH/$1
+  chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/$1
  fi
 }
 
@@ -41,9 +47,15 @@ if [ "$name" = "" ]; then
  name="*"
 fi
 
-if [ -f src/.app_name ]; then
- name=$(<src/.app_name)
- name=${name,,}
+is_dev_env=
+
+if [ -d src ]; then
+ is_dev_env=1
+
+ if [ -f src/.app_name ]; then
+  name=$(<src/.app_name)
+  name=${name,,}
+ fi
 fi
 
 if [ "$WEBDIR" = "" ]; then
@@ -56,17 +68,63 @@ fi
 
 if [ "$WEBDIR" = "" ]; then
  echo "Error: Unable to determine WEBDIR (apache2 not installed?)."
+
  exit
 fi
 
+HTTPD_USER=$(stat -c "%U" $WEBDIR 2> /dev/null)
 HTTPD_GROUP=$(stat -c "%G" $WEBDIR 2> /dev/null)
 
 if [ "$HTTPD_GROUP" = "" ]; then
  echo "Error: Unable to determine HTTPD_GROUP (incorrect WEBDIR?)."
+
  exit
 fi
 
+if [ -f /usr/bin/mysql ]; then
+ MYSQL=mysql
+fi
+
+if [ -f /usr/bin/mariadb ]; then
+ MYSQL=mariadb
+fi
+
+if [ "$MYSQL" = "" ]; then
+ echo "Error: Neither MySQL (nor MariaDB) program was found (not installed?)."
+
+ exit
+fi
+
+if [ "$CIYAM_USER" = "root" ]; then
+ if [ "$is_dev_env" = "1" ]; then
+  echo "Error: Do not run this script as 'root' in a development environment."
+
+  exit
+ else
+  if [ ! $(getent group ciyam) ]; then
+   groupadd ciyam
+  fi
+
+  if ! id -u admin > /dev/null 2>&1; then
+   useradd -m admin
+  fi
+
+  usermod -aG sudo,ciyam,$HTTPD_GROUP admin
+
+  usermod -g $HTTPD_GROUP admin
+
+  echo "admin ALL=(ALL) NOPASSWD:ALL" | (EDITOR="tee -a" visudo)
+
+  chmod g+w $WEBDIR
+  chown $HTTPD_USER:$HTTPD_GROUP $WEBDIR
+
+  CIYAM_USER=admin
+  CIYAM_GROUP=ciyam
+ fi
+fi
+
 had_error=
+
 release_dir=
 release_file=
 
@@ -109,14 +167,11 @@ if [ "$release_dir" = "" ]; then
  exit
 fi
 
-is_dev_env=
 
 # NOTE: If is a development environment then will save and erase the current
 # identity (and also stop the application server if it's currently running).
-if [ -d src ]; then
+if [ "$is_dev_env" = "1" ]; then
  pushd src > /dev/null
-
- is_dev_env=1
 
  if [ -f ciyam_server.sid ]; then
   ./save_identity > /dev/null
@@ -166,15 +221,20 @@ if [ ! -d $SYSTEM_LOG_PATH ]; then
  sudo chown $CIYAM_USER:$CIYAM_GROUP $SYSTEM_LOG_PATH
 
  touch $SYSTEM_LOG_PATH/ciyam_script.log
+ sudo chown $CIYAM_USER:$CIYAM_GROUP $SYSTEM_LOG_PATH/ciyam_script.log
+
  touch $SYSTEM_LOG_PATH/ciyam_server.log
+ sudo chown $CIYAM_USER:$CIYAM_GROUP $SYSTEM_LOG_PATH/ciyam_server.log
 fi
 
 if [ ! -L $INSTALL_PATH/ciyam_script.log ]; then
  ln -s $SYSTEM_LOG_PATH/ciyam_script.log $INSTALL_PATH/ciyam_script.log
+ sudo chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/ciyam_script.log
 fi
 
 if [ ! -L $INSTALL_PATH/ciyam_server.log ]; then
  ln -s $SYSTEM_LOG_PATH/ciyam_server.log $INSTALL_PATH/ciyam_server.log
+ sudo chown -h $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/ciyam_server.log
 fi
 
 has_service=
@@ -225,10 +285,9 @@ else
 fi
 
 sudo cp -R ciyam/* $INSTALL_PATH
+sudo chown -R $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
 
 if [ "$has_system" = "" ]; then
- sudo chown -R $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
-
  if [ ! -f $INSTALL_PATH/Meta.log ]; then
   if [ ! "$CIYAM_APP_MOD" = "Meta" ]; then
    dbus-uuidgen | xargs -I{} echo -n @{} > $INSTALL_PATH/Meta/id
@@ -236,6 +295,7 @@ if [ "$has_system" = "" ]; then
    cat $INSTALL_PATH/Meta/id | sed 's/@/[0]/g' | xargs echo -e > $INSTALL_PATH/Meta.log
 
    cat $INSTALL_PATH/Meta.log.app >> $INSTALL_PATH/Meta.log
+   sudo chown $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/Meta.log
 
    rm -f $INSTALL_PATH/Meta.log.app
   fi
@@ -247,6 +307,7 @@ if [ "$has_system" = "" ]; then
  cat $INSTALL_PATH/$CIYAM_APP_MOD/id | sed 's/@/[0]/g' | xargs echo -e > $INSTALL_PATH/$CIYAM_APP_MOD.log
 
  cat $INSTALL_PATH/$CIYAM_APP_MOD.log.app >> $INSTALL_PATH/$CIYAM_APP_MOD.log
+ sudo chown $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/$CIYAM_APP_MOD.log
 
  rm -f $INSTALL_PATH/$CIYAM_APP_MOD.log.app
 
@@ -351,6 +412,14 @@ if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.backup.sql ]; then
  rm -f $CIYAM_APP_MOD.backup.sql
  popd > /dev/null
 fi
+
+if [ "$is_dev_env" = "" ]; then
+ $INSTALL_PATH/xrep @$INSTALL_PATH/ciyam_sftp.sh.xrep user=$CIYAM_USER > /home/$CIYAM_USER/ciyam_sftp.sh
+
+ sudo chmod a+x /home/$CIYAM_USER/ciyam_sftp.sh
+fi
+
+$INSTALL_PATH/xrep @$INSTALL_PATH/ciyam.service.xrep user=$CIYAM_USER group=$CIYAM_GROUP mysql=$MYSQL webdir=$WEBDIR >ciyam.service
 
 sudo mv ciyam.service /usr/lib/systemd/system
 
