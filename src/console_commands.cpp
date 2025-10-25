@@ -461,6 +461,7 @@ string get_input_from_choices( const string& input )
          if( vpos != string::npos )
          {
             var = choice_info.substr( 0, vpos );
+
             choice_info.erase( 0, vpos + 1 );
          }
 
@@ -473,6 +474,7 @@ string get_input_from_choices( const string& input )
             choice next_choice;
 
             bool has_output = false;
+
             string::size_type opos = next.find( '!' );
 
             if( opos != string::npos )
@@ -480,15 +482,17 @@ string get_input_from_choices( const string& input )
                next_choice.output = next.substr( opos + 1 );
 
                has_output = true;
+
                next.erase( opos );
             }
 
             string::size_type epos = next.find( '=' );
 
-            if( epos == 0 || epos == string::npos )
+            if( ( epos == 0 ) || ( epos == string::npos ) )
                break;
 
             next_choice.value = next.substr( epos + 1 );
+
             next.erase( epos );
 
             char ch = '\0';
@@ -502,6 +506,7 @@ string get_input_from_choices( const string& input )
                   next_choice.output += ch;
 
                bool okay = true;
+
                for( size_t j = 0; j < choices.size( ); j++ )
                {
                   if( choices[ j ].ch == ch )
@@ -516,7 +521,9 @@ string get_input_from_choices( const string& input )
                else
                {
                   found = true;
+
                   next_choice.ch = ch;
+
                   next_choice.show += '[' + string( 1, ch ) + ']';
                }
             }
@@ -535,6 +542,7 @@ string get_input_from_choices( const string& input )
          {
             if( i > 0 )
                choice_info += ", ";
+
             choice_info += choices[ i ].show;
          }
 
@@ -549,6 +557,7 @@ string get_input_from_choices( const string& input )
          while( !found )
          {
             char ch = get_char( );
+
             for( size_t i = 0; i < choices.size( ); i++ )
             {
                if( choices[ i ].ch == ch )
@@ -2588,11 +2597,17 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
       if( !is_executing_commands )
          ++line_number;
 
+      string str_for_history( str );
+
+      // NOTE: The history line is stored before prompted input to
+      // prevent accidental infinite looping so for something like
+      // "Yes, No, All or Quit" the "All" assignment would require
+      // being in a conditional to prevent all further prompts.
       if( !is_skipping_to_label
        && dummy_conditions.empty( )
        && ( conditions.empty( ) || conditions.back( ) ) )
       {
-         if( !str.empty( ) && str[ 0 ] == c_prompted_input_prefix )
+         if( !str.empty( ) && ( str[ 0 ] == c_prompted_input_prefix ) )
          {
             string msg( c_default_value_prompt );
 
@@ -2602,11 +2617,9 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             if( !is_choice_input( msg ) )
                str = msg + get_line( msg.c_str( ), false );
             else
-               str = get_input_from_choices( msg );
+               str = get_input_from_choices( msg + ' ' );
          }
       }
-
-      string str_for_history( str );
 
       string error_context;
 
@@ -2615,7 +2628,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
       if( is_skipping_to_label || !conditions.empty( ) )
       {
-         if( !str.empty( ) && str[ 0 ] != c_envcond_command_prefix )
+         if( !str.empty( ) && ( str[ 0 ] != c_envcond_command_prefix ) )
          {
             if( is_skipping_to_label || !conditions.back( ) || !dummy_conditions.empty( ) )
                str.erase( );
@@ -2784,7 +2797,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          // TIME=@unix:
          // HEX_BIG_ENDIAN=@hexbig:$TIME
          // LAST_FOUR_BYTES=@substr:8:$HEX_BIG_ENDIAN
-         // REV=*!reverse_hex?$LAST_FOUR_BYTES
+         // LAST_FOUR_REVERSED=*!reverse_hex?$LAST_FOUR_BYTES
          //
          if( !assign_env_var_name.empty( ) )
          {
