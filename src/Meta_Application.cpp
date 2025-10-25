@@ -1980,6 +1980,9 @@ void Meta_Application::impl::impl_Generate( )
 
       outs << "export WEBDIR=" << get_web_root( ) << "\n\n";
       outs << "echo Starting Generate... >" << generate_log_file << "\n";
+
+      outs << "\necho \"" << get_obj( ).Name( ) << "\" > .app_name\n\n";
+
       outs << "if [ ! -d " << web_dir_var << "/" << app_dir << " ]; then\n"
        << " ./setup " << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file
        << "\nfi\n\n";
