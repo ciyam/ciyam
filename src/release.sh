@@ -109,7 +109,7 @@ else
 
  cp [a-z]*.cin $release_name/ciyam
 
- cp ciyam.fissile timezones.sio  $release_name/ciyam
+ cp ciyam.fissile timezones.sio $release_name/ciyam
 
  cp ciyam.service.xrep ciyam_sftp.sh.xrep xrep $release_name/ciyam
 
@@ -121,9 +121,10 @@ else
 
  cp channel_readme.md mnemonics.txt ciyam_strings.txt module_strings.txt $release_name/ciyam
 
- cp add_user backup_check backup_export backup_import block_tree_hash ciyam_backup ciyam_command ciyam_restore $release_name/ciyam
- cp construct create_ciyam_pem create_db drop_db export_files generate_next_block hub_check import_files init_identity $release_name/ciyam
- cp prepare_for_import process_ciyam_logins restore shared_export shared_check shared_import startup system_variable tree_list update unlock_identity $release_name/ciyam
+ cp add_user backup_check backup_export backup_import block_tree_hash ciyam_backup ciyam_command ciyam_restore construct $release_name/ciyam
+ cp create_ciyam_pem create_db drop_db export_files generate_next_block hub_check import_files init_identity kill_current_pid_for_user $release_name/ciyam
+ cp prepare_for_import process_ciyam_logins restore set_random_password shared_export shared_check shared_import startup system_variable $release_name/ciyam
+ cp tree_list update unlock_identity $release_name/ciyam
 
  cp ext_request run_script run_temp script set_password $release_name/ciyam
 
