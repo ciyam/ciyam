@@ -2203,7 +2203,7 @@ void init_system_ods( bool* p_restored = 0 )
          ++num_system_db_files;
    }
 
-   string system_backup_files = ods_backup_file_names( c_ciyam_server, c_sav_file_ext );
+   string system_backup_files( ods_backup_file_names( c_ciyam_server, c_sav_file_ext ) );
 
    vector< string > all_system_backup_files;
 
@@ -3846,13 +3846,13 @@ void read_server_configuration( )
          user_prefix += '/';
 
       set_system_variable( get_special_var_name(
-       e_special_var_backup_files ), user_prefix + c_server_folder_backup );
+       e_special_var_backup_files ), user_prefix + c_server_folder_backup, true );
 
       set_system_variable( get_special_var_name(
-       e_special_var_opened_files ), user_prefix + c_server_folder_opened );
+       e_special_var_opened_files ), user_prefix + c_server_folder_opened, true );
 
       set_system_variable( get_special_var_name(
-       e_special_var_shared_files ), user_prefix + c_server_folder_shared );
+       e_special_var_shared_files ), user_prefix + c_server_folder_shared, true );
 
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage, c_meta_storage_name );
       set_system_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
@@ -4718,6 +4718,9 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       has_identity( &g_encrypted_identity );
 
+      if( g_encrypted_identity )
+         set_system_variable( get_special_var_name( e_special_var_sid_locked ), c_true_value, true );
+
       read_server_configuration( );
 
       // NOTE: Remember special read only variable names for later checks.
@@ -4766,10 +4769,10 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       check_timezone_info( );
 
-      set_system_variable( get_special_var_name( e_special_var_os ), "Linux" );
+      set_system_variable( get_special_var_name( e_special_var_os ), "Linux", true );
 
       set_system_variable(
-       get_special_var_name( e_special_var_peer_port ), to_string( c_default_ciyam_peer_port ) );
+       get_special_var_name( e_special_var_peer_port ), to_string( c_default_ciyam_peer_port ), true );
 
       string identity( c_str_unknown );
 
@@ -4781,7 +4784,7 @@ void init_globals( const char* p_sid, int* p_use_udp )
       else if( !g_sid.empty( ) && !g_encrypted_identity )
          identity = get_identity( ).substr( 0, c_identity_length );
 
-      set_system_variable( get_special_var_name( e_special_var_system_identity ), identity );
+      set_system_variable( get_special_var_name( e_special_var_system_identity ), identity, true );
 
       check_if_is_known_demo_identity( );
 
@@ -5147,6 +5150,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
             hash_sid_val( sid );
 
+            set_system_variable( get_special_var_name( e_special_var_sid_locked ), "", true );
+
             if( get_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
                run_init_script = true;
          }
@@ -5213,6 +5218,8 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
             set_sid( sid );
 
+            set_system_variable( get_special_var_name( e_special_var_sid_locked ), "", true );
+
             if( get_raw_system_variable(
              get_special_var_name( e_special_var_blockchain_backup_identity ) ).empty( ) )
             {
@@ -5220,7 +5227,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
                g_identity_suffix = identity.substr( 0, c_bc_identity_length );
 
-               set_system_variable( get_special_var_name( e_special_var_system_identity ), g_identity_suffix );
+               set_system_variable( get_special_var_name( e_special_var_system_identity ), g_identity_suffix, true );
             }
          }
       }
