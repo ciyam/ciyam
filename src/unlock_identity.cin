@@ -3,12 +3,21 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+.system_variable @sid_locked
+@ifdef $OUTPUT
+;
 .identity
 COMBINED=@repstr:!/\n:$OUTPUT
 IDENT=%COMBINED:1%
 ;
+#Locked Identity: $IDENT
+;
 .session_variable @pubkey
 EXT_PUBKEY=$OUTPUT
+;
+@:LOOP
+;
+@label NEXT
 ;
 DATA_AND_PUBKEY=@password:Enter password to unlock identity:$EXT_PUBKEY
 ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
@@ -19,7 +28,26 @@ NEW_IDENT=%COMBINED:1%
 ;
 @ifneq "$IDENT" "$NEW_IDENT"
 #Unlocked identity: $NEW_IDENT
+;
+@label DONE
+;
 @else
-#Unchanged identity: $IDENT
-#(identity is not encrypted, is already unlocked or password is incorrect)
+#Unlock failed (incorrect password?).
+;
+&Retry? [yes=1|no=]
+;
+@ifndef $Retry
+@label DONE
+@endif
+;
+@endif
+;
+@skip
+;
+@:NEXT
+;
+!!@:LOOP
+;
+@:DONE
+;
 @endif
