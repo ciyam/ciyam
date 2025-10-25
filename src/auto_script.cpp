@@ -216,11 +216,17 @@ void read_script_info( )
 
             if( pos != string::npos )
             {
+               size_t old_num_execs = num_execs;
+
                num_execs = from_string< size_t >( cycle.substr( 0, pos ) );
 
-               if( ( num_execs == 0 ) || ( num_execs > c_max_execs ) )
+               if( num_execs > c_max_execs )
                   throw runtime_error( "invalid num execs value '"
                    + to_string( num_execs ) + "' in cycle for '" + info.name + "'" );
+
+               // NOTE: Treat zero as default (unlimited).
+               if( !num_execs )
+                  num_execs = old_num_execs;
 
                cycle.erase( 0, pos + 1 );
             }
@@ -235,6 +241,9 @@ void read_script_info( )
                info.cycle_seconds = unformat_duration( cycle );
                info.cycle_num_years = 0;
             }
+
+            if( !info.cycle_seconds && !info.cycle_num_years )
+               throw runtime_error( "invalid zero cycle amount for '" + info.name + "'" );
 
             info.start_date = udate::local( );
 
@@ -273,7 +282,8 @@ void read_script_info( )
                else if( val == "weekends" )
                   info.exclude = e_exclude_type_weekends;
                else
-                  throw runtime_error( "invalid exclude value '" + exclude + "'" );
+                  throw runtime_error( "invalid exclude value '"
+                   + exclude + "' provided for '" + info.name + "'" );
             }
 
             string logging( reader.read_opt_attribute( c_attribute_logging, c_logging_standard ) );
@@ -287,7 +297,8 @@ void read_script_info( )
             else if( logging == c_logging_standard )
                info.logging = e_logging_type_standard;
             else
-               throw runtime_error( "invalid logging value '" + logging + "'" );
+               throw runtime_error( "invalid logging value '"
+                + logging + "' provided for '" + info.name + "'" );
 
             info.filename = reader.read_attribute( c_attribute_filename );
             info.arguments = reader.read_opt_attribute( c_attribute_arguments );
@@ -488,7 +499,9 @@ void output_schedule( ostream& os, bool from_now )
          os << "[ " << setw( 15 ) << ( extra + format_duration( difference, include_seconds ) ) << " ]";
       }
 
-      os << ' ' << g_scripts[ ssci->second ].name;
+      string name( g_scripts[ ssci->second ].name );
+
+      os << ' ' << name;
 
       string filename( g_scripts[ ssci->second ].filename );
 
@@ -505,6 +518,9 @@ void output_schedule( ostream& os, bool from_now )
          os << " [ *** busy *** ]";
       else if( !g_scripts[ ssci->second ].tsfilename.empty( ) )
          os << " [" << g_scripts[ ssci->second ].tsfilename << "]";
+
+      if( g_script_exec_limit.count( name ) )
+         os << " (+" << g_script_exec_limit[ name ] << ")";
 
       os << '\n';
    }
@@ -654,7 +670,6 @@ void autoscript_session::on_start( )
                // NOTE: Use *<name> for scripts to run even if locked.
                if( okay && !name.empty( ) && ( name[ 0 ] == '*' ) )
                {
-                  okay = true;
                   special = true;
 
                   name.erase( 0, 1 );
