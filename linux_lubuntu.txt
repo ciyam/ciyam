@@ -238,11 +238,8 @@ Create backup staging area ext4 file system and automount entry
 sudo fallocate -l 10M backup.img
 sudo mkfs.ext4 backup.img
 
-sudo su -c "echo '/home/admin/backup.img  /home/admin/backup ext4 loop 0 0' >> /etc/fstab"
-
 sudo mkdir backup
 sudo mount backup.img backup
-(ignore hint about modified fstab)
 
 sudo mkdir backup/.ciyam
 sudo mkdir backup/.system
@@ -257,11 +254,8 @@ Create opened staging area ext4 file system and automount entry
 sudo fallocate -l 10M opened.img
 sudo mkfs.ext4 opened.img
 
-sudo su -c "echo '/home/admin/opened.img  /home/admin/opened ext4 loop 0 0' >> /etc/fstab"
-
 sudo mkdir opened
 sudo mount opened.img opened
-(ignore hint about modified fstab)
 
 sudo mkdir opened/.system
 sudo mv opened/lost+found opened/.system
@@ -276,11 +270,8 @@ Create shared staging area ext4 file system and automount entry
 sudo fallocate -l 10M shared.img
 sudo mkfs.ext4 shared.img
 
-sudo su -c "echo '/home/admin/shared.img  /home/admin/shared ext4 loop 0 0' >> /etc/fstab"
-
 sudo mkdir shared
 sudo mount shared.img shared
-(ignore hint about modified fstab)
 
 sudo mkdir shared/.system
 sudo mv shared/lost+found shared/.system
