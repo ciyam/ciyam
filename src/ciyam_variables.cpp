@@ -144,6 +144,7 @@ const char* const c_special_variable_key_suffix = "@key_suffix";
 const char* const c_special_variable_permission = "@permission";
 const char* const c_special_variable_queue_puts = "@queue_puts";
 const char* const c_special_variable_session_id = "@session_id";
+const char* const c_special_variable_sid_locked = "@sid_locked";
 const char* const c_special_variable_tag_prefix = "@tag_prefix";
 const char* const c_special_variable_tree_count = "@tree_count";
 const char* const c_special_variable_tree_match = "@tree_match";
@@ -469,6 +470,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_permission );
       g_special_variable_names.push_back( c_special_variable_queue_puts );
       g_special_variable_names.push_back( c_special_variable_session_id );
+      g_special_variable_names.push_back( c_special_variable_sid_locked );
       g_special_variable_names.push_back( c_special_variable_tag_prefix );
       g_special_variable_names.push_back( c_special_variable_tree_count );
       g_special_variable_names.push_back( c_special_variable_tree_match );
@@ -732,6 +734,25 @@ void set_complete_restore_needed( bool check = true )
       touch_or_remove( var_name, true );
 
    set_file_var_name( var_name );
+}
+
+
+void check_system_variable_can_be_set( const string& var_name )
+{
+   bool okay = true;
+
+   if( ( var_name == c_special_variable_os )
+    || ( var_name == c_special_variable_peer_port )
+    || ( var_name == c_special_variable_sid_locked )
+    || ( var_name == c_special_variable_devt_system )
+    || ( var_name == c_special_variable_backup_files )
+    || ( var_name == c_special_variable_opened_files )
+    || ( var_name == c_special_variable_shared_files )
+    || ( var_name == c_special_variable_system_identity ) )
+      okay = false;
+
+   if( !okay )
+      throw runtime_error( "invalid attempt to change system variable '" + var_name + "'" );
 }
 
 }
@@ -1094,8 +1115,6 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
       file_remove( tmp_file_name );
    }
-   else if( name == c_special_variable_devt_system )
-      set_devt_system( );
    else if( name == c_special_variable_backup_needed )
    {
       guard g( g_mutex );
@@ -1256,6 +1275,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
       else if( persist
        && ( ( var_name == c_special_variable_os )
        || ( var_name == c_special_variable_peer_port )
+       || ( var_name == c_special_variable_sid_locked )
        || ( var_name == c_special_variable_log_files_dir )
        || ( var_name == c_special_variable_files_area_dir )
        || ( var_name == c_special_variable_generate_hub_block )
@@ -1280,7 +1300,11 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          for( ; vi != g_variables.end( ); ++vi )
          {
             if( wildcard_match( var_name, vi->first ) )
+            {
                vars_to_change.push_back( vi->first );
+
+               check_system_variable_can_be_set( vi->first );
+            }
 
             if( !prefix.empty( ) && ( vi->first.find( prefix ) != 0 ) )
                break;
@@ -1288,6 +1312,8 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
          for( size_t i = 0; i < vars_to_change.size( ); i++ )
          {
+            string next_name( vars_to_change[ i ] );
+
             if( !val.empty( ) )
                g_variables[ vars_to_change[ i ] ] = val;
             else
@@ -1298,6 +1324,9 @@ void set_system_variable( const string& name, const string& value, bool is_init,
       {
          if( val.empty( ) && ( var_name == string( c_special_variable_files_area_dir ) ) )
             val = string( c_ciyam_files_directory );
+
+         if( !is_init )
+            check_system_variable_can_be_set( var_name );
 
          if( !val.empty( ) )
             g_variables[ var_name ] = val;
@@ -1364,6 +1393,11 @@ bool set_system_variable( const string& name, const string& value,
    if( name.find_first_of( c_invalid_name_chars ) != string::npos )
       throw runtime_error( "invalid system variable name '" + name + "'" );
 
+   check_system_variable_can_be_set( name );
+
+   if( name == string( c_special_variable_files_area_dir ) )
+      throw runtime_error( "invalid attempt to change the files area dir" );
+
    string new_value( value );
 
    // NOTE: If an append separator is provided then variable will be
@@ -1397,9 +1431,6 @@ bool set_system_variable( const string& name, const string& value,
             g_variables.erase( name );
       }
    }
-
-   if( name == string( c_special_variable_files_area_dir ) )
-      throw runtime_error( "invalid attempt to change the files area dir" );
 
    return retval;
 }
