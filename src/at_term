@@ -8,37 +8,31 @@ if [ "$CIYAM_USER" = "" ]; then
  CIYAM_USER=$USER
 fi
 
+# NOTE: Modify the following if wanting to be notified when the CIYAM application server has been stopped.
+#curl -H "Title: CIYAM Stopped" -d  "CIYAM Application Server has stopped." https://ntfy.domain.org/up_admin
+
 USER_PATH=/home/$CIYAM_USER
 
 BACKUP_PATH=$USER_PATH/backup
-BACKUP_IMAGE=$USER_PATH/backup.img
 
 if [ -d $BACKUP_PATH ]; then
- if ! mountpoint -q $BACKUP_PATH; then
-  if [ -f $BACKUP_IMAGE ]; then
-   sudo mount $BACKUP_IMAGE $BACKUP_PATH
-  fi
+ if mountpoint -q $BACKUP_PATH; then
+  sudo umount $BACKUP_PATH
  fi
 fi
 
 OPENED_PATH=$USER_PATH/opened
-OPENED_IMAGE=$USER_PATH/opened.img
 
 if [ -d $OPENED_PATH ]; then
- if ! mountpoint -q $OPENED_PATH; then
-  if [ -f $OPENED_IMAGE ]; then
-   sudo mount $OPENED_IMAGE $OPENED_PATH
-  fi
+ if mountpoint -q $OPENED_PATH; then
+  sudo umount $OPENED_PATH
  fi
 fi
 
 SHARED_PATH=$USER_PATH/shared
-SHARED_IMAGE=$USER_PATH/shared.img
 
 if [ -d $SHARED_PATH ]; then
- if ! mountpoint -q $SHARED_PATH; then
-  if [ -f $SHARED_IMAGE ]; then
-   sudo mount $SHARED_IMAGE $SHARED_PATH
-  fi
+ if mountpoint -q $SHARED_PATH; then
+  sudo umount $SHARED_PATH
  fi
 fi

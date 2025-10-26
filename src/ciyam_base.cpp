@@ -132,6 +132,9 @@ const char* const c_script_arg_opt = "opt";
 
 const char* const c_dummy_host_name = "ciyam.peer";
 
+const char* const c_at_init_script = "./at_init";
+const char* const c_at_term_script = "./at_term";
+
 const char* const c_server_log_file = "ciyam_server.log";
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
@@ -4734,9 +4737,12 @@ void init_globals( const char* p_sid, int* p_use_udp )
       if( p_use_udp )
          *p_use_udp = g_use_udp;
 
-      bool restored = false;
+      if( file_exists( c_at_init_script ) )
+         ( void )system( c_at_init_script );
 
       init_files_area( );
+
+      bool restored = false;
 
       init_system_ods( &restored );
 
@@ -4888,6 +4894,9 @@ void term_globals( )
 
    term_system_ods( );
    term_files_area( );
+
+   if( file_exists( c_at_term_script ) )
+      ( void )system( c_at_term_script );
 
    // NOTE: Need to force the manuscript information to be reloaded.
    g_scripts_mod = 0;

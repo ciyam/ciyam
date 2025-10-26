@@ -6,12 +6,6 @@
 # NOTE: Any @name values used in arguments are system (rather than session) variables.
 <sio/>
 # <script/>
-#  <name>*startup
-#  <time>00:00:00
-#  <cycle>1=5s*
-#  <filename>startup
-# </script>
-# <script/>
 #  <name>hub_check
 #  <time>00:00:01
 #  <cycle>5s
