@@ -21,9 +21,6 @@
 <bc_gen.cin -backup @sid 2
 <bc_gen.cin -backup @sid 3
 ;
-.system_variable @blockchain_backup_identity
-.system_variable @system_identity $OUTPUT
-;
 .system_variable @blockchain_backup_1_identity
 .system_variable >@blockchain_next_backup $OUTPUT
 ;

@@ -4738,7 +4738,10 @@ void init_globals( const char* p_sid, int* p_use_udp )
          *p_use_udp = g_use_udp;
 
       if( file_exists( c_at_init_script ) )
-         ( void )system( c_at_init_script );
+      {
+         int rc = system( c_at_init_script );
+         ( void )rc;
+      }
 
       init_files_area( );
 
@@ -4896,7 +4899,10 @@ void term_globals( )
    term_files_area( );
 
    if( file_exists( c_at_term_script ) )
-      ( void )system( c_at_term_script );
+   {
+      int rc = system( c_at_term_script );
+      ( void )rc;
+   }
 
    // NOTE: Need to force the manuscript information to be reloaded.
    g_scripts_mod = 0;
@@ -5290,7 +5296,16 @@ void set_identity( const string& info, const char* p_encrypted_sid )
    {
       run_script( "init_ciyam", false );
 
-      g_identity_suffix = get_raw_system_variable( get_special_var_name( e_special_var_system_identity ) );
+      string blockchain_backup_identity( get_raw_system_variable(
+       get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+
+      if( !blockchain_backup_identity.empty( ) )
+      {
+         g_identity_suffix = blockchain_backup_identity;
+
+         set_system_variable( get_special_var_name(
+          e_special_var_system_identity ), blockchain_backup_identity, true );
+      }
 
       check_if_is_known_demo_identity( );
    }
