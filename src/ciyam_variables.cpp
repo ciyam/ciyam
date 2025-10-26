@@ -151,7 +151,6 @@ const char* const c_special_variable_tree_match = "@tree_match";
 const char* const c_special_variable_tree_total = "@tree_total";
 const char* const c_special_variable_allow_async = "@allow_async";
 const char* const c_special_variable_application = "@application";
-const char* const c_special_variable_devt_system = "@devt_system";
 const char* const c_special_variable_errors_only = "@errors_only";
 const char* const c_special_variable_init_log_id = "@init_log_id";
 const char* const c_special_variable_opened_user = "@opened_user";
@@ -257,6 +256,7 @@ const char* const c_special_variable_fixed_field_values = "@fixed_field_values";
 const char* const c_special_variable_generate_hub_block = "@generate_hub_block";
 const char* const c_special_variable_repo_entry_missing = "@repo_entry_missing";
 const char* const c_special_variable_system_is_for_demo = "@system_is_for_demo";
+const char* const c_special_variable_system_is_for_devt = "@system_is_for_devt";
 const char* const c_special_variable_blockchain_data_key = "@blockchain_data_key";
 const char* const c_special_variable_blockchain_identity = "@blockchain_identity";
 const char* const c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
@@ -477,7 +477,6 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_tree_total );
       g_special_variable_names.push_back( c_special_variable_allow_async );
       g_special_variable_names.push_back( c_special_variable_application );
-      g_special_variable_names.push_back( c_special_variable_devt_system );
       g_special_variable_names.push_back( c_special_variable_errors_only );
       g_special_variable_names.push_back( c_special_variable_init_log_id );
       g_special_variable_names.push_back( c_special_variable_opened_user );
@@ -583,6 +582,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_generate_hub_block );
       g_special_variable_names.push_back( c_special_variable_repo_entry_missing );
       g_special_variable_names.push_back( c_special_variable_system_is_for_demo );
+      g_special_variable_names.push_back( c_special_variable_system_is_for_devt );
       g_special_variable_names.push_back( c_special_variable_blockchain_data_key );
       g_special_variable_names.push_back( c_special_variable_blockchain_identity );
       g_special_variable_names.push_back( c_special_variable_blockchain_is_owner );
@@ -665,12 +665,6 @@ void touch_or_remove( const string& var_name, bool remove )
       file_touch( file_name, 0, true );
 }
 
-void set_devt_system( )
-{
-   if( file_exists( "config.info" ) )
-      g_variables[ c_special_variable_devt_system ] = c_true_value;
-}
-
 void set_file_var_name( const string& var_name )
 {
    string file_name( c_hidden_file_prefix + var_name.substr( 1 ) );
@@ -711,6 +705,12 @@ void set_generate_hub_block( bool check = true )
    set_file_var_name( var_name );
 }
 
+void set_system_is_for_devt( )
+{
+   if( file_exists( "config.info" ) )
+      g_variables[ c_special_variable_system_is_for_devt ] = c_true_value;
+}
+
 void set_ods_cache_hit_ratios( )
 {
    g_variables[ c_special_variable_ods_cache_hit_ratios ] = system_ods_instance( ).get_cache_hit_ratios( );
@@ -736,7 +736,6 @@ void set_complete_restore_needed( bool check = true )
    set_file_var_name( var_name );
 }
 
-
 void check_system_variable_can_be_set( const string& var_name )
 {
    bool okay = true;
@@ -744,11 +743,11 @@ void check_system_variable_can_be_set( const string& var_name )
    if( ( var_name == c_special_variable_os )
     || ( var_name == c_special_variable_peer_port )
     || ( var_name == c_special_variable_sid_locked )
-    || ( var_name == c_special_variable_devt_system )
     || ( var_name == c_special_variable_backup_files )
     || ( var_name == c_special_variable_opened_files )
     || ( var_name == c_special_variable_shared_files )
-    || ( var_name == c_special_variable_system_identity ) )
+    || ( var_name == c_special_variable_system_identity )
+    || ( var_name == c_special_variable_system_is_for_devt ) )
       okay = false;
 
    if( !okay )
@@ -949,9 +948,6 @@ string get_raw_system_variable( const string& name, bool is_internal )
 
       map< string, string >::const_iterator ci;
 
-      if( wildcard_match( var_name, c_special_variable_devt_system ) )
-         set_devt_system( );
-
       if( wildcard_match( var_name, c_special_variable_backup_needed ) )
          set_backup_needed( );
 
@@ -960,6 +956,9 @@ string get_raw_system_variable( const string& name, bool is_internal )
 
       if( wildcard_match( var_name, c_special_variable_generate_hub_block ) )
          set_generate_hub_block( );
+
+      if( wildcard_match( var_name, c_special_variable_system_is_for_devt ) )
+         set_system_is_for_devt( );
 
       if( wildcard_match( var_name, c_special_variable_ods_cache_hit_ratios ) )
          set_ods_cache_hit_ratios( );
@@ -1005,9 +1004,6 @@ string get_raw_system_variable( const string& name, bool is_internal )
    }
    else
    {
-      if( var_name == c_special_variable_devt_system )
-         set_devt_system( );
-
       if( var_name == c_special_variable_backup_needed )
          set_backup_needed( );
 
@@ -1016,6 +1012,9 @@ string get_raw_system_variable( const string& name, bool is_internal )
 
       if( var_name == c_special_variable_generate_hub_block )
          set_generate_hub_block( );
+
+      if( var_name == c_special_variable_system_is_for_devt )
+         set_system_is_for_devt( );
 
       if( var_name == c_special_variable_ods_cache_hit_ratios )
          set_ods_cache_hit_ratios( );
