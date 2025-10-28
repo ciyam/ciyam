@@ -168,48 +168,48 @@ IDENT=$COMBINED
 @ifndef $HUB
 @ifndef $SHARED
 @ifndef $CHANNEL
-./crypto_hash $SEED -s=-0
+.=crypto_hash $SEED -s=-0
 ENTROPY_HASH_PRIMARY=$OUTPUT
 ;
-./crypto_hash $SEED -s=-$MULTIPLE
+.=crypto_hash $SEED -s=-$MULTIPLE
 ENTROPY_HASH_SECONDARY=$OUTPUT
 ;
-./crypto_hash $SEED -s=-$SQUARED
+.=crypto_hash $SEED -s=-$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
 @else
-./crypto_hash $SEED -s=%IDENT%0
+.=crypto_hash $SEED -s=%IDENT%0
 ENTROPY_HASH_PRIMARY=$OUTPUT
 ;
-./crypto_hash $SEED -s=$IDENT$MULTIPLE
+.=crypto_hash $SEED -s=$IDENT$MULTIPLE
 ENTROPY_HASH_SECONDARY=$OUTPUT
 ;
-./crypto_hash $SEED -s=$IDENT$SQUARED
+.=crypto_hash $SEED -s=$IDENT$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
 @endif
 @else
-./crypto_hash $SEED -s=+0
+.=crypto_hash $SEED -s=+0
 ENTROPY_HASH_PRIMARY=$OUTPUT
 ;
-./crypto_hash $SEED -s=+$MULTIPLE
+.=crypto_hash $SEED -s=+$MULTIPLE
 ENTROPY_HASH_SECONDARY=$OUTPUT
 ;
-./crypto_hash $SEED -s=+$SQUARED
+.=crypto_hash $SEED -s=+$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
 @endif
 @else
-./crypto_hash $SEED -s=#0
+.=crypto_hash $SEED -s=#0
 ENTROPY_HASH_PRIMARY=$OUTPUT
 ;
-./crypto_hash $SEED -s=#$MULTIPLE
+.=crypto_hash $SEED -s=#$MULTIPLE
 ENTROPY_HASH_SECONDARY=$OUTPUT
 ;
-./crypto_hash $SEED -s=#$SQUARED
+.=crypto_hash $SEED -s=#$SQUARED
 ENTROPY_HASH_TERTIARY=$OUTPUT
 @endif
 ;
-./crypto_lamport primary $ENTROPY_HASH_PRIMARY$EXTRA
-./crypto_lamport secondary $ENTROPY_HASH_SECONDARY$EXTRA
-./crypto_lamport tertiary $ENTROPY_HASH_TERTIARY$EXTRA
+.=crypto_lamport primary $ENTROPY_HASH_PRIMARY$EXTRA
+.=crypto_lamport secondary $ENTROPY_HASH_SECONDARY$EXTRA
+.=crypto_lamport tertiary $ENTROPY_HASH_TERTIARY$EXTRA
 ;
 .file_put primary.pub bc.$UUID.0.pub
 .file_put secondary.pub bc.$UUID.$MULTIPLE.pub
@@ -231,7 +231,7 @@ TERTIARY_PUBKEY_HASH=$OUTPUT
 ;
 @ifndef $SHARED
 @ifndef $CHANNEL
-./crypto_hash $PRIMARY_PUBKEY_HASH$SECONDARY_PUBKEY_HASH$TERTIARY_PUBKEY_HASH
+.=crypto_hash $PRIMARY_PUBKEY_HASH$SECONDARY_PUBKEY_HASH$TERTIARY_PUBKEY_HASH
 IDENTITY_HASH=$OUTPUT
 ;
 IDENT=@substr:0,9:$IDENTITY_HASH

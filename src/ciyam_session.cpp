@@ -1847,9 +1847,9 @@ void socket_command_handler::preprocess_command_and_args( string& str, const str
       string::size_type pos = string::npos;
 
       // NOTE: In order to prevent accidental leakage of sensitive information
-      // (such as key entropy or passwords) a command can be prefixed with '/'
+      // (such as key entropy or passwords) a command can be prefixed with '='
       // to truncate the log output immediately after the command name.
-      if( ( str.length( ) > 1 ) && ( str[ 0 ] == '/' ) )
+      if( ( str.length( ) > 1 ) && ( str[ 0 ] == '=' ) )
       {
          str.erase( 0, 1 );
 

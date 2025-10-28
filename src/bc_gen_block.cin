@@ -233,7 +233,7 @@ PUB_KEY_HASH_ENC=$PUB_KEY_HASH_ENC,$OUTPUT
 ;
 @:NEXT
 .crypto_hash @sid -s=$IDENT.$HEIGHT
-./crypto_chain 1440 -b64 -hind $OUTPUT
+.=crypto_chain 1440 -b64 -hind $OUTPUT
 HIND_HASH_ENC=$OUTPUT
 ;
 @ifdef $ERROR

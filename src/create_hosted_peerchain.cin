@@ -60,10 +60,10 @@ PEER_PORT=$OUTPUT
 @ifndef $ERROR
 @ifdef $SHARED_SECRET_HASH
 .identity -raw
-./crypto_hash $IDENTITY$REVERSED$OUTPUT
+.=crypto_hash $IDENTITY$REVERSED$OUTPUT
 OBFUSCATED_IDENTITY=@substr:0,9:$OUTPUT
 ;
-./system_variable >@secret_hash_$OBFUSCATED_IDENTITY $SHARED_SECRET_HASH
+.=system_variable >@secret_hash_$OBFUSCATED_IDENTITY $SHARED_SECRET_HASH
 @endif
 ;
 @ifdef $PEER_HUB

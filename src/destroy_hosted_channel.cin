@@ -41,7 +41,7 @@ FILES_AREA_DIR=$OUTPUT
 @endif
 ;
 .identity -raw
-./crypto_hash $COMBINED$REVERSED$OUTPUT
+.=crypto_hash $COMBINED$REVERSED$OUTPUT
 OBFUSCATED_IDENTITY=@substr:0,9:$OUTPUT
 ;
 .system_variable @secret_hash_$OBFUSCATED_IDENTITY
