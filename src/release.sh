@@ -89,17 +89,19 @@ else
  CIYAM_USER=$USER
  CIYAM_GROUP=$(id -gn)
 
+ ./unlock_identity
+
  if [ ! -d $release_name ]; then
   mkdir $release_name
   if [ ! -d $release_name ]; then
-   echo "Error: Unable to create '$release_name' directory."
+   echo "Error: Unable to create '$release_name' directory (incorrect perms?)."
 
    exit
   fi
 
   mkdir $release_name/ciyam
   if [ ! -d $release_name/ciyam ]; then
-   echo "Error: Unable to create '$release_name/ciyam' directory."
+   echo "Error: Unable to create '$release_name/ciyam' directory (incorrect umask?)."
 
    exit
   fi
