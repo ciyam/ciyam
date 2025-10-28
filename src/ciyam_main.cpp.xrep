@@ -114,6 +114,7 @@ void module_`{`$model_name`}_command_functor::operator ( )( const string& comman
 `{`(`?`$specification_home_message_id`)`&`@eq`(`$specification_home_message_type`,`'stats`'`)\
 `{`#home_message_stats.spec.xrep section=commands_impl\
  model_name=$model_name arg_id=$specification_home_message_id\
+ arg_skip_if_zero=$specification_home_message_skip_if_zero\
  arg_primary_class=$specification_home_message_primary_class\
  arg_secondary_class=$specification_home_message_secondary_class\
  arg_primary_stats1_cclass=$specification_home_message_primary_stats1_cclass\
@@ -142,12 +143,14 @@ void module_`{`$model_name`}_command_functor::operator ( )( const string& comman
  arg_secondary_stats2_value1=$specification_home_message_secondary_stats2_value1\
  arg_secondary_stats2_field2=$specification_home_message_secondary_stats2_field2\
  arg_secondary_stats2_value2=$specification_home_message_secondary_stats2_value2\
- arg_secondary_stats2_perm=$specification_home_message_secondary_stats2_perm`}`}
+ arg_secondary_stats2_perm=$specification_home_message_secondary_stats2_perm`}
+`}
 `{`(`?`$specification_home_message_id`)`&`@eq`(`$specification_home_message_type`,`'top_n`'`)\
 `{`#home_message_top_n.spec.xrep section=commands_impl\
  model_name=$model_name arg_id=$specification_home_message_id\
  arg_class=$specification_home_message_class arg_limit=$specification_home_message_limit\
- arg_field=$specification_home_message_field arg_ofield=$specification_home_message_ofield`}`}
+ arg_field=$specification_home_message_field arg_ofield=$specification_home_message_ofield`}
+`}
       // [<start commands_impl>]
 `{`(`?`$user_source`)`#$user_source section=commands_impl`}
       // [<finish commands_impl>]

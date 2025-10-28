@@ -21,6 +21,7 @@
 // [(finish home_message_stats)] `{`$arg_id`}
 `}
 `{`@eq`(`'commands_impl`'`,`$section`)\
+`{`$i`=`'`'`}`{`@eq`(`$arg_skip_if_zero`,`'true`'`)`{`$i`=`'   `'`}`}\
 `{`!`@eq`(`$arg_primary_stats1_cfield`,`'`'`)`$child1_suffix`=`$arg_primary_stats1_cfield`,`$child1_suffix`=`$arg_primary_stats1_cclass`}\
 `{`!`@eq`(`$arg_primary_stats2_cfield`,`'`'`)`$child2_suffix`=`$arg_primary_stats2_cfield`,`$child2_suffix`=`$arg_primary_stats2_cclass`}\
       // [(start home_message_stats)] `{`$arg_id`}
@@ -61,6 +62,7 @@
 `{`@eq`(`$arg_primary_stats1_field2`,`'`'`)\
             key_info += "#1 `{`$arg_primary_stats1_value1`}";\
 `,\
+
             if( index_depth > 2 )
             {
                key_info += "," + to_string( FIELD_ID( `{`$model_name`}, `{`$arg_primary_stats1_cclass`}, `{`$arg_primary_stats1_field1`} ) );
@@ -77,6 +79,7 @@
          if( user.child_`{`$child1_suffix`}( ).iterate_forwards( key_info, true, 0, e_sql_optimisation_unordered ) )
          {
             class_base_filter filter( user.child_`{`$child1_suffix`}( ), "*" );
+
             do
             {
                if( !user.child_`{`$child1_suffix`}( ).is_filtered( ) )
@@ -95,11 +98,18 @@
             } while( user.child_`{`$child1_suffix`}( ).iterate_next( ) );
          }
 
-         osstr << get_string_message( GS( c_str_home_stats ),
-          make_pair( c_str_home_stats_num, to_string( num_stats_1 ) ),
-          make_pair( c_str_home_stats_type, get_module_string( "`{`$arg_id`}_primary_stats1_title" ) ) );
+`{`@eq`(`$arg_skip_if_zero`,`'true`'`)\
+         if( num_stats_1 )
+         {
+`}\
+`{`$i`}         osstr << get_string_message( GS( c_str_home_stats ),
+`{`$i`}          make_pair( c_str_home_stats_num, to_string( num_stats_1 ) ),
+`{`$i`}          make_pair( c_str_home_stats_type, get_module_string( "`{`$arg_id`}_primary_stats1_title" ) ) );
 
-         osstr << " " << user.child_`{`$child1_suffix`}( ).get_display_name( num_stats_1 != 1 );`}`{`!`@eq`(`$arg_primary_stats2_cclass`,`'`'`)
+`{`$i`}         osstr << " " << user.child_`{`$child1_suffix`}( ).get_display_name( num_stats_1 != 1 );`}
+`{`@eq`(`$arg_skip_if_zero`,`'true`'`)\
+         }
+`}`{`!`@eq`(`$arg_primary_stats2_cclass`,`'`'`)\
 
 `{`!`@eq`(`$arg_primary_stats2_perm`,`'`'`)\
          if( perms.count( "`{`$arg_primary_stats2_perm`}" ) )\
@@ -117,12 +127,14 @@
             index_depth = user.child_`{`$child2_suffix`}( ).get_max_index_depth( fields );
 
             key_info.erase( );
+
             if( index_depth > 1 )
             {
                key_info = FIELD_ID( `{`$model_name`}, `{`$arg_primary_stats2_cclass`}, `{`$arg_primary_stats2_field1`} );
 `{`@eq`(`$arg_primary_stats2_field2`,`'`'`)\
                key_info += "#1 `{`$arg_primary_stats2_value1`}";\
 `,\
+
                if( index_depth > 2 )
                {
                   key_info += "," + to_string( FIELD_ID( `{`$model_name`}, `{`$arg_primary_stats2_cclass`}, `{`$arg_primary_stats2_field1`} ) );
@@ -139,6 +151,7 @@
             if( user.child_`{`$child2_suffix`}( ).iterate_forwards( key_info, true, 0, e_sql_optimisation_unordered ) )
             {
                class_base_filter filter( user.child_`{`$child2_suffix`}( ), "*" );
+
                do
                {
                   if( !user.child_`{`$child2_suffix`}( ).is_filtered( ) )
@@ -157,16 +170,31 @@
                } while( user.child_`{`$child2_suffix`}( ).iterate_next( ) );
             }
 
-            osstr << get_string_message( GS( c_str_home_stats_extra ),
-             make_pair( c_str_home_stats_extra_num, to_string( num_stats_2 ) ),
-             make_pair( c_str_home_stats_extra_type, get_module_string( "`{`$arg_id`}_primary_stats2_title" ) ) );
+`{`@eq`(`$arg_skip_if_zero`,`'true`'`)\
+            if( num_stats_2 )
+            {
+               string stats_message( ( num_stats_1 == 0 ) ? GS( c_str_home_stats ) : GS( c_str_home_stats_extra ) );
 
-            osstr << " " << user.child_`{`$child2_suffix`}( ).get_display_name( num_stats_2 != 1 );
+`}\
+`{`$i`}            osstr << get_string_message( `{`@eq`(`$arg_skip_if_zero`,`'true`'`)stats_message`,GS( c_str_home_stats_extra )`},
+`{`$i`}             make_pair( c_str_home_stats_extra_num, to_string( num_stats_2 ) ),
+`{`$i`}             make_pair( c_str_home_stats_extra_type, get_module_string( "`{`$arg_id`}_primary_stats2_title" ) ) );
+
+`{`$i`}            osstr << " " << user.child_`{`$child2_suffix`}( ).get_display_name( num_stats_2 != 1 );
+`{`@eq`(`$arg_skip_if_zero`,`'true`'`)\
+            }
+`}\
          }
 `}
-         osstr << ".";\
+`{`@eq`(`$arg_skip_if_zero`,`'true`'`)\
+`{`@eq`(`$arg_primary_stats2_cclass`,`'`'`)\
+         if( num_stats_1 )
+`,\
+         if( num_stats_1 || num_stats_2 )
+`}`}\
+`{`$i`}         osstr << ".";
 `{`!`@eq`(`$arg_secondary_class`,`'`'`)`{`!`@eq`(`$arg_secondary_stats1_cclass`,`'`'`)
-`{`@eq`(`$arg_secondary_perm`,`'`'`)
+`{`@eq`(`$arg_secondary_perm`,`'`'`)\
          if( !string( user.`{`$arg_secondary_class`}( ) ).empty( ) )
 `,
          if( perms.count( "`{`$arg_secondary_perm`}" )
@@ -176,7 +204,10 @@
             `{`$model_name`}_`{`$arg_secondary_class`} group;
             group.perform_fetch( user.`{`$arg_secondary_class`}( ) );
 
-            osstr << "\\\\\\\\\\\\\\\\n\\\\\\\\\\\\\\\\n";
+`{`@eq`(`$arg_skip_if_zero`,`'true`'`)\
+            if( num_stats_1 || num_stats_2 )
+`}
+`{`$i`}            osstr << "\\\\\\\\\\\\\\\\n\\\\\\\\\\\\\\\\n";
 
             fields.clear( );
 
@@ -188,12 +219,14 @@
             index_depth = user.child_`{`$child1_suffix`}( ).get_max_index_depth( fields );
 
             key_info.erase( );
+
             if( index_depth > 1 )
             {
                key_info = FIELD_ID( `{`$model_name`}, `{`$arg_secondary_stats1_cclass`}, `{`$arg_secondary_stats1_field1`} );
 `{`@eq`(`$arg_secondary_stats1_field2`,`'`'`)\
                key_info += "#1 `{`$arg_secondary_stats1_value1`}";\
 `,\
+
                if( index_depth > 2 )
                {
                   key_info += "," + to_string( FIELD_ID( `{`$model_name`}, `{`$arg_secondary_stats1_cclass`}, `{`$arg_secondary_stats1_field1`} ) );
@@ -210,6 +243,7 @@
             if( group.child_`{`$child1_suffix`}( ).iterate_forwards( key_info, true, 0, e_sql_optimisation_unordered ) )
             {
                class_base_filter filter( group.child_`{`$child1_suffix`}( ), "*" );
+
                do
                {
                   if( !group.child_`{`$child1_suffix`}( ).is_filtered( ) )
@@ -228,13 +262,19 @@
                } while( group.child_`{`$child1_suffix`}( ).iterate_next( ) );
             }
 
-            osstr << get_string_message( GS( c_str_home_group_stats ),
-             make_pair( c_str_home_group_stats_group, group.get_display_name( ) ),
-             make_pair( c_str_home_group_stats_num, to_string( num_stats_1 ) ),
-             make_pair( c_str_home_group_stats_type, get_module_string( "`{`$arg_id`}_secondary_stats1_title" ) ) );
+`{`@eq`(`$arg_skip_if_zero`,`'true`'`)\
+            if( num_stats_1 )
+            {
+`}\
+`{`$i`}            osstr << get_string_message( GS( c_str_home_group_stats ),
+`{`$i`}             make_pair( c_str_home_group_stats_group, group.get_display_name( ) ),
+`{`$i`}             make_pair( c_str_home_group_stats_num, to_string( num_stats_1 ) ),
+`{`$i`}             make_pair( c_str_home_group_stats_type, get_module_string( "`{`$arg_id`}_secondary_stats1_title" ) ) );
 
-            osstr << " " << group.child_`{`$child1_suffix`}( ).get_display_name( num_stats_1 != 1 );`}`{`!`@eq`(`$arg_secondary_stats2_cclass`,`'`'`)
-
+`{`$i`}            osstr << " " << group.child_`{`$child1_suffix`}( ).get_display_name( num_stats_1 != 1 );`}
+`{`@eq`(`$arg_skip_if_zero`,`'true`'`)\
+            }
+`}`{`!`@eq`(`$arg_secondary_stats2_cclass`,`'`'`)
 `{`!`@eq`(`$arg_primary_stats2_perm`,`'`'`)\
             if( perms.count( "`{`$arg_secondary_stats2_perm`}" ) )\
 `,\
@@ -251,12 +291,14 @@
                index_depth = user.child_`{`$child2_suffix`}( ).get_max_index_depth( fields );
 
                key_info.erase( );
+
                if( index_depth > 1 )
                {
                   key_info = FIELD_ID( `{`$model_name`}, `{`$arg_secondary_stats2_cclass`}, `{`$arg_secondary_stats2_field1`} );
 `{`@eq`(`$arg_secondary_stats2_field2`,`'`'`)\
                   key_info += "#1 `{`$arg_secondary_stats2_value1`}";\
 `,\
+
                   if( index_depth > 2 )
                   {
                      key_info += "," + to_string( FIELD_ID( `{`$model_name`}, `{`$arg_secondary_stats2_cclass`}, `{`$arg_secondary_stats2_field1`} ) );
@@ -273,6 +315,7 @@
                if( group.child_`{`$child2_suffix`}( ).iterate_forwards( key_info, true, 0, e_sql_optimisation_unordered ) )
                {
                   class_base_filter filter( group.child_`{`$child2_suffix`}( ), "*" );
+
                   do
                   {
                      if( !group.child_`{`$child2_suffix`}( ).is_filtered( ) )
@@ -291,16 +334,31 @@
                   } while( group.child_`{`$child2_suffix`}( ).iterate_next( ) );
                }
 
-               osstr << get_string_message( GS( c_str_home_stats_extra ),
-                make_pair( c_str_home_stats_extra_num, to_string( num_stats_2 ) ),
-                make_pair( c_str_home_stats_extra_type, get_module_string( "`{`$arg_id`}_secondary_stats2_title" ) ) );
+`{`@eq`(`$arg_skip_if_zero`,`'true`'`)\
+               if( num_stats_2 )
+               {
+                  string stats_message( ( num_stats_1 == 0 ) ? GS( c_str_home_group_stats ) : GS( c_str_home_group_stats_extra ) );
 
-               osstr << " " << group.child_`{`$child2_suffix`}( ).get_display_name( num_stats_2 != 1 );
+`}\
+`{`$i`}               osstr << get_string_message( `{`@eq`(`$arg_skip_if_zero`,`'true`'`)stats_message`,GS( c_str_home_stats_extra )`},
+`{`$i`}                make_pair( c_str_home_stats_extra_num, to_string( num_stats_2 ) ),
+`{`$i`}                make_pair( c_str_home_stats_extra_type, get_module_string( "`{`$arg_id`}_secondary_stats2_title" ) ) );
+
+`{`$i`}               osstr << " " << group.child_`{`$child2_suffix`}( ).get_display_name( num_stats_2 != 1 );
+`{`@eq`(`$arg_skip_if_zero`,`'true`'`)\
+               }
+`}\
             }
 `}
-            osstr << ".";
+`{`@eq`(`$arg_skip_if_zero`,`'true`'`)\
+`{`@eq`(`$arg_secondary_stats2_cclass`,`'`'`)\
+            if( num_stats_1 )
+`,\
+            if( num_stats_1 || num_stats_2 )
+`}`}\
+`{`$i`}            osstr << ".";
          }
-`}
+`}\
       }
       // [(finish home_message_stats)] `{`$arg_id`}
 `}
