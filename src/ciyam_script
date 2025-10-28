@@ -1,0 +1,15 @@
+#!/bin/bash
+# Copyright (c) 2025 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 1 ]; then
+ echo Usage: ciyam_script [name]
+else
+ NAME=$1
+
+ shift
+
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr -exec="\<$NAME.cin $*"
+fi
