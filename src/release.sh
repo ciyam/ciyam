@@ -89,7 +89,27 @@ else
  CIYAM_USER=$USER
  CIYAM_GROUP=$(id -gn)
 
- ./unlock_identity
+ PASSWORD=
+
+ SID_FILE_SIZE=$(stat -c%s ciyam_server.sid)
+
+ if (( SID_FILE_SIZE > 32 )); then
+  while true;
+  do
+   read -r -s -p "Enter password to unlock identity: " PASSWORD
+   echo
+
+   if [ "$PASSWORD" = "" ]; then
+    exit
+   fi
+
+   ./ciyam_script unlock_identity "$PASSWORD"
+
+   if [ ! -f .unlock_failed ]; then
+    break;
+   fi
+  done
+ fi
 
  if [ ! -d $release_name ]; then
   mkdir $release_name
@@ -157,9 +177,13 @@ else
   sed -e '1,/^### .<start generated/ d' manuscript.sio > $release_name/ciyam/manuscript.sio.generated
 
   if grep -q "^ <ods_use_encrypted>false$" ciyam_server.sio; then
+   PASSWORD=
+  fi
+
+  if [ "$PASSWORD" = "" ]; then
    ./ods_fsed -quiet "-exec=export $main_module" $main_module
   else
-   ./export_encrypted_ods_db $main_module
+   ./ciyam_script export_encrypted_ods_db $main_module "$PASSWORD"
   fi
 
   mv $main_module $release_name/ciyam

@@ -8,16 +8,20 @@
 @else
 ENCRYPTED=@file:ciyam_server.sid
 ;
+@ifdef $2
+PASSWORD=$2
+@else
 PASSWORD=@password:Enter Password to unlock identity:
+@endif
 ;
 .system_variable @storage
 STORAGE=$OUTPUT
 ;
-./decrypt -harden_key -pwd_and_data "$PASSWORD $ENCRYPTED"
+.=decrypt -harden_key -pwd_and_data "$PASSWORD $ENCRYPTED"
 @ifndef $ERROR
-./crypto_seed "$OUTPUT"
-./crypto_hash "$OUTPUT"
-./crypto_hash "$OUTPUT$STORAGE"
+.=crypto_seed "$OUTPUT"
+.=crypto_hash "$OUTPUT"
+.=crypto_hash "$OUTPUT$STORAGE"
 PASSWORD=$OUTPUT
 ;
 ~echo $~PASSWORD | xclip
