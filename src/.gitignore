@@ -135,6 +135,7 @@ create_blockchain_*_application.cin
 !for_destroy_clone_peer.spec.xrep
 !for_call_proc_with_parent.spec.xrep
 !for_parent_value_mismatch.spec.xrep
+!for_rename_system_variable.spec.xrep
 !for_send_email_notification.spec.xrep
 
 # Ignore specific installed package files.

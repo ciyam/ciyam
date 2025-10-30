@@ -1,0 +1,11 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_rename_system_variable)] `{`$arg_id`}
+   if( `{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )
+    && `}!get_obj( ).get_is_for_peer( ) )
+   {
+      rename_system_variable(
+       "`{`$arg_lvalue`}" + get_obj( ).`{`$arg_field`}( ),
+       "`{`$arg_rvalue`}" + get_obj( ).`{`$arg_ofield`}( ) );
+   }
+   // [(finish for_rename_system_variable)] `{`$arg_id`}
+`}
