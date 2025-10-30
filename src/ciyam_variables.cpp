@@ -48,6 +48,7 @@ const char* const c_special_variable_id = "@id";
 const char* const c_special_variable_os = "@os";
 const char* const c_special_variable_dtm = "@dtm";
 const char* const c_special_variable_grp = "@grp";
+const char* const c_special_variable_hub = "@hub";
 const char* const c_special_variable_key = "@key";
 const char* const c_special_variable_sec = "@sec";
 const char* const c_special_variable_set = "@set";
@@ -374,6 +375,7 @@ void init_special_variable_names( )
       g_special_variable_names.push_back( c_special_variable_os );
       g_special_variable_names.push_back( c_special_variable_dtm );
       g_special_variable_names.push_back( c_special_variable_grp );
+      g_special_variable_names.push_back( c_special_variable_hub );
       g_special_variable_names.push_back( c_special_variable_key );
       g_special_variable_names.push_back( c_special_variable_sec );
       g_special_variable_names.push_back( c_special_variable_set );
@@ -864,6 +866,7 @@ string get_raw_system_variable( const string& name, bool is_internal )
          output_all_persistent_variables = true;
 
       ods::bulk_write bulk_write( system_ods_instance( ) );
+
       scoped_ods_instance ods_instance( system_ods_instance( ) );
 
       system_ods_file_system( ).set_root_folder( c_system_variables_folder );
@@ -1370,6 +1373,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
       if( persist )
       {
          ods::bulk_write bulk_write( system_ods_instance( ) );
+
          scoped_ods_instance ods_instance( system_ods_instance( ) );
 
          system_ods_file_system( ).set_root_folder( c_system_variables_folder );
@@ -1432,6 +1436,49 @@ bool set_system_variable( const string& name, const string& value,
    }
 
    return retval;
+}
+
+void rename_system_variable( const string& old_name, const string& new_name )
+{
+   guard g( g_mutex );
+
+   if( old_name.empty( ) )
+      throw runtime_error( "incorrect empty 'old_name' for rename_system_variable" );
+
+   if( new_name.empty( ) )
+      throw runtime_error( "incorrect empty 'new_name' for rename_system_variable" );
+
+   check_system_variable_can_be_set( old_name );
+   check_system_variable_can_be_set( new_name );
+
+   if( g_variables.count( old_name ) )
+   {
+      if( g_variables.count( new_name ) )
+         // FUTURE: This should be a module string.
+         throw runtime_error( "System variable '" + new_name + "' is already in use." );
+
+      string value( g_variables[ old_name ] );
+
+      ods::bulk_write bulk_write( system_ods_instance( ) );
+
+      scoped_ods_instance ods_instance( system_ods_instance( ) );
+
+      system_ods_file_system( ).set_root_folder( c_system_variables_folder );
+
+      if( system_ods_file_system( ).has_file( old_name ) )
+      {
+         ods::transaction ods_tx( system_ods_instance( ) );
+
+         system_ods_file_system( ).remove_file( old_name );
+         system_ods_file_system( ).store_as_text_file( new_name, value );
+
+         ods_tx.commit( );
+      }
+
+      g_variables.erase( old_name );
+
+      g_variables[ new_name ] = value;
+   }
 }
 
 bool set_variable_checker::can_set( ) const

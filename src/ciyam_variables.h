@@ -54,6 +54,9 @@ bool CIYAM_BASE_DECL_SPEC set_system_variable(
  const std::string& name, const std::string& value,
  const std::string& current, progress* p_progress = 0, const char append_separator = '\0' );
 
+void CIYAM_BASE_DECL_SPEC rename_system_variable(
+ const std::string& old_name, const std::string& new_name );
+
 enum variable_check_type
 {
    e_variable_check_type_no_session_has,
