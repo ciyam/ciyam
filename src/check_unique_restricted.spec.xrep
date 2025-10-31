@@ -1,0 +1,41 @@
+`{`@eq`(`'validate`'`,`$section`)\
+   // [(start check_unique_restricted)] `{`$arg_id`}
+   if( get_obj( ).`{`$arg_tfield`}( )
+    && ( get_obj( ).get_is_creating( )
+    || get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} ) ) )
+   {
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_tfield`} ) );
+`{`@eq`(`$arg_sfield`,`'`'`)
+      key_info += "#1 " + to_string( get_obj( ).`{`$arg_tfield`}( ) );
+`,
+      key_info += "," + string( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_sfield`} ) );
+
+      key_info += "#2 " + to_string( get_obj( ).`{`$arg_tfield`}( ) ) + "," + to_string( get_obj( ).`{`$arg_sfield`}( ) );
+`}
+      class_pointer< `{`$module_name`}_`{`$class_name`} > cp_other( e_create_instance );
+
+      perform_fetch_rc rc;
+
+      cp_other->perform_fetch( key_info, &rc );
+
+      if( rc == e_perform_fetch_rc_okay )
+      {
+         p_validation_errors->insert(
+          construct_validation_error( vf.num, "",
+`{`@eq`(`$arg_sfield`,`'`'`)
+          get_string_message( GS( c_str_found_another_record_1 ),
+           make_pair( c_str_found_another_record_2_class, cp_other->get_display_name( ) ),
+           make_pair( c_str_found_another_record_2_tfield, get_obj( ).`{`$arg_tfield`}( ) ) );
+`,\
+          get_string_message( GS( c_str_found_another_record_2 ),
+           make_pair( c_str_found_another_record_2_class, cp_other->get_display_name( ) ),
+           make_pair( c_str_found_another_record_2_tfield, get_obj( ).get_field_display_name( c_field_id_`{`$arg_tfield`} ) ),
+`{`@eq`(`$arg_ofield`,`'`'`)\
+           make_pair( c_str_found_another_record_2_ofield, get_obj( ).get_field_display_name( c_field_id_`{`$arg_sfield`} ) ) ) ) );
+`,\
+           make_pair( c_str_found_another_record_2_ofield, get_obj( ).get_field_display_name( c_field_id_`{`$arg_ofield`} ) ) ) ) );
+`}`}\
+      }
+   }
+   // [(finish check_unique_restricted)] `{`$arg_id`}
+`}

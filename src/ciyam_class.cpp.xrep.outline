@@ -1884,6 +1884,10 @@ void `{`$full_class_name`}::impl::validate(
 `{`#check_null_match.spec.xrep section=validate class_name=$class_name\
  arg_id=$specification_\0_id arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2`}\
 `,\
+`@eq`(`'\1`'`,`'check_unique_restricted`'`)
+`{`#check_unique_restricted.spec.xrep section=validate class_name=$class_name module_name=$module_name\
+ arg_id=$specification_\0_id arg_ofield=$specification_\0_ofield arg_tfield=$specification_\0_tfield arg_sfield=$specification_\0_sfield`}\
+`,\
 `@eq`(`'\1`'`,`'folder`'`)
 `{`#folder.spec.xrep section=validate class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
