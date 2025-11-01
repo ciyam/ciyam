@@ -1,0 +1,56 @@
+#!/bin/bash
+# Copyright (c) 2025 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ "$WEBDIR" = "" ]; then
+ echo "Error: Missing WEBDIR environment variable."
+
+ exit
+fi
+
+if [ "$1" = "" ]; then
+ echo "Usage: prepare_release [-keep_source|-remove_source]"
+
+ exit
+fi
+
+rm_src=
+
+if [ "$1" = "-remove_source" ]; then
+ rm_src=1
+elif [ ! "$1" = "-keep_source" ]; then
+ echo "Error: Invalid option '$1' for prepare_release"
+
+ exit
+fi
+
+sudo systemctl stop ciyam
+
+make strip
+
+sudo systemctl daemon-reload
+sudo systemctl start ciyam
+sudo systemctl restart apache2
+
+make release
+
+./reconstruct_meta okay
+
+if [ "$rm_src" = "1" ]; then
+ rm -rf $WEBDIR/meta
+fi
+
+cd ..
+
+if [ "$rm_src" = "1" ]; then
+ rm -rf src
+fi
+
+./install
+
+if [ "$rm_src" = "1" ]; then
+ cd ..
+ rm -rf ciyam
+fi
