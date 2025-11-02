@@ -18,19 +18,20 @@
 `{`!`@eq`(`$arg_new_only`,`'`'`)`$new_or_create_only`=`'true`'`}\
 `{`!`@eq`(`$arg_create_only`,`'`'`)`$new_or_create_only`=`'true`'`}\
 `{`$new_create_update_or_test_field`=`'`'`}\
-`{`$new_create_update_internal_mod_or_test_field`=`'`'`}\
+`{`$new_create_update_internal_chk_mod_or_test_field`=`'`'`}\
+`{`!`@eq`(`$arg_check`,`'`'`)`$new_create_update_internal_chk_mod_or_test_field`=`'true`'`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)`$new_create_update_or_test_field`=`'true`'`}\
-`{`!`@eq`(`$arg_tfield`,`'`'`)`$new_create_update_internal_mod_or_test_field`=`'true`'`}\
-`{`!`@eq`(`$arg_modifier`,`'`'`)`$new_create_update_internal_mod_or_test_field`=`'true`'`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`$new_create_update_internal_chk_mod_or_test_field`=`'true`'`}\
+`{`!`@eq`(`$arg_modifier`,`'`'`)`$new_create_update_internal_chk_mod_or_test_field`=`'true`'`}\
 `{`@eq`(`$arg_new_only`,`'true`'`)`$new_create_update_or_test_field`=`'true`'`}\
-`{`@eq`(`$arg_new_only`,`'true`'`)`$new_create_update_internal_mod_or_test_field`=`'true`'`}\
+`{`@eq`(`$arg_new_only`,`'true`'`)`$new_create_update_internal_chk_mod_or_test_field`=`'true`'`}\
 `{`@eq`(`$arg_create_only`,`'true`'`)`$new_create_update_or_test_field`=`'true`'`}\
-`{`@eq`(`$arg_create_only`,`'true`'`)`$new_create_update_internal_mod_or_test_field`=`'true`'`}\
+`{`@eq`(`$arg_create_only`,`'true`'`)`$new_create_update_internal_chk_mod_or_test_field`=`'true`'`}\
 `{`@eq`(`$arg_update_only`,`'true`'`)`$new_create_update_or_test_field`=`'true`'`}\
-`{`@eq`(`$arg_update_only`,`'true`'`)`$new_create_update_internal_mod_or_test_field`=`'true`'`}\
-`{`@eq`(`$arg_internal_only`,`'true`'`)`$new_create_update_internal_mod_or_test_field`=`'true`'`}\
+`{`@eq`(`$arg_update_only`,`'true`'`)`$new_create_update_internal_chk_mod_or_test_field`=`'true`'`}\
+`{`@eq`(`$arg_internal_only`,`'true`'`)`$new_create_update_internal_chk_mod_or_test_field`=`'true`'`}\
    // [(start field_to_value)] `{`$arg_id`}
-`{`@eq`(`$new_create_update_internal_mod_or_test_field`,`'`'`)\
+`{`@eq`(`$new_create_update_internal_chk_mod_or_test_field`,`'`'`)\
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    get_obj( ).op_update( );
 `}\
@@ -44,7 +45,9 @@
 `{`@eq`(`$arg_internal_only`,`'true`'`)is_internal`{`@eq`(`$new_create_update_or_test_field`,`'true`'`) && `}`}\
 `{`!`@eq`(`$new_or_create_only`,`'`'`)`{`@eq`(`$arg_new_only`,`'`'`)is_create`,is_null( get_obj( ).get_key( ) )`}`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`,\
 `@eq`(`$arg_update_only`,`'true`'`)!is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`}\
-`{`!`@eq`(`$arg_tfield`,`'`'`)`{`@eq`(`$arg_tfistexttype`,`'1`'`)!is_null( `}get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}`} )
+`{`!`@eq`(`$arg_tfield`,`'`'`)`{`@eq`(`$arg_tfistexttype`,`'1`'`)!is_null( `}get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}`}\
+`{`!`@eq`(`$arg_check`,`'`'`)`{`!`@eq`(`$arg_modifier`,`'`'`)`|`@eq`(`$arg_internal_only`,`'true`'`)`|`@eq`(`$new_create_update_or_test_field`,`'true`'`)
+    && `}( get_obj( ).`{`$arg_field`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`$arg_field`} )`} )
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    {
       get_obj( ).op_update( );

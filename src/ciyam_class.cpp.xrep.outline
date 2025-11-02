@@ -1006,7 +1006,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_modifier=$specification_\\0_modifier arg_tfield=$specification_\\0_tfield arg_value=$specification_\\0_value\
  arg_evalue=$specification_\\0_evalue arg_update=$specification_\\0_update arg_new_only=$specification_\\0_new_only\
  arg_create_only=$specification_\\0_create_only arg_update_only=$specification_\\0_update_only\
- arg_internal_only=$specification_\\0_internal_only arg_tfistexttype=$specification_\\0_tfistexttype`}\
+ arg_internal_only=$specification_\\0_internal_only arg_check=$specification_\\0_check arg_tfistexttype=$specification_\\0_tfistexttype`}\
 `,\
 `@eq`(`'\\1`'`,`'field_to_variable`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#field_to_variable.spec.xrep section=procedure class_name=$class_name module_name=$module_name\
@@ -2449,7 +2449,7 @@ void `{`$full_class_name`}::impl::post_init( )
  arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value\
  arg_evalue=$specification_\0_evalue arg_update=$specification_\0_update arg_new_only=$specification_\0_new_only\
  arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only\
- arg_internal_only=$specification_\0_internal_only arg_tfistexttype=$specification_\0_tfistexttype`}
+ arg_internal_only=$specification_\0_internal_only arg_check=$specification_\0_check arg_tfistexttype=$specification_\0_tfistexttype`}
 `,\
 `@eq`(`'\1`'`,`'transient_default_trigger_script`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_default_trigger_script.spec.xrep section=post_init\
@@ -2857,7 +2857,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value\
  arg_evalue=$specification_\0_evalue arg_update=$specification_\0_update arg_new_only=$specification_\0_new_only\
  arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only\
- arg_internal_only=$specification_\0_internal_only arg_tfistexttype=$specification_\0_tfistexttype`}\
+ arg_internal_only=$specification_\0_internal_only arg_check=$specification_\0_check arg_tfistexttype=$specification_\0_tfistexttype`}\
 `,\
 `@eq`(`'\1`'`,`'field_to_value_for_updating_graph_parent`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_to_value_for_updating_graph_parent.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -3206,7 +3206,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value\
  arg_evalue=$specification_\0_evalue arg_update=$specification_\0_update arg_new_only=$specification_\0_new_only\
  arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only\
- arg_internal_only=$specification_\0_internal_only arg_tfistexttype=$specification_\0_tfistexttype`}\
+ arg_internal_only=$specification_\0_internal_only arg_check=$specification_\0_check arg_tfistexttype=$specification_\0_tfistexttype`}\
 `,\
 `@eq`(`'\1`'`,`'field_to_value_for_updating_graph_parent`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_to_value_for_updating_graph_parent.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
