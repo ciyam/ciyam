@@ -324,12 +324,12 @@ Export_Needed,M001C108F124
 Exporting_For_Chain_Id,M001C108F125
 Fetching_And_Not_Reconnecting,M001C108F126
 Host_And_Port_Info,M001C108F127
-Core_Peer_Lot,M001C108F128
+Lot_Number,M001C108F128
 Initial_Backup_Hash,M001C108F129
 Initial_Hub_Hash,M001C108F130
 Initial_Shared_Hash,M001C108F131
 Local_Checksum,M001C108F132
-Next_Peer_Lot,M001C108F133
+Use_Next_Lot,M001C108F133
 Host_Name,M001C108F134
 Identity,M001C108F135
 Identity_For_Peer,M001C108F136
