@@ -20,6 +20,10 @@ else
   rm $1.sql
  fi
 
+ if [ -f $1.log.new ]; then
+  rm $1.log.new
+ fi
+
  if [ -f $1.undo.sql ]; then
   rm $1.undo.sql
  fi
