@@ -1703,6 +1703,7 @@ void Meta_Package::impl::impl_Remove( )
 
                      outf << ";\n";
                      outf << "@endif\n";
+                     outf << ";\n";
                   }
 
                   class_keys[ next_cid ].clear( );
@@ -1713,6 +1714,7 @@ void Meta_Package::impl::impl_Remove( )
                outf << "@else\n";
                outf << ".storage_transaction_rollback\n";
                outf << "@endif\n";
+               outf << ";\n";
 
                if( is_last )
                   outf << ".system_variable @" << model_key << " \"\"\n";
