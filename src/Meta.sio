@@ -2784,6 +2784,10 @@
       <type>1045
       <mandatory>true
       <indexes/>
+       <index/>
+        <id>400420
+        <num>1
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -2919,6 +2923,10 @@
         <id>400410
         <num>0
        </index>
+       <index/>
+        <id>400420
+        <num>0
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -2939,6 +2947,11 @@
      </field>
     </fields>
     <indexes/>
+     <index/>
+      <id>400420
+      <name>[{Enum}],[Label]
+      <unique>true
+     </index>
      <index/>
       <id>400400
       <name>[{Enum}],[Order]
@@ -3768,6 +3781,10 @@
       <mandatory>true
       <default_value>0
       <indexes/>
+       <index/>
+        <id>400715
+        <num>1
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -3881,6 +3898,10 @@
        <index/>
         <id>400700
         <num>1
+       </index>
+       <index/>
+        <id>400715
+        <num>2
        </index>
        <index/>
         <id>400720
@@ -4509,6 +4530,10 @@
         <id>400710
         <num>0
        </index>
+       <index/>
+        <id>400715
+        <num>0
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -4707,6 +4732,11 @@
      <index/>
       <id>400710
       <name>[{Class}],[Id]
+      <unique>true
+     </index>
+     <index/>
+      <id>400715
+      <name>[{Class}],[Is_Foreign_Key],[Name]
       <unique>true
      </index>
      <index/>
@@ -6171,6 +6201,10 @@
       <type>1045
       <mandatory>true
       <indexes/>
+       <index/>
+        <id>400925
+        <num>1
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -6226,6 +6260,10 @@
         <id>400920
         <num>0
        </index>
+       <index/>
+        <id>400925
+        <num>0
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -6238,6 +6276,11 @@
      </field>
     </fields>
     <indexes/>
+     <index/>
+      <id>400925
+      <name>[{Class}],[Key]
+      <unique>true
+     </index>
      <index/>
       <id>400920
       <name>[{Class}],[Order]
@@ -31638,7 +31681,7 @@
      <class_id>106100
      <field_info>300600:105101;no_edit+link+filename+max_size=30
      <field_info>300610:105101!@group:300500+@xparent;new_edit+link+fkey1+force
-     <field_info>300620:106101!@fkey1:300600+106101;new_edit+force+link
+     <field_info>300620:106101!@fkey1:300600;new_edit+force+link
      <field_info>106101;forced
      <field_info>106102;forced
      <field_info>106104;no_edit+non_new
@@ -32316,7 +32359,7 @@
      <class_id>107100
      <field_info>300700:106101;no_edit+link+filename+max_size=30
      <field_info>107110;no_edit+non_new
-     <field_info>300710:102101!@group:300200+102101;force+link
+     <field_info>300710:102101!@group:300200;force+link
      <field_info>107101
      <field_info>107112;force
      <field_info>107105
@@ -32889,11 +32932,11 @@
      <class_id>108100
      <field_info>300800:106101;no_edit+link+fkey1+filename+max_size=30
      <field_info>108102
-     <field_info>300811:107101!@fkey1:300700+107101
-     <field_info>300812:107101!@fkey1:300700+107101
-     <field_info>300813:107101!@fkey1:300700+107101
-     <field_info>300814:107101!@fkey1:300700+107101
-     <field_info>300815:107101!@fkey1:300700+107101
+     <field_info>300811:107101!@fkey1:300700
+     <field_info>300812:107101!@fkey1:300700
+     <field_info>300813:107101!@fkey1:300700
+     <field_info>300814:107101!@fkey1:300700
+     <field_info>300815:107101!@fkey1:300700
     </data>
    </specification>
    <specification/>
@@ -33705,22 +33748,22 @@
      <field_info>302120:123101;force+new_edit+max_size=30
      <field_info>124104;force
      <field_info>302170:106101;hidden+fkey2+filename+max_size=30
-     <field_info>302140:107101!@fkey1:300700+107108=0+107101;link+force
-     <field_info>302150:107101!@fkey1:300700+107108=1+107101;link+force
-     <field_info>302160:107101!@fkey2:300700+107101;link+force
+     <field_info>302140:107101!@fkey1:300700+107108=0;link+force
+     <field_info>302150:107101!@fkey1:300700+107108=1;link+force
+     <field_info>302160:107101!@fkey2:300700;link+force
      <field_info>302175:106101;hidden+fkey3+filename+max_size=30
-     <field_info>302165:107101!@fkey3:300700+107108=0+107101;link
+     <field_info>302165:107101!@fkey3:300700+107108=0;link
      <field_info>302193:113105!@fkey1:301320+@sort;force
      <field_info>302194:106101;hidden+fkey4+filename+max_size=30
      <field_info>124123;force
-     <field_info>302195:107101!@fkey4:300700+107108=0+107101;link
-     <field_info>302196:107101!@fkey4:300700+107108=1+107101;link+force
+     <field_info>302195:107101!@fkey4:300700+107108=0;link
+     <field_info>302196:107101!@fkey4:300700+107108=1;link+force
      <field_info>302197:106101;hidden+fkey5+filename+max_size=30
-     <field_info>302198:107101!@fkey5:300700+107108=0+107101;link
+     <field_info>302198:107101!@fkey5:300700+107108=0;link
      <field_info>302180:115101!@fkey2:301420+301410=restriction;link
      <field_info>124135
      <field_info>124105;enum=694
-     <field_info>302185:107101!@fkey1:300700+107101;link
+     <field_info>302185:107101!@fkey1:300700;link
      <field_info>124106
      <field_info>124121;enum=693
      <field_info>124132;enum=699
@@ -33728,7 +33771,7 @@
      <field_info>124117
      <field_info>124122
      <field_info>124107
-     <field_info>302190:111101!@fkey1:301100+111101;link
+     <field_info>302190:111101!@fkey1:301100;link
      <field_info>124109
      <field_info>124110
      <field_info>124111
@@ -33740,7 +33783,7 @@
      <field_info>124136;enum=638
      <field_info>124125;enum=696
      <field_info>124115;enum=695
-     <field_info>302176:107101!@fkey1:300700+107108=0+107101;link
+     <field_info>302176:107101!@fkey1:300700+107108=0;link
      <field_info>124131;enum=698
      <field_info>124120;enum=692
      <field_info>124129;enum=639
@@ -33752,7 +33795,7 @@
      <field_info>124103;enum=690
      <field_info>302130:116101!@group:301500
      <field_info>302115;hidden+fkey6
-     <field_info>302199:109101!@fkey6:300900+109101
+     <field_info>302199:109101!@fkey6:300900
      <field_info>124134;enum=691
      <field_info>124133
     </data>
@@ -34083,8 +34126,8 @@
      <field_info>122101;no_edit
      <field_info>122111;no_edit+non_new
      <field_info>301991:121101;force+max_size=30
-     <field_info>301992:106101!@fkey1:300600+106101;new_edit+link+fkey2
-     <field_info>301996:107101!@fkey2:300700+107108=1+107101;link+force
+     <field_info>301992:106101!@fkey1:300600;new_edit+link+fkey2
+     <field_info>301996:107101!@fkey2:300700+107108=1;link+force
      <field_info>301997;hidden+fkey3
      <field_info>122106
      <field_info>122107;force+enum=685
@@ -34092,13 +34135,13 @@
      <field_info>122123;enum=681
      <field_info>122103;force+enum=680
      <field_info>301993:116101!@group:301500;force
-     <field_info>301998:109101!@fkey3:300900+109101;force
+     <field_info>301998:109101!@fkey3:300900;force
      <field_info>122104;enum=680
      <field_info>301994:116101!@group:301500
-     <field_info>301998a:109101!@fkey3:300900+109101;force
+     <field_info>301998a:109101!@fkey3:300900;force
      <field_info>122105;enum=680
      <field_info>301995:116101!@group:301500
-     <field_info>301998b:109101!@fkey3:300900+109101;force
+     <field_info>301998b:109101!@fkey3:300900;force
      <field_info>122145
      <field_info>@tab:Basic_UI_Options
      <field_info>122119
@@ -34427,7 +34470,7 @@
      <field_info>110101;no_edit+enum=540
      <field_info>110102;enum=550
      <field_info>110103;enum=560
-     <field_info>301020:107101!@fkey1:300700+107101;link
+     <field_info>301020:107101!@fkey1:300700;link
      <field_info>301010;fkey1+hidden
     </data>
    </specification>
@@ -34624,7 +34667,7 @@
      <extra>no_edit
      <class_id>126100
      <field_info>302210:127101;no_edit+link+max_size=30
-     <field_info>302200:105101!@group:300500+105101;link
+     <field_info>302200:105101!@group:300500;link
     </data>
    </specification>
    <specification/>
@@ -34906,17 +34949,17 @@
      <field_info>137114
      <field_info>137102
      <field_info>137121
-     <field_info>302830a:106101!@fkey1:300600+106101;fkey2+force
-     <field_info>302830c:118101!@fkey2:301820+118101
-     <field_info>302831:122101!@fkey2:301992+122101
-     <field_info>302830b:107101!@fkey2:300700+107101
-     <field_info>302830d:107101!@fkey2:300700+107101
-     <field_info>302830e:107101!@fkey2:300700+107101
-     <field_info>302830f:107101!@fkey2:300700+107101
-     <field_info>302830g:107101!@fkey2:300700+107101
-     <field_info>302832:109101!@fkey2:300900+109101
-     <field_info>302833:111101!@fkey2:301100+111101
-     <field_info>302830:136101!@fkey1:302800+@key1:302810+136103=1+136101
+     <field_info>302830a:106101!@fkey1:300600;fkey2+force
+     <field_info>302830c:118101!@fkey2:301820
+     <field_info>302831:122101!@fkey2:301992
+     <field_info>302830b:107101!@fkey2:300700
+     <field_info>302830d:107101!@fkey2:300700
+     <field_info>302830e:107101!@fkey2:300700
+     <field_info>302830f:107101!@fkey2:300700
+     <field_info>302830g:107101!@fkey2:300700
+     <field_info>302832:109101!@fkey2:300900
+     <field_info>302833:111101!@fkey2:301100
+     <field_info>302830:136101!@fkey1:302800+@key1:302810+136103=1
      <field_info>302825;hidden+fkey1
      <field_info>137106;hidden+key1
     </data>
@@ -35640,11 +35683,11 @@
      <type>standard
      <class_id>113100
      <field_info>301300:105101;no_edit+link+fkey1+filename+max_size=30
-     <field_info>301310:106101!@fkey1:300600+106101;link+force+new_edit
+     <field_info>301310:106101!@fkey1:300600;link+force+new_edit
      <field_info>113106;no_edit+non_new
-     <field_info>301320:106101!@fkey1:300600+106101;fkey2+link+force+new_edit
-     <field_info>301330a:107101!@fkey2:300700+107101;new_only
-     <field_info>301330b:107101!@fkey2:300700+107101;new_only
+     <field_info>301320:106101!@fkey1:300600;fkey2+link+force+new_edit
+     <field_info>301330a:107101!@fkey2:300700;new_only
+     <field_info>301330b:107101!@fkey2:300700;new_only
      <field_info>113102
      <field_info>113111;force
      <field_info>113101;forced
@@ -35816,20 +35859,20 @@
      <field_info>115112
      <field_info>301410:114101;no_edit+link+max_size=100
      <field_info>301410:114120;no_edit+notes
-     <field_info>301420:106101!@fkey1:300600+106101;link+fkey2
-     <field_info>301430:107101!@fkey2:300700+107101;link+force
+     <field_info>301420:106101!@fkey1:300600;link+fkey2
+     <field_info>301430:107101!@fkey2:300700;link+force
      <field_info>128104;force+enum=802
      <field_info>128102;enum=800
-     <field_info>301450:111101!@fkey2:301100+111101;link
-     <field_info>302300:106101!@fkey1:300600+106101;link+fkey3
-     <field_info>302310:107101!@fkey3:300700+107101
+     <field_info>301450:111101!@fkey2:301100;link
+     <field_info>302300:106101!@fkey1:300600;link+fkey3
+     <field_info>302310:107101!@fkey3:300700
      <field_info>128105
      <field_info>128101
      <field_info>115107;force
-     <field_info>301481:107101!@fkey2:300700+107101;link
+     <field_info>301481:107101!@fkey2:300700;link
      <field_info>301490:106101;hidden+fkey4+filename+max_size=30
-     <field_info>301480:107101!@fkey2:300700+107108=1+107101;link+force
-     <field_info>301495:107101!@fkey4:300700+107101;link
+     <field_info>301480:107101!@fkey2:300700+107108=1;link+force
+     <field_info>301495:107101!@fkey4:300700;link
      <field_info>115102
      <field_info>128103;enum=801
      <field_info>115104
@@ -38437,48 +38480,48 @@
      <field_info>115112
      <field_info>301410:114101;no_edit+link+max_size=100
      <field_info>301410:114120;no_edit+full_height+notes
-     <field_info>301420:106101!@fkey1:300600+106101;link+fkey2+force
-     <field_info>301430:107101!@fkey2:300700+107101;link+force
-     <field_info>301435:107101!@fkey2:300700+107101;link
-     <field_info>301436:107101!@fkey2:300700+107101;link
+     <field_info>301420:106101!@fkey1:300600;link+fkey2+force
+     <field_info>301430:107101!@fkey2:300700;link+force
+     <field_info>301435:107101!@fkey2:300700;link
+     <field_info>301436:107101!@fkey2:300700;link
      <field_info>115102
-     <field_info>301421:106101!@fkey1:300600+106101;link+fkey9
-     <field_info>301437:107101!@fkey9:300700+107101
-     <field_info>301440:109101!@fkey2:300900+109101;link
-     <field_info>301441:109101!@fkey2:300900+109101;link
-     <field_info>301442:109101!@fkey2:300900+109101;link
-     <field_info>301450:111101!@fkey2:301100+111101;link+fkey5
-     <field_info>301498:112101!@fkey5:301200+112101
-     <field_info>301477:112101!@fkey5:301200+112101
-     <field_info>301478:112101!@fkey5:301200+112101
-     <field_info>301451:111101!@fkey2:301100+111101;link
-     <field_info>301452:111101!@fkey2:301100+111101;link
-     <field_info>301460:103101!@group:300300+103101;link+fkey3
-     <field_info>301470:104101!@fkey3:300400+104101;link
-     <field_info>301471:104101!@fkey3:300400+104101;link
-     <field_info>301472:104101!@fkey3:300400+104101;link
-     <field_info>301473:104101!@fkey3:300400+104101;link
-     <field_info>301474:104101!@fkey3:300400+104101;link
+     <field_info>301421:106101!@fkey1:300600;link+fkey9
+     <field_info>301437:107101!@fkey9:300700
+     <field_info>301440:109101!@fkey2:300900;link
+     <field_info>301441:109101!@fkey2:300900;link
+     <field_info>301442:109101!@fkey2:300900;link
+     <field_info>301450:111101!@fkey2:301100;link+fkey5
+     <field_info>301498:112101!@fkey5:301200
+     <field_info>301477:112101!@fkey5:301200
+     <field_info>301478:112101!@fkey5:301200
+     <field_info>301451:111101!@fkey2:301100;link
+     <field_info>301452:111101!@fkey2:301100;link
+     <field_info>301460:103101!@group:300300;link+fkey3
+     <field_info>301470:104101!@fkey3:300400;link
+     <field_info>301471:104101!@fkey3:300400;link
+     <field_info>301472:104101!@fkey3:300400;link
+     <field_info>301473:104101!@fkey3:300400;link
+     <field_info>301474:104101!@fkey3:300400;link
      <field_info>115107;force
-     <field_info>301494:106101;no_edit+link+fkey7+filename+max_size=30
-     <field_info>301481:107101!@fkey7:300700+107101;link+force
-     <field_info>301490:106101;hidden+fkey4+filename+max_size=30
-     <field_info>301480:107101!@fkey2:300700+107108=1+107101;link+force
-     <field_info>301495:107101!@fkey4:300700+107101;link+force
-     <field_info>301489:106101;hidden+fkey8+filename+max_size=30
-     <field_info>301476:107101!@fkey8:300700+107101;link
-     <field_info>301496:107101!@fkey4:300700+107101;link
-     <field_info>301497:107101!@fkey4:300700+107101;link
+     <field_info>301494:106101!@fkey1:300600;no_edit+link+fkey7
+     <field_info>301481:107101!@fkey7:300700;link+force
+     <field_info>301490:106101!@fkey1:300600;hidden+fkey4
+     <field_info>301480:107101!@fkey2:300700+107108=1;link+force
+     <field_info>301495:107101!@fkey4:300700;link+force
+     <field_info>301489:106101!@fkey1:300600;hidden+fkey8
+     <field_info>301476:107101!@fkey8:300700;link
+     <field_info>301496:107101!@fkey4:300700;link
+     <field_info>301497:107101!@fkey4:300700;link
      <field_info>301475:113105!@fkey2:301320+@sort;link
      <field_info>115110;force
-     <field_info>301485:107101!@fkey2:300700+107101;link
-     <field_info>301487:106101;hidden+fkey6+filename+max_size=30
-     <field_info>301486:107101!@fkey2:300700+107108=1+107101;link+force+forced
-     <field_info>301488:107101!@fkey6:300700+107101;link
+     <field_info>301485:107101!@fkey2:300700;link
+     <field_info>301487:106101!@fkey1:300600;hidden+fkey6
+     <field_info>301486:107101!@fkey2:300700+107108=1;link+force+forced
+     <field_info>301488:107101!@fkey6:300700;link
      <field_info>115103
      <field_info>301499:116101!@group:301500
-     <field_info>301331:116101!@group:301500+116101
-     <field_info>301332:116101!@group:301500+116101
+     <field_info>301331:116101!@group:301500
+     <field_info>301332:116101!@group:301500
      <field_info>115104
      <field_info>115108
      <field_info>115123;no_edit
@@ -39332,10 +39375,10 @@
      <field_info>301910:119101;force+new_edit+max_size=30
      <field_info>120107;force
      <field_info>301970:106101;hidden+fkey2+forced+filename+max_size=30
-     <field_info>301940:107101!@fkey1:300700+107108=0+107101;link
-     <field_info>301950:107101!@fkey1:300700+107108=1+107101;link+force+forced
-     <field_info>301960:107101!@fkey2:300700+107108=0+107101;link+force
-     <field_info>301965:107101!@fkey2:300700+107108=0+107101;link
+     <field_info>301940:107101!@fkey1:300700+107108=0;link
+     <field_info>301950:107101!@fkey1:300700+107108=1;link+force+forced
+     <field_info>301960:107101!@fkey2:300700+107108=0;link+force
+     <field_info>301965:107101!@fkey2:300700+107108=0;link
      <field_info>120115
      <field_info>301980:115101!@fkey2:301420+301410=restriction;link
      <field_info>120109;force+enum=670
@@ -39525,7 +39568,7 @@
      <field_info>118101;no_edit
      <field_info>118105;no_edit+non_new
      <field_info>301810:117101;force+max_size=30
-     <field_info>301820:106101!@fkey1:300600+106101;new_edit+link
+     <field_info>301820:106101!@fkey1:300600;new_edit+link
      <field_info>118104
      <field_info>@tab:Security_Options
      <field_info>118102;enum=655

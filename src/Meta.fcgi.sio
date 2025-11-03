@@ -2977,7 +2977,7 @@
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>@fkey1:300600+106101
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_class_name
@@ -3312,7 +3312,7 @@
      <pclass>102100
      <pfield>102101
      <pfname>field_type_name
-     <pextra>@group:300200+102101
+     <pextra>@group:300200
     </field>
     <field/>
      <name>field_field_name
@@ -3845,7 +3845,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey1:300700+107101
+     <pextra>@fkey1:300700
     </field>
     <field/>
      <name>field_index_field_2
@@ -3857,7 +3857,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey1:300700+107101
+     <pextra>@fkey1:300700
     </field>
     <field/>
      <name>field_index_field_3
@@ -3869,7 +3869,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey1:300700+107101
+     <pextra>@fkey1:300700
     </field>
     <field/>
      <name>field_index_field_4
@@ -3881,7 +3881,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey1:300700+107101
+     <pextra>@fkey1:300700
     </field>
     <field/>
      <name>field_index_field_5
@@ -3893,7 +3893,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey1:300700+107101
+     <pextra>@fkey1:300700
     </field>
    </fields>
   </view>
@@ -4044,7 +4044,7 @@
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>@fkey1:300600+106101
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_list_parent_field
@@ -4056,7 +4056,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107108=1+107101
+     <pextra>@fkey2:300700+107108=1
     </field>
     <field/>
      <name>field_list_parent_class
@@ -4129,7 +4129,7 @@
      <pclass>109100
      <pfield>109101
      <pfname>field_modifier_name
-     <pextra>@fkey3:300900+109101
+     <pextra>@fkey3:300900
     </field>
     <field/>
      <name>field_list_create_restriction
@@ -4161,7 +4161,7 @@
      <pclass>109100
      <pfield>109101
      <pfname>field_modifier_name
-     <pextra>@fkey3:300900+109101
+     <pextra>@fkey3:300900
     </field>
     <field/>
      <name>field_list_destroy_restriction
@@ -4193,7 +4193,7 @@
      <pclass>109100
      <pfield>109101
      <pfname>field_modifier_name
-     <pextra>@fkey3:300900+109101
+     <pextra>@fkey3:300900
     </field>
     <field/>
      <name>field_list_allow_anonymous_access
@@ -4511,7 +4511,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey1:300700+107108=0+107101
+     <pextra>@fkey1:300700+107108=0
     </field>
     <field/>
      <name>field_list_field_source_parent
@@ -4523,7 +4523,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey1:300700+107108=1+107101
+     <pextra>@fkey1:300700+107108=1
     </field>
     <field/>
      <name>field_list_field_source_child
@@ -4535,7 +4535,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_list_field_source_child_class
@@ -4559,7 +4559,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey3:300700+107108=0+107101
+     <pextra>@fkey3:300700+107108=0
     </field>
     <field/>
      <name>field_list_field_child_relationship
@@ -4603,7 +4603,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey4:300700+107108=0+107101
+     <pextra>@fkey4:300700+107108=0
     </field>
     <field/>
      <name>field_list_field_child_rel_source_parent
@@ -4615,7 +4615,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey4:300700+107108=1+107101
+     <pextra>@fkey4:300700+107108=1
     </field>
     <field/>
      <name>field_list_field_child_rel_source_parent_class
@@ -4639,7 +4639,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey5:300700+107108=0+107101
+     <pextra>@fkey5:300700+107108=0
     </field>
     <field/>
      <name>field_list_field_restriction_spec
@@ -4679,7 +4679,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey1:300700+107101
+     <pextra>@fkey1:300700
     </field>
     <field/>
      <name>field_list_field_restriction_value
@@ -4747,7 +4747,7 @@
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
-     <pextra>@fkey1:301100+111101
+     <pextra>@fkey1:301100
     </field>
     <field/>
      <name>field_list_field_procedure_args
@@ -4847,7 +4847,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey1:300700+107108=0+107101
+     <pextra>@fkey1:300700+107108=0
     </field>
     <field/>
      <name>field_list_field_label_class
@@ -4956,7 +4956,7 @@
      <pclass>109100
      <pfield>109101
      <pfname>field_modifier_name
-     <pextra>@fkey6:300900+109101
+     <pextra>@fkey6:300900
     </field>
     <field/>
      <name>field_list_field_link_empty_restriction
@@ -5195,7 +5195,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey1:300700+107101
+     <pextra>@fkey1:300700
     </field>
     <field/>
      <name>field_modifier_affect_class
@@ -5241,7 +5241,7 @@
      <pclass>105100
      <pfield>105101
      <pfname>field_model_name
-     <pextra>@group:300500+105101
+     <pextra>@group:300500
     </field>
    </fields>
   </view>
@@ -5427,7 +5427,7 @@
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>@fkey1:300600+106101
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_package_option_view
@@ -5439,7 +5439,7 @@
      <pclass>118100
      <pfield>118101
      <pfname>field_view_name
-     <pextra>@fkey2:301820+118101
+     <pextra>@fkey2:301820
     </field>
     <field/>
      <name>field_package_option_list
@@ -5451,7 +5451,7 @@
      <pclass>122100
      <pfield>122101
      <pfname>field_list_name
-     <pextra>@fkey2:301992+122101
+     <pextra>@fkey2:301992
     </field>
     <field/>
      <name>field_package_option_field
@@ -5463,7 +5463,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_package_option_other_field
@@ -5475,7 +5475,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_package_option_other_field_2
@@ -5487,7 +5487,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_package_option_source_field
@@ -5499,7 +5499,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_package_option_other_source_field
@@ -5511,7 +5511,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_package_option_modifier
@@ -5523,7 +5523,7 @@
      <pclass>109100
      <pfield>109101
      <pfname>field_modifier_name
-     <pextra>@fkey2:300900+109101
+     <pextra>@fkey2:300900
     </field>
     <field/>
      <name>field_package_option_procedure
@@ -5535,7 +5535,7 @@
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
-     <pextra>@fkey2:301100+111101
+     <pextra>@fkey2:301100
     </field>
     <field/>
      <name>field_package_option_other_package
@@ -5547,7 +5547,7 @@
      <pclass>136100
      <pfield>136101
      <pfname>field_package_name
-     <pextra>@fkey1:302800+@key1:302810+136103=1+136101
+     <pextra>@fkey1:302800+@key1:302810+136103=1
     </field>
     <field/>
      <name>field_package_option_model
@@ -5817,7 +5817,7 @@
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>@fkey1:300600+106101
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_relationship_field_id
@@ -5837,7 +5837,7 @@
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>@fkey1:300600+106101
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_relationship_parent_field_for_view
@@ -5849,7 +5849,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_relationship_parent_field_for_list
@@ -5861,7 +5861,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_relationship_mandatory
@@ -6042,7 +6042,7 @@
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>@fkey1:300600+106101
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_specification_field
@@ -6054,7 +6054,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_specification_other_field
@@ -6066,7 +6066,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_specification_other_field_2
@@ -6078,7 +6078,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_specification_value
@@ -6098,7 +6098,7 @@
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>@fkey1:300600+106101
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_specification_other_class_field
@@ -6110,7 +6110,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey9:300700+107101
+     <pextra>@fkey9:300700
     </field>
     <field/>
      <name>field_specification_modifier
@@ -6122,7 +6122,7 @@
      <pclass>109100
      <pfield>109101
      <pfname>field_modifier_name
-     <pextra>@fkey2:300900+109101
+     <pextra>@fkey2:300900
     </field>
     <field/>
      <name>field_specification_other_modifier
@@ -6134,7 +6134,7 @@
      <pclass>109100
      <pfield>109101
      <pfname>field_modifier_name
-     <pextra>@fkey2:300900+109101
+     <pextra>@fkey2:300900
     </field>
     <field/>
      <name>field_specification_other_modifier_2
@@ -6146,7 +6146,7 @@
      <pclass>109100
      <pfield>109101
      <pfname>field_modifier_name
-     <pextra>@fkey2:300900+109101
+     <pextra>@fkey2:300900
     </field>
     <field/>
      <name>field_specification_procedure
@@ -6158,7 +6158,7 @@
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
-     <pextra>@fkey2:301100+111101
+     <pextra>@fkey2:301100
     </field>
     <field/>
      <name>field_specification_procedure_arg
@@ -6170,7 +6170,7 @@
      <pclass>112100
      <pfield>112101
      <pfname>field_procedure_arg_name
-     <pextra>@fkey5:301200+112101
+     <pextra>@fkey5:301200
     </field>
     <field/>
      <name>field_specification_procedure_arg_2
@@ -6182,7 +6182,7 @@
      <pclass>112100
      <pfield>112101
      <pfname>field_procedure_arg_name
-     <pextra>@fkey5:301200+112101
+     <pextra>@fkey5:301200
     </field>
     <field/>
      <name>field_specification_procedure_arg_3
@@ -6194,7 +6194,7 @@
      <pclass>112100
      <pfield>112101
      <pfname>field_procedure_arg_name
-     <pextra>@fkey5:301200+112101
+     <pextra>@fkey5:301200
     </field>
     <field/>
      <name>field_specification_other_procedure
@@ -6206,7 +6206,7 @@
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
-     <pextra>@fkey2:301100+111101
+     <pextra>@fkey2:301100
     </field>
     <field/>
      <name>field_specification_other_procedure_2
@@ -6218,7 +6218,7 @@
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
-     <pextra>@fkey2:301100+111101
+     <pextra>@fkey2:301100
     </field>
     <field/>
      <name>field_specification_enum
@@ -6230,7 +6230,7 @@
      <pclass>103100
      <pfield>103101
      <pfname>field_enum_name
-     <pextra>@group:300300+103101
+     <pextra>@group:300300
     </field>
     <field/>
      <name>field_specification_enum_item
@@ -6242,7 +6242,7 @@
      <pclass>104100
      <pfield>104101
      <pfname>field_enum_item_label
-     <pextra>@fkey3:300400+104101
+     <pextra>@fkey3:300400
     </field>
     <field/>
      <name>field_specification_enum_item_2
@@ -6254,7 +6254,7 @@
      <pclass>104100
      <pfield>104101
      <pfname>field_enum_item_label
-     <pextra>@fkey3:300400+104101
+     <pextra>@fkey3:300400
     </field>
     <field/>
      <name>field_specification_enum_item_3
@@ -6266,7 +6266,7 @@
      <pclass>104100
      <pfield>104101
      <pfname>field_enum_item_label
-     <pextra>@fkey3:300400+104101
+     <pextra>@fkey3:300400
     </field>
     <field/>
      <name>field_specification_enum_item_4
@@ -6278,7 +6278,7 @@
      <pclass>104100
      <pfield>104101
      <pfname>field_enum_item_label
-     <pextra>@fkey3:300400+104101
+     <pextra>@fkey3:300400
     </field>
     <field/>
      <name>field_specification_enum_item_5
@@ -6290,7 +6290,7 @@
      <pclass>104100
      <pfield>104101
      <pfname>field_enum_item_label
-     <pextra>@fkey3:300400+104101
+     <pextra>@fkey3:300400
     </field>
     <field/>
      <name>field_specification_use_source_parent
@@ -6304,13 +6304,13 @@
      <name>field_specification_source_class
      <field>301494
      <ftype>@class
-     <extra>no_edit+link+fkey7+filename+max_size=30
+     <extra>no_edit+link+fkey7
      <mandatory>false
      <modifiers>1000000000:relegate
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_specification_source_field
@@ -6322,19 +6322,19 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey7:300700+107101
+     <pextra>@fkey7:300700
     </field>
     <field/>
      <name>field_specification_source_parent_class
      <field>301490
      <ftype>@class
-     <extra>hidden+fkey4+filename+max_size=30
+     <extra>hidden+fkey4
      <mandatory>false
      <modifiers>
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_specification_source_parent
@@ -6346,7 +6346,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107108=1+107101
+     <pextra>@fkey2:300700+107108=1
     </field>
     <field/>
      <name>field_specification_source_child
@@ -6358,19 +6358,19 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey4:300700+107101
+     <pextra>@fkey4:300700
     </field>
     <field/>
      <name>field_specification_source_child_class
      <field>301489
      <ftype>@class
-     <extra>hidden+fkey8+filename+max_size=30
+     <extra>hidden+fkey8
      <mandatory>false
      <modifiers>
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_specification_source_grandchild
@@ -6382,7 +6382,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey8:300700+107101
+     <pextra>@fkey8:300700
     </field>
     <field/>
      <name>field_specification_other_source_child
@@ -6394,7 +6394,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey4:300700+107101
+     <pextra>@fkey4:300700
     </field>
     <field/>
      <name>field_specification_other_source_child_2
@@ -6406,7 +6406,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey4:300700+107101
+     <pextra>@fkey4:300700
     </field>
     <field/>
      <name>field_specification_child_relationship
@@ -6438,19 +6438,19 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_specification_test_parent_class
      <field>301487
      <ftype>@class
-     <extra>hidden+fkey6+filename+max_size=30
+     <extra>hidden+fkey6
      <mandatory>false
      <modifiers>
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_specification_test_parent
@@ -6462,7 +6462,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107108=1+107101
+     <pextra>@fkey2:300700+107108=1
     </field>
     <field/>
      <name>field_specification_test_child
@@ -6474,7 +6474,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey6:300700+107101
+     <pextra>@fkey6:300700
     </field>
     <field/>
      <name>field_specification_test_value
@@ -6506,7 +6506,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_specification_other_permission_2
@@ -6518,7 +6518,7 @@
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
-     <pextra>@group:301500+116101
+     <pextra>@group:301500
     </field>
     <field/>
      <name>field_specification_options
@@ -6635,7 +6635,7 @@
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>@fkey1:300600+106101
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_specification_field
@@ -6647,7 +6647,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_specification_field_action_type
@@ -6675,7 +6675,7 @@
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
-     <pextra>@fkey2:301100+111101
+     <pextra>@fkey2:301100
     </field>
     <field/>
      <name>field_specification_field_action_new_record_class
@@ -6687,7 +6687,7 @@
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>@fkey1:300600+106101
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_specification_field_action_new_record_fk_field
@@ -6699,7 +6699,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey3:300700+107101
+     <pextra>@fkey3:300700
     </field>
     <field/>
      <name>field_specification_field_action_new_record_fk_value
@@ -6735,7 +6735,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107101
+     <pextra>@fkey2:300700
     </field>
     <field/>
      <name>field_specification_source_parent_class
@@ -6759,7 +6759,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107108=1+107101
+     <pextra>@fkey2:300700+107108=1
     </field>
     <field/>
      <name>field_specification_source_child
@@ -6771,7 +6771,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey4:300700+107101
+     <pextra>@fkey4:300700
     </field>
     <field/>
      <name>field_specification_value
@@ -8079,7 +8079,7 @@
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
-     <pextra>@fkey1:300600+106101
+     <pextra>@fkey1:300600
     </field>
     <field/>
      <name>field_view_title
@@ -8309,7 +8309,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey1:300700+107108=0+107101
+     <pextra>@fkey1:300700+107108=0
     </field>
     <field/>
      <name>field_view_field_source_parent
@@ -8321,7 +8321,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey1:300700+107108=1+107101
+     <pextra>@fkey1:300700+107108=1
     </field>
     <field/>
      <name>field_view_field_source_child
@@ -8333,7 +8333,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107108=0+107101
+     <pextra>@fkey2:300700+107108=0
     </field>
     <field/>
      <name>field_view_field_source_edit_child
@@ -8345,7 +8345,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107108=0+107101
+     <pextra>@fkey2:300700+107108=0
     </field>
     <field/>
      <name>field_view_field_sort_manually
@@ -8864,8 +8864,8 @@
      <ftype>string
      <extra>max_size=30
      <modifiers>
-     <unique>false
-     <indexed>false
+     <unique>true
+     <indexed>true
     </column>
     <column/>
      <name>field_enum_item_filter
@@ -9274,8 +9274,8 @@
      <ftype>string
      <extra>max_size=30
      <modifiers>
-     <unique>false
-     <indexed>false
+     <unique>true
+     <indexed>true
     </column>
     <column/>
      <name>field_initial_record_comments

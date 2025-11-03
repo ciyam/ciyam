@@ -425,7 +425,7 @@
 `{`$specification_Class_view_prcnm002`=`'Class`'`}
 `{`$specification_Class_view_prfld002`=`'106101`'`}
 `{`$specification_Class_view_prfnm002`=`'Name`'`}
-`{`$specification_Class_view_prxtr002`=`'@fkey1:300600+106101`'`}
+`{`$specification_Class_view_prxtr002`=`'@fkey1:300600`'`}
 `{`$specification_Class_view_pridx002`=`'false`'`}
 `{`$specification_Class_view_field003`=`'106101`'`}
 `{`$specification_Class_view_ftype003`=`'string`'`}
@@ -757,8 +757,8 @@
 `{`$specification_Enum_Item_child_list0_cltype02`=`'string`'`}
 `{`$specification_Enum_Item_child_list0_clxtra02`=`'max_size=30`'`}
 `{`$specification_Enum_Item_child_list0_clmods02`=`'`'`}
-`{`$specification_Enum_Item_child_list0_cluniq02`=`'false`'`}
-`{`$specification_Enum_Item_child_list0_cindex02`=`'false`'`}
+`{`$specification_Enum_Item_child_list0_cluniq02`=`'true`'`}
+`{`$specification_Enum_Item_child_list0_cindex02`=`'true`'`}
 `{`$specification_Enum_Item_child_list0_column03`=`'104105`'`}
 `{`$specification_Enum_Item_child_list0_clname03`=`'Enum_Item_Filter`'`}
 `{`$specification_Enum_Item_child_list0_cltype03`=`'string`'`}
@@ -803,7 +803,7 @@
 `{`$specification_Field_view_prcnm002`=`'Type`'`}
 `{`$specification_Field_view_prfld002`=`'102101`'`}
 `{`$specification_Field_view_prfnm002`=`'Name`'`}
-`{`$specification_Field_view_prxtr002`=`'@group:300200+102101`'`}
+`{`$specification_Field_view_prxtr002`=`'@group:300200`'`}
 `{`$specification_Field_view_pridx002`=`'false`'`}
 `{`$specification_Field_view_field003`=`'107101`'`}
 `{`$specification_Field_view_ftype003`=`'string`'`}
@@ -1397,7 +1397,7 @@
 `{`$specification_Index_view_prcnm002`=`'Field`'`}
 `{`$specification_Index_view_prfld002`=`'107101`'`}
 `{`$specification_Index_view_prfnm002`=`'Name`'`}
-`{`$specification_Index_view_prxtr002`=`'@fkey1:300700+107101`'`}
+`{`$specification_Index_view_prxtr002`=`'@fkey1:300700`'`}
 `{`$specification_Index_view_pridx002`=`'false`'`}
 `{`$specification_Index_view_field003`=`'300812`'`}
 `{`$specification_Index_view_ftype003`=`'@class`'`}
@@ -1409,7 +1409,7 @@
 `{`$specification_Index_view_prcnm003`=`'Field`'`}
 `{`$specification_Index_view_prfld003`=`'107101`'`}
 `{`$specification_Index_view_prfnm003`=`'Name`'`}
-`{`$specification_Index_view_prxtr003`=`'@fkey1:300700+107101`'`}
+`{`$specification_Index_view_prxtr003`=`'@fkey1:300700`'`}
 `{`$specification_Index_view_pridx003`=`'false`'`}
 `{`$specification_Index_view_field004`=`'300813`'`}
 `{`$specification_Index_view_ftype004`=`'@class`'`}
@@ -1421,7 +1421,7 @@
 `{`$specification_Index_view_prcnm004`=`'Field`'`}
 `{`$specification_Index_view_prfld004`=`'107101`'`}
 `{`$specification_Index_view_prfnm004`=`'Name`'`}
-`{`$specification_Index_view_prxtr004`=`'@fkey1:300700+107101`'`}
+`{`$specification_Index_view_prxtr004`=`'@fkey1:300700`'`}
 `{`$specification_Index_view_pridx004`=`'false`'`}
 `{`$specification_Index_view_field005`=`'300814`'`}
 `{`$specification_Index_view_ftype005`=`'@class`'`}
@@ -1433,7 +1433,7 @@
 `{`$specification_Index_view_prcnm005`=`'Field`'`}
 `{`$specification_Index_view_prfld005`=`'107101`'`}
 `{`$specification_Index_view_prfnm005`=`'Name`'`}
-`{`$specification_Index_view_prxtr005`=`'@fkey1:300700+107101`'`}
+`{`$specification_Index_view_prxtr005`=`'@fkey1:300700`'`}
 `{`$specification_Index_view_pridx005`=`'false`'`}
 `{`$specification_Index_view_field006`=`'300815`'`}
 `{`$specification_Index_view_ftype006`=`'@class`'`}
@@ -1445,7 +1445,7 @@
 `{`$specification_Index_view_prcnm006`=`'Field`'`}
 `{`$specification_Index_view_prfld006`=`'107101`'`}
 `{`$specification_Index_view_prfnm006`=`'Name`'`}
-`{`$specification_Index_view_prxtr006`=`'@fkey1:300700+107101`'`}
+`{`$specification_Index_view_prxtr006`=`'@fkey1:300700`'`}
 `{`$specification_Index_view_pridx006`=`'false`'`}
 `{`}
 `{`$specification_Index_child_list0_id`=`'601820`'`}
@@ -1589,8 +1589,8 @@
 `{`$specification_Initial_Record_child_list0_cltype01`=`'string`'`}
 `{`$specification_Initial_Record_child_list0_clxtra01`=`'max_size=30`'`}
 `{`$specification_Initial_Record_child_list0_clmods01`=`'`'`}
-`{`$specification_Initial_Record_child_list0_cluniq01`=`'false`'`}
-`{`$specification_Initial_Record_child_list0_cindex01`=`'false`'`}
+`{`$specification_Initial_Record_child_list0_cluniq01`=`'true`'`}
+`{`$specification_Initial_Record_child_list0_cindex01`=`'true`'`}
 `{`$specification_Initial_Record_child_list0_column02`=`'129102`'`}
 `{`$specification_Initial_Record_child_list0_clname02`=`'Initial_Record_Comments`'`}
 `{`$specification_Initial_Record_child_list0_cltype02`=`'string`'`}
@@ -1724,7 +1724,7 @@
 `{`$specification_List_view_prcnm004`=`'Class`'`}
 `{`$specification_List_view_prfld004`=`'106101`'`}
 `{`$specification_List_view_prfnm004`=`'Name`'`}
-`{`$specification_List_view_prxtr004`=`'@fkey1:300600+106101`'`}
+`{`$specification_List_view_prxtr004`=`'@fkey1:300600`'`}
 `{`$specification_List_view_pridx004`=`'false`'`}
 `{`$specification_List_view_field005`=`'301996`'`}
 `{`$specification_List_view_ftype005`=`'@class`'`}
@@ -1736,7 +1736,7 @@
 `{`$specification_List_view_prcnm005`=`'Field`'`}
 `{`$specification_List_view_prfld005`=`'107101`'`}
 `{`$specification_List_view_prfnm005`=`'Name`'`}
-`{`$specification_List_view_prxtr005`=`'@fkey2:300700+107108=1+107101`'`}
+`{`$specification_List_view_prxtr005`=`'@fkey2:300700+107108=1`'`}
 `{`$specification_List_view_pridx005`=`'false`'`}
 `{`$specification_List_view_field006`=`'301997`'`}
 `{`$specification_List_view_ftype006`=`'@class`'`}
@@ -1797,7 +1797,7 @@
 `{`$specification_List_view_prcnm013`=`'Modifier`'`}
 `{`$specification_List_view_prfld013`=`'109101`'`}
 `{`$specification_List_view_prfnm013`=`'Name`'`}
-`{`$specification_List_view_prxtr013`=`'@fkey3:300900+109101`'`}
+`{`$specification_List_view_prxtr013`=`'@fkey3:300900`'`}
 `{`$specification_List_view_pridx013`=`'false`'`}
 `{`$specification_List_view_field014`=`'122104`'`}
 `{`$specification_List_view_ftype014`=`'int`'`}
@@ -1827,7 +1827,7 @@
 `{`$specification_List_view_prcnm016`=`'Modifier`'`}
 `{`$specification_List_view_prfld016`=`'109101`'`}
 `{`$specification_List_view_prfnm016`=`'Name`'`}
-`{`$specification_List_view_prxtr016`=`'@fkey3:300900+109101`'`}
+`{`$specification_List_view_prxtr016`=`'@fkey3:300900`'`}
 `{`$specification_List_view_pridx016`=`'false`'`}
 `{`$specification_List_view_field017`=`'122105`'`}
 `{`$specification_List_view_ftype017`=`'int`'`}
@@ -1857,7 +1857,7 @@
 `{`$specification_List_view_prcnm019`=`'Modifier`'`}
 `{`$specification_List_view_prfld019`=`'109101`'`}
 `{`$specification_List_view_prfnm019`=`'Name`'`}
-`{`$specification_List_view_prxtr019`=`'@fkey3:300900+109101`'`}
+`{`$specification_List_view_prxtr019`=`'@fkey3:300900`'`}
 `{`$specification_List_view_pridx019`=`'false`'`}
 `{`$specification_List_view_field020`=`'122145`'`}
 `{`$specification_List_view_ftype020`=`'bool`'`}
@@ -2146,7 +2146,7 @@
 `{`$specification_List_Field_view_prcnm006`=`'Field`'`}
 `{`$specification_List_Field_view_prfld006`=`'107101`'`}
 `{`$specification_List_Field_view_prfnm006`=`'Name`'`}
-`{`$specification_List_Field_view_prxtr006`=`'@fkey1:300700+107108=0+107101`'`}
+`{`$specification_List_Field_view_prxtr006`=`'@fkey1:300700+107108=0`'`}
 `{`$specification_List_Field_view_pridx006`=`'false`'`}
 `{`$specification_List_Field_view_field007`=`'302150`'`}
 `{`$specification_List_Field_view_ftype007`=`'@class`'`}
@@ -2158,7 +2158,7 @@
 `{`$specification_List_Field_view_prcnm007`=`'Field`'`}
 `{`$specification_List_Field_view_prfld007`=`'107101`'`}
 `{`$specification_List_Field_view_prfnm007`=`'Name`'`}
-`{`$specification_List_Field_view_prxtr007`=`'@fkey1:300700+107108=1+107101`'`}
+`{`$specification_List_Field_view_prxtr007`=`'@fkey1:300700+107108=1`'`}
 `{`$specification_List_Field_view_pridx007`=`'false`'`}
 `{`$specification_List_Field_view_field008`=`'302160`'`}
 `{`$specification_List_Field_view_ftype008`=`'@class`'`}
@@ -2170,7 +2170,7 @@
 `{`$specification_List_Field_view_prcnm008`=`'Field`'`}
 `{`$specification_List_Field_view_prfld008`=`'107101`'`}
 `{`$specification_List_Field_view_prfnm008`=`'Name`'`}
-`{`$specification_List_Field_view_prxtr008`=`'@fkey2:300700+107101`'`}
+`{`$specification_List_Field_view_prxtr008`=`'@fkey2:300700`'`}
 `{`$specification_List_Field_view_pridx008`=`'false`'`}
 `{`$specification_List_Field_view_field009`=`'302175`'`}
 `{`$specification_List_Field_view_ftype009`=`'@class`'`}
@@ -2194,7 +2194,7 @@
 `{`$specification_List_Field_view_prcnm010`=`'Field`'`}
 `{`$specification_List_Field_view_prfld010`=`'107101`'`}
 `{`$specification_List_Field_view_prfnm010`=`'Name`'`}
-`{`$specification_List_Field_view_prxtr010`=`'@fkey3:300700+107108=0+107101`'`}
+`{`$specification_List_Field_view_prxtr010`=`'@fkey3:300700+107108=0`'`}
 `{`$specification_List_Field_view_pridx010`=`'false`'`}
 `{`$specification_List_Field_view_field011`=`'302193`'`}
 `{`$specification_List_Field_view_ftype011`=`'@class`'`}
@@ -2236,7 +2236,7 @@
 `{`$specification_List_Field_view_prcnm014`=`'Field`'`}
 `{`$specification_List_Field_view_prfld014`=`'107101`'`}
 `{`$specification_List_Field_view_prfnm014`=`'Name`'`}
-`{`$specification_List_Field_view_prxtr014`=`'@fkey4:300700+107108=0+107101`'`}
+`{`$specification_List_Field_view_prxtr014`=`'@fkey4:300700+107108=0`'`}
 `{`$specification_List_Field_view_pridx014`=`'false`'`}
 `{`$specification_List_Field_view_field015`=`'302196`'`}
 `{`$specification_List_Field_view_ftype015`=`'@class`'`}
@@ -2248,7 +2248,7 @@
 `{`$specification_List_Field_view_prcnm015`=`'Field`'`}
 `{`$specification_List_Field_view_prfld015`=`'107101`'`}
 `{`$specification_List_Field_view_prfnm015`=`'Name`'`}
-`{`$specification_List_Field_view_prxtr015`=`'@fkey4:300700+107108=1+107101`'`}
+`{`$specification_List_Field_view_prxtr015`=`'@fkey4:300700+107108=1`'`}
 `{`$specification_List_Field_view_pridx015`=`'false`'`}
 `{`$specification_List_Field_view_field016`=`'302197`'`}
 `{`$specification_List_Field_view_ftype016`=`'@class`'`}
@@ -2272,7 +2272,7 @@
 `{`$specification_List_Field_view_prcnm017`=`'Field`'`}
 `{`$specification_List_Field_view_prfld017`=`'107101`'`}
 `{`$specification_List_Field_view_prfnm017`=`'Name`'`}
-`{`$specification_List_Field_view_prxtr017`=`'@fkey5:300700+107108=0+107101`'`}
+`{`$specification_List_Field_view_prxtr017`=`'@fkey5:300700+107108=0`'`}
 `{`$specification_List_Field_view_pridx017`=`'false`'`}
 `{`$specification_List_Field_view_field018`=`'302180`'`}
 `{`$specification_List_Field_view_ftype018`=`'@class`'`}
@@ -2308,7 +2308,7 @@
 `{`$specification_List_Field_view_prcnm021`=`'Field`'`}
 `{`$specification_List_Field_view_prfld021`=`'107101`'`}
 `{`$specification_List_Field_view_prfnm021`=`'Name`'`}
-`{`$specification_List_Field_view_prxtr021`=`'@fkey1:300700+107101`'`}
+`{`$specification_List_Field_view_prxtr021`=`'@fkey1:300700`'`}
 `{`$specification_List_Field_view_pridx021`=`'false`'`}
 `{`$specification_List_Field_view_field022`=`'124106`'`}
 `{`$specification_List_Field_view_ftype022`=`'string`'`}
@@ -2362,7 +2362,7 @@
 `{`$specification_List_Field_view_prcnm029`=`'Procedure`'`}
 `{`$specification_List_Field_view_prfld029`=`'111101`'`}
 `{`$specification_List_Field_view_prfnm029`=`'Name`'`}
-`{`$specification_List_Field_view_prxtr029`=`'@fkey1:301100+111101`'`}
+`{`$specification_List_Field_view_prxtr029`=`'@fkey1:301100`'`}
 `{`$specification_List_Field_view_pridx029`=`'false`'`}
 `{`$specification_List_Field_view_field030`=`'124109`'`}
 `{`$specification_List_Field_view_ftype030`=`'string`'`}
@@ -2440,7 +2440,7 @@
 `{`$specification_List_Field_view_prcnm041`=`'Field`'`}
 `{`$specification_List_Field_view_prfld041`=`'107101`'`}
 `{`$specification_List_Field_view_prfnm041`=`'Name`'`}
-`{`$specification_List_Field_view_prxtr041`=`'@fkey1:300700+107108=0+107101`'`}
+`{`$specification_List_Field_view_prxtr041`=`'@fkey1:300700+107108=0`'`}
 `{`$specification_List_Field_view_pridx041`=`'false`'`}
 `{`$specification_List_Field_view_field042`=`'124131`'`}
 `{`$specification_List_Field_view_ftype042`=`'int`'`}
@@ -2531,7 +2531,7 @@
 `{`$specification_List_Field_view_prcnm053`=`'Modifier`'`}
 `{`$specification_List_Field_view_prfld053`=`'109101`'`}
 `{`$specification_List_Field_view_prfnm053`=`'Name`'`}
-`{`$specification_List_Field_view_prxtr053`=`'@fkey6:300900+109101`'`}
+`{`$specification_List_Field_view_prxtr053`=`'@fkey6:300900`'`}
 `{`$specification_List_Field_view_pridx053`=`'false`'`}
 `{`$specification_List_Field_view_field054`=`'124134`'`}
 `{`$specification_List_Field_view_ftype054`=`'int`'`}
@@ -2804,7 +2804,7 @@
 `{`$specification_Modifier_Affect_view_prcnm004`=`'Field`'`}
 `{`$specification_Modifier_Affect_view_prfld004`=`'107101`'`}
 `{`$specification_Modifier_Affect_view_prfnm004`=`'Name`'`}
-`{`$specification_Modifier_Affect_view_prxtr004`=`'@fkey1:300700+107101`'`}
+`{`$specification_Modifier_Affect_view_prxtr004`=`'@fkey1:300700`'`}
 `{`$specification_Modifier_Affect_view_pridx004`=`'false`'`}
 `{`$specification_Modifier_Affect_view_field005`=`'301010`'`}
 `{`$specification_Modifier_Affect_view_ftype005`=`'@class`'`}
@@ -2924,7 +2924,7 @@
 `{`$specification_Module_view_prcnm001`=`'Model`'`}
 `{`$specification_Module_view_prfld001`=`'105101`'`}
 `{`$specification_Module_view_prfnm001`=`'Name`'`}
-`{`$specification_Module_view_prxtr001`=`'@group:300500+105101`'`}
+`{`$specification_Module_view_prxtr001`=`'@group:300500`'`}
 `{`$specification_Module_view_pridx001`=`'false`'`}
 `{`}
 `{`$specification_Package_child_list0_id`=`'601520`'`}
@@ -3130,7 +3130,7 @@
 `{`$specification_Package_Option_view_prcnm010`=`'Class`'`}
 `{`$specification_Package_Option_view_prfld010`=`'106101`'`}
 `{`$specification_Package_Option_view_prfnm010`=`'Name`'`}
-`{`$specification_Package_Option_view_prxtr010`=`'@fkey1:300600+106101`'`}
+`{`$specification_Package_Option_view_prxtr010`=`'@fkey1:300600`'`}
 `{`$specification_Package_Option_view_pridx010`=`'false`'`}
 `{`$specification_Package_Option_view_field011`=`'302830c`'`}
 `{`$specification_Package_Option_view_ftype011`=`'@class`'`}
@@ -3142,7 +3142,7 @@
 `{`$specification_Package_Option_view_prcnm011`=`'View`'`}
 `{`$specification_Package_Option_view_prfld011`=`'118101`'`}
 `{`$specification_Package_Option_view_prfnm011`=`'Name`'`}
-`{`$specification_Package_Option_view_prxtr011`=`'@fkey2:301820+118101`'`}
+`{`$specification_Package_Option_view_prxtr011`=`'@fkey2:301820`'`}
 `{`$specification_Package_Option_view_pridx011`=`'false`'`}
 `{`$specification_Package_Option_view_field012`=`'302831`'`}
 `{`$specification_Package_Option_view_ftype012`=`'@class`'`}
@@ -3154,7 +3154,7 @@
 `{`$specification_Package_Option_view_prcnm012`=`'List`'`}
 `{`$specification_Package_Option_view_prfld012`=`'122101`'`}
 `{`$specification_Package_Option_view_prfnm012`=`'Name`'`}
-`{`$specification_Package_Option_view_prxtr012`=`'@fkey2:301992+122101`'`}
+`{`$specification_Package_Option_view_prxtr012`=`'@fkey2:301992`'`}
 `{`$specification_Package_Option_view_pridx012`=`'false`'`}
 `{`$specification_Package_Option_view_field013`=`'302830b`'`}
 `{`$specification_Package_Option_view_ftype013`=`'@class`'`}
@@ -3166,7 +3166,7 @@
 `{`$specification_Package_Option_view_prcnm013`=`'Field`'`}
 `{`$specification_Package_Option_view_prfld013`=`'107101`'`}
 `{`$specification_Package_Option_view_prfnm013`=`'Name`'`}
-`{`$specification_Package_Option_view_prxtr013`=`'@fkey2:300700+107101`'`}
+`{`$specification_Package_Option_view_prxtr013`=`'@fkey2:300700`'`}
 `{`$specification_Package_Option_view_pridx013`=`'false`'`}
 `{`$specification_Package_Option_view_field014`=`'302830d`'`}
 `{`$specification_Package_Option_view_ftype014`=`'@class`'`}
@@ -3178,7 +3178,7 @@
 `{`$specification_Package_Option_view_prcnm014`=`'Field`'`}
 `{`$specification_Package_Option_view_prfld014`=`'107101`'`}
 `{`$specification_Package_Option_view_prfnm014`=`'Name`'`}
-`{`$specification_Package_Option_view_prxtr014`=`'@fkey2:300700+107101`'`}
+`{`$specification_Package_Option_view_prxtr014`=`'@fkey2:300700`'`}
 `{`$specification_Package_Option_view_pridx014`=`'false`'`}
 `{`$specification_Package_Option_view_field015`=`'302830e`'`}
 `{`$specification_Package_Option_view_ftype015`=`'@class`'`}
@@ -3190,7 +3190,7 @@
 `{`$specification_Package_Option_view_prcnm015`=`'Field`'`}
 `{`$specification_Package_Option_view_prfld015`=`'107101`'`}
 `{`$specification_Package_Option_view_prfnm015`=`'Name`'`}
-`{`$specification_Package_Option_view_prxtr015`=`'@fkey2:300700+107101`'`}
+`{`$specification_Package_Option_view_prxtr015`=`'@fkey2:300700`'`}
 `{`$specification_Package_Option_view_pridx015`=`'false`'`}
 `{`$specification_Package_Option_view_field016`=`'302830f`'`}
 `{`$specification_Package_Option_view_ftype016`=`'@class`'`}
@@ -3202,7 +3202,7 @@
 `{`$specification_Package_Option_view_prcnm016`=`'Field`'`}
 `{`$specification_Package_Option_view_prfld016`=`'107101`'`}
 `{`$specification_Package_Option_view_prfnm016`=`'Name`'`}
-`{`$specification_Package_Option_view_prxtr016`=`'@fkey2:300700+107101`'`}
+`{`$specification_Package_Option_view_prxtr016`=`'@fkey2:300700`'`}
 `{`$specification_Package_Option_view_pridx016`=`'false`'`}
 `{`$specification_Package_Option_view_field017`=`'302830g`'`}
 `{`$specification_Package_Option_view_ftype017`=`'@class`'`}
@@ -3214,7 +3214,7 @@
 `{`$specification_Package_Option_view_prcnm017`=`'Field`'`}
 `{`$specification_Package_Option_view_prfld017`=`'107101`'`}
 `{`$specification_Package_Option_view_prfnm017`=`'Name`'`}
-`{`$specification_Package_Option_view_prxtr017`=`'@fkey2:300700+107101`'`}
+`{`$specification_Package_Option_view_prxtr017`=`'@fkey2:300700`'`}
 `{`$specification_Package_Option_view_pridx017`=`'false`'`}
 `{`$specification_Package_Option_view_field018`=`'302832`'`}
 `{`$specification_Package_Option_view_ftype018`=`'@class`'`}
@@ -3226,7 +3226,7 @@
 `{`$specification_Package_Option_view_prcnm018`=`'Modifier`'`}
 `{`$specification_Package_Option_view_prfld018`=`'109101`'`}
 `{`$specification_Package_Option_view_prfnm018`=`'Name`'`}
-`{`$specification_Package_Option_view_prxtr018`=`'@fkey2:300900+109101`'`}
+`{`$specification_Package_Option_view_prxtr018`=`'@fkey2:300900`'`}
 `{`$specification_Package_Option_view_pridx018`=`'false`'`}
 `{`$specification_Package_Option_view_field019`=`'302833`'`}
 `{`$specification_Package_Option_view_ftype019`=`'@class`'`}
@@ -3238,7 +3238,7 @@
 `{`$specification_Package_Option_view_prcnm019`=`'Procedure`'`}
 `{`$specification_Package_Option_view_prfld019`=`'111101`'`}
 `{`$specification_Package_Option_view_prfnm019`=`'Name`'`}
-`{`$specification_Package_Option_view_prxtr019`=`'@fkey2:301100+111101`'`}
+`{`$specification_Package_Option_view_prxtr019`=`'@fkey2:301100`'`}
 `{`$specification_Package_Option_view_pridx019`=`'false`'`}
 `{`$specification_Package_Option_view_field020`=`'302830`'`}
 `{`$specification_Package_Option_view_ftype020`=`'@class`'`}
@@ -3250,7 +3250,7 @@
 `{`$specification_Package_Option_view_prcnm020`=`'Package`'`}
 `{`$specification_Package_Option_view_prfld020`=`'136101`'`}
 `{`$specification_Package_Option_view_prfnm020`=`'Name`'`}
-`{`$specification_Package_Option_view_prxtr020`=`'@fkey1:302800+@key1:302810+136103=1+136101`'`}
+`{`$specification_Package_Option_view_prxtr020`=`'@fkey1:302800+@key1:302810+136103=1`'`}
 `{`$specification_Package_Option_view_pridx020`=`'false`'`}
 `{`$specification_Package_Option_view_field021`=`'302825`'`}
 `{`$specification_Package_Option_view_ftype021`=`'@class`'`}
@@ -3590,7 +3590,7 @@
 `{`$specification_Relationship_view_prcnm001`=`'Class`'`}
 `{`$specification_Relationship_view_prfld001`=`'106101`'`}
 `{`$specification_Relationship_view_prfnm001`=`'Name`'`}
-`{`$specification_Relationship_view_prxtr001`=`'@fkey1:300600+106101`'`}
+`{`$specification_Relationship_view_prxtr001`=`'@fkey1:300600`'`}
 `{`$specification_Relationship_view_pridx001`=`'false`'`}
 `{`$specification_Relationship_view_field002`=`'113106`'`}
 `{`$specification_Relationship_view_ftype002`=`'string`'`}
@@ -3608,7 +3608,7 @@
 `{`$specification_Relationship_view_prcnm003`=`'Class`'`}
 `{`$specification_Relationship_view_prfld003`=`'106101`'`}
 `{`$specification_Relationship_view_prfnm003`=`'Name`'`}
-`{`$specification_Relationship_view_prxtr003`=`'@fkey1:300600+106101`'`}
+`{`$specification_Relationship_view_prxtr003`=`'@fkey1:300600`'`}
 `{`$specification_Relationship_view_pridx003`=`'false`'`}
 `{`$specification_Relationship_view_field004`=`'301330a`'`}
 `{`$specification_Relationship_view_ftype004`=`'@class`'`}
@@ -3620,7 +3620,7 @@
 `{`$specification_Relationship_view_prcnm004`=`'Field`'`}
 `{`$specification_Relationship_view_prfld004`=`'107101`'`}
 `{`$specification_Relationship_view_prfnm004`=`'Name`'`}
-`{`$specification_Relationship_view_prxtr004`=`'@fkey2:300700+107101`'`}
+`{`$specification_Relationship_view_prxtr004`=`'@fkey2:300700`'`}
 `{`$specification_Relationship_view_pridx004`=`'false`'`}
 `{`$specification_Relationship_view_field005`=`'301330b`'`}
 `{`$specification_Relationship_view_ftype005`=`'@class`'`}
@@ -3632,7 +3632,7 @@
 `{`$specification_Relationship_view_prcnm005`=`'Field`'`}
 `{`$specification_Relationship_view_prfld005`=`'107101`'`}
 `{`$specification_Relationship_view_prfnm005`=`'Name`'`}
-`{`$specification_Relationship_view_prxtr005`=`'@fkey2:300700+107101`'`}
+`{`$specification_Relationship_view_prxtr005`=`'@fkey2:300700`'`}
 `{`$specification_Relationship_view_pridx005`=`'false`'`}
 `{`$specification_Relationship_view_field006`=`'113102`'`}
 `{`$specification_Relationship_view_ftype006`=`'bool`'`}
@@ -3888,7 +3888,7 @@
 `{`$specification_Specification_view_prcnm006`=`'Class`'`}
 `{`$specification_Specification_view_prfld006`=`'106101`'`}
 `{`$specification_Specification_view_prfnm006`=`'Name`'`}
-`{`$specification_Specification_view_prxtr006`=`'@fkey1:300600+106101`'`}
+`{`$specification_Specification_view_prxtr006`=`'@fkey1:300600`'`}
 `{`$specification_Specification_view_pridx006`=`'false`'`}
 `{`$specification_Specification_view_field007`=`'301430`'`}
 `{`$specification_Specification_view_ftype007`=`'@class`'`}
@@ -3900,7 +3900,7 @@
 `{`$specification_Specification_view_prcnm007`=`'Field`'`}
 `{`$specification_Specification_view_prfld007`=`'107101`'`}
 `{`$specification_Specification_view_prfnm007`=`'Name`'`}
-`{`$specification_Specification_view_prxtr007`=`'@fkey2:300700+107101`'`}
+`{`$specification_Specification_view_prxtr007`=`'@fkey2:300700`'`}
 `{`$specification_Specification_view_pridx007`=`'false`'`}
 `{`$specification_Specification_view_field008`=`'301435`'`}
 `{`$specification_Specification_view_ftype008`=`'@class`'`}
@@ -3912,7 +3912,7 @@
 `{`$specification_Specification_view_prcnm008`=`'Field`'`}
 `{`$specification_Specification_view_prfld008`=`'107101`'`}
 `{`$specification_Specification_view_prfnm008`=`'Name`'`}
-`{`$specification_Specification_view_prxtr008`=`'@fkey2:300700+107101`'`}
+`{`$specification_Specification_view_prxtr008`=`'@fkey2:300700`'`}
 `{`$specification_Specification_view_pridx008`=`'false`'`}
 `{`$specification_Specification_view_field009`=`'301436`'`}
 `{`$specification_Specification_view_ftype009`=`'@class`'`}
@@ -3924,7 +3924,7 @@
 `{`$specification_Specification_view_prcnm009`=`'Field`'`}
 `{`$specification_Specification_view_prfld009`=`'107101`'`}
 `{`$specification_Specification_view_prfnm009`=`'Name`'`}
-`{`$specification_Specification_view_prxtr009`=`'@fkey2:300700+107101`'`}
+`{`$specification_Specification_view_prxtr009`=`'@fkey2:300700`'`}
 `{`$specification_Specification_view_pridx009`=`'false`'`}
 `{`$specification_Specification_view_field010`=`'115102`'`}
 `{`$specification_Specification_view_ftype010`=`'string`'`}
@@ -3942,7 +3942,7 @@
 `{`$specification_Specification_view_prcnm011`=`'Class`'`}
 `{`$specification_Specification_view_prfld011`=`'106101`'`}
 `{`$specification_Specification_view_prfnm011`=`'Name`'`}
-`{`$specification_Specification_view_prxtr011`=`'@fkey1:300600+106101`'`}
+`{`$specification_Specification_view_prxtr011`=`'@fkey1:300600`'`}
 `{`$specification_Specification_view_pridx011`=`'false`'`}
 `{`$specification_Specification_view_field012`=`'301437`'`}
 `{`$specification_Specification_view_ftype012`=`'@class`'`}
@@ -3954,7 +3954,7 @@
 `{`$specification_Specification_view_prcnm012`=`'Field`'`}
 `{`$specification_Specification_view_prfld012`=`'107101`'`}
 `{`$specification_Specification_view_prfnm012`=`'Name`'`}
-`{`$specification_Specification_view_prxtr012`=`'@fkey9:300700+107101`'`}
+`{`$specification_Specification_view_prxtr012`=`'@fkey9:300700`'`}
 `{`$specification_Specification_view_pridx012`=`'false`'`}
 `{`$specification_Specification_view_field013`=`'301440`'`}
 `{`$specification_Specification_view_ftype013`=`'@class`'`}
@@ -3966,7 +3966,7 @@
 `{`$specification_Specification_view_prcnm013`=`'Modifier`'`}
 `{`$specification_Specification_view_prfld013`=`'109101`'`}
 `{`$specification_Specification_view_prfnm013`=`'Name`'`}
-`{`$specification_Specification_view_prxtr013`=`'@fkey2:300900+109101`'`}
+`{`$specification_Specification_view_prxtr013`=`'@fkey2:300900`'`}
 `{`$specification_Specification_view_pridx013`=`'false`'`}
 `{`$specification_Specification_view_field014`=`'301441`'`}
 `{`$specification_Specification_view_ftype014`=`'@class`'`}
@@ -3978,7 +3978,7 @@
 `{`$specification_Specification_view_prcnm014`=`'Modifier`'`}
 `{`$specification_Specification_view_prfld014`=`'109101`'`}
 `{`$specification_Specification_view_prfnm014`=`'Name`'`}
-`{`$specification_Specification_view_prxtr014`=`'@fkey2:300900+109101`'`}
+`{`$specification_Specification_view_prxtr014`=`'@fkey2:300900`'`}
 `{`$specification_Specification_view_pridx014`=`'false`'`}
 `{`$specification_Specification_view_field015`=`'301442`'`}
 `{`$specification_Specification_view_ftype015`=`'@class`'`}
@@ -3990,7 +3990,7 @@
 `{`$specification_Specification_view_prcnm015`=`'Modifier`'`}
 `{`$specification_Specification_view_prfld015`=`'109101`'`}
 `{`$specification_Specification_view_prfnm015`=`'Name`'`}
-`{`$specification_Specification_view_prxtr015`=`'@fkey2:300900+109101`'`}
+`{`$specification_Specification_view_prxtr015`=`'@fkey2:300900`'`}
 `{`$specification_Specification_view_pridx015`=`'false`'`}
 `{`$specification_Specification_view_field016`=`'301450`'`}
 `{`$specification_Specification_view_ftype016`=`'@class`'`}
@@ -4002,7 +4002,7 @@
 `{`$specification_Specification_view_prcnm016`=`'Procedure`'`}
 `{`$specification_Specification_view_prfld016`=`'111101`'`}
 `{`$specification_Specification_view_prfnm016`=`'Name`'`}
-`{`$specification_Specification_view_prxtr016`=`'@fkey2:301100+111101`'`}
+`{`$specification_Specification_view_prxtr016`=`'@fkey2:301100`'`}
 `{`$specification_Specification_view_pridx016`=`'false`'`}
 `{`$specification_Specification_view_field017`=`'301498`'`}
 `{`$specification_Specification_view_ftype017`=`'@class`'`}
@@ -4014,7 +4014,7 @@
 `{`$specification_Specification_view_prcnm017`=`'Procedure_Arg`'`}
 `{`$specification_Specification_view_prfld017`=`'112101`'`}
 `{`$specification_Specification_view_prfnm017`=`'Name`'`}
-`{`$specification_Specification_view_prxtr017`=`'@fkey5:301200+112101`'`}
+`{`$specification_Specification_view_prxtr017`=`'@fkey5:301200`'`}
 `{`$specification_Specification_view_pridx017`=`'false`'`}
 `{`$specification_Specification_view_field018`=`'301477`'`}
 `{`$specification_Specification_view_ftype018`=`'@class`'`}
@@ -4026,7 +4026,7 @@
 `{`$specification_Specification_view_prcnm018`=`'Procedure_Arg`'`}
 `{`$specification_Specification_view_prfld018`=`'112101`'`}
 `{`$specification_Specification_view_prfnm018`=`'Name`'`}
-`{`$specification_Specification_view_prxtr018`=`'@fkey5:301200+112101`'`}
+`{`$specification_Specification_view_prxtr018`=`'@fkey5:301200`'`}
 `{`$specification_Specification_view_pridx018`=`'false`'`}
 `{`$specification_Specification_view_field019`=`'301478`'`}
 `{`$specification_Specification_view_ftype019`=`'@class`'`}
@@ -4038,7 +4038,7 @@
 `{`$specification_Specification_view_prcnm019`=`'Procedure_Arg`'`}
 `{`$specification_Specification_view_prfld019`=`'112101`'`}
 `{`$specification_Specification_view_prfnm019`=`'Name`'`}
-`{`$specification_Specification_view_prxtr019`=`'@fkey5:301200+112101`'`}
+`{`$specification_Specification_view_prxtr019`=`'@fkey5:301200`'`}
 `{`$specification_Specification_view_pridx019`=`'false`'`}
 `{`$specification_Specification_view_field020`=`'301451`'`}
 `{`$specification_Specification_view_ftype020`=`'@class`'`}
@@ -4050,7 +4050,7 @@
 `{`$specification_Specification_view_prcnm020`=`'Procedure`'`}
 `{`$specification_Specification_view_prfld020`=`'111101`'`}
 `{`$specification_Specification_view_prfnm020`=`'Name`'`}
-`{`$specification_Specification_view_prxtr020`=`'@fkey2:301100+111101`'`}
+`{`$specification_Specification_view_prxtr020`=`'@fkey2:301100`'`}
 `{`$specification_Specification_view_pridx020`=`'false`'`}
 `{`$specification_Specification_view_field021`=`'301452`'`}
 `{`$specification_Specification_view_ftype021`=`'@class`'`}
@@ -4062,7 +4062,7 @@
 `{`$specification_Specification_view_prcnm021`=`'Procedure`'`}
 `{`$specification_Specification_view_prfld021`=`'111101`'`}
 `{`$specification_Specification_view_prfnm021`=`'Name`'`}
-`{`$specification_Specification_view_prxtr021`=`'@fkey2:301100+111101`'`}
+`{`$specification_Specification_view_prxtr021`=`'@fkey2:301100`'`}
 `{`$specification_Specification_view_pridx021`=`'false`'`}
 `{`$specification_Specification_view_field022`=`'301460`'`}
 `{`$specification_Specification_view_ftype022`=`'@class`'`}
@@ -4074,7 +4074,7 @@
 `{`$specification_Specification_view_prcnm022`=`'Enum`'`}
 `{`$specification_Specification_view_prfld022`=`'103101`'`}
 `{`$specification_Specification_view_prfnm022`=`'Name`'`}
-`{`$specification_Specification_view_prxtr022`=`'@group:300300+103101`'`}
+`{`$specification_Specification_view_prxtr022`=`'@group:300300`'`}
 `{`$specification_Specification_view_pridx022`=`'false`'`}
 `{`$specification_Specification_view_field023`=`'301470`'`}
 `{`$specification_Specification_view_ftype023`=`'@class`'`}
@@ -4086,7 +4086,7 @@
 `{`$specification_Specification_view_prcnm023`=`'Enum_Item`'`}
 `{`$specification_Specification_view_prfld023`=`'104101`'`}
 `{`$specification_Specification_view_prfnm023`=`'Label`'`}
-`{`$specification_Specification_view_prxtr023`=`'@fkey3:300400+104101`'`}
+`{`$specification_Specification_view_prxtr023`=`'@fkey3:300400`'`}
 `{`$specification_Specification_view_pridx023`=`'false`'`}
 `{`$specification_Specification_view_field024`=`'301471`'`}
 `{`$specification_Specification_view_ftype024`=`'@class`'`}
@@ -4098,7 +4098,7 @@
 `{`$specification_Specification_view_prcnm024`=`'Enum_Item`'`}
 `{`$specification_Specification_view_prfld024`=`'104101`'`}
 `{`$specification_Specification_view_prfnm024`=`'Label`'`}
-`{`$specification_Specification_view_prxtr024`=`'@fkey3:300400+104101`'`}
+`{`$specification_Specification_view_prxtr024`=`'@fkey3:300400`'`}
 `{`$specification_Specification_view_pridx024`=`'false`'`}
 `{`$specification_Specification_view_field025`=`'301472`'`}
 `{`$specification_Specification_view_ftype025`=`'@class`'`}
@@ -4110,7 +4110,7 @@
 `{`$specification_Specification_view_prcnm025`=`'Enum_Item`'`}
 `{`$specification_Specification_view_prfld025`=`'104101`'`}
 `{`$specification_Specification_view_prfnm025`=`'Label`'`}
-`{`$specification_Specification_view_prxtr025`=`'@fkey3:300400+104101`'`}
+`{`$specification_Specification_view_prxtr025`=`'@fkey3:300400`'`}
 `{`$specification_Specification_view_pridx025`=`'false`'`}
 `{`$specification_Specification_view_field026`=`'301473`'`}
 `{`$specification_Specification_view_ftype026`=`'@class`'`}
@@ -4122,7 +4122,7 @@
 `{`$specification_Specification_view_prcnm026`=`'Enum_Item`'`}
 `{`$specification_Specification_view_prfld026`=`'104101`'`}
 `{`$specification_Specification_view_prfnm026`=`'Label`'`}
-`{`$specification_Specification_view_prxtr026`=`'@fkey3:300400+104101`'`}
+`{`$specification_Specification_view_prxtr026`=`'@fkey3:300400`'`}
 `{`$specification_Specification_view_pridx026`=`'false`'`}
 `{`$specification_Specification_view_field027`=`'301474`'`}
 `{`$specification_Specification_view_ftype027`=`'@class`'`}
@@ -4134,7 +4134,7 @@
 `{`$specification_Specification_view_prcnm027`=`'Enum_Item`'`}
 `{`$specification_Specification_view_prfld027`=`'104101`'`}
 `{`$specification_Specification_view_prfnm027`=`'Label`'`}
-`{`$specification_Specification_view_prxtr027`=`'@fkey3:300400+104101`'`}
+`{`$specification_Specification_view_prxtr027`=`'@fkey3:300400`'`}
 `{`$specification_Specification_view_pridx027`=`'false`'`}
 `{`$specification_Specification_view_field028`=`'115107`'`}
 `{`$specification_Specification_view_ftype028`=`'bool`'`}
@@ -4144,7 +4144,7 @@
 `{`$specification_Specification_view_fmand028`=`'true`'`}
 `{`$specification_Specification_view_field029`=`'301494`'`}
 `{`$specification_Specification_view_ftype029`=`'@class`'`}
-`{`$specification_Specification_view_extra029`=`'no_edit+link+fkey7+filename+max_size=30`'`}
+`{`$specification_Specification_view_extra029`=`'no_edit+link+fkey7`'`}
 `{`$specification_Specification_view_fmods029`=`'1000000000:relegate`'`}
 `{`$specification_Specification_view_fname029`=`'field_specification_source_class`'`}
 `{`$specification_Specification_view_fmand029`=`'false`'`}
@@ -4152,7 +4152,7 @@
 `{`$specification_Specification_view_prcnm029`=`'Class`'`}
 `{`$specification_Specification_view_prfld029`=`'106101`'`}
 `{`$specification_Specification_view_prfnm029`=`'Name`'`}
-`{`$specification_Specification_view_prxtr029`=`'`'`}
+`{`$specification_Specification_view_prxtr029`=`'@fkey1:300600`'`}
 `{`$specification_Specification_view_pridx029`=`'false`'`}
 `{`$specification_Specification_view_field030`=`'301481`'`}
 `{`$specification_Specification_view_ftype030`=`'@class`'`}
@@ -4164,11 +4164,11 @@
 `{`$specification_Specification_view_prcnm030`=`'Field`'`}
 `{`$specification_Specification_view_prfld030`=`'107101`'`}
 `{`$specification_Specification_view_prfnm030`=`'Name`'`}
-`{`$specification_Specification_view_prxtr030`=`'@fkey7:300700+107101`'`}
+`{`$specification_Specification_view_prxtr030`=`'@fkey7:300700`'`}
 `{`$specification_Specification_view_pridx030`=`'false`'`}
 `{`$specification_Specification_view_field031`=`'301490`'`}
 `{`$specification_Specification_view_ftype031`=`'@class`'`}
-`{`$specification_Specification_view_extra031`=`'hidden+fkey4+filename+max_size=30`'`}
+`{`$specification_Specification_view_extra031`=`'hidden+fkey4`'`}
 `{`$specification_Specification_view_fmods031`=`'`'`}
 `{`$specification_Specification_view_fname031`=`'field_specification_source_parent_class`'`}
 `{`$specification_Specification_view_fmand031`=`'false`'`}
@@ -4176,7 +4176,7 @@
 `{`$specification_Specification_view_prcnm031`=`'Class`'`}
 `{`$specification_Specification_view_prfld031`=`'106101`'`}
 `{`$specification_Specification_view_prfnm031`=`'Name`'`}
-`{`$specification_Specification_view_prxtr031`=`'`'`}
+`{`$specification_Specification_view_prxtr031`=`'@fkey1:300600`'`}
 `{`$specification_Specification_view_pridx031`=`'false`'`}
 `{`$specification_Specification_view_field032`=`'301480`'`}
 `{`$specification_Specification_view_ftype032`=`'@class`'`}
@@ -4188,7 +4188,7 @@
 `{`$specification_Specification_view_prcnm032`=`'Field`'`}
 `{`$specification_Specification_view_prfld032`=`'107101`'`}
 `{`$specification_Specification_view_prfnm032`=`'Name`'`}
-`{`$specification_Specification_view_prxtr032`=`'@fkey2:300700+107108=1+107101`'`}
+`{`$specification_Specification_view_prxtr032`=`'@fkey2:300700+107108=1`'`}
 `{`$specification_Specification_view_pridx032`=`'false`'`}
 `{`$specification_Specification_view_field033`=`'301495`'`}
 `{`$specification_Specification_view_ftype033`=`'@class`'`}
@@ -4200,11 +4200,11 @@
 `{`$specification_Specification_view_prcnm033`=`'Field`'`}
 `{`$specification_Specification_view_prfld033`=`'107101`'`}
 `{`$specification_Specification_view_prfnm033`=`'Name`'`}
-`{`$specification_Specification_view_prxtr033`=`'@fkey4:300700+107101`'`}
+`{`$specification_Specification_view_prxtr033`=`'@fkey4:300700`'`}
 `{`$specification_Specification_view_pridx033`=`'false`'`}
 `{`$specification_Specification_view_field034`=`'301489`'`}
 `{`$specification_Specification_view_ftype034`=`'@class`'`}
-`{`$specification_Specification_view_extra034`=`'hidden+fkey8+filename+max_size=30`'`}
+`{`$specification_Specification_view_extra034`=`'hidden+fkey8`'`}
 `{`$specification_Specification_view_fmods034`=`'`'`}
 `{`$specification_Specification_view_fname034`=`'field_specification_source_child_class`'`}
 `{`$specification_Specification_view_fmand034`=`'false`'`}
@@ -4212,7 +4212,7 @@
 `{`$specification_Specification_view_prcnm034`=`'Class`'`}
 `{`$specification_Specification_view_prfld034`=`'106101`'`}
 `{`$specification_Specification_view_prfnm034`=`'Name`'`}
-`{`$specification_Specification_view_prxtr034`=`'`'`}
+`{`$specification_Specification_view_prxtr034`=`'@fkey1:300600`'`}
 `{`$specification_Specification_view_pridx034`=`'false`'`}
 `{`$specification_Specification_view_field035`=`'301476`'`}
 `{`$specification_Specification_view_ftype035`=`'@class`'`}
@@ -4224,7 +4224,7 @@
 `{`$specification_Specification_view_prcnm035`=`'Field`'`}
 `{`$specification_Specification_view_prfld035`=`'107101`'`}
 `{`$specification_Specification_view_prfnm035`=`'Name`'`}
-`{`$specification_Specification_view_prxtr035`=`'@fkey8:300700+107101`'`}
+`{`$specification_Specification_view_prxtr035`=`'@fkey8:300700`'`}
 `{`$specification_Specification_view_pridx035`=`'false`'`}
 `{`$specification_Specification_view_field036`=`'301496`'`}
 `{`$specification_Specification_view_ftype036`=`'@class`'`}
@@ -4236,7 +4236,7 @@
 `{`$specification_Specification_view_prcnm036`=`'Field`'`}
 `{`$specification_Specification_view_prfld036`=`'107101`'`}
 `{`$specification_Specification_view_prfnm036`=`'Name`'`}
-`{`$specification_Specification_view_prxtr036`=`'@fkey4:300700+107101`'`}
+`{`$specification_Specification_view_prxtr036`=`'@fkey4:300700`'`}
 `{`$specification_Specification_view_pridx036`=`'false`'`}
 `{`$specification_Specification_view_field037`=`'301497`'`}
 `{`$specification_Specification_view_ftype037`=`'@class`'`}
@@ -4248,7 +4248,7 @@
 `{`$specification_Specification_view_prcnm037`=`'Field`'`}
 `{`$specification_Specification_view_prfld037`=`'107101`'`}
 `{`$specification_Specification_view_prfnm037`=`'Name`'`}
-`{`$specification_Specification_view_prxtr037`=`'@fkey4:300700+107101`'`}
+`{`$specification_Specification_view_prxtr037`=`'@fkey4:300700`'`}
 `{`$specification_Specification_view_pridx037`=`'false`'`}
 `{`$specification_Specification_view_field038`=`'301475`'`}
 `{`$specification_Specification_view_ftype038`=`'@class`'`}
@@ -4278,11 +4278,11 @@
 `{`$specification_Specification_view_prcnm040`=`'Field`'`}
 `{`$specification_Specification_view_prfld040`=`'107101`'`}
 `{`$specification_Specification_view_prfnm040`=`'Name`'`}
-`{`$specification_Specification_view_prxtr040`=`'@fkey2:300700+107101`'`}
+`{`$specification_Specification_view_prxtr040`=`'@fkey2:300700`'`}
 `{`$specification_Specification_view_pridx040`=`'false`'`}
 `{`$specification_Specification_view_field041`=`'301487`'`}
 `{`$specification_Specification_view_ftype041`=`'@class`'`}
-`{`$specification_Specification_view_extra041`=`'hidden+fkey6+filename+max_size=30`'`}
+`{`$specification_Specification_view_extra041`=`'hidden+fkey6`'`}
 `{`$specification_Specification_view_fmods041`=`'`'`}
 `{`$specification_Specification_view_fname041`=`'field_specification_test_parent_class`'`}
 `{`$specification_Specification_view_fmand041`=`'false`'`}
@@ -4290,7 +4290,7 @@
 `{`$specification_Specification_view_prcnm041`=`'Class`'`}
 `{`$specification_Specification_view_prfld041`=`'106101`'`}
 `{`$specification_Specification_view_prfnm041`=`'Name`'`}
-`{`$specification_Specification_view_prxtr041`=`'`'`}
+`{`$specification_Specification_view_prxtr041`=`'@fkey1:300600`'`}
 `{`$specification_Specification_view_pridx041`=`'false`'`}
 `{`$specification_Specification_view_field042`=`'301486`'`}
 `{`$specification_Specification_view_ftype042`=`'@class`'`}
@@ -4302,7 +4302,7 @@
 `{`$specification_Specification_view_prcnm042`=`'Field`'`}
 `{`$specification_Specification_view_prfld042`=`'107101`'`}
 `{`$specification_Specification_view_prfnm042`=`'Name`'`}
-`{`$specification_Specification_view_prxtr042`=`'@fkey2:300700+107108=1+107101`'`}
+`{`$specification_Specification_view_prxtr042`=`'@fkey2:300700+107108=1`'`}
 `{`$specification_Specification_view_pridx042`=`'false`'`}
 `{`$specification_Specification_view_field043`=`'301488`'`}
 `{`$specification_Specification_view_ftype043`=`'@class`'`}
@@ -4314,7 +4314,7 @@
 `{`$specification_Specification_view_prcnm043`=`'Field`'`}
 `{`$specification_Specification_view_prfld043`=`'107101`'`}
 `{`$specification_Specification_view_prfnm043`=`'Name`'`}
-`{`$specification_Specification_view_prxtr043`=`'@fkey6:300700+107101`'`}
+`{`$specification_Specification_view_prxtr043`=`'@fkey6:300700`'`}
 `{`$specification_Specification_view_pridx043`=`'false`'`}
 `{`$specification_Specification_view_field044`=`'115103`'`}
 `{`$specification_Specification_view_ftype044`=`'string`'`}
@@ -4344,7 +4344,7 @@
 `{`$specification_Specification_view_prcnm046`=`'Permission`'`}
 `{`$specification_Specification_view_prfld046`=`'116101`'`}
 `{`$specification_Specification_view_prfnm046`=`'Name`'`}
-`{`$specification_Specification_view_prxtr046`=`'@group:301500+116101`'`}
+`{`$specification_Specification_view_prxtr046`=`'@group:301500`'`}
 `{`$specification_Specification_view_pridx046`=`'false`'`}
 `{`$specification_Specification_view_field047`=`'301332`'`}
 `{`$specification_Specification_view_ftype047`=`'@class`'`}
@@ -4356,7 +4356,7 @@
 `{`$specification_Specification_view_prcnm047`=`'Permission`'`}
 `{`$specification_Specification_view_prfld047`=`'116101`'`}
 `{`$specification_Specification_view_prfnm047`=`'Name`'`}
-`{`$specification_Specification_view_prxtr047`=`'@group:301500+116101`'`}
+`{`$specification_Specification_view_prxtr047`=`'@group:301500`'`}
 `{`$specification_Specification_view_pridx047`=`'false`'`}
 `{`$specification_Specification_view_field048`=`'115104`'`}
 `{`$specification_Specification_view_ftype048`=`'string`'`}
@@ -4667,7 +4667,7 @@
 `{`$specification_Specification_Field_Action_view_prcnm006`=`'Class`'`}
 `{`$specification_Specification_Field_Action_view_prfld006`=`'106101`'`}
 `{`$specification_Specification_Field_Action_view_prfnm006`=`'Name`'`}
-`{`$specification_Specification_Field_Action_view_prxtr006`=`'@fkey1:300600+106101`'`}
+`{`$specification_Specification_Field_Action_view_prxtr006`=`'@fkey1:300600`'`}
 `{`$specification_Specification_Field_Action_view_pridx006`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_field007`=`'301430`'`}
 `{`$specification_Specification_Field_Action_view_ftype007`=`'@class`'`}
@@ -4679,7 +4679,7 @@
 `{`$specification_Specification_Field_Action_view_prcnm007`=`'Field`'`}
 `{`$specification_Specification_Field_Action_view_prfld007`=`'107101`'`}
 `{`$specification_Specification_Field_Action_view_prfnm007`=`'Name`'`}
-`{`$specification_Specification_Field_Action_view_prxtr007`=`'@fkey2:300700+107101`'`}
+`{`$specification_Specification_Field_Action_view_prxtr007`=`'@fkey2:300700`'`}
 `{`$specification_Specification_Field_Action_view_pridx007`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_field008`=`'128104`'`}
 `{`$specification_Specification_Field_Action_view_ftype008`=`'int`'`}
@@ -4703,7 +4703,7 @@
 `{`$specification_Specification_Field_Action_view_prcnm010`=`'Procedure`'`}
 `{`$specification_Specification_Field_Action_view_prfld010`=`'111101`'`}
 `{`$specification_Specification_Field_Action_view_prfnm010`=`'Name`'`}
-`{`$specification_Specification_Field_Action_view_prxtr010`=`'@fkey2:301100+111101`'`}
+`{`$specification_Specification_Field_Action_view_prxtr010`=`'@fkey2:301100`'`}
 `{`$specification_Specification_Field_Action_view_pridx010`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_field011`=`'302300`'`}
 `{`$specification_Specification_Field_Action_view_ftype011`=`'@class`'`}
@@ -4715,7 +4715,7 @@
 `{`$specification_Specification_Field_Action_view_prcnm011`=`'Class`'`}
 `{`$specification_Specification_Field_Action_view_prfld011`=`'106101`'`}
 `{`$specification_Specification_Field_Action_view_prfnm011`=`'Name`'`}
-`{`$specification_Specification_Field_Action_view_prxtr011`=`'@fkey1:300600+106101`'`}
+`{`$specification_Specification_Field_Action_view_prxtr011`=`'@fkey1:300600`'`}
 `{`$specification_Specification_Field_Action_view_pridx011`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_field012`=`'302310`'`}
 `{`$specification_Specification_Field_Action_view_ftype012`=`'@class`'`}
@@ -4727,7 +4727,7 @@
 `{`$specification_Specification_Field_Action_view_prcnm012`=`'Field`'`}
 `{`$specification_Specification_Field_Action_view_prfld012`=`'107101`'`}
 `{`$specification_Specification_Field_Action_view_prfnm012`=`'Name`'`}
-`{`$specification_Specification_Field_Action_view_prxtr012`=`'@fkey3:300700+107101`'`}
+`{`$specification_Specification_Field_Action_view_prxtr012`=`'@fkey3:300700`'`}
 `{`$specification_Specification_Field_Action_view_pridx012`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_field013`=`'128105`'`}
 `{`$specification_Specification_Field_Action_view_ftype013`=`'string`'`}
@@ -4757,7 +4757,7 @@
 `{`$specification_Specification_Field_Action_view_prcnm016`=`'Field`'`}
 `{`$specification_Specification_Field_Action_view_prfld016`=`'107101`'`}
 `{`$specification_Specification_Field_Action_view_prfnm016`=`'Name`'`}
-`{`$specification_Specification_Field_Action_view_prxtr016`=`'@fkey2:300700+107101`'`}
+`{`$specification_Specification_Field_Action_view_prxtr016`=`'@fkey2:300700`'`}
 `{`$specification_Specification_Field_Action_view_pridx016`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_field017`=`'301490`'`}
 `{`$specification_Specification_Field_Action_view_ftype017`=`'@class`'`}
@@ -4781,7 +4781,7 @@
 `{`$specification_Specification_Field_Action_view_prcnm018`=`'Field`'`}
 `{`$specification_Specification_Field_Action_view_prfld018`=`'107101`'`}
 `{`$specification_Specification_Field_Action_view_prfnm018`=`'Name`'`}
-`{`$specification_Specification_Field_Action_view_prxtr018`=`'@fkey2:300700+107108=1+107101`'`}
+`{`$specification_Specification_Field_Action_view_prxtr018`=`'@fkey2:300700+107108=1`'`}
 `{`$specification_Specification_Field_Action_view_pridx018`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_field019`=`'301495`'`}
 `{`$specification_Specification_Field_Action_view_ftype019`=`'@class`'`}
@@ -4793,7 +4793,7 @@
 `{`$specification_Specification_Field_Action_view_prcnm019`=`'Field`'`}
 `{`$specification_Specification_Field_Action_view_prfld019`=`'107101`'`}
 `{`$specification_Specification_Field_Action_view_prfnm019`=`'Name`'`}
-`{`$specification_Specification_Field_Action_view_prxtr019`=`'@fkey4:300700+107101`'`}
+`{`$specification_Specification_Field_Action_view_prxtr019`=`'@fkey4:300700`'`}
 `{`$specification_Specification_Field_Action_view_pridx019`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_field020`=`'115102`'`}
 `{`$specification_Specification_Field_Action_view_ftype020`=`'string`'`}
@@ -6044,7 +6044,7 @@
 `{`$specification_View_view_prcnm004`=`'Class`'`}
 `{`$specification_View_view_prfld004`=`'106101`'`}
 `{`$specification_View_view_prfnm004`=`'Name`'`}
-`{`$specification_View_view_prxtr004`=`'@fkey1:300600+106101`'`}
+`{`$specification_View_view_prxtr004`=`'@fkey1:300600`'`}
 `{`$specification_View_view_pridx004`=`'false`'`}
 `{`$specification_View_view_field005`=`'118104`'`}
 `{`$specification_View_view_ftype005`=`'string`'`}
@@ -6273,7 +6273,7 @@
 `{`$specification_View_Field_view_prcnm006`=`'Field`'`}
 `{`$specification_View_Field_view_prfld006`=`'107101`'`}
 `{`$specification_View_Field_view_prfnm006`=`'Name`'`}
-`{`$specification_View_Field_view_prxtr006`=`'@fkey1:300700+107108=0+107101`'`}
+`{`$specification_View_Field_view_prxtr006`=`'@fkey1:300700+107108=0`'`}
 `{`$specification_View_Field_view_pridx006`=`'false`'`}
 `{`$specification_View_Field_view_field007`=`'301950`'`}
 `{`$specification_View_Field_view_ftype007`=`'@class`'`}
@@ -6285,7 +6285,7 @@
 `{`$specification_View_Field_view_prcnm007`=`'Field`'`}
 `{`$specification_View_Field_view_prfld007`=`'107101`'`}
 `{`$specification_View_Field_view_prfnm007`=`'Name`'`}
-`{`$specification_View_Field_view_prxtr007`=`'@fkey1:300700+107108=1+107101`'`}
+`{`$specification_View_Field_view_prxtr007`=`'@fkey1:300700+107108=1`'`}
 `{`$specification_View_Field_view_pridx007`=`'false`'`}
 `{`$specification_View_Field_view_field008`=`'301960`'`}
 `{`$specification_View_Field_view_ftype008`=`'@class`'`}
@@ -6297,7 +6297,7 @@
 `{`$specification_View_Field_view_prcnm008`=`'Field`'`}
 `{`$specification_View_Field_view_prfld008`=`'107101`'`}
 `{`$specification_View_Field_view_prfnm008`=`'Name`'`}
-`{`$specification_View_Field_view_prxtr008`=`'@fkey2:300700+107108=0+107101`'`}
+`{`$specification_View_Field_view_prxtr008`=`'@fkey2:300700+107108=0`'`}
 `{`$specification_View_Field_view_pridx008`=`'false`'`}
 `{`$specification_View_Field_view_field009`=`'301965`'`}
 `{`$specification_View_Field_view_ftype009`=`'@class`'`}
@@ -6309,7 +6309,7 @@
 `{`$specification_View_Field_view_prcnm009`=`'Field`'`}
 `{`$specification_View_Field_view_prfld009`=`'107101`'`}
 `{`$specification_View_Field_view_prfnm009`=`'Name`'`}
-`{`$specification_View_Field_view_prxtr009`=`'@fkey2:300700+107108=0+107101`'`}
+`{`$specification_View_Field_view_prxtr009`=`'@fkey2:300700+107108=0`'`}
 `{`$specification_View_Field_view_pridx009`=`'false`'`}
 `{`$specification_View_Field_view_field010`=`'120115`'`}
 `{`$specification_View_Field_view_ftype010`=`'bool`'`}
