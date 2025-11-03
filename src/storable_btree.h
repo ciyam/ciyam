@@ -103,7 +103,7 @@ template< typename T > write_stream& operator <<( write_stream& ws, const storab
    return ws;
 }
 
-const int c_max_buffer_nodes = 6;
+const int c_max_buffer_nodes = 10;
 
 template< typename T > class storable_node_manager
  : public bt_node_manager< T, storable< storable_node_base< T >, storable_node_base< T >::c_round_to_value > >
