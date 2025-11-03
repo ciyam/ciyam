@@ -422,7 +422,7 @@ FORUM_OPTION_KEY=$OUTPUT
 .pc $CIYAM_UID @now 100 127100 " " "127101=$CIYAM_MODEL,127102=$CIYAM_VER,302220=$CIYAM_GRP,127137=0"
 @endif
 ;
-.pf 100 106100 "106101#1 User" #1 @key -min
+.pf 100 106100 "300600,106101#2 $MODEL_KEY,User" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Class for 'User'.
 @endif
@@ -433,7 +433,7 @@ ERROR=Unable to locate Class for 'User'.
 ;
 USER_CLASS_KEY=$OUTPUT
 ;
-.pf 100 106100 "106101#1 Group" #1 @key -min
+.pf 100 106100 "300600,106101#2 $MODEL_KEY,Group" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Class for 'Group'.
 @endif
@@ -444,7 +444,7 @@ ERROR=Unable to locate Class for 'Group'.
 ;
 GROUP_CLASS_KEY=$OUTPUT
 ;
-.pf 100 129100 "129101#1 Adopter" #1 @key -min
+.pf 100 129100 "302410,129101#2 $USER_CLASS_KEY,Adopter" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Initial_Record for 'Adopter'.
 @endif
@@ -455,7 +455,7 @@ ERROR=Unable to locate Initial_Record for 'Adopter'.
 ;
 INITIAL_RECORD_ADOPTER_KEY=$OUTPUT
 ;
-.pf 100 129100 "129101#1 Creator" #1 @key -min
+.pf 100 129100 "302410,129101#2 $USER_CLASS_KEY,Creator" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Initial_Record for 'Creator'.
 @endif
@@ -466,7 +466,7 @@ ERROR=Unable to locate Initial_Record for 'Creator'.
 ;
 INITIAL_RECORD_CREATOR_KEY=$OUTPUT
 ;
-.pf 100 129100 "129101#1 adopters" #1 @key -min
+.pf 100 129100 "302410,129101#2 $GROUP_CLASS_KEY,adopters" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Initial_Record for 'adopters'.
 @endif
@@ -477,7 +477,7 @@ ERROR=Unable to locate Initial_Record for 'adopters'.
 ;
 INITIAL_RECORD_ADOPTERS_KEY=$OUTPUT
 ;
-.pf 100 103100 "103101#1 User_Access" #1 @key -min
+.pf 100 103100 "300300,103101#2 $CIYAM_GRP,User_Access" #1 @key -min
 @ifndef $OUTPUT
 ERROR=Unable to locate Enum 'User_Access'.
 @endif
