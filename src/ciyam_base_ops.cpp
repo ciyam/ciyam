@@ -1224,6 +1224,7 @@ string determine_local_iteration_info(
          if( next_field_list == order_field_list )
          {
             index_num = i;
+
             break;
          }
          else if( ( index_partial < 0 ) && ( next_field_list.find( order_without_key ) == 0 ) )
@@ -1239,14 +1240,24 @@ string determine_local_iteration_info(
       if( index_num < 0 )
          index_num = index_partial;
 
-      string field_name( all_index_pairs[ index_num ].first );
+      string field_names( all_index_pairs[ index_num ].first );
 
-      string::size_type pos = field_name.rfind( ',' );
+      size_t num_index_fields = count( field_names.begin( ), field_names.end( ), ',' ) + 1;
 
-      if( pos != string::npos )
-         field_name.erase( 0, pos + 1 );
+      string last_field_name( field_names );
 
-      instance.set_variable( local_starts_name, field_name );
+      if( num_index_fields > 1 )
+      {
+         string::size_type pos = last_field_name.rfind( ',' );
+
+         if( pos != string::npos )
+            last_field_name.erase( 0, pos + 1 );
+      }
+
+      if( last_field_name == c_primary_key_name )
+         last_field_name = c_key_field;
+
+      instance.set_variable( local_starts_name, last_field_name );
 
       folder += c_storage_folder_name_dot_idx;
 
@@ -1265,6 +1276,11 @@ string determine_local_iteration_info(
             prefix += fixed_info[ i ].second;
          }
       }
+
+      size_t num_prefix_fields = count( prefix.begin( ), prefix.end( ), '\t' ) + 1;
+
+      if( num_prefix_fields < num_index_fields )
+         prefix += '\t';
    }
 
    folder += '/' + class_id;
@@ -1426,14 +1442,7 @@ void fetch_keys_from_local_storage( class_base& instance,
    string start_from;
 
    if( !origin.empty( ) )
-   {
-      start_from = expr;
-
-      if( !prefix.empty( ) )
-         start_from += '\t';
-
-      start_from += origin;
-   }
+      start_from = expr + origin;
 
    string suffix( instance.get_variable(
     get_special_var_name( e_special_var_local_suffix ) ) );
@@ -1448,6 +1457,9 @@ void fetch_keys_from_local_storage( class_base& instance,
    if( ofs.has_root_folder( folder ) )
    {
       ofs.set_root_folder( folder );
+
+      TRACE_LOG( TRACE_VERBOSE | TRACE_QUERIES, "folder = '" + folder + "', expr = '"
+       + expr + "', start_from = '" + start_from + "', limit = " + to_string( limit ) );
 
       ofs.list_files( expr, instance_keys, true, start_from, inclusive, limit, in_reverse_order );
    }
