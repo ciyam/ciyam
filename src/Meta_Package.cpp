@@ -1020,6 +1020,7 @@ void Meta_Package::impl::impl_Install( )
       get_obj( ).Model( ).Workgroup( ).Standard_Package( ).op_update( );
 
       int count = get_obj( ).Model( ).Workgroup( ).Standard_Package( ).Usage_Count( );
+
       get_obj( ).Model( ).Workgroup( ).Standard_Package( ).Usage_Count( ++count );
 
       get_obj( ).Model( ).Workgroup( ).Standard_Package( ).op_apply( );
@@ -1033,7 +1034,8 @@ void Meta_Package::impl::impl_Install( )
       if( !outl )
          throw runtime_error( "unable to open '" + install_log + "' for output" );
 
-      outl << "Linked to existing Standard package..."; // FUTURE: Should be a module string...
+      // FUTURE: This message should be handled as a server string message.
+      outl << "Linked to existing Standard package...";
 
       string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
 
@@ -1089,7 +1091,8 @@ void Meta_Package::impl::impl_Install( )
                next.erase( pos );
 
             if( !installed_types.count( next ) )
-               throw runtime_error( "This package requires '" + next + "' to first be installed." ); // FUTURE: Should be a module string...
+               // FUTURE: This message should be handled as a server string message.
+               throw runtime_error( "This package requires '" + next + "' to first be installed." );
 
             dependency_keys.push_back( installed_types[ next ] );
          }
@@ -1099,61 +1102,63 @@ void Meta_Package::impl::impl_Install( )
       {
          do
          {
+            // FUTURE: The following exceptions should be handled as a server string messages.
+
             if( get_obj( ).child_Package_Option( ).Is_Class( )
              && get_obj( ).child_Package_Option( ).Is_Mandatory_Class( )
              && get_obj( ).child_Package_Option( ).Value( ).empty( ) )
                throw runtime_error( "This package requires option '"
-                + get_obj( ).child_Package_Option( ).Name( ) + "' to be provided." ); // FUTURE: Should be a module string...
+                + get_obj( ).child_Package_Option( ).Name( ) + "' to be provided." );
             else if( get_obj( ).child_Package_Option( ).Is_Class( )
              && get_obj( ).child_Package_Option( ).Is_Mandatory_View( )
              && is_null( get_obj( ).child_Package_Option( ).View( ) ) )
                throw runtime_error( "This package option '"
-                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a View." ); // FUTURE: Should be a module string...
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a View." );
             else if( get_obj( ).child_Package_Option( ).Is_Class( )
              && get_obj( ).child_Package_Option( ).Is_Mandatory_List( )
              && is_null( get_obj( ).child_Package_Option( ).List( ) ) )
                throw runtime_error( "This package option '"
-                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a List." ); // FUTURE: Should be a module string...
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a List." );
             else if( get_obj( ).child_Package_Option( ).Is_Class( )
              && get_obj( ).child_Package_Option( ).Is_Mandatory_Field( )
              && is_null( get_obj( ).child_Package_Option( ).Field( ) ) )
                throw runtime_error( "The package option '"
-                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a Field." ); // FUTURE: Should be a module string...
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a Field." );
             else if( get_obj( ).child_Package_Option( ).Is_Class( )
              && get_obj( ).child_Package_Option( ).Is_Mandatory_Other_Field( )
              && is_null( get_obj( ).child_Package_Option( ).Other_Field( ) ) )
                throw runtime_error( "The package option '"
-                + get_obj( ).child_Package_Option( ).Name( ) + "' requires Other Field." ); // FUTURE: Should be a module string...
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires Other Field." );
             else if( get_obj( ).child_Package_Option( ).Is_Class( )
              && get_obj( ).child_Package_Option( ).Is_Mandatory_Other_Field_2( )
              && is_null( get_obj( ).child_Package_Option( ).Other_Field_2( ) ) )
                throw runtime_error( "The package option '"
-                + get_obj( ).child_Package_Option( ).Name( ) + "' requires Other Field 2." ); // FUTURE: Should be a module string...
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires Other Field 2." );
             else if( get_obj( ).child_Package_Option( ).Is_Class( )
              && get_obj( ).child_Package_Option( ).Is_Mandatory_Source_Field( )
              && is_null( get_obj( ).child_Package_Option( ).Source_Field( ) ) )
                throw runtime_error( "The package option '"
-                + get_obj( ).child_Package_Option( ).Name( ) + "' requires Source Field." ); // FUTURE: Should be a module string...
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires Source Field." );
             else if( get_obj( ).child_Package_Option( ).Is_Class( )
              && get_obj( ).child_Package_Option( ).Is_Mandatory_Other_Source_Field( )
              && is_null( get_obj( ).child_Package_Option( ).Other_Source_Field( ) ) )
                throw runtime_error( "The package option '"
-                + get_obj( ).child_Package_Option( ).Name( ) + "' requires Other Source Field." ); // FUTURE: Should be a module string...
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires Other Source Field." );
             else if( get_obj( ).child_Package_Option( ).Is_Class( )
              && get_obj( ).child_Package_Option( ).Is_Mandatory_Modifier( )
              && is_null( get_obj( ).child_Package_Option( ).Modifier( ) ) )
                throw runtime_error( "The package option '"
-                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a Modifier." ); // FUTURE: Should be a module string...
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a Modifier." );
             else if( get_obj( ).child_Package_Option( ).Is_Class( )
              && get_obj( ).child_Package_Option( ).Is_Mandatory_Procedure( )
              && is_null( get_obj( ).child_Package_Option( ).Procedure( ) ) )
                throw runtime_error( "The package option '"
-                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a Procedure." ); // FUTURE: Should be a module string...
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a Procedure." );
             else if( get_obj( ).child_Package_Option( ).Is_Other_Package( )
              && get_obj( ).child_Package_Option( ).Other_Package_Required( )
              && is_null( get_obj( ).child_Package_Option( ).Other_Package( ) ) )
                throw runtime_error( "This package requires option '"
-                + get_obj( ).child_Package_Option( ).Name( ) + "' to be provided." ); // FUTURE: Should be a module string...
+                + get_obj( ).child_Package_Option( ).Name( ) + "' to be provided." );
             else if( get_obj( ).child_Package_Option( ).Is_Other_Package( )
              && !is_null( get_obj( ).child_Package_Option( ).Other_Package( ) ) )
             {
@@ -1161,7 +1166,7 @@ void Meta_Package::impl::impl_Install( )
 
                if( !installed_types.count( other_type_name ) )
                   throw runtime_error( "This package requires '"
-                   + get_obj( ).child_Package_Option( ).Other_Package( ).Name( ) + "' to first be installed." ); // FUTURE: Should be a module string...
+                   + get_obj( ).child_Package_Option( ).Other_Package( ).Name( ) + "' to first be installed." );
 
                dependency_keys.push_back( get_obj( ).child_Package_Option( ).Other_Package( ).get_key( ) );
             }
@@ -1357,7 +1362,8 @@ void Meta_Package::impl::impl_Install( )
          if( !outl )
             throw runtime_error( "unable to open '" + install_log + "' for output" );
 
-         outl << "Starting Install...\n"; // FUTURE: Should be a module string...
+         // FUTURE: This message should be handled as a server string message.
+         outl << "Starting Install...\n";
 
          ofstream outs( script_filename.c_str( ) );
 
@@ -1403,7 +1409,8 @@ void Meta_Package::impl::impl_Install( )
 
       string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
 
-      set_system_variable( model_key, "Installing package '" + get_obj( ).Name( ) + "'..." ); // FUTURE: Should be a module string...
+      // FUTURE: This message should be handled as a server string message.
+      set_system_variable( model_key, "Installing package '" + get_obj( ).Name( ) + "'..." );
 
       // NOTE: If the thread that has spawned the child process is terminated (due
       // to client deciding to finish its session) then this can potentially cause
@@ -1473,7 +1480,8 @@ void Meta_Package::impl::impl_Remove( )
       if( !install_details.empty( ) )
          outl << install_details << "\n\n";
 
-      outl << "Unlinked from existing Standard package..."; // FUTURE: Should be a module string...
+      // FUTURE: This message should be handled as a server string message.
+      outl << "Unlinked from existing Standard package...";
 
       get_obj( ).op_apply( );
 
@@ -1489,6 +1497,7 @@ void Meta_Package::impl::impl_Remove( )
          if( do_exec )
             skip = true;
          else
+            // FUTURE: This message should be handled as a server string message.
             throw runtime_error( "This package cannot be removed as it is being referenced by other models." );
       }
 
@@ -1526,6 +1535,7 @@ void Meta_Package::impl::impl_Remove( )
                         set_system_variable( model_key, "" );
                         set_system_variable( "@" + model_key, "" );
 
+                        // FUTURE: This message should be handled as a server string message.
                         throw runtime_error( "Need to remove '"
                          + cp_other->Name( ) + "' before this package can be removed." );
                      }
@@ -1545,6 +1555,7 @@ void Meta_Package::impl::impl_Remove( )
                         set_system_variable( model_key, "" );
                         set_system_variable( "@" + model_key, "" );
 
+                        // FUTURE: This message should be handled as a server string message.
                         throw runtime_error( "Need to remove '"
                          + cp_other->Name( ) + "' before this package can be removed." );
                      }
@@ -1616,6 +1627,7 @@ void Meta_Package::impl::impl_Remove( )
                outf << ".storage_transaction_start\n";
                outf << "@endif\n";
 
+               // FUTURE: This message should be handled as a server string message.
                if( !progress_pipe.empty( ) )
                   outf << "~echo \"\rRemoving " << get_obj( ).Name( ) << " package...\" >> " << progress_pipe << "\n";
 
@@ -1692,6 +1704,7 @@ void Meta_Package::impl::impl_Remove( )
 
                      outf << "@ifeq $SHOW_PROGRESS 1\n";
 
+                     // FUTURE: These messages should be handled as a server string messages.
                      if( progress_pipe.empty( ) )
                         outf << "#Processed $TOTAL_RECORDS records...\n";
                      else
@@ -1742,6 +1755,7 @@ void Meta_Package::impl::impl_Remove( )
                if( !outl )
                   throw runtime_error( "unable to open '" + install_log + "' for output" );
 
+               // FUTURE: This message should be handled as a server string message.
                outl << "\nStarting Remove...\n";
             }
 
@@ -1758,6 +1772,7 @@ void Meta_Package::impl::impl_Remove( )
 
             if( !skip )
             {
+               // FUTURE: This message should be handled as a server string message.
                outs << "echo Finished Remove...>>" << install_log << "\n";
 
                get_obj( ).Actions( "" );
@@ -1765,7 +1780,8 @@ void Meta_Package::impl::impl_Remove( )
             }
          }
 
-         set_system_variable( model_key, "Removing package '" + get_obj( ).Name( ) + "'..." ); // FUTURE: Should be a module string...
+         // FUTURE: This message should be handled as a server string message.
+         set_system_variable( model_key, "Removing package '" + get_obj( ).Name( ) + "'..." );
 
          if( do_exec )
          {
@@ -2039,6 +2055,7 @@ uint64_t Meta_Package::impl::get_state( ) const
       state |= c_modifier_Is_In_Use;
 
    string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
+
    if( !get_system_variable( model_key ).empty( ) )
       state |= ( c_state_is_changing | c_state_uneditable | c_state_unactionable );
    // [<finish get_state>]
@@ -2343,7 +2360,9 @@ void Meta_Package::impl::for_store( bool is_create, bool is_internal )
              == get_obj( ).Model( ).child_Package( ).Package_Type( ).get_key( ) )
             {
                get_obj( ).Model( ).child_Package( ).iterate_stop( );
-               throw runtime_error( "This package type is singular and has already been added." ); // FUTURE: Should be a module string...
+
+               // FUTURE: This message should be handled as a server string message.
+               throw runtime_error( "This package type is singular and has already been added." );
             }
          } while( get_obj( ).Model( ).child_Package( ).iterate_next( ) );
       }
@@ -2366,6 +2385,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
       string key_list( get_obj( ).Package_Type( ).Name( ) + ".keys.lst" );
 
       ifstream inpf( key_list.c_str( ) );
+
       if( !inpf )
          throw runtime_error( "unable to open '" + key_list + "' for input" );
 
@@ -2373,23 +2393,24 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
 
       string name( lower( get_obj( ).Package_Type( ).Name( ) ) );
 
-      if( name.length( ) && 3 && name.substr( name.length( ) - 2 ) == "_b" )
-         name.erase( name.length( ) - 2 );
-
       string ext_prefix( "ext_" + name + "_" );
       string opt_prefix( "opt_" + name + "_" );
 
       map< string, string > package_types;
+
       class_pointer< Meta_Package_Type > cp_type( e_create_instance );
+
       if( cp_type->iterate_forwards( ) )
       {
          do
          {
             package_types.insert( make_pair( cp_type->Name( ), cp_type->get_key( ) ) );
+
          } while( cp_type->iterate_next( ) );
       }
 
       string next;
+
       int child_num = 0;
 
       while( getline( inpf, next ) )
@@ -2399,9 +2420,11 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
          if( next.find( ext_prefix ) == 0 )
          {
             string::size_type pos = next.find( '=' );
+
             if( pos != string::npos )
             {
                string opt_id = next.substr( 0, pos );
+
                if( !options.count( opt_id ) )
                {
                   get_obj( ).child_Package_Option( ).op_create( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
@@ -2425,6 +2448,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
          else if( next.find( opt_prefix ) == 0 )
          {
             string::size_type pos = next.find( '=' );
+
             if( pos != string::npos )
             {
                string opt_id = next.substr( 0, pos );
@@ -2433,7 +2457,8 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                if( !type_and_id.empty( ) )
                {
                   string::size_type tpos = type_and_id.find( '_' );
-                  if( tpos == string::npos || tpos == 0 )
+
+                  if( ( tpos == 0 ) || ( tpos == string::npos ) )
                      throw runtime_error( "unexpected invalid option type_and_id: " + type_and_id );
 
                   string type( type_and_id.substr( 0, tpos ) );
@@ -2463,11 +2488,13 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                            if( class_options[ i ] == "mandatory" )
                            {
                               valid = true;
+
                               get_obj( ).child_Package_Option( ).Is_Mandatory_Class( true );
                            }
                            else if( class_options[ i ].find( "notes=" ) == 0 )
                            {
                               valid = true;
+
                               get_obj( ).child_Package_Option( ).Notes( class_options[ i ].substr( 6 ) );
                            }
                            else if( class_options[ i ].find( "view" ) == 0 )
@@ -2475,11 +2502,13 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               string view_info( class_options[ i ] );
 
                               string::size_type pos = view_info.find( '=' );
+
                               if( pos == string::npos )
                               {
                                  if( view_info == "view" )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_View( true );
                                  }
                               }
@@ -2487,9 +2516,11 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               {
                                  string info( view_info.substr( 0, pos ) );
                                  string extra = view_info.substr( pos + 1 );
-                                 if( info == "view" && extra == "mandatory" )
+
+                                 if( ( info == "view" ) && ( extra == "mandatory" ) )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_View( true );
                                     get_obj( ).child_Package_Option( ).Is_Mandatory_View( true );
                                  }
@@ -2500,6 +2531,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               string list_info( class_options[ i ] );
 
                               string::size_type pos = list_info.find( '=' );
+
                               if( pos == string::npos )
                               {
                                  if( list_info == "list" )
@@ -2512,9 +2544,11 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               {
                                  string info( list_info.substr( 0, pos ) );
                                  string extra = list_info.substr( pos + 1 );
-                                 if( info == "list" && extra == "mandatory" )
+
+                                 if( ( info == "list" ) && ( extra == "mandatory" ) )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_List( true );
                                     get_obj( ).child_Package_Option( ).Is_Mandatory_List( true );
                                  }
@@ -2525,11 +2559,13 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               string field_info( class_options[ i ] );
 
                               string::size_type pos = field_info.find( '=' );
+
                               if( pos == string::npos )
                               {
                                  if( field_info == "field" )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_Field( true );
                                  }
                               }
@@ -2537,9 +2573,11 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               {
                                  string info( field_info.substr( 0, pos ) );
                                  string extra = field_info.substr( pos + 1 );
-                                 if( info == "field" && extra == "mandatory" )
+
+                                 if( ( info == "field" ) && ( extra == "mandatory" ) )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_Field( true );
                                     get_obj( ).child_Package_Option( ).Is_Mandatory_Field( true );
                                  }
@@ -2550,11 +2588,13 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               string field_info( class_options[ i ] );
 
                               string::size_type pos = field_info.find( '=' );
+
                               if( pos == string::npos )
                               {
                                  if( field_info == "ofield" )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_Other_Field( true );
                                  }
                               }
@@ -2562,9 +2602,11 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               {
                                  string info( field_info.substr( 0, pos ) );
                                  string extra = field_info.substr( pos + 1 );
-                                 if( info == "ofield" && extra == "mandatory" )
+
+                                 if( ( info == "ofield" ) && ( extra == "mandatory" ) )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_Other_Field( true );
                                     get_obj( ).child_Package_Option( ).Is_Mandatory_Other_Field( true );
                                  }
@@ -2575,11 +2617,13 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               string field_info( class_options[ i ] );
 
                               string::size_type pos = field_info.find( '=' );
+
                               if( pos == string::npos )
                               {
                                  if( field_info == "o2field" )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_Other_Field_2( true );
                                  }
                               }
@@ -2587,9 +2631,11 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               {
                                  string info( field_info.substr( 0, pos ) );
                                  string extra = field_info.substr( pos + 1 );
-                                 if( info == "o2field" && extra == "mandatory" )
+
+                                 if( ( info == "o2field" ) && ( extra == "mandatory" ) )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_Other_Field_2( true );
                                     get_obj( ).child_Package_Option( ).Is_Mandatory_Other_Field_2( true );
                                  }
@@ -2600,11 +2646,13 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               string field_info( class_options[ i ] );
 
                               string::size_type pos = field_info.find( '=' );
+
                               if( pos == string::npos )
                               {
                                  if( field_info == "sfield" )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_Source_Field( true );
                                  }
                               }
@@ -2612,9 +2660,11 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               {
                                  string info( field_info.substr( 0, pos ) );
                                  string extra = field_info.substr( pos + 1 );
-                                 if( info == "sfield" && extra == "mandatory" )
+
+                                 if( ( info == "sfield" ) && ( extra == "mandatory" ) )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_Source_Field( true );
                                     get_obj( ).child_Package_Option( ).Is_Mandatory_Source_Field( true );
                                  }
@@ -2625,11 +2675,13 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               string field_info( class_options[ i ] );
 
                               string::size_type pos = field_info.find( '=' );
+
                               if( pos == string::npos )
                               {
                                  if( field_info == "osfield" )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_Other_Source_Field( true );
                                  }
                               }
@@ -2637,9 +2689,11 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               {
                                  string info( field_info.substr( 0, pos ) );
                                  string extra = field_info.substr( pos + 1 );
-                                 if( info == "osfield" && extra == "mandatory" )
+
+                                 if( ( info == "osfield" ) && ( extra == "mandatory" ) )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_Other_Source_Field( true );
                                     get_obj( ).child_Package_Option( ).Is_Mandatory_Other_Source_Field( true );
                                  }
@@ -2650,6 +2704,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               string modifier_info( class_options[ i ] );
 
                               string::size_type pos = modifier_info.find( '=' );
+
                               if( pos == string::npos )
                               {
                                  if( modifier_info == "modifier" )
@@ -2662,9 +2717,11 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               {
                                  string info( modifier_info.substr( 0, pos ) );
                                  string extra = modifier_info.substr( pos + 1 );
-                                 if( info == "modifier" && extra == "mandatory" )
+
+                                 if( ( info == "modifier" ) && ( extra == "mandatory" ) )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_Modifier( true );
                                     get_obj( ).child_Package_Option( ).Is_Mandatory_Modifier( true );
                                  }
@@ -2675,6 +2732,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               string procedure_info( class_options[ i ] );
 
                               string::size_type pos = procedure_info.find( '=' );
+
                               if( pos == string::npos )
                               {
                                  if( procedure_info == "procedure" )
@@ -2687,9 +2745,11 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               {
                                  string info( procedure_info.substr( 0, pos ) );
                                  string extra = procedure_info.substr( pos + 1 );
-                                 if( info == "procedure" && extra == "mandatory" )
+
+                                 if( ( info == "procedure" ) && ( extra == "mandatory" ) )
                                  {
                                     valid = true;
+
                                     get_obj( ).child_Package_Option( ).Has_Procedure( true );
                                     get_obj( ).child_Package_Option( ).Is_Mandatory_Procedure( true );
                                  }
@@ -2744,15 +2804,15 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               else
                                  value.erase( );
                            }
-                           else if( get_obj( ).child_Package_Option( ).Name( ) == "@has_blockchain"
-                            || get_obj( ).child_Package_Option( ).Name( ) == "@use_peerchains" )
+                           else if( ( get_obj( ).child_Package_Option( ).Name( ) == "@has_blockchain" )
+                            || ( get_obj( ).child_Package_Option( ).Name( ) == "@use_peerchains" ) )
                            {
                               if( !get_obj( ).Model( ).Type( ) )
-                                 value = "1";
+                                 value = c_true_value;
                               else
                                  value.erase( );
                            }
-                           get_obj( ).child_Package_Option( ).Use_Option( value == "1" || value == "true" );
+                           get_obj( ).child_Package_Option( ).Use_Option( ( value == c_true ) || ( value == c_true_value ) );
                            break;
 
                            default:
@@ -2779,6 +2839,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
             get_obj( ).child_Package_Option( ).op_update( );
             get_obj( ).child_Package_Option( ).Installed( get_obj( ).Installed( ) );
             get_obj( ).child_Package_Option( ).op_apply( );
+
          } while( get_obj( ).child_Package_Option( ).iterate_next( ) );
       }
    }
