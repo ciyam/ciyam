@@ -157,6 +157,8 @@ else
 
   mv $main_module $release_name/ciyam
 
+  cp *.package.bun.gz $release_name/ciyam
+
   cp Meta_init_std.cin $release_name/ciyam
 
   ./ciyam_command storage_backup -init $main_module
