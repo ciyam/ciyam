@@ -32720,6 +32720,7 @@
     <data/>
      <name>*
      <type>admin
+     <extra>no_new
      <class_id>145100
      <ordering>forward
      <field_info>145101
@@ -32736,6 +32737,7 @@
     <data/>
      <name>?
      <type>admin
+     <extra>no_edit
      <class_id>145100
      <field_info>@key
      <field_info>145101;key_name

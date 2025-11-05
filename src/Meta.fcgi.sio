@@ -3639,7 +3639,7 @@
    <cid>145100
    <name>603970_name
    <type>admin
-   <extra>
+   <extra>no_edit
    <modifiers>1000:lowlight
    <class>Global_Peerchain_Entry
    <bclass>
@@ -9052,7 +9052,7 @@
    <cid>145100
    <name>603960_name
    <type>admin
-   <extra>
+   <extra>no_new
    <actions>
    <modifiers>1000:lowlight,200:extralight1,400:extralight,800:extralight
    <view>603970

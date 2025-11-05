@@ -1179,7 +1179,7 @@
 `{`$specification_Global_Peerchain_Entry_list_type`=`'admin`'`}
 `{`$specification_Global_Peerchain_Entry_list_acts`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_list_mods`=`'1000:lowlight,200:extralight1,400:extralight,800:extralight`'`}
-`{`$specification_Global_Peerchain_Entry_list_extra`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_list_extra`=`'no_new`'`}
 `{`$specification_Global_Peerchain_Entry_list_order`=`'forward`'`}
 `{`$specification_Global_Peerchain_Entry_list_binfo`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_list_column00`=`'145101`'`}
@@ -1222,7 +1222,7 @@
 `{`$specification_Global_Peerchain_Entry_view_cid`=`'145100`'`}
 `{`$specification_Global_Peerchain_Entry_view_name`=`'Global_Peerchain_Entry`'`}
 `{`$specification_Global_Peerchain_Entry_view_type`=`'admin`'`}
-`{`$specification_Global_Peerchain_Entry_view_extra`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_extra`=`'no_edit`'`}
 `{`$specification_Global_Peerchain_Entry_view_mods`=`'1000:lowlight`'`}
 `{`$specification_Global_Peerchain_Entry_view_binfo`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010 011 012`'`}

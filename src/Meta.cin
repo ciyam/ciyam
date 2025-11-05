@@ -2346,8 +2346,8 @@ specification_add -id=603850 {Global_Archive}_view view "? admin:no_edit,auto_ba
 ,Size_Avail;non_new+no_edit,Use_Custom_Size;force+new_only,Size_Limit,Standard_Size_Limit;new_only,Status_Info;non_new+no_edit,Actions"
 specification_add -id=603900 {Global_Blacklist_Entry}_list list "* admin Global_Blacklist_Entry Content_Hash"
 specification_add -id=603950 {Global_Blacklist_Entry}_view view "? admin:no_edit,auto_back Global_Blacklist_Entry @key,Content_Hash;key_name"
-specification_add -id=603960 {Global_Peerchain_Entry}_list list "* admin Global_Peerchain_Entry Chain_Id,Description,Status,Host_Name,Port_Numbers"
-specification_add -id=603970 {Global_Peerchain_Entry}_view view "? admin Global_Peerchain_Entry @key,Chain_Id;key_name,Description\
+specification_add -id=603960 {Global_Peerchain_Entry}_list list "* admin:no_new Global_Peerchain_Entry Chain_Id,Description,Status,Host_Name,Port_Numbers"
+specification_add -id=603970 {Global_Peerchain_Entry}_view view "? admin:no_edit Global_Peerchain_Entry @key,Chain_Id;key_name,Description\
 ,Peer_Type;new_edit+force,Local_Port,Host_Name,Host_Port,Num_Helpers,Extra_Value,Auto_Start,Status;no_edit,Shared_Secret;show,Actions"
 specification_add -id=603980 {Global_Repository_Entry}_list list "* admin:no_new Global_Repository_Entry File_Hash"
 specification_add -id=603990 {Global_Repository_Entry}_view view "? admin:no_edit Global_Repository_Entry @key,File_Hash;key_name,Local_Hash,Local_Public_Key,Master_Public_Key"
