@@ -7965,6 +7965,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
              make_pair( parm_1, value_1 ), make_pair( parm_2, value_2 ),
              make_pair( parm_3, value_3 ), make_pair( parm_4, value_4 ) );
       }
+      else if( command == c_cmd_ciyam_session_system_peerchain_destroy )
+      {
+         string identity( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_destroy_identity ) );
+
+         destroy_peerchain( identity, &handler );
+      }
       else if( command == c_cmd_ciyam_session_test )
       {
          string arg_1( get_parm_val( parameters, c_cmd_ciyam_session_test_arg_1 ) );

@@ -120,6 +120,13 @@ const uint64_t c_unset_trace_flags = TRACE_WAITING;
 // call returns buffer too small then the file can be stored uncompressed).
 const int c_max_file_buffer_expansion = 2;
 
+const int c_peerchain_type_hub = -2;
+const int c_peerchain_type_user = -1;
+const int c_peerchain_type_combined = 0;
+const int c_peerchain_type_local_only = 1;
+const int c_peerchain_type_backup_only = 2;
+const int c_peerchain_type_shared_only = 3;
+
 const char c_module_prefix_separator = '_';
 const char c_module_order_prefix_separator = '.';
 
@@ -5521,6 +5528,170 @@ void identity_variable_name_prefix_and_suffix(
    suffix = identity_variable_name.substr( pos - 1 );
 }
 
+void destroy_peerchain( const string& identity, progress* p_progress )
+{
+   system_ods_fs_guard ods_fs_guard;
+
+   system_ods_bulk_write ods_bulk_write;
+
+   gap_ofs->set_root_folder( c_system_peerchain_folder );
+
+   string backup_identity( get_raw_system_variable(
+    get_special_var_name( e_special_var_blockchain_backup_identity ) ) );
+
+   if( identity == backup_identity )
+      throw runtime_error( "invalid attempt to destroy system backup identity" );
+
+   string peer_hub_identity( get_raw_system_variable(
+    get_special_var_name( e_special_var_blockchain_peer_hub_identity ) ) );
+
+   if( identity == peer_hub_identity )
+      throw runtime_error( "invalid attempt to destroy system peer hub identity" );
+
+   if( !gap_ofs->has_file( identity ) )
+      throw runtime_error( "invalid attempt to destroy unknown peerchain '" + identity + "'" );
+
+   if( has_system_variable( identity )
+    || has_system_variable( "~" + identity )
+    || any_session_has_blockchain( identity )
+    || has_registered_listener_id( identity ) )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Peerchain '" + identity + "' is currently in use." );
+
+   stringstream sio_data;
+
+   gap_ofs->get_file( identity, &sio_data );
+
+   sio_reader reader( sio_data );
+
+   string auto_start( reader.read_attribute( c_peerchain_attribute_auto_start ) );
+   string description( reader.read_attribute( c_peerchain_attribute_description ) );
+   string extra_value( reader.read_opt_attribute( c_peerchain_attribute_extra_value ) );
+   string host_name( reader.read_attribute( c_peerchain_attribute_host_name ) );
+   string host_port( reader.read_attribute( c_peerchain_attribute_host_port ) );
+   string local_port( reader.read_attribute( c_peerchain_attribute_local_port ) );
+   string num_helpers( reader.read_attribute( c_peerchain_attribute_num_helpers ) );
+   string peer_type( reader.read_attribute( c_peerchain_attribute_peer_type ) );
+   string shared_secret( reader.read_attribute( c_peerchain_attribute_shared_secret ) );
+
+   gap_ofs->remove_file( identity );
+
+   int type = from_string< int >( peer_type );
+
+   bool is_backup_type = false;
+
+   string reversed( identity );
+   reverse( reversed.begin( ), reversed.end( ) );
+
+   bool has_reversed = false;
+
+   if( ( type == c_peerchain_type_combined )
+    || ( type == c_peerchain_type_local_only ) )
+      has_reversed = true;
+
+   if( ( type == c_peerchain_type_combined )
+    || ( type == c_peerchain_type_backup_only ) )
+   {
+      is_backup_type = true;
+
+      string extra_identity( get_extra_identity_variable(
+       get_special_var_name( e_special_var_blockchain_backup_identity ), extra_value ) );
+
+      string hub_hash_variable;
+
+      if( auto_start == c_true_value )
+         hub_hash_variable = "@" + extra_identity;
+      else
+         hub_hash_variable = get_special_var_name( e_special_var_hub ) + '_' + identity;
+
+      if( has_system_variable( hub_hash_variable ) )
+      {
+         string all_tags( get_hash_tags( get_raw_system_variable( hub_hash_variable ) ) );
+
+         if( !all_tags.empty( ) )
+         {
+            vector< string > tags;
+
+            split( all_tags, tags, '\n' );
+
+            string hub_tags_prefix;
+
+            for( size_t i = 0; i < tags.size( ); i++ )
+            {
+               string next_tag( tags[ i ] );
+
+               string::size_type pos = next_tag.find( c_genesis_suffix );
+
+               if( pos != string::npos )
+               {
+                  next_tag.erase( pos );
+
+                  hub_tags_prefix = next_tag;
+
+                  break;
+               }
+            }
+
+            if( !hub_tags_prefix.empty( ) )
+            {
+               delete_files_for_tags( hub_tags_prefix + ".*", p_progress );
+
+               string hub_identity( hub_tags_prefix );
+
+               replace( hub_identity, c_bc_prefix, "" );
+
+               set_system_variable( "#" + hub_identity, "" );
+               set_system_variable( "%" + hub_identity, "" );
+            }
+         }
+
+         set_system_variable( ">" + hub_hash_variable, "" );
+      }
+   }
+
+   set_system_variable( "#" + identity, "" );
+   set_system_variable( "%" + identity, "" );
+
+   set_system_variable( ">@" + identity, "" );
+
+   set_system_variable( get_special_var_name(
+    e_special_var_auto ) + '_' + identity, "" );
+
+   set_system_variable( ">" + get_special_var_name(
+    e_special_var_hub ) + '_' + identity, "" );
+
+   set_system_variable( ">" + get_special_var_name(
+    e_special_var_secret_hash ) + '_' + identity, "" );
+
+   set_system_variable( get_special_var_name(
+    e_special_var_export_needed ) + '_' + identity, "" );
+
+   if( has_files_area_archive( identity ) )
+   {
+      remove_files_area_archive( identity, true, true );
+
+      if( has_reversed && has_files_area_archive( reversed ) )
+      {
+         set_system_variable( "#" + reversed, "" );
+         set_system_variable( "%" + reversed, "" );
+
+         remove_files_area_archive( reversed, true, true );
+      }
+
+      if( is_backup_type )
+      {
+         date_time dtm( date_time::local( ) );
+
+         remove_all_repository_entries( identity, &dtm, p_progress );
+      }
+   }
+
+   if( has_reversed )
+      delete_files_area_files_for_pat( c_bc_prefix + reversed + ".*" );
+
+   delete_files_area_files_for_pat( c_bc_prefix + identity + ".*" );
+}
+
 string get_peerchain_info( const string& identity, bool* p_is_listener, string* p_shared_secret )
 {
    system_ods_fs_guard ods_fs_guard;
@@ -5548,21 +5719,20 @@ string get_peerchain_info( const string& identity, bool* p_is_listener, string* 
       if( is_reversed || ( identity == peerchains[ i ] ) )
       {
          stringstream sio_data;
-         auto_ptr< sio_reader > ap_sio_reader;
 
          gap_ofs->get_file( !is_reversed ? identity : reversed, &sio_data );
 
-         ap_sio_reader.reset( new sio_reader( sio_data ) );
+         sio_reader reader( sio_data );
 
-         string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
-         string description( ap_sio_reader->read_attribute( c_peerchain_attribute_description ) );
-         string extra_value( ap_sio_reader->read_opt_attribute( c_peerchain_attribute_extra_value ) );
-         string host_name( ap_sio_reader->read_attribute( c_peerchain_attribute_host_name ) );
-         string host_port( ap_sio_reader->read_attribute( c_peerchain_attribute_host_port ) );
-         string local_port( ap_sio_reader->read_attribute( c_peerchain_attribute_local_port ) );
-         string num_helpers( ap_sio_reader->read_attribute( c_peerchain_attribute_num_helpers ) );
-         string peer_type( ap_sio_reader->read_attribute( c_peerchain_attribute_peer_type ) );
-         string shared_secret( ap_sio_reader->read_attribute( c_peerchain_attribute_shared_secret ) );
+         string auto_start( reader.read_attribute( c_peerchain_attribute_auto_start ) );
+         string description( reader.read_attribute( c_peerchain_attribute_description ) );
+         string extra_value( reader.read_opt_attribute( c_peerchain_attribute_extra_value ) );
+         string host_name( reader.read_attribute( c_peerchain_attribute_host_name ) );
+         string host_port( reader.read_attribute( c_peerchain_attribute_host_port ) );
+         string local_port( reader.read_attribute( c_peerchain_attribute_local_port ) );
+         string num_helpers( reader.read_attribute( c_peerchain_attribute_num_helpers ) );
+         string peer_type( reader.read_attribute( c_peerchain_attribute_peer_type ) );
+         string shared_secret( reader.read_attribute( c_peerchain_attribute_shared_secret ) );
 
          if( p_shared_secret )
             *p_shared_secret = shared_secret;
@@ -5613,20 +5783,20 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
       string identity( peerchains[ i ] );
 
       stringstream sio_data;
-      auto_ptr< sio_reader > ap_sio_reader;
 
       gap_ofs->get_file( identity, &sio_data );
-      ap_sio_reader.reset( new sio_reader( sio_data ) );
 
-      string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
-      string description( ap_sio_reader->read_attribute( c_peerchain_attribute_description ) );
-      string extra_value( ap_sio_reader->read_opt_attribute( c_peerchain_attribute_extra_value ) );
-      string host_name( ap_sio_reader->read_attribute( c_peerchain_attribute_host_name ) );
-      string host_port( ap_sio_reader->read_attribute( c_peerchain_attribute_host_port ) );
-      string local_port( ap_sio_reader->read_attribute( c_peerchain_attribute_local_port ) );
-      string num_helpers( ap_sio_reader->read_attribute( c_peerchain_attribute_num_helpers ) );
-      string peer_type( ap_sio_reader->read_attribute( c_peerchain_attribute_peer_type ) );
-      string shared_secret( ap_sio_reader->read_attribute( c_peerchain_attribute_shared_secret ) );
+      sio_reader reader( sio_data );
+
+      string auto_start( reader.read_attribute( c_peerchain_attribute_auto_start ) );
+      string description( reader.read_attribute( c_peerchain_attribute_description ) );
+      string extra_value( reader.read_opt_attribute( c_peerchain_attribute_extra_value ) );
+      string host_name( reader.read_attribute( c_peerchain_attribute_host_name ) );
+      string host_port( reader.read_attribute( c_peerchain_attribute_host_port ) );
+      string local_port( reader.read_attribute( c_peerchain_attribute_local_port ) );
+      string num_helpers( reader.read_attribute( c_peerchain_attribute_num_helpers ) );
+      string peer_type( reader.read_attribute( c_peerchain_attribute_peer_type ) );
+      string shared_secret( reader.read_attribute( c_peerchain_attribute_shared_secret ) );
 
       if( auto_start_only && ( host_name == c_dummy_host_name ) )
          continue;
@@ -5677,20 +5847,20 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
       string identity( peerchains[ i ] );
 
       stringstream sio_data;
-      auto_ptr< sio_reader > ap_sio_reader;
 
       gap_ofs->get_file( identity, &sio_data );
-      ap_sio_reader.reset( new sio_reader( sio_data ) );
 
-      string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
-      string description( ap_sio_reader->read_attribute( c_peerchain_attribute_description ) );
-      string extra_value( ap_sio_reader->read_opt_attribute( c_peerchain_attribute_extra_value ) );
-      string host_name( ap_sio_reader->read_attribute( c_peerchain_attribute_host_name ) );
-      string host_port( ap_sio_reader->read_attribute( c_peerchain_attribute_host_port ) );
-      string local_port( ap_sio_reader->read_attribute( c_peerchain_attribute_local_port ) );
-      string num_helpers( ap_sio_reader->read_attribute( c_peerchain_attribute_num_helpers ) );
-      string peer_type( ap_sio_reader->read_attribute( c_peerchain_attribute_peer_type ) );
-      string shared_secret( ap_sio_reader->read_attribute( c_peerchain_attribute_shared_secret ) );
+      sio_reader reader( sio_data );
+
+      string auto_start( reader.read_attribute( c_peerchain_attribute_auto_start ) );
+      string description( reader.read_attribute( c_peerchain_attribute_description ) );
+      string extra_value( reader.read_opt_attribute( c_peerchain_attribute_extra_value ) );
+      string host_name( reader.read_attribute( c_peerchain_attribute_host_name ) );
+      string host_port( reader.read_attribute( c_peerchain_attribute_host_port ) );
+      string local_port( reader.read_attribute( c_peerchain_attribute_local_port ) );
+      string num_helpers( reader.read_attribute( c_peerchain_attribute_num_helpers ) );
+      string peer_type( reader.read_attribute( c_peerchain_attribute_peer_type ) );
+      string shared_secret( reader.read_attribute( c_peerchain_attribute_shared_secret ) );
 
       int port = atoi( local_port.c_str( ) );
 
@@ -5701,10 +5871,11 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
       {
          string suffix;
 
-         if( ( type == 0 ) || ( type == 1 ) )
+         if( ( type == c_peerchain_type_combined ) || ( type == c_peerchain_type_local_only ) )
             suffix = '!';
 
-         if( ( type == 1 ) && ( identity == get_system_variable( blockchain_backup_identity_name ) ) )
+         if( ( type == c_peerchain_type_local_only )
+          && ( identity == get_system_variable( blockchain_backup_identity_name ) ) )
          {
             for( size_t i = 1; i <= c_max_extras; i++ )
             {
@@ -5716,7 +5887,7 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
                peerchain_listeners.insert( make_pair( port, next_extra + suffix ) );
             }
          }
-         else if( ( type == -2 ) && ( identity == get_system_variable( blockchain_peer_hub_identity_name ) ) )
+         else if( ( type == c_peerchain_type_hub ) && ( identity == get_system_variable( blockchain_peer_hub_identity_name ) ) )
          {
             size_t num_listeners = peerchain_listeners.size( );
 

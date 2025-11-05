@@ -270,6 +270,8 @@ std::string get_identity_variable_extra(
 void CIYAM_BASE_DECL_SPEC identity_variable_name_prefix_and_suffix(
  const std::string& identity_variable_name, std::string& prefix, std::string& suffix );
 
+void CIYAM_BASE_DECL_SPEC destroy_peerchain( const std::string& identity, progress* p_progress = 0 );
+
 std::string CIYAM_BASE_DECL_SPEC get_peerchain_info(
  const std::string& identity, bool* p_is_listener = 0, std::string* p_shared_secret = 0 );
 

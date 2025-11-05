@@ -19,12 +19,11 @@ IDENTITY=$1
 ;
 REVERSED=*!reverse?$IDENTITY
 ;
-PEER_HUB=
-;
 .system_variable @blockchain_peer_hub_identity
 @ifeq "$IDENTITY" "$OUTPUT"
-PEER_HUB=1
-@endif
+;FUTURE This should be a server string.
+#Error: Invalid attempt to remove system peer hub '$IDENTITY'.
+@else
 ;
 .system_variable @peer_port
 PEER_PORT=$OUTPUT
@@ -32,36 +31,12 @@ PEER_PORT=$OUTPUT
 #Error: Found empty '@peer_port' system variable value.
 @else
 ;
-@ifdef $PEER_HUB
-.peer_listen -remove $PEER_PORT $IDENTITY
-@else
 .peer_listen -remove $PEER_PORT $IDENTITY,$REVERSED
-@endif
 ;
 @ifndef $ERROR
-.storage_init Meta
-.pd admin @now Meta Global_Peerchain_Entry $IDENTITY
-.storage_term
+.system_peerchain_destroy $IDENTITY
 ;
 @ifndef $ERROR
-.system_variable @files_area_dir
-FILES_AREA_DIR=$OUTPUT
-;
-.file_kill -p=bc.$IDENTITY.*
-.file_archives -path_only $IDENTITY
-@ifdef $OUTPUT
-.file_archive -destroy $IDENTITY
-~rmdir $FILES_AREA_DIR/$IDENTITY
-@endif
-;
-@ifndef $PEER_HUB
-.file_kill -p=bc.$REVERSED.*
-.file_archives -path_only $REVERSED
-@ifdef $OUTPUT
-.file_archive -destroy $REVERSED
-~rmdir $FILES_AREA_DIR/$REVERSED
-@endif
-;
 .identity -raw
 .=crypto_hash $IDENTITY$REVERSED$OUTPUT
 OBFUSCATED_IDENTITY=@substr:0,9:$OUTPUT
