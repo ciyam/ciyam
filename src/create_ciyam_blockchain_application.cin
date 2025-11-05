@@ -41,7 +41,7 @@ MODEL_KEY=$OUTPUT
 ; to prevent clearing the "Meta_Model_<key>" system
 ; variable in the "Check Install" function (to keep
 ; the Model UI refreshing during the installation).
-system_variable "@Meta_Model_$MODEL_KEY" 1
+.system_variable "@Meta_Model_$MODEL_KEY" 1
 ;
 .pc $CIYAM_UID @now 100 136100 " " "136101=Standard,136107=Standard,302810=Standard,302800=$MODEL_KEY"
 @ifdef $ERROR
@@ -806,7 +806,7 @@ CAN_MAINTAIN_TOPICS_AND_POSTS_KEY=$OUTPUT
 ;
 @:END
 @ifdef $MODEL_KEY
-system_variable "Meta_Model_$MODEL_KEY" ""
-system_variable "@Meta_Model_$MODEL_KEY" ""
+.system_variable "Meta_Model_$MODEL_KEY" ""
+.system_variable "@Meta_Model_$MODEL_KEY" ""
 @endif
 .quit
