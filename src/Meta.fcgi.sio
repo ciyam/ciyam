@@ -3683,7 +3683,7 @@
      <ftype>int
      <extra>range=0..65535
      <mandatory>true
-     <modifiers>2000:relegate,8000:protect
+     <modifiers>8000:protect
     </field>
     <field/>
      <name>field_global_peerchain_entry_host_name
@@ -3691,7 +3691,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>true
-     <modifiers>4000:relegate,8000:protect
+     <modifiers>4000:relegate,2000:relegate,8000:protect
     </field>
     <field/>
      <name>field_global_peerchain_entry_host_port
@@ -3699,7 +3699,7 @@
      <ftype>int
      <extra>range=0..65535
      <mandatory>true
-     <modifiers>4000:relegate,8000:protect
+     <modifiers>4000:relegate,2000:relegate,8000:protect
     </field>
     <field/>
      <name>field_global_peerchain_entry_num_helpers
@@ -9052,7 +9052,7 @@
    <cid>145100
    <name>603960_name
    <type>admin
-   <extra>no_new
+   <extra>no_new,no_erase
    <actions>
    <modifiers>1000:lowlight,200:extralight1,400:extralight,800:extralight
    <view>603970

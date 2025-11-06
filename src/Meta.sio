@@ -5279,6 +5279,10 @@
         <affect>relegate;view
        </modifier>
        <modifier/>
+        <id>145303
+        <affect>relegate;view
+       </modifier>
+       <modifier/>
         <id>145307
         <affect>protect
        </modifier>
@@ -5308,6 +5312,10 @@
         <affect>relegate
        </modifier>
        <modifier/>
+        <id>145303
+        <affect>relegate
+       </modifier>
+       <modifier/>
         <id>145307
         <affect>protect
        </modifier>
@@ -5328,10 +5336,6 @@
       <indexes/>
       </indexes>
       <modifiers/>
-       <modifier/>
-        <id>145303
-        <affect>relegate
-       </modifier>
        <modifier/>
         <id>145307
         <affect>protect
@@ -32720,7 +32724,7 @@
     <data/>
      <name>*
      <type>admin
-     <extra>no_new
+     <extra>no_new,no_erase
      <class_id>145100
      <ordering>forward
      <field_info>145101

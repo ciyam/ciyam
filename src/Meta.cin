@@ -929,7 +929,7 @@ field_add -id=145113 Global_Peerchain_Entry Shared_Secret str200 opt -x=encrypte
 modifier_add -id=145300 Global_Peerchain_Entry Is_Halted @class:lowlight
 modifier_add -id=145301 Global_Peerchain_Entry Is_Local_Only Host_Name:relegate;view,Host_Port:relegate,Num_Helpers:relegate,Extra_Value:relegate,Shared_Secret:relegate
 modifier_add -id=145302 Global_Peerchain_Entry Is_Backup_Only Status:protect
-modifier_add -id=145303 Global_Peerchain_Entry Is_Hub Local_Port:relegate,Num_Helpers:relegate,Extra_Value:relegate,Shared_Secret:relegate
+modifier_add -id=145303 Global_Peerchain_Entry Is_Hub Host_Name:relegate;view,Host_Port:relegate,Num_Helpers:relegate,Extra_Value:relegate,Shared_Secret:relegate
 modifier_add -id=145304 Global_Peerchain_Entry Is_Connected @class:extralight1;list,Status:extralight1;view
 modifier_add -id=145305 Global_Peerchain_Entry Is_Connecting @class:extralight;list,Status:extralight;view
 modifier_add -id=145306 Global_Peerchain_Entry Is_Disconnecting @class:extralight;list,Status:extralight;view
@@ -2346,7 +2346,7 @@ specification_add -id=603850 {Global_Archive}_view view "? admin:no_edit,auto_ba
 ,Size_Avail;non_new+no_edit,Use_Custom_Size;force+new_only,Size_Limit,Standard_Size_Limit;new_only,Status_Info;non_new+no_edit,Actions"
 specification_add -id=603900 {Global_Blacklist_Entry}_list list "* admin Global_Blacklist_Entry Content_Hash"
 specification_add -id=603950 {Global_Blacklist_Entry}_view view "? admin:no_edit,auto_back Global_Blacklist_Entry @key,Content_Hash;key_name"
-specification_add -id=603960 {Global_Peerchain_Entry}_list list "* admin:no_new Global_Peerchain_Entry Chain_Id,Description,Status,Host_Name,Port_Numbers"
+specification_add -id=603960 {Global_Peerchain_Entry}_list list "* admin:no_new,no_erase Global_Peerchain_Entry Chain_Id,Description,Status,Host_Name,Port_Numbers"
 specification_add -id=603970 {Global_Peerchain_Entry}_view view "? admin:no_edit Global_Peerchain_Entry @key,Chain_Id;key_name,Description\
 ,Peer_Type;new_edit+force,Local_Port,Host_Name,Host_Port,Num_Helpers,Extra_Value,Auto_Start,Status;no_edit,Shared_Secret;show,Actions"
 specification_add -id=603980 {Global_Repository_Entry}_list list "* admin:no_new Global_Repository_Entry File_Hash"

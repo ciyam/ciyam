@@ -1506,6 +1506,8 @@ void Meta_Global_Peerchain_Entry::impl::finalise_fetch( bool skip_set_original )
 void Meta_Global_Peerchain_Entry::impl::at_create( )
 {
    // [<start at_create>]
+//nyi
+   throw runtime_error( "create is not supported for this type" );
    // [<finish at_create>]
 }
 
@@ -1530,13 +1532,6 @@ void Meta_Global_Peerchain_Entry::impl::to_store( bool is_create, bool is_intern
    ( void )state;
 
    // [<start to_store>]
-//nyi
-   if( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Hub )
-      get_obj( ).Num_Helpers( 0 );
-
-   if( get_obj( ).Host_Name( ).empty( )
-    || ( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Local_Only ) )
-      get_obj( ).Host_Name( c_local_host );
    // [<finish to_store>]
 }
 
@@ -1549,12 +1544,6 @@ void Meta_Global_Peerchain_Entry::impl::for_store( bool is_create, bool is_inter
    ( void )state;
 
    // [<start for_store>]
-//nyi
-   if( ( get_obj( ).Host_Name( ) == c_local_host )
-    && ( get_obj( ).Peer_Type( ) == c_enum_peerchain_peer_type_Hosted ) )
-      throw runtime_error( "Invalid Host Name '" + to_string( c_local_host ) + "' for Hosted Peerchain Entry" );
-
-   set_session_variable( get_special_var_name( e_special_var_skip_persistence ), c_true_value );
    // [<finish for_store>]
 }
 
