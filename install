@@ -58,6 +58,12 @@ if [ -d src ]; then
  fi
 fi
 
+is_git_env=
+
+if [ -d .git ]; then
+ is_git_env=1
+fi
+
 if [ "$WEBDIR" = "" ]; then
  if [ -d /var/www/html ]; then
   WEBDIR=/var/www/html
@@ -313,6 +319,8 @@ if [ "$has_system" = "" ]; then
 
  if [ "$is_dev_env" = "1" ]; then
   sed -i "s/# <protocol_handler>file:/ <protocol_handler>apt:/g" $CONFIG_PATH/ciyam_server.sio
+ elif [ "$is_git_env" = "1" ]; then
+  sed -i "s/# <protocol_handler>file:\/\// <protocol_handler>sftp:\/\/@user@localhost:2222/g" $CONFIG_PATH/ciyam_server.sio
  fi
 
  if [ ! "$CIYAM_APP_MOD" = "Meta" ]; then
