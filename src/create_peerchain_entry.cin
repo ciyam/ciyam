@@ -77,21 +77,9 @@ REVERSED=
 REVERSED=*!reverse?$IDENTITY
 @endif
 ;
-.system_variable @peer_port
-PEER_PORT=$OUTPUT
-@ifeq "$PEER_PORT" ""
-#Error: Found empty '@peer_port' system variable value.
-@else
-@ifdef $PEERCHAIN_HUB
-PEER_PORT=0
-@endif
-.storage_init Meta
-;
-.pc sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=$AUTO_START,Description=$DESCRIPTION,Peer_Type=$PEER_TYPE\
-,Host_Name=$HOST_NAME,Host_Port=$HOST_PORT,Local_Port=$PEER_PORT,Num_Helpers=$NUM_HELPERS,Extra_Value=$EXTRA_VALUE,Shared_Secret=$SHARED_SECRET"
+.system_peerchain_create -num=$NUM_HELPERS -auto=$AUTO_START -type=$PEER_TYPE -extra=$EXTRA_VALUE -secret=$SHARED_SECRET $IDENTITY $HOST_NAME-$HOST_PORT "$DESCRIPTION"
 ;
 @ifndef $ERROR
-.storage_term
 ;
 @ifdef $SHARED_SECRET
 .decrypt $SHARED_SECRET

@@ -5528,6 +5528,68 @@ void identity_variable_name_prefix_and_suffix(
    suffix = identity_variable_name.substr( pos - 1 );
 }
 
+void create_peerchain(
+ const string& identity, const string& host_and_port, const string& description,
+ const string& extra_value, const string& shared_secret, bool auto_start, size_t num_helpers, int peer_type )
+{
+   system_ods_fs_guard ods_fs_guard;
+
+   system_ods_bulk_write ods_bulk_write;
+
+   gap_ofs->set_root_folder( c_system_peerchain_folder );
+
+   if( gap_ofs->has_file( identity ) )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Peerchain '" + identity + "' already exists." );
+
+   int port = 0;
+
+   string host_name;
+
+   parse_host_and_or_port( host_and_port, host_name, port );
+
+   string peer_port( get_raw_system_variable( get_special_var_name( e_special_var_peer_port ) ) );
+
+   if( peer_port.empty( ) )
+      throw runtime_error( "unexpect missing 'peer_port' system variable" );
+
+   if( ( peer_type == c_peerchain_type_hub )
+    || ( peer_type == c_peerchain_type_local_only ) )
+   {
+      port = 0;
+      num_helpers = 0;
+   }
+
+   if( host_name.empty( )
+    || ( peer_type == c_peerchain_type_hub )
+    || ( peer_type == c_peerchain_type_local_only ) )
+      host_name = c_local_host;
+
+   if( ( host_name == c_local_host )
+    && ( peer_type != c_peerchain_type_hub )
+    && ( peer_type != c_peerchain_type_local_only ) )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Peerchain '" + identity + "' host name '" + host_name + "' is invalid." );
+
+   stringstream sio_data;
+
+   sio_writer writer( sio_data );
+
+   writer.write_attribute( c_peerchain_attribute_auto_start, to_string( auto_start ) );
+   writer.write_attribute( c_peerchain_attribute_description, description );
+   writer.write_attribute( c_peerchain_attribute_extra_value, extra_value );
+   writer.write_attribute( c_peerchain_attribute_host_name, host_name );
+   writer.write_attribute( c_peerchain_attribute_host_port, to_string( port ) );
+   writer.write_attribute( c_peerchain_attribute_local_port, peer_port );
+   writer.write_attribute( c_peerchain_attribute_num_helpers, to_string( num_helpers ) );
+   writer.write_attribute( c_peerchain_attribute_peer_type, to_string( peer_type ) );
+   writer.write_attribute( c_peerchain_attribute_shared_secret, shared_secret );
+
+   writer.finish_sections( );
+
+   gap_ofs->store_file( identity, 0, &sio_data );
+}
+
 void destroy_peerchain( const string& identity, progress* p_progress )
 {
    system_ods_fs_guard ods_fs_guard;

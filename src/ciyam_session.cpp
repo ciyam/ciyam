@@ -7965,6 +7965,33 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
              make_pair( parm_1, value_1 ), make_pair( parm_2, value_2 ),
              make_pair( parm_3, value_3 ), make_pair( parm_4, value_4 ) );
       }
+      else if( command == c_cmd_ciyam_session_system_peerchain_create )
+      {
+         string num_extra( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_create_num_extra ) );
+         string auto_start( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_create_auto_start ) );
+         string peer_type( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_create_peer_type ) );
+         string extra_value( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_create_extra_value ) );
+         string shared_secret( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_create_shared_secret ) );
+         string identity( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_create_identity ) );
+         string host_and_port( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_create_host_and_port ) );
+         string description( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_create_description ) );
+
+         size_t num = from_string< size_t >( num_extra );
+
+         if( ( num > 11 ) || ( num_extra != to_string( num ) ) )
+            throw runtime_error( "invalid value for 'num_extra' (must be 0..11)" );
+
+         if( ( auto_start != c_true_value ) && ( auto_start != c_false_value ) )
+            throw runtime_error( "invalid value for 'auto_start' (must be 0 or 1)" );
+
+         int type_val = from_string< int >( peer_type );
+
+         if( ( type_val > 3 ) || ( type_val < -2 ) || ( peer_type != to_string( type_val ) ) )
+            throw runtime_error( "invalid value for 'peer_type' (must be -2..3)" );
+
+         create_peerchain( identity, host_and_port, description,
+          extra_value, shared_secret, from_string< bool >( auto_start ), num, type_val );
+      }
       else if( command == c_cmd_ciyam_session_system_peerchain_destroy )
       {
          string identity( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_destroy_identity ) );

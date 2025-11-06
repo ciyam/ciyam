@@ -33,14 +33,13 @@ PEER_HUB=$OUTPUT
 @endif
 ;
 @ifndef $ERROR
-.storage_init Meta
-.pc sys @now Meta Global_Peerchain_Entry $BACKUP "Auto_Start=1,Description=Home,Peer_Type=1,Local_Port=$PEER_PORT"
-.pc sys @now Meta Global_Peerchain_Entry $PEER_HUB "Auto_Start=1,Description=Home Hub,Peer_Type=-2,Local_Port=$PEER_PORT"
+;
+.system_peerchain_create -auto=1 -type=1 $BACKUP $PEER_PORT "Home"
+.system_peerchain_create -auto=1 -type=-2 $PEER_HUB $PEER_PORT "Home Hub"
 ;
 @ifndef $ERROR
 #Created global peerchain entries for identities '$PEER_HUB' and '$BACKUP' (plus '$SHARED').
 @endif
-.storage_term
 @endif
 @endif
 @endif
