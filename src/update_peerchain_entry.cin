@@ -36,13 +36,9 @@ HOST_PORT=$5
 NUM_HELPERS=$6
 SHARED_SECRET=$7
 ;
-.storage_init Meta
-;
-.pu sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=$AUTO_START,Description=$DESCRIPTION\
-,Host_Name=$HOST_NAME,Host_Port=$HOST_PORT,Num_Helpers=$NUM_HELPERS,Shared_Secret=$SHARED_SECRET"
+.system_peerchain_update -num=$NUM_HELPERS -auto=$AUTO_START -secret=$SHARED_SECRET -host_info=$HOST_NAME-$HOST_PORT $IDENTITY "$DESCRIPTION"
 ;
 @ifndef $ERROR
 #Updated global peerchain entry for identity '$IDENTITY'.
 @endif
-.storage_term
 @endif

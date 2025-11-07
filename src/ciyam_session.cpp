@@ -228,6 +228,15 @@ void check_key_has_suffix( const string& key, const string& suffix )
    }
 }
 
+void check_non_blockchain_or_script( const string& cmd )
+{
+   if( has_system_variable( get_special_var_name( e_special_var_blockchain_backup_identity ) ) )
+   {
+      if( !has_session_variable( get_special_var_name( e_special_var_args_file ) ) )
+         throw runtime_error( "command '" + cmd + "' can only be used via script execution" );
+   }
+}
+
 void check_not_possible_protocol_response( const string& value )
 {
    string response( c_response_okay );
@@ -7976,6 +7985,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string host_and_port( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_create_host_and_port ) );
          string description( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_create_description ) );
 
+         check_non_blockchain_or_script( command );
+
          size_t num = from_string< size_t >( num_extra );
 
          if( ( num > 11 ) || ( num_extra != to_string( num ) ) )
@@ -7992,9 +8003,66 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          create_peerchain( identity, host_and_port, description,
           extra_value, shared_secret, from_string< bool >( auto_start ), num, type_val );
       }
+      else if( command == c_cmd_ciyam_session_system_peerchain_update )
+      {
+         string num_extra( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_update_num_extra ) );
+         string auto_start( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_update_auto_start ) );
+         string shared_secret( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_update_shared_secret ) );
+         string host_and_port( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_update_host_and_port ) );
+         string identity( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_update_identity ) );
+         string description( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_update_description ) );
+
+         check_non_blockchain_or_script( command );
+
+         size_t num = 0;
+         bool has_num = false;
+
+         if( !num_extra.empty( ) )
+         {
+            has_num = true;
+
+            num = from_string< size_t >( num_extra );
+
+            if( ( num > 11 ) || ( num_extra != to_string( num ) ) )
+               throw runtime_error( "invalid value for 'num_extra' (must be 0..11)" );
+         }
+
+         bool auto_val = false;
+         bool has_auto = false;
+
+         if( !auto_start.empty( ) )
+         {
+            has_auto = true;
+
+            if( ( auto_start != c_true_value ) && ( auto_start != c_false_value ) )
+               throw runtime_error( "invalid value for 'auto_start' (must be 0 or 1)" );
+
+            auto_val = from_string< bool >( auto_start );
+         }
+
+         string* p_description = 0;
+
+         if( !description.empty( ) )
+            p_description = &description;
+
+         string* p_host_and_port = 0;
+
+         if( !host_and_port.empty( ) )
+            p_host_and_port = &host_and_port;
+
+         string* p_shared_secret = 0;
+
+         if( !shared_secret.empty( ) )
+            p_shared_secret = &shared_secret;
+
+         update_peerchain( identity, p_host_and_port, p_description,
+          p_shared_secret, ( has_auto ? &auto_val : 0 ), ( has_num ? &num : 0 ) );
+      }
       else if( command == c_cmd_ciyam_session_system_peerchain_destroy )
       {
          string identity( get_parm_val( parameters, c_cmd_ciyam_session_system_peerchain_destroy_identity ) );
+
+         check_non_blockchain_or_script( command );
 
          destroy_peerchain( identity, &handler );
       }

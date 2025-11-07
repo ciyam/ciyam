@@ -5590,6 +5590,102 @@ void create_peerchain(
    gap_ofs->store_file( identity, 0, &sio_data );
 }
 
+void update_peerchain( const string& identity,
+ const string* p_host_and_port, const string* p_description,
+ const string* p_shared_secret, bool* p_auto_start, size_t* p_num_helpers )
+{
+   system_ods_fs_guard ods_fs_guard;
+
+   system_ods_bulk_write ods_bulk_write;
+
+   gap_ofs->set_root_folder( c_system_peerchain_folder );
+
+   if( !gap_ofs->has_file( identity ) )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Peerchain '" + identity + "' was not found." );
+
+   stringstream sio_data;
+
+   gap_ofs->get_file( identity, &sio_data );
+
+   sio_reader reader( sio_data );
+
+   string old_auto_start( reader.read_attribute( c_peerchain_attribute_auto_start ) );
+   string old_description( reader.read_attribute( c_peerchain_attribute_description ) );
+   string old_extra_value( reader.read_opt_attribute( c_peerchain_attribute_extra_value ) );
+   string old_host_name( reader.read_attribute( c_peerchain_attribute_host_name ) );
+   string old_host_port( reader.read_attribute( c_peerchain_attribute_host_port ) );
+   string old_local_port( reader.read_attribute( c_peerchain_attribute_local_port ) );
+   string old_num_helpers( reader.read_attribute( c_peerchain_attribute_num_helpers ) );
+   string old_peer_type( reader.read_attribute( c_peerchain_attribute_peer_type ) );
+   string old_shared_secret( reader.read_attribute( c_peerchain_attribute_shared_secret ) );
+
+   int peer_type = from_string< int >( old_peer_type );
+
+   string new_description( old_description );
+
+   if( p_description && !p_description->empty( ) )
+      new_description = *p_description;
+
+   string new_host_name( old_host_name );
+   string new_host_port( old_host_port );
+
+   if( p_host_and_port
+    && ( ( peer_type != c_peerchain_type_hub )
+    && ( peer_type != c_peerchain_type_local_only ) ) )
+   {
+      int port = 0;
+
+      parse_host_and_or_port( *p_host_and_port, new_host_name, port );
+
+      new_host_port = to_string( port );
+   }
+
+   if( new_host_name.empty( )
+    || ( ( new_host_name == c_local_host )
+    && ( peer_type != c_peerchain_type_hub )
+    && ( peer_type != c_peerchain_type_local_only ) ) )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Peerchain '" + identity + "' host name '" + new_host_name + "' is invalid." );
+
+   string new_shared_secret( old_shared_secret );
+
+   if( p_shared_secret )
+      new_shared_secret = *p_shared_secret;
+
+   string new_auto_start( old_auto_start );
+
+   if( p_auto_start )
+      new_auto_start = to_string( *p_auto_start );
+
+   string new_num_helpers( old_num_helpers );
+
+   if( p_num_helpers
+    && ( ( peer_type != c_peerchain_type_hub )
+    && ( peer_type != c_peerchain_type_local_only ) ) )
+      new_num_helpers = *p_num_helpers;
+
+   // NOTE: Reset the stringstream.
+   sio_data.str( "" );
+   sio_data.clear( );
+
+   sio_writer writer( sio_data );
+
+   writer.write_attribute( c_peerchain_attribute_auto_start, new_auto_start );
+   writer.write_attribute( c_peerchain_attribute_description, new_description );
+   writer.write_attribute( c_peerchain_attribute_extra_value, old_extra_value );
+   writer.write_attribute( c_peerchain_attribute_host_name, new_host_name );
+   writer.write_attribute( c_peerchain_attribute_host_port, new_host_port );
+   writer.write_attribute( c_peerchain_attribute_local_port, old_local_port );
+   writer.write_attribute( c_peerchain_attribute_num_helpers, new_num_helpers );
+   writer.write_attribute( c_peerchain_attribute_peer_type, old_peer_type );
+   writer.write_attribute( c_peerchain_attribute_shared_secret, new_shared_secret );
+
+   writer.finish_sections( );
+
+   gap_ofs->store_file( identity, 0, &sio_data );
+}
+
 void destroy_peerchain( const string& identity, progress* p_progress )
 {
    system_ods_fs_guard ods_fs_guard;
