@@ -93,19 +93,19 @@ const int c_greeting_timeout = 2500;
 
 const char* const c_unlock = "unlock";
 
-const char* const c_id_file = "../meta/identity.txt";
-const char* const c_eid_file = "../meta/encrypted.txt";
+const char* const c_id_file = "identity.txt";
+const char* const c_eid_file = "encrypted.txt";
 
-const char* const c_stop_file = "../meta/ciyam_interface.stop";
+const char* const c_stop_file = "ciyam_interface.stop";
 
-const char* const c_backup_log_file = "../meta/backup.log";
-const char* const c_restore_log_file = "../meta/restore.log";
+const char* const c_backup_log_file = "backup.log";
+const char* const c_restore_log_file = "restore.log";
 
 const char* const c_has_restored_file = ".has_restored";
 const char* const c_allow_register_file = ".allow_register";
 
-const char* const c_prepare_backup_file = "../meta/.prepare.backup";
-const char* const c_prepare_restore_file = "../meta/.prepare.restore";
+const char* const c_prepare_backup_file = ".prepare.backup";
+const char* const c_prepare_restore_file = ".prepare.restore";
 
 const char* const c_login_htms = "login.htms";
 const char* const c_backup_htms = "backup.htms";
@@ -1175,7 +1175,7 @@ void request_handler::process_request( )
       title = mod_info.title;
       module_id = mod_info.id;
 
-      if( g_id.empty( ) && file_exists( c_id_file ) )
+      if( g_id.empty( ) && file_exists( c_id_file ) && file_exists( c_id_file, true ) )
          g_id = buffer_file( c_id_file );
 
       bool is_invalid_session = false;
@@ -1860,9 +1860,11 @@ void request_handler::process_request( )
                               throw runtime_error( "unable to set/update identity information" );
                            }
 #endif
-                           if( !skip_save_encrypted && !file_exists( eid_file_name ) )
+                           if( !skip_save_encrypted
+                            && ( !file_exists( eid_file_name ) || !file_exists( eid_file_name, true ) ) )
                            {
                               ofstream outf( eid_file_name.c_str( ) );
+
                               outf << current_identity;
 
                               if( !using_anonymous )
@@ -1920,6 +1922,7 @@ void request_handler::process_request( )
                         if( !file_exists( id_file_name ) )
                         {
                            ofstream outf( id_file_name.c_str( ) );
+
                            outf << server_identity;
                         }
 
@@ -1942,7 +1945,9 @@ void request_handler::process_request( )
 
                               g_reset_identity = true;
 
-                              file_remove( eid_file_name );
+                              // NOTE: Will remove the target file if the
+                              // file name is actually a "symbolic link".
+                              file_remove( file_target( eid_file_name ) );
                            }
                         }
 
@@ -1952,11 +1957,12 @@ void request_handler::process_request( )
 
                         string encrypted_identity;
 
-                        if( file_exists( eid_file_name.c_str( ) ) )
+                        if( file_exists( eid_file_name ) && file_exists( eid_file_name, true ) )
                         {
-                           encrypted_identity = buffer_file( eid_file_name.c_str( ) );
+                           encrypted_identity = buffer_file( eid_file_name );
 
-                           if( ( server_identity != encrypted_identity ) && !file_exists( id_file_name.c_str( ) ) )
+                           if( ( server_identity != encrypted_identity )
+                            && !file_exists( id_file_name ) && !file_exists( id_file_name, true ) )
                            {
                               login_refresh = true;
 
@@ -1976,6 +1982,7 @@ void request_handler::process_request( )
                            if( !g_seed.empty( ) )
                            {
                               ofstream outf( id_file_name.c_str( ) );
+
                               outf << server_identity;
 
                               login_refresh = true;
