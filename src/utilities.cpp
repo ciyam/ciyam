@@ -30,31 +30,6 @@
 #     include <sys/stat.h>
 #     include <sys/time.h>
 #  endif
-#  ifdef _WIN32
-#     ifdef __BORLANDC__
-#        include <cio>
-#        include <dir.h>
-#        include <cfcntl>
-#     endif
-#     ifdef _MSC_VER
-#        include <io.h>
-#        include <fcntl.h>
-#        include <direct.h>
-#     endif
-#     ifndef STRICT
-#        define STRICT // Needed for "windows.h" by various Borland headers.
-#     endif
-#     define _WIN32_WINNT 0x0502 // Needed for the CreateHardLink API function and PROCESS_MEMORY_COUNTERS_EX.
-#     define NOMINMAX
-#     include <rpc.h>
-#     include <psapi.h>
-#     include <windows.h>
-#     include <sys/utime.h>
-#  endif
-#endif
-
-#ifdef _WIN32
-typedef int mode_t;
 #endif
 
 #ifdef __GNUG__
@@ -89,7 +64,6 @@ const unsigned char c_high_mask = 0xc0;
 const unsigned int c_tail_buffer_size = 1024;
 const unsigned int c_tail_maximum_lines = 10000;
 
-#ifndef _WIN32
 const int c_open_directory_perms = S_IRWXU | S_IRWXG | S_IRWXO;
 const int c_group_directory_perms = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
 const int c_standard_directory_perms = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
@@ -97,7 +71,6 @@ const int c_restricted_directory_perms = S_IRWXU | S_IRGRP | S_IXGRP;
 const int c_confidential_directory_perms = S_IRWXU;
 
 const int c_default_directory_perms = c_standard_directory_perms;
-#endif
 
 const char c_soundex_map_values[ ] = "01230120022455012623010202";
 
@@ -181,7 +154,6 @@ bool are_hex_nibbles( const char* p_str )
    return retval;
 }
 
-#ifndef _WIN32
 void uuidgen( unsigned char buf[ ] )
 {
    static int fd;
@@ -196,15 +168,10 @@ void uuidgen( unsigned char buf[ ] )
    if( read( fd, buf, c_uuid_size ) != c_uuid_size )
       throw runtime_error( "unexpected failure to create uuid" );
 }
-#endif
 
 uuid::uuid( )
 {
-#ifndef _WIN32
    uuidgen( buf );
-#else
-   ::UuidCreate( ( UUID* )&buf );
-#endif
 }
 
 uuid::uuid( const string& str )
@@ -403,7 +370,6 @@ string random_characters( size_t minimum, size_t max_extra, printable_type type 
    return retval;
 }
 
-#ifdef __GNUG__
 void msleep( unsigned long amt )
 {
    timeval t;
@@ -412,37 +378,16 @@ void msleep( unsigned long amt )
 
    ::select( 0, 0, 0, 0, &t );
 }
-#endif
-#ifdef _WIN32
-void msleep( unsigned long amt ) { ::Sleep( amt ); }
-#endif
 
 int get_pid( )
 {
-#ifndef _WIN32
    return getpid( );
-#else
-   return ::GetCurrentProcessId( );
-#endif
 }
 
 int vmem_used( )
 {
    int64_t size_kb = 0;
 
-#ifdef _WIN32
-#  define GET_PMC_USAGE( PMC_STRUCT, PMC_PARAM )\
-   PMC_STRUCT pmc; \
-   ::GetProcessMemoryInfo( ::GetCurrentProcess( ), ( PPROCESS_MEMORY_COUNTERS )&pmc, sizeof( pmc ) ); \
-   size_kb = ( pmc.PMC_PARAM / 1024 );
-
-   // NOTE: For newer versions of Windws PagefileUsage returns zero so use PrivateUsage instead.
-#  if( defined( NTDDI_WIN7 ) || defined( NTDDI_WS08 ) )
-      GET_PMC_USAGE( PROCESS_MEMORY_COUNTERS_EX, PrivateUsage )
-#  else
-      GET_PMC_USAGE( PROCESS_MEMORY_COUNTERS, PagefileUsage )
-#  endif
-#else
    ifstream inpf( "/proc/self/status" );
 
    string next;
@@ -468,30 +413,16 @@ int vmem_used( )
          break;
       }
    }
-#endif
 
    return size_kb;
 }
 
-string get_cwd( bool change_backslash_to_forwardslash )
+string get_cwd( )
 {
    char buf[ _MAX_PATH ];
 
    if( !_getcwd( buf, _MAX_PATH ) )
       throw runtime_error( "unexpected error occurred calling _getcwd" );
-
-#ifndef _WIN32
-   ( void )change_backslash_to_forwardslash;
-#else
-   if( change_backslash_to_forwardslash )
-   {
-      for( size_t i = 0; i < _MAX_PATH; i++ )
-      {
-         if( buf[ i ] == '\\' )
-            buf[ i ] = '/';
-      }
-   }
-#endif
 
    return buf;
 }
@@ -511,29 +442,18 @@ void set_cwd( const char* p_name, bool* p_rc )
 
 temp_umask::temp_umask( int um )
 {
-#ifdef _WIN32
-   ( void )um;
-#else
    oum = umask( um );
-#endif
 }
 
 temp_umask::~temp_umask( )
 {
-#ifndef _WIN32
    umask( oum );
-#endif
 }
 
 void create_dir( const char* p_name, bool* p_rc, dir_perms perms, int um )
 {
-#ifdef _WIN32
-   ( void )perms;
-   ( void )umask;
-
-   if( _mkdir( p_name ) != 0 )
-#else
    int oum = umask( um );
+
    int pval = c_default_directory_perms;
 
    switch( perms )
@@ -560,15 +480,13 @@ void create_dir( const char* p_name, bool* p_rc, dir_perms perms, int um )
    }
 
    if( _mkdir( p_name, pval ) )
-#endif
    {
       if( p_rc )
          *p_rc = false;
       else
       {
-#ifndef _WIN32
          umask( oum );
-#endif
+
          throw runtime_error( "unable to create directory '" + string( p_name ) + "'" );
       }
    }
@@ -578,9 +496,7 @@ void create_dir( const char* p_name, bool* p_rc, dir_perms perms, int um )
          *p_rc = true;
    }
 
-#ifndef _WIN32
    umask( oum );
-#endif
 }
 
 bool dir_exists( const char* p_name, bool check_link_target )
@@ -588,12 +504,6 @@ bool dir_exists( const char* p_name, bool check_link_target )
    bool rc = false;
    struct stat statbuf;
 
-#ifdef _WIN32
-   ( void )check_link_target;
-
-   if( stat( p_name, &statbuf ) == 0 && S_ISDIR( statbuf.st_mode ) )
-      rc = true;
-#else
    if( check_link_target )
    {
       if( stat( p_name, &statbuf ) == 0 && S_ISDIR( statbuf.st_mode ) )
@@ -604,7 +514,6 @@ bool dir_exists( const char* p_name, bool check_link_target )
       if( lstat( p_name, &statbuf ) == 0 && S_ISDIR( statbuf.st_mode ) )
          rc = true;
    }
-#endif
 
    return rc;
 }
@@ -646,7 +555,6 @@ bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists, bo
          }
          else
          {
-#ifndef _WIN32
             int fd = open( p_name, O_RDWR | O_CREAT, S_IREAD | S_IWRITE | S_IRGRP | S_IROTH );
 
             if( fd > 0 )
@@ -654,7 +562,6 @@ bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists, bo
                fsync( fd );
                close( fd );
             }
-#endif
          }
 
          if( file_exists( p_name ) )
@@ -670,15 +577,10 @@ bool file_exists( const char* p_name, bool check_link_target )
    int rc;
    struct stat statbuf;
 
-#ifdef _WIN32
-   ( void )check_link_target;
-   rc = stat( p_name, &statbuf );
-#else
    if( check_link_target )
       rc = stat( p_name, &statbuf );
    else
       rc = lstat( p_name, &statbuf );
-#endif
 
    return rc == 0;
 }
@@ -687,13 +589,6 @@ bool file_remove( const char* p_name )
 {
    return ::remove( p_name ) == 0;
 }
-
-#ifdef _WIN32
-bool file_remove( const wchar_t* p_name )
-{
-   return ::DeleteFileW( p_name ) != 0;
-}
-#endif
 
 bool file_rename( const char* p_old_name, const char* p_new_name )
 {
@@ -704,33 +599,6 @@ int64_t file_size( const char* p_name, unsigned char* p_hdr, size_t hdr_size )
 {
    int64_t retval;
 
-#ifdef _WIN32
-   HANDLE hFile = ::CreateFile( p_name,
-    GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0 );
-
-   if( hFile == INVALID_HANDLE_VALUE )
-      throw runtime_error( "unable to open file '" + string( p_name ) + "' for input in file_size" );
-
-   if( p_hdr && hdr_size )
-   {
-      size_t num = 0;
-
-      ::ReadFile( hFile, p_hdr, hdr_size, &num, 0 );
-
-      if( num != hdr_size )
-         memset( p_hdr, '\0', hdr_size );
-   }
-
-   LARGE_INTEGER pos, npos;
-   pos.QuadPart = INT64_C( 0 );
-   if( !::SetFilePointerEx( hFile, pos, &npos, FILE_END ) )
-   {
-      CloseHandle( hFile );
-      throw runtime_error( "unexpected SetFilePointerEx error in file_size for file '" + string( p_name ) + "'" );
-   }
-   retval = npos.QuadPart;
-   ::CloseHandle( hFile );
-#else
    if( p_hdr && hdr_size )
    {
       int fd = _open( p_name, O_RDONLY );
@@ -780,7 +648,6 @@ int64_t file_size( const char* p_name, unsigned char* p_hdr, size_t hdr_size )
          retval = statbuf.st_size;
       }
    }
-#endif
 
    return retval;
 }
@@ -842,34 +709,6 @@ string file_perms( const char* p_name )
    if( rc != 0 )
       throw runtime_error( "unable to access '" + to_string( p_name ) + "'" );
 
-#ifdef _WIN32
-   string extra;
-
-   if( statbuf.st_mode & _S_IREAD )
-      str += 'r';
-   else
-      str += '-';
-   extra += str;
-
-   if( statbuf.st_mode & _S_IWRITE )
-      str += 'w';
-   else
-      str += '-';
-   extra += '-';
-
-   if( statbuf.st_mode & S_IFDIR )
-   {
-      str += 'x';
-      extra += 'x';
-   }
-   else
-   {
-      str += '-';
-      extra += '-';
-   }
-
-   str += extra + extra;
-#else
    if( statbuf.st_mode & S_IRUSR )
       str += 'r';
    else
@@ -914,7 +753,6 @@ string file_perms( const char* p_name )
       str += 'x';
    else
       str += '-';
-#endif
 
    return str;
 }
@@ -931,27 +769,6 @@ void file_perms( const string& name, const string& rwx_perms )
    {
       char ch( rwx_perms[ i ] );
 
-#ifdef _WIN32
-      if( i % 3 == 0 )
-      {
-         if( ch == 'r' )
-            mode |= _S_IREAD;
-         else if( ch != '-' )
-            invalid = true;
-      }
-      else if( i % 3 == 1 )
-      {
-         if( ch == 'w' )
-            mode |= _S_IWRITE;
-         else if( ch != '-' )
-            invalid = true;
-      }
-      else if( i % 3 == 1 )
-      {
-         if( ch != 'x' && ch != '-' )
-            invalid = true;
-      }
-#else
       switch( i )
       {
          case 0:
@@ -1017,7 +834,6 @@ void file_perms( const string& name, const string& rwx_perms )
             invalid = true;
          break;
       }
-#endif
    }
 
    if( invalid )
@@ -1027,52 +843,63 @@ void file_perms( const string& name, const string& rwx_perms )
       throw runtime_error( "_chmod call failed for '" + name + "'" );
 }
 
-void file_link( const char* p_src, const char* p_name, const wchar_t* p_wsrc, const wchar_t* p_wname )
+void file_link( const char* p_target, const char* p_name )
 {
-   if( !p_src )
-      throw runtime_error( "unexpected null p_src in file_link" );
+   if( !p_target )
+      throw runtime_error( "unexpected null p_target in file_link" );
 
    string name;
-   string source( p_src );
+   string source( p_target );
 
    if( p_name )
       name = string( p_name );
    else
    {
       string::size_type pos = source.find_last_of( "/\\" );
+
       if( pos != string::npos )
          name = source.substr( pos + 1 );
       else
          throw runtime_error( "cannot create a link in same directory with the same name '" + name + "'" );
    }
-#ifdef _WIN32
-   // NOTE: Under Win32 create a "hard link" as "symbolic links" are only supported post Vista.
-   char buf[ 128 ];
-   bool rc;
-   if( p_wsrc )
-      rc = ::CreateHardLinkW( p_wname, p_wsrc, 0 );
-   else
-      rc = ::CreateHardLink( name.c_str( ), source.c_str( ), 0 );
 
-   if( !rc )
-   {
-      ::FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM, 0, ::GetLastError( ), 0, buf, 128, 0 );
-      throw runtime_error( buf );
-   }
-#else
-   // NOTE: Under Linux create a "symbolic link" in case source and dest are on different devices.
+   // NOTE: Always create a "symbolic link" just in case source and dest are on different devices.
    // Also when creating a "symbolic link" the full path to the source is required so if it wasn't
    // provided then assume the current working directory. If the link has become "invalid" then it
    // will fail the "access" test for file existence so this can be problematic if wanting to test
    // for existence in order to remove before re-creating.
    string::size_type pos = source.find( '/' );
+
    if( pos == string::npos )
       source = get_cwd( ) + "/" + source;
 
    if( symlink( source.c_str( ), name.c_str( ) ) != 0 )
-      throw runtime_error( "failed to create link '"
-       + name + "' to '" + source + "' (errno = " + to_string( errno ) + ")" );
-#endif
+      throw runtime_error( "failed to create link '" + name
+       + "' to '" + source + "' (errno = " + to_string( errno ) + ")" );
+}
+
+string file_target( const char* p_name )
+{
+   if( !p_name )
+      throw runtime_error( "unexpected null p_name in file_target" );
+
+   string target;
+
+   char buf[ _MAX_PATH ];
+
+   size_t length = readlink( p_name, buf, sizeof( buf ) - 1 );
+
+   // NOTE: If not a symbolic link will just return the name.
+   if( !length )
+      target = p_name;
+   else
+   {
+      buf[ length ] = 0;
+
+      target = buf;
+   }
+
+   return target;
 }
 
 void file_copy( const char* p_src, const char* p_dest, bool append )
@@ -1305,7 +1132,7 @@ string& escape( string& s, const char* p_chars,
    {
       char c = s[ i ];
 
-      if( c == esc || ( p_chars && strchr( p_chars, c ) ) )
+      if( ( c == esc ) || ( p_chars && strchr( p_chars, c ) ) )
          s.insert( i++, 1, esc_char );
       else if( p_specials )
       {
@@ -1314,10 +1141,12 @@ string& escape( string& s, const char* p_chars,
             if( c == p_specials[ offset + j ] )
             {
                s.insert( i++, 1, esc_char );
+
                if( double_escape_specials )
                   s.insert( i++, 1, esc_char );
 
                s[ i ] = p_specials[ j ];
+
                break;
             }
          }
@@ -1341,7 +1170,8 @@ string escaped( const string& s, const char* p_chars,
    for( string::size_type i = 0, size = s.size( ); i < size; i++ )
    {
       char c = s[ i ];
-      if( c == esc || ( p_chars && strchr( p_chars, c ) ) )
+
+      if( ( c == esc ) || ( p_chars && strchr( p_chars, c ) ) )
          str += esc_char;
       else if( p_specials )
       {
@@ -1350,10 +1180,12 @@ string escaped( const string& s, const char* p_chars,
             if( c == p_specials[ offset + j ] )
             {
                str += esc_char;
+
                if( double_escape_specials )
                   str += esc_char;
 
                c = p_specials[ j ];
+
                break;
             }
          }
@@ -1381,6 +1213,7 @@ string unescaped( const char* p_start, size_t len, const char* p_specials, char 
       if( was_escape )
       {
          was_escape = false;
+
          char c = *( p_start + i );
 
          for( size_t j = 0; j < offset; j++ )
@@ -1388,6 +1221,7 @@ string unescaped( const char* p_start, size_t len, const char* p_specials, char 
             if( c == p_specials[ j ] )
             {
                c = p_specials[ offset + j ];
+
                break;
             }
          }
@@ -1410,9 +1244,10 @@ string escaped_shell_arg( const string& arg )
 {
    string s( arg );
 
-   if( !s.empty( ) && s != "\"\"" )
+   if( !s.empty( ) && ( s != "\"\"" ) )
    {
       replace( s, "\"", "\\\"" );
+
       s = '"' + s + '"';
    }
 
@@ -1425,11 +1260,7 @@ string escaped_shell_cmd( const string& cmd )
 
    if( !s.empty( ) )
    {
-#ifdef _WIN32
-      replace( s, "^", "^^" );
-#else
       replace( s, "\\", "\\\\" );
-#endif
 
       size_t nsq = count( s.begin( ), s.end( ), '\'' );
       size_t ndq = count( s.begin( ), s.end( ), '\"' );
@@ -1454,12 +1285,6 @@ string escaped_shell_cmd( const string& cmd )
          s.insert( ndq_pos, "\\" );
       }
 
-#ifdef _WIN32
-      replace( s, ",", "^,", "%", "^%" );
-      replace( s, "&", "^&", "|", "^|" );
-      replace( s, "<", "^<", ">", "^>" );
-      replace( s, "!", "^^!", ".", "^." );
-#else
       replace( s, "&", "\\&", "|", "\\|" );
       replace( s, "<", "\\<", ">", "\\>" );
       replace( s, "`", "\\`", "%", "\\%" );
@@ -1468,8 +1293,8 @@ string escaped_shell_cmd( const string& cmd )
       replace( s, "[", "\\[", "]", "\\]" );
       replace( s, "(", "\\(", ")", "\\)" );
       replace( s, ",", "\\,", ";", "\\;" );
+
       replace( s, "0x0a", "\\0x0a", "0xff", "\\0xff" );
-#endif
    }
 
    return s;
@@ -1482,6 +1307,7 @@ size_t find_end_of_escaped_sequence( const string& s, size_t p, char eos, char e
    assert( esc != '\0' && eos != '\0' && esc != eos );
 
    bool is_escape = false;
+
    for( string::size_type i = p; i < s.size( ); i++ )
    {
       if( is_escape )
@@ -1491,6 +1317,7 @@ size_t find_end_of_escaped_sequence( const string& s, size_t p, char eos, char e
       else if( s[ i ] == eos )
       {
          pos = i;
+
          break;
       }
    }
@@ -1511,15 +1338,15 @@ bool is_valid_utf8( const string& utf8 )
 
       if( c < 127 )
          ++pos;
-      else if( c >= 192 && c <= 223 )
+      else if( ( c >= 192 ) && ( c <= 223 ) )
          pos += 2;
-      else if( c >= 224 && c <= 239 )
+      else if( ( c >= 224 ) && ( c <= 239 ) )
          pos += 3;
-      else if( c >= 240 && c <= 247 )
+      else if( ( c >= 240 ) && ( c <= 247 ) )
          pos += 4;
-      else if( c >= 248 && c <= 251 )
+      else if( ( c >= 248 ) && ( c <= 251 ) )
          pos += 5;
-      else if( c >= 252 && c <= 253 )
+      else if( ( c >= 252 ) && ( c <= 253 ) )
          pos += 6;
       else
          return false;
@@ -1536,6 +1363,7 @@ string& utf8_replace( string& utf8, const char* p_findstr, const char* p_replstr
    if( !utf8.empty( ) )
    {
       size_t pos = 0;
+
       set< size_t > start_char_pos;
 
       while( true )
@@ -1549,15 +1377,15 @@ string& utf8_replace( string& utf8, const char* p_findstr, const char* p_replstr
 
          if( c < 127 )
             ++pos;
-         else if( c >= 192 && c <= 223 )
+         else if( ( c >= 192 ) && ( c <= 223 ) )
             pos += 2;
-         else if( c >= 224 && c <= 239 )
+         else if( ( c >= 224 ) && ( c <= 239 ) )
             pos += 3;
-         else if( c >= 240 && c <= 247 )
+         else if( ( c >= 240 ) && ( c <= 247 ) )
             pos += 4;
-         else if( c >= 248 && c <= 251 )
+         else if( ( c >= 248 ) && ( c <= 251 ) )
             pos += 5;
-         else if( c >= 252 && c <= 253 )
+         else if( ( c >= 252 ) && ( c <= 253 ) )
             pos += 6;
          else
             throw runtime_error( "unexpected UTF-8 encoding found in: " + utf8 );
@@ -1571,12 +1399,14 @@ string& utf8_replace( string& utf8, const char* p_findstr, const char* p_replstr
       while( true )
       {
          string::size_type pos = utf8.find( p_findstr, lpos );
+
          if( pos == string::npos )
             break;
 
          if( start_char_pos.count( pos ) )
          {
             utf8.replace( pos, strlen( p_findstr ), p_replstr );
+
             lpos = pos + strlen( p_replstr );
          }
          else
@@ -1636,7 +1466,7 @@ string& utf8_truncate( string& utf8, int trunc_limit,
                }
             }
          }
-         else if( c >= 192 && c <= 223 )
+         else if( ( c >= 192 ) && ( c <= 223 ) )
          {
             pos += 2;
 
@@ -1648,7 +1478,7 @@ string& utf8_truncate( string& utf8, int trunc_limit,
                num_chars += 2;
             }
          }
-         else if( c >= 224 && c <= 239 )
+         else if( ( c >= 224 ) && ( c <= 239 ) )
          {
             pos += 3;
 
@@ -1660,7 +1490,7 @@ string& utf8_truncate( string& utf8, int trunc_limit,
                num_chars += 3;
             }
          }
-         else if( c >= 240 && c <= 247 )
+         else if( ( c >= 240 ) && ( c <= 247 ) )
          {
             pos += 4;
 
@@ -1672,7 +1502,7 @@ string& utf8_truncate( string& utf8, int trunc_limit,
                num_chars += 4;
             }
          }
-         else if( c >= 248 && c <= 251 )
+         else if( ( c >= 248 ) && ( c <= 251 ) )
          {
             pos += 5;
 
@@ -1684,7 +1514,7 @@ string& utf8_truncate( string& utf8, int trunc_limit,
                num_chars += 5;
             }
          }
-         else if( c >= 252 && c <= 253 )
+         else if( ( c >= 252 ) && ( c <= 253 ) )
          {
             pos += 6;
 
@@ -1747,11 +1577,7 @@ string get_environment_variable( const char* p_env_var_name )
 
 void set_environment_variable( const char* p_env_var_name, const char* p_new_value )
 {
-#ifndef _WIN32
    setenv( p_env_var_name, p_new_value, 1 );
-#else
-   _putenv( ( char* )( string( p_env_var_name ) + "=" + string( p_new_value ) ).c_str( ) );
-#endif
 }
 
 void replace_environment_variables( string& s, char c, bool as_quotes, const char* p_specials, char esc )
@@ -1762,9 +1588,9 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
 
    while( pos != string::npos )
    {
-      if( s.size( ) > pos + 1
+      if( ( s.size( ) > ( pos + 1 ) )
        && ( ( s[ pos + 1 ] == c ) || ( s[ pos + 1 ] == '*' )
-       || ( s[ pos + 1 ] >= '0' && s[ pos + 1 ] <= '9' ) ) )
+       || ( ( s[ pos + 1 ] >= '0' ) && ( s[ pos + 1 ] <= '9' ) ) ) )
       {
          pos = s.find( c, pos + 2 );
          continue;
@@ -1816,6 +1642,7 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
             // appears after the PREFIX or before the SUFFIX (assuming the
             // PREFIX or SUFFIX is found).
             string::size_type lpos = env_var_name.find( ':' );
+
             if( lpos != string::npos )
             {
                string::size_type epos = env_var_name.rfind( '<' );
@@ -1823,17 +1650,21 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
                if( epos != string::npos && epos > lpos )
                {
                   suffix = env_var_name.substr( epos + 1 );
+
                   env_var_name.erase( epos );
                }
 
                epos = env_var_name.find( '>', lpos );
+
                if( epos != string::npos )
                {
                   prefix = env_var_name.substr( epos + 1 );
+
                   env_var_name.erase( epos );
                }
 
                line = atoi( env_var_name.substr( lpos + 1 ).c_str( ) );
+
                env_var_name.erase( lpos );
             }
          }
@@ -1850,6 +1681,7 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
             else
             {
                vector< string > lines;
+
                split( p_env_var, lines, '\n' );
 
                if( line > 0 && line <= lines.size( ) )
@@ -1863,7 +1695,7 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
                      if( !env_var_value.empty( ) )
                         env_var_value += '\n';
 
-                     if( line != i + 1 )
+                     if( line != ( i + 1 ) )
                         env_var_value += lines[ i ];
                   }
                }
@@ -1896,6 +1728,7 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
             escape( env_var_value, p_specials, esc );
 
          s.erase( pos, npos - pos + as_quotes );
+
          s.insert( pos, env_var_value );
 
          npos = pos + env_var_value.size( );
@@ -1914,6 +1747,7 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
    for( size_t i = 0; i < env_vars_to_overwrite.size( ); i++ )
    {
       string next( env_vars_to_overwrite[ i ] );
+
       char* p_env_var = getenv( next.c_str( ) );
 
       if( p_env_var )
@@ -1938,6 +1772,7 @@ string trim( const string& s, bool leading_only, bool trailing_only )
          {
             if( ws.find( s[ i ] ) == string::npos )
                break;
+
             ++start;
          }
       }
@@ -1950,6 +1785,7 @@ string trim( const string& s, bool leading_only, bool trailing_only )
             {
                if( ws.find( s[ i ] ) == string::npos )
                   break;
+
                --finish;
 
                if( i == 0 )
@@ -1967,6 +1803,7 @@ string trim( const string& s, bool leading_only, bool trailing_only )
 size_t split( const string& s, set< string >& c, char sep, char esc, bool unescape )
 {
    vector< string > v;
+
    split( s, v, sep, esc, unescape );
 
    for( size_t i = 0; i < v.size( ); i++ )
@@ -1978,6 +1815,7 @@ size_t split( const string& s, set< string >& c, char sep, char esc, bool unesca
 size_t split( const string& s, deque< string >& c, char sep, char esc, bool unescape )
 {
    vector< string > v;
+
    split( s, v, sep, esc, unescape );
 
    for( size_t i = 0; i < v.size( ); i++ )
@@ -2002,19 +1840,22 @@ size_t split( const string& s, vector< string >& c, char sep, char esc, bool une
       if( had_escape )
       {
          had_escape = false;
+
          if( !unescape && s[ i ] != sep )
             next += esc;
+
          next += s[ i ];
       }
       else
       {
-         if( esc && ( esc != sep ) && s[ i ] == esc )
+         if( esc && ( esc != sep ) && ( s[ i ] == esc ) )
             had_escape = true;
          else if( s[ i ] == sep )
          {
-            if( esc != sep || i == len - 1 || s[ i + 1 ] != sep )
+            if( ( esc != sep ) || ( i == ( len - 1 ) ) || ( s[ i + 1 ] != sep ) )
             {
                had_sep = true;
+
                c.push_back( next );
 
                next.erase( );
@@ -2044,10 +1885,12 @@ size_t split( const string& s, set< string >& c, const string& sep )
    while( true )
    {
       string::size_type pos = s.find( sep, spos );
+
       if( pos == string::npos )
       {
          if( !s.empty( ) )
             c.insert( s.substr( spos ) );
+
          break;
       }
 
@@ -2066,10 +1909,12 @@ size_t split( const string& s, deque< string >& c, const string& sep )
    while( true )
    {
       string::size_type pos = s.find( sep, spos );
+
       if( pos == string::npos )
       {
          if( !s.empty( ) )
             c.push_back( s.substr( spos ) );
+
          break;
       }
 
@@ -2088,10 +1933,12 @@ size_t split( const string& s, vector< string >& c, const string& sep )
    while( true )
    {
       string::size_type pos = s.find( sep, spos );
+
       if( pos == string::npos )
       {
          if( !s.empty( ) )
             c.push_back( s.substr( spos ) );
+
          break;
       }
 
@@ -2107,6 +1954,7 @@ size_t split_size( const string& s, char sep, char esc )
    // FUTURE: The "split" function should call a "split_impl" that will take a pointer to
    // a vector which can be set to null when called via this function to be more efficient.
    vector< string > v;
+
    return split( s, v, sep, esc );
 }
 
@@ -2120,7 +1968,7 @@ string join( const vector< string >& c, char sep, char esc, bool escape )
 
    for( size_t i = 0; i < c.size( ); i++ )
    {
-      if( i > 0 && sep )
+      if( sep && ( i > 0 ) )
          s += sep;
 
       if( !c[ i ].empty( ) )
@@ -2141,16 +1989,20 @@ string get_version_info( const string& s, version_info& ver_info )
    string str( s );
 
    string::size_type pos = str.find( '\n' );
+
    if( pos != string::npos )
    {
       rs = str.substr( pos + 1 );
+
       str.erase( pos );
    }
 
    pos = str.find( ':' );
+
    if( pos != string::npos )
    {
       ver_info.extra = str.substr( pos + 1 );
+
       str.erase( pos );
    }
 
@@ -2160,6 +2012,7 @@ string get_version_info( const string& s, version_info& ver_info )
    ver_info.minor = 0;
 
    pos = str.find( '.' );
+
    if( pos != string::npos )
       ver_info.minor = atoi( str.substr( pos + 1 ).c_str( ) );
 
@@ -2246,7 +2099,7 @@ size_t setup_arguments( const char* p_input, vector< string >& arguments, char e
 {
    arguments.clear( );
 
-   assert( esc != '\'' && esc != '"' && esc != '\0' && !isspace( static_cast< unsigned char >( esc ) ) );
+   assert( ( esc != '\'' ) && ( esc != '"' ) && ( esc != '\0' ) && !isspace( static_cast< unsigned char >( esc ) ) );
 
    const char* p_start( p_input );
    const char* p_finish( p_input );
@@ -2263,6 +2116,7 @@ size_t setup_arguments( const char* p_input, vector< string >& arguments, char e
             throw runtime_error( "unexpected trailing escape" );
 
          had_escape = false;
+
          ++p_finish;
       }
       else if( *p_finish == esc )
@@ -2271,11 +2125,13 @@ size_t setup_arguments( const char* p_input, vector< string >& arguments, char e
             began_without_quotes = true;
 
          had_escape = true;
+
          ++p_finish;
       }
       else if( *p_finish == '"' )
       {
          in_quotes = !in_quotes;
+
          if( !in_quotes && !began_without_quotes )
          {
             if( p_start == p_finish )
@@ -2289,7 +2145,7 @@ size_t setup_arguments( const char* p_input, vector< string >& arguments, char e
          else
             p_start = ++p_finish;
       }
-      else if( *p_finish == '\0' || isspace( static_cast< unsigned char >( *p_finish ) ) )
+      else if( ( *p_finish == '\0' ) || isspace( static_cast< unsigned char >( *p_finish ) ) )
       {
          if( in_quotes && *p_finish == '\0' )
             throw runtime_error( "missing expected end-quote in: " + string( p_input ) );
@@ -2298,19 +2154,21 @@ size_t setup_arguments( const char* p_input, vector< string >& arguments, char e
             ++p_finish;
          else
          {
-            if( p_input != p_finish && p_start != p_finish )
+            if( ( p_input != p_finish ) && ( p_start != p_finish ) )
                arguments.push_back( unescaped( p_start, p_finish - p_start, p_specials, esc ) );
 
             if( *p_finish == '\0' )
                break;
 
             p_start = ++p_finish;
+
             began_without_quotes = false;
          }
       }
       else
       {
          ++p_finish;
+
          if( !in_quotes )
             began_without_quotes = true;
       }
@@ -2318,8 +2176,10 @@ size_t setup_arguments( const char* p_input, vector< string >& arguments, char e
 
 #ifdef DEBUG
    cout << "\nsetup_arguments:" << endl;
+
    for( vector< string >::size_type i = 0; i < arguments.size( ); i++ )
       cout << i << " \"" << arguments[ i ] << "\"\n";
+
    cout << endl;
 #endif
 
@@ -2346,15 +2206,13 @@ void buffer_file( string& buffer, const char* p_file_name, size_t max_bytes, siz
    if( !p_file_name )
       throw runtime_error( "unexpected null pointer for p_file_name in buffer_file" );
 
-#ifndef _MSC_VER
    FILE* fp = fopen( p_file_name, "rb" );
-#else
-   FILE* fp = fopen( p_file_name, "rb, ccs=UTF-8" );
-#endif
+
    if( !fp )
       throw runtime_error( "unable to open file '" + string( p_file_name ) + "' for input in buffer_file" );
 
    fseek( fp, 0, SEEK_END );
+
    size_t size = ftell( fp );
 
    if( p_size )
@@ -2392,6 +2250,7 @@ void write_file( const char* p_file_name, unsigned char* p_data, size_t length, 
       throw runtime_error( "unexpected null pointer for p_file_name in write_file" );
 
    FILE* fp = fopen( p_file_name, ( append ? "ab" : "wb" ) );
+
    if( !fp )
       throw runtime_error( "unable to open file '" + string( p_file_name ) + "' for output in write_file" );
 
@@ -2417,6 +2276,7 @@ void write_file_lines( const string& file_name, const vector< string >& lines )
 string buffer_file_lines( const string& file_name, bool skip_blank_lines, bool strip_extra_crs )
 {
    string str;
+
    vector< string > lines;
 
    buffer_file_lines( file_name, lines, skip_blank_lines, strip_extra_crs );
@@ -2425,6 +2285,7 @@ string buffer_file_lines( const string& file_name, bool skip_blank_lines, bool s
    {
       if( i > 0 )
          str += '\n';
+
       str += lines[ i ];
    }
 
@@ -2434,10 +2295,12 @@ string buffer_file_lines( const string& file_name, bool skip_blank_lines, bool s
 void buffer_file_lines( const string& file_name, set< string >& lines, bool strip_extra_crs )
 {
    ifstream inpf( file_name.c_str( ) );
+
    if( !inpf )
       throw runtime_error( "unable to open file '" + file_name + "' for input in buffer_file_lines" );
 
    string next;
+
    size_t line_num = 0;
 
    while( getline( inpf, next ) )
@@ -2460,10 +2323,12 @@ void buffer_file_lines( const string& file_name,
  deque< string >& lines, bool skip_blank_lines, bool strip_extra_crs )
 {
    ifstream inpf( file_name.c_str( ) );
+
    if( !inpf )
       throw runtime_error( "unable to open file '" + file_name + "' for input in buffer_file_lines" );
 
    string next;
+
    size_t line_num = 0;
 
    while( getline( inpf, next ) )
@@ -2486,10 +2351,12 @@ void buffer_file_lines( const string& file_name,
  vector< string >& lines, bool skip_blank_lines, bool strip_extra_crs )
 {
    ifstream inpf( file_name.c_str( ) );
+
    if( !inpf )
       throw runtime_error( "unable to open file '" + file_name + "' for input in buffer_file_lines" );
 
    string next;
+
    size_t line_num = 0;
 
    while( getline( inpf, next ) )
@@ -2519,6 +2386,7 @@ void buffer_file_tail( const string& file_name,
       start_pos = total_size - c_tail_buffer_size;
 
    string data;
+
    bool finished_buffering = false;
 
    if( !num_lines )
@@ -2537,7 +2405,7 @@ void buffer_file_tail( const string& file_name,
       if( lines.empty( ) && !data.empty( ) )
       {
          // NOTE: Will always ignore a final trailing blank line.
-         while( data.size( ) && data[ data.size( ) - 1 ] == '\n' )
+         while( data.size( ) && ( data[ data.size( ) - 1 ] == '\n' ) )
          {
             data.erase( data.size( ) - 1 );
 
@@ -2567,12 +2435,12 @@ void buffer_file_tail( const string& file_name,
       }
 
       if( strip_extra_crs )
-         remove_trailing_cr_from_text_file_line( next, start_pos == 0 );
+         remove_trailing_cr_from_text_file_line( next, ( start_pos == 0 ) );
 
       if( !skip_blank_lines || !next.empty( ) )
          lines.push_front( next );
 
-      if( pos == string::npos && start_pos == 0 )
+      if( ( pos == string::npos ) && ( start_pos == 0 ) )
          break;
    }
 }
@@ -2581,10 +2449,12 @@ void buffer_file_items( const string& file_name,
  map< string, string >& items, char separator, bool strip_extra_crs )
 {
    ifstream inpf( file_name.c_str( ) );
+
    if( !inpf )
       throw runtime_error( "unable to open file '" + file_name + "' for input in buffer_file_items" );
 
    string next;
+
    size_t line_num = 0;
 
    while( getline( inpf, next ) )
@@ -2597,6 +2467,7 @@ void buffer_file_items( const string& file_name,
       if( !next.empty( ) )
       {
          string::size_type pos = next.find( separator );
+
          if( pos == string::npos )
             throw runtime_error( "unexpected missing separator '"
              + to_string( separator ) + "' in '" + file_name + "' at line #" + to_string( line_num ) );
@@ -2614,15 +2485,11 @@ void absolute_path( const string& relative_path, string& absolute_path, bool* p_
 {
    bool found = false;
 
-#ifdef _WIN32
    char path[ _MAX_PATH ] = { 0 };
-   found = ( _fullpath( path, relative_path.c_str( ), sizeof( path ) ) != 0 );
-   absolute_path = path;
-#else
-   char path[ PATH_MAX ] = { 0 };
+
    found = realpath( relative_path.c_str( ), &path[ 0 ] );
+
    absolute_path = path;
-#endif
 
    if( !found && !p_rc )
       throw runtime_error( "unable to determine absolute path for '" + relative_path + "'" );
@@ -2661,7 +2528,7 @@ time_t last_modification_time( const string& file_name, bool try_avoiding_epoch_
    time_t retval = statbuf.st_mtime;
 
    // KLUDGE: It has been found in certain VM situations that mtime is zero
-   // (i.e.the unix epoch) so assuming that the caller would prefer to have
+   // (i.e. the unix epoch) so assumes that the caller would prefer to have
    // a non-zero value (if available) will instead use "ctime" and if still
    // going to return zero will finally try using "atime".
    if( !retval && try_avoiding_epoch_time )
@@ -2678,14 +2545,16 @@ time_t last_modification_time( const string& file_name, bool try_avoiding_epoch_
 void output_string_as_text_lines( const string& str, ostream& os, size_t max_length, const char* p_prefix, const char* p_suffix )
 {
    size_t offs = 0;
+
    while( true )
    {
       if( p_prefix )
          os << p_prefix;
 
-      if( str.size( ) - offs <= max_length )
+      if( ( str.size( ) - offs ) <= max_length )
       {
          os << str.substr( offs );
+
          if( p_suffix )
             os << p_suffix;
 
@@ -2693,6 +2562,7 @@ void output_string_as_text_lines( const string& str, ostream& os, size_t max_len
       }
 
       os << str.substr( offs, max_length );
+
       if( p_suffix )
          os << p_suffix;
 
@@ -2712,6 +2582,7 @@ void uudecode( ostream& outs, const char* p_input, int num_bytes )
    for( int i = 0; i < triplets; i++, p_input++ )
    {
       int j = 2;
+
       for( composite = *( p_input + 3 ) - c_space; j < 7; j += 2, p_input++ )
           outs.put( ( *p_input - c_space ) | ( ( composite & ( c_high_mask >> j ) ) << j ) );
    }
@@ -2720,7 +2591,9 @@ void uudecode( ostream& outs, const char* p_input, int num_bytes )
    if( remainder > 1 )
    {
       int j = 2;
+
       remainder--;
+
       for( composite = *( p_input + remainder ) - c_space; j <  ( 2 * remainder + 1 ); j += 2, p_input++ )
         outs.put( ( *p_input - c_space ) | ( ( composite & ( c_high_mask >> j ) ) << j ) );
    }
@@ -2751,10 +2624,11 @@ void uuencode( const char* p_data, int num_bytes, ostream& outs )
    if( remainder )
    {
       composite = 0;
+
       for( int j = 2; j < 2 * remainder + 1; j += 2, p_data++ )
       {
-          outs.put( ( *p_data & c_low_mask ) + c_space );
-          composite |= ( *p_data & c_high_mask ) >> j;
+         outs.put( ( *p_data & c_low_mask ) + c_space );
+         composite |= ( *p_data & c_high_mask ) >> j;
       }
 
       outs.put( composite + c_space );
@@ -2777,7 +2651,8 @@ void hex_decode( const string& data, unsigned char* p_data, size_t len )
    for( size_t i = 0; i < data.size( ); i += 2 )
    {
       unsigned char val = hex_nibble( data[ i ] );
-      val <<= 4;
+
+     val <<= 4;
 
       val |= hex_nibble( data[ i + 1 ] );
 
@@ -2810,6 +2685,7 @@ void hex_encode( string& data, const unsigned char* p_data, size_t len, int max_
        && ( line_chars >= max_chars_per_line ) && ( i != len - 1 ) )
       {
          line_chars = 0;
+
          data[ n++ ] = '\n';
       }
    }
@@ -2846,6 +2722,7 @@ string decode_quoted_printable( const string& data )
          if( i != data.size( ) - 1 && data[ i + 1 ] == '\n' )
          {
             ++i;
+
             continue;
          }
 
@@ -2860,7 +2737,9 @@ string decode_quoted_printable( const string& data )
 string encode_quoted_printable( const string& data, int max_chars_per_line )
 {
    string s;
+
    int num_chars = 0;
+
    int almost_max_chars = ( int )( max_chars_per_line * 0.9 );
 
    for( size_t i = 0; i < data.length( ); i++ )
@@ -2871,59 +2750,71 @@ string encode_quoted_printable( const string& data, int max_chars_per_line )
             s += "=";
 
          s += "\r\n";
+
          num_chars = 0;
 
          if( data[ i ] == '\n' )
             continue;
       }
 
-      if( num_chars > almost_max_chars && ( data[ i ] == 9 || data[ i ] == 32 ) )
+      if( ( num_chars > almost_max_chars )
+       && ( ( data[ i ] == 9 ) || ( data[ i ] == 32 ) ) )
       {
          s += data[ i ];
          s += "=";
          s += "\r\n";
+
          num_chars = 0;
+
          continue;
       }
 
       if( data[ i ] == '\n' )
       {
          s += "\r\n";
+
          num_chars = 0;
+
          continue;
       }
 
       bool needs_encoding = false;
 
-      if( data[ i ] != 9 && ( data[ i ] < 32 || data[ i ] > 126 || data[ i ] == 61 ) )
+      if( ( data[ i ] != 9 )
+       && ( ( data[ i ] < 32 ) || ( data[ i ] > 126 ) || ( data[ i ] == 61 ) ) )
          needs_encoding = true;
 
-      if( num_chars == 0
-       && ( data[ i ] == 9 || data[ i ] == 32 )
-       && ( i == data.length( ) - 1 || data[ i + 1 ] == '\n' ) )
+      if( ( num_chars == 0 )
+       && ( ( data[ i ] == 9 ) || ( data[ i ] == 32 ) )
+       && ( ( i == ( data.length( ) - 1 ) ) || ( data[ i + 1 ] == '\n' ) ) )
          needs_encoding = true;
 
       if( !needs_encoding )
       {
          ++num_chars;
+
          s += data[ i ];
       }
       else
       {
          s += '=';
+
          ++num_chars;
 
          if( num_chars > max_chars_per_line - 2 )
          {
             s += "\r\n";
             s += '=';
+
             num_chars = 1;
          }
 
          ++num_chars;
+
          s += ascii_digit( ( data[ i ] & 0xf0 ) >> 4, true );
 
          ++num_chars;
+
          s += ascii_digit( data[ i ] & 0x0f, true );
       }
    }
@@ -2935,11 +2826,14 @@ void read_strings( const string& file_name, map< string, string >& strings,
  const char* p_prefix, bool unescape_data, char esc, const char* p_specials )
 {
    ifstream inpf( file_name.c_str( ) );
+
    if( !inpf )
       throw runtime_error( "unable to open file '" + file_name + "' for input in read_strings" );
 
    string next;
+
    bool is_first = true;
+
    while( getline( inpf, next ) )
    {
       remove_trailing_cr_from_text_file_line( next, is_first );
@@ -2951,21 +2845,25 @@ void read_strings( const string& file_name, map< string, string >& strings,
          continue;
 
       string::size_type pos = next.find( ' ' );
+
       if( pos == string::npos )
          throw runtime_error( "unexpected format for string '" + next + "'" );
 
       string key( p_prefix ? p_prefix : "" );
+
       key += next.substr( 0, pos );
 
       size_t npos = pos + 1;
+
       while( npos < next.size( ) && next[ npos ] == ' ' )
          ++npos;
+
       next.erase( 0, npos );
 
       while( !next.empty( ) && next[ next.size( ) - 1 ] == ' ' )
          next.erase( next.size( ) - 1 );
 
-      if( next.length( ) < 2 || next[ 0 ] != '"' || next[ next.length( ) - 1 ] != '"' )
+      if( ( next.length( ) < 2 ) || ( next[ 0 ] != '"' ) || ( next[ next.length( ) - 1 ] != '"' ) )
          throw runtime_error( "unexpected format for string data '" + next + "'" );
 
       string data( next.substr( 1, next.length( ) - 2 ) );
@@ -2988,12 +2886,14 @@ void write_strings( const string& file_name,
  const string_container& strings, bool escape_data, char esc, const char* p_specials )
 {
    ofstream outf( file_name.c_str( ) );
+
    if( !outf )
       throw runtime_error( "unable to open file '" + file_name + "' for output in write_strings" );
 
    for( string_const_iterator i = strings.begin( ); i != strings.end( ); ++i )
    {
       string data( i->second );
+
       if( escape_data )
          escape( data, 0, esc, p_specials );
 
@@ -3011,7 +2911,9 @@ string extract_text_from_html( const string& html )
    string text;
 
    string token;
+
    size_t tok_pos = 0;
+
    bool in_token = false;
    bool had_first_non_white = false;
 
@@ -3025,6 +2927,7 @@ string extract_text_from_html( const string& html )
       else if( html[ i ] == '>' )
       {
          in_token = false;
+
          token = lower( html.substr( tok_pos, i - tok_pos + 1 ) );
 
          // NOTE: Ignore text that is within an "empty span".
@@ -3043,15 +2946,19 @@ string extract_text_from_html( const string& html )
          if( html[ i ] == '&' )
          {
             had_first_non_white = true;
+
             string::size_type pos = html.find( ';', i + 1 );
+
             if( pos != string::npos )
             {
                string special = lower( html.substr( i + 1, pos - i - 1 ) );
+
                if( !special.empty( ) )
                {
                   if( special[ 0 ] == '#' )
                   {
                      char ch = 0;
+
                      for( size_t j = 1; j < special.size( ); j++ )
                      {
                         ch = ch * 10;
@@ -3081,16 +2988,19 @@ string extract_text_from_html( const string& html )
                }
 
                i = pos;
+
                continue;
             }
          }
 
-         if( html[ i ] != '\r' && html[ i ] != '\n' )
+         if( ( html[ i ] != '\r' ) && ( html[ i ] != '\n' ) )
          {
-            if( had_first_non_white || ( html[ i ] != ' ' && html[ i ] != '\t' ) )
+            if( had_first_non_white
+             || ( ( html[ i ] != ' ' ) && ( html[ i ] != '\t' ) ) )
             {
                text += html[ i ];
-               if( html[ i ] != ' ' && html[ i ] != '\t' )
+
+               if( ( html[ i ] != ' ' ) && ( html[ i ] != '\t' ) )
                   had_first_non_white = true;
             }
          }

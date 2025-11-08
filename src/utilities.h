@@ -89,9 +89,6 @@ inline void to_upper( std::string& s )
 inline void to_lower( std::string& s )
  { std::transform( s.begin( ), s.end( ), s.begin( ), ( int( * )( int ) )tolower ); }
 
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option push -w-8027
-#  endif
 inline std::string upper( const std::string& s )
 {
    std::string ss( s );
@@ -105,9 +102,6 @@ inline std::string lower( const std::string& s )
    to_lower( ss );
    return ss;
 }
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option pop
-#  endif
 
 inline void clear_key( std::string& key, bool erase = false )
 {
@@ -226,6 +220,7 @@ template< class C, class T = std::char_traits< C > >
 #  endif   
 
    public:
+
    basic_teestream(
     typename std::basic_ostream< C, T >& a,
     typename std::basic_ostream< C, T >& b )
@@ -319,7 +314,7 @@ int get_pid( );
 
 int vmem_used( );
 
-std::string get_cwd( bool change_backslash_to_forwardslash = false );
+std::string get_cwd( );
 
 void set_cwd( const char* p_name, bool* p_rc = 0 );
 
@@ -387,10 +382,6 @@ inline bool file_exists( const std::string& name, bool check_link_target = false
 
 bool file_remove( const char* p_name );
 inline bool file_remove( const std::string& name ) { return file_remove( name.c_str( ) ); }
-#  ifdef _WIN32
-bool file_remove( const wchar_t* p_name );
-inline bool file_remove( const std::wstring& name ) { return file_remove( name.c_str( ) ); }
-#  endif
 
 bool file_rename( const char* p_old_name, const char* p_new_name );
 
@@ -427,10 +418,12 @@ inline std::string file_perms( const std::string& name ) { return file_perms( na
 
 void file_perms( const std::string& name, const std::string& rwx_perms );
 
-void file_link( const char* p_src, const char* p_name = 0, const wchar_t* p_wsrc = 0, const wchar_t* p_wname = 0 );
-inline void file_link( const std::string& src, const char* p_name = 0 ) { file_link( src.c_str( ), p_name ); }
-inline void file_link( const std::string& src, const std::string& name ) { file_link( src.c_str( ), name.c_str( ) ); }
-inline void file_linkw( const wchar_t* p_wsrc, const wchar_t* p_wname ) { file_link( "", "", p_wsrc, p_wname ); }
+void file_link( const char* p_target, const char* p_name = 0 );
+inline void file_link( const std::string& target, const char* p_name = 0 ) { file_link( target.c_str( ), p_name ); }
+inline void file_link( const std::string& target, const std::string& name ) { file_link( target.c_str( ), name.c_str( ) ); }
+
+std::string file_target( const char* p_name );
+inline std::string file_target( const std::string& name ) { return file_target( name.c_str( ) ); }
 
 void file_copy( const char* p_src, const char* p_dest, bool append = false );
 
@@ -458,9 +451,6 @@ inline void file_append( const std::string& src, const std::string& dest )
 
 std::string valid_file_name( const std::string& str, bool* p_has_utf8_chars = 0, bool allow_path_separators = false );
 
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option push -w-8026
-#  endif
 template< typename T > class restorable
 {
    public:
@@ -483,9 +473,6 @@ template< typename T > class restorable
 
    bool committed;
 };
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option pop
-#  endif
 
 inline std::string comparable_int_string(
  bool prefix_with_sign, int max_digits, const std::string& val, bool is_less_than_zero )
@@ -528,13 +515,16 @@ template< typename T > inline std::string signed_to_string( T val )
       val *= -1;
 
    size_t pos = buf_size - 2;
+
    while( true )
    {
       buf[ pos ] = '0' + ( char )( val % 10 );
+
       val /= 10;
 
-      if( !val || pos == 0 + is_neg )
+      if( !val || ( pos == ( 0 + is_neg ) ) )
          break;
+
       --pos;
    }
 
@@ -549,16 +539,20 @@ template< typename T > inline std::string unsigned_to_string( T val )
    const int buf_size = std::numeric_limits< T >::digits10 + 2;
 
    char buf[ buf_size ];
+
    buf[ buf_size - 1 ] = '\0';
 
    size_t pos = buf_size - 2;
+
    while( true )
    {
       buf[ pos ] = '0' + ( char )( val % 10 );
+
       val /= 10;
 
-      if( !val || pos == 0 )
+      if( !val || ( pos == 0 ) )
          break;
+
       --pos;
    }
 
@@ -570,18 +564,14 @@ template< typename T > struct string_converter
    std::string operator ( )( const T& t ) const;
 };
 
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option push -w-8027
-#  endif
 template< typename T > inline std::string string_converter< T >::operator ( )( const T& t ) const
 {
    std::ostringstream osstr;
+
    osstr << t;
+
    return osstr.str( );
 }
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option pop
-#  endif
 
 template< > inline std::string string_converter< char >::operator ( )( const char& v ) const
 {
@@ -642,10 +632,6 @@ template< typename T > inline std::string to_string( const T& t )
    return string_converter< T >( )( t );
 }
 
-#  ifdef __BORLANDC__
-#     define USE_FROM_STRING_IMPL
-#  endif
-
 template< typename T > inline std::string
  to_comparable_string( T val, bool prefix_with_sign, int max_digits = 0 )
 {
@@ -660,10 +646,6 @@ template< typename T > inline std::string to_comparable_string( const T& val )
    return to_comparable_string( val, true );
 }
 
-// NOTE: For some reason BCB is not able to use/handle the "from_string" std::string specialisation when
-// explicit syntax (i.e. from_string< std::string >( s )) is used. So a work-around is to instead forward
-// the "from_string" call to "from_string_impl" using implicit syntax.
-#  ifndef USE_FROM_STRING_IMPL
 template< typename T > inline T from_string( const std::string& s )
 {
    T t = T( );
@@ -682,37 +664,6 @@ template< > inline std::string from_string( const std::string& s )
 {
    return s;
 }
-#  else
-inline void from_string_impl( std::string& t, const std::string& s )
-{
-   t = s;
-}
-
-template< typename T > inline void from_string_impl( T& t, const std::string& s )
-{
-   if( !s.empty( ) )
-   {
-      std::istringstream iss( s );
-
-      iss >> t;
-   }
-}
-
-#     ifdef NEW_BORLAND_VERSION
-#        pragma option push -w-8027
-#     endif
-template< typename T > inline T from_string( const std::string& s )
-{
-   T t = T( );
-
-   from_string_impl( t, s );
-
-   return t;
-}
-#     ifdef NEW_BORLAND_VERSION
-#        pragma option pop
-#     endif
-#  endif
 
 class boyer_moore
 {
@@ -877,16 +828,10 @@ inline std::string& unescape( std::string& s, const char* p_specials = 0, char e
 std::string escaped_shell_arg( const std::string& arg );
 std::string escaped_shell_cmd( const std::string& cmd );
 
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option push -w-8027
-#  endif
 inline std::string unescaped( const std::string& s, const char* p_specials = 0, char esc = c_esc )
 {
    return s.length( ) ? unescaped( &*s.begin( ), s.length( ), p_specials, esc ) : std::string( );
 }
-#  ifdef NEW_BORLAND_VERSION
-#     pragma option pop
-#  endif
 
 size_t find_end_of_escaped_sequence( const std::string& s, size_t p, char eos, char esc = c_esc );
 
@@ -1001,9 +946,10 @@ inline std::string join( const std::deque< std::string >& c, char sep = c_sep, c
 
 inline void remove_utf8_bom_impl( std::string& s )
 {
-   // NOTE: UTF-8 text files will sometimes begin with an identifying sequence "EF BB BF" as the
-   // first three characters of the file (especially in Windows) so if this is found then remove.
-   if( s.size( ) >= 3 && s[ 0 ] == ( char )0xef && s[ 1 ] == ( char )0xbb && s[ 2 ] == ( char )0xbf )
+   // NOTE: UTF-8 text files will sometimes begin with an identifying
+   // initial byte sequence of "EF BB BF" so if found then remove it.
+   if( ( s.size( ) >= 3 ) && ( s[ 0 ] == ( char )0xef )
+    && ( s[ 1 ] == ( char )0xbb ) && ( s[ 2 ] == ( char )0xbf ) )
       s.erase( 0, 3 );
 }
 
