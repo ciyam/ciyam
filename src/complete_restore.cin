@@ -19,7 +19,7 @@ APP_DIR=@lower:$STORAGE
 .wait 5000
 ;
 @ifdef $WEBDIR
-~touch $WEBDIR/meta/.prepare.restore
+~touch $WEBDIR/$APP_DIR/.prepare.restore
 @endif
 ;
 .system_variable @disallow_connections 1
@@ -64,7 +64,7 @@ ERROR=Failed due to active sessions not being automatically terminated.
 ~echo "*** ERROR: RESTORE FAILED DUE TO ACTIVE SESSIONS NOT AUTOMATICALLY TERMINATED ***" > Backup.txt
 @else
 @ifdef $WEBDIR
-CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/restore.log
+CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/$APP_DIR/restore.log
 ~rm -f Backup.txt
 ~./log_head.sh $CIYAM_EXEC_SYSTEM_APPEND
 ;
@@ -72,7 +72,6 @@ CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/restore.log
 BACKUP_FILES_PATH=$OUTPUT
 ;
 @ifdef $BACKUP_FILES_PATH
-~cp $BACKUP_FILES_PATH/.ciyam/Meta.backup*.bun.gz .
 ~cp $BACKUP_FILES_PATH/.ciyam/$STORAGE.backup*.bun.gz .
 ;
 WEB_DIRS=@file:~find $WEBDIR -maxdepth 1 -type d -printf "%P?"
@@ -83,7 +82,7 @@ APP_DIR_REMOVED=@repstr:?$APP_DIR?/?:$WEB_DIRS
 ERROR=Failed due to unexpected missing '$STORAGE' application directory.
 ~echo "Error: $ERROR" >> $CIYAM_EXEC_SYSTEM_APPEND
 @else
-~./unbundle -q Meta.backup "*script.sio.*" "ciyam_server.*" >> $CIYAM_EXEC_SYSTEM_APPEND
+~./unbundle -q $STORAGE.backup "*script.sio.*" "ciyam_server.*" >> $CIYAM_EXEC_SYSTEM_APPEND
 ~tar -xf $BACKUP_FILES_PATH/.ciyam/System_Files_And_Archives.tar -m
 #Restored application server files, archives and databases.
 .session_lock -capture 0
@@ -121,8 +120,8 @@ ERROR=Failed due to a WEBDIR environment variable not having being set.
 @ifdef $WEBDIR
 ; NOTE: Restart the web server in order to force the FCGI UI to reload all application server information.
 ~sudo systemctl stop apache2
-~rm -f $WEBDIR/meta/.prepare.restore
-~touch $WEBDIR/meta/ciyam_interface.stop
+~rm -f $WEBDIR/$APP_DIR/.prepare.restore
+~touch $WEBDIR/$APP_DIR/ciyam_interface.stop
 ~sudo systemctl start apache2
 @endif
 ;
