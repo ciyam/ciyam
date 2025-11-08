@@ -1983,8 +1983,13 @@ void Meta_Application::impl::impl_Generate( )
 
       outs << "\necho \"" << get_obj( ).Name( ) << "\" > .app_name\n\n";
 
+      // NOTE: The 'identity.txt' and 'encrypted.txt' files are created as symbolic links
+      // in order to simplify a development environment (so that the same files are being
+      // used for unlocking the system identity by all applications and Meta).
       outs << "if [ ! -d " << web_dir_var << "/" << app_dir << " ]; then\n"
        << " ./setup " << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file
+       << "\nln -s $WEBDIR/" << c_meta_app_directory << "/identity.txt $WEBDIR/" << app_dir
+       << "\nln -s $WEBDIR/" << c_meta_app_directory << "/encrypted.txt $WEBDIR/" << app_dir
        << "\nfi\n\n";
 
       string standard_client_args( "-quiet -no_prompt" );
