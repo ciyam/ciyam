@@ -2095,12 +2095,6 @@ struct reconstruct_trace_progress : progress
     also_to_cout( also_to_cout ),
     num_chars_to_cout( 0 )
    {
-      if( !g_web_root.empty( ) )
-         stop_file = g_web_root + '/' + lower( c_meta_storage_name ) + "/ciyam_interface.stop";
-
-      if( !stop_file.empty( ) )
-         file_touch( stop_file, 0, true );
-
       // FUTURE: This message should be handled as a server string message.
       string message( "(starting restore for ODS DB '" + name + "'..." );
 
@@ -2126,9 +2120,6 @@ struct reconstruct_trace_progress : progress
       TRACE_LOG( TRACE_MINIMAL, message );
 
       clear_num_cout_chars( );
-
-      if( !stop_file.empty( ) )
-         file_remove( stop_file );
    }
 
    void output_progress( const string& message, unsigned long num, unsigned long total )
@@ -2184,9 +2175,8 @@ struct reconstruct_trace_progress : progress
    }
 
    string name;
-   date_time dtm;
 
-   string stop_file;
+   date_time dtm;
 
    bool also_to_cout;
 
@@ -2863,7 +2853,9 @@ bool is_child_constrained( class_base& instance,
                      if( lock.type != op_lock::e_lock_type_destroy )
                      {
                         constraining_class = p_class_base->get_display_name( );
+
                         p_class_base->iterate_stop( );
+
                         return true;
                      }
                   } while( p_class_base->iterate_next( ) );
@@ -2886,6 +2878,7 @@ bool is_child_constrained( class_base& instance,
                      if( is_child_constrained( *p_dyn_class_base, root_instance, constraining_class, instance_keys ) )
                      {
                         p_class_base->iterate_stop( );
+
                         return true;
                      }
 
@@ -2972,6 +2965,7 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
                       p_class_base->get_key( ), op_lock::e_lock_type_update, gtp_session, &instance, &root_instance ) )
                      {
                         p_class_base->iterate_stop( );
+
                         return false;
                      }
                   }
@@ -2994,6 +2988,7 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
                         if( !obtain_cascade_locks_for_destroy( *p_dyn_class_base, root_instance, instance_keys ) )
                         {
                            p_class_base->iterate_stop( );
+
                            return false;
                         }
 
@@ -3002,6 +2997,7 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
                      else
                      {
                         p_class_base->iterate_stop( );
+
                         return false;
                      }
                   }
@@ -4863,12 +4859,16 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       if( !g_web_root.empty( ) )
       {
-         // NOTE: If has completed restoring remove the FCGI UI stop file.
-         string ui_stop_file( g_web_root
-          + '/' + lower( c_meta_storage_name ) + "/ciyam_interface.stop" );
+         string app_dir( lower( get_raw_system_variable( get_special_var_name( e_special_var_storage ) ) ) );
 
-         if( file_exists( ui_stop_file ) )
-            file_remove( ui_stop_file );
+         if( !app_dir.empty( ) )
+         {
+            // NOTE: If has completed restoring remove the FCGI UI stop file.
+            string ui_stop_file( g_web_root + '/' + app_dir + "/ciyam_interface.stop" );
+
+            if( file_exists( ui_stop_file ) )
+               file_remove( ui_stop_file );
+         }
       }
    }
    catch( exception& x )
