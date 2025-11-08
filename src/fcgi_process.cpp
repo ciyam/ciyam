@@ -2633,7 +2633,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         }
                         else
                         {
-                           string msg_file( "message?" + get_cwd( true ) + "/" + key + ".asc" );
+                           string msg_file( "message?" + get_cwd( ) + "/" + key + ".asc" );
 
                            string smtp_result;
 

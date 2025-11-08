@@ -973,12 +973,7 @@ void create_tmp_file_link_or_copy( string& tmp_path, const string& file_name,
    if( dest_file_name.empty( ) )
       link_file_name = file_ext;
       
-#ifndef _WIN32
    link_file_name = valid_file_name( link_file_name );
-#else
-   bool has_wide_chars;
-   link_file_name = valid_file_name( link_file_name, &has_wide_chars );
-#endif
 
    if( dest_file_name.empty( ) )
       tmp_path += "/" + link_file_name;
@@ -1003,34 +998,8 @@ void create_tmp_file_link_or_copy( string& tmp_path, const string& file_name,
    }
    else
    {
-#ifndef _WIN32
       file_remove( tmp_path );
       file_link( get_storage_info( ).web_root + "/" + file_name, tmp_path );
-#else
-      if( !has_wide_chars )
-      {
-         file_remove( tmp_path );
-         file_link( get_storage_info( ).web_root + "/" + file_name, tmp_path );
-      }
-      else
-      {
-         wstring wsrc;
-         wchar_t buffer[ 256 ];
-         memset( buffer, '\0', sizeof( buffer ) );
-
-         string s( get_storage_info( ).web_root + "/" + file_name );
-         for( size_t i = 0; i < s.size( ); i++ )
-            wsrc += ( wchar_t )s[ i ];
-
-         ::MultiByteToWideChar( CP_UTF8, MB_ERR_INVALID_CHARS,
-          tmp_path.c_str( ), tmp_path.length( ), buffer, 255 );
-
-         wstring wname( buffer );
-
-         file_remove( wname );
-         file_linkw( wsrc.c_str( ), wname.c_str( ) );
-      }
-#endif
    }
 }
 
