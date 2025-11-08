@@ -19,7 +19,7 @@ APP_DIR=@lower:$STORAGE
 .wait 5000
 ;
 @ifdef $WEBDIR
-~touch $WEBDIR/meta/.prepare.backup
+~touch $WEBDIR/$APP_DIR/.prepare.backup
 @endif
 ;
 .system_variable @disallow_connections 1
@@ -64,10 +64,9 @@ ERROR=Failed due to active sessions not being automatically terminated.
 @else
 ;
 @ifdef $WEBDIR
-CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/meta/backup.log
+CIYAM_EXEC_SYSTEM_APPEND=$WEBDIR/$APP_DIR/backup.log
 ~rm -f Backup.txt
 ~./log_head.sh $CIYAM_EXEC_SYSTEM_APPEND
-~./ciyam_backup Meta meta >> $CIYAM_EXEC_SYSTEM_APPEND
 ~./ciyam_backup $STORAGE $APP_DIR >> $CIYAM_EXEC_SYSTEM_APPEND
 ~./log_tail.sh $CIYAM_EXEC_SYSTEM_APPEND
 ;
@@ -76,7 +75,6 @@ BACKUP_FILES_PATH=$OUTPUT
 ;
 @ifdef $BACKUP_FILES_PATH
 ~mkdir -p $BACKUP_FILES_PATH/.ciyam
-~mv Meta.backup*.bun.gz $BACKUP_FILES_PATH/.ciyam
 ~mv $STORAGE.backup*.bun.gz $BACKUP_FILES_PATH/.ciyam
 <create_peer_info_file_list.cin "~prepare_backup.files"
 <append_hub_and_extras_list.cin "~prepare_backup.files"
@@ -86,7 +84,6 @@ BACKUP_FILES_PATH=$OUTPUT
 .system_variable @backup_needed 1
 @endif
 @else
-~./ciyam_backup Meta meta
 ~./ciyam_backup $STORAGE $APP_DIR
 @endif
 @endif
@@ -95,7 +92,7 @@ BACKUP_FILES_PATH=$OUTPUT
 .system_variable @prepare_in_progress ""
 ;
 @ifdef $WEBDIR
-~rm -f $WEBDIR/meta/.prepare.backup
+~rm -f $WEBDIR/$APP_DIR/.prepare.backup
 @endif
 ;
 .system_variable @prepare_system ""
