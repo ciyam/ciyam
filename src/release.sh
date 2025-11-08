@@ -221,10 +221,12 @@ else
 
  cp -R $WEBDIR/$app_dir_name $release_name/$app_dir_name
 
+ # NOTE: Remove any symbolic links that were copied.
+ find $release_name/$app_dir_name -type l -exec unlink {} \;
+
  if [ "$main_module" = "Meta" ]; then
   rm -f $release_name/$app_dir_name/*.log
   rm -f $release_name/$app_dir_name/*.sav
-  rm -f $release_name/$app_dir_name/ciyam.pem
   rm -f $release_name/$app_dir_name/identity.txt
   rm -f $release_name/$app_dir_name/encrypted.txt
  fi
