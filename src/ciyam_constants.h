@@ -132,6 +132,8 @@ const char* const c_ui_group_marker = "GROUP";
 const char* const c_ui_class_changing = "ui_CLASS_changing";
 const char* const c_ui_group_changing = "ui_GROUP_changing";
 
+const char* const c_ciyam_ui_stop_file = "ciyam_interface.stop";
+
 const char* const c_test_backup_identity = "e3733d121";
 const char* const c_test_shared_identity = "121d3373e";
 

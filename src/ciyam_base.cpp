@@ -2095,6 +2095,12 @@ struct reconstruct_trace_progress : progress
     also_to_cout( also_to_cout ),
     num_chars_to_cout( 0 )
    {
+      if( !g_web_root.empty( ) )
+         stop_file = g_web_root + '/' + c_ciyam_ui_stop_file;
+
+      if( !stop_file.empty( ) )
+         file_touch( stop_file, 0, true );
+
       // FUTURE: This message should be handled as a server string message.
       string message( "(starting restore for ODS DB '" + name + "'..." );
 
@@ -2120,6 +2126,9 @@ struct reconstruct_trace_progress : progress
       TRACE_LOG( TRACE_MINIMAL, message );
 
       clear_num_cout_chars( );
+
+      if( !stop_file.empty( ) )
+         file_remove( stop_file );
    }
 
    void output_progress( const string& message, unsigned long num, unsigned long total )
@@ -2175,6 +2184,7 @@ struct reconstruct_trace_progress : progress
    }
 
    string name;
+   string stop_file;
 
    date_time dtm;
 
@@ -4859,16 +4869,11 @@ void init_globals( const char* p_sid, int* p_use_udp )
 
       if( !g_web_root.empty( ) )
       {
-         string app_dir( lower( get_raw_system_variable( get_special_var_name( e_special_var_storage ) ) ) );
+         // NOTE: If completed restore now remove the FCGI UI stop file.
+         string ui_stop_file( g_web_root + '/' + c_ciyam_ui_stop_file );
 
-         if( !app_dir.empty( ) )
-         {
-            // NOTE: If has completed restoring remove the FCGI UI stop file.
-            string ui_stop_file( g_web_root + '/' + app_dir + "/ciyam_interface.stop" );
-
-            if( file_exists( ui_stop_file ) )
-               file_remove( ui_stop_file );
-         }
+         if( file_exists( ui_stop_file ) )
+            file_remove( ui_stop_file );
       }
    }
    catch( exception& x )

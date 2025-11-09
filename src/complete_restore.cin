@@ -82,7 +82,6 @@ APP_DIR_REMOVED=@repstr:?$APP_DIR?/?:$WEB_DIRS
 ERROR=Failed due to unexpected missing '$STORAGE' application directory.
 ~echo "Error: $ERROR" >> $CIYAM_EXEC_SYSTEM_APPEND
 @else
-~./unbundle -q $STORAGE.backup "*script.sio.*" "ciyam_server.*" >> $CIYAM_EXEC_SYSTEM_APPEND
 ~tar -xf $BACKUP_FILES_PATH/.ciyam/System_Files_And_Archives.tar -m
 #Restored application server files, archives and databases.
 .session_lock -capture 0
@@ -120,8 +119,8 @@ ERROR=Failed due to a WEBDIR environment variable not having being set.
 @ifdef $WEBDIR
 ; NOTE: Restart the web server in order to force the FCGI UI to reload all application server information.
 ~sudo systemctl stop apache2
+~touch $WEBDIR/ciyam_interface.stop
 ~rm -f $WEBDIR/$APP_DIR/.prepare.restore
-~touch $WEBDIR/$APP_DIR/ciyam_interface.stop
 ~sudo systemctl start apache2
 @endif
 ;

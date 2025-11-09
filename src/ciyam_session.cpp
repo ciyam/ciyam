@@ -5890,6 +5890,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          init_storage( name, "", handler, true );
 
+         bool is_default_storage = ( name == get_raw_system_variable( get_special_var_name( e_special_var_storage ) ) );
+
          backup_storage( handler, ( truncate_log ? &truncation_count : 0 ), &sav_db_file_names );
 
          term_storage( handler );
@@ -5998,43 +6000,46 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   has_demo_keys = true;
                }
 
-               ifstream ascf( autoscript_name.c_str( ), ios::in | ios::binary );
+               if( is_default_storage )
+               {
+                  ifstream ascf( autoscript_name.c_str( ), ios::in | ios::binary );
 
-               if( !ascf )
-                  throw runtime_error( "unable to open '" + autoscript_name + "' for input" );
+                  if( !ascf )
+                     throw runtime_error( "unable to open '" + autoscript_name + "' for input" );
 
-               ofstream sav_ascf( sav_autoscript_name.c_str( ), ios::out | ios::binary );
+                  ofstream sav_ascf( sav_autoscript_name.c_str( ), ios::out | ios::binary );
 
-               if( !sav_ascf )
-                  throw runtime_error( "unable to open '" + sav_autoscript_name + "' for output" );
+                  if( !sav_ascf )
+                     throw runtime_error( "unable to open '" + sav_autoscript_name + "' for output" );
 
-               copy_stream( ascf, sav_ascf );
+                  copy_stream( ascf, sav_ascf );
 
-               ifstream mscf( manuscript_name.c_str( ), ios::in | ios::binary );
+                  ifstream mscf( manuscript_name.c_str( ), ios::in | ios::binary );
 
-               if( !mscf )
-                  throw runtime_error( "unable to open '" + manuscript_name + "' for input" );
+                  if( !mscf )
+                     throw runtime_error( "unable to open '" + manuscript_name + "' for input" );
 
-               ofstream sav_mscf( sav_manuscript_name.c_str( ), ios::out | ios::binary );
+                  ofstream sav_mscf( sav_manuscript_name.c_str( ), ios::out | ios::binary );
 
-               if( !sav_mscf )
-                  throw runtime_error( "unable to open '" + sav_manuscript_name + "' for output" );
+                  if( !sav_mscf )
+                     throw runtime_error( "unable to open '" + sav_manuscript_name + "' for output" );
 
-               copy_stream( mscf, sav_mscf );
+                  copy_stream( mscf, sav_mscf );
 
-               ifstream siof( server_sio_name.c_str( ), ios::in | ios::binary );
+                  ifstream siof( server_sio_name.c_str( ), ios::in | ios::binary );
 
-               if( !siof )
-                  throw runtime_error( "unable to open server backup input files for '" + name + "'" );
+                  if( !siof )
+                     throw runtime_error( "unable to open server backup input files for '" + name + "'" );
 
-               ofstream sav_siof( sav_server_sio_name.c_str( ), ios::out | ios::binary );
+                  ofstream sav_siof( sav_server_sio_name.c_str( ), ios::out | ios::binary );
 
-               if( !sav_siof )
-                  throw runtime_error( "unable to open server backup output files for '" + name + "'" );
+                  if( !sav_siof )
+                     throw runtime_error( "unable to open server backup output files for '" + name + "'" );
 
-               copy_stream( siof, sav_siof );
+                  copy_stream( siof, sav_siof );
 
-               sav_server_db_file_names = system_ods_instance( ).backup_database( c_sav_extension, ' ' );
+                  sav_server_db_file_names = system_ods_instance( ).backup_database( c_sav_extension, ' ' );
+               }
             }
 
             string file_names( sav_db_file_names );
@@ -6079,11 +6084,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
             }
 
-            file_names += " " + sav_autoscript_name;
-            file_names += " " + sav_manuscript_name;
-            file_names += " " + sav_server_sio_name;
+            if( is_default_storage )
+            {
+               file_names += " " + sav_autoscript_name;
+               file_names += " " + sav_manuscript_name;
+               file_names += " " + sav_server_sio_name;
 
-            file_names += " " + sav_server_db_file_names;
+               file_names += " " + sav_server_db_file_names;
+            }
 
             if( is_meta )
                file_names += " Meta.cin";
@@ -6122,11 +6130,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( has_demo_keys )
                remove_file( sav_demo_keys_name );
 
-            remove_file( sav_autoscript_name );
-            remove_file( sav_manuscript_name );
-            remove_file( sav_server_sio_name );
+            if( is_default_storage )
+            {
+               remove_file( sav_autoscript_name );
+               remove_file( sav_manuscript_name );
+               remove_file( sav_server_sio_name );
 
-            remove_files( sav_server_db_file_names, ' ' );
+               remove_files( sav_server_db_file_names, ' ' );
+            }
 
             if( truncate_log )
             {
@@ -6171,6 +6182,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          bool is_meta = ( name == c_meta_model_name );
+
+         bool is_default_storage = ( name == get_raw_system_variable( get_special_var_name( e_special_var_storage ) ) );
 
          string db_file_names( ods_file_names( name, ' ' ) );
 
@@ -6238,13 +6251,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             file_names += " " + backup_sql_name;
             file_names += " " + module_list_name;
 
-            file_names += " " + sav_autoscript_name;
-            file_names += " " + sav_manuscript_name;
-            file_names += " " + sav_server_sio_name;
+            if( is_default_storage )
+            {
+               file_names += " " + sav_autoscript_name;
+               file_names += " " + sav_manuscript_name;
+               file_names += " " + sav_server_sio_name;
 
-            sav_server_db_file_names = ods_backup_file_names( "ciyam_server", c_sav_extension, ' ' );
+               sav_server_db_file_names = ods_backup_file_names( "ciyam_server", c_sav_extension, ' ' );
 
-            file_names += " " + sav_server_db_file_names;
+               file_names += " " + sav_server_db_file_names;
+            }
 
             // NOTE: The ".init.lst" and ".csv" files are omitted (as they should have been
             // generated and are only included in the backup itself for debugging purposes).

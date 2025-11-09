@@ -97,6 +97,7 @@ const char* const c_id_file = "identity.txt";
 const char* const c_eid_file = "encrypted.txt";
 
 const char* const c_stop_file = "ciyam_interface.stop";
+const char* const c_all_stop_file = "../ciyam_interface.stop";
 
 const char* const c_backup_log_file = "backup.log";
 const char* const c_restore_log_file = "restore.log";
@@ -240,6 +241,19 @@ string g_restore_checksum;
 string g_display_login_info;
 string g_display_change_password;
 string g_display_sign_up_for_an_account;
+
+bool has_ui_stop_file( )
+{
+   bool retval = false;
+
+   string stop_file_name( c_ciyam_ui_stop_file );
+
+   if( file_exists( stop_file_name )
+    || file_exists( "../" + stop_file_name ) )
+      retval = true;
+
+   return retval;
+}
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
 #  ifdef SSL_SUPPORT
@@ -790,7 +804,7 @@ void timeout_handler::on_start( )
          g_sessions.erase( dead_sessions[ i ] );
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
-      if( file_exists( c_stop_file ) )
+      if( has_ui_stop_file( ) )
          disconnect_sockets( true );
 #endif
       if( g_sessions.empty( ) )
@@ -1149,11 +1163,11 @@ void request_handler::process_request( )
          if( !file_exists( c_restore_log_file ) )
             file_touch( c_has_restored_file, 0, true );
       }
-      else if( file_exists( c_stop_file ) )
+      else if( has_ui_stop_file( ) )
       {
          msleep( 2500 );
 
-         if( file_exists( c_stop_file ) )
+         if( has_ui_stop_file( ) )
          {
             using_anonymous = true;
             throw runtime_error( GDS( c_display_under_maintenance_try_again_later ) );
@@ -4025,7 +4039,7 @@ int main( int argc, char* argv[ ] )
       // can be displayed).
       for( size_t i = 0; i < 20; i++ )
       {
-         if( file_exists( c_stop_file ) )
+         if( file_exists( c_ciyam_ui_stop_file ) || file_exists( c_all_stop_file ) )
             msleep( 500 );
          else
             break;
