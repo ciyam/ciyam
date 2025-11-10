@@ -99,6 +99,7 @@ const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_slotx = "SLOTX";
 const char* const c_env_var_no_udp = "NO_UDP";
 const char* const c_env_var_output = "OUTPUT";
+const char* const c_env_var_webdir = "WEBDIR";
 const char* const c_env_var_pub_key = "PUB_KEY";
 const char* const c_env_var_pub_keyx = "PUB_KEYX";
 const char* const c_env_var_file_name = "FILE_NAME";
@@ -258,6 +259,7 @@ class ciyam_console_command_handler : public console_command_handler
    }
 
    const char* get_host( ) const { return host.c_str( ); }
+
    int get_port( ) const { return port; }
 
    private:
@@ -748,10 +750,11 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                if( num_datagrams > 0 && num_datagrams <= 1000 )
                {
                   has_sent_datagrams = true;
+
                   send_test_datagrams( num_datagrams, get_host( ), get_port( ), c_send_datagram_timeout, &usocket );
 
                   // NOTE: Allow application server a little extra time to receive datagrams.
-                  if( get_host( ) == c_local_host )
+                  if( string( get_host( ) ) == c_local_host )
                      msleep( c_send_datagram_timeout * 2 );
                   else
                      msleep( c_send_datagram_timeout / 2 );
@@ -785,7 +788,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
          if( has_sent_datagrams )
          {
-            if( get_host( ) == c_local_host )
+            if( string( get_host( ) ) == c_local_host )
                msleep( c_send_datagram_timeout * 2 );
             else
                msleep( c_send_datagram_timeout / 2 );
@@ -1200,7 +1203,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                            bool was_cancelled = false;
 
-                           if( get_host( ) == string( c_local_host ) )
+                           if( string( get_host( ) ) == c_local_host )
                               data_copy = data;
 
                            while( data.length( ) )
@@ -1232,7 +1235,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
                               {
                                  unsigned char buffer[ c_udp_packet_buffer_size ];
 
-                                 if( get_host( ) == string( c_local_host ) )
+                                 if( string( get_host( ) ) == c_local_host )
                                     msleep( 5 );
 
                                  n = usocket.recv_from( buffer, sizeof( buffer ), c_recv_datagram_timeout );
@@ -1286,7 +1289,7 @@ void ciyam_console_command_handler::preprocess_command_and_args(
 
                            if( !was_cancelled )
                            {
-                              if( get_host( ) != string( c_local_host ) )
+                              if( string( get_host( ) ) != c_local_host )
                                  msleep( c_send_datagram_timeout );
                               else
                                  msleep( c_send_datagram_timeout * 2 );
@@ -1936,6 +1939,20 @@ int main( int argc, char* argv[ ] )
          else
          {
             socket.close( );
+
+            if( string( cmd_handler.get_host( ) ) == c_local_host )
+            {
+               string web_dir( get_environment_variable( c_env_var_webdir ) );
+
+               // NOTE: If the global FCGI UI "stop" file is found then is
+               // likely to be performing an ODS DB reconstruction so will
+               // prompt the user to check its log.
+               if( !web_dir.empty( ) )
+               {
+                  if( file_exists( web_dir + '/' + c_ciyam_ui_stop_file ) )
+                     throw runtime_error( "(application server appears to be busy - check its log file)" );
+               }
+            }
 
             throw runtime_error( "unable to connect to host '"
              + string( cmd_handler.get_host( ) ) + "' on port " + to_string( cmd_handler.get_port( ) ) );
