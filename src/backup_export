@@ -101,7 +101,7 @@ fi
 echo "Finished restore..." >>Backup.txt
 date >>Backup.txt
 
-if [ -f $BACKUP_PATH/.ciyam/Meta.backup.bun.gz ]; then
+if [ -f $BACKUP_PATH/.ciyam/System_Files_And_Archives.tar ]; then
  touch .complete_restore_needed
 fi
 
