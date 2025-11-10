@@ -137,8 +137,6 @@ else
 
  cp autoscript.sio.default ciyam_server.sio.default manuscript.sio.default $release_name/ciyam
 
- cp Meta.cin Meta.sql Meta.txt Meta.modules.lst $release_name/ciyam
-
  cp modules.lst packages.lst ciyam_demo_identities.lst $release_name/ciyam
 
  cp channel_readme.md mnemonics.txt ciyam_strings.txt module_strings.txt $release_name/ciyam
@@ -157,9 +155,15 @@ else
 
   mv $main_module $release_name/ciyam
 
+  cp $main_module.cin $release_name/ciyam
+  cp $main_module.sql $release_name/ciyam
+  cp $main_module.txt $release_name/ciyam
+
   cp *.package.bun.gz $release_name/ciyam
 
   cp Meta_init_std.cin $release_name/ciyam
+
+  cp $main_module.modules.lst $release_name/ciyam
 
   ./ciyam_command storage_backup -init $main_module
 
@@ -190,20 +194,16 @@ else
 
   mv $main_module $release_name/ciyam
 
+  rm -f $release_name/ciyam/Meta.so
+
+  rm -f $release_name/ciyam/getmeta.cin
+  rm -f $release_name/ciyam/recreate_meta.cin
+  rm -f $release_name/ciyam/meta_user_set_active.cin
+  rm -f $release_name/ciyam/output_all_mapped_meta_data.cin
+
   rm -f $release_name/ciyam/$main_module.generate.*.cin
 
-  ./ods_fsed -quiet "-exec=export Meta" Meta
-
-  mv Meta $release_name/ciyam
-
-  cat Meta.log | tail -n +2 | sed '/meta std (start)/!q' > $release_name/ciyam/Meta.log.app
-
-  ./ciyam_command storage_backup -init Meta
   ./ciyam_command storage_backup -init $main_module
-
-  if [ -f Meta.backup.sql ]; then
-   mv Meta.backup.sql $release_name/ciyam
-  fi
 
   if [ -f $main_module.backup.sql ]; then
    mv $main_module.backup.sql $release_name/ciyam
@@ -221,15 +221,14 @@ else
 
  cp -R $WEBDIR/$app_dir_name $release_name/$app_dir_name
 
+ # NOTE: Remove files that should not be present.
+ rm -f $release_name/$app_dir_name/*.log
+ rm -f $release_name/$app_dir_name/*.sav
+ rm -f $release_name/$app_dir_name/identity.txt
+ rm -f $release_name/$app_dir_name/encrypted.txt
+
  # NOTE: Remove any symbolic links that were copied.
  find $release_name/$app_dir_name -type l -exec unlink {} \;
-
- if [ "$main_module" = "Meta" ]; then
-  rm -f $release_name/$app_dir_name/*.log
-  rm -f $release_name/$app_dir_name/*.sav
-  rm -f $release_name/$app_dir_name/identity.txt
-  rm -f $release_name/$app_dir_name/encrypted.txt
- fi
 
  had_install=
 

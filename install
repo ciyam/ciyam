@@ -294,25 +294,22 @@ sudo cp -R ciyam/* $INSTALL_PATH
 sudo chown -R $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
 
 if [ "$has_system" = "" ]; then
- if [ ! -f $INSTALL_PATH/Meta.log ]; then
-  if [ ! "$CIYAM_APP_MOD" = "Meta" ]; then
-   dbus-uuidgen | xargs -I{} echo -n @{} > $INSTALL_PATH/Meta/id
+ if [ "$CIYAM_APP_MOD" = "Meta" ]; then
+  # NOTE: Replace the exported "id" with a newly generated "<identity>".
+  dbus-uuidgen | xargs -I{} echo -n {} > $INSTALL_PATH/$CIYAM_APP_MOD/id
 
-   cat $INSTALL_PATH/Meta/id | sed 's/@/[0]/g' | xargs echo -e > $INSTALL_PATH/Meta.log
+  echo -n "[0]" > $INSTALL_PATH/$CIYAM_APP_MOD.log
+  cat $INSTALL_PATH/$CIYAM_APP_MOD/id >> $INSTALL_PATH/$CIYAM_APP_MOD.log
 
-   cat $INSTALL_PATH/Meta.log.app >> $INSTALL_PATH/Meta.log
-   sudo chown $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/Meta.log
+ else
+  # NOTE: Replace the exported "id" with a newly generated "@<identity>".
+  dbus-uuidgen | xargs -I{} echo -n @{} > $INSTALL_PATH/$CIYAM_APP_MOD/id
 
-   rm -f $INSTALL_PATH/Meta.log.app
-  fi
+  cat $INSTALL_PATH/$CIYAM_APP_MOD/id | sed 's/@/[0]/g' | xargs echo -e > $INSTALL_PATH/$CIYAM_APP_MOD.log
  fi
 
- # NOTE: Replace the exported "id" with a newly generated "@<identity>".
- dbus-uuidgen | xargs -I{} echo -n @{} > $INSTALL_PATH/$CIYAM_APP_MOD/id
-
- cat $INSTALL_PATH/$CIYAM_APP_MOD/id | sed 's/@/[0]/g' | xargs echo -e > $INSTALL_PATH/$CIYAM_APP_MOD.log
-
  cat $INSTALL_PATH/$CIYAM_APP_MOD.log.app >> $INSTALL_PATH/$CIYAM_APP_MOD.log
+
  sudo chown $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH/$CIYAM_APP_MOD.log
 
  rm -f $INSTALL_PATH/$CIYAM_APP_MOD.log.app
@@ -323,9 +320,7 @@ if [ "$has_system" = "" ]; then
   sed -i "s/# <protocol_handler>file:\/\// <protocol_handler>sftp:\/\/@user@localhost:2222/g" $CONFIG_PATH/ciyam_server.sio
  fi
 
- if [ ! "$CIYAM_APP_MOD" = "Meta" ]; then
-  sed -i "s/# <default_storage>Meta/ <default_storage>$CIYAM_APP_MOD/g" $CONFIG_PATH/ciyam_server.sio
- fi
+ sed -i "s/# <default_storage>Meta/ <default_storage>$CIYAM_APP_MOD/g" $CONFIG_PATH/ciyam_server.sio
 fi
 
 if [ -f $INSTALL_PATH/manuscript.sio.generated ]; then
@@ -368,18 +363,6 @@ sudo chown -R $CIYAM_USER:$CIYAM_GROUP $INSTALL_PATH
 
 rm -r ciyam
 
-if [ ! -d $WEBDIR/meta ]; then
- sudo mkdir $WEBDIR/meta
- sudo chmod g+w $WEBDIR/meta
- sudo chown $CIYAM_USER:$HTTPD_GROUP $WEBDIR/meta
-fi
-
-if [ ! -d $WEBDIR/meta ]; then
- echo "Error: Unable to access/create $WEBDIR/meta directory (incorrect perms?)."
-
- exit
-fi
-
 if [ ! -d $WEBDIR/$CIYAM_APP_DIR ]; then
  sudo mkdir $WEBDIR/$CIYAM_APP_DIR
  sudo chmod g+w $WEBDIR/$CIYAM_APP_DIR
@@ -404,16 +387,6 @@ if [ ! -f $WEBDIR/$CIYAM_APP_DIR/ciyam.pem ]; then
 fi
 
 sudo systemctl restart apache2
-
-if [ -f $INSTALL_PATH/Meta.backup.sql ]; then
- pushd $INSTALL_PATH > /dev/null
- if [ "$has_service" = "1" ]; then
-  ./drop_db Meta .
- fi
- ./create_db Meta .
- rm -f Meta.backup.sql
- popd > /dev/null
-fi
 
 if [ -f $INSTALL_PATH/$CIYAM_APP_MOD.backup.sql ]; then
  pushd $INSTALL_PATH > /dev/null
