@@ -233,53 +233,6 @@ rmdir Public
 rmdir Videos
 rmdir Templates
 
-Create backup staging area ext4 file system and automount entry
----------------------------------------------------------------
-sudo fallocate -l 10M backup.img
-sudo mkfs.ext4 backup.img
-
-sudo mkdir backup
-sudo mount backup.img backup
-
-sudo mkdir backup/.ciyam
-sudo mkdir backup/.system
-sudo mv backup/lost+found backup/.system
-
-sudo chown -R admin:www-data backup
-
-sudo umount backup
-
-Create opened staging area ext4 file system and automount entry
----------------------------------------------------------------
-sudo fallocate -l 10M opened.img
-sudo mkfs.ext4 opened.img
-
-sudo mkdir opened
-sudo mount opened.img opened
-
-sudo mkdir opened/.system
-sudo mv opened/lost+found opened/.system
-
-sudo chown -R admin:ciyam opened
-sudo chmod g+rx /home/admin/opened
-
-sudo umount opened
-
-Create shared staging area ext4 file system and automount entry
----------------------------------------------------------------
-sudo fallocate -l 10M shared.img
-sudo mkfs.ext4 shared.img
-
-sudo mkdir shared
-sudo mount shared.img shared
-
-sudo mkdir shared/.system
-sudo mv shared/lost+found shared/.system
-
-sudo chown -R admin:www-data shared
-
-sudo umount shared
-
 Clone the CIYAM Software Manufacturing repository
 -------------------------------------------------
 
