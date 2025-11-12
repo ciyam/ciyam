@@ -8,6 +8,36 @@ CONFIG_PATH=/etc/ciyam
 INSTALL_PATH=/opt/ciyam
 SYSTEM_LOG_PATH=/var/log/ciyam
 
+create_fs_file( )
+{
+ if [ "$1" = "" ]; then
+  echo "Error: Unexpected missing name for 'create_fs_file'."
+  exit
+ fi
+
+ if [ ! -f /home/$CIYAM_USER/$1.img ]; then
+  pushd /home/$CIYAM_USER > /dev/null
+
+  sudo fallocate -l 10M $1.img
+  sudo mkfs.ext4 $1.img
+
+  if [ ! -d $1 ]; then
+   sudo mkdir $1
+   sudo mount $1.img $1
+
+   sudo mkdir $1/.ciyam
+   sudo mkdir $1/.system
+   sudo mv $1/lost+found $1/.system
+
+   sudo chown -R $CIYAM_USER:$HTTPD_GROUP $1
+
+   sudo umount $1
+  fi
+
+  popd > /dev/null
+ fi
+}
+
 copy_config_default( )
 {
  if [ "$1" = "" ]; then
@@ -129,6 +159,12 @@ if [ "$CIYAM_USER" = "root" ]; then
  fi
 fi
 
+if [ ! -d /home/$CIYAM_USER ]; then
+ echo "Error: Home directory for '$CIYAM_USER' was not found."
+
+ exit
+fi
+
 had_error=
 
 release_dir=
@@ -173,7 +209,6 @@ if [ "$release_dir" = "" ]; then
  exit
 fi
 
-
 # NOTE: If is a development environment then will save and erase the current
 # identity (and also stop the application server if it's currently running).
 if [ "$is_dev_env" = "1" ]; then
@@ -196,6 +231,10 @@ if [ "$is_dev_env" = "1" ]; then
  fi
 
  popd > /dev/null
+else
+ create_fs_file backup
+ create_fs_file shared
+ create_fs_file opened
 fi
 
 cd $release_dir
