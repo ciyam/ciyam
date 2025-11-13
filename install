@@ -18,8 +18,8 @@ create_fs_file( )
  if [ ! -f /home/$CIYAM_USER/$1.img ]; then
   pushd /home/$CIYAM_USER > /dev/null
 
-  sudo fallocate -l 10M $1.img
-  sudo mkfs.ext4 $1.img
+  sudo fallocate -l 10M $1.img > /dev/null
+  sudo mkfs.ext4 $1.img > /dev/null
 
   if [ ! -d $1 ]; then
    sudo mkdir $1
@@ -233,8 +233,8 @@ if [ "$is_dev_env" = "1" ]; then
  popd > /dev/null
 else
  create_fs_file backup
- create_fs_file shared
  create_fs_file opened
+ create_fs_file shared
 fi
 
 cd $release_dir
