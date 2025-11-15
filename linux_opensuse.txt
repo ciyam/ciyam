@@ -633,16 +633,24 @@ sudo certbot renew --force-renewal
 sudo systemctl restart coturn
 sudo systemctl status coturn
 
-NOTE: If the external IP is not static then will need to add an update "cron" script.
+NOTE: If the external IP is not static then might want to add an update "cron" bash
+script such as the following.
 
 vi coturn-external-ip
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 #!/bin/bash
 
+current_external_ip=$1
 current_external_ip_config=$(sudo cat /etc/turnserver.conf | grep "^external-ip" | cut -d'=' -f2)
-current_external_ip=$(dig +short ***domain_name***)
 
-if [[ -n "$current_external_ip" ]] && [[ $current_external_ip_config != $current_external_ip ]]; then
+if [ "$current_external_ip" = "" ]; then
+ current_external_ip=$(dig +tls @9.9.9.9 +short ***domain_name***)
+fi
+
+# NOTE: Only checks not empty and has no spaces (use 'ipcalc-ng' for a precise check).
+if [[ "$current_external_ip" != "" ]] &&
+ [[ "$current_external_ip" != *" "* ]] &&
+ [[ $current_external_ip_config != $current_external_ip ]]; then
  sudo sed -i "/^external-ip=/ c external-ip=$current_external_ip" /etc/turnserver.conf
  sudo systemctl restart coturn
 fi

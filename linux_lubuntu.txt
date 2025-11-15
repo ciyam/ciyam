@@ -691,16 +691,25 @@ sudo certbot renew --force-renewal
 sudo systemctl restart coturn
 sudo systemctl status coturn
 
-NOTE: If the external IP is not static then will need to add an update "cron" script.
+NOTE: If the external IP is not static then might want to add an update "cron" bash
+script such as the following (or instead call it using 'check-external-ip' which is
+documented in the LiveKit section).
 
 vi coturn-external-ip
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 #!/bin/bash
 
+current_external_ip=$1
 current_external_ip_config=$(sudo cat /etc/turnserver.conf | grep "^external-ip" | cut -d'=' -f2)
-current_external_ip=$(dig +short ***domain_name***)
 
-if [[ -n "$current_external_ip" ]] && [[ $current_external_ip_config != $current_external_ip ]]; then
+if [ "$current_external_ip" = "" ]; then
+ current_external_ip=$(dig +tls @9.9.9.9 +short ***domain_name***)
+fi
+
+# NOTE: Only checks not empty and has no spaces (use 'ipcalc-ng' for a precise check).
+if [[ "$current_external_ip" != "" ]] &&
+ [[ "$current_external_ip" != *" "* ]] &&
+ [[ $current_external_ip_config != $current_external_ip ]]; then
  sudo sed -i "/^external-ip=/ c external-ip=$current_external_ip" /etc/turnserver.conf
  sudo systemctl restart coturn
 fi
@@ -1060,6 +1069,9 @@ rtc:
   port_range_start: 40000
   port_range_end: 44999
   use_external_ip: true
+# NOTE: If livekit-sfu has issues with the external IP address can use this instead:
+#  use_external_ip: false
+#  node_ip: ***external_ip_address***
 logging:
   level: info
 turn:
@@ -1198,10 +1210,55 @@ lk token create --api-key devkey --api-secret ***livekit-secret*** --join --room
 
 https://livekit.io/connection-test
 
-Livekit URL: https://***server***/livekit/sfu
+Livekit URL: wss://***server***/livekit/sfu
 Room Token: ***access_token***
 
 https://github.com/element-hq/element-call/blob/livekit/docs/self-hosting.md
+
+NOTE: If the external IP is not static then might want to add an update "cron" bash
+such as the following (which will also call 'coturn-external-ip' if it is present).
+
+vi check-external-ip
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#!/bin/bash
+
+cd /home/admin
+
+saved_external_ip=
+
+if [ -f .external_ip_address ]; then
+ saved_external_ip=$(<.external_ip_address)
+fi
+
+current_external_ip=$(dig +tls @9.9.9.9 +short ***domain_name***)
+
+if [ "$current_external_ip=" = "" ]; then
+ not_good=1
+fi
+
+if [[ "$current_external_ip" = *" "* ]]; then
+ not_good=1
+fi
+
+if [ "$current_external_ip=" = "127.0.0.1" ]; then
+ not_good=1
+fi
+
+if [ "$not_good" = "" ]; then
+ if [ "$saved_external_ip" != "$current_external_ip" ]; then
+  echo -n "$current_external_ip" > .external_ip_address
+
+  if [ -f coturn-external-ip ]; then
+   ./coturn-external-ip $current_external_ip
+  fi
+
+  # NOTE: This is only required if an explicit 'node_ip' has been configured.
+  sudo sed -i "/^  node_ip:/ c \  node_ip: $current_external_ip" /etc/livekit.yaml
+
+  sudo systemctl restart livekit-sfu
+ fi
+fi
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 mkdir -p /var/www/html/.well-known/matrix
 
