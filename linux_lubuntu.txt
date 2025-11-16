@@ -374,10 +374,11 @@ Required router port mappings:
 Port #  Label     Local Port Protocol
 ------  -------   ---------- --------
     80  HTTP            80        TCP
-   443  HTTPS          443    TCP/UDP
-  3478  TURN CTL      3478        TCP
-  5348  TURN SCTL     5348        TCP
-  5349  LVKT SCTL     5349        TCP
+   443  HTTPS          443        TCP
+  3477  TURN CTL      3477    TCP/UDP
+  3478  LVKT CTL      3478    TCP/UDP
+  5348  TURN SCTL     5348    TCP/UDP
+  5349  LVKT SCTL     5349    TCP/UDP
   7881  LVKT SRTC     7881        TCP
  10001  SSH          10001        TCP
  12021  CIYAM        12021    TCP/UDP
@@ -624,6 +625,9 @@ head -c 32 /dev/random | sha256sum | cut -c -32
 sudo vi /etc/turnserver.conf
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
+#listening-port=3478
+listening-port=3477
+...
 #tls-listening-port=5349
 tls-listening-port=5348
 ...
@@ -647,7 +651,7 @@ pkey=/etc/coturn/certs/***domain_name***.key
 no-cli
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-sudo ufw allow 3478
+sudo ufw allow 3477
 sudo ufw allow 5348
 sudo ufw allow 50000:59999/udp
 
@@ -722,8 +726,8 @@ sudo vi /etc/matrix-synapse/homeserver.yaml
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ...
 turn_uris:
-  - "turn:***domain_name***:3478?transport=udp"
-  - "turn:***domain_name***:3478?transport=tcp"
+  - "turn:***domain_name***:3477?transport=udp"
+  - "turn:***domain_name***:3477?transport=tcp"
 # Due to issues with LetsEncrypt certs these two may need to be omitted.
 #  - "turns:***domain_name***:5348?transport=udp"
 #  - "turns:***domain_name***:5348?transport=tcp"
@@ -1076,11 +1080,13 @@ logging:
   level: info
 turn:
   enabled: true
-  udp_port: 443
+  udp_port: 3478
   tls_port: 5349
   relay_range_start: 45000
   relay_range_end: 49999
   domain: ***domain_name***
+  key_file: /etc/letsencrypt/live/***domain_name***/privkey.pem
+  cert_file: /etc/letsencrypt/live/***domain_name***/fullchain.pem
 keys:
   devkey: "***livekit_secret***"
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -1088,9 +1094,9 @@ keys:
 (to verify if the configuration is valid)
 livekit-server --config /etc/livekit.yaml
 
-ufw allow 443/udp
 ufw allow 7881/tcp
-ufw allow 5349/tcp
+ufw allow 3478
+ufw allow 5349
 ufw allow 40000:49999/udp
 
 vi livekit-sfu.service
