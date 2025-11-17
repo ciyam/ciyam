@@ -13,13 +13,9 @@
 #     include <sys/stat.h>
 #  endif
 
-#  ifdef _WIN32
-const char c_dir_char = '\\';
-const char* const c_default_directory = "C:\\";
-#  else
 const char c_dir_char = '/';
+
 const char* const c_default_directory = "/";
-#  endif
 
 struct directory_info;
 
@@ -88,4 +84,3 @@ class fs_iterator
 };
 
 #endif
-

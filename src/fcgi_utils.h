@@ -70,10 +70,6 @@ std::string get_module_id_for_attached_file( const source& source );
 
 std::string get_module_page_name( const std::string& module_ref, bool check_for_index = false );
 
-#  ifdef _WIN32
-bool delete_files( const char* p_dir, bool recycle = false );
-#  endif
-
 std::string get_hash( const std::string& values );
 
 std::string get_user_hash( const std::string& user_id );

@@ -9,11 +9,6 @@
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <string>
-#     ifdef _WIN32
-#        define NOMINMAX
-#        define _WINSOCKAPI_
-#        include <windows.h>
-#     endif
 #  endif
 
 #  include "macros.h"
@@ -22,7 +17,9 @@ class dynamic_library
 {
    public:
    dynamic_library( const std::string& file_name );
+
    dynamic_library( const std::string& file_name, const std::string& module_name );
+
    virtual ~dynamic_library( );
 
    void init( );
@@ -41,4 +38,3 @@ class dynamic_library
 };
 
 #endif
-
