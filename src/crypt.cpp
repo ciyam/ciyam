@@ -16,16 +16,9 @@
 #  include <sstream>
 #  include <iostream>
 #  include <stdexcept>
-#  ifdef _WIN32
-#     ifndef STRICT
-#        define STRICT // Needed for "windows.h" by various Borland headers.
-#     endif
-#     include <windows.h>
-#  else
-#     include <time.h>
-#     include <utime.h>
-#     include <sys/stat.h>
-#  endif
+#  include <time.h>
+#  include <utime.h>
+#  include <sys/stat.h>
 #endif
 
 #include "md5.h"
@@ -89,6 +82,8 @@ int main( int argc, char* argv[ ] )
       cout << c_title << "\nUsage: crypt [-q] [-c] [-h] [-cc|-dh] [-p[s]] [-t] <file> [<program>]" << endl;
       return 0;
    }
+
+   int rc = 0;
 
    int first_arg = 1;
    int hash_count = 0;
@@ -184,21 +179,6 @@ int main( int argc, char* argv[ ] )
       else if( use_dbl_hash )
          cipher = e_stream_cipher_dbl_hash;
 
-#ifdef _WIN32
-      FILETIME atime, ctime, mtime;
-
-      HANDLE hFile = ::CreateFile( argv[ first_arg ], GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0 );
-
-      if( hFile == INVALID_HANDLE_VALUE )
-      {
-         cerr << "Error: Unable to open file '" << argv[ first_arg ] << "' for input." << endl;
-         return 1;
-      }
-
-      ::GetFileTime( hFile, &ctime, &atime, &mtime );
-
-      ::CloseHandle( hFile );
-#else
       struct stat statbuf;
       struct utimbuf otimes;
 
@@ -210,7 +190,6 @@ int main( int argc, char* argv[ ] )
 
       otimes.actime = statbuf.st_atime;
       otimes.modtime = statbuf.st_mtime;
-#endif
 
       // NOTE: Empty code block for scope purposes.
       {
@@ -357,32 +336,23 @@ int main( int argc, char* argv[ ] )
             file_remove( test_file_name );
       }
 
-#ifndef _WIN32
       utime( argv[ first_arg - 1 ], &otimes );
-#else
-      hFile = ::CreateFile( argv[ first_arg - 1 ],
-       GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0 );
-
-      if( hFile != INVALID_HANDLE_VALUE )
-      {
-         ::SetFileTime( hFile, &ctime, &atime, &mtime );
-         ::CloseHandle( hFile );
-      }
-#endif
 
       if( !is_quiet )
          cout << "Finished." << endl;
    }
    catch( exception& x )
    {
+      rc = 1;
+
       cerr << "Error: " << x.what( ) << endl;
-      return 2;
    }
    catch( ... )
    {
-      cerr << "Error: unexpected exception caught" << endl;
-      return 2;
+      rc = 2;
+
+      cerr << "Error: unexpected unknown exception caught" << endl;
    }
 
-   return 0;
+   return rc;
 }

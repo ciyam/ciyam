@@ -17,13 +17,6 @@
 #  include <iostream>
 #  include <algorithm>
 #  include <stdexcept>
-#  ifdef _WIN32
-#     ifndef STRICT
-#        define STRICT // Needed for "windows.h" by various Borland headers.
-#     endif
-#     define NOMINMAX
-#     include <windows.h>
-#  endif
 #endif
 
 #include "date_time.h"
@@ -1234,60 +1227,44 @@ string mtime::as_string( bool use_separators, bool include_milliseconds ) const
 
 mtime mtime::local( )
 {
-#ifdef _WIN32
-   SYSTEMTIME st;
-   ::GetLocalTime( &st );
-
-   return mtime( ( hour )st.wHour,
-    ( minute )st.wMinute, ( second )st.wSecond, ( millisecond )st.wMilliseconds );
-#else
    time_t t;
    millisecond m = 0;
 
-#  ifdef __GNUG__
+#ifdef __GNUG__
    struct timeval tv;
    ::gettimeofday( &tv, 0 );
 
    t = tv.tv_sec;
    m = tv.tv_usec / 1000;
-#  else
+#else
    t = time( 0 );
-#  endif
+#endif
 
    struct tm* p_t;
    p_t = localtime( &t );
 
    return mtime( p_t->tm_hour, p_t->tm_min, p_t->tm_sec, m );
-#endif
 }
 
 mtime mtime::standard( )
 {
-#ifdef _WIN32
-   SYSTEMTIME st;
-   ::GetSystemTime( &st );
-
-   return mtime( ( hour )st.wHour,
-    ( minute )st.wMinute, ( second )st.wSecond, ( millisecond )st.wMilliseconds );
-#else
    time_t t;
    millisecond m = 0;
 
-#  ifdef __GNUG__
+#ifdef __GNUG__
    struct timeval tv;
    ::gettimeofday( &tv, 0 );
 
    t = tv.tv_sec;
    m = tv.tv_usec / 1000;
-#  else
+#else
    t = time( 0 );
-#  endif
+#endif
 
    struct tm* p_t;
    p_t = gmtime( &t );
 
    return mtime( p_t->tm_hour, p_t->tm_min, p_t->tm_sec, m );
-#endif
 }
 
 mtime mtime::minimum( )
@@ -2394,12 +2371,6 @@ void udate::print( ostream& os ) const
 
 udate udate::local( )
 {
-#ifdef _WIN32
-   SYSTEMTIME st;
-   ::GetLocalTime( &st );
-
-   return udate( st.wYear, ( month )st.wMonth, ( day )st.wDay );
-#else
    time_t t;
    struct tm* p_t;
 
@@ -2407,17 +2378,10 @@ udate udate::local( )
    p_t = localtime( &t );
 
    return udate( p_t->tm_year + 1900, ( month )( p_t->tm_mon + 1 ), p_t->tm_mday );
-#endif
 }
 
 udate udate::standard( )
 {
-#ifdef _WIN32
-   SYSTEMTIME st;
-   ::GetSystemTime( &st );
-
-   return udate( st.wYear, ( month )st.wMonth, ( day )st.wDay );
-#else
    time_t t;
    struct tm* p_t;
 
@@ -2425,7 +2389,6 @@ udate udate::standard( )
    p_t = gmtime( &t );
 
    return udate( p_t->tm_year + 1900, ( month )( p_t->tm_mon + 1 ), p_t->tm_mday );
-#endif
 }
 
 udate udate::minimum( )

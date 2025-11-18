@@ -22,12 +22,7 @@
 #ifdef RDBMS_SQLITE
 #  include "sqlite3.h"
 #else
-#  ifdef _WIN32
-#     include <winsock2.h> // NOTE: Required to get around a MySQL include issue...
-#     include <mysql.h>
-#  else
-#     include <mysql/mysql.h>
-#  endif
+#  include <mysql/mysql.h>
 #endif
 
 using namespace std;

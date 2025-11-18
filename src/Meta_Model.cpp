@@ -52,6 +52,8 @@
 
 // [<start includes>]
 //nyi
+#include <sys/stat.h>
+
 #include "Meta_Enum.h"
 #include "Meta_Type.h"
 #include "Meta_User.h"
@@ -71,9 +73,6 @@
 #include "Meta_Modifier_Affect.h"
 #include "Meta_Specification_Type.h"
 #include "Meta_Initial_Record_Value.h"
-#ifndef _WIN32
-#  include <sys/stat.h>
-#endif
 // [<finish includes>]
 
 using namespace std;

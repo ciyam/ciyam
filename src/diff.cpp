@@ -11,11 +11,7 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <stdio.h>
-#  ifdef _WIN32
-#     include <io.h>
-#  else
-#     include <unistd.h>
-#  endif
+#  include <unistd.h>
 #  include <memory>
 #  include <iostream>
 #  include <stdexcept>
@@ -47,26 +43,19 @@ string append_first_if_second_is_path( const string& first, const string& second
    if( !second.empty( ) )
    {
       string::size_type lpos = second.size( ) - 1;
-#ifndef _WIN32
+
       if( second[ lpos ] == '/' )
          second_is_path = true;
-#else
-      if( second[ lpos ] == '/' || second[ lpos ] == '\\' || second[ lpos ] == ':' )
-         second_is_path = true;
-#endif
 
-      if( second_is_path || _access( second.c_str( ), 0 ) == 0 )
+      if( second_is_path || ( _access( second.c_str( ), 0 ) == 0 ) )
       {
          string tmp( retval );
-#ifndef _WIN32
+
          if( !second_is_path )
             tmp += '/';
+
          string::size_type fpos = first.find_last_of( "/" );
-#else
-         if( !second_is_path )
-            tmp += '\\';
-         string::size_type fpos = first.find_last_of( ":/\\" );
-#endif
+
          if( fpos != string::npos )
             ++fpos;
          else
@@ -137,24 +126,32 @@ int main( int argc, char* argv[ ] )
       return 1;
    }
 
+   int rc = 0;
+
    bool quiet = false;
+
    if( argc > 2 + first_arg && argv[ first_arg ] == string( c_quiet_opt ) )
    {
       ++first_arg;
+
       quiet = true;
    }
 
    bool minimal = false;
+
    if( argc > 2 + first_arg && argv[ first_arg ] == string( c_min_opt ) )
    {
       ++first_arg;
+
       minimal = true;
    }
 
    bool rcs_format = false;
+
    if( argc > 2 + first_arg && argv[ first_arg ] == string( c_rcs_opt ) )
    {
       ++first_arg;
+
       rcs_format = true;
    }
 
@@ -172,6 +169,7 @@ int main( int argc, char* argv[ ] )
          cout << "Files: " << file1 << "\t\t" << file2 << endl;
 
       diff< text_file_buffer > diffs( a, b, true, minimal, a.size( ), b.size( ), c_path_items_initial_reserve );
+
       ed = diffs.get_edit_distance( );
 #ifdef DEBUG
       cout << "(edit distance = " << ed << ")\n" << endl;
@@ -179,27 +177,33 @@ int main( int argc, char* argv[ ] )
 
       int len = 0;
       int num_matches;
+
       pair< int, int > match_point;
 
       int last_x = 0;
       int last_y = 0;
+
       while( diffs.get_next_match_chunk( match_point, num_matches ) )
       {
          len += num_matches;
+
          int x = match_point.first;
          int y = match_point.second;
+
          output_context( x, y, last_x, last_y, rcs_format );
 
          if( rcs_format )
          {
             last_x = x;
+
             while( last_y < y )
                cout << b[ last_y++ ] << '\n';
          }
          else
          {
             bool output_divider = false;
-            if( last_x < x && last_y < y )
+
+            if( ( last_x < x ) && ( last_y < y ) )
                output_divider = true;
 
             while( last_x < x )
@@ -229,6 +233,7 @@ int main( int argc, char* argv[ ] )
       else
       {
          bool output_divider = false;
+
          if( last_x < x && last_y < y )
             output_divider = true;
 
@@ -245,6 +250,7 @@ int main( int argc, char* argv[ ] )
       if( minimal )
       {
          int lcs = ( a.size( ) + b.size( ) - ed ) / 2;
+
          if( lcs != len )
             cerr << "\n*** LCS was not found (path length is "
              << len << " but if is LCS should be " << lcs << ") ***\n";
@@ -252,10 +258,10 @@ int main( int argc, char* argv[ ] )
    }
    catch( exception& e )
    {
+      rc = 1;
+
       cerr << "error: " << e.what( ) << endl;
-      return 1;
    }
 
-   return 0;
+   return rc;
 }
-

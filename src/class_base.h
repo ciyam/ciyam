@@ -767,17 +767,16 @@ class CIYAM_BASE_DECL_SPEC class_base
    void trace( const std::string& s ) const;
 };
 
-#  ifdef __BORLANDC__
-std::string construct_class_identity( const class_base& cb );
-#  else
 inline std::string construct_class_identity( const class_base& cb )
 {
    std::string identity( cb.get_module_id( ) );
+
    identity += ':';
+
    identity += cb.get_class_id( );
+
    return identity;
 }
-#  endif
 
 struct variable_getter
 {

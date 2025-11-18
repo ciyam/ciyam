@@ -42,7 +42,9 @@
 
 // [<start includes>]
 //nyi
+#include <sys/stat.h>
 #include "module_management.h"
+
 #include "Meta_Enum.h"
 #include "Meta_List.h"
 #include "Meta_Type.h"
@@ -56,9 +58,6 @@
 #include "Meta_Relationship.h"
 #include "Meta_Specification.h"
 #include "Meta_Initial_Record.h"
-#ifndef _WIN32
-#  include <sys/stat.h>
-#endif
 // [<finish includes>]
 
 using namespace std;

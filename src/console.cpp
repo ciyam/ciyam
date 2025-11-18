@@ -19,11 +19,7 @@
 #  include <unistd.h>
 #  include <termios.h>
 #else
-#  ifdef _WIN32
-#     include <conio.h>
-#  else
-#     error unsupported compiler platform...
-#  endif
+#  error unsupported compiler platform...
 #endif
 #include <stdexcept>
 
@@ -61,7 +57,7 @@ void get_line_using_get_char( string& str )
       cout.flush( );
       char ch = get_char( 0, false );
 
-      if( ch == '\r' || ch == '\n' || ch == 0x03 ) // i.e. ctrl-c
+      if( ( ch == '\r' ) || ( ch == '\n' ) || ( ch == 0x03 ) ) // i.e. ctrl-c
       {
          cout << endl;
 
@@ -70,11 +66,7 @@ void get_line_using_get_char( string& str )
 
          break;
       }
-#ifdef _WIN32
-      else if( ch == '\b' || ch == 0x1b ) // i.e. BS or ESC
-#else
-      else if( ch == '\b' || ch == 0x21 ) // i.e. BS or ctrl-u
-#endif
+      else if( ( ch == '\b' ) || ( ch == 0x21 ) ) // i.e. BS or ctrl-u
       {
          if( str.length( ) )
          {
@@ -123,9 +115,6 @@ char get_char( const char* p_prompt, bool flush_input )
       cout.flush( );
    }
 
-#ifdef _WIN32
-   return ( char )_getch( );
-#else
    struct termios systerm;
 
    int infd = STDIN_FILENO;
@@ -169,7 +158,6 @@ char get_char( const char* p_prompt, bool flush_input )
       close( infd );
 
    return ( int )ch;
-#endif
 }
 
 void get_line( string& str, const char* p_prompt, bool use_cin )
@@ -239,68 +227,8 @@ string get_password( const char* p_prompt, char* p_buf, size_t buflen )
 }
 #endif
 
-#ifdef _WIN32
-string get_password( const char* p_prompt, char* p_buf, size_t buflen )
-{
-   string str;
-   char buf[ c_max_pwd_len ] = "";
-
-   if( p_prompt && p_prompt[ 0 ] != 0 )
-   {
-      cout << p_prompt;
-      cout.flush( );
-   }
-
-   int pos = 0;
-   while( pos < sizeof( buf ) )
-   {
-      char ch = _getch( );
-
-      if( ch == '\b' )
-      {
-         if( pos > 0 )
-            --pos;
-      }
-      else if( ch == '\r' )
-      {
-         buf[ pos ] = '\0';
-         break;
-      }
-      else
-         buf[ pos++ ] = ch;
-   }
-
-   if( buf[ 0 ] != '\0' )
-   {
-      if( p_buf && buflen )
-      {
-         if( pos >= buflen )
-            throw runtime_error( "get_password buflen was exceeded" );
-
-         strncpy( p_buf, buf, pos );
-         p_buf[ pos ] = '\0';
-      }
-      else
-         str = string( buf );
-
-      memset( buf, '\0', str.size( ) );
-   }
-
-   cout << '\n';
-
-   return str;
-}
-#endif
-
 void put_line( const char* p_chars, size_t len, bool append_lf )
 {
-#ifdef _WIN32
-   for( size_t i = 0; i < len; i++ )
-      _putch( *( p_chars + i ) );
-
-   if( append_lf )
-      _putch( '\n' );
-#else
   int outfd = STDOUT_FILENO;
 
    // NOTE: If standard output is not a terminal (such as is the case with redirected output) then
@@ -327,7 +255,6 @@ void put_line( const char* p_chars, size_t len, bool append_lf )
 
    if( outfd != STDOUT_FILENO )
       close( outfd );
-#endif
 }
 
 void console_progress::output_progress( const string& message, unsigned long num, unsigned long total )

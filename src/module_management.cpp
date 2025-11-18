@@ -15,12 +15,6 @@
 #  include <iostream>
 #  include <algorithm>
 #  include <stdexcept>
-#  ifdef _MSC_VER
-#     include <io.h>
-#  endif
-#  ifdef __BORLANDC__
-#     include <cio>
-#  endif
 #  ifdef __GNUG__
 #     include <unistd.h>
 #  endif
@@ -229,19 +223,11 @@ module_load_error load_module( const string& module_name )
       return e_module_load_error_none;
    }
 
-#ifdef _WIN32
-   string dyn_lib_name;
-#else
    string dyn_lib_name( "./" );
-#endif
 
    dyn_lib_name += directory + module_name;
 
-#ifdef _WIN32
-   dyn_lib_name += string( ".dll" );
-#else
    dyn_lib_name += string( ".so" );
-#endif
 
    if( _access( dyn_lib_name.c_str( ), 0 ) != 0 )
       return e_module_load_error_file_does_not_exist;

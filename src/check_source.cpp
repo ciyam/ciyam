@@ -51,11 +51,7 @@ void debug_error( const char* file, int line )
    cerr << "==> in " << file << " at line " << line << endl;
 }
 
-#ifndef _WIN32
 const char c_path_separator = '/';
-#else
-const char c_path_separator = '\\';
-#endif
 
 const char* const c_check_ignore_file_name = "check_source_ignore";
 const char* const c_check_include_file_name = "check_source_include";
@@ -1139,9 +1135,9 @@ int main( int argc, char* argv[ ] )
    get_include_masks( );
 
    int rc = 0;
+
    while( first_arg < argc )
       rc += process_file( argv[ first_arg++ ] );
 
    return rc;
 }
-

@@ -55,6 +55,8 @@
 
 // [<start includes>]
 //nyi
+#include <sys/stat.h>
+
 #include "Meta_Type.h"
 #include "Meta_Enum.h"
 #include "Meta_Enum_Item.h"
@@ -3807,10 +3809,10 @@ void Meta_Class::impl::impl_Generate( )
             if( is_gen_script_object )
             {
                gen_xrep += " >" + gen_script + gen_extra;
-#ifndef _WIN32
+
                if( specification_object == "gen_ext_script" )
                   gen_xrep += "\nchmod a+x " + gen_script + gen_extra;
-#endif
+
                exec_system( gen_xrep );
 
                ofstream outl( extra_lst_file_name.c_str( ), ios::out | ios::app );

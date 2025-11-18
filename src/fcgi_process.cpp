@@ -1162,11 +1162,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   }
                   else
                   {
-#ifndef _WIN32
                      string::size_type pos = new_file.find_last_of( "/" );
-#else
-                     string::size_type pos = new_file.find_last_of( "/\\" );
-#endif
+
                      if( pos != string::npos )
                         new_file_name = new_file.substr( pos + 1 );
 

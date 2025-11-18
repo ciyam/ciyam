@@ -20,6 +20,7 @@
 #endif
 
 #define USE_CHAR_BUF
+
 #ifdef USE_CHAR_BUF
 #  ifndef _LP64
 #     define USE_SIZE_PADDING
@@ -858,11 +859,8 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       if( !o.is_in_transaction( ) )
          ap_ods_tx.reset( new ods::transaction( o ) );
 
-#ifndef _WIN32
       string::size_type pos = file_name.find_last_of( "/" );
-#else
-      string::size_type pos = file_name.find_last_of( ":/\\" );
-#endif
+
       temp_node.set_new( );
 
       // NOTE: If a path was specified then don't store it.

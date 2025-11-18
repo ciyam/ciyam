@@ -24,21 +24,6 @@
 #  ifdef __GNUG__
 #     include <unistd.h>
 #  endif
-#  ifdef __BORLANDC__
-#     include <cio>
-#     include <dos.h>
-#     include <dir.h>
-#  endif
-#  ifdef _MSC_VER
-#     include <io.h>
-#     include <direct.h>
-#  endif
-#endif
-
-// KLUDGE: Suppress the "function now deprecated" warning as it is being incorrectly issued for
-// the "sgetn" I/O function (an issue at least with the VS Express 2005 version of VC8).
-#ifdef _MSC_VER
-#  pragma warning (disable: 4996)
 #endif
 
 #ifdef __GNUG__
@@ -209,11 +194,8 @@ void create_all_directories( deque< string >& create_directories,
             throw runtime_error( "unexpected missing directory perms for '" + path_name + "'" );
 
          string full_path = destination_directory + path_name;
-#ifdef _WIN32
-         int rc = _mkdir( full_path.c_str( ) );
-#else
+
          int rc = _mkdir( full_path.c_str( ), S_IRWXU );
-#endif
 
          if( rc < 0 && errno != EEXIST )
             throw runtime_error( "unable to create directory '" + full_path + "'" );
@@ -473,17 +455,9 @@ int main( int argc, char* argv[ ] )
 
                if( !dir_exists( destination_directory ) )
                   create_dir( destination_directory );
-#ifndef _WIN32
+
                if( destination_directory[ destination_directory.size( ) - 1 ] != '/' )
                   destination_directory += '/';
-#else
-               if( destination_directory[ destination_directory.size( ) - 1 ] != '/'
-                && destination_directory[ destination_directory.size( ) - 1 ] != '\\'
-                && destination_directory[ destination_directory.size( ) - 1 ] != ':' )
-                  destination_directory += '/';
-
-               replace( destination_directory, "\\", "/" );
-#endif
             }
             else if( get_exclude_filespecs )
                exclude_filename_filters.push_back( next );

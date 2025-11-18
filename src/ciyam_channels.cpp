@@ -1357,11 +1357,7 @@ string storage_channel_documents_update( const string& identity, bool submitted 
    {
       create_dir( blockchain_identity );
 
-#ifdef _WIN32
-      string cmd( "unbundle" );
-#else
       string cmd( "./unbundle" );
-#endif
 
       string temp_file( "~" + uuid( ).as_string( ) );
 
@@ -1745,11 +1741,7 @@ string storage_channel_documents_prepare( const string& identity )
 
       write_file( blockchain_identity + '/' + string( c_channel_files ), files );
 
-#ifdef _WIN32
-      string cmd( "bundle" );
-#else
       string cmd( "./bundle" );
-#endif
 
       cmd += " -qq " + blockchain_identity + " \"" + blockchain_identity + "/*\"";
 

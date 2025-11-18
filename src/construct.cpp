@@ -32,6 +32,8 @@ int main( int argc, char* argv[ ] )
       return 0;
    }
 
+   int rc = 0;
+
    try
    {
       int arg_num = 1;
@@ -117,11 +119,7 @@ int main( int argc, char* argv[ ] )
 
       }
 
-#ifdef _WIN32
-      string cmd( "update" );
-#else
       string cmd( "./update" );
-#endif
 
       cmd += " " + target_filename + " " + new_filename;
 
@@ -130,13 +128,16 @@ int main( int argc, char* argv[ ] )
    }
    catch( exception& x )
    {
+      rc = 1;
+
       cerr << "error: " << x.what( ) << endl;
-      return 1;
    }
    catch( ... )
    {
-      cerr << "unexpected exception occurred..." << endl;
-      return 2;
-   }
-}
+      rc = 2;
 
+      cerr << "unexpected exception occurred..." << endl;
+   }
+
+   return rc;
+}

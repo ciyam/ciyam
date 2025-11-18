@@ -150,7 +150,6 @@ typedef void ( *fp_obtain_module_strings )( const module_strings_container*& p_m
 typedef void ( *fp_obtain_module_commands )(
  command_functor_creator*& p_functor_creator, command_definition*& p_definitions, size_t* p_num_commands );
 
-#  ifndef __BORLANDC__
 const char* const c_init_dir_func_name = "init_dir";
 const char* const c_load_strings_func_name = "load_strings";
 const char* const c_init_classes_func_name = "init_classes";
@@ -162,19 +161,5 @@ const char* const c_obtain_class_registry_func_name = "obtain_class_registry";
 const char* const c_obtain_module_details_func_name = "obtain_module_details";
 const char* const c_obtain_module_strings_func_name = "obtain_module_strings";
 const char* const c_obtain_module_commands_func_name = "obtain_module_commands";
-#  else
-const char* const c_load_strings_func_name = "_init_dir";
-const char* const c_load_strings_func_name = "_load_strings";
-const char* const c_init_classes_func_name = "_init_classes";
-const char* const c_term_classes_func_name = "_term_classes";
-const char* const c_obtain_externals_func_name = "_obtain_externals";
-const char* const c_create_class_object_func_name = "_create_class_object";
-const char* const c_destroy_class_object_func_name = "_destroy_class_object";
-const char* const c_obtain_class_registry_func_name = "_obtain_class_registry";
-const char* const c_obtain_module_details_func_name = "_obtain_module_details";
-const char* const c_obtain_module_strings_func_name = "_obtain_module_strings";
-const char* const c_obtain_module_commands_func_name = "_obtain_module_commands";
-#  endif
 
 #endif
-

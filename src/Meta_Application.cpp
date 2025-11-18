@@ -41,15 +41,14 @@
 
 // [<start includes>]
 //nyi
+#include <sys/stat.h>
+
 #include "Meta_List.h"
 #include "Meta_View.h"
 #include "Meta_Class.h"
 #include "Meta_Field.h"
 #include "Meta_Model.h"
 #include "Meta_Package.h"
-#ifndef _WIN32
-#  include <sys/stat.h>
-#endif
 // [<finish includes>]
 
 using namespace std;

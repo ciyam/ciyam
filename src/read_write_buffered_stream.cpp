@@ -24,12 +24,6 @@
 
 //#define READ_WRITE_BUFFERED_STREAM_TESTBED
 
-// KLUDGE: Although BCB does actually implement all of the numeric limits functions
-// that required in this module linker errors are occurring when they are being used.
-#ifdef __BORLANDC__
-#  define NO_SUPPORT_FOR_INF_OR_NAN
-#endif
-
 using namespace std;
 
 const char c_bool_true = '1';

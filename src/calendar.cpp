@@ -386,15 +386,14 @@ void output_calendar( ostream& outf, const udate& ud, const udate& udm )
 
 int main( int argc, char* argv[ ] )
 {
+   int rc = 0;
+
    try
    {
       string exe_path( argv[ 0 ] );
 
-#ifndef _WIN32
       size_t pos = exe_path.find_last_of( "/" );
-#else
-      size_t pos = exe_path.find_last_of( "\\" );
-#endif
+
       if( pos != string::npos )
          exe_path.erase( pos );
       else
@@ -447,6 +446,7 @@ int main( int argc, char* argv[ ] )
       if( file_exists( sio_file ) )
       {
          ifstream inpf( sio_file.c_str( ) );
+
          if( !inpf )
             throw runtime_error( "unable to open '" + sio_file + "' for input" );
 
@@ -457,13 +457,16 @@ int main( int argc, char* argv[ ] )
    }
    catch( exception& x )
    {
+      rc = 1;
+
       cerr << "error: " << x.what( ) << endl;
-      return 1;
    }
    catch( ... )
    {
-      cerr << "unexpected exception caught" << endl;
-      return 2;
-   }
-}
+      rc = 2;
 
+      cerr << "unexpected exception caught" << endl;
+   }
+
+   return rc;
+}

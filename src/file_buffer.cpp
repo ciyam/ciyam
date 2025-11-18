@@ -54,13 +54,8 @@ void file_buffer::load( const char* p_file_name )
    inpf.read( ( char* )&data[ 0 ], size );
 
    name = string( p_file_name );
-#ifdef _WIN32
-   string::size_type pos = name.find_last_of( '\\' );
-   if( pos == string::npos )
-      pos = name.find( ':' );
-#else
+
    string::size_type pos = name.find_last_of( '/' );
-#endif
 
    if( pos != string::npos )
       name.erase( 0, pos + 1 );
@@ -72,11 +67,14 @@ void file_buffer::save( const char* p_output_path ) const
       throw runtime_error( "file name is required for save" );
 
    string file_name( p_output_path );
+
    if( !file_name.empty( ) )
       file_name += '/';
+
    file_name += name;
 
    ofstream outf( file_name.c_str( ), ios::out | ios::binary );
+
    if( !outf )
       throw runtime_error( "unable to open file '" + file_name + "' for output" );
 
@@ -84,7 +82,7 @@ void file_buffer::save( const char* p_output_path ) const
       outf.write( ( const char* )&data[ 0 ], data.size( ) );
 
    outf.flush( );
+
    if( !outf.good( ) )
       throw runtime_error( "unexpected bad output stream for file '" + file_name + "'" );
 }
-

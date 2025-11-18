@@ -21,11 +21,6 @@
 #  define _rmdir rmdir
 #endif
 
-#ifdef _WIN32
-#  include <direct.h>
-#  include <windows.h>
-#endif
-
 #include "file_utils.h"
 
 #include "utilities.h"
@@ -38,47 +33,11 @@ namespace
 
 const int c_buf_size = 65536;
 
-#ifdef _WIN32
-bool delete_files( const char* p_dir, bool recycle )
-{
-   int len = strlen( p_dir );
-   char* p_from = new char[ len + 2 ];
-   memcpy( ( void* )p_from, ( void* )p_dir, len );
-
-   // NOTE: Requires two trailing zeros to mark the end of the file list.
-   p_from[ len ] = 0;
-   p_from[ len + 1 ] = 0;
-  
-   SHFILEOPSTRUCT fileop;
-   fileop.hwnd = 0;
-   fileop.wFunc = FO_DELETE;
-   fileop.pFrom = p_from;
-   fileop.pTo = 0;
-   fileop.fFlags = FOF_NOCONFIRMATION | FOF_SILENT;
-  
-   if( recycle )
-      fileop.fFlags |= FOF_ALLOWUNDO;
-
-   fileop.fAnyOperationsAborted = 0;
-   fileop.lpszProgressTitle = 0;
-   fileop.hNameMappings = 0;
-
-   int ret = ::SHFileOperation( &fileop );
-   delete[ ] p_from;
-
-   return ret == 0;
-}
-#endif
-
 }
 
 void create_directories( const string& file_path, int perm, int mask )
 {
-#ifndef _WIN32
    string::size_type pos = file_path.rfind( '/' );
-#else
-   string::size_type pos = file_path.find_last_of( "/\\" );
-#endif
 
    if( !file_path.empty( ) && !file_exists( file_path ) )
    {
@@ -86,17 +45,6 @@ void create_directories( const string& file_path, int perm, int mask )
       string dir_path( file_path.substr( 0, pos ) );
 
       string next;
-
-#ifdef _WIN32
-      replace( dir_path, '\\', '/' );
-
-      string::size_type dpos = dir_path.find( ':' );
-      if( dpos != string::npos )
-      {
-         next += dir_path.substr( 0, pos + 1 );
-         dir_path.erase( 0, pos + 1 );
-      }
-#endif
 
       bool absolute = false;
 
@@ -158,9 +106,7 @@ bool files_are_identical( const string& file_path1, const string& file_path2 )
 bool delete_directory_files( const string& path, bool include_directory_itself )
 {
    bool okay = true;
-#ifdef _WIN32
-   okay = delete_files( ( path + "\\*.*" ).c_str( ), false );
-#else
+
    directory_filter df;
    fs_iterator dfsi( path, &df, true );
 
@@ -196,11 +142,9 @@ bool delete_directory_files( const string& path, bool include_directory_itself )
       if( !okay )
          break;
    }
-#endif
 
    if( okay && include_directory_itself )
       okay = ( _rmdir( path.c_str( ) ) == 0 );
 
    return okay;
 }
-

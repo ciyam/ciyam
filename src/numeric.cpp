@@ -10,9 +10,6 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
-#  ifndef __STDC_CONSTANT_MACROS
-#     define __STDC_CONSTANT_MACROS
-#  endif
 #  include <cmath>
 #  include <cstdio>
 #  include <iostream>

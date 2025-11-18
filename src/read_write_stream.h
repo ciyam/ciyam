@@ -462,11 +462,6 @@ template< typename T1, typename T2 > write_stream& operator <<( write_stream& ws
    return ws;
 }
 
-// KLUDGE: The warning suppression is coded in order to prevent BCB from issuing a warning
-// about "p_c" being assigned a value that is never used (when it points to a primitive).
-#  ifdef __BORLANDC__
-#     pragma option push -w-8004
-#  endif
 template< typename C, class T, class A > size_t size_determiner( const std::basic_string< C, T, A >* p )
 {
    if( !p )
@@ -484,9 +479,6 @@ template< typename C, class T, class A > size_t size_determiner( const std::basi
 
    return total_size;
 }
-#  ifdef __BORLANDC__
-#     pragma option pop
-#  endif
 
 template< typename C, class T, class A > write_stream& operator <<( write_stream& ws, const std::basic_string< C, T, A >& ctr )
 {
@@ -498,11 +490,6 @@ template< typename C, class T, class A > write_stream& operator <<( write_stream
    return ws;
 }
 
-// KLUDGE: The warning suppression is coded in order to prevent BCB from issuing a warning
-// about "p_t" being assigned a value that is never used (when it points to a primitive).
-#  ifdef __BORLANDC__
-#     pragma option push -w-8004
-#  endif
 template< typename T, class A > size_t size_determiner( const std::list< T, A >* p )
 {
    if( !p )
@@ -523,9 +510,6 @@ template< typename T, class A > size_t size_determiner( const std::list< T, A >*
 
    return total_size;
 }
-#  ifdef __BORLANDC__
-#     pragma option pop
-#  endif
 
 template< typename T, class A > write_stream& operator <<( write_stream& ws, const std::list< T, A >& ctr )
 {
@@ -543,11 +527,6 @@ template< typename T, class A > write_stream& operator <<( write_stream& ws, con
    return ws;
 }
 
-// KLUDGE: The warning suppression is coded in order to prevent BCB from issuing a warning
-// about "p_t" being assigned a value that is never used (when it points to a primitive).
-#  ifdef __BORLANDC__
-#     pragma option push -w-8004
-#  endif
 template< typename T, class A > size_t size_determiner( const std::deque< T, A >* p )
 {
    if( !p )
@@ -568,9 +547,6 @@ template< typename T, class A > size_t size_determiner( const std::deque< T, A >
 
    return total_size;
 }
-#  ifdef __BORLANDC__
-#     pragma option pop
-#  endif
 
 template< typename T, class A > write_stream& operator <<( write_stream& ws, const std::deque< T, A >& ctr )
 {
@@ -587,11 +563,6 @@ template< typename T, class A > write_stream& operator <<( write_stream& ws, con
    return ws;
 }
 
-// KLUDGE: The warning suppression is coded in order to prevent BCB from issuing a warning
-// about "p_t" being assigned a value that is never used (when it points to a primitive).
-#  ifdef __BORLANDC__
-#     pragma option push -w-8004
-#  endif
 template< typename T, class A > size_t size_determiner( const std::vector< T, A >* p )
 {
    if( !p )
@@ -612,9 +583,6 @@ template< typename T, class A > size_t size_determiner( const std::vector< T, A 
 
    return total_size;
 }
-#  ifdef __BORLANDC__
-#     pragma option pop
-#  endif
 
 template< typename T, class A > write_stream& operator <<( write_stream& ws, const std::vector< T, A >& ctr )
 {
@@ -631,11 +599,6 @@ template< typename T, class A > write_stream& operator <<( write_stream& ws, con
    return ws;
 }
 
-// KLUDGE: The warning suppression is coded in order to prevent BCB from issuing a warning
-// about "p_k" being assigned a value that is never used (when it points to a primitive).
-#  ifdef __BORLANDC__
-#     pragma option push -w-8004
-#  endif
 template< typename K, class C, class A > size_t size_determiner( const std::set< K, C, A >* p )
 {
    if( !p )
@@ -656,9 +619,6 @@ template< typename K, class C, class A > size_t size_determiner( const std::set<
 
    return total_size;
 }
-#  ifdef __BORLANDC__
-#     pragma option pop
-#  endif
 
 template< typename K, class C, class A > write_stream& operator <<( write_stream& ws, const std::set< K, C, A >& ctr )
 {
@@ -676,11 +636,6 @@ template< typename K, class C, class A > write_stream& operator <<( write_stream
    return ws;
 }
 
-// KLUDGE: The warning suppression is coded in order to prevent BCB from issuing a warning
-// about "p_k" being assigned a value that is never used (when it points to a primitive).
-#  ifdef __BORLANDC__
-#     pragma option push -w-8004
-#  endif
 template< typename K, class C, class A > size_t size_determiner( const std::multiset< K, C, A >* p )
 {
    if( !p )
@@ -701,9 +656,6 @@ template< typename K, class C, class A > size_t size_determiner( const std::mult
 
    return total_size;
 }
-#  ifdef __BORLANDC__
-#     pragma option pop
-#  endif
 
 template< typename K, class C, class A > write_stream& operator <<( write_stream& ws, const std::multiset< K, C, A >& ctr )
 {
@@ -721,11 +673,6 @@ template< typename K, class C, class A > write_stream& operator <<( write_stream
    return ws;
 }
 
-// KLUDGE: The warning suppression is coded in order to prevent BCB from issuing warnings about
-// "p_k" and/or "p_t" being assigned values that are never used (when either points to a primitive).
-#  ifdef __BORLANDC__
-#     pragma option push -w-8004
-#  endif
 template< typename K, typename T, class C, class A > size_t size_determiner( const std::map< K, T, C, A >* p )
 {
    if( !p )
@@ -762,9 +709,6 @@ template< typename K, typename T, class C, class A > size_t size_determiner( con
 
    return total_size;
 }
-#  ifdef __BORLANDC__
-#     pragma option pop
-#  endif
 
 template< typename K,
  typename T, class C, class A > write_stream& operator <<( write_stream& ws, const std::map< K, T, C, A >& ctr )
@@ -783,11 +727,6 @@ template< typename K,
    return ws;
 }
 
-// KLUDGE: The warning suppression is coded in order to prevent BCB from issuing warnings about
-// "p_k" and/or "p_t" being assigned values that are never used (when either points to a primitive).
-#  ifdef __BORLANDC__
-#     pragma option push -w-8004
-#  endif
 template< typename K, typename T, class C, class A > size_t size_determiner( const std::multimap< K, T, C, A >* p )
 {
    if( !p )
@@ -824,9 +763,6 @@ template< typename K, typename T, class C, class A > size_t size_determiner( con
 
    return total_size;
 }
-#  ifdef __BORLANDC__
-#     pragma option pop
-#  endif
 
 template< typename K,
  typename T, class C, class A > write_stream& operator <<( write_stream& ws, const std::multimap< K, T, C, A >& ctr )
@@ -846,4 +782,3 @@ template< typename K,
 }
 
 #endif
-

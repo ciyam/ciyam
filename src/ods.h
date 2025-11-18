@@ -438,17 +438,6 @@ class final
    final( ) { }
 };
 
-// KLUDGE: The function pointer approach that follows (which is used to match an exact signature in order to
-// ensure that a function that takes a base class isn't being chosen) is perhaps not standard (although it's
-// not clear why) so it is not being used when either GNU or Borland compilers are in use. It is still being
-// used for Visual C++ so that at least compilation with it will reveal any missing required functions.
-#  ifdef __GNUG__
-#     define ODS_DO_NOT_USE_FUNCTION_POINTERS
-#  endif
-#  ifdef __BORLANDC__
-#     define ODS_DO_NOT_USE_FUNCTION_POINTERS
-#  endif
-
 #  ifdef ODS_NON_FINAL_STORABLE
 template< class T, int64_t R = 0, class B = none > class storable : public T, public B
 #  else
@@ -463,13 +452,7 @@ template< class T, int64_t R = 0, class B = none > class storable : public T, pu
 
    int64_t get_size_of( ) const
    {
-#  ifndef ODS_DO_NOT_USE_FUNCTION_POINTERS
-      int64_t ( *p_func )( const T& );
-      p_func = &size_of;
-      int64_t size = ( *p_func )( *this );
-#  else
       int64_t size = size_of( *this );
-#  endif
 
       // IMPORTANT: The R value is used to round up the storable size allowing storable objects to grow by
       // this amount before needing to be moved to the end of the data file (reducing the amount of wasted
@@ -484,24 +467,12 @@ template< class T, int64_t R = 0, class B = none > class storable : public T, pu
 
    void get_instance( read_stream& rs )
    {
-#  ifndef ODS_DO_NOT_USE_FUNCTION_POINTERS
-      read_stream& ( *p_func )( read_stream&, T& );
-      p_func = &operator >>;
-      ( *p_func )( rs, *this );
-#  else
       operator >>( rs, *this );
-#  endif
    }
 
    void put_instance( write_stream& ws ) const
    {
-#  ifndef ODS_DO_NOT_USE_FUNCTION_POINTERS
-      write_stream& ( *p_func )( write_stream&, const T& );
-      p_func = &operator <<;
-      ( *p_func )( ws, *this );
-#  else
       operator <<( ws, *this );
-#  endif
    }
 };
 

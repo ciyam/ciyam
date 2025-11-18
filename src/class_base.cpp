@@ -2788,16 +2788,6 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
       key = new_key_value;
 }
 
-#ifdef __BORLANDC__
-string construct_class_identity( const class_base& cb )
-{
-   string identity( cb.get_module_id( ) );
-   identity += ':';
-   identity += cb.get_class_id( );
-   return identity;
-}
-#endif
-
 struct unique_items_object_variable::impl
 {
    impl( class_base& cb, const string& name )

@@ -21,16 +21,6 @@
 #  include <stdexcept>
 #endif
 
-#ifdef _MSC_VER
-#  ifndef STRICT
-#     define STRICT // Needed for "windows.h" by various Borland headers.
-#  endif
-#  define NOMINMAX
-#  include <windows.h>
-#  include <tchar.h>
-#  include <shellapi.h>
-#endif
-
 //#define DEBUG
 
 #include "pdf_gen.h"
@@ -588,42 +578,6 @@ inline string group_repeat_string( int repeat_num )
    return osstr.str( );
 }
 
-#ifdef _WIN32
-bool wmove_file( const wstring& from, const wstring& to )
-{
-   int from_len = from.length( );
-   wchar_t* p_from = new wchar_t[ from_len + 2 ];
-   memcpy( ( void* )p_from, ( void* )from.c_str( ), sizeof( wchar_t ) * from_len );
-
-   // NOTE: Requires two trailing zeros to mark the end of the file list.
-   p_from[ from_len ] = 0;
-   p_from[ from_len + 1 ] = 0;
-
-   int to_len = to.length( );
-   wchar_t* p_to = new wchar_t[ to_len + 2 ];
-   memcpy( ( void* )p_to, ( void* )to.c_str( ), sizeof( wchar_t ) * to_len );
-
-   p_to[ to_len ] = 0;
-   p_to[ to_len + 1 ] = 0;
-
-   SHFILEOPSTRUCTW fileop;
-   fileop.hwnd = 0;
-   fileop.wFunc = FO_MOVE;
-   fileop.pFrom = p_from;
-   fileop.pTo = p_to;
-   fileop.fFlags = FOF_NOCONFIRMATION | FOF_SILENT;
-  
-   fileop.fAnyOperationsAborted = 0;
-   fileop.lpszProgressTitle = 0;
-   fileop.hNameMappings = 0;
-
-   int ret = ::SHFileOperationW( &fileop );
-   delete[ ] p_from;
-
-   return ret == 0;
-}
-#endif
-
 #ifdef ICONV_SUPPORT
 string convert_utf8_to_other( const string& utf8, const string& other )
 {
@@ -631,6 +585,7 @@ string convert_utf8_to_other( const string& utf8, const string& other )
    str.reserve( utf8.size( ) );
 
    string src( utf8 );
+
    // KLUDGE: The UTF-8 copyright character and dash characters cannot be
    // converted to GB2312 so these are instead replaced by ASCII characters.
    if( other == "gb2312" )
@@ -673,11 +628,7 @@ string convert_utf8_to_other( const string& utf8, const string& other )
       char* p_buf = buf;
       const char* p_src = next_line.c_str( );
 
-#  ifdef _WIN32
-      size_t rc = iconv( cd, &p_src, &isize, &p_buf, &avail );
-#  else
       size_t rc = iconv( cd, ( char** )&p_src, &isize, &p_buf, &avail );
-#  endif
 
       if( rc == -1 )
       {
@@ -6302,47 +6253,8 @@ void generate_pdf_doc( const string& format_filename,
    vector< string > temp_image_files;
    generate_pdf_output( doc, format, variables, temp_image_files );
 
-#ifdef _WIN32
-   bool has_wide_chars = false;
-   for( size_t i = 0; i < output_filename.length( ); i++ )
-   {
-      if( output_filename[ i ] < 0 )
-      {
-         has_wide_chars = true;
-         break;
-      }
-   }
-
-   // NOTE: For Win32 if a the desired filename has wide characters then
-   // will need to first create a non-wide character temporary name then
-   // rename it with a wide character name.
-   if( has_wide_chars )
-   {
-      wchar_t buffer[ 256 ];
-      memset( buffer, '\0', sizeof( buffer ) );
-
-      ::MultiByteToWideChar( CP_UTF8, MB_ERR_INVALID_CHARS,
-       output_filename.c_str( ), output_filename.length( ), buffer, 255 );
-
-      wstring wname( buffer );
-
-      string tmp_file_name( "~" + uuid( ).as_string( ) + ".pdf" );
-      doc.save_to_file( tmp_file_name );
-
-      wstring wtmp_file_name;
-      for( size_t i = 0; i < tmp_file_name.length( ); i++ )
-         wtmp_file_name += ( wchar_t )tmp_file_name[ i ];
-
-      file_remove( wname );
-      wmove_file( wtmp_file_name, wname );
-   }
-   else
-      doc.save_to_file( output_filename );
-#else
    doc.save_to_file( output_filename );
-#endif
 
    for( size_t i = 0; i < temp_image_files.size( ); i++ )
       file_remove( temp_image_files[ i ] );
 }
-

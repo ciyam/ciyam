@@ -15,14 +15,6 @@
 #  include <fstream>
 #  include <iostream>
 #  include <stdexcept>
-#  ifdef __BORLANDC__
-#     include <cio>
-#     include <cfcntl>
-#  endif
-#  ifdef _MSC_VER
-#     include <io.h>
-#     include <fcntl.h>
-#  endif
 #  ifdef __GNUG__
 #     include <fcntl.h>
 #     include <unistd.h>
@@ -192,12 +184,6 @@ template< unsigned block_size > struct mem_block
       ++total_item_cctor_calls;
 #  endif
    }
-
-   // NOTE: This destructor appears to be required to stop GPF's occurring in BCB5 version when
-   // application exceptions are thrown (no such problem is occurring with g++)??
-#  ifdef __BORLANDC__
-   ~mem_block( ) { }
-#  endif
 
    mem_block& operator =( const mem_block< block_size >& src )
    {

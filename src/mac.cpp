@@ -15,17 +15,11 @@
 #  include <iomanip>
 #  include <iostream>
 #  include <stdexcept>
-#  ifdef _WIN32
-#     include <cstring>
-#     include <windows.h>
-#     include <iphlpapi.h> // NOTE: Needs to be linked with "iphlpapi.lib".
-#  else
-#     include <cstdio>
-#     include <cstring>
-#     include <unistd.h>
-#     include <net/if.h>
-#     include <sys/ioctl.h>
-#  endif
+#  include <cstdio>
+#  include <cstring>
+#  include <unistd.h>
+#  include <net/if.h>
+#  include <sys/ioctl.h>
 #endif
 
 #include "mac.h"
@@ -41,58 +35,15 @@ void output_buffer( ostream& os, unsigned char* p_buffer, int size, char sep )
 {
    for( int i = 0; i < size; ++i )
    {
-      if( i > 0 && sep != '\0' )
+      if( ( i > 0 ) && ( sep != '\0' ) )
          os << ':';
+
       os << hex << setw( 2 ) << setfill( '0' ) << ( unsigned )*p_buffer++;
    }
 }
 
 }
 
-#ifdef _WIN32
-string get_mac_addr( char sep, const char *p_name )
-{
-   IP_ADAPTER_INFO* p;
-
-   char* buffer( 0 );
-   ULONG bufsize( 0 );
-
-   // first call gets the real number of bytes required
-   ::GetAdaptersInfo( ( IP_ADAPTER_INFO* )buffer, &bufsize );
-
-   buffer = new char[ bufsize ];
-
-   // second call gets the data (after allocating an appropriately-sized buffer)
-   ::GetAdaptersInfo( ( IP_ADAPTER_INFO* )buffer, &bufsize );
-
-   ostringstream osstr;
-   for( p = ( IP_ADAPTER_INFO* )buffer; p; p = p->Next )
-   {
-      if( p_name && strcmp( p->AdapterName, p_name ) )
-         continue;
-
-      unsigned i;
-      for( i = 0; i < p->AddressLength; i++ )
-      {
-         if( p->Address[ i ] != 0 )
-            break;
-      }
-
-      // NOTE: If no name is provided then skip disconnected media if they appear first.
-      if( !p_name && i == p->AddressLength )
-         continue;
-
-      output_buffer( osstr, p->Address, p->AddressLength, sep );
-
-      if( !p_name )
-         break;
-   }
-
-   delete[ ] buffer;
-
-   return osstr.str( );
-}
-#else
 string get_mac_addr( char sep, const char *p_name )
 {
    char default_name[ 5 ] = "eth0";
@@ -112,6 +63,7 @@ string get_mac_addr( char sep, const char *p_name )
       p_name = default_name;
 
    sckt = socket( PF_INET, SOCK_STREAM, 0 );
+
    if( sckt < 0 )
       throw runtime_error( "socket creation failure" );
 
@@ -139,36 +91,34 @@ string get_mac_addr( char sep, const char *p_name )
 
    return osstr.str( );
 }
-#endif
 
 #ifdef COMPILE_TESTBED_MAIN
 int main( int argc, char * argv[ ] )
 {
+   int rc = 0;
+
    try
    {
       string mac_addr( get_mac_addr( ':' ) );
 
-      if( mac_addr.empty( ) )
-      {
-         cerr << "error: failed to get MAC address" << endl;
-         return 1;
-      }
-      else
-      {
+      if( !mac_addr.empty( ) )
          cout << mac_addr << endl;
-         return 0;
-      }
+      else
+         throw runtime_error( "failed to get MAC address" );
    }
    catch( exception& x )
    {
+      rc = 1;
+
       cerr << "error: " << x.what( ) << endl;
-      return 1;
    }
    catch( ... )
    {
-      cerr << "unexpected exception caught" << endl;
-      return 2;
+      rc = 2;
+
+      cerr << "error: unexpected unknown exception caught" << endl;
    }
+
+   return rc;
 }
 #endif
-

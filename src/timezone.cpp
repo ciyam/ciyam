@@ -1,13 +1,23 @@
-#include <ctime>
-#include <cstdio>
-#include <cstdlib>
-#include <string>
-#include <vector>
-#include <sstream>
-#include <iomanip>
-#include <iostream>
-#ifndef _WIN32
+// Copyright (c) 2012-2025 CIYAM Developers
+//
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+#ifdef PRECOMPILE_H
+#  include "precompile.h"
+#endif
+#pragma hdrstop
+
+#ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <unistd.h>
+#  include <ctime>
+#  include <cstdio>
+#  include <cstdlib>
+#  include <string>
+#  include <vector>
+#  include <sstream>
+#  include <iomanip>
+#  include <iostream>
 #endif
 
 const int c_start_year = 2000;

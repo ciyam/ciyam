@@ -16,27 +16,10 @@
 #  include <sstream>
 #  include <iostream>
 #  include <stdexcept>
-#  ifdef __BORLANDC__
-#     include <dir.h>
-#  endif
-#  ifdef _MSC_VER
-#     include <direct.h>
-#  endif
 #  ifdef __GNUG__
 #     include <limits.h>
 #     include <unistd.h>
 #  endif
-#endif
-
-// KLUDGE: Suppress the "function now deprecated" warning as it is being incorrectly issued for
-// the "sgetn" I/O function (an issue at least with the VS Express 2005 version of VC8).
-#ifdef _MSC_VER
-#  pragma warning (disable: 4996)
-#endif
-
-#ifdef _WIN32
-#  define PATH_MAX MAX_PATH
-#  include <windows.h>
 #endif
 
 #include "md5.h"
@@ -90,10 +73,7 @@ bool is_root_path( const string& absolute_path )
 {
    if( absolute_path == "/" )
       return true;
-#ifdef _WIN32
-   if( absolute_path.size( ) == 3 )
-      return true;
-#endif
+
    return false;
 }
 
@@ -301,11 +281,6 @@ void process_directory( const string& directory, const string& filespec_path,
       fs_iterator ffsi( dfsi.get_path_name( ), &ff );
 
       string path_name( dfsi.get_path_name( ) );
-#ifdef _WIN32
-      string::size_type pos;
-      while( ( pos = path_name.find( '\\' ) ) != string::npos )
-         path_name[ pos ] = '/';
-#endif
 
       if( path_name.find( filespec_path ) == 0 )
          path_name.erase( 0, filespec_path.length( ) );
@@ -745,11 +720,6 @@ int main( int argc, char* argv[ ] )
 
       string::size_type pos;
 
-#ifdef _WIN32
-      while( ( pos = g_cwd.find( '\\' ) ) != string::npos )
-         g_cwd[ pos ] = '/';
-#endif
-
       pos = g_cwd.find_last_of( '/' );
 
       if( is_root_path( g_cwd ) )
@@ -831,22 +801,12 @@ int main( int argc, char* argv[ ] )
                   }
                }
 
-#ifdef _WIN32
-               string::size_type pos;
-
-               while( ( pos = filespec_path.find( '\\' ) ) != string::npos )
-                  filespec_path[ pos ] = '/';
-#endif
-
                if( is_root_path( filespec_path ) )
                   throw runtime_error( "cannot bundle directory '" + next + "' (need to specify a non-root directory)" );
 
                if( wpos != string::npos )
-#ifdef _WIN32
-                  filespec_path += next.substr( wpos );
-#else
                   filespec_path += "/" + next.substr( wpos );
-#endif
+
                string::size_type rpos = filespec_path.find_last_of( '/' );
 
                string filename_filter;
