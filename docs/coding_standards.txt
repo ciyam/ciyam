@@ -25,7 +25,7 @@ global         g_          int g_port;
 thread         gt_         static TLS( session )* gtp_session;
  (these next prefixes can also be combined with the previous)
 pointer        p_          char* p_ch;
-auto pointer   ap_         auto_ptr< char > ap_char;
+unique pointer up_         unique_ptr< char > up_char;
 ref count ptr  rp_         ref_count_ptr< private_key > rp_private_key;
  
 Operator Space Rules
